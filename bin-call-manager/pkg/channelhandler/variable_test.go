@@ -60,8 +60,8 @@ func Test_VariableSet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id).Return(tt.responseChannel, nil)
-			mockReq.EXPECT().AstChannelVariableSet(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID, tt.key, tt.value).Return(nil)
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id.Return(tt.responseChannel, nil)
+			mockReq.EXPECT().AstChannelVariableSet(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID, tt.key, tt.value.Return(nil)
 
 			if errSet := h.VariableSet(ctx, tt.id, tt.key, tt.value); errSet != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errSet)
@@ -116,7 +116,7 @@ func Test_variableGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AstChannelVariableGet(ctx, tt.channel.AsteriskID, tt.channel.ID, tt.key).Return(tt.responseValue, nil)
+			mockReq.EXPECT().AstChannelVariableGet(ctx, tt.channel.AsteriskID, tt.channel.ID, tt.key.Return(tt.responseValue, nil)
 
 			res, err := h.variableGet(ctx, tt.channel, tt.key)
 			if err != nil {

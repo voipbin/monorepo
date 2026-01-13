@@ -52,7 +52,7 @@ func Test_processEvent_processEventCUCustomerDeleted(t *testing.T) {
 				numberHandler: mockNumber,
 			}
 
-			mockNumber.EXPECT().EventCustomerDeleted(gomock.Any(), tt.expectCustomer).Return(nil)
+			mockNumber.EXPECT().EventCustomerDeleted(gomock.Any(), tt.expectCustomer.Return(nil)
 
 			h.processEvent(tt.event)
 		})

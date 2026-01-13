@@ -78,7 +78,7 @@ func Test_v1StreamingsPost(t *testing.T) {
 				streamingHandler: mockStreaming,
 			}
 
-			mockStreaming.EXPECT().Start(gomock.Any(), tt.expectCustomerID, tt.expectActiveflowID, tt.expectReferenceType, tt.expectReferenceID, tt.expectLanguage, tt.expectGender, tt.expectDirection).Return(tt.responseStreaming, nil)
+			mockStreaming.EXPECT().Start(gomock.Any(), tt.expectCustomerID, tt.expectActiveflowID, tt.expectReferenceType, tt.expectReferenceID, tt.expectLanguage, tt.expectGender, tt.expectDirection.Return(tt.responseStreaming, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -142,7 +142,7 @@ func Test_v1StreamingsIDDelete(t *testing.T) {
 				streamingHandler: mockStreaming,
 			}
 
-			mockStreaming.EXPECT().Stop(gomock.Any(), tt.expectID).Return(tt.responseStreaming, nil)
+			mockStreaming.EXPECT().Stop(gomock.Any(), tt.expectID.Return(tt.responseStreaming, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -210,7 +210,7 @@ func Test_v1StreamingsIDSayAddPost(t *testing.T) {
 				streamingHandler: mockStreaming,
 			}
 
-			mockStreaming.EXPECT().SayAdd(gomock.Any(), tt.expectID, tt.expectMessageID, tt.expectText).Return(nil)
+			mockStreaming.EXPECT().SayAdd(gomock.Any(), tt.expectID, tt.expectMessageID, tt.expectText.Return(nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -272,7 +272,7 @@ func Test_v1StreamingsIDSayStopPost(t *testing.T) {
 				streamingHandler: mockStreaming,
 			}
 
-			mockStreaming.EXPECT().SayStop(gomock.Any(), tt.expectID).Return(nil)
+			mockStreaming.EXPECT().SayStop(gomock.Any(), tt.expectID.Return(nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -340,7 +340,7 @@ func Test_v1StreamingsIDSayInitPost(t *testing.T) {
 				streamingHandler: mockStreaming,
 			}
 
-			mockStreaming.EXPECT().SayInit(gomock.Any(), tt.expectID, tt.expectMessageID).Return(tt.responseStreaming, nil)
+			mockStreaming.EXPECT().SayInit(gomock.Any(), tt.expectID, tt.expectMessageID.Return(tt.responseStreaming, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -408,7 +408,7 @@ func Test_v1StreamingsIDSayFinishPost(t *testing.T) {
 				streamingHandler: mockStreaming,
 			}
 
-			mockStreaming.EXPECT().SayFinish(gomock.Any(), tt.expectID, tt.expectMessageID).Return(tt.responseStreaming, nil)
+			mockStreaming.EXPECT().SayFinish(gomock.Any(), tt.expectID, tt.expectMessageID.Return(tt.responseStreaming, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

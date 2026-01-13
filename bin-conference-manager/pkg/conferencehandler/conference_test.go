@@ -120,17 +120,17 @@ func Test_Create(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
 			confbridgeType := cmconfbridge.TypeConnect
 			if tt.conferenceType == conference.TypeConference {
 				confbridgeType = cmconfbridge.TypeConference
 			}
-			mockReq.EXPECT().CallV1ConfbridgeCreate(ctx, tt.customerID, uuid.Nil, cmconfbridge.ReferenceTypeConference, tt.responseUUID, confbridgeType).Return(tt.responseConfbridge, nil)
-			mockDB.EXPECT().ConferenceCreate(ctx, tt.expectConference).Return(nil)
-			mockDB.EXPECT().ConferenceGet(ctx, gomock.Any()).Return(tt.expectRes, nil)
+			mockReq.EXPECT().CallV1ConfbridgeCreate(ctx, tt.customerID, uuid.Nil, cmconfbridge.ReferenceTypeConference, tt.responseUUID, confbridgeType.Return(tt.responseConfbridge, nil)
+			mockDB.EXPECT().ConferenceCreate(ctx, tt.expectConference.Return(nil)
+			mockDB.EXPECT().ConferenceGet(ctx, gomock.Any().Return(tt.expectRes, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectRes.CustomerID, conference.EventTypeConferenceCreated, gomock.Any())
 			if tt.timeout > 0 {
-				mockReq.EXPECT().ConferenceV1ConferenceDeleteDelay(ctx, gomock.Any(), tt.timeout*1000).Return(nil)
+				mockReq.EXPECT().ConferenceV1ConferenceDeleteDelay(ctx, gomock.Any(), tt.timeout*1000.Return(nil)
 			}
 
 			res, err := h.Create(ctx, tt.id, tt.customerID, tt.conferenceType, tt.conferenceName, tt.detail, tt.data, tt.timeout, tt.preFlowID, tt.postFlowID)
@@ -184,7 +184,7 @@ func Test_GetByConfbridgeID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConferenceGetByConfbridgeID(ctx, tt.confbridgeID).Return(tt.responseConference, nil)
+			mockDB.EXPECT().ConferenceGetByConfbridgeID(ctx, tt.confbridgeID.Return(tt.responseConference, nil)
 
 			res, err := h.GetByConfbridgeID(ctx, tt.confbridgeID)
 			if err != nil {
@@ -279,8 +279,8 @@ func Test_Update(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConferenceUpdate(ctx, tt.id, tt.expectFields).Return(nil)
-			mockDB.EXPECT().ConferenceGet(ctx, tt.id).Return(tt.responseConference, nil)
+			mockDB.EXPECT().ConferenceUpdate(ctx, tt.id, tt.expectFields.Return(nil)
+			mockDB.EXPECT().ConferenceGet(ctx, tt.id.Return(tt.responseConference, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseConference.CustomerID, conference.EventTypeConferenceUpdated, tt.responseConference)
 
 			res, err := h.Update(ctx, tt.id, tt.conferenceName, tt.detail, tt.data, tt.timeout, tt.preFlowID, tt.postFlowID)
@@ -355,11 +355,11 @@ func Test_UpdateRecordingID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConferenceUpdate(ctx, tt.id, tt.expectFields).Return(nil)
+			mockDB.EXPECT().ConferenceUpdate(ctx, tt.id, tt.expectFields.Return(nil)
 			if tt.recordingID != uuid.Nil {
-				mockDB.EXPECT().ConferenceAddRecordingIDs(ctx, tt.id, tt.recordingID).Return(nil)
+				mockDB.EXPECT().ConferenceAddRecordingIDs(ctx, tt.id, tt.recordingID.Return(nil)
 			}
-			mockDB.EXPECT().ConferenceGet(ctx, tt.id).Return(tt.responseConference, nil)
+			mockDB.EXPECT().ConferenceGet(ctx, tt.id.Return(tt.responseConference, nil)
 
 			res, err := h.UpdateRecordingID(ctx, tt.id, tt.recordingID)
 			if err != nil {
@@ -433,11 +433,11 @@ func Test_UpdateTranscribeID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConferenceUpdate(ctx, tt.id, tt.expectFields).Return(nil)
+			mockDB.EXPECT().ConferenceUpdate(ctx, tt.id, tt.expectFields.Return(nil)
 			if tt.transcribeID != uuid.Nil {
-				mockDB.EXPECT().ConferenceAddTranscribeIDs(ctx, tt.id, tt.transcribeID).Return(nil)
+				mockDB.EXPECT().ConferenceAddTranscribeIDs(ctx, tt.id, tt.transcribeID.Return(nil)
 			}
-			mockDB.EXPECT().ConferenceGet(ctx, tt.id).Return(tt.responseConference, nil)
+			mockDB.EXPECT().ConferenceGet(ctx, tt.id.Return(tt.responseConference, nil)
 
 			res, err := h.UpdateTranscribeID(ctx, tt.id, tt.transcribeID)
 			if err != nil {
@@ -492,8 +492,8 @@ func Test_AddConferencecallID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConferenceAddConferencecallID(ctx, tt.id, tt.conferencecallID).Return(nil)
-			mockDB.EXPECT().ConferenceGet(ctx, tt.id).Return(tt.responseConference, nil)
+			mockDB.EXPECT().ConferenceAddConferencecallID(ctx, tt.id, tt.conferencecallID.Return(nil)
+			mockDB.EXPECT().ConferenceGet(ctx, tt.id.Return(tt.responseConference, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseConference.CustomerID, conference.EventTypeConferenceUpdated, tt.responseConference)
 
 			res, err := h.AddConferencecallID(ctx, tt.id, tt.conferencecallID)
@@ -548,10 +548,10 @@ func Test_Delete(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConferenceGet(ctx, tt.id).Return(tt.responseConference, nil)
+			mockDB.EXPECT().ConferenceGet(ctx, tt.id.Return(tt.responseConference, nil)
 
-			mockDB.EXPECT().ConferenceDelete(ctx, tt.id).Return(nil)
-			mockDB.EXPECT().ConferenceGet(ctx, tt.id).Return(tt.responseConference, nil)
+			mockDB.EXPECT().ConferenceDelete(ctx, tt.id.Return(nil)
+			mockDB.EXPECT().ConferenceGet(ctx, tt.id.Return(tt.responseConference, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseConference.CustomerID, conference.EventTypeConferenceDeleted, tt.responseConference)
 
 			res, err := h.Delete(ctx, tt.id)
@@ -624,7 +624,7 @@ func Test_Gets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConferenceGets(ctx, tt.size, tt.token, tt.filters).Return(tt.responseConference, nil)
+			mockDB.EXPECT().ConferenceGets(ctx, tt.size, tt.token, tt.filters.Return(tt.responseConference, nil)
 
 			res, err := h.Gets(ctx, tt.size, tt.token, tt.filters)
 			if err != nil {

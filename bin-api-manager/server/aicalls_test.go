@@ -89,7 +89,7 @@ func Test_PostAicalls(t *testing.T) {
 				tt.expectedReferenceID,
 				tt.expectedGender,
 				tt.expectedLanguage,
-			).Return(tt.response, nil)
+			.Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -199,7 +199,7 @@ func Test_aicallsGET(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().AIcallGetsByCustomerID(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseAIcalls, nil)
+			mockSvc.EXPECT().AIcallGetsByCustomerID(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken.Return(tt.responseAIcalls, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -267,7 +267,7 @@ func Test_aicallsIDGET(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().AIcallGet(req.Context(), &tt.agent, tt.expectAIcallID).Return(tt.responseAIcall, nil)
+			mockSvc.EXPECT().AIcallGet(req.Context(), &tt.agent, tt.expectAIcallID.Return(tt.responseAIcall, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -335,7 +335,7 @@ func Test_aicallsIDDELETE(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().AIcallDelete(req.Context(), &tt.agent, tt.expectAIcallID).Return(tt.responseAIcall, nil)
+			mockSvc.EXPECT().AIcallDelete(req.Context(), &tt.agent, tt.expectAIcallID.Return(tt.responseAIcall, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

@@ -102,7 +102,7 @@ func Test_groupcallsPOST(t *testing.T) {
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().GroupcallCreate(req.Context(), &tt.agent, tt.expectSource, tt.expectDestinations, tt.expectFlowID, tt.expectActions, tt.expectRingMethod, tt.expectAnswerMethod).Return(tt.responseGroupcall, nil)
+			mockSvc.EXPECT().GroupcallCreate(req.Context(), &tt.agent, tt.expectSource, tt.expectDestinations, tt.expectFlowID, tt.expectActions, tt.expectRingMethod, tt.expectAnswerMethod.Return(tt.responseGroupcall, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -183,7 +183,7 @@ func Test_groupcallsGET(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().GroupcallGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseGroupcalls, nil)
+			mockSvc.EXPECT().GroupcallGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken.Return(tt.responseGroupcalls, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -251,7 +251,7 @@ func Test_groupcallsIDGET(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().GroupcallGet(req.Context(), &tt.agent, tt.expectGroupcallID).Return(tt.responseGroupcall, nil)
+			mockSvc.EXPECT().GroupcallGet(req.Context(), &tt.agent, tt.expectGroupcallID.Return(tt.responseGroupcall, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -320,7 +320,7 @@ func Test_groupcallsIDHangupPOST(t *testing.T) {
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().GroupcallHangup(req.Context(), &tt.agent, tt.expectGroupcallID).Return(tt.responseGroupcall, nil)
+			mockSvc.EXPECT().GroupcallHangup(req.Context(), &tt.agent, tt.expectGroupcallID.Return(tt.responseGroupcall, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -388,7 +388,7 @@ func Test_groupcallsIDDELETE(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().GroupcallDelete(req.Context(), &tt.agent, tt.expectGroupcallID).Return(tt.responseGroupcall, nil)
+			mockSvc.EXPECT().GroupcallDelete(req.Context(), &tt.agent, tt.expectGroupcallID.Return(tt.responseGroupcall, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

@@ -73,15 +73,15 @@ func Test_EventCUCustomerDeleted(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().QueueGets(ctx, uint64(1000), "", tt.expectFilters).Return(tt.responseQueues, nil)
+			mockDB.EXPECT().QueueGets(ctx, uint64(1000), "", tt.expectFilters.Return(tt.responseQueues, nil)
 
 			for _, q := range tt.responseQueues {
 				fields := map[queue.Field]any{
 					queue.FieldExecute: queue.ExecuteStop,
 				}
-				mockDB.EXPECT().QueueUpdate(ctx, q.ID, fields).Return(nil)
-				mockDB.EXPECT().QueueDelete(ctx, q.ID).Return(nil)
-				mockDB.EXPECT().QueueGet(ctx, q.ID).Return(q, nil)
+				mockDB.EXPECT().QueueUpdate(ctx, q.ID, fields.Return(nil)
+				mockDB.EXPECT().QueueDelete(ctx, q.ID.Return(nil)
+				mockDB.EXPECT().QueueGet(ctx, q.ID.Return(q, nil)
 				mockNotify.EXPECT().PublishEvent(ctx, queue.EventTypeQueueDeleted, q)
 			}
 

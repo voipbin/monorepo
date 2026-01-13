@@ -77,8 +77,8 @@ func Test_StartContextIncoming(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConfbridgeGet(ctx, tt.expectConfbridgeID).Return(tt.responseConfbridge, nil)
-			mockBridge.EXPECT().ChannelJoin(ctx, tt.responseConfbridge.BridgeID, tt.channel.ID, "", false, false).Return(nil)
+			mockDB.EXPECT().ConfbridgeGet(ctx, tt.expectConfbridgeID.Return(tt.responseConfbridge, nil)
+			mockBridge.EXPECT().ChannelJoin(ctx, tt.responseConfbridge.BridgeID, tt.channel.ID, "", false, false.Return(nil)
 
 			err := h.StartContextIncoming(ctx, tt.channel)
 			if err != nil {

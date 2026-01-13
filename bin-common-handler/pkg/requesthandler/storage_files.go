@@ -11,6 +11,7 @@ import (
 	smrequest "monorepo/bin-storage-manager/pkg/listenhandler/models/request"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 )
 
 // StorageV1FileCreate sends a request to storage-manager
@@ -112,13 +113,15 @@ func (r *requestHandler) StorageV1FileCreateWithDelay(
 // StorageV1FileGets sends a request to storage-manager
 // to getting a list of files.
 // it returns file list of flows if it succeed.
-func (r *requestHandler) StorageV1FileGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]smfile.File, error) {
+func (r *requestHandler) StorageV1FileGets(ctx context.Context, pageToken string, pageSize uint64, filters map[smfile.Field]any) ([]smfile.File, error) {
 	uri := fmt.Sprintf("/v1/files?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
-	// parse filters
-	uri = r.utilHandler.URLMergeFilters(uri, filters)
+	m, err := json.Marshal(filters)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not marshal filters")
+	}
 
-	tmp, err := r.sendRequestStorage(ctx, uri, sock.RequestMethodGet, "storage/files", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestStorage(ctx, uri, sock.RequestMethodGet, "storage/files", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}

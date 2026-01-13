@@ -137,13 +137,13 @@ func Test_PipecatcallsCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().PipecatcallSet(ctx, gomock.Any())
 			if err := h.PipecatcallCreate(ctx, tt.pipecatcall); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().PipecatcallGet(ctx, tt.pipecatcall.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().PipecatcallGet(ctx, tt.pipecatcall.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().PipecatcallSet(ctx, gomock.Any())
 			res, err := h.PipecatcallGet(ctx, tt.pipecatcall.ID)
 			if err != nil {
@@ -226,19 +226,19 @@ func Test_PipecatcallUpdate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().PipecatcallSet(ctx, gomock.Any())
 			if err := h.PipecatcallCreate(context.Background(), tt.flow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().PipecatcallSet(ctx, gomock.Any())
 			if err := h.PipecatcallUpdate(context.Background(), tt.id, tt.fields); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().PipecatcallGet(ctx, tt.flow.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().PipecatcallGet(ctx, tt.flow.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().PipecatcallSet(ctx, gomock.Any())
 			res, err := h.PipecatcallGet(context.Background(), tt.flow.ID)
 			if err != nil {
@@ -301,20 +301,20 @@ func Test_FlowDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().PipecatcallSet(ctx, gomock.Any())
 			if err := h.PipecatcallCreate(ctx, tt.flow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().PipecatcallSet(ctx, gomock.Any())
 			if err := h.PipecatcallDelete(ctx, tt.flow.ID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().PipecatcallGet(ctx, tt.flow.ID).Return(nil, fmt.Errorf("error"))
-			mockCache.EXPECT().PipecatcallSet(ctx, gomock.Any()).Return(nil)
+			mockCache.EXPECT().PipecatcallGet(ctx, tt.flow.ID.Return(nil, fmt.Errorf("error"))
+			mockCache.EXPECT().PipecatcallSet(ctx, gomock.Any().Return(nil)
 			res, err := h.PipecatcallGet(ctx, tt.flow.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

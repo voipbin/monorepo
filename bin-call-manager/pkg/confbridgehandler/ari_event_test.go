@@ -79,8 +79,8 @@ func Test_ARIStasisStartTypeConference(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConfbridgeGet(ctx, tt.confbridge.ID).Return(tt.confbridge, nil)
-			mockBridge.EXPECT().ChannelJoin(ctx, tt.confbridge.BridgeID, tt.channel.ID, "", false, false).Return(nil)
+			mockDB.EXPECT().ConfbridgeGet(ctx, tt.confbridge.ID.Return(tt.confbridge, nil)
+			mockBridge.EXPECT().ChannelJoin(ctx, tt.confbridge.BridgeID, tt.channel.ID, "", false, false.Return(nil)
 
 			err := h.ARIStasisStart(ctx, tt.channel)
 			if err != nil {
@@ -210,12 +210,12 @@ func Test_ARIChannelLeftBridge(t *testing.T) {
 			ctx := context.Background()
 
 			// Leaved
-			mockChannel.EXPECT().HangingUp(ctx, tt.channel.ID, ari.ChannelCauseNormalClearing).Return(tt.channel, nil)
+			mockChannel.EXPECT().HangingUp(ctx, tt.channel.ID, ari.ChannelCauseNormalClearing.Return(tt.channel, nil)
 			mockDB.EXPECT().ConfbridgeRemoveChannelCallID(ctx, tt.expectConfbridgeID, tt.channel.ID)
-			mockDB.EXPECT().ConfbridgeGet(ctx, tt.expectConfbridgeID).Return(tt.responseConfbridge, nil)
+			mockDB.EXPECT().ConfbridgeGet(ctx, tt.expectConfbridgeID.Return(tt.responseConfbridge, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, confbridge.EventTypeConfbridgeLeaved, gomock.Any())
 
-			mockReq.EXPECT().CallV1CallUpdateConfbridgeID(ctx, tt.expectCallID, uuid.Nil).Return(&call.Call{}, nil)
+			mockReq.EXPECT().CallV1CallUpdateConfbridgeID(ctx, tt.expectCallID, uuid.Nil.Return(&call.Call{}, nil)
 
 			err := h.ARIChannelLeftBridge(ctx, tt.channel, tt.bridge)
 			if err != nil {

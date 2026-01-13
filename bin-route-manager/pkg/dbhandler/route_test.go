@@ -81,13 +81,13 @@ func Test_RouteCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().RouteSet(ctx, gomock.Any())
 			if err := h.RouteCreate(ctx, tt.route); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().RouteGet(ctx, tt.route.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().RouteGet(ctx, tt.route.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().RouteSet(ctx, gomock.Any())
 			res, err := h.RouteGet(ctx, tt.route.ID)
 			if err != nil {
@@ -143,7 +143,7 @@ func Test_RouteGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime).AnyTimes()
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime).AnyTimes()
 			for _, r := range tt.routes {
 				mockCache.EXPECT().RouteSet(ctx, gomock.Any())
 				if err := h.RouteCreate(ctx, &r); err != nil {
@@ -235,7 +235,7 @@ func Test_RouteGetsByCustomerID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime).AnyTimes()
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime).AnyTimes()
 			for _, r := range tt.routes {
 				mockCache.EXPECT().RouteSet(ctx, gomock.Any())
 				if err := h.RouteCreate(ctx, &r); err != nil {
@@ -335,7 +335,7 @@ func Test_RouteGetsByCustomerIDWithTarget(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime).AnyTimes()
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime).AnyTimes()
 			for _, r := range tt.routes {
 				mockCache.EXPECT().RouteSet(ctx, gomock.Any())
 				if err := h.RouteCreate(ctx, &r); err != nil {
@@ -396,8 +396,8 @@ func Test_RouteDelete(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().RouteGet(ctx, tt.route.ID).Return(nil, fmt.Errorf("error"))
-			mockCache.EXPECT().RouteSet(ctx, gomock.Any()).Return(nil)
+			mockCache.EXPECT().RouteGet(ctx, tt.route.ID.Return(nil, fmt.Errorf("error"))
+			mockCache.EXPECT().RouteSet(ctx, gomock.Any().Return(nil)
 			res, err := h.RouteGet(ctx, tt.route.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -475,7 +475,7 @@ func Test_RouteUpdate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime).AnyTimes()
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime).AnyTimes()
 			mockCache.EXPECT().RouteSet(ctx, gomock.Any())
 			if err := h.RouteCreate(ctx, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -486,7 +486,7 @@ func Test_RouteUpdate(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().RouteGet(ctx, tt.data.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().RouteGet(ctx, tt.data.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().RouteSet(ctx, gomock.Any())
 			res, err := h.RouteGet(ctx, tt.data.ID)
 			if err != nil {

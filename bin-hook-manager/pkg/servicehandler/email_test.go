@@ -54,7 +54,7 @@ func Test_Email(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().EmailV1Hooks(ctx, tt.expectReq).Return(nil)
+			mockReq.EXPECT().EmailV1Hooks(ctx, tt.expectReq.Return(nil)
 
 			if err := h.Email(ctx, tt.uri, tt.message); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

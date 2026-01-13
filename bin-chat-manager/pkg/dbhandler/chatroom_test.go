@@ -109,13 +109,13 @@ func Test_ChatroomCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+			mockUtil.EXPECT().TimeGetCurTime(.Return(utilhandler.TimeGetCurTime())
 			mockCache.EXPECT().ChatroomSet(ctx, gomock.Any())
 			if err := h.ChatroomCreate(ctx, tt.chatroom); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().ChatroomGet(ctx, tt.chatroom.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ChatroomGet(ctx, tt.chatroom.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().ChatroomSet(ctx, gomock.Any())
 			res, err := h.ChatroomGet(ctx, tt.chatroom.ID)
 			if err != nil {
@@ -213,7 +213,7 @@ func Test_ChatroomGets(t *testing.T) {
 			ctx := context.Background()
 
 			for _, c := range tt.data {
-				mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+				mockUtil.EXPECT().TimeGetCurTime(.Return(utilhandler.TimeGetCurTime())
 				mockCache.EXPECT().ChatroomSet(ctx, gomock.Any())
 				if err := h.ChatroomCreate(ctx, c); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -293,19 +293,19 @@ func Test_ChatroomUpdateBasicInfo(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+			mockUtil.EXPECT().TimeGetCurTime(.Return(utilhandler.TimeGetCurTime())
 			mockCache.EXPECT().ChatroomSet(ctx, gomock.Any())
 			if err := h.ChatroomCreate(ctx, tt.chatroom); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+			mockUtil.EXPECT().TimeGetCurTime(.Return(utilhandler.TimeGetCurTime())
 			mockCache.EXPECT().ChatroomSet(ctx, gomock.Any())
 			if err := h.ChatroomUpdateBasicInfo(ctx, tt.id, tt.chatroomName, tt.detail); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().ChatroomGet(ctx, tt.chatroom.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ChatroomGet(ctx, tt.chatroom.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().ChatroomSet(ctx, gomock.Any())
 			res, err := h.ChatroomGet(ctx, tt.id)
 			if err != nil {
@@ -358,20 +358,20 @@ func Test_ChatroomDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+			mockUtil.EXPECT().TimeGetCurTime(.Return(utilhandler.TimeGetCurTime())
 			mockCache.EXPECT().ChatroomSet(ctx, gomock.Any())
 			if err := h.ChatroomCreate(ctx, tt.chatroom); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+			mockUtil.EXPECT().TimeGetCurTime(.Return(utilhandler.TimeGetCurTime())
 			mockCache.EXPECT().ChatroomSet(ctx, gomock.Any())
 			if err := h.ChatroomDelete(ctx, tt.id); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().ChatroomGet(ctx, tt.id).Return(nil, fmt.Errorf("error"))
-			mockCache.EXPECT().ChatroomSet(ctx, gomock.Any()).Return(nil)
+			mockCache.EXPECT().ChatroomGet(ctx, tt.id.Return(nil, fmt.Errorf("error"))
+			mockCache.EXPECT().ChatroomSet(ctx, gomock.Any().Return(nil)
 			res, err := h.ChatroomGet(ctx, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

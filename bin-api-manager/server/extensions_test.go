@@ -84,7 +84,7 @@ func TestExtensionsPOST(t *testing.T) {
 			req, _ := http.NewRequest("POST", "/extensions", bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ExtensionCreate(req.Context(), &tt.agent, tt.expectExtension, tt.expectPassword, tt.expectName, tt.expectDetail).Return(tt.responseExtension, nil)
+			mockSvc.EXPECT().ExtensionCreate(req.Context(), &tt.agent, tt.expectExtension, tt.expectPassword, tt.expectName, tt.expectDetail.Return(tt.responseExtension, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -158,7 +158,7 @@ func Test_ExtensionsGET(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().ExtensionGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseExntesions, nil)
+			mockSvc.EXPECT().ExtensionGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken.Return(tt.responseExntesions, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -228,7 +228,7 @@ func Test_ExtensionsIDGET(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", fmt.Sprintf("/extensions/%s", tt.responseExntesion.ID), nil)
-			mockSvc.EXPECT().ExtensionGet(req.Context(), &tt.agent, tt.responseExntesion.ID).Return(tt.responseExntesion, nil)
+			mockSvc.EXPECT().ExtensionGet(req.Context(), &tt.agent, tt.responseExntesion.ID.Return(tt.responseExntesion, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -308,7 +308,7 @@ func TestExtensionsIDPUT(t *testing.T) {
 			req, _ := http.NewRequest("PUT", "/extensions/"+tt.extensionID.String(), bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ExtensionUpdate(req.Context(), &tt.agent, tt.extensionID, tt.expectName, tt.expectDetail, tt.expectPassword).Return(tt.responseExtension, nil)
+			mockSvc.EXPECT().ExtensionUpdate(req.Context(), &tt.agent, tt.extensionID, tt.expectName, tt.expectDetail, tt.expectPassword.Return(tt.responseExtension, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -378,7 +378,7 @@ func TestExtensionsIDDELETE(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().ExtensionDelete(req.Context(), &tt.agent, tt.expectExtensionID).Return(tt.responseExtension, nil)
+			mockSvc.EXPECT().ExtensionDelete(req.Context(), &tt.agent, tt.expectExtensionID.Return(tt.responseExtension, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

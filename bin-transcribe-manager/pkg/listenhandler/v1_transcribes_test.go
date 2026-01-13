@@ -84,7 +84,7 @@ func Test_processV1TranscribesPost(t *testing.T) {
 				transcribeHandler: mockTranscribe,
 			}
 
-			mockTranscribe.EXPECT().Start(gomock.Any(), tt.expectCustomerID, tt.expectActiveflowID, tt.expectOnEndFlowID, tt.expectReferenceType, tt.expectReferenceID, tt.expectLanguage, tt.expectDirection).Return(tt.responseTranscribe, nil)
+			mockTranscribe.EXPECT().Start(gomock.Any(), tt.expectCustomerID, tt.expectActiveflowID, tt.expectOnEndFlowID, tt.expectReferenceType, tt.expectReferenceID, tt.expectLanguage, tt.expectDirection.Return(tt.responseTranscribe, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -195,8 +195,8 @@ func Test_processV1TranscribesGet(t *testing.T) {
 				transcribeHandler: mockTranscribe,
 			}
 
-			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
-			mockTranscribe.EXPECT().Gets(gomock.Any(), tt.pageSize, tt.pageToken, tt.expectFilters).Return(tt.responseTranscribes, nil)
+			mockUtil.EXPECT().URLParseFilters(gomock.Any(.Return(tt.responseFilters)
+			mockTranscribe.EXPECT().Gets(gomock.Any(), tt.pageSize, tt.pageToken, gomock.Any(.Return(tt.responseTranscribes, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -251,7 +251,7 @@ func Test_processV1TranscribesIDGet(t *testing.T) {
 				transcribeHandler: mockTranscribe,
 			}
 
-			mockTranscribe.EXPECT().Get(gomock.Any(), tt.responseTranscribe.ID).Return(tt.responseTranscribe, nil)
+			mockTranscribe.EXPECT().Get(gomock.Any(), tt.responseTranscribe.ID.Return(tt.responseTranscribe, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -316,7 +316,7 @@ func Test_processV1TranscribesIDDelete(t *testing.T) {
 				transcribeHandler: mockTranscribe,
 			}
 
-			mockTranscribe.EXPECT().Delete(gomock.Any(), tt.id).Return(tt.responseTranscribe, nil)
+			mockTranscribe.EXPECT().Delete(gomock.Any(), tt.id.Return(tt.responseTranscribe, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -382,7 +382,7 @@ func Test_processV1TranscribesIDStopPost(t *testing.T) {
 				transcribeHandler: mockTranscribe,
 			}
 
-			mockTranscribe.EXPECT().Stop(gomock.Any(), tt.transcribeID).Return(tt.responseTranscribe, nil)
+			mockTranscribe.EXPECT().Stop(gomock.Any(), tt.transcribeID.Return(tt.responseTranscribe, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

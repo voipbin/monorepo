@@ -143,7 +143,7 @@ func Test_v1ChatroomsGet(t *testing.T) {
 				chatroomHandler: mockChatroom,
 			}
 
-			mockChatroom.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, tt.filters).Return(tt.responseChatrooms, nil)
+			mockChatroom.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, gomock.Any().Return(tt.responseChatrooms, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -210,7 +210,7 @@ func Test_v1ChatroomsIDGet(t *testing.T) {
 				chatroomHandler: mockChatroom,
 			}
 
-			mockChatroom.EXPECT().Get(gomock.Any(), tt.chatroomID).Return(tt.responseChatroom, nil)
+			mockChatroom.EXPECT().Get(gomock.Any(), tt.chatroomID.Return(tt.responseChatroom, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -282,7 +282,7 @@ func Test_v1ChatroomsIDPut(t *testing.T) {
 				chatroomHandler: mockChatroom,
 			}
 
-			mockChatroom.EXPECT().UpdateBasicInfo(gomock.Any(), tt.chatroomID, tt.updateName, tt.updateDetail).Return(tt.responseChatroom, nil)
+			mockChatroom.EXPECT().UpdateBasicInfo(gomock.Any(), tt.chatroomID, tt.updateName, tt.updateDetail.Return(tt.responseChatroom, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -348,7 +348,7 @@ func Test_v1ChatroomsIDDelete(t *testing.T) {
 				chatroomHandler: mockChatroom,
 			}
 
-			mockChatroom.EXPECT().Delete(gomock.Any(), tt.chatroomID).Return(tt.responseChatroom, nil)
+			mockChatroom.EXPECT().Delete(gomock.Any(), tt.chatroomID.Return(tt.responseChatroom, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

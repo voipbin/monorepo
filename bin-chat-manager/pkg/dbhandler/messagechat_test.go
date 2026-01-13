@@ -78,13 +78,13 @@ func Test_MessagechatCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+			mockUtil.EXPECT().TimeGetCurTime(.Return(utilhandler.TimeGetCurTime())
 			mockCache.EXPECT().MessagechatSet(ctx, gomock.Any())
 			if err := h.MessagechatCreate(ctx, tt.msg); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().MessagechatGet(ctx, tt.msg.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().MessagechatGet(ctx, tt.msg.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().MessagechatSet(ctx, gomock.Any())
 			res, err := h.MessagechatGet(ctx, tt.msg.ID)
 			if err != nil {
@@ -157,7 +157,7 @@ func Test_MessagechatGets(t *testing.T) {
 			ctx := context.Background()
 
 			for _, c := range tt.messagechats {
-				mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+				mockUtil.EXPECT().TimeGetCurTime(.Return(utilhandler.TimeGetCurTime())
 				mockCache.EXPECT().MessagechatSet(ctx, gomock.Any())
 				if err := h.MessagechatCreate(ctx, c); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -236,19 +236,19 @@ func Test_MessagechatDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+			mockUtil.EXPECT().TimeGetCurTime(.Return(utilhandler.TimeGetCurTime())
 			mockCache.EXPECT().MessagechatSet(ctx, gomock.Any())
 			if err := h.MessagechatCreate(ctx, tt.msg); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+			mockUtil.EXPECT().TimeGetCurTime(.Return(utilhandler.TimeGetCurTime())
 			mockCache.EXPECT().MessagechatSet(ctx, gomock.Any())
 			if errDel := h.MessagechatDelete(ctx, tt.msg.ID); errDel != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errDel)
 			}
 
-			mockCache.EXPECT().MessagechatGet(ctx, tt.msg.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().MessagechatGet(ctx, tt.msg.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().MessagechatSet(ctx, gomock.Any())
 			res, err := h.MessagechatGet(ctx, tt.msg.ID)
 			if err != nil {

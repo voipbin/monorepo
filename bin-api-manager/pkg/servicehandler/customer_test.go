@@ -100,7 +100,7 @@ func Test_CustomerCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CustomerV1CustomerCreate(ctx, 30000, tt.customerName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI).Return(tt.responseCustomer, nil)
+			mockReq.EXPECT().CustomerV1CustomerCreate(ctx, 30000, tt.customerName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI.Return(tt.responseCustomer, nil)
 
 			res, err := h.CustomerCreate(ctx, tt.agent, tt.customerName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI)
 			if err != nil {
@@ -163,7 +163,7 @@ func TestCustomerGet(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.id).Return(tt.responseCustomer, nil)
+			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.id.Return(tt.responseCustomer, nil)
 
 			res, err := h.CustomerGet(ctx, tt.customer, tt.id)
 			if err != nil {
@@ -235,7 +235,7 @@ func Test_CustomerGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CustomerV1CustomerGets(ctx, tt.token, tt.size, tt.filters).Return(tt.responseCustomers, nil)
+			mockReq.EXPECT().CustomerV1CustomerGets(ctx, tt.token, tt.size, tt.filters.Return(tt.responseCustomers, nil)
 
 			res, err := h.CustomerGets(ctx, tt.agent, tt.size, tt.token, tt.filters)
 			if err != nil {
@@ -312,8 +312,8 @@ func Test_CustomerUpdate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.id).Return(tt.responseCustomers, nil)
-			mockReq.EXPECT().CustomerV1CustomerUpdate(ctx, tt.id, tt.customerName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI).Return(tt.responseCustomers, nil)
+			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.id.Return(tt.responseCustomers, nil)
+			mockReq.EXPECT().CustomerV1CustomerUpdate(ctx, tt.id, tt.customerName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI.Return(tt.responseCustomers, nil)
 
 			res, err := h.CustomerUpdate(ctx, tt.agent, tt.id, tt.customerName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI)
 			if err != nil {
@@ -375,8 +375,8 @@ func Test_CustomerDelete(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.id).Return(tt.responseCustomers, nil)
-			mockReq.EXPECT().CustomerV1CustomerDelete(ctx, tt.id).Return(tt.responseCustomers, nil)
+			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.id.Return(tt.responseCustomers, nil)
+			mockReq.EXPECT().CustomerV1CustomerDelete(ctx, tt.id.Return(tt.responseCustomers, nil)
 
 			res, err := h.CustomerDelete(ctx, tt.agent, tt.id)
 			if err != nil {
@@ -450,9 +450,9 @@ func Test_CustomerUpdateBillingAccountID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.customerID).Return(tt.responseCustomer, nil)
-			mockReq.EXPECT().BillingV1AccountGet(ctx, tt.billingAccountID).Return(tt.responseBillingAccount, nil)
-			mockReq.EXPECT().CustomerV1CustomerUpdateBillingAccountID(ctx, tt.customerID, tt.billingAccountID).Return(tt.responseCustomer, nil)
+			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.customerID.Return(tt.responseCustomer, nil)
+			mockReq.EXPECT().BillingV1AccountGet(ctx, tt.billingAccountID.Return(tt.responseBillingAccount, nil)
+			mockReq.EXPECT().CustomerV1CustomerUpdateBillingAccountID(ctx, tt.customerID, tt.billingAccountID.Return(tt.responseCustomer, nil)
 
 			res, err := h.CustomerUpdateBillingAccountID(ctx, tt.agent, tt.customerID, tt.billingAccountID)
 			if err != nil {

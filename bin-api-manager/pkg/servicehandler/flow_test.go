@@ -92,10 +92,10 @@ func Test_FlowCreate(t *testing.T) {
 			ctx := context.Background()
 
 			if tt.onCompleteFlowID != uuid.Nil {
-				mockReq.EXPECT().FlowV1FlowGet(ctx, tt.onCompleteFlowID).Return(tt.responseCompleteFlow, nil)
+				mockReq.EXPECT().FlowV1FlowGet(ctx, tt.onCompleteFlowID.Return(tt.responseCompleteFlow, nil)
 			}
 
-			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.agent.CustomerID, fmflow.TypeFlow, tt.flowName, tt.detail, tt.actions, tt.onCompleteFlowID, tt.persist).Return(tt.responseFlow, nil)
+			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.agent.CustomerID, fmflow.TypeFlow, tt.flowName, tt.detail, tt.actions, tt.onCompleteFlowID, tt.persist.Return(tt.responseFlow, nil)
 			res, err := h.FlowCreate(ctx, tt.agent, tt.flowName, tt.detail, tt.actions, tt.onCompleteFlowID, tt.persist)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -166,8 +166,8 @@ func Test_FlowDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1FlowGet(ctx, tt.flowID).Return(tt.responseFlow, nil)
-			mockReq.EXPECT().FlowV1FlowDelete(ctx, tt.flowID).Return(tt.responseFlow, nil)
+			mockReq.EXPECT().FlowV1FlowGet(ctx, tt.flowID.Return(tt.responseFlow, nil)
+			mockReq.EXPECT().FlowV1FlowDelete(ctx, tt.flowID.Return(tt.responseFlow, nil)
 
 			res, err := h.FlowDelete(ctx, tt.agent, tt.flowID)
 			if err != nil {
@@ -281,7 +281,7 @@ func Test_FlowGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1FlowGet(ctx, tt.flowID).Return(tt.response, nil)
+			mockReq.EXPECT().FlowV1FlowGet(ctx, tt.flowID.Return(tt.response, nil)
 
 			res, err := h.FlowGet(ctx, tt.agent, tt.flowID)
 			if err != nil {
@@ -437,7 +437,7 @@ func Test_FlowGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1FlowGets(ctx, tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.responseFlows, nil)
+			mockReq.EXPECT().FlowV1FlowGets(ctx, tt.pageToken, tt.pageSize, tt.expectFilters.Return(tt.responseFlows, nil)
 
 			res, err := h.FlowGets(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
@@ -525,13 +525,13 @@ func Test_FlowUpdate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1FlowGet(ctx, tt.flowID).Return(tt.responseFlow, nil)
+			mockReq.EXPECT().FlowV1FlowGet(ctx, tt.flowID.Return(tt.responseFlow, nil)
 
 			if tt.onCompleteFlowID != uuid.Nil {
-				mockReq.EXPECT().FlowV1FlowGet(ctx, tt.onCompleteFlowID).Return(tt.responseCompleteFlow, nil)
+				mockReq.EXPECT().FlowV1FlowGet(ctx, tt.onCompleteFlowID.Return(tt.responseCompleteFlow, nil)
 			}
 
-			mockReq.EXPECT().FlowV1FlowUpdate(ctx, tt.flowID, tt.flowName, tt.detail, tt.actions, tt.onCompleteFlowID).Return(tt.responseFlow, nil)
+			mockReq.EXPECT().FlowV1FlowUpdate(ctx, tt.flowID, tt.flowName, tt.detail, tt.actions, tt.onCompleteFlowID.Return(tt.responseFlow, nil)
 			res, err := h.FlowUpdate(ctx, tt.agent, tt.flowID, tt.flowName, tt.detail, tt.actions, tt.onCompleteFlowID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -603,8 +603,8 @@ func Test_FlowUpdateActions(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1FlowGet(ctx, tt.flowID).Return(tt.response, nil)
-			mockReq.EXPECT().FlowV1FlowUpdateActions(ctx, tt.flowID, tt.actions).Return(tt.response, nil)
+			mockReq.EXPECT().FlowV1FlowGet(ctx, tt.flowID.Return(tt.response, nil)
+			mockReq.EXPECT().FlowV1FlowUpdateActions(ctx, tt.flowID, tt.actions.Return(tt.response, nil)
 			res, err := h.FlowUpdateActions(ctx, tt.agent, tt.flowID, tt.actions)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

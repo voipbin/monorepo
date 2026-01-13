@@ -67,11 +67,11 @@ func Test_Delete(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().GroupcallGet(ctx, tt.id).Return(tt.responseGroupcall, nil)
+			mockDB.EXPECT().GroupcallGet(ctx, tt.id.Return(tt.responseGroupcall, nil)
 
 			// dbDelete
-			mockDB.EXPECT().GroupcallDelete(ctx, tt.id).Return(nil)
-			mockDB.EXPECT().GroupcallGet(ctx, tt.id).Return(tt.responseGroupcall, nil)
+			mockDB.EXPECT().GroupcallDelete(ctx, tt.id.Return(nil)
+			mockDB.EXPECT().GroupcallGet(ctx, tt.id.Return(tt.responseGroupcall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseGroupcall.CustomerID, groupcall.EventTypeGroupcallDeleted, tt.responseGroupcall)
 
 			res, err := h.Delete(ctx, tt.id)

@@ -67,7 +67,7 @@ func Test_activeflowGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1ActiveflowGet(ctx, tt.activeflowID).Return(tt.responseActiveflow, nil)
+			mockReq.EXPECT().FlowV1ActiveflowGet(ctx, tt.activeflowID.Return(tt.responseActiveflow, nil)
 
 			res, err := h.activeflowGet(ctx, tt.activeflowID)
 			if err != nil {
@@ -220,16 +220,16 @@ func Test_ActiveflowCreate(t *testing.T) {
 
 			activeflowID := tt.activeflowID
 			if activeflowID == uuid.Nil {
-				mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+				mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
 				activeflowID = tt.responseUUID
 			}
 
 			flowID := tt.flowID
 			if tt.flowID == uuid.Nil {
-				mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.agent.CustomerID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), tt.actions, uuid.Nil, false).Return(tt.responseFlow, nil)
+				mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.agent.CustomerID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), tt.actions, uuid.Nil, false.Return(tt.responseFlow, nil)
 				flowID = tt.responseFlow.ID
 			}
-			mockReq.EXPECT().FlowV1FlowGet(ctx, flowID).Return(tt.responseFlow, nil)
+			mockReq.EXPECT().FlowV1FlowGet(ctx, flowID.Return(tt.responseFlow, nil)
 
 			mockReq.EXPECT().FlowV1ActiveflowCreate(
 				ctx,
@@ -239,8 +239,8 @@ func Test_ActiveflowCreate(t *testing.T) {
 				fmactiveflow.ReferenceTypeAPI,
 				uuid.Nil,
 				uuid.Nil,
-			).Return(tt.responseActiveflow, nil)
-			mockReq.EXPECT().FlowV1ActiveflowExecute(ctx, activeflowID).Return(nil)
+			.Return(tt.responseActiveflow, nil)
+			mockReq.EXPECT().FlowV1ActiveflowExecute(ctx, activeflowID.Return(nil)
 
 			res, err := h.ActiveflowCreate(ctx, tt.agent, tt.activeflowID, tt.flowID, tt.actions)
 			if err != nil {
@@ -308,7 +308,7 @@ func Test_ActiveflowGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1ActiveflowGet(ctx, tt.activeflowID).Return(tt.responseActiveflow, nil)
+			mockReq.EXPECT().FlowV1ActiveflowGet(ctx, tt.activeflowID.Return(tt.responseActiveflow, nil)
 
 			res, err := h.ActiveflowGet(ctx, tt.agent, tt.activeflowID)
 			if err != nil {
@@ -382,7 +382,7 @@ func Test_ActiveflowGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1ActiveflowGets(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseActiveflows, nil)
+			mockReq.EXPECT().FlowV1ActiveflowGets(ctx, tt.token, tt.size, tt.expectFilters.Return(tt.responseActiveflows, nil)
 
 			res, err := h.ActiveflowGets(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {
@@ -448,8 +448,8 @@ func Test_ActiveflowStop(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1ActiveflowGet(ctx, tt.activeflowID).Return(tt.responseActiveflow, nil)
-			mockReq.EXPECT().FlowV1ActiveflowStop(ctx, tt.activeflowID).Return(tt.responseActiveflow, nil)
+			mockReq.EXPECT().FlowV1ActiveflowGet(ctx, tt.activeflowID.Return(tt.responseActiveflow, nil)
+			mockReq.EXPECT().FlowV1ActiveflowStop(ctx, tt.activeflowID.Return(tt.responseActiveflow, nil)
 
 			res, err := h.ActiveflowStop(ctx, tt.agent, tt.activeflowID)
 			if err != nil {
@@ -515,8 +515,8 @@ func Test_ActiveflowDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1ActiveflowGet(ctx, tt.activeflowID).Return(tt.responseActiveflow, nil)
-			mockReq.EXPECT().FlowV1ActiveflowDelete(ctx, tt.activeflowID).Return(tt.responseActiveflow, nil)
+			mockReq.EXPECT().FlowV1ActiveflowGet(ctx, tt.activeflowID.Return(tt.responseActiveflow, nil)
+			mockReq.EXPECT().FlowV1ActiveflowDelete(ctx, tt.activeflowID.Return(tt.responseActiveflow, nil)
 
 			res, err := h.ActiveflowDelete(ctx, tt.agent, tt.activeflowID)
 			if err != nil {

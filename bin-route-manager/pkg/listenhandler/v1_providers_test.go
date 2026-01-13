@@ -78,7 +78,7 @@ func Test_v1ProvidersPost(t *testing.T) {
 				providerHandler: mockProvider,
 			}
 
-			mockProvider.EXPECT().Create(gomock.Any(), tt.providerType, tt.hostname, tt.techPrefix, tt.techPostfix, tt.techHeaders, tt.provierName, tt.providerDetail).Return(tt.responseRoute, nil)
+			mockProvider.EXPECT().Create(gomock.Any(), tt.providerType, tt.hostname, tt.techPrefix, tt.techPostfix, tt.techHeaders, tt.provierName, tt.providerDetail.Return(tt.responseRoute, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -189,7 +189,7 @@ func Test_v1ProvidersGet(t *testing.T) {
 				providerHandler: mockProvider,
 			}
 
-			mockProvider.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize).Return(tt.responseProviders, nil)
+			mockProvider.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize.Return(tt.responseProviders, gomock.Any())
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -250,7 +250,7 @@ func Test_v1ProvidersIDGet(t *testing.T) {
 				providerHandler: mockProvider,
 			}
 
-			mockProvider.EXPECT().Get(gomock.Any(), tt.providerID).Return(tt.responseProvider, nil)
+			mockProvider.EXPECT().Get(gomock.Any(), tt.providerID.Return(tt.responseProvider, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -329,7 +329,7 @@ func Test_v1ProvidersIDPut(t *testing.T) {
 				providerHandler: mockProvider,
 			}
 
-			mockProvider.EXPECT().Update(gomock.Any(), tt.id, tt.providerType, tt.hostname, tt.techPrefix, tt.techPostfix, tt.techHeaders, tt.providerName, tt.detail).Return(tt.responseRoute, nil)
+			mockProvider.EXPECT().Update(gomock.Any(), tt.id, tt.providerType, tt.hostname, tt.techPrefix, tt.techPostfix, tt.techHeaders, tt.providerName, tt.detail.Return(tt.responseRoute, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -389,7 +389,7 @@ func Test_v1ProvidersIDDelete(t *testing.T) {
 				providerHandler: mockProvider,
 			}
 
-			mockProvider.EXPECT().Delete(gomock.Any(), tt.id).Return(tt.responseProvider, nil)
+			mockProvider.EXPECT().Delete(gomock.Any(), tt.id.Return(tt.responseProvider, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

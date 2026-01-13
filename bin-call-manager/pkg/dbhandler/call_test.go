@@ -208,13 +208,13 @@ func Test_CallCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallCreate(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().CallGet(ctx, tt.call.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CallGet(ctx, tt.call.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			res, err := h.CallGet(context.Background(), tt.call.ID)
 			if err != nil {
@@ -339,7 +339,7 @@ func Test_CallGets(t *testing.T) {
 			ctx := context.Background()
 
 			for _, c := range tt.calls {
-				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 				mockCache.EXPECT().CallSet(ctx, gomock.Any())
 				_ = h.CallCreate(ctx, c)
 			}
@@ -437,14 +437,14 @@ func Test_CallGets_delete(t *testing.T) {
 			ctx := context.Background()
 
 			for _, c := range tt.calls {
-				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 				mockCache.EXPECT().CallSet(ctx, gomock.Any())
 				_ = h.CallCreate(ctx, c)
 			}
 
 			// delete
 			for _, id := range tt.deleteCallIDs {
-				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 				mockCache.EXPECT().CallSet(ctx, gomock.Any())
 				_ = h.CallDelete(ctx, id)
 			}
@@ -534,14 +534,14 @@ func Test_CallSetBridgeID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallCreate(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().CallGet(ctx, tt.id).Return(nil, fmt.Errorf(""))
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockCache.EXPECT().CallGet(ctx, tt.id.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallSetBridgeID(ctx, tt.id, tt.bridgeID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -636,19 +636,19 @@ func Test_CallSetStatus(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurtime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurtime)
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallCreate(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurtime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurtime)
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallSetStatus(ctx, tt.id, tt.status); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().CallGet(ctx, tt.call.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CallGet(ctx, tt.call.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			res, err := h.CallGet(ctx, tt.call.ID)
 			if err != nil {
@@ -782,7 +782,7 @@ func Test_CallGetByChannelID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurtime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurtime)
 			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
 			if err := h.CallCreate(ctx, &tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -885,19 +885,19 @@ func Test_CallSetHangup(t *testing.T) {
 				cache:       mockCache,
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
 			if err := h.CallCreate(context.Background(), tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
 			if err := h.CallSetHangup(context.Background(), tt.id, tt.reason, tt.hangupBy); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CallGet(gomock.Any(), tt.call.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
 			res, err := h.CallGet(context.Background(), tt.call.ID)
 			if err != nil {
@@ -975,19 +975,19 @@ func Test_CallSetFlowID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallCreate(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallSetFlowID(ctx, tt.call.ID, tt.flowID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().CallGet(ctx, tt.call.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CallGet(ctx, tt.call.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			res, err := h.CallGet(ctx, tt.call.ID)
 			if err != nil {
@@ -1063,19 +1063,19 @@ func Test_CallSetConfbridgeID(t *testing.T) {
 				cache:       mockCache,
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
 			if err := h.CallCreate(context.Background(), tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
 			if err := h.CallSetConfbridgeID(context.Background(), tt.call.ID, tt.confbridgeID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CallGet(gomock.Any(), tt.call.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
 			res, err := h.CallGet(context.Background(), tt.call.ID)
 			if err != nil {
@@ -1239,19 +1239,19 @@ func Test_CallSetActionAndActionNextHold(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallCreate(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallSetActionAndActionNextHold(ctx, tt.call.ID, tt.action, tt.hold); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().CallGet(ctx, tt.call.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CallGet(ctx, tt.call.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			res, err := h.CallGet(ctx, tt.call.ID)
 			if err != nil {
@@ -1358,19 +1358,19 @@ func Test_CallSetMasterCallID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallCreate(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallSetMasterCallID(ctx, tt.call.ID, tt.masterCallID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().CallGet(ctx, tt.call.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CallGet(ctx, tt.call.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			res, err := h.CallGet(ctx, tt.call.ID)
 			if err != nil {
@@ -1479,19 +1479,19 @@ func Test_CallSetRecordingID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallCreate(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallSetRecordingID(ctx, tt.call.ID, tt.reocrdID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().CallGet(ctx, tt.call.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CallGet(ctx, tt.call.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			res, err := h.CallGet(ctx, tt.call.ID)
 			if err != nil {
@@ -1566,19 +1566,19 @@ func Test_CallSetExternalMediaID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallCreate(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallSetExternalMediaID(ctx, tt.call.ID, tt.externalMediaID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().CallGet(ctx, tt.call.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CallGet(ctx, tt.call.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			res, err := h.CallGet(ctx, tt.call.ID)
 			if err != nil {
@@ -1661,19 +1661,19 @@ func Test_CallSetForRouteFailover(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallCreate(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallSetForRouteFailover(ctx, tt.id, tt.channelID, tt.dialrouteID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().CallGet(ctx, tt.call.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CallGet(ctx, tt.call.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			res, err := h.CallGet(ctx, tt.call.ID)
 			if err != nil {
@@ -1776,19 +1776,19 @@ func Test_CallSetActionNextHold(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallCreate(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallSetActionNextHold(ctx, tt.call.ID, tt.hold); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().CallGet(ctx, tt.call.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CallGet(ctx, tt.call.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			res, err := h.CallGet(ctx, tt.call.ID)
 			if err != nil {
@@ -1866,19 +1866,19 @@ func Test_CallDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallCreate(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallDelete(ctx, tt.id); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().CallGet(ctx, tt.call.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CallGet(ctx, tt.call.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			res, err := h.CallGet(ctx, tt.call.ID)
 			if err != nil {
@@ -1961,14 +1961,14 @@ func Test_CallSetData(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallCreate(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().CallGet(ctx, tt.id).Return(nil, fmt.Errorf(""))
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockCache.EXPECT().CallGet(ctx, tt.id.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallSetData(ctx, tt.id, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -2052,14 +2052,14 @@ func Test_CallSetMuteDirection(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallCreate(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().CallGet(ctx, tt.id).Return(nil, fmt.Errorf(""))
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockCache.EXPECT().CallGet(ctx, tt.id.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallSetMuteDirection(ctx, tt.id, tt.mute); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

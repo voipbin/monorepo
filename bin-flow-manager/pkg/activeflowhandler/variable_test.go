@@ -106,10 +106,10 @@ func Test_variableCreate(t *testing.T) {
 			ctx := context.Background()
 
 			if tt.activeflow.ReferenceActiveflowID != uuid.Nil {
-				mockVar.EXPECT().Get(ctx, tt.activeflow.ReferenceActiveflowID).Return(tt.responseReferenceActiveflowVariable, nil)
+				mockVar.EXPECT().Get(ctx, tt.activeflow.ReferenceActiveflowID.Return(tt.responseReferenceActiveflowVariable, nil)
 			}
 
-			mockVar.EXPECT().Create(ctx, tt.activeflow.ID, tt.expectedVariables).Return(tt.responseVariable, nil)
+			mockVar.EXPECT().Create(ctx, tt.activeflow.ID, tt.expectedVariables.Return(tt.responseVariable, nil)
 
 			res, err := h.variableCreate(ctx, tt.activeflow)
 			if err != nil {
@@ -166,7 +166,7 @@ func Test_variableCreate_error(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockVar.EXPECT().Get(ctx, tt.activeflow.ReferenceActiveflowID).Return(tt.responseReferenceActiveflowVariable, nil)
+			mockVar.EXPECT().Get(ctx, tt.activeflow.ReferenceActiveflowID.Return(tt.responseReferenceActiveflowVariable, nil)
 
 			_, err := h.variableCreate(ctx, tt.activeflow)
 			if err == nil {
@@ -227,7 +227,7 @@ func Test_variableSetFromReferenceActiveflow(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockVar.EXPECT().Get(ctx, tt.referenceActiveflowID).Return(tt.responseVariable, nil)
+			mockVar.EXPECT().Get(ctx, tt.referenceActiveflowID.Return(tt.responseVariable, nil)
 
 			err := h.variableSetFromReferenceActiveflow(ctx, tt.variables, tt.referenceActiveflowID)
 			if err != nil {

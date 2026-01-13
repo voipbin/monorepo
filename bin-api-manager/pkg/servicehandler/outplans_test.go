@@ -92,7 +92,7 @@ func Test_OutplanCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CampaignV1OutplanCreate(ctx, tt.agent.CustomerID, tt.outplanName, tt.detail, tt.source, tt.dialTimeout, tt.tryInterval, tt.maxTryCount0, tt.maxTryCount1, tt.maxTryCount2, tt.maxTryCount3, tt.maxTryCount4).Return(tt.response, nil)
+			mockReq.EXPECT().CampaignV1OutplanCreate(ctx, tt.agent.CustomerID, tt.outplanName, tt.detail, tt.source, tt.dialTimeout, tt.tryInterval, tt.maxTryCount0, tt.maxTryCount1, tt.maxTryCount2, tt.maxTryCount3, tt.maxTryCount4.Return(tt.response, nil)
 			res, err := h.OutplanCreate(ctx, tt.agent, tt.outplanName, tt.detail, tt.source, tt.dialTimeout, tt.tryInterval, tt.maxTryCount0, tt.maxTryCount0, tt.maxTryCount0, tt.maxTryCount0, tt.maxTryCount4)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -156,8 +156,8 @@ func Test_OutplanDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CampaignV1OutplanGet(ctx, tt.id).Return(tt.responseOutplan, nil)
-			mockReq.EXPECT().CampaignV1OutplanDelete(ctx, tt.id).Return(tt.responseOutplan, nil)
+			mockReq.EXPECT().CampaignV1OutplanGet(ctx, tt.id.Return(tt.responseOutplan, nil)
+			mockReq.EXPECT().CampaignV1OutplanDelete(ctx, tt.id.Return(tt.responseOutplan, nil)
 			res, err := h.OutplanDelete(ctx, tt.agent, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -234,7 +234,7 @@ func Test_OutplanGetsByCustomerID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CampaignV1OutplanGetsByCustomerID(ctx, tt.agent.CustomerID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
+			mockReq.EXPECT().CampaignV1OutplanGetsByCustomerID(ctx, tt.agent.CustomerID, tt.pageToken, tt.pageSize.Return(tt.response, nil)
 			res, err := h.OutplanGetsByCustomerID(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -298,7 +298,7 @@ func Test_OutplanGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CampaignV1OutplanGet(ctx, tt.outplanID).Return(tt.response, nil)
+			mockReq.EXPECT().CampaignV1OutplanGet(ctx, tt.outplanID.Return(tt.response, nil)
 			res, err := h.OutplanGet(ctx, tt.agent, tt.outplanID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -366,8 +366,8 @@ func Test_OutplanUpdateBasicInfo(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CampaignV1OutplanGet(ctx, tt.outplanID).Return(tt.response, nil)
-			mockReq.EXPECT().CampaignV1OutplanUpdateBasicInfo(ctx, tt.outplanID, tt.outplanName, tt.detail).Return(tt.response, nil)
+			mockReq.EXPECT().CampaignV1OutplanGet(ctx, tt.outplanID.Return(tt.response, nil)
+			mockReq.EXPECT().CampaignV1OutplanUpdateBasicInfo(ctx, tt.outplanID, tt.outplanName, tt.detail.Return(tt.response, nil)
 			res, err := h.OutplanUpdateBasicInfo(ctx, tt.agent, tt.outplanID, tt.outplanName, tt.detail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -450,8 +450,8 @@ func Test_OutplanUpdateDialInfo(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CampaignV1OutplanGet(ctx, tt.outplanID).Return(tt.response, nil)
-			mockReq.EXPECT().CampaignV1OutplanUpdateDialInfo(ctx, tt.outplanID, tt.source, tt.dialTimeout, tt.tryInterval, tt.maxTryCount0, tt.maxTryCount1, tt.maxTryCount2, tt.maxTryCount3, tt.maxTryCount4).Return(tt.response, nil)
+			mockReq.EXPECT().CampaignV1OutplanGet(ctx, tt.outplanID.Return(tt.response, nil)
+			mockReq.EXPECT().CampaignV1OutplanUpdateDialInfo(ctx, tt.outplanID, tt.source, tt.dialTimeout, tt.tryInterval, tt.maxTryCount0, tt.maxTryCount1, tt.maxTryCount2, tt.maxTryCount3, tt.maxTryCount4.Return(tt.response, nil)
 			res, err := h.OutplanUpdateDialInfo(ctx, tt.agent, tt.outplanID, tt.source, tt.dialTimeout, tt.tryInterval, tt.maxTryCount0, tt.maxTryCount1, tt.maxTryCount2, tt.maxTryCount3, tt.maxTryCount4)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

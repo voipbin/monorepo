@@ -797,16 +797,16 @@ func Test_actionHandleConnect(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1ConfbridgeCreate(ctx, tt.af.CustomerID, tt.af.ID, cmconfbridge.ReferenceTypeCall, tt.af.ReferenceID, cmconfbridge.TypeConnect).Return(tt.responseConfbridge, nil)
-			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.af.CustomerID, flow.TypeFlow, gomock.Any(), gomock.Any(), tt.expectFlowCreateActions, uuid.Nil, false).Return(tt.responseFlow, nil)
-			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.responseFlow.CustomerID, tt.responseFlow.ID, tt.af.ReferenceID, tt.expectCallSource, tt.expectCallDestinations, tt.expectEarlyExecution, tt.expectExecuteNextMasterOnHangup).Return(tt.responseCalls, tt.responseGroupcalls, nil)
+			mockReq.EXPECT().CallV1ConfbridgeCreate(ctx, tt.af.CustomerID, tt.af.ID, cmconfbridge.ReferenceTypeCall, tt.af.ReferenceID, cmconfbridge.TypeConnect.Return(tt.responseConfbridge, nil)
+			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.af.CustomerID, flow.TypeFlow, gomock.Any(), gomock.Any(), tt.expectFlowCreateActions, uuid.Nil, false.Return(tt.responseFlow, nil)
+			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.responseFlow.CustomerID, tt.responseFlow.ID, tt.af.ReferenceID, tt.expectCallSource, tt.expectCallDestinations, tt.expectEarlyExecution, tt.expectExecuteNextMasterOnHangup.Return(tt.responseCalls, tt.responseGroupcalls, nil)
 
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDConfbridgeJoin)
+			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUIDConfbridgeJoin)
 			if tt.responseUUIDHangup != uuid.Nil {
-				mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDHangup)
+				mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUIDHangup)
 			}
-			mockStack.EXPECT().PushStackByActions(tt.af.StackMap, uuid.Nil, tt.expectPushActions, tt.af.CurrentStackID, tt.af.CurrentAction.ID).Return(tt.responsePushStack, nil)
-			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.af.ID, tt.expectUpdateFields).Return(nil)
+			mockStack.EXPECT().PushStackByActions(tt.af.StackMap, uuid.Nil, tt.expectPushActions, tt.af.CurrentStackID, tt.af.CurrentAction.ID.Return(tt.responsePushStack, nil)
+			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.af.ID, tt.expectUpdateFields.Return(nil)
 
 			if err := h.actionHandleConnect(ctx, tt.af); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -937,9 +937,9 @@ func Test_actionHandleGotoLoopContinue(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockStack.EXPECT().GetAction(tt.activeFlow.StackMap, tt.activeFlow.CurrentStackID, tt.activeFlow.CurrentAction.ID, false).Return(tt.responseOrgStackID, tt.responseOrgAction, nil)
-			mockStack.EXPECT().GetAction(tt.activeFlow.StackMap, tt.activeFlow.CurrentStackID, tt.targetID, false).Return(tt.responseTargetStackID, tt.responseTargetAction, nil)
-			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.activeFlow.ID, tt.expectUpdateFields).Return(nil)
+			mockStack.EXPECT().GetAction(tt.activeFlow.StackMap, tt.activeFlow.CurrentStackID, tt.activeFlow.CurrentAction.ID, false.Return(tt.responseOrgStackID, tt.responseOrgAction, nil)
+			mockStack.EXPECT().GetAction(tt.activeFlow.StackMap, tt.activeFlow.CurrentStackID, tt.targetID, false.Return(tt.responseTargetStackID, tt.responseTargetAction, nil)
+			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.activeFlow.ID, tt.expectUpdateFields.Return(nil)
 
 			if err := h.actionHandleGoto(ctx, tt.activeFlow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1139,13 +1139,13 @@ func Test_actionHandleQueueJoin(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().QueueV1ServiceTypeQueuecallStart(ctx, tt.expectQueueID, tt.activeflow.ID, qmqueuecall.ReferenceType(qmqueuecall.ReferenceTypeCall), tt.activeflow.ReferenceID).Return(tt.responseService, nil)
+			mockReq.EXPECT().QueueV1ServiceTypeQueuecallStart(ctx, tt.expectQueueID, tt.activeflow.ID, qmqueuecall.ReferenceType(qmqueuecall.ReferenceTypeCall), tt.activeflow.ReferenceID.Return(tt.responseService, nil)
 
 			// PushStack
-			mockStack.EXPECT().PushStackByActions(tt.activeflow.StackMap, tt.responseService.ID, tt.responseService.PushActions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID).Return(tt.responseStack, nil)
-			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.activeflow.ID, gomock.Any()).Return(nil)
+			mockStack.EXPECT().PushStackByActions(tt.activeflow.StackMap, tt.responseService.ID, tt.responseService.PushActions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID.Return(tt.responseStack, nil)
+			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.activeflow.ID, gomock.Any().Return(nil)
 
-			mockReq.EXPECT().QueueV1QueuecallUpdateStatusWaiting(ctx, tt.responseService.ID).Return(&qmqueuecall.Queuecall{}, nil)
+			mockReq.EXPECT().QueueV1QueuecallUpdateStatusWaiting(ctx, tt.responseService.ID.Return(&qmqueuecall.Queuecall{}, nil)
 
 			if err := h.actionHandleQueueJoin(ctx, tt.activeflow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1268,9 +1268,9 @@ func Test_actionHandleFetch(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockAction.EXPECT().ActionFetchGet(&tt.activeflow.CurrentAction, tt.activeflow.ID, tt.activeflow.ReferenceID).Return(tt.responseFetch, nil)
-			mockStack.EXPECT().PushStackByActions(tt.activeflow.StackMap, uuid.Nil, tt.responseFetch, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID).Return(tt.responseStack, nil)
-			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.activeflow.ID, tt.expectUpdateFields).Return(nil)
+			mockAction.EXPECT().ActionFetchGet(&tt.activeflow.CurrentAction, tt.activeflow.ID, tt.activeflow.ReferenceID.Return(tt.responseFetch, nil)
+			mockStack.EXPECT().PushStackByActions(tt.activeflow.StackMap, uuid.Nil, tt.responseFetch, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID.Return(tt.responseStack, nil)
+			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.activeflow.ID, tt.expectUpdateFields.Return(nil)
 
 			if err := h.actionHandleFetch(ctx, tt.activeflow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1495,10 +1495,10 @@ func Test_actionHandleFetchFlow(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1FlowGet(ctx, tt.flowID).Return(tt.responseflow, nil)
+			mockReq.EXPECT().FlowV1FlowGet(ctx, tt.flowID.Return(tt.responseflow, nil)
 
-			mockStack.EXPECT().PushStackByActions(tt.activeflow.StackMap, uuid.Nil, tt.responseflow.Actions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID).Return(tt.responseStack, nil)
-			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.activeflow.ID, tt.expectUpdateFields).Return(nil)
+			mockStack.EXPECT().PushStackByActions(tt.activeflow.StackMap, uuid.Nil, tt.responseflow.Actions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID.Return(tt.responseStack, nil)
+			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.activeflow.ID, tt.expectUpdateFields.Return(nil)
 
 			if err := h.actionHandleFetchFlow(ctx, tt.activeflow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1616,11 +1616,11 @@ func Test_actionHandleConferenceJoin(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ConferenceV1ServiceTypeConferencecallStart(ctx, tt.activeflow.ID, tt.expectConferenceID, cfconferencecall.ReferenceTypeCall, tt.activeflow.ReferenceID).Return(tt.responseService, nil)
+			mockReq.EXPECT().ConferenceV1ServiceTypeConferencecallStart(ctx, tt.activeflow.ID, tt.expectConferenceID, cfconferencecall.ReferenceTypeCall, tt.activeflow.ReferenceID.Return(tt.responseService, nil)
 
 			// push stack
-			mockStack.EXPECT().PushStackByActions(tt.activeflow.StackMap, tt.responseService.ID, tt.responseService.PushActions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID).Return(tt.responseStack, nil)
-			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.activeflow.ID, gomock.Any()).Return(nil)
+			mockStack.EXPECT().PushStackByActions(tt.activeflow.StackMap, tt.responseService.ID, tt.responseService.PushActions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID.Return(tt.responseStack, nil)
+			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.activeflow.ID, gomock.Any().Return(nil)
 
 			if err := h.actionHandleConferenceJoin(ctx, tt.activeflow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1886,11 +1886,11 @@ func Test_actionHandleBranch(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockVar.EXPECT().Get(ctx, tt.activeflow.ID).Return(tt.responseVariable, nil)
-			mockVar.EXPECT().SetVariable(ctx, tt.activeflow.ID, tt.expectVariables).Return(nil)
-			mockStack.EXPECT().GetAction(tt.activeflow.StackMap, tt.activeflow.CurrentStackID, tt.targetActionID, false).Return(tt.responseStackID, tt.responseAction, nil)
+			mockVar.EXPECT().Get(ctx, tt.activeflow.ID.Return(tt.responseVariable, nil)
+			mockVar.EXPECT().SetVariable(ctx, tt.activeflow.ID, tt.expectVariables.Return(nil)
+			mockStack.EXPECT().GetAction(tt.activeflow.StackMap, tt.activeflow.CurrentStackID, tt.targetActionID, false.Return(tt.responseStackID, tt.responseAction, nil)
 
-			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.activeflow.ID, tt.expectUpdateFields).Return(nil)
+			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.activeflow.ID, tt.expectUpdateFields.Return(nil)
 
 			if err := h.actionHandleBranch(ctx, tt.activeflow); err != nil {
 				t.Errorf("Wrong match. exepct: ok, got: %v", err)
@@ -2002,7 +2002,7 @@ func Test_actionHandleConditionCallDigits(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1CallGetDigits(ctx, tt.callID).Return(tt.responseDigits, nil)
+			mockReq.EXPECT().CallV1CallGetDigits(ctx, tt.callID.Return(tt.responseDigits, nil)
 
 			if err := h.actionHandleConditionCallDigits(ctx, tt.activeFlow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -2221,9 +2221,9 @@ func Test_actionHandleConditionCallDigitsFail(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1CallGetDigits(ctx, tt.callID).Return(tt.responseDigits, nil)
-			mockStack.EXPECT().GetAction(tt.activeFlow.StackMap, tt.activeFlow.CurrentStackID, tt.expectTargetActionID, false).Return(stack.IDMain, tt.responseAction, nil)
-			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.activeFlow.ID, tt.expectUpdateFields).Return(nil)
+			mockReq.EXPECT().CallV1CallGetDigits(ctx, tt.callID.Return(tt.responseDigits, nil)
+			mockStack.EXPECT().GetAction(tt.activeFlow.StackMap, tt.activeFlow.CurrentStackID, tt.expectTargetActionID, false.Return(stack.IDMain, tt.responseAction, nil)
+			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.activeFlow.ID, tt.expectUpdateFields.Return(nil)
 
 			if err := h.actionHandleConditionCallDigits(ctx, tt.activeFlow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -2304,7 +2304,7 @@ func Test_actionHandleConditionCallStatus(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1CallGet(ctx, tt.activeFlow.ReferenceID).Return(tt.responseCall, nil)
+			mockReq.EXPECT().CallV1CallGet(ctx, tt.activeFlow.ReferenceID.Return(tt.responseCall, nil)
 
 			if err := h.actionHandleConditionCallStatus(ctx, tt.activeFlow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -2436,8 +2436,8 @@ func Test_actionHandleConditionCallStatusFalse(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1CallGet(ctx, tt.activeFlow.ReferenceID).Return(tt.responseCall, nil)
-			mockStack.EXPECT().GetAction(tt.activeFlow.StackMap, tt.activeFlow.CurrentStackID, tt.expectTargetID, false).Return(stack.IDMain, tt.responseAction, nil)
+			mockReq.EXPECT().CallV1CallGet(ctx, tt.activeFlow.ReferenceID.Return(tt.responseCall, nil)
+			mockStack.EXPECT().GetAction(tt.activeFlow.StackMap, tt.activeFlow.CurrentStackID, tt.expectTargetID, false.Return(stack.IDMain, tt.responseAction, nil)
 			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.activeFlow.ID, tt.expectUpdateFields)
 
 			if err := h.actionHandleConditionCallStatus(ctx, tt.activeFlow); err != nil {
@@ -2711,8 +2711,8 @@ func Test_actionHandleConditionDatetime_unmatch(t *testing.T) {
 				activeflow.FieldStackMap: af.StackMap,
 			}
 
-			mockStack.EXPECT().GetAction(af.StackMap, af.CurrentStackID, gomock.Any(), false).Return(af.ForwardStackID, &action.Action{}, nil)
-			mockDB.EXPECT().ActiveflowUpdate(ctx, af.ID, expectUpdateFields).Return(nil)
+			mockStack.EXPECT().GetAction(af.StackMap, af.CurrentStackID, gomock.Any(), false.Return(af.ForwardStackID, &action.Action{}, nil)
+			mockDB.EXPECT().ActiveflowUpdate(ctx, af.ID, expectUpdateFields.Return(nil)
 
 			if err := h.actionHandleConditionDatetime(ctx, af); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -3147,8 +3147,8 @@ func Test_actionHandleConditionVariable_unmatch(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockStack.EXPECT().GetAction(tt.activeflow.StackMap, tt.activeflow.CurrentStackID, gomock.Any(), false).Return(stack.IDMain, &action.Action{}, nil)
-			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.activeflow.ID, tt.expectUpdateFields).Return(nil)
+			mockStack.EXPECT().GetAction(tt.activeflow.StackMap, tt.activeflow.CurrentStackID, gomock.Any(), false.Return(stack.IDMain, &action.Action{}, nil)
+			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.activeflow.ID, tt.expectUpdateFields.Return(nil)
 
 			if err := h.actionHandleConditionVariable(ctx, tt.activeflow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -3335,7 +3335,7 @@ func Test_actionHandleMessageSend(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().MessageV1MessageSend(ctx, uuid.Nil, tt.expectCustomerID, tt.expectSource, tt.expectDestinations, tt.expectText).Return(&mmmessage.Message{}, nil)
+			mockReq.EXPECT().MessageV1MessageSend(ctx, uuid.Nil, tt.expectCustomerID, tt.expectSource, tt.expectDestinations, tt.expectText.Return(&mmmessage.Message{}, nil)
 
 			if err := h.actionHandleMessageSend(ctx, tt.activeFlow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -3403,7 +3403,7 @@ func Test_actionHandleTranscribeRecording(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1CallGet(ctx, tt.activeflow.ReferenceID).Return(tt.responseCall, nil)
+			mockReq.EXPECT().CallV1CallGet(ctx, tt.activeflow.ReferenceID.Return(tt.responseCall, nil)
 			for _, recordingID := range tt.responseCall.RecordingIDs {
 				mockReq.EXPECT().TranscribeV1TranscribeStart(
 					ctx,
@@ -3415,7 +3415,7 @@ func Test_actionHandleTranscribeRecording(t *testing.T) {
 					tt.expectedLanguage,
 					tmtranscribe.DirectionBoth,
 					30000,
-				).Return(&tmtranscribe.Transcribe{}, nil)
+				.Return(&tmtranscribe.Transcribe{}, nil)
 			}
 
 			if err := h.actionHandleTranscribeRecording(ctx, tt.activeflow); err != nil {
@@ -3504,7 +3504,7 @@ func Test_actionHandleTranscribeStart(t *testing.T) {
 				tt.expectedLanguage,
 				tmtranscribe.DirectionBoth,
 				30000,
-			).Return(tt.response, nil)
+			.Return(tt.response, nil)
 			if err := h.actionHandleTranscribeStart(ctx, tt.activeFlow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -4104,11 +4104,11 @@ func Test_actionHandleCall(t *testing.T) {
 
 			flowID := tt.flowID
 			if flowID == uuid.Nil {
-				mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.af.CustomerID, flow.TypeFlow, "", "", tt.actions, uuid.Nil, false).Return(tt.responseFlow, nil)
+				mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.af.CustomerID, flow.TypeFlow, "", "", tt.actions, uuid.Nil, false.Return(tt.responseFlow, nil)
 				flowID = tt.responseFlow.ID
 			}
 
-			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.af.CustomerID, flowID, tt.masterCallID, tt.source, tt.destinations, tt.earlyExecution, false).Return(tt.responseCall, tt.responseGroupcall, nil)
+			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.af.CustomerID, flowID, tt.masterCallID, tt.source, tt.destinations, tt.earlyExecution, false.Return(tt.responseCall, tt.responseGroupcall, nil)
 
 			if errCall := h.actionHandleCall(ctx, tt.af); errCall != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errCall)
@@ -4186,7 +4186,7 @@ func Test_actionHandleVariableSet(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockVariable.EXPECT().SetVariable(ctx, tt.af.ID, tt.expectVariables).Return(nil)
+			mockVariable.EXPECT().SetVariable(ctx, tt.af.ID, tt.expectVariables.Return(nil)
 
 			if errCall := h.actionHandleVariableSet(ctx, tt.af); errCall != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errCall)
@@ -4276,7 +4276,7 @@ func Test_actionHandleWebhookSend(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().WebhookV1WebhookSendToDestination(ctx, tt.af.CustomerID, tt.expectURI, tt.expectMethod, tt.expectDataType, tt.expectData).Return(nil)
+			mockReq.EXPECT().WebhookV1WebhookSendToDestination(ctx, tt.af.CustomerID, tt.expectURI, tt.expectMethod, tt.expectDataType, tt.expectData.Return(nil)
 
 			if errCall := h.actionHandleWebhookSend(ctx, tt.af); errCall != nil {
 				t.Errorf("Wrong match.\nexpect: ok\ngot: %v", errCall)
@@ -4368,7 +4368,7 @@ func Test_actionHandleConversationSend(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ConversationV1MessageSend(ctx, tt.expectConversationID, tt.expectText, []conversationmedia.Media{}).Return(&conversationmessage.Message{}, nil)
+			mockReq.EXPECT().ConversationV1MessageSend(ctx, tt.expectConversationID, tt.expectText, []conversationmedia.Media{}.Return(&conversationmessage.Message{}, nil)
 
 			if errCall := h.actionHandleConversationSend(ctx, tt.af); errCall != nil {
 				t.Errorf("Wrong match.\nexpect: ok\ngot: %v", errCall)
@@ -4486,11 +4486,11 @@ func Test_actionHandleAITalk(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().AIV1ServiceTypeAIcallStart(ctx, tt.expectedAIID, tt.expectedActiveflowID, tt.expectedReferenceType, tt.expectedReferenceID, tt.expectedResume, tt.expectedGender, tt.expectedLanguage, 30000).Return(tt.responseService, nil)
+			mockReq.EXPECT().AIV1ServiceTypeAIcallStart(ctx, tt.expectedAIID, tt.expectedActiveflowID, tt.expectedReferenceType, tt.expectedReferenceID, tt.expectedResume, tt.expectedGender, tt.expectedLanguage, 30000.Return(tt.responseService, nil)
 
 			// push stack
-			mockStack.EXPECT().PushStackByActions(tt.activeflow.StackMap, tt.responseService.ID, tt.responseService.PushActions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID).Return(tt.responseStack, nil)
-			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.activeflow.ID, gomock.Any()).Return(nil)
+			mockStack.EXPECT().PushStackByActions(tt.activeflow.StackMap, tt.responseService.ID, tt.responseService.PushActions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID.Return(tt.responseStack, nil)
+			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.activeflow.ID, gomock.Any().Return(nil)
 
 			if errCall := h.actionHandleAITalk(ctx, tt.activeflow); errCall != nil {
 				t.Errorf("Wrong match.\nexpect: ok\ngot: %v", errCall)
@@ -4591,7 +4591,7 @@ func Test_actionHandleEmailSend(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().EmailV1EmailSend(ctx, tt.activeflow.CustomerID, tt.activeflow.ID, tt.expectDestinations, tt.expectSubject, tt.expectContent, tt.expectAttachments).Return(tt.responseEmail, nil)
+			mockReq.EXPECT().EmailV1EmailSend(ctx, tt.activeflow.CustomerID, tt.activeflow.ID, tt.expectDestinations, tt.expectSubject, tt.expectContent, tt.expectAttachments.Return(tt.responseEmail, nil)
 
 			if errCall := h.actionHandleEmailSend(ctx, tt.activeflow); errCall != nil {
 				t.Errorf("Wrong match.\nexpect: ok\ngot: %v", errCall)
@@ -4699,11 +4699,11 @@ func Test_actionHandleAISummary(t *testing.T) {
 				tt.expectedReferenceID,
 				tt.expectedLanguage,
 				60000,
-			).Return(tt.responseService, nil)
+			.Return(tt.responseService, nil)
 
 			// push stack
-			mockStack.EXPECT().PushStackByActions(tt.activeflow.StackMap, tt.responseService.ID, tt.responseService.PushActions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID).Return(tt.responseStack, nil)
-			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.activeflow.ID, gomock.Any()).Return(nil)
+			mockStack.EXPECT().PushStackByActions(tt.activeflow.StackMap, tt.responseService.ID, tt.responseService.PushActions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID.Return(tt.responseStack, nil)
+			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.activeflow.ID, gomock.Any().Return(nil)
 
 			if errCall := h.actionHandleAISummary(ctx, tt.activeflow); errCall != nil {
 				t.Errorf("Wrong match.\nexpect: ok\ngot: %v", errCall)
@@ -4837,11 +4837,11 @@ func Test_actionHandleAITask(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AIV1ServiceTypeTaskStart(ctx, tt.expectedAIID, tt.expectedActiveflowID).Return(tt.responseService, nil)
+			mockReq.EXPECT().AIV1ServiceTypeTaskStart(ctx, tt.expectedAIID, tt.expectedActiveflowID.Return(tt.responseService, nil)
 
 			// push stack
-			mockStack.EXPECT().PushStackByActions(tt.activeflow.StackMap, tt.responseService.ID, tt.responseService.PushActions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID).Return(tt.responseStack, nil)
-			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.activeflow.ID, gomock.Any()).Return(nil)
+			mockStack.EXPECT().PushStackByActions(tt.activeflow.StackMap, tt.responseService.ID, tt.responseService.PushActions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID.Return(tt.responseStack, nil)
+			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.activeflow.ID, gomock.Any().Return(nil)
 
 			if errCall := h.actionHandleAITask(ctx, tt.activeflow); errCall != nil {
 				t.Errorf("Wrong match.\nexpect: ok\ngot: %v", errCall)

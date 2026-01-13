@@ -71,7 +71,7 @@ func Test_runKeepAlive(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			mockConn := new(MockConn)
-			mockConn.On("Write", []byte{0x10, 0x00, 0x01, 0x00}).Return(4, nil)
+			mockConn.On("Write", []byte{0x10, 0x00, 0x01, 0x00}.Return(4, nil)
 
 			ctx, cancel := context.WithCancel(context.Background())
 

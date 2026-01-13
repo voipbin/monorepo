@@ -86,7 +86,7 @@ func Test_processV1TrunksPost(t *testing.T) {
 				trunkHandler: mockTrunk,
 			}
 
-			mockTrunk.EXPECT().Create(gomock.Any(), tt.customerID, tt.trunkName, tt.detail, tt.domainName, tt.authTypes, tt.username, tt.password, tt.allowedIPs).Return(tt.resTrunk, nil)
+			mockTrunk.EXPECT().Create(gomock.Any(), tt.customerID, tt.trunkName, tt.detail, tt.domainName, tt.authTypes, tt.username, tt.password, tt.allowedIPs.Return(tt.resTrunk, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -188,7 +188,7 @@ func Test_processV1TrunksGet(t *testing.T) {
 				trunkHandler: mockTrunk,
 			}
 
-			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
+			mockUtil.EXPECT().URLParseFilters(gomock.Any().Return(tt.responseFilters)
 			mockTrunk.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, gomock.Any()).Return(tt.responseTrunks, nil)
 
 			res, err := h.processRequest(tt.request)
@@ -271,7 +271,7 @@ func Test_processV1TrunksIDPut(t *testing.T) {
 				trunkHandler: mockTrunk,
 			}
 
-			mockTrunk.EXPECT().Update(gomock.Any(), tt.id, gomock.Any()).Return(tt.resTrunk, nil)
+			mockTrunk.EXPECT().Update(gomock.Any(), tt.id, gomock.Any().Return(tt.resTrunk, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -334,7 +334,7 @@ func Test_processV1TrunksIDGet(t *testing.T) {
 				trunkHandler: mockTrunk,
 			}
 
-			mockTrunk.EXPECT().Get(gomock.Any(), tt.id).Return(tt.resTrunk, nil)
+			mockTrunk.EXPECT().Get(gomock.Any(), tt.id.Return(tt.resTrunk, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -396,7 +396,7 @@ func Test_processV1TrunksTrunkNameTrunkNameGet(t *testing.T) {
 				trunkHandler: mockTrunk,
 			}
 
-			mockTrunk.EXPECT().GetByDomainName(gomock.Any(), tt.expectDomainName).Return(tt.responseTrunk, nil)
+			mockTrunk.EXPECT().GetByDomainName(gomock.Any(), tt.expectDomainName.Return(tt.responseTrunk, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -458,7 +458,7 @@ func Test_processV1TrunksDelete(t *testing.T) {
 				trunkHandler: mockTrunk,
 			}
 
-			mockTrunk.EXPECT().Delete(gomock.Any(), tt.trunkID).Return(tt.responseTrunk, nil)
+			mockTrunk.EXPECT().Delete(gomock.Any(), tt.trunkID.Return(tt.responseTrunk, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

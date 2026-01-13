@@ -112,9 +112,9 @@ func Test_recoveryRun(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().CallGetByChannelID(ctx, tt.ch.ID).Return(tt.responseCall, nil)
-			mockRecovery.EXPECT().GetRecoveryDetail(ctx, tt.ch.SIPCallID).Return(tt.responseRecoveryDetail, nil)
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockDB.EXPECT().CallGetByChannelID(ctx, tt.ch.ID.Return(tt.responseCall, nil)
+			mockRecovery.EXPECT().GetRecoveryDetail(ctx, tt.ch.SIPCallID.Return(tt.responseRecoveryDetail, nil)
+			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
 			mockChannel.EXPECT().StartChannel(
 				ctx,
 				requesthandler.AsteriskIDCall,
@@ -125,7 +125,7 @@ func Test_recoveryRun(t *testing.T) {
 				"",
 				"",
 				tt.expectedChannelVariables,
-			).Return(tt.responseChannel, nil)
+			.Return(tt.responseChannel, nil)
 
 			if errRecovery := h.recoveryRun(ctx, tt.ch); errRecovery != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errRecovery)

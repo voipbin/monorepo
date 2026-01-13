@@ -1,78 +1,23 @@
 package queue
 
 import (
-	"fmt"
-
-	"github.com/gofrs/uuid"
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 )
 
 // ConvertStringMapToFieldMap converts a map with string keys to a map with queue.Field keys,
-// performing necessary type coercions for specific queue fields.
+// using reflection-based type conversion from bin-common-handler.
 func ConvertStringMapToFieldMap(src map[string]any) (map[Field]any, error) {
-	res := make(map[Field]any, len(src))
-
-	for key, val := range src {
-		field := Field(key) // Convert the string key to the queue.Field type
-
-		switch field {
-		case FieldDeleted:
-			// Handle both bool and string types for deleted filter
-			switch v := val.(type) {
-			case bool:
-				res[field] = v
-			case string:
-				// Convert string "true"/"false" to boolean
-				res[field] = v == "true"
-			default:
-				return nil, fmt.Errorf("expected bool or string for %s, got %T", key, val)
-			}
-
-
-		// Fields requiring UUID conversion
-		case FieldID, FieldCustomerID, FieldWaitFlowID:
-			str, ok := val.(string)
-			if !ok {
-				return nil, fmt.Errorf("expected string for uuid field %s, got %T", key, val)
-			}
-			id := uuid.FromStringOrNil(str)
-			res[field] = id
-
-		case FieldRoutingMethod:
-			str, ok := val.(string)
-			if !ok {
-				return nil, fmt.Errorf("expected string for routing_method field %s, got %T", key, val)
-			}
-			res[field] = RoutingMethod(str)
-
-		case FieldExecute:
-			str, ok := val.(string)
-			if !ok {
-				return nil, fmt.Errorf("expected string for execute field %s, got %T", key, val)
-			}
-			res[field] = Execute(str)
-
-		// Integer fields
-		case FieldWaitTimeout, FieldServiceTimeout, FieldTotalIncomingCount, FieldTotalServicedCount, FieldTotalAbandonedCount:
-			// JSON numbers come as float64
-			num, ok := val.(float64)
-			if !ok {
-				return nil, fmt.Errorf("expected number for field %s, got %T", key, val)
-			}
-			res[field] = int(num)
-
-		// String fields
-		case FieldName, FieldDetail, FieldTMCreate, FieldTMUpdate, FieldTMDelete:
-			str, ok := val.(string)
-			if !ok {
-				return nil, fmt.Errorf("expected string for field %s, got %T", key, val)
-			}
-			res[field] = str
-
-		// Default case: if the field key is not one of the recognized Field constants.
-		default:
-			return nil, fmt.Errorf("unknown or unhandled field: %s", key)
-		}
+	// Use reflection-based converter with Queue struct
+	typed, err := commondatabasehandler.ConvertMapToTypedMap(src, Queue{})
+	if err != nil {
+		return nil, err
 	}
 
-	return res, nil
+	// Convert string keys to Field type
+	result := make(map[Field]any, len(typed))
+	for k, v := range typed {
+		result[Field(k)] = v
+	}
+
+	return result, nil
 }

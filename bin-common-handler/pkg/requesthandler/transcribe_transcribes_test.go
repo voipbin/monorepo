@@ -13,7 +13,6 @@ import (
 	"monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
-	"monorepo/bin-common-handler/pkg/utilhandler"
 )
 
 func Test_TranscribeV1TranscribeGet(t *testing.T) {
@@ -88,11 +87,10 @@ func Test_TranscribeV1TranscribeGets(t *testing.T) {
 
 		pageToken string
 		pageSize  uint64
-		filters   map[string]string
+		filters   map[tmtranscribe.Field]any
 
 		response *sock.Response
 
-		expectedURL     string
 		expectedTarget  string
 		expectedRequest *sock.Request
 		expectedRes     []tmtranscribe.Transcribe
@@ -102,8 +100,8 @@ func Test_TranscribeV1TranscribeGets(t *testing.T) {
 
 			pageToken: "2020-09-20T03:23:20.995000",
 			pageSize:  10,
-			filters: map[string]string{
-				"customer_id": "adddce70-8093-11ed-9a79-530f80f428d8",
+			filters: map[tmtranscribe.Field]any{
+				tmtranscribe.FieldCustomerID: uuid.FromStringOrNil("adddce70-8093-11ed-9a79-530f80f428d8"),
 			},
 
 			response: &sock.Response{
@@ -112,12 +110,12 @@ func Test_TranscribeV1TranscribeGets(t *testing.T) {
 				Data:       []byte(`[{"id":"ae0a7cfe-8093-11ed-963d-abb334c8e6d8"}]`),
 			},
 
-			expectedURL:    "/v1/transcribes?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
 			expectedTarget: "bin-manager.transcribe-manager.request",
 			expectedRequest: &sock.Request{
-				URI:      "/v1/transcribes?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&filter_customer_id=adddce70-8093-11ed-9a79-530f80f428d8",
+				URI:      "/v1/transcribes?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
+				Data:     []byte(`{"customer_id":"adddce70-8093-11ed-9a79-530f80f428d8"}`),
 			},
 			expectedRes: []tmtranscribe.Transcribe{
 				{
@@ -132,8 +130,8 @@ func Test_TranscribeV1TranscribeGets(t *testing.T) {
 
 			pageToken: "2020-09-20T03:23:20.995000",
 			pageSize:  10,
-			filters: map[string]string{
-				"customer_id": "bb3c9146-8093-11ed-a0df-6fbf1a76cbd3",
+			filters: map[tmtranscribe.Field]any{
+				tmtranscribe.FieldCustomerID: uuid.FromStringOrNil("bb3c9146-8093-11ed-a0df-6fbf1a76cbd3"),
 			},
 
 			response: &sock.Response{
@@ -142,12 +140,12 @@ func Test_TranscribeV1TranscribeGets(t *testing.T) {
 				Data:       []byte(`[{"id":"bb6c13bc-8093-11ed-b647-5f3b613e1180"},{"id":"bb8fc46a-8093-11ed-9ea7-9304ab751b40"}]`),
 			},
 
-			expectedURL:    "/v1/transcribes?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
 			expectedTarget: "bin-manager.transcribe-manager.request",
 			expectedRequest: &sock.Request{
-				URI:      "/v1/transcribes?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&filter_customer_id=bb3c9146-8093-11ed-a0df-6fbf1a76cbd3",
+				URI:      "/v1/transcribes?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
+				Data:     []byte(`{"customer_id":"bb3c9146-8093-11ed-a0df-6fbf1a76cbd3"}`),
 			},
 			expectedRes: []tmtranscribe.Transcribe{
 				{
@@ -170,14 +168,11 @@ func Test_TranscribeV1TranscribeGets(t *testing.T) {
 			defer mc.Finish()
 
 			mockSock := sockhandler.NewMockSockHandler(mc)
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			h := requestHandler{
-				sock:        mockSock,
-				utilHandler: mockUtil,
+				sock: mockSock,
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().URLMergeFilters(tt.expectedURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectedURL, tt.filters))
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectedTarget, tt.expectedRequest).Return(tt.response, nil)
 
 			res, err := h.TranscribeV1TranscribeGets(ctx, tt.pageToken, tt.pageSize, tt.filters)

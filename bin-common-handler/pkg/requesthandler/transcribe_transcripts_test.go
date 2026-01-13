@@ -13,7 +13,6 @@ import (
 	"monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
-	"monorepo/bin-common-handler/pkg/utilhandler"
 )
 
 func Test_TranscribeV1TranscriptGets(t *testing.T) {
@@ -23,11 +22,10 @@ func Test_TranscribeV1TranscriptGets(t *testing.T) {
 
 		pageToken string
 		pageSize  uint64
-		filters   map[string]string
+		filters   map[tmtranscript.Field]any
 
 		response *sock.Response
 
-		expectedURL     string
 		expectedTarget  string
 		expectedRequest *sock.Request
 		expectedRes     []tmtranscript.Transcript
@@ -39,8 +37,8 @@ func Test_TranscribeV1TranscriptGets(t *testing.T) {
 
 			pageToken: "2020-09-20T03:23:20.995000",
 			pageSize:  10,
-			filters: map[string]string{
-				"transcribe_id": "8fe05f90-8229-11ed-a215-a78ed418d1c0",
+			filters: map[tmtranscript.Field]any{
+				tmtranscript.FieldTranscribeID: uuid.FromStringOrNil("8fe05f90-8229-11ed-a215-a78ed418d1c0"),
 			},
 
 			response: &sock.Response{
@@ -49,12 +47,12 @@ func Test_TranscribeV1TranscriptGets(t *testing.T) {
 				Data:       []byte(`[{"id":"9021680a-8229-11ed-a360-0792bc711080"}]`),
 			},
 
-			expectedURL:    "/v1/transcripts?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
 			expectedTarget: "bin-manager.transcribe-manager.request",
 			expectedRequest: &sock.Request{
-				URI:      "/v1/transcripts?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&filter_transcribe_id=8fe05f90-8229-11ed-a215-a78ed418d1c0",
+				URI:      "/v1/transcripts?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
 				Method:   sock.RequestMethodGet,
-				DataType: ContentTypeJSON,
+				DataType: "application/json",
+				Data:     []byte(`{"transcribe_id":"8fe05f90-8229-11ed-a215-a78ed418d1c0"}`),
 			},
 			expectedRes: []tmtranscript.Transcript{
 				{
@@ -72,14 +70,11 @@ func Test_TranscribeV1TranscriptGets(t *testing.T) {
 			defer mc.Finish()
 
 			mockSock := sockhandler.NewMockSockHandler(mc)
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			h := requestHandler{
-				sock:        mockSock,
-				utilHandler: mockUtil,
+				sock: mockSock,
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().URLMergeFilters(tt.expectedURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectedURL, tt.filters))
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectedTarget, tt.expectedRequest).Return(tt.response, nil)
 
 			res, err := h.TranscribeV1TranscriptGets(ctx, tt.pageToken, tt.pageSize, tt.filters)

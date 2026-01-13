@@ -72,9 +72,9 @@ func Test_Ring(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id).Return(tt.responseConfbridge, nil)
+			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id.Return(tt.responseConfbridge, nil)
 			for channelID := range tt.responseConfbridge.ChannelCallIDs {
-				mockChannel.EXPECT().Ring(ctx, channelID).Return(nil)
+				mockChannel.EXPECT().Ring(ctx, channelID.Return(nil)
 			}
 
 			if err := h.Ring(ctx, tt.id); err != nil {
@@ -137,9 +137,9 @@ func Test_Answer(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id).Return(tt.responseConfbridge, nil)
+			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id.Return(tt.responseConfbridge, nil)
 			for channelID := range tt.responseConfbridge.ChannelCallIDs {
-				mockChannel.EXPECT().Answer(ctx, channelID).Return(nil)
+				mockChannel.EXPECT().Answer(ctx, channelID.Return(nil)
 			}
 
 			if err := h.Answer(ctx, tt.id); err != nil {

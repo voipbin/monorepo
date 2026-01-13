@@ -57,7 +57,7 @@ func Test_processEvent_processEventActiveflowStop(t *testing.T) {
 				callHandler:     mockCall,
 			}
 
-			mockCall.EXPECT().EventFMActiveflowUpdated(gomock.Any(), tt.expectedActiveflow).Return(nil)
+			mockCall.EXPECT().EventFMActiveflowUpdated(gomock.Any(), tt.expectedActiveflow.Return(nil)
 
 			if errProcess := h.processEvent(tt.event); errProcess != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errProcess)

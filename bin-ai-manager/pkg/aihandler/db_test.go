@@ -103,9 +103,9 @@ func Test_Create(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
-			mockDB.EXPECT().AICreate(ctx, tt.expectAI).Return(nil)
-			mockDB.EXPECT().AIGet(ctx, tt.responseUUID).Return(tt.responseAI, nil)
+			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
+			mockDB.EXPECT().AICreate(ctx, tt.expectAI.Return(nil)
+			mockDB.EXPECT().AIGet(ctx, tt.responseUUID.Return(tt.responseAI, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAI.CustomerID, ai.EventTypeCreated, tt.responseAI)
 
 			res, err := h.Create(ctx, tt.customerID, tt.aiName, tt.detail, tt.engineType, tt.engineModel, tt.engineData, tt.engineKey, tt.initPrompt, tt.ttsType, tt.ttsVoiceID, tt.sttType)
@@ -170,7 +170,7 @@ func Test_Gets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().AIGets(ctx, tt.size, tt.token, tt.filters).Return(tt.responseAIs, nil)
+			mockDB.EXPECT().AIGets(ctx, tt.size, tt.token, tt.filters.Return(tt.responseAIs, nil)
 
 			res, err := h.Gets(ctx, tt.size, tt.token, tt.filters)
 			if err != nil {
@@ -225,7 +225,7 @@ func Test_Get(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().AIGet(ctx, tt.id).Return(tt.responseAI, nil)
+			mockDB.EXPECT().AIGet(ctx, tt.id.Return(tt.responseAI, nil)
 
 			res, err := h.Get(ctx, tt.id)
 			if err != nil {
@@ -280,8 +280,8 @@ func Test_Delete(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().AIDelete(ctx, tt.id).Return(nil)
-			mockDB.EXPECT().AIGet(ctx, tt.id).Return(tt.responseAI, nil)
+			mockDB.EXPECT().AIDelete(ctx, tt.id.Return(nil)
+			mockDB.EXPECT().AIGet(ctx, tt.id.Return(tt.responseAI, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAI.CustomerID, ai.EventTypeDeleted, tt.responseAI)
 
 			res, err := h.Delete(ctx, tt.id)
@@ -359,8 +359,8 @@ func Test_Update(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().AIUpdate(ctx, tt.id, gomock.Any()).Return(nil)
-			mockDB.EXPECT().AIGet(ctx, tt.id).Return(tt.responseAI, nil)
+			mockDB.EXPECT().AIUpdate(ctx, tt.id, gomock.Any().Return(nil)
+			mockDB.EXPECT().AIGet(ctx, tt.id.Return(tt.responseAI, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAI.CustomerID, ai.EventTypeUpdated, tt.responseAI)
 
 			res, err := h.Update(

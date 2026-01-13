@@ -110,7 +110,7 @@ func Test_campaignsPOST(t *testing.T) {
 				tt.expectOutdialID,
 				tt.expectQueueID,
 				tt.expectNextCampaignID,
-			).Return(tt.response, nil)
+			.Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -219,7 +219,7 @@ func Test_campaignsGET(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().CampaignGetsByCustomerID(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseCampaigns, nil)
+			mockSvc.EXPECT().CampaignGetsByCustomerID(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken.Return(tt.responseCampaigns, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -287,7 +287,7 @@ func Test_campaignsIDGET(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().CampaignGet(req.Context(), &tt.agent, tt.expectCampaignID).Return(tt.responseCampaign, nil)
+			mockSvc.EXPECT().CampaignGet(req.Context(), &tt.agent, tt.expectCampaignID.Return(tt.responseCampaign, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -355,7 +355,7 @@ func Test_campaignsIDDELETE(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().CampaignDelete(req.Context(), &tt.agent, tt.expectCampaignID).Return(tt.responseCampaign, nil)
+			mockSvc.EXPECT().CampaignDelete(req.Context(), &tt.agent, tt.expectCampaignID.Return(tt.responseCampaign, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -436,7 +436,7 @@ func Test_campaignsIDPUT(t *testing.T) {
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().CampaignUpdateBasicInfo(req.Context(), &tt.agent, tt.expectCampaignID, tt.expectName, tt.expectDetail, tt.expectType, tt.expectServiceLevel, tt.expectEndHandle).Return(tt.responseCampaign, nil)
+			mockSvc.EXPECT().CampaignUpdateBasicInfo(req.Context(), &tt.agent, tt.expectCampaignID, tt.expectName, tt.expectDetail, tt.expectType, tt.expectServiceLevel, tt.expectEndHandle.Return(tt.responseCampaign, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -510,7 +510,7 @@ func Test_campaignsIDStatusPUT(t *testing.T) {
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().CampaignUpdateStatus(req.Context(), &tt.agent, tt.expectCampaignID, tt.expectStatus).Return(tt.responseCampaign, nil)
+			mockSvc.EXPECT().CampaignUpdateStatus(req.Context(), &tt.agent, tt.expectCampaignID, tt.expectStatus.Return(tt.responseCampaign, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -582,7 +582,7 @@ func Test_campaignsIDServiceLevelPUT(t *testing.T) {
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().CampaignUpdateServiceLevel(req.Context(), &tt.agent, tt.expectCampaignID, tt.expectServiceLevel).Return(tt.responseCampaign, nil)
+			mockSvc.EXPECT().CampaignUpdateServiceLevel(req.Context(), &tt.agent, tt.expectCampaignID, tt.expectServiceLevel.Return(tt.responseCampaign, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -666,7 +666,7 @@ func Test_campaignsIDActionsPUT(t *testing.T) {
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().CampaignUpdateActions(req.Context(), &tt.agent, tt.expectCampaignID, tt.expectActions).Return(tt.responseCampaign, nil)
+			mockSvc.EXPECT().CampaignUpdateActions(req.Context(), &tt.agent, tt.expectCampaignID, tt.expectActions.Return(tt.responseCampaign, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -745,7 +745,7 @@ func Test_campaignsIDResourceInfoPUT(t *testing.T) {
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().CampaignUpdateResourceInfo(req.Context(), &tt.agent, tt.expectCampaignID, tt.expectOutplanID, tt.expectOutdialID, tt.expectQueueID, tt.expectNextCampaignID).Return(tt.responseCampaign, nil)
+			mockSvc.EXPECT().CampaignUpdateResourceInfo(req.Context(), &tt.agent, tt.expectCampaignID, tt.expectOutplanID, tt.expectOutdialID, tt.expectQueueID, tt.expectNextCampaignID.Return(tt.responseCampaign, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -818,7 +818,7 @@ func Test_campaignsIDNextCampaignIDPUT(t *testing.T) {
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().CampaignUpdateNextCampaignID(req.Context(), &tt.agent, tt.expectCampaignID, tt.expectNextCampaignID).Return(tt.responseCampaign, nil)
+			mockSvc.EXPECT().CampaignUpdateNextCampaignID(req.Context(), &tt.agent, tt.expectCampaignID, tt.expectNextCampaignID.Return(tt.responseCampaign, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -930,7 +930,7 @@ func Test_campaignsIDCampaigncallsGET(t *testing.T) {
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().CampaigncallGetsByCampaignID(req.Context(), &tt.agent, tt.campaignID, tt.expectPageSize, tt.expectPageToken).Return(tt.responseOutdials, nil)
+			mockSvc.EXPECT().CampaigncallGetsByCampaignID(req.Context(), &tt.agent, tt.campaignID, tt.expectPageSize, tt.expectPageToken.Return(tt.responseOutdials, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

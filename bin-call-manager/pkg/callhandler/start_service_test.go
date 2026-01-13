@@ -89,26 +89,26 @@ func Test_startServiceFromAMD(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime()).AnyTimes()
+			mockUtil.EXPECT().TimeGetCurTime(.Return(utilhandler.TimeGetCurTime()).AnyTimes()
 
-			mockDB.EXPECT().CallApplicationAMDGet(ctx, tt.channelID).Return(tt.responseAMD, nil)
+			mockDB.EXPECT().CallApplicationAMDGet(ctx, tt.channelID.Return(tt.responseAMD, nil)
 
 			if tt.responseAMD.MachineHandle == callapplication.AMDMachineHandleHangup && tt.data[channel.StasisDataTypeServiceAMDStatus] == amdStatusMachine {
-				mockDB.EXPECT().CallGet(ctx, tt.responseAMD.CallID).Return(&call.Call{}, nil)
-				mockDB.EXPECT().CallSetStatus(ctx, gomock.Any(), call.StatusTerminating).Return(nil)
+				mockDB.EXPECT().CallGet(ctx, tt.responseAMD.CallID.Return(&call.Call{}, nil)
+				mockDB.EXPECT().CallSetStatus(ctx, gomock.Any(), call.StatusTerminating.Return(nil)
 
 				tmpCall := &call.Call{
 					Status: call.StatusProgressing,
 				}
-				mockDB.EXPECT().CallGet(ctx, gomock.Any()).Return(tmpCall, nil)
+				mockDB.EXPECT().CallGet(ctx, gomock.Any().Return(tmpCall, nil)
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), gomock.Any(), gomock.Any())
-				mockChannel.EXPECT().HangingUp(ctx, gomock.Any(), gomock.Any()).Return(&channel.Channel{TMEnd: dbhandler.DefaultTimeStamp}, nil)
+				mockChannel.EXPECT().HangingUp(ctx, gomock.Any(), gomock.Any().Return(&channel.Channel{TMEnd: dbhandler.DefaultTimeStamp}, nil)
 			} else {
 				if !tt.responseAMD.Async {
 					mockReq.EXPECT().CallV1CallActionNext(ctx, tt.responseAMD.CallID, false)
 				}
 			}
-			mockChannel.EXPECT().HangingUp(ctx, tt.channelID, ari.ChannelCauseNormalClearing).Return(&channel.Channel{}, nil)
+			mockChannel.EXPECT().HangingUp(ctx, tt.channelID, ari.ChannelCauseNormalClearing.Return(&channel.Channel{}, nil)
 
 			if err := h.startServiceFromAMD(ctx, tt.channelID, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

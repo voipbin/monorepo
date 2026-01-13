@@ -123,13 +123,13 @@ func Test_AIcallCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().AIcallSet(ctx, gomock.Any())
 			if err := h.AIcallCreate(ctx, tt.ai); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().AIcallGet(ctx, tt.ai.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().AIcallGet(ctx, tt.ai.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().AIcallSet(ctx, gomock.Any())
 			res, err := h.AIcallGet(ctx, tt.ai.ID)
 			if err != nil {
@@ -199,13 +199,13 @@ func Test_AIcallGetByReferenceID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().AIcallSet(ctx, gomock.Any())
 			if err := h.AIcallCreate(ctx, tt.ai); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().AIcallGetByReferenceID(ctx, tt.referenceID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().AIcallGetByReferenceID(ctx, tt.referenceID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().AIcallSet(ctx, gomock.Any())
 			res, err := h.AIcallGetByReferenceID(ctx, tt.referenceID)
 			if err != nil {
@@ -303,19 +303,19 @@ func Test_AIcallUpdate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().AIcallSet(ctx, gomock.Any())
 			if err := h.AIcallCreate(ctx, tt.ai); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().AIcallSet(ctx, gomock.Any())
 			if err := h.AIcallUpdate(ctx, tt.id, tt.fields); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().AIcallGet(ctx, tt.id).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().AIcallGet(ctx, tt.id.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().AIcallSet(ctx, gomock.Any())
 			res, err := h.AIcallGet(ctx, tt.id)
 			if err != nil {
@@ -379,19 +379,19 @@ func Test_AIcallDelete(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().AIcallSet(ctx, gomock.Any())
 			if err := h.AIcallCreate(ctx, tt.aicall); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().AIcallSet(ctx, gomock.Any())
 			if errDel := h.AIcallDelete(ctx, tt.id); errDel != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errDel)
 			}
 
-			mockCache.EXPECT().AIcallGet(ctx, tt.id).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().AIcallGet(ctx, tt.id.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().AIcallSet(ctx, gomock.Any())
 			res, err := h.AIcallGet(ctx, tt.id)
 			if err != nil {
@@ -498,7 +498,7 @@ func Test_AIcallGets(t *testing.T) {
 			ctx := context.Background()
 
 			for _, cc := range tt.aicalls {
-				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 				mockCache.EXPECT().AIcallSet(ctx, gomock.Any())
 				if errCreate := h.AIcallCreate(ctx, cc); errCreate != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", errCreate)

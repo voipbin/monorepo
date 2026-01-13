@@ -65,8 +65,8 @@ func Test_StartSnoop(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id).Return(tt.responseChannel, nil)
-			mockReq.EXPECT().AstChannelCreateSnoop(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID, tt.snoopID, tt.appArgs, tt.directionSpy, tt.directionWhisper).Return(tt.responseChannel, nil)
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id.Return(tt.responseChannel, nil)
+			mockReq.EXPECT().AstChannelCreateSnoop(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID, tt.snoopID, tt.appArgs, tt.directionSpy, tt.directionWhisper.Return(tt.responseChannel, nil)
 
 			res, err := h.StartSnoop(ctx, tt.id, tt.snoopID, tt.appArgs, tt.directionSpy, tt.directionWhisper)
 			if err != nil {
@@ -142,7 +142,7 @@ func Test_StartExternalMedia(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AstChannelExternalMedia(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction, tt.data, tt.variables).Return(tt.responseChannel, nil)
+			mockReq.EXPECT().AstChannelExternalMedia(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction, tt.data, tt.variables.Return(tt.responseChannel, nil)
 
 			res, err := h.StartExternalMedia(ctx, tt.asteriskID, tt.id, tt.externalHost, tt.encapsulation, tt.transport, tt.connectionType, tt.format, tt.direction, tt.data, tt.variables)
 			if err != nil {
@@ -214,7 +214,7 @@ func Test_StartChannel(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AstChannelCreate(ctx, tt.asteriskID, tt.id, tt.appArgs, tt.endpoint, tt.otherChannelID, tt.originator, tt.formats, tt.variables).Return(tt.responseChannel, nil)
+			mockReq.EXPECT().AstChannelCreate(ctx, tt.asteriskID, tt.id, tt.appArgs, tt.endpoint, tt.otherChannelID, tt.originator, tt.formats, tt.variables.Return(tt.responseChannel, nil)
 
 			res, err := h.StartChannel(ctx, tt.asteriskID, tt.id, tt.appArgs, tt.endpoint, tt.otherChannelID, tt.originator, tt.formats, tt.variables)
 			if err != nil {
@@ -292,8 +292,8 @@ func Test_StartChannelWithBaseChannel(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.baseChannelID).Return(tt.responseBaseChannel, nil)
-			mockReq.EXPECT().AstChannelCreate(ctx, tt.responseBaseChannel.AsteriskID, tt.id, tt.appArgs, tt.endpoint, tt.otherChannelID, tt.originator, tt.formats, tt.variables).Return(tt.responseChannel, nil)
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.baseChannelID.Return(tt.responseBaseChannel, nil)
+			mockReq.EXPECT().AstChannelCreate(ctx, tt.responseBaseChannel.AsteriskID, tt.id, tt.appArgs, tt.endpoint, tt.otherChannelID, tt.originator, tt.formats, tt.variables.Return(tt.responseChannel, nil)
 
 			res, err := h.StartChannelWithBaseChannel(ctx, tt.baseChannelID, tt.id, tt.appArgs, tt.endpoint, tt.otherChannelID, tt.originator, tt.formats, tt.variables)
 			if err != nil {

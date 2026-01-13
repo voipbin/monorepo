@@ -69,7 +69,7 @@ func Test_RouteGet(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().RouteV1RouteGet(ctx, tt.id).Return(tt.responseRoute, nil)
+			mockReq.EXPECT().RouteV1RouteGet(ctx, tt.id.Return(tt.responseRoute, nil)
 
 			res, err := h.RouteGet(ctx, tt.agent, tt.id)
 			if err != nil {
@@ -139,7 +139,7 @@ func Test_RouteGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().RouteV1RouteGets(ctx, tt.pageToken, tt.pageSize).Return(tt.responseRoutes, nil)
+			mockReq.EXPECT().RouteV1RouteGets(ctx, tt.pageToken, tt.pageSize.Return(tt.responseRoutes, nil)
 
 			res, err := h.RouteGets(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
@@ -211,7 +211,7 @@ func Test_RouteGetsByCustomerID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().RouteV1RouteGetsByCustomerID(ctx, tt.customerID, tt.pageToken, tt.pageSize).Return(tt.responseRoutes, nil)
+			mockReq.EXPECT().RouteV1RouteGetsByCustomerID(ctx, tt.customerID, tt.pageToken, tt.pageSize.Return(tt.responseRoutes, nil)
 
 			res, err := h.RouteGetsByCustomerID(ctx, tt.agent, tt.customerID, tt.pageSize, tt.pageToken)
 			if err != nil {
@@ -294,7 +294,7 @@ func Test_RouteCreate(t *testing.T) {
 				tt.providerID,
 				tt.priority,
 				tt.target,
-			).Return(tt.responseRoute, nil)
+			.Return(tt.responseRoute, nil)
 
 			res, err := h.RouteCreate(
 				ctx,
@@ -368,8 +368,8 @@ func Test_RouteDelete(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().RouteV1RouteGet(ctx, tt.routeID).Return(tt.responseRoute, nil)
-			mockReq.EXPECT().RouteV1RouteDelete(ctx, tt.routeID).Return(tt.responseRoute, nil)
+			mockReq.EXPECT().RouteV1RouteGet(ctx, tt.routeID.Return(tt.responseRoute, nil)
+			mockReq.EXPECT().RouteV1RouteDelete(ctx, tt.routeID.Return(tt.responseRoute, nil)
 
 			res, err := h.RouteDelete(ctx, tt.agent, tt.routeID)
 			if err != nil {
@@ -446,7 +446,7 @@ func Test_RouteUpdate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().RouteV1RouteGet(ctx, tt.routeID).Return(tt.responseRoute, nil)
+			mockReq.EXPECT().RouteV1RouteGet(ctx, tt.routeID.Return(tt.responseRoute, nil)
 			mockReq.EXPECT().RouteV1RouteUpdate(
 				ctx,
 				tt.routeID,
@@ -455,7 +455,7 @@ func Test_RouteUpdate(t *testing.T) {
 				tt.providerID,
 				tt.priority,
 				tt.target,
-			).Return(tt.responseRoute, nil)
+			.Return(tt.responseRoute, nil)
 
 			res, err := h.RouteUpdate(
 				ctx,

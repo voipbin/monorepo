@@ -73,7 +73,7 @@ func Test_ChatroommessageGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().ChatV1MessagechatroomGet(ctx, tt.chatroommessageID).Return(tt.response, nil)
+			mockReq.EXPECT().ChatV1MessagechatroomGet(ctx, tt.chatroommessageID.Return(tt.response, nil)
 
 			res, err := h.ChatroommessageGet(ctx, tt.agent, tt.chatroommessageID)
 			if err != nil {
@@ -180,11 +180,11 @@ func Test_ChatroommessageCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().ChatV1ChatroomGet(ctx, tt.chatroomID).Return(tt.responseChatroom, nil)
-			mockReq.EXPECT().ChatV1MessagechatCreate(ctx, tt.agent.CustomerID, tt.responseChatroom.ChatID, tt.expectSource, chatmessagechat.TypeNormal, tt.message, tt.medias).Return(tt.responseMessagechat, nil)
+			mockReq.EXPECT().ChatV1ChatroomGet(ctx, tt.chatroomID.Return(tt.responseChatroom, nil)
+			mockReq.EXPECT().ChatV1MessagechatCreate(ctx, tt.agent.CustomerID, tt.responseChatroom.ChatID, tt.expectSource, chatmessagechat.TypeNormal, tt.message, tt.medias.Return(tt.responseMessagechat, nil)
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
-			mockReq.EXPECT().ChatV1MessagechatroomGets(ctx, gomock.Any(), uint64(1), tt.expectFilters).Return(tt.responseMessagechatroom, nil)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(utilhandler.TimeGetCurTime())
+			mockReq.EXPECT().ChatV1MessagechatroomGets(ctx, gomock.Any(), uint64(1), tt.expectFilters.Return(tt.responseMessagechatroom, nil)
 
 			res, err := h.ChatroommessageCreate(ctx, tt.agent, tt.chatroomID, tt.message, tt.medias)
 			if err != nil {
@@ -270,8 +270,8 @@ func Test_ChatroommessageGetsByChatroomID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ChatV1ChatroomGet(ctx, tt.chatroomID).Return(tt.responseChatroom, nil)
-			mockReq.EXPECT().ChatV1MessagechatroomGets(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.response, nil)
+			mockReq.EXPECT().ChatV1ChatroomGet(ctx, tt.chatroomID.Return(tt.responseChatroom, nil)
+			mockReq.EXPECT().ChatV1MessagechatroomGets(ctx, tt.token, tt.size, tt.expectFilters.Return(tt.response, nil)
 
 			res, err := h.ChatroommessageGetsByChatroomID(ctx, tt.agent, tt.chatroomID, tt.size, tt.token)
 			if err != nil {
@@ -338,8 +338,8 @@ func Test_ChatroommessageDelete(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ChatV1MessagechatroomGet(ctx, tt.messagechatroomID).Return(tt.responseChatroommessage, nil)
-			mockReq.EXPECT().ChatV1MessagechatroomDelete(ctx, tt.messagechatroomID).Return(tt.responseChatroommessage, nil)
+			mockReq.EXPECT().ChatV1MessagechatroomGet(ctx, tt.messagechatroomID.Return(tt.responseChatroommessage, nil)
+			mockReq.EXPECT().ChatV1MessagechatroomDelete(ctx, tt.messagechatroomID.Return(tt.responseChatroommessage, nil)
 
 			res, err := h.ChatroommessageDelete(ctx, tt.agent, tt.messagechatroomID)
 			if err != nil {

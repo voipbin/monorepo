@@ -144,7 +144,7 @@ func Test_processV1SummariesPost(t *testing.T) {
 				summaryHandler: mockSummary,
 			}
 
-			mockSummary.EXPECT().Start(gomock.Any(), tt.expectedCustomerID, tt.expectedActiveflowID, tt.expectedOnEndFlowID, tt.expectedReferenceType, tt.expectedReferenceID, tt.expectedLanguage).Return(tt.responseSummary, nil)
+			mockSummary.EXPECT().Start(gomock.Any(), tt.expectedCustomerID, tt.expectedActiveflowID, tt.expectedOnEndFlowID, tt.expectedReferenceType, tt.expectedReferenceID, tt.expectedLanguage.Return(tt.responseSummary, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -203,7 +203,7 @@ func Test_processV1SummariesIDGet(t *testing.T) {
 				summaryHandler: mockSummary,
 			}
 
-			mockSummary.EXPECT().Get(gomock.Any(), tt.expectedID).Return(tt.responseSummary, nil)
+			mockSummary.EXPECT().Get(gomock.Any(), tt.expectedID.Return(tt.responseSummary, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -262,7 +262,7 @@ func Test_processV1SummariesIDDelete(t *testing.T) {
 				summaryHandler: mockSummary,
 			}
 
-			mockSummary.EXPECT().Delete(gomock.Any(), tt.expectedID).Return(tt.responseSummary, nil)
+			mockSummary.EXPECT().Delete(gomock.Any(), tt.expectedID.Return(tt.responseSummary, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -50,14 +50,14 @@ package filehandler
 // 			}
 // 			ctx := context.Background()
 
-// 			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
-// 			mockDB.EXPECT().FileGets(ctx, gomock.Any(), uint64(10000), tt.expectFilters).Return(tt.responseFiles, nil)
+// 			mockUtil.EXPECT().TimeGetCurTime(.Return(utilhandler.TimeGetCurTime())
+// 			mockDB.EXPECT().FileGets(ctx, gomock.Any(), uint64(10000), tt.expectFilters.Return(tt.responseFiles, nil)
 
 // 			// delete
 // 			for _, f := range tt.responseFiles {
 
-// 				mockDB.EXPECT().FileDelete(ctx, f.ID).Return(nil)
-// 				mockDB.EXPECT().FileGet(ctx, f.ID).Return(f, nil)
+// 				mockDB.EXPECT().FileDelete(ctx, f.ID.Return(nil)
+// 				mockDB.EXPECT().FileGet(ctx, f.ID.Return(f, nil)
 // 				mockNotify.EXPECT().PublishWebhookEvent(ctx, f.CustomerID, file.EventTypeFileDeleted, f)
 // 			}
 

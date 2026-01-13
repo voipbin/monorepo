@@ -52,7 +52,7 @@ func Test_recevieMessage(t *testing.T) {
 			for i := 0; i < tt.count; i++ {
 				topic := fmt.Sprintf("topic: %d", i)
 				message := fmt.Sprintf("message: %d", i)
-				mockSock.EXPECT().ReceiveNoBlock().Return([]string{topic, message}, nil).AnyTimes()
+				mockSock.EXPECT().ReceiveNoBlock(.Return([]string{topic, message}, nil).AnyTimes()
 			}
 
 			go func() {

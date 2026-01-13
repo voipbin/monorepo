@@ -90,7 +90,7 @@ func Test_ServiceAgentChatroomGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().ChatV1ChatroomGets(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseChatrooms, nil)
+			mockReq.EXPECT().ChatV1ChatroomGets(ctx, tt.token, tt.size, tt.expectFilters.Return(tt.responseChatrooms, nil)
 
 			res, err := h.ServiceAgentChatroomGets(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {
@@ -162,7 +162,7 @@ func Test_ServiceAgentChatroomGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().ChatV1ChatroomGet(ctx, tt.chatroomID).Return(tt.responseChatroom, nil)
+			mockReq.EXPECT().ChatV1ChatroomGet(ctx, tt.chatroomID.Return(tt.responseChatroom, nil)
 
 			res, err := h.ServiceAgentChatroomGet(ctx, tt.agent, tt.chatroomID)
 			if err != nil {
@@ -234,8 +234,8 @@ func Test_ServiceAgentChatroomDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().ChatV1ChatroomGet(ctx, tt.chatroomID).Return(tt.responseChatroom, nil)
-			mockReq.EXPECT().ChatV1ChatroomDelete(ctx, tt.chatroomID).Return(tt.responseChatroom, nil)
+			mockReq.EXPECT().ChatV1ChatroomGet(ctx, tt.chatroomID.Return(tt.responseChatroom, nil)
+			mockReq.EXPECT().ChatV1ChatroomDelete(ctx, tt.chatroomID.Return(tt.responseChatroom, nil)
 
 			res, err := h.ServiceAgentChatroomDelete(ctx, tt.agent, tt.chatroomID)
 			if err != nil {
@@ -347,12 +347,12 @@ func Test_ServiceAgentChatroomCreate(t *testing.T) {
 					continue
 				}
 
-				mockReq.EXPECT().AgentV1AgentGet(ctx, participantID).Return(tmpAgent, nil)
+				mockReq.EXPECT().AgentV1AgentGet(ctx, participantID.Return(tmpAgent, nil)
 			}
-			mockReq.EXPECT().ChatV1ChatCreate(ctx, tt.agent.CustomerID, tt.expectChatType, tt.agent.ID, tt.participantIDs, tt.chatroomName, tt.detail).Return(tt.responseChat, nil)
+			mockReq.EXPECT().ChatV1ChatCreate(ctx, tt.agent.CustomerID, tt.expectChatType, tt.agent.ID, tt.participantIDs, tt.chatroomName, tt.detail.Return(tt.responseChat, nil)
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockReq.EXPECT().ChatV1ChatroomGets(ctx, tt.responseCurTime, uint64(1), tt.expectFilters).Return(tt.responseChatrooms, nil)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockReq.EXPECT().ChatV1ChatroomGets(ctx, tt.responseCurTime, uint64(1), tt.expectFilters.Return(tt.responseChatrooms, nil)
 
 			res, err := h.ServiceAgentChatroomCreate(ctx, tt.agent, tt.participantIDs, tt.chatroomName, tt.detail)
 			if err != nil {

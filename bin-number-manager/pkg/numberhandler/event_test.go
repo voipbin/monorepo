@@ -80,20 +80,20 @@ func Test_EventCustomerDeleted(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().NumberGets(ctx, uint64(10000), gomock.Any(), tt.expectFilter).Return(tt.responseNumbers, nil)
+			mockDB.EXPECT().NumberGets(ctx, uint64(10000), gomock.Any(), tt.expectFilter.Return(tt.responseNumbers, nil)
 
 			for _, nb := range tt.responseNumbers {
 
 				// Delete()
-				mockDB.EXPECT().NumberGet(ctx, nb.ID).Return(nb, nil)
+				mockDB.EXPECT().NumberGet(ctx, nb.ID.Return(nb, nil)
 
 				switch nb.ProviderName {
 				case number.ProviderNameTelnyx:
-					mockTelnyx.EXPECT().NumberRelease(ctx, nb).Return(nil)
+					mockTelnyx.EXPECT().NumberRelease(ctx, nb.Return(nil)
 				}
 
-				mockDB.EXPECT().NumberDelete(ctx, nb.ID).Return(nil)
-				mockDB.EXPECT().NumberGet(ctx, nb.ID).Return(nb, nil)
+				mockDB.EXPECT().NumberDelete(ctx, nb.ID.Return(nil)
+				mockDB.EXPECT().NumberGet(ctx, nb.ID.Return(nb, nil)
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, nb.CustomerID, number.EventTypeNumberDeleted, nb)
 			}
 
@@ -205,16 +205,16 @@ func Test_EventFlowDeleted(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
-			mockDB.EXPECT().NumberGets(gomock.Any(), gomock.Any(), gomock.Any(), tt.expectFiltersCallFlow).Return(tt.responseNumbersCallFlow, nil)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(utilhandler.TimeGetCurTime())
+			mockDB.EXPECT().NumberGets(gomock.Any(), gomock.Any(), gomock.Any(), tt.expectFiltersCallFlow.Return(tt.responseNumbersCallFlow, nil)
 			for _, num := range tt.responseNumbersCallFlow {
 				mockDB.EXPECT().NumberUpdate(gomock.Any(), num.ID, map[number.Field]any{
 					number.FieldCallFlowID: uuid.Nil,
 				})
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
-			mockDB.EXPECT().NumberGets(gomock.Any(), gomock.Any(), gomock.Any(), tt.expectFiltersMessageFlow).Return(tt.responseNumbersMessageFlow, nil)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(utilhandler.TimeGetCurTime())
+			mockDB.EXPECT().NumberGets(gomock.Any(), gomock.Any(), gomock.Any(), tt.expectFiltersMessageFlow.Return(tt.responseNumbersMessageFlow, nil)
 			for _, num := range tt.responseNumbersMessageFlow {
 				mockDB.EXPECT().NumberUpdate(gomock.Any(), num.ID, map[number.Field]any{
 					number.FieldMessageFlowID: uuid.Nil,

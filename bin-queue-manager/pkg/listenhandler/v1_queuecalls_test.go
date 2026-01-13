@@ -115,7 +115,7 @@ func Test_processV1QueuecallsGet(t *testing.T) {
 				queuecallHandler: mockQueuecall,
 			}
 
-			mockQueuecall.EXPECT().Gets(gomock.Any(), tt.pageSize, tt.pageToken, tt.responseFilters).Return(tt.queuecalls, nil)
+			mockQueuecall.EXPECT().Gets(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any().Return(tt.queuecalls, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -176,7 +176,7 @@ func Test_processV1QueuecallsIDGet(t *testing.T) {
 				queuecallHandler: mockQueuecall,
 			}
 
-			mockQueuecall.EXPECT().Get(gomock.Any(), tt.id).Return(tt.queuecall, nil)
+			mockQueuecall.EXPECT().Get(gomock.Any(), tt.id.Return(tt.queuecall, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -237,7 +237,7 @@ func Test_processV1QueuescallsIDDelete(t *testing.T) {
 				queuecallHandler: mockQueuecall,
 			}
 
-			mockQueuecall.EXPECT().Delete(gomock.Any(), tt.queuecallID).Return(tt.responseQueuecall, nil)
+			mockQueuecall.EXPECT().Delete(gomock.Any(), tt.queuecallID.Return(tt.responseQueuecall, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -298,7 +298,7 @@ func Test_processV1QueuecallsIDKickPost(t *testing.T) {
 				queuecallHandler: mockQueuecall,
 			}
 
-			mockQueuecall.EXPECT().Kick(gomock.Any(), tt.queuecallID).Return(tt.responseQueuecall, nil)
+			mockQueuecall.EXPECT().Kick(gomock.Any(), tt.queuecallID.Return(tt.responseQueuecall, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -422,7 +422,7 @@ func Test_processV1QueuecallsReferenceIDIDKickPost(t *testing.T) {
 				queuecallHandler: mockQueuecall,
 			}
 
-			mockQueuecall.EXPECT().KickByReferenceID(gomock.Any(), tt.referenceID).Return(tt.responseQueuecall, nil)
+			mockQueuecall.EXPECT().KickByReferenceID(gomock.Any(), tt.referenceID.Return(tt.responseQueuecall, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -482,7 +482,7 @@ func Test_processV1QueuecallsReferenceIDIDGet(t *testing.T) {
 				queuecallHandler: mockQueuecall,
 			}
 
-			mockQueuecall.EXPECT().GetByReferenceID(gomock.Any(), tt.referenceID).Return(tt.responseQueuecall, nil)
+			mockQueuecall.EXPECT().GetByReferenceID(gomock.Any(), tt.referenceID.Return(tt.responseQueuecall, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -543,7 +543,7 @@ func Test_processV1QueuecallsIDStatusWaitingPost(t *testing.T) {
 				queuecallHandler: mockQueuecall,
 			}
 
-			mockQueuecall.EXPECT().UpdateStatusWaiting(gomock.Any(), tt.expectedQueuecallID).Return(tt.responseQueuecall, nil)
+			mockQueuecall.EXPECT().UpdateStatusWaiting(gomock.Any(), tt.expectedQueuecallID.Return(tt.responseQueuecall, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

@@ -81,7 +81,7 @@ func Test_OutdialCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().OutdialV1OutdialCreate(ctx, tt.agent.CustomerID, tt.campaignID, tt.outdialName, tt.detail, tt.data).Return(tt.response, nil)
+			mockReq.EXPECT().OutdialV1OutdialCreate(ctx, tt.agent.CustomerID, tt.campaignID, tt.outdialName, tt.detail, tt.data.Return(tt.response, nil)
 			res, err := h.OutdialCreate(ctx, tt.agent, tt.campaignID, tt.outdialName, tt.detail, tt.data)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -158,7 +158,7 @@ func Test_OutdialGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().OutdialV1OutdialGetsByCustomerID(ctx, tt.agent.CustomerID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
+			mockReq.EXPECT().OutdialV1OutdialGetsByCustomerID(ctx, tt.agent.CustomerID, tt.pageToken, tt.pageSize.Return(tt.response, nil)
 			res, err := h.OutdialGetsByCustomerID(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -221,8 +221,8 @@ func Test_OutdialDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().OutdialV1OutdialGet(ctx, tt.outdialID).Return(tt.response, nil)
-			mockReq.EXPECT().OutdialV1OutdialDelete(ctx, tt.outdialID).Return(tt.response, nil)
+			mockReq.EXPECT().OutdialV1OutdialGet(ctx, tt.outdialID.Return(tt.response, nil)
+			mockReq.EXPECT().OutdialV1OutdialDelete(ctx, tt.outdialID.Return(tt.response, nil)
 
 			res, err := h.OutdialDelete(ctx, tt.agent, tt.outdialID)
 			if err != nil {
@@ -291,8 +291,8 @@ func Test_OutdialUpdate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().OutdialV1OutdialGet(ctx, tt.outdialID).Return(tt.response, nil)
-			mockReq.EXPECT().OutdialV1OutdialUpdateBasicInfo(ctx, tt.outdialID, tt.outdialName, tt.detail).Return(tt.response, nil)
+			mockReq.EXPECT().OutdialV1OutdialGet(ctx, tt.outdialID.Return(tt.response, nil)
+			mockReq.EXPECT().OutdialV1OutdialUpdateBasicInfo(ctx, tt.outdialID, tt.outdialName, tt.detail.Return(tt.response, nil)
 			res, err := h.OutdialUpdateBasicInfo(ctx, tt.agent, tt.outdialID, tt.outdialName, tt.detail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -357,8 +357,8 @@ func Test_OutdialUpdateCampaignID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().OutdialV1OutdialGet(ctx, tt.outdialID).Return(tt.response, nil)
-			mockReq.EXPECT().OutdialV1OutdialUpdateCampaignID(ctx, tt.outdialID, tt.campaignID).Return(tt.response, nil)
+			mockReq.EXPECT().OutdialV1OutdialGet(ctx, tt.outdialID.Return(tt.response, nil)
+			mockReq.EXPECT().OutdialV1OutdialUpdateCampaignID(ctx, tt.outdialID, tt.campaignID.Return(tt.response, nil)
 			res, err := h.OutdialUpdateCampaignID(ctx, tt.agent, tt.outdialID, tt.campaignID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -423,8 +423,8 @@ func Test_OutdialUpdateData(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().OutdialV1OutdialGet(ctx, tt.outdialID).Return(tt.response, nil)
-			mockReq.EXPECT().OutdialV1OutdialUpdateData(ctx, tt.outdialID, tt.data).Return(tt.response, nil)
+			mockReq.EXPECT().OutdialV1OutdialGet(ctx, tt.outdialID.Return(tt.response, nil)
+			mockReq.EXPECT().OutdialV1OutdialUpdateData(ctx, tt.outdialID, tt.data.Return(tt.response, nil)
 			res, err := h.OutdialUpdateData(ctx, tt.agent, tt.outdialID, tt.data)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

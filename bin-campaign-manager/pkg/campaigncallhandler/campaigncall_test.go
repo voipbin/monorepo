@@ -91,11 +91,11 @@ func Test_Create(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
-			mockDB.EXPECT().CampaigncallCreate(gomock.Any(), gomock.Any()).Return(nil)
-			mockDB.EXPECT().CampaigncallGet(gomock.Any(), gomock.Any()).Return(&campaigncall.Campaigncall{}, nil)
+			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
+			mockDB.EXPECT().CampaigncallCreate(gomock.Any(), gomock.Any().Return(nil)
+			mockDB.EXPECT().CampaigncallGet(gomock.Any(), gomock.Any().Return(&campaigncall.Campaigncall{}, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), campaigncall.EventTypeCampaigncallCreated, gomock.Any())
-			mockReq.EXPECT().OutdialV1OutdialtargetUpdateStatusProgressing(ctx, tt.outdialTargetID, tt.destinationIndex).Return(&omoutdialtarget.OutdialTarget{}, nil)
+			mockReq.EXPECT().OutdialV1OutdialtargetUpdateStatusProgressing(ctx, tt.outdialTargetID, tt.destinationIndex.Return(&omoutdialtarget.OutdialTarget{}, nil)
 
 			_, err := h.Create(
 				ctx,
@@ -150,7 +150,7 @@ func Test_Get(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockDB.EXPECT().CampaigncallGet(ctx, tt.res.ID).Return(tt.res, nil)
+			mockDB.EXPECT().CampaigncallGet(ctx, tt.res.ID.Return(tt.res, nil)
 
 			_, err := h.Get(ctx, tt.res.ID)
 			if err != nil {
@@ -190,7 +190,7 @@ func Test_GetByReferenceID(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockDB.EXPECT().CampaigncallGetByReferenceID(ctx, tt.res.ReferenceID).Return(tt.res, nil)
+			mockDB.EXPECT().CampaigncallGetByReferenceID(ctx, tt.res.ReferenceID.Return(tt.res, nil)
 
 			_, err := h.GetByReferenceID(ctx, tt.res.ReferenceID)
 			if err != nil {
@@ -230,7 +230,7 @@ func Test_GetByActiveflowID(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockDB.EXPECT().CampaigncallGetByActiveflowID(ctx, tt.res.ActiveflowID).Return(tt.res, nil)
+			mockDB.EXPECT().CampaigncallGetByActiveflowID(ctx, tt.res.ActiveflowID.Return(tt.res, nil)
 
 			_, err := h.GetByActiveflowID(ctx, tt.res.ActiveflowID)
 			if err != nil {
@@ -271,7 +271,7 @@ func Test_GetsByCustomerID(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockDB.EXPECT().CampaigncallGetsByCustomerID(ctx, tt.customerID, tt.token, tt.limit).Return(nil, nil)
+			mockDB.EXPECT().CampaigncallGetsByCustomerID(ctx, tt.customerID, tt.token, tt.limit.Return(nil, nil)
 
 			_, err := h.GetsByCustomerID(ctx, tt.customerID, tt.token, tt.limit)
 			if err != nil {
@@ -310,7 +310,7 @@ func Test_GetsByCampaignID(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockDB.EXPECT().CampaigncallGetsByCampaignID(ctx, tt.campaignID, tt.token, tt.limit).Return(nil, nil)
+			mockDB.EXPECT().CampaigncallGetsByCampaignID(ctx, tt.campaignID, tt.token, tt.limit.Return(nil, nil)
 
 			_, err := h.GetsByCampaignID(ctx, tt.campaignID, tt.token, tt.limit)
 			if err != nil {
@@ -351,7 +351,7 @@ func Test_GetsByCampaignIDAndStatus(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockDB.EXPECT().CampaigncallGetsByCampaignIDAndStatus(ctx, tt.campaignID, tt.status, tt.token, tt.limit).Return(nil, nil)
+			mockDB.EXPECT().CampaigncallGetsByCampaignIDAndStatus(ctx, tt.campaignID, tt.status, tt.token, tt.limit.Return(nil, nil)
 
 			_, err := h.GetsByCampaignIDAndStatus(ctx, tt.campaignID, tt.status, tt.token, tt.limit)
 			if err != nil {
@@ -390,7 +390,7 @@ func Test_GetsOngoingByCampaignID(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockDB.EXPECT().CampaigncallGetsOngoingByCampaignID(ctx, tt.campaignID, tt.token, tt.limit).Return(nil, nil)
+			mockDB.EXPECT().CampaigncallGetsOngoingByCampaignID(ctx, tt.campaignID, tt.token, tt.limit.Return(nil, nil)
 
 			_, err := h.GetsOngoingByCampaignID(ctx, tt.campaignID, tt.token, tt.limit)
 			if err != nil {
@@ -444,8 +444,8 @@ func Test_updateStatus(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CampaigncallUpdateStatus(ctx, tt.id, tt.status).Return(nil)
-			mockDB.EXPECT().CampaigncallGet(ctx, tt.id).Return(tt.responseCampaigncall, nil)
+			mockDB.EXPECT().CampaigncallUpdateStatus(ctx, tt.id, tt.status.Return(nil)
+			mockDB.EXPECT().CampaigncallGet(ctx, tt.id.Return(tt.responseCampaigncall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCampaigncall.CustomerID, campaigncall.EventTypeCampaigncallUpdated, tt.responseCampaigncall)
 
 			res, err := h.updateStatus(ctx, tt.id, tt.status)
@@ -521,8 +521,8 @@ func Test_updateStatusDone(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CampaigncallUpdateStatusAndResult(ctx, tt.id, campaigncall.StatusDone, tt.result).Return(nil)
-			mockDB.EXPECT().CampaigncallGet(ctx, tt.id).Return(tt.responseCampaigncall, nil)
+			mockDB.EXPECT().CampaigncallUpdateStatusAndResult(ctx, tt.id, campaigncall.StatusDone, tt.result.Return(nil)
+			mockDB.EXPECT().CampaigncallGet(ctx, tt.id.Return(tt.responseCampaigncall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCampaigncall.CustomerID, campaigncall.EventTypeCampaigncallUpdated, tt.responseCampaigncall)
 
 			res, err := h.updateStatusDone(ctx, tt.id, tt.result)
@@ -577,9 +577,9 @@ func Test_Delete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().CampaigncallGet(ctx, tt.id).Return(tt.responseCampaigncall, nil)
-			mockDB.EXPECT().CampaigncallDelete(ctx, tt.id).Return(nil)
-			mockDB.EXPECT().CampaigncallGet(ctx, gomock.Any()).Return(tt.responseCampaigncall, nil)
+			mockDB.EXPECT().CampaigncallGet(ctx, tt.id.Return(tt.responseCampaigncall, nil)
+			mockDB.EXPECT().CampaigncallDelete(ctx, tt.id.Return(nil)
+			mockDB.EXPECT().CampaigncallGet(ctx, gomock.Any().Return(tt.responseCampaigncall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCampaigncall.CustomerID, campaigncall.EventTypeCampaigncallDeleted, tt.responseCampaigncall)
 
 			res, err := h.Delete(ctx, tt.id)

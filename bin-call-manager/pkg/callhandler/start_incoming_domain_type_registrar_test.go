@@ -128,11 +128,11 @@ func Test_startIncomingDomainTypeRegistrar_DestinationTypeAgent(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockChannel.EXPECT().AddressGetSource(tt.channel, commonaddress.TypeExtension).Return(tt.responseSource)
-			mockReq.EXPECT().RegistrarV1ExtensionGets(ctx, "", uint64(1), gomock.Any()).Return([]rmextension.Extension{}, nil)
-			mockChannel.EXPECT().AddressGetDestinationWithoutSpecificType(tt.channel).Return(tt.responseDestination)
+			mockChannel.EXPECT().AddressGetSource(tt.channel, commonaddress.TypeExtension.Return(tt.responseSource)
+			mockReq.EXPECT().RegistrarV1ExtensionGets(ctx, "", uint64(1), gomock.Any().Return([]rmextension.Extension{}, nil)
+			mockChannel.EXPECT().AddressGetDestinationWithoutSpecificType(tt.channel.Return(tt.responseDestination)
 
-			mockReq.EXPECT().AgentV1AgentGet(ctx, tt.expectAgentID).Return(tt.responseAgent, nil)
+			mockReq.EXPECT().AgentV1AgentGet(ctx, tt.expectAgentID.Return(tt.responseAgent, nil)
 			mockReq.EXPECT().FlowV1FlowCreate(
 				ctx,
 				tt.expectCustomerID,
@@ -172,11 +172,11 @@ func Test_startIncomingDomainTypeRegistrar_DestinationTypeAgent(t *testing.T) {
 			})
 
 			// startCallTypeFlow
-			mockUtil.EXPECT().UUIDCreate().Return(utilhandler.UUIDCreate())
-			mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, tt.expectCustomerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
-			mockUtil.EXPECT().UUIDCreate().Return(utilhandler.UUIDCreate())
-			mockBridge.EXPECT().Start(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf(""))
-			mockChannel.EXPECT().HangingUp(ctx, gomock.Any(), gomock.Any()).Return(&channel.Channel{}, nil)
+			mockUtil.EXPECT().UUIDCreate(.Return(utilhandler.UUIDCreate())
+			mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, tt.expectCustomerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1.Return(true, nil)
+			mockUtil.EXPECT().UUIDCreate(.Return(utilhandler.UUIDCreate())
+			mockBridge.EXPECT().Start(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any().Return(nil, fmt.Errorf(""))
+			mockChannel.EXPECT().HangingUp(ctx, gomock.Any(), gomock.Any().Return(&channel.Channel{}, nil)
 
 			if err := h.startIncomingDomainTypeRegistrar(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -282,19 +282,19 @@ func Test_startIncomingDomainTypeRegistrar_DestinationTypeConference(t *testing.
 
 			ctx := context.Background()
 
-			mockChannel.EXPECT().AddressGetSource(tt.channel, commonaddress.TypeExtension).Return(tt.responseSource)
-			mockReq.EXPECT().RegistrarV1ExtensionGets(ctx, "", uint64(1), gomock.Any()).Return(tt.responseExtensions, nil)
-			mockChannel.EXPECT().AddressGetDestinationWithoutSpecificType(tt.channel).Return(tt.responseDestination)
+			mockChannel.EXPECT().AddressGetSource(tt.channel, commonaddress.TypeExtension.Return(tt.responseSource)
+			mockReq.EXPECT().RegistrarV1ExtensionGets(ctx, "", uint64(1), gomock.Any().Return(tt.responseExtensions, nil)
+			mockChannel.EXPECT().AddressGetDestinationWithoutSpecificType(tt.channel.Return(tt.responseDestination)
 
-			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.expectConferenceID).Return(tt.responseConference, nil)
-			mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, tt.expectCustomerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
-			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.expectCustomerID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), tt.expectActions, uuid.Nil, false).Return(tt.responseFlow, nil)
+			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.expectConferenceID.Return(tt.responseConference, nil)
+			mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, tt.expectCustomerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1.Return(true, nil)
+			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.expectCustomerID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), tt.expectActions, uuid.Nil, false.Return(tt.responseFlow, nil)
 
 			// startCallTypeFlow
-			mockUtil.EXPECT().UUIDCreate().Return(utilhandler.UUIDCreate())
-			mockUtil.EXPECT().UUIDCreate().Return(utilhandler.UUIDCreate())
-			mockBridge.EXPECT().Start(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf(""))
-			mockChannel.EXPECT().HangingUp(ctx, gomock.Any(), gomock.Any()).Return(&channel.Channel{}, nil)
+			mockUtil.EXPECT().UUIDCreate(.Return(utilhandler.UUIDCreate())
+			mockUtil.EXPECT().UUIDCreate(.Return(utilhandler.UUIDCreate())
+			mockBridge.EXPECT().Start(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any().Return(nil, fmt.Errorf(""))
+			mockChannel.EXPECT().HangingUp(ctx, gomock.Any(), gomock.Any().Return(&channel.Channel{}, nil)
 
 			if err := h.startIncomingDomainTypeRegistrar(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -403,12 +403,12 @@ func Test_startIncomingDomainTypeRegistrar_DestinationTypeTel(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockChannel.EXPECT().AddressGetSource(tt.channel, commonaddress.TypeExtension).Return(tt.responseSource)
+			mockChannel.EXPECT().AddressGetSource(tt.channel, commonaddress.TypeExtension.Return(tt.responseSource)
 
 			// parseAddressTypeExtension
-			mockReq.EXPECT().RegistrarV1ExtensionGets(ctx, "", uint64(1), gomock.Any()).Return([]rmextension.Extension{}, nil)
+			mockReq.EXPECT().RegistrarV1ExtensionGets(ctx, "", uint64(1), gomock.Any().Return([]rmextension.Extension{}, nil)
 
-			mockChannel.EXPECT().AddressGetDestinationWithoutSpecificType(tt.channel).Return(tt.responseDestination)
+			mockChannel.EXPECT().AddressGetDestinationWithoutSpecificType(tt.channel.Return(tt.responseDestination)
 
 			mockReq.EXPECT().FlowV1FlowCreate(
 				ctx,
@@ -450,9 +450,9 @@ func Test_startIncomingDomainTypeRegistrar_DestinationTypeTel(t *testing.T) {
 
 			// startCallTypeFlow
 			// we don't go further. just return the error
-			mockUtil.EXPECT().UUIDCreate().Return(utilhandler.UUIDCreate())
-			mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, tt.expectCustomerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(false, nil)
-			mockChannel.EXPECT().HangingUp(ctx, gomock.Any(), gomock.Any()).Return(&channel.Channel{}, nil)
+			mockUtil.EXPECT().UUIDCreate(.Return(utilhandler.UUIDCreate())
+			mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, tt.expectCustomerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1.Return(false, nil)
+			mockChannel.EXPECT().HangingUp(ctx, gomock.Any(), gomock.Any().Return(&channel.Channel{}, nil)
 
 			if err := h.startIncomingDomainTypeRegistrar(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -566,12 +566,12 @@ func Test_startIncomingDomainTypeRegistrarDestinationTypeExtension(t *testing.T)
 
 			ctx := context.Background()
 
-			mockChannel.EXPECT().AddressGetSource(tt.channel, commonaddress.TypeExtension).Return(tt.responseSource)
+			mockChannel.EXPECT().AddressGetSource(tt.channel, commonaddress.TypeExtension.Return(tt.responseSource)
 
-			mockReq.EXPECT().RegistrarV1ExtensionGets(ctx, "", uint64(1), gomock.Any()).Return([]rmextension.Extension{}, nil)
-			mockChannel.EXPECT().AddressGetDestinationWithoutSpecificType(tt.channel).Return(tt.responseDestination)
+			mockReq.EXPECT().RegistrarV1ExtensionGets(ctx, "", uint64(1), gomock.Any().Return([]rmextension.Extension{}, nil)
+			mockChannel.EXPECT().AddressGetDestinationWithoutSpecificType(tt.channel.Return(tt.responseDestination)
 
-			mockReq.EXPECT().RegistrarV1ExtensionGets(ctx, "", uint64(1), tt.expectFilters).Return(tt.responseExtensions, nil)
+			mockReq.EXPECT().RegistrarV1ExtensionGets(ctx, "", uint64(1), tt.expectFilters.Return(tt.responseExtensions, nil)
 
 			mockReq.EXPECT().FlowV1FlowCreate(
 				ctx,
@@ -612,11 +612,11 @@ func Test_startIncomingDomainTypeRegistrarDestinationTypeExtension(t *testing.T)
 			})
 
 			// startCallTypeFlow
-			mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, tt.expectCustomerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
-			mockUtil.EXPECT().UUIDCreate().Return(utilhandler.UUIDCreate())
-			mockUtil.EXPECT().UUIDCreate().Return(utilhandler.UUIDCreate())
-			mockBridge.EXPECT().Start(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf(""))
-			mockChannel.EXPECT().HangingUp(ctx, gomock.Any(), gomock.Any()).Return(&channel.Channel{}, nil)
+			mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, tt.expectCustomerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1.Return(true, nil)
+			mockUtil.EXPECT().UUIDCreate(.Return(utilhandler.UUIDCreate())
+			mockUtil.EXPECT().UUIDCreate(.Return(utilhandler.UUIDCreate())
+			mockBridge.EXPECT().Start(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any().Return(nil, fmt.Errorf(""))
+			mockChannel.EXPECT().HangingUp(ctx, gomock.Any(), gomock.Any().Return(&channel.Channel{}, nil)
 
 			if err := h.startIncomingDomainTypeRegistrar(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -718,9 +718,9 @@ func Test_parseAddressTypeExtension(t *testing.T) {
 			ctx := context.Background()
 
 			if tt.responseExtension != nil {
-				mockReq.EXPECT().RegistrarV1ExtensionGet(ctx, tt.expectExtensionID).Return(tt.responseExtension, nil)
+				mockReq.EXPECT().RegistrarV1ExtensionGet(ctx, tt.expectExtensionID.Return(tt.responseExtension, nil)
 			} else {
-				mockReq.EXPECT().RegistrarV1ExtensionGets(ctx, "", uint64(1), tt.expectFilters).Return(tt.responseExtensions, nil)
+				mockReq.EXPECT().RegistrarV1ExtensionGets(ctx, "", uint64(1), tt.expectFilters.Return(tt.responseExtensions, nil)
 			}
 
 			res, err := h.parseAddressTypeExtension(ctx, tt.customerID, tt.address)

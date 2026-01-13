@@ -93,7 +93,7 @@ func Test_processV1ExtensionsPost(t *testing.T) {
 				tt.expectDetail,
 				tt.expectExtension,
 				tt.expectPassword,
-			).Return(tt.responseExtension, nil)
+			.Return(tt.responseExtension, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -195,7 +195,7 @@ func Test_processV1ExtensionsGet(t *testing.T) {
 				extensionHandler: mockExtension,
 			}
 
-			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
+			mockUtil.EXPECT().URLParseFilters(gomock.Any().Return(tt.responseFilters)
 			mockExtension.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, gomock.Any()).Return(tt.responseExtensions, nil)
 
 			res, err := h.processRequest(tt.request)
@@ -279,7 +279,7 @@ func Test_processV1ExtensionsPut(t *testing.T) {
 				extensionHandler: mockExtension,
 			}
 
-			mockExtension.EXPECT().Update(gomock.Any(), tt.expectID, gomock.Any()).Return(tt.resExt, nil)
+			mockExtension.EXPECT().Update(gomock.Any(), tt.expectID, gomock.Any().Return(tt.resExt, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -340,7 +340,7 @@ func Test_processV1ExtensionsIDDelete(t *testing.T) {
 				extensionHandler: mockExtension,
 			}
 
-			mockExtension.EXPECT().Delete(gomock.Any(), tt.extensionID).Return(tt.responseExtension, nil)
+			mockExtension.EXPECT().Delete(gomock.Any(), tt.extensionID.Return(tt.responseExtension, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -406,7 +406,7 @@ func Test_processV1ExtensionsExtensionExtensionGet(t *testing.T) {
 				extensionHandler: mockExtension,
 			}
 
-			mockExtension.EXPECT().GetByExtension(gomock.Any(), tt.expectCustomerID, tt.expectExt).Return(tt.responseExtension, nil)
+			mockExtension.EXPECT().GetByExtension(gomock.Any(), tt.expectCustomerID, tt.expectExt.Return(tt.responseExtension, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

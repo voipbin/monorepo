@@ -138,8 +138,8 @@ func Test_Create(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().GroupcallCreate(ctx, tt.expectGroupcall).Return(nil)
-			mockDB.EXPECT().GroupcallGet(ctx, tt.expectGroupcall.ID).Return(tt.expectGroupcall, nil)
+			mockDB.EXPECT().GroupcallCreate(ctx, tt.expectGroupcall.Return(nil)
+			mockDB.EXPECT().GroupcallGet(ctx, tt.expectGroupcall.ID.Return(tt.expectGroupcall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectGroupcall.CustomerID, groupcall.EventTypeGroupcallCreated, tt.expectGroupcall)
 
 			res, err := h.Create(ctx, tt.id, tt.customerID, tt.ownerType, tt.ownerID, tt.flowID, tt.source, tt.destinations, tt.callIDs, tt.groupcallIDs, tt.masterCallID, tt.masterGroupcallID, tt.ringMethod, tt.answerMethod)
@@ -207,7 +207,7 @@ func Test_Gets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().GroupcallGets(ctx, tt.size, tt.token, gomock.Any()).Return(tt.responseGroupcalls, nil)
+			mockDB.EXPECT().GroupcallGets(ctx, tt.size, tt.token, gomock.Any().Return(tt.responseGroupcalls, nil)
 
 			res, err := h.Gets(ctx, tt.size, tt.token, tt.filters)
 			if err != nil {
@@ -260,7 +260,7 @@ func Test_Get(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().GroupcallGet(ctx, tt.id).Return(tt.responseGroupcall, nil)
+			mockDB.EXPECT().GroupcallGet(ctx, tt.id.Return(tt.responseGroupcall, nil)
 
 			res, err := h.Get(ctx, tt.id)
 			if err != nil {
@@ -317,8 +317,8 @@ func Test_UpdateAnswerCallID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().GroupcallSetAnswerCallID(ctx, tt.id, tt.callID).Return(nil)
-			mockDB.EXPECT().GroupcallGet(ctx, tt.id).Return(tt.responseGroupcall, nil)
+			mockDB.EXPECT().GroupcallSetAnswerCallID(ctx, tt.id, tt.callID.Return(nil)
+			mockDB.EXPECT().GroupcallGet(ctx, tt.id.Return(tt.responseGroupcall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseGroupcall.CustomerID, groupcall.EventTypeGroupcallProgressing, tt.responseGroupcall)
 
 			res, err := h.UpdateAnswerCallID(ctx, tt.id, tt.callID)
@@ -376,8 +376,8 @@ func Test_UpdateAnswerGroupcallID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().GroupcallSetAnswerGroupcallID(ctx, tt.id, tt.groupcallID).Return(nil)
-			mockDB.EXPECT().GroupcallGet(ctx, tt.id).Return(tt.responseGroupcall, nil)
+			mockDB.EXPECT().GroupcallSetAnswerGroupcallID(ctx, tt.id, tt.groupcallID.Return(nil)
+			mockDB.EXPECT().GroupcallGet(ctx, tt.id.Return(tt.responseGroupcall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseGroupcall.CustomerID, groupcall.EventTypeGroupcallProgressing, tt.responseGroupcall)
 
 			res, err := h.UpdateAnswerGroupcallID(ctx, tt.id, tt.groupcallID)
@@ -431,8 +431,8 @@ func Test_dbDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().GroupcallDelete(ctx, tt.id).Return(nil)
-			mockDB.EXPECT().GroupcallGet(ctx, tt.id).Return(tt.responseGroupcall, nil)
+			mockDB.EXPECT().GroupcallDelete(ctx, tt.id.Return(nil)
+			mockDB.EXPECT().GroupcallGet(ctx, tt.id.Return(tt.responseGroupcall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseGroupcall.CustomerID, groupcall.EventTypeGroupcallDeleted, tt.responseGroupcall)
 
 			res, err := h.dbDelete(ctx, tt.id)
@@ -486,8 +486,8 @@ func Test_DecreaseCallCount(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().GroupcallDecreaseCallCount(ctx, tt.id).Return(nil)
-			mockDB.EXPECT().GroupcallGet(ctx, tt.id).Return(tt.responseGroupcall, nil)
+			mockDB.EXPECT().GroupcallDecreaseCallCount(ctx, tt.id.Return(nil)
+			mockDB.EXPECT().GroupcallGet(ctx, tt.id.Return(tt.responseGroupcall, nil)
 
 			res, err := h.DecreaseCallCount(ctx, tt.id)
 			if err != nil {
@@ -540,8 +540,8 @@ func Test_DecreaseGroupcallCount(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().GroupcallDecreaseGroupcallCount(ctx, tt.id).Return(nil)
-			mockDB.EXPECT().GroupcallGet(ctx, tt.id).Return(tt.responseGroupcall, nil)
+			mockDB.EXPECT().GroupcallDecreaseGroupcallCount(ctx, tt.id.Return(nil)
+			mockDB.EXPECT().GroupcallGet(ctx, tt.id.Return(tt.responseGroupcall, nil)
 
 			res, err := h.DecreaseGroupcallCount(ctx, tt.id)
 			if err != nil {
@@ -604,8 +604,8 @@ func Test_UpdateCallIDsAndCallCountAndDialIndex(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().GroupcallSetCallIDsAndCallCountAndDialIndex(ctx, tt.id, tt.callIDs, tt.callCount, tt.dialIndex).Return(nil)
-			mockDB.EXPECT().GroupcallGet(ctx, tt.id).Return(tt.responseGroupcall, nil)
+			mockDB.EXPECT().GroupcallSetCallIDsAndCallCountAndDialIndex(ctx, tt.id, tt.callIDs, tt.callCount, tt.dialIndex.Return(nil)
+			mockDB.EXPECT().GroupcallGet(ctx, tt.id.Return(tt.responseGroupcall, nil)
 
 			res, err := h.UpdateCallIDsAndCallCountAndDialIndex(ctx, tt.id, tt.callIDs, tt.callCount, tt.dialIndex)
 			if err != nil {
@@ -668,8 +668,8 @@ func Test_UpdateGroupcallIDsAndGroupcallCountAndDialIndex(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().GroupcallSetGroupcallIDsAndGroupcallCountAndDialIndex(ctx, tt.id, tt.groupcallIDs, tt.groupcallCount, tt.dialIndex).Return(nil)
-			mockDB.EXPECT().GroupcallGet(ctx, tt.id).Return(tt.responseGroupcall, nil)
+			mockDB.EXPECT().GroupcallSetGroupcallIDsAndGroupcallCountAndDialIndex(ctx, tt.id, tt.groupcallIDs, tt.groupcallCount, tt.dialIndex.Return(nil)
+			mockDB.EXPECT().GroupcallGet(ctx, tt.id.Return(tt.responseGroupcall, nil)
 
 			res, err := h.UpdateGroupcallIDsAndGroupcallCountAndDialIndex(ctx, tt.id, tt.groupcallIDs, tt.groupcallCount, tt.dialIndex)
 			if err != nil {
@@ -725,8 +725,8 @@ func Test_UpdateStatus(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().GroupcallSetStatus(ctx, tt.id, tt.status).Return(nil)
-			mockDB.EXPECT().GroupcallGet(ctx, tt.id).Return(tt.responseGroupcall, nil)
+			mockDB.EXPECT().GroupcallSetStatus(ctx, tt.id, tt.status.Return(nil)
+			mockDB.EXPECT().GroupcallGet(ctx, tt.id.Return(tt.responseGroupcall, nil)
 
 			res, err := h.UpdateStatus(ctx, tt.id, tt.status)
 			if err != nil {

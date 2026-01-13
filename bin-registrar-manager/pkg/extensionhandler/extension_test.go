@@ -132,13 +132,13 @@ func Test_Create(t *testing.T) {
 			t.Errorf("Wrong match. expect: ok, got: %v", errSet)
 		}
 
-		mockDBAst.EXPECT().AstAORCreate(ctx, tt.expectAOR).Return(nil)
-		mockDBAst.EXPECT().AstAuthCreate(ctx, tt.expectAuth).Return(nil)
-		mockDBAst.EXPECT().AstEndpointCreate(ctx, tt.expectEndpoint).Return(nil)
-		mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDExtensionID)
-		mockDBBin.EXPECT().ExtensionCreate(ctx, tt.expectExtension).Return(nil)
-		mockDBBin.EXPECT().ExtensionGet(ctx, tt.expectExtension.ID).Return(tt.responseExtension, nil)
-		mockDBBin.EXPECT().SIPAuthCreate(ctx, tt.expectSIPAuth).Return(nil)
+		mockDBAst.EXPECT().AstAORCreate(ctx, tt.expectAOR.Return(nil)
+		mockDBAst.EXPECT().AstAuthCreate(ctx, tt.expectAuth.Return(nil)
+		mockDBAst.EXPECT().AstEndpointCreate(ctx, tt.expectEndpoint.Return(nil)
+		mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUIDExtensionID)
+		mockDBBin.EXPECT().ExtensionCreate(ctx, tt.expectExtension.Return(nil)
+		mockDBBin.EXPECT().ExtensionGet(ctx, tt.expectExtension.ID.Return(tt.responseExtension, nil)
+		mockDBBin.EXPECT().SIPAuthCreate(ctx, tt.expectSIPAuth.Return(nil)
 		mockNotify.EXPECT().PublishEvent(ctx, extension.EventTypeExtensionCreated, tt.responseExtension)
 
 		res, err := h.Create(ctx, tt.customerID, tt.extName, tt.detail, tt.ext, tt.password)
@@ -192,7 +192,7 @@ func Test_Get(t *testing.T) {
 		}
 		ctx := context.Background()
 
-		mockDBBin.EXPECT().ExtensionGet(ctx, tt.id).Return(tt.responseExtension, nil)
+		mockDBBin.EXPECT().ExtensionGet(ctx, tt.id.Return(tt.responseExtension, nil)
 
 		res, err := h.Get(ctx, tt.id)
 		if err != nil {
@@ -280,11 +280,11 @@ func Test_Update(t *testing.T) {
 
 		ctx := context.Background()
 
-		mockDBBin.EXPECT().ExtensionGet(gomock.Any(), tt.id).Return(tt.responseExtension, nil)
-		mockDBAst.EXPECT().AstAuthUpdate(gomock.Any(), tt.updateAuth).Return(nil)
-		mockDBBin.EXPECT().ExtensionUpdate(gomock.Any(), tt.id, tt.fields).Return(nil)
-		mockDBBin.EXPECT().ExtensionGet(gomock.Any(), tt.responseExtension.ID).Return(tt.updatedExt, nil)
-		mockDBBin.EXPECT().SIPAuthUpdate(ctx, tt.id, gomock.Any()).Return(nil)
+		mockDBBin.EXPECT().ExtensionGet(gomock.Any(), tt.id.Return(tt.responseExtension, nil)
+		mockDBAst.EXPECT().AstAuthUpdate(gomock.Any(), tt.updateAuth.Return(nil)
+		mockDBBin.EXPECT().ExtensionUpdate(gomock.Any(), tt.id, tt.fields.Return(nil)
+		mockDBBin.EXPECT().ExtensionGet(gomock.Any(), tt.responseExtension.ID.Return(tt.updatedExt, nil)
+		mockDBBin.EXPECT().SIPAuthUpdate(ctx, tt.id, gomock.Any().Return(nil)
 
 		mockNotify.EXPECT().PublishEvent(gomock.Any(), extension.EventTypeExtensionUpdated, tt.updatedExt)
 		_, err := h.Update(ctx, tt.id, tt.fields)
@@ -351,13 +351,13 @@ func Test_ExtensionDelete(t *testing.T) {
 
 		ctx := context.Background()
 
-		mockDBBin.EXPECT().ExtensionGet(ctx, tt.responseExtension.ID).Return(tt.responseExtension, nil)
-		mockDBBin.EXPECT().ExtensionDelete(ctx, tt.responseExtension.ID).Return(nil)
-		mockDBAst.EXPECT().AstEndpointDelete(ctx, tt.responseExtension.EndpointID).Return(nil)
-		mockDBAst.EXPECT().AstAuthDelete(ctx, tt.responseExtension.AuthID).Return(nil)
-		mockDBAst.EXPECT().AstAORDelete(ctx, tt.responseExtension.AORID).Return(nil)
-		mockDBBin.EXPECT().ExtensionGet(ctx, tt.responseExtension.ID).Return(tt.responseExtension, nil)
-		mockDBBin.EXPECT().SIPAuthDelete(ctx, tt.responseExtension.ID).Return(nil)
+		mockDBBin.EXPECT().ExtensionGet(ctx, tt.responseExtension.ID.Return(tt.responseExtension, nil)
+		mockDBBin.EXPECT().ExtensionDelete(ctx, tt.responseExtension.ID.Return(nil)
+		mockDBAst.EXPECT().AstEndpointDelete(ctx, tt.responseExtension.EndpointID.Return(nil)
+		mockDBAst.EXPECT().AstAuthDelete(ctx, tt.responseExtension.AuthID.Return(nil)
+		mockDBAst.EXPECT().AstAORDelete(ctx, tt.responseExtension.AORID.Return(nil)
+		mockDBBin.EXPECT().ExtensionGet(ctx, tt.responseExtension.ID.Return(tt.responseExtension, nil)
+		mockDBBin.EXPECT().SIPAuthDelete(ctx, tt.responseExtension.ID.Return(nil)
 		mockNotify.EXPECT().PublishEvent(ctx, extension.EventTypeExtensionDeleted, tt.responseExtension)
 
 		res, err := h.Delete(ctx, tt.responseExtension.ID)
@@ -410,7 +410,7 @@ func Test_ExtensionGet(t *testing.T) {
 
 		ctx := context.Background()
 
-		mockDBBin.EXPECT().ExtensionGet(ctx, tt.ext.ID).Return(tt.ext, nil)
+		mockDBBin.EXPECT().ExtensionGet(ctx, tt.ext.ID.Return(tt.ext, nil)
 		res, err := h.Get(ctx, tt.ext.ID)
 		if err != nil {
 			t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -468,7 +468,7 @@ func Test_Gets(t *testing.T) {
 
 		ctx := context.Background()
 
-		mockDBBin.EXPECT().ExtensionGets(gomock.Any(), tt.limit, tt.token, tt.filters).Return(tt.exts, nil)
+		mockDBBin.EXPECT().ExtensionGets(gomock.Any(), tt.limit, tt.token, tt.filters.Return(tt.exts, nil)
 		res, err := h.Gets(ctx, tt.token, tt.limit, tt.filters)
 		if err != nil {
 			t.Errorf("Wrong match. expect: ok, got: %v", err)

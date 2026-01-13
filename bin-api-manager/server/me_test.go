@@ -65,7 +65,7 @@ func Test_meGET(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().AgentGet(req.Context(), &tt.agent, tt.agent.ID).Return(tt.responseAgent, nil)
+			mockSvc.EXPECT().AgentGet(req.Context(), &tt.agent, tt.agent.ID.Return(tt.responseAgent, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

@@ -59,7 +59,7 @@ func Test_Get(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().AccountGet(gomock.Any(), tt.id).Return(tt.responseGet, nil)
+			mockDB.EXPECT().AccountGet(gomock.Any(), tt.id.Return(tt.responseGet, nil)
 
 			res, err := h.Get(ctx, tt.id)
 			if err != nil {
@@ -108,11 +108,11 @@ func Test_GetErrorDB(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().AccountGet(gomock.Any(), tt.id).Return(nil, fmt.Errorf(""))
-			mockReq.EXPECT().CustomerV1CustomerGet(gomock.Any(), tt.id).Return(tt.responseGet, nil)
+			mockDB.EXPECT().AccountGet(gomock.Any(), tt.id.Return(nil, fmt.Errorf(""))
+			mockReq.EXPECT().CustomerV1CustomerGet(gomock.Any(), tt.id.Return(tt.responseGet, nil)
 
 			tmp := account.CreateAccountFromCustomer(tt.responseGet)
-			mockDB.EXPECT().AccountSet(gomock.Any(), tmp).Return(nil)
+			mockDB.EXPECT().AccountSet(gomock.Any(), tmp.Return(nil)
 
 			res, err := h.Get(ctx, tt.id)
 			if err != nil {
@@ -158,7 +158,7 @@ func Test_Update(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().AccountSet(gomock.Any(), tt.data).Return(nil)
+			mockDB.EXPECT().AccountSet(gomock.Any(), tt.data.Return(nil)
 
 			if err := h.Update(ctx, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -207,7 +207,7 @@ func Test_UpdateByCustomer(t *testing.T) {
 			ctx := context.Background()
 
 			tmp := account.CreateAccountFromCustomer(tt.customerInfo)
-			mockDB.EXPECT().AccountSet(gomock.Any(), tmp).Return(nil)
+			mockDB.EXPECT().AccountSet(gomock.Any(), tmp.Return(nil)
 
 			res, err := h.UpdateByCustomer(ctx, tt.customerInfo)
 			if err != nil {

@@ -109,7 +109,7 @@ func Test_outplansPOST(t *testing.T) {
 				tt.expectMaxTryCount2,
 				tt.expectMaxTryCount3,
 				tt.expectMaxTryCount4,
-			).Return(tt.responseOutplan, nil)
+			.Return(tt.responseOutplan, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -220,7 +220,7 @@ func Test_outplansGET(t *testing.T) {
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().OutplanGetsByCustomerID(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseOutplans, nil)
+			mockSvc.EXPECT().OutplanGetsByCustomerID(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken.Return(tt.responseOutplans, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -288,7 +288,7 @@ func Test_outplansIDGET(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.rqeQuery, nil)
-			mockSvc.EXPECT().OutplanGet(req.Context(), &tt.agent, tt.expectOutplanID).Return(tt.responseOutplan, nil)
+			mockSvc.EXPECT().OutplanGet(req.Context(), &tt.agent, tt.expectOutplanID.Return(tt.responseOutplan, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -356,7 +356,7 @@ func Test_outplansIDDELETE(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().OutplanDelete(req.Context(), &tt.agent, tt.expectOutplanID).Return(tt.responseOutplan, nil)
+			mockSvc.EXPECT().OutplanDelete(req.Context(), &tt.agent, tt.expectOutplanID.Return(tt.responseOutplan, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -431,7 +431,7 @@ func Test_outplansIDPUT(t *testing.T) {
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().OutplanUpdateBasicInfo(req.Context(), &tt.agent, tt.expectOutplanID, tt.expectName, tt.expectDetail).Return(tt.responseOuplan, nil)
+			mockSvc.EXPECT().OutplanUpdateBasicInfo(req.Context(), &tt.agent, tt.expectOutplanID, tt.expectName, tt.expectDetail.Return(tt.responseOuplan, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -533,7 +533,7 @@ func Test_outplansIDDialInfoPUT(t *testing.T) {
 				tt.expectMaxTryCount2,
 				tt.expectMaxTryCount3,
 				tt.expectMaxTryCount4,
-			).Return(tt.responseOutplan, nil)
+			.Return(tt.responseOutplan, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

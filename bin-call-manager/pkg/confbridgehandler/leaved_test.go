@@ -124,22 +124,22 @@ func Test_Leaved(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockChannel.EXPECT().HangingUp(ctx, tt.channel.ID, ari.ChannelCauseNormalClearing).Return(tt.channel, nil)
+			mockChannel.EXPECT().HangingUp(ctx, tt.channel.ID, ari.ChannelCauseNormalClearing.Return(tt.channel, nil)
 
-			mockDB.EXPECT().ConfbridgeRemoveChannelCallID(ctx, tt.expectConfbridgeID, tt.channel.ID).Return(nil)
-			mockDB.EXPECT().ConfbridgeGet(ctx, tt.responseConfbridge.ID).Return(tt.responseConfbridge, nil)
+			mockDB.EXPECT().ConfbridgeRemoveChannelCallID(ctx, tt.expectConfbridgeID, tt.channel.ID.Return(nil)
+			mockDB.EXPECT().ConfbridgeGet(ctx, tt.responseConfbridge.ID.Return(tt.responseConfbridge, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, confbridge.EventTypeConfbridgeLeaved, gomock.Any())
 
-			mockReq.EXPECT().CallV1CallUpdateConfbridgeID(ctx, tt.expectCallID, uuid.Nil).Return(&call.Call{}, nil)
+			mockReq.EXPECT().CallV1CallUpdateConfbridgeID(ctx, tt.expectCallID, uuid.Nil.Return(&call.Call{}, nil)
 
 			if tt.responseConfbridge.Type == confbridge.TypeConnect && len(tt.responseConfbridge.ChannelCallIDs) == 1 && !h.flagExist(ctx, tt.responseConfbridge.Flags, confbridge.FlagNoAutoLeave) {
 				// Terminating
-				mockDB.EXPECT().ConfbridgeGet(ctx, tt.responseConfbridge.ID).Return(tt.responseConfbridge, nil)
-				mockDB.EXPECT().ConfbridgeSetStatus(ctx, tt.responseConfbridge.ID, confbridge.StatusTerminating).Return(nil)
-				mockDB.EXPECT().ConfbridgeGet(ctx, tt.responseConfbridge.ID).Return(tt.responseConfbridge, nil)
+				mockDB.EXPECT().ConfbridgeGet(ctx, tt.responseConfbridge.ID.Return(tt.responseConfbridge, nil)
+				mockDB.EXPECT().ConfbridgeSetStatus(ctx, tt.responseConfbridge.ID, confbridge.StatusTerminating.Return(nil)
+				mockDB.EXPECT().ConfbridgeGet(ctx, tt.responseConfbridge.ID.Return(tt.responseConfbridge, nil)
 				mockNotify.EXPECT().PublishEvent(ctx, confbridge.EventTypeConfbridgeTerminating, gomock.Any())
 
-				mockBridge.EXPECT().Destroy(ctx, tt.responseConfbridge.BridgeID).Return(nil)
+				mockBridge.EXPECT().Destroy(ctx, tt.responseConfbridge.BridgeID.Return(nil)
 			}
 
 			if err := h.Leaved(ctx, tt.channel, tt.bridge); err != nil {

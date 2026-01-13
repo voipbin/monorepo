@@ -87,7 +87,7 @@ func Test_processV1NumbersPost(t *testing.T) {
 				numberHandler: mockNumber,
 			}
 
-			mockNumber.EXPECT().Create(gomock.Any(), tt.customerID, tt.num, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail).Return(tt.createdNumber, nil)
+			mockNumber.EXPECT().Create(gomock.Any(), tt.customerID, tt.num, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail.Return(tt.createdNumber, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -155,7 +155,7 @@ func Test_ProcessV1NumbersIDDelete(t *testing.T) {
 				numberHandler: mockNumber,
 			}
 
-			mockNumber.EXPECT().Delete(gomock.Any(), tt.id).Return(tt.resultData, nil)
+			mockNumber.EXPECT().Delete(gomock.Any(), tt.id.Return(tt.resultData, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -223,7 +223,7 @@ func Test_ProcessV1NumbersIDGet(t *testing.T) {
 				numberHandler: mockNumber,
 			}
 
-			mockNumber.EXPECT().Get(gomock.Any(), tt.id).Return(tt.resultData, nil)
+			mockNumber.EXPECT().Get(gomock.Any(), tt.id.Return(tt.resultData, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -370,7 +370,7 @@ func Test_processV1NumbersGet(t *testing.T) {
 				numberHandler: mockNumber,
 			}
 
-			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
+			mockUtil.EXPECT().URLParseFilters(gomock.Any().Return(tt.responseFilters)
 			mockNumber.EXPECT().Gets(gomock.Any(), tt.pageSize, tt.pageToken, gomock.Any()).Return(tt.responseNumbers, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -461,7 +461,7 @@ func Test_processV1NumbersIDPut(t *testing.T) {
 				number.FieldDetail:        tt.detail,
 			}
 
-			mockNumber.EXPECT().Update(gomock.Any(), tt.id, expectFields).Return(tt.resultData, nil)
+			mockNumber.EXPECT().Update(gomock.Any(), tt.id, expectFields.Return(tt.resultData, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -544,7 +544,7 @@ func Test_processV1NumbersIDFlowIDPut(t *testing.T) {
 				number.FieldMessageFlowID: tt.messageFlowID,
 			}
 
-			mockNumber.EXPECT().Update(gomock.Any(), tt.id, expectFields).Return(tt.resultData, nil)
+			mockNumber.EXPECT().Update(gomock.Any(), tt.id, expectFields.Return(tt.resultData, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -620,7 +620,7 @@ func Test_processV1NumbersRenewPost(t *testing.T) {
 				numberHandler: mockNumber,
 			}
 
-			mockNumber.EXPECT().RenewNumbers(gomock.Any(), tt.days, tt.hours, tt.tmRenew).Return(tt.responseNumbers, nil)
+			mockNumber.EXPECT().RenewNumbers(gomock.Any(), tt.days, tt.hours, tt.tmRenew.Return(tt.responseNumbers, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

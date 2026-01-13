@@ -70,14 +70,14 @@ func Test_ServiceStart(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConferencecallGet(ctx, tt.id).Return(tt.responseConferencecall, nil)
-			mockConference.EXPECT().Get(ctx, tt.responseConferencecall.ConferenceID).Return(tt.responseConference, nil)
+			mockDB.EXPECT().ConferencecallGet(ctx, tt.id.Return(tt.responseConferencecall, nil)
+			mockConference.EXPECT().Get(ctx, tt.responseConferencecall.ConferenceID.Return(tt.responseConference, nil)
 			mockDB.EXPECT().ConferencecallUpdate(ctx, tt.id, map[conferencecall.Field]any{
 				conferencecall.FieldStatus: conferencecall.StatusLeaving,
-			}).Return(nil)
-			mockDB.EXPECT().ConferencecallGet(ctx, tt.id).Return(tt.responseConferencecall, nil)
+			}.Return(nil)
+			mockDB.EXPECT().ConferencecallGet(ctx, tt.id.Return(tt.responseConferencecall, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, gomock.Any(), gomock.Any())
-			mockReq.EXPECT().CallV1ConfbridgeCallKick(ctx, tt.responseConference.ConfbridgeID, tt.responseConferencecall.ReferenceID).Return(nil)
+			mockReq.EXPECT().CallV1ConfbridgeCallKick(ctx, tt.responseConference.ConfbridgeID, tt.responseConferencecall.ReferenceID.Return(nil)
 
 			res, err := h.Terminate(ctx, tt.id)
 			if err != nil {

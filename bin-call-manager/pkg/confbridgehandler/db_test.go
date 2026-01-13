@@ -102,9 +102,9 @@ func Test_Create(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
-			mockDB.EXPECT().ConfbridgeCreate(ctx, tt.expectConfbridge).Return(nil)
-			mockDB.EXPECT().ConfbridgeGet(ctx, tt.responseUUID).Return(tt.responseConfbridge, nil)
+			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
+			mockDB.EXPECT().ConfbridgeCreate(ctx, tt.expectConfbridge.Return(nil)
+			mockDB.EXPECT().ConfbridgeGet(ctx, tt.responseUUID.Return(tt.responseConfbridge, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, confbridge.EventTypeConfbridgeCreated, tt.responseConfbridge)
 
 			res, err := h.Create(ctx, tt.customer, tt.activeflowID, tt.referenceType, tt.referenceID, tt.confbridgeType)
@@ -175,7 +175,7 @@ func Test_Gets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConfbridgeGets(ctx, tt.size, tt.token, gomock.Any()).Return(tt.responseGets, nil)
+			mockDB.EXPECT().ConfbridgeGets(ctx, tt.size, tt.token, gomock.Any().Return(tt.responseGets, nil)
 
 			res, err := h.Gets(ctx, tt.size, tt.token, tt.filters)
 			if err != nil {
@@ -238,11 +238,11 @@ func Test_UpdateRecordingID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConfbridgeSetRecordingID(ctx, tt.id, tt.recordingID).Return(nil)
+			mockDB.EXPECT().ConfbridgeSetRecordingID(ctx, tt.id, tt.recordingID.Return(nil)
 			if tt.recordingID != uuid.Nil {
-				mockDB.EXPECT().ConfbridgeAddRecordingIDs(ctx, tt.id, tt.recordingID).Return(nil)
+				mockDB.EXPECT().ConfbridgeAddRecordingIDs(ctx, tt.id, tt.recordingID.Return(nil)
 			}
-			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id).Return(&confbridge.Confbridge{}, nil)
+			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id.Return(&confbridge.Confbridge{}, nil)
 
 			_, err := h.UpdateRecordingID(ctx, tt.id, tt.recordingID)
 			if err != nil {
@@ -300,8 +300,8 @@ func Test_UpdateExternalMediaID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConfbridgeSetExternalMediaID(ctx, tt.id, tt.externalMediaID).Return(nil)
-			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id).Return(&confbridge.Confbridge{}, nil)
+			mockDB.EXPECT().ConfbridgeSetExternalMediaID(ctx, tt.id, tt.externalMediaID.Return(nil)
+			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id.Return(&confbridge.Confbridge{}, nil)
 
 			_, err := h.UpdateExternalMediaID(ctx, tt.id, tt.externalMediaID)
 			if err != nil {
@@ -372,8 +372,8 @@ func Test_AddChannelCallID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConfbridgeAddChannelCallID(ctx, tt.id, tt.channelID, tt.callID).Return(nil)
-			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id).Return(tt.responseConfbridge, nil)
+			mockDB.EXPECT().ConfbridgeAddChannelCallID(ctx, tt.id, tt.channelID, tt.callID.Return(nil)
+			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id.Return(tt.responseConfbridge, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, confbridge.EventTypeConfbridgeJoined, tt.expectEvent)
 
 			res, err := h.AddChannelCallID(ctx, tt.id, tt.channelID, tt.callID)
@@ -436,8 +436,8 @@ func Test_dbDelete(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConfbridgeDelete(ctx, tt.id).Return(nil)
-			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id).Return(tt.responseConfbridge, nil)
+			mockDB.EXPECT().ConfbridgeDelete(ctx, tt.id.Return(nil)
+			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id.Return(tt.responseConfbridge, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, confbridge.EventTypeConfbridgeDeleted, tt.responseConfbridge)
 
 			res, err := h.dbDelete(ctx, tt.id)
@@ -504,8 +504,8 @@ func Test_UpdateStatus(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConfbridgeSetStatus(ctx, tt.id, tt.status).Return(nil)
-			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id).Return(tt.responseConfbridge, nil)
+			mockDB.EXPECT().ConfbridgeSetStatus(ctx, tt.id, tt.status.Return(nil)
+			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id.Return(tt.responseConfbridge, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, tt.expectEventType, tt.responseConfbridge)
 
 			res, err := h.UpdateStatus(ctx, tt.id, tt.status)

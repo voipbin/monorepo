@@ -94,8 +94,8 @@ func Test_TransferStart(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1CallGet(ctx, tt.transfererCallID).Return(tt.responseTransfererCall, nil)
-			mockReq.EXPECT().TransferV1TransferStart(ctx, tt.transferType, tt.transfererCallID, tt.transfereeAddresses).Return(tt.responseTransfer, nil)
+			mockReq.EXPECT().CallV1CallGet(ctx, tt.transfererCallID.Return(tt.responseTransfererCall, nil)
+			mockReq.EXPECT().TransferV1TransferStart(ctx, tt.transferType, tt.transfererCallID, tt.transfereeAddresses.Return(tt.responseTransfer, nil)
 
 			res, err := h.TransferStart(ctx, tt.agent, tt.transferType, tt.transfererCallID, tt.transfereeAddresses)
 			if err != nil {

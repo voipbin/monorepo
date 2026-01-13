@@ -142,7 +142,7 @@ func Test_SayAdd(t *testing.T) {
 				h.mapStreaming[s.ID] = s
 			}
 
-			mockEleven.EXPECT().SayAdd(gomock.Any(), tt.text).Return(nil).Times(1)
+			mockEleven.EXPECT().SayAdd(gomock.Any(), tt.text.Return(nil).Times(1)
 
 			if err := h.SayAdd(ctx, tt.id, tt.messageID, tt.text); err != nil {
 				t.Errorf("Wrong match. expected: ok, got: %v", err)

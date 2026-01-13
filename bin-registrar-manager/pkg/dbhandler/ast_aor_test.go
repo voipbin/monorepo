@@ -47,7 +47,7 @@ func TestAstAORCreate(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().AstAORGet(gomock.Any(), *tt.aor.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().AstAORGet(gomock.Any(), *tt.aor.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().AstAORSet(gomock.Any(), gomock.Any())
 			res, err := h.AstAORGet(context.Background(), *tt.aor.ID)
 			if err != nil {
@@ -96,7 +96,7 @@ func TestAstAORDelete(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().AstAORGet(gomock.Any(), *tt.aor.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().AstAORGet(gomock.Any(), *tt.aor.ID.Return(nil, fmt.Errorf(""))
 			_, err := h.AstAORGet(context.Background(), *tt.aor.ID)
 			if err == nil {
 				t.Errorf("Wrong match. expect: err, got: ok")

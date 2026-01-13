@@ -61,7 +61,7 @@ func Test_billingAccountGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().BillingV1AccountGet(ctx, tt.billingAccountID).Return(tt.responseBillingAccount, nil)
+			mockReq.EXPECT().BillingV1AccountGet(ctx, tt.billingAccountID.Return(tt.responseBillingAccount, nil)
 
 			res, err := h.billingAccountGet(ctx, tt.billingAccountID)
 			if err != nil {
@@ -129,8 +129,8 @@ func Test_BillingAccountDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().BillingV1AccountGet(ctx, tt.billingAccountID).Return(tt.responseBillingAccount, nil)
-			mockReq.EXPECT().BillingV1AccountDelete(ctx, tt.billingAccountID).Return(tt.responseBillingAccount, nil)
+			mockReq.EXPECT().BillingV1AccountGet(ctx, tt.billingAccountID.Return(tt.responseBillingAccount, nil)
+			mockReq.EXPECT().BillingV1AccountDelete(ctx, tt.billingAccountID.Return(tt.responseBillingAccount, nil)
 
 			res, err := h.BillingAccountDelete(ctx, tt.agent, tt.billingAccountID)
 			if err != nil {
@@ -215,7 +215,7 @@ func Test_BillingAccountGets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().BillingV1AccountGets(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseBillingAcounts, nil)
+			mockReq.EXPECT().BillingV1AccountGets(ctx, tt.token, tt.size, tt.expectFilters.Return(tt.responseBillingAcounts, nil)
 
 			res, err := h.BillingAccountGets(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {
@@ -285,7 +285,7 @@ func Test_BillingAccountCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().BillingV1AccountCreate(ctx, tt.agent.CustomerID, tt.billingAccountName, tt.detail, tt.paymentType, tt.paymentMethod).Return(tt.responseBillingAccount, nil)
+			mockReq.EXPECT().BillingV1AccountCreate(ctx, tt.agent.CustomerID, tt.billingAccountName, tt.detail, tt.paymentType, tt.paymentMethod.Return(tt.responseBillingAccount, nil)
 
 			res, err := h.BillingAccountCreate(ctx, tt.agent, tt.billingAccountName, tt.detail, tt.paymentType, tt.paymentMethod)
 			if err != nil {
@@ -357,8 +357,8 @@ func Test_BillingAccountUpdateBasicInfo(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().BillingV1AccountGet(ctx, tt.billingAccountID).Return(tt.responseBillingAccount, nil)
-			mockReq.EXPECT().BillingV1AccountUpdateBasicInfo(ctx, tt.billingAccountID, tt.billingAccountName, tt.detail).Return(tt.responseBillingAccount, nil)
+			mockReq.EXPECT().BillingV1AccountGet(ctx, tt.billingAccountID.Return(tt.responseBillingAccount, nil)
+			mockReq.EXPECT().BillingV1AccountUpdateBasicInfo(ctx, tt.billingAccountID, tt.billingAccountName, tt.detail.Return(tt.responseBillingAccount, nil)
 
 			res, err := h.BillingAccountUpdateBasicInfo(ctx, tt.agent, tt.billingAccountID, tt.billingAccountName, tt.detail)
 			if err != nil {
@@ -430,8 +430,8 @@ func Test_BillingAccountUpdatePaymentInfo(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().BillingV1AccountGet(ctx, tt.billingAccountID).Return(tt.responseBillingAccount, nil)
-			mockReq.EXPECT().BillingV1AccountUpdatePaymentInfo(ctx, tt.billingAccountID, tt.paymentType, tt.paymentMethod).Return(tt.responseBillingAccount, nil)
+			mockReq.EXPECT().BillingV1AccountGet(ctx, tt.billingAccountID.Return(tt.responseBillingAccount, nil)
+			mockReq.EXPECT().BillingV1AccountUpdatePaymentInfo(ctx, tt.billingAccountID, tt.paymentType, tt.paymentMethod.Return(tt.responseBillingAccount, nil)
 
 			res, err := h.BillingAccountUpdatePaymentInfo(ctx, tt.agent, tt.billingAccountID, tt.paymentType, tt.paymentMethod)
 			if err != nil {
@@ -497,7 +497,7 @@ func Test_BillingAccountAddBalanceForce(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().BillingV1AccountAddBalanceForce(ctx, tt.accountID, tt.balance).Return(tt.responseBillingAccount, nil)
+			mockReq.EXPECT().BillingV1AccountAddBalanceForce(ctx, tt.accountID, tt.balance.Return(tt.responseBillingAccount, nil)
 
 			res, err := h.BillingAccountAddBalanceForce(ctx, tt.agent, tt.accountID, tt.balance)
 			if err != nil {

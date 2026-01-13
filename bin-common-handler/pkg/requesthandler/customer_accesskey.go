@@ -4,12 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/url"
+
 	"monorepo/bin-common-handler/models/sock"
 	csaccesskey "monorepo/bin-customer-manager/models/accesskey"
 	csrequest "monorepo/bin-customer-manager/pkg/listenhandler/models/request"
-	"net/url"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 )
 
 // CustomerV1AccesskeyGet sends a request to customer-manager
@@ -34,13 +36,15 @@ func (r *requestHandler) CustomerV1AccesskeyGet(ctx context.Context, accesskeyID
 // CustomerV1AccesskeyGets sends a request to customer-manager
 // to getting a list of accesskeys info.
 // it returns list of accesskeys info if it succeed.
-func (r *requestHandler) CustomerV1AccesskeyGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]csaccesskey.Accesskey, error) {
+func (r *requestHandler) CustomerV1AccesskeyGets(ctx context.Context, pageToken string, pageSize uint64, filters map[csaccesskey.Field]any) ([]csaccesskey.Accesskey, error) {
 	uri := fmt.Sprintf("/v1/accesskeys?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
-	// parse filters
-	uri = r.utilHandler.URLMergeFilters(uri, filters)
+	m, err := json.Marshal(filters)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not marshal filters")
+	}
 
-	tmp, err := r.sendRequestCustomer(ctx, uri, sock.RequestMethodGet, "customer/accesskeys", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestCustomer(ctx, uri, sock.RequestMethodGet, "customer/accesskeys", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}

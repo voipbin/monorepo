@@ -100,8 +100,8 @@ func Test_Create(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().BridgeCreate(ctx, tt.expectBridge).Return(nil)
-			mockDB.EXPECT().BridgeGet(gomock.Any(), tt.id).Return(tt.responseBridge, nil)
+			mockDB.EXPECT().BridgeCreate(ctx, tt.expectBridge.Return(nil)
+			mockDB.EXPECT().BridgeGet(gomock.Any(), tt.id.Return(tt.responseBridge, nil)
 
 			res, err := h.Create(
 				ctx,
@@ -176,7 +176,7 @@ func Test_Get(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().BridgeGet(gomock.Any(), tt.id).Return(tt.responseBridge, nil)
+			mockDB.EXPECT().BridgeGet(gomock.Any(), tt.id.Return(tt.responseBridge, nil)
 
 			res, err := h.Get(ctx, tt.id)
 			if err != nil {
@@ -234,8 +234,8 @@ func Test_Delete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().BridgeEnd(ctx, tt.id).Return(nil)
-			mockDB.EXPECT().BridgeGet(gomock.Any(), tt.id).Return(tt.responseBridge, nil)
+			mockDB.EXPECT().BridgeEnd(ctx, tt.id.Return(nil)
+			mockDB.EXPECT().BridgeGet(gomock.Any(), tt.id.Return(tt.responseBridge, nil)
 
 			res, err := h.Delete(ctx, tt.id)
 			if err != nil {
@@ -295,8 +295,8 @@ func Test_AddChannelID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().BridgeAddChannelID(ctx, tt.id, tt.channelID).Return(nil)
-			mockDB.EXPECT().BridgeGet(gomock.Any(), tt.id).Return(tt.responseBridge, nil)
+			mockDB.EXPECT().BridgeAddChannelID(ctx, tt.id, tt.channelID.Return(nil)
+			mockDB.EXPECT().BridgeGet(gomock.Any(), tt.id.Return(tt.responseBridge, nil)
 
 			res, err := h.AddChannelID(ctx, tt.id, tt.channelID)
 			if err != nil {
@@ -356,8 +356,8 @@ func Test_RemoveChannelID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().BridgeRemoveChannelID(ctx, tt.id, tt.channelID).Return(nil)
-			mockDB.EXPECT().BridgeGet(gomock.Any(), tt.id).Return(tt.responseBridge, nil)
+			mockDB.EXPECT().BridgeRemoveChannelID(ctx, tt.id, tt.channelID.Return(nil)
+			mockDB.EXPECT().BridgeGet(gomock.Any(), tt.id.Return(tt.responseBridge, nil)
 
 			res, err := h.RemoveChannelID(ctx, tt.id, tt.channelID)
 			if err != nil {

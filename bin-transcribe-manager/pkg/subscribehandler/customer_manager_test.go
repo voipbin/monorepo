@@ -50,7 +50,7 @@ func Test_processEvent_processEventCUCustomerDeleted(t *testing.T) {
 				transcribeHandler: mockTranscribe,
 			}
 
-			mockTranscribe.EXPECT().EventCUCustomerDeleted(gomock.Any(), tt.expectCustomer).Return(nil)
+			mockTranscribe.EXPECT().EventCUCustomerDeleted(gomock.Any(), tt.expectCustomer.Return(nil)
 
 			if errProcess := h.processEvent(tt.event); errProcess != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errProcess)

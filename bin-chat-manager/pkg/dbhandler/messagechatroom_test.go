@@ -81,13 +81,13 @@ func Test_MessagechatroomCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+			mockUtil.EXPECT().TimeGetCurTime(.Return(utilhandler.TimeGetCurTime())
 			mockCache.EXPECT().MessagechatroomSet(ctx, gomock.Any())
 			if err := h.MessagechatroomCreate(ctx, tt.msg); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().MessagechatroomGet(ctx, tt.msg.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().MessagechatroomGet(ctx, tt.msg.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().MessagechatroomSet(ctx, gomock.Any())
 			res, err := h.MessagechatroomGet(ctx, tt.msg.ID)
 			if err != nil {
@@ -180,7 +180,7 @@ func Test_MessagechatroomGets(t *testing.T) {
 			ctx := context.Background()
 
 			for _, c := range tt.data {
-				mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+				mockUtil.EXPECT().TimeGetCurTime(.Return(utilhandler.TimeGetCurTime())
 				mockCache.EXPECT().MessagechatroomSet(ctx, gomock.Any())
 				if err := h.MessagechatroomCreate(ctx, c); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -246,19 +246,19 @@ func Test_MessagechatroomDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+			mockUtil.EXPECT().TimeGetCurTime(.Return(utilhandler.TimeGetCurTime())
 			mockCache.EXPECT().MessagechatroomSet(ctx, gomock.Any())
 			if err := h.MessagechatroomCreate(ctx, tt.msg); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+			mockUtil.EXPECT().TimeGetCurTime(.Return(utilhandler.TimeGetCurTime())
 			mockCache.EXPECT().MessagechatroomSet(ctx, gomock.Any())
 			if errDel := h.MessagechatroomDelete(ctx, tt.msg.ID); errDel != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errDel)
 			}
 
-			mockCache.EXPECT().MessagechatroomGet(ctx, tt.msg.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().MessagechatroomGet(ctx, tt.msg.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().MessagechatroomSet(ctx, gomock.Any())
 			res, err := h.MessagechatroomGet(ctx, tt.msg.ID)
 			if err != nil {

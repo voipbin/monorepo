@@ -147,7 +147,7 @@ func Test_processV1AIcallsPost(t *testing.T) {
 				aicallHandler: mockAIcall,
 			}
 
-			mockAIcall.EXPECT().Start(gomock.Any(), tt.expectedAIID, tt.expectedActiveflowID, tt.expectedReferenceType, tt.expectedReferenceID, tt.expectedGender, tt.expectedLanguage).Return(tt.responseAIcall, nil)
+			mockAIcall.EXPECT().Start(gomock.Any(), tt.expectedAIID, tt.expectedActiveflowID, tt.expectedReferenceType, tt.expectedReferenceID, tt.expectedGender, tt.expectedLanguage.Return(tt.responseAIcall, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -206,7 +206,7 @@ func Test_processV1AIcallsIDDelete(t *testing.T) {
 				aicallHandler: mockAIcall,
 			}
 
-			mockAIcall.EXPECT().Delete(gomock.Any(), tt.expectedID).Return(tt.responseAIcall, nil)
+			mockAIcall.EXPECT().Delete(gomock.Any(), tt.expectedID.Return(tt.responseAIcall, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -265,7 +265,7 @@ func Test_processV1AIcallsIDGet(t *testing.T) {
 				aicallHandler: mockAIcall,
 			}
 
-			mockAIcall.EXPECT().Get(gomock.Any(), tt.expectedID).Return(tt.responseAIcall, nil)
+			mockAIcall.EXPECT().Get(gomock.Any(), tt.expectedID.Return(tt.responseAIcall, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -324,7 +324,7 @@ func Test_processV1AIcallsIDTerminatePost(t *testing.T) {
 				aicallHandler: mockAIcall,
 			}
 
-			mockAIcall.EXPECT().ProcessTerminate(gomock.Any(), tt.expectedID).Return(tt.responseAIcall, nil)
+			mockAIcall.EXPECT().ProcessTerminate(gomock.Any(), tt.expectedID.Return(tt.responseAIcall, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -394,7 +394,7 @@ func Test_processV1AIcallsIDToolExecutePost(t *testing.T) {
 				aicallHandler: mockAIcall,
 			}
 
-			mockAIcall.EXPECT().ToolHandle(gomock.Any(), tt.expectedID, tt.expectedToolID, tt.expectedToolType, tt.expectedToolFunction).Return(tt.responseToolHandle, nil)
+			mockAIcall.EXPECT().ToolHandle(gomock.Any(), tt.expectedID, tt.expectedToolID, tt.expectedToolType, tt.expectedToolFunction.Return(tt.responseToolHandle, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

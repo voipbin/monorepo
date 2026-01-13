@@ -141,13 +141,13 @@ func Test_ConferenceCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
 			if err := h.ConferenceCreate(ctx, tt.conference); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().ConferenceGet(ctx, tt.conference.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ConferenceGet(ctx, tt.conference.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
 			res, err := h.ConferenceGet(ctx, tt.conference.ID)
 			if err != nil {
@@ -221,7 +221,7 @@ func Test_ConferenceGetByConfbridgeID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
 			if err := h.ConferenceCreate(ctx, tt.conference); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -311,19 +311,19 @@ func Test_ConferenceUpdate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
 			if err := h.ConferenceCreate(ctx, tt.conference); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
 			if err := h.ConferenceUpdate(ctx, tt.conference.ID, tt.fields); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().ConferenceGet(ctx, tt.conference.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ConferenceGet(ctx, tt.conference.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
 			res, err := h.ConferenceGet(ctx, tt.conference.ID)
 			if err != nil {
@@ -390,13 +390,13 @@ func Test_ConferenceUpdateRecordingID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
 			if err := h.ConferenceCreate(ctx, tt.conference); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
 			fields := map[conference.Field]any{
 				conference.FieldRecordingID: tt.recordingID,
@@ -405,7 +405,7 @@ func Test_ConferenceUpdateRecordingID(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().ConferenceGet(ctx, tt.conference.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ConferenceGet(ctx, tt.conference.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
 			res, err := h.ConferenceGet(ctx, tt.conference.ID)
 			if err != nil {
@@ -537,13 +537,13 @@ func Test_ConferenceUpdateData(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
 			if err := h.ConferenceCreate(ctx, tt.conference); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
 			fields := map[conference.Field]any{
 				conference.FieldData: tt.data,
@@ -552,7 +552,7 @@ func Test_ConferenceUpdateData(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().ConferenceGet(ctx, tt.conference.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ConferenceGet(ctx, tt.conference.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
 			res, err := h.ConferenceGet(ctx, tt.conference.ID)
 			if err != nil {
@@ -732,7 +732,7 @@ func Test_ConferenceGets(t *testing.T) {
 			ctx := context.Background()
 
 			for _, cf := range tt.conferences {
-				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 				mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
 				if errCreate := h.ConferenceCreate(ctx, cf); errCreate != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", errCreate)
@@ -806,20 +806,20 @@ func Test_ConferenceEnd(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
 			if err := h.ConferenceCreate(ctx, tt.conference); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			// ConferenceEnd calls TimeGetCurTime once, and internally ConferenceUpdate calls it again
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime).Times(2)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime).Times(2)
 			mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
 			if errDel := h.ConferenceEnd(ctx, tt.id); errDel != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errDel)
 			}
 
-			mockCache.EXPECT().ConferenceGet(ctx, tt.id).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ConferenceGet(ctx, tt.id.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
 			res, err := h.ConferenceGet(ctx, tt.id)
 			if err != nil {
@@ -887,19 +887,19 @@ func Test_ConferenceDelete(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
 			if err := h.ConferenceCreate(ctx, tt.conference); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
 			if errDel := h.ConferenceDelete(ctx, tt.id); errDel != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errDel)
 			}
 
-			mockCache.EXPECT().ConferenceGet(ctx, tt.id).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ConferenceGet(ctx, tt.id.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
 			res, err := h.ConferenceGet(ctx, tt.id)
 			if err != nil {
@@ -967,13 +967,13 @@ func Test_ConferenceUpdateTranscribeID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
 			if err := h.ConferenceCreate(ctx, tt.conference); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
 			fields := map[conference.Field]any{
 				conference.FieldTranscribeID: tt.transcribeID,
@@ -982,7 +982,7 @@ func Test_ConferenceUpdateTranscribeID(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().ConferenceGet(ctx, tt.conference.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ConferenceGet(ctx, tt.conference.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().ConferenceSet(ctx, gomock.Any())
 			res, err := h.ConferenceGet(ctx, tt.conference.ID)
 			if err != nil {

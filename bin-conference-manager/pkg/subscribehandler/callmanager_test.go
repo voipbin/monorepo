@@ -63,8 +63,8 @@ func Test_processEventCMConfbridgeJoined(t *testing.T) {
 				conferencecallHandler: mockConfcall,
 			}
 
-			mockConfcall.EXPECT().GetByReferenceID(gomock.Any(), tt.expectConferencecallID).Return(tt.responseConferencecall, nil)
-			mockConfcall.EXPECT().Joined(gomock.Any(), tt.responseConferencecall).Return(tt.responseConferencecall, nil)
+			mockConfcall.EXPECT().GetByReferenceID(gomock.Any(), tt.expectConferencecallID.Return(tt.responseConferencecall, nil)
+			mockConfcall.EXPECT().Joined(gomock.Any(), tt.responseConferencecall.Return(tt.responseConferencecall, nil)
 			h.processEvent(tt.event)
 		})
 	}
@@ -121,8 +121,8 @@ func Test_processEventCMConfbridgeLeaved(t *testing.T) {
 				conferencecallHandler: mockConfCall,
 			}
 
-			mockConfCall.EXPECT().GetByReferenceID(gomock.Any(), tt.expectCallID).Return(tt.responseConferencecall, nil)
-			mockConfCall.EXPECT().Terminated(gomock.Any(), tt.responseConferencecall).Return(tt.responseConferencecall, nil)
+			mockConfCall.EXPECT().GetByReferenceID(gomock.Any(), tt.expectCallID.Return(tt.responseConferencecall, nil)
+			mockConfCall.EXPECT().Terminated(gomock.Any(), tt.responseConferencecall.Return(tt.responseConferencecall, nil)
 			h.processEvent(tt.event)
 		})
 	}

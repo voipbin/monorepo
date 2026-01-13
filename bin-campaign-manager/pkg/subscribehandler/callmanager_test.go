@@ -58,9 +58,9 @@ func Test_processEventCMCallHangup(t *testing.T) {
 				campaigncallHandler: mockCampaigncall,
 			}
 
-			mockCampaigncall.EXPECT().GetByReferenceID(gomock.Any(), tt.callID).Return(tt.responseCampaigncall, nil)
-			mockCampaigncall.EXPECT().EventHandleReferenceCallHungup(gomock.Any(), gomock.Any(), tt.responseCampaigncall).Return(tt.responseCampaigncall, nil)
-			mockCampaign.EXPECT().EventHandleReferenceCallHungup(gomock.Any(), tt.responseCampaigncall.CampaignID).Return(nil)
+			mockCampaigncall.EXPECT().GetByReferenceID(gomock.Any(), tt.callID.Return(tt.responseCampaigncall, nil)
+			mockCampaigncall.EXPECT().EventHandleReferenceCallHungup(gomock.Any(), gomock.Any(), tt.responseCampaigncall.Return(tt.responseCampaigncall, nil)
+			mockCampaign.EXPECT().EventHandleReferenceCallHungup(gomock.Any(), tt.responseCampaigncall.CampaignID.Return(nil)
 
 			h.processEvent(tt.event)
 		})

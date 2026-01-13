@@ -70,7 +70,7 @@ func Test_loginPOST(t *testing.T) {
 			req, _ := http.NewRequest("POST", "/auth/login", bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().AuthLogin(req.Context(), tt.reqBody.Username, tt.reqBody.Password).Return(tt.responseToken, nil)
+			mockSvc.EXPECT().AuthLogin(req.Context(), tt.reqBody.Username, tt.reqBody.Password.Return(tt.responseToken, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

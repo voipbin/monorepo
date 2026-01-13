@@ -86,7 +86,7 @@ func Test_transfersPOST(t *testing.T) {
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().TransferStart(req.Context(), &tt.agent, tt.expectTransferType, tt.expectTransfererCallID, tt.expectTransfereeAddresses).Return(tt.responseTransfer, nil)
+			mockSvc.EXPECT().TransferStart(req.Context(), &tt.agent, tt.expectTransferType, tt.expectTransfererCallID, tt.expectTransfereeAddresses.Return(tt.responseTransfer, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

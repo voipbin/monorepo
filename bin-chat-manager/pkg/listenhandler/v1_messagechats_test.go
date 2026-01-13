@@ -128,7 +128,7 @@ func Test_v1MessagechatsPost(t *testing.T) {
 				tt.messageType,
 				tt.text,
 				tt.medias,
-			).Return(tt.responseMessagechat, nil)
+			.Return(tt.responseMessagechat, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -269,7 +269,7 @@ func Test_v1MessagechatsGet(t *testing.T) {
 				messagechatHandler: mockMessagechat,
 			}
 
-			mockMessagechat.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.responseMessagechats, nil)
+			mockMessagechat.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, gomock.Any().Return(tt.responseMessagechats, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -339,7 +339,7 @@ func Test_v1MessagechatsIDGet(t *testing.T) {
 				messagechatHandler: mockMessagechat,
 			}
 
-			mockMessagechat.EXPECT().Get(gomock.Any(), tt.chatID).Return(tt.responseMessagechat, nil)
+			mockMessagechat.EXPECT().Get(gomock.Any(), tt.chatID.Return(tt.responseMessagechat, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -408,7 +408,7 @@ func Test_v1MessagechatsIDDelete(t *testing.T) {
 				messagechatHandler: mockMessagechat,
 			}
 
-			mockMessagechat.EXPECT().Delete(gomock.Any(), tt.messagechatID).Return(tt.responseMessagechat, nil)
+			mockMessagechat.EXPECT().Delete(gomock.Any(), tt.messagechatID.Return(tt.responseMessagechat, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

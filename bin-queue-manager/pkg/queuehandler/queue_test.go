@@ -57,11 +57,11 @@ func Test_Delete(t *testing.T) {
 			fields := map[queue.Field]any{
 				queue.FieldExecute: queue.ExecuteStop,
 			}
-			mockDB.EXPECT().QueueUpdate(ctx, tt.queueID, fields).Return(nil)
+			mockDB.EXPECT().QueueUpdate(ctx, tt.queueID, fields.Return(nil)
 
 			// dbDelete
-			mockDB.EXPECT().QueueDelete(ctx, tt.queueID).Return(nil)
-			mockDB.EXPECT().QueueGet(ctx, tt.queueID).Return(tt.responseQueue, nil)
+			mockDB.EXPECT().QueueDelete(ctx, tt.queueID.Return(nil)
+			mockDB.EXPECT().QueueGet(ctx, tt.queueID.Return(tt.responseQueue, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, queue.EventTypeQueueDeleted, tt.responseQueue)
 
 			res, err := h.Delete(ctx, tt.queueID)

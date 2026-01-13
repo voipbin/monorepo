@@ -57,9 +57,9 @@ func Test_processEventFMActiveflowDeleted(t *testing.T) {
 				campaigncallHandler: mockCampaigncall,
 			}
 
-			mockCampaigncall.EXPECT().GetByActiveflowID(gomock.Any(), tt.callID).Return(tt.responseCampaigncall, nil)
-			mockCampaigncall.EXPECT().EventHandleActiveflowDeleted(gomock.Any(), tt.responseCampaigncall).Return(tt.responseCampaigncall, nil)
-			mockCampaign.EXPECT().EventHandleActiveflowDeleted(gomock.Any(), tt.responseCampaigncall.CampaignID).Return(nil)
+			mockCampaigncall.EXPECT().GetByActiveflowID(gomock.Any(), tt.callID.Return(tt.responseCampaigncall, nil)
+			mockCampaigncall.EXPECT().EventHandleActiveflowDeleted(gomock.Any(), tt.responseCampaigncall.Return(tt.responseCampaigncall, nil)
+			mockCampaign.EXPECT().EventHandleActiveflowDeleted(gomock.Any(), tt.responseCampaigncall.CampaignID.Return(nil)
 
 			h.processEvent(tt.event)
 		})

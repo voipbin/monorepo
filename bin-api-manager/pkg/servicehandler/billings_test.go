@@ -89,7 +89,7 @@ func Test_BillingGets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().BillingV1BillingGets(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseBillingAcounts, nil)
+			mockReq.EXPECT().BillingV1BillingGets(ctx, tt.token, tt.size, tt.expectFilters.Return(tt.responseBillingAcounts, nil)
 
 			res, err := h.BillingGets(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {

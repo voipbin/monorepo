@@ -123,9 +123,9 @@ func Test_QueuecallCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().QueuecallSet(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
-			mockCache.EXPECT().QueuecallGet(gomock.Any(), tt.data.ID).Return(nil, fmt.Errorf("")).AnyTimes()
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockCache.EXPECT().QueuecallSet(gomock.Any(), gomock.Any().Return(nil).AnyTimes()
+			mockCache.EXPECT().QueuecallGet(gomock.Any(), tt.data.ID.Return(nil, fmt.Errorf("")).AnyTimes()
 			if err := h.QueuecallCreate(ctx, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -364,9 +364,9 @@ func Test_QueuecallGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockCache.EXPECT().QueuecallSet(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+			mockCache.EXPECT().QueuecallSet(gomock.Any(), gomock.Any().Return(nil).AnyTimes()
 			for _, u := range tt.data {
-				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 				if err := h.QueuecallCreate(ctx, u); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
 				}
@@ -435,14 +435,14 @@ func Test_QueuecallDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().QueuecallSet(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
-			mockCache.EXPECT().QueuecallGet(gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("")).AnyTimes()
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockCache.EXPECT().QueuecallSet(gomock.Any(), gomock.Any().Return(nil).AnyTimes()
+			mockCache.EXPECT().QueuecallGet(gomock.Any(), gomock.Any().Return(nil, fmt.Errorf("")).AnyTimes()
 			if err := h.QueuecallCreate(ctx, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			err := h.QueuecallDelete(ctx, tt.queuecallID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -515,14 +515,14 @@ func Test_QueuecallSetStatusConnecting(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().QueuecallSet(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
-			mockCache.EXPECT().QueuecallGet(gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("")).AnyTimes()
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockCache.EXPECT().QueuecallSet(gomock.Any(), gomock.Any().Return(nil).AnyTimes()
+			mockCache.EXPECT().QueuecallGet(gomock.Any(), gomock.Any().Return(nil, fmt.Errorf("")).AnyTimes()
 			if err := h.QueuecallCreate(ctx, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			err := h.QueuecallSetStatusConnecting(ctx, tt.id, tt.serviceAgentID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -599,9 +599,9 @@ func Test_QueuecallSetStatusService(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().QueuecallSet(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
-			mockCache.EXPECT().QueuecallGet(gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("")).AnyTimes()
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockCache.EXPECT().QueuecallSet(gomock.Any(), gomock.Any().Return(nil).AnyTimes()
+			mockCache.EXPECT().QueuecallGet(gomock.Any(), gomock.Any().Return(nil, fmt.Errorf("")).AnyTimes()
 			if err := h.QueuecallCreate(ctx, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -674,21 +674,21 @@ func Test_QueuecallSetStatusKicking(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().QueuecallGet(gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf(""))
-			mockCache.EXPECT().QueuecallSet(gomock.Any(), gomock.Any()).Return(nil)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockCache.EXPECT().QueuecallGet(gomock.Any(), gomock.Any().Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().QueuecallSet(gomock.Any(), gomock.Any().Return(nil)
 			if err := h.QueuecallCreate(ctx, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().QueuecallSet(gomock.Any(), gomock.Any()).Return(nil)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockCache.EXPECT().QueuecallSet(gomock.Any(), gomock.Any().Return(nil)
 			err := h.QueuecallSetStatusKicking(ctx, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().QueuecallSet(gomock.Any(), gomock.Any()).Return(nil)
+			mockCache.EXPECT().QueuecallSet(gomock.Any(), gomock.Any().Return(nil)
 			res, err := h.QueuecallGet(ctx, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match.\nexpect: ok\ngot: %v\n", err)
@@ -758,9 +758,9 @@ func Test_QueuecallSetStatusAbandoned(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().QueuecallSet(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
-			mockCache.EXPECT().QueuecallGet(gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("")).AnyTimes()
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockCache.EXPECT().QueuecallSet(gomock.Any(), gomock.Any().Return(nil).AnyTimes()
+			mockCache.EXPECT().QueuecallGet(gomock.Any(), gomock.Any().Return(nil, fmt.Errorf("")).AnyTimes()
 			if err := h.QueuecallCreate(ctx, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -839,9 +839,9 @@ func Test_QueuecallSetStatusDone(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().QueuecallSet(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
-			mockCache.EXPECT().QueuecallGet(gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("")).AnyTimes()
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockCache.EXPECT().QueuecallSet(gomock.Any(), gomock.Any().Return(nil).AnyTimes()
+			mockCache.EXPECT().QueuecallGet(gomock.Any(), gomock.Any().Return(nil, fmt.Errorf("")).AnyTimes()
 			if err := h.QueuecallCreate(ctx, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -918,14 +918,14 @@ func Test_QueuecallGetByReferenceID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().QueuecallSet(gomock.Any(), gomock.Any()).Return(nil)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockCache.EXPECT().QueuecallSet(gomock.Any(), gomock.Any().Return(nil)
 			if err := h.QueuecallCreate(ctx, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().QueuecallGetByReferenceID(ctx, tt.referenceID).Return(nil, fmt.Errorf(""))
-			mockCache.EXPECT().QueuecallSet(gomock.Any(), gomock.Any()).Return(nil)
+			mockCache.EXPECT().QueuecallGetByReferenceID(ctx, tt.referenceID.Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().QueuecallSet(gomock.Any(), gomock.Any().Return(nil)
 			res, err := h.QueuecallGetByReferenceID(ctx, tt.referenceID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -109,16 +109,16 @@ func Test_Create_OrderNumberTelnyx(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, tt.customerID, bmbilling.ReferenceTypeNumber, "", 1).Return(true, nil)
+			mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, tt.customerID, bmbilling.ReferenceTypeNumber, "", 1.Return(true, nil)
 
-			mockTelnyx.EXPECT().NumberPurchase(tt.number).Return(tt.responseTelnyx, nil)
-			mockDB.EXPECT().NumberGets(ctx, uint64(1), "", map[number.Field]any{number.FieldDeleted: false, number.FieldNumber: tt.number}).Return([]*number.Number{}, nil)
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
-			mockDB.EXPECT().NumberCreate(ctx, tt.expectNumber).Return(nil)
-			mockDB.EXPECT().NumberGet(ctx, gomock.Any()).Return(tt.responseNumber, nil)
+			mockTelnyx.EXPECT().NumberPurchase(tt.number.Return(tt.responseTelnyx, nil)
+			mockDB.EXPECT().NumberGets(ctx, uint64(1), "", map[number.Field]any{number.FieldDeleted: false, number.FieldNumber: tt.number}.Return([]*number.Number{}, nil)
+			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
+			mockDB.EXPECT().NumberCreate(ctx, tt.expectNumber.Return(nil)
+			mockDB.EXPECT().NumberGet(ctx, gomock.Any().Return(tt.responseNumber, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.responseNumber.CustomerID, number.EventTypeNumberCreated, tt.responseNumber)
 
-			mockTelnyx.EXPECT().NumberUpdateTags(ctx, tt.responseNumber, tt.expectTags).Return(nil)
+			mockTelnyx.EXPECT().NumberUpdateTags(ctx, tt.responseNumber, tt.expectTags.Return(nil)
 
 			res, err := h.Create(ctx, tt.customerID, tt.number, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail)
 			if err != nil {
@@ -225,11 +225,11 @@ func Test_Register(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().NumberGets(ctx, uint64(1), "", map[number.Field]any{number.FieldDeleted: false, number.FieldNumber: tt.number}).Return(tt.responseGets, nil)
+			mockDB.EXPECT().NumberGets(ctx, uint64(1), "", map[number.Field]any{number.FieldDeleted: false, number.FieldNumber: tt.number}.Return(tt.responseGets, nil)
 
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
-			mockDB.EXPECT().NumberCreate(ctx, tt.expectCreateNumber).Return(nil)
-			mockDB.EXPECT().NumberGet(ctx, gomock.Any()).Return(tt.responseNumber, nil)
+			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
+			mockDB.EXPECT().NumberCreate(ctx, tt.expectCreateNumber.Return(nil)
+			mockDB.EXPECT().NumberGet(ctx, gomock.Any().Return(tt.responseNumber, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.responseNumber.CustomerID, number.EventTypeNumberCreated, tt.responseNumber)
 
 			res, err := h.Register(ctx, tt.customerID, tt.number, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail, tt.providerName, tt.providerReferenceID, tt.status, tt.t38Enabled, tt.emergencyEnabled)
@@ -296,7 +296,7 @@ func Test_Register_error(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().NumberGets(ctx, uint64(1), "", map[number.Field]any{number.FieldDeleted: false, number.FieldNumber: tt.number}).Return(tt.mockGetsResult, tt.mockGetsErr)
+			mockDB.EXPECT().NumberGets(ctx, uint64(1), "", map[number.Field]any{number.FieldDeleted: false, number.FieldNumber: tt.number}.Return(tt.mockGetsResult, tt.mockGetsErr)
 
 			_, err := h.Register(ctx, tt.customerID, tt.number, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail, number.ProviderNameNone, "", number.StatusActive, false, false)
 			if err == nil {
@@ -365,8 +365,8 @@ func Test_Update(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().NumberUpdate(gomock.Any(), tt.id, tt.fields).Return(nil)
-			mockDB.EXPECT().NumberGet(gomock.Any(), tt.id).Return(tt.responseNumber, nil)
+			mockDB.EXPECT().NumberUpdate(gomock.Any(), tt.id, tt.fields.Return(nil)
+			mockDB.EXPECT().NumberGet(gomock.Any(), tt.id.Return(tt.responseNumber, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.responseNumber.CustomerID, number.EventTypeNumberUpdated, tt.responseNumber)
 			res, err := h.Update(ctx, tt.id, tt.fields)
 			if err != nil {
@@ -452,7 +452,7 @@ func Test_Gets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().NumberGets(ctx, tt.pageSize, tt.pageToken, tt.filters).Return(tt.responseNumbers, nil)
+			mockDB.EXPECT().NumberGets(ctx, tt.pageSize, tt.pageToken, tt.filters.Return(tt.responseNumbers, nil)
 
 			res, err := h.Gets(ctx, tt.pageSize, tt.pageToken, tt.filters)
 			if err != nil {
@@ -502,7 +502,7 @@ func Test_Get(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().NumberGet(ctx, tt.numberID).Return(tt.responseNumber, nil)
+			mockDB.EXPECT().NumberGet(ctx, tt.numberID.Return(tt.responseNumber, nil)
 			res, err := h.Get(ctx, tt.numberID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -568,15 +568,15 @@ func Test_Delete(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().NumberGet(ctx, tt.id).Return(tt.responseNumber, nil)
+			mockDB.EXPECT().NumberGet(ctx, tt.id.Return(tt.responseNumber, nil)
 
 			switch tt.responseNumber.ProviderName {
 			case number.ProviderNameTelnyx:
-				mockTelnyx.EXPECT().NumberRelease(ctx, tt.responseNumber).Return(nil)
+				mockTelnyx.EXPECT().NumberRelease(ctx, tt.responseNumber.Return(nil)
 			}
 
-			mockDB.EXPECT().NumberDelete(ctx, tt.id).Return(nil)
-			mockDB.EXPECT().NumberGet(ctx, tt.id).Return(tt.responseNumber, nil)
+			mockDB.EXPECT().NumberDelete(ctx, tt.id.Return(nil)
+			mockDB.EXPECT().NumberGet(ctx, tt.id.Return(tt.responseNumber, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseNumber.CustomerID, number.EventTypeNumberDeleted, tt.responseNumber)
 
 			res, err := h.Delete(ctx, tt.id)

@@ -65,7 +65,7 @@ func Test_RecordingfilesIDGET(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().RecordingfileGet(req.Context(), &tt.agent, tt.expectRecordingfileID).Return(tt.responseDownloadURL, nil)
+			mockSvc.EXPECT().RecordingfileGet(req.Context(), &tt.agent, tt.expectRecordingfileID.Return(tt.responseDownloadURL, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusTemporaryRedirect {

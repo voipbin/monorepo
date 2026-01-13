@@ -87,11 +87,11 @@ func Test_Done(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CampaigncallUpdateStatusAndResult(ctx, tt.id, campaigncall.StatusDone, tt.result).Return(nil)
-			mockDB.EXPECT().CampaigncallGet(ctx, tt.id).Return(tt.responseCampaigncall, nil)
+			mockDB.EXPECT().CampaigncallUpdateStatusAndResult(ctx, tt.id, campaigncall.StatusDone, tt.result.Return(nil)
+			mockDB.EXPECT().CampaigncallGet(ctx, tt.id.Return(tt.responseCampaigncall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCampaigncall.CustomerID, campaigncall.EventTypeCampaigncallUpdated, tt.responseCampaigncall)
 
-			mockReq.EXPECT().OutdialV1OutdialtargetUpdateStatus(ctx, tt.responseCampaigncall.OutdialTargetID, tt.expectStatus).Return(&omoutdialtarget.OutdialTarget{}, nil)
+			mockReq.EXPECT().OutdialV1OutdialtargetUpdateStatus(ctx, tt.responseCampaigncall.OutdialTargetID, tt.expectStatus.Return(&omoutdialtarget.OutdialTarget{}, nil)
 
 			res, err := h.Done(ctx, tt.id, tt.result)
 			if err != nil {
@@ -149,8 +149,8 @@ func Test_Progressing(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CampaigncallUpdateStatus(ctx, tt.id, campaigncall.StatusProgressing).Return(nil)
-			mockDB.EXPECT().CampaigncallGet(ctx, tt.id).Return(tt.responseCampaigncall, nil)
+			mockDB.EXPECT().CampaigncallUpdateStatus(ctx, tt.id, campaigncall.StatusProgressing.Return(nil)
+			mockDB.EXPECT().CampaigncallGet(ctx, tt.id.Return(tt.responseCampaigncall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCampaigncall.CustomerID, campaigncall.EventTypeCampaigncallUpdated, tt.responseCampaigncall)
 
 			res, err := h.Progressing(ctx, tt.id)

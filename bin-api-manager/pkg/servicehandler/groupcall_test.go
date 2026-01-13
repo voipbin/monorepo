@@ -76,7 +76,7 @@ func Test_GroupcallGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1GroupcallGet(ctx, tt.groupcallID).Return(tt.responseGroupcall, nil)
+			mockReq.EXPECT().CallV1GroupcallGet(ctx, tt.groupcallID.Return(tt.responseGroupcall, nil)
 
 			res, err := h.GroupcallGet(ctx, tt.agent, tt.groupcallID)
 			if err != nil {
@@ -168,9 +168,9 @@ func Test_GroupcallCreate(t *testing.T) {
 
 			targetFlowID := tt.flowID
 			if targetFlowID == uuid.Nil {
-				mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.agent.CustomerID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), tt.actions, uuid.Nil, false).Return(tt.responseFlow, nil)
+				mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.agent.CustomerID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), tt.actions, uuid.Nil, false.Return(tt.responseFlow, nil)
 			}
-			mockReq.EXPECT().CallV1GroupcallCreate(ctx, uuid.Nil, tt.agent.CustomerID, targetFlowID, tt.source, tt.destinations, uuid.Nil, uuid.Nil, tt.ringMethod, tt.answerMethod).Return(tt.responseGroupcall, nil)
+			mockReq.EXPECT().CallV1GroupcallCreate(ctx, uuid.Nil, tt.agent.CustomerID, targetFlowID, tt.source, tt.destinations, uuid.Nil, uuid.Nil, tt.ringMethod, tt.answerMethod.Return(tt.responseGroupcall, nil)
 
 			res, err := h.GroupcallCreate(ctx, tt.agent, tt.source, tt.destinations, tt.flowID, tt.actions, tt.ringMethod, tt.answerMethod)
 			if err != nil {
@@ -238,8 +238,8 @@ func Test_GroupcallHangup(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1GroupcallGet(ctx, tt.groupcallID).Return(tt.responseGroupcall, nil)
-			mockReq.EXPECT().CallV1GroupcallHangup(ctx, tt.groupcallID).Return(tt.responseGroupcall, nil)
+			mockReq.EXPECT().CallV1GroupcallGet(ctx, tt.groupcallID.Return(tt.responseGroupcall, nil)
+			mockReq.EXPECT().CallV1GroupcallHangup(ctx, tt.groupcallID.Return(tt.responseGroupcall, nil)
 
 			res, err := h.GroupcallHangup(ctx, tt.agent, tt.groupcallID)
 			if err != nil {
@@ -307,8 +307,8 @@ func Test_GroupcallDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1GroupcallGet(ctx, tt.groupcallID).Return(tt.responseGroupcall, nil)
-			mockReq.EXPECT().CallV1GroupcallDelete(ctx, tt.groupcallID).Return(tt.responseGroupcall, nil)
+			mockReq.EXPECT().CallV1GroupcallGet(ctx, tt.groupcallID.Return(tt.responseGroupcall, nil)
+			mockReq.EXPECT().CallV1GroupcallDelete(ctx, tt.groupcallID.Return(tt.responseGroupcall, nil)
 
 			res, err := h.GroupcallDelete(ctx, tt.agent, tt.groupcallID)
 			if err != nil {

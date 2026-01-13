@@ -84,11 +84,11 @@ func Test_RecordingStart(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id).Return(tt.responseConfbridge, nil)
-			mockRecording.EXPECT().Start(ctx, tt.responseConfbridge.ActiveflowID, recording.ReferenceTypeConfbridge, tt.id, tt.format, tt.endOfSilence, tt.endOfKey, tt.duration, tt.onEndFlowID).Return(tt.responseRecording, nil)
-			mockDB.EXPECT().ConfbridgeSetRecordingID(ctx, tt.id, tt.responseRecording.ID).Return(nil)
-			mockDB.EXPECT().ConfbridgeAddRecordingIDs(ctx, tt.id, tt.responseRecording.ID).Return(nil)
-			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id).Return(tt.responseConfbridge, nil)
+			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id.Return(tt.responseConfbridge, nil)
+			mockRecording.EXPECT().Start(ctx, tt.responseConfbridge.ActiveflowID, recording.ReferenceTypeConfbridge, tt.id, tt.format, tt.endOfSilence, tt.endOfKey, tt.duration, tt.onEndFlowID.Return(tt.responseRecording, nil)
+			mockDB.EXPECT().ConfbridgeSetRecordingID(ctx, tt.id, tt.responseRecording.ID.Return(nil)
+			mockDB.EXPECT().ConfbridgeAddRecordingIDs(ctx, tt.id, tt.responseRecording.ID.Return(nil)
+			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id.Return(tt.responseConfbridge, nil)
 
 			res, err := h.RecordingStart(ctx, tt.id, tt.format, tt.endOfSilence, tt.endOfKey, tt.duration, tt.onEndFlowID)
 			if err != nil {

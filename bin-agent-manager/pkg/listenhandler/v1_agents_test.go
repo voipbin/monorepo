@@ -103,8 +103,8 @@ func Test_ProcessV1AgentsGet(t *testing.T) {
 				utilHandler:  mockUtil,
 			}
 
-			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
-			mockAgent.EXPECT().Gets(gomock.Any(), tt.pageSize, tt.pageToken, tt.convertedFilters).Return(tt.responseAgents, nil)
+			mockUtil.EXPECT().URLParseFilters(gomock.Any().Return(tt.responseFilters)
+			mockAgent.EXPECT().Gets(gomock.Any(), tt.pageSize, tt.pageToken, gomock.Any().Return(tt.responseAgents, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -252,7 +252,7 @@ func Test_ProcessV1AgentsGet(t *testing.T) {
 // 				agentHandler: mockAgent,
 // 			}
 
-// 			mockAgent.EXPECT().GetsByTagIDs(gomock.Any(), tt.customerID, tt.tagIDs).Return(tt.agents, nil)
+// 			mockAgent.EXPECT().GetsByTagIDs(gomock.Any(), tt.customerID, tt.tagIDs.Return(tt.agents, nil)
 
 // 			res, err := h.processRequest(tt.request)
 // 			if err != nil {
@@ -403,7 +403,7 @@ func Test_ProcessV1AgentsGet(t *testing.T) {
 // 				agentHandler: mockAgent,
 // 			}
 
-// 			mockAgent.EXPECT().GetsByTagIDsAndStatus(gomock.Any(), tt.customerID, tt.tagIDs, tt.status).Return(tt.agents, nil)
+// 			mockAgent.EXPECT().GetsByTagIDsAndStatus(gomock.Any(), tt.customerID, tt.tagIDs, tt.status.Return(tt.agents, nil)
 
 // 			res, err := h.processRequest(tt.request)
 // 			if err != nil {
@@ -631,7 +631,7 @@ func TestProcessV1AgentsPost(t *testing.T) {
 				agentHandler: mockAgent,
 			}
 
-			mockAgent.EXPECT().Create(gomock.Any(), tt.customerID, tt.username, tt.password, tt.agentName, tt.detail, agent.RingMethod(tt.ringMethod), agent.Permission(tt.permission), tt.tagIDs, tt.addresses).Return(tt.agent, nil)
+			mockAgent.EXPECT().Create(gomock.Any(), tt.customerID, tt.username, tt.password, tt.agentName, tt.detail, agent.RingMethod(tt.ringMethod), agent.Permission(tt.permission), tt.tagIDs, tt.addresses.Return(tt.agent, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -714,7 +714,7 @@ func TestProcessV1AgentsUsernameLoginPost(t *testing.T) {
 				agentHandler: mockAgent,
 			}
 
-			mockAgent.EXPECT().Login(gomock.Any(), tt.username, tt.password).Return(tt.agent, nil)
+			mockAgent.EXPECT().Login(gomock.Any(), tt.username, tt.password.Return(tt.agent, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -777,7 +777,7 @@ func TestProcessV1AgentsIDGet(t *testing.T) {
 				agentHandler: mockAgent,
 			}
 
-			mockAgent.EXPECT().Get(gomock.Any(), tt.id).Return(tt.agent, nil)
+			mockAgent.EXPECT().Get(gomock.Any(), tt.id.Return(tt.agent, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -846,7 +846,7 @@ func TestProcessV1AgentsIDPut(t *testing.T) {
 				agentHandler: mockAgent,
 			}
 
-			mockAgent.EXPECT().UpdateBasicInfo(gomock.Any(), tt.id, tt.agentName, tt.detail, tt.ringMethod).Return(tt.resonseAgent, nil)
+			mockAgent.EXPECT().UpdateBasicInfo(gomock.Any(), tt.id, tt.agentName, tt.detail, tt.ringMethod.Return(tt.resonseAgent, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -915,7 +915,7 @@ func TestProcessV1AgentsIDAddressesPut(t *testing.T) {
 				agentHandler: mockAgent,
 			}
 
-			mockAgent.EXPECT().UpdateAddresses(gomock.Any(), tt.id, tt.addresses).Return(tt.responseAgent, nil)
+			mockAgent.EXPECT().UpdateAddresses(gomock.Any(), tt.id, tt.addresses.Return(tt.responseAgent, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -979,7 +979,7 @@ func TestProcessV1AgentsIDStatusPut(t *testing.T) {
 				agentHandler: mockAgent,
 			}
 
-			mockAgent.EXPECT().UpdateStatus(gomock.Any(), tt.id, tt.status).Return(tt.resonseAgent, nil)
+			mockAgent.EXPECT().UpdateStatus(gomock.Any(), tt.id, tt.status.Return(tt.resonseAgent, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -1044,7 +1044,7 @@ func TestProcessV1AgentsIDPasswordPut(t *testing.T) {
 				agentHandler: mockAgent,
 			}
 
-			mockAgent.EXPECT().UpdatePassword(gomock.Any(), tt.id, tt.password).Return(tt.responseAgent, nil)
+			mockAgent.EXPECT().UpdatePassword(gomock.Any(), tt.id, tt.password.Return(tt.responseAgent, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1110,7 +1110,7 @@ func TestProcessV1AgentsIDTagIDsPut(t *testing.T) {
 				agentHandler: mockAgent,
 			}
 
-			mockAgent.EXPECT().UpdateTagIDs(gomock.Any(), tt.id, tt.tagIDs).Return(tt.responseAgent, nil)
+			mockAgent.EXPECT().UpdateTagIDs(gomock.Any(), tt.id, tt.tagIDs.Return(tt.responseAgent, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1171,7 +1171,7 @@ func TestProcessV1AgentsIDDelete(t *testing.T) {
 				agentHandler: mockAgent,
 			}
 
-			mockAgent.EXPECT().Delete(gomock.Any(), tt.id).Return(tt.responseAgent, nil)
+			mockAgent.EXPECT().Delete(gomock.Any(), tt.id.Return(tt.responseAgent, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -1236,7 +1236,7 @@ func Test_processV1AgentsIDPermissionPut(t *testing.T) {
 				agentHandler: mockAgent,
 			}
 
-			mockAgent.EXPECT().UpdatePermission(gomock.Any(), tt.id, tt.permission).Return(tt.responseAgent, nil)
+			mockAgent.EXPECT().UpdatePermission(gomock.Any(), tt.id, tt.permission.Return(tt.responseAgent, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1305,7 +1305,7 @@ func Test_processV1AgentsGetByCustomerIDAddressPost(t *testing.T) {
 				agentHandler: mockAgent,
 			}
 
-			mockAgent.EXPECT().GetByCustomerIDAndAddress(gomock.Any(), tt.expectCustomerID, tt.expectAddress).Return(tt.responseAgent, nil)
+			mockAgent.EXPECT().GetByCustomerIDAndAddress(gomock.Any(), tt.expectCustomerID, tt.expectAddress.Return(tt.responseAgent, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

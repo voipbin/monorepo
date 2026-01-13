@@ -75,7 +75,7 @@ func Test_v1ChatsPost(t *testing.T) {
 				tt.participantIDs,
 				tt.chatName,
 				tt.detail,
-			).Return(&chat.Chat{}, nil)
+			.Return(&chat.Chat{}, nil)
 
 			if _, err := h.processRequest(tt.request); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -204,7 +204,7 @@ func Test_v1ChatsGet(t *testing.T) {
 				chatroomHandler: mockChatroom,
 			}
 
-			mockChat.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, tt.filters).Return(tt.responseChats, nil)
+			mockChat.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, gomock.Any().Return(tt.responseChats, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -271,7 +271,7 @@ func Test_v1ChatsIDGet(t *testing.T) {
 				chatroomHandler: mockChatroom,
 			}
 
-			mockChat.EXPECT().Get(gomock.Any(), tt.chatID).Return(tt.responseChat, nil)
+			mockChat.EXPECT().Get(gomock.Any(), tt.chatID.Return(tt.responseChat, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -337,7 +337,7 @@ func Test_v1ChatsIDDelete(t *testing.T) {
 				chatroomHandler: mockChatroom,
 			}
 
-			mockChat.EXPECT().Delete(gomock.Any(), tt.chatID).Return(tt.responseChat, nil)
+			mockChat.EXPECT().Delete(gomock.Any(), tt.chatID.Return(tt.responseChat, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -409,7 +409,7 @@ func Test_v1ChatsIDPut(t *testing.T) {
 				chatroomHandler: mockChatroom,
 			}
 
-			mockChat.EXPECT().UpdateBasicInfo(gomock.Any(), tt.chatID, tt.updateName, tt.updateDetail).Return(tt.responseChat, nil)
+			mockChat.EXPECT().UpdateBasicInfo(gomock.Any(), tt.chatID, tt.updateName, tt.updateDetail.Return(tt.responseChat, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -479,7 +479,7 @@ func Test_v1ChatsIDRoomOwnerIDPut(t *testing.T) {
 				chatroomHandler: mockChatroom,
 			}
 
-			mockChat.EXPECT().UpdateRoomOwnerID(gomock.Any(), tt.chatID, tt.roomOwnerID).Return(tt.responseChat, nil)
+			mockChat.EXPECT().UpdateRoomOwnerID(gomock.Any(), tt.chatID, tt.roomOwnerID.Return(tt.responseChat, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -549,7 +549,7 @@ func Test_v1ChatsIDParticipantIDsPost(t *testing.T) {
 				chatroomHandler: mockChatroom,
 			}
 
-			mockChat.EXPECT().AddParticipantID(gomock.Any(), tt.chatID, tt.participantID).Return(tt.responseChat, nil)
+			mockChat.EXPECT().AddParticipantID(gomock.Any(), tt.chatID, tt.participantID.Return(tt.responseChat, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -618,7 +618,7 @@ func Test_v1ChatsIDParticipantIDsIDDelete(t *testing.T) {
 				chatroomHandler: mockChatroom,
 			}
 
-			mockChat.EXPECT().RemoveParticipantID(gomock.Any(), tt.chatID, tt.participantID).Return(tt.responseChat, nil)
+			mockChat.EXPECT().RemoveParticipantID(gomock.Any(), tt.chatID, tt.participantID.Return(tt.responseChat, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

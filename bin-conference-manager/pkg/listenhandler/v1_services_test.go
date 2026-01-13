@@ -70,7 +70,7 @@ func Test_processV1ServicesTypeConferencecallPost(t *testing.T) {
 				conferencecallHandler: mockConfcall,
 			}
 
-			mockConfcall.EXPECT().ServiceStart(gomock.Any(), tt.expectedActiveflowID, tt.expectedConferenceID, tt.expectedReferenceType, tt.expectedReferenceID).Return(tt.responseService, nil)
+			mockConfcall.EXPECT().ServiceStart(gomock.Any(), tt.expectedActiveflowID, tt.expectedConferenceID, tt.expectedReferenceType, tt.expectedReferenceID.Return(tt.responseService, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

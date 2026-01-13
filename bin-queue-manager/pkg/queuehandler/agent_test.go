@@ -128,10 +128,10 @@ func Test_GetAgents(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().QueueGet(ctx, tt.id).Return(tt.responseQueue, nil)
+			mockDB.EXPECT().QueueGet(ctx, tt.id.Return(tt.responseQueue, nil)
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
-			mockReq.EXPECT().AgentV1AgentGets(ctx, gomock.Any(), uint64(100), tt.expectFilters).Return(tt.responseAgents, nil)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(utilhandler.TimeGetCurTime())
+			mockReq.EXPECT().AgentV1AgentGets(ctx, gomock.Any(), uint64(100), tt.expectFilters.Return(tt.responseAgents, nil)
 
 			res, err := h.GetAgents(ctx, tt.id, tt.status)
 			if err != nil {

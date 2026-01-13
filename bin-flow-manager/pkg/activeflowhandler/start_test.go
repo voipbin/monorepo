@@ -138,17 +138,17 @@ func Test_startOnCompleteFlow(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDActiveflowID)
-			mockReq.EXPECT().FlowV1FlowGet(ctx, tt.activeflow.OnCompleteFlowID).Return(tt.responseFlow, nil)
-			mockStack.EXPECT().Create(tt.responseFlow.Actions).Return(tt.responseStack)
-			mockDB.EXPECT().ActiveflowCreate(ctx, tt.expectedActiveflow).Return(nil)
-			mockDB.EXPECT().ActiveflowGet(ctx, tt.responseUUIDActiveflowID).Return(tt.expectedActiveflow, nil)
+			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUIDActiveflowID)
+			mockReq.EXPECT().FlowV1FlowGet(ctx, tt.activeflow.OnCompleteFlowID.Return(tt.responseFlow, nil)
+			mockStack.EXPECT().Create(tt.responseFlow.Actions.Return(tt.responseStack)
+			mockDB.EXPECT().ActiveflowCreate(ctx, tt.expectedActiveflow.Return(nil)
+			mockDB.EXPECT().ActiveflowGet(ctx, tt.responseUUIDActiveflowID.Return(tt.expectedActiveflow, nil)
 
-			mockVar.EXPECT().Get(ctx, tt.activeflow.ID).Return(tt.responseVariableParent, nil)
-			mockVar.EXPECT().Create(ctx, tt.expectedActiveflow.ID, tt.expectedVariables).Return(tt.responseVariable, nil)
+			mockVar.EXPECT().Get(ctx, tt.activeflow.ID.Return(tt.responseVariableParent, nil)
+			mockVar.EXPECT().Create(ctx, tt.expectedActiveflow.ID, tt.expectedVariables.Return(tt.responseVariable, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectedActiveflow.CustomerID, activeflow.EventTypeActiveflowCreated, tt.expectedActiveflow)
 
-			mockReq.EXPECT().FlowV1ActiveflowExecute(ctx, tt.expectedActiveflow.ID).Return(nil)
+			mockReq.EXPECT().FlowV1ActiveflowExecute(ctx, tt.expectedActiveflow.ID.Return(nil)
 
 			res, err := h.startOnCompleteFlow(ctx, tt.activeflow)
 			if err != nil {

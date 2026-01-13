@@ -15,7 +15,6 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
-	"monorepo/bin-common-handler/pkg/utilhandler"
 )
 
 func Test_ChatV1MessagechatCreate(t *testing.T) {
@@ -172,11 +171,10 @@ func Test_ChatV1MessagechatGets(t *testing.T) {
 
 		pageToken string
 		pageSize  uint64
-		filters   map[string]string
+		filters   map[chatmessagechat.Field]any
 
 		response *sock.Response
 
-		expectURL     string
 		expectTarget  string
 		expectRequest *sock.Request
 		expectResult  []chatmessagechat.Messagechat
@@ -186,8 +184,8 @@ func Test_ChatV1MessagechatGets(t *testing.T) {
 
 			"2020-09-20 03:23:20.995000",
 			10,
-			map[string]string{
-				"chat_id": "fdf8ca74-369f-11ed-b48b-b728ad308b30",
+			map[chatmessagechat.Field]any{
+				chatmessagechat.FieldChatID: uuid.FromStringOrNil("fdf8ca74-369f-11ed-b48b-b728ad308b30"),
 			},
 
 			&sock.Response{
@@ -196,12 +194,12 @@ func Test_ChatV1MessagechatGets(t *testing.T) {
 				Data:       []byte(`[{"id":"fe1ec10c-369f-11ed-aa7b-6f4631dff513"}]`),
 			},
 
-			"/v1/messagechats?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10",
 			"bin-manager.chat-manager.request",
 			&sock.Request{
-				URI:      "/v1/messagechats?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10&filter_chat_id=fdf8ca74-369f-11ed-b48b-b728ad308b30",
+				URI:      "/v1/messagechats?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10",
 				Method:   sock.RequestMethodGet,
-				DataType: ContentTypeJSON,
+				DataType: "application/json",
+				Data:     []byte(`{"chat_id":"fdf8ca74-369f-11ed-b48b-b728ad308b30"}`),
 			},
 			[]chatmessagechat.Messagechat{
 				{
@@ -219,14 +217,11 @@ func Test_ChatV1MessagechatGets(t *testing.T) {
 			defer mc.Finish()
 
 			mockSock := sockhandler.NewMockSockHandler(mc)
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			h := requestHandler{
-				sock:        mockSock,
-				utilHandler: mockUtil,
+				sock: mockSock,
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := h.ChatV1MessagechatGets(ctx, tt.pageToken, tt.pageSize, tt.filters)

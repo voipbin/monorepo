@@ -106,7 +106,7 @@ func Test_processV1PipecatcallsPost(t *testing.T) {
 				tt.expectTTSType,
 				tt.expectTTSLanguage,
 				tt.expectTTSVoiceID,
-			).Return(tt.responsePipecatcall, nil)
+			.Return(tt.responsePipecatcall, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -168,7 +168,7 @@ func Test_processV1PipecatcallsIDGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockPipecatcall.EXPECT().Get(ctx, tt.expectPipecatcallID).Return(tt.responsePipecatcall, nil)
+			mockPipecatcall.EXPECT().Get(ctx, tt.expectPipecatcallID.Return(tt.responsePipecatcall, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -230,7 +230,7 @@ func Test_processV1PipecatcallsIDStopPost(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockPipecatcall.EXPECT().Terminate(ctx, tt.expectPipecatcallID).Return(tt.responsePipecatcall, nil)
+			mockPipecatcall.EXPECT().Terminate(ctx, tt.expectPipecatcallID.Return(tt.responsePipecatcall, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

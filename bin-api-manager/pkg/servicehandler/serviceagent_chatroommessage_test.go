@@ -79,7 +79,7 @@ func Test_ServiceAgentChatroommessageGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().ChatV1MessagechatroomGet(ctx, tt.chatroomMessageID).Return(tt.responseChatroomMessage, nil)
+			mockReq.EXPECT().ChatV1MessagechatroomGet(ctx, tt.chatroomMessageID.Return(tt.responseChatroomMessage, nil)
 
 			res, err := h.ServiceAgentChatroommessageGet(ctx, tt.agent, tt.chatroomMessageID)
 			if err != nil {
@@ -179,8 +179,8 @@ func Test_ServiceAgentChatroommessageGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().ChatV1ChatroomGet(ctx, tt.chatroomID).Return(tt.responseChatroom, nil)
-			mockReq.EXPECT().ChatV1MessagechatroomGets(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseChatroomMessages, nil)
+			mockReq.EXPECT().ChatV1ChatroomGet(ctx, tt.chatroomID.Return(tt.responseChatroom, nil)
+			mockReq.EXPECT().ChatV1MessagechatroomGets(ctx, tt.token, tt.size, tt.expectFilters.Return(tt.responseChatroomMessages, nil)
 
 			res, err := h.ServiceAgentChatroommessageGets(ctx, tt.agent, tt.chatroomID, tt.size, tt.token)
 			if err != nil {
@@ -293,7 +293,7 @@ func Test_ServiceAgentChatroommessageCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().ChatV1ChatroomGet(ctx, tt.chatroomID).Return(tt.responseChatroom, nil)
+			mockReq.EXPECT().ChatV1ChatroomGet(ctx, tt.chatroomID.Return(tt.responseChatroom, nil)
 			mockReq.EXPECT().ChatV1MessagechatCreate(
 				ctx,
 				tt.agent.CustomerID,
@@ -302,9 +302,9 @@ func Test_ServiceAgentChatroommessageCreate(t *testing.T) {
 				chatmessagechat.TypeNormal,
 				tt.message,
 				tt.medias,
-			).Return(tt.responseMessageChat, nil)
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockReq.EXPECT().ChatV1MessagechatroomGets(ctx, tt.responseCurTime, uint64(1), tt.expectFilters).Return(tt.responseMessageChatrooms, nil)
+			.Return(tt.responseMessageChat, nil)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockReq.EXPECT().ChatV1MessagechatroomGets(ctx, tt.responseCurTime, uint64(1), tt.expectFilters.Return(tt.responseMessageChatrooms, nil)
 
 			res, err := h.ServiceAgentChatroommessageCreate(ctx, tt.agent, tt.chatroomID, tt.message, tt.medias)
 			if err != nil {

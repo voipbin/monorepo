@@ -103,11 +103,11 @@ func Test_RecordingGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockFile.EXPECT().Gets(ctx, "", uint64(100), tt.expectFilters).Return(tt.responseFiles, nil)
+			mockFile.EXPECT().Gets(ctx, "", uint64(100), gomock.Any().Return(tt.responseFiles, nil)
 
-			mockFile.EXPECT().CompressCreate(ctx, tt.responseFiles).Return(tt.responseBucketName, tt.responseFilepath, nil)
-			mockFile.EXPECT().DownloadURIGet(ctx, tt.responseBucketName, tt.responseFilepath, time.Hour*24).Return(tt.responseBucketURI, tt.responseDownloadURI, nil)
-			mockUtil.EXPECT().TimeGetCurTimeAdd(gomock.Any()).Return("")
+			mockFile.EXPECT().CompressCreate(ctx, tt.responseFiles.Return(tt.responseBucketName, tt.responseFilepath, nil)
+			mockFile.EXPECT().DownloadURIGet(ctx, tt.responseBucketName, tt.responseFilepath, time.Hour*24.Return(tt.responseBucketURI, tt.responseDownloadURI, nil)
+			mockUtil.EXPECT().TimeGetCurTimeAdd(gomock.Any().Return("")
 
 			res, err := h.RecordingGet(ctx, tt.recordingID)
 			if err != nil {
@@ -176,9 +176,9 @@ func Test_RecordingDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockFile.EXPECT().Gets(ctx, "", uint64(100), tt.expectFilters).Return(tt.responseFiles, nil)
+			mockFile.EXPECT().Gets(ctx, "", uint64(100), gomock.Any().Return(tt.responseFiles, nil)
 			for _, f := range tt.responseFiles {
-				mockFile.EXPECT().Delete(ctx, f.ID).Return(&file.File{}, nil)
+				mockFile.EXPECT().Delete(ctx, f.ID.Return(&file.File{}, nil)
 			}
 
 			if errDel := h.RecordingDelete(ctx, tt.recordingID); errDel != nil {

@@ -146,7 +146,7 @@ func Test_ConferenceCreate(t *testing.T) {
 				tt.timeout,
 				tt.preFlowID,
 				tt.postFlowID,
-			).Return(tt.cfConference, nil)
+			.Return(tt.cfConference, nil)
 			res, err := h.ConferenceCreate(
 				ctx,
 				tt.agent,
@@ -219,8 +219,8 @@ func Test_ConferenceDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.conferenceID).Return(tt.responseConference, nil)
-			mockReq.EXPECT().ConferenceV1ConferenceDelete(ctx, tt.conferenceID).Return(tt.responseConference, nil)
+			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.conferenceID.Return(tt.responseConference, nil)
+			mockReq.EXPECT().ConferenceV1ConferenceDelete(ctx, tt.conferenceID.Return(tt.responseConference, nil)
 
 			res, err := h.ConferenceDelete(ctx, tt.agent, tt.conferenceID)
 			if err != nil {
@@ -298,7 +298,7 @@ func Test_ConferenceGets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ConferenceV1ConferenceGets(ctx, tt.token, tt.limit, tt.expectFilters).Return(tt.response, nil)
+			mockReq.EXPECT().ConferenceV1ConferenceGets(ctx, tt.token, tt.limit, tt.expectFilters.Return(tt.response, nil)
 			res, err := h.ConferenceGets(ctx, tt.agent, tt.limit, tt.token)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -359,7 +359,7 @@ func Test_ConferenceGet(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.id).Return(tt.response, nil)
+			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.id.Return(tt.response, nil)
 			res, err := h.ConferenceGet(ctx, tt.agent, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -432,8 +432,8 @@ func Test_ConferenceUpdate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.id).Return(tt.response, nil)
-			mockReq.EXPECT().ConferenceV1ConferenceUpdate(ctx, tt.id, tt.updateName, tt.detail, tt.data, tt.timeout, tt.preFlowID, tt.postFlowID).Return(tt.response, nil)
+			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.id.Return(tt.response, nil)
+			mockReq.EXPECT().ConferenceV1ConferenceUpdate(ctx, tt.id, tt.updateName, tt.detail, tt.data, tt.timeout, tt.preFlowID, tt.postFlowID.Return(tt.response, nil)
 			res, err := h.ConferenceUpdate(ctx, tt.agent, tt.id, tt.updateName, tt.detail, tt.data, tt.timeout, tt.preFlowID, tt.postFlowID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -504,8 +504,8 @@ func Test_ConferenceRecordingStart(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.conferenceID).Return(tt.responseconference, nil)
-			mockReq.EXPECT().ConferenceV1ConferenceRecordingStart(ctx, tt.conferenceID, uuid.Nil, tt.format, tt.duration, tt.onEndFlowID).Return(tt.responseconference, nil)
+			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.conferenceID.Return(tt.responseconference, nil)
+			mockReq.EXPECT().ConferenceV1ConferenceRecordingStart(ctx, tt.conferenceID, uuid.Nil, tt.format, tt.duration, tt.onEndFlowID.Return(tt.responseconference, nil)
 			res, err := h.ConferenceRecordingStart(ctx, tt.agent, tt.conferenceID, tt.format, tt.duration, tt.onEndFlowID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -570,8 +570,8 @@ func Test_ConferenceRecordingStop(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.conferenceID).Return(tt.responseconference, nil)
-			mockReq.EXPECT().ConferenceV1ConferenceRecordingStop(ctx, tt.conferenceID).Return(tt.responseconference, nil)
+			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.conferenceID.Return(tt.responseconference, nil)
+			mockReq.EXPECT().ConferenceV1ConferenceRecordingStop(ctx, tt.conferenceID.Return(tt.responseconference, nil)
 			res, err := h.ConferenceRecordingStop(ctx, tt.agent, tt.conferenceID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -638,8 +638,8 @@ func Test_ConferenceTranscribeStart(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.conferenceID).Return(tt.responseconference, nil)
-			mockReq.EXPECT().ConferenceV1ConferenceTranscribeStart(ctx, tt.conferenceID, tt.language).Return(tt.responseconference, nil)
+			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.conferenceID.Return(tt.responseconference, nil)
+			mockReq.EXPECT().ConferenceV1ConferenceTranscribeStart(ctx, tt.conferenceID, tt.language.Return(tt.responseconference, nil)
 			res, err := h.ConferenceTranscribeStart(ctx, tt.agent, tt.conferenceID, tt.language)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -704,8 +704,8 @@ func Test_ConferenceTranscribeStop(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.conferenceID).Return(tt.responseconference, nil)
-			mockReq.EXPECT().ConferenceV1ConferenceTranscribeStop(ctx, tt.conferenceID).Return(tt.responseconference, nil)
+			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.conferenceID.Return(tt.responseconference, nil)
+			mockReq.EXPECT().ConferenceV1ConferenceTranscribeStop(ctx, tt.conferenceID.Return(tt.responseconference, nil)
 			res, err := h.ConferenceTranscribeStop(ctx, tt.agent, tt.conferenceID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -781,8 +781,8 @@ func Test_ConferenceMediaStreamStart(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.conferenceID).Return(tt.responseConference, nil)
-			mockWebsock.EXPECT().RunMediaStream(ctx, tt.writer, tt.request, cmexternalmedia.ReferenceTypeConfbridge, tt.responseConference.ConfbridgeID, tt.encapsulation).Return(nil)
+			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.conferenceID.Return(tt.responseConference, nil)
+			mockWebsock.EXPECT().RunMediaStream(ctx, tt.writer, tt.request, cmexternalmedia.ReferenceTypeConfbridge, tt.responseConference.ConfbridgeID, tt.encapsulation.Return(nil)
 
 			if err := h.ConferenceMediaStreamStart(ctx, tt.agent, tt.conferenceID, tt.encapsulation, tt.writer, tt.request); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

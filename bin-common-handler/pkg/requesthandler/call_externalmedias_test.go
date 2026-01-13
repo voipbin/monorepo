@@ -12,7 +12,6 @@ import (
 
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
-	"monorepo/bin-common-handler/pkg/utilhandler"
 )
 
 func Test_CallV1ExternalMediaGets(t *testing.T) {
@@ -22,9 +21,8 @@ func Test_CallV1ExternalMediaGets(t *testing.T) {
 
 		pageToken string
 		pageSize  uint64
-		filters   map[string]string
+		filters   map[cmexternalmedia.Field]any
 
-		expectURL     string
 		expectTarget  string
 		expectRequest *sock.Request
 		response      *sock.Response
@@ -35,15 +33,16 @@ func Test_CallV1ExternalMediaGets(t *testing.T) {
 
 			"2020-09-20T03:23:20.995000",
 			10,
-			map[string]string{
-				"reference_id": "6ddd7aa8-e82c-11ee-9ae3-23cca4c32454",
+			map[cmexternalmedia.Field]any{
+				cmexternalmedia.FieldReferenceID: uuid.FromStringOrNil("6ddd7aa8-e82c-11ee-9ae3-23cca4c32454"),
 			},
 
-			"/v1/external-medias?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
 			"bin-manager.call-manager.request",
 			&sock.Request{
-				URI:    "/v1/external-medias?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&filter_reference_id=6ddd7aa8-e82c-11ee-9ae3-23cca4c32454",
-				Method: sock.RequestMethodGet,
+				URI:      "/v1/external-medias?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
+				Method:   sock.RequestMethodGet,
+				DataType: "application/json",
+				Data:     []byte(`{"reference_id":"6ddd7aa8-e82c-11ee-9ae3-23cca4c32454"}`),
 			},
 			&sock.Response{
 				StatusCode: 200,
@@ -61,15 +60,16 @@ func Test_CallV1ExternalMediaGets(t *testing.T) {
 
 			"2020-09-20T03:23:20.995000",
 			10,
-			map[string]string{
-				"reference_id": "a188209c-e82c-11ee-9a12-2f13b7edeb5f",
+			map[cmexternalmedia.Field]any{
+				cmexternalmedia.FieldReferenceID: uuid.FromStringOrNil("a188209c-e82c-11ee-9a12-2f13b7edeb5f"),
 			},
 
-			"/v1/external-medias?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
 			"bin-manager.call-manager.request",
 			&sock.Request{
-				URI:    "/v1/external-medias?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&filter_reference_id=a188209c-e82c-11ee-9a12-2f13b7edeb5f",
-				Method: sock.RequestMethodGet,
+				URI:      "/v1/external-medias?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
+				Method:   sock.RequestMethodGet,
+				DataType: "application/json",
+				Data:     []byte(`{"reference_id":"a188209c-e82c-11ee-9a12-2f13b7edeb5f"}`),
 			},
 			&sock.Response{
 				StatusCode: 200,
@@ -93,14 +93,11 @@ func Test_CallV1ExternalMediaGets(t *testing.T) {
 			defer mc.Finish()
 
 			mockSock := sockhandler.NewMockSockHandler(mc)
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			reqHandler := requestHandler{
-				sock:        mockSock,
-				utilHandler: mockUtil,
+				sock: mockSock,
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.CallV1ExternalMediaGets(ctx, tt.pageToken, tt.pageSize, tt.filters)

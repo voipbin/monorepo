@@ -108,11 +108,11 @@ func Test_Event_eventSMS_single_target(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConversationGetBySelfAndPeer(ctx, tt.expectedSelf, tt.expectedPeer).Return(nil, fmt.Errorf(""))
+			mockDB.EXPECT().ConversationGetBySelfAndPeer(ctx, tt.expectedSelf, tt.expectedPeer.Return(nil, fmt.Errorf(""))
 
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
-			mockDB.EXPECT().ConversationCreate(ctx, tt.expectedConversation).Return(nil)
-			mockDB.EXPECT().ConversationGet(ctx, tt.responseUUID).Return(tt.expectedConversation, nil)
+			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
+			mockDB.EXPECT().ConversationCreate(ctx, tt.expectedConversation.Return(nil)
+			mockDB.EXPECT().ConversationGet(ctx, tt.responseUUID.Return(tt.expectedConversation, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectedConversation.CustomerID, conversation.EventTypeConversationCreated, tt.expectedConversation)
 
 			mockMessage.EXPECT().Create(
@@ -127,8 +127,8 @@ func Test_Event_eventSMS_single_target(t *testing.T) {
 				"",
 				tt.expectedMessageText,
 				[]media.Media{},
-			).Return(&message.Message{}, nil)
-			mockReq.EXPECT().NumberV1NumberGets(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseNumbers, nil)
+			.Return(&message.Message{}, nil)
+			mockReq.EXPECT().NumberV1NumberGets(ctx, gomock.Any(), gomock.Any(), gomock.Any().Return(tt.responseNumbers, nil)
 
 			if err := h.Event(ctx, conversation.TypeMessage, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

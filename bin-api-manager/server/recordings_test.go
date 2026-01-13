@@ -72,7 +72,7 @@ func Test_recordingsIDGET(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().RecordingGet(req.Context(), &tt.agent, tt.expectRecordingID).Return(tt.responseRecording, nil)
+			mockSvc.EXPECT().RecordingGet(req.Context(), &tt.agent, tt.expectRecordingID.Return(tt.responseRecording, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -140,7 +140,7 @@ func Test_recordingsIDDELETE(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().RecordingDelete(req.Context(), &tt.agent, tt.expectRecordingID).Return(tt.responseRecording, nil)
+			mockSvc.EXPECT().RecordingDelete(req.Context(), &tt.agent, tt.expectRecordingID.Return(tt.responseRecording, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

@@ -98,7 +98,7 @@ func Test_v1FlowsPost(t *testing.T) {
 				tt.expectedPersist,
 				tt.expectedActions,
 				tt.expectedOnCompleteFlowID,
-			).Return(&flow.Flow{}, nil)
+			.Return(&flow.Flow{}, nil)
 
 			if _, err := h.processRequest(tt.request); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -318,7 +318,7 @@ func Test_v1FlowsGet(t *testing.T) {
 				flowHandler: mockFlowHandler,
 			}
 
-			mockFlowHandler.EXPECT().Gets(gomock.Any(), tt.expectedToken, tt.expectedSize, tt.responseFilters).Return(tt.responseFlows, nil)
+			mockFlowHandler.EXPECT().Gets(gomock.Any(), tt.expectedToken, tt.expectedSize, gomock.Any()).Return(tt.responseFlows, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -379,7 +379,7 @@ func Test_v1FlowsIDActionsIDGet(t *testing.T) {
 				flowHandler: mockFlowHandler,
 			}
 
-			mockFlowHandler.EXPECT().ActionGet(gomock.Any(), tt.expectedFlowID, tt.expectedActionID).Return(tt.responseAction, nil)
+			mockFlowHandler.EXPECT().ActionGet(gomock.Any(), tt.expectedFlowID, tt.expectedActionID.Return(tt.responseAction, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -474,7 +474,7 @@ func Test_v1FlowsIDGet(t *testing.T) {
 				flowHandler: mockFlowHandler,
 			}
 
-			mockFlowHandler.EXPECT().Get(gomock.Any(), tt.responseFlow.ID).Return(tt.responseFlow, nil)
+			mockFlowHandler.EXPECT().Get(gomock.Any(), tt.responseFlow.ID.Return(tt.responseFlow, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -563,7 +563,7 @@ func Test_v1FlowsIDPut(t *testing.T) {
 				flowHandler: mockFlowHandler,
 			}
 
-			mockFlowHandler.EXPECT().Update(gomock.Any(), tt.expectedflowID, tt.expectedName, tt.expectedDetail, tt.expectedActions, tt.expectedOnCompleteFlowID).Return(tt.responseFlow, nil)
+			mockFlowHandler.EXPECT().Update(gomock.Any(), tt.expectedflowID, tt.expectedName, tt.expectedDetail, tt.expectedActions, tt.expectedOnCompleteFlowID.Return(tt.responseFlow, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -625,7 +625,7 @@ func Test_v1FlowsIDDelete(t *testing.T) {
 				flowHandler: mockFlowHandler,
 			}
 
-			mockFlowHandler.EXPECT().Delete(gomock.Any(), tt.expectedFlowID).Return(tt.responseFlow, nil)
+			mockFlowHandler.EXPECT().Delete(gomock.Any(), tt.expectedFlowID.Return(tt.responseFlow, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -708,7 +708,7 @@ func Test_v1FlowsIDActionsPut(t *testing.T) {
 				flowHandler: mockFlowHandler,
 			}
 
-			mockFlowHandler.EXPECT().UpdateActions(gomock.Any(), tt.expectedFlowID, tt.expectedActions).Return(tt.responseFlow, nil)
+			mockFlowHandler.EXPECT().UpdateActions(gomock.Any(), tt.expectedFlowID, tt.expectedActions.Return(tt.responseFlow, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

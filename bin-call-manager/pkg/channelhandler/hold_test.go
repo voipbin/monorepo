@@ -56,8 +56,8 @@ func Test_HoldOn(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id).Return(tt.responseChannel, nil)
-			mockReq.EXPECT().AstChannelHoldOn(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID).Return(nil)
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id.Return(tt.responseChannel, nil)
+			mockReq.EXPECT().AstChannelHoldOn(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID.Return(nil)
 
 			if err := h.HoldOn(ctx, tt.id); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -108,8 +108,8 @@ func Test_HoldOff(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id).Return(tt.responseChannel, nil)
-			mockReq.EXPECT().AstChannelHoldOff(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID).Return(nil)
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id.Return(tt.responseChannel, nil)
+			mockReq.EXPECT().AstChannelHoldOff(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID.Return(nil)
 
 			if err := h.HoldOff(ctx, tt.id); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

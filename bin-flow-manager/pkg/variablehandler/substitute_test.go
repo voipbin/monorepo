@@ -59,7 +59,7 @@ func Test_Substitute(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().VariableGet(ctx, tt.id).Return(tt.responseVariable, nil)
+			mockDB.EXPECT().VariableGet(ctx, tt.id.Return(tt.responseVariable, nil)
 
 			res, err := h.Substitute(ctx, tt.id, string(tt.data))
 			if err != nil {
@@ -470,12 +470,12 @@ func Test_substituteParseFromOther(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1ActiveflowGet(ctx, tt.v.ID).Return(tt.responseActiveflow, nil)
+			mockReq.EXPECT().FlowV1ActiveflowGet(ctx, tt.v.ID.Return(tt.responseActiveflow, nil)
 
 			if tt.responseCall != nil {
-				mockReq.EXPECT().CallV1CallGet(ctx, tt.responseActiveflow.ReferenceID).Return(tt.responseCall, nil)
+				mockReq.EXPECT().CallV1CallGet(ctx, tt.responseActiveflow.ReferenceID.Return(tt.responseCall, nil)
 			} else if tt.responseConversation != nil {
-				mockReq.EXPECT().ConversationV1ConversationGet(ctx, tt.responseActiveflow.ReferenceID).Return(tt.responseConversation, nil)
+				mockReq.EXPECT().ConversationV1ConversationGet(ctx, tt.responseActiveflow.ReferenceID.Return(tt.responseConversation, nil)
 			}
 
 			res, found := h.substituteParseDynamic(ctx, tt.variableName, tt.v)

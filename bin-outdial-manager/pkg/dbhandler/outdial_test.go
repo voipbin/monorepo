@@ -72,7 +72,7 @@ func Test_OutdialCreate(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().OutdialGet(gomock.Any(), tt.outdial.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().OutdialGet(gomock.Any(), tt.outdial.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().OutdialSet(gomock.Any(), gomock.Any())
 			res, err := h.OutdialGet(context.Background(), tt.outdial.ID)
 			if err != nil {
@@ -295,7 +295,7 @@ func Test_OutdialUpdate(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().OutdialGet(gomock.Any(), tt.outdial.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().OutdialGet(gomock.Any(), tt.outdial.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().OutdialSet(gomock.Any(), gomock.Any())
 			res, err := h.OutdialGet(context.Background(), tt.outdial.ID)
 			if err != nil {

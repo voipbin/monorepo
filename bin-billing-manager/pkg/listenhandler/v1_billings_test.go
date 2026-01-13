@@ -75,7 +75,7 @@ func Test_processV1BillingsGet(t *testing.T) {
 				billingHandler: mockBilling,
 			}
 
-			mockBilling.EXPECT().Gets(gomock.Any(), tt.expectSize, tt.expectToken, tt.expectFilters).Return(tt.responseBillings, nil)
+			mockBilling.EXPECT().Gets(gomock.Any(), tt.expectSize, tt.expectToken, gomock.Any().Return(tt.responseBillings, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

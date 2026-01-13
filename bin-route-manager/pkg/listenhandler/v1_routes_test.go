@@ -73,7 +73,7 @@ func Test_v1RoutesPost(t *testing.T) {
 				providerHandler: mockProvider,
 			}
 
-			mockRoute.EXPECT().Create(gomock.Any(), tt.customerID, tt.routeName, tt.detail, tt.providerID, tt.priority, tt.target).Return(tt.responseRoute, nil)
+			mockRoute.EXPECT().Create(gomock.Any(), tt.customerID, tt.routeName, tt.detail, tt.providerID, tt.priority, tt.target.Return(tt.responseRoute, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -188,7 +188,7 @@ func Test_v1RoutesGet(t *testing.T) {
 				providerHandler: mockProvider,
 			}
 
-			mockRoute.EXPECT().GetsByCustomerID(gomock.Any(), tt.customerID, tt.pageToken, tt.pageSize).Return(tt.responseRoutes, nil)
+			mockRoute.EXPECT().GetsByCustomerID(gomock.Any(), tt.customerID, tt.pageToken, tt.pageSize.Return(tt.responseRoutes, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -249,7 +249,7 @@ func Test_v1RoutesIDGet(t *testing.T) {
 				providerHandler: mockProvider,
 			}
 
-			mockRoute.EXPECT().Get(gomock.Any(), tt.routeID).Return(tt.responseRoute, nil)
+			mockRoute.EXPECT().Get(gomock.Any(), tt.routeID.Return(tt.responseRoute, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -320,7 +320,7 @@ func Test_v1RoutesIDPut(t *testing.T) {
 				providerHandler: mockProvider,
 			}
 
-			mockRoute.EXPECT().Update(gomock.Any(), tt.id, tt.routeName, tt.detail, tt.providerID, tt.priority, tt.target).Return(tt.responseRoute, nil)
+			mockRoute.EXPECT().Update(gomock.Any(), tt.id, tt.routeName, tt.detail, tt.providerID, tt.priority, tt.target.Return(tt.responseRoute, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -380,7 +380,7 @@ func Test_v1RoutesIDDelete(t *testing.T) {
 				providerHandler: mockProvider,
 			}
 
-			mockRoute.EXPECT().Delete(gomock.Any(), tt.routeID).Return(tt.responseRoute, nil)
+			mockRoute.EXPECT().Delete(gomock.Any(), tt.routeID.Return(tt.responseRoute, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

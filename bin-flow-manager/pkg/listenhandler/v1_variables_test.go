@@ -62,7 +62,7 @@ func Test_v1VariablesIDGet(t *testing.T) {
 				variableHandler: mockVariableHandler,
 			}
 
-			mockVariableHandler.EXPECT().Get(gomock.Any(), tt.expectedVariableID).Return(tt.responseVariable, nil)
+			mockVariableHandler.EXPECT().Get(gomock.Any(), tt.expectedVariableID.Return(tt.responseVariable, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -119,7 +119,7 @@ func Test_v1VariablesIDVariablesPost(t *testing.T) {
 				variableHandler: mockVariableHandler,
 			}
 
-			mockVariableHandler.EXPECT().SetVariable(gomock.Any(), tt.expectedVariableID, tt.expectedVariables).Return(nil)
+			mockVariableHandler.EXPECT().SetVariable(gomock.Any(), tt.expectedVariableID, tt.expectedVariables.Return(nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -188,7 +188,7 @@ func Test_v1VariablesIDVariablesKeyDelete(t *testing.T) {
 				variableHandler: mockVariableHandler,
 			}
 
-			mockVariableHandler.EXPECT().DeleteVariable(gomock.Any(), tt.expectedVariableID, tt.expectedKey).Return(nil)
+			mockVariableHandler.EXPECT().DeleteVariable(gomock.Any(), tt.expectedVariableID, tt.expectedKey.Return(nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -247,7 +247,7 @@ func Test_v1VariablesIDSubstitutePost(t *testing.T) {
 				variableHandler: mockVariableHandler,
 			}
 
-			mockVariableHandler.EXPECT().Substitute(gomock.Any(), tt.expectedID, tt.expectedData).Return(tt.responseData, nil)
+			mockVariableHandler.EXPECT().Substitute(gomock.Any(), tt.expectedID, tt.expectedData.Return(tt.responseData, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

@@ -92,7 +92,7 @@ func Test_PostFlows(t *testing.T) {
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().FlowCreate(req.Context(), &tt.agent, tt.expectName, tt.expectDetail, tt.expectActions, tt.expectOnCompleteFlowID, true).Return(tt.responseFlow, nil)
+			mockSvc.EXPECT().FlowCreate(req.Context(), &tt.agent, tt.expectName, tt.expectDetail, tt.expectActions, tt.expectOnCompleteFlowID, true.Return(tt.responseFlow, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -166,7 +166,7 @@ func Test_GetFlows(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().FlowGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseFlows, nil)
+			mockSvc.EXPECT().FlowGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken.Return(tt.responseFlows, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -241,7 +241,7 @@ func Test_GetFlowsId(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().FlowGet(req.Context(), &tt.agent, tt.expectFlowID).Return(tt.responseFlow, nil)
+			mockSvc.EXPECT().FlowGet(req.Context(), &tt.agent, tt.expectFlowID.Return(tt.responseFlow, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -332,7 +332,7 @@ func Test_PutFlowsId(t *testing.T) {
 				tt.expectDetail,
 				tt.expectActions,
 				tt.expectOnCompleteFlowID,
-			).Return(tt.responseFlow, nil)
+			.Return(tt.responseFlow, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -400,7 +400,7 @@ func Test_DeleteFlowsId(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().FlowDelete(req.Context(), &tt.agent, tt.expectFlowID).Return(tt.responseFlow, nil)
+			mockSvc.EXPECT().FlowDelete(req.Context(), &tt.agent, tt.expectFlowID.Return(tt.responseFlow, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

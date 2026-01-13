@@ -80,15 +80,15 @@ func TestChainedCallIDAdd(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CallTXStart(tt.call.ID).Return(nil, tt.call, nil)
-			mockDB.EXPECT().CallTXAddChainedCallID(gomock.Any(), tt.call.ID, tt.chaindCallID).Return(nil)
-			mockDB.EXPECT().CallSetMasterCallID(ctx, tt.chaindCallID, tt.call.ID).Return(nil)
+			mockDB.EXPECT().CallTXStart(tt.call.ID.Return(nil, tt.call, nil)
+			mockDB.EXPECT().CallTXAddChainedCallID(gomock.Any(), tt.call.ID, tt.chaindCallID.Return(nil)
+			mockDB.EXPECT().CallSetMasterCallID(ctx, tt.chaindCallID, tt.call.ID.Return(nil)
 			mockDB.EXPECT().CallTXFinish(gomock.Any(), true)
 
-			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.call, nil)
+			mockDB.EXPECT().CallGet(ctx, tt.id.Return(tt.call, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.call.CustomerID, call.EventTypeCallUpdated, tt.call)
 
-			mockDB.EXPECT().CallGet(ctx, tt.chaindCallID).Return(&call.Call{}, nil)
+			mockDB.EXPECT().CallGet(ctx, tt.chaindCallID.Return(&call.Call{}, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), call.EventTypeCallUpdated, gomock.Any())
 
 			res, err := h.ChainedCallIDAdd(ctx, tt.id, tt.chaindCallID)
@@ -161,7 +161,7 @@ func TestChainedCallIDAddFailStatus(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CallTXStart(tt.call.ID).Return(nil, tt.call, nil)
+			mockDB.EXPECT().CallTXStart(tt.call.ID.Return(nil, tt.call, nil)
 			mockDB.EXPECT().CallTXFinish(gomock.Any(), false)
 
 			_, err := h.ChainedCallIDAdd(ctx, tt.call.ID, tt.chaindCallID)
@@ -211,15 +211,15 @@ func TestChainedCallIDRemove(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CallTXStart(tt.call.ID).Return(nil, tt.call, nil)
-			mockDB.EXPECT().CallTXRemoveChainedCallID(gomock.Any(), tt.call.ID, tt.chaindCallID).Return(nil)
-			mockDB.EXPECT().CallSetMasterCallID(ctx, tt.chaindCallID, uuid.Nil).Return(nil)
+			mockDB.EXPECT().CallTXStart(tt.call.ID.Return(nil, tt.call, nil)
+			mockDB.EXPECT().CallTXRemoveChainedCallID(gomock.Any(), tt.call.ID, tt.chaindCallID.Return(nil)
+			mockDB.EXPECT().CallSetMasterCallID(ctx, tt.chaindCallID, uuid.Nil.Return(nil)
 			mockDB.EXPECT().CallTXFinish(gomock.Any(), true)
 
-			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.call, nil)
+			mockDB.EXPECT().CallGet(ctx, tt.id.Return(tt.call, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.call.CustomerID, call.EventTypeCallUpdated, tt.call)
 
-			mockDB.EXPECT().CallGet(ctx, tt.chaindCallID).Return(&call.Call{}, nil)
+			mockDB.EXPECT().CallGet(ctx, tt.chaindCallID.Return(&call.Call{}, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), call.EventTypeCallUpdated, gomock.Any())
 
 			res, err := h.ChainedCallIDRemove(ctx, tt.call.ID, tt.chaindCallID)

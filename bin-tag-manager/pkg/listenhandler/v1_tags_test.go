@@ -123,7 +123,7 @@ func TestProcessV1TagsGet(t *testing.T) {
 				tagHandler: mockTag,
 			}
 
-			mockTag.EXPECT().Gets(gomock.Any(), tt.pageSize, tt.pageToken, tt.filters).Return(tt.tags, nil)
+			mockTag.EXPECT().Gets(gomock.Any(), tt.pageSize, tt.pageToken, gomock.Any().Return(tt.tags, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -198,7 +198,7 @@ func TestProcessV1TagsPost(t *testing.T) {
 				tagHandler: mockTag,
 			}
 
-			mockTag.EXPECT().Create(gomock.Any(), tt.customerID, tt.tagName, tt.detail).Return(tt.tag, nil)
+			mockTag.EXPECT().Create(gomock.Any(), tt.customerID, tt.tagName, tt.detail.Return(tt.tag, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -268,7 +268,7 @@ func TestProcessV1TagsIDGet(t *testing.T) {
 				tagHandler: mockTag,
 			}
 
-			mockTag.EXPECT().Get(gomock.Any(), tt.id).Return(tt.tag, nil)
+			mockTag.EXPECT().Get(gomock.Any(), tt.id.Return(tt.tag, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -335,7 +335,7 @@ func TestProcessV1TagsIDPut(t *testing.T) {
 				tagHandler:  mockTag,
 			}
 
-			mockTag.EXPECT().UpdateBasicInfo(gomock.Any(), tt.id, tt.tagName, tt.detail).Return(tt.resonseTag, nil)
+			mockTag.EXPECT().UpdateBasicInfo(gomock.Any(), tt.id, tt.tagName, tt.detail.Return(tt.resonseTag, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -396,7 +396,7 @@ func TestProcessV1TagsIDDelete(t *testing.T) {
 				tagHandler:  mockTag,
 			}
 
-			mockTag.EXPECT().Delete(gomock.Any(), tt.id).Return(tt.responseTag, nil)
+			mockTag.EXPECT().Delete(gomock.Any(), tt.id.Return(tt.responseTag, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

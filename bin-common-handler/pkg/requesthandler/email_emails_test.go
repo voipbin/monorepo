@@ -6,7 +6,6 @@ import (
 	"monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
-	"monorepo/bin-common-handler/pkg/utilhandler"
 	ememail "monorepo/bin-email-manager/models/email"
 	"reflect"
 	"testing"
@@ -22,11 +21,10 @@ func Test_EmailV1EmailGets(t *testing.T) {
 
 		pageToken string
 		pageSize  uint64
-		filters   map[string]string
+		filters   map[ememail.Field]any
 
 		response *sock.Response
 
-		expectURL     string
 		expectTarget  string
 		expectRequest *sock.Request
 		expectRes     []ememail.Email
@@ -36,8 +34,8 @@ func Test_EmailV1EmailGets(t *testing.T) {
 
 			pageToken: "2021-03-02 03:23:20.995000",
 			pageSize:  10,
-			filters: map[string]string{
-				"deleted": "false",
+			filters: map[ememail.Field]any{
+				ememail.FieldDeleted: false,
 			},
 
 			response: &sock.Response{
@@ -46,12 +44,12 @@ func Test_EmailV1EmailGets(t *testing.T) {
 				Data:       []byte(`[{"id":"67770202-0076-11f0-8091-bb84394f5e3b"},{"id":"679b8e06-0076-11f0-b24b-47c12990318f"}]`),
 			},
 
-			expectURL:    "/v1/emails?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10",
 			expectTarget: "bin-manager.email-manager.request",
 			expectRequest: &sock.Request{
-				URI:      "/v1/emails?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10&filter_deleted=false",
+				URI:      "/v1/emails?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10",
 				Method:   sock.RequestMethodGet,
-				DataType: ContentTypeJSON,
+				DataType: "application/json",
+				Data:     []byte(`{"deleted":false}`),
 			},
 			expectRes: []ememail.Email{
 				{
@@ -74,14 +72,11 @@ func Test_EmailV1EmailGets(t *testing.T) {
 			defer mc.Finish()
 
 			mockSock := sockhandler.NewMockSockHandler(mc)
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			h := requestHandler{
-				sock:        mockSock,
-				utilHandler: mockUtil,
+				sock: mockSock,
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := h.EmailV1EmailGets(ctx, tt.pageToken, tt.pageSize, tt.filters)

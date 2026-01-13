@@ -106,7 +106,7 @@ func Test_providersGet(t *testing.T) {
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().ProviderGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseProviders, nil)
+			mockSvc.EXPECT().ProviderGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken.Return(tt.responseProviders, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -203,7 +203,7 @@ func Test_providersPost(t *testing.T) {
 				tt.expectTechHeaders,
 				tt.expectName,
 				tt.expectDetail,
-			).Return(tt.responseProvider, nil)
+			.Return(tt.responseProvider, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -273,7 +273,7 @@ func Test_providersIDGet(t *testing.T) {
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().ProviderGet(req.Context(), &tt.agent, tt.expectProviderID).Return(tt.responseProvider, nil)
+			mockSvc.EXPECT().ProviderGet(req.Context(), &tt.agent, tt.expectProviderID.Return(tt.responseProvider, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -342,7 +342,7 @@ func Test_providersIDDelete(t *testing.T) {
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().ProviderDelete(req.Context(), &tt.agent, tt.expectProviderID).Return(tt.responseProvider, nil)
+			mockSvc.EXPECT().ProviderDelete(req.Context(), &tt.agent, tt.expectProviderID.Return(tt.responseProvider, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -430,7 +430,7 @@ func Test_providersIDPut(t *testing.T) {
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 
-			mockSvc.EXPECT().ProviderUpdate(req.Context(), &tt.agent, tt.expectProviderID, tt.expectProviderType, tt.expectHostname, tt.expectTechPrefix, tt.expectTechPostfix, tt.expectTechHeaders, tt.expectName, tt.expectDetail).Return(tt.responseProvider, nil)
+			mockSvc.EXPECT().ProviderUpdate(req.Context(), &tt.agent, tt.expectProviderID, tt.expectProviderType, tt.expectHostname, tt.expectTechPrefix, tt.expectTechPostfix, tt.expectTechHeaders, tt.expectName, tt.expectDetail.Return(tt.responseProvider, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

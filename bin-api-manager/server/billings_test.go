@@ -113,7 +113,7 @@ func Test_billingsGET(t *testing.T) {
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().BillingGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseBillings, nil)
+			mockSvc.EXPECT().BillingGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken.Return(tt.responseBillings, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

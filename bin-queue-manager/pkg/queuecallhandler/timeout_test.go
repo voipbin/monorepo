@@ -59,10 +59,10 @@ func Test_TimeoutWait(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().QueuecallGet(ctx, tt.queuecallID).Return(tt.responseQueuecall, nil)
+			mockDB.EXPECT().QueuecallGet(ctx, tt.queuecallID.Return(tt.responseQueuecall, nil)
 
 			// Kick()
-			mockDB.EXPECT().QueuecallGet(ctx, tt.queuecallID).Return(nil, fmt.Errorf(""))
+			mockDB.EXPECT().QueuecallGet(ctx, tt.queuecallID.Return(nil, fmt.Errorf(""))
 
 			h.TimeoutWait(ctx, tt.queuecallID)
 		})
@@ -111,10 +111,10 @@ func Test_TimeoutService(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().QueuecallGet(ctx, tt.queuecallID).Return(tt.responseQueuecall, nil)
+			mockDB.EXPECT().QueuecallGet(ctx, tt.queuecallID.Return(tt.responseQueuecall, nil)
 
 			// Kick()
-			mockDB.EXPECT().QueuecallGet(ctx, tt.queuecallID).Return(nil, fmt.Errorf(""))
+			mockDB.EXPECT().QueuecallGet(ctx, tt.queuecallID.Return(nil, fmt.Errorf(""))
 
 			h.TimeoutService(ctx, tt.queuecallID)
 		})

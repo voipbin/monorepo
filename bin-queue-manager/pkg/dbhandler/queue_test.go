@@ -104,9 +104,9 @@ func Test_QueueCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().QueueSet(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
-			mockCache.EXPECT().QueueGet(gomock.Any(), tt.queue.ID).Return(nil, fmt.Errorf("")).AnyTimes()
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockCache.EXPECT().QueueSet(gomock.Any(), gomock.Any().Return(nil).AnyTimes()
+			mockCache.EXPECT().QueueGet(gomock.Any(), tt.queue.ID.Return(nil, fmt.Errorf("")).AnyTimes()
 			if err := h.QueueCreate(ctx, tt.queue); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -220,7 +220,7 @@ func Test_QueueGets(t *testing.T) {
 			ctx := context.Background()
 
 			for _, u := range tt.data {
-				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurtime)
+				mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurtime)
 				mockCache.EXPECT().QueueSet(gomock.Any(), gomock.Any())
 				if err := h.QueueCreate(ctx, u); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -284,19 +284,19 @@ func Test_QueueDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().QueueSet(ctx, gomock.Any())
 			if err := h.QueueCreate(ctx, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().QueueSet(ctx, gomock.Any())
 			if err := h.QueueDelete(ctx, tt.data.ID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().QueueGet(ctx, tt.data.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().QueueGet(ctx, tt.data.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().QueueSet(ctx, gomock.Any())
 			res, err := h.QueueGet(ctx, tt.data.ID)
 			if err != nil {
@@ -438,19 +438,19 @@ func Test_QueueUpdate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().QueueSet(gomock.Any(), gomock.Any())
 			if err := h.QueueCreate(ctx, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().QueueSet(gomock.Any(), gomock.Any())
 			if err := h.QueueUpdate(ctx, tt.id, tt.fields); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().QueueGet(gomock.Any(), tt.data.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().QueueGet(gomock.Any(), tt.data.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().QueueSet(gomock.Any(), gomock.Any())
 			res, err := h.QueueGet(ctx, tt.id)
 			if err != nil {

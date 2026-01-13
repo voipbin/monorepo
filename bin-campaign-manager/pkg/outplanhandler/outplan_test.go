@@ -77,9 +77,9 @@ func Test_Create(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
-			mockDB.EXPECT().OutplanCreate(ctx, gomock.Any()).Return(nil)
-			mockDB.EXPECT().OutplanGet(ctx, gomock.Any()).Return(&outplan.Outplan{}, nil)
+			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
+			mockDB.EXPECT().OutplanCreate(ctx, gomock.Any().Return(nil)
+			mockDB.EXPECT().OutplanGet(ctx, gomock.Any().Return(&outplan.Outplan{}, nil)
 
 			_, err := h.Create(
 				ctx,
@@ -133,8 +133,8 @@ func Test_Delete(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().OutplanDelete(ctx, tt.id).Return(nil)
-			mockDB.EXPECT().OutplanGet(ctx, tt.id).Return(&outplan.Outplan{}, nil)
+			mockDB.EXPECT().OutplanDelete(ctx, tt.id.Return(nil)
+			mockDB.EXPECT().OutplanGet(ctx, tt.id.Return(&outplan.Outplan{}, nil)
 			_, err := h.Delete(ctx, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -178,7 +178,7 @@ func Test_GetsByCustomerID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().OutplanGetsByCustomerID(ctx, tt.customerID, tt.token, tt.limit).Return([]*outplan.Outplan{}, nil)
+			mockDB.EXPECT().OutplanGetsByCustomerID(ctx, tt.customerID, tt.token, tt.limit.Return([]*outplan.Outplan{}, nil)
 			_, err := h.GetsByCustomerID(ctx, tt.customerID, tt.token, tt.limit)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -218,8 +218,8 @@ func Test_UpdateBasicInfo(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().OutplanUpdateBasicInfo(ctx, tt.id, tt.outplanName, tt.detail).Return(nil)
-			mockDB.EXPECT().OutplanGet(ctx, tt.id).Return(&outplan.Outplan{}, nil)
+			mockDB.EXPECT().OutplanUpdateBasicInfo(ctx, tt.id, tt.outplanName, tt.detail.Return(nil)
+			mockDB.EXPECT().OutplanGet(ctx, tt.id.Return(&outplan.Outplan{}, nil)
 
 			_, err := h.UpdateBasicInfo(ctx, tt.id, tt.outplanName, tt.detail)
 			if err != nil {
@@ -275,8 +275,8 @@ func Test_UpdateDialInfo(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().OutplanUpdateDialInfo(ctx, tt.id, tt.source, tt.dialTimeout, tt.tyrInterval, tt.maxTryCount0, tt.maxTryCount1, tt.maxTryCount2, tt.maxTryCount3, tt.maxTryCount4).Return(nil)
-			mockDB.EXPECT().OutplanGet(ctx, tt.id).Return(&outplan.Outplan{}, nil)
+			mockDB.EXPECT().OutplanUpdateDialInfo(ctx, tt.id, tt.source, tt.dialTimeout, tt.tyrInterval, tt.maxTryCount0, tt.maxTryCount1, tt.maxTryCount2, tt.maxTryCount3, tt.maxTryCount4.Return(nil)
+			mockDB.EXPECT().OutplanGet(ctx, tt.id.Return(&outplan.Outplan{}, nil)
 
 			_, err := h.UpdateDialInfo(ctx, tt.id, tt.source, tt.dialTimeout, tt.tyrInterval, tt.maxTryCount0, tt.maxTryCount1, tt.maxTryCount2, tt.maxTryCount3, tt.maxTryCount4)
 			if err != nil {

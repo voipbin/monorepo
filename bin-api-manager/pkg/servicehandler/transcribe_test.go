@@ -77,7 +77,7 @@ func Test_TranscribeGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().TranscribeV1TranscribeGet(ctx, tt.transcribeID).Return(tt.responseTranscribe, nil)
+			mockReq.EXPECT().TranscribeV1TranscribeGet(ctx, tt.transcribeID.Return(tt.responseTranscribe, nil)
 
 			res, err := h.TranscribeGet(ctx, tt.agent, tt.transcribeID)
 			if err != nil {
@@ -163,7 +163,7 @@ func Test_TranscribeGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().TranscribeV1TranscribeGets(ctx, tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.response, nil)
+			mockReq.EXPECT().TranscribeV1TranscribeGets(ctx, tt.pageToken, tt.pageSize, tt.expectFilters.Return(tt.response, nil)
 			res, err := h.TranscribeGets(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -254,10 +254,10 @@ func Test_TranscribeStart(t *testing.T) {
 
 			switch tt.referenceType {
 			case "call":
-				mockReq.EXPECT().CallV1CallGet(ctx, tt.referenceID).Return(tt.responseCall, nil)
+				mockReq.EXPECT().CallV1CallGet(ctx, tt.referenceID.Return(tt.responseCall, nil)
 
 			case "recording":
-				mockReq.EXPECT().CallV1RecordingGet(ctx, tt.referenceID).Return(tt.responseRecording, nil)
+				mockReq.EXPECT().CallV1RecordingGet(ctx, tt.referenceID.Return(tt.responseRecording, nil)
 			}
 			mockReq.EXPECT().TranscribeV1TranscribeStart(
 				ctx,
@@ -269,7 +269,7 @@ func Test_TranscribeStart(t *testing.T) {
 				tt.language,
 				tt.direction,
 				60000,
-			).Return(tt.responseTranscribe, nil)
+			.Return(tt.responseTranscribe, nil)
 
 			res, err := h.TranscribeStart(ctx, tt.agent, tt.referenceType, tt.referenceID, tt.language, tt.direction, tt.onEndFlowID)
 			if err != nil {
@@ -341,9 +341,9 @@ func Test_TranscribeStop(t *testing.T) {
 			ctx := context.Background()
 
 			// transcribeGet
-			mockReq.EXPECT().TranscribeV1TranscribeGet(ctx, tt.transcribeID).Return(tt.responseTranscribe, nil)
+			mockReq.EXPECT().TranscribeV1TranscribeGet(ctx, tt.transcribeID.Return(tt.responseTranscribe, nil)
 
-			mockReq.EXPECT().TranscribeV1TranscribeStop(ctx, tt.transcribeID).Return(tt.responseTranscribe, nil)
+			mockReq.EXPECT().TranscribeV1TranscribeStop(ctx, tt.transcribeID.Return(tt.responseTranscribe, nil)
 
 			res, err := h.TranscribeStop(ctx, tt.agent, tt.transcribeID)
 			if err != nil {
@@ -415,9 +415,9 @@ func Test_TranscribeDelete(t *testing.T) {
 			ctx := context.Background()
 
 			// transcribeGet
-			mockReq.EXPECT().TranscribeV1TranscribeGet(ctx, tt.transcribeID).Return(tt.responseTranscribe, nil)
+			mockReq.EXPECT().TranscribeV1TranscribeGet(ctx, tt.transcribeID.Return(tt.responseTranscribe, nil)
 
-			mockReq.EXPECT().TranscribeV1TranscribeDelete(ctx, tt.transcribeID).Return(tt.responseTranscribe, nil)
+			mockReq.EXPECT().TranscribeV1TranscribeDelete(ctx, tt.transcribeID.Return(tt.responseTranscribe, nil)
 
 			res, err := h.TranscribeDelete(ctx, tt.agent, tt.transcribeID)
 			if err != nil {

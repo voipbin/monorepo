@@ -74,8 +74,8 @@ func Test_ProcessStart(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().AIcallUpdate(ctx, tt.aicall.ID, gomock.Any()).Return(nil)
-			mockDB.EXPECT().AIcallGet(ctx, tt.aicall.ID).Return(tt.aicall, nil)
+			mockDB.EXPECT().AIcallUpdate(ctx, tt.aicall.ID, gomock.Any().Return(nil)
+			mockDB.EXPECT().AIcallGet(ctx, tt.aicall.ID.Return(tt.aicall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.aicall.CustomerID, aicall.EventTypeStatusProgressing, tt.aicall)
 
 			res, err := h.ProcessStart(ctx, tt.aicall)
@@ -162,23 +162,23 @@ func Test_ProcessTerminate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AIcallGet(ctx, tt.id).Return(tt.responseAicall, nil)
-			mockReq.EXPECT().FlowV1ActiveflowServiceStop(ctx, tt.responseAicall.ActiveflowID, tt.responseAicall.ID, 0).Return(nil)
+			mockDB.EXPECT().AIcallGet(ctx, tt.id.Return(tt.responseAicall, nil)
+			mockReq.EXPECT().FlowV1ActiveflowServiceStop(ctx, tt.responseAicall.ActiveflowID, tt.responseAicall.ID, 0.Return(nil)
 			if tt.responseAicall.ReferenceType != aicall.ReferenceTypeCall {
-				mockReq.EXPECT().FlowV1ActiveflowContinue(ctx, tt.responseAicall.ActiveflowID, tt.responseAicall.ID).Return(nil)
+				mockReq.EXPECT().FlowV1ActiveflowContinue(ctx, tt.responseAicall.ActiveflowID, tt.responseAicall.ID.Return(nil)
 			}
 
 			if tt.responseAicall.PipecatcallID != uuid.Nil {
-				mockReq.EXPECT().PipecatV1PipecatcallGet(ctx, tt.responseAicall.PipecatcallID).Return(tt.responsePipecatcall, nil)
-				mockReq.EXPECT().PipecatV1PipecatcallTerminate(ctx, tt.responsePipecatcall.HostID, tt.responsePipecatcall.ID).Return(tt.responsePipecatcall, nil)
+				mockReq.EXPECT().PipecatV1PipecatcallGet(ctx, tt.responseAicall.PipecatcallID.Return(tt.responsePipecatcall, nil)
+				mockReq.EXPECT().PipecatV1PipecatcallTerminate(ctx, tt.responsePipecatcall.HostID, tt.responsePipecatcall.ID.Return(tt.responsePipecatcall, nil)
 			}
 
 			if tt.responseAicall.ConfbridgeID != uuid.Nil {
-				mockReq.EXPECT().CallV1ConfbridgeTerminate(ctx, tt.responseAicall.ConfbridgeID).Return(&cmconfbridge.Confbridge{}, nil)
+				mockReq.EXPECT().CallV1ConfbridgeTerminate(ctx, tt.responseAicall.ConfbridgeID.Return(&cmconfbridge.Confbridge{}, nil)
 			}
 
-			mockDB.EXPECT().AIcallUpdate(ctx, tt.responseAicall.ID, gomock.Any()).Return(nil)
-			mockDB.EXPECT().AIcallGet(ctx, tt.responseAicall.ID).Return(tt.responseAicall, nil)
+			mockDB.EXPECT().AIcallUpdate(ctx, tt.responseAicall.ID, gomock.Any().Return(nil)
+			mockDB.EXPECT().AIcallGet(ctx, tt.responseAicall.ID.Return(tt.responseAicall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAicall.CustomerID, aicall.EventTypeStatusTerminated, tt.responseAicall)
 
 			res, err := h.ProcessTerminate(ctx, tt.id)

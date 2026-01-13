@@ -93,13 +93,13 @@ func Test_FileCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().FileSet(ctx, gomock.Any())
 			if err := h.FileCreate(ctx, tt.file); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().FileGet(ctx, tt.file.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().FileGet(ctx, tt.file.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().FileSet(ctx, gomock.Any())
 			res, err := h.FileGet(ctx, tt.file.ID)
 			if err != nil {
@@ -191,7 +191,7 @@ func Test_FileGets(t *testing.T) {
 			ctx := context.Background()
 
 			for _, f := range tt.files {
-				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 				mockCache.EXPECT().FileSet(ctx, gomock.Any())
 				if err := h.FileCreate(ctx, &f); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -258,19 +258,19 @@ func Test_FileUpdate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+			mockUtil.EXPECT().TimeGetCurTime(.Return(utilhandler.TimeGetCurTime())
 			mockCache.EXPECT().FileSet(ctx, gomock.Any())
 			if err := h.FileCreate(ctx, tt.file); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+			mockUtil.EXPECT().TimeGetCurTime(.Return(utilhandler.TimeGetCurTime())
 			mockCache.EXPECT().FileSet(ctx, gomock.Any())
 			if err := h.FileUpdate(ctx, tt.file.ID, tt.updateFields); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().FileGet(ctx, tt.file.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().FileGet(ctx, tt.file.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().FileSet(ctx, gomock.Any())
 			res, err := h.FileGet(ctx, tt.file.ID)
 			if err != nil {
@@ -320,7 +320,7 @@ func Test_FileDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime()).AnyTimes()
+			mockUtil.EXPECT().TimeGetCurTime(.Return(utilhandler.TimeGetCurTime()).AnyTimes()
 
 			mockCache.EXPECT().FileSet(ctx, gomock.Any())
 			if err := h.FileCreate(ctx, tt.file); err != nil {
@@ -332,8 +332,8 @@ func Test_FileDelete(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().FileGet(ctx, tt.file.ID).Return(nil, fmt.Errorf("error"))
-			mockCache.EXPECT().FileSet(ctx, gomock.Any()).Return(nil)
+			mockCache.EXPECT().FileGet(ctx, tt.file.ID.Return(nil, fmt.Errorf("error"))
+			mockCache.EXPECT().FileSet(ctx, gomock.Any().Return(nil)
 			res, err := h.FileGet(ctx, tt.file.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

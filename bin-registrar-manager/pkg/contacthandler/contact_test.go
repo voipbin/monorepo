@@ -72,7 +72,7 @@ func Test_ContactGetsByDomainID(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", errSet)
 			}
 
-			mockDBAst.EXPECT().AstContactGetsByEndpoint(ctx, tt.expectEndpoint).Return(tt.responseContacts, nil)
+			mockDBAst.EXPECT().AstContactGetsByEndpoint(ctx, tt.expectEndpoint.Return(tt.responseContacts, nil)
 			res, err := h.ContactGetsByExtension(ctx, tt.customerID, tt.ext)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -124,7 +124,7 @@ func Test_ContactRefreshByEndpoint(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", errSet)
 			}
 
-			mockDBAst.EXPECT().AstContactDeleteFromCache(ctx, tt.expectEndpoint).Return(nil)
+			mockDBAst.EXPECT().AstContactDeleteFromCache(ctx, tt.expectEndpoint.Return(nil)
 			if err := h.ContactRefreshByEndpoint(ctx, tt.customerID, tt.extension); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

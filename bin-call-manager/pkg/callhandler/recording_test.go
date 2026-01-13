@@ -79,11 +79,11 @@ func Test_RecordingStart(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
-			mockRecording.EXPECT().Start(ctx, tt.responseCall.ActiveflowID, recording.ReferenceTypeCall, tt.responseCall.ID, tt.format, tt.endOfSilence, tt.endOfKey, tt.duration, tt.onEndFlowID).Return(tt.responseRecording, nil)
-			mockDB.EXPECT().CallSetRecordingID(ctx, tt.responseCall.ID, tt.responseRecording.ID).Return(nil)
-			mockDB.EXPECT().CallAddRecordingIDs(ctx, tt.responseCall.ID, tt.responseRecording.ID).Return(nil)
-			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
+			mockDB.EXPECT().CallGet(ctx, tt.id.Return(tt.responseCall, nil)
+			mockRecording.EXPECT().Start(ctx, tt.responseCall.ActiveflowID, recording.ReferenceTypeCall, tt.responseCall.ID, tt.format, tt.endOfSilence, tt.endOfKey, tt.duration, tt.onEndFlowID.Return(tt.responseRecording, nil)
+			mockDB.EXPECT().CallSetRecordingID(ctx, tt.responseCall.ID, tt.responseRecording.ID.Return(nil)
+			mockDB.EXPECT().CallAddRecordingIDs(ctx, tt.responseCall.ID, tt.responseRecording.ID.Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID.Return(tt.responseCall, nil)
 
 			res, err := h.RecordingStart(ctx, tt.id, tt.format, tt.endOfSilence, tt.endOfKey, tt.duration, tt.onEndFlowID)
 			if err != nil {
@@ -155,10 +155,10 @@ func Test_RecordingStop(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
-			mockRecording.EXPECT().Stop(ctx, tt.responseCall.RecordingID).Return(tt.responseRecording, nil)
-			mockDB.EXPECT().CallSetRecordingID(ctx, tt.responseCall.ID, uuid.Nil).Return(nil)
-			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
+			mockDB.EXPECT().CallGet(ctx, tt.id.Return(tt.responseCall, nil)
+			mockRecording.EXPECT().Stop(ctx, tt.responseCall.RecordingID.Return(tt.responseRecording, nil)
+			mockDB.EXPECT().CallSetRecordingID(ctx, tt.responseCall.ID, uuid.Nil.Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID.Return(tt.responseCall, nil)
 
 			res, err := h.RecordingStop(ctx, tt.id)
 			if err != nil {

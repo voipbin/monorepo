@@ -98,16 +98,16 @@ func Test_Execute(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().QueueGet(ctx, tt.queueID).Return(tt.responseQueue, nil)
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockReq.EXPECT().QueueV1QueuecallGets(ctx, tt.responseCurTime, uint64(1), tt.expectFiltersQueue).Return(tt.responseQueuecall, nil)
+			mockDB.EXPECT().QueueGet(ctx, tt.queueID.Return(tt.responseQueue, nil)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockReq.EXPECT().QueueV1QueuecallGets(ctx, tt.responseCurTime, uint64(1), tt.expectFiltersQueue.Return(tt.responseQueuecall, nil)
 
 			// GetAgents
-			mockDB.EXPECT().QueueGet(ctx, tt.queueID).Return(tt.responseQueue, nil)
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockReq.EXPECT().AgentV1AgentGets(ctx, gomock.Any(), uint64(100), tt.expectFiltersAgent).Return(tt.responseAgent, nil)
+			mockDB.EXPECT().QueueGet(ctx, tt.queueID.Return(tt.responseQueue, nil)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockReq.EXPECT().AgentV1AgentGets(ctx, gomock.Any(), uint64(100), tt.expectFiltersAgent.Return(tt.responseAgent, nil)
 
-			mockReq.EXPECT().QueueV1QueuecallExecute(ctx, tt.responseQueuecall[0].ID, gomock.Any()).Return(&queuecall.Queuecall{}, nil)
+			mockReq.EXPECT().QueueV1QueuecallExecute(ctx, tt.responseQueuecall[0].ID, gomock.Any().Return(&queuecall.Queuecall{}, nil)
 			mockReq.EXPECT().QueueV1QueueExecuteRun(ctx, tt.queueID, 100)
 
 			h.Execute(ctx, tt.queueID)

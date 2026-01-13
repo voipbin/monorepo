@@ -157,18 +157,18 @@ func Test_ServiceStart(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockQueue.EXPECT().Get(ctx, tt.queueID).Return(tt.responseQueue, nil)
-			mockReq.EXPECT().CallV1CallGet(ctx, tt.referenceID).Return(tt.responseCall, nil)
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDQueuecall)
-			mockReq.EXPECT().CallV1ConfbridgeCreate(ctx, tt.responseQueue.CustomerID, tt.activeflowID, cmconfbridge.ReferenceTypeQueue, tt.responseUUIDQueuecall, cmconfbridge.TypeConnect).Return(tt.responseConfbridge, nil)
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDTargetID)
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDLoopID)
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDForwardID)
-			mockDB.EXPECT().QueuecallCreate(ctx, tt.expectQueuecall).Return(nil)
-			mockDB.EXPECT().QueuecallGet(ctx, tt.responseUUIDQueuecall).Return(tt.responseQueuecall, nil)
+			mockQueue.EXPECT().Get(ctx, tt.queueID.Return(tt.responseQueue, nil)
+			mockReq.EXPECT().CallV1CallGet(ctx, tt.referenceID.Return(tt.responseCall, nil)
+			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUIDQueuecall)
+			mockReq.EXPECT().CallV1ConfbridgeCreate(ctx, tt.responseQueue.CustomerID, tt.activeflowID, cmconfbridge.ReferenceTypeQueue, tt.responseUUIDQueuecall, cmconfbridge.TypeConnect.Return(tt.responseConfbridge, nil)
+			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUIDTargetID)
+			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUIDLoopID)
+			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUIDForwardID)
+			mockDB.EXPECT().QueuecallCreate(ctx, tt.expectQueuecall.Return(nil)
+			mockDB.EXPECT().QueuecallGet(ctx, tt.responseUUIDQueuecall.Return(tt.responseQueuecall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallCreated, tt.responseQueuecall)
-			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.responseQueuecall.ReferenceActiveflowID, gomock.Any()).Return(nil)
-			mockReq.EXPECT().QueueV1QueuecallHealthCheck(ctx, tt.responseQueuecall.ID, defaultHealthCheckDelay, 0).Return(nil)
+			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.responseQueuecall.ReferenceActiveflowID, gomock.Any().Return(nil)
+			mockReq.EXPECT().QueueV1QueuecallHealthCheck(ctx, tt.responseQueuecall.ID, defaultHealthCheckDelay, 0.Return(nil)
 
 			res, err := h.ServiceStart(ctx, tt.queueID, tt.activeflowID, tt.referenceType, tt.referenceID)
 			if err != nil {
@@ -255,9 +255,9 @@ func Test_createActions(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDTargetID)
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDLoopID)
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDForwardID)
+			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUIDTargetID)
+			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUIDLoopID)
+			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUIDForwardID)
 
 			res, resForward, err := h.createActions(ctx, tt.queue, tt.confbridgeID)
 			if err != nil {

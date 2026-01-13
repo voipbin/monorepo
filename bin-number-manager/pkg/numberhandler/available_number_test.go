@@ -59,7 +59,7 @@ func TestGetAvailableNumbersTelnyx(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockTelnyx.EXPECT().GetAvailableNumbers(tt.country, tt.limit).Return(tt.expectRes, nil)
+			mockTelnyx.EXPECT().GetAvailableNumbers(tt.country, tt.limit.Return(tt.expectRes, nil)
 
 			res, err := h.GetAvailableNumbers(tt.country, tt.limit)
 			if err != nil {

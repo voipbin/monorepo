@@ -10,6 +10,7 @@ import (
 	amrequest "monorepo/bin-agent-manager/pkg/listenhandler/models/request"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 	"monorepo/bin-common-handler/models/sock"
@@ -115,13 +116,15 @@ func (r *requestHandler) AgentV1AgentGetByCustomerIDAndAddress(ctx context.Conte
 // AgentV1AgentGets sends a request to agent-manager
 // to getting a list of agent info.
 // it returns detail list of agent info if it succeed.
-func (r *requestHandler) AgentV1AgentGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]amagent.Agent, error) {
+func (r *requestHandler) AgentV1AgentGets(ctx context.Context, pageToken string, pageSize uint64, filters map[amagent.Field]any) ([]amagent.Agent, error) {
 	uri := fmt.Sprintf("/v1/agents?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
-	// parse filters
-	uri = r.utilHandler.URLMergeFilters(uri, filters)
+	m, err := json.Marshal(filters)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not marshal filters")
+	}
 
-	tmp, err := r.sendRequestAgent(ctx, uri, sock.RequestMethodGet, "agent/agents", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestAgent(ctx, uri, sock.RequestMethodGet, "agent/agents", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}

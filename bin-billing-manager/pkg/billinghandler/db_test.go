@@ -86,9 +86,9 @@ func Test_Create(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
-			mockDB.EXPECT().BillingCreate(ctx, tt.expectBilling).Return(nil)
-			mockDB.EXPECT().BillingGet(ctx, tt.responseUUID).Return(tt.responseBilling, nil)
+			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
+			mockDB.EXPECT().BillingCreate(ctx, tt.expectBilling.Return(nil)
+			mockDB.EXPECT().BillingGet(ctx, tt.responseUUID.Return(tt.responseBilling, nil)
 
 			mockNotify.EXPECT().PublishEvent(ctx, billing.EventTypeBillingCreated, tt.responseBilling)
 
@@ -148,7 +148,7 @@ func Test_Get(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().BillingGet(ctx, tt.id).Return(tt.responseBilling, nil)
+			mockDB.EXPECT().BillingGet(ctx, tt.id.Return(tt.responseBilling, nil)
 
 			res, err := h.Get(ctx, tt.id)
 			if err != nil {
@@ -207,7 +207,7 @@ func Test_GetByReferenceID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().BillingGetByReferenceID(ctx, tt.referenceID).Return(tt.responseBilling, nil)
+			mockDB.EXPECT().BillingGetByReferenceID(ctx, tt.referenceID.Return(tt.responseBilling, nil)
 
 			res, err := h.GetByReferenceID(ctx, tt.referenceID)
 			if err != nil {
@@ -278,7 +278,7 @@ func Test_Gets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().BillingGets(ctx, tt.size, tt.token, tt.filters).Return(tt.responseBillings, nil)
+			mockDB.EXPECT().BillingGets(ctx, tt.size, tt.token, tt.filters.Return(tt.responseBillings, nil)
 
 			res, err := h.Gets(ctx, tt.size, tt.token, tt.filters)
 			if err != nil {
@@ -340,8 +340,8 @@ func Test_UpdateStatusEnd(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().BillingSetStatusEnd(ctx, tt.id, tt.billingDuration, tt.tmBillingEnd).Return(nil)
-			mockDB.EXPECT().BillingGet(ctx, tt.id).Return(tt.responseBilling, nil)
+			mockDB.EXPECT().BillingSetStatusEnd(ctx, tt.id, tt.billingDuration, tt.tmBillingEnd.Return(nil)
+			mockDB.EXPECT().BillingGet(ctx, tt.id.Return(tt.responseBilling, nil)
 
 			res, err := h.UpdateStatusEnd(ctx, tt.id, tt.billingDuration, tt.tmBillingEnd)
 			if err != nil {

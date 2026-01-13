@@ -93,7 +93,7 @@ func Test_chatsPOST(t *testing.T) {
 				tt.expectParticipantIDs,
 				tt.expectName,
 				tt.expectDetail,
-			).Return(tt.responseChat, nil)
+			.Return(tt.responseChat, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -204,7 +204,7 @@ func Test_chatsGET(t *testing.T) {
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().ChatGetsByCustomerID(req.Context(), &tt.agent, tt.expectPageSize, tt.expectpageToken).Return(tt.responseChats, nil)
+			mockSvc.EXPECT().ChatGetsByCustomerID(req.Context(), &tt.agent, tt.expectPageSize, tt.expectpageToken.Return(tt.responseChats, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -273,7 +273,7 @@ func Test_chatsIDGET(t *testing.T) {
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().ChatGet(req.Context(), &tt.agent, tt.expectChatID).Return(tt.responseChatmessage, nil)
+			mockSvc.EXPECT().ChatGet(req.Context(), &tt.agent, tt.expectChatID.Return(tt.responseChatmessage, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -342,7 +342,7 @@ func Test_chatsIDDELETE(t *testing.T) {
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().ChatDelete(req.Context(), &tt.agent, tt.expectChatID).Return(tt.responseChat, nil)
+			mockSvc.EXPECT().ChatDelete(req.Context(), &tt.agent, tt.expectChatID.Return(tt.responseChat, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -418,7 +418,7 @@ func Test_chatsIDPUT(t *testing.T) {
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ChatUpdateBasicInfo(req.Context(), &tt.agent, tt.expectChatID, tt.expectName, tt.expectDetail).Return(tt.responseChat, nil)
+			mockSvc.EXPECT().ChatUpdateBasicInfo(req.Context(), &tt.agent, tt.expectChatID, tt.expectName, tt.expectDetail.Return(tt.responseChat, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -492,7 +492,7 @@ func Test_chatsIDRoomOwnerIDPUT(t *testing.T) {
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ChatUpdateRoomOwnerID(req.Context(), &tt.agent, tt.expectChatID, tt.expectRoomOwnerID).Return(tt.responseChat, nil)
+			mockSvc.EXPECT().ChatUpdateRoomOwnerID(req.Context(), &tt.agent, tt.expectChatID, tt.expectRoomOwnerID.Return(tt.responseChat, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -566,7 +566,7 @@ func Test_chatsIDParticipantIDsPOST(t *testing.T) {
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ChatAddParticipantID(req.Context(), &tt.agent, tt.expectChatID, tt.expectParticipantID).Return(tt.responseChat, nil)
+			mockSvc.EXPECT().ChatAddParticipantID(req.Context(), &tt.agent, tt.expectChatID, tt.expectParticipantID.Return(tt.responseChat, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -638,7 +638,7 @@ func Test_chatsIDParticipantIDsIDDELETE(t *testing.T) {
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ChatRemoveParticipantID(req.Context(), &tt.agent, tt.expectChatID, tt.expectParticipantID).Return(tt.responseChat, nil)
+			mockSvc.EXPECT().ChatRemoveParticipantID(req.Context(), &tt.agent, tt.expectChatID, tt.expectParticipantID.Return(tt.responseChat, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

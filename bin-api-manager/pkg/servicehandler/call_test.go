@@ -72,7 +72,7 @@ func Test_callGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID).Return(tt.responseCall, nil)
+			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID.Return(tt.responseCall, nil)
 
 			res, err := h.callGet(ctx, tt.callID)
 			if err != nil {
@@ -145,7 +145,7 @@ func Test_callGet_error(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID).Return(tt.responseCall, tt.responseCallError)
+			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID.Return(tt.responseCall, tt.responseCallError)
 
 			_, err := h.callGet(ctx, tt.callID)
 			if err == nil {
@@ -379,12 +379,12 @@ func Test_CallCreate(t *testing.T) {
 
 			flowID := tt.flowID
 			if flowID == uuid.Nil {
-				mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.agent.CustomerID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), tt.actions, uuid.Nil, false).Return(tt.responseFlow, nil)
+				mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.agent.CustomerID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), tt.actions, uuid.Nil, false.Return(tt.responseFlow, nil)
 				flowID = tt.responseFlow.ID
 			}
-			mockReq.EXPECT().FlowV1FlowGet(ctx, flowID).Return(tt.responseFlow, nil)
+			mockReq.EXPECT().FlowV1FlowGet(ctx, flowID.Return(tt.responseFlow, nil)
 
-			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.agent.CustomerID, tt.responseFlow.ID, uuid.Nil, tt.source, tt.destinations, false, false).Return(tt.responseCalls, tt.responseGroupcalls, nil)
+			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.agent.CustomerID, tt.responseFlow.ID, uuid.Nil, tt.source, tt.destinations, false, false.Return(tt.responseCalls, tt.responseGroupcalls, nil)
 
 			resCalls, resGroupcalls, err := h.CallCreate(ctx, tt.agent, tt.flowID, tt.actions, tt.source, tt.destinations)
 			if err != nil {
@@ -455,8 +455,8 @@ func Test_CallDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID).Return(tt.responseCall, nil)
-			mockReq.EXPECT().CallV1CallDelete(ctx, tt.callID).Return(tt.responseCall, nil)
+			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID.Return(tt.responseCall, nil)
+			mockReq.EXPECT().CallV1CallDelete(ctx, tt.callID.Return(tt.responseCall, nil)
 
 			res, err := h.CallDelete(ctx, tt.agent, tt.callID)
 			if err != nil {
@@ -523,8 +523,8 @@ func Test_CallHangup(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID).Return(tt.responseCall, nil)
-			mockReq.EXPECT().CallV1CallHangup(ctx, tt.callID).Return(tt.responseCall, nil)
+			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID.Return(tt.responseCall, nil)
+			mockReq.EXPECT().CallV1CallHangup(ctx, tt.callID.Return(tt.responseCall, nil)
 
 			res, err := h.CallHangup(ctx, tt.agent, tt.callID)
 			if err != nil {
@@ -588,8 +588,8 @@ func Test_CallTalk(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID).Return(tt.responseCall, nil)
-			mockReq.EXPECT().CallV1CallTalk(ctx, tt.callID, tt.text, tt.gender, tt.language, 10000).Return(nil)
+			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID.Return(tt.responseCall, nil)
+			mockReq.EXPECT().CallV1CallTalk(ctx, tt.callID, tt.text, tt.gender, tt.language, 10000.Return(nil)
 
 			if err := h.CallTalk(ctx, tt.agent, tt.callID, tt.text, tt.gender, tt.language); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -643,8 +643,8 @@ func Test_CallHoldOn(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID).Return(tt.responseCall, nil)
-			mockReq.EXPECT().CallV1CallHoldOn(ctx, tt.callID).Return(nil)
+			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID.Return(tt.responseCall, nil)
+			mockReq.EXPECT().CallV1CallHoldOn(ctx, tt.callID.Return(nil)
 
 			if err := h.CallHoldOn(ctx, tt.agent, tt.callID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -698,8 +698,8 @@ func Test_CallHoldOff(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID).Return(tt.responseCall, nil)
-			mockReq.EXPECT().CallV1CallHoldOff(ctx, tt.callID).Return(nil)
+			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID.Return(tt.responseCall, nil)
+			mockReq.EXPECT().CallV1CallHoldOff(ctx, tt.callID.Return(nil)
 
 			if err := h.CallHoldOff(ctx, tt.agent, tt.callID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -755,8 +755,8 @@ func Test_CallMuteOn(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID).Return(tt.responseCall, nil)
-			mockReq.EXPECT().CallV1CallMuteOn(ctx, tt.callID, tt.direction).Return(nil)
+			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID.Return(tt.responseCall, nil)
+			mockReq.EXPECT().CallV1CallMuteOn(ctx, tt.callID, tt.direction.Return(nil)
 
 			if err := h.CallMuteOn(ctx, tt.agent, tt.callID, tt.direction); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -811,8 +811,8 @@ func Test_CallMuteOff(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID).Return(tt.responseCall, nil)
-			mockReq.EXPECT().CallV1CallMuteOff(ctx, tt.callID, tt.direction).Return(nil)
+			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID.Return(tt.responseCall, nil)
+			mockReq.EXPECT().CallV1CallMuteOff(ctx, tt.callID, tt.direction.Return(nil)
 
 			if err := h.CallMuteOff(ctx, tt.agent, tt.callID, tt.direction); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -882,7 +882,7 @@ func Test_CallGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1CallGets(ctx, tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.responseCalls, nil)
+			mockReq.EXPECT().CallV1CallGets(ctx, tt.pageToken, tt.pageSize, tt.expectFilters.Return(tt.responseCalls, nil)
 
 			res, err := h.CallGets(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
@@ -959,8 +959,8 @@ func Test_CallMediaStreamStart(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID).Return(tt.responseCall, nil)
-			mockWebsock.EXPECT().RunMediaStream(ctx, tt.writer, tt.request, cmexternalmedia.ReferenceTypeCall, tt.callID, tt.encapsulation).Return(nil)
+			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID.Return(tt.responseCall, nil)
+			mockWebsock.EXPECT().RunMediaStream(ctx, tt.writer, tt.request, cmexternalmedia.ReferenceTypeCall, tt.callID, tt.encapsulation.Return(nil)
 
 			if err := h.CallMediaStreamStart(ctx, tt.agent, tt.callID, tt.encapsulation, tt.writer, tt.request); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1033,8 +1033,8 @@ func Test_CallRecordingStart(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID).Return(tt.responseCall, nil)
-			mockReq.EXPECT().CallV1CallRecordingStart(ctx, tt.callID, tt.format, tt.endOfSilence, tt.endOfKey, tt.duration, tt.onEndFlowID).Return(tt.responseCall, nil)
+			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID.Return(tt.responseCall, nil)
+			mockReq.EXPECT().CallV1CallRecordingStart(ctx, tt.callID, tt.format, tt.endOfSilence, tt.endOfKey, tt.duration, tt.onEndFlowID.Return(tt.responseCall, nil)
 
 			res, err := h.CallRecordingStart(ctx, tt.agent, tt.callID, tt.format, tt.endOfSilence, tt.endOfKey, tt.duration, tt.onEndFlowID)
 			if err != nil {
@@ -1102,8 +1102,8 @@ func Test_CallRecordingStop(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID).Return(tt.responseCall, nil)
-			mockReq.EXPECT().CallV1CallRecordingStop(ctx, tt.callID).Return(tt.responseCall, nil)
+			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID.Return(tt.responseCall, nil)
+			mockReq.EXPECT().CallV1CallRecordingStop(ctx, tt.callID.Return(tt.responseCall, nil)
 			res, err := h.CallRecordingStop(ctx, tt.agent, tt.callID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

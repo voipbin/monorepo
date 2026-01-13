@@ -38,7 +38,7 @@ func Test_AccountSet(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockCache.EXPECT().AccountSet(gomock.Any(), gomock.Any()).Return(nil)
+			mockCache.EXPECT().AccountSet(gomock.Any(), gomock.Any().Return(nil)
 
 			if err := h.AccountSet(ctx, tt.message); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -76,7 +76,7 @@ func Test_AccountGet(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockCache.EXPECT().AccountGet(gomock.Any(), tt.id).Return(tt.expectRes, nil)
+			mockCache.EXPECT().AccountGet(gomock.Any(), tt.id.Return(tt.expectRes, nil)
 
 			res, err := h.AccountGet(ctx, tt.id)
 			if err != nil {

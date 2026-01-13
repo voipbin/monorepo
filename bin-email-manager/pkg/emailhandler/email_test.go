@@ -136,13 +136,13 @@ func Test_Create(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
-			mockDB.EXPECT().EmailCreate(ctx, tt.expectEmail).Return(nil)
-			mockDB.EXPECT().EmailGet(ctx, tt.responseUUID).Return(tt.expectEmail, nil)
+			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
+			mockDB.EXPECT().EmailCreate(ctx, tt.expectEmail.Return(nil)
+			mockDB.EXPECT().EmailGet(ctx, tt.responseUUID.Return(tt.expectEmail, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectEmail.CustomerID, email.EventTypeCreated, tt.expectEmail)
 
-			mockSendgrid.EXPECT().Send(ctx, tt.expectEmail).Return(tt.responseProviderReferenceID, nil)
-			mockDB.EXPECT().EmailUpdateProviderReferenceID(ctx, tt.expectEmail.ID, tt.responseProviderReferenceID).Return(nil)
+			mockSendgrid.EXPECT().Send(ctx, tt.expectEmail.Return(tt.responseProviderReferenceID, nil)
+			mockDB.EXPECT().EmailUpdateProviderReferenceID(ctx, tt.expectEmail.ID, tt.responseProviderReferenceID.Return(nil)
 
 			res, err := h.Create(ctx, tt.customerID, tt.activeflowID, tt.destinations, tt.subject, tt.content, tt.attachments)
 			if err != nil {
@@ -227,7 +227,7 @@ func Test_Gets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().EmailGets(ctx, tt.token, tt.size, tt.filters).Return(tt.responseEmails, nil)
+			mockDB.EXPECT().EmailGets(ctx, tt.token, tt.size, tt.filters.Return(tt.responseEmails, nil)
 
 			res, err := h.Gets(ctx, tt.token, tt.size, tt.filters)
 			if err != nil {
@@ -290,8 +290,8 @@ func Test_Delete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().EmailDelete(ctx, tt.id).Return(nil)
-			mockDB.EXPECT().EmailGet(ctx, tt.id).Return(tt.responseEmail, nil)
+			mockDB.EXPECT().EmailDelete(ctx, tt.id.Return(nil)
+			mockDB.EXPECT().EmailGet(ctx, tt.id.Return(tt.responseEmail, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseEmail.CustomerID, email.EventTypeDeleted, tt.responseEmail)
 
 			res, err := h.Delete(ctx, tt.id)
@@ -355,7 +355,7 @@ func Test_Get(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().EmailGet(ctx, tt.id).Return(tt.responseEmail, nil)
+			mockDB.EXPECT().EmailGet(ctx, tt.id.Return(tt.responseEmail, nil)
 
 			res, err := h.Get(ctx, tt.id)
 			if err != nil {
@@ -500,9 +500,9 @@ func Test_create(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
-			mockDB.EXPECT().EmailCreate(ctx, tt.expectEmail).Return(nil)
-			mockDB.EXPECT().EmailGet(ctx, tt.responseUUID).Return(tt.expectEmail, nil)
+			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
+			mockDB.EXPECT().EmailCreate(ctx, tt.expectEmail.Return(nil)
+			mockDB.EXPECT().EmailGet(ctx, tt.responseUUID.Return(tt.expectEmail, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectEmail.CustomerID, email.EventTypeCreated, tt.expectEmail)
 
 			res, err := h.create(ctx, tt.customerID, tt.activeflowID, tt.providerType, tt.source, tt.destinations, tt.subject, tt.content, tt.attachments)
@@ -556,7 +556,7 @@ func Test_UpdateProviderReferenceID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().EmailUpdateProviderReferenceID(ctx, tt.id, tt.providerReferenceID).Return(nil)
+			mockDB.EXPECT().EmailUpdateProviderReferenceID(ctx, tt.id, tt.providerReferenceID.Return(nil)
 
 			if errUpdate := h.UpdateProviderReferenceID(ctx, tt.id, tt.providerReferenceID); errUpdate != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errUpdate)
@@ -610,8 +610,8 @@ func Test_UpdateStatus(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().EmailUpdateStatus(ctx, tt.id, tt.status).Return(nil)
-			mockDB.EXPECT().EmailGet(ctx, tt.id).Return(tt.responseEmail, nil)
+			mockDB.EXPECT().EmailUpdateStatus(ctx, tt.id, tt.status.Return(nil)
+			mockDB.EXPECT().EmailGet(ctx, tt.id.Return(tt.responseEmail, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseEmail.CustomerID, email.EventTypeUpdated, tt.responseEmail)
 
 			res, err := h.UpdateStatus(ctx, tt.id, tt.status)

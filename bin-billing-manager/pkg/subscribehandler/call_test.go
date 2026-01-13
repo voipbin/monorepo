@@ -53,7 +53,7 @@ func Test_processEventCMCallProgressing(t *testing.T) {
 				billingHandler: mockBilling,
 			}
 
-			mockBilling.EXPECT().EventCMCallProgressing(gomock.Any(), tt.expectCall).Return(nil)
+			mockBilling.EXPECT().EventCMCallProgressing(gomock.Any(), tt.expectCall.Return(nil)
 
 			if err := h.processEvent(tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -101,7 +101,7 @@ func Test_processEventCMCallHangup(t *testing.T) {
 				billingHandler: mockBilling,
 			}
 
-			mockBilling.EXPECT().EventCMCallHangup(gomock.Any(), tt.expectCall).Return(nil)
+			mockBilling.EXPECT().EventCMCallHangup(gomock.Any(), tt.expectCall.Return(nil)
 			if err := h.processEvent(tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

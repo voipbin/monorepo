@@ -130,11 +130,11 @@ func Test_Hook(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().NumberV1NumberGets(ctx, "", uint64(1), tt.expectFilters).Return(tt.responseNumbers, nil)
+			mockReq.EXPECT().NumberV1NumberGets(ctx, "", uint64(1), tt.expectFilters.Return(tt.responseNumbers, nil)
 
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
-			mockDB.EXPECT().MessageCreate(ctx, gomock.Any()).Return(nil)
-			mockDB.EXPECT().MessageGet(ctx, gomock.Any()).Return(tt.responseMessage, nil)
+			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
+			mockDB.EXPECT().MessageCreate(ctx, gomock.Any().Return(nil)
+			mockDB.EXPECT().MessageGet(ctx, gomock.Any().Return(tt.responseMessage, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), message.EventTypeMessageCreated, gomock.Any())
 
 			if errHook := h.Hook(ctx, tt.uri, tt.data); errHook != nil {

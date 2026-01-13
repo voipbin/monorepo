@@ -92,18 +92,18 @@ func Test_transfererHangupTypeAttended(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1GroupcallGet(ctx, tt.tr.GroupcallID).Return(tt.responseGroupcall, nil)
-			mockDB.EXPECT().TransferGet(ctx, tt.tr.ID).Return(tt.tr, nil)
-			mockDB.EXPECT().TransferUpdate(ctx, tt.expectTransfer).Return(nil)
-			mockDB.EXPECT().TransferGet(ctx, tt.tr.ID).Return(tt.expectTransfer, nil)
+			mockReq.EXPECT().CallV1GroupcallGet(ctx, tt.tr.GroupcallID.Return(tt.responseGroupcall, nil)
+			mockDB.EXPECT().TransferGet(ctx, tt.tr.ID.Return(tt.tr, nil)
+			mockDB.EXPECT().TransferUpdate(ctx, tt.expectTransfer.Return(nil)
+			mockDB.EXPECT().TransferGet(ctx, tt.tr.ID.Return(tt.expectTransfer, nil)
 
-			mockReq.EXPECT().CallV1ConfbridgeGet(ctx, tt.expectTransfer.ConfbridgeID).Return(tt.responseConfbridge, nil)
+			mockReq.EXPECT().CallV1ConfbridgeGet(ctx, tt.expectTransfer.ConfbridgeID.Return(tt.responseConfbridge, nil)
 			for _, callID := range tt.responseConfbridge.ChannelCallIDs {
 				if callID == tt.transfererCall.ID {
 					continue
 				}
-				mockReq.EXPECT().CallV1CallMusicOnHoldOff(ctx, callID).Return(nil)
-				mockReq.EXPECT().CallV1CallMuteOff(ctx, callID, cmcall.MuteDirectionIn).Return(nil)
+				mockReq.EXPECT().CallV1CallMusicOnHoldOff(ctx, callID.Return(nil)
+				mockReq.EXPECT().CallV1CallMuteOff(ctx, callID, cmcall.MuteDirectionIn.Return(nil)
 			}
 
 			if err := h.transfererHangupTypeAttended(ctx, tt.tr, tt.transfererCall); err != nil {

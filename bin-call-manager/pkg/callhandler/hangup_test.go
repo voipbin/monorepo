@@ -139,18 +139,18 @@ func Test_Hangup(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime()).AnyTimes()
+			mockUtil.EXPECT().TimeGetCurTime(.Return(utilhandler.TimeGetCurTime()).AnyTimes()
 
-			mockDB.EXPECT().CallGetByChannelID(ctx, tt.channel.ID).Return(tt.responseCall, nil)
-			mockBridge.EXPECT().Destroy(ctx, tt.responseCall.BridgeID).Return(nil)
-			mockDB.EXPECT().CallSetHangup(ctx, tt.responseCall.ID, call.HangupReasonNormal, call.HangupByRemote).Return(nil)
+			mockDB.EXPECT().CallGetByChannelID(ctx, tt.channel.ID.Return(tt.responseCall, nil)
+			mockBridge.EXPECT().Destroy(ctx, tt.responseCall.BridgeID.Return(nil)
+			mockDB.EXPECT().CallSetHangup(ctx, tt.responseCall.ID, call.HangupReasonNormal, call.HangupByRemote.Return(nil)
 			tt.responseCall.Status = call.StatusHangup
-			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
+			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID.Return(tt.responseCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallHangup, gomock.Any())
 			if tt.responseCall.GroupcallID != uuid.Nil {
-				mockReq.EXPECT().CallV1GroupcallHangupCall(ctx, tt.responseCall.GroupcallID).Return(nil)
+				mockReq.EXPECT().CallV1GroupcallHangupCall(ctx, tt.responseCall.GroupcallID.Return(nil)
 			}
-			mockReq.EXPECT().FlowV1ActiveflowStop(ctx, tt.responseCall.ActiveflowID).Return(&fmactiveflow.Activeflow{}, nil)
+			mockReq.EXPECT().FlowV1ActiveflowStop(ctx, tt.responseCall.ActiveflowID.Return(&fmactiveflow.Activeflow{}, nil)
 
 			for _, chainedCallID := range tt.responseCall.ChainedCallIDs {
 				tmpCall := &call.Call{
@@ -159,8 +159,8 @@ func Test_Hangup(t *testing.T) {
 					},
 					Status: call.StatusProgressing,
 				}
-				mockDB.EXPECT().CallGet(ctx, chainedCallID).Return(tmpCall, nil)
-				mockDB.EXPECT().CallSetStatus(ctx, tmpCall.ID, call.StatusTerminating).Return(nil)
+				mockDB.EXPECT().CallGet(ctx, chainedCallID.Return(tmpCall, nil)
+				mockDB.EXPECT().CallSetStatus(ctx, tmpCall.ID, call.StatusTerminating.Return(nil)
 
 				tmpCall2 := &call.Call{
 					Identity: commonidentity.Identity{
@@ -168,9 +168,9 @@ func Test_Hangup(t *testing.T) {
 					},
 					Status: call.StatusTerminating,
 				}
-				mockDB.EXPECT().CallGet(ctx, tmpCall.ID).Return(tmpCall2, nil)
+				mockDB.EXPECT().CallGet(ctx, tmpCall.ID.Return(tmpCall2, nil)
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, tmpCall2.CustomerID, call.EventTypeCallTerminating, gomock.Any())
-				mockChannel.EXPECT().HangingUp(ctx, tmpCall2.ChannelID, ari.ChannelCauseNormalClearing).Return(tt.responseChannel, nil)
+				mockChannel.EXPECT().HangingUp(ctx, tmpCall2.ChannelID, ari.ChannelCauseNormalClearing.Return(tt.responseChannel, nil)
 			}
 
 			res, err := h.Hangup(ctx, tt.channel)
@@ -274,18 +274,18 @@ func Test_hangingUpWithCause(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime()).AnyTimes()
-			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(utilhandler.TimeGetCurTime()).AnyTimes()
+			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID.Return(tt.responseCall, nil)
 
 			// updateStatus
-			mockDB.EXPECT().CallSetStatus(ctx, tt.responseCall.ID, tt.expectCallStatus).Return(nil)
+			mockDB.EXPECT().CallSetStatus(ctx, tt.responseCall.ID, tt.expectCallStatus.Return(nil)
 
 			tmpCall := *tt.responseCall
 			tmpCall.Status = tt.expectCallStatus
-			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(&tmpCall, nil)
+			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID.Return(&tmpCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tmpCall.CustomerID, tt.expectEventType, &tmpCall)
 
-			mockChannel.EXPECT().HangingUp(ctx, tmpCall.ChannelID, tt.cause).Return(tt.responseChannel, nil)
+			mockChannel.EXPECT().HangingUp(ctx, tmpCall.ChannelID, tt.cause.Return(tt.responseChannel, nil)
 
 			res, err := h.hangingUpWithCause(ctx, tt.id, tt.cause)
 			if err != nil {
@@ -364,15 +364,15 @@ func Test_hangingupWithReference(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().CallGet(ctx, tt.referenceID).Return(tt.responseReferenceCall, nil)
-			mockChannel.EXPECT().Get(ctx, tt.responseReferenceCall.ChannelID).Return(tt.responseReferenceChannel, nil)
+			mockDB.EXPECT().CallGet(ctx, tt.referenceID.Return(tt.responseReferenceCall, nil)
+			mockChannel.EXPECT().Get(ctx, tt.responseReferenceCall.ChannelID.Return(tt.responseReferenceChannel, nil)
 
-			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
-			mockDB.EXPECT().CallSetStatus(ctx, tt.call.ID, call.StatusTerminating).Return(nil)
-			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.responseCall, nil)
+			mockDB.EXPECT().CallGet(ctx, tt.call.ID.Return(tt.call, nil)
+			mockDB.EXPECT().CallSetStatus(ctx, tt.call.ID, call.StatusTerminating.Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.call.ID.Return(tt.responseCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallTerminating, tt.responseCall)
 
-			mockChannel.EXPECT().HangingUp(ctx, tt.responseCall.ChannelID, tt.responseReferenceChannel.HangupCause).Return(tt.responseReferenceChannel, nil)
+			mockChannel.EXPECT().HangingUp(ctx, tt.responseCall.ChannelID, tt.responseReferenceChannel.HangupCause.Return(tt.responseReferenceChannel, nil)
 
 			res, err := h.hangingupWithReference(ctx, tt.call, tt.referenceID)
 			if err != nil {

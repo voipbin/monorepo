@@ -103,13 +103,13 @@ func Test_DialrouteGets(t *testing.T) {
 				route.FieldCustomerID: tt.customerID,
 				route.FieldTarget:     tt.target,
 			}
-			mockDB.EXPECT().RouteGets(ctx, "", uint64(1000), filtersCustomerTarget).Return(tt.responseRoutesCustomerTarget, nil)
+			mockDB.EXPECT().RouteGets(ctx, "", uint64(1000), filtersCustomerTarget.Return(tt.responseRoutesCustomerTarget, nil)
 			// Second call: filtersAll with customerID and TargetAll
 			filtersCustomerAll := map[route.Field]any{
 				route.FieldCustomerID: tt.customerID,
 				route.FieldTarget:     route.TargetAll,
 			}
-			mockDB.EXPECT().RouteGets(ctx, "", uint64(1000), filtersCustomerAll).Return(tt.responseRoutesCustomerAll, nil)
+			mockDB.EXPECT().RouteGets(ctx, "", uint64(1000), filtersCustomerAll.Return(tt.responseRoutesCustomerAll, nil)
 
 			// GetsByTarget for default route base
 			// First call: filtersTarget with CustomerIDBasicRoute and target
@@ -117,13 +117,13 @@ func Test_DialrouteGets(t *testing.T) {
 				route.FieldCustomerID: route.CustomerIDBasicRoute,
 				route.FieldTarget:     tt.target,
 			}
-			mockDB.EXPECT().RouteGets(ctx, "", uint64(1000), filtersDefaultTarget).Return(tt.responseRoutesDefaultTarget, nil)
+			mockDB.EXPECT().RouteGets(ctx, "", uint64(1000), filtersDefaultTarget.Return(tt.responseRoutesDefaultTarget, nil)
 			// Second call: filtersAll with CustomerIDBasicRoute and TargetAll
 			filtersDefaultAll := map[route.Field]any{
 				route.FieldCustomerID: route.CustomerIDBasicRoute,
 				route.FieldTarget:     route.TargetAll,
 			}
-			mockDB.EXPECT().RouteGets(ctx, "", uint64(1000), filtersDefaultAll).Return(tt.responseRoutesDefaultAll, nil)
+			mockDB.EXPECT().RouteGets(ctx, "", uint64(1000), filtersDefaultAll.Return(tt.responseRoutesDefaultAll, nil)
 
 			res, err := h.DialrouteGets(ctx, tt.customerID, tt.target)
 			if err != nil {

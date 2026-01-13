@@ -194,21 +194,21 @@ func Test_startReferenceTypeCall(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1ConfbridgeCreate(ctx, cmcustomer.IDAIManager, tt.activeflowID, cmconfbridge.ReferenceTypeAI, tt.ai.ID, cmconfbridge.TypeConference).Return(tt.responseConfbridge, nil)
+			mockReq.EXPECT().CallV1ConfbridgeCreate(ctx, cmcustomer.IDAIManager, tt.activeflowID, cmconfbridge.ReferenceTypeAI, tt.ai.ID, cmconfbridge.TypeConference.Return(tt.responseConfbridge, nil)
 
 			// startAIcall
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDPipecatcallID)
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDAIcallID)
-			mockDB.EXPECT().AIcallCreate(ctx, gomock.Any()).Return(nil)
-			mockDB.EXPECT().AIcallGet(ctx, gomock.Any()).Return(tt.responseAIcall, nil)
+			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUIDPipecatcallID)
+			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUIDAIcallID)
+			mockDB.EXPECT().AIcallCreate(ctx, gomock.Any().Return(nil)
+			mockDB.EXPECT().AIcallGet(ctx, gomock.Any().Return(tt.responseAIcall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), gomock.Any(), gomock.Any())
-			mockMessage.EXPECT().Create(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes().Return(&message.Message{}, nil)
+			mockMessage.EXPECT().Create(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes(.Return(&message.Message{}, nil)
 
-			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.activeflowID, tt.expectVariables).Return(nil)
-			mockReq.EXPECT().FlowV1VariableSubstitute(ctx, tt.responseAIcall.ActiveflowID, tt.ai.InitPrompt).Return(tt.ai.InitPrompt, nil)
+			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.activeflowID, tt.expectVariables.Return(nil)
+			mockReq.EXPECT().FlowV1VariableSubstitute(ctx, tt.responseAIcall.ActiveflowID, tt.ai.InitPrompt.Return(tt.ai.InitPrompt, nil)
 
 			// startPipecatcall
-			mockMessage.EXPECT().Gets(ctx, tt.responseAIcall.ID, uint64(100), "", gomock.Any()).Return(tt.responseMessages, nil)
+			mockMessage.EXPECT().Gets(ctx, tt.responseAIcall.ID, uint64(100), gomock.Any()).Return(tt.responseMessages, nil)
 			mockReq.EXPECT().PipecatV1PipecatcallStart(
 				ctx,
 				tt.responseAIcall.PipecatcallID,
@@ -223,7 +223,7 @@ func Test_startReferenceTypeCall(t *testing.T) {
 				tt.expectTTSType,
 				tt.responseAIcall.Language,
 				tt.expectTTSVoiceID,
-			).Return(tt.responsePipecatcall, nil)
+			.Return(tt.responsePipecatcall, nil)
 
 			res, err := h.startReferenceTypeCall(ctx, tt.ai, tt.activeflowID, tt.referenceID, tt.gender, tt.language)
 			if err != nil {
@@ -306,15 +306,15 @@ func Test_startReferenceTypeNone(t *testing.T) {
 			ctx := context.Background()
 
 			// startAIcall
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDPipecatcallID)
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDAIcallID)
-			mockDB.EXPECT().AIcallCreate(ctx, gomock.Any()).Return(nil)
-			mockDB.EXPECT().AIcallGet(ctx, gomock.Any()).Return(tt.responseAIcall, nil)
+			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUIDPipecatcallID)
+			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUIDAIcallID)
+			mockDB.EXPECT().AIcallCreate(ctx, gomock.Any().Return(nil)
+			mockDB.EXPECT().AIcallGet(ctx, gomock.Any().Return(tt.responseAIcall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), gomock.Any(), gomock.Any())
-			mockMessage.EXPECT().Create(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes().Return(&message.Message{}, nil)
+			mockMessage.EXPECT().Create(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes(.Return(&message.Message{}, nil)
 
-			mockDB.EXPECT().AIcallUpdate(ctx, tt.responseAIcall.ID, gomock.Any()).Return(nil)
-			mockDB.EXPECT().AIcallGet(ctx, tt.responseAIcall.ID).Return(tt.responseAIcall, nil)
+			mockDB.EXPECT().AIcallUpdate(ctx, tt.responseAIcall.ID, gomock.Any().Return(nil)
+			mockDB.EXPECT().AIcallGet(ctx, tt.responseAIcall.ID.Return(tt.responseAIcall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeStatusProgressing, tt.responseAIcall)
 
 			res, err := h.startReferenceTypeNone(ctx, tt.ai, tt.gender, tt.language)
@@ -462,19 +462,19 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.activeflowID).Return(tt.responseVarible, nil)
+			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.activeflowID.Return(tt.responseVarible, nil)
 
 			// GetByReferenceID
-			mockDB.EXPECT().AIcallGetByReferenceID(ctx, tt.referenceID).Return(tt.responseAIcall, nil)
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDPipecatcallID)
-			mockDB.EXPECT().AIcallUpdate(ctx, tt.responseAIcall.ID, gomock.Any()).Return(nil)
-			mockDB.EXPECT().AIcallGet(ctx, tt.responseAIcall.ID).Return(tt.responseAIcall, nil)
+			mockDB.EXPECT().AIcallGetByReferenceID(ctx, tt.referenceID.Return(tt.responseAIcall, nil)
+			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUIDPipecatcallID)
+			mockDB.EXPECT().AIcallUpdate(ctx, tt.responseAIcall.ID, gomock.Any().Return(nil)
+			mockDB.EXPECT().AIcallGet(ctx, tt.responseAIcall.ID.Return(tt.responseAIcall, nil)
 
 			// get conversation message
-			mockMessage.EXPECT().Create(ctx, tt.responseAIcall.CustomerID, tt.responseAIcall.ID, message.DirectionOutgoing, message.RoleUser, tt.expectMessageContent, nil, "").Return(&message.Message{}, nil)
+			mockMessage.EXPECT().Create(ctx, tt.responseAIcall.CustomerID, tt.responseAIcall.ID, message.DirectionOutgoing, message.RoleUser, tt.expectMessageContent, nil, "".Return(&message.Message{}, nil)
 
 			// startPipecatcall
-			mockMessage.EXPECT().Gets(ctx, tt.responseAIcall.ID, uint64(100), "", gomock.Any()).Return(tt.responseMessages, nil)
+			mockMessage.EXPECT().Gets(ctx, tt.responseAIcall.ID, uint64(100), gomock.Any()).Return(tt.responseMessages, nil)
 			mockReq.EXPECT().PipecatV1PipecatcallStart(
 				ctx,
 				tt.responseAIcall.PipecatcallID,
@@ -489,8 +489,8 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 				tt.expectTTSType,
 				tt.responseAIcall.Language,
 				tt.expectTTSVoiceID,
-			).Return(tt.responsePipecatcall, nil)
-			mockReq.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, tt.responsePipecatcall.HostID, tt.responsePipecatcall.ID, defaultAITaskTimeout).Return(nil)
+			.Return(tt.responsePipecatcall, nil)
+			mockReq.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, tt.responsePipecatcall.HostID, tt.responsePipecatcall.ID, defaultAITaskTimeout.Return(nil)
 
 			res, err := h.startReferenceTypeConversation(ctx, tt.ai, tt.activeflowID, tt.referenceID, tt.gender, tt.language)
 			if err != nil {
@@ -568,7 +568,7 @@ func Test_getPipecatcallMessages(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockMessage.EXPECT().Gets(ctx, tt.aicall.ID, uint64(100), "", gomock.Any()).Return(tt.responseMessages, nil)
+			mockMessage.EXPECT().Gets(ctx, tt.aicall.ID, uint64(100), gomock.Any()).Return(tt.responseMessages, nil)
 
 			res, err := h.getPipecatcallMessages(ctx, tt.aicall)
 			if err != nil {
@@ -814,7 +814,7 @@ func Test_startPipecatcall(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockMessage.EXPECT().Gets(ctx, tt.aicall.ID, uint64(100), "", gomock.Any()).Return(tt.responseMessages, nil)
+			mockMessage.EXPECT().Gets(ctx, tt.aicall.ID, uint64(100), gomock.Any()).Return(tt.responseMessages, nil)
 			mockReq.EXPECT().PipecatV1PipecatcallStart(
 				ctx,
 				tt.aicall.PipecatcallID,
@@ -829,7 +829,7 @@ func Test_startPipecatcall(t *testing.T) {
 				tt.expectTTSType,
 				tt.aicall.Language,
 				tt.expectTTSVoiceID,
-			).Return(tt.responsePipecatcall, nil)
+			.Return(tt.responsePipecatcall, nil)
 
 			res, err := h.startPipecatcall(ctx, tt.aicall)
 			if err != nil {
@@ -960,21 +960,21 @@ func Test_startAIcall(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDPipecatcallID)
+			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUIDPipecatcallID)
 
 			// create
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDAIcallID)
-			mockDB.EXPECT().AIcallCreate(ctx, tt.expectAIcall).Return(nil)
-			mockDB.EXPECT().AIcallGet(ctx, tt.responseUUIDAIcallID).Return(tt.expectAIcall, nil)
+			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUIDAIcallID)
+			mockDB.EXPECT().AIcallCreate(ctx, tt.expectAIcall.Return(nil)
+			mockDB.EXPECT().AIcallGet(ctx, tt.responseUUIDAIcallID.Return(tt.expectAIcall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectAIcall.CustomerID, aicall.EventTypeStatusInitializing, tt.expectAIcall)
 
 			// setActiveflowVariables
-			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.expectAIcall.ActiveflowID, tt.expectVariables).Return(nil)
+			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.expectAIcall.ActiveflowID, tt.expectVariables.Return(nil)
 
 			// startInitMessages
-			mockReq.EXPECT().FlowV1VariableSubstitute(ctx, tt.activeflowID, tt.ai.InitPrompt).Return(tt.ai.InitPrompt, nil)
+			mockReq.EXPECT().FlowV1VariableSubstitute(ctx, tt.activeflowID, tt.ai.InitPrompt.Return(tt.ai.InitPrompt, nil)
 			for _, m := range tt.expectMessageTexts {
-				mockMessage.EXPECT().Create(ctx, tt.expectAIcall.CustomerID, tt.expectAIcall.ID, message.DirectionOutgoing, message.RoleSystem, m, nil, "").Return(&message.Message{}, nil)
+				mockMessage.EXPECT().Create(ctx, tt.expectAIcall.CustomerID, tt.expectAIcall.ID, message.DirectionOutgoing, message.RoleSystem, m, nil, "".Return(&message.Message{}, nil)
 			}
 
 			res, err := h.startAIcall(ctx, tt.ai, tt.activeflowID, tt.referenceType, tt.referenceID, tt.confbridgeID, tt.gender, tt.language, tt.isTask)
@@ -1036,7 +1036,7 @@ func Test_getInitPrompt(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1VariableSubstitute(ctx, tt.activeflowID, tt.ai.InitPrompt).Return(tt.responseSubstitute, nil)
+			mockReq.EXPECT().FlowV1VariableSubstitute(ctx, tt.activeflowID, tt.ai.InitPrompt.Return(tt.responseSubstitute, nil)
 
 			res := h.getInitPrompt(ctx, tt.ai, tt.activeflowID)
 			if !reflect.DeepEqual(res, tt.expectRes) {
@@ -1176,11 +1176,11 @@ func Test_startInitMessages(t *testing.T) {
 
 			// getInitPrompt
 			for _, m := range tt.responseSubstitutes {
-				mockReq.EXPECT().FlowV1VariableSubstitute(ctx, gomock.Any(), gomock.Any()).Return(m, nil)
+				mockReq.EXPECT().FlowV1VariableSubstitute(ctx, gomock.Any(), gomock.Any().Return(m, nil)
 			}
 
 			for _, m := range tt.expectMessageTexts {
-				mockMessage.EXPECT().Create(ctx, tt.aicall.CustomerID, tt.aicall.ID, message.DirectionOutgoing, message.RoleSystem, m, nil, "").Return(&message.Message{}, nil)
+				mockMessage.EXPECT().Create(ctx, tt.aicall.CustomerID, tt.aicall.ID, message.DirectionOutgoing, message.RoleSystem, m, nil, "".Return(&message.Message{}, nil)
 			}
 
 			if err := h.startInitMessages(ctx, tt.ai, tt.aicall, tt.isTask); err != nil {
@@ -1286,22 +1286,22 @@ func Test_StartTask(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockAI.EXPECT().Get(ctx, tt.aiID).Return(tt.responseAI, nil)
+			mockAI.EXPECT().Get(ctx, tt.aiID.Return(tt.responseAI, nil)
 
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDPipecatcallID)
+			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUIDPipecatcallID)
 
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDAIcallID)
-			mockDB.EXPECT().AIcallCreate(ctx, gomock.Any()).Return(nil)
-			mockDB.EXPECT().AIcallGet(ctx, tt.responseUUIDAIcallID).Return(tt.expectAIcall, nil)
+			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUIDAIcallID)
+			mockDB.EXPECT().AIcallCreate(ctx, gomock.Any().Return(nil)
+			mockDB.EXPECT().AIcallGet(ctx, tt.responseUUIDAIcallID.Return(tt.expectAIcall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), aicall.EventTypeStatusInitializing, gomock.Any())
 
-			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.activeflowID, gomock.Any()).Return(nil)
+			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.activeflowID, gomock.Any().Return(nil)
 
 			for _, m := range tt.expectMessageContents {
-				mockMessage.EXPECT().Create(ctx, tt.expectAIcall.CustomerID, tt.expectAIcall.ID, message.DirectionOutgoing, message.RoleSystem, m, nil, "").Return(&message.Message{}, nil)
+				mockMessage.EXPECT().Create(ctx, tt.expectAIcall.CustomerID, tt.expectAIcall.ID, message.DirectionOutgoing, message.RoleSystem, m, nil, "".Return(&message.Message{}, nil)
 			}
 
-			mockMessage.EXPECT().Gets(ctx, tt.expectAIcall.ID, uint64(100), "", gomock.Any()).Return(tt.responseMessages, nil)
+			mockMessage.EXPECT().Gets(ctx, tt.expectAIcall.ID, uint64(100), gomock.Any()).Return(tt.responseMessages, nil)
 			mockReq.EXPECT().PipecatV1PipecatcallStart(
 				ctx,
 				tt.expectAIcall.PipecatcallID,
@@ -1316,9 +1316,9 @@ func Test_StartTask(t *testing.T) {
 				pmpipecatcall.TTSTypeNone,
 				"",
 				"",
-			).Return(tt.responsePipecatcall, nil)
+			.Return(tt.responsePipecatcall, nil)
 
-			mockReq.EXPECT().AIV1AIcallTerminateWithDelay(ctx, tt.expectAIcall.ID, defaultAITaskTimeout).Return(nil)
+			mockReq.EXPECT().AIV1AIcallTerminateWithDelay(ctx, tt.expectAIcall.ID, defaultAITaskTimeout.Return(nil)
 
 			res, err := h.StartTask(ctx, tt.aiID, tt.activeflowID)
 			if err != nil {

@@ -62,7 +62,7 @@ func Test_Get(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().MessagechatGet(ctx, tt.id).Return(tt.responseChat, nil)
+			mockDB.EXPECT().MessagechatGet(ctx, tt.id.Return(tt.responseChat, nil)
 
 			res, err := h.Get(ctx, tt.id)
 			if err != nil {
@@ -125,7 +125,7 @@ func Test_Gets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().MessagechatGets(ctx, tt.token, tt.limit, tt.filters).Return(tt.responseMessagechat, nil)
+			mockDB.EXPECT().MessagechatGets(ctx, tt.token, tt.limit, tt.filters.Return(tt.responseMessagechat, nil)
 
 			res, err := h.Gets(ctx, tt.token, tt.limit, tt.filters)
 			if err != nil {
@@ -228,15 +228,15 @@ func Test_Create(t *testing.T) {
 			ctx := context.Background()
 
 			// create
-			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
-			mockDB.EXPECT().MessagechatCreate(ctx, gomock.Any()).Return(nil)
-			mockDB.EXPECT().MessagechatGet(ctx, gomock.Any()).Return(tt.responseMessagechat, nil)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(utilhandler.TimeGetCurTime())
+			mockDB.EXPECT().MessagechatCreate(ctx, gomock.Any().Return(nil)
+			mockDB.EXPECT().MessagechatGet(ctx, gomock.Any().Return(tt.responseMessagechat, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseMessagechat.CustomerID, messagechat.EventTypeMessagechatCreated, tt.responseMessagechat)
 
 			convertType := messagechatroom.ConvertType(tt.responseMessagechat.Type)
-			mockChatroom.EXPECT().Gets(ctx, gomock.Any(), gomock.Any(), tt.expectFilters).Return(tt.responseChatroom, nil)
+			mockChatroom.EXPECT().Gets(ctx, gomock.Any(), gomock.Any(), gomock.Any().Return(tt.responseChatroom, nil)
 			for _, cr := range tt.responseChatroom {
-				mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+				mockUtil.EXPECT().TimeGetCurTime(.Return(utilhandler.TimeGetCurTime())
 				mockMessagechatroom.EXPECT().Create(
 					ctx,
 					tt.responseMessagechat.CustomerID,
@@ -247,7 +247,7 @@ func Test_Create(t *testing.T) {
 					convertType,
 					tt.responseMessagechat.Text,
 					tt.responseMessagechat.Medias,
-				).Return(&messagechatroom.Messagechatroom{}, nil)
+				.Return(&messagechatroom.Messagechatroom{}, nil)
 			}
 
 			res, err := h.Create(ctx, tt.customerID, tt.chatID, tt.source, tt.messageType, tt.text, tt.medias)
@@ -318,9 +318,9 @@ func Test_create(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
-			mockDB.EXPECT().MessagechatCreate(ctx, gomock.Any()).Return(nil)
-			mockDB.EXPECT().MessagechatGet(ctx, gomock.Any()).Return(tt.responseMessagechat, nil)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(utilhandler.TimeGetCurTime())
+			mockDB.EXPECT().MessagechatCreate(ctx, gomock.Any().Return(nil)
+			mockDB.EXPECT().MessagechatGet(ctx, gomock.Any().Return(tt.responseMessagechat, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseMessagechat.CustomerID, messagechat.EventTypeMessagechatCreated, tt.responseMessagechat)
 
 			res, err := h.create(ctx, tt.customerID, tt.chatID, tt.source, tt.messageType, tt.text, tt.medias)
@@ -374,8 +374,8 @@ func Test_delete(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().MessagechatDelete(ctx, tt.id).Return(nil)
-			mockDB.EXPECT().MessagechatGet(ctx, tt.responseMessagechat.ID).Return(tt.responseMessagechat, nil)
+			mockDB.EXPECT().MessagechatDelete(ctx, tt.id.Return(nil)
+			mockDB.EXPECT().MessagechatGet(ctx, tt.responseMessagechat.ID.Return(tt.responseMessagechat, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseMessagechat.CustomerID, messagechat.EventTypeMessagechatDeleted, tt.responseMessagechat)
 
 			res, err := h.delete(ctx, tt.id)
@@ -453,13 +453,13 @@ func Test_Delete(t *testing.T) {
 			ctx := context.Background()
 
 			// delete
-			mockDB.EXPECT().MessagechatDelete(ctx, tt.id).Return(nil)
-			mockDB.EXPECT().MessagechatGet(ctx, tt.responseMessagechat.ID).Return(tt.responseMessagechat, nil)
+			mockDB.EXPECT().MessagechatDelete(ctx, tt.id.Return(nil)
+			mockDB.EXPECT().MessagechatGet(ctx, tt.responseMessagechat.ID.Return(tt.responseMessagechat, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseMessagechat.CustomerID, messagechat.EventTypeMessagechatDeleted, tt.responseMessagechat)
 
-			mockMessagechatroom.EXPECT().Gets(ctx, dbhandler.DefaultTimeStamp, gomock.Any(), tt.expectFilters).Return(tt.responseMessagechatroom, nil)
+			mockMessagechatroom.EXPECT().Gets(ctx, dbhandler.DefaultTimeStamp, gomock.Any(), gomock.Any().Return(tt.responseMessagechatroom, nil)
 			for _, mc := range tt.responseMessagechatroom {
-				mockMessagechatroom.EXPECT().Delete(ctx, mc.ID).Return(&messagechatroom.Messagechatroom{}, nil)
+				mockMessagechatroom.EXPECT().Delete(ctx, mc.ID.Return(&messagechatroom.Messagechatroom{}, nil)
 			}
 
 			res, err := h.Delete(ctx, tt.id)

@@ -14,7 +14,6 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
-	"monorepo/bin-common-handler/pkg/utilhandler"
 )
 
 func Test_BillingV1AccountGets(t *testing.T) {
@@ -24,9 +23,8 @@ func Test_BillingV1AccountGets(t *testing.T) {
 
 		size    uint64
 		token   string
-		filters map[string]string
+		filters map[bmaccount.Field]any
 
-		expectURL     string
 		expectTarget  string
 		expectRequest *sock.Request
 		expectRes     []bmaccount.Account
@@ -37,15 +35,16 @@ func Test_BillingV1AccountGets(t *testing.T) {
 
 			size:  10,
 			token: "2023-06-08 03:22:17.995000",
-			filters: map[string]string{
-				"customer_id": "33a95f94-0e7c-11ee-aeb3-57a93b9f70fd",
+			filters: map[bmaccount.Field]any{
+				bmaccount.FieldCustomerID: uuid.FromStringOrNil("33a95f94-0e7c-11ee-aeb3-57a93b9f70fd"),
 			},
 
-			expectURL:    "/v1/accounts?page_token=2023-06-08+03%3A22%3A17.995000&page_size=10",
 			expectTarget: "bin-manager.billing-manager.request",
 			expectRequest: &sock.Request{
-				URI:    "/v1/accounts?page_token=2023-06-08+03%3A22%3A17.995000&page_size=10&filter_customer_id=33a95f94-0e7c-11ee-aeb3-57a93b9f70fd",
-				Method: sock.RequestMethodGet,
+				URI:      "/v1/accounts?page_token=2023-06-08+03%3A22%3A17.995000&page_size=10",
+				Method:   sock.RequestMethodGet,
+				DataType: "application/json",
+				Data:     []byte(`{"customer_id":"33a95f94-0e7c-11ee-aeb3-57a93b9f70fd"}`),
 			},
 			expectRes: []bmaccount.Account{
 				{
@@ -74,14 +73,11 @@ func Test_BillingV1AccountGets(t *testing.T) {
 			defer mc.Finish()
 
 			mockSock := sockhandler.NewMockSockHandler(mc)
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			reqHandler := requestHandler{
-				sock:        mockSock,
-				utilHandler: mockUtil,
+				sock: mockSock,
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 			res, err := reqHandler.BillingV1AccountGets(ctx, tt.token, tt.size, tt.filters)
 			if err != nil {

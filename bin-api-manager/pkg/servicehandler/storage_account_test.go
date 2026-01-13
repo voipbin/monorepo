@@ -59,7 +59,7 @@ func Test_storageAccountGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().StorageV1AccountGet(ctx, tt.storageAccountID).Return(tt.responseStorageAccount, nil)
+			mockReq.EXPECT().StorageV1AccountGet(ctx, tt.storageAccountID.Return(tt.responseStorageAccount, nil)
 
 			res, err := h.storageAccountGet(ctx, tt.storageAccountID)
 			if err != nil {
@@ -123,8 +123,8 @@ func Test_StorageAccountDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().StorageV1AccountGet(ctx, tt.storageAccountID).Return(tt.responseStorageAccount, nil)
-			mockReq.EXPECT().StorageV1AccountDelete(ctx, tt.storageAccountID, 60000).Return(tt.responseStorageAccount, nil)
+			mockReq.EXPECT().StorageV1AccountGet(ctx, tt.storageAccountID.Return(tt.responseStorageAccount, nil)
+			mockReq.EXPECT().StorageV1AccountDelete(ctx, tt.storageAccountID, 60000.Return(tt.responseStorageAccount, nil)
 
 			res, err := h.StorageAccountDelete(ctx, tt.agent, tt.storageAccountID)
 			if err != nil {
@@ -200,7 +200,7 @@ func Test_StorageAccountGets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().StorageV1AccountGets(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseStorageAcounts, nil)
+			mockReq.EXPECT().StorageV1AccountGets(ctx, tt.token, tt.size, tt.expectFilters.Return(tt.responseStorageAcounts, nil)
 
 			res, err := h.StorageAccountGets(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {
@@ -260,7 +260,7 @@ func Test_StorageAccountCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().StorageV1AccountCreate(ctx, tt.agent.CustomerID).Return(tt.responseStorageAccount, nil)
+			mockReq.EXPECT().StorageV1AccountCreate(ctx, tt.agent.CustomerID.Return(tt.responseStorageAccount, nil)
 
 			res, err := h.StorageAccountCreate(ctx, tt.agent, tt.customerID)
 			if err != nil {

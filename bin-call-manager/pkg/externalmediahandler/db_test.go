@@ -145,9 +145,9 @@ func Test_Create(t *testing.T) {
 			ctx := context.Background()
 
 			if tt.id == uuid.Nil {
-				mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+				mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
 			}
-			mockDB.EXPECT().ExternalMediaSet(ctx, tt.expectExternalMedia).Return(nil)
+			mockDB.EXPECT().ExternalMediaSet(ctx, tt.expectExternalMedia.Return(nil)
 			res, err := h.Create(
 				ctx,
 				tt.id,
@@ -218,7 +218,7 @@ func Test_Get(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ExternalMediaGet(ctx, tt.id).Return(tt.responseExternalMedia, nil)
+			mockDB.EXPECT().ExternalMediaGet(ctx, tt.id.Return(tt.responseExternalMedia, nil)
 			res, err := h.Get(ctx, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -284,7 +284,7 @@ func Test_Gets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ExternalMediaGetByReferenceID(ctx, tt.expectReferenceID).Return(tt.responseExternalMedia, nil)
+			mockDB.EXPECT().ExternalMediaGetByReferenceID(ctx, tt.expectReferenceID.Return(tt.responseExternalMedia, nil)
 			res, err := h.Gets(ctx, 1, "", tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

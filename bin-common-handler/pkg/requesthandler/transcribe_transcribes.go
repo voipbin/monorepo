@@ -11,6 +11,7 @@ import (
 	tmrequest "monorepo/bin-transcribe-manager/pkg/listenhandler/models/request"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 )
 
 // TranscribeV1TranscribeGet sends a request to transcribe-manager
@@ -35,13 +36,15 @@ func (r *requestHandler) TranscribeV1TranscribeGet(ctx context.Context, transcri
 // TranscribeV1TranscribeGets sends a request to transcribe-manager
 // to getting a list of transcribe info.
 // it returns detail list of transcribe info if it succeed.
-func (r *requestHandler) TranscribeV1TranscribeGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]tmtranscribe.Transcribe, error) {
+func (r *requestHandler) TranscribeV1TranscribeGets(ctx context.Context, pageToken string, pageSize uint64, filters map[tmtranscribe.Field]any) ([]tmtranscribe.Transcribe, error) {
 	uri := fmt.Sprintf("/v1/transcribes?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
-	// parse filters
-	uri = r.utilHandler.URLMergeFilters(uri, filters)
+	m, err := json.Marshal(filters)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not marshal filters")
+	}
 
-	tmp, err := r.sendRequestTranscribe(ctx, uri, sock.RequestMethodGet, "transcribe/transcribes", 30000, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestTranscribe(ctx, uri, sock.RequestMethodGet, "transcribe/transcribes", 30000, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}

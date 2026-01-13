@@ -72,7 +72,7 @@ func Test_Stop(t *testing.T) {
 
 			h.mapStreaming[tt.streaming.ID] = tt.streaming
 
-			mockReq.EXPECT().CallV1ExternalMediaStop(ctx, tt.expectExternalMediaID).Return(tt.responseExternalMedia, nil)
+			mockReq.EXPECT().CallV1ExternalMediaStop(ctx, tt.expectExternalMediaID.Return(tt.responseExternalMedia, nil)
 
 			res, err := h.Stop(ctx, tt.id)
 			if err != nil {

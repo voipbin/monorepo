@@ -81,7 +81,7 @@ func Test_conversationsGet(t *testing.T) {
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ConversationGetsByCustomerID(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseConversations, nil)
+			mockSvc.EXPECT().ConversationGetsByCustomerID(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken.Return(tt.responseConversations, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -154,7 +154,7 @@ func Test_conversationsIDGet(t *testing.T) {
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ConversationGet(req.Context(), &tt.agent, tt.expectConversationID).Return(tt.responseConversation, nil)
+			mockSvc.EXPECT().ConversationGet(req.Context(), &tt.agent, tt.expectConversationID.Return(tt.responseConversation, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -232,7 +232,7 @@ func Test_GetConversationsIdMessages(t *testing.T) {
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ConversationMessageGetsByConversationID(req.Context(), &tt.agent, tt.expectConversationID, tt.expectPageSize, tt.expectPageToken).Return(tt.responseMessages, nil)
+			mockSvc.EXPECT().ConversationMessageGetsByConversationID(req.Context(), &tt.agent, tt.expectConversationID, tt.expectPageSize, tt.expectPageToken.Return(tt.responseMessages, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -308,7 +308,7 @@ func Test_PostConversationsIdMessages(t *testing.T) {
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ConversationMessageSend(req.Context(), &tt.agent, tt.expectConversationID, tt.expectText, []cvmedia.Media{}).Return(tt.responseMessage, nil)
+			mockSvc.EXPECT().ConversationMessageSend(req.Context(), &tt.agent, tt.expectConversationID, tt.expectText, []cvmedia.Media{}.Return(tt.responseMessage, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -387,7 +387,7 @@ func Test_conversationsIDPut(t *testing.T) {
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ConversationUpdate(req.Context(), &tt.agent, tt.expectConversationID, tt.expectFields).Return(tt.responseConversation, nil)
+			mockSvc.EXPECT().ConversationUpdate(req.Context(), &tt.agent, tt.expectConversationID, tt.expectFields.Return(tt.responseConversation, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

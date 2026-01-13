@@ -64,7 +64,7 @@ func Test_storeRecordingFiles(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AstProxyRecordingFileMove(ctx, tt.recording.AsteriskID, tt.recording.Filenames, 30000).Return(nil)
+			mockReq.EXPECT().AstProxyRecordingFileMove(ctx, tt.recording.AsteriskID, tt.recording.Filenames, 30000.Return(nil)
 
 			for _, filename := range tt.recording.Filenames {
 				filepath := h.getFilepath(filename)
@@ -80,7 +80,7 @@ func Test_storeRecordingFiles(t *testing.T) {
 					defaultBucketName,
 					filepath,
 					30000,
-				).Return(&smfile.File{}, nil)
+				.Return(&smfile.File{}, nil)
 			}
 
 			if errFile := h.storeRecordingFiles(ctx, tt.recording); errFile != nil {
@@ -142,11 +142,11 @@ func Test_Stopped(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().RecordingSetStatus(ctx, tt.id, recording.StatusEnded).Return(nil)
-			mockDB.EXPECT().RecordingGet(ctx, tt.id).Return(tt.responseRecording, nil)
+			mockDB.EXPECT().RecordingSetStatus(ctx, tt.id, recording.StatusEnded.Return(nil)
+			mockDB.EXPECT().RecordingGet(ctx, tt.id.Return(tt.responseRecording, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseRecording.CustomerID, recording.EventTypeRecordingFinished, tt.responseRecording)
 
-			mockReq.EXPECT().AstProxyRecordingFileMove(ctx, tt.responseRecording.AsteriskID, tt.responseRecording.Filenames, 30000).Return(nil)
+			mockReq.EXPECT().AstProxyRecordingFileMove(ctx, tt.responseRecording.AsteriskID, tt.responseRecording.Filenames, 30000.Return(nil)
 
 			for _, filename := range tt.responseRecording.Filenames {
 				filepath := h.getFilepath(filename)
@@ -162,7 +162,7 @@ func Test_Stopped(t *testing.T) {
 					defaultBucketName,
 					filepath,
 					gomock.Any(),
-				).Return(&smfile.File{}, nil)
+				.Return(&smfile.File{}, nil)
 			}
 
 			res, err := h.Stopped(ctx, tt.id)
@@ -227,12 +227,12 @@ func Test_Stop_referenceTypeCall(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().RecordingGet(ctx, tt.id).Return(tt.responseRecording, nil)
+			mockDB.EXPECT().RecordingGet(ctx, tt.id.Return(tt.responseRecording, nil)
 			for _, channelID := range tt.responseRecording.ChannelIDs {
-				mockChannel.EXPECT().HangingUpWithAsteriskID(ctx, tt.responseRecording.AsteriskID, channelID, ari.ChannelCauseNormalClearing).Return(nil)
+				mockChannel.EXPECT().HangingUpWithAsteriskID(ctx, tt.responseRecording.AsteriskID, channelID, ari.ChannelCauseNormalClearing.Return(nil)
 			}
-			mockDB.EXPECT().RecordingSetStatus(ctx, tt.id, recording.StatusStopping).Return(nil)
-			mockDB.EXPECT().RecordingGet(ctx, tt.id).Return(tt.responseRecording, nil)
+			mockDB.EXPECT().RecordingSetStatus(ctx, tt.id, recording.StatusStopping.Return(nil)
+			mockDB.EXPECT().RecordingGet(ctx, tt.id.Return(tt.responseRecording, nil)
 
 			res, err := h.Stop(ctx, tt.id)
 			if err != nil {
@@ -294,10 +294,10 @@ func Test_Stop_referenceTypeConference(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().RecordingGet(ctx, tt.id).Return(tt.responseRecording, nil)
-			mockReq.EXPECT().AstRecordingStop(ctx, tt.responseRecording.AsteriskID, tt.expectRecordingName).Return(nil)
-			mockDB.EXPECT().RecordingSetStatus(ctx, tt.id, recording.StatusStopping).Return(nil)
-			mockDB.EXPECT().RecordingGet(ctx, tt.id).Return(tt.responseRecording, nil)
+			mockDB.EXPECT().RecordingGet(ctx, tt.id.Return(tt.responseRecording, nil)
+			mockReq.EXPECT().AstRecordingStop(ctx, tt.responseRecording.AsteriskID, tt.expectRecordingName.Return(nil)
+			mockDB.EXPECT().RecordingSetStatus(ctx, tt.id, recording.StatusStopping.Return(nil)
+			mockDB.EXPECT().RecordingGet(ctx, tt.id.Return(tt.responseRecording, nil)
 
 			res, err := h.Stop(ctx, tt.id)
 			if err != nil {

@@ -53,7 +53,7 @@ func Test_processEvent_processEventCMGroupcallCreated(t *testing.T) {
 				agentHandler: mockAgent,
 			}
 
-			mockAgent.EXPECT().EventGroupcallCreated(gomock.Any(), tt.expectGroupcall).Return(nil)
+			mockAgent.EXPECT().EventGroupcallCreated(gomock.Any(), tt.expectGroupcall.Return(nil)
 
 			h.processEvent(tt.event)
 		})
@@ -99,7 +99,7 @@ func Test_processEvent_processEventCMGroupcallAnswered(t *testing.T) {
 				agentHandler: mockAgent,
 			}
 
-			mockAgent.EXPECT().EventGroupcallProgressing(gomock.Any(), tt.expectGroupcall).Return(nil)
+			mockAgent.EXPECT().EventGroupcallProgressing(gomock.Any(), tt.expectGroupcall.Return(nil)
 
 			h.processEvent(tt.event)
 		})

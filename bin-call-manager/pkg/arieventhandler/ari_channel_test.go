@@ -140,7 +140,7 @@ func Test_EventHandlerChannelCreated(t *testing.T) {
 				tt.expectDestinationName,
 				tt.expectDestinationNumber,
 				tt.expectState,
-			).Return(tt.responseChannel, nil)
+			.Return(tt.responseChannel, nil)
 
 			if err := h.EventHandlerChannelCreated(ctx, tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -218,8 +218,8 @@ func Test_EventHandlerChannelDestroyed(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockChannel.EXPECT().Delete(ctx, tt.expectChannelID, tt.expectHangup).Return(tt.responseChannel, nil)
-			mockCall.EXPECT().ARIChannelDestroyed(ctx, tt.responseChannel).Return(nil)
+			mockChannel.EXPECT().Delete(ctx, tt.expectChannelID, tt.expectHangup.Return(tt.responseChannel, nil)
+			mockCall.EXPECT().ARIChannelDestroyed(ctx, tt.responseChannel.Return(nil)
 
 			if err := h.EventHandlerChannelDestroyed(ctx, tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -290,8 +290,8 @@ func Test_EventHandlerChannelStateChange(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockChannel.EXPECT().ARIChannelStateChange(ctx, tt.event).Return(tt.responseChannel, nil)
-			mockCall.EXPECT().ARIChannelStateChange(ctx, tt.responseChannel).Return(nil)
+			mockChannel.EXPECT().ARIChannelStateChange(ctx, tt.event.Return(tt.responseChannel, nil)
+			mockCall.EXPECT().ARIChannelStateChange(ctx, tt.responseChannel.Return(nil)
 
 			if err := h.EventHandlerChannelStateChange(ctx, tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -482,11 +482,11 @@ func Test_EventHandlerChannelEnteredBridge(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockChannel.EXPECT().UpdateBridgeID(ctx, tt.channel.ID, tt.responseBridge.ID).Return(tt.channel, nil)
-			mockBridge.EXPECT().AddChannelID(ctx, tt.responseBridge.ID, tt.channel.ID).Return(tt.responseBridge, nil)
+			mockChannel.EXPECT().UpdateBridgeID(ctx, tt.channel.ID, tt.responseBridge.ID.Return(tt.channel, nil)
+			mockBridge.EXPECT().AddChannelID(ctx, tt.responseBridge.ID, tt.channel.ID.Return(tt.responseBridge, nil)
 
 			if tt.channel.Type == channel.TypeConfbridge {
-				mockConfbridge.EXPECT().ARIChannelEnteredBridge(gomock.Any(), tt.channel, tt.responseBridge).Return(nil)
+				mockConfbridge.EXPECT().ARIChannelEnteredBridge(gomock.Any(), tt.channel, tt.responseBridge.Return(nil)
 			}
 
 			if err := h.EventHandlerChannelEnteredBridge(ctx, tt.event); err != nil {
@@ -727,15 +727,15 @@ func Test_EventHandlerChannelLeftBridge(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockChannel.EXPECT().UpdateBridgeID(ctx, tt.event.Channel.ID, "").Return(tt.channel, nil)
-			mockBridge.EXPECT().RemoveChannelID(ctx, tt.event.Bridge.ID, tt.event.Channel.ID).Return(tt.responseBridge, nil)
+			mockChannel.EXPECT().UpdateBridgeID(ctx, tt.event.Channel.ID, "".Return(tt.channel, nil)
+			mockBridge.EXPECT().RemoveChannelID(ctx, tt.event.Bridge.ID, tt.event.Channel.ID.Return(tt.responseBridge, nil)
 
 			switch tt.responseBridge.ReferenceType {
 			case bridge.ReferenceTypeConfbridge, bridge.ReferenceTypeConfbridgeSnoop:
-				mockConfbridge.EXPECT().ARIChannelLeftBridge(ctx, tt.channel, tt.responseBridge).Return(nil)
+				mockConfbridge.EXPECT().ARIChannelLeftBridge(ctx, tt.channel, tt.responseBridge.Return(nil)
 
 			case bridge.ReferenceTypeCall, bridge.ReferenceTypeCallSnoop:
-				mockCall.EXPECT().ARIChannelLeftBridge(ctx, tt.channel, tt.responseBridge).Return(nil)
+				mockCall.EXPECT().ARIChannelLeftBridge(ctx, tt.channel, tt.responseBridge.Return(nil)
 			}
 
 			if err := h.EventHandlerChannelLeftBridge(ctx, tt.event); err != nil {
@@ -814,8 +814,8 @@ func Test_EventHandlerChannelDtmfReceived(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockChannel.EXPECT().Get(ctx, tt.responseChannel.ID).Return(tt.responseChannel, nil)
-			mockCall.EXPECT().ARIChannelDtmfReceived(ctx, tt.responseChannel, tt.expectDigit, tt.expectDuration).Return(nil)
+			mockChannel.EXPECT().Get(ctx, tt.responseChannel.ID.Return(tt.responseChannel, nil)
+			mockCall.EXPECT().ARIChannelDtmfReceived(ctx, tt.responseChannel, tt.expectDigit, tt.expectDuration.Return(nil)
 
 			if err := h.EventHandlerChannelDtmfReceived(ctx, tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -871,7 +871,7 @@ func Test_EventHandlerChannelVarset(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockChannel.EXPECT().SetDataItem(ctx, tt.channel.ID, tt.key, tt.value).Return(nil)
+			mockChannel.EXPECT().SetDataItem(ctx, tt.channel.ID, tt.key, tt.value.Return(nil)
 			if err := h.EventHandlerChannelVarset(ctx, tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

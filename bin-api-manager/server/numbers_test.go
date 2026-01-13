@@ -76,7 +76,7 @@ func TestNumbersGET(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().NumberGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseNumbers, nil)
+			mockSvc.EXPECT().NumberGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken.Return(tt.responseNumbers, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -144,7 +144,7 @@ func Test_NumbersIDGET(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().NumberGet(req.Context(), &tt.agent, tt.expectNumberID).Return(tt.responseNumber, nil)
+			mockSvc.EXPECT().NumberGet(req.Context(), &tt.agent, tt.expectNumberID.Return(tt.responseNumber, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -214,7 +214,7 @@ func TestNumbersIDDELETE(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().NumberDelete(req.Context(), &tt.agent, tt.expectNumberID).Return(tt.responseNumber, nil)
+			mockSvc.EXPECT().NumberDelete(req.Context(), &tt.agent, tt.expectNumberID.Return(tt.responseNumber, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -294,7 +294,7 @@ func TestNumbersPOST(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
-			mockSvc.EXPECT().NumberCreate(req.Context(), &tt.agent, tt.expectNumber, tt.expectCallFlowID, tt.expectMessageFlowID, tt.expectName, tt.expectDetail).Return(tt.responseNumber, nil)
+			mockSvc.EXPECT().NumberCreate(req.Context(), &tt.agent, tt.expectNumber, tt.expectCallFlowID, tt.expectMessageFlowID, tt.expectName, tt.expectDetail.Return(tt.responseNumber, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -377,7 +377,7 @@ func TestNumbersIDPUT(t *testing.T) {
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 
-			mockSvc.EXPECT().NumberUpdate(req.Context(), &tt.agent, tt.expectNumberID, tt.expectCallFlowID, tt.expectMessageFlowID, tt.expectName, tt.expectDetail).Return(tt.responseNumber, nil)
+			mockSvc.EXPECT().NumberUpdate(req.Context(), &tt.agent, tt.expectNumberID, tt.expectCallFlowID, tt.expectMessageFlowID, tt.expectName, tt.expectDetail.Return(tt.responseNumber, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
@@ -453,7 +453,7 @@ func TestNumbersIDFlowIDsPUT(t *testing.T) {
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 
-			mockSvc.EXPECT().NumberUpdateFlowIDs(req.Context(), &tt.agent, tt.expectNumberID, tt.expectCallFlowID, tt.expectMessageFlowID).Return(tt.responseNumber, nil)
+			mockSvc.EXPECT().NumberUpdateFlowIDs(req.Context(), &tt.agent, tt.expectNumberID, tt.expectCallFlowID, tt.expectMessageFlowID.Return(tt.responseNumber, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
@@ -532,7 +532,7 @@ func Test_NumbersRenewPOST(t *testing.T) {
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 
-			mockSvc.EXPECT().NumberRenew(req.Context(), &tt.agent, tt.expectTMRenew).Return(tt.responseNumbers, nil)
+			mockSvc.EXPECT().NumberRenew(req.Context(), &tt.agent, tt.expectTMRenew.Return(tt.responseNumbers, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)

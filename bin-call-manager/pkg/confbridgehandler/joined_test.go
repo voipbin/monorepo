@@ -105,13 +105,13 @@ func Test_Joined_type_connect(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConfbridgeAddChannelCallID(ctx, tt.expectConfbridgeID, tt.channel.ID, tt.expectCallID).Return(nil)
-			mockDB.EXPECT().ConfbridgeGet(ctx, tt.expectConfbridgeID).Return(tt.responseConfbridge, nil)
+			mockDB.EXPECT().ConfbridgeAddChannelCallID(ctx, tt.expectConfbridgeID, tt.channel.ID, tt.expectCallID.Return(nil)
+			mockDB.EXPECT().ConfbridgeGet(ctx, tt.expectConfbridgeID.Return(tt.responseConfbridge, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, confbridge.EventTypeConfbridgeJoined, tt.expectEvent)
 
-			mockReq.EXPECT().CallV1CallUpdateConfbridgeID(ctx, tt.expectCallID, tt.expectConfbridgeID).Return(tt.responseCall, nil)
+			mockReq.EXPECT().CallV1CallUpdateConfbridgeID(ctx, tt.expectCallID, tt.expectConfbridgeID.Return(tt.responseCall, nil)
 
-			mockChannel.EXPECT().Ring(ctx, tt.channel.ID).Return(nil)
+			mockChannel.EXPECT().Ring(ctx, tt.channel.ID.Return(nil)
 
 			if err := h.Joined(ctx, tt.channel, tt.bridge); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -199,13 +199,13 @@ func Test_Joined_type_conference(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConfbridgeAddChannelCallID(ctx, tt.expectConfbridgeID, tt.channel.ID, tt.expectCallID).Return(nil)
-			mockDB.EXPECT().ConfbridgeGet(ctx, tt.expectConfbridgeID).Return(tt.responseConfbridge, nil)
+			mockDB.EXPECT().ConfbridgeAddChannelCallID(ctx, tt.expectConfbridgeID, tt.channel.ID, tt.expectCallID.Return(nil)
+			mockDB.EXPECT().ConfbridgeGet(ctx, tt.expectConfbridgeID.Return(tt.responseConfbridge, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, confbridge.EventTypeConfbridgeJoined, tt.expectEvent)
 
-			mockReq.EXPECT().CallV1CallUpdateConfbridgeID(ctx, tt.expectCallID, tt.expectConfbridgeID).Return(tt.responseCall, nil)
+			mockReq.EXPECT().CallV1CallUpdateConfbridgeID(ctx, tt.expectCallID, tt.expectConfbridgeID.Return(tt.responseCall, nil)
 
-			mockChannel.EXPECT().Answer(ctx, tt.channel.ID).Return(nil)
+			mockChannel.EXPECT().Answer(ctx, tt.channel.ID.Return(nil)
 
 			if err := h.Joined(ctx, tt.channel, tt.bridge); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -353,23 +353,23 @@ func Test_joinedTypeConnect(t *testing.T) {
 			ctx := context.Background()
 
 			if len(tt.confbridge.ChannelCallIDs) == 1 {
-				mockChannel.EXPECT().Ring(ctx, tt.channelID).Return(nil)
+				mockChannel.EXPECT().Ring(ctx, tt.channelID.Return(nil)
 			} else {
 				i := 0
 				for _, callID := range tt.confbridge.ChannelCallIDs {
-					mockReq.EXPECT().CallV1CallGet(ctx, callID).Return(tt.responseCalls[i], nil).AnyTimes()
+					mockReq.EXPECT().CallV1CallGet(ctx, callID.Return(tt.responseCalls[i], nil).AnyTimes()
 					i++
 				}
 
 				if tt.expectFlagRing {
-					mockDB.EXPECT().ConfbridgeGet(ctx, tt.confbridge.ID).Return(tt.confbridge, nil)
+					mockDB.EXPECT().ConfbridgeGet(ctx, tt.confbridge.ID.Return(tt.confbridge, nil)
 					for channelID := range tt.confbridge.ChannelCallIDs {
-						mockChannel.EXPECT().Ring(ctx, channelID).Return(nil)
+						mockChannel.EXPECT().Ring(ctx, channelID.Return(nil)
 					}
 				} else {
-					mockDB.EXPECT().ConfbridgeGet(ctx, tt.confbridge.ID).Return(tt.confbridge, nil)
+					mockDB.EXPECT().ConfbridgeGet(ctx, tt.confbridge.ID.Return(tt.confbridge, nil)
 					for channelID := range tt.confbridge.ChannelCallIDs {
-						mockChannel.EXPECT().Answer(ctx, channelID).Return(nil)
+						mockChannel.EXPECT().Answer(ctx, channelID.Return(nil)
 					}
 				}
 			}
@@ -428,7 +428,7 @@ func Test_joinedTypeConference(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockChannel.EXPECT().Answer(ctx, tt.channelID).Return(nil)
+			mockChannel.EXPECT().Answer(ctx, tt.channelID.Return(nil)
 
 			if err := h.joinedTypeConference(ctx, tt.channelID, tt.call, tt.confbridge); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -82,7 +82,7 @@ func Test_EmailSend(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().EmailV1EmailSend(ctx, tt.agent.CustomerID, uuid.Nil, tt.destinations, tt.subject, tt.content, tt.attachments).Return(tt.response, nil)
+			mockReq.EXPECT().EmailV1EmailSend(ctx, tt.agent.CustomerID, uuid.Nil, tt.destinations, tt.subject, tt.content, tt.attachments.Return(tt.response, nil)
 			res, err := h.EmailSend(ctx, tt.agent, tt.destinations, tt.subject, tt.content, tt.attachments)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -195,7 +195,7 @@ func Test_EmailGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().EmailV1EmailGets(ctx, tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.responseEmails, nil)
+			mockReq.EXPECT().EmailV1EmailGets(ctx, tt.pageToken, tt.pageSize, tt.expectFilters.Return(tt.responseEmails, nil)
 
 			res, err := h.EmailGets(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
@@ -263,7 +263,7 @@ func Test_EmailGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().EmailV1EmailGet(ctx, tt.emailID).Return(tt.response, nil)
+			mockReq.EXPECT().EmailV1EmailGet(ctx, tt.emailID.Return(tt.response, nil)
 
 			res, err := h.EmailGet(ctx, tt.agent, tt.emailID)
 			if err != nil {
@@ -331,8 +331,8 @@ func Test_EmailDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().EmailV1EmailGet(ctx, tt.emailID).Return(tt.responseEmail, nil)
-			mockReq.EXPECT().EmailV1EmailDelete(ctx, tt.emailID).Return(tt.responseEmail, nil)
+			mockReq.EXPECT().EmailV1EmailGet(ctx, tt.emailID.Return(tt.responseEmail, nil)
+			mockReq.EXPECT().EmailV1EmailDelete(ctx, tt.emailID.Return(tt.responseEmail, nil)
 
 			res, err := h.EmailDelete(ctx, tt.agent, tt.emailID)
 			if err != nil {

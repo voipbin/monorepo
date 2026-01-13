@@ -95,7 +95,7 @@ func Test_processV1QueuesPost(t *testing.T) {
 				tt.expectedWaitFlowID,
 				tt.expectedWaitTimeout,
 				tt.expectedServiceTimeout,
-			).Return(tt.responseQueue, nil)
+			.Return(tt.responseQueue, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -201,7 +201,7 @@ func Test_processV1QueuesGet(t *testing.T) {
 				queueHandler: mockQueue,
 			}
 
-			mockQueue.EXPECT().Gets(gomock.Any(), tt.expectedPageSize, tt.expectedPageToken, tt.responseFilters).Return(tt.responseQueues, nil)
+			mockQueue.EXPECT().Gets(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any().Return(tt.responseQueues, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -263,7 +263,7 @@ func Test_processV1QueuesIDGet(t *testing.T) {
 				queueHandler: mockQueue,
 			}
 
-			mockQueue.EXPECT().Get(gomock.Any(), tt.expectedID).Return(tt.responseQueue, nil)
+			mockQueue.EXPECT().Get(gomock.Any(), tt.expectedID.Return(tt.responseQueue, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -325,7 +325,7 @@ func Test_processV1QueuesIDDelete(t *testing.T) {
 				queueHandler: mockQueue,
 			}
 
-			mockQueue.EXPECT().Delete(gomock.Any(), tt.expectedID).Return(tt.responseQueue, nil)
+			mockQueue.EXPECT().Delete(gomock.Any(), tt.expectedID.Return(tt.responseQueue, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -415,7 +415,7 @@ func Test_processV1QueuesIDPut(t *testing.T) {
 				tt.expectedWaitFlowID,
 				tt.expectedWaitTimeout,
 				tt.expectedServiceTimeout,
-			).Return(tt.responseQueue, nil)
+			.Return(tt.responseQueue, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -508,7 +508,7 @@ func Test_processV1QueuesIDTagIDsPut(t *testing.T) {
 				queueHandler: mockQueue,
 			}
 
-			mockQueue.EXPECT().UpdateTagIDs(gomock.Any(), tt.expectedID, tt.expectedTagIDs).Return(tt.responseQueue, nil)
+			mockQueue.EXPECT().UpdateTagIDs(gomock.Any(), tt.expectedID, tt.expectedTagIDs.Return(tt.responseQueue, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -573,7 +573,7 @@ func Test_processV1QueuesIDRoutingMethodPut(t *testing.T) {
 				queueHandler: mockQueue,
 			}
 
-			mockQueue.EXPECT().UpdateRoutingMethod(gomock.Any(), tt.expectedID, tt.expectedRoutingMethod).Return(tt.responseQueue, nil)
+			mockQueue.EXPECT().UpdateRoutingMethod(gomock.Any(), tt.expectedID, tt.expectedRoutingMethod.Return(tt.responseQueue, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -647,7 +647,7 @@ func Test_processV1QueuesIDRoutingMethodPut(t *testing.T) {
 // 				queueHandler: mockQueue,
 // 			}
 
-// 			mockQueue.EXPECT().UpdateWaitActionsAndTimeouts(gomock.Any(), tt.id, tt.waitActions, tt.waitTimeout, tt.serviceTimeout).Return(tt.responseQueue, nil)
+// 			mockQueue.EXPECT().UpdateWaitActionsAndTimeouts(gomock.Any(), tt.id, tt.waitActions, tt.waitTimeout, tt.serviceTimeout.Return(tt.responseQueue, nil)
 
 // 			res, err := h.processRequest(tt.request)
 // 			if err != nil {
@@ -712,7 +712,7 @@ func Test_processV1QueuesIDAgentsGet(t *testing.T) {
 				queueHandler: mockQueue,
 			}
 
-			mockQueue.EXPECT().GetAgents(gomock.Any(), tt.expectedID, tt.expectedStatus).Return(tt.responseAgents, nil)
+			mockQueue.EXPECT().GetAgents(gomock.Any(), tt.expectedID, tt.expectedStatus.Return(tt.responseAgents, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -828,7 +828,7 @@ func Test_processV1QueuesIDExecutePut(t *testing.T) {
 				queueHandler: mockQueue,
 			}
 
-			mockQueue.EXPECT().UpdateExecute(gomock.Any(), tt.expectedQueueID, tt.expectedExecute).Return(tt.responseQueue, nil)
+			mockQueue.EXPECT().UpdateExecute(gomock.Any(), tt.expectedQueueID, tt.expectedExecute.Return(tt.responseQueue, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -66,7 +66,7 @@ func Test_processV1CallsIDGet(t *testing.T) {
 				callHandler: mockCall,
 			}
 
-			mockCall.EXPECT().Get(gomock.Any(), tt.call.ID).Return(tt.call, nil)
+			mockCall.EXPECT().Get(gomock.Any(), tt.call.ID.Return(tt.call, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -171,8 +171,8 @@ func Test_processV1CallsGet(t *testing.T) {
 				callHandler: mockCall,
 			}
 
-			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
-			mockCall.EXPECT().Gets(gomock.Any(), tt.pageSize, tt.pageToken, tt.responseFilters).Return(tt.responseCalls, nil)
+			mockUtil.EXPECT().URLParseFilters(gomock.Any().Return(tt.responseFilters)
+			mockCall.EXPECT().Gets(gomock.Any(), tt.pageSize, tt.pageToken, gomock.Any().Return(tt.responseCalls, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -281,7 +281,7 @@ func TestProcessV1CallsIDActionTimeoutPost(t *testing.T) {
 				callHandler: mockCall,
 			}
 
-			mockCall.EXPECT().ActionTimeout(gomock.Any(), tt.id, tt.action).Return(nil)
+			mockCall.EXPECT().ActionTimeout(gomock.Any(), tt.id, tt.action.Return(nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -415,7 +415,7 @@ func Test_processV1CallsIDPost(t *testing.T) {
 				callHandler: mockCall,
 			}
 
-			mockCall.EXPECT().CreateCallOutgoing(gomock.Any(), tt.callID, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, tt.groupcallID, tt.source, tt.destination, tt.earlyExecution, tt.connect).Return(tt.call, nil)
+			mockCall.EXPECT().CreateCallOutgoing(gomock.Any(), tt.callID, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, tt.groupcallID, tt.source, tt.destination, tt.earlyExecution, tt.connect.Return(tt.call, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -548,7 +548,7 @@ func Test_processV1CallsPost(t *testing.T) {
 				callHandler: mockCall,
 			}
 
-			mockCall.EXPECT().CreateCallsOutgoing(gomock.Any(), tt.customerID, tt.flowID, tt.masterCallID, tt.source, tt.destinations, tt.earlyExeuction, tt.connect).Return(tt.responseCalls, tt.responseGroupcalls, nil)
+			mockCall.EXPECT().CreateCallsOutgoing(gomock.Any(), tt.customerID, tt.flowID, tt.masterCallID, tt.source, tt.destinations, tt.earlyExeuction, tt.connect.Return(tt.responseCalls, tt.responseGroupcalls, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -612,7 +612,7 @@ func Test_processV1CallsIDDelete(t *testing.T) {
 				callHandler: mockCall,
 			}
 
-			mockCall.EXPECT().Delete(context.Background(), tt.id).Return(tt.responseCall, nil)
+			mockCall.EXPECT().Delete(context.Background(), tt.id.Return(tt.responseCall, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -677,7 +677,7 @@ func Test_processV1CallsIDHangupPost(t *testing.T) {
 				callHandler: mockCall,
 			}
 
-			mockCall.EXPECT().HangingUp(context.Background(), tt.expectID, call.HangupReasonNormal).Return(tt.responseCall, nil)
+			mockCall.EXPECT().HangingUp(context.Background(), tt.expectID, call.HangupReasonNormal.Return(tt.responseCall, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -758,7 +758,7 @@ func TestProcessV1CallsIDActionNextPost(t *testing.T) {
 				callHandler: mockCall,
 			}
 
-			mockCall.EXPECT().Get(gomock.Any(), tt.call.ID).Return(tt.call, nil)
+			mockCall.EXPECT().Get(gomock.Any(), tt.call.ID.Return(tt.call, nil)
 
 			if !tt.force {
 				mockCall.EXPECT().ActionNext(context.Background(), tt.call)
@@ -834,7 +834,7 @@ func Test_processV1CallsIDChainedCallIDsPost(t *testing.T) {
 				callHandler: mockCall,
 			}
 
-			mockCall.EXPECT().ChainedCallIDAdd(context.Background(), tt.call.ID, tt.chainedCallID).Return(tt.responseCall, nil)
+			mockCall.EXPECT().ChainedCallIDAdd(context.Background(), tt.call.ID, tt.chainedCallID.Return(tt.responseCall, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -900,7 +900,7 @@ func Test_processV1CallsIDChainedCallIDsDelete(t *testing.T) {
 				callHandler: mockCall,
 			}
 
-			mockCall.EXPECT().ChainedCallIDRemove(context.Background(), tt.call.ID, tt.chainedCallID).Return(tt.responseCall, nil)
+			mockCall.EXPECT().ChainedCallIDRemove(context.Background(), tt.call.ID, tt.chainedCallID.Return(tt.responseCall, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -996,7 +996,7 @@ func Test_processV1CallsIDExternalMediaPost(t *testing.T) {
 				tt.expectFormat,
 				tt.expectDirectionListen,
 				tt.expectDirectionSpeak,
-			).Return(tt.responseCall, nil)
+			.Return(tt.responseCall, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -1060,7 +1060,7 @@ func Test_processV1CallsIDExternalMediaDelete(t *testing.T) {
 				externalMediaHandler: mockExternal,
 			}
 
-			mockCall.EXPECT().ExternalMediaStop(context.Background(), tt.expectCallID).Return(tt.responseCall, nil)
+			mockCall.EXPECT().ExternalMediaStop(context.Background(), tt.expectCallID.Return(tt.responseCall, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -1119,7 +1119,7 @@ func Test_processV1CallsIDDigitsGet(t *testing.T) {
 				callHandler: mockCall,
 			}
 
-			mockCall.EXPECT().DigitsGet(gomock.Any(), tt.id).Return(tt.responseDigits, nil)
+			mockCall.EXPECT().DigitsGet(gomock.Any(), tt.id.Return(tt.responseDigits, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -1196,7 +1196,7 @@ func Test_processV1CallsIDDigitsPost(t *testing.T) {
 				callHandler: mockCall,
 			}
 
-			mockCall.EXPECT().DigitsSet(gomock.Any(), tt.id, tt.digits).Return(nil)
+			mockCall.EXPECT().DigitsSet(gomock.Any(), tt.id, tt.digits.Return(nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -1289,7 +1289,7 @@ func Test_processV1CallsIDRecordingIDPut(t *testing.T) {
 				callHandler: mockCall,
 			}
 
-			mockCall.EXPECT().UpdateRecordingID(gomock.Any(), tt.id, tt.recordingID).Return(tt.responseCall, nil)
+			mockCall.EXPECT().UpdateRecordingID(gomock.Any(), tt.id, tt.recordingID.Return(tt.responseCall, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -1366,7 +1366,7 @@ func Test_processV1CallsIDRecordingStartPost(t *testing.T) {
 				callHandler: mockCall,
 			}
 
-			mockCall.EXPECT().RecordingStart(gomock.Any(), tt.expectID, tt.expectFormat, tt.expectEndOfSilence, tt.expectEndOfKey, tt.expectDuration, tt.expectOnEndFlowID).Return(tt.responseCall, nil)
+			mockCall.EXPECT().RecordingStart(gomock.Any(), tt.expectID, tt.expectFormat, tt.expectEndOfSilence, tt.expectEndOfKey, tt.expectDuration, tt.expectOnEndFlowID.Return(tt.responseCall, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1430,7 +1430,7 @@ func Test_processV1CallsIDRecordingStopPost(t *testing.T) {
 				callHandler: mockCall,
 			}
 
-			mockCall.EXPECT().RecordingStop(gomock.Any(), tt.expectID).Return(tt.responseCall, nil)
+			mockCall.EXPECT().RecordingStop(gomock.Any(), tt.expectID.Return(tt.responseCall, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1490,7 +1490,7 @@ func Test_processV1CallsIDTalkPost(t *testing.T) {
 				callHandler: mockCall,
 			}
 
-			mockCall.EXPECT().Talk(gomock.Any(), tt.expectID, false, tt.expectText, tt.expectGender, tt.expectLanguage).Return(nil)
+			mockCall.EXPECT().Talk(gomock.Any(), tt.expectID, false, tt.expectText, tt.expectGender, tt.expectLanguage.Return(nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1564,7 +1564,7 @@ func Test_processV1CallsIDPlayPost(t *testing.T) {
 				callHandler: mockCall,
 			}
 
-			mockCall.EXPECT().Play(gomock.Any(), tt.expectID, false, tt.expectMedias).Return(nil)
+			mockCall.EXPECT().Play(gomock.Any(), tt.expectID, false, tt.expectMedias.Return(nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1617,7 +1617,7 @@ func Test_processV1CallsIDMediaStopPost(t *testing.T) {
 				callHandler: mockCall,
 			}
 
-			mockCall.EXPECT().MediaStop(gomock.Any(), tt.expectID).Return(nil)
+			mockCall.EXPECT().MediaStop(gomock.Any(), tt.expectID.Return(nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1669,7 +1669,7 @@ func Test_processV1CallsIDHoldPost(t *testing.T) {
 				callHandler: mockCall,
 			}
 
-			mockCall.EXPECT().HoldOn(gomock.Any(), tt.expectID).Return(nil)
+			mockCall.EXPECT().HoldOn(gomock.Any(), tt.expectID.Return(nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1721,7 +1721,7 @@ func Test_processV1CallsIDHoldDelete(t *testing.T) {
 				callHandler: mockCall,
 			}
 
-			mockCall.EXPECT().HoldOff(gomock.Any(), tt.expectID).Return(nil)
+			mockCall.EXPECT().HoldOff(gomock.Any(), tt.expectID.Return(nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1779,7 +1779,7 @@ func Test_processV1CallsIDMutePost(t *testing.T) {
 				callHandler: mockCall,
 			}
 
-			mockCall.EXPECT().MuteOn(gomock.Any(), tt.expectID, tt.expectDirection).Return(nil)
+			mockCall.EXPECT().MuteOn(gomock.Any(), tt.expectID, tt.expectDirection.Return(nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1836,7 +1836,7 @@ func Test_processV1CallsIDMuteDelete(t *testing.T) {
 				callHandler: mockCall,
 			}
 
-			mockCall.EXPECT().MuteOff(gomock.Any(), tt.expectID, tt.expectDirection).Return(nil)
+			mockCall.EXPECT().MuteOff(gomock.Any(), tt.expectID, tt.expectDirection.Return(nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1888,7 +1888,7 @@ func Test_processV1CallsIDMOHPost(t *testing.T) {
 				callHandler: mockCall,
 			}
 
-			mockCall.EXPECT().MOHOn(gomock.Any(), tt.expectID).Return(nil)
+			mockCall.EXPECT().MOHOn(gomock.Any(), tt.expectID.Return(nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1940,7 +1940,7 @@ func Test_processV1CallsIDMOHDelete(t *testing.T) {
 				callHandler: mockCall,
 			}
 
-			mockCall.EXPECT().MOHOff(gomock.Any(), tt.expectID).Return(nil)
+			mockCall.EXPECT().MOHOff(gomock.Any(), tt.expectID.Return(nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1992,7 +1992,7 @@ func Test_processV1CallsIDSilencePost(t *testing.T) {
 				callHandler: mockCall,
 			}
 
-			mockCall.EXPECT().SilenceOn(gomock.Any(), tt.expectID).Return(nil)
+			mockCall.EXPECT().SilenceOn(gomock.Any(), tt.expectID.Return(nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -2044,7 +2044,7 @@ func Test_processV1CallsIDSilenceDelete(t *testing.T) {
 				callHandler: mockCall,
 			}
 
-			mockCall.EXPECT().SilenceOff(gomock.Any(), tt.expectID).Return(nil)
+			mockCall.EXPECT().SilenceOff(gomock.Any(), tt.expectID.Return(nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

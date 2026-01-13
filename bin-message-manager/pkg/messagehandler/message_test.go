@@ -110,11 +110,11 @@ func Test_Create(t *testing.T) {
 			ctx := context.Background()
 
 			if tt.id == uuid.Nil {
-				mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+				mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
 			}
 
-			mockDB.EXPECT().MessageCreate(ctx, tt.expectMessage).Return(nil)
-			mockDB.EXPECT().MessageGet(ctx, tt.expectMessage.ID).Return(tt.responseMessage, nil)
+			mockDB.EXPECT().MessageCreate(ctx, tt.expectMessage.Return(nil)
+			mockDB.EXPECT().MessageGet(ctx, tt.expectMessage.ID.Return(tt.responseMessage, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseMessage.CustomerID, message.EventTypeMessageCreated, tt.responseMessage)
 
 			res, err := h.Create(ctx, tt.id, tt.customerID, tt.source, tt.targets, tt.providerName, tt.text, tt.direction)

@@ -64,8 +64,8 @@ func Test_dbCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().MessageCreate(ctx, tt.message).Return(nil)
-			mockDB.EXPECT().MessageGet(ctx, tt.message.ID).Return(tt.responseGet, nil)
+			mockDB.EXPECT().MessageCreate(ctx, tt.message.Return(nil)
+			mockDB.EXPECT().MessageGet(ctx, tt.message.ID.Return(tt.responseGet, nil)
 
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseGet.CustomerID, message.EventTypeMessageCreated, tt.responseGet)
 
@@ -138,8 +138,8 @@ func Test_UpdateTargets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().MessageUpdateTargets(ctx, tt.id, tt.providerName, tt.targets).Return(nil)
-			mockDB.EXPECT().MessageGet(ctx, tt.id).Return(tt.responseGet, nil)
+			mockDB.EXPECT().MessageUpdateTargets(ctx, tt.id, tt.providerName, tt.targets.Return(nil)
+			mockDB.EXPECT().MessageGet(ctx, tt.id.Return(tt.responseGet, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseGet.CustomerID, message.EventTypeMessageUpdated, tt.responseGet)
 
 			res, err := h.dbUpdateTargets(ctx, tt.id, tt.providerName, tt.targets)
@@ -197,7 +197,7 @@ func Test_Get(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().MessageGet(ctx, tt.id).Return(tt.responseGet, nil)
+			mockDB.EXPECT().MessageGet(ctx, tt.id.Return(tt.responseGet, nil)
 
 			res, err := h.dbGet(ctx, tt.id)
 			if err != nil {
@@ -264,7 +264,7 @@ func Test_Gets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().MessageGets(ctx, tt.token, tt.size, tt.filters).Return(tt.responseGets, nil)
+			mockDB.EXPECT().MessageGets(ctx, tt.token, tt.size, tt.filters.Return(tt.responseGets, nil)
 
 			res, err := h.dbGets(ctx, tt.token, tt.size, tt.filters)
 			if err != nil {
@@ -323,8 +323,8 @@ func Test_Delete(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().MessageDelete(ctx, tt.id).Return(nil)
-			mockDB.EXPECT().MessageGet(ctx, tt.id).Return(tt.responseGet, nil)
+			mockDB.EXPECT().MessageDelete(ctx, tt.id.Return(nil)
+			mockDB.EXPECT().MessageGet(ctx, tt.id.Return(tt.responseGet, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseGet.CustomerID, message.EventTypeMessageDeleted, tt.responseGet)
 
 			res, err := h.dbDelete(ctx, tt.id)

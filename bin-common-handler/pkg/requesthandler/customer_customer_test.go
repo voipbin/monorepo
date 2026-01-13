@@ -13,7 +13,6 @@ import (
 
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
-	"monorepo/bin-common-handler/pkg/utilhandler"
 )
 
 func Test_CustomerV1CustomerGets(t *testing.T) {
@@ -23,11 +22,10 @@ func Test_CustomerV1CustomerGets(t *testing.T) {
 
 		pageToken string
 		pageSize  uint64
-		filters   map[string]string
+		filters   map[cscustomer.Field]any
 
 		response *sock.Response
 
-		expectURL     string
 		expectTarget  string
 		expectRequest *sock.Request
 		expectRes     []cscustomer.Customer
@@ -37,8 +35,8 @@ func Test_CustomerV1CustomerGets(t *testing.T) {
 
 			pageToken: "2021-03-02 03:23:20.995000",
 			pageSize:  10,
-			filters: map[string]string{
-				"deleted": "false",
+			filters: map[cscustomer.Field]any{
+				cscustomer.FieldDeleted: false,
 			},
 
 			response: &sock.Response{
@@ -47,12 +45,12 @@ func Test_CustomerV1CustomerGets(t *testing.T) {
 				Data:       []byte(`[{"id":"30071608-7e43-11ec-b04a-bb4270e3e223","username":"test1","name":"test user 1","detail":"test user 1 detail","permission_ids":[]},{"id":"5ca81a9a-7e43-11ec-b271-5b65823bfdd3","username":"test2","name":"test user 2","detail":"test user 2 detail","permission_ids":[]}]`),
 			},
 
-			expectURL:    "/v1/customers?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10",
 			expectTarget: "bin-manager.customer-manager.request",
 			expectRequest: &sock.Request{
-				URI:      "/v1/customers?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10&filter_deleted=false",
+				URI:      "/v1/customers?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10",
 				Method:   sock.RequestMethodGet,
-				DataType: ContentTypeJSON,
+				DataType: "application/json",
+				Data:     []byte(`{"deleted":false}`),
 			},
 			expectRes: []cscustomer.Customer{
 				{
@@ -75,14 +73,11 @@ func Test_CustomerV1CustomerGets(t *testing.T) {
 			defer mc.Finish()
 
 			mockSock := sockhandler.NewMockSockHandler(mc)
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			h := requestHandler{
-				sock:        mockSock,
-				utilHandler: mockUtil,
+				sock: mockSock,
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := h.CustomerV1CustomerGets(ctx, tt.pageToken, tt.pageSize, tt.filters)

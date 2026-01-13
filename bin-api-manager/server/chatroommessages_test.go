@@ -95,7 +95,7 @@ func Test_chatroommessagesPOST(t *testing.T) {
 				tt.expectChatroomID,
 				tt.expectText,
 				tt.expectMedias,
-			).Return(tt.responseMessagechatroom, nil)
+			.Return(tt.responseMessagechatroom, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -209,7 +209,7 @@ func Test_chatroommessagesGET(t *testing.T) {
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().ChatroommessageGetsByChatroomID(req.Context(), &tt.agent, tt.expectChatroomID, tt.expectPageSize, tt.expectPageToken).Return(tt.responseChatroommessages, nil)
+			mockSvc.EXPECT().ChatroommessageGetsByChatroomID(req.Context(), &tt.agent, tt.expectChatroomID, tt.expectPageSize, tt.expectPageToken.Return(tt.responseChatroommessages, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -278,7 +278,7 @@ func Test_chatroommessagesIDGET(t *testing.T) {
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().ChatroommessageGet(req.Context(), &tt.agent, tt.expectChatroommessageID).Return(tt.responseChatroommessage, nil)
+			mockSvc.EXPECT().ChatroommessageGet(req.Context(), &tt.agent, tt.expectChatroommessageID.Return(tt.responseChatroommessage, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -347,7 +347,7 @@ func Test_chatroommessagesIDDELETE(t *testing.T) {
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().ChatroommessageDelete(req.Context(), &tt.agent, tt.expectChatroommessageID).Return(tt.responseChatroommessage, nil)
+			mockSvc.EXPECT().ChatroommessageDelete(req.Context(), &tt.agent, tt.expectChatroommessageID.Return(tt.responseChatroommessage, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

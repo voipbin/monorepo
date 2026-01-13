@@ -82,7 +82,7 @@ func Test_OrderNumberGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().NumberV1NumberGets(ctx, tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.response, nil)
+			mockReq.EXPECT().NumberV1NumberGets(ctx, tt.pageToken, tt.pageSize, tt.expectFilters.Return(tt.response, nil)
 
 			res, err := h.NumberGets(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
@@ -148,7 +148,7 @@ func Test_OrderNumberGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().NumberV1NumberGet(ctx, tt.id).Return(tt.response, nil)
+			mockReq.EXPECT().NumberV1NumberGet(ctx, tt.id.Return(tt.response, nil)
 
 			res, err := h.NumberGet(ctx, tt.agent, tt.id)
 			if err != nil {
@@ -214,7 +214,7 @@ func Test_OrderNumberGetError(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().NumberV1NumberGet(ctx, tt.id).Return(tt.responseNumber, nil)
+			mockReq.EXPECT().NumberV1NumberGet(ctx, tt.id.Return(tt.responseNumber, nil)
 
 			_, err := h.NumberGet(ctx, tt.agent, tt.id)
 			if err == nil {
@@ -282,7 +282,7 @@ func Test_NumberCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().NumberV1NumberCreate(ctx, tt.agent.CustomerID, tt.num, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail).Return(tt.response, nil)
+			mockReq.EXPECT().NumberV1NumberCreate(ctx, tt.agent.CustomerID, tt.num, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail.Return(tt.response, nil)
 			res, err := h.NumberCreate(ctx, tt.agent, tt.num, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -363,8 +363,8 @@ func Test_NumberDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().NumberV1NumberGet(ctx, tt.id).Return(tt.responseGet, nil)
-			mockReq.EXPECT().NumberV1NumberDelete(ctx, tt.id).Return(tt.responseDelete, nil)
+			mockReq.EXPECT().NumberV1NumberGet(ctx, tt.id.Return(tt.responseGet, nil)
+			mockReq.EXPECT().NumberV1NumberDelete(ctx, tt.id.Return(tt.responseDelete, nil)
 
 			res, err := h.NumberDelete(ctx, tt.agent, tt.id)
 			if err != nil {
@@ -471,10 +471,10 @@ func Test_NumberUpdate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().NumberV1NumberGet(ctx, tt.id).Return(tt.responseGet, nil)
-			mockReq.EXPECT().FlowV1FlowGet(ctx, tt.callFlowID).Return(tt.responseFlowCall, nil)
-			mockReq.EXPECT().FlowV1FlowGet(ctx, tt.messageFlowID).Return(tt.responseFlowMessage, nil)
-			mockReq.EXPECT().NumberV1NumberUpdate(ctx, tt.id, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail).Return(tt.responseUpdate, nil)
+			mockReq.EXPECT().NumberV1NumberGet(ctx, tt.id.Return(tt.responseGet, nil)
+			mockReq.EXPECT().FlowV1FlowGet(ctx, tt.callFlowID.Return(tt.responseFlowCall, nil)
+			mockReq.EXPECT().FlowV1FlowGet(ctx, tt.messageFlowID.Return(tt.responseFlowMessage, nil)
+			mockReq.EXPECT().NumberV1NumberUpdate(ctx, tt.id, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail.Return(tt.responseUpdate, nil)
 
 			res, err := h.NumberUpdate(ctx, tt.agent, tt.id, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail)
 			if err != nil {
@@ -550,7 +550,7 @@ func Test_NumberUpdateError(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().NumberV1NumberGet(ctx, tt.id).Return(tt.responseGet, nil)
+			mockReq.EXPECT().NumberV1NumberGet(ctx, tt.id.Return(tt.responseGet, nil)
 
 			_, err := h.NumberUpdate(ctx, tt.agent, tt.id, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail)
 			if err == nil {
@@ -626,7 +626,7 @@ func Test_NumberRenew(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().NumberV1NumberRenewByTmRenew(ctx, tt.tmRenew).Return(tt.responseNumbers, nil)
+			mockReq.EXPECT().NumberV1NumberRenewByTmRenew(ctx, tt.tmRenew.Return(tt.responseNumbers, nil)
 
 			res, err := h.NumberRenew(ctx, tt.agent, tt.tmRenew)
 			if err != nil {
@@ -706,7 +706,7 @@ func Test_numberVerifyFlow(t *testing.T) {
 			ctx := context.Background()
 
 			if tt.flowID != uuid.Nil {
-				mockReq.EXPECT().FlowV1FlowGet(ctx, tt.flowID).Return(tt.responseFlow, nil)
+				mockReq.EXPECT().FlowV1FlowGet(ctx, tt.flowID.Return(tt.responseFlow, nil)
 			}
 
 			res := h.numberVerifyFlow(ctx, tt.agent, tt.flowID)

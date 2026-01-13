@@ -52,7 +52,7 @@ func Test_Get(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().TranscribeGet(gomock.Any(), tt.id).Return(&transcribe.Transcribe{}, nil)
+			mockDB.EXPECT().TranscribeGet(gomock.Any(), tt.id.Return(&transcribe.Transcribe{}, nil)
 			_, err := h.Get(ctx, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -105,7 +105,7 @@ func Test_GetByReferenceIDAndLanguage(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().TranscribeGetByReferenceIDAndLanguage(ctx, tt.referenceID, tt.language).Return(tt.responseTranscribe, nil)
+			mockDB.EXPECT().TranscribeGetByReferenceIDAndLanguage(ctx, tt.referenceID, tt.language.Return(tt.responseTranscribe, nil)
 			_, err := h.GetByReferenceIDAndLanguage(ctx, tt.referenceID, tt.language)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -162,7 +162,7 @@ func Test_Gets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().TranscribeGets(ctx, tt.size, tt.token, tt.filters).Return(tt.responseTranscribes, nil)
+			mockDB.EXPECT().TranscribeGets(ctx, tt.size, tt.token, tt.filters.Return(tt.responseTranscribes, nil)
 			_, err := h.Gets(ctx, tt.size, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -276,9 +276,9 @@ func Test_Create(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().TranscribeCreate(ctx, tt.expectedTranscribe).Return(nil)
-			mockDB.EXPECT().TranscribeGet(ctx, tt.id).Return(tt.responseTranscribe, nil)
-			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.activeflowID, tt.expectedVariables).Return(nil)
+			mockDB.EXPECT().TranscribeCreate(ctx, tt.expectedTranscribe.Return(nil)
+			mockDB.EXPECT().TranscribeGet(ctx, tt.id.Return(tt.responseTranscribe, nil)
+			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.activeflowID, tt.expectedVariables.Return(nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseTranscribe.CustomerID, transcribe.EventTypeTranscribeCreated, tt.responseTranscribe)
 			res, err := h.Create(ctx, tt.id, tt.customerID, tt.activeflowID, tt.onEndFlowID, transcribe.ReferenceTypeCall, tt.referenceID, tt.language, transcribe.DirectionBoth, tt.streamingIDs)
 			if err != nil {
@@ -345,14 +345,14 @@ func Test_Delete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().TranscribeGet(ctx, tt.id).Return(tt.responseTranscribe, nil)
+			mockDB.EXPECT().TranscribeGet(ctx, tt.id.Return(tt.responseTranscribe, nil)
 
 			// deleteTranscripts
-			mockTranscript.EXPECT().Gets(ctx, uint64(1000), "", gomock.Any()).Return([]*transcript.Transcript{}, nil)
+			mockTranscript.EXPECT().Gets(ctx, uint64(1000), "", gomock.Any().Return([]*transcript.Transcript{}, nil)
 
 			// dbDelete
-			mockDB.EXPECT().TranscribeDelete(ctx, tt.id).Return(nil)
-			mockDB.EXPECT().TranscribeGet(ctx, tt.id).Return(tt.responseTranscribe, nil)
+			mockDB.EXPECT().TranscribeDelete(ctx, tt.id.Return(nil)
+			mockDB.EXPECT().TranscribeGet(ctx, tt.id.Return(tt.responseTranscribe, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, transcribe.EventTypeTranscribeDeleted, gomock.Any())
 
 			res, err := h.Delete(ctx, tt.id)
@@ -422,9 +422,9 @@ func Test_deleteTranscripts(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockTranscript.EXPECT().Gets(ctx, uint64(1000), "", tt.expectFilters).Return(tt.responseTranscripts, nil)
+			mockTranscript.EXPECT().Gets(ctx, uint64(1000), "", gomock.Any(.Return(tt.responseTranscripts, nil)
 			for _, tr := range tt.responseTranscripts {
-				mockTranscript.EXPECT().Delete(ctx, tr.ID).Return(&transcript.Transcript{}, nil)
+				mockTranscript.EXPECT().Delete(ctx, tr.ID.Return(&transcript.Transcript{}, nil)
 			}
 
 			if err := h.deleteTranscripts(ctx, tt.id); err != nil {
@@ -486,8 +486,8 @@ func Test_UpdateStatus(t *testing.T) {
 
 			mockDB.EXPECT().TranscribeUpdate(ctx, tt.id, map[transcribe.Field]any{
 				transcribe.FieldStatus: tt.status,
-			}).Return(nil)
-			mockDB.EXPECT().TranscribeGet(ctx, tt.id).Return(tt.responseTranscribe, nil)
+			}.Return(nil)
+			mockDB.EXPECT().TranscribeGet(ctx, tt.id.Return(tt.responseTranscribe, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseTranscribe.CustomerID, transcribe.EventTypeTranscribeProgressing, tt.responseTranscribe)
 
 			res, err := h.UpdateStatus(ctx, tt.id, tt.status)

@@ -133,7 +133,7 @@ func Test_GetActiveflows(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().ActiveflowGets(req.Context(), &tt.agent, tt.expectedPageSize, tt.expectedPageToken).Return(tt.resActiveflows, nil)
+			mockSvc.EXPECT().ActiveflowGets(req.Context(), &tt.agent, tt.expectedPageSize, tt.expectedPageToken.Return(tt.resActiveflows, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -239,7 +239,7 @@ func Test_PostActiveflows(t *testing.T) {
 				tt.expectedID,
 				tt.expectedFlowID,
 				tt.expectedActions,
-			).Return(tt.response, nil)
+			.Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -309,7 +309,7 @@ func Test_GetActiveflowsId(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().ActiveflowGet(req.Context(), &tt.agent, tt.expectedActiveflowID).Return(tt.responseActiveflow, nil)
+			mockSvc.EXPECT().ActiveflowGet(req.Context(), &tt.agent, tt.expectedActiveflowID.Return(tt.responseActiveflow, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
@@ -375,7 +375,7 @@ func Test_DeleteActiveflowsId(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().ActiveflowDelete(req.Context(), &tt.agent, tt.expectActiveflowID).Return(tt.responseActiveflow, nil)
+			mockSvc.EXPECT().ActiveflowDelete(req.Context(), &tt.agent, tt.expectActiveflowID.Return(tt.responseActiveflow, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -442,7 +442,7 @@ func Test_PostActiveflowsIdStop(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, nil)
-			mockSvc.EXPECT().ActiveflowStop(req.Context(), &tt.agent, tt.expectActiveflowID).Return(tt.responseActiveflow, nil)
+			mockSvc.EXPECT().ActiveflowStop(req.Context(), &tt.agent, tt.expectActiveflowID.Return(tt.responseActiveflow, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

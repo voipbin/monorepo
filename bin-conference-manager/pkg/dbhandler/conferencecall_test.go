@@ -82,13 +82,13 @@ func Test_ConferencecallCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().ConferencecallSet(ctx, gomock.Any())
 			if err := h.ConferencecallCreate(ctx, tt.conferencecall); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().ConferencecallGet(ctx, tt.conferencecall.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ConferencecallGet(ctx, tt.conferencecall.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().ConferencecallSet(ctx, gomock.Any())
 			res, err := h.ConferencecallGet(ctx, tt.conferencecall.ID)
 			if err != nil {
@@ -159,13 +159,13 @@ func Test_ConferencecallGetByReferenceID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().ConferencecallSet(ctx, gomock.Any())
 			if err := h.ConferencecallCreate(ctx, tt.conferencecall); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().ConferencecallGetByReferenceID(ctx, tt.referenceID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ConferencecallGetByReferenceID(ctx, tt.referenceID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().ConferencecallSet(ctx, gomock.Any())
 			res, err := h.ConferencecallGetByReferenceID(ctx, tt.referenceID)
 			if err != nil {
@@ -267,7 +267,7 @@ func Test_ConferencecallGets(t *testing.T) {
 			ctx := context.Background()
 
 			for _, cc := range tt.conferencecalls {
-				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 				mockCache.EXPECT().ConferencecallSet(ctx, gomock.Any())
 				if errCreate := h.ConferencecallCreate(ctx, cc); errCreate != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", errCreate)
@@ -334,19 +334,19 @@ func Test_ConferencecallDelete(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().ConferencecallSet(ctx, gomock.Any())
 			if err := h.ConferencecallCreate(ctx, tt.conferencecall); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().ConferencecallSet(ctx, gomock.Any())
 			if errDel := h.ConferencecallDelete(ctx, tt.id); errDel != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errDel)
 			}
 
-			mockCache.EXPECT().ConferencecallGet(ctx, tt.id).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ConferencecallGet(ctx, tt.id.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().ConferencecallSet(ctx, gomock.Any())
 			res, err := h.ConferencecallGet(ctx, tt.id)
 			if err != nil {

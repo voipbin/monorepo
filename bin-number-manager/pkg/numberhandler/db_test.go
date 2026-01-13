@@ -101,10 +101,10 @@ func Test_dbCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
 
-			mockDB.EXPECT().NumberCreate(ctx, tt.expectNumber).Return(nil)
-			mockDB.EXPECT().NumberGet(ctx, tt.responseUUID).Return(tt.responseNumber, nil)
+			mockDB.EXPECT().NumberCreate(ctx, tt.expectNumber.Return(nil)
+			mockDB.EXPECT().NumberGet(ctx, tt.responseUUID.Return(tt.responseNumber, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseNumber.CustomerID, number.EventTypeNumberCreated, tt.responseNumber)
 
 			res, err := h.dbCreate(ctx, tt.customerID, tt.num, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail, tt.providerName, tt.providerReferenceID, tt.status, tt.t38Enabled, tt.emergencyEnabled)
@@ -164,8 +164,8 @@ func Test_dbUpdate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().NumberUpdate(ctx, tt.id, tt.fields).Return(nil)
-			mockDB.EXPECT().NumberGet(ctx, tt.id).Return(tt.responseNumber, nil)
+			mockDB.EXPECT().NumberUpdate(ctx, tt.id, tt.fields.Return(nil)
+			mockDB.EXPECT().NumberGet(ctx, tt.id.Return(tt.responseNumber, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.responseNumber.CustomerID, number.EventTypeNumberUpdated, tt.responseNumber)
 			res, err := h.dbUpdate(ctx, tt.id, tt.fields, number.EventTypeNumberUpdated)
 			if err != nil {

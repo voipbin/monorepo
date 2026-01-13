@@ -57,7 +57,7 @@ func Test_GetWs(t *testing.T) {
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().WebsockCreate(req.Context(), &tt.agent, c.Writer, req).Return(nil)
+			mockSvc.EXPECT().WebsockCreate(req.Context(), &tt.agent, c.Writer, req.Return(nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

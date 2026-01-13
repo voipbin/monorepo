@@ -53,7 +53,7 @@ func Test_processEvent_processEventCMCallHangup(t *testing.T) {
 				activeflowHandler: mockActive,
 			}
 
-			mockActive.EXPECT().EventCallHangup(gomock.Any(), tt.expectedCall).Return(nil)
+			mockActive.EXPECT().EventCallHangup(gomock.Any(), tt.expectedCall.Return(nil)
 
 			h.processEvent(tt.event)
 		})

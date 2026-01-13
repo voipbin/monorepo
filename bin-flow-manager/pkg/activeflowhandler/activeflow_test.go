@@ -115,8 +115,8 @@ func Test_PushStack(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockStack.EXPECT().PushStackByActions(tt.activeflow.StackMap, tt.stackID, tt.actions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID).Return(tt.responseStack, nil)
-			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.activeflow.ID, tt.expectUpdateFields).Return(nil)
+			mockStack.EXPECT().PushStackByActions(tt.activeflow.StackMap, tt.stackID, tt.actions, tt.activeflow.CurrentStackID, tt.activeflow.CurrentAction.ID.Return(tt.responseStack, nil)
+			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.activeflow.ID, tt.expectUpdateFields.Return(nil)
 
 			if err := h.PushStack(ctx, tt.activeflow, tt.stackID, tt.actions); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -234,14 +234,14 @@ func Test_PushActions(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ActiveflowGet(ctx, tt.id).Return(tt.responseActiveflow, nil)
-			mockAction.EXPECT().GenerateFlowActions(ctx, tt.actions).Return(tt.responseActions, nil)
+			mockDB.EXPECT().ActiveflowGet(ctx, tt.id.Return(tt.responseActiveflow, nil)
+			mockAction.EXPECT().GenerateFlowActions(ctx, tt.actions.Return(tt.responseActions, nil)
 
 			// push stack
-			mockStack.EXPECT().PushStackByActions(tt.responseActiveflow.StackMap, uuid.Nil, tt.responseActions, tt.responseActiveflow.CurrentStackID, tt.responseActiveflow.CurrentAction.ID).Return(tt.responseStack, nil)
-			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.id, tt.expectUpdateFields).Return(nil)
+			mockStack.EXPECT().PushStackByActions(tt.responseActiveflow.StackMap, uuid.Nil, tt.responseActions, tt.responseActiveflow.CurrentStackID, tt.responseActiveflow.CurrentAction.ID.Return(tt.responseStack, nil)
+			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.id, tt.expectUpdateFields.Return(nil)
 
-			mockDB.EXPECT().ActiveflowGet(ctx, tt.id).Return(tt.responseActiveflow, nil)
+			mockDB.EXPECT().ActiveflowGet(ctx, tt.id.Return(tt.responseActiveflow, nil)
 
 			res, err := h.PushActions(ctx, tt.id, tt.actions)
 			if err != nil {
@@ -369,9 +369,9 @@ func Test_PopStackWithStackID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockStack.EXPECT().PopStack(tt.af.StackMap, tt.stackID).Return(tt.responseStack, nil)
-			mockStack.EXPECT().GetNextAction(tt.af.StackMap, tt.responseStack.ReturnStackID, tt.responseStack.ReturnActionID, true).Return(tt.responseForwardStackID, tt.responseForwardAction)
-			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.af.ID, tt.expectUpdateFields).Return(nil)
+			mockStack.EXPECT().PopStack(tt.af.StackMap, tt.stackID.Return(tt.responseStack, nil)
+			mockStack.EXPECT().GetNextAction(tt.af.StackMap, tt.responseStack.ReturnStackID, tt.responseStack.ReturnActionID, true.Return(tt.responseForwardStackID, tt.responseForwardAction)
+			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.af.ID, tt.expectUpdateFields.Return(nil)
 
 			if err := h.PopStackWithStackID(ctx, tt.af, tt.stackID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -496,9 +496,9 @@ func Test_PopStack(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockStack.EXPECT().PopStack(tt.af.StackMap, tt.expectStackID).Return(tt.responseStack, nil)
-			mockStack.EXPECT().GetNextAction(tt.af.StackMap, tt.responseStack.ReturnStackID, tt.responseStack.ReturnActionID, true).Return(tt.responseForwardStackID, tt.responseForwardAction)
-			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.af.ID, tt.expectUpdateFields).Return(nil)
+			mockStack.EXPECT().PopStack(tt.af.StackMap, tt.expectStackID.Return(tt.responseStack, nil)
+			mockStack.EXPECT().GetNextAction(tt.af.StackMap, tt.responseStack.ReturnStackID, tt.responseStack.ReturnActionID, true.Return(tt.responseForwardStackID, tt.responseForwardAction)
+			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.af.ID, tt.expectUpdateFields.Return(nil)
 
 			if err := h.PopStack(ctx, tt.af); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -587,11 +587,11 @@ func Test_AddActions(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockAction.EXPECT().GenerateFlowActions(ctx, tt.actions).Return(tt.responseActions, nil)
-			mockDB.EXPECT().ActiveflowGet(ctx, tt.id).Return(tt.responseActiveflow, nil)
-			mockStack.EXPECT().AddActions(tt.responseActiveflow.StackMap, tt.responseActiveflow.CurrentStackID, tt.responseActiveflow.CurrentAction.ID, tt.responseActions).Return(nil)
-			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.id, tt.expectedUpdateFields).Return(nil)
-			mockDB.EXPECT().ActiveflowGet(ctx, tt.id).Return(tt.responseActiveflow, nil)
+			mockAction.EXPECT().GenerateFlowActions(ctx, tt.actions.Return(tt.responseActions, nil)
+			mockDB.EXPECT().ActiveflowGet(ctx, tt.id.Return(tt.responseActiveflow, nil)
+			mockStack.EXPECT().AddActions(tt.responseActiveflow.StackMap, tt.responseActiveflow.CurrentStackID, tt.responseActiveflow.CurrentAction.ID, tt.responseActions.Return(nil)
+			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.id, tt.expectedUpdateFields.Return(nil)
+			mockDB.EXPECT().ActiveflowGet(ctx, tt.id.Return(tt.responseActiveflow, nil)
 
 			res, err := h.AddActions(ctx, tt.id, tt.actions)
 			if err != nil {
@@ -725,10 +725,10 @@ func Test_ServiceStop(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ActiveflowGet(ctx, tt.id).Return(tt.responseActiveflow, nil)
-			mockStack.EXPECT().PopStack(tt.responseActiveflow.StackMap, tt.expectStackID).Return(tt.responseStack, nil)
-			mockStack.EXPECT().GetNextAction(tt.responseActiveflow.StackMap, tt.responseStack.ReturnStackID, tt.responseStack.ReturnActionID, true).Return(tt.responseForwardStackID, tt.responseForwardAction)
-			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.id, tt.expectUpdateFields).Return(nil)
+			mockDB.EXPECT().ActiveflowGet(ctx, tt.id.Return(tt.responseActiveflow, nil)
+			mockStack.EXPECT().PopStack(tt.responseActiveflow.StackMap, tt.expectStackID.Return(tt.responseStack, nil)
+			mockStack.EXPECT().GetNextAction(tt.responseActiveflow.StackMap, tt.responseStack.ReturnStackID, tt.responseStack.ReturnActionID, true.Return(tt.responseForwardStackID, tt.responseForwardAction)
+			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.id, tt.expectUpdateFields.Return(nil)
 
 			if err := h.ServiceStop(ctx, tt.id, tt.serviceID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

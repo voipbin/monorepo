@@ -74,7 +74,7 @@ func Test_MessageGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().MessageV1MessageGets(ctx, tt.agent.CustomerID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
+			mockReq.EXPECT().MessageV1MessageGets(ctx, tt.agent.CustomerID, tt.pageToken, tt.pageSize.Return(tt.response, nil)
 
 			res, err := h.MessageGets(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
@@ -146,7 +146,7 @@ func Test_MessageGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().MessageV1MessageGet(ctx, tt.id).Return(tt.response, nil)
+			mockReq.EXPECT().MessageV1MessageGet(ctx, tt.id.Return(tt.response, nil)
 
 			res, err := h.MessageGet(ctx, tt.agent, tt.id)
 			if err != nil {
@@ -222,7 +222,7 @@ func Test_MessageSend(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().MessageV1MessageSend(ctx, uuid.Nil, tt.agent.CustomerID, tt.source, tt.destinations, tt.text).Return(tt.response, nil)
+			mockReq.EXPECT().MessageV1MessageSend(ctx, uuid.Nil, tt.agent.CustomerID, tt.source, tt.destinations, tt.text.Return(tt.response, nil)
 			res, err := h.MessageSend(ctx, tt.agent, tt.source, tt.destinations, tt.text)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -287,8 +287,8 @@ func Test_MessageDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().MessageV1MessageGet(ctx, tt.id).Return(tt.response, nil)
-			mockReq.EXPECT().MessageV1MessageDelete(ctx, tt.id).Return(tt.response, nil)
+			mockReq.EXPECT().MessageV1MessageGet(ctx, tt.id.Return(tt.response, nil)
+			mockReq.EXPECT().MessageV1MessageDelete(ctx, tt.id.Return(tt.response, nil)
 
 			res, err := h.MessageDelete(ctx, tt.agent, tt.id)
 			if err != nil {

@@ -98,13 +98,13 @@ func Test_ChatCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+			mockUtil.EXPECT().TimeGetCurTime(.Return(utilhandler.TimeGetCurTime())
 			mockCache.EXPECT().ChatSet(ctx, gomock.Any())
 			if err := h.ChatCreate(ctx, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().ChatGet(ctx, tt.data.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ChatGet(ctx, tt.data.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().ChatSet(ctx, gomock.Any())
 
 			res, err := h.ChatGet(ctx, tt.data.ID)
@@ -196,7 +196,7 @@ func Test_ChatGets(t *testing.T) {
 			ctx := context.Background()
 
 			for _, c := range tt.data {
-				mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+				mockUtil.EXPECT().TimeGetCurTime(.Return(utilhandler.TimeGetCurTime())
 				mockCache.EXPECT().ChatSet(ctx, gomock.Any())
 				if err := h.ChatCreate(ctx, c); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -295,7 +295,7 @@ func Test_ChatUpdateBasic(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().ChatGet(ctx, tt.chat.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ChatGet(ctx, tt.chat.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().ChatSet(ctx, gomock.Any())
 			res, err := h.ChatGet(ctx, tt.id)
 			if err != nil {
@@ -348,20 +348,20 @@ func Test_ChatDelete(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+			mockUtil.EXPECT().TimeGetCurTime(.Return(utilhandler.TimeGetCurTime())
 			mockCache.EXPECT().ChatSet(ctx, gomock.Any())
 			if err := h.ChatCreate(ctx, tt.chat); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+			mockUtil.EXPECT().TimeGetCurTime(.Return(utilhandler.TimeGetCurTime())
 			mockCache.EXPECT().ChatSet(ctx, gomock.Any())
 			if err := h.ChatDelete(ctx, tt.id); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().ChatGet(ctx, tt.id).Return(nil, fmt.Errorf("error"))
-			mockCache.EXPECT().ChatSet(ctx, gomock.Any()).Return(nil)
+			mockCache.EXPECT().ChatGet(ctx, tt.id.Return(nil, fmt.Errorf("error"))
+			mockCache.EXPECT().ChatSet(ctx, gomock.Any().Return(nil)
 			res, err := h.ChatGet(ctx, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -431,7 +431,7 @@ func Test_ChatUpdateRoomOwnerID(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().ChatGet(ctx, tt.id).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ChatGet(ctx, tt.id.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().ChatSet(ctx, gomock.Any())
 			res, err := h.ChatGet(ctx, tt.id)
 			if err != nil {
@@ -513,19 +513,19 @@ func Test_ChatUpdateParticipantID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+			mockUtil.EXPECT().TimeGetCurTime(.Return(utilhandler.TimeGetCurTime())
 			mockCache.EXPECT().ChatSet(ctx, gomock.Any())
 			if err := h.ChatCreate(ctx, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().ChatSet(ctx, gomock.Any())
 			if err := h.ChatUpdateParticipantID(ctx, tt.id, tt.praticipantIDs); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().ChatGet(ctx, tt.id).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ChatGet(ctx, tt.id.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().ChatSet(ctx, gomock.Any())
 			res, err := h.ChatGet(ctx, tt.id)
 			if err != nil {

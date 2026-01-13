@@ -126,25 +126,25 @@ func Test_Start_startReferenceTypeCall(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
-			mockChannel.EXPECT().Get(ctx, tt.responseCall.ChannelID).Return(tt.responseChannel, nil)
+			mockReq.EXPECT().CallV1CallGet(ctx, tt.responseCall.ID.Return(tt.responseCall, nil)
+			mockChannel.EXPECT().Get(ctx, tt.responseCall.ChannelID.Return(tt.responseChannel, nil)
 
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDBridgeID)
-			mockBridge.EXPECT().Start(ctx, tt.responseChannel.AsteriskID, tt.responseUUIDBridgeID.String(), tt.expectBridgeArgs, []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}).Return(tt.responseBridge, nil)
+			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUIDBridgeID)
+			mockBridge.EXPECT().Start(ctx, tt.responseChannel.AsteriskID, tt.responseUUIDBridgeID.String(), tt.expectBridgeArgs, []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}.Return(tt.responseBridge, nil)
 
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDSnoopID)
-			mockChannel.EXPECT().StartSnoop(ctx, tt.responseCall.ChannelID, gomock.Any(), gomock.Any(), channel.SnoopDirection(tt.directionListen), channel.SnoopDirection(tt.directionSpeak)).Return(&channel.Channel{}, nil)
+			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUIDSnoopID)
+			mockChannel.EXPECT().StartSnoop(ctx, tt.responseCall.ChannelID, gomock.Any(), gomock.Any(), channel.SnoopDirection(tt.directionListen), channel.SnoopDirection(tt.directionSpeak).Return(&channel.Channel{}, nil)
 
-			mockBridge.EXPECT().Play(ctx, tt.responseCall.BridgeID, tt.expectPlaybackID, []string{defaultSilencePlaybackMedia}, "", 0, 0).Return(nil)
+			mockBridge.EXPECT().Play(ctx, tt.responseCall.BridgeID, tt.expectPlaybackID, []string{defaultSilencePlaybackMedia}, "", 0, 0.Return(nil)
 
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDChannelID)
-			mockChannel.EXPECT().StartExternalMedia(ctx, tt.responseChannel.AsteriskID, gomock.Any(), tt.externalHost, string(tt.encapsulation), string(tt.transport), tt.connectionType, tt.format, string(tt.directionListen), tt.expectChannelData, gomock.Any()).Return(&channel.Channel{}, nil)
+			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUIDChannelID)
+			mockChannel.EXPECT().StartExternalMedia(ctx, tt.responseChannel.AsteriskID, gomock.Any(), tt.externalHost, string(tt.encapsulation), string(tt.transport), tt.connectionType, tt.format, string(tt.directionListen), tt.expectChannelData, gomock.Any().Return(&channel.Channel{}, nil)
 
-			mockDB.EXPECT().ExternalMediaSet(ctx, tt.expectExternalMedia).Return(nil)
+			mockDB.EXPECT().ExternalMediaSet(ctx, tt.expectExternalMedia.Return(nil)
 
-			mockDB.EXPECT().ExternalMediaGet(ctx, tt.id).Return(tt.expectExternalMedia, nil)
-			mockDB.EXPECT().ExternalMediaSet(ctx, gomock.Any()).Return(nil)
-			mockDB.EXPECT().ExternalMediaGet(ctx, tt.id).Return(tt.expectExternalMedia, nil)
+			mockDB.EXPECT().ExternalMediaGet(ctx, tt.id.Return(tt.expectExternalMedia, nil)
+			mockDB.EXPECT().ExternalMediaSet(ctx, gomock.Any().Return(nil)
+			mockDB.EXPECT().ExternalMediaGet(ctx, tt.id.Return(tt.expectExternalMedia, nil)
 
 			res, err := h.Start(
 				ctx,
@@ -260,17 +260,17 @@ func Test_Start_reference_type_confbridge(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1ConfbridgeGet(ctx, tt.referenceID).Return(tt.responseConfbridge, nil)
-			mockBridge.EXPECT().Get(ctx, tt.responseConfbridge.BridgeID).Return(tt.responseBridge, nil)
+			mockReq.EXPECT().CallV1ConfbridgeGet(ctx, tt.referenceID.Return(tt.responseConfbridge, nil)
+			mockBridge.EXPECT().Get(ctx, tt.responseConfbridge.BridgeID.Return(tt.responseBridge, nil)
 
 			// startExternalMedia
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDChannelID)
-			mockChannel.EXPECT().StartExternalMedia(ctx, tt.responseBridge.AsteriskID, tt.responseUUIDChannelID.String(), tt.expectExternalHost, string(tt.encapsulation), string(tt.transport), defaultConnectionType, defaultFormat, defaultDirection, tt.expectChannelData, gomock.Any()).Return(&channel.Channel{}, nil)
-			mockDB.EXPECT().ExternalMediaSet(ctx, tt.expectExternalMedia).Return(nil)
+			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUIDChannelID)
+			mockChannel.EXPECT().StartExternalMedia(ctx, tt.responseBridge.AsteriskID, tt.responseUUIDChannelID.String(), tt.expectExternalHost, string(tt.encapsulation), string(tt.transport), defaultConnectionType, defaultFormat, defaultDirection, tt.expectChannelData, gomock.Any().Return(&channel.Channel{}, nil)
+			mockDB.EXPECT().ExternalMediaSet(ctx, tt.expectExternalMedia.Return(nil)
 
-			mockDB.EXPECT().ExternalMediaGet(ctx, tt.id).Return(tt.expectExternalMedia, nil)
-			mockDB.EXPECT().ExternalMediaSet(ctx, gomock.Any()).Return(nil)
-			mockDB.EXPECT().ExternalMediaGet(ctx, tt.id).Return(tt.expectExternalMedia, nil)
+			mockDB.EXPECT().ExternalMediaGet(ctx, tt.id.Return(tt.expectExternalMedia, nil)
+			mockDB.EXPECT().ExternalMediaSet(ctx, gomock.Any().Return(nil)
+			mockDB.EXPECT().ExternalMediaGet(ctx, tt.id.Return(tt.expectExternalMedia, nil)
 
 			res, err := h.Start(
 				ctx,

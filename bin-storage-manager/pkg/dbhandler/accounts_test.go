@@ -61,13 +61,13 @@ func Test_AccountCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().AccountSet(ctx, gomock.Any())
 			if err := h.AccountCreate(ctx, tt.file); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().AccountGet(ctx, tt.file.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().AccountGet(ctx, tt.file.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().AccountSet(ctx, gomock.Any())
 			res, err := h.AccountGet(ctx, tt.file.ID)
 			if err != nil {
@@ -148,7 +148,7 @@ func Test_AccountGets(t *testing.T) {
 			ctx := context.Background()
 
 			for _, account := range tt.accounts {
-				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 				mockCache.EXPECT().AccountSet(ctx, gomock.Any())
 				if err := h.AccountCreate(ctx, &account); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -223,7 +223,7 @@ func Test_AccountIncreaseFileInfo(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime).AnyTimes()
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime).AnyTimes()
 			mockCache.EXPECT().AccountSet(ctx, gomock.Any())
 			if err := h.AccountCreate(ctx, tt.account); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -234,7 +234,7 @@ func Test_AccountIncreaseFileInfo(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: got: %v", errIncrease)
 			}
 
-			mockCache.EXPECT().AccountGet(ctx, tt.account.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().AccountGet(ctx, tt.account.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().AccountSet(ctx, gomock.Any())
 			res, err := h.AccountGet(ctx, tt.account.ID)
 			if err != nil {
@@ -304,7 +304,7 @@ func Test_AccountDecreaseFileInfo(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime).AnyTimes()
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime).AnyTimes()
 			mockCache.EXPECT().AccountSet(ctx, gomock.Any())
 			if err := h.AccountCreate(ctx, tt.account); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -315,7 +315,7 @@ func Test_AccountDecreaseFileInfo(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: got: %v", errIncrease)
 			}
 
-			mockCache.EXPECT().AccountGet(ctx, tt.account.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().AccountGet(ctx, tt.account.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().AccountSet(ctx, gomock.Any())
 			res, err := h.AccountGet(ctx, tt.account.ID)
 			if err != nil {
@@ -375,7 +375,7 @@ func Test_AccountDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime).AnyTimes()
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime).AnyTimes()
 			mockCache.EXPECT().AccountSet(ctx, gomock.Any())
 			if err := h.AccountCreate(ctx, tt.account); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -386,7 +386,7 @@ func Test_AccountDelete(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: got: %v", errDelete)
 			}
 
-			mockCache.EXPECT().AccountGet(ctx, tt.account.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().AccountGet(ctx, tt.account.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().AccountSet(ctx, gomock.Any())
 			res, err := h.AccountGet(ctx, tt.account.ID)
 			if err != nil {

@@ -67,7 +67,7 @@ func Test_GetServiceAgentsCustomer(t *testing.T) {
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().ServiceAgentCustomerGet(req.Context(), &tt.agent).Return(tt.responseCustomer, nil)
+			mockSvc.EXPECT().ServiceAgentCustomerGet(req.Context(), &tt.agent.Return(tt.responseCustomer, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)

@@ -73,11 +73,11 @@ func TestBridgeLeftJoin(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockChannel.EXPECT().HangingUp(ctx, tt.channel.ID, ari.ChannelCauseNormalClearing).Return(&channel.Channel{}, nil)
-			mockDB.EXPECT().CallSetConfbridgeID(ctx, tt.bridge.ReferenceID, uuid.Nil).Return(nil)
-			mockDB.EXPECT().CallGet(ctx, tt.bridge.ReferenceID).Return(tt.call, nil)
+			mockChannel.EXPECT().HangingUp(ctx, tt.channel.ID, ari.ChannelCauseNormalClearing.Return(&channel.Channel{}, nil)
+			mockDB.EXPECT().CallSetConfbridgeID(ctx, tt.bridge.ReferenceID, uuid.Nil.Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.bridge.ReferenceID.Return(tt.call, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.call.CustomerID, call.EventTypeCallUpdated, tt.call)
-			mockReq.EXPECT().CallV1CallActionNext(ctx, tt.call.ID, false).Return(nil)
+			mockReq.EXPECT().CallV1CallActionNext(ctx, tt.call.ID, false.Return(nil)
 
 			if err := h.bridgeLeftJoin(ctx, tt.channel, tt.bridge); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -147,13 +147,13 @@ func Test_BridgeLeftExternal(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockChannel.EXPECT().HangingUp(ctx, tt.channel.ID, ari.ChannelCauseNormalClearing).Return(&channel.Channel{}, nil)
+			mockChannel.EXPECT().HangingUp(ctx, tt.channel.ID, ari.ChannelCauseNormalClearing.Return(&channel.Channel{}, nil)
 
 			if len(tt.bridge.ChannelIDs) == 0 {
-				mockBridge.EXPECT().Destroy(ctx, tt.bridge.ID).Return(nil)
+				mockBridge.EXPECT().Destroy(ctx, tt.bridge.ID.Return(nil)
 			} else {
 				for _, channelID := range tt.bridge.ChannelIDs {
-					mockBridge.EXPECT().ChannelKick(ctx, tt.bridge.ID, channelID).Return(nil)
+					mockBridge.EXPECT().ChannelKick(ctx, tt.bridge.ID, channelID.Return(nil)
 				}
 			}
 
@@ -201,7 +201,7 @@ func TestRemoveAllChannelsInBridge(t *testing.T) {
 			ctx := context.Background()
 
 			for _, channelID := range tt.bridge.ChannelIDs {
-				mockBridge.EXPECT().ChannelKick(ctx, tt.bridge.ID, channelID).Return(nil)
+				mockBridge.EXPECT().ChannelKick(ctx, tt.bridge.ID, channelID.Return(nil)
 			}
 			h.removeAllChannelsInBridge(ctx, tt.bridge)
 		})

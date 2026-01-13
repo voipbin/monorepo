@@ -75,7 +75,7 @@ func Test_ExternalMediaStart(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConfbridgeGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
+			mockDB.EXPECT().ConfbridgeGet(ctx, tt.responseCall.ID.Return(tt.responseCall, nil)
 			mockExternal.EXPECT().Start(
 				ctx,
 				tt.externalMediaID,
@@ -88,9 +88,9 @@ func Test_ExternalMediaStart(t *testing.T) {
 				tt.format,
 				externalmedia.DirectionBoth,
 				externalmedia.DirectionBoth,
-			).Return(tt.responseExternalMedia, nil)
-			mockDB.EXPECT().ConfbridgeSetExternalMediaID(ctx, tt.id, tt.responseExternalMedia.ID).Return(nil)
-			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id).Return(tt.responseCall, nil)
+			.Return(tt.responseExternalMedia, nil)
+			mockDB.EXPECT().ConfbridgeSetExternalMediaID(ctx, tt.id, tt.responseExternalMedia.ID.Return(nil)
+			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id.Return(tt.responseCall, nil)
 
 			res, err := h.ExternalMediaStart(
 				ctx,
@@ -157,10 +157,10 @@ func Test_ExternalMediaStop(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id).Return(tt.responseConfbridge, nil)
-			mockExternal.EXPECT().Stop(ctx, tt.responseConfbridge.ExternalMediaID).Return(&externalmedia.ExternalMedia{}, nil)
-			mockDB.EXPECT().ConfbridgeSetExternalMediaID(ctx, tt.id, uuid.Nil).Return(nil)
-			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id).Return(tt.responseConfbridge, nil)
+			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id.Return(tt.responseConfbridge, nil)
+			mockExternal.EXPECT().Stop(ctx, tt.responseConfbridge.ExternalMediaID.Return(&externalmedia.ExternalMedia{}, nil)
+			mockDB.EXPECT().ConfbridgeSetExternalMediaID(ctx, tt.id, uuid.Nil.Return(nil)
+			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id.Return(tt.responseConfbridge, nil)
 
 			res, err := h.ExternalMediaStop(ctx, tt.id)
 			if err != nil {

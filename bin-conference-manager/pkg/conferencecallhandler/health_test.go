@@ -86,10 +86,10 @@ func Test_HealthCheck(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConferencecallGet(ctx, tt.id).Return(tt.responseConferencecall, nil)
-			mockUtil.EXPECT().TimeGetCurTimeAdd(-maxConferencecallDuration).Return(tt.responseCurTimeAdd)
-			mockReq.EXPECT().CallV1CallGet(ctx, tt.responseConferencecall.ReferenceID).Return(tt.responseCall, nil)
-			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.responseConferencecall.ConferenceID).Return(tt.responseConference, nil)
+			mockDB.EXPECT().ConferencecallGet(ctx, tt.id.Return(tt.responseConferencecall, nil)
+			mockUtil.EXPECT().TimeGetCurTimeAdd(-maxConferencecallDuration.Return(tt.responseCurTimeAdd)
+			mockReq.EXPECT().CallV1CallGet(ctx, tt.responseConferencecall.ReferenceID.Return(tt.responseCall, nil)
+			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.responseConferencecall.ConferenceID.Return(tt.responseConference, nil)
 
 			mockReq.EXPECT().ConferenceV1ConferencecallHealthCheck(ctx, tt.id, 0, defaultHealthCheckDelay)
 
@@ -329,32 +329,32 @@ func Test_HealthCheck_error(t *testing.T) {
 
 			if tt.retryCount > defaultHealthCheckRetryMax {
 				// terminate
-				mockDB.EXPECT().ConferencecallGet(ctx, tt.id).Return(tt.responseConferencecall, nil)
-				mockConference.EXPECT().Get(ctx, tt.responseConferencecall.ConferenceID).Return(tt.responseConference, nil)
+				mockDB.EXPECT().ConferencecallGet(ctx, tt.id.Return(tt.responseConferencecall, nil)
+				mockConference.EXPECT().Get(ctx, tt.responseConferencecall.ConferenceID.Return(tt.responseConference, nil)
 				mockDB.EXPECT().ConferencecallUpdate(ctx, tt.id, map[conferencecall.Field]any{
 					conferencecall.FieldStatus: conferencecall.StatusLeaving,
-				}).Return(nil)
-				mockDB.EXPECT().ConferencecallGet(ctx, tt.id).Return(tt.responseConferencecall, nil)
+				}.Return(nil)
+				mockDB.EXPECT().ConferencecallGet(ctx, tt.id.Return(tt.responseConferencecall, nil)
 				mockNotify.EXPECT().PublishEvent(ctx, gomock.Any(), gomock.Any())
-				mockReq.EXPECT().CallV1ConfbridgeCallKick(ctx, tt.responseConference.ConfbridgeID, tt.responseConferencecall.ReferenceID).Return(nil)
+				mockReq.EXPECT().CallV1ConfbridgeCallKick(ctx, tt.responseConference.ConfbridgeID, tt.responseConferencecall.ReferenceID.Return(nil)
 			} else {
-				mockDB.EXPECT().ConferencecallGet(ctx, tt.id).Return(tt.responseConferencecall, tt.responseConferencecallError)
+				mockDB.EXPECT().ConferencecallGet(ctx, tt.id.Return(tt.responseConferencecall, tt.responseConferencecallError)
 				if tt.responseConferencecallError != nil {
 					mockReq.EXPECT().ConferenceV1ConferencecallHealthCheck(ctx, tt.id, tt.expectRetryCount, defaultHealthCheckDelay)
 				} else {
-					mockUtil.EXPECT().TimeGetCurTimeAdd(-maxConferencecallDuration).Return(tt.responseCurTimeAdd)
+					mockUtil.EXPECT().TimeGetCurTimeAdd(-maxConferencecallDuration.Return(tt.responseCurTimeAdd)
 					if tt.responseConferencecall.TMCreate < tt.responseCurTimeAdd {
 						mockReq.EXPECT().ConferenceV1ConferencecallHealthCheck(ctx, tt.id, tt.expectRetryCount, defaultHealthCheckDelay)
 					} else {
 						if tt.responseConferencecall.Status != conferencecall.StatusLeaved {
-							mockReq.EXPECT().CallV1CallGet(ctx, tt.responseConferencecall.ReferenceID).Return(tt.responseCall, tt.responseCallError)
+							mockReq.EXPECT().CallV1CallGet(ctx, tt.responseConferencecall.ReferenceID.Return(tt.responseCall, tt.responseCallError)
 							if tt.responseCallError != nil {
 								mockReq.EXPECT().ConferenceV1ConferencecallHealthCheck(ctx, tt.id, tt.expectRetryCount, defaultHealthCheckDelay)
 							} else {
 								if tt.responseCall.Status != cmcall.StatusProgressing {
 									mockReq.EXPECT().ConferenceV1ConferencecallHealthCheck(ctx, tt.id, tt.expectRetryCount, defaultHealthCheckDelay)
 								} else {
-									mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.responseConferencecall.ConferenceID).Return(tt.responseConference, tt.responseconferenceError)
+									mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.responseConferencecall.ConferenceID.Return(tt.responseConference, tt.responseconferenceError)
 									if tt.responseConference.ConfbridgeID != tt.responseCall.ConfbridgeID {
 										mockReq.EXPECT().ConferenceV1ConferencecallHealthCheck(ctx, tt.id, tt.expectRetryCount, defaultHealthCheckDelay)
 									}

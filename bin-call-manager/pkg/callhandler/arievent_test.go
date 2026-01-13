@@ -102,14 +102,14 @@ func Test_ARIChannelStateChangeStatusProgressing(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.call, nil)
+			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID.Return(tt.call, nil)
 			mockDB.EXPECT().CallSetStatusProgressing(gomock.Any(), tt.call.ID)
-			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.responseCall, nil)
+			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID.Return(tt.responseCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.responseCall.CustomerID, call.EventTypeCallProgressing, tt.responseCall)
 			if tt.call.Direction != call.DirectionIncoming {
 				// ActionNext
 				// consider the call was hungup already to make this test done quickly.
-				mockDB.EXPECT().CallGet(ctx, gomock.Any()).Return(&call.Call{Status: call.StatusHangup}, nil)
+				mockDB.EXPECT().CallGet(ctx, gomock.Any().Return(&call.Call{Status: call.StatusHangup}, nil)
 			}
 
 			if err := h.ARIChannelStateChange(ctx, tt.channel); err != nil {
@@ -169,9 +169,9 @@ func Test_ARIChannelStateChangeStatusRinging(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().CallGetByChannelID(ctx, tt.channel.ID).Return(tt.responseCall1, nil)
+			mockDB.EXPECT().CallGetByChannelID(ctx, tt.channel.ID.Return(tt.responseCall1, nil)
 			mockDB.EXPECT().CallSetStatusRinging(ctx, tt.responseCall1.ID)
-			mockDB.EXPECT().CallGet(ctx, tt.responseCall1.ID).Return(tt.responseCall2, nil)
+			mockDB.EXPECT().CallGet(ctx, tt.responseCall1.ID.Return(tt.responseCall2, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.responseCall2.CustomerID, call.EventTypeCallRinging, tt.responseCall2)
 
 			if err := h.ARIChannelStateChange(ctx, tt.channel); err != nil {
@@ -229,12 +229,12 @@ func TestARIChannelDestroyedContextTypeCall(t *testing.T) {
 			ctx := context.Background()
 
 			// call hangup
-			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.responseCall, nil)
-			mockBridge.EXPECT().Destroy(ctx, tt.responseCall.BridgeID).Return(nil)
-			mockDB.EXPECT().CallSetHangup(ctx, tt.responseCall.ID, call.HangupReasonNormal, call.HangupByRemote).Return(nil)
-			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
+			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID.Return(tt.responseCall, nil)
+			mockBridge.EXPECT().Destroy(ctx, tt.responseCall.BridgeID.Return(nil)
+			mockDB.EXPECT().CallSetHangup(ctx, tt.responseCall.ID, call.HangupReasonNormal, call.HangupByRemote.Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID.Return(tt.responseCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.responseCall.CustomerID, call.EventTypeCallHangup, tt.responseCall)
-			mockReq.EXPECT().FlowV1ActiveflowStop(ctx, tt.responseCall.ActiveflowID).Return(&fmactiveflow.Activeflow{}, nil)
+			mockReq.EXPECT().FlowV1ActiveflowStop(ctx, tt.responseCall.ActiveflowID.Return(&fmactiveflow.Activeflow{}, nil)
 
 			if err := h.ARIChannelDestroyed(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -344,11 +344,11 @@ func Test_ARIPlaybackFinished(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.call, nil)
+			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID.Return(tt.call, nil)
 
 			// action next part.
-			mockDB.EXPECT().CallSetActionNextHold(ctx, tt.call.ID, true).Return(fmt.Errorf(""))
-			mockDB.EXPECT().CallGet(ctx, gomock.Any()).Return(&call.Call{Status: call.StatusHangup}, nil)
+			mockDB.EXPECT().CallSetActionNextHold(ctx, tt.call.ID, true.Return(fmt.Errorf(""))
+			mockDB.EXPECT().CallGet(ctx, gomock.Any().Return(&call.Call{Status: call.StatusHangup}, nil)
 
 			if errFin := h.ARIPlaybackFinished(ctx, tt.channel, tt.e); errFin != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errFin)

@@ -88,7 +88,7 @@ func Test_ServiceAgentCallGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1CallGets(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseCalls, nil)
+			mockReq.EXPECT().CallV1CallGets(ctx, tt.token, tt.size, tt.expectFilters.Return(tt.responseCalls, nil)
 
 			res, err := h.ServiceAgentCallGets(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {
@@ -162,7 +162,7 @@ func Test_ServiceAgentCallGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID).Return(tt.responseCall, nil)
+			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID.Return(tt.responseCall, nil)
 
 			res, err := h.ServiceAgentCallGet(ctx, tt.agent, tt.callID)
 			if err != nil {
@@ -236,8 +236,8 @@ func Test_ServiceAgentCallDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID).Return(tt.responseCall, nil)
-			mockReq.EXPECT().CallV1CallDelete(ctx, tt.callID).Return(tt.responseCall, nil)
+			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID.Return(tt.responseCall, nil)
+			mockReq.EXPECT().CallV1CallDelete(ctx, tt.callID.Return(tt.responseCall, nil)
 
 			res, err := h.ServiceAgentCallDelete(ctx, tt.agent, tt.callID)
 			if err != nil {

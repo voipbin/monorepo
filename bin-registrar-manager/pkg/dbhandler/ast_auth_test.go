@@ -57,7 +57,7 @@ func TestAstAuthCreate(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().AstAuthGet(gomock.Any(), *tt.auth.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().AstAuthGet(gomock.Any(), *tt.auth.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().AstAuthSet(gomock.Any(), gomock.Any())
 			res, err := h.AstAuthGet(context.Background(), *tt.auth.ID)
 			if err != nil {
@@ -111,7 +111,7 @@ func TestAstAuthDelete(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().AstAuthGet(gomock.Any(), *tt.auth.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().AstAuthGet(gomock.Any(), *tt.auth.ID.Return(nil, fmt.Errorf(""))
 			_, err := h.AstAuthGet(context.Background(), *tt.auth.ID)
 			if err == nil {
 				t.Errorf("Wrong match. expect: err, got: ok")
@@ -170,7 +170,7 @@ func TestAstAuthUpdate(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().AstAuthGet(gomock.Any(), *tt.updateAuth.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().AstAuthGet(gomock.Any(), *tt.updateAuth.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().AstAuthSet(gomock.Any(), gomock.Any())
 			res, err := h.AstAuthGet(context.Background(), *tt.updateAuth.ID)
 			if err != nil {

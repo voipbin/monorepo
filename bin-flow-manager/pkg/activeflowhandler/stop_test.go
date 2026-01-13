@@ -71,9 +71,9 @@ func Test_Stop(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ActiveflowGet(ctx, tt.id).Return(tt.responseActiveflow, nil)
-			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.id, tt.expectUpdateFields).Return(nil)
-			mockDB.EXPECT().ActiveflowGet(ctx, tt.id).Return(tt.responseActiveflow, nil)
+			mockDB.EXPECT().ActiveflowGet(ctx, tt.id.Return(tt.responseActiveflow, nil)
+			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.id, tt.expectUpdateFields.Return(nil)
+			mockDB.EXPECT().ActiveflowGet(ctx, tt.id.Return(tt.responseActiveflow, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseActiveflow.CustomerID, activeflow.EventTypeActiveflowUpdated, tt.responseActiveflow)
 
 			res, err := h.Stop(ctx, tt.id)
@@ -153,25 +153,25 @@ func Test_Stop_has_oncompleteflowid(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ActiveflowGet(ctx, tt.id).Return(tt.responseActiveflow, nil)
-			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.id, tt.expectUpdateFields).Return(nil)
-			mockDB.EXPECT().ActiveflowGet(ctx, tt.id).Return(tt.responseActiveflow, nil)
+			mockDB.EXPECT().ActiveflowGet(ctx, tt.id.Return(tt.responseActiveflow, nil)
+			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.id, tt.expectUpdateFields.Return(nil)
+			mockDB.EXPECT().ActiveflowGet(ctx, tt.id.Return(tt.responseActiveflow, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseActiveflow.CustomerID, activeflow.EventTypeActiveflowUpdated, tt.responseActiveflow)
 
 			// startOnCompleteFlow
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
-			mockReq.EXPECT().FlowV1FlowGet(ctx, tt.responseActiveflow.OnCompleteFlowID).Return(tt.responseFlow, nil)
-			mockStack.EXPECT().Create(gomock.Any()).Return(map[uuid.UUID]*stack.Stack{})
+			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
+			mockReq.EXPECT().FlowV1FlowGet(ctx, tt.responseActiveflow.OnCompleteFlowID.Return(tt.responseFlow, nil)
+			mockStack.EXPECT().Create(gomock.Any().Return(map[uuid.UUID]*stack.Stack{})
 
-			mockDB.EXPECT().ActiveflowCreate(ctx, gomock.Any()).Return(nil)
-			mockDB.EXPECT().ActiveflowGet(ctx, gomock.Any()).Return(tt.responseActiveflow, nil)
+			mockDB.EXPECT().ActiveflowCreate(ctx, gomock.Any().Return(nil)
+			mockDB.EXPECT().ActiveflowGet(ctx, gomock.Any().Return(tt.responseActiveflow, nil)
 
-			mockVar.EXPECT().Get(ctx, gomock.Any()).Return(tt.responseVariable, nil)
-			mockVar.EXPECT().Create(ctx, gomock.Any(), gomock.Any()).Return(&variable.Variable{}, nil)
+			mockVar.EXPECT().Get(ctx, gomock.Any().Return(tt.responseVariable, nil)
+			mockVar.EXPECT().Create(ctx, gomock.Any(), gomock.Any().Return(&variable.Variable{}, nil)
 
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseActiveflow.CustomerID, activeflow.EventTypeActiveflowCreated, gomock.Any())
 
-			mockReq.EXPECT().FlowV1ActiveflowExecute(ctx, gomock.Any()).Return(nil)
+			mockReq.EXPECT().FlowV1ActiveflowExecute(ctx, gomock.Any().Return(nil)
 
 			res, err := h.Stop(ctx, tt.id)
 			if err != nil {

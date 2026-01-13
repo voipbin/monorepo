@@ -10,6 +10,7 @@ import (
 	"net/url"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 )
 
 // StorageV1AccountCreate sends a request to storage-manager
@@ -43,13 +44,15 @@ func (r *requestHandler) StorageV1AccountCreate(ctx context.Context, customerID 
 // StorageV1AccountGets sends a request to storage-manager
 // to getting a list of accounts.
 // it returns file list of accounts if it succeed.
-func (r *requestHandler) StorageV1AccountGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]smaccount.Account, error) {
+func (r *requestHandler) StorageV1AccountGets(ctx context.Context, pageToken string, pageSize uint64, filters map[smaccount.Field]any) ([]smaccount.Account, error) {
 	uri := fmt.Sprintf("/v1/accounts?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
-	// parse filters
-	uri = r.utilHandler.URLMergeFilters(uri, filters)
+	m, err := json.Marshal(filters)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not marshal filters")
+	}
 
-	tmp, err := r.sendRequestStorage(ctx, uri, sock.RequestMethodGet, "storage/accounts", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestStorage(ctx, uri, sock.RequestMethodGet, "storage/accounts", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}

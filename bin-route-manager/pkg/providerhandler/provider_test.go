@@ -48,7 +48,7 @@ func Test_Get(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ProviderGet(ctx, tt.id).Return(tt.responseProvider, nil)
+			mockDB.EXPECT().ProviderGet(ctx, tt.id.Return(tt.responseProvider, nil)
 
 			res, err := h.Get(ctx, tt.id)
 			if err != nil {
@@ -111,8 +111,8 @@ func Test_Create(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ProviderCreate(ctx, gomock.Any()).Return(nil)
-			mockDB.EXPECT().ProviderGet(ctx, gomock.Any()).Return(tt.responseProvider, nil)
+			mockDB.EXPECT().ProviderCreate(ctx, gomock.Any().Return(nil)
+			mockDB.EXPECT().ProviderGet(ctx, gomock.Any().Return(tt.responseProvider, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, provider.EventTypeProviderCreated, tt.responseProvider)
 
 			res, err := h.Create(ctx, tt.providerType, tt.hostname, tt.techPrefix, tt.techPostfix, tt.techHeaders, tt.providerName, tt.detail)
@@ -166,7 +166,7 @@ func Test_Gets(t *testing.T) {
 			ctx := context.Background()
 
 			filters := map[provider.Field]any{}
-			mockDB.EXPECT().ProviderGets(ctx, tt.token, tt.limit, filters).Return(tt.responseProviders, nil)
+			mockDB.EXPECT().ProviderGets(ctx, tt.token, tt.limit, filters.Return(tt.responseProviders, nil)
 
 			res, err := h.Gets(ctx, tt.token, tt.limit)
 			if err != nil {
@@ -214,8 +214,8 @@ func Test_Delete(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ProviderDelete(ctx, tt.id).Return(nil)
-			mockDB.EXPECT().ProviderGet(ctx, tt.id).Return(tt.responseProvider, nil)
+			mockDB.EXPECT().ProviderDelete(ctx, tt.id.Return(nil)
+			mockDB.EXPECT().ProviderGet(ctx, tt.id.Return(tt.responseProvider, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, provider.EventTypeProviderDeleted, tt.responseProvider)
 
 			res, err := h.Delete(ctx, tt.id)
@@ -290,8 +290,8 @@ func Test_Update(t *testing.T) {
 				provider.FieldName:        tt.updateName,
 				provider.FieldDetail:      tt.detail,
 			}
-			mockDB.EXPECT().ProviderUpdate(ctx, tt.id, fields).Return(nil)
-			mockDB.EXPECT().ProviderGet(ctx, tt.id).Return(tt.responseProvider, nil)
+			mockDB.EXPECT().ProviderUpdate(ctx, tt.id, fields.Return(nil)
+			mockDB.EXPECT().ProviderGet(ctx, tt.id.Return(tt.responseProvider, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, provider.EventTypeProviderUpdated, tt.responseProvider)
 
 			res, err := h.Update(ctx, tt.id, tt.providerType, tt.hostname, tt.techPrefix, tt.techPostfix, tt.techHeaders, tt.updateName, tt.detail)

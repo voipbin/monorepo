@@ -126,11 +126,11 @@ func Test_Create(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", errSet)
 			}
 
-			mockDBBin.EXPECT().TrunkGetByDomainName(ctx, tt.domainName).Return(nil, fmt.Errorf(""))
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockDBBin.EXPECT().TrunkGetByDomainName(ctx, tt.domainName.Return(nil, fmt.Errorf(""))
+			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
 			mockDBBin.EXPECT().TrunkCreate(ctx, tt.expectTrunk)
-			mockDBBin.EXPECT().TrunkGet(ctx, tt.expectTrunk.ID).Return(tt.responseTrunk, nil)
-			mockDBBin.EXPECT().SIPAuthCreate(ctx, tt.expectSIPAuth).Return(nil)
+			mockDBBin.EXPECT().TrunkGet(ctx, tt.expectTrunk.ID.Return(tt.responseTrunk, nil)
+			mockDBBin.EXPECT().SIPAuthCreate(ctx, tt.expectSIPAuth.Return(nil)
 			mockNotify.EXPECT().PublishEvent(ctx, trunk.EventTypeTrunkCreated, tt.responseTrunk)
 
 			res, err := h.Create(ctx, tt.customerID, tt.trunkName, tt.detail, tt.domainName, tt.authTypes, tt.username, tt.password, tt.allowedIPs)
@@ -180,7 +180,7 @@ func Test_Get(t *testing.T) {
 		}
 		ctx := context.Background()
 
-		mockDBBin.EXPECT().TrunkGet(ctx, tt.id).Return(tt.responseTrunk, nil)
+		mockDBBin.EXPECT().TrunkGet(ctx, tt.id.Return(tt.responseTrunk, nil)
 		res, err := h.Get(ctx, tt.id)
 		if err != nil {
 			t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -247,7 +247,7 @@ func Test_Gets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().TrunkGets(ctx, tt.size, tt.token, tt.filters).Return(tt.responseGets, nil)
+			mockDB.EXPECT().TrunkGets(ctx, tt.size, tt.token, tt.filters.Return(tt.responseGets, nil)
 
 			res, err := h.Gets(ctx, tt.token, tt.size, tt.filters)
 			if err != nil {
@@ -305,7 +305,7 @@ func Test_GetByDomainName(t *testing.T) {
 		}
 		ctx := context.Background()
 
-		mockDBBin.EXPECT().TrunkGetByDomainName(ctx, tt.domainName).Return(tt.responseTrunk, nil)
+		mockDBBin.EXPECT().TrunkGetByDomainName(ctx, tt.domainName.Return(tt.responseTrunk, nil)
 		res, err := h.GetByDomainName(ctx, tt.domainName)
 		if err != nil {
 			t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -371,9 +371,9 @@ func Test_Update(t *testing.T) {
 
 		ctx := context.Background()
 
-		mockDBBin.EXPECT().TrunkUpdate(ctx, tt.id, tt.fields).Return(nil)
-		mockDBBin.EXPECT().TrunkGet(ctx, tt.responseTrunk.ID).Return(tt.responseTrunk, nil)
-		mockDBBin.EXPECT().SIPAuthUpdate(ctx, tt.id, gomock.Any()).Return(nil)
+		mockDBBin.EXPECT().TrunkUpdate(ctx, tt.id, tt.fields.Return(nil)
+		mockDBBin.EXPECT().TrunkGet(ctx, tt.responseTrunk.ID.Return(tt.responseTrunk, nil)
+		mockDBBin.EXPECT().SIPAuthUpdate(ctx, tt.id, gomock.Any().Return(nil)
 		mockNotify.EXPECT().PublishEvent(ctx, trunk.EventTypeTrunkUpdated, tt.responseTrunk)
 		_, err := h.Update(ctx, tt.id, tt.fields)
 		if err != nil {
@@ -424,9 +424,9 @@ func Test_Delete(t *testing.T) {
 		}
 		ctx := context.Background()
 
-		mockDBBin.EXPECT().TrunkDelete(ctx, tt.trunkID).Return(nil)
-		mockDBBin.EXPECT().TrunkGet(ctx, tt.trunkID).Return(tt.responseTrunk, nil)
-		mockDBBin.EXPECT().SIPAuthDelete(ctx, tt.responseTrunk.ID).Return(nil)
+		mockDBBin.EXPECT().TrunkDelete(ctx, tt.trunkID.Return(nil)
+		mockDBBin.EXPECT().TrunkGet(ctx, tt.trunkID.Return(tt.responseTrunk, nil)
+		mockDBBin.EXPECT().SIPAuthDelete(ctx, tt.responseTrunk.ID.Return(nil)
 		mockNotify.EXPECT().PublishEvent(ctx, trunk.EventTypeTrunkDeleted, tt.responseTrunk)
 		res, err := h.Delete(ctx, tt.trunkID)
 		if err != nil {

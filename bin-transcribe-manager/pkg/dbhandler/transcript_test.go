@@ -89,13 +89,13 @@ func Test_TranscriptCreate(t *testing.T) {
 				cache:       mockCache,
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().TranscriptSet(gomock.Any(), gomock.Any())
 			if err := h.TranscriptCreate(context.Background(), tt.transcript); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().TranscriptGet(gomock.Any(), tt.transcript.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().TranscriptGet(gomock.Any(), tt.transcript.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().TranscriptSet(gomock.Any(), gomock.Any())
 			res, err := h.TranscriptGet(context.Background(), tt.transcript.ID)
 			if err != nil {
@@ -220,7 +220,7 @@ func Test_TranscriptGets(t *testing.T) {
 
 			// creates messages for test
 			for i := 0; i < len(tt.transcripts); i++ {
-				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 				mockCache.EXPECT().TranscriptSet(ctx, gomock.Any())
 
 				if err := h.TranscriptCreate(ctx, tt.transcripts[i]); err != nil {
@@ -286,7 +286,7 @@ func Test_TranscriptDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime).AnyTimes()
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime).AnyTimes()
 			mockCache.EXPECT().TranscriptSet(ctx, gomock.Any())
 			if err := h.TranscriptCreate(ctx, tt.transcript); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -297,7 +297,7 @@ func Test_TranscriptDelete(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", errDelete)
 			}
 
-			mockCache.EXPECT().TranscriptGet(gomock.Any(), tt.transcript.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().TranscriptGet(gomock.Any(), tt.transcript.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().TranscriptSet(gomock.Any(), gomock.Any())
 			res, err := h.TranscriptGet(context.Background(), tt.transcript.ID)
 			if err != nil {

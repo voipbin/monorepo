@@ -84,9 +84,9 @@ func Test_Create(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
-			mockDB.EXPECT().TranscriptCreate(ctx, tt.expectReqCreate).Return(nil)
-			mockDB.EXPECT().TranscriptGet(ctx, tt.responseUUID).Return(tt.responseTranscript, nil)
+			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
+			mockDB.EXPECT().TranscriptCreate(ctx, tt.expectReqCreate.Return(nil)
+			mockDB.EXPECT().TranscriptGet(ctx, tt.responseUUID.Return(tt.responseTranscript, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseTranscript.CustomerID, transcript.EventTypeTranscriptCreated, tt.responseTranscript)
 
 			res, err := h.Create(ctx, tt.customerID, tt.transcribeID, tt.direction, tt.message, tt.tmTranscript)
@@ -147,7 +147,7 @@ func Test_Gets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().TranscriptGets(ctx, tt.size, tt.token, tt.filters).Return(tt.responseTranscripts, nil)
+			mockDB.EXPECT().TranscriptGets(ctx, tt.size, tt.token, tt.filters.Return(tt.responseTranscripts, nil)
 			_, err := h.Gets(ctx, tt.size, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -196,11 +196,11 @@ func Test_Delete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().TranscriptGet(ctx, tt.id).Return(tt.responseTranscript, nil)
+			mockDB.EXPECT().TranscriptGet(ctx, tt.id.Return(tt.responseTranscript, nil)
 
 			// dbDelete
-			mockDB.EXPECT().TranscriptDelete(ctx, tt.id).Return(nil)
-			mockDB.EXPECT().TranscriptGet(ctx, tt.id).Return(tt.responseTranscript, nil)
+			mockDB.EXPECT().TranscriptDelete(ctx, tt.id.Return(nil)
+			mockDB.EXPECT().TranscriptGet(ctx, tt.id.Return(tt.responseTranscript, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, transcript.EventTypeTranscriptCreated, tt.responseTranscript)
 
 			res, err := h.Delete(ctx, tt.id)

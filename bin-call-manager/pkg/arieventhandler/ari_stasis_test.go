@@ -105,10 +105,10 @@ func Test_EventHandlerStasisStart(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockChannel.EXPECT().Get(ctx, tt.expectChannelID).Return(tt.responseChannel, nil)
-			mockChannel.EXPECT().ARIStasisStart(ctx, tt.event).Return(tt.responseChannel, nil)
+			mockChannel.EXPECT().Get(ctx, tt.expectChannelID.Return(tt.responseChannel, nil)
+			mockChannel.EXPECT().ARIStasisStart(ctx, tt.event.Return(tt.responseChannel, nil)
 
-			mockCall.EXPECT().ARIStasisStart(gomock.Any(), tt.responseChannel).Return(nil)
+			mockCall.EXPECT().ARIStasisStart(gomock.Any(), tt.responseChannel.Return(nil)
 
 			if err := h.EventHandlerStasisStart(ctx, tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -177,7 +177,7 @@ func Test_EventHandlerStasisEnd(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockChannel.EXPECT().UpdateStasisName(ctx, tt.expectChannelID, tt.expectStasis).Return(&channel.Channel{}, nil)
+			mockChannel.EXPECT().UpdateStasisName(ctx, tt.expectChannelID, tt.expectStasis.Return(&channel.Channel{}, nil)
 
 			if err := h.EventHandlerStasisEnd(ctx, tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

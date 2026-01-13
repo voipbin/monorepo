@@ -73,7 +73,7 @@ func Test_processV1TransfersPost(t *testing.T) {
 				transferHandler: mockTransfer,
 			}
 
-			mockTransfer.EXPECT().ServiceStart(gomock.Any(), tt.expectType, tt.expectTransfererCallID, tt.expectTransfereeAddresses).Return(tt.responseTransfer, nil)
+			mockTransfer.EXPECT().ServiceStart(gomock.Any(), tt.expectType, tt.expectTransfererCallID, tt.expectTransfereeAddresses.Return(tt.responseTransfer, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

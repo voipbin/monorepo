@@ -13,6 +13,7 @@ import (
 	csresponse "monorepo/bin-customer-manager/pkg/listenhandler/models/response"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 )
 
 // CustomerV1CustomerGet sends a request to customer-manager
@@ -37,13 +38,15 @@ func (r *requestHandler) CustomerV1CustomerGet(ctx context.Context, customerID u
 // CustomerV1CustomerGets sends a request to customer-manager
 // to getting a list of customers info.
 // it returns detail customer info if it succeed.
-func (r *requestHandler) CustomerV1CustomerGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]cscustomer.Customer, error) {
+func (r *requestHandler) CustomerV1CustomerGets(ctx context.Context, pageToken string, pageSize uint64, filters map[cscustomer.Field]any) ([]cscustomer.Customer, error) {
 	uri := fmt.Sprintf("/v1/customers?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
-	// parse filters
-	uri = r.utilHandler.URLMergeFilters(uri, filters)
+	m, err := json.Marshal(filters)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not marshal filters")
+	}
 
-	tmp, err := r.sendRequestCustomer(ctx, uri, sock.RequestMethodGet, "customer/customers", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestCustomer(ctx, uri, sock.RequestMethodGet, "customer/customers", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}

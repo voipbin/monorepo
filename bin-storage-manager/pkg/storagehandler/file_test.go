@@ -72,7 +72,7 @@ func Test_FileCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockFile.EXPECT().Create(ctx, tt.customerID, tt.ownerID, tt.referenceType, tt.referenceID, tt.fileName, tt.detail, tt.filename, tt.bucketName, tt.filepath).Return(tt.responseFile, nil)
+			mockFile.EXPECT().Create(ctx, tt.customerID, tt.ownerID, tt.referenceType, tt.referenceID, tt.fileName, tt.detail, tt.filename, tt.bucketName, tt.filepath.Return(tt.responseFile, nil)
 
 			res, err := h.FileCreate(ctx, tt.customerID, tt.ownerID, tt.referenceType, tt.referenceID, tt.fileName, tt.detail, tt.filename, tt.bucketName, tt.filepath)
 			if err != nil {
@@ -128,7 +128,7 @@ func Test_FileGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockFile.EXPECT().Get(ctx, tt.id).Return(tt.responseFile, nil)
+			mockFile.EXPECT().Get(ctx, tt.id.Return(tt.responseFile, nil)
 
 			res, err := h.FileGet(ctx, tt.id)
 			if err != nil {
@@ -192,7 +192,7 @@ func Test_FileGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockFile.EXPECT().Gets(ctx, tt.token, tt.size, tt.filters).Return(tt.responseFiles, nil)
+			mockFile.EXPECT().Gets(ctx, tt.token, tt.size, gomock.Any().Return(tt.responseFiles, nil)
 
 			res, err := h.FileGets(ctx, tt.token, tt.size, tt.filters)
 			if err != nil {
@@ -248,7 +248,7 @@ func Test_FileDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockFile.EXPECT().Delete(ctx, tt.id).Return(tt.responseFile, nil)
+			mockFile.EXPECT().Delete(ctx, tt.id.Return(tt.responseFile, nil)
 
 			res, err := h.FileDelete(ctx, tt.id)
 			if err != nil {

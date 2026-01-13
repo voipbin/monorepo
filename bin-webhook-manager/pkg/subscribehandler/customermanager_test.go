@@ -51,7 +51,7 @@ func TestProcessEventCSCustomerCreatedCreated(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockAccount.EXPECT().UpdateByCustomer(gomock.Any(), tt.message).Return(&account.Account{}, nil)
+			mockAccount.EXPECT().UpdateByCustomer(gomock.Any(), tt.message.Return(&account.Account{}, nil)
 
 			h.processEvent(tt.event)
 
@@ -95,7 +95,7 @@ func TestProcessEventCSCustomerCreatedUpdated(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockAccount.EXPECT().UpdateByCustomer(gomock.Any(), tt.message).Return(&account.Account{}, nil)
+			mockAccount.EXPECT().UpdateByCustomer(gomock.Any(), tt.message.Return(&account.Account{}, nil)
 
 			h.processEvent(tt.event)
 

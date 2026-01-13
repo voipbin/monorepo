@@ -62,7 +62,7 @@ func Test_v1OutdialsPost(t *testing.T) {
 				outdialTargetHandler: mockOutdialTarget,
 			}
 
-			mockOutdial.EXPECT().Create(gomock.Any(), tt.customerID, tt.campaignID, tt.outdialName, tt.detail, tt.data).Return(&outdial.Outdial{}, nil)
+			mockOutdial.EXPECT().Create(gomock.Any(), tt.customerID, tt.campaignID, tt.outdialName, tt.detail, tt.data.Return(&outdial.Outdial{}, nil)
 
 			if _, err := h.processRequest(tt.request); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -151,7 +151,7 @@ func Test_v1OutdialsGet(t *testing.T) {
 				outdialTargetHandler: mockOutdialTarget,
 			}
 
-			mockOutdial.EXPECT().GetsByCustomerID(gomock.Any(), tt.customerID, tt.pageToken, tt.pageSize).Return(tt.outdials, nil)
+			mockOutdial.EXPECT().GetsByCustomerID(gomock.Any(), tt.customerID, tt.pageToken, tt.pageSize.Return(tt.outdials, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -208,7 +208,7 @@ func Test_v1OutdialsIDGet(t *testing.T) {
 				outdialTargetHandler: mockOutdialTarget,
 			}
 
-			mockOutdial.EXPECT().Get(gomock.Any(), tt.outdial.ID).Return(tt.outdial, nil)
+			mockOutdial.EXPECT().Get(gomock.Any(), tt.outdial.ID.Return(tt.outdial, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -269,7 +269,7 @@ func Test_v1OutdialsIDPut(t *testing.T) {
 				outdialTargetHandler: mockOutdialTarget,
 			}
 
-			mockOutdial.EXPECT().UpdateBasicInfo(gomock.Any(), tt.id, tt.outdialName, tt.detail).Return(&outdial.Outdial{}, nil)
+			mockOutdial.EXPECT().UpdateBasicInfo(gomock.Any(), tt.id, tt.outdialName, tt.detail.Return(&outdial.Outdial{}, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -325,7 +325,7 @@ func Test_v1OutdialsIDDelete(t *testing.T) {
 				outdialTargetHandler: mockOutdialTarget,
 			}
 
-			mockOutdial.EXPECT().Delete(gomock.Any(), tt.id).Return(&outdial.Outdial{}, nil)
+			mockOutdial.EXPECT().Delete(gomock.Any(), tt.id.Return(&outdial.Outdial{}, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -400,7 +400,7 @@ func Test_v1OutdialsIDAvailableGet(t *testing.T) {
 				outdialTargetHandler: mockOutdialTarget,
 			}
 
-			mockOutdialTarget.EXPECT().GetAvailable(gomock.Any(), tt.outdialID, tt.tryCount0, tt.tryCount1, tt.tryCount2, tt.tryCount3, tt.tryCount4, tt.limit).Return(tt.outdialtargets, nil)
+			mockOutdialTarget.EXPECT().GetAvailable(gomock.Any(), tt.outdialID, tt.tryCount0, tt.tryCount1, tt.tryCount2, tt.tryCount3, tt.tryCount4, tt.limit.Return(tt.outdialtargets, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -523,7 +523,7 @@ func Test_v1OutdialsIDTargetsPost(t *testing.T) {
 				outdialTargetHandler: mockOutdialTarget,
 			}
 
-			mockOutdialTarget.EXPECT().Create(gomock.Any(), tt.outdialID, tt.targetName, tt.detail, tt.data, tt.destination0, tt.destination1, tt.destination2, tt.destination3, tt.destination4).Return(tt.outdialtarget, nil)
+			mockOutdialTarget.EXPECT().Create(gomock.Any(), tt.outdialID, tt.targetName, tt.detail, tt.data, tt.destination0, tt.destination1, tt.destination2, tt.destination3, tt.destination4.Return(tt.outdialtarget, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -614,7 +614,7 @@ func Test_v1OutdialsIDTargetsGet(t *testing.T) {
 				outdialTargetHandler: mockOutdialTarget,
 			}
 
-			mockOutdialTarget.EXPECT().GetsByOutdialID(gomock.Any(), tt.outdialID, tt.pageToken, tt.pageSize).Return(tt.outdialTargets, nil)
+			mockOutdialTarget.EXPECT().GetsByOutdialID(gomock.Any(), tt.outdialID, tt.pageToken, tt.pageSize.Return(tt.outdialTargets, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -679,7 +679,7 @@ func Test_v1OutdialsIDCampaignIDPut(t *testing.T) {
 				outdialTargetHandler: mockOutdialTarget,
 			}
 
-			mockOutdial.EXPECT().UpdateCampaignID(gomock.Any(), tt.outdialID, tt.campaignID).Return(tt.outdial, nil)
+			mockOutdial.EXPECT().UpdateCampaignID(gomock.Any(), tt.outdialID, tt.campaignID.Return(tt.outdial, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -744,7 +744,7 @@ func Test_v1OutdialsIDDataPut(t *testing.T) {
 				outdialTargetHandler: mockOutdialTarget,
 			}
 
-			mockOutdial.EXPECT().UpdateData(gomock.Any(), tt.outdialID, tt.data).Return(tt.outdial, nil)
+			mockOutdial.EXPECT().UpdateData(gomock.Any(), tt.outdialID, tt.data.Return(tt.outdial, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

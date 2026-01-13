@@ -60,8 +60,8 @@ func Test_RemoveConferencecallID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConferenceRemoveConferencecallID(ctx, tt.responseConference.ID, tt.conferencecallID).Return(nil)
-			mockDB.EXPECT().ConferenceGet(ctx, tt.responseConference.ID).Return(tt.responseConference, nil)
+			mockDB.EXPECT().ConferenceRemoveConferencecallID(ctx, tt.responseConference.ID, tt.conferencecallID.Return(nil)
+			mockDB.EXPECT().ConferenceGet(ctx, tt.responseConference.ID.Return(tt.responseConference, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseConference.CustomerID, conference.EventTypeConferenceUpdated, tt.responseConference)
 
 			res, err := h.RemoveConferencecallID(ctx, tt.conferenceID, tt.conferencecallID)
@@ -136,9 +136,9 @@ func Test_removeConferencecallIDTypeConference(t *testing.T) {
 			ctx := context.Background()
 
 			if tt.conference.Status == conference.StatusTerminating && len(tt.conference.ConferencecallIDs) == 0 {
-				mockReq.EXPECT().CallV1ConfbridgeDelete(ctx, tt.conference.ConfbridgeID).Return(&confbridge.Confbridge{}, nil)
-				mockDB.EXPECT().ConferenceEnd(ctx, tt.conference.ID).Return(nil)
-				mockDB.EXPECT().ConferenceGet(ctx, tt.conference.ID).Return(tt.conference, nil)
+				mockReq.EXPECT().CallV1ConfbridgeDelete(ctx, tt.conference.ConfbridgeID.Return(&confbridge.Confbridge{}, nil)
+				mockDB.EXPECT().ConferenceEnd(ctx, tt.conference.ID.Return(nil)
+				mockDB.EXPECT().ConferenceGet(ctx, tt.conference.ID.Return(tt.conference, nil)
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.conference.CustomerID, conference.EventTypeConferenceDeleted, tt.conference)
 			}
 

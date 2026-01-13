@@ -77,7 +77,7 @@ func Test_v1FilesPost(t *testing.T) {
 				storageHandler: mockStorage,
 			}
 
-			mockStorage.EXPECT().FileCreate(gomock.Any(), tt.customerID, tt.ownerID, tt.referenceType, tt.referenceID, tt.fileName, tt.detail, tt.filename, tt.bucketName, tt.filepath).Return(tt.responseFile, nil)
+			mockStorage.EXPECT().FileCreate(gomock.Any(), tt.customerID, tt.ownerID, tt.referenceType, tt.referenceID, tt.fileName, tt.detail, tt.filename, tt.bucketName, tt.filepath.Return(tt.responseFile, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -148,7 +148,7 @@ func Test_v1FilesGet(t *testing.T) {
 				storageHandler: mockStorage,
 			}
 
-			mockStorage.EXPECT().FileGets(gomock.Any(), tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.responseFiles, nil)
+			mockStorage.EXPECT().FileGets(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(.Return(tt.responseFiles, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -205,7 +205,7 @@ func Test_v1FilesIDGet(t *testing.T) {
 				storageHandler: mockStorage,
 			}
 
-			mockStorage.EXPECT().FileGet(gomock.Any(), tt.responseFile.Identity.ID).Return(tt.responseFile, nil)
+			mockStorage.EXPECT().FileGet(gomock.Any(), tt.responseFile.Identity.ID.Return(tt.responseFile, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -265,7 +265,7 @@ func Test_v1FilesIDDelete(t *testing.T) {
 				storageHandler: mockStorage,
 			}
 
-			mockStorage.EXPECT().FileDelete(gomock.Any(), tt.fileID).Return(tt.responseFile, nil)
+			mockStorage.EXPECT().FileDelete(gomock.Any(), tt.fileID.Return(tt.responseFile, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

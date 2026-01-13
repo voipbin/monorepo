@@ -71,14 +71,14 @@ func Test_MediaCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			mockCache.EXPECT().MediaSet(gomock.Any(), gomock.Any())
 			if err := h.MediaCreate(ctx, tt.media); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().MediaGet(gomock.Any(), tt.media.ID).Return(nil, fmt.Errorf(""))
-			mockCache.EXPECT().MediaSet(gomock.Any(), gomock.Any()).Return(nil)
+			mockCache.EXPECT().MediaGet(gomock.Any(), tt.media.ID.Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().MediaSet(gomock.Any(), gomock.Any().Return(nil)
 			res, err := h.MediaGet(ctx, tt.media.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

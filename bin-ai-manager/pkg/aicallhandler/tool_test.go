@@ -138,8 +138,8 @@ func Test_toolHandleConnect(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1ActiveflowAddActions(ctx, tt.aicall.ActiveflowID, tt.expectActions).Return(tt.responseActiveflow, nil)
-			mockReq.EXPECT().AIV1AIcallTerminate(gomock.Any(), tt.aicall.ID).Return(&aicall.AIcall{}, nil)
+			mockReq.EXPECT().FlowV1ActiveflowAddActions(ctx, tt.aicall.ActiveflowID, tt.expectActions.Return(tt.responseActiveflow, nil)
+			mockReq.EXPECT().AIV1AIcallTerminate(gomock.Any(), tt.aicall.ID.Return(&aicall.AIcall{}, nil)
 
 			res := h.toolHandleConnect(ctx, tt.aicall, tt.tool)
 
@@ -257,8 +257,8 @@ func Test_toolHandleMessageSend(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDMessageID)
-			mockReq.EXPECT().MessageV1MessageSend(ctx, tt.responseUUIDMessageID, tt.aicall.CustomerID, tt.expectSource, tt.expectDestinations, tt.expectText).Return(tt.responseMMMessage, nil)
+			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUIDMessageID)
+			mockReq.EXPECT().MessageV1MessageSend(ctx, tt.responseUUIDMessageID, tt.aicall.CustomerID, tt.expectSource, tt.expectDestinations, tt.expectText.Return(tt.responseMMMessage, nil)
 
 			res := h.toolHandleMessageSend(ctx, tt.aicall, tt.tool)
 
@@ -379,7 +379,7 @@ func Test_toolHandleEmailSend(t *testing.T) {
 				tt.expectSubject,
 				tt.expectContent,
 				tt.expectAttachments,
-			).Return(tt.responseEmail, nil)
+			.Return(tt.responseEmail, nil)
 
 			res := h.toolHandleEmailSend(ctx, tt.aicall, tt.tool)
 
@@ -463,23 +463,23 @@ func Test_toolHandleServiceStop(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AIcallGet(ctx, tt.aicall.ID).Return(tt.aicall, nil)
-			mockReq.EXPECT().FlowV1ActiveflowServiceStop(ctx, tt.aicall.ActiveflowID, tt.aicall.ID, 0).Return(nil)
+			mockDB.EXPECT().AIcallGet(ctx, tt.aicall.ID.Return(tt.aicall, nil)
+			mockReq.EXPECT().FlowV1ActiveflowServiceStop(ctx, tt.aicall.ActiveflowID, tt.aicall.ID, 0.Return(nil)
 			if tt.aicall.ReferenceType != aicall.ReferenceTypeCall {
-				mockReq.EXPECT().FlowV1ActiveflowContinue(ctx, tt.aicall.ActiveflowID, tt.aicall.ID).Return(nil)
+				mockReq.EXPECT().FlowV1ActiveflowContinue(ctx, tt.aicall.ActiveflowID, tt.aicall.ID.Return(nil)
 			}
 
 			if tt.aicall.PipecatcallID != uuid.Nil {
-				mockReq.EXPECT().PipecatV1PipecatcallGet(ctx, tt.aicall.PipecatcallID).Return(tt.responsePipecatcall, nil)
-				mockReq.EXPECT().PipecatV1PipecatcallTerminate(ctx, tt.responsePipecatcall.HostID, tt.responsePipecatcall.ID).Return(tt.responsePipecatcall, nil)
+				mockReq.EXPECT().PipecatV1PipecatcallGet(ctx, tt.aicall.PipecatcallID.Return(tt.responsePipecatcall, nil)
+				mockReq.EXPECT().PipecatV1PipecatcallTerminate(ctx, tt.responsePipecatcall.HostID, tt.responsePipecatcall.ID.Return(tt.responsePipecatcall, nil)
 			}
 
 			if tt.aicall.ConfbridgeID != uuid.Nil {
-				mockReq.EXPECT().CallV1ConfbridgeTerminate(ctx, tt.aicall.ConfbridgeID).Return(&cmconfbridge.Confbridge{}, nil)
+				mockReq.EXPECT().CallV1ConfbridgeTerminate(ctx, tt.aicall.ConfbridgeID.Return(&cmconfbridge.Confbridge{}, nil)
 			}
 
-			mockDB.EXPECT().AIcallUpdate(ctx, tt.aicall.ID, gomock.Any()).Return(nil)
-			mockDB.EXPECT().AIcallGet(ctx, tt.aicall.ID).Return(tt.aicall, nil)
+			mockDB.EXPECT().AIcallUpdate(ctx, tt.aicall.ID, gomock.Any().Return(nil)
+			mockDB.EXPECT().AIcallGet(ctx, tt.aicall.ID.Return(tt.aicall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.aicall.CustomerID, aicall.EventTypeStatusTerminated, tt.aicall)
 
 			res := h.toolHandleServiceStop(ctx, tt.aicall, tt.tool)
@@ -561,7 +561,7 @@ func Test_toolHandleStop(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1ActiveflowStop(ctx, tt.aicall.ActiveflowID).Return(tt.responseActiveflow, nil)
+			mockReq.EXPECT().FlowV1ActiveflowStop(ctx, tt.aicall.ActiveflowID.Return(tt.responseActiveflow, nil)
 
 			res := h.toolHandleStop(ctx, tt.aicall, tt.tool)
 
@@ -635,7 +635,7 @@ func Test_toolHandleMediaStop(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1CallMediaStop(ctx, tt.aicall.ReferenceID).Return(nil)
+			mockReq.EXPECT().CallV1CallMediaStop(ctx, tt.aicall.ReferenceID.Return(nil)
 
 			res := h.toolHandleMediaStop(ctx, tt.aicall, tt.tool)
 
@@ -718,7 +718,7 @@ func Test_toolHandleSetVariables(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.aicall.ActiveflowID, tt.expectedVariables).Return(nil)
+			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.aicall.ActiveflowID, tt.expectedVariables.Return(nil)
 
 			res := h.toolHandleSetVariables(ctx, tt.aicall, tt.tool)
 
@@ -800,7 +800,7 @@ func Test_toolHandleGetVariables(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.aicall.ActiveflowID).Return(tt.responseVariable, nil)
+			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.aicall.ActiveflowID.Return(tt.responseVariable, nil)
 
 			res := h.toolHandleGetVariables(ctx, tt.aicall, tt.tool)
 
@@ -898,8 +898,8 @@ func Test_toolHandleGetAIcallMessages(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AIcallGet(ctx, tt.expectAIcallID).Return(tt.responseAIcall, nil)
-			mockMessage.EXPECT().Gets(ctx, tt.responseAIcall.ID, gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseMessages, nil)
+			mockDB.EXPECT().AIcallGet(ctx, tt.expectAIcallID.Return(tt.responseAIcall, nil)
+			mockMessage.EXPECT().Gets(ctx, tt.responseAIcall.ID, gomock.Any(), gomock.Any()), gomock.Any().Return(tt.responseMessages, nil)
 
 			res := h.toolHandleGetAIcallMessages(ctx, tt.aicall, tt.tool)
 

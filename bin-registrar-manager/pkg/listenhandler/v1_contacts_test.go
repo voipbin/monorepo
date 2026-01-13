@@ -94,7 +94,7 @@ func Test_processV1ContactsGet(t *testing.T) {
 				contactHandler: mockContact,
 			}
 
-			mockContact.EXPECT().ContactGetsByExtension(gomock.Any(), tt.customerID, tt.expectExtension).Return(tt.responseContacts, nil)
+			mockContact.EXPECT().ContactGetsByExtension(gomock.Any(), tt.customerID, tt.expectExtension.Return(tt.responseContacts, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -152,7 +152,7 @@ func Test_processV1ContactsPut(t *testing.T) {
 				contactHandler: mockContact,
 			}
 
-			mockContact.EXPECT().ContactRefreshByEndpoint(gomock.Any(), tt.customerID, tt.extension).Return(nil)
+			mockContact.EXPECT().ContactRefreshByEndpoint(gomock.Any(), tt.customerID, tt.extension.Return(nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

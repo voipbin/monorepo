@@ -86,7 +86,7 @@ func Test_PostAisummaries(t *testing.T) {
 				tt.expectedReferenceType,
 				tt.expectedReferenceID,
 				tt.expectedLanguage,
-			).Return(tt.responseAIsummary, nil)
+			.Return(tt.responseAIsummary, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -160,7 +160,7 @@ func Test_GetAisummaries(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().AISummaryGetsByCustomerID(req.Context(), &tt.agent, tt.expectedPageSize, tt.expectedPageToken).Return(tt.responseAIsummaries, nil)
+			mockSvc.EXPECT().AISummaryGetsByCustomerID(req.Context(), &tt.agent, tt.expectedPageSize, tt.expectedPageToken.Return(tt.responseAIsummaries, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -228,7 +228,7 @@ func Test_GetAisummariesId(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().AISummaryGet(req.Context(), &tt.agent, tt.expectAIID).Return(tt.responseAI, nil)
+			mockSvc.EXPECT().AISummaryGet(req.Context(), &tt.agent, tt.expectAIID.Return(tt.responseAI, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -296,7 +296,7 @@ func Test_DeleteAisummariesId(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().AISummaryDelete(req.Context(), &tt.agent, tt.expectAIID).Return(tt.responseAI, nil)
+			mockSvc.EXPECT().AISummaryDelete(req.Context(), &tt.agent, tt.expectAIID.Return(tt.responseAI, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

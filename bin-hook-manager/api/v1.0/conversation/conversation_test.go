@@ -64,7 +64,7 @@ func Test_conversationPOST(t *testing.T) {
 			req, _ := http.NewRequest("POST", tt.target, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().Conversation(gomock.Any(), tt.target, body).Return(nil)
+			mockSvc.EXPECT().Conversation(gomock.Any(), tt.target, body.Return(nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

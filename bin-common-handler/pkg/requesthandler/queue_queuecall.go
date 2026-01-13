@@ -11,18 +11,21 @@ import (
 	qmrequest "monorepo/bin-queue-manager/pkg/listenhandler/models/request"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 )
 
 // QueueV1QueuecallGets sends a request to queue-manager
 // to get a list of queuecalls.
 // Returns list of queuecalls
-func (r *requestHandler) QueueV1QueuecallGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]qmqueuecall.Queuecall, error) {
+func (r *requestHandler) QueueV1QueuecallGets(ctx context.Context, pageToken string, pageSize uint64, filters map[qmqueuecall.Field]any) ([]qmqueuecall.Queuecall, error) {
 	uri := fmt.Sprintf("/v1/queuecalls?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
-	// parse filters
-	uri = r.utilHandler.URLMergeFilters(uri, filters)
+	m, err := json.Marshal(filters)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not marshal filters")
+	}
 
-	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodGet, "queue/queuecalls", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodGet, "queue/queuecalls", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}

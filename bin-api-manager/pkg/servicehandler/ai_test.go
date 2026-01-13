@@ -101,7 +101,7 @@ func Test_AICreate(t *testing.T) {
 				tt.ttsType,
 				tt.ttsVoiceID,
 				tt.sttType,
-			).Return(tt.response, nil)
+			.Return(tt.response, nil)
 
 			res, err := h.AICreate(
 				ctx,
@@ -189,7 +189,7 @@ func Test_AIGetsByCustomerID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().AIV1AIGets(ctx, tt.token, tt.size, tt.filters).Return(tt.response, nil)
+			mockReq.EXPECT().AIV1AIGets(ctx, tt.token, tt.size, tt.filters.Return(tt.response, nil)
 
 			res, err := h.AIGetsByCustomerID(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {
@@ -253,7 +253,7 @@ func Test_AIGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AIV1AIGet(ctx, tt.aiID).Return(tt.response, nil)
+			mockReq.EXPECT().AIV1AIGet(ctx, tt.aiID.Return(tt.response, nil)
 
 			res, err := h.AIGet(ctx, tt.agent, tt.aiID)
 			if err != nil {
@@ -319,8 +319,8 @@ func Test_AIDelete(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().AIV1AIGet(ctx, tt.aiID).Return(tt.responseChat, nil)
-			mockReq.EXPECT().AIV1AIDelete(ctx, tt.aiID).Return(tt.responseChat, nil)
+			mockReq.EXPECT().AIV1AIGet(ctx, tt.aiID.Return(tt.responseChat, nil)
+			mockReq.EXPECT().AIV1AIDelete(ctx, tt.aiID.Return(tt.responseChat, nil)
 
 			res, err := h.AIDelete(ctx, tt.agent, tt.aiID)
 			if err != nil {

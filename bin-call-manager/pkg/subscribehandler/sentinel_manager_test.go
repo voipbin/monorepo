@@ -58,7 +58,7 @@ func Test_processEvent_processEventSMPodDeleted(t *testing.T) {
 				callHandler:     mockCall,
 			}
 
-			mockCall.EXPECT().EventSMPodDeleted(gomock.Any(), tt.expectedPod).Return(nil)
+			mockCall.EXPECT().EventSMPodDeleted(gomock.Any(), tt.expectedPod.Return(nil)
 
 			if errProcess := h.processEvent(tt.event); errProcess != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errProcess)

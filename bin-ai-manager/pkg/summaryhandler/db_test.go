@@ -103,12 +103,12 @@ func Test_Create(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
-			mockDB.EXPECT().SummaryCreate(ctx, tt.expectedSummary).Return(nil)
-			mockDB.EXPECT().SummaryGet(ctx, tt.responseUUID).Return(tt.expectedSummary, nil)
+			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
+			mockDB.EXPECT().SummaryCreate(ctx, tt.expectedSummary.Return(nil)
+			mockDB.EXPECT().SummaryGet(ctx, tt.responseUUID.Return(tt.expectedSummary, nil)
 
 			if tt.activeflowID != uuid.Nil {
-				mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.expectedSummary.ActiveflowID, tt.expectedVariables).Return(nil)
+				mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.expectedSummary.ActiveflowID, tt.expectedVariables.Return(nil)
 			}
 
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectedSummary.CustomerID, summary.EventTypeCreated, tt.expectedSummary)
@@ -164,7 +164,7 @@ func Test_Get(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().SummaryGet(ctx, tt.id).Return(tt.responseSummary, nil)
+			mockDB.EXPECT().SummaryGet(ctx, tt.id.Return(tt.responseSummary, nil)
 
 			res, err := h.Get(ctx, tt.id)
 			if err != nil {
@@ -232,7 +232,7 @@ func Test_Gets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().SummaryGets(ctx, tt.size, tt.token, tt.filters).Return(tt.responseSummaries, nil)
+			mockDB.EXPECT().SummaryGets(ctx, tt.size, tt.token, tt.filters.Return(tt.responseSummaries, nil)
 
 			res, err := h.Gets(ctx, tt.size, tt.token, tt.filters)
 			if err != nil {
@@ -312,7 +312,7 @@ func Test_GetByCustomerIDAndReferenceIDAndLanguage(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().SummaryGets(ctx, uint64(1000), "", tt.expectedFilters).Return(tt.responseSummaries, nil)
+			mockDB.EXPECT().SummaryGets(ctx, uint64(1000), "", tt.expectedFilters.Return(tt.responseSummaries, nil)
 
 			res, err := h.GetByCustomerIDAndReferenceIDAndLanguage(ctx, tt.customerID, tt.referenceID, tt.language)
 			if err != nil {
@@ -372,8 +372,8 @@ func Test_Delete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().SummaryDelete(ctx, tt.id).Return(nil)
-			mockDB.EXPECT().SummaryGet(ctx, tt.id).Return(tt.responseSummary, nil)
+			mockDB.EXPECT().SummaryDelete(ctx, tt.id.Return(nil)
+			mockDB.EXPECT().SummaryGet(ctx, tt.id.Return(tt.responseSummary, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseSummary.CustomerID, summary.EventTypeDeleted, tt.responseSummary)
 
 			res, err := h.Delete(ctx, tt.id)
@@ -436,8 +436,8 @@ func Test_UpdateStatusDone(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().SummaryUpdate(ctx, tt.id, gomock.Any()).Return(nil)
-			mockDB.EXPECT().SummaryGet(ctx, tt.id).Return(tt.responseSummary, nil)
+			mockDB.EXPECT().SummaryUpdate(ctx, tt.id, gomock.Any().Return(nil)
+			mockDB.EXPECT().SummaryGet(ctx, tt.id.Return(tt.responseSummary, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseSummary.CustomerID, summary.EventTypeUpdated, tt.responseSummary)
 
 			res, err := h.UpdateStatusDone(ctx, tt.id, tt.content)

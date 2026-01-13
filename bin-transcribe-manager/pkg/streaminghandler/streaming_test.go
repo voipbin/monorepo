@@ -69,7 +69,7 @@ func Test_Create(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseID)
+			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseID)
 			mockNotify.EXPECT().PublishEvent(ctx, streaming.EventTypeStreamingStarted, tt.expectRes)
 
 			res, err := h.Create(ctx, tt.customerID, tt.transcribeID, tt.language, tt.direction)

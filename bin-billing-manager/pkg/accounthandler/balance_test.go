@@ -94,9 +94,9 @@ func Test_IsValidBalanceByCustomerID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.customerID).Return(tt.responseCustomer, nil)
-			mockDB.EXPECT().AccountGet(ctx, tt.responseCustomer.BillingAccountID).Return(tt.responseAccount, nil)
-			mockDB.EXPECT().AccountGet(ctx, tt.responseCustomer.BillingAccountID).Return(tt.responseAccount, nil)
+			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.customerID.Return(tt.responseCustomer, nil)
+			mockDB.EXPECT().AccountGet(ctx, tt.responseCustomer.BillingAccountID.Return(tt.responseAccount, nil)
+			mockDB.EXPECT().AccountGet(ctx, tt.responseCustomer.BillingAccountID.Return(tt.responseAccount, nil)
 			res, err := h.IsValidBalanceByCustomerID(ctx, tt.customerID, tt.billingType, tt.country, tt.count)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -176,7 +176,7 @@ func Test_IsValidBalance(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AccountGet(ctx, tt.accountID).Return(tt.responseAccount, nil)
+			mockDB.EXPECT().AccountGet(ctx, tt.accountID.Return(tt.responseAccount, nil)
 
 			res, err := h.IsValidBalance(ctx, tt.accountID, tt.billingType, tt.country, tt.count)
 			if err != nil {

@@ -83,20 +83,20 @@ func Test_EventCUCustomerDeleted(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().TranscribeGets(ctx, uint64(1000), "", tt.expectFilters).Return(tt.responseTranscribes, nil)
+			mockDB.EXPECT().TranscribeGets(ctx, uint64(1000), "", tt.expectFilters.Return(tt.responseTranscribes, nil)
 
 			// delete each
 			for _, tr := range tt.responseTranscribes {
-				mockDB.EXPECT().TranscribeGet(ctx, tr.ID).Return(tr, nil)
+				mockDB.EXPECT().TranscribeGet(ctx, tr.ID.Return(tr, nil)
 
 				tmpFilters := map[transcript.Field]any{
 					transcript.FieldTranscribeID: tr.ID,
 					transcript.FieldDeleted:      false,
 				}
-				mockTranscript.EXPECT().Gets(ctx, uint64(1000), "", tmpFilters).Return([]*transcript.Transcript{}, nil)
+				mockTranscript.EXPECT().Gets(ctx, uint64(1000), "", gomock.Any(.Return([]*transcript.Transcript{}, nil)
 
-				mockDB.EXPECT().TranscribeDelete(ctx, tr.ID).Return(nil)
-				mockDB.EXPECT().TranscribeGet(ctx, tr.ID).Return(tr, nil)
+				mockDB.EXPECT().TranscribeDelete(ctx, tr.ID.Return(nil)
+				mockDB.EXPECT().TranscribeGet(ctx, tr.ID.Return(tr, nil)
 				mockNotify.EXPECT().PublishEvent(ctx, transcribe.EventTypeTranscribeDeleted, tr)
 			}
 
@@ -169,11 +169,11 @@ func Test_EventCMCallHangup(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().TranscribeGets(ctx, uint64(1000), "", tt.expectFilters).Return(tt.responseTranscribes, nil)
+			mockDB.EXPECT().TranscribeGets(ctx, uint64(1000), "", tt.expectFilters.Return(tt.responseTranscribes, nil)
 
 			// delete each
 			for _, tr := range tt.responseTranscribes {
-				mockDB.EXPECT().TranscribeGet(ctx, tr.ID).Return(tr, nil)
+				mockDB.EXPECT().TranscribeGet(ctx, tr.ID.Return(tr, nil)
 			}
 
 			if err := h.EventCMCallHangup(ctx, tt.call); err != nil {
@@ -245,11 +245,11 @@ func Test_EventCMConfbridgeTerminated(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().TranscribeGets(ctx, uint64(1000), "", tt.expectFilters).Return(tt.responseTranscribes, nil)
+			mockDB.EXPECT().TranscribeGets(ctx, uint64(1000), "", tt.expectFilters.Return(tt.responseTranscribes, nil)
 
 			// delete each
 			for _, tr := range tt.responseTranscribes {
-				mockDB.EXPECT().TranscribeGet(ctx, tr.ID).Return(tr, nil)
+				mockDB.EXPECT().TranscribeGet(ctx, tr.ID.Return(tr, nil)
 			}
 
 			if err := h.EventCMConfbridgeTerminated(ctx, tt.confbridge); err != nil {

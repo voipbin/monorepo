@@ -77,7 +77,7 @@ func Test_storageAccountsGet(t *testing.T) {
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().StorageAccountGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseAccounts, nil)
+			mockSvc.EXPECT().StorageAccountGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken.Return(tt.responseAccounts, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -149,7 +149,7 @@ func Test_storageAccountsPost(t *testing.T) {
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().StorageAccountCreate(req.Context(), &tt.agent, tt.expectCustomerID).Return(tt.responseAccount, nil)
+			mockSvc.EXPECT().StorageAccountCreate(req.Context(), &tt.agent, tt.expectCustomerID.Return(tt.responseAccount, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -220,7 +220,7 @@ func Test_storageAccountsIDGet(t *testing.T) {
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().StorageAccountGet(req.Context(), &tt.agent, tt.expectStorageAccountID).Return(tt.responseStorageAccount, nil)
+			mockSvc.EXPECT().StorageAccountGet(req.Context(), &tt.agent, tt.expectStorageAccountID.Return(tt.responseStorageAccount, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -290,7 +290,7 @@ func Test_storageAccountsIDDelete(t *testing.T) {
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().StorageAccountDelete(req.Context(), &tt.agent, tt.expectStorageAccountID).Return(tt.responseAccount, nil)
+			mockSvc.EXPECT().StorageAccountDelete(req.Context(), &tt.agent, tt.expectStorageAccountID.Return(tt.responseAccount, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

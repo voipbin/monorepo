@@ -102,7 +102,7 @@ func Test_RecordingGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1RecordingGets(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseRecording, nil)
+			mockReq.EXPECT().CallV1RecordingGets(ctx, tt.token, tt.size, tt.expectFilters.Return(tt.responseRecording, nil)
 
 			res, err := h.RecordingGets(ctx, tt.agent, tt.size, tt.token)
 
@@ -172,8 +172,8 @@ func Test_RecordingDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1RecordingGet(ctx, tt.recordingID).Return(tt.responseRecording, nil)
-			mockReq.EXPECT().CallV1RecordingDelete(ctx, tt.recordingID).Return(tt.responseRecording, nil)
+			mockReq.EXPECT().CallV1RecordingGet(ctx, tt.recordingID.Return(tt.responseRecording, nil)
+			mockReq.EXPECT().CallV1RecordingDelete(ctx, tt.recordingID.Return(tt.responseRecording, nil)
 
 			res, err := h.RecordingDelete(ctx, tt.agent, tt.recordingID)
 			if err != nil {

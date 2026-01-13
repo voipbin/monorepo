@@ -112,7 +112,7 @@ func Test_processV1GroupcallsPost(t *testing.T) {
 				tt.expectMasterGroupcallID,
 				tt.expectRingMethod,
 				tt.expectAnswerMethod,
-			).Return(tt.responseGroupcall, nil)
+			.Return(tt.responseGroupcall, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -190,8 +190,8 @@ func Test_processV1GroupcallsGet(t *testing.T) {
 				groupcallHandler: mockGroupcall,
 			}
 
-			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
-			mockGroupcall.EXPECT().Gets(gomock.Any(), tt.expectPageSize, tt.expectPageToken, tt.responseFilters).Return(tt.responseGroupcalls, nil)
+			mockUtil.EXPECT().URLParseFilters(gomock.Any().Return(tt.responseFilters)
+			mockGroupcall.EXPECT().Gets(gomock.Any(), tt.expectPageSize, tt.expectPageToken, gomock.Any().Return(tt.responseGroupcalls, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -252,7 +252,7 @@ func Test_processV1GroupcallsIDGet(t *testing.T) {
 				groupcallHandler: mockGroupcall,
 			}
 
-			mockGroupcall.EXPECT().Get(gomock.Any(), tt.responseGroupcall.ID).Return(tt.responseGroupcall, nil)
+			mockGroupcall.EXPECT().Get(gomock.Any(), tt.responseGroupcall.ID.Return(tt.responseGroupcall, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -313,7 +313,7 @@ func Test_processV1GroupcallsIDDelete(t *testing.T) {
 				groupcallHandler: mockGroupcall,
 			}
 
-			mockGroupcall.EXPECT().Delete(gomock.Any(), tt.expectID).Return(tt.responseGroupcall, nil)
+			mockGroupcall.EXPECT().Delete(gomock.Any(), tt.expectID.Return(tt.responseGroupcall, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -374,7 +374,7 @@ func Test_processV1GroupcallsIDHangupPost(t *testing.T) {
 				groupcallHandler: mockGroupcall,
 			}
 
-			mockGroupcall.EXPECT().Hangingup(gomock.Any(), tt.expectID).Return(tt.responseGroupcall, nil)
+			mockGroupcall.EXPECT().Hangingup(gomock.Any(), tt.expectID.Return(tt.responseGroupcall, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -438,7 +438,7 @@ func Test_processV1GroupcallsIDAnswerGroupcallIDPost(t *testing.T) {
 				groupcallHandler: mockGroupcall,
 			}
 
-			mockGroupcall.EXPECT().AnswerGroupcall(gomock.Any(), tt.expectID, tt.expectAnwerGroupcallID).Return(tt.responseGroupcall, nil)
+			mockGroupcall.EXPECT().AnswerGroupcall(gomock.Any(), tt.expectID, tt.expectAnwerGroupcallID.Return(tt.responseGroupcall, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -498,7 +498,7 @@ func Test_processV1GroupcallsIDHangupGroupcallPost(t *testing.T) {
 				groupcallHandler: mockGroupcall,
 			}
 
-			mockGroupcall.EXPECT().HangupGroupcall(gomock.Any(), tt.expectID).Return(tt.responseGroupcall, nil)
+			mockGroupcall.EXPECT().HangupGroupcall(gomock.Any(), tt.expectID.Return(tt.responseGroupcall, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -558,7 +558,7 @@ func Test_processV1GroupcallsIDHangupCallPost(t *testing.T) {
 				groupcallHandler: mockGroupcall,
 			}
 
-			mockGroupcall.EXPECT().HangupCall(gomock.Any(), tt.expectID).Return(tt.responseGroupcall, nil)
+			mockGroupcall.EXPECT().HangupCall(gomock.Any(), tt.expectID.Return(tt.responseGroupcall, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

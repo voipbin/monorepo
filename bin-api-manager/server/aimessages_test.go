@@ -85,7 +85,7 @@ func Test_PostAimessages(t *testing.T) {
 				tt.expectedAIcallID,
 				tt.expectedRole,
 				tt.expectedContent,
-			).Return(tt.responseAImessage, nil)
+			.Return(tt.responseAImessage, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -198,7 +198,7 @@ func Test_GetAimessages(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().AImessageGetsByAIcallID(req.Context(), &tt.agent, tt.expectedAIcallID, tt.expectedPageSize, tt.expectedPageToken).Return(tt.responseAImessages, nil)
+			mockSvc.EXPECT().AImessageGetsByAIcallID(req.Context(), &tt.agent, tt.expectedAIcallID, tt.expectedPageSize, tt.expectedPageToken.Return(tt.responseAImessages, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -266,7 +266,7 @@ func Test_GetAimessagesId(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().AImessageGet(req.Context(), &tt.agent, tt.expectedAImessageID).Return(tt.responseAImessage, nil)
+			mockSvc.EXPECT().AImessageGet(req.Context(), &tt.agent, tt.expectedAImessageID.Return(tt.responseAImessage, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -334,7 +334,7 @@ func Test_DeleteAimessagesId(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().AImessageDelete(req.Context(), &tt.agent, tt.expectedAImessageID).Return(tt.responseAImessage, nil)
+			mockSvc.EXPECT().AImessageDelete(req.Context(), &tt.agent, tt.expectedAImessageID.Return(tt.responseAImessage, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

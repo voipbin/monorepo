@@ -128,7 +128,7 @@ func Test_GetAccesskeys(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().AccesskeyGets(req.Context(), &tt.agent, tt.expectedPageSize, tt.expectedPageToken).Return(tt.responseAccesskeys, nil)
+			mockSvc.EXPECT().AccesskeyGets(req.Context(), &tt.agent, tt.expectedPageSize, tt.expectedPageToken.Return(tt.responseAccesskeys, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -226,7 +226,7 @@ func Test_PostAccesskeys(t *testing.T) {
 				tt.expectedName,
 				tt.expectedDetail,
 				tt.expectedExpire,
-			).Return(tt.responseAccesskey, nil)
+			.Return(tt.responseAccesskey, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -291,7 +291,7 @@ func Test_GetAccesskeysId(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().AccesskeyGet(req.Context(), &tt.agent, tt.expectedAccesskeyID).Return(tt.responseAccesskey, nil)
+			mockSvc.EXPECT().AccesskeyGet(req.Context(), &tt.agent, tt.expectedAccesskeyID.Return(tt.responseAccesskey, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -357,7 +357,7 @@ func Test_DeleteAccesskeysId(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().AccesskeyDelete(req.Context(), &tt.agent, tt.expectAccesskeyID).Return(tt.responseAccesskey, nil)
+			mockSvc.EXPECT().AccesskeyDelete(req.Context(), &tt.agent, tt.expectAccesskeyID.Return(tt.responseAccesskey, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
@@ -429,7 +429,7 @@ func Test_PutAccesskeysId(t *testing.T) {
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().AccesskeyUpdate(req.Context(), &tt.agent, tt.expectedAccesskeyID, tt.expectedName, tt.expectedDetail).Return(tt.responseAccesskey, nil)
+			mockSvc.EXPECT().AccesskeyUpdate(req.Context(), &tt.agent, tt.expectedAccesskeyID, tt.expectedName, tt.expectedDetail.Return(tt.responseAccesskey, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

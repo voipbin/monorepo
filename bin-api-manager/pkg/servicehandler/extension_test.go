@@ -78,7 +78,7 @@ func Test_ExtensionCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().RegistrarV1ExtensionCreate(ctx, tt.agent.CustomerID, tt.ext, tt.password, tt.extName, tt.detail).Return(tt.response, nil)
+			mockReq.EXPECT().RegistrarV1ExtensionCreate(ctx, tt.agent.CustomerID, tt.ext, tt.password, tt.extName, tt.detail.Return(tt.response, nil)
 
 			res, err := h.ExtensionCreate(ctx, tt.agent, tt.ext, tt.password, tt.extName, tt.detail)
 			if err != nil {
@@ -163,8 +163,8 @@ func Test_ExtensionUpdate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().RegistrarV1ExtensionGet(ctx, tt.id).Return(tt.responseExtension, nil)
-			mockReq.EXPECT().RegistrarV1ExtensionUpdate(ctx, tt.id, tt.extName, tt.detail, tt.password).Return(tt.responseExtension, nil)
+			mockReq.EXPECT().RegistrarV1ExtensionGet(ctx, tt.id.Return(tt.responseExtension, nil)
+			mockReq.EXPECT().RegistrarV1ExtensionUpdate(ctx, tt.id, tt.extName, tt.detail, tt.password.Return(tt.responseExtension, nil)
 			res, err := h.ExtensionUpdate(ctx, tt.agent, tt.id, tt.extName, tt.detail, tt.password)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -241,8 +241,8 @@ func Test_ExtensionDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().RegistrarV1ExtensionGet(ctx, tt.extensionID).Return(tt.response, nil)
-			mockReq.EXPECT().RegistrarV1ExtensionDelete(ctx, tt.extensionID).Return(tt.response, nil)
+			mockReq.EXPECT().RegistrarV1ExtensionGet(ctx, tt.extensionID.Return(tt.response, nil)
+			mockReq.EXPECT().RegistrarV1ExtensionDelete(ctx, tt.extensionID.Return(tt.response, nil)
 
 			res, err := h.ExtensionDelete(ctx, tt.agent, tt.extensionID)
 			if err != nil {
@@ -314,7 +314,7 @@ func Test_ExtensionGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().RegistrarV1ExtensionGet(ctx, tt.extensionID).Return(tt.response, nil)
+			mockReq.EXPECT().RegistrarV1ExtensionGet(ctx, tt.extensionID.Return(tt.response, nil)
 			res, err := h.ExtensionGet(ctx, tt.agent, tt.extensionID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -398,7 +398,7 @@ func Test_ExtensionGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().RegistrarV1ExtensionGets(ctx, tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.response, nil)
+			mockReq.EXPECT().RegistrarV1ExtensionGets(ctx, tt.pageToken, tt.pageSize, tt.expectFilters.Return(tt.response, nil)
 
 			res, err := h.ExtensionGets(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {

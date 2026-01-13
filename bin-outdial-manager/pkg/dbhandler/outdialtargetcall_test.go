@@ -123,24 +123,24 @@ func Test_OutdialTargetCallCreate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 
-			mockCache.EXPECT().OutdialTargetCallSet(ctx, tt.outdialTargetCall).Return(nil)
+			mockCache.EXPECT().OutdialTargetCallSet(ctx, tt.outdialTargetCall.Return(nil)
 			if tt.outdialTargetCall.ActiveflowID != uuid.Nil {
-				mockCache.EXPECT().OutdialTargetCallSetByActiveflowID(ctx, tt.outdialTargetCall).Return(nil)
+				mockCache.EXPECT().OutdialTargetCallSetByActiveflowID(ctx, tt.outdialTargetCall.Return(nil)
 			}
 			if tt.outdialTargetCall.ReferenceID != uuid.Nil {
-				mockCache.EXPECT().OutdialTargetCallSetByReferenceID(ctx, tt.outdialTargetCall).Return(nil)
+				mockCache.EXPECT().OutdialTargetCallSetByReferenceID(ctx, tt.outdialTargetCall.Return(nil)
 			}
 			if err := h.OutdialTargetCallCreate(context.Background(), tt.outdialTargetCall); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().OutdialTargetCallGet(gomock.Any(), tt.outdialTargetCall.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().OutdialTargetCallGet(gomock.Any(), tt.outdialTargetCall.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().OutdialTargetCallSet(gomock.Any(), gomock.Any())
 			if tt.outdialTargetCall.ActiveflowID != uuid.Nil {
-				mockCache.EXPECT().OutdialTargetCallSetByActiveflowID(ctx, tt.outdialTargetCall).Return(nil)
+				mockCache.EXPECT().OutdialTargetCallSetByActiveflowID(ctx, tt.outdialTargetCall.Return(nil)
 			}
 			if tt.outdialTargetCall.ReferenceID != uuid.Nil {
-				mockCache.EXPECT().OutdialTargetCallSetByReferenceID(ctx, tt.outdialTargetCall).Return(nil)
+				mockCache.EXPECT().OutdialTargetCallSetByReferenceID(ctx, tt.outdialTargetCall.Return(nil)
 			}
 
 			res, err := h.OutdialTargetCallGet(ctx, tt.outdialTargetCall.ID)
@@ -156,11 +156,11 @@ func Test_OutdialTargetCallCreate(t *testing.T) {
 			// get by ActiveflowID
 			if tt.outdialTargetCall.ActiveflowID != uuid.Nil {
 
-				mockCache.EXPECT().OutdialTargetCallGetByActiveflowID(ctx, tt.outdialTargetCall.ActiveflowID).Return(nil, fmt.Errorf(""))
-				mockCache.EXPECT().OutdialTargetCallSet(ctx, tt.outdialTargetCall).Return(nil)
-				mockCache.EXPECT().OutdialTargetCallSetByActiveflowID(ctx, tt.outdialTargetCall).Return(nil)
+				mockCache.EXPECT().OutdialTargetCallGetByActiveflowID(ctx, tt.outdialTargetCall.ActiveflowID.Return(nil, fmt.Errorf(""))
+				mockCache.EXPECT().OutdialTargetCallSet(ctx, tt.outdialTargetCall.Return(nil)
+				mockCache.EXPECT().OutdialTargetCallSetByActiveflowID(ctx, tt.outdialTargetCall.Return(nil)
 				if tt.outdialTargetCall.ReferenceID != uuid.Nil {
-					mockCache.EXPECT().OutdialTargetCallSetByReferenceID(ctx, tt.outdialTargetCall).Return(nil)
+					mockCache.EXPECT().OutdialTargetCallSetByReferenceID(ctx, tt.outdialTargetCall.Return(nil)
 				}
 				tmp, err := h.OutdialTargetCallGetByActiveflowID(ctx, tt.outdialTargetCall.ActiveflowID)
 				if err != nil {
@@ -175,11 +175,11 @@ func Test_OutdialTargetCallCreate(t *testing.T) {
 			// get by ReferenceID
 			if tt.outdialTargetCall.ReferenceID != uuid.Nil {
 
-				mockCache.EXPECT().OutdialTargetCallGetByReferenceID(ctx, tt.outdialTargetCall.ReferenceID).Return(nil, fmt.Errorf(""))
-				mockCache.EXPECT().OutdialTargetCallSet(ctx, tt.outdialTargetCall).Return(nil)
-				mockCache.EXPECT().OutdialTargetCallSetByReferenceID(ctx, tt.outdialTargetCall).Return(nil)
+				mockCache.EXPECT().OutdialTargetCallGetByReferenceID(ctx, tt.outdialTargetCall.ReferenceID.Return(nil, fmt.Errorf(""))
+				mockCache.EXPECT().OutdialTargetCallSet(ctx, tt.outdialTargetCall.Return(nil)
+				mockCache.EXPECT().OutdialTargetCallSetByReferenceID(ctx, tt.outdialTargetCall.Return(nil)
 				if tt.outdialTargetCall.ActiveflowID != uuid.Nil {
-					mockCache.EXPECT().OutdialTargetCallSetByActiveflowID(ctx, tt.outdialTargetCall).Return(nil)
+					mockCache.EXPECT().OutdialTargetCallSetByActiveflowID(ctx, tt.outdialTargetCall.Return(nil)
 				}
 				tmp, err := h.OutdialTargetCallGetByReferenceID(ctx, tt.outdialTargetCall.ReferenceID)
 				if err != nil {
@@ -491,12 +491,12 @@ func Test_OutdialTargetCallGets(t *testing.T) {
 
 			for _, targetCall := range tt.outdialTargetCalls {
 
-				mockCache.EXPECT().OutdialTargetCallSet(ctx, targetCall).Return(nil)
+				mockCache.EXPECT().OutdialTargetCallSet(ctx, targetCall.Return(nil)
 				if targetCall.ActiveflowID != uuid.Nil {
-					mockCache.EXPECT().OutdialTargetCallSetByActiveflowID(ctx, targetCall).Return(nil)
+					mockCache.EXPECT().OutdialTargetCallSetByActiveflowID(ctx, targetCall.Return(nil)
 				}
 				if targetCall.ReferenceID != uuid.Nil {
-					mockCache.EXPECT().OutdialTargetCallSetByReferenceID(ctx, targetCall).Return(nil)
+					mockCache.EXPECT().OutdialTargetCallSetByReferenceID(ctx, targetCall.Return(nil)
 				}
 				if err := h.OutdialTargetCallCreate(ctx, targetCall); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)

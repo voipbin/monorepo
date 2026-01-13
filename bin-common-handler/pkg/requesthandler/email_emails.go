@@ -11,18 +11,21 @@ import (
 	"net/url"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 )
 
 // EmailV1EmailGets sends a request to email-manager
 // to getting a list of emails info.
 // it returns detail email info if it succeed.
-func (r *requestHandler) EmailV1EmailGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]ememail.Email, error) {
+func (r *requestHandler) EmailV1EmailGets(ctx context.Context, pageToken string, pageSize uint64, filters map[ememail.Field]any) ([]ememail.Email, error) {
 	uri := fmt.Sprintf("/v1/emails?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
-	// parse filters
-	uri = r.utilHandler.URLMergeFilters(uri, filters)
+	m, err := json.Marshal(filters)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not marshal filters")
+	}
 
-	tmp, err := r.sendRequestEmail(ctx, uri, sock.RequestMethodGet, "email/emails", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestEmail(ctx, uri, sock.RequestMethodGet, "email/emails", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}

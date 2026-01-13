@@ -7,7 +7,6 @@ import (
 	"monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
-	"monorepo/bin-common-handler/pkg/utilhandler"
 	"reflect"
 	"testing"
 
@@ -23,11 +22,10 @@ func Test_AIV1MessageGetsByAIcallID(t *testing.T) {
 		aicallID  uuid.UUID
 		pageToken string
 		pageSize  uint64
-		filters   map[string]string
+		filters   map[cbmessage.Field]any
 
 		response *sock.Response
 
-		expectURL     string
 		expectTarget  string
 		expectRequest *sock.Request
 		expectRes     []cbmessage.Message
@@ -38,8 +36,8 @@ func Test_AIV1MessageGetsByAIcallID(t *testing.T) {
 			aicallID:  uuid.FromStringOrNil("d43e25a6-f2ce-11ef-bd10-3b19aa3747d8"),
 			pageToken: "2020-09-20 03:23:20.995000",
 			pageSize:  10,
-			filters: map[string]string{
-				"deleted": "false",
+			filters: map[cbmessage.Field]any{
+				cbmessage.FieldDeleted: false,
 			},
 
 			response: &sock.Response{
@@ -48,11 +46,12 @@ func Test_AIV1MessageGetsByAIcallID(t *testing.T) {
 				Data:       []byte(`[{"id":"d49161bc-f2ce-11ef-8263-17e36f2d0922"},{"id":"d4c481d2-f2ce-11ef-b59d-e3cfadb6b877"}]`),
 			},
 
-			expectURL:    "/v1/messages?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10&aicall_id=d43e25a6-f2ce-11ef-bd10-3b19aa3747d8",
 			expectTarget: string(outline.QueueNameAIRequest),
 			expectRequest: &sock.Request{
-				URI:    "/v1/messages?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10&aicall_id=d43e25a6-f2ce-11ef-bd10-3b19aa3747d8&filter_deleted=false",
-				Method: sock.RequestMethodGet,
+				URI:      "/v1/messages?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10&aicall_id=d43e25a6-f2ce-11ef-bd10-3b19aa3747d8",
+				Method:   sock.RequestMethodGet,
+				DataType: "application/json",
+				Data:     []byte(`{"deleted":false}`),
 			},
 			expectRes: []cbmessage.Message{
 				{
@@ -75,14 +74,11 @@ func Test_AIV1MessageGetsByAIcallID(t *testing.T) {
 			defer mc.Finish()
 
 			mockSock := sockhandler.NewMockSockHandler(mc)
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			h := requestHandler{
-				sock:        mockSock,
-				utilHandler: mockUtil,
+				sock: mockSock,
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := h.AIV1MessageGetsByAIcallID(ctx, tt.aicallID, tt.pageToken, tt.pageSize, tt.filters)

@@ -123,10 +123,10 @@ func Test_HealthCheck(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
-			mockChannel.EXPECT().Get(ctx, tt.responseCall.ChannelID).Return(tt.responseChannel, nil)
+			mockDB.EXPECT().CallGet(ctx, tt.id.Return(tt.responseCall, nil)
+			mockChannel.EXPECT().Get(ctx, tt.responseCall.ChannelID.Return(tt.responseChannel, nil)
 
-			mockReq.EXPECT().CallV1CallHealth(ctx, tt.id, defaultHealthDelay, tt.expectRetryCount).Return(nil)
+			mockReq.EXPECT().CallV1CallHealth(ctx, tt.id, defaultHealthDelay, tt.expectRetryCount.Return(nil)
 
 			h.HealthCheck(ctx, tt.id, tt.retryCount)
 		})

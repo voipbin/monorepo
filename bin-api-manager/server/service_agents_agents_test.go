@@ -77,7 +77,7 @@ func Test_agentsGET(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().ServiceAgentAgentGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseCalls, nil)
+			mockSvc.EXPECT().ServiceAgentAgentGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken.Return(tt.responseCalls, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -149,7 +149,7 @@ func Test_agentsIDGET(t *testing.T) {
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().ServiceAgentAgentGet(req.Context(), &tt.agent, tt.expectAgentID).Return(tt.responseAgent, nil)
+			mockSvc.EXPECT().ServiceAgentAgentGet(req.Context(), &tt.agent, tt.expectAgentID.Return(tt.responseAgent, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)

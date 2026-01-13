@@ -75,7 +75,7 @@ func Test_MessagesGET(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().MessageGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseGets, nil)
+			mockSvc.EXPECT().MessageGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken.Return(tt.responseGets, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -143,7 +143,7 @@ func Test_MessagesIDGET(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().MessageGet(req.Context(), &tt.agent, tt.expectMessageID).Return(tt.responseMessage, nil)
+			mockSvc.EXPECT().MessageGet(req.Context(), &tt.agent, tt.expectMessageID.Return(tt.responseMessage, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -213,7 +213,7 @@ func Test_messagesIDDELETE(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().MessageDelete(req.Context(), &tt.agent, tt.expectMessageID).Return(tt.responseMessage, nil)
+			mockSvc.EXPECT().MessageDelete(req.Context(), &tt.agent, tt.expectMessageID.Return(tt.responseMessage, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -298,7 +298,7 @@ func Test_messagesPOST(t *testing.T) {
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 
-			mockSvc.EXPECT().MessageSend(req.Context(), &tt.agent, tt.expectSource, tt.expectDestinations, tt.expectText).Return(tt.responseMessage, nil)
+			mockSvc.EXPECT().MessageSend(req.Context(), &tt.agent, tt.expectSource, tt.expectDestinations, tt.expectText.Return(tt.responseMessage, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

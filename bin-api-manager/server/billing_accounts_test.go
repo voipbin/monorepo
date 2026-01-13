@@ -82,7 +82,7 @@ func Test_PostBillingAccounts(t *testing.T) {
 			req, _ := http.NewRequest("POST", "/billing_accounts", bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().BillingAccountCreate(req.Context(), &tt.agent, tt.expectedName, tt.expectedDetail, tt.expectedPaymentType, tt.expectedPaymentMethod).Return(tt.responsBillingAccount, nil)
+			mockSvc.EXPECT().BillingAccountCreate(req.Context(), &tt.agent, tt.expectedName, tt.expectedDetail, tt.expectedPaymentType, tt.expectedPaymentMethod.Return(tt.responsBillingAccount, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -193,7 +193,7 @@ func Test_GetBillingAccounts(t *testing.T) {
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().BillingAccountGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.resBillingAccounts, nil)
+			mockSvc.EXPECT().BillingAccountGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken.Return(tt.resBillingAccounts, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -261,7 +261,7 @@ func Test_DeleteBillingAccountsId(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().BillingAccountDelete(req.Context(), &tt.agent, tt.expectBillingAccountID).Return(tt.responseBillingAccount, nil)
+			mockSvc.EXPECT().BillingAccountDelete(req.Context(), &tt.agent, tt.expectBillingAccountID.Return(tt.responseBillingAccount, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -329,7 +329,7 @@ func Test_GetBillingAccountsId(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().BillingAccountGet(req.Context(), &tt.agent, tt.billingAccountID).Return(tt.responseBillingAccount, nil)
+			mockSvc.EXPECT().BillingAccountGet(req.Context(), &tt.agent, tt.billingAccountID.Return(tt.responseBillingAccount, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -407,7 +407,7 @@ func Test_PutBillingAccountsId(t *testing.T) {
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().BillingAccountUpdateBasicInfo(req.Context(), &tt.agent, tt.expectBillingAccountID, tt.expectName, tt.expectDetail).Return(tt.responsBillingAccount, nil)
+			mockSvc.EXPECT().BillingAccountUpdateBasicInfo(req.Context(), &tt.agent, tt.expectBillingAccountID, tt.expectName, tt.expectDetail.Return(tt.responsBillingAccount, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -486,7 +486,7 @@ func Test_PutBillingAccountsIdPaymentInfo(t *testing.T) {
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().BillingAccountUpdatePaymentInfo(req.Context(), &tt.agent, tt.expectBillingAccountID, tt.expectPaymentType, tt.expectPaymentMethod).Return(tt.responsBillingAccount, nil)
+			mockSvc.EXPECT().BillingAccountUpdatePaymentInfo(req.Context(), &tt.agent, tt.expectBillingAccountID, tt.expectPaymentType, tt.expectPaymentMethod.Return(tt.responsBillingAccount, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -561,7 +561,7 @@ func Test_PostBillingAccountsIdBalanceAddForce(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
-			mockSvc.EXPECT().BillingAccountAddBalanceForce(req.Context(), &tt.agent, tt.expectBillingAccountID, tt.expectBalance).Return(tt.responseBillingAccount, nil)
+			mockSvc.EXPECT().BillingAccountAddBalanceForce(req.Context(), &tt.agent, tt.expectBillingAccountID, tt.expectBalance.Return(tt.responseBillingAccount, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -635,7 +635,7 @@ func Test_PostBillingAccountsIdBalanceSubtractForce(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
-			mockSvc.EXPECT().BillingAccountSubtractBalanceForce(req.Context(), &tt.agent, tt.expectBillingAccountID, tt.expectBalance).Return(tt.responseBillingAccount, nil)
+			mockSvc.EXPECT().BillingAccountSubtractBalanceForce(req.Context(), &tt.agent, tt.expectBillingAccountID, tt.expectBalance.Return(tt.responseBillingAccount, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

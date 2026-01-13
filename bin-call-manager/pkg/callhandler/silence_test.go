@@ -63,8 +63,8 @@ func Test_SilenceOn(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
-			mockChannel.EXPECT().SilenceOn(ctx, tt.responseCall.ChannelID).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.id.Return(tt.responseCall, nil)
+			mockChannel.EXPECT().SilenceOn(ctx, tt.responseCall.ChannelID.Return(nil)
 
 			if err := h.SilenceOn(ctx, tt.id); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -118,8 +118,8 @@ func Test_SilenceOff(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
-			mockChannel.EXPECT().SilenceOff(ctx, tt.responseCall.ChannelID).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.id.Return(tt.responseCall, nil)
+			mockChannel.EXPECT().SilenceOff(ctx, tt.responseCall.ChannelID.Return(nil)
 
 			if err := h.SilenceOff(ctx, tt.id); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

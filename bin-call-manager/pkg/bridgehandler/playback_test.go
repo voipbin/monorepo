@@ -65,8 +65,8 @@ func Test_Play(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().BridgeGet(gomock.Any(), tt.id).Return(tt.responseBridge, nil)
-			mockReq.EXPECT().AstBridgePlay(ctx, tt.responseBridge.AsteriskID, tt.responseBridge.ID, tt.medias, tt.language, tt.offsetms, tt.skipms, tt.playbackID).Return(&ari.Playback{}, nil)
+			mockDB.EXPECT().BridgeGet(gomock.Any(), tt.id.Return(tt.responseBridge, nil)
+			mockReq.EXPECT().AstBridgePlay(ctx, tt.responseBridge.AsteriskID, tt.responseBridge.ID, tt.medias, tt.language, tt.offsetms, tt.skipms, tt.playbackID.Return(&ari.Playback{}, nil)
 
 			if err := h.Play(ctx, tt.id, tt.playbackID, tt.medias, tt.language, tt.offsetms, tt.skipms); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

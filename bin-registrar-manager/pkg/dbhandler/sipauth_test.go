@@ -85,7 +85,7 @@ func Test_SIPAuthCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			if err := h.SIPAuthCreate(ctx, tt.sipauth); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -195,12 +195,12 @@ func Test_SIPAuthUpdate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			if err := h.SIPAuthCreate(ctx, tt.sipauth); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			if err := h.SIPAuthUpdate(ctx, tt.sipauth.ID, tt.updateFields); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -272,7 +272,7 @@ func Test_SIPAuthDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
 			if err := h.SIPAuthCreate(ctx, tt.sipauth); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

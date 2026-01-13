@@ -93,7 +93,7 @@ func Test_transcribesPOST(t *testing.T) {
 				tt.expectLanguage,
 				tt.expectDirection,
 				tt.expectOnEndFlowID,
-			).Return(tt.responseTranscribe, nil)
+			.Return(tt.responseTranscribe, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -169,7 +169,7 @@ func Test_transcribesGET(t *testing.T) {
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().TranscribeGets(req.Context(), &tt.agent, tt.expectedPageSize, tt.expectedPageToken).Return(tt.responseTranscribes, nil)
+			mockSvc.EXPECT().TranscribeGets(req.Context(), &tt.agent, tt.expectedPageSize, tt.expectedPageToken.Return(tt.responseTranscribes, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -241,7 +241,7 @@ func Test_transcribesIDGET(t *testing.T) {
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().TranscribeGet(req.Context(), &tt.agent, tt.expectTranscribeID).Return(tt.responseTranscribe, nil)
+			mockSvc.EXPECT().TranscribeGet(req.Context(), &tt.agent, tt.expectTranscribeID.Return(tt.responseTranscribe, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -313,7 +313,7 @@ func Test_transcribesIDDelete(t *testing.T) {
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().TranscribeDelete(req.Context(), &tt.agent, tt.expectTranscribeID).Return(tt.responseTranscribes, nil)
+			mockSvc.EXPECT().TranscribeDelete(req.Context(), &tt.agent, tt.expectTranscribeID.Return(tt.responseTranscribes, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -385,7 +385,7 @@ func Test_transcribesIDStopPOST(t *testing.T) {
 			req, _ := http.NewRequest("POST", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().TranscribeStop(req.Context(), &tt.agent, tt.expectTranscribeID).Return(tt.responseTranscribes, nil)
+			mockSvc.EXPECT().TranscribeStop(req.Context(), &tt.agent, tt.expectTranscribeID.Return(tt.responseTranscribes, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

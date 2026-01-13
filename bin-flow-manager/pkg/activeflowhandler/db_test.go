@@ -247,18 +247,18 @@ func Test_Create(t *testing.T) {
 			ctx := context.Background()
 
 			if tt.id == uuid.Nil {
-				mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+				mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
 			}
 
-			mockReq.EXPECT().FlowV1FlowGet(ctx, tt.flowID).Return(tt.responseFlow, nil)
-			mockStack.EXPECT().Create(tt.responseFlow.Actions).Return(tt.responseStackMap)
-			mockDB.EXPECT().ActiveflowCreate(ctx, tt.expectActiveflow).Return(nil)
-			mockDB.EXPECT().ActiveflowGet(ctx, tt.expectActiveflow.ID).Return(tt.responseActiveflow, nil)
+			mockReq.EXPECT().FlowV1FlowGet(ctx, tt.flowID.Return(tt.responseFlow, nil)
+			mockStack.EXPECT().Create(tt.responseFlow.Actions.Return(tt.responseStackMap)
+			mockDB.EXPECT().ActiveflowCreate(ctx, tt.expectActiveflow.Return(nil)
+			mockDB.EXPECT().ActiveflowGet(ctx, tt.expectActiveflow.ID.Return(tt.responseActiveflow, nil)
 
 			if tt.referenceActiveflowID != uuid.Nil {
-				mockVariable.EXPECT().Get(ctx, tt.referenceActiveflowID).Return(tt.responseVariable, nil)
+				mockVariable.EXPECT().Get(ctx, tt.referenceActiveflowID.Return(tt.responseVariable, nil)
 			}
-			mockVariable.EXPECT().Create(ctx, tt.responseActiveflow.ID, tt.expectVariables).Return(&variable.Variable{}, nil)
+			mockVariable.EXPECT().Create(ctx, tt.responseActiveflow.ID, tt.expectVariables.Return(&variable.Variable{}, nil)
 
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseActiveflow.CustomerID, activeflow.EventTypeActiveflowCreated, tt.responseActiveflow)
 
@@ -368,10 +368,10 @@ func Test_updateCurrentAction(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ActiveflowGet(ctx, tt.activeflowID).Return(tt.responseActiveflow, nil)
-			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime()).AnyTimes()
-			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.activeflowID, tt.expectUpdateFields).Return(nil)
-			mockDB.EXPECT().ActiveflowGet(ctx, tt.activeflowID).Return(tt.responseActiveflow, nil)
+			mockDB.EXPECT().ActiveflowGet(ctx, tt.activeflowID.Return(tt.responseActiveflow, nil)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(utilhandler.TimeGetCurTime()).AnyTimes()
+			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.activeflowID, tt.expectUpdateFields.Return(nil)
+			mockDB.EXPECT().ActiveflowGet(ctx, tt.activeflowID.Return(tt.responseActiveflow, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseActiveflow.CustomerID, activeflow.EventTypeActiveflowUpdated, tt.responseActiveflow)
 
 			_, err := h.updateCurrentAction(ctx, tt.activeflowID, tt.stackID, tt.act)
@@ -424,10 +424,10 @@ func Test_Delete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ActiveflowGet(ctx, tt.id).Return(tt.responseActiveflow, nil)
+			mockDB.EXPECT().ActiveflowGet(ctx, tt.id.Return(tt.responseActiveflow, nil)
 
-			mockDB.EXPECT().ActiveflowDelete(ctx, tt.responseActiveflow.ID).Return(nil)
-			mockDB.EXPECT().ActiveflowGet(ctx, tt.responseActiveflow.ID).Return(tt.responseActiveflow, nil)
+			mockDB.EXPECT().ActiveflowDelete(ctx, tt.responseActiveflow.ID.Return(nil)
+			mockDB.EXPECT().ActiveflowGet(ctx, tt.responseActiveflow.ID.Return(tt.responseActiveflow, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseActiveflow.CustomerID, activeflow.EventTypeActiveflowDeleted, tt.responseActiveflow)
 
 			res, err := h.Delete(ctx, tt.id)
@@ -704,15 +704,15 @@ func Test_SetForwardActionID(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockDB.EXPECT().ActiveflowGetWithLock(ctx, tt.id).Return(tt.responseActiveflow, nil)
-			mockStack.EXPECT().GetAction(tt.responseActiveflow.StackMap, tt.responseActiveflow.CurrentStackID, tt.actionID, false).Return(tt.responseStackID, tt.responseAction, nil)
-			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.id, tt.expectUpdateFields).Return(nil)
+			mockDB.EXPECT().ActiveflowGetWithLock(ctx, tt.id.Return(tt.responseActiveflow, nil)
+			mockStack.EXPECT().GetAction(tt.responseActiveflow.StackMap, tt.responseActiveflow.CurrentStackID, tt.actionID, false.Return(tt.responseStackID, tt.responseAction, nil)
+			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.id, tt.expectUpdateFields.Return(nil)
 
 			if tt.forwardNow && tt.responseActiveflow.ReferenceType == activeflow.ReferenceTypeCall {
-				mockReq.EXPECT().CallV1CallActionNext(ctx, tt.responseActiveflow.ReferenceID, true).Return(nil)
+				mockReq.EXPECT().CallV1CallActionNext(ctx, tt.responseActiveflow.ReferenceID, true.Return(nil)
 			}
 
-			mockDB.EXPECT().ActiveflowReleaseLock(ctx, tt.id).Return(nil)
+			mockDB.EXPECT().ActiveflowReleaseLock(ctx, tt.id.Return(nil)
 			if err := h.SetForwardActionID(ctx, tt.id, tt.actionID, tt.forwardNow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -769,8 +769,8 @@ func Test_delete(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ActiveflowDelete(ctx, tt.id).Return(nil)
-			mockDB.EXPECT().ActiveflowGet(ctx, tt.id).Return(tt.responseGet, nil)
+			mockDB.EXPECT().ActiveflowDelete(ctx, tt.id.Return(nil)
+			mockDB.EXPECT().ActiveflowGet(ctx, tt.id.Return(tt.responseGet, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseGet.CustomerID, activeflow.EventTypeActiveflowDeleted, tt.responseGet)
 
 			res, err := h.delete(ctx, tt.id)
@@ -832,7 +832,7 @@ func Test_Gets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ActiveflowGets(ctx, tt.token, tt.size, tt.filters).Return(tt.responseGet, nil)
+			mockDB.EXPECT().ActiveflowGets(ctx, tt.token, tt.size, tt.filters.Return(tt.responseGet, nil)
 
 			res, err := h.Gets(ctx, tt.token, tt.size, tt.filters)
 			if err != nil {

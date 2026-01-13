@@ -121,8 +121,8 @@ func Test_ExecuteWithTypeFlow(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.responseCampaign, nil)
-			mockOutplan.EXPECT().Get(ctx, tt.responseCampaign.OutplanID).Return(tt.responseOutplan, nil)
+			mockDB.EXPECT().CampaignGet(ctx, tt.id.Return(tt.responseCampaign, nil)
+			mockOutplan.EXPECT().Get(ctx, tt.responseCampaign.OutplanID.Return(tt.responseOutplan, nil)
 
 			// get destination
 			mockReq.EXPECT().OutdialV1OutdialtargetGetsAvailable(
@@ -134,10 +134,10 @@ func Test_ExecuteWithTypeFlow(t *testing.T) {
 				tt.responseOutplan.MaxTryCount3,
 				tt.responseOutplan.MaxTryCount4,
 				1,
-			).Return(tt.responseOmoutdialtarget, nil)
+			.Return(tt.responseOmoutdialtarget, nil)
 
 			// executeFlow
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
 			mockCampaigncall.EXPECT().Create(
 				ctx,
 				tt.responseCampaign.CustomerID,
@@ -157,8 +157,8 @@ func Test_ExecuteWithTypeFlow(t *testing.T) {
 				tt.expectDestination,
 				tt.expectDestinationIndex,
 				tt.expectTryCount,
-			).Return(tt.responseCampaigncall, nil)
-			mockCampaigncall.EXPECT().Progressing(ctx, tt.responseCampaigncall.ID).Return(tt.responseCampaigncall, nil)
+			.Return(tt.responseCampaigncall, nil)
+			mockCampaigncall.EXPECT().Progressing(ctx, tt.responseCampaigncall.ID.Return(tt.responseCampaigncall, nil)
 			mockReq.EXPECT().FlowV1ActiveflowCreate(
 				ctx,
 				tt.responseCampaigncall.ActiveflowID,
@@ -167,10 +167,10 @@ func Test_ExecuteWithTypeFlow(t *testing.T) {
 				activeflow.ReferenceTypeCampaign,
 				tt.responseCampaigncall.ID,
 				uuid.Nil,
-			).Return(tt.responseActiveflow, nil)
-			mockReq.EXPECT().FlowV1ActiveflowExecute(ctx, tt.responseActiveflow.ID).Return(nil)
+			.Return(tt.responseActiveflow, nil)
+			mockReq.EXPECT().FlowV1ActiveflowExecute(ctx, tt.responseActiveflow.ID.Return(nil)
 
-			mockReq.EXPECT().CampaignV1CampaignExecute(ctx, tt.id, 500).Return(nil)
+			mockReq.EXPECT().CampaignV1CampaignExecute(ctx, tt.id, 500.Return(nil)
 
 			h.Execute(ctx, tt.id)
 		})
@@ -286,7 +286,7 @@ func Test_getTarget(t *testing.T) {
 				tt.p.MaxTryCount3,
 				tt.p.MaxTryCount4,
 				1,
-			).Return(tt.responseOutdialtarget, nil)
+			.Return(tt.responseOutdialtarget, nil)
 
 			res, err := h.getTarget(ctx, tt.c, tt.p)
 			if err != nil {
@@ -587,8 +587,8 @@ func Test_isDialable(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().QueueV1QueueGetAgents(ctx, tt.queueID, amagent.StatusAvailable).Return(tt.responseAgents, nil)
-			mockCampaigncall.EXPECT().GetsByCampaignIDAndStatus(ctx, tt.campaignID, campaigncall.StatusDialing, gomock.Any(), uint64(100)).Return(tt.responseCampaingcalls, nil)
+			mockReq.EXPECT().QueueV1QueueGetAgents(ctx, tt.queueID, amagent.StatusAvailable.Return(tt.responseAgents, nil)
+			mockCampaigncall.EXPECT().GetsByCampaignIDAndStatus(ctx, tt.campaignID, campaigncall.StatusDialing, gomock.Any(), uint64(100).Return(tt.responseCampaingcalls, nil)
 
 			res := h.isDialable(ctx, tt.campaignID, tt.queueID, tt.serviceLevel)
 

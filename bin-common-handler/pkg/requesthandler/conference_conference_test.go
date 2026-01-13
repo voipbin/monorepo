@@ -14,7 +14,6 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
-	"monorepo/bin-common-handler/pkg/utilhandler"
 )
 
 func Test_ConferenceV1ConferenceGet(t *testing.T) {
@@ -85,9 +84,8 @@ func Test_ConferenceV1ConferenceGets(t *testing.T) {
 
 		pageToken string
 		pageSize  uint64
-		filters   map[string]string
+		filters   map[cfconference.Field]any
 
-		expectURL     string
 		expectTarget  string
 		expectRequest *sock.Request
 		response      *sock.Response
@@ -99,15 +97,16 @@ func Test_ConferenceV1ConferenceGets(t *testing.T) {
 
 			"2021-03-02 03:23:20.995000",
 			10,
-			map[string]string{
-				"type": string(cfconference.TypeConference),
+			map[cfconference.Field]any{
+				cfconference.FieldType: string(cfconference.TypeConference),
 			},
 
-			"/v1/conferences?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10",
 			"bin-manager.conference-manager.request",
 			&sock.Request{
-				URI:    "/v1/conferences?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10&filter_type=conference",
-				Method: sock.RequestMethodGet,
+				URI:      "/v1/conferences?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10",
+				Method:   sock.RequestMethodGet,
+				DataType: "application/json",
+				Data:     []byte(`{"type":"conference"}`),
 			},
 			&sock.Response{
 				StatusCode: 200,
@@ -136,14 +135,11 @@ func Test_ConferenceV1ConferenceGets(t *testing.T) {
 			defer mc.Finish()
 
 			mockSock := sockhandler.NewMockSockHandler(mc)
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			h := requestHandler{
-				sock:        mockSock,
-				utilHandler: mockUtil,
+				sock: mockSock,
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := h.ConferenceV1ConferenceGets(ctx, tt.pageToken, tt.pageSize, tt.filters)

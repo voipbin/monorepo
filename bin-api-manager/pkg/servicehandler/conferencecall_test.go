@@ -69,7 +69,7 @@ func Test_ConferencecallGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().ConferenceV1ConferencecallGet(ctx, tt.conferencecallID).Return(tt.responseConferencecall, nil)
+			mockReq.EXPECT().ConferenceV1ConferencecallGet(ctx, tt.conferencecallID.Return(tt.responseConferencecall, nil)
 
 			res, err := h.ConferencecallGet(ctx, tt.agent, tt.conferencecallID)
 			if err != nil {
@@ -144,7 +144,7 @@ func Test_ConferencecallGets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ConferenceV1ConferencecallGets(ctx, tt.token, tt.limit, tt.expectFilters).Return(tt.response, nil)
+			mockReq.EXPECT().ConferenceV1ConferencecallGets(ctx, tt.token, tt.limit, tt.expectFilters.Return(tt.response, nil)
 			res, err := h.ConferencecallGets(ctx, tt.agent, tt.limit, tt.token)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -208,8 +208,8 @@ func Test_ConferencecallKick(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().ConferenceV1ConferencecallGet(ctx, tt.conferencecallID).Return(tt.responseConferencecall, nil)
-			mockReq.EXPECT().ConferenceV1ConferencecallKick(ctx, tt.conferencecallID).Return(tt.responseConferencecall, nil)
+			mockReq.EXPECT().ConferenceV1ConferencecallGet(ctx, tt.conferencecallID.Return(tt.responseConferencecall, nil)
+			mockReq.EXPECT().ConferenceV1ConferencecallKick(ctx, tt.conferencecallID.Return(tt.responseConferencecall, nil)
 
 			res, err := h.ConferencecallKick(ctx, tt.agent, tt.conferencecallID)
 			if err != nil {

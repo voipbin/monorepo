@@ -53,7 +53,7 @@ func Test_processEventMMMessageCreated(t *testing.T) {
 				billingHandler: mockBilling,
 			}
 
-			mockBilling.EXPECT().EventMMMessageCreated(gomock.Any(), tt.expectMessage).Return(nil)
+			mockBilling.EXPECT().EventMMMessageCreated(gomock.Any(), tt.expectMessage.Return(nil)
 
 			if err := h.processEvent(tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

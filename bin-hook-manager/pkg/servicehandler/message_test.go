@@ -56,7 +56,7 @@ func Test_Message(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 
-			mockReq.EXPECT().MessageV1Hook(ctx, tt.expectReq).Return(nil)
+			mockReq.EXPECT().MessageV1Hook(ctx, tt.expectReq.Return(nil)
 
 			if err := h.Message(ctx, tt.uri, tt.message); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -76,7 +76,7 @@ func Test_processV1ConferencecallsGet(t *testing.T) {
 				conferencecallHandler: mockConf,
 			}
 
-			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
+			mockUtil.EXPECT().URLParseFilters(gomock.Any().Return(tt.responseFilters)
 			mockConf.EXPECT().Gets(gomock.Any(), tt.pageSize, tt.pageToken, gomock.Any()).Return(tt.responseConferences, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -142,7 +142,7 @@ func Test_processV1ConferencecallsIDGet(t *testing.T) {
 				conferencecallHandler: mockConferencecall,
 			}
 
-			mockConferencecall.EXPECT().Get(gomock.Any(), tt.conferencecallID).Return(tt.responseConferencecall, nil)
+			mockConferencecall.EXPECT().Get(gomock.Any(), tt.conferencecallID.Return(tt.responseConferencecall, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -203,7 +203,7 @@ func Test_processV1ConferencecallsIDDelete(t *testing.T) {
 				conferencecallHandler: mockConfcall,
 			}
 
-			mockConfcall.EXPECT().Terminate(gomock.Any(), tt.conferencecallID).Return(tt.responseConferencecall, nil)
+			mockConfcall.EXPECT().Terminate(gomock.Any(), tt.conferencecallID.Return(tt.responseConferencecall, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

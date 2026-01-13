@@ -158,13 +158,13 @@ func Test_CampaignCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockCache.EXPECT().CampaignSet(ctx, gomock.Any().Return(nil)
 			if err := h.CampaignCreate(ctx, tt.campaign); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().CampaignGet(ctx, tt.campaign.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CampaignGet(ctx, tt.campaign.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().CampaignSet(ctx, gomock.Any())
 			res, err := h.CampaignGet(ctx, tt.campaign.ID)
 			if err != nil {
@@ -224,7 +224,7 @@ func Test_CampaignDelete(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().CampaignGet(gomock.Any(), tt.campaign.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CampaignGet(gomock.Any(), tt.campaign.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().CampaignSet(gomock.Any(), gomock.Any())
 			res, err := h.CampaignGet(context.Background(), tt.campaign.ID)
 			if err != nil {
@@ -397,8 +397,8 @@ func Test_CampaignGetsByCustomerID(t *testing.T) {
 			ctx := context.Background()
 
 			for _, p := range tt.campaigns {
-				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-				mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
+				mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+				mockCache.EXPECT().CampaignSet(ctx, gomock.Any().Return(nil)
 				if err := h.CampaignCreate(ctx, p); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
 				}
@@ -492,19 +492,19 @@ func Test_CampaignUpdateBasicInfo(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockCache.EXPECT().CampaignSet(ctx, gomock.Any().Return(nil)
 			if err := h.CampaignCreate(ctx, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockCache.EXPECT().CampaignSet(ctx, gomock.Any().Return(nil)
 			if err := h.CampaignUpdateBasicInfo(ctx, tt.data.ID, tt.campaignName, tt.detail, tt.campaignType, tt.serviceLevel, tt.endHandle); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().CampaignGet(ctx, tt.data.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CampaignGet(ctx, tt.data.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().CampaignSet(ctx, gomock.Any())
 			res, err := h.CampaignGet(ctx, tt.data.ID)
 			if err != nil {
@@ -587,19 +587,19 @@ func Test_CampaignUpdateResourceInfo(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockCache.EXPECT().CampaignSet(ctx, gomock.Any().Return(nil)
 			if err := h.CampaignCreate(context.Background(), tt.campaign); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockCache.EXPECT().CampaignSet(ctx, gomock.Any().Return(nil)
 			if err := h.CampaignUpdateResourceInfo(ctx, tt.campaign.ID, tt.outplanID, tt.outdialID, tt.queueID, tt.nextCampaignID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().CampaignGet(ctx, tt.campaign.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CampaignGet(ctx, tt.campaign.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().CampaignSet(ctx, gomock.Any())
 			res, err := h.CampaignGet(ctx, tt.campaign.ID)
 			if err != nil {
@@ -677,19 +677,19 @@ func Test_CampaignUpdateNextCampaignID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockCache.EXPECT().CampaignSet(ctx, gomock.Any().Return(nil)
 			if err := h.CampaignCreate(context.Background(), tt.campaign); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockCache.EXPECT().CampaignSet(ctx, gomock.Any().Return(nil)
 			if err := h.CampaignUpdateNextCampaignID(ctx, tt.campaign.ID, tt.nextCampaignID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().CampaignGet(gomock.Any(), tt.campaign.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CampaignGet(gomock.Any(), tt.campaign.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().CampaignSet(gomock.Any(), gomock.Any())
 			res, err := h.CampaignGet(ctx, tt.campaign.ID)
 			if err != nil {
@@ -771,19 +771,19 @@ func Test_CampaignUpdateStatus(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockCache.EXPECT().CampaignSet(ctx, gomock.Any().Return(nil)
 			if err := h.CampaignCreate(ctx, tt.campaign); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockCache.EXPECT().CampaignSet(ctx, gomock.Any().Return(nil)
 			if err := h.CampaignUpdateStatus(ctx, tt.campaign.ID, tt.status); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().CampaignGet(ctx, tt.campaign.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CampaignGet(ctx, tt.campaign.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().CampaignSet(ctx, gomock.Any())
 			res, err := h.CampaignGet(ctx, tt.campaign.ID)
 			if err != nil {
@@ -866,19 +866,19 @@ func Test_CampaignUpdateStatusAndExecute(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockCache.EXPECT().CampaignSet(ctx, gomock.Any().Return(nil)
 			if err := h.CampaignCreate(ctx, tt.campaign); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockCache.EXPECT().CampaignSet(ctx, gomock.Any().Return(nil)
 			if err := h.CampaignUpdateStatusAndExecute(ctx, tt.campaign.ID, tt.status, tt.execute); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().CampaignGet(ctx, tt.campaign.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CampaignGet(ctx, tt.campaign.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().CampaignSet(ctx, gomock.Any())
 			res, err := h.CampaignGet(ctx, tt.campaign.ID)
 			if err != nil {
@@ -959,19 +959,19 @@ func Test_CampaignUpdateExecute(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockCache.EXPECT().CampaignSet(ctx, gomock.Any().Return(nil)
 			if err := h.CampaignCreate(ctx, tt.campaign); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockCache.EXPECT().CampaignSet(ctx, gomock.Any().Return(nil)
 			if err := h.CampaignUpdateExecute(ctx, tt.campaign.ID, tt.execute); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().CampaignGet(ctx, tt.campaign.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CampaignGet(ctx, tt.campaign.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().CampaignSet(ctx, gomock.Any())
 			res, err := h.CampaignGet(ctx, tt.campaign.ID)
 			if err != nil {
@@ -1050,19 +1050,19 @@ func Test_OutplanUpdateServiceLevel(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockCache.EXPECT().CampaignSet(ctx, gomock.Any().Return(nil)
 			if err := h.CampaignCreate(ctx, tt.campaign); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockCache.EXPECT().CampaignSet(ctx, gomock.Any().Return(nil)
 			if err := h.CampaignUpdateServiceLevel(ctx, tt.campaign.ID, tt.serviceLevel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().CampaignGet(ctx, tt.campaign.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CampaignGet(ctx, tt.campaign.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().CampaignSet(ctx, gomock.Any())
 			res, err := h.CampaignGet(ctx, tt.campaign.ID)
 			if err != nil {
@@ -1143,19 +1143,19 @@ func Test_OutplanUpdateEndHandle(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockCache.EXPECT().CampaignSet(ctx, gomock.Any().Return(nil)
 			if err := h.CampaignCreate(ctx, tt.campaign); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockCache.EXPECT().CampaignSet(ctx, gomock.Any().Return(nil)
 			if err := h.CampaignUpdateEndHandle(ctx, tt.campaign.ID, tt.endHandle); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().CampaignGet(ctx, tt.campaign.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CampaignGet(ctx, tt.campaign.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().CampaignSet(ctx, gomock.Any())
 			res, err := h.CampaignGet(ctx, tt.campaign.ID)
 			if err != nil {
@@ -1247,19 +1247,19 @@ func Test_CampaignUpdateActions(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockCache.EXPECT().CampaignSet(ctx, gomock.Any().Return(nil)
 			if err := h.CampaignCreate(ctx, tt.campaign); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockCache.EXPECT().CampaignSet(ctx, gomock.Any().Return(nil)
 			if err := h.CampaignUpdateActions(ctx, tt.campaign.ID, tt.actions); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().CampaignGet(ctx, tt.campaign.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CampaignGet(ctx, tt.campaign.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().CampaignSet(ctx, gomock.Any())
 			res, err := h.CampaignGet(ctx, tt.campaign.ID)
 			if err != nil {
@@ -1344,19 +1344,19 @@ func Test_OutplanUpdateType(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurtime)
-			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurtime)
+			mockCache.EXPECT().CampaignSet(ctx, gomock.Any().Return(nil)
 			if err := h.CampaignCreate(ctx, tt.campaign); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurtime)
-			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
+			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurtime)
+			mockCache.EXPECT().CampaignSet(ctx, gomock.Any().Return(nil)
 			if err := h.CampaignUpdateType(ctx, tt.campaign.ID, tt.campaignType); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().CampaignGet(ctx, tt.campaign.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CampaignGet(ctx, tt.campaign.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().CampaignSet(ctx, gomock.Any())
 			res, err := h.CampaignGet(ctx, tt.campaign.ID)
 			if err != nil {

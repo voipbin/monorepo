@@ -53,7 +53,7 @@ func Test_processV1HooksPost(t *testing.T) {
 				emailHandler: mockEmail,
 			}
 
-			mockEmail.EXPECT().Hook(gomock.Any(), tt.expectReceivedURI, tt.expectReceivedData).Return(nil)
+			mockEmail.EXPECT().Hook(gomock.Any(), tt.expectReceivedURI, tt.expectReceivedData.Return(nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

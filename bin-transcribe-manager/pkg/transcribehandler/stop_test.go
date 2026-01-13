@@ -75,11 +75,11 @@ func Test_TranscribingStop_call(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().TranscribeGet(ctx, tt.id).Return(tt.responseTranscribe, nil)
+			mockDB.EXPECT().TranscribeGet(ctx, tt.id.Return(tt.responseTranscribe, nil)
 
 			// streamingTranscribeStop
-			mockDB.EXPECT().TranscribeUpdate(ctx, gomock.Any(), gomock.Any()).Return(nil)
-			mockDB.EXPECT().TranscribeGet(gomock.Any(), gomock.Any()).Return(tt.responseTranscribe, nil)
+			mockDB.EXPECT().TranscribeUpdate(ctx, gomock.Any(), gomock.Any(.Return(nil)
+			mockDB.EXPECT().TranscribeGet(gomock.Any(), gomock.Any(.Return(tt.responseTranscribe, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
 
 			res, err := h.Stop(ctx, tt.id)
@@ -138,13 +138,13 @@ func Test_stopLive(t *testing.T) {
 			ctx := context.Background()
 
 			for _, stID := range tt.transcribe.StreamingIDs {
-				mockStreaming.EXPECT().Stop(ctx, stID).Return(&streaming.Streaming{}, nil)
+				mockStreaming.EXPECT().Stop(ctx, stID.Return(&streaming.Streaming{}, nil)
 			}
 
 			mockDB.EXPECT().TranscribeUpdate(ctx, tt.transcribe.ID, map[transcribe.Field]any{
 				transcribe.FieldStatus: transcribe.StatusDone,
-			}).Return(nil)
-			mockDB.EXPECT().TranscribeGet(gomock.Any(), tt.transcribe.ID).Return(tt.transcribe, nil)
+			}.Return(nil)
+			mockDB.EXPECT().TranscribeGet(gomock.Any(), tt.transcribe.ID.Return(tt.transcribe, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.transcribe.CustomerID, transcribe.EventTypeTranscribeDone, tt.transcribe)
 
 			res, err := h.stopLive(ctx, tt.transcribe)

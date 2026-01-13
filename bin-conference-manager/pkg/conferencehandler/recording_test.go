@@ -72,13 +72,13 @@ func Test_RecordingStart(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConferenceGet(ctx, tt.id).Return(tt.responseConference, nil)
-			mockReq.EXPECT().CallV1RecordingStart(ctx, tt.activeflowID, cmrecording.ReferenceTypeConfbridge, tt.responseConference.ConfbridgeID, tt.format, 0, "", tt.duration, tt.onEndFlowID).Return(tt.responseRecording, nil)
+			mockDB.EXPECT().ConferenceGet(ctx, tt.id.Return(tt.responseConference, nil)
+			mockReq.EXPECT().CallV1RecordingStart(ctx, tt.activeflowID, cmrecording.ReferenceTypeConfbridge, tt.responseConference.ConfbridgeID, tt.format, 0, "", tt.duration, tt.onEndFlowID.Return(tt.responseRecording, nil)
 			mockDB.EXPECT().ConferenceUpdate(ctx, tt.id, map[conference.Field]any{
 				conference.FieldRecordingID: tt.responseRecording.ID,
-			}).Return(nil)
-			mockDB.EXPECT().ConferenceAddRecordingIDs(ctx, tt.id, tt.responseRecording.ID).Return(nil)
-			mockDB.EXPECT().ConferenceGet(ctx, tt.id).Return(tt.responseConference, nil)
+			}.Return(nil)
+			mockDB.EXPECT().ConferenceAddRecordingIDs(ctx, tt.id, tt.responseRecording.ID.Return(nil)
+			mockDB.EXPECT().ConferenceGet(ctx, tt.id.Return(tt.responseConference, nil)
 
 			res, err := h.RecordingStart(ctx, tt.id, tt.activeflowID, tt.format, tt.duration, tt.onEndFlowID)
 			if err != nil {
@@ -140,12 +140,12 @@ func Test_RecordingStop(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConferenceGet(ctx, tt.id).Return(tt.responseConference, nil)
-			mockReq.EXPECT().CallV1RecordingStop(ctx, tt.responseConference.RecordingID).Return(tt.responseRecording, nil)
+			mockDB.EXPECT().ConferenceGet(ctx, tt.id.Return(tt.responseConference, nil)
+			mockReq.EXPECT().CallV1RecordingStop(ctx, tt.responseConference.RecordingID.Return(tt.responseRecording, nil)
 			mockDB.EXPECT().ConferenceUpdate(ctx, tt.id, map[conference.Field]any{
 				conference.FieldRecordingID: uuid.Nil,
-			}).Return(nil)
-			mockDB.EXPECT().ConferenceGet(ctx, tt.id).Return(tt.responseConference, nil)
+			}.Return(nil)
+			mockDB.EXPECT().ConferenceGet(ctx, tt.id.Return(tt.responseConference, nil)
 
 			res, err := h.RecordingStop(ctx, tt.id)
 			if err != nil {

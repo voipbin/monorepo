@@ -75,12 +75,12 @@ func Test_OutdialTargetCreate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 
-			mockCache.EXPECT().OutdialTargetSet(ctx, gomock.Any()).Return(nil)
+			mockCache.EXPECT().OutdialTargetSet(ctx, gomock.Any().Return(nil)
 			if err := h.OutdialTargetCreate(context.Background(), tt.outdialTarget); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().OutdialTargetGet(gomock.Any(), tt.outdialTarget.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().OutdialTargetGet(gomock.Any(), tt.outdialTarget.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().OutdialTargetSet(gomock.Any(), gomock.Any())
 			res, err := h.OutdialTargetGet(ctx, tt.outdialTarget.ID)
 			if err != nil {
@@ -299,7 +299,7 @@ func Test_OutdialTargetUpdate(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().OutdialTargetGet(gomock.Any(), tt.outdialTarget.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().OutdialTargetGet(gomock.Any(), tt.outdialTarget.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().OutdialTargetSet(gomock.Any(), gomock.Any())
 			res, err := h.OutdialTargetGet(context.Background(), tt.outdialTarget.ID)
 			if err != nil {
@@ -350,7 +350,7 @@ func Test_OutdialTargetDelete(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().OutdialTargetGet(gomock.Any(), tt.outdialTarget.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().OutdialTargetGet(gomock.Any(), tt.outdialTarget.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().OutdialTargetSet(gomock.Any(), gomock.Any())
 			res, err := h.OutdialTargetGet(context.Background(), tt.outdialTarget.ID)
 			if err != nil {
@@ -407,7 +407,7 @@ func Test_OutdialTargetUpdateProgressing(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().OutdialTargetGet(gomock.Any(), tt.outdialTarget.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().OutdialTargetGet(gomock.Any(), tt.outdialTarget.ID.Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().OutdialTargetSet(gomock.Any(), gomock.Any())
 			res, err := h.OutdialTargetGet(context.Background(), tt.outdialTarget.ID)
 			if err != nil {

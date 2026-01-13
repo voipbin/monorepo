@@ -64,11 +64,11 @@ func Test_Stop(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ExternalMediaGet(ctx, tt.externalMediaID).Return(tt.responseExternalMedia, nil)
-			mockDB.EXPECT().ExternalMediaSet(ctx, gomock.Any()).Return(nil)
-			mockDB.EXPECT().ExternalMediaGet(ctx, tt.externalMediaID).Return(tt.responseExternalMedia, nil)
-			mockChannel.EXPECT().HangingUpWithAsteriskID(ctx, tt.responseExternalMedia.AsteriskID, tt.responseExternalMedia.ChannelID, ari.ChannelCauseNormalClearing).Return(nil)
-			mockDB.EXPECT().ExternalMediaDelete(ctx, tt.externalMediaID).Return(nil)
+			mockDB.EXPECT().ExternalMediaGet(ctx, tt.externalMediaID.Return(tt.responseExternalMedia, nil)
+			mockDB.EXPECT().ExternalMediaSet(ctx, gomock.Any().Return(nil)
+			mockDB.EXPECT().ExternalMediaGet(ctx, tt.externalMediaID.Return(tt.responseExternalMedia, nil)
+			mockChannel.EXPECT().HangingUpWithAsteriskID(ctx, tt.responseExternalMedia.AsteriskID, tt.responseExternalMedia.ChannelID, ari.ChannelCauseNormalClearing.Return(nil)
+			mockDB.EXPECT().ExternalMediaDelete(ctx, tt.externalMediaID.Return(nil)
 
 			res, err := h.Stop(ctx, tt.externalMediaID)
 			if err != nil {

@@ -4,7 +4,6 @@ import (
 	"context"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
-	"monorepo/bin-common-handler/pkg/utilhandler"
 	csaccesskey "monorepo/bin-customer-manager/models/accesskey"
 	"reflect"
 	"testing"
@@ -21,11 +20,10 @@ func Test_CustomerV1AccesskeyGets(t *testing.T) {
 		pageToken  string
 		pageSize   uint64
 		customerID uuid.UUID
-		filters    map[string]string
+		filters    map[csaccesskey.Field]any
 
 		response *sock.Response
 
-		expectedURL     string
 		expectedTarget  string
 		expectedRequest *sock.Request
 
@@ -37,8 +35,8 @@ func Test_CustomerV1AccesskeyGets(t *testing.T) {
 			pageToken:  "2021-03-02 03:23:20.995000",
 			pageSize:   10,
 			customerID: uuid.FromStringOrNil("eee40e32-ab3b-11ef-8190-ab49eeb155a1"),
-			filters: map[string]string{
-				"deleted": "false",
+			filters: map[csaccesskey.Field]any{
+				csaccesskey.FieldDeleted: false,
 			},
 
 			response: &sock.Response{
@@ -47,12 +45,12 @@ func Test_CustomerV1AccesskeyGets(t *testing.T) {
 				Data:       []byte(`[{"id":"db965d74-ab3d-11ef-a273-17bee7b8b789"},{"id":"dc5d389a-ab3d-11ef-bc7f-ab1929a9dc03"}]`),
 			},
 
-			expectedURL:    "/v1/accesskeys?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10",
 			expectedTarget: "bin-manager.customer-manager.request",
 			expectedRequest: &sock.Request{
-				URI:      "/v1/accesskeys?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10&filter_deleted=false",
+				URI:      "/v1/accesskeys?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10",
 				Method:   sock.RequestMethodGet,
-				DataType: ContentTypeJSON,
+				DataType: "application/json",
+				Data:     []byte(`{"deleted":false}`),
 			},
 			expectedRes: []csaccesskey.Accesskey{
 				{
@@ -71,14 +69,11 @@ func Test_CustomerV1AccesskeyGets(t *testing.T) {
 			defer mc.Finish()
 
 			mockSock := sockhandler.NewMockSockHandler(mc)
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			h := requestHandler{
-				sock:        mockSock,
-				utilHandler: mockUtil,
+				sock: mockSock,
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().URLMergeFilters(tt.expectedURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectedURL, tt.filters))
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectedTarget, tt.expectedRequest).Return(tt.response, nil)
 
 			res, err := h.CustomerV1AccesskeyGets(ctx, tt.pageToken, tt.pageSize, tt.filters)

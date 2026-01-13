@@ -13,7 +13,6 @@ import (
 	"monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
-	"monorepo/bin-common-handler/pkg/utilhandler"
 )
 
 func Test_RegistrarExtensionCreate(t *testing.T) {
@@ -304,11 +303,10 @@ func Test_RegistrarV1ExtensionGets(t *testing.T) {
 
 		pageToken string
 		pageSize  uint64
-		filters   map[string]string
+		filters   map[rmextension.Field]any
 
 		response *sock.Response
 
-		expectURL     string
 		expectTarget  string
 		expectRequest *sock.Request
 		expectRes     []rmextension.Extension
@@ -318,8 +316,8 @@ func Test_RegistrarV1ExtensionGets(t *testing.T) {
 
 			"2020-09-20 03:23:20.995000",
 			10,
-			map[string]string{
-				"customer_id": "f18dcabe-4ff3-11ee-80be-875a8c6041d4",
+			map[rmextension.Field]any{
+				rmextension.FieldCustomerID: uuid.FromStringOrNil("f18dcabe-4ff3-11ee-80be-875a8c6041d4"),
 			},
 
 			&sock.Response{
@@ -328,12 +326,12 @@ func Test_RegistrarV1ExtensionGets(t *testing.T) {
 				Data:       []byte(`[{"id":"f1d6686e-4ff3-11ee-a1cc-cbb904dc2d7e"}]`),
 			},
 
-			"/v1/extensions?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10",
 			"bin-manager.registrar-manager.request",
 			&sock.Request{
-				URI:      "/v1/extensions?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10&filter_customer_id=f18dcabe-4ff3-11ee-80be-875a8c6041d4",
+				URI:      "/v1/extensions?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10",
 				Method:   sock.RequestMethodGet,
-				DataType: ContentTypeJSON,
+				DataType: "application/json",
+				Data:     []byte(`{"customer_id":"f18dcabe-4ff3-11ee-80be-875a8c6041d4"}`),
 			},
 			[]rmextension.Extension{
 				{
@@ -351,14 +349,11 @@ func Test_RegistrarV1ExtensionGets(t *testing.T) {
 			defer mc.Finish()
 
 			mockSock := sockhandler.NewMockSockHandler(mc)
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			reqHandler := requestHandler{
-				sock:        mockSock,
-				utilHandler: mockUtil,
+				sock: mockSock,
 			}
 
 			ctx := context.Background()
-			mockUtil.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.RegistrarV1ExtensionGets(ctx, tt.pageToken, tt.pageSize, tt.filters)

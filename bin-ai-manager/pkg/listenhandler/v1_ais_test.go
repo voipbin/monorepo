@@ -172,7 +172,7 @@ func Test_processV1AIsPost(t *testing.T) {
 				tt.expectTTSType,
 				tt.expectTTSVoiceID,
 				tt.expectSTTType,
-			).Return(tt.responseAI, nil)
+			.Return(tt.responseAI, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -232,7 +232,7 @@ func Test_processV1AIsIDGet(t *testing.T) {
 				aiHandler:   mockAI,
 			}
 
-			mockAI.EXPECT().Get(gomock.Any(), tt.expectID).Return(tt.responseAI, nil)
+			mockAI.EXPECT().Get(gomock.Any(), tt.expectID.Return(tt.responseAI, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -292,7 +292,7 @@ func Test_processV1AIsIDDelete(t *testing.T) {
 				aiHandler:   mockAI,
 			}
 
-			mockAI.EXPECT().Delete(gomock.Any(), tt.expectID).Return(tt.responseAI, nil)
+			mockAI.EXPECT().Delete(gomock.Any(), tt.expectID.Return(tt.responseAI, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -389,7 +389,7 @@ func Test_processV1AIsIDPut(t *testing.T) {
 				tt.expectTTSType,
 				tt.expectTTSVoiceID,
 				tt.expectSTTType,
-			).Return(tt.responseAI, nil)
+			.Return(tt.responseAI, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

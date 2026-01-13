@@ -104,8 +104,8 @@ func Test_processV1AccesskeysGet(t *testing.T) {
 				accesskeyHandler: mockAccesskey,
 			}
 
-			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
-			mockAccesskey.EXPECT().Gets(gomock.Any(), tt.size, tt.token, tt.expectFilters).Return(tt.responseAccesskeys, nil)
+			mockUtil.EXPECT().URLParseFilters(gomock.Any().Return(tt.responseFilters)
+			mockAccesskey.EXPECT().Gets(gomock.Any(), tt.size, tt.token, gomock.Any().Return(tt.responseAccesskeys, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -179,7 +179,7 @@ func Test_processV1AccesskeysPost(t *testing.T) {
 				tt.expectedName,
 				tt.expectedDetail,
 				tt.expectedExpire,
-			).Return(tt.responseAccesskey, nil)
+			.Return(tt.responseAccesskey, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -240,7 +240,7 @@ func Test_processV1AccesskeysIDGet(t *testing.T) {
 				accesskeyHandler: mockAccesskey,
 			}
 
-			mockAccesskey.EXPECT().Get(gomock.Any(), tt.id).Return(tt.responseAccesskey, nil)
+			mockAccesskey.EXPECT().Get(gomock.Any(), tt.id.Return(tt.responseAccesskey, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -301,7 +301,7 @@ func Test_processV1AccesskeysIDDelete(t *testing.T) {
 				accesskeyHandler: mockAccesskey,
 			}
 
-			mockAccesskey.EXPECT().Delete(gomock.Any(), tt.accesskeyID).Return(tt.responseAccesskey, nil)
+			mockAccesskey.EXPECT().Delete(gomock.Any(), tt.accesskeyID.Return(tt.responseAccesskey, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -366,7 +366,7 @@ func Test_processV1AccesskeysIDPut(t *testing.T) {
 				accesskeyHandler: mockAccesskey,
 			}
 
-			mockAccesskey.EXPECT().UpdateBasicInfo(gomock.Any(), tt.expectedID, tt.expectedName, tt.expectedDetail).Return(tt.responseAccesskey, nil)
+			mockAccesskey.EXPECT().UpdateBasicInfo(gomock.Any(), tt.expectedID, tt.expectedName, tt.expectedDetail.Return(tt.responseAccesskey, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

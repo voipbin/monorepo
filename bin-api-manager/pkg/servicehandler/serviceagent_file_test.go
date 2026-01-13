@@ -61,7 +61,7 @@ func Test_storageFileGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().StorageV1FileGet(ctx, tt.fileID).Return(tt.responseStorageFile, nil)
+			mockReq.EXPECT().StorageV1FileGet(ctx, tt.fileID.Return(tt.responseStorageFile, nil)
 
 			res, err := h.storageFileGet(ctx, tt.fileID)
 			if err != nil {
@@ -135,8 +135,8 @@ func Test_ServiceAgentFileDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().StorageV1FileGet(ctx, tt.storageFileID).Return(tt.responseStorageFile, nil)
-			mockReq.EXPECT().StorageV1FileDelete(ctx, tt.storageFileID, 60000).Return(tt.responseStorageFile, nil)
+			mockReq.EXPECT().StorageV1FileGet(ctx, tt.storageFileID.Return(tt.responseStorageFile, nil)
+			mockReq.EXPECT().StorageV1FileDelete(ctx, tt.storageFileID, 60000.Return(tt.responseStorageFile, nil)
 
 			res, err := h.ServiceAgentFileDelete(ctx, tt.agent, tt.storageFileID)
 			if err != nil {
@@ -222,7 +222,7 @@ func Test_StorageFileGets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().StorageV1FileGets(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseStorageFiles, nil)
+			mockReq.EXPECT().StorageV1FileGets(ctx, tt.token, tt.size, tt.expectFilters.Return(tt.responseStorageFiles, nil)
 
 			res, err := h.ServiceAgentFileGets(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {

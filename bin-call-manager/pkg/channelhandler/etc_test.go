@@ -56,8 +56,8 @@ func Test_Answer(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id).Return(tt.responseChannel, nil)
-			mockReq.EXPECT().AstChannelAnswer(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID).Return(nil)
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id.Return(tt.responseChannel, nil)
+			mockReq.EXPECT().AstChannelAnswer(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID.Return(nil)
 
 			if err := h.Answer(ctx, tt.id); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -118,8 +118,8 @@ func Test_DTMFSend(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id).Return(tt.responseChannel, nil)
-			mockReq.EXPECT().AstChannelDTMF(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID, tt.digit, tt.duration, tt.before, tt.between, tt.after).Return(nil)
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id.Return(tt.responseChannel, nil)
+			mockReq.EXPECT().AstChannelDTMF(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID, tt.digit, tt.duration, tt.before, tt.between, tt.after.Return(nil)
 
 			if err := h.DTMFSend(ctx, tt.id, tt.digit, tt.duration, tt.before, tt.between, tt.after); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -184,8 +184,8 @@ func Test_Record(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id).Return(tt.responseChannel, nil)
-			mockReq.EXPECT().AstChannelRecord(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID, tt.filename, tt.format, tt.duration, tt.silence, tt.beep, tt.endKey, tt.ifExists).Return(nil)
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id.Return(tt.responseChannel, nil)
+			mockReq.EXPECT().AstChannelRecord(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID, tt.filename, tt.format, tt.duration, tt.silence, tt.beep, tt.endKey, tt.ifExists.Return(nil)
 
 			if err := h.Record(ctx, tt.id, tt.filename, tt.format, tt.duration, tt.silence, tt.beep, tt.endKey, tt.ifExists); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -240,8 +240,8 @@ func Test_Dial(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id).Return(tt.responseChannel, nil)
-			mockReq.EXPECT().AstChannelDial(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID, tt.caller, tt.timeout).Return(nil)
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id.Return(tt.responseChannel, nil)
+			mockReq.EXPECT().AstChannelDial(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID, tt.caller, tt.timeout.Return(nil)
 
 			if err := h.Dial(ctx, tt.id, tt.caller, tt.timeout); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -298,8 +298,8 @@ func Test_Redirect(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id).Return(tt.responseChannel, nil)
-			mockReq.EXPECT().AstAMIRedirect(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID, tt.contextName, tt.exten, tt.priority).Return(nil)
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id.Return(tt.responseChannel, nil)
+			mockReq.EXPECT().AstAMIRedirect(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID, tt.contextName, tt.exten, tt.priority.Return(nil)
 
 			if err := h.Redirect(ctx, tt.id, tt.contextName, tt.exten, tt.priority); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -358,8 +358,8 @@ func Test_Continue(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id).Return(tt.responseChannel, nil)
-			mockReq.EXPECT().AstChannelContinue(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID, tt.contextName, tt.exten, tt.priority, tt.label).Return(nil)
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id.Return(tt.responseChannel, nil)
+			mockReq.EXPECT().AstChannelContinue(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID, tt.contextName, tt.exten, tt.priority, tt.label.Return(nil)
 
 			if err := h.Continue(ctx, tt.id, tt.contextName, tt.exten, tt.priority, tt.label); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -410,8 +410,8 @@ func Test_Ring(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id).Return(tt.responseChannel, nil)
-			mockReq.EXPECT().AstChannelRing(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID).Return(nil)
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id.Return(tt.responseChannel, nil)
+			mockReq.EXPECT().AstChannelRing(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID.Return(nil)
 
 			if err := h.Ring(ctx, tt.id); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
