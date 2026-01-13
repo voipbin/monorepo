@@ -28,7 +28,7 @@ func Test_BillingGets(t *testing.T) {
 		token string
 
 		responseBillingAcounts []bmbilling.Billing
-		expectFilters          map[string]string
+		expectFilters map[bmbilling.Field]any
 		expectRes              []*bmbilling.WebhookMessage
 	}{
 		{
@@ -55,9 +55,9 @@ func Test_BillingGets(t *testing.T) {
 					},
 				},
 			},
-			expectFilters: map[string]string{
-				"customer_id": "5f621078-8e5f-11ee-97b2-cfe7337b701c",
-				"deleted":     "false",
+			expectFilters: map[bmbilling.Field]any{
+				bmbilling.FieldCustomerID: "5f621078-8e5f-11ee-97b2-cfe7337b701c",
+				bmbilling.FieldDeleted:    false,
 			},
 			expectRes: []*bmbilling.WebhookMessage{
 				{
@@ -89,7 +89,7 @@ func Test_BillingGets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().BillingV1BillingGets(ctx, tt.token, tt.size, tt.expectFilters.Return(tt.responseBillingAcounts, nil)
+			mockReq.EXPECT().BillingV1BillingGets(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseBillingAcounts, nil)
 
 			res, err := h.BillingGets(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {

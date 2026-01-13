@@ -71,7 +71,7 @@ func Test_v1CompressfilesPost(t *testing.T) {
 				storageHandler: mockStorage,
 			}
 
-			mockStorage.EXPECT().CompressfileCreate(gomock.Any(), tt.referenceIDs, tt.fileIDs.Return(tt.responseCompress, nil)
+			mockStorage.EXPECT().CompressfileCreate(gomock.Any(), tt.referenceIDs, tt.fileIDs).Return(tt.responseCompress, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

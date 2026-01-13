@@ -63,14 +63,14 @@ func Test_EventHandleActiveflowDeletedWithStoppableCampaign(t *testing.T) {
 			ctx := context.Background()
 
 			// isstoppable
-			mockDB.EXPECT().CampaignGet(ctx, tt.id.Return(tt.response, nil)
-			mockUtil.EXPECT().TimeGetCurTime(.Return(utilhandler.TimeGetCurTime())
-			mockCampaigncall.EXPECT().GetsOngoingByCampaignID(ctx, tt.id, gomock.Any(), uint64(1).Return([]*campaigncall.Campaigncall{}, nil)
+			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
+			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+			mockCampaigncall.EXPECT().GetsOngoingByCampaignID(ctx, tt.id, gomock.Any(), uint64(1)).Return([]*campaigncall.Campaigncall{}, nil)
 
 			// updateStatusStop
-			mockDB.EXPECT().CampaignGet(ctx, tt.id.Return(tt.response, nil)
-			mockDB.EXPECT().CampaignUpdateStatus(ctx, tt.id, campaign.StatusStop.Return(nil)
-			mockDB.EXPECT().CampaignGet(ctx, tt.id.Return(tt.response, nil)
+			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
+			mockDB.EXPECT().CampaignUpdateStatus(ctx, tt.id, campaign.StatusStop).Return(nil)
+			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.response.CustomerID, campaign.EventTypeCampaignStatusStop, tt.response)
 
 			if err := h.EventHandleActiveflowDeleted(ctx, tt.id); err != nil {
@@ -125,14 +125,14 @@ func Test_EventHandleReferenceCallHungupWithStoppableCampaign(t *testing.T) {
 			ctx := context.Background()
 
 			// isstoppable
-			mockDB.EXPECT().CampaignGet(ctx, tt.id.Return(tt.response, nil)
-			mockUtil.EXPECT().TimeGetCurTime(.Return(utilhandler.TimeGetCurTime())
-			mockCampaigncall.EXPECT().GetsOngoingByCampaignID(ctx, tt.id, gomock.Any(), uint64(1).Return([]*campaigncall.Campaigncall{}, nil)
+			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
+			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+			mockCampaigncall.EXPECT().GetsOngoingByCampaignID(ctx, tt.id, gomock.Any(), uint64(1)).Return([]*campaigncall.Campaigncall{}, nil)
 
 			// updateStatusStop
-			mockDB.EXPECT().CampaignGet(ctx, tt.id.Return(tt.response, nil)
-			mockDB.EXPECT().CampaignUpdateStatus(ctx, tt.id, campaign.StatusStop.Return(nil)
-			mockDB.EXPECT().CampaignGet(ctx, tt.id.Return(tt.response, nil)
+			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
+			mockDB.EXPECT().CampaignUpdateStatus(ctx, tt.id, campaign.StatusStop).Return(nil)
+			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.response.CustomerID, campaign.EventTypeCampaignStatusStop, tt.response)
 
 			if err := h.EventHandleReferenceCallHungup(ctx, tt.id); err != nil {

@@ -51,12 +51,12 @@ func Test_Delete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().CustomerGet(gomock.Any(), tt.id.Return(tt.responseCustomer, nil)
+			mockDB.EXPECT().CustomerGet(gomock.Any(), tt.id).Return(tt.responseCustomer, nil)
 
 			// dbDelete
-			mockDB.EXPECT().CustomerDelete(gomock.Any(), tt.id.Return(nil)
-			mockDB.EXPECT().CustomerGet(gomock.Any(), tt.id.Return(tt.responseCustomer, nil)
-			mockNotify.EXPECT().PublishEvent(gomock.Any(), customer.EventTypeCustomerDeleted, tt.responseCustomer.Return()
+			mockDB.EXPECT().CustomerDelete(gomock.Any(), tt.id).Return(nil)
+			mockDB.EXPECT().CustomerGet(gomock.Any(), tt.id).Return(tt.responseCustomer, nil)
+			mockNotify.EXPECT().PublishEvent(gomock.Any(), customer.EventTypeCustomerDeleted, tt.responseCustomer).Return()
 
 			_, err := h.Delete(ctx, tt.id)
 			if err != nil {
@@ -76,7 +76,7 @@ func Test_validateCreate(t *testing.T) {
 		expectedRes      bool
 
 		expectedFilterCustomer map[customer.Field]any
-		expectedFilterAgent    map[string]string
+		expectedFilterAgent    map[amagent.Field]any
 	}{
 		{
 			name: "normal1",
@@ -94,9 +94,9 @@ func Test_validateCreate(t *testing.T) {
 				customer.FieldDeleted: false,
 				customer.FieldEmail:   "test@voipbin.net",
 			},
-			expectedFilterAgent: map[string]string{
-				"deleted":  "false",
-				"username": "test@voipbin.net",
+			expectedFilterAgent: map[amagent.Field]any{
+				amagent.FieldDeleted:  false,
+				amagent.FieldUsername: "test@voipbin.net",
 			},
 		},
 	}
@@ -119,9 +119,9 @@ func Test_validateCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().EmailIsValid(tt.email.Return(true)
-			mockDB.EXPECT().CustomerGets(gomock.Any(), uint64(100), "", tt.expectedFilterCustomer.Return([]*customer.Customer{}, nil)
-			mockReq.EXPECT().AgentV1AgentGets(gomock.Any(), "", uint64(100), tt.expectedFilterAgent.Return([]amagent.Agent{}, nil)
+			mockUtil.EXPECT().EmailIsValid(tt.email).Return(true)
+			mockDB.EXPECT().CustomerGets(gomock.Any(), uint64(100), "", tt.expectedFilterCustomer).Return([]*customer.Customer{}, nil)
+			mockReq.EXPECT().AgentV1AgentGets(gomock.Any(), "", uint64(100), tt.expectedFilterAgent).Return([]amagent.Agent{}, nil)
 
 			res := h.validateCreate(ctx, tt.email)
 			if res != tt.expectedRes {

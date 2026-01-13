@@ -11,6 +11,7 @@ import (
 	cmrecording "monorepo/bin-call-manager/models/recording"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	fmaction "monorepo/bin-flow-manager/models/action"
 
@@ -178,8 +179,15 @@ func (h *serviceHandler) callGetsByFilters(ctx context.Context, size uint64, tok
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
+	// Convert string filters to typed filters
+	typedFilters, err := h.convertCallFilters(filters)
+	if err != nil {
+		log.Errorf("Could not convert filters. err: %v", err)
+		return nil, err
+	}
+
 	// get calls
-	tmps, err := h.reqHandler.CallV1CallGets(ctx, token, size, filters)
+	tmps, err := h.reqHandler.CallV1CallGets(ctx, token, size, typedFilters)
 	if err != nil {
 		log.Infof("Could not get calls info. err: %v", err)
 		return nil, err
@@ -193,6 +201,29 @@ func (h *serviceHandler) callGetsByFilters(ctx context.Context, size uint64, tok
 	}
 
 	return res, nil
+}
+
+// convertCallFilters converts map[string]string to map[cmcall.Field]any
+func (h *serviceHandler) convertCallFilters(filters map[string]string) (map[cmcall.Field]any, error) {
+	// Convert to map[string]any first
+	srcAny := make(map[string]any, len(filters))
+	for k, v := range filters {
+		srcAny[k] = v
+	}
+
+	// Use reflection-based converter
+	typed, err := commondatabasehandler.ConvertMapToTypedMap(srcAny, cmcall.Call{})
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert string keys to Field type
+	result := make(map[cmcall.Field]any, len(typed))
+	for k, v := range typed {
+		result[cmcall.Field(k)] = v
+	}
+
+	return result, nil
 }
 
 // CallDelete sends a request to call-manager

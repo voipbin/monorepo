@@ -59,7 +59,7 @@ func Test_processV1WebhooksPost(t *testing.T) {
 				whHandler:   mockWeb,
 			}
 
-			mockWeb.EXPECT().SendWebhookToCustomer(gomock.Any(), tt.customerID, tt.dataType, tt.data.Return(nil)
+			mockWeb.EXPECT().SendWebhookToCustomer(gomock.Any(), tt.customerID, tt.dataType, tt.data).Return(nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -123,7 +123,7 @@ func Test_processV1WebhookDestinationsPost(t *testing.T) {
 				whHandler:   mockWeb,
 			}
 
-			mockWeb.EXPECT().SendWebhookToURI(gomock.Any(), tt.customerID, tt.uri, tt.method, tt.dataType, tt.data.Return(nil)
+			mockWeb.EXPECT().SendWebhookToURI(gomock.Any(), tt.customerID, tt.uri, tt.method, tt.dataType, tt.data).Return(nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

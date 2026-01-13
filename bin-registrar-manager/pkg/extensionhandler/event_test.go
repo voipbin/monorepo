@@ -73,17 +73,17 @@ func Test_EventCUCustomerDeleted(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDBBin.EXPECT().ExtensionGets(ctx, uint64(1000), gomock.Any(), tt.expectFilter.Return(tt.responseExtensions, nil)
+			mockDBBin.EXPECT().ExtensionGets(ctx, uint64(1000), gomock.Any(), tt.expectFilter).Return(tt.responseExtensions, nil)
 
 			for _, e := range tt.responseExtensions {
 
-				mockDBBin.EXPECT().ExtensionGet(ctx, e.ID.Return(e, nil)
-				mockDBBin.EXPECT().ExtensionDelete(ctx, e.ID.Return(nil)
-				mockDBAst.EXPECT().AstEndpointDelete(ctx, e.EndpointID.Return(nil)
-				mockDBAst.EXPECT().AstAuthDelete(ctx, e.AuthID.Return(nil)
-				mockDBAst.EXPECT().AstAORDelete(ctx, e.AORID.Return(nil)
-				mockDBBin.EXPECT().ExtensionGet(ctx, e.ID.Return(e, nil)
-				mockDBBin.EXPECT().SIPAuthDelete(ctx, e.ID.Return(nil)
+				mockDBBin.EXPECT().ExtensionGet(ctx, e.ID).Return(e, nil)
+				mockDBBin.EXPECT().ExtensionDelete(ctx, e.ID).Return(nil)
+				mockDBAst.EXPECT().AstEndpointDelete(ctx, e.EndpointID).Return(nil)
+				mockDBAst.EXPECT().AstAuthDelete(ctx, e.AuthID).Return(nil)
+				mockDBAst.EXPECT().AstAORDelete(ctx, e.AORID).Return(nil)
+				mockDBBin.EXPECT().ExtensionGet(ctx, e.ID).Return(e, nil)
+				mockDBBin.EXPECT().SIPAuthDelete(ctx, e.ID).Return(nil)
 				mockNotify.EXPECT().PublishEvent(ctx, extension.EventTypeExtensionDeleted, e)
 			}
 

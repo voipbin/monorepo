@@ -94,19 +94,19 @@ func Test_Terminating(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id.Return(tt.responseConfbridge, nil)
+			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id).Return(tt.responseConfbridge, nil)
 
-			mockDB.EXPECT().ConfbridgeSetStatus(ctx, tt.id, confbridge.StatusTerminating.Return(nil)
-			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id.Return(tt.responseConfbridge, nil)
+			mockDB.EXPECT().ConfbridgeSetStatus(ctx, tt.id, confbridge.StatusTerminating).Return(nil)
+			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id).Return(tt.responseConfbridge, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, confbridge.EventTypeConfbridgeTerminating, tt.responseConfbridge)
 
 			if tt.responseConfbridge.BridgeID == "" {
-				mockDB.EXPECT().ConfbridgeGet(ctx, tt.responseConfbridge.ID.Return(tt.responseConfbridgeUpdate, nil)
-				mockDB.EXPECT().ConfbridgeSetStatus(ctx, tt.responseConfbridge.ID, confbridge.StatusTerminated.Return(nil)
-				mockDB.EXPECT().ConfbridgeGet(ctx, tt.responseConfbridge.ID.Return(tt.responseConfbridge, nil)
+				mockDB.EXPECT().ConfbridgeGet(ctx, tt.responseConfbridge.ID).Return(tt.responseConfbridgeUpdate, nil)
+				mockDB.EXPECT().ConfbridgeSetStatus(ctx, tt.responseConfbridge.ID, confbridge.StatusTerminated).Return(nil)
+				mockDB.EXPECT().ConfbridgeGet(ctx, tt.responseConfbridge.ID).Return(tt.responseConfbridge, nil)
 				mockNotify.EXPECT().PublishEvent(ctx, confbridge.EventTypeConfbridgeTerminated, tt.responseConfbridge)
 			} else {
-				mockBridge.EXPECT().Destroy(ctx, tt.responseConfbridge.BridgeID.Return(nil)
+				mockBridge.EXPECT().Destroy(ctx, tt.responseConfbridge.BridgeID).Return(nil)
 			}
 
 			res, err := h.Terminating(ctx, tt.id)
@@ -170,10 +170,10 @@ func Test_Terminate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id.Return(tt.responseConfbridge, nil)
+			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id).Return(tt.responseConfbridge, nil)
 
-			mockDB.EXPECT().ConfbridgeSetStatus(ctx, tt.responseConfbridge.ID, confbridge.StatusTerminated.Return(nil)
-			mockDB.EXPECT().ConfbridgeGet(ctx, tt.responseConfbridge.ID.Return(tt.responseConfbridge, nil)
+			mockDB.EXPECT().ConfbridgeSetStatus(ctx, tt.responseConfbridge.ID, confbridge.StatusTerminated).Return(nil)
+			mockDB.EXPECT().ConfbridgeGet(ctx, tt.responseConfbridge.ID).Return(tt.responseConfbridge, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, confbridge.EventTypeConfbridgeTerminated, tt.responseConfbridge)
 
 			if err := h.Terminate(ctx, tt.id); err != nil {

@@ -96,7 +96,7 @@ func Test_customersPOST(t *testing.T) {
 				tt.expectAddress,
 				tt.expectWebhookMethod,
 				tt.expectWebhookURI,
-			.Return(tt.responseCustomer, nil)
+			).Return(tt.responseCustomer, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -172,7 +172,7 @@ func Test_customersGet(t *testing.T) {
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CustomerGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken, tt.expectFilters.Return(tt.responseCustomers, nil)
+			mockSvc.EXPECT().CustomerGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken, tt.expectFilters).Return(tt.responseCustomers, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -241,7 +241,7 @@ func Test_customersIDGet(t *testing.T) {
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CustomerGet(req.Context(), &tt.agent, tt.expectCustomerID.Return(tt.responseCustomer, nil)
+			mockSvc.EXPECT().CustomerGet(req.Context(), &tt.agent, tt.expectCustomerID).Return(tt.responseCustomer, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -326,7 +326,7 @@ func Test_customersIDPut(t *testing.T) {
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CustomerUpdate(req.Context(), &tt.agent, tt.expectCustomerID, tt.expectName, tt.expectDetail, tt.expectEmail, tt.expectPhoneNumber, tt.expectAddress, tt.expectWebhookMethod, tt.expectWebhookURI.Return(tt.responseCustomer, nil)
+			mockSvc.EXPECT().CustomerUpdate(req.Context(), &tt.agent, tt.expectCustomerID, tt.expectName, tt.expectDetail, tt.expectEmail, tt.expectPhoneNumber, tt.expectAddress, tt.expectWebhookMethod, tt.expectWebhookURI).Return(tt.responseCustomer, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -395,7 +395,7 @@ func Test_customersIDDelete(t *testing.T) {
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CustomerDelete(req.Context(), &tt.agent, tt.expectCustomerID.Return(tt.responseCustomer, nil)
+			mockSvc.EXPECT().CustomerDelete(req.Context(), &tt.agent, tt.expectCustomerID).Return(tt.responseCustomer, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -467,7 +467,7 @@ func Test_customersIDBillingAccountIDPut(t *testing.T) {
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CustomerUpdateBillingAccountID(req.Context(), &tt.agent, tt.expectedCustomerID, tt.expectedBillingAccountID.Return(tt.responseCustomer, nil)
+			mockSvc.EXPECT().CustomerUpdateBillingAccountID(req.Context(), &tt.agent, tt.expectedCustomerID, tt.expectedBillingAccountID).Return(tt.responseCustomer, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

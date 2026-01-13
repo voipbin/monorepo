@@ -26,7 +26,7 @@ func Test_ServiceAgentChatroomGets(t *testing.T) {
 		token string
 
 		responseChatrooms []chatchatroom.Chatroom
-		expectFilters     map[string]string
+		expectFilters     map[chatchatroom.Field]any
 		expectRes         []*chatchatroom.WebhookMessage
 	}
 
@@ -56,10 +56,10 @@ func Test_ServiceAgentChatroomGets(t *testing.T) {
 					},
 				},
 			},
-			expectFilters: map[string]string{
-				"owner_id":    "5cd8c836-3b9f-11ef-98ac-db226570f09a",
-				"customer_id": "5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9",
-				"deleted":     "false",
+			expectFilters: map[chatchatroom.Field]any{
+				chatchatroom.FieldOwnerID:    "5cd8c836-3b9f-11ef-98ac-db226570f09a",
+				chatchatroom.FieldCustomerID: "5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9",
+				chatchatroom.FieldDeleted:    false,
 			},
 			expectRes: []*chatchatroom.WebhookMessage{
 				{
@@ -90,7 +90,7 @@ func Test_ServiceAgentChatroomGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().ChatV1ChatroomGets(ctx, tt.token, tt.size, tt.expectFilters.Return(tt.responseChatrooms, nil)
+			mockReq.EXPECT().ChatV1ChatroomGets(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseChatrooms, nil)
 
 			res, err := h.ServiceAgentChatroomGets(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {
@@ -162,7 +162,7 @@ func Test_ServiceAgentChatroomGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().ChatV1ChatroomGet(ctx, tt.chatroomID.Return(tt.responseChatroom, nil)
+			mockReq.EXPECT().ChatV1ChatroomGet(ctx, tt.chatroomID).Return(tt.responseChatroom, nil)
 
 			res, err := h.ServiceAgentChatroomGet(ctx, tt.agent, tt.chatroomID)
 			if err != nil {
@@ -234,8 +234,8 @@ func Test_ServiceAgentChatroomDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().ChatV1ChatroomGet(ctx, tt.chatroomID.Return(tt.responseChatroom, nil)
-			mockReq.EXPECT().ChatV1ChatroomDelete(ctx, tt.chatroomID.Return(tt.responseChatroom, nil)
+			mockReq.EXPECT().ChatV1ChatroomGet(ctx, tt.chatroomID).Return(tt.responseChatroom, nil)
+			mockReq.EXPECT().ChatV1ChatroomDelete(ctx, tt.chatroomID).Return(tt.responseChatroom, nil)
 
 			res, err := h.ServiceAgentChatroomDelete(ctx, tt.agent, tt.chatroomID)
 			if err != nil {
@@ -264,7 +264,7 @@ func Test_ServiceAgentChatroomCreate(t *testing.T) {
 		responseChatrooms []chatchatroom.Chatroom
 
 		expectChatType chatchat.Type
-		expectFilters  map[string]string
+		expectFilters  map[chatchatroom.Field]any
 		expectRes      *chatchatroom.WebhookMessage
 	}
 
@@ -304,10 +304,10 @@ func Test_ServiceAgentChatroomCreate(t *testing.T) {
 			},
 
 			expectChatType: chatchat.TypeNormal,
-			expectFilters: map[string]string{
-				"deleted":  "false",
-				"chat_id":  "6aac6da2-3ba7-11ef-adf3-a3455d849cf3",
-				"owner_id": "5cd8c836-3b9f-11ef-98ac-db226570f09a",
+			expectFilters: map[chatchatroom.Field]any{
+				chatchatroom.FieldDeleted:  false,
+				chatchatroom.FieldChatID:   "6aac6da2-3ba7-11ef-adf3-a3455d849cf3",
+				chatchatroom.FieldOwnerID:  "5cd8c836-3b9f-11ef-98ac-db226570f09a",
 			},
 			expectRes: &chatchatroom.WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -347,12 +347,12 @@ func Test_ServiceAgentChatroomCreate(t *testing.T) {
 					continue
 				}
 
-				mockReq.EXPECT().AgentV1AgentGet(ctx, participantID.Return(tmpAgent, nil)
+				mockReq.EXPECT().AgentV1AgentGet(ctx, participantID).Return(tmpAgent, nil)
 			}
-			mockReq.EXPECT().ChatV1ChatCreate(ctx, tt.agent.CustomerID, tt.expectChatType, tt.agent.ID, tt.participantIDs, tt.chatroomName, tt.detail.Return(tt.responseChat, nil)
+			mockReq.EXPECT().ChatV1ChatCreate(ctx, tt.agent.CustomerID, tt.expectChatType, tt.agent.ID, tt.participantIDs, tt.chatroomName, tt.detail).Return(tt.responseChat, nil)
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
-			mockReq.EXPECT().ChatV1ChatroomGets(ctx, tt.responseCurTime, uint64(1), tt.expectFilters.Return(tt.responseChatrooms, nil)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockReq.EXPECT().ChatV1ChatroomGets(ctx, tt.responseCurTime, uint64(1), tt.expectFilters).Return(tt.responseChatrooms, nil)
 
 			res, err := h.ServiceAgentChatroomCreate(ctx, tt.agent, tt.participantIDs, tt.chatroomName, tt.detail)
 			if err != nil {

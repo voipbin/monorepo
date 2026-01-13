@@ -81,13 +81,13 @@ func Test_NumberCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().NumberSet(ctx, gomock.Any())
 			if err := h.NumberCreate(ctx, tt.number); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().NumberGet(ctx, tt.number.ID.Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().NumberGet(ctx, tt.number.ID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().NumberSet(ctx, gomock.Any())
 			res, err := h.NumberGet(ctx, tt.number.ID)
 			if err != nil {
@@ -179,7 +179,7 @@ func Test_NumberGets(t *testing.T) {
 
 			// creates numbers for test
 			for i := 0; i < len(tt.numbers); i++ {
-				mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 				mockCache.EXPECT().NumberSet(gomock.Any(), gomock.Any())
 				_ = h.NumberCreate(context.Background(), tt.numbers[i])
 			}
@@ -258,7 +258,7 @@ func Test_NumberDelete(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime).AnyTimes()
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime).AnyTimes()
 
 			mockCache.EXPECT().NumberSet(gomock.Any(), gomock.Any())
 			if err := h.NumberCreate(ctx, tt.number); err != nil {
@@ -270,7 +270,7 @@ func Test_NumberDelete(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().NumberGet(gomock.Any(), tt.number.ID.Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().NumberGet(gomock.Any(), tt.number.ID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().NumberSet(gomock.Any(), gomock.Any())
 			res, err := h.NumberGet(context.Background(), tt.number.ID)
 			if err != nil {
@@ -363,10 +363,10 @@ func Test_NumberUpdate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime).AnyTimes()
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime).AnyTimes()
 
 			mockCache.EXPECT().NumberSet(gomock.Any(), gomock.Any()).AnyTimes()
-			mockCache.EXPECT().NumberGet(gomock.Any(), tt.num.ID.Return(nil, fmt.Errorf("")).AnyTimes()
+			mockCache.EXPECT().NumberGet(gomock.Any(), tt.num.ID).Return(nil, fmt.Errorf("")).AnyTimes()
 			if err := h.NumberCreate(ctx, tt.num); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -461,10 +461,10 @@ func Test_NumberUpdateFlowID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime).AnyTimes()
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime).AnyTimes()
 
 			mockCache.EXPECT().NumberSet(gomock.Any(), gomock.Any()).AnyTimes()
-			mockCache.EXPECT().NumberGet(gomock.Any(), tt.num.ID.Return(nil, fmt.Errorf("")).AnyTimes()
+			mockCache.EXPECT().NumberGet(gomock.Any(), tt.num.ID).Return(nil, fmt.Errorf("")).AnyTimes()
 			if err := h.NumberCreate(ctx, tt.num); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -558,10 +558,10 @@ func Test_NumberUpdateCallFlowID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime).AnyTimes()
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime).AnyTimes()
 
 			mockCache.EXPECT().NumberSet(gomock.Any(), gomock.Any()).AnyTimes()
-			mockCache.EXPECT().NumberGet(gomock.Any(), tt.num.ID.Return(nil, fmt.Errorf("")).AnyTimes()
+			mockCache.EXPECT().NumberGet(gomock.Any(), tt.num.ID).Return(nil, fmt.Errorf("")).AnyTimes()
 			if err := h.NumberCreate(ctx, tt.num); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -654,10 +654,10 @@ func Test_NumberUpdateMessageFlowID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime).AnyTimes()
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime).AnyTimes()
 
 			mockCache.EXPECT().NumberSet(gomock.Any(), gomock.Any()).AnyTimes()
-			mockCache.EXPECT().NumberGet(gomock.Any(), tt.num.ID.Return(nil, fmt.Errorf("")).AnyTimes()
+			mockCache.EXPECT().NumberGet(gomock.Any(), tt.num.ID).Return(nil, fmt.Errorf("")).AnyTimes()
 			if err := h.NumberCreate(ctx, tt.num); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -727,13 +727,13 @@ func Test_NumberSetTMRenew(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().NumberSet(gomock.Any(), gomock.Any())
 			if err := h.NumberCreate(ctx, tt.num); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTimeRenew)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTimeRenew)
 			mockCache.EXPECT().NumberSet(gomock.Any(), gomock.Any())
 
 			updateFields := map[number.Field]any{
@@ -743,7 +743,7 @@ func Test_NumberSetTMRenew(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().NumberGet(gomock.Any(), tt.num.ID.Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().NumberGet(gomock.Any(), tt.num.ID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().NumberSet(gomock.Any(), gomock.Any())
 			res, err := h.NumberGet(context.Background(), tt.num.ID)
 			if err != nil {
@@ -861,7 +861,7 @@ func Test_NumberGetsByTMRenew(t *testing.T) {
 			ctx := context.Background()
 
 			for i, n := range tt.numbers {
-				mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTimes[i])
+				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTimes[i])
 				mockCache.EXPECT().NumberSet(gomock.Any(), gomock.Any())
 				if err := h.NumberCreate(ctx, &n); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)

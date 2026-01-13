@@ -110,11 +110,11 @@ func Test_dialNextDestination_call(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
-			mockDB.EXPECT().GroupcallSetCallIDsAndCallCountAndDialIndex(ctx, tt.groupcall.ID, tt.expectCallIDs, tt.expectCallCount, tt.expectDialIndex.Return(nil)
-			mockDB.EXPECT().GroupcallGet(ctx, tt.groupcall.ID.Return(tt.responseGroupcall, nil)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockDB.EXPECT().GroupcallSetCallIDsAndCallCountAndDialIndex(ctx, tt.groupcall.ID, tt.expectCallIDs, tt.expectCallCount, tt.expectDialIndex).Return(nil)
+			mockDB.EXPECT().GroupcallGet(ctx, tt.groupcall.ID).Return(tt.responseGroupcall, nil)
 
-			mockReq.EXPECT().CallV1CallCreateWithID(ctx, tt.responseUUID, tt.groupcall.CustomerID, tt.groupcall.FlowID, uuid.Nil, tt.groupcall.MasterCallID, tt.groupcall.Source, tt.expectDestination, tt.responseGroupcall.ID, false, false.Return(tt.responseCall, nil)
+			mockReq.EXPECT().CallV1CallCreateWithID(ctx, tt.responseUUID, tt.groupcall.CustomerID, tt.groupcall.FlowID, uuid.Nil, tt.groupcall.MasterCallID, tt.groupcall.Source, tt.expectDestination, tt.responseGroupcall.ID, false, false).Return(tt.responseCall, nil)
 
 			res, err := h.dialNextDestination(ctx, tt.groupcall)
 			if err != nil {
@@ -238,13 +238,13 @@ func Test_dialNextDestination_groupcall(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AgentV1AgentGet(ctx, tt.responseAgent.ID.Return(tt.responseAgent, nil)
+			mockReq.EXPECT().AgentV1AgentGet(ctx, tt.responseAgent.ID).Return(tt.responseAgent, nil)
 
-			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
-			mockDB.EXPECT().GroupcallSetGroupcallIDsAndGroupcallCountAndDialIndex(ctx, tt.groupcall.ID, tt.expectGroupcallIDs, tt.expectGroupcallCount, tt.expectDialIndex.Return(nil)
-			mockDB.EXPECT().GroupcallGet(ctx, tt.groupcall.ID.Return(tt.responseGroupcall, nil)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockDB.EXPECT().GroupcallSetGroupcallIDsAndGroupcallCountAndDialIndex(ctx, tt.groupcall.ID, tt.expectGroupcallIDs, tt.expectGroupcallCount, tt.expectDialIndex).Return(nil)
+			mockDB.EXPECT().GroupcallGet(ctx, tt.groupcall.ID).Return(tt.responseGroupcall, nil)
 
-			mockReq.EXPECT().CallV1GroupcallCreate(ctx, tt.responseUUID, tt.responseGroupcall.CustomerID, tt.responseGroupcall.FlowID, *tt.responseGroupcall.Source, tt.responseAgent.Addresses, tt.responseGroupcall.MasterCallID, tt.responseGroupcall.ID, tt.expectGroupcallRingMethod, tt.responseGroupcall.AnswerMethod.Return(&groupcall.Groupcall{}, nil)
+			mockReq.EXPECT().CallV1GroupcallCreate(ctx, tt.responseUUID, tt.responseGroupcall.CustomerID, tt.responseGroupcall.FlowID, *tt.responseGroupcall.Source, tt.responseAgent.Addresses, tt.responseGroupcall.MasterCallID, tt.responseGroupcall.ID, tt.expectGroupcallRingMethod, tt.responseGroupcall.AnswerMethod).Return(&groupcall.Groupcall{}, nil)
 
 			res, err := h.dialNextDestination(ctx, tt.groupcall)
 			if err != nil {
@@ -324,7 +324,7 @@ func Test_getDialDestinationsAddressTypeExtension(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().RegistrarV1ContactGets(ctx, tt.cusotmerID, tt.destination.TargetName.Return(tt.responseContacts, nil)
+			mockReq.EXPECT().RegistrarV1ContactGets(ctx, tt.cusotmerID, tt.destination.TargetName).Return(tt.responseContacts, nil)
 			res, err := h.getDialDestinationsAddressTypeExtension(ctx, tt.cusotmerID, tt.destination)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -419,7 +419,7 @@ func Test_getDialDestinationsAddressAndRingMethodTypeAgent(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AgentV1AgentGet(ctx, uuid.FromStringOrNil(tt.destination.Target).Return(tt.responseAgent, nil)
+			mockReq.EXPECT().AgentV1AgentGet(ctx, uuid.FromStringOrNil(tt.destination.Target)).Return(tt.responseAgent, nil)
 			resAddresses, resRingMethod, err := h.getDialDestinationsAddressAndRingMethodTypeAgent(ctx, tt.cusotmerID, tt.destination)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -510,9 +510,9 @@ func Test_getAddressOwner(t *testing.T) {
 			ctx := context.Background()
 
 			if tt.expectAgentID != uuid.Nil {
-				mockReq.EXPECT().AgentV1AgentGet(ctx, tt.expectAgentID.Return(tt.responseAgent, nil)
+				mockReq.EXPECT().AgentV1AgentGet(ctx, tt.expectAgentID).Return(tt.responseAgent, nil)
 			} else {
-				mockReq.EXPECT().AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, tt.customerID, *tt.address.Return(tt.responseAgent, nil)
+				mockReq.EXPECT().AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, tt.customerID, *tt.address).Return(tt.responseAgent, nil)
 			}
 
 			resOwnerType, resOwnerID, err := h.getAddressOwner(ctx, tt.customerID, tt.address)

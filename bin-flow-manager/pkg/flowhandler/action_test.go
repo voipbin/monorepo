@@ -63,7 +63,7 @@ func TestActionGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().FlowGet(ctx, tt.flowID.Return(tt.responseFlow, nil)
+			mockDB.EXPECT().FlowGet(ctx, tt.flowID).Return(tt.responseFlow, nil)
 			res, err := h.ActionGet(ctx, tt.flowID, tt.actionID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

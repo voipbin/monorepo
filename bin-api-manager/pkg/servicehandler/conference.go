@@ -11,6 +11,7 @@ import (
 	cfconference "monorepo/bin-conference-manager/models/conference"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -89,7 +90,13 @@ func (h *serviceHandler) ConferenceGets(ctx context.Context, a *amagent.Agent, s
 	}
 
 	// get conferences
-	tmps, err := h.reqHandler.ConferenceV1ConferenceGets(ctx, token, size, filters)
+	// Convert string filters to typed filters
+	typedFilters, err := h.convertConferenceFilters(filters)
+	if err != nil {
+		return nil, err
+	}
+
+	tmps, err := h.reqHandler.ConferenceV1ConferenceGets(ctx, token, size, typedFilters)
 	if err != nil {
 		log.Infof("Could not get conferences info. err: %v", err)
 		return nil, err
@@ -376,4 +383,27 @@ func (h *serviceHandler) ConferenceMediaStreamStart(ctx context.Context, a *amag
 	}
 
 	return nil
+}
+
+// convertConferenceFilters converts map[string]string to map[cfconference.Field]any
+func (h *serviceHandler) convertConferenceFilters(filters map[string]string) (map[cfconference.Field]any, error) {
+	// Convert to map[string]any first
+	srcAny := make(map[string]any, len(filters))
+	for k, v := range filters {
+		srcAny[k] = v
+	}
+
+	// Use reflection-based converter
+	typed, err := commondatabasehandler.ConvertMapToTypedMap(srcAny, cfconference.Conference{})
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert string keys to Field type
+	result := make(map[cfconference.Field]any, len(typed))
+	for k, v := range typed {
+		result[cfconference.Field(k)] = v
+	}
+
+	return result, nil
 }

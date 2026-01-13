@@ -65,7 +65,7 @@ func Test_GetServiceAgentsMe(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().ServiceAgentMeGet(req.Context(), &tt.agent.Return(tt.responseMe, nil)
+			mockSvc.EXPECT().ServiceAgentMeGet(req.Context(), &tt.agent).Return(tt.responseMe, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -139,7 +139,7 @@ func Test_mePUT(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
-			mockSvc.EXPECT().ServiceAgentMeUpdate(req.Context(), &tt.agent, tt.expectName, tt.expectDetail, tt.expectRingMethod.Return(tt.responseMe, nil)
+			mockSvc.EXPECT().ServiceAgentMeUpdate(req.Context(), &tt.agent, tt.expectName, tt.expectDetail, tt.expectRingMethod).Return(tt.responseMe, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -214,7 +214,7 @@ func Test_meAddressesPUT(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
-			mockSvc.EXPECT().ServiceAgentMeUpdateAddresses(req.Context(), &tt.agent, tt.expectAddresses.Return(tt.responseMe, nil)
+			mockSvc.EXPECT().ServiceAgentMeUpdateAddresses(req.Context(), &tt.agent, tt.expectAddresses).Return(tt.responseMe, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -284,7 +284,7 @@ func Test_meStatusPUT(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
-			mockSvc.EXPECT().ServiceAgentMeUpdateStatus(req.Context(), &tt.agent, tt.expectStatus.Return(tt.responseMe, nil)
+			mockSvc.EXPECT().ServiceAgentMeUpdateStatus(req.Context(), &tt.agent, tt.expectStatus).Return(tt.responseMe, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -354,7 +354,7 @@ func Test_mePasswordPUT(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
-			mockSvc.EXPECT().ServiceAgentMeUpdatePassword(req.Context(), &tt.agent, tt.expectPassword.Return(tt.responseMe, nil)
+			mockSvc.EXPECT().ServiceAgentMeUpdatePassword(req.Context(), &tt.agent, tt.expectPassword).Return(tt.responseMe, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

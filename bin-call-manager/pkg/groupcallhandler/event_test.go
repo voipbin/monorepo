@@ -76,15 +76,15 @@ func Test_EventCUCustomerDeleted(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().GroupcallGets(ctx, uint64(1000), "", gomock.Any().Return(tt.responseGroupcalls, nil)
+			mockDB.EXPECT().GroupcallGets(ctx, uint64(1000), "", gomock.Any()).Return(tt.responseGroupcalls, nil)
 
 			// delete each groupcalls
 			for _, gc := range tt.responseGroupcalls {
-				mockDB.EXPECT().GroupcallGet(ctx, gc.ID.Return(gc, nil)
+				mockDB.EXPECT().GroupcallGet(ctx, gc.ID).Return(gc, nil)
 
 				// dbDelete
-				mockDB.EXPECT().GroupcallDelete(ctx, gc.ID.Return(nil)
-				mockDB.EXPECT().GroupcallGet(ctx, gc.ID.Return(gc, nil)
+				mockDB.EXPECT().GroupcallDelete(ctx, gc.ID).Return(nil)
+				mockDB.EXPECT().GroupcallGet(ctx, gc.ID).Return(gc, nil)
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, gc.CustomerID, groupcall.EventTypeGroupcallDeleted, gc)
 
 			}

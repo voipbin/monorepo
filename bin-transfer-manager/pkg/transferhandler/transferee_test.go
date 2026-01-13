@@ -55,7 +55,7 @@ func Test_TransfereeHangup_type_blind(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1ConfbridgeTerminate(ctx, tt.tr.ConfbridgeID.Return(&cmconfbridge.Confbridge{}, nil)
+			mockReq.EXPECT().CallV1ConfbridgeTerminate(ctx, tt.tr.ConfbridgeID).Return(&cmconfbridge.Confbridge{}, nil)
 
 			if err := h.TransfereeHangup(ctx, tt.tr, tt.gc); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -120,14 +120,14 @@ func Test_transfereeHangupTypeAttended(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1CallGet(ctx, tt.tr.TransfererCallID.Return(tt.responseTransfererCall, nil)
-			mockReq.EXPECT().CallV1ConfbridgeGet(ctx, tt.responseTransfererCall.ConfbridgeID.Return(tt.responseConfbridge, nil)
+			mockReq.EXPECT().CallV1CallGet(ctx, tt.tr.TransfererCallID).Return(tt.responseTransfererCall, nil)
+			mockReq.EXPECT().CallV1ConfbridgeGet(ctx, tt.responseTransfererCall.ConfbridgeID).Return(tt.responseConfbridge, nil)
 			for _, callID := range tt.responseConfbridge.ChannelCallIDs {
 				if callID == tt.responseTransfererCall.ID {
 					continue
 				}
-				mockReq.EXPECT().CallV1CallMusicOnHoldOff(ctx, callID.Return(nil)
-				mockReq.EXPECT().CallV1CallMuteOff(ctx, callID, cmcall.MuteDirectionIn.Return(nil)
+				mockReq.EXPECT().CallV1CallMusicOnHoldOff(ctx, callID).Return(nil)
+				mockReq.EXPECT().CallV1CallMuteOff(ctx, callID, cmcall.MuteDirectionIn).Return(nil)
 			}
 
 			if err := h.transfereeHangupTypeAttended(ctx, tt.tr, tt.gc); err != nil {
@@ -189,11 +189,11 @@ func Test_TransfereeAnswer_TypeBlind(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1ConfbridgeFlagRemove(ctx, tt.tr.ConfbridgeID, cmconfbridge.FlagNoAutoLeave.Return(&cmconfbridge.Confbridge{}, nil)
-			mockDB.EXPECT().TransferGet(ctx, tt.tr.ID.Return(tt.tr, nil)
-			mockDB.EXPECT().TransferUpdate(ctx, tt.expectTransfer.Return(nil)
-			mockDB.EXPECT().TransferGet(ctx, tt.tr.ID.Return(tt.tr, nil)
-			mockReq.EXPECT().CallV1ConfbridgeAnswer(ctx, tt.tr.ConfbridgeID.Return(nil)
+			mockReq.EXPECT().CallV1ConfbridgeFlagRemove(ctx, tt.tr.ConfbridgeID, cmconfbridge.FlagNoAutoLeave).Return(&cmconfbridge.Confbridge{}, nil)
+			mockDB.EXPECT().TransferGet(ctx, tt.tr.ID).Return(tt.tr, nil)
+			mockDB.EXPECT().TransferUpdate(ctx, tt.expectTransfer).Return(nil)
+			mockDB.EXPECT().TransferGet(ctx, tt.tr.ID).Return(tt.tr, nil)
+			mockReq.EXPECT().CallV1ConfbridgeAnswer(ctx, tt.tr.ConfbridgeID).Return(nil)
 
 			if err := h.TransfereeAnswer(ctx, tt.tr, tt.gc); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

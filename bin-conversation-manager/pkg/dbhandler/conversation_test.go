@@ -103,14 +103,14 @@ func Test_ConversationCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ConversationSet(ctx, gomock.Any())
 			if err := h.ConversationCreate(ctx, tt.conversation); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().ConversationGet(ctx, tt.conversation.ID.Return(nil, fmt.Errorf(""))
-			mockCache.EXPECT().ConversationSet(ctx, gomock.Any().Return(nil)
+			mockCache.EXPECT().ConversationGet(ctx, tt.conversation.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ConversationSet(ctx, gomock.Any()).Return(nil)
 			res, err := h.ConversationGet(ctx, tt.conversation.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -243,7 +243,7 @@ func Test_ConversationGets(t *testing.T) {
 			ctx := context.Background()
 
 			for _, c := range tt.conversations {
-				mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 				mockCache.EXPECT().ConversationSet(gomock.Any(), gomock.Any())
 				if err := h.ConversationCreate(ctx, c); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -332,19 +332,19 @@ func Test_ConversationUpdate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ConversationSet(ctx, gomock.Any())
 			if err := h.ConversationCreate(ctx, tt.conversation); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
-			mockCache.EXPECT().ConversationSet(gomock.Any(), gomock.Any().Return(nil)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().ConversationSet(gomock.Any(), gomock.Any()).Return(nil)
 			if err := h.ConversationUpdate(ctx, tt.id, tt.field); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().ConversationGet(ctx, tt.conversation.ID.Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ConversationGet(ctx, tt.conversation.ID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().ConversationSet(ctx, gomock.Any())
 			res, err := h.ConversationGet(ctx, tt.id)
 			if err != nil {

@@ -117,8 +117,8 @@ func Test_processV1MessagesGet(t *testing.T) {
 				messageHandler: mockMessage,
 			}
 
-			mockUtil.EXPECT().URLParseFilters(gomock.Any().Return(tt.responseFilters)
-			mockMessage.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, gomock.Any().Return(tt.resultData, nil)
+			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
+			mockMessage.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, gomock.Any()).Return(tt.resultData, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -197,7 +197,7 @@ func Test_processV1MessagesPost(t *testing.T) {
 				messageHandler: mockMessageHandler,
 			}
 
-			mockMessageHandler.EXPECT().Send(gomock.Any(), tt.id, tt.customerID, tt.source, tt.destinations, tt.Text.Return(tt.responseSend, nil)
+			mockMessageHandler.EXPECT().Send(gomock.Any(), tt.id, tt.customerID, tt.source, tt.destinations, tt.Text).Return(tt.responseSend, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -254,7 +254,7 @@ func Test_processV1MessagesIDGet(t *testing.T) {
 				messageHandler: mockMessage,
 			}
 
-			mockMessage.EXPECT().Get(gomock.Any(), tt.id.Return(tt.resultData, nil)
+			mockMessage.EXPECT().Get(gomock.Any(), tt.id).Return(tt.resultData, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -310,7 +310,7 @@ func Test_processV1MessagesIDDelete(t *testing.T) {
 				messageHandler: mockMessage,
 			}
 
-			mockMessage.EXPECT().Delete(gomock.Any(), tt.id.Return(tt.responseDelete, nil)
+			mockMessage.EXPECT().Delete(gomock.Any(), tt.id).Return(tt.responseDelete, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

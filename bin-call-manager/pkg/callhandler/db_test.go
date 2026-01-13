@@ -213,10 +213,10 @@ func Test_Create(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CallCreate(ctx, tt.expectCall.Return(nil)
-			mockDB.EXPECT().CallGet(ctx, tt.id.Return(tt.responseCall, nil)
+			mockDB.EXPECT().CallCreate(ctx, tt.expectCall).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallCreated, tt.responseCall)
-			mockReq.EXPECT().CallV1CallHealth(ctx, tt.responseCall.ID, defaultHealthDelay, 0.Return(nil)
+			mockReq.EXPECT().CallV1CallHealth(ctx, tt.responseCall.ID, defaultHealthDelay, 0).Return(nil)
 
 			res, err := h.Create(
 				ctx,
@@ -317,7 +317,7 @@ func Test_Gets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CallGets(ctx, tt.size, tt.token, gomock.Any().Return(tt.responseGets, nil)
+			mockDB.EXPECT().CallGets(ctx, tt.size, tt.token, gomock.Any()).Return(tt.responseGets, nil)
 
 			res, err := h.Gets(ctx, tt.size, tt.token, tt.filters)
 			if err != nil {
@@ -379,7 +379,7 @@ func Test_Get(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CallGet(ctx, tt.id.Return(tt.responseCall, nil)
+			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
 
 			res, err := h.Get(ctx, tt.id)
 			if err != nil {
@@ -445,8 +445,8 @@ func Test_updateForRouteFailover(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CallSetForRouteFailover(ctx, tt.id, tt.channelID, tt.dialrouteID.Return(nil)
-			mockDB.EXPECT().CallGet(ctx, tt.id.Return(tt.responseCall, nil)
+			mockDB.EXPECT().CallSetForRouteFailover(ctx, tt.id, tt.channelID, tt.dialrouteID).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallUpdated, tt.responseCall)
 
 			res, err := h.updateForRouteFailover(ctx, tt.id, tt.channelID, tt.dialrouteID)
@@ -508,8 +508,8 @@ func Test_dbDelete(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CallDelete(ctx, tt.id.Return(nil)
-			mockDB.EXPECT().CallGet(ctx, tt.id.Return(tt.responseCall, nil)
+			mockDB.EXPECT().CallDelete(ctx, tt.id).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallDeleted, tt.responseCall)
 
 			res, err := h.dbDelete(ctx, tt.id)
@@ -592,11 +592,11 @@ func Test_UpdateRecordingID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CallSetRecordingID(ctx, tt.id, tt.recordingID.Return(nil)
+			mockDB.EXPECT().CallSetRecordingID(ctx, tt.id, tt.recordingID).Return(nil)
 			if tt.recordingID != uuid.Nil {
-				mockDB.EXPECT().CallAddRecordingIDs(ctx, tt.id, tt.recordingID.Return(nil)
+				mockDB.EXPECT().CallAddRecordingIDs(ctx, tt.id, tt.recordingID).Return(nil)
 			}
-			mockDB.EXPECT().CallGet(ctx, tt.id.Return(tt.responseCall, nil)
+			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
 
 			res, err := h.UpdateRecordingID(ctx, tt.id, tt.recordingID)
 			if err != nil {
@@ -659,8 +659,8 @@ func Test_UpdateExternalMediaID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CallSetExternalMediaID(ctx, tt.id, tt.externalMediaID.Return(nil)
-			mockDB.EXPECT().CallGet(ctx, tt.id.Return(tt.responseCall, nil)
+			mockDB.EXPECT().CallSetExternalMediaID(ctx, tt.id, tt.externalMediaID).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
 
 			res, err := h.UpdateExternalMediaID(ctx, tt.id, tt.externalMediaID)
 			if err != nil {
@@ -723,8 +723,8 @@ func Test_UpdateHangup(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CallSetHangup(ctx, tt.id, tt.reason, tt.hangupBy.Return(nil)
-			mockDB.EXPECT().CallGet(ctx, tt.id.Return(tt.responseCall, nil)
+			mockDB.EXPECT().CallSetHangup(ctx, tt.id, tt.reason, tt.hangupBy).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallHangup, tt.responseCall)
 
 			_, err := h.UpdateHangupInfo(ctx, tt.id, tt.reason, tt.hangupBy)
@@ -781,8 +781,8 @@ func Test_UpdateMuteDirection(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CallSetMuteDirection(ctx, tt.id, tt.muteDirection.Return(nil)
-			mockDB.EXPECT().CallGet(ctx, tt.id.Return(tt.responseCall, nil)
+			mockDB.EXPECT().CallSetMuteDirection(ctx, tt.id, tt.muteDirection).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallUpdated, tt.responseCall)
 
 			_, err := h.UpdateMuteDirection(ctx, tt.id, tt.muteDirection)

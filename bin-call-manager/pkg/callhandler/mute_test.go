@@ -67,10 +67,10 @@ func Test_MuteOn(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().CallGet(ctx, tt.id.Return(tt.responseCall, nil)
-			mockChannel.EXPECT().MuteOn(ctx, tt.responseCall.ChannelID, channel.MuteDirection(tt.direction).Return(nil)
-			mockDB.EXPECT().CallSetMuteDirection(ctx, tt.id, tt.direction.Return(nil)
-			mockDB.EXPECT().CallGet(ctx, tt.id.Return(tt.responseCall, nil)
+			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
+			mockChannel.EXPECT().MuteOn(ctx, tt.responseCall.ChannelID, channel.MuteDirection(tt.direction)).Return(nil)
+			mockDB.EXPECT().CallSetMuteDirection(ctx, tt.id, tt.direction).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallUpdated, tt.responseCall)
 
 			if err := h.MuteOn(ctx, tt.id, tt.direction); err != nil {
@@ -130,10 +130,10 @@ func Test_MuteOff(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().CallGet(ctx, tt.id.Return(tt.responseCall, nil)
-			mockChannel.EXPECT().MuteOff(ctx, tt.responseCall.ChannelID, channel.MuteDirection(tt.direction).Return(nil)
-			mockDB.EXPECT().CallSetMuteDirection(ctx, tt.id, tt.expectMuteDirection.Return(nil)
-			mockDB.EXPECT().CallGet(ctx, tt.id.Return(tt.responseCall, nil)
+			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
+			mockChannel.EXPECT().MuteOff(ctx, tt.responseCall.ChannelID, channel.MuteDirection(tt.direction)).Return(nil)
+			mockDB.EXPECT().CallSetMuteDirection(ctx, tt.id, tt.expectMuteDirection).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallUpdated, tt.responseCall)
 
 			if err := h.MuteOff(ctx, tt.id, tt.direction); err != nil {

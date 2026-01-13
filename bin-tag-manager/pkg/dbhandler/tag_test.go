@@ -63,13 +63,13 @@ func Test_TagCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().TagSet(ctx, gomock.Any())
 			if err := h.TagCreate(ctx, tt.tag); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().TagGet(ctx, tt.tag.ID.Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().TagGet(ctx, tt.tag.ID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().TagSet(ctx, gomock.Any())
 			res, err := h.TagGet(ctx, tt.tag.ID)
 			if err != nil {
@@ -165,7 +165,7 @@ func Test_TagGets(t *testing.T) {
 			ctx := context.Background()
 
 			for _, u := range tt.tags {
-				mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 				mockCache.EXPECT().TagSet(ctx, gomock.Any())
 				if err := h.TagCreate(ctx, u); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -246,21 +246,21 @@ func Test_TagSetBasicInfo(t *testing.T) {
 			ctx := context.Background()
 
 			for _, u := range tt.tags {
-				mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 				mockCache.EXPECT().TagSet(ctx, gomock.Any())
 				if err := h.TagCreate(ctx, u); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
 				}
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().TagSet(ctx, gomock.Any())
 			err := h.TagSetBasicInfo(ctx, tt.id, tt.tagName, tt.detail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().TagGet(ctx, tt.id.Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().TagGet(ctx, tt.id).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().TagSet(ctx, gomock.Any())
 			res, err := h.TagGet(ctx, tt.id)
 			if err != nil {
@@ -327,20 +327,20 @@ func Test_TagDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().TagSet(gomock.Any(), gomock.Any())
 			if err := h.TagCreate(ctx, tt.tag); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().TagSet(gomock.Any(), gomock.Any())
 			err := h.TagDelete(ctx, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().TagGet(gomock.Any(), tt.id.Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().TagGet(gomock.Any(), tt.id).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().TagSet(gomock.Any(), gomock.Any())
 			res, err := h.TagGet(ctx, tt.id)
 			if err != nil {

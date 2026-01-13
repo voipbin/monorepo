@@ -116,9 +116,9 @@ func Test_Create(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUIDID)
-			mockDB.EXPECT().AIcallCreate(ctx, tt.expectAIcall.Return(nil)
-			mockDB.EXPECT().AIcallGet(ctx, tt.responseUUIDID.Return(tt.responseAIcall, nil)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDID)
+			mockDB.EXPECT().AIcallCreate(ctx, tt.expectAIcall).Return(nil)
+			mockDB.EXPECT().AIcallGet(ctx, tt.responseUUIDID).Return(tt.responseAIcall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeStatusInitializing, tt.responseAIcall)
 
 			res, err := h.Create(ctx, tt.ai, tt.activeflowID, tt.referenceType, tt.referenceID, tt.confbridgeID, tt.pipecatcallID, tt.gender, tt.language)
@@ -176,7 +176,7 @@ func Test_Get(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().AIcallGet(ctx, tt.id.Return(tt.responseAIcall, nil)
+			mockDB.EXPECT().AIcallGet(ctx, tt.id).Return(tt.responseAIcall, nil)
 
 			res, err := h.Get(ctx, tt.id)
 			if err != nil {
@@ -233,7 +233,7 @@ func Test_GetByReferenceID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().AIcallGetByReferenceID(ctx, tt.referenceID.Return(tt.responseAIcall, nil)
+			mockDB.EXPECT().AIcallGetByReferenceID(ctx, tt.referenceID).Return(tt.responseAIcall, nil)
 
 			res, err := h.GetByReferenceID(ctx, tt.referenceID)
 			if err != nil {
@@ -288,8 +288,8 @@ func Test_Delete(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().AIcallDelete(ctx, tt.id.Return(nil)
-			mockDB.EXPECT().AIcallGet(ctx, tt.id.Return(tt.responseAIcall, nil)
+			mockDB.EXPECT().AIcallDelete(ctx, tt.id).Return(nil)
+			mockDB.EXPECT().AIcallGet(ctx, tt.id).Return(tt.responseAIcall, nil)
 
 			res, err := h.Delete(ctx, tt.id)
 			if err != nil {
@@ -353,7 +353,7 @@ func Test_Gets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().AIcallGets(ctx, tt.size, tt.token, tt.filters.Return(tt.responseAIcalls, nil)
+			mockDB.EXPECT().AIcallGets(ctx, tt.size, tt.token, tt.filters).Return(tt.responseAIcalls, nil)
 
 			res, err := h.Gets(ctx, tt.size, tt.token, tt.filters)
 			if err != nil {

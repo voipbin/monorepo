@@ -66,7 +66,7 @@ func Test_WebsockCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockWebsock.EXPECT().RunSubscription(ctx, gomock.Any(), gomock.Any(), tt.agent.Return(nil)
+			mockWebsock.EXPECT().RunSubscription(ctx, gomock.Any(), gomock.Any(), tt.agent).Return(nil)
 
 			if err := h.WebsockCreate(ctx, tt.agent, tt.writer, tt.request); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

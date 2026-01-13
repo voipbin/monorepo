@@ -101,8 +101,8 @@ func Test_Hook(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockAccount.EXPECT().Get(ctx, tt.expectAccountID.Return(tt.responseAccount, nil)
-			mockLine.EXPECT().Hook(ctx, tt.responseAccount, tt.data.Return(nil)
+			mockAccount.EXPECT().Get(ctx, tt.expectAccountID).Return(tt.responseAccount, nil)
+			mockLine.EXPECT().Hook(ctx, tt.responseAccount, tt.data).Return(nil)
 
 			if err := h.Hook(ctx, tt.uri, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -192,7 +192,7 @@ func Test_hookLine(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockLine.EXPECT().Hook(ctx, tt.account, tt.data.Return(nil)
+			mockLine.EXPECT().Hook(ctx, tt.account, tt.data).Return(nil)
 
 			if err := h.hookLine(ctx, tt.account, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

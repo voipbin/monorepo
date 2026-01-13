@@ -71,7 +71,7 @@ func Test_customerGET(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().CustomerGet(req.Context(), &tt.agent, tt.expectedCustomerID.Return(tt.responseCustomer, nil)
+			mockSvc.EXPECT().CustomerGet(req.Context(), &tt.agent, tt.expectedCustomerID).Return(tt.responseCustomer, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -156,7 +156,7 @@ func Test_customerPut(t *testing.T) {
 			req, _ := http.NewRequest(http.MethodPut, tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CustomerUpdate(req.Context(), &tt.agent, tt.expectedCustomerID, tt.expectecName, tt.expectedDetail, tt.expectedEmail, tt.expectedPhoneNumber, tt.expectedAddress, tt.expectedWebhookMethod, tt.expectedWebhookURI.Return(tt.responseCustomer, nil)
+			mockSvc.EXPECT().CustomerUpdate(req.Context(), &tt.agent, tt.expectedCustomerID, tt.expectecName, tt.expectedDetail, tt.expectedEmail, tt.expectedPhoneNumber, tt.expectedAddress, tt.expectedWebhookMethod, tt.expectedWebhookURI).Return(tt.responseCustomer, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -229,7 +229,7 @@ func Test_customerBillingAccountIDPut(t *testing.T) {
 			req, _ := http.NewRequest(http.MethodPut, tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CustomerUpdateBillingAccountID(req.Context(), &tt.agent, tt.expectedCustomerID, tt.expectedBillingAccountID.Return(tt.responseCustomer, nil)
+			mockSvc.EXPECT().CustomerUpdateBillingAccountID(req.Context(), &tt.agent, tt.expectedCustomerID, tt.expectedBillingAccountID).Return(tt.responseCustomer, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

@@ -74,7 +74,7 @@ func Test_variablesSet(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.activeflowID, tt.expectVariables.Return(nil)
+			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.activeflowID, tt.expectVariables).Return(nil)
 
 			if err := h.variablesSet(ctx, tt.activeflowID, tt.recording); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

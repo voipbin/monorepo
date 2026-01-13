@@ -56,7 +56,7 @@ func Test_processEvent_processEventCMCallHangup(t *testing.T) {
 				transcribeHandler: mockTranscribe,
 			}
 
-			mockTranscribe.EXPECT().EventCMCallHangup(gomock.Any(), tt.expectCall.Return(nil)
+			mockTranscribe.EXPECT().EventCMCallHangup(gomock.Any(), tt.expectCall).Return(nil)
 
 			if errProcess := h.processEvent(tt.event); errProcess != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errProcess)
@@ -104,7 +104,7 @@ func Test_processEvent_processEventCMConfbridgeTerminated(t *testing.T) {
 				transcribeHandler: mockTranscribe,
 			}
 
-			mockTranscribe.EXPECT().EventCMConfbridgeTerminated(gomock.Any(), tt.expectConfbridge.Return(nil)
+			mockTranscribe.EXPECT().EventCMConfbridgeTerminated(gomock.Any(), tt.expectConfbridge).Return(nil)
 
 			if errProcess := h.processEvent(tt.event); errProcess != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errProcess)

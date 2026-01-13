@@ -70,7 +70,7 @@ func Test_v1CampaigncallsGet_campaignID(t *testing.T) {
 				campaigncallHandler: mockCampaigncall,
 			}
 
-			mockCampaigncall.EXPECT().GetsByCampaignID(gomock.Any(), tt.campaignID, tt.pageToken, tt.pageSize.Return(tt.responseCampaigns, nil)
+			mockCampaigncall.EXPECT().GetsByCampaignID(gomock.Any(), tt.campaignID, tt.pageToken, tt.pageSize).Return(tt.responseCampaigns, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -137,7 +137,7 @@ func Test_v1CampaigncallsGet_customerID(t *testing.T) {
 				campaigncallHandler: mockCampaigncall,
 			}
 
-			mockCampaigncall.EXPECT().GetsByCustomerID(gomock.Any(), tt.customerID, tt.pageToken, tt.pageSize.Return(tt.responseCampaigns, nil)
+			mockCampaigncall.EXPECT().GetsByCustomerID(gomock.Any(), tt.customerID, tt.pageToken, tt.pageSize).Return(tt.responseCampaigns, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -199,7 +199,7 @@ func Test_v1CampaigncallsIDGet(t *testing.T) {
 				campaigncallHandler: mockCampaigncall,
 			}
 
-			mockCampaigncall.EXPECT().Get(gomock.Any(), tt.campaigncallID.Return(tt.responseCampaigncall, nil)
+			mockCampaigncall.EXPECT().Get(gomock.Any(), tt.campaigncallID).Return(tt.responseCampaigncall, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -261,7 +261,7 @@ func Test_v1CampaigncallsIDDelete(t *testing.T) {
 				campaigncallHandler: mockCampaigncall,
 			}
 
-			mockCampaigncall.EXPECT().Delete(gomock.Any(), tt.campaigncallID.Return(tt.responseCampaigncall, nil)
+			mockCampaigncall.EXPECT().Delete(gomock.Any(), tt.campaigncallID).Return(tt.responseCampaigncall, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

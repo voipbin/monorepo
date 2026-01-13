@@ -7,6 +7,7 @@ import (
 	nmnumber "monorepo/bin-number-manager/models/number"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -62,7 +63,13 @@ func (h *serviceHandler) NumberGets(ctx context.Context, a *amagent.Agent, size 
 	}
 
 	// get available numbers
-	tmps, err := h.reqHandler.NumberV1NumberGets(ctx, token, size, filters)
+	// Convert string filters to typed filters
+	typedFilters, err := h.convertNumberFilters(filters)
+	if err != nil {
+		return nil, err
+	}
+
+	tmps, err := h.reqHandler.NumberV1NumberGets(ctx, token, size, typedFilters)
 	if err != nil {
 		log.Infof("Could not get numbers info. err: %v", err)
 		return nil, err
@@ -307,4 +314,27 @@ func (h *serviceHandler) numberVerifyFlow(ctx context.Context, a *amagent.Agent,
 	}
 
 	return true
+}
+
+// convertNumberFilters converts map[string]string to map[nmnumber.Field]any
+func (h *serviceHandler) convertNumberFilters(filters map[string]string) (map[nmnumber.Field]any, error) {
+	// Convert to map[string]any first
+	srcAny := make(map[string]any, len(filters))
+	for k, v := range filters {
+		srcAny[k] = v
+	}
+
+	// Use reflection-based converter
+	typed, err := commondatabasehandler.ConvertMapToTypedMap(srcAny, nmnumber.Number{})
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert string keys to Field type
+	result := make(map[nmnumber.Field]any, len(typed))
+	for k, v := range typed {
+		result[nmnumber.Field(k)] = v
+	}
+
+	return result, nil
 }

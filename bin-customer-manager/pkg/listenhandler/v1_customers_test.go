@@ -109,8 +109,8 @@ func Test_processV1CustomersGet(t *testing.T) {
 				customerHandler: mockCustomer,
 			}
 
-			mockUtil.EXPECT().URLParseFilters(gomock.Any().Return(tt.responseFilters)
-			mockCustomer.EXPECT().Gets(gomock.Any(), tt.size, tt.token, gomock.Any().Return(tt.responseCustomers, nil)
+			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
+			mockCustomer.EXPECT().Gets(gomock.Any(), tt.size, tt.token, gomock.Any()).Return(tt.responseCustomers, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -206,7 +206,7 @@ func Test_processV1CustomersPost(t *testing.T) {
 				tt.address,
 				tt.webhookMethod,
 				tt.webhookURI,
-			.Return(tt.responseCustomer, nil)
+			).Return(tt.responseCustomer, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -268,7 +268,7 @@ func Test_processV1CustomersIDGet(t *testing.T) {
 				customerHandler: mockCustomer,
 			}
 
-			mockCustomer.EXPECT().Get(gomock.Any(), tt.id.Return(tt.customer, nil)
+			mockCustomer.EXPECT().Get(gomock.Any(), tt.id).Return(tt.customer, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -330,7 +330,7 @@ func Test_processV1CustomersIDDelete(t *testing.T) {
 				customerHandler: mockCustomer,
 			}
 
-			mockCustomer.EXPECT().Delete(gomock.Any(), tt.customerID.Return(tt.responseCustomer, nil)
+			mockCustomer.EXPECT().Delete(gomock.Any(), tt.customerID).Return(tt.responseCustomer, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -407,7 +407,7 @@ func Test_processV1CustomersIDPut(t *testing.T) {
 				customerHandler: mockCustomer,
 			}
 
-			mockCustomer.EXPECT().UpdateBasicInfo(gomock.Any(), tt.id, tt.userName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI.Return(tt.responseCustomer, nil)
+			mockCustomer.EXPECT().UpdateBasicInfo(gomock.Any(), tt.id, tt.userName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI).Return(tt.responseCustomer, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -473,7 +473,7 @@ func Test_processV1CustomersIDIsValidBalance(t *testing.T) {
 				customerHandler: mockCustomer,
 			}
 
-			mockCustomer.EXPECT().IsValidBalance(gomock.Any(), tt.id, tt.referenceType, tt.country, tt.count.Return(tt.responseValid, nil)
+			mockCustomer.EXPECT().IsValidBalance(gomock.Any(), tt.id, tt.referenceType, tt.country, tt.count).Return(tt.responseValid, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -536,7 +536,7 @@ func Test_processV1CustomersIDBillingAccountIDPut(t *testing.T) {
 				customerHandler: mockCustomer,
 			}
 
-			mockCustomer.EXPECT().UpdateBillingAccountID(gomock.Any(), tt.id, tt.billingAccountID.Return(tt.responseCustomer, nil)
+			mockCustomer.EXPECT().UpdateBillingAccountID(gomock.Any(), tt.id, tt.billingAccountID).Return(tt.responseCustomer, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -7,6 +7,7 @@ import (
 	chatchat "monorepo/bin-chat-manager/models/chat"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -112,7 +113,15 @@ func (h *serviceHandler) ChatGetsByCustomerID(ctx context.Context, a *amagent.Ag
 		"customer_id": a.CustomerID.String(),
 		"deleted":     "false",
 	}
-	tmps, err := h.reqHandler.ChatV1ChatGets(ctx, token, size, filters)
+
+	// Convert string filters to typed filters
+	typedFilters, err := h.convertChatFilters(filters)
+	if err != nil {
+		log.Errorf("Could not convert filters. err: %v", err)
+		return nil, err
+	}
+
+	tmps, err := h.reqHandler.ChatV1ChatGets(ctx, token, size, typedFilters)
 	if err != nil {
 		log.Errorf("Could not get chats info from the chat-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find chats info. err: %v", err)
@@ -126,6 +135,29 @@ func (h *serviceHandler) ChatGetsByCustomerID(ctx context.Context, a *amagent.Ag
 	}
 
 	return res, nil
+}
+
+// convertChatFilters converts map[string]string to map[chatchat.Field]any
+func (h *serviceHandler) convertChatFilters(filters map[string]string) (map[chatchat.Field]any, error) {
+	// Convert to map[string]any first
+	srcAny := make(map[string]any, len(filters))
+	for k, v := range filters {
+		srcAny[k] = v
+	}
+
+	// Use reflection-based converter
+	typed, err := commondatabasehandler.ConvertMapToTypedMap(srcAny, chatchat.Chat{})
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert string keys to Field type
+	result := make(map[chatchat.Field]any, len(typed))
+	for k, v := range typed {
+		result[chatchat.Field(k)] = v
+	}
+
+	return result, nil
 }
 
 // ChatGet gets the chat of the given id.

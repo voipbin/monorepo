@@ -86,7 +86,7 @@ func Test_AISummaryCreate_referencetype_call(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1CallGet(ctx, tt.referenceID.Return(tt.responseCall, nil)
+			mockReq.EXPECT().CallV1CallGet(ctx, tt.referenceID).Return(tt.responseCall, nil)
 			mockReq.EXPECT().AIV1SummaryCreate(
 				ctx,
 				tt.agent.CustomerID,
@@ -96,7 +96,7 @@ func Test_AISummaryCreate_referencetype_call(t *testing.T) {
 				tt.referenceID,
 				tt.language,
 				gomock.Any(),
-			.Return(tt.responseSummary, nil)
+			).Return(tt.responseSummary, nil)
 
 			res, err := h.AISummaryCreate(ctx, tt.agent, tt.onEndFlowID, tt.referenceType, tt.referenceID, tt.language)
 			if err != nil {
@@ -118,7 +118,7 @@ func Test_AISummaryGetsByCustomerID(t *testing.T) {
 		agent   *amagent.Agent
 		size    uint64
 		token   string
-		filters map[string]string
+		filters map[amsummary.Field]any
 
 		response  []amsummary.Summary
 		expectRes []*amsummary.WebhookMessage
@@ -135,9 +135,9 @@ func Test_AISummaryGetsByCustomerID(t *testing.T) {
 			},
 			size:  10,
 			token: "2020-09-20 03:23:20.995000",
-			filters: map[string]string{
-				"deleted":     "false",
-				"customer_id": "2017e1fe-0ccb-11f0-9c4f-73268b39a2cc",
+			filters: map[amsummary.Field]any{
+				amsummary.FieldDeleted:    false,
+				amsummary.FieldCustomerID: "2017e1fe-0ccb-11f0-9c4f-73268b39a2cc",
 			},
 
 			response: []amsummary.Summary{
@@ -171,7 +171,7 @@ func Test_AISummaryGetsByCustomerID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AIV1SummaryGets(ctx, tt.token, tt.size, tt.filters.Return(tt.response, nil)
+			mockReq.EXPECT().AIV1SummaryGets(ctx, tt.token, tt.size, tt.filters).Return(tt.response, nil)
 
 			res, err := h.AISummaryGetsByCustomerID(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {
@@ -236,7 +236,7 @@ func Test_AISummaryGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AIV1SummaryGet(ctx, tt.aisummaryID.Return(tt.response, nil)
+			mockReq.EXPECT().AIV1SummaryGet(ctx, tt.aisummaryID).Return(tt.response, nil)
 
 			res, err := h.AISummaryGet(ctx, tt.agent, tt.aisummaryID)
 			if err != nil {
@@ -302,8 +302,8 @@ func Test_AISummaryDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AIV1SummaryGet(ctx, tt.aisummaryID.Return(tt.responseAISummary, nil)
-			mockReq.EXPECT().AIV1SummaryDelete(ctx, tt.aisummaryID.Return(tt.responseAISummary, nil)
+			mockReq.EXPECT().AIV1SummaryGet(ctx, tt.aisummaryID).Return(tt.responseAISummary, nil)
+			mockReq.EXPECT().AIV1SummaryDelete(ctx, tt.aisummaryID).Return(tt.responseAISummary, nil)
 
 			res, err := h.AISummaryDelete(ctx, tt.agent, tt.aisummaryID)
 			if err != nil {

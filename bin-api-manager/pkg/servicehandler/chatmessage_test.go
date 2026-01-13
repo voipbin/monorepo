@@ -82,7 +82,7 @@ func Test_ChatmessageCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ChatV1MessagechatCreate(ctx, tt.agent.CustomerID, tt.chatID, tt.source, tt.messageType, tt.text, tt.medias.Return(tt.response, nil)
+			mockReq.EXPECT().ChatV1MessagechatCreate(ctx, tt.agent.CustomerID, tt.chatID, tt.source, tt.messageType, tt.text, tt.medias).Return(tt.response, nil)
 
 			res, err := h.ChatmessageCreate(ctx, tt.agent, tt.chatID, tt.source, tt.messageType, tt.text, tt.medias)
 			if err != nil {
@@ -109,7 +109,7 @@ func Test_ChatmessageGetsByChatID(t *testing.T) {
 		responseChat *chatchat.Chat
 		response     []chatmessagechat.Messagechat
 
-		expectFilters map[string]string
+		expectFilters map[chatmessagechat.Field]any
 		expectRes     []*chatmessagechat.WebhookMessage
 	}{
 		{
@@ -139,9 +139,9 @@ func Test_ChatmessageGetsByChatID(t *testing.T) {
 				},
 			},
 
-			expectFilters: map[string]string{
-				"deleted": "false",
-				"chat_id": "8ec6c9be-3774-11ed-a626-73312e33dc72",
+			expectFilters: map[chatmessagechat.Field]any{
+				chatmessagechat.FieldDeleted: false,
+				chatmessagechat.FieldChatID: "8ec6c9be-3774-11ed-a626-73312e33dc72",
 			},
 			expectRes: []*chatmessagechat.WebhookMessage{
 				{
@@ -168,8 +168,8 @@ func Test_ChatmessageGetsByChatID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ChatV1ChatGet(ctx, tt.chatID.Return(tt.responseChat, nil)
-			mockReq.EXPECT().ChatV1MessagechatGets(ctx, tt.token, tt.size, tt.expectFilters.Return(tt.response, nil)
+			mockReq.EXPECT().ChatV1ChatGet(ctx, tt.chatID).Return(tt.responseChat, nil)
+			mockReq.EXPECT().ChatV1MessagechatGets(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.response, nil)
 
 			res, err := h.ChatmessageGetsByChatID(ctx, tt.agent, tt.chatID, tt.size, tt.token)
 			if err != nil {
@@ -233,7 +233,7 @@ func Test_ChatmessageGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().ChatV1MessagechatGet(ctx, tt.chatmessageID.Return(tt.response, nil)
+			mockReq.EXPECT().ChatV1MessagechatGet(ctx, tt.chatmessageID).Return(tt.response, nil)
 
 			res, err := h.ChatmessageGet(ctx, tt.agent, tt.chatmessageID)
 			if err != nil {
@@ -292,8 +292,8 @@ func Test_ChatmessageDelete(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ChatV1MessagechatGet(ctx, tt.messagechatID.Return(tt.responseChat, nil)
-			mockReq.EXPECT().ChatV1MessagechatDelete(ctx, tt.messagechatID.Return(tt.responseChat, nil)
+			mockReq.EXPECT().ChatV1MessagechatGet(ctx, tt.messagechatID).Return(tt.responseChat, nil)
+			mockReq.EXPECT().ChatV1MessagechatDelete(ctx, tt.messagechatID).Return(tt.responseChat, nil)
 
 			_, err := h.ChatmessageDelete(ctx, tt.agent, tt.messagechatID)
 			if err != nil {

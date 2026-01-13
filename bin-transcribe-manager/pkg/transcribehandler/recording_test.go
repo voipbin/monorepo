@@ -106,22 +106,22 @@ func Test_startRecording(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().TranscribeGetByReferenceIDAndLanguage(ctx, tt.recordingID, tt.language.Return(nil, fmt.Errorf(""))
+			mockDB.EXPECT().TranscribeGetByReferenceIDAndLanguage(ctx, tt.recordingID, tt.language).Return(nil, fmt.Errorf(""))
 
 			// create
-			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
-			mockDB.EXPECT().TranscribeCreate(ctx, tt.expectTranscribe.Return(nil)
-			mockDB.EXPECT().TranscribeGet(ctx, tt.responseUUID.Return(tt.responseTranscribe, nil)
-			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.activeflowID, gomock.Any(.Return(nil)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockDB.EXPECT().TranscribeCreate(ctx, tt.expectTranscribe).Return(nil)
+			mockDB.EXPECT().TranscribeGet(ctx, tt.responseUUID).Return(tt.responseTranscribe, nil)
+			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.activeflowID, gomock.Any()).Return(nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseTranscribe.CustomerID, transcribe.EventTypeTranscribeCreated, tt.responseTranscribe)
 
-			mockTranscript.EXPECT().Recording(ctx, tt.customerID, tt.responseTranscribe.ID, tt.recordingID, tt.language.Return([]*transcript.Transcript{}, nil)
+			mockTranscript.EXPECT().Recording(ctx, tt.customerID, tt.responseTranscribe.ID, tt.recordingID, tt.language).Return([]*transcript.Transcript{}, nil)
 
 			// update status
 			mockDB.EXPECT().TranscribeUpdate(ctx, tt.responseTranscribe.ID, map[transcribe.Field]any{
 				transcribe.FieldStatus: transcribe.StatusDone,
-			}.Return(nil)
-			mockDB.EXPECT().TranscribeGet(ctx, tt.responseTranscribe.ID.Return(tt.responseTranscribe, nil)
+			}).Return(nil)
+			mockDB.EXPECT().TranscribeGet(ctx, tt.responseTranscribe.ID).Return(tt.responseTranscribe, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseTranscribe.CustomerID, transcribe.EventTypeTranscribeDone, tt.responseTranscribe)
 
 			res, err := h.startRecording(ctx, tt.customerID, tt.activeflowID, tt.onEndFlowID, tt.recordingID, tt.language)

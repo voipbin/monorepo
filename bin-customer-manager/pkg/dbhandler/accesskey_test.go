@@ -65,13 +65,13 @@ func Test_AccesskeyCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().AccesskeySet(ctx, gomock.Any()).AnyTimes()
 			if err := h.AccesskeyCreate(ctx, tt.accesskey); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().AccesskeyGet(ctx, tt.accesskey.ID.Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().AccesskeyGet(ctx, tt.accesskey.ID).Return(nil, fmt.Errorf(""))
 			res, err := h.AccesskeyGet(ctx, tt.accesskey.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -123,14 +123,14 @@ func Test_AccesskeyDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
-			mockCache.EXPECT().AccesskeyGet(ctx, tt.accesskey.ID.Return(nil, fmt.Errorf("")).AnyTimes()
-			mockCache.EXPECT().AccesskeySet(ctx, gomock.Any().Return(nil).AnyTimes()
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().AccesskeyGet(ctx, tt.accesskey.ID).Return(nil, fmt.Errorf("")).AnyTimes()
+			mockCache.EXPECT().AccesskeySet(ctx, gomock.Any()).Return(nil).AnyTimes()
 			if err := h.AccesskeyCreate(ctx, tt.accesskey); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			if err := h.AccesskeyDelete(ctx, tt.accesskey.ID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -246,7 +246,7 @@ func Test_AccesskeyGets(t *testing.T) {
 			ctx := context.Background()
 
 			for _, u := range tt.accesskeys {
-				mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 				mockCache.EXPECT().AccesskeySet(ctx, gomock.Any())
 				if err := h.AccesskeyCreate(ctx, u); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -338,20 +338,20 @@ func Test_AccesskeyUpdate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
-			mockCache.EXPECT().AccesskeySet(ctx, gomock.Any().Return(nil)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().AccesskeySet(ctx, gomock.Any()).Return(nil)
 			if err := h.AccesskeyCreate(ctx, tt.accesskey); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
-			mockCache.EXPECT().AccesskeySet(ctx, gomock.Any().Return(nil)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().AccesskeySet(ctx, gomock.Any()).Return(nil)
 			if err := h.AccesskeyUpdate(ctx, tt.accesskey.ID, tt.updateFields); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().AccesskeyGet(ctx, gomock.Any().Return(nil, fmt.Errorf(""))
-			mockCache.EXPECT().AccesskeySet(ctx, gomock.Any().Return(nil)
+			mockCache.EXPECT().AccesskeyGet(ctx, gomock.Any()).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().AccesskeySet(ctx, gomock.Any()).Return(nil)
 			res, err := h.AccesskeyGet(ctx, tt.accesskey.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

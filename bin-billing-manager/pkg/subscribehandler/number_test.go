@@ -53,7 +53,7 @@ func Test_processEventNMNumberCreated(t *testing.T) {
 				billingHandler: mockBilling,
 			}
 
-			mockBilling.EXPECT().EventNMNumberCreated(gomock.Any(), tt.expectNumber.Return(nil)
+			mockBilling.EXPECT().EventNMNumberCreated(gomock.Any(), tt.expectNumber).Return(nil)
 			if err := h.processEvent(tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -100,7 +100,7 @@ func Test_processEventNMNumberRenewed(t *testing.T) {
 				billingHandler: mockBilling,
 			}
 
-			mockBilling.EXPECT().EventNMNumberRenewed(gomock.Any(), tt.expectNumber.Return(nil)
+			mockBilling.EXPECT().EventNMNumberRenewed(gomock.Any(), tt.expectNumber).Return(nil)
 
 			if err := h.processEvent(tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

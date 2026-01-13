@@ -30,7 +30,7 @@ func Test_GetAgents(t *testing.T) {
 		responseQueue  *queue.Queue
 		responseAgents []amagent.Agent
 
-		expectFilters map[string]string
+		expectFilters map[amagent.Field]any
 		expectRes     []amagent.Agent
 	}{
 		{
@@ -57,10 +57,10 @@ func Test_GetAgents(t *testing.T) {
 				},
 			},
 
-			map[string]string{
-				"deleted":     "false",
-				"customer_id": "dd185d70-b499-11ec-a4b6-735983739876",
-				"tag_ids":     "5d443cfe-b499-11ec-ac74-83f95d8a0381,4fc21d6c-b244-11ee-9bd1-1b47f77edd77",
+			map[amagent.Field]any{
+				amagent.FieldDeleted:    false,
+				amagent.FieldCustomerID: "dd185d70-b499-11ec-a4b6-735983739876",
+				amagent.FieldTagIDs:     "5d443cfe-b499-11ec-ac74-83f95d8a0381,4fc21d6c-b244-11ee-9bd1-1b47f77edd77",
 			},
 			[]amagent.Agent{
 				{
@@ -93,11 +93,11 @@ func Test_GetAgents(t *testing.T) {
 				},
 			},
 
-			map[string]string{
-				"deleted":     "false",
-				"customer_id": "dd185d70-b499-11ec-a4b6-735983739876",
-				"status":      string(amagent.StatusAvailable),
-				"tag_ids":     "5d443cfe-b499-11ec-ac74-83f95d8a0381",
+			map[amagent.Field]any{
+				amagent.FieldDeleted:    false,
+				amagent.FieldCustomerID: "dd185d70-b499-11ec-a4b6-735983739876",
+				amagent.FieldStatus:     string(amagent.StatusAvailable),
+				amagent.FieldTagIDs:     "5d443cfe-b499-11ec-ac74-83f95d8a0381",
 			},
 			[]amagent.Agent{
 				{
@@ -128,10 +128,10 @@ func Test_GetAgents(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().QueueGet(ctx, tt.id.Return(tt.responseQueue, nil)
+			mockDB.EXPECT().QueueGet(ctx, tt.id).Return(tt.responseQueue, nil)
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(utilhandler.TimeGetCurTime())
-			mockReq.EXPECT().AgentV1AgentGets(ctx, gomock.Any(), uint64(100), tt.expectFilters.Return(tt.responseAgents, nil)
+			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+			mockReq.EXPECT().AgentV1AgentGets(ctx, gomock.Any(), uint64(100), tt.expectFilters).Return(tt.responseAgents, nil)
 
 			res, err := h.GetAgents(ctx, tt.id, tt.status)
 			if err != nil {

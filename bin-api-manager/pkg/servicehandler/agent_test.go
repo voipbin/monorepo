@@ -116,7 +116,7 @@ func Test_AgentCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().AgentV1AgentCreate(ctx, 30000, tt.agent.CustomerID, tt.username, tt.password, tt.agentName, tt.detail, tt.ringMethod, tt.permission, tt.tagIDs, tt.addresses.Return(tt.response, nil)
+			mockReq.EXPECT().AgentV1AgentCreate(ctx, 30000, tt.agent.CustomerID, tt.username, tt.password, tt.agentName, tt.detail, tt.ringMethod, tt.permission, tt.tagIDs, tt.addresses).Return(tt.response, nil)
 
 			res, err := h.AgentCreate(ctx, tt.agent, tt.username, tt.password, tt.agentName, tt.detail, tt.ringMethod, tt.permission, tt.tagIDs, tt.addresses)
 			if err != nil {
@@ -180,7 +180,7 @@ func Test_AgentGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AgentV1AgentGet(ctx, tt.agentID.Return(tt.response, nil)
+			mockReq.EXPECT().AgentV1AgentGet(ctx, tt.agentID).Return(tt.response, nil)
 
 			res, err := h.AgentGet(ctx, tt.agent, tt.agentID)
 			if err != nil {
@@ -199,10 +199,11 @@ func Test_AgentGets(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent   *amagent.Agent
-		size    uint64
-		token   string
-		filters map[string]string
+		agent         *amagent.Agent
+		size          uint64
+		token         string
+		filters       map[string]string
+		expectFilters map[amagent.Field]any
 
 		response  []amagent.Agent
 		expectRes []*amagent.WebhookMessage
@@ -220,6 +221,9 @@ func Test_AgentGets(t *testing.T) {
 			"2020-09-20 03:23:20.995000",
 			map[string]string{
 				"deleted": "false",
+			},
+			map[amagent.Field]any{
+				amagent.FieldDeleted: false,
 			},
 
 			[]amagent.Agent{
@@ -250,6 +254,9 @@ func Test_AgentGets(t *testing.T) {
 			"2020-09-20 03:23:20.995000",
 			map[string]string{
 				"deleted": "false",
+			},
+			map[amagent.Field]any{
+				amagent.FieldDeleted: false,
 			},
 
 			[]amagent.Agent{
@@ -294,7 +301,7 @@ func Test_AgentGets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().AgentV1AgentGets(ctx, tt.token, tt.size, tt.filters.Return(tt.response, nil)
+			mockReq.EXPECT().AgentV1AgentGets(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.response, nil)
 
 			res, err := h.AgentGets(ctx, tt.agent, tt.size, tt.token, tt.filters)
 			if err != nil {
@@ -353,8 +360,8 @@ func TestAgentDelete(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().AgentV1AgentGet(ctx, tt.agentID.Return(tt.resAgentGet, nil)
-			mockReq.EXPECT().AgentV1AgentDelete(ctx, tt.agentID.Return(&amagent.Agent{}, nil)
+			mockReq.EXPECT().AgentV1AgentGet(ctx, tt.agentID).Return(tt.resAgentGet, nil)
+			mockReq.EXPECT().AgentV1AgentDelete(ctx, tt.agentID).Return(&amagent.Agent{}, nil)
 
 			_, err := h.AgentDelete(ctx, tt.agent, tt.agentID)
 			if err != nil {
@@ -429,8 +436,8 @@ func Test_AgentUpdate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().AgentV1AgentGet(ctx, tt.agentID.Return(tt.resAgentGet, nil)
-			mockReq.EXPECT().AgentV1AgentUpdate(ctx, tt.agentID, tt.agentName, tt.detail, tt.ringMethod.Return(tt.resAgentPut, nil)
+			mockReq.EXPECT().AgentV1AgentGet(ctx, tt.agentID).Return(tt.resAgentGet, nil)
+			mockReq.EXPECT().AgentV1AgentUpdate(ctx, tt.agentID, tt.agentName, tt.detail, tt.ringMethod).Return(tt.resAgentPut, nil)
 
 			res, err := h.AgentUpdate(ctx, tt.agent, tt.agentID, tt.agentName, tt.detail, tt.ringMethod)
 			if err != nil {
@@ -503,8 +510,8 @@ func Test_AgentUpdateAddresses(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().AgentV1AgentGet(ctx, tt.agentID.Return(tt.responseAgent, nil)
-			mockReq.EXPECT().AgentV1AgentUpdateAddresses(ctx, tt.agentID, tt.addresses.Return(tt.responseAgent, nil)
+			mockReq.EXPECT().AgentV1AgentGet(ctx, tt.agentID).Return(tt.responseAgent, nil)
+			mockReq.EXPECT().AgentV1AgentUpdateAddresses(ctx, tt.agentID, tt.addresses).Return(tt.responseAgent, nil)
 
 			res, err := h.AgentUpdateAddresses(ctx, tt.agent, tt.agentID, tt.addresses)
 			if err != nil {
@@ -573,8 +580,8 @@ func Test_AgentUpdateTagIDs(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().AgentV1AgentGet(ctx, tt.agentID.Return(tt.responseAgent, nil)
-			mockReq.EXPECT().AgentV1AgentUpdateTagIDs(ctx, tt.agentID, tt.tagIDs.Return(tt.responseAgent, nil)
+			mockReq.EXPECT().AgentV1AgentGet(ctx, tt.agentID).Return(tt.responseAgent, nil)
+			mockReq.EXPECT().AgentV1AgentUpdateTagIDs(ctx, tt.agentID, tt.tagIDs).Return(tt.responseAgent, nil)
 
 			res, err := h.AgentUpdateTagIDs(ctx, tt.agent, tt.agentID, tt.tagIDs)
 			if err != nil {
@@ -641,8 +648,8 @@ func Test_AgentUpdateStatus(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().AgentV1AgentGet(ctx, tt.agentID.Return(tt.responseAgent, nil)
-			mockReq.EXPECT().AgentV1AgentUpdateStatus(ctx, tt.agentID, amagent.Status(tt.status).Return(tt.responseAgent, nil)
+			mockReq.EXPECT().AgentV1AgentGet(ctx, tt.agentID).Return(tt.responseAgent, nil)
+			mockReq.EXPECT().AgentV1AgentUpdateStatus(ctx, tt.agentID, amagent.Status(tt.status)).Return(tt.responseAgent, nil)
 
 			res, err := h.AgentUpdateStatus(ctx, tt.agent, tt.agentID, tt.status)
 			if err != nil {
@@ -709,8 +716,8 @@ func Test_AgentUpdatePermission(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().AgentV1AgentGet(ctx, tt.agentID.Return(tt.responseAgent, nil)
-			mockReq.EXPECT().AgentV1AgentUpdatePermission(ctx, tt.agentID, tt.permission.Return(tt.responseAgent, nil)
+			mockReq.EXPECT().AgentV1AgentGet(ctx, tt.agentID).Return(tt.responseAgent, nil)
+			mockReq.EXPECT().AgentV1AgentUpdatePermission(ctx, tt.agentID, tt.permission).Return(tt.responseAgent, nil)
 
 			res, err := h.AgentUpdatePermission(ctx, tt.agent, tt.agentID, tt.permission)
 			if err != nil {
@@ -776,8 +783,8 @@ func Test_AgentUpdatePassword(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AgentV1AgentGet(ctx, tt.agentID.Return(tt.responseAgent, nil)
-			mockReq.EXPECT().AgentV1AgentUpdatePassword(ctx, 30000, tt.agentID, tt.password.Return(tt.responseAgent, nil)
+			mockReq.EXPECT().AgentV1AgentGet(ctx, tt.agentID).Return(tt.responseAgent, nil)
+			mockReq.EXPECT().AgentV1AgentUpdatePassword(ctx, 30000, tt.agentID, tt.password).Return(tt.responseAgent, nil)
 
 			res, err := h.AgentUpdatePassword(ctx, tt.agent, tt.agentID, tt.password)
 			assert.NoError(t, err)

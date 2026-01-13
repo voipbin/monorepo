@@ -133,21 +133,21 @@ func Test_Create(t *testing.T) {
 
 			// validate
 			if tt.outplanID != uuid.Nil {
-				mockOutplan.EXPECT().Get(ctx, tt.outplanID.Return(tt.responseOutplan, nil)
+				mockOutplan.EXPECT().Get(ctx, tt.outplanID).Return(tt.responseOutplan, nil)
 			}
 			if tt.outdialID != uuid.Nil {
-				mockReq.EXPECT().OutdialV1OutdialGet(ctx, tt.outdialID.Return(tt.responseOutdial, nil)
+				mockReq.EXPECT().OutdialV1OutdialGet(ctx, tt.outdialID).Return(tt.responseOutdial, nil)
 			}
 			if tt.queueID != uuid.Nil {
-				mockReq.EXPECT().QueueV1QueueGet(ctx, tt.queueID.Return(tt.responseQueue, nil)
+				mockReq.EXPECT().QueueV1QueueGet(ctx, tt.queueID).Return(tt.responseQueue, nil)
 			}
 			if tt.nextCampaignID != uuid.Nil {
-				mockDB.EXPECT().CampaignGet(ctx, tt.nextCampaignID.Return(tt.responseNextCampaign, nil)
+				mockDB.EXPECT().CampaignGet(ctx, tt.nextCampaignID).Return(tt.responseNextCampaign, nil)
 			}
 
-			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.customerID, fmflow.TypeCampaign, "", "", gomock.Any(), uuid.Nil, true.Return(&fmflow.Flow{}, nil)
-			mockDB.EXPECT().CampaignCreate(ctx, gomock.Any().Return(nil)
-			mockDB.EXPECT().CampaignGet(ctx, gomock.Any().Return(tt.responseCampaign, nil)
+			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.customerID, fmflow.TypeCampaign, "", "", gomock.Any(), uuid.Nil, true).Return(&fmflow.Flow{}, nil)
+			mockDB.EXPECT().CampaignCreate(ctx, gomock.Any()).Return(nil)
+			mockDB.EXPECT().CampaignGet(ctx, gomock.Any()).Return(tt.responseCampaign, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCampaign.CustomerID, campaign.EventTypeCampaignCreated, tt.responseCampaign)
 
 			_, err := h.Create(
@@ -213,11 +213,11 @@ func Test_Delete(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CampaignGet(ctx, tt.id.Return(tt.responseCampaign, nil)
-			mockDB.EXPECT().CampaignDelete(ctx, tt.id.Return(nil)
-			mockDB.EXPECT().CampaignGet(ctx, gomock.Any().Return(tt.responseCampaign, nil)
+			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.responseCampaign, nil)
+			mockDB.EXPECT().CampaignDelete(ctx, tt.id).Return(nil)
+			mockDB.EXPECT().CampaignGet(ctx, gomock.Any()).Return(tt.responseCampaign, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCampaign.CustomerID, campaign.EventTypeCampaignDeleted, tt.responseCampaign)
-			mockReq.EXPECT().FlowV1FlowDelete(ctx, tt.responseCampaign.FlowID.Return(&fmflow.Flow{}, nil)
+			mockReq.EXPECT().FlowV1FlowDelete(ctx, tt.responseCampaign.FlowID).Return(&fmflow.Flow{}, nil)
 
 			_, err := h.Delete(ctx, tt.id)
 			if err != nil {
@@ -258,7 +258,7 @@ func Test_GetsByCustomerID(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockDB.EXPECT().CampaignGetsByCustomerID(ctx, tt.customerID, tt.token, tt.limit.Return(nil, nil)
+			mockDB.EXPECT().CampaignGetsByCustomerID(ctx, tt.customerID, tt.token, tt.limit).Return(nil, nil)
 
 			_, err := h.GetsByCustomerID(ctx, tt.customerID, tt.token, tt.limit)
 			if err != nil {
@@ -324,8 +324,8 @@ func Test_UpdateBasicInfo(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CampaignUpdateBasicInfo(ctx, tt.id, tt.campaignName, tt.detail, tt.campaignType, tt.serviceLevel, tt.endHandle.Return(nil)
-			mockDB.EXPECT().CampaignGet(ctx, tt.id.Return(tt.response, nil)
+			mockDB.EXPECT().CampaignUpdateBasicInfo(ctx, tt.id, tt.campaignName, tt.detail, tt.campaignType, tt.serviceLevel, tt.endHandle).Return(nil)
+			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.response.CustomerID, campaign.EventTypeCampaignUpdated, tt.response)
 
 			res, err := h.UpdateBasicInfo(ctx, tt.id, tt.campaignName, tt.detail, tt.campaignType, tt.serviceLevel, tt.endHandle)
@@ -427,32 +427,32 @@ func Test_UpdateResourceInfo(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CampaignGet(ctx, tt.id.Return(tt.responseCampaign, nil)
+			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.responseCampaign, nil)
 
 			// validate
 			if tt.outplanID != uuid.Nil {
-				mockOutplan.EXPECT().Get(ctx, tt.outplanID.Return(tt.responseOutplan, nil)
+				mockOutplan.EXPECT().Get(ctx, tt.outplanID).Return(tt.responseOutplan, nil)
 			}
 			if tt.outdialID != uuid.Nil {
-				mockReq.EXPECT().OutdialV1OutdialGet(ctx, tt.outdialID.Return(tt.responseOutdial, nil)
+				mockReq.EXPECT().OutdialV1OutdialGet(ctx, tt.outdialID).Return(tt.responseOutdial, nil)
 			}
 			if tt.queueID != uuid.Nil {
-				mockReq.EXPECT().QueueV1QueueGet(ctx, tt.queueID.Return(tt.responseQueue, nil)
+				mockReq.EXPECT().QueueV1QueueGet(ctx, tt.queueID).Return(tt.responseQueue, nil)
 			}
 			if tt.nextCampaignID != uuid.Nil {
-				mockDB.EXPECT().CampaignGet(ctx, tt.nextCampaignID.Return(tt.responseNextCampaign, nil)
+				mockDB.EXPECT().CampaignGet(ctx, tt.nextCampaignID).Return(tt.responseNextCampaign, nil)
 
 			}
 
-			mockDB.EXPECT().CampaignUpdateResourceInfo(ctx, tt.id, tt.outplanID, tt.outdialID, tt.queueID, tt.nextCampaignID.Return(nil)
+			mockDB.EXPECT().CampaignUpdateResourceInfo(ctx, tt.id, tt.outplanID, tt.outdialID, tt.queueID, tt.nextCampaignID).Return(nil)
 
 			tmpActions, err := h.createFlowActions(ctx, tt.responseCampaign.Actions, tt.queueID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
-			mockReq.EXPECT().FlowV1FlowUpdateActions(ctx, tt.responseCampaign.FlowID, tmpActions.Return(&fmflow.Flow{}, nil)
+			mockReq.EXPECT().FlowV1FlowUpdateActions(ctx, tt.responseCampaign.FlowID, tmpActions).Return(&fmflow.Flow{}, nil)
 
-			mockDB.EXPECT().CampaignGet(ctx, tt.id.Return(tt.responseCampaign, nil)
+			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.responseCampaign, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCampaign.CustomerID, campaign.EventTypeCampaignUpdated, tt.responseCampaign)
 
 			res, err := h.UpdateResourceInfo(ctx, tt.id, tt.outplanID, tt.outdialID, tt.queueID, tt.nextCampaignID)
@@ -508,11 +508,11 @@ func Test_UpdateNextCampaignID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CampaignUpdateNextCampaignID(ctx, tt.id, tt.nextCampaignID.Return(nil)
-			mockDB.EXPECT().CampaignGet(ctx, tt.id.Return(tt.response, nil)
+			mockDB.EXPECT().CampaignUpdateNextCampaignID(ctx, tt.id, tt.nextCampaignID).Return(nil)
+			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.response.CustomerID, campaign.EventTypeCampaignUpdated, tt.response)
 			if tt.response.Execute == campaign.ExecuteRun {
-				mockReq.EXPECT().CampaignV1CampaignExecute(ctx, tt.id, 1000.Return(nil)
+				mockReq.EXPECT().CampaignV1CampaignExecute(ctx, tt.id, 1000).Return(nil)
 			}
 
 			res, err := h.UpdateNextCampaignID(ctx, tt.id, tt.nextCampaignID)
@@ -568,8 +568,8 @@ func Test_UpdateServiceLevel(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CampaignUpdateServiceLevel(ctx, tt.id, tt.serviceLevel.Return(nil)
-			mockDB.EXPECT().CampaignGet(ctx, tt.id.Return(tt.response, nil)
+			mockDB.EXPECT().CampaignUpdateServiceLevel(ctx, tt.id, tt.serviceLevel).Return(nil)
+			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.response.CustomerID, campaign.EventTypeCampaignUpdated, tt.response)
 
 			res, err := h.UpdateServiceLevel(ctx, tt.id, tt.serviceLevel)
@@ -679,10 +679,10 @@ func Test_UpdateActions(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CampaignGet(ctx, tt.id.Return(tt.response, nil)
-			mockReq.EXPECT().FlowV1FlowUpdateActions(ctx, tt.response.FlowID, tt.expectActions.Return(tt.responseFlow, nil)
+			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
+			mockReq.EXPECT().FlowV1FlowUpdateActions(ctx, tt.response.FlowID, tt.expectActions).Return(tt.responseFlow, nil)
 			mockDB.EXPECT().CampaignUpdateActions(ctx, tt.id, tt.actions)
-			mockDB.EXPECT().CampaignGet(ctx, tt.id.Return(tt.response, nil)
+			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.response.CustomerID, campaign.EventTypeCampaignUpdated, tt.response)
 
 			res, err := h.UpdateActions(ctx, tt.id, tt.actions)
@@ -820,17 +820,17 @@ func Test_updateExecuteStopAndCampaignIsStoppable(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CampaignUpdateExecute(ctx, tt.id, campaign.ExecuteStop.Return(nil)
+			mockDB.EXPECT().CampaignUpdateExecute(ctx, tt.id, campaign.ExecuteStop).Return(nil)
 
 			// isstoppable
-			mockDB.EXPECT().CampaignGet(ctx, tt.id.Return(tt.response, nil)
-			mockUtil.EXPECT().TimeGetCurTime(.Return(utilhandler.TimeGetCurTime())
-			mockCampaigncall.EXPECT().GetsOngoingByCampaignID(ctx, tt.id, gomock.Any(), uint64(1).Return([]*campaigncall.Campaigncall{}, nil)
+			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
+			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+			mockCampaigncall.EXPECT().GetsOngoingByCampaignID(ctx, tt.id, gomock.Any(), uint64(1)).Return([]*campaigncall.Campaigncall{}, nil)
 
 			// updateStatusStop
-			mockDB.EXPECT().CampaignGet(ctx, tt.id.Return(tt.response, nil)
-			mockDB.EXPECT().CampaignUpdateStatus(ctx, tt.id, campaign.StatusStop.Return(nil)
-			mockDB.EXPECT().CampaignGet(ctx, tt.id.Return(tt.response, nil)
+			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
+			mockDB.EXPECT().CampaignUpdateStatus(ctx, tt.id, campaign.StatusStop).Return(nil)
+			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.response.CustomerID, campaign.EventTypeCampaignStatusStop, tt.response)
 
 			if err := h.updateExecuteStop(ctx, tt.id); err != nil {
@@ -881,15 +881,15 @@ func Test_updateExecuteStopAndCampaignIsNotStoppable(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CampaignUpdateExecute(ctx, tt.id, campaign.ExecuteStop.Return(nil)
+			mockDB.EXPECT().CampaignUpdateExecute(ctx, tt.id, campaign.ExecuteStop).Return(nil)
 
 			// is stoppable
-			mockDB.EXPECT().CampaignGet(ctx, tt.id.Return(tt.response, nil)
+			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
 
 			// UpdateStatusStopping
-			mockDB.EXPECT().CampaignGet(ctx, tt.id.Return(tt.response, nil)
-			mockDB.EXPECT().CampaignUpdateStatus(ctx, tt.id, campaign.StatusStopping.Return(nil)
-			mockDB.EXPECT().CampaignGet(ctx, tt.id.Return(tt.response, nil)
+			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
+			mockDB.EXPECT().CampaignUpdateStatus(ctx, tt.id, campaign.StatusStopping).Return(nil)
+			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.response.CustomerID, campaign.EventTypeCampaignStatusStopping, tt.response)
 
 			if err := h.updateExecuteStop(ctx, tt.id); err != nil {
@@ -961,7 +961,7 @@ func Test_isValidOutdialID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().OutdialV1OutdialGet(ctx, tt.outdialID.Return(tt.responseOutdial, nil)
+			mockReq.EXPECT().OutdialV1OutdialGet(ctx, tt.outdialID).Return(tt.responseOutdial, nil)
 
 			if res := h.isValidOutdialID(ctx, tt.outdialID, tt.campaignID, tt.customerID); res != true {
 				t.Errorf("Wrong match. expect: ok, got: %v", res)
@@ -1025,7 +1025,7 @@ func Test_isValidOutplanID(t *testing.T) {
 			ctx := context.Background()
 
 			if tt.outplanID != uuid.Nil {
-				mockOutplan.EXPECT().Get(ctx, tt.outplanID.Return(tt.responseOutplan, nil)
+				mockOutplan.EXPECT().Get(ctx, tt.outplanID).Return(tt.responseOutplan, nil)
 			}
 
 			if res := h.isValidOutplanID(ctx, tt.outplanID, tt.customerID); res != true {
@@ -1087,7 +1087,7 @@ func Test_isValidQueueID(t *testing.T) {
 			ctx := context.Background()
 
 			if tt.queueID != uuid.Nil {
-				mockReq.EXPECT().QueueV1QueueGet(ctx, tt.queueID.Return(tt.responseQueue, nil)
+				mockReq.EXPECT().QueueV1QueueGet(ctx, tt.queueID).Return(tt.responseQueue, nil)
 			}
 
 			if res := h.isValidQueueID(ctx, tt.queueID, tt.customerID); res != true {
@@ -1149,7 +1149,7 @@ func Test_isValidNextCampaignID(t *testing.T) {
 			ctx := context.Background()
 
 			if tt.nextCampaignID != uuid.Nil {
-				mockDB.EXPECT().CampaignGet(ctx, tt.nextCampaignID.Return(tt.responseCampaign, nil)
+				mockDB.EXPECT().CampaignGet(ctx, tt.nextCampaignID).Return(tt.responseCampaign, nil)
 			}
 
 			if res := h.isValidNextCampaignID(ctx, tt.nextCampaignID, tt.customerID); res != true {
@@ -1208,7 +1208,7 @@ func Test_updateReferencedResources(t *testing.T) {
 			ctx := context.Background()
 
 			if tt.campaign.OutdialID != uuid.Nil {
-				mockReq.EXPECT().OutdialV1OutdialUpdateCampaignID(ctx, tt.campaign.OutdialID, tt.campaign.ID.Return(tt.responseOutdial, nil)
+				mockReq.EXPECT().OutdialV1OutdialUpdateCampaignID(ctx, tt.campaign.OutdialID, tt.campaign.ID).Return(tt.responseOutdial, nil)
 			}
 
 			if res := h.updateReferencedResources(ctx, tt.campaign); res != true {
@@ -1296,19 +1296,19 @@ func Test_validateResources(t *testing.T) {
 			ctx := context.Background()
 
 			if tt.outplanID != uuid.Nil {
-				mockOutplan.EXPECT().Get(ctx, tt.outplanID.Return(tt.responseOutplan, nil)
+				mockOutplan.EXPECT().Get(ctx, tt.outplanID).Return(tt.responseOutplan, nil)
 			}
 
 			if tt.outdialID != uuid.Nil {
-				mockReq.EXPECT().OutdialV1OutdialGet(ctx, tt.outdialID.Return(tt.responseOutdial, nil)
+				mockReq.EXPECT().OutdialV1OutdialGet(ctx, tt.outdialID).Return(tt.responseOutdial, nil)
 			}
 
 			if tt.queueID != uuid.Nil {
-				mockReq.EXPECT().QueueV1QueueGet(ctx, tt.queueID.Return(tt.responseQueue, nil)
+				mockReq.EXPECT().QueueV1QueueGet(ctx, tt.queueID).Return(tt.responseQueue, nil)
 			}
 
 			if tt.nextCampaignID != uuid.Nil {
-				mockDB.EXPECT().CampaignGet(ctx, tt.nextCampaignID.Return(tt.responseNextCampaign, nil)
+				mockDB.EXPECT().CampaignGet(ctx, tt.nextCampaignID).Return(tt.responseNextCampaign, nil)
 			}
 
 			if res := h.validateResources(ctx, tt.id, tt.customerID, tt.outplanID, tt.outdialID, tt.queueID, tt.nextCampaignID); res != true {

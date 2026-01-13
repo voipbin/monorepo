@@ -71,13 +71,13 @@ func Test_EventCUCustomerDeleted(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().TrunkGets(ctx, uint64(1000), gomock.Any(), tt.expectFilter.Return(tt.responseTrunks, nil)
+			mockDB.EXPECT().TrunkGets(ctx, uint64(1000), gomock.Any(), tt.expectFilter).Return(tt.responseTrunks, nil)
 
 			for _, t := range tt.responseTrunks {
 
-				mockDB.EXPECT().TrunkDelete(ctx, t.ID.Return(nil)
-				mockDB.EXPECT().TrunkGet(ctx, t.ID.Return(t, nil)
-				mockDB.EXPECT().SIPAuthDelete(ctx, t.ID.Return(nil)
+				mockDB.EXPECT().TrunkDelete(ctx, t.ID).Return(nil)
+				mockDB.EXPECT().TrunkGet(ctx, t.ID).Return(t, nil)
+				mockDB.EXPECT().SIPAuthDelete(ctx, t.ID).Return(nil)
 				mockNotify.EXPECT().PublishEvent(ctx, trunk.EventTypeTrunkDeleted, t)
 			}
 

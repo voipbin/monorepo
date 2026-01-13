@@ -76,15 +76,15 @@ func Test_EventCUCustomerDeleted(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConfbridgeGets(ctx, uint64(1000), "", gomock.Any().Return(tt.responseConfbridges, nil)
+			mockDB.EXPECT().ConfbridgeGets(ctx, uint64(1000), "", gomock.Any()).Return(tt.responseConfbridges, nil)
 
 			// delete each calls
 			for _, cf := range tt.responseConfbridges {
-				mockDB.EXPECT().ConfbridgeGet(ctx, cf.ID.Return(cf, nil)
+				mockDB.EXPECT().ConfbridgeGet(ctx, cf.ID).Return(cf, nil)
 
 				// dbDelete
-				mockDB.EXPECT().ConfbridgeDelete(ctx, cf.ID.Return(nil)
-				mockDB.EXPECT().ConfbridgeGet(ctx, cf.ID.Return(cf, nil)
+				mockDB.EXPECT().ConfbridgeDelete(ctx, cf.ID).Return(nil)
+				mockDB.EXPECT().ConfbridgeGet(ctx, cf.ID).Return(cf, nil)
 				mockNotify.EXPECT().PublishEvent(ctx, confbridge.EventTypeConfbridgeDeleted, cf)
 			}
 

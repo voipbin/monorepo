@@ -168,10 +168,10 @@ func (h *recordingHandler) deleteRecordingFiles(r *recording.Recording) {
 	ctx := context.Background()
 
 	// get files
-	filters := map[string]string{
-		"reference_type": string(smfile.ReferenceTypeRecording),
-		"reference_id":   r.ID.String(),
-		"deleted":        "false",
+	filters := map[smfile.Field]any{
+		smfile.FieldReferenceType: string(smfile.ReferenceTypeRecording),
+		smfile.FieldReferenceID:   r.ID.String(),
+		smfile.FieldDeleted:       false,
 	}
 
 	files, err := h.reqHandler.StorageV1FileGets(ctx, "", 1000, filters)

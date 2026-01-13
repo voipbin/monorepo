@@ -11,6 +11,7 @@ import (
 	chatmessagechatroom "monorepo/bin-chat-manager/models/messagechatroom"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -176,7 +177,13 @@ func (h *serviceHandler) chatroommessageGetsWithFilters(ctx context.Context, siz
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	res, err := h.reqHandler.ChatV1MessagechatroomGets(ctx, token, size, filters)
+	// Convert string filters to typed filters
+	typedFilters, err := h.convertMessagechatroomFilters(filters)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := h.reqHandler.ChatV1MessagechatroomGets(ctx, token, size, typedFilters)
 	if err != nil {
 		return nil, fmt.Errorf("could not find chatroommessages info. err: %v", err)
 	}
@@ -223,4 +230,27 @@ func (h *serviceHandler) chatroommessageDelete(ctx context.Context, id uuid.UUID
 	}
 
 	return res, nil
+}
+
+// convertMessagechatroomFilters converts map[string]string to map[chatmessagechatroom.Field]any
+func (h *serviceHandler) convertMessagechatroomFilters(filters map[string]string) (map[chatmessagechatroom.Field]any, error) {
+	// Convert to map[string]any first
+	srcAny := make(map[string]any, len(filters))
+	for k, v := range filters {
+		srcAny[k] = v
+	}
+
+	// Use reflection-based converter
+	typed, err := commondatabasehandler.ConvertMapToTypedMap(srcAny, chatmessagechatroom.Messagechatroom{})
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert string keys to Field type
+	result := make(map[chatmessagechatroom.Field]any, len(typed))
+	for k, v := range typed {
+		result[chatmessagechatroom.Field(k)] = v
+	}
+
+	return result, nil
 }

@@ -101,7 +101,7 @@ func Test_AICreate(t *testing.T) {
 				tt.ttsType,
 				tt.ttsVoiceID,
 				tt.sttType,
-			.Return(tt.response, nil)
+			).Return(tt.response, nil)
 
 			res, err := h.AICreate(
 				ctx,
@@ -136,7 +136,7 @@ func Test_AIGetsByCustomerID(t *testing.T) {
 		agent   *amagent.Agent
 		size    uint64
 		token   string
-		filters map[string]string
+		filters map[amai.Field]any
 
 		response  []amai.AI
 		expectRes []*amai.WebhookMessage
@@ -152,9 +152,9 @@ func Test_AIGetsByCustomerID(t *testing.T) {
 			},
 			size:  10,
 			token: "2020-09-20 03:23:20.995000",
-			filters: map[string]string{
-				"deleted":     "false",
-				"customer_id": "5f621078-8e5f-11ee-97b2-cfe7337b701c",
+			filters: map[amai.Field]any{
+				amai.FieldDeleted:    false,
+				amai.FieldCustomerID: "5f621078-8e5f-11ee-97b2-cfe7337b701c",
 			},
 
 			response: []amai.AI{
@@ -189,7 +189,7 @@ func Test_AIGetsByCustomerID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().AIV1AIGets(ctx, tt.token, tt.size, tt.filters.Return(tt.response, nil)
+			mockReq.EXPECT().AIV1AIGets(ctx, tt.token, tt.size, tt.filters).Return(tt.response, nil)
 
 			res, err := h.AIGetsByCustomerID(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {
@@ -253,7 +253,7 @@ func Test_AIGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AIV1AIGet(ctx, tt.aiID.Return(tt.response, nil)
+			mockReq.EXPECT().AIV1AIGet(ctx, tt.aiID).Return(tt.response, nil)
 
 			res, err := h.AIGet(ctx, tt.agent, tt.aiID)
 			if err != nil {
@@ -319,8 +319,8 @@ func Test_AIDelete(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().AIV1AIGet(ctx, tt.aiID.Return(tt.responseChat, nil)
-			mockReq.EXPECT().AIV1AIDelete(ctx, tt.aiID.Return(tt.responseChat, nil)
+			mockReq.EXPECT().AIV1AIGet(ctx, tt.aiID).Return(tt.responseChat, nil)
+			mockReq.EXPECT().AIV1AIDelete(ctx, tt.aiID).Return(tt.responseChat, nil)
 
 			res, err := h.AIDelete(ctx, tt.agent, tt.aiID)
 			if err != nil {

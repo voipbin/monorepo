@@ -88,7 +88,7 @@ func Test_processV1ConferencesGet(t *testing.T) {
 				conferenceHandler: mockConf,
 			}
 
-			mockUtil.EXPECT().URLParseFilters(gomock.Any().Return(tt.responseFilters)
+			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
 			mockConf.EXPECT().Gets(gomock.Any(), tt.pageSize, tt.pageToken, gomock.Any()).Return(tt.responseConferences, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -178,7 +178,7 @@ func Test_processV1ConferencesPost(t *testing.T) {
 				tt.expectTimeout,
 				tt.expectPreFlowID,
 				tt.expectPostFlowID,
-			.Return(tt.responseConference, nil)
+			).Return(tt.responseConference, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -237,7 +237,7 @@ func Test_processV1ConferencesIDDelete(t *testing.T) {
 				conferenceHandler: mockConf,
 			}
 
-			mockConf.EXPECT().Delete(gomock.Any(), tt.id.Return(tt.responseConference, nil)
+			mockConf.EXPECT().Delete(gomock.Any(), tt.id).Return(tt.responseConference, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -318,7 +318,7 @@ func Test_processV1ConferencesIDPut(t *testing.T) {
 				tt.expectedTimeout,
 				tt.expectPreFlowID,
 				tt.expectPostFlowID,
-			.Return(tt.responseConference, nil)
+			).Return(tt.responseConference, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -378,7 +378,7 @@ func Test_processV1ConferencesIDGet(t *testing.T) {
 				conferenceHandler: mockConf,
 			}
 
-			mockConf.EXPECT().Get(gomock.Any(), tt.expectedID.Return(tt.responseConference, nil)
+			mockConf.EXPECT().Get(gomock.Any(), tt.expectedID).Return(tt.responseConference, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -441,7 +441,7 @@ func Test_processV1ConferencesIDRecordingIDPut(t *testing.T) {
 				conferenceHandler: mockConf,
 			}
 
-			mockConf.EXPECT().UpdateRecordingID(gomock.Any(), tt.expectID, tt.expectRecordingID.Return(tt.responseConference, nil)
+			mockConf.EXPECT().UpdateRecordingID(gomock.Any(), tt.expectID, tt.expectRecordingID).Return(tt.responseConference, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -510,7 +510,7 @@ func Test_processV1ConferencesIDRecordingStartPost(t *testing.T) {
 				conferenceHandler: mockConf,
 			}
 
-			mockConf.EXPECT().RecordingStart(gomock.Any(), tt.expectedID, tt.expectedActiveflowID, tt.expectedFormat, tt.expectedDuration, tt.expectedOnEndFlowID.Return(tt.responseConference, nil)
+			mockConf.EXPECT().RecordingStart(gomock.Any(), tt.expectedID, tt.expectedActiveflowID, tt.expectedFormat, tt.expectedDuration, tt.expectedOnEndFlowID).Return(tt.responseConference, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -569,7 +569,7 @@ func Test_processV1ConferencesIDRecordingStopPost(t *testing.T) {
 				conferenceHandler: mockConf,
 			}
 
-			mockConf.EXPECT().RecordingStop(gomock.Any(), tt.expectID.Return(tt.responseConference, nil)
+			mockConf.EXPECT().RecordingStop(gomock.Any(), tt.expectID).Return(tt.responseConference, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -631,7 +631,7 @@ func Test_processV1ConferencesIDTranscribeStartPost(t *testing.T) {
 				conferenceHandler: mockConf,
 			}
 
-			mockConf.EXPECT().TranscribeStart(gomock.Any(), tt.expectID, tt.expectLang.Return(tt.responseConference, nil)
+			mockConf.EXPECT().TranscribeStart(gomock.Any(), tt.expectID, tt.expectLang).Return(tt.responseConference, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -690,7 +690,7 @@ func Test_processV1ConferencesIDTranscribeStopPost(t *testing.T) {
 				conferenceHandler: mockConf,
 			}
 
-			mockConf.EXPECT().TranscribeStop(gomock.Any(), tt.expectID.Return(tt.responseConference, nil)
+			mockConf.EXPECT().TranscribeStop(gomock.Any(), tt.expectID).Return(tt.responseConference, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -749,7 +749,7 @@ func Test_processV1ConferencesIDStopPost(t *testing.T) {
 				conferenceHandler: mockConf,
 			}
 
-			mockConf.EXPECT().Terminating(gomock.Any(), tt.expectID.Return(tt.responseConference, nil)
+			mockConf.EXPECT().Terminating(gomock.Any(), tt.expectID).Return(tt.responseConference, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

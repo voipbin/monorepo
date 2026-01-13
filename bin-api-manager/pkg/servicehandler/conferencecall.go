@@ -7,6 +7,7 @@ import (
 	cfconferencecall "monorepo/bin-conference-manager/models/conferencecall"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -82,7 +83,13 @@ func (h *serviceHandler) ConferencecallGets(ctx context.Context, a *amagent.Agen
 	}
 
 	// get conferences
-	tmps, err := h.reqHandler.ConferenceV1ConferencecallGets(ctx, token, size, filters)
+	// Convert string filters to typed filters
+	typedFilters, err := h.convertConferencecallFilters(filters)
+	if err != nil {
+		return nil, err
+	}
+
+	tmps, err := h.reqHandler.ConferenceV1ConferencecallGets(ctx, token, size, typedFilters)
 	if err != nil {
 		log.Infof("Could not get conferences info. err: %v", err)
 		return nil, err
@@ -128,4 +135,27 @@ func (h *serviceHandler) ConferencecallKick(ctx context.Context, a *amagent.Agen
 
 	res := tmp.ConvertWebhookMessage()
 	return res, nil
+}
+
+// convertConferencecallFilters converts map[string]string to map[cfconferencecall.Field]any
+func (h *serviceHandler) convertConferencecallFilters(filters map[string]string) (map[cfconferencecall.Field]any, error) {
+	// Convert to map[string]any first
+	srcAny := make(map[string]any, len(filters))
+	for k, v := range filters {
+		srcAny[k] = v
+	}
+
+	// Use reflection-based converter
+	typed, err := commondatabasehandler.ConvertMapToTypedMap(srcAny, cfconferencecall.Conferencecall{})
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert string keys to Field type
+	result := make(map[cfconferencecall.Field]any, len(typed))
+	for k, v := range typed {
+		result[cfconferencecall.Field(k)] = v
+	}
+
+	return result, nil
 }

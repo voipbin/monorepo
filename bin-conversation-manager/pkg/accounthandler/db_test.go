@@ -86,10 +86,10 @@ func Test_Create(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
-			mockLine.EXPECT().Setup(ctx, tt.expectAccount.Return(nil)
-			mockDB.EXPECT().AccountCreate(ctx, tt.expectAccount.Return(nil)
-			mockDB.EXPECT().AccountGet(ctx, tt.responseUUID.Return(tt.responseAccount, nil)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockLine.EXPECT().Setup(ctx, tt.expectAccount).Return(nil)
+			mockDB.EXPECT().AccountCreate(ctx, tt.expectAccount).Return(nil)
+			mockDB.EXPECT().AccountGet(ctx, tt.responseUUID).Return(tt.responseAccount, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, account.EventTypeAccountCreated, tt.responseAccount)
 
 			res, err := h.Create(ctx, tt.customerID, tt.accountType, tt.accountName, tt.detail, tt.secret, tt.token)
@@ -140,7 +140,7 @@ func Test_Get(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AccountGet(ctx, tt.id.Return(tt.responseAccount, nil)
+			mockDB.EXPECT().AccountGet(ctx, tt.id).Return(tt.responseAccount, nil)
 
 			res, err := h.Get(ctx, tt.id)
 			if err != nil {
@@ -204,7 +204,7 @@ func Test_Gets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AccountGets(ctx, tt.size, tt.token, tt.filters.Return(tt.responseAccounts, nil)
+			mockDB.EXPECT().AccountGets(ctx, tt.size, tt.token, tt.filters).Return(tt.responseAccounts, nil)
 
 			res, err := h.Gets(ctx, tt.token, tt.size, tt.filters)
 			if err != nil {
@@ -265,9 +265,9 @@ func Test_Update(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AccountUpdate(ctx, tt.id, tt.fields.Return(nil)
-			mockDB.EXPECT().AccountGet(ctx, tt.id.Return(tt.responseAccount, nil)
-			mockLine.EXPECT().Setup(ctx, tt.responseAccount.Return(nil)
+			mockDB.EXPECT().AccountUpdate(ctx, tt.id, tt.fields).Return(nil)
+			mockDB.EXPECT().AccountGet(ctx, tt.id).Return(tt.responseAccount, nil)
+			mockLine.EXPECT().Setup(ctx, tt.responseAccount).Return(nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAccount.CustomerID, account.EventTypeAccountUpdated, tt.responseAccount)
 
 			res, err := h.Update(ctx, tt.id, tt.fields)
@@ -321,8 +321,8 @@ func Test_Delete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AccountDelete(ctx, tt.id.Return(nil)
-			mockDB.EXPECT().AccountGet(ctx, tt.id.Return(tt.responseAccount, nil)
+			mockDB.EXPECT().AccountDelete(ctx, tt.id).Return(nil)
+			mockDB.EXPECT().AccountGet(ctx, tt.id).Return(tt.responseAccount, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, account.EventTypeAccountDeleted, tt.responseAccount)
 
 			res, err := h.Delete(ctx, tt.id)

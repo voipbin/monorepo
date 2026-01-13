@@ -76,8 +76,8 @@ func Test_AImessageCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().AIV1AIcallGet(ctx, tt.aicallID.Return(tt.responseAIcall, nil)
-			mockReq.EXPECT().AIV1MessageSend(ctx, tt.aicallID, tt.role, tt.content, true, false, 30000.Return(tt.response, nil)
+			mockReq.EXPECT().AIV1AIcallGet(ctx, tt.aicallID).Return(tt.responseAIcall, nil)
+			mockReq.EXPECT().AIV1MessageSend(ctx, tt.aicallID, tt.role, tt.content, true, false, 30000).Return(tt.response, nil)
 
 			res, err := h.AImessageCreate(ctx, tt.agent, tt.aicallID, tt.role, tt.content)
 			if err != nil {
@@ -104,7 +104,7 @@ func Test_AImessageGetsByAIcallID(t *testing.T) {
 		responseAIcall *amaicall.AIcall
 		response       []ammessage.Message
 
-		expectFilters map[string]string
+		expectFilters map[ammessage.Field]any
 		expectRes     []*ammessage.WebhookMessage
 	}{
 		{
@@ -139,9 +139,9 @@ func Test_AImessageGetsByAIcallID(t *testing.T) {
 				},
 			},
 
-			expectFilters: map[string]string{
-				"deleted":   "false",
-				"aicall_id": "24d250de-f31d-11ef-846e-9ba3307567d6",
+			expectFilters: map[ammessage.Field]any{
+				ammessage.FieldDeleted:  false,
+				ammessage.FieldAIcallID: "24d250de-f31d-11ef-846e-9ba3307567d6",
 			},
 			expectRes: []*ammessage.WebhookMessage{
 				{
@@ -173,8 +173,8 @@ func Test_AImessageGetsByAIcallID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().AIV1AIcallGet(ctx, tt.aicallID.Return(tt.responseAIcall, nil)
-			mockReq.EXPECT().AIV1MessageGetsByAIcallID(ctx, tt.aicallID, tt.token, tt.size, tt.expectFilters.Return(tt.response, nil)
+			mockReq.EXPECT().AIV1AIcallGet(ctx, tt.aicallID).Return(tt.responseAIcall, nil)
+			mockReq.EXPECT().AIV1MessageGetsByAIcallID(ctx, tt.aicallID, tt.token, tt.size, tt.expectFilters).Return(tt.response, nil)
 
 			res, err := h.AImessageGetsByAIcallID(ctx, tt.agent, tt.aicallID, tt.size, tt.token)
 			if err != nil {
@@ -238,7 +238,7 @@ func Test_AImessageGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AIV1MessageGet(ctx, tt.messageID.Return(tt.response, nil)
+			mockReq.EXPECT().AIV1MessageGet(ctx, tt.messageID).Return(tt.response, nil)
 
 			res, err := h.AImessageGet(ctx, tt.agent, tt.messageID)
 			if err != nil {
@@ -305,8 +305,8 @@ func Test_AImessageDelete(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().AIV1MessageGet(ctx, tt.messageID.Return(tt.response, nil)
-			mockReq.EXPECT().AIV1MessageDelete(ctx, tt.messageID.Return(tt.response, nil)
+			mockReq.EXPECT().AIV1MessageGet(ctx, tt.messageID).Return(tt.response, nil)
+			mockReq.EXPECT().AIV1MessageDelete(ctx, tt.messageID).Return(tt.response, nil)
 
 			_, err := h.AImessageDelete(ctx, tt.agent, tt.messageID)
 			if err != nil {

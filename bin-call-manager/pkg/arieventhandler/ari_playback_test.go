@@ -76,8 +76,8 @@ func Test_EventHandlerPlaybackStarted(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockChannel.EXPECT().UpdatePlaybackID(ctx, tt.expectchannelID, tt.expectPlaybackID.Return(tt.responseChannel, nil)
-			// mockCall.EXPECT().ARIPlaybackFinished(gomock.Any(), tt.responseChannel, tt.expectPlaybackID.Return(nil)
+			mockChannel.EXPECT().UpdatePlaybackID(ctx, tt.expectchannelID, tt.expectPlaybackID).Return(tt.responseChannel, nil)
+			// mockCall.EXPECT().ARIPlaybackFinished(gomock.Any(), tt.responseChannel, tt.expectPlaybackID).Return(nil)
 
 			if err := h.EventHandlerPlaybackStarted(ctx, tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -145,8 +145,8 @@ func Test_EventHandlerPlaybackFinished(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockChannel.EXPECT().UpdatePlaybackID(ctx, tt.expectchannelID, "".Return(tt.responseChannel, nil)
-			mockCall.EXPECT().ARIPlaybackFinished(gomock.Any(), tt.responseChannel, tt.event.Return(nil)
+			mockChannel.EXPECT().UpdatePlaybackID(ctx, tt.expectchannelID, "").Return(tt.responseChannel, nil)
+			mockCall.EXPECT().ARIPlaybackFinished(gomock.Any(), tt.responseChannel, tt.event).Return(nil)
 
 			if err := h.EventHandlerPlaybackFinished(ctx, tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -215,7 +215,7 @@ func TestEventHandlerPlaybackFinishedChannelGone(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockChannel.EXPECT().UpdatePlaybackID(ctx, tt.expectchannelID, "".Return(tt.responseChannel, nil)
+			mockChannel.EXPECT().UpdatePlaybackID(ctx, tt.expectchannelID, "").Return(tt.responseChannel, nil)
 
 			if err := h.EventHandlerPlaybackFinished(ctx, tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

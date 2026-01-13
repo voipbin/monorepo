@@ -108,13 +108,13 @@ func Test_TranscribeCreate(t *testing.T) {
 				cache:       mockCache,
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().TranscribeSet(gomock.Any(), gomock.Any())
 			if err := h.TranscribeCreate(context.Background(), tt.transcribe); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().TranscribeGet(gomock.Any(), tt.transcribe.ID.Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().TranscribeGet(gomock.Any(), tt.transcribe.ID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().TranscribeSet(gomock.Any(), gomock.Any())
 			res, err := h.TranscribeGet(context.Background(), tt.transcribe.ID)
 			if err != nil {
@@ -245,7 +245,7 @@ func Test_TranscribeGets(t *testing.T) {
 
 			// creates messages for test
 			for i := 0; i < len(tt.transcribes); i++ {
-				mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 				mockCache.EXPECT().TranscribeSet(ctx, gomock.Any())
 
 				if err := h.TranscribeCreate(ctx, tt.transcribes[i]); err != nil {
@@ -325,19 +325,19 @@ func Test_TranscribeUpdate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().TranscribeSet(ctx, gomock.Any())
 			if err := h.TranscribeCreate(ctx, tt.transcribe); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().TranscribeSet(ctx, gomock.Any())
 			if err := h.TranscribeUpdate(ctx, tt.id, tt.fields); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().TranscribeGet(ctx, tt.id.Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().TranscribeGet(ctx, tt.id).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().TranscribeSet(ctx, gomock.Any())
 			res, err := h.TranscribeGet(ctx, tt.transcribe.ID)
 			if err != nil {
@@ -399,7 +399,7 @@ func Test_TranscribeDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime).AnyTimes()
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime).AnyTimes()
 			mockCache.EXPECT().TranscribeSet(ctx, gomock.Any())
 			if err := h.TranscribeCreate(ctx, tt.transcribe); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -410,7 +410,7 @@ func Test_TranscribeDelete(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", errDelete)
 			}
 
-			mockCache.EXPECT().TranscribeGet(gomock.Any(), tt.transcribe.ID.Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().TranscribeGet(gomock.Any(), tt.transcribe.ID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().TranscribeSet(gomock.Any(), gomock.Any())
 			res, err := h.TranscribeGet(context.Background(), tt.transcribe.ID)
 			if err != nil {

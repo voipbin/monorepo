@@ -105,7 +105,7 @@ func Test_startReferenceTypeCall(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1CallGet(ctx, tt.referenceID.Return(tt.responseCall, nil)
+			mockReq.EXPECT().CallV1CallGet(ctx, tt.referenceID).Return(tt.responseCall, nil)
 			mockReq.EXPECT().TranscribeV1TranscribeStart(
 				ctx,
 				cmcustomer.IDAIManager,
@@ -116,13 +116,13 @@ func Test_startReferenceTypeCall(t *testing.T) {
 				tt.language,
 				tmtranscribe.DirectionBoth,
 				5000,
-			.Return(tt.responseTranscribe, nil)
+			).Return(tt.responseTranscribe, nil)
 
 			// create
-			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
-			mockDB.EXPECT().SummaryCreate(ctx, tt.expectedSummary.Return(nil)
-			mockDB.EXPECT().SummaryGet(ctx, tt.responseUUID.Return(tt.expectedSummary, nil)
-			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.activeflowID, tt.expectedVariables.Return(nil)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockDB.EXPECT().SummaryCreate(ctx, tt.expectedSummary).Return(nil)
+			mockDB.EXPECT().SummaryGet(ctx, tt.responseUUID).Return(tt.expectedSummary, nil)
+			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.activeflowID, tt.expectedVariables).Return(nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectedSummary.CustomerID, summary.EventTypeCreated, tt.expectedSummary)
 
 			res, err := h.startReferenceTypeCall(ctx, tt.customerID, tt.activeflowID, tt.onEndFlowID, tt.referenceID, tt.language)
@@ -216,7 +216,7 @@ func Test_startReferenceTypeConference(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.referenceID.Return(tt.responseConference, nil)
+			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.referenceID).Return(tt.responseConference, nil)
 
 			mockReq.EXPECT().TranscribeV1TranscribeStart(
 				ctx,
@@ -228,13 +228,13 @@ func Test_startReferenceTypeConference(t *testing.T) {
 				tt.language,
 				tmtranscribe.DirectionIn,
 				5000,
-			.Return(tt.responseTranscribe, nil)
+			).Return(tt.responseTranscribe, nil)
 
 			// create
-			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
-			mockDB.EXPECT().SummaryCreate(ctx, tt.expectedSummary.Return(nil)
-			mockDB.EXPECT().SummaryGet(ctx, tt.responseUUID.Return(tt.expectedSummary, nil)
-			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.activeflowID, tt.expectedVariables.Return(nil)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockDB.EXPECT().SummaryCreate(ctx, tt.expectedSummary).Return(nil)
+			mockDB.EXPECT().SummaryGet(ctx, tt.responseUUID).Return(tt.expectedSummary, nil)
+			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.activeflowID, tt.expectedVariables).Return(nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectedSummary.CustomerID, summary.EventTypeCreated, tt.expectedSummary)
 
 			res, err := h.startReferenceTypeConference(ctx, tt.customerID, tt.activeflowID, tt.onEndFlowID, tt.referenceID, tt.language)
@@ -266,7 +266,7 @@ func Test_startReferenceTypeTranscribe(t *testing.T) {
 		responseUUID        uuid.UUID
 		responseActiveflow  *fmactiveflow.Activeflow
 
-		expectedFiltersTranscripts map[string]string
+		expectedFiltersTranscripts map[tmtranscript.Field]any
 		expectedSummary            *summary.Summary
 		expectedVariables          map[string]string
 	}{
@@ -312,9 +312,9 @@ func Test_startReferenceTypeTranscribe(t *testing.T) {
 				},
 			},
 
-			expectedFiltersTranscripts: map[string]string{
-				"deleted":       "false",
-				"transcribe_id": "705f227a-0ba0-11f0-aa84-b3acfd22daa1",
+			expectedFiltersTranscripts: map[tmtranscript.Field]any{
+				tmtranscript.FieldDeleted:      false,
+				tmtranscript.FieldTranscribeID: "705f227a-0ba0-11f0-aa84-b3acfd22daa1",
 			},
 			expectedSummary: &summary.Summary{
 				Identity: commonidentity.Identity{
@@ -360,17 +360,17 @@ func Test_startReferenceTypeTranscribe(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().TranscribeV1TranscriptGets(ctx, "", uint64(1000), tt.expectedFiltersTranscripts.Return(tt.responseTranscripts, nil)
+			mockReq.EXPECT().TranscribeV1TranscriptGets(ctx, "", uint64(1000), tt.expectedFiltersTranscripts).Return(tt.responseTranscripts, nil)
 
 			// getContent
-			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.activeflowID.Return(tt.responseVariable, nil)
-			mockOpenai.EXPECT().Send(ctx, gomock.Any().Return(tt.responseOpenai, nil)
+			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.activeflowID).Return(tt.responseVariable, nil)
+			mockOpenai.EXPECT().Send(ctx, gomock.Any()).Return(tt.responseOpenai, nil)
 
 			// Create
-			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
-			mockDB.EXPECT().SummaryCreate(ctx, tt.expectedSummary.Return(nil)
-			mockDB.EXPECT().SummaryGet(ctx, tt.responseUUID.Return(tt.expectedSummary, nil)
-			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.activeflowID, tt.expectedVariables.Return(nil)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockDB.EXPECT().SummaryCreate(ctx, tt.expectedSummary).Return(nil)
+			mockDB.EXPECT().SummaryGet(ctx, tt.responseUUID).Return(tt.expectedSummary, nil)
+			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.activeflowID, tt.expectedVariables).Return(nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectedSummary.CustomerID, summary.EventTypeCreated, tt.expectedSummary)
 
 			if tt.expectedSummary.OnEndFlowID != uuid.Nil {
@@ -383,9 +383,9 @@ func Test_startReferenceTypeTranscribe(t *testing.T) {
 					fmactiveflow.ReferenceTypeAI,
 					tt.expectedSummary.ID,
 					tt.expectedSummary.ActiveflowID,
-				.Return(tt.responseActiveflow, nil)
-				mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.responseActiveflow.ID, tt.expectedVariables.Return(nil)
-				mockReq.EXPECT().FlowV1ActiveflowExecute(ctx, tt.responseActiveflow.ID.Return(nil)
+				).Return(tt.responseActiveflow, nil)
+				mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.responseActiveflow.ID, tt.expectedVariables).Return(nil)
+				mockReq.EXPECT().FlowV1ActiveflowExecute(ctx, tt.responseActiveflow.ID).Return(nil)
 			}
 
 			res, err := h.startReferenceTypeTranscribe(ctx, tt.customerID, tt.activeflowID, tt.onEndFlowID, tt.referenceID, tt.language)
@@ -418,7 +418,7 @@ func Test_startReferenceTypeRecording(t *testing.T) {
 		responseUUID        uuid.UUID
 		responseActiveflow  *fmactiveflow.Activeflow
 
-		expectedFiltersTranscripts map[string]string
+		expectedFiltersTranscripts map[tmtranscript.Field]any
 		expectedSummary            *summary.Summary
 		expectedVariables          map[string]string
 	}{
@@ -469,9 +469,9 @@ func Test_startReferenceTypeRecording(t *testing.T) {
 				},
 			},
 
-			expectedFiltersTranscripts: map[string]string{
-				"deleted":       "false",
-				"transcribe_id": "5885ec42-0b9b-11f0-99ba-4b3106d01f9b",
+			expectedFiltersTranscripts: map[tmtranscript.Field]any{
+				tmtranscript.FieldDeleted:      false,
+				tmtranscript.FieldTranscribeID: "5885ec42-0b9b-11f0-99ba-4b3106d01f9b",
 			},
 			expectedSummary: &summary.Summary{
 				Identity: commonidentity.Identity{
@@ -527,18 +527,18 @@ func Test_startReferenceTypeRecording(t *testing.T) {
 				tt.language,
 				tmtranscribe.DirectionBoth,
 				300000,
-			.Return(tt.responseTranscribe, nil)
-			mockReq.EXPECT().TranscribeV1TranscriptGets(ctx, "", uint64(1000), tt.expectedFiltersTranscripts.Return(tt.responseTranscripts, nil)
+			).Return(tt.responseTranscribe, nil)
+			mockReq.EXPECT().TranscribeV1TranscriptGets(ctx, "", uint64(1000), tt.expectedFiltersTranscripts).Return(tt.responseTranscripts, nil)
 
 			// getContent
-			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.activeflowID.Return(tt.responseVariable, nil)
-			mockOpenai.EXPECT().Send(ctx, gomock.Any().Return(tt.responseOpenai, nil)
+			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.activeflowID).Return(tt.responseVariable, nil)
+			mockOpenai.EXPECT().Send(ctx, gomock.Any()).Return(tt.responseOpenai, nil)
 
 			// Create
-			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
-			mockDB.EXPECT().SummaryCreate(ctx, tt.expectedSummary.Return(nil)
-			mockDB.EXPECT().SummaryGet(ctx, tt.responseUUID.Return(tt.expectedSummary, nil)
-			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.activeflowID, tt.expectedVariables.Return(nil)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockDB.EXPECT().SummaryCreate(ctx, tt.expectedSummary).Return(nil)
+			mockDB.EXPECT().SummaryGet(ctx, tt.responseUUID).Return(tt.expectedSummary, nil)
+			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.activeflowID, tt.expectedVariables).Return(nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectedSummary.CustomerID, summary.EventTypeCreated, tt.expectedSummary)
 
 			if tt.expectedSummary.OnEndFlowID != uuid.Nil {
@@ -551,9 +551,9 @@ func Test_startReferenceTypeRecording(t *testing.T) {
 					fmactiveflow.ReferenceTypeAI,
 					tt.expectedSummary.ID,
 					tt.expectedSummary.ActiveflowID,
-				.Return(tt.responseActiveflow, nil)
-				mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.responseActiveflow.ID, tt.expectedVariables.Return(nil)
-				mockReq.EXPECT().FlowV1ActiveflowExecute(ctx, tt.responseActiveflow.ID.Return(nil)
+				).Return(tt.responseActiveflow, nil)
+				mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.responseActiveflow.ID, tt.expectedVariables).Return(nil)
+				mockReq.EXPECT().FlowV1ActiveflowExecute(ctx, tt.responseActiveflow.ID).Return(nil)
 			}
 
 			res, err := h.startReferenceTypeRecording(ctx, tt.customerID, tt.activeflowID, tt.onEndFlowID, tt.referenceID, tt.language)
@@ -641,9 +641,9 @@ func Test_startOnEndFlow(t *testing.T) {
 				fmactiveflow.ReferenceTypeAI,
 				tt.summary.ID,
 				tt.summary.ActiveflowID,
-			.Return(tt.responseActiveflow, nil)
-			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.responseActiveflow.ID, tt.expectedVariables.Return(nil)
-			mockReq.EXPECT().FlowV1ActiveflowExecute(ctx, tt.responseActiveflow.ID.Return(nil)
+			).Return(tt.responseActiveflow, nil)
+			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.responseActiveflow.ID, tt.expectedVariables).Return(nil)
+			mockReq.EXPECT().FlowV1ActiveflowExecute(ctx, tt.responseActiveflow.ID).Return(nil)
 
 			if errFlow := h.startOnEndFlow(ctx, tt.summary); errFlow != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errFlow)

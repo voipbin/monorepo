@@ -14,6 +14,7 @@ import (
 	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
 	fmflow "monorepo/bin-flow-manager/models/flow"
 
+	nmnumber "monorepo/bin-number-manager/models/number"
 	rmroute "monorepo/bin-route-manager/models/route"
 
 	uuid "github.com/gofrs/uuid"
@@ -499,9 +500,9 @@ func (h *callHandler) startIncomingDomainTypePSTN(ctx context.Context, cn *chann
 	log.Debugf("Starting the flow incoming call handler. source_target: %s, destinaiton_target: %s", source.Target, destination.Target)
 
 	// get number info
-	filters := map[string]string{
-		"number":  destination.Target,
-		"deleted": "false",
+	filters := map[nmnumber.Field]any{
+		nmnumber.FieldNumber:  destination.Target,
+		nmnumber.FieldDeleted: false,
 	}
 	numbs, err := h.reqHandler.NumberV1NumberGets(ctx, "", 1, filters)
 	if err != nil {

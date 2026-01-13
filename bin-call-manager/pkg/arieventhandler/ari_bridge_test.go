@@ -116,7 +116,7 @@ func Test_EventHandlerBridgeCreated(t *testing.T) {
 				tt.expectVideoSourceID,
 				tt.expectReferenceType,
 				tt.expectReferenceID,
-			.Return(tt.responseBridge, nil)
+			).Return(tt.responseBridge, nil)
 
 			if err := h.EventHandlerBridgeCreated(ctx, tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -194,9 +194,9 @@ func Test_EventHandlerBridgeDestroyed(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockBridge.EXPECT().Get(ctx, tt.expectBridgeID.Return(tt.responseBridge, nil)
-			mockBridge.EXPECT().Delete(ctx, tt.expectBridgeID.Return(tt.responseBridge, nil)
-			mockConfbridge.EXPECT().ARIBridgeDestroyed(ctx, tt.responseBridge.Return(nil)
+			mockBridge.EXPECT().Get(ctx, tt.expectBridgeID).Return(tt.responseBridge, nil)
+			mockBridge.EXPECT().Delete(ctx, tt.expectBridgeID).Return(tt.responseBridge, nil)
+			mockConfbridge.EXPECT().ARIBridgeDestroyed(ctx, tt.responseBridge).Return(nil)
 
 			if err := h.EventHandlerBridgeDestroyed(ctx, tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

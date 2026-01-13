@@ -55,7 +55,7 @@ func Test_Gets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().AccesskeyGets(gomock.Any(), tt.size, tt.token, tt.filters.Return(tt.result, nil)
+			mockDB.EXPECT().AccesskeyGets(gomock.Any(), tt.size, tt.token, tt.filters).Return(tt.result, nil)
 			_, err := h.Gets(ctx, tt.size, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -124,7 +124,7 @@ func Test_GetsByCustomerID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AccesskeyGets(ctx, gomock.Any(), "", tt.expectFilter.Return(tt.responseAccesskeys, nil)
+			mockDB.EXPECT().AccesskeyGets(ctx, gomock.Any(), "", tt.expectFilter).Return(tt.responseAccesskeys, nil)
 
 			res, err := h.GetsByCustomerID(ctx, tt.size, tt.token, tt.customerID)
 			if err != nil {
@@ -193,12 +193,12 @@ func Test_Create(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
-			mockUtil.EXPECT().TimeGetCurTimeAdd(tt.expire.Return(tt.responseExpire)
-			mockUtil.EXPECT().StringGenerateRandom(defaultLenToken.Return(tt.responseToken, nil)
-			mockDB.EXPECT().AccesskeyCreate(ctx, tt.expectAccesskey.Return(nil)
-			mockDB.EXPECT().AccesskeyGet(ctx, tt.responseUUID.Return(&accesskey.Accesskey{}, nil)
-			mockNotify.EXPECT().PublishEvent(ctx, accesskey.EventTypeAccesskeyCreated, gomock.Any().Return()
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockUtil.EXPECT().TimeGetCurTimeAdd(tt.expire).Return(tt.responseExpire)
+			mockUtil.EXPECT().StringGenerateRandom(defaultLenToken).Return(tt.responseToken, nil)
+			mockDB.EXPECT().AccesskeyCreate(ctx, tt.expectAccesskey).Return(nil)
+			mockDB.EXPECT().AccesskeyGet(ctx, tt.responseUUID).Return(&accesskey.Accesskey{}, nil)
+			mockNotify.EXPECT().PublishEvent(ctx, accesskey.EventTypeAccesskeyCreated, gomock.Any()).Return()
 
 			_, err := h.Create(ctx, tt.customerID, tt.userName, tt.detail, tt.expire)
 			if err != nil {
@@ -249,7 +249,7 @@ func Test_Get(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AccesskeyGet(ctx, tt.id.Return(tt.responseAccesskey, nil)
+			mockDB.EXPECT().AccesskeyGet(ctx, tt.id).Return(tt.responseAccesskey, nil)
 
 			res, err := h.Get(ctx, tt.id)
 			if err != nil {
@@ -311,7 +311,7 @@ func Test_GetByToken(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AccesskeyGets(ctx, gomock.Any(), "", tt.expectFilter.Return(tt.responseAccesskeys, nil)
+			mockDB.EXPECT().AccesskeyGets(ctx, gomock.Any(), "", tt.expectFilter).Return(tt.responseAccesskeys, nil)
 
 			res, err := h.GetByToken(ctx, tt.token)
 			if err != nil {
@@ -359,10 +359,10 @@ func Test_Delete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AccesskeyGet(ctx, tt.id.Return(tt.responseAccesskey, nil)
-			mockDB.EXPECT().AccesskeyDelete(ctx, tt.id.Return(nil)
-			mockDB.EXPECT().AccesskeyGet(ctx, tt.id.Return(tt.responseAccesskey, nil)
-			mockNotify.EXPECT().PublishEvent(ctx, accesskey.EventTypeAccesskeyDeleted, tt.responseAccesskey.Return()
+			mockDB.EXPECT().AccesskeyGet(ctx, tt.id).Return(tt.responseAccesskey, nil)
+			mockDB.EXPECT().AccesskeyDelete(ctx, tt.id).Return(nil)
+			mockDB.EXPECT().AccesskeyGet(ctx, tt.id).Return(tt.responseAccesskey, nil)
+			mockNotify.EXPECT().PublishEvent(ctx, accesskey.EventTypeAccesskeyDeleted, tt.responseAccesskey).Return()
 
 			_, err := h.Delete(ctx, tt.id)
 			if err != nil {
@@ -414,9 +414,9 @@ func Test_UpdateBasicInfo(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().AccesskeyUpdate(gomock.Any(), tt.id, tt.expectFields.Return(nil)
-			mockDB.EXPECT().AccesskeyGet(gomock.Any(), gomock.Any().Return(&accesskey.Accesskey{}, nil)
-			mockNotify.EXPECT().PublishEvent(gomock.Any(), accesskey.EventTypeAccesskeyUpdated, gomock.Any().Return()
+			mockDB.EXPECT().AccesskeyUpdate(gomock.Any(), tt.id, tt.expectFields).Return(nil)
+			mockDB.EXPECT().AccesskeyGet(gomock.Any(), gomock.Any()).Return(&accesskey.Accesskey{}, nil)
+			mockNotify.EXPECT().PublishEvent(gomock.Any(), accesskey.EventTypeAccesskeyUpdated, gomock.Any()).Return()
 
 			_, err := h.UpdateBasicInfo(ctx, tt.id, tt.customerName, tt.detail)
 			if err != nil {

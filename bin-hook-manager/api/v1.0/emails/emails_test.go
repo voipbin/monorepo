@@ -61,7 +61,7 @@ func Test_MessagesPOST(t *testing.T) {
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().Email(gomock.Any(), tt.reqQuery, body.Return(nil)
+			mockSvc.EXPECT().Email(gomock.Any(), tt.reqQuery, body).Return(nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

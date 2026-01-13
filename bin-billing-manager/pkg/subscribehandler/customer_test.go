@@ -53,7 +53,7 @@ func Test_processEventCMCustomerDeleted(t *testing.T) {
 				billingHandler: mockBilling,
 			}
 
-			mockAccount.EXPECT().EventCUCustomerDeleted(gomock.Any(), tt.expectCustomer.Return(nil)
+			mockAccount.EXPECT().EventCUCustomerDeleted(gomock.Any(), tt.expectCustomer).Return(nil)
 
 			if err := h.processEvent(tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -101,7 +101,7 @@ func Test_processEventCMCustomerCreated(t *testing.T) {
 				billingHandler: mockBilling,
 			}
 
-			mockAccount.EXPECT().EventCUCustomerCreated(gomock.Any(), tt.expectCustomer.Return(nil)
+			mockAccount.EXPECT().EventCUCustomerCreated(gomock.Any(), tt.expectCustomer).Return(nil)
 
 			if err := h.processEvent(tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -144,7 +144,7 @@ func Test_v1MessagechatroomsGet(t *testing.T) {
 				messagechatroomHandler: mockMessagechatroom,
 			}
 
-			mockMessagechatroom.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, gomock.Any().Return(tt.responseMessagechatrooms, nil)
+			mockMessagechatroom.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, gomock.Any()).Return(tt.responseMessagechatrooms, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -215,7 +215,7 @@ func Test_v1MessagechatroomsIDGet(t *testing.T) {
 				messagechatroomHandler: mockMessagechatroom,
 			}
 
-			mockMessagechatroom.EXPECT().Get(gomock.Any(), tt.messagechatroomID.Return(tt.responseMessagechatroom, nil)
+			mockMessagechatroom.EXPECT().Get(gomock.Any(), tt.messagechatroomID).Return(tt.responseMessagechatroom, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -285,7 +285,7 @@ func Test_v1MessagechatroomsIDDelete(t *testing.T) {
 				messagechatroomHandler: mockMessagechatroom,
 			}
 
-			mockMessagechatroom.EXPECT().Delete(gomock.Any(), tt.messagechatroomID.Return(tt.responseMessagechatroom, nil)
+			mockMessagechatroom.EXPECT().Delete(gomock.Any(), tt.messagechatroomID).Return(tt.responseMessagechatroom, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

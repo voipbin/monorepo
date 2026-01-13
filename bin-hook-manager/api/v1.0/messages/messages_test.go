@@ -63,7 +63,7 @@ func Test_MessagesPOST(t *testing.T) {
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().Message(gomock.Any(), tt.reqQuery, body.Return(nil)
+			mockSvc.EXPECT().Message(gomock.Any(), tt.reqQuery, body).Return(nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -122,7 +122,7 @@ func Test_MessagesPOST_Error(t *testing.T) {
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(body))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().Message(gomock.Any(), tt.reqQuery, body.Return(fmt.Errorf("service handler error"))
+			mockSvc.EXPECT().Message(gomock.Any(), tt.reqQuery, body).Return(fmt.Errorf("service handler error"))
 
 			r.ServeHTTP(w, req)
 			if w.Code != tt.expectCode {

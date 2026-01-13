@@ -56,8 +56,8 @@ func Test_MOHOn(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id.Return(tt.responseChannel, nil)
-			mockReq.EXPECT().AstChannelMusicOnHoldOn(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID.Return(nil)
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id).Return(tt.responseChannel, nil)
+			mockReq.EXPECT().AstChannelMusicOnHoldOn(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID).Return(nil)
 
 			if err := h.MOHOn(ctx, tt.id); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -108,8 +108,8 @@ func Test_MOHOff(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id.Return(tt.responseChannel, nil)
-			mockReq.EXPECT().AstChannelMusicOnHoldOff(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID.Return(nil)
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id).Return(tt.responseChannel, nil)
+			mockReq.EXPECT().AstChannelMusicOnHoldOff(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID).Return(nil)
 
 			if err := h.MOHOff(ctx, tt.id); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

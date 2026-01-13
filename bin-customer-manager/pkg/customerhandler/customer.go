@@ -3,6 +3,7 @@ package customerhandler
 import (
 	"context"
 
+	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-customer-manager/models/customer"
 	"monorepo/bin-customer-manager/pkg/dbhandler"
 
@@ -67,9 +68,9 @@ func (h *customerHandler) validateCreate(ctx context.Context, email string) bool
 	}
 
 	// check agent
-	filterAgent := map[string]string{
-		"deleted":  "false",
-		"username": email,
+	filterAgent := map[amagent.Field]any{
+		amagent.FieldDeleted:  false,
+		amagent.FieldUsername: email,
 	}
 	tmpAgents, err := h.reqHandler.AgentV1AgentGets(ctx, "", 100, filterAgent)
 	if err != nil {

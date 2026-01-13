@@ -71,7 +71,7 @@ func Test_EventHandlerContactStatusChange(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().RegistrarV1ContactRefresh(ctx, tt.expectCustomerID, tt.expectextension.Return(nil)
+			mockReq.EXPECT().RegistrarV1ContactRefresh(ctx, tt.expectCustomerID, tt.expectextension).Return(nil)
 			if err := h.EventHandlerContactStatusChange(ctx, tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

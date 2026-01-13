@@ -151,16 +151,16 @@ func Test_HealthCheck(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().TranscribeGet(ctx, tt.id.Return(tt.responseTranscribe, nil)
+			mockDB.EXPECT().TranscribeGet(ctx, tt.id).Return(tt.responseTranscribe, nil)
 			switch tt.responseTranscribe.ReferenceType {
 			case transcribe.ReferenceTypeCall:
-				mockReq.EXPECT().CallV1CallGet(ctx, tt.responseTranscribe.ReferenceID.Return(tt.responseCall, nil)
+				mockReq.EXPECT().CallV1CallGet(ctx, tt.responseTranscribe.ReferenceID).Return(tt.responseCall, nil)
 
 			case transcribe.ReferenceTypeConfbridge:
-				mockReq.EXPECT().CallV1ConfbridgeGet(ctx, tt.responseTranscribe.ReferenceID.Return(tt.responseConfbridge, nil)
+				mockReq.EXPECT().CallV1ConfbridgeGet(ctx, tt.responseTranscribe.ReferenceID).Return(tt.responseConfbridge, nil)
 			}
 
-			mockReq.EXPECT().TranscribeV1TranscribeHealthCheck(ctx, tt.id, defaultHealthDelay, tt.expectRetryCount.Return(nil)
+			mockReq.EXPECT().TranscribeV1TranscribeHealthCheck(ctx, tt.id, defaultHealthDelay, tt.expectRetryCount).Return(nil)
 
 			h.HealthCheck(ctx, tt.id, tt.retryCount)
 

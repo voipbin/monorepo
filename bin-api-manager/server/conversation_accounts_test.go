@@ -79,7 +79,7 @@ func Test_conversationAccountsGet(t *testing.T) {
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ConversationAccountGetsByCustomerID(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken.Return(tt.responseAccounts, nil)
+			mockSvc.EXPECT().ConversationAccountGetsByCustomerID(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseAccounts, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -161,7 +161,7 @@ func Test_conversationAccountsPost(t *testing.T) {
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ConversationAccountCreate(req.Context(), &tt.agent, tt.expectType, tt.expectName, tt.expectDetail, tt.expectSecret, tt.expectToken.Return(tt.responseAccount, nil)
+			mockSvc.EXPECT().ConversationAccountCreate(req.Context(), &tt.agent, tt.expectType, tt.expectName, tt.expectDetail, tt.expectSecret, tt.expectToken).Return(tt.responseAccount, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -233,7 +233,7 @@ func Test_conversationAccountsIDGet(t *testing.T) {
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ConversationAccountGet(req.Context(), &tt.agent, tt.expectConversationAccountID.Return(tt.responseConversationAccount, nil)
+			mockSvc.EXPECT().ConversationAccountGet(req.Context(), &tt.agent, tt.expectConversationAccountID).Return(tt.responseConversationAccount, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -313,7 +313,7 @@ func Test_conversationAccountsIDPut(t *testing.T) {
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ConversationAccountUpdate(req.Context(), &tt.agent, tt.expectConversationAccountID, tt.expectFields.Return(tt.responseConversationAccount, nil)
+			mockSvc.EXPECT().ConversationAccountUpdate(req.Context(), &tt.agent, tt.expectConversationAccountID, tt.expectFields).Return(tt.responseConversationAccount, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -386,7 +386,7 @@ func Test_conversationAccountsIDDelete(t *testing.T) {
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ConversationAccountDelete(req.Context(), &tt.agent, tt.expectConversationAccountID.Return(tt.responseConversationAccount, nil)
+			mockSvc.EXPECT().ConversationAccountDelete(req.Context(), &tt.agent, tt.expectConversationAccountID).Return(tt.responseConversationAccount, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

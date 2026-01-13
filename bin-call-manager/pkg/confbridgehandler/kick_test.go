@@ -70,8 +70,8 @@ func Test_Kick(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConfbridgeGet(ctx, tt.confbridgeID.Return(tt.confbridge, nil)
-			mockChannel.EXPECT().HangingUp(ctx, tt.channel.ID, ari.ChannelCauseNormalClearing.Return(tt.channel, nil)
+			mockDB.EXPECT().ConfbridgeGet(ctx, tt.confbridgeID).Return(tt.confbridge, nil)
+			mockChannel.EXPECT().HangingUp(ctx, tt.channel.ID, ari.ChannelCauseNormalClearing).Return(tt.channel, nil)
 
 			if err := h.Kick(ctx, tt.confbridgeID, tt.callID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

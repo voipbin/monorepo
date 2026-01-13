@@ -78,7 +78,7 @@ func Test_processV1ServicesTypeAIcallPost(t *testing.T) {
 				aicallHandler: mockAIcall,
 			}
 
-			mockAIcall.EXPECT().ServiceStart(gomock.Any(), tt.expectedAIID, tt.expectedActiveflowID, tt.expectedReferenceType, tt.expectedReferenceID, tt.expectedGender, tt.expectedLanguage.Return(tt.responseService, nil)
+			mockAIcall.EXPECT().ServiceStart(gomock.Any(), tt.expectedAIID, tt.expectedActiveflowID, tt.expectedReferenceType, tt.expectedReferenceID, tt.expectedGender, tt.expectedLanguage).Return(tt.responseService, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -160,7 +160,7 @@ func Test_processV1ServicesTypeSummaryPost(t *testing.T) {
 				tt.expectedReferenceType,
 				tt.expectedReferenceID,
 				tt.expectedLanguage,
-			.Return(tt.responseService, nil)
+			).Return(tt.responseService, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -234,7 +234,7 @@ func Test_processV1ServicesTypeTaskPost(t *testing.T) {
 				aicallHandler:  mockAIcall,
 			}
 
-			mockAIcall.EXPECT().ServiceStartTypeTask(gomock.Any(), tt.expectedAIID, tt.expectedActiveflowID.Return(tt.responseService, nil)
+			mockAIcall.EXPECT().ServiceStartTypeTask(gomock.Any(), tt.expectedAIID, tt.expectedActiveflowID).Return(tt.responseService, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

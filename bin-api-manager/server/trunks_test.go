@@ -91,7 +91,7 @@ func Test_trunksPOST(t *testing.T) {
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().TrunkCreate(req.Context(), &tt.agent, tt.expectName, tt.expectDetail, tt.expectDomainName, tt.expectAuthTypes, tt.expectUsername, tt.expectPassword, tt.expectAllowedIPs.Return(tt.responseTrunk, nil)
+			mockSvc.EXPECT().TrunkCreate(req.Context(), &tt.agent, tt.expectName, tt.expectDetail, tt.expectDomainName, tt.expectAuthTypes, tt.expectUsername, tt.expectPassword, tt.expectAllowedIPs).Return(tt.responseTrunk, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -172,7 +172,7 @@ func Test_trunksGET(t *testing.T) {
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().TrunkGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken.Return(tt.responseTrunks, nil)
+			mockSvc.EXPECT().TrunkGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseTrunks, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -243,7 +243,7 @@ func Test_TrunksIDGET(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().TrunkGet(req.Context(), &tt.agent, tt.expectTrunkID.Return(tt.responseTrunk, nil)
+			mockSvc.EXPECT().TrunkGet(req.Context(), &tt.agent, tt.expectTrunkID).Return(tt.responseTrunk, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -321,7 +321,7 @@ func Test_TrunksIDPUT(t *testing.T) {
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().TrunkUpdateBasicInfo(req.Context(), &tt.agent, tt.expectTrunkID, tt.expectName, tt.expectDetail, tt.expectAuthTypes, tt.expectUsername, tt.expectPassword, tt.expectAllowedIPs.Return(&rmtrunk.WebhookMessage{}, nil)
+			mockSvc.EXPECT().TrunkUpdateBasicInfo(req.Context(), &tt.agent, tt.expectTrunkID, tt.expectName, tt.expectDetail, tt.expectAuthTypes, tt.expectUsername, tt.expectPassword, tt.expectAllowedIPs).Return(&rmtrunk.WebhookMessage{}, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -375,7 +375,7 @@ func Test_trunksIDDELETE(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().TrunkDelete(req.Context(), &tt.agent, tt.expectTrunkID.Return(&rmtrunk.WebhookMessage{}, nil)
+			mockSvc.EXPECT().TrunkDelete(req.Context(), &tt.agent, tt.expectTrunkID).Return(&rmtrunk.WebhookMessage{}, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

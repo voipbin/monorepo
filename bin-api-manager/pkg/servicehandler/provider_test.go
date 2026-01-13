@@ -67,7 +67,7 @@ func Test_ProviderGet(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().RouteV1ProviderGet(ctx, tt.id.Return(tt.response, nil)
+			mockReq.EXPECT().RouteV1ProviderGet(ctx, tt.id).Return(tt.response, nil)
 
 			res, err := h.ProviderGet(ctx, tt.agent, tt.id)
 			if err != nil {
@@ -135,7 +135,7 @@ func Test_ProviderGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().RouteV1ProviderGets(ctx, tt.pageToken, tt.pageSize.Return(tt.responseProviders, nil)
+			mockReq.EXPECT().RouteV1ProviderGets(ctx, tt.pageToken, tt.pageSize).Return(tt.responseProviders, nil)
 
 			res, err := h.ProviderGets(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
@@ -222,7 +222,7 @@ func Test_ProviderCreate(t *testing.T) {
 				tt.techHeaders,
 				tt.providerName,
 				tt.detail,
-			.Return(tt.response, nil)
+			).Return(tt.response, nil)
 
 			res, err := h.ProviderCreate(
 				ctx,
@@ -295,8 +295,8 @@ func Test_ProviderDelete(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().RouteV1ProviderGet(ctx, tt.providerID.Return(tt.responseProvider, nil)
-			mockReq.EXPECT().RouteV1ProviderDelete(ctx, tt.providerID.Return(tt.responseProvider, nil)
+			mockReq.EXPECT().RouteV1ProviderGet(ctx, tt.providerID).Return(tt.responseProvider, nil)
+			mockReq.EXPECT().RouteV1ProviderDelete(ctx, tt.providerID).Return(tt.responseProvider, nil)
 
 			res, err := h.ProviderDelete(ctx, tt.agent, tt.providerID)
 			if err != nil {
@@ -378,7 +378,7 @@ func Test_ProviderUpdate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().RouteV1ProviderGet(ctx, tt.providerID.Return(tt.responseProvider, nil)
+			mockReq.EXPECT().RouteV1ProviderGet(ctx, tt.providerID).Return(tt.responseProvider, nil)
 			mockReq.EXPECT().RouteV1ProviderUpdate(
 				ctx,
 				tt.providerID,
@@ -389,7 +389,7 @@ func Test_ProviderUpdate(t *testing.T) {
 				tt.techHeaders,
 				tt.providerName,
 				tt.detail,
-			.Return(tt.responseProvider, nil)
+			).Return(tt.responseProvider, nil)
 
 			res, err := h.ProviderUpdate(
 				ctx,

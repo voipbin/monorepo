@@ -75,9 +75,9 @@ func Test_HealthCheck(t *testing.T) {
 				mockReq.EXPECT().CallPublishEvent(ctx, string(ari.EventTypeChannelDestroyed), "asterisk-proxy", "application/json", gomock.Any())
 
 			} else {
-				mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id.Return(tt.responseChannel, nil)
-				mockReq.EXPECT().AstChannelGet(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID.Return(tt.responseChannel, nil)
-				mockReq.EXPECT().CallV1ChannelHealth(ctx, tt.id, defaultHealthDelay, 0.Return(nil)
+				mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id).Return(tt.responseChannel, nil)
+				mockReq.EXPECT().AstChannelGet(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID).Return(tt.responseChannel, nil)
+				mockReq.EXPECT().CallV1ChannelHealth(ctx, tt.id, defaultHealthDelay, 0).Return(nil)
 
 			}
 

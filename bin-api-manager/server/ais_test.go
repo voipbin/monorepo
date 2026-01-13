@@ -107,7 +107,7 @@ func Test_PostAis(t *testing.T) {
 				tt.expectedTTSType,
 				tt.expectedTTSVoiceID,
 				tt.expectedSTTType,
-			.Return(tt.responseAI, nil)
+			).Return(tt.responseAI, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -216,7 +216,7 @@ func Test_GetAis(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().AIGetsByCustomerID(req.Context(), &tt.agent, tt.expectedPageSize, tt.expectedPageToken.Return(tt.responseAIs, nil)
+			mockSvc.EXPECT().AIGetsByCustomerID(req.Context(), &tt.agent, tt.expectedPageSize, tt.expectedPageToken).Return(tt.responseAIs, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -284,7 +284,7 @@ func Test_GetAisId(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().AIGet(req.Context(), &tt.agent, tt.expectAIID.Return(tt.responseAI, nil)
+			mockSvc.EXPECT().AIGet(req.Context(), &tt.agent, tt.expectAIID).Return(tt.responseAI, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -352,7 +352,7 @@ func Test_DeleteAisId(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().AIDelete(req.Context(), &tt.agent, tt.expectAIID.Return(tt.responseAI, nil)
+			mockSvc.EXPECT().AIDelete(req.Context(), &tt.agent, tt.expectAIID).Return(tt.responseAI, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -459,7 +459,7 @@ func Test_PutAisId(t *testing.T) {
 				tt.expectedTTSType,
 				tt.expectedTTSVoiceID,
 				tt.expectedSTTType,
-			.Return(tt.responseAI, nil)
+			).Return(tt.responseAI, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

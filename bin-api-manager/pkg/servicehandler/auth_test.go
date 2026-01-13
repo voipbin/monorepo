@@ -64,8 +64,8 @@ func Test_AuthLogin(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AgentV1Login(ctx, gomock.Any(), tt.username, tt.password.Return(tt.responseAgent, nil)
-			mockUtil.EXPECT().TimeGetCurTimeAdd(TokenExpiration.Return(tt.responseCurTime)
+			mockReq.EXPECT().AgentV1Login(ctx, gomock.Any(), tt.username, tt.password).Return(tt.responseAgent, nil)
+			mockUtil.EXPECT().TimeGetCurTimeAdd(TokenExpiration).Return(tt.responseCurTime)
 
 			res, err := h.AuthLogin(ctx, tt.username, tt.password)
 			if err != nil {
@@ -123,13 +123,13 @@ func Test_AuthJWTGenerate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTimeAdd(TokenExpiration.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTimeAdd(TokenExpiration).Return(tt.responseCurTime)
 			token, err := h.AuthJWTGenerate(tt.data)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			res, err := h.AuthJWTParse(ctx, token)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -201,8 +201,8 @@ func Test_AuthAccesskeyParse(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CustomerV1AccesskeyGets(ctx, "", gomock.Any(), gomock.Any().Return(tt.responseAccesskeys, nil)
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockReq.EXPECT().CustomerV1AccesskeyGets(ctx, "", gomock.Any(), gomock.Any()).Return(tt.responseAccesskeys, nil)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 
 			res, err := h.AuthAccesskeyParse(ctx, tt.accesskey)
 			if err != nil {
@@ -278,8 +278,8 @@ func Test_AuthAccesskeyParse_error(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CustomerV1AccesskeyGets(ctx, "", gomock.Any(), gomock.Any().Return(tt.responseAccesskeys, nil)
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockReq.EXPECT().CustomerV1AccesskeyGets(ctx, "", gomock.Any(), gomock.Any()).Return(tt.responseAccesskeys, nil)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 
 			_, err := h.AuthAccesskeyParse(ctx, tt.accesskey)
 			if err == nil {

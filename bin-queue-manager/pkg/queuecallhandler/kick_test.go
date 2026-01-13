@@ -122,22 +122,22 @@ func Test_Kick(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().QueuecallGet(ctx, tt.queuecallID.Return(tt.responseQueuecall, nil)
+			mockDB.EXPECT().QueuecallGet(ctx, tt.queuecallID).Return(tt.responseQueuecall, nil)
 
-			mockReq.EXPECT().FlowV1ActiveflowServiceStop(ctx, tt.responseQueuecall.ReferenceActiveflowID, tt.queuecallID, 0.Return(nil)
+			mockReq.EXPECT().FlowV1ActiveflowServiceStop(ctx, tt.responseQueuecall.ReferenceActiveflowID, tt.queuecallID, 0).Return(nil)
 			if tt.responseQueuecall.Status != queuecall.StatusService {
-				mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 				mockDB.EXPECT().QueuecallSetStatusAbandoned(ctx, tt.responseQueuecall.ID, tt.expectDurationWaiting, tt.responseCurTime)
 
-				mockDB.EXPECT().QueuecallGet(ctx, tt.responseQueuecall.ID.Return(tt.responseQueuecall, nil)
+				mockDB.EXPECT().QueuecallGet(ctx, tt.responseQueuecall.ID).Return(tt.responseQueuecall, nil)
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallAbandoned, tt.responseQueuecall)
 
-				mockQueue.EXPECT().RemoveQueuecallID(ctx, tt.responseQueuecall.QueueID, tt.responseQueuecall.ID.Return(&queue.Queue{}, nil)
-				mockReq.EXPECT().CallV1ConfbridgeDelete(ctx, tt.responseQueuecall.ConfbridgeID.Return(&cmconfbridge.Confbridge{}, nil)
+				mockQueue.EXPECT().RemoveQueuecallID(ctx, tt.responseQueuecall.QueueID, tt.responseQueuecall.ID).Return(&queue.Queue{}, nil)
+				mockReq.EXPECT().CallV1ConfbridgeDelete(ctx, tt.responseQueuecall.ConfbridgeID).Return(&cmconfbridge.Confbridge{}, nil)
 			}
 
 			// deleteVariables
-			mockReq.EXPECT().FlowV1VariableDeleteVariable(ctx, gomock.Any(), gomock.Any().Return(nil).AnyTimes()
+			mockReq.EXPECT().FlowV1VariableDeleteVariable(ctx, gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 
 			res, err := h.Kick(ctx, tt.queuecallID)
 			if err != nil {
@@ -215,21 +215,21 @@ func Test_KickByReferenceID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().QueuecallGetByReferenceID(ctx, tt.referenceID.Return(tt.responseQueuecall, nil)
-			mockDB.EXPECT().QueuecallGet(ctx, tt.responseQueuecall.ID.Return(tt.responseQueuecall, nil)
+			mockDB.EXPECT().QueuecallGetByReferenceID(ctx, tt.referenceID).Return(tt.responseQueuecall, nil)
+			mockDB.EXPECT().QueuecallGet(ctx, tt.responseQueuecall.ID).Return(tt.responseQueuecall, nil)
 
-			mockReq.EXPECT().FlowV1ActiveflowServiceStop(ctx, tt.responseQueuecall.ReferenceActiveflowID, tt.responseQueuecall.ID, 0.Return(nil)
+			mockReq.EXPECT().FlowV1ActiveflowServiceStop(ctx, tt.responseQueuecall.ReferenceActiveflowID, tt.responseQueuecall.ID, 0).Return(nil)
 			if tt.responseQueuecall.Status != queuecall.StatusService {
-				mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 				mockDB.EXPECT().QueuecallSetStatusAbandoned(ctx, tt.responseQueuecall.ID, gomock.Any(), tt.responseCurTime)
 
-				mockDB.EXPECT().QueuecallGet(ctx, tt.responseQueuecall.ID.Return(tt.responseQueuecall, nil)
+				mockDB.EXPECT().QueuecallGet(ctx, tt.responseQueuecall.ID).Return(tt.responseQueuecall, nil)
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallAbandoned, tt.responseQueuecall)
 
-				mockQueue.EXPECT().RemoveQueuecallID(ctx, tt.responseQueuecall.QueueID, tt.responseQueuecall.ID.Return(&queue.Queue{}, nil)
-				mockReq.EXPECT().CallV1ConfbridgeDelete(ctx, tt.responseQueuecall.ConfbridgeID.Return(&cmconfbridge.Confbridge{}, nil)
+				mockQueue.EXPECT().RemoveQueuecallID(ctx, tt.responseQueuecall.QueueID, tt.responseQueuecall.ID).Return(&queue.Queue{}, nil)
+				mockReq.EXPECT().CallV1ConfbridgeDelete(ctx, tt.responseQueuecall.ConfbridgeID).Return(&cmconfbridge.Confbridge{}, nil)
 			}
-			mockReq.EXPECT().FlowV1VariableDeleteVariable(ctx, gomock.Any(), gomock.Any().Return(nil).AnyTimes()
+			mockReq.EXPECT().FlowV1VariableDeleteVariable(ctx, gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 
 			res, err := h.KickByReferenceID(ctx, tt.referenceID)
 			if err != nil {
@@ -337,34 +337,34 @@ func Test_kickForce(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().QueuecallGet(ctx, tt.id.Return(tt.responseQueuecall, nil)
+			mockDB.EXPECT().QueuecallGet(ctx, tt.id).Return(tt.responseQueuecall, nil)
 
-			mockReq.EXPECT().FlowV1ActiveflowServiceStop(ctx, tt.responseQueuecall.ReferenceActiveflowID, tt.responseQueuecall.ID, 0.Return(nil)
+			mockReq.EXPECT().FlowV1ActiveflowServiceStop(ctx, tt.responseQueuecall.ReferenceActiveflowID, tt.responseQueuecall.ID, 0).Return(nil)
 
 			if tt.responseQueuecall.Status == queuecall.StatusService {
 				// update status done
-				mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
-				mockDB.EXPECT().QueuecallSetStatusDone(ctx, tt.responseQueuecall.ID, gomock.Any(), tt.responseCurTime.Return(nil)
+				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+				mockDB.EXPECT().QueuecallSetStatusDone(ctx, tt.responseQueuecall.ID, gomock.Any(), tt.responseCurTime).Return(nil)
 
-				mockDB.EXPECT().QueuecallGet(ctx, tt.responseQueuecall.ID.Return(tt.responseQueuecall, nil)
+				mockDB.EXPECT().QueuecallGet(ctx, tt.responseQueuecall.ID).Return(tt.responseQueuecall, nil)
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallDone, tt.responseQueuecall)
 
-				mockQueue.EXPECT().RemoveQueuecallID(ctx, tt.responseQueuecall.QueueID, tt.responseQueuecall.ID.Return(&queue.Queue{}, nil)
-				mockReq.EXPECT().CallV1ConfbridgeDelete(ctx, tt.responseQueuecall.ConfbridgeID.Return(&cmconfbridge.Confbridge{}, nil)
+				mockQueue.EXPECT().RemoveQueuecallID(ctx, tt.responseQueuecall.QueueID, tt.responseQueuecall.ID).Return(&queue.Queue{}, nil)
+				mockReq.EXPECT().CallV1ConfbridgeDelete(ctx, tt.responseQueuecall.ConfbridgeID).Return(&cmconfbridge.Confbridge{}, nil)
 
-				mockReq.EXPECT().FlowV1VariableDeleteVariable(ctx, gomock.Any(), gomock.Any().Return(nil).AnyTimes()
+				mockReq.EXPECT().FlowV1VariableDeleteVariable(ctx, gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 			} else {
 				// update status abandoned
-				mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
-				mockDB.EXPECT().QueuecallSetStatusAbandoned(ctx, tt.responseQueuecall.ID, gomock.Any(), tt.responseCurTime.Return(nil)
+				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+				mockDB.EXPECT().QueuecallSetStatusAbandoned(ctx, tt.responseQueuecall.ID, gomock.Any(), tt.responseCurTime).Return(nil)
 
-				mockDB.EXPECT().QueuecallGet(ctx, tt.responseQueuecall.ID.Return(tt.responseQueuecall, nil)
+				mockDB.EXPECT().QueuecallGet(ctx, tt.responseQueuecall.ID).Return(tt.responseQueuecall, nil)
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallAbandoned, tt.responseQueuecall)
 
-				mockQueue.EXPECT().RemoveQueuecallID(ctx, tt.responseQueuecall.QueueID, tt.responseQueuecall.ID.Return(&queue.Queue{}, nil)
-				mockReq.EXPECT().CallV1ConfbridgeDelete(ctx, tt.responseQueuecall.ConfbridgeID.Return(&cmconfbridge.Confbridge{}, nil)
+				mockQueue.EXPECT().RemoveQueuecallID(ctx, tt.responseQueuecall.QueueID, tt.responseQueuecall.ID).Return(&queue.Queue{}, nil)
+				mockReq.EXPECT().CallV1ConfbridgeDelete(ctx, tt.responseQueuecall.ConfbridgeID).Return(&cmconfbridge.Confbridge{}, nil)
 
-				mockReq.EXPECT().FlowV1VariableDeleteVariable(ctx, gomock.Any(), gomock.Any().Return(nil).AnyTimes()
+				mockReq.EXPECT().FlowV1VariableDeleteVariable(ctx, gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 			}
 
 			res, err := h.kickForce(ctx, tt.id)

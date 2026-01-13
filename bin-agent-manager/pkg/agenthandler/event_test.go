@@ -73,9 +73,9 @@ func Test_EventGroupcallCreated(t *testing.T) {
 
 			for _, destination := range tt.groupcall.Destinations {
 				agentID := uuid.FromStringOrNil(destination.Target)
-				mockDB.EXPECT().AgentGet(ctx, agentID.Return(tt.responseAgent, nil)
-				mockDB.EXPECT().AgentSetStatus(ctx, tt.responseAgent.ID, agent.StatusRinging.Return(nil)
-				mockDB.EXPECT().AgentGet(ctx, tt.responseAgent.ID.Return(tt.responseAgent, nil)
+				mockDB.EXPECT().AgentGet(ctx, agentID).Return(tt.responseAgent, nil)
+				mockDB.EXPECT().AgentSetStatus(ctx, tt.responseAgent.ID, agent.StatusRinging).Return(nil)
+				mockDB.EXPECT().AgentGet(ctx, tt.responseAgent.ID).Return(tt.responseAgent, nil)
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAgent.CustomerID, agent.EventTypeAgentStatusUpdated, tt.responseAgent)
 			}
 
@@ -138,9 +138,9 @@ func Test_EventGroupcallAnswered(t *testing.T) {
 
 			for _, destination := range tt.groupcall.Destinations {
 				agentID := uuid.FromStringOrNil(destination.Target)
-				mockDB.EXPECT().AgentGet(ctx, agentID.Return(tt.responseAgent, nil)
-				mockDB.EXPECT().AgentSetStatus(ctx, tt.responseAgent.ID, agent.StatusBusy.Return(nil)
-				mockDB.EXPECT().AgentGet(ctx, tt.responseAgent.ID.Return(tt.responseAgent, nil)
+				mockDB.EXPECT().AgentGet(ctx, agentID).Return(tt.responseAgent, nil)
+				mockDB.EXPECT().AgentSetStatus(ctx, tt.responseAgent.ID, agent.StatusBusy).Return(nil)
+				mockDB.EXPECT().AgentGet(ctx, tt.responseAgent.ID).Return(tt.responseAgent, nil)
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAgent.CustomerID, agent.EventTypeAgentStatusUpdated, tt.responseAgent)
 			}
 
@@ -205,12 +205,12 @@ func Test_EventCustomerDeleted(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(utilhandler.TimeGetCurTime())
-			mockDB.EXPECT().AgentGets(ctx, uint64(1000), gomock.Any(), tt.expectFilter.Return(tt.responseAgents, nil)
+			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+			mockDB.EXPECT().AgentGets(ctx, uint64(1000), gomock.Any(), tt.expectFilter).Return(tt.responseAgents, nil)
 
 			for _, ag := range tt.responseAgents {
-				mockDB.EXPECT().AgentDelete(ctx, ag.ID.Return(nil)
-				mockDB.EXPECT().AgentGet(ctx, ag.ID.Return(ag, nil)
+				mockDB.EXPECT().AgentDelete(ctx, ag.ID).Return(nil)
+				mockDB.EXPECT().AgentGet(ctx, ag.ID).Return(ag, nil)
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, ag.CustomerID, agent.EventTypeAgentDeleted, ag)
 			}
 
@@ -268,12 +268,12 @@ func Test_EventCustomerCreated(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().EmailIsValid(tt.customer.Email.Return(true)
-			mockDB.EXPECT().AgentGetByUsername(ctx, tt.customer.Email.Return(nil, fmt.Errorf(""))
-			mockUtil.EXPECT().HashGenerate(tt.customer.Email, defaultPasswordHashCost.Return(tt.responseHash, nil)
-			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
-			mockDB.EXPECT().AgentCreate(ctx, gomock.Any().Return(nil)
-			mockDB.EXPECT().AgentGet(ctx, tt.responseUUID.Return(tt.responseAgent, nil)
+			mockUtil.EXPECT().EmailIsValid(tt.customer.Email).Return(true)
+			mockDB.EXPECT().AgentGetByUsername(ctx, tt.customer.Email).Return(nil, fmt.Errorf(""))
+			mockUtil.EXPECT().HashGenerate(tt.customer.Email, defaultPasswordHashCost).Return(tt.responseHash, nil)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockDB.EXPECT().AgentCreate(ctx, gomock.Any()).Return(nil)
+			mockDB.EXPECT().AgentGet(ctx, tt.responseUUID).Return(tt.responseAgent, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAgent.CustomerID, agent.EventTypeAgentCreated, tt.responseAgent)
 
 			if err := h.EventCustomerCreated(ctx, tt.customer); err != nil {

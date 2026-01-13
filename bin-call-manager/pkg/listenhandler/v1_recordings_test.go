@@ -80,8 +80,8 @@ func Test_processV1RecordingsGet(t *testing.T) {
 				recordingHandler: mockRecording,
 			}
 
-			mockUtil.EXPECT().URLParseFilters(gomock.Any().Return(tt.responseFilters)
-			mockRecording.EXPECT().Gets(gomock.Any(), tt.pageSize, tt.pageToken, gomock.Any().Return(tt.responseRecordings, nil)
+			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
+			mockRecording.EXPECT().Gets(gomock.Any(), tt.pageSize, tt.pageToken, gomock.Any()).Return(tt.responseRecordings, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -162,7 +162,7 @@ func Test_processV1RecordingsPost(t *testing.T) {
 				recordingHandler: mockRecording,
 			}
 
-			mockRecording.EXPECT().Start(gomock.Any(), tt.expectActiveflowID, tt.expectReferenceType, tt.expectReferenceID, tt.expectFormat, tt.expectEndOfSilence, tt.expectEndOfKey, tt.expectDuration, tt.expectOnEndFlowID.Return(tt.responseRecording, nil)
+			mockRecording.EXPECT().Start(gomock.Any(), tt.expectActiveflowID, tt.expectReferenceType, tt.expectReferenceID, tt.expectFormat, tt.expectEndOfSilence, tt.expectEndOfKey, tt.expectDuration, tt.expectOnEndFlowID).Return(tt.responseRecording, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -226,7 +226,7 @@ func Test_processV1RecordingsIDGet(t *testing.T) {
 				recordingHandler: mockRecording,
 			}
 
-			mockRecording.EXPECT().Get(gomock.Any(), tt.responseRecording.ID.Return(tt.responseRecording, nil)
+			mockRecording.EXPECT().Get(gomock.Any(), tt.responseRecording.ID).Return(tt.responseRecording, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -293,7 +293,7 @@ func Test_processV1RecordingsIDDelete(t *testing.T) {
 				recordingHandler: mockRecording,
 			}
 
-			mockRecording.EXPECT().Delete(gomock.Any(), tt.responseRecording.ID.Return(tt.responseRecording, nil)
+			mockRecording.EXPECT().Delete(gomock.Any(), tt.responseRecording.ID).Return(tt.responseRecording, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -353,7 +353,7 @@ func Test_processV1RecordingsIDStopPost(t *testing.T) {
 				recordingHandler: mockRecording,
 			}
 
-			mockRecording.EXPECT().Stop(gomock.Any(), tt.responseRecording.ID.Return(tt.responseRecording, nil)
+			mockRecording.EXPECT().Stop(gomock.Any(), tt.responseRecording.ID).Return(tt.responseRecording, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

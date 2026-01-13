@@ -23,7 +23,7 @@ func Test_ServiceAgentAgentGets(t *testing.T) {
 		token string
 
 		responseAgents []amagent.Agent
-		expectFilters  map[string]string
+		expectFilters  map[amagent.Field]any
 		expectRes      []*amagent.WebhookMessage
 	}
 
@@ -53,9 +53,9 @@ func Test_ServiceAgentAgentGets(t *testing.T) {
 					},
 				},
 			},
-			expectFilters: map[string]string{
-				"customer_id": "5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9",
-				"deleted":     "false",
+			expectFilters: map[amagent.Field]any{
+				amagent.FieldCustomerID: "5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9",
+				amagent.FieldDeleted:    false,
 			},
 			expectRes: []*amagent.WebhookMessage{
 				{
@@ -86,7 +86,7 @@ func Test_ServiceAgentAgentGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AgentV1AgentGets(ctx, tt.token, tt.size, tt.expectFilters.Return(tt.responseAgents, nil)
+			mockReq.EXPECT().AgentV1AgentGets(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseAgents, nil)
 
 			res, err := h.ServiceAgentAgentGets(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {
@@ -154,7 +154,7 @@ func Test_ServiceAgentAgentGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AgentV1AgentGet(ctx, tt.agentID.Return(tt.responseAgent, nil)
+			mockReq.EXPECT().AgentV1AgentGet(ctx, tt.agentID).Return(tt.responseAgent, nil)
 
 			res, err := h.ServiceAgentAgentGet(ctx, tt.agent, tt.agentID)
 			if err != nil {

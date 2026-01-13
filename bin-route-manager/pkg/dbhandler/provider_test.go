@@ -92,13 +92,13 @@ func Test_ProviderCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime).AnyTimes()
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime).AnyTimes()
 			mockCache.EXPECT().ProviderSet(ctx, gomock.Any())
 			if err := h.ProviderCreate(ctx, tt.provider); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().ProviderGet(ctx, tt.provider.ID.Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ProviderGet(ctx, tt.provider.ID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().ProviderSet(ctx, gomock.Any())
 			res, err := h.ProviderGet(ctx, tt.provider.ID)
 			if err != nil {
@@ -178,7 +178,7 @@ func Test_ProviderGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime).AnyTimes()
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime).AnyTimes()
 			for _, p := range tt.providers {
 				mockCache.EXPECT().ProviderSet(ctx, gomock.Any())
 				if err := h.ProviderCreate(ctx, &p); err != nil {
@@ -239,8 +239,8 @@ func Test_ProviderDelete(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().ProviderGet(ctx, tt.provider.ID.Return(nil, fmt.Errorf("error"))
-			mockCache.EXPECT().ProviderSet(ctx, gomock.Any().Return(nil)
+			mockCache.EXPECT().ProviderGet(ctx, tt.provider.ID).Return(nil, fmt.Errorf("error"))
+			mockCache.EXPECT().ProviderSet(ctx, gomock.Any()).Return(nil)
 			res, err := h.ProviderGet(ctx, tt.provider.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -312,7 +312,7 @@ func Test_ProviderUpdate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime).AnyTimes()
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime).AnyTimes()
 			mockCache.EXPECT().ProviderSet(ctx, gomock.Any())
 			if err := h.ProviderCreate(ctx, tt.provider); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -323,7 +323,7 @@ func Test_ProviderUpdate(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().ProviderGet(ctx, tt.provider.ID.Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ProviderGet(ctx, tt.provider.ID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().ProviderSet(ctx, gomock.Any())
 			res, err := h.ProviderGet(ctx, tt.provider.ID)
 			if err != nil {

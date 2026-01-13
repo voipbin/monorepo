@@ -63,8 +63,8 @@ func Test_MOHOn(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().CallGet(ctx, tt.id.Return(tt.responseCall, nil)
-			mockChannel.EXPECT().MOHOn(ctx, tt.responseCall.ChannelID.Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
+			mockChannel.EXPECT().MOHOn(ctx, tt.responseCall.ChannelID).Return(nil)
 
 			if err := h.MOHOn(ctx, tt.id); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -118,8 +118,8 @@ func Test_MOHOff(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().CallGet(ctx, tt.id.Return(tt.responseCall, nil)
-			mockChannel.EXPECT().MOHOff(ctx, tt.responseCall.ChannelID.Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
+			mockChannel.EXPECT().MOHOff(ctx, tt.responseCall.ChannelID).Return(nil)
 
 			if err := h.MOHOff(ctx, tt.id); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

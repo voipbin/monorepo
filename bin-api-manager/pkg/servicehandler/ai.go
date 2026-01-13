@@ -7,6 +7,7 @@ import (
 	amai "monorepo/bin-ai-manager/models/ai"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -114,7 +115,14 @@ func (h *serviceHandler) AIGetsByCustomerID(ctx context.Context, a *amagent.Agen
 		"customer_id": a.CustomerID.String(),
 	}
 
-	tmps, err := h.reqHandler.AIV1AIGets(ctx, token, size, filters)
+	// Convert string filters to typed filters
+	typedFilters, err := h.convertAIFilters(filters)
+	if err != nil {
+		log.Errorf("Could not convert filters. err: %v", err)
+		return nil, err
+	}
+
+	tmps, err := h.reqHandler.AIV1AIGets(ctx, token, size, typedFilters)
 	if err != nil {
 		log.Errorf("Could not get AIs info from the chatobt manager. err: %v", err)
 		return nil, fmt.Errorf("could not find chats info. err: %v", err)
@@ -128,6 +136,29 @@ func (h *serviceHandler) AIGetsByCustomerID(ctx context.Context, a *amagent.Agen
 	}
 
 	return res, nil
+}
+
+// convertAIFilters converts map[string]string to map[amai.Field]any
+func (h *serviceHandler) convertAIFilters(filters map[string]string) (map[amai.Field]any, error) {
+	// Convert to map[string]any first
+	srcAny := make(map[string]any, len(filters))
+	for k, v := range filters {
+		srcAny[k] = v
+	}
+
+	// Use reflection-based converter
+	typed, err := commondatabasehandler.ConvertMapToTypedMap(srcAny, amai.AI{})
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert string keys to Field type
+	result := make(map[amai.Field]any, len(typed))
+	for k, v := range typed {
+		result[amai.Field(k)] = v
+	}
+
+	return result, nil
 }
 
 // AIGet gets the AI of the given id.

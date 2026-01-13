@@ -111,7 +111,7 @@ func Test_getEngineData(t *testing.T) {
 			ctx := context.Background()
 
 			for k, v := range tt.responseSubstitutes {
-				mockReq.EXPECT().FlowV1VariableSubstitute(ctx, tt.activeflowID, k.Return(v, nil)
+				mockReq.EXPECT().FlowV1VariableSubstitute(ctx, tt.activeflowID, k).Return(v, nil)
 			}
 
 			res := h.getEngineData(ctx, tt.ai, tt.activeflowID)
@@ -247,7 +247,7 @@ func Test_getEngineDataValue(t *testing.T) {
 
 			// string substitution mocking
 			for k, v := range tt.substitutes {
-				mockReq.EXPECT().FlowV1VariableSubstitute(ctx, tt.activeflowID, k.Return(v, nil)
+				mockReq.EXPECT().FlowV1VariableSubstitute(ctx, tt.activeflowID, k).Return(v, nil)
 			}
 
 			actual := h.getEngineDataValue(ctx, tt.input, tt.activeflowID)

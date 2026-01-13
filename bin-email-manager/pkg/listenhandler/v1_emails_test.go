@@ -143,8 +143,8 @@ func Test_v1EmailsGet(t *testing.T) {
 				emailHandler: mockEmail,
 			}
 
-			mockUtil.EXPECT().URLParseFilters(gomock.Any().Return(tt.responseFilters)
-			mockEmail.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, gomock.Any().Return(tt.responseEmails, nil)
+			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
+			mockEmail.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, gomock.Any()).Return(tt.responseEmails, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -227,7 +227,7 @@ func Test_v1EmailsPost(t *testing.T) {
 				emailHandler: mockEmail,
 			}
 
-			mockEmail.EXPECT().Create(gomock.Any(), tt.expectCustomerID, tt.expectActiveflowID, tt.expectDestinations, tt.expectSubject, tt.expectContent, tt.expectAttachments.Return(tt.responseEmail, nil)
+			mockEmail.EXPECT().Create(gomock.Any(), tt.expectCustomerID, tt.expectActiveflowID, tt.expectDestinations, tt.expectSubject, tt.expectContent, tt.expectAttachments).Return(tt.responseEmail, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -286,7 +286,7 @@ func Test_v1EmailsIDGet(t *testing.T) {
 				emailHandler: mockEmail,
 			}
 
-			mockEmail.EXPECT().Get(gomock.Any(), tt.expectEmailID.Return(tt.responseEmail, nil)
+			mockEmail.EXPECT().Get(gomock.Any(), tt.expectEmailID).Return(tt.responseEmail, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -346,7 +346,7 @@ func Test_v1EmailsIDDelete(t *testing.T) {
 				emailHandler: mockEmail,
 			}
 
-			mockEmail.EXPECT().Delete(gomock.Any(), tt.expectEmailID.Return(tt.responseEmail, nil)
+			mockEmail.EXPECT().Delete(gomock.Any(), tt.expectEmailID).Return(tt.responseEmail, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

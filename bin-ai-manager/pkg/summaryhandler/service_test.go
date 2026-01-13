@@ -105,8 +105,8 @@ func Test_ServiceStart_referencetype_call(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1CallGet(ctx, tt.referenceID.Return(tt.responseCall, nil)
-			mockDB.EXPECT().SummaryGets(ctx, gomock.Any(), gomock.Any(), gomock.Any().Return(nil, fmt.Errorf(""))
+			mockReq.EXPECT().CallV1CallGet(ctx, tt.referenceID).Return(tt.responseCall, nil)
+			mockDB.EXPECT().SummaryGets(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf(""))
 			mockReq.EXPECT().TranscribeV1TranscribeStart(
 				ctx,
 				cmcustomer.IDAIManager,
@@ -117,11 +117,11 @@ func Test_ServiceStart_referencetype_call(t *testing.T) {
 				tt.language,
 				tmtranscribe.DirectionBoth,
 				gomock.Any(),
-			.Return(&tmtranscribe.Transcribe{}, nil)
-			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
-			mockDB.EXPECT().SummaryCreate(ctx, tt.expectedSummary.Return(nil)
-			mockDB.EXPECT().SummaryGet(ctx, tt.responseUUID.Return(tt.expectedSummary, nil)
-			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.activeflowID, tt.expectedVariables.Return(nil)
+			).Return(&tmtranscribe.Transcribe{}, nil)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockDB.EXPECT().SummaryCreate(ctx, tt.expectedSummary).Return(nil)
+			mockDB.EXPECT().SummaryGet(ctx, tt.responseUUID).Return(tt.expectedSummary, nil)
+			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.activeflowID, tt.expectedVariables).Return(nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.customerID, summary.EventTypeCreated, tt.expectedSummary)
 
 			res, err := h.ServiceStart(

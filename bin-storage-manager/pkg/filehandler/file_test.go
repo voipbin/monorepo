@@ -51,7 +51,7 @@ func Test_Get(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().FileGet(ctx, tt.id.Return(tt.responseFile, nil)
+			mockDB.EXPECT().FileGet(ctx, tt.id).Return(tt.responseFile, nil)
 
 			res, err := h.Get(ctx, tt.id)
 			if err != nil {
@@ -110,7 +110,7 @@ func Test_Gets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().FileGets(ctx, tt.token, tt.size, tt.filters.Return(tt.responseFiles, nil)
+			mockDB.EXPECT().FileGets(ctx, tt.token, tt.size, tt.filters).Return(tt.responseFiles, nil)
 
 			res, err := h.Gets(ctx, tt.token, tt.size, tt.filters)
 			if err != nil {

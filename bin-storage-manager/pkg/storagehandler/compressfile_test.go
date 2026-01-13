@@ -116,16 +116,16 @@ func Test_CompressCreate(t *testing.T) {
 			ctx := context.Background()
 
 			for i, id := range tt.fileIDs {
-				mockFile.EXPECT().Get(ctx, id.Return(tt.responseFilesByFileIDs[i], nil)
+				mockFile.EXPECT().Get(ctx, id).Return(tt.responseFilesByFileIDs[i], nil)
 			}
 			for i, _ := range tt.referenceIDs {
-				mockFile.EXPECT().Gets(ctx, "", uint64(1000), gomock.Any().Return(tt.responseFilesByReferenceIDs[i], nil)
+				mockFile.EXPECT().Gets(ctx, "", uint64(1000), gomock.Any()).Return(tt.responseFilesByReferenceIDs[i], nil)
 			}
 
-			// mockFile.EXPECT().CompressCreateRaw(ctx, h.bucketNameMedia, tt.expectSourcefilePaths.Return(h.bucketNameMedia, tt.responseFilepath, nil)
-			mockFile.EXPECT().CompressCreate(ctx, tt.expectFiles.Return(h.bucketNameMedia, tt.responseFilepath, nil)
-			mockFile.EXPECT().DownloadURIGet(ctx, h.bucketNameMedia, tt.responseFilepath, time.Hour*24.Return("", tt.responseDownloadURI, nil)
-			mockUtil.EXPECT().TimeGetCurTimeAdd(24 * time.Hour.Return(tt.responseCurTimeAdd)
+			// mockFile.EXPECT().CompressCreateRaw(ctx, h.bucketNameMedia, tt.expectSourcefilePaths).Return(h.bucketNameMedia, tt.responseFilepath, nil)
+			mockFile.EXPECT().CompressCreate(ctx, tt.expectFiles).Return(h.bucketNameMedia, tt.responseFilepath, nil)
+			mockFile.EXPECT().DownloadURIGet(ctx, h.bucketNameMedia, tt.responseFilepath, time.Hour*24).Return("", tt.responseDownloadURI, nil)
+			mockUtil.EXPECT().TimeGetCurTimeAdd(24 * time.Hour).Return(tt.responseCurTimeAdd)
 
 			res, err := h.CompressfileCreate(ctx, tt.referenceIDs, tt.fileIDs)
 			if err != nil {
@@ -229,7 +229,7 @@ func Test_compressGetFilesByReferenceIDs(t *testing.T) {
 			ctx := context.Background()
 
 			for i, _ := range tt.referenceIDs {
-				mockFile.EXPECT().Gets(ctx, "", uint64(1000), gomock.Any().Return(tt.responseFiles[i], nil)
+				mockFile.EXPECT().Gets(ctx, "", uint64(1000), gomock.Any()).Return(tt.responseFiles[i], nil)
 			}
 
 			res, err := h.compressGetFilesByReferenceIDs(ctx, tt.referenceIDs)
@@ -310,7 +310,7 @@ func Test_compressGetFilesByFileIDs(t *testing.T) {
 			ctx := context.Background()
 
 			for i, id := range tt.fileIDs {
-				mockFile.EXPECT().Get(ctx, id.Return(tt.responseFiles[i], nil)
+				mockFile.EXPECT().Get(ctx, id).Return(tt.responseFiles[i], nil)
 			}
 
 			res, err := h.compressGetFilesByFileIDs(ctx, tt.fileIDs)

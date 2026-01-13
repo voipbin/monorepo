@@ -89,7 +89,7 @@ func Test_ConversationGetsByCustomerID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ConversationV1ConversationGets(ctx, tt.pageToken, tt.pageSize, tt.expectFilters.Return(tt.responseConversations, nil)
+			mockReq.EXPECT().ConversationV1ConversationGets(ctx, tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.responseConversations, nil)
 			res, err := h.ConversationGetsByCustomerID(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -154,7 +154,7 @@ func Test_ConversationGet(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ConversationV1ConversationGet(ctx, tt.conversationID.Return(tt.response, nil)
+			mockReq.EXPECT().ConversationV1ConversationGet(ctx, tt.conversationID).Return(tt.response, nil)
 			res, err := h.ConversationGet(ctx, tt.customer, tt.conversationID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -225,8 +225,8 @@ func Test_ConversationUpdate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ConversationV1ConversationGet(ctx, tt.conversationID.Return(tt.responseConversation, nil)
-			mockReq.EXPECT().ConversationV1ConversationUpdate(ctx, tt.conversationID, tt.fileds.Return(tt.responseConversation, nil)
+			mockReq.EXPECT().ConversationV1ConversationGet(ctx, tt.conversationID).Return(tt.responseConversation, nil)
+			mockReq.EXPECT().ConversationV1ConversationUpdate(ctx, tt.conversationID, tt.fileds).Return(tt.responseConversation, nil)
 			res, err := h.ConversationUpdate(ctx, tt.agent, tt.conversationID, tt.fileds)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

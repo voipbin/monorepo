@@ -64,7 +64,7 @@ func Test_Gets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().QueueGets(ctx, tt.pageSize, tt.token, tt.filters.Return(tt.responseQueues, nil)
+			mockDB.EXPECT().QueueGets(ctx, tt.pageSize, tt.token, tt.filters).Return(tt.responseQueues, nil)
 
 			res, err := h.Gets(ctx, tt.pageSize, tt.token, tt.filters)
 			if err != nil {
@@ -117,7 +117,7 @@ func Test_Get(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().QueueGet(ctx, tt.queueID.Return(tt.responseQueue, nil)
+			mockDB.EXPECT().QueueGet(ctx, tt.queueID).Return(tt.responseQueue, nil)
 
 			res, err := h.Get(ctx, tt.queueID)
 			if err != nil {
@@ -169,8 +169,8 @@ func Test_dbDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().QueueDelete(ctx, tt.queueID.Return(nil)
-			mockDB.EXPECT().QueueGet(ctx, tt.queueID.Return(tt.responseQueue, nil)
+			mockDB.EXPECT().QueueDelete(ctx, tt.queueID).Return(nil)
+			mockDB.EXPECT().QueueGet(ctx, tt.queueID).Return(tt.responseQueue, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, queue.EventTypeQueueDeleted, tt.responseQueue)
 
 			res, err := h.dbDelete(ctx, tt.queueID)
@@ -251,8 +251,8 @@ func Test_UpdateBasicInfo(t *testing.T) {
 				queue.FieldServiceTimeout: tt.serviceTimeout,
 			}
 
-			mockDB.EXPECT().QueueUpdate(ctx, tt.queueID, fields.Return(nil)
-			mockDB.EXPECT().QueueGet(ctx, tt.queueID.Return(tt.responseQueue, nil)
+			mockDB.EXPECT().QueueUpdate(ctx, tt.queueID, fields).Return(nil)
+			mockDB.EXPECT().QueueGet(ctx, tt.queueID).Return(tt.responseQueue, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, queue.EventTypeQueueUpdated, tt.responseQueue)
 
 			res, err := h.UpdateBasicInfo(
@@ -323,8 +323,8 @@ func Test_UpdateTagIDs(t *testing.T) {
 			fields := map[queue.Field]any{
 				queue.FieldTagIDs: tt.tagIDs,
 			}
-			mockDB.EXPECT().QueueUpdate(ctx, tt.queueID, fields.Return(nil)
-			mockDB.EXPECT().QueueGet(ctx, tt.queueID.Return(tt.responseQueue, nil)
+			mockDB.EXPECT().QueueUpdate(ctx, tt.queueID, fields).Return(nil)
+			mockDB.EXPECT().QueueGet(ctx, tt.queueID).Return(tt.responseQueue, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, queue.EventTypeQueueUpdated, tt.responseQueue)
 
 			res, err := h.UpdateTagIDs(ctx, tt.queueID, tt.tagIDs)
@@ -383,8 +383,8 @@ func Test_UpdateRoutingMethod(t *testing.T) {
 			fields := map[queue.Field]any{
 				queue.FieldRoutingMethod: tt.routingMethod,
 			}
-			mockDB.EXPECT().QueueUpdate(ctx, tt.queueID, fields.Return(nil)
-			mockDB.EXPECT().QueueGet(ctx, tt.queueID.Return(tt.responseQueue, nil)
+			mockDB.EXPECT().QueueUpdate(ctx, tt.queueID, fields).Return(nil)
+			mockDB.EXPECT().QueueGet(ctx, tt.queueID).Return(tt.responseQueue, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, queue.EventTypeQueueUpdated, tt.responseQueue)
 
 			res, err := h.UpdateRoutingMethod(ctx, tt.queueID, tt.routingMethod)
@@ -448,8 +448,8 @@ func Test_UpdateRoutingMethod(t *testing.T) {
 
 // 			ctx := context.Background()
 
-// 			mockDB.EXPECT().QueueSetWaitActionsAndTimeouts(ctx, tt.queueID, tt.waitActions, tt.waitTimeout, tt.serviceTimeout.Return(nil)
-// 			mockDB.EXPECT().QueueGet(ctx, tt.queueID.Return(tt.responseQueue, nil)
+// 			mockDB.EXPECT().QueueSetWaitActionsAndTimeouts(ctx, tt.queueID, tt.waitActions, tt.waitTimeout, tt.serviceTimeout).Return(nil)
+// 			mockDB.EXPECT().QueueGet(ctx, tt.queueID).Return(tt.responseQueue, nil)
 // 			mockNotify.EXPECT().PublishEvent(ctx, queue.EventTypeQueueUpdated, tt.responseQueue)
 
 // 			res, err := h.UpdateWaitActionsAndTimeouts(ctx, tt.queueID, tt.waitActions, tt.waitTimeout, tt.serviceTimeout)
@@ -545,14 +545,14 @@ func Test_UpdateExecute(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().QueueGet(ctx, tt.queueID.Return(tt.responseQueue, nil)
+			mockDB.EXPECT().QueueGet(ctx, tt.queueID).Return(tt.responseQueue, nil)
 
 			if tt.responseQueue.Execute != tt.execute {
 				fields := map[queue.Field]any{
 					queue.FieldExecute: tt.execute,
 				}
-				mockDB.EXPECT().QueueUpdate(ctx, tt.queueID, fields.Return(nil)
-				mockDB.EXPECT().QueueGet(ctx, tt.queueID.Return(tt.responseQueue, nil)
+				mockDB.EXPECT().QueueUpdate(ctx, tt.queueID, fields).Return(nil)
+				mockDB.EXPECT().QueueGet(ctx, tt.queueID).Return(tt.responseQueue, nil)
 				mockNotify.EXPECT().PublishEvent(ctx, queue.EventTypeQueueUpdated, tt.responseQueue)
 
 				if tt.execute == queue.ExecuteRun && tt.responseQueue.Execute == queue.ExecuteStop {
@@ -612,9 +612,9 @@ func Test_RemoveQueuecallID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().QueueRemoveWaitQueueCall(ctx, tt.queueID, tt.queuecallID.Return(nil)
-			mockDB.EXPECT().QueueRemoveServiceQueueCall(ctx, tt.queueID, tt.queuecallID.Return(nil)
-			mockDB.EXPECT().QueueGet(ctx, tt.queueID.Return(tt.responseQueue, nil)
+			mockDB.EXPECT().QueueRemoveWaitQueueCall(ctx, tt.queueID, tt.queuecallID).Return(nil)
+			mockDB.EXPECT().QueueRemoveServiceQueueCall(ctx, tt.queueID, tt.queuecallID).Return(nil)
+			mockDB.EXPECT().QueueGet(ctx, tt.queueID).Return(tt.responseQueue, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, queue.EventTypeQueueUpdated, tt.responseQueue)
 
 			res, err := h.RemoveQueuecallID(ctx, tt.queueID, tt.queuecallID)

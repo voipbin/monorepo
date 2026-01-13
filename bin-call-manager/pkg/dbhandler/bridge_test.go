@@ -103,13 +103,13 @@ func Test_BridgeCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().BridgeSet(ctx, gomock.Any())
 			if err := h.BridgeCreate(ctx, tt.bridge); err != nil {
 				t.Errorf("Wrong match. BridgeCreate expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().BridgeGet(ctx, tt.bridge.ID.Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().BridgeGet(ctx, tt.bridge.ID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().BridgeSet(ctx, gomock.Any())
 			res, err := h.BridgeGet(ctx, tt.bridge.ID)
 			if err != nil {
@@ -165,19 +165,19 @@ func Test_BridgeEnd(t *testing.T) {
 				cache:       mockCache,
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().BridgeSet(gomock.Any(), gomock.Any())
 			if err := h.BridgeCreate(context.Background(), tt.bridge); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().BridgeSet(gomock.Any(), gomock.Any())
 			if err := h.BridgeEnd(context.Background(), tt.bridge.ID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().BridgeGet(gomock.Any(), tt.bridge.ID.Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().BridgeGet(gomock.Any(), tt.bridge.ID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().BridgeSet(gomock.Any(), gomock.Any())
 			res, err := h.BridgeGet(context.Background(), tt.bridge.ID)
 			if err != nil {

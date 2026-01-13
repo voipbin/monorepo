@@ -63,8 +63,8 @@ func Test_HoldOn(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().CallGet(ctx, tt.id.Return(tt.responseCall, nil)
-			mockChannel.EXPECT().HoldOn(ctx, tt.responseCall.ChannelID.Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
+			mockChannel.EXPECT().HoldOn(ctx, tt.responseCall.ChannelID).Return(nil)
 
 			if err := h.HoldOn(ctx, tt.id); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -118,8 +118,8 @@ func Test_HoldOff(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().CallGet(ctx, tt.id.Return(tt.responseCall, nil)
-			mockChannel.EXPECT().HoldOff(ctx, tt.responseCall.ChannelID.Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
+			mockChannel.EXPECT().HoldOff(ctx, tt.responseCall.ChannelID).Return(nil)
 
 			if err := h.HoldOff(ctx, tt.id); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

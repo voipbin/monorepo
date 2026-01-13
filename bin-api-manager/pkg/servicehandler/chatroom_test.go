@@ -33,7 +33,7 @@ func Test_ChatroomGetsByOwnerID(t *testing.T) {
 		responseAgent *amagent.Agent
 		response      []chatchatroom.Chatroom
 
-		expectFilters map[string]string
+		expectFilters map[chatchatroom.Field]any
 		expectRes     []*chatchatroom.WebhookMessage
 	}{
 		{
@@ -65,9 +65,9 @@ func Test_ChatroomGetsByOwnerID(t *testing.T) {
 				},
 			},
 
-			map[string]string{
-				"deleted":  "false",
-				"owner_id": "d152e69e-105b-11ee-b395-eb18426de979",
+			map[chatchatroom.Field]any{
+				chatchatroom.FieldDeleted: false,
+				chatchatroom.FieldOwnerID: "d152e69e-105b-11ee-b395-eb18426de979",
 			},
 			[]*chatchatroom.WebhookMessage{
 				{
@@ -94,8 +94,8 @@ func Test_ChatroomGetsByOwnerID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().AgentV1AgentGet(ctx, tt.ownerID.Return(tt.responseAgent, nil)
-			mockReq.EXPECT().ChatV1ChatroomGets(ctx, tt.token, tt.size, tt.expectFilters.Return(tt.response, nil)
+			mockReq.EXPECT().AgentV1AgentGet(ctx, tt.ownerID).Return(tt.responseAgent, nil)
+			mockReq.EXPECT().ChatV1ChatroomGets(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.response, nil)
 
 			res, err := h.ChatroomGetsByOwnerID(ctx, tt.agent, tt.ownerID, tt.size, tt.token)
 			if err != nil {
@@ -159,7 +159,7 @@ func Test_ChatroomGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().ChatV1ChatroomGet(ctx, tt.chatroomID.Return(tt.response, nil)
+			mockReq.EXPECT().ChatV1ChatroomGet(ctx, tt.chatroomID).Return(tt.response, nil)
 
 			res, err := h.ChatroomGet(ctx, tt.agent, tt.chatroomID)
 			if err != nil {
@@ -184,7 +184,7 @@ func Test_chatroomGetByChatIDAndOwnerID(t *testing.T) {
 
 		responseChatrooms []chatchatroom.Chatroom
 
-		expectFilters map[string]string
+		expectFilters map[chatchatroom.Field]any
 		expectRes     *chatchatroom.WebhookMessage
 	}{
 		{
@@ -208,10 +208,10 @@ func Test_chatroomGetByChatIDAndOwnerID(t *testing.T) {
 				},
 			},
 
-			expectFilters: map[string]string{
-				"deleted":  "false",
+			expectFilters: map[chatchatroom.Field]any{
+				chatchatroom.FieldDeleted: false,
 				"chat_id":  "731a0de8-bc02-11ee-9606-1b8395e94244",
-				"owner_id": "734e22c2-bc02-11ee-b7b0-9f9f9f508f1b",
+				chatchatroom.FieldOwnerID: "734e22c2-bc02-11ee-b7b0-9f9f9f508f1b",
 			},
 			expectRes: &chatchatroom.WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -237,8 +237,8 @@ func Test_chatroomGetByChatIDAndOwnerID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(utilhandler.TimeGetCurTime())
-			mockReq.EXPECT().ChatV1ChatroomGets(ctx, gomock.Any(), uint64(1), tt.expectFilters.Return(tt.responseChatrooms, nil)
+			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+			mockReq.EXPECT().ChatV1ChatroomGets(ctx, gomock.Any(), uint64(1), tt.expectFilters).Return(tt.responseChatrooms, nil)
 
 			res, err := h.chatroomGetByChatIDAndOwnerID(ctx, tt.agent, tt.chatID, tt.ownerID)
 			if err != nil {
@@ -304,8 +304,8 @@ func Test_ChatroomDelete(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ChatV1ChatroomGet(ctx, tt.chatroomID.Return(tt.responseChat, nil)
-			mockReq.EXPECT().ChatV1ChatroomDelete(ctx, tt.chatroomID.Return(tt.responseChat, nil)
+			mockReq.EXPECT().ChatV1ChatroomGet(ctx, tt.chatroomID).Return(tt.responseChat, nil)
+			mockReq.EXPECT().ChatV1ChatroomDelete(ctx, tt.chatroomID).Return(tt.responseChat, nil)
 
 			res, err := h.ChatroomDelete(ctx, tt.agent, tt.chatroomID)
 			if err != nil {
@@ -335,7 +335,7 @@ func Test_ChatroomCreate(t *testing.T) {
 		responseChatrooms []chatchatroom.Chatroom
 
 		expectType    chatchat.Type
-		expectFilters map[string]string
+		expectFilters map[chatchatroom.Field]any
 		expectRes     *chatchatroom.WebhookMessage
 	}{
 		{
@@ -377,10 +377,10 @@ func Test_ChatroomCreate(t *testing.T) {
 			},
 
 			expectType: chatchat.TypeNormal,
-			expectFilters: map[string]string{
-				"deleted":  "false",
+			expectFilters: map[chatchatroom.Field]any{
+				chatchatroom.FieldDeleted: false,
 				"chat_id":  "3eb7bbde-bc04-11ee-933b-f38aea616771",
-				"owner_id": "d152e69e-105b-11ee-b395-eb18426de979",
+				chatchatroom.FieldOwnerID: "d152e69e-105b-11ee-b395-eb18426de979",
 			},
 			expectRes: &chatchatroom.WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -410,13 +410,13 @@ func Test_ChatroomCreate(t *testing.T) {
 				if participantID == tt.agent.ID {
 					continue
 				}
-				mockReq.EXPECT().AgentV1AgentGet(ctx, participantID.Return(tt.responseAgents[i], nil)
+				mockReq.EXPECT().AgentV1AgentGet(ctx, participantID).Return(tt.responseAgents[i], nil)
 				i++
 			}
-			mockReq.EXPECT().ChatV1ChatCreate(ctx, tt.agent.CustomerID, tt.expectType, tt.agent.ID, tt.participantIDs, tt.chatroomName, tt.detail.Return(tt.responseChat, nil)
+			mockReq.EXPECT().ChatV1ChatCreate(ctx, tt.agent.CustomerID, tt.expectType, tt.agent.ID, tt.participantIDs, tt.chatroomName, tt.detail).Return(tt.responseChat, nil)
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(utilhandler.TimeGetCurTime())
-			mockReq.EXPECT().ChatV1ChatroomGets(ctx, gomock.Any(), uint64(1), tt.expectFilters.Return(tt.responseChatrooms, nil)
+			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+			mockReq.EXPECT().ChatV1ChatroomGets(ctx, gomock.Any(), uint64(1), tt.expectFilters).Return(tt.responseChatrooms, nil)
 
 			res, err := h.ChatroomCreate(ctx, tt.agent, tt.participantIDs, tt.chatroomName, tt.detail)
 			if err != nil {
@@ -492,8 +492,8 @@ func Test_ChatroomUpdateBasicInfo(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ChatV1ChatroomGet(ctx, tt.chatroomID.Return(tt.responseChatroom, nil)
-			mockReq.EXPECT().ChatV1ChatroomUpdateBasicInfo(ctx, tt.chatroomID, tt.chatName, tt.detail.Return(tt.responseChatroom, nil)
+			mockReq.EXPECT().ChatV1ChatroomGet(ctx, tt.chatroomID).Return(tt.responseChatroom, nil)
+			mockReq.EXPECT().ChatV1ChatroomUpdateBasicInfo(ctx, tt.chatroomID, tt.chatName, tt.detail).Return(tt.responseChatroom, nil)
 
 			res, err := h.ChatroomUpdateBasicInfo(ctx, tt.agent, tt.chatroomID, tt.chatName, tt.detail)
 			if err != nil {

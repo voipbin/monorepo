@@ -60,7 +60,7 @@ func Test_setup(t *testing.T) {
 
 			switch tt.account.Type {
 			case account.TypeLine:
-				mockLine.EXPECT().Setup(ctx, tt.account.Return(nil)
+				mockLine.EXPECT().Setup(ctx, tt.account).Return(nil)
 			}
 
 			if err := h.setup(ctx, tt.account); err != nil {

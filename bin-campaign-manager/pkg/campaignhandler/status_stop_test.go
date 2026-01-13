@@ -61,9 +61,9 @@ func Test_UpdateStatusStopping(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CampaignGet(ctx, tt.id.Return(tt.responseCampaign, nil)
-			mockDB.EXPECT().CampaignUpdateStatus(ctx, tt.id, campaign.StatusStopping.Return(nil)
-			mockDB.EXPECT().CampaignGet(ctx, tt.id.Return(tt.responseCampaign, nil)
+			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.responseCampaign, nil)
+			mockDB.EXPECT().CampaignUpdateStatus(ctx, tt.id, campaign.StatusStopping).Return(nil)
+			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.responseCampaign, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCampaign.CustomerID, campaign.EventTypeCampaignStatusStopping, tt.responseCampaign)
 
 			res, err := h.campaignStopping(ctx, tt.id)
@@ -118,9 +118,9 @@ func Test_updateStatusStop(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CampaignGet(ctx, tt.id.Return(tt.response, nil)
-			mockDB.EXPECT().CampaignUpdateStatus(ctx, tt.id, campaign.StatusStop.Return(nil)
-			mockDB.EXPECT().CampaignGet(ctx, tt.id.Return(tt.response, nil)
+			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
+			mockDB.EXPECT().CampaignUpdateStatus(ctx, tt.id, campaign.StatusStop).Return(nil)
+			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.response.CustomerID, campaign.EventTypeCampaignStatusStop, tt.response)
 
 			res, err := h.campaignStopNow(ctx, tt.id)
@@ -243,11 +243,11 @@ func Test_isStoppable(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CampaignGet(ctx, tt.id.Return(tt.response, nil)
+			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
 
 			if tt.response.Execute == campaign.ExecuteStop {
-				mockUtil.EXPECT().TimeGetCurTime(.Return(utilhandler.TimeGetCurTime())
-				mockCampaigncall.EXPECT().GetsOngoingByCampaignID(ctx, tt.id, gomock.Any(), uint64(1).Return(tt.responseCampaigncall, nil)
+				mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+				mockCampaigncall.EXPECT().GetsOngoingByCampaignID(ctx, tt.id, gomock.Any(), uint64(1)).Return(tt.responseCampaigncall, nil)
 			}
 
 			res := h.isStoppable(ctx, tt.id)

@@ -23,9 +23,9 @@ func (h *transcriptHandler) Recording(ctx context.Context, customerID uuid.UUID,
 		"language":      language,
 	})
 
-	filters := map[string]string{
-		"deleted":      "false",
-		"reference_id": recordingID.String(),
+	filters := map[smfile.Field]any{
+		smfile.FieldDeleted:     false,
+		smfile.FieldReferenceID: recordingID.String(),
 	}
 	files, err := h.reqHandler.StorageV1FileGets(ctx, "", 100, filters)
 	if err != nil {

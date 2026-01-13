@@ -91,7 +91,7 @@ func Test_AIcallCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AIV1AIGet(ctx, tt.aiID.Return(tt.responseAI, nil)
+			mockReq.EXPECT().AIV1AIGet(ctx, tt.aiID).Return(tt.responseAI, nil)
 			mockReq.EXPECT().AIV1AIcallStart(
 				ctx,
 				uuid.Nil,
@@ -100,7 +100,7 @@ func Test_AIcallCreate(t *testing.T) {
 				tt.referenceID,
 				tt.gender,
 				tt.language,
-			.Return(tt.responseAIcall, nil)
+			).Return(tt.responseAIcall, nil)
 
 			res, err := h.AIcallCreate(ctx, tt.agent, tt.aiID, tt.referenceType, tt.referenceID, tt.gender, tt.language)
 			if err != nil {
@@ -122,7 +122,7 @@ func Test_AIcallGetsByCustomerID(t *testing.T) {
 		agent   *amagent.Agent
 		size    uint64
 		token   string
-		filters map[string]string
+		filters map[amaicall.Field]any
 
 		response  []amaicall.AIcall
 		expectRes []*amaicall.WebhookMessage
@@ -139,9 +139,9 @@ func Test_AIcallGetsByCustomerID(t *testing.T) {
 			},
 			size:  10,
 			token: "2020-09-20 03:23:20.995000",
-			filters: map[string]string{
-				"deleted":     "false",
-				"customer_id": "5f621078-8e5f-11ee-97b2-cfe7337b701c",
+			filters: map[amaicall.Field]any{
+				amaicall.FieldDeleted:    false,
+				amaicall.FieldCustomerID: "5f621078-8e5f-11ee-97b2-cfe7337b701c",
 			},
 
 			response: []amaicall.AIcall{
@@ -175,7 +175,7 @@ func Test_AIcallGetsByCustomerID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AIV1AIcallGets(ctx, tt.token, tt.size, tt.filters.Return(tt.response, nil)
+			mockReq.EXPECT().AIV1AIcallGets(ctx, tt.token, tt.size, tt.filters).Return(tt.response, nil)
 
 			res, err := h.AIcallGetsByCustomerID(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {
@@ -240,7 +240,7 @@ func Test_AIcallGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AIV1AIcallGet(ctx, tt.aicallID.Return(tt.response, nil)
+			mockReq.EXPECT().AIV1AIcallGet(ctx, tt.aicallID).Return(tt.response, nil)
 
 			res, err := h.AIcallGet(ctx, tt.agent, tt.aicallID)
 			if err != nil {
@@ -306,8 +306,8 @@ func Test_AIcallDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AIV1AIcallGet(ctx, tt.aicallID.Return(tt.responseAicall, nil)
-			mockReq.EXPECT().AIV1AIcallDelete(ctx, tt.aicallID.Return(tt.responseAicall, nil)
+			mockReq.EXPECT().AIV1AIcallGet(ctx, tt.aicallID).Return(tt.responseAicall, nil)
+			mockReq.EXPECT().AIV1AIcallDelete(ctx, tt.aicallID).Return(tt.responseAicall, nil)
 
 			res, err := h.AIcallDelete(ctx, tt.agent, tt.aicallID)
 			if err != nil {

@@ -111,7 +111,7 @@ func Test_routesGet_customer_id(t *testing.T) {
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().RouteGetsByCustomerID(req.Context(), &tt.agent, tt.expectCustomerID, tt.expectPageSize, tt.expectPageToken.Return(tt.responseRoutes, nil)
+			mockSvc.EXPECT().RouteGetsByCustomerID(req.Context(), &tt.agent, tt.expectCustomerID, tt.expectPageSize, tt.expectPageToken).Return(tt.responseRoutes, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -211,7 +211,7 @@ func Test_routesGet_without_customer_id(t *testing.T) {
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().RouteGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken.Return(tt.responseRoutes, nil)
+			mockSvc.EXPECT().RouteGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseRoutes, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -300,7 +300,7 @@ func Test_routesPost(t *testing.T) {
 				tt.expectProviderID,
 				tt.expectPriority,
 				tt.expectTarget,
-			.Return(tt.responseRoute, nil)
+			).Return(tt.responseRoute, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -365,7 +365,7 @@ func Test_routesIDGet(t *testing.T) {
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().RouteGet(req.Context(), &tt.agent, tt.expectRouteID.Return(tt.responseRoute, nil)
+			mockSvc.EXPECT().RouteGet(req.Context(), &tt.agent, tt.expectRouteID).Return(tt.responseRoute, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -432,7 +432,7 @@ func Test_routesIDDelete(t *testing.T) {
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().RouteDelete(req.Context(), &tt.agent, tt.expectRouteID.Return(tt.responseRoute, nil)
+			mockSvc.EXPECT().RouteDelete(req.Context(), &tt.agent, tt.expectRouteID).Return(tt.responseRoute, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -520,7 +520,7 @@ func Test_routesIDPut(t *testing.T) {
 				tt.expectProviderID,
 				tt.expectPriority,
 				tt.expectTarget,
-			.Return(tt.responseRoute, nil)
+			).Return(tt.responseRoute, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

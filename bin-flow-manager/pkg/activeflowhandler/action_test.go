@@ -85,7 +85,7 @@ func Test_getActionsFromFlow(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1FlowGet(ctx, tt.flowID.Return(tt.responseFlow, nil)
+			mockReq.EXPECT().FlowV1FlowGet(ctx, tt.flowID).Return(tt.responseFlow, nil)
 
 			res, err := h.actionGetsFromFlow(ctx, tt.flowID, tt.customerID)
 			if err != nil {
@@ -175,17 +175,17 @@ func Test_updateNextAction(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ActiveflowGetWithLock(ctx, tt.activeflowID.Return(tt.responseActiveflow, nil)
-			mockDB.EXPECT().ActiveflowReleaseLock(ctx, tt.activeflowID.Return(nil)
+			mockDB.EXPECT().ActiveflowGetWithLock(ctx, tt.activeflowID).Return(tt.responseActiveflow, nil)
+			mockDB.EXPECT().ActiveflowReleaseLock(ctx, tt.activeflowID).Return(nil)
 
-			mockStack.EXPECT().GetNextAction(tt.responseActiveflow.StackMap, tt.responseActiveflow.CurrentStackID, tt.responseActiveflow.CurrentAction.ID, true.Return(tt.responseStackID, tt.responseAction)
+			mockStack.EXPECT().GetNextAction(tt.responseActiveflow.StackMap, tt.responseActiveflow.CurrentStackID, tt.responseActiveflow.CurrentAction.ID, true).Return(tt.responseStackID, tt.responseAction)
 
-			mockVar.EXPECT().Get(ctx, tt.activeflowID.Return(tt.responseVariable, nil)
+			mockVar.EXPECT().Get(ctx, tt.activeflowID).Return(tt.responseVariable, nil)
 			mockVar.EXPECT().SubstituteOption(ctx, tt.responseAction.Option, tt.responseVariable)
 
-			mockDB.EXPECT().ActiveflowGet(ctx, tt.activeflowID.Return(tt.responseActiveflow, nil)
-			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.activeflowID, gomock.Any().Return(nil)
-			mockDB.EXPECT().ActiveflowGet(ctx, tt.activeflowID.Return(tt.responseActiveflow, nil)
+			mockDB.EXPECT().ActiveflowGet(ctx, tt.activeflowID).Return(tt.responseActiveflow, nil)
+			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.activeflowID, gomock.Any()).Return(nil)
+			mockDB.EXPECT().ActiveflowGet(ctx, tt.activeflowID).Return(tt.responseActiveflow, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseActiveflow.CustomerID, activeflow.EventTypeActiveflowUpdated, tt.responseActiveflow)
 
 			res, err := h.updateNextAction(ctx, tt.activeflowID, tt.currentActionID)

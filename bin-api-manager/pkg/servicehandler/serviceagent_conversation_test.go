@@ -72,7 +72,7 @@ func Test_ServiceAgentConversationGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().ConversationV1ConversationGet(ctx, tt.conversationID.Return(tt.responseConversation, nil)
+			mockReq.EXPECT().ConversationV1ConversationGet(ctx, tt.conversationID).Return(tt.responseConversation, nil)
 
 			res, err := h.ServiceAgentConversationGet(ctx, tt.agent, tt.conversationID)
 			if err != nil {
@@ -161,7 +161,7 @@ func Test_ServiceAgentConversationGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().ConversationV1ConversationGets(ctx, tt.token, tt.size, tt.expectFilters.Return(tt.responseConversations, nil)
+			mockReq.EXPECT().ConversationV1ConversationGets(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseConversations, nil)
 
 			res, err := h.ServiceAgentConversationGets(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {

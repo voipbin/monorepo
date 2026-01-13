@@ -58,9 +58,9 @@ func Test_processEvent_processEventCUCustomerDeleted(t *testing.T) {
 				confbridgeHandler: mockConf,
 			}
 
-			mockCall.EXPECT().EventCUCustomerDeleted(gomock.Any(), tt.expectCustomer.Return(nil)
-			mockGroup.EXPECT().EventCUCustomerDeleted(gomock.Any(), tt.expectCustomer.Return(nil)
-			mockConf.EXPECT().EventCUCustomerDeleted(gomock.Any(), tt.expectCustomer.Return(nil)
+			mockCall.EXPECT().EventCUCustomerDeleted(gomock.Any(), tt.expectCustomer).Return(nil)
+			mockGroup.EXPECT().EventCUCustomerDeleted(gomock.Any(), tt.expectCustomer).Return(nil)
+			mockConf.EXPECT().EventCUCustomerDeleted(gomock.Any(), tt.expectCustomer).Return(nil)
 
 			if errProcess := h.processEvent(tt.event); errProcess != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errProcess)

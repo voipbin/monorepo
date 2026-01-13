@@ -5,6 +5,7 @@ import (
 	"fmt"
 	amagent "monorepo/bin-agent-manager/models/agent"
 	amsummary "monorepo/bin-ai-manager/models/summary"
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -106,7 +107,13 @@ func (h *serviceHandler) AISummaryGetsByCustomerID(ctx context.Context, a *amage
 		"customer_id": a.CustomerID.String(),
 	}
 
-	tmps, err := h.reqHandler.AIV1SummaryGets(ctx, token, size, filters)
+	// Convert string filters to typed filters
+	typedFilters, err := h.convertAISummaryFilters(filters)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not convert filters")
+	}
+
+	tmps, err := h.reqHandler.AIV1SummaryGets(ctx, token, size, typedFilters)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get ai summaries info")
 	}
@@ -119,6 +126,29 @@ func (h *serviceHandler) AISummaryGetsByCustomerID(ctx context.Context, a *amage
 	}
 
 	return res, nil
+}
+
+// convertAISummaryFilters converts map[string]string to map[amsummary.Field]any
+func (h *serviceHandler) convertAISummaryFilters(filters map[string]string) (map[amsummary.Field]any, error) {
+	// Convert to map[string]any first
+	srcAny := make(map[string]any, len(filters))
+	for k, v := range filters {
+		srcAny[k] = v
+	}
+
+	// Use reflection-based converter
+	typed, err := commondatabasehandler.ConvertMapToTypedMap(srcAny, amsummary.Summary{})
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert string keys to Field type
+	result := make(map[amsummary.Field]any, len(typed))
+	for k, v := range typed {
+		result[amsummary.Field(k)] = v
+	}
+
+	return result, nil
 }
 
 // AISummaryGet gets the ai summary of the given id.

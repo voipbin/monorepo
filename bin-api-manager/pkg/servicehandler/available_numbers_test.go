@@ -53,7 +53,7 @@ func Test_AvailableNumberGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().NumberV1AvailableNumberGets(ctx, tt.agent.CustomerID, tt.limit, tt.countryCode.Return([]nmavailablenumber.AvailableNumber{}, nil)
+			mockReq.EXPECT().NumberV1AvailableNumberGets(ctx, tt.agent.CustomerID, tt.limit, tt.countryCode).Return([]nmavailablenumber.AvailableNumber{}, nil)
 
 			_, err := h.AvailableNumberGets(ctx, tt.agent, tt.limit, tt.countryCode)
 			if err != nil {

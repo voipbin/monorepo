@@ -85,7 +85,7 @@ func Test_SendWebhookToCustomer(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockMessageTargethandler.EXPECT().Get(ctx, tt.customerID.Return(tt.responseAccount, nil)
+			mockMessageTargethandler.EXPECT().Get(ctx, tt.customerID).Return(tt.responseAccount, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, webhook.EventTypeWebhookPublished, tt.expectWebhook)
 
 			err := h.SendWebhookToCustomer(ctx, tt.customerID, tt.dataType, tt.data)

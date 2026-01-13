@@ -32,13 +32,13 @@ func (h *queueHandler) GetAgents(ctx context.Context, id uuid.UUID, status amage
 	tagIds := strings.Join(tmpIDs, ",")
 
 	// get filters
-	filters := map[string]string{
-		"deleted":     "false",
-		"customer_id": q.CustomerID.String(),
-		"tag_ids":     tagIds,
+	filters := map[amagent.Field]any{
+		amagent.FieldDeleted:    false,
+		amagent.FieldCustomerID: q.CustomerID.String(),
+		amagent.FieldTagIDs:     tagIds,
 	}
 	if status != amagent.StatusNone {
-		filters["status"] = string(status)
+		filters[amagent.FieldStatus] = string(status)
 	}
 
 	// get agents

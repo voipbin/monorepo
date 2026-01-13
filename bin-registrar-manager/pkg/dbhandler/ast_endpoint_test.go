@@ -51,7 +51,7 @@ func TestAstEndpointCreate(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().AstEndpointGet(gomock.Any(), *tt.endpoint.ID.Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().AstEndpointGet(gomock.Any(), *tt.endpoint.ID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().AstEndpointSet(gomock.Any(), gomock.Any())
 			res, err := h.AstEndpointGet(context.Background(), *tt.endpoint.ID)
 			if err != nil {
@@ -102,7 +102,7 @@ func TestAstEndpointDelete(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().AstEndpointGet(gomock.Any(), *tt.endpoint.ID.Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().AstEndpointGet(gomock.Any(), *tt.endpoint.ID).Return(nil, fmt.Errorf(""))
 			_, err := h.AstEndpointGet(context.Background(), *tt.endpoint.ID)
 			if err == nil {
 				t.Errorf("Wrong match. expect: err, got: ok")

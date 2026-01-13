@@ -116,14 +116,14 @@ func Test_MessageCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().MessageSet(ctx, gomock.Any())
 
 			if err := h.MessageCreate(ctx, tt.message); err != nil {
 				t.Errorf("Unexpected error: %v", err)
 			}
 
-			mockCache.EXPECT().MessageGet(ctx, tt.message.ID.Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().MessageGet(ctx, tt.message.ID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().MessageSet(ctx, gomock.Any())
 			res, err := h.MessageGet(ctx, tt.message.ID)
 			if err != nil {

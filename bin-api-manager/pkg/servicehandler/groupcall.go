@@ -11,6 +11,7 @@ import (
 	fmaction "monorepo/bin-flow-manager/models/action"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -62,7 +63,13 @@ func (h *serviceHandler) GroupcallGets(ctx context.Context, a *amagent.Agent, si
 	}
 
 	// get calls
-	tmps, err := h.reqHandler.CallV1GroupcallGets(ctx, token, size, filters)
+	// Convert string filters to typed filters
+	typedFilters, err := h.convertGroupcallFilters(filters)
+	if err != nil {
+		return nil, err
+	}
+
+	tmps, err := h.reqHandler.CallV1GroupcallGets(ctx, token, size, typedFilters)
 	if err != nil {
 		log.Infof("Could not get calls info. err: %v", err)
 		return nil, err
@@ -224,4 +231,27 @@ func (h *serviceHandler) GroupcallDelete(ctx context.Context, a *amagent.Agent, 
 	res := tmp.ConvertWebhookMessage()
 
 	return res, nil
+}
+
+// convertGroupcallFilters converts map[string]string to map[cmgroupcall.Field]any
+func (h *serviceHandler) convertGroupcallFilters(filters map[string]string) (map[cmgroupcall.Field]any, error) {
+	// Convert to map[string]any first
+	srcAny := make(map[string]any, len(filters))
+	for k, v := range filters {
+		srcAny[k] = v
+	}
+
+	// Use reflection-based converter
+	typed, err := commondatabasehandler.ConvertMapToTypedMap(srcAny, cmgroupcall.Groupcall{})
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert string keys to Field type
+	result := make(map[cmgroupcall.Field]any, len(typed))
+	for k, v := range typed {
+		result[cmgroupcall.Field(k)] = v
+	}
+
+	return result, nil
 }

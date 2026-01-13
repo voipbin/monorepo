@@ -78,7 +78,7 @@ func Test_processV1MessagesGet(t *testing.T) {
 				messageHandler: mockMessage,
 			}
 
-			mockMessage.EXPECT().Gets(gomock.Any(), tt.expectAIcallID, tt.expectPageSize, gomock.Any()).Return(tt.responseMessages, nil)
+			mockMessage.EXPECT().Gets(gomock.Any(), tt.expectAIcallID, tt.expectPageSize, gomock.Any(), gomock.Any()).Return(tt.responseMessages, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -152,7 +152,7 @@ func Test_processV1MessagesPost(t *testing.T) {
 				messageHandler: mockMessage,
 			}
 
-			mockAIcall.EXPECT().Send(gomock.Any(), tt.expectAIcallID, tt.expectRole, tt.expectContent, tt.expectRunImmediately, tt.expectAudioResponse.Return(tt.responseMessage, nil)
+			mockAIcall.EXPECT().Send(gomock.Any(), tt.expectAIcallID, tt.expectRole, tt.expectContent, tt.expectRunImmediately, tt.expectAudioResponse).Return(tt.responseMessage, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -213,7 +213,7 @@ func Test_processV1MessagesIDGet(t *testing.T) {
 				messageHandler: mockMessage,
 			}
 
-			mockMessage.EXPECT().Get(gomock.Any(), tt.expectID.Return(tt.responseMessage, nil)
+			mockMessage.EXPECT().Get(gomock.Any(), tt.expectID).Return(tt.responseMessage, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

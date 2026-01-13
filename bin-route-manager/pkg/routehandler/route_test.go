@@ -48,7 +48,7 @@ func Test_Get(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().RouteGet(ctx, tt.id.Return(tt.responseProvider, nil)
+			mockDB.EXPECT().RouteGet(ctx, tt.id).Return(tt.responseProvider, nil)
 
 			res, err := h.Get(ctx, tt.id)
 			if err != nil {
@@ -106,8 +106,8 @@ func Test_Create(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().RouteCreate(ctx, gomock.Any().Return(nil)
-			mockDB.EXPECT().RouteGet(ctx, gomock.Any().Return(tt.responseProvider, nil)
+			mockDB.EXPECT().RouteCreate(ctx, gomock.Any()).Return(nil)
+			mockDB.EXPECT().RouteGet(ctx, gomock.Any()).Return(tt.responseProvider, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, route.EventTypeRouteCreated, tt.responseProvider)
 
 			res, err := h.Create(ctx, tt.customerID, tt.routeName, tt.detail, tt.providerID, tt.priority, tt.target)
@@ -165,7 +165,7 @@ func Test_GetsByCustomerID(t *testing.T) {
 			filters := map[route.Field]any{
 				route.FieldCustomerID: tt.customerID,
 			}
-			mockDB.EXPECT().RouteGets(ctx, tt.token, tt.limit, filters.Return(tt.responseRoutes, nil)
+			mockDB.EXPECT().RouteGets(ctx, tt.token, tt.limit, filters).Return(tt.responseRoutes, nil)
 
 			res, err := h.GetsByCustomerID(ctx, tt.customerID, tt.token, tt.limit)
 			if err != nil {
@@ -217,7 +217,7 @@ func Test_GetsByCustomerID_customer_id_is_nil(t *testing.T) {
 			ctx := context.Background()
 
 			filters := map[route.Field]any{}
-			mockDB.EXPECT().RouteGets(ctx, tt.token, tt.limit, filters.Return(tt.responseRoutes, nil)
+			mockDB.EXPECT().RouteGets(ctx, tt.token, tt.limit, filters).Return(tt.responseRoutes, nil)
 
 			res, err := h.GetsByCustomerID(ctx, uuid.Nil, tt.token, tt.limit)
 			if err != nil {
@@ -298,8 +298,8 @@ func Test_GetsByTarget(t *testing.T) {
 				route.FieldCustomerID: tt.customerID,
 				route.FieldTarget:     route.TargetAll,
 			}
-			mockDB.EXPECT().RouteGets(ctx, "", uint64(1000), filtersTarget.Return(tt.responseRoutesCustomer, nil)
-			mockDB.EXPECT().RouteGets(ctx, "", uint64(1000), filtersAll.Return(tt.responseRoutesAll, nil)
+			mockDB.EXPECT().RouteGets(ctx, "", uint64(1000), filtersTarget).Return(tt.responseRoutesCustomer, nil)
+			mockDB.EXPECT().RouteGets(ctx, "", uint64(1000), filtersAll).Return(tt.responseRoutesAll, nil)
 
 			res, err := h.GetsByTarget(ctx, tt.customerID, tt.target)
 			if err != nil {
@@ -347,8 +347,8 @@ func Test_Delete(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().RouteDelete(ctx, tt.id.Return(nil)
-			mockDB.EXPECT().RouteGet(ctx, tt.id.Return(tt.responseRoute, nil)
+			mockDB.EXPECT().RouteDelete(ctx, tt.id).Return(nil)
+			mockDB.EXPECT().RouteGet(ctx, tt.id).Return(tt.responseRoute, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, route.EventTypeRouteDeleted, tt.responseRoute)
 
 			res, err := h.Delete(ctx, tt.id)
@@ -414,8 +414,8 @@ func Test_Update(t *testing.T) {
 				route.FieldPriority:   tt.priority,
 				route.FieldTarget:     tt.target,
 			}
-			mockDB.EXPECT().RouteUpdate(ctx, tt.id, fields.Return(nil)
-			mockDB.EXPECT().RouteGet(ctx, tt.id.Return(tt.responseRoute, nil)
+			mockDB.EXPECT().RouteUpdate(ctx, tt.id, fields).Return(nil)
+			mockDB.EXPECT().RouteGet(ctx, tt.id).Return(tt.responseRoute, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, route.EventTypeRouteUpdated, tt.responseRoute)
 
 			res, err := h.Update(ctx, tt.id, tt.routeName, tt.detail, tt.providerID, tt.priority, tt.target)

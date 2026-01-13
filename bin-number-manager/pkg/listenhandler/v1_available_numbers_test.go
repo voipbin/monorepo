@@ -80,7 +80,7 @@ func TestProcessV1AvailableNumbersGet(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockNumber.EXPECT().GetAvailableNumbers(tt.countryCode, tt.pageSize.Return(tt.numbers, nil)
+			mockNumber.EXPECT().GetAvailableNumbers(tt.countryCode, tt.pageSize).Return(tt.numbers, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

@@ -113,7 +113,7 @@ func Test_conferencecallsGET(t *testing.T) {
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().ConferencecallGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken.Return(tt.responseConferencecalls, nil)
+			mockSvc.EXPECT().ConferencecallGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseConferencecalls, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -183,7 +183,7 @@ func Test_ConferencecallsIDGET(t *testing.T) {
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().ConferencecallGet(req.Context(), &tt.agent, tt.expectConferencecallID.Return(tt.responseConference, nil)
+			mockSvc.EXPECT().ConferencecallGet(req.Context(), &tt.agent, tt.expectConferencecallID).Return(tt.responseConference, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
@@ -250,7 +250,7 @@ func Test_conferencecallsIDDELETE(t *testing.T) {
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().ConferencecallKick(req.Context(), &tt.agent, tt.expectConferencecallID.Return(tt.responseConferencecall, nil)
+			mockSvc.EXPECT().ConferencecallKick(req.Context(), &tt.agent, tt.expectConferencecallID).Return(tt.responseConferencecall, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

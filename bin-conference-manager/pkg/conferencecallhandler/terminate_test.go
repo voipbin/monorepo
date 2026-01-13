@@ -72,14 +72,14 @@ func Test_Terminate_kickable(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConferencecallGet(ctx, tt.id.Return(tt.responseConferencecall, nil)
-			mockConference.EXPECT().Get(ctx, tt.responseConferencecall.ConferenceID.Return(tt.responseConference, nil)
+			mockDB.EXPECT().ConferencecallGet(ctx, tt.id).Return(tt.responseConferencecall, nil)
+			mockConference.EXPECT().Get(ctx, tt.responseConferencecall.ConferenceID).Return(tt.responseConference, nil)
 			mockDB.EXPECT().ConferencecallUpdate(ctx, tt.id, map[conferencecall.Field]any{
 				conferencecall.FieldStatus: conferencecall.StatusLeaving,
-			}.Return(nil)
-			mockDB.EXPECT().ConferencecallGet(ctx, tt.id.Return(tt.responseConferencecall, nil)
+			}).Return(nil)
+			mockDB.EXPECT().ConferencecallGet(ctx, tt.id).Return(tt.responseConferencecall, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, gomock.Any(), gomock.Any())
-			mockReq.EXPECT().CallV1ConfbridgeCallKick(ctx, tt.responseConference.ConfbridgeID, tt.responseConferencecall.ReferenceID.Return(nil)
+			mockReq.EXPECT().CallV1ConfbridgeCallKick(ctx, tt.responseConference.ConfbridgeID, tt.responseConferencecall.ReferenceID).Return(nil)
 
 			res, err := h.Terminate(ctx, tt.id)
 			if err != nil {
@@ -147,8 +147,8 @@ func Test_Terminate_unkickable(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConferencecallGet(ctx, tt.id.Return(tt.responseConferencecall, nil)
-			mockConference.EXPECT().Get(ctx, tt.responseConferencecall.ConferenceID.Return(tt.responseConference, nil)
+			mockDB.EXPECT().ConferencecallGet(ctx, tt.id).Return(tt.responseConferencecall, nil)
+			mockConference.EXPECT().Get(ctx, tt.responseConferencecall.ConferenceID).Return(tt.responseConference, nil)
 
 			res, err := h.Terminate(ctx, tt.id)
 			if err != nil {
@@ -278,10 +278,10 @@ func Test_Terminated(t *testing.T) {
 
 			mockDB.EXPECT().ConferencecallUpdate(ctx, tt.conferencecall.ID, map[conferencecall.Field]any{
 				conferencecall.FieldStatus: conferencecall.StatusLeaved,
-			}.Return(nil)
-			mockDB.EXPECT().ConferencecallGet(ctx, tt.conferencecall.ID.Return(tt.conferencecall, nil)
+			}).Return(nil)
+			mockDB.EXPECT().ConferencecallGet(ctx, tt.conferencecall.ID).Return(tt.conferencecall, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, gomock.Any(), gomock.Any())
-			mockConference.EXPECT().RemoveConferencecallID(ctx, tt.conferencecall.ConferenceID, tt.conferencecall.ID.Return(tt.responseConference, nil)
+			mockConference.EXPECT().RemoveConferencecallID(ctx, tt.conferencecall.ConferenceID, tt.conferencecall.ID).Return(tt.responseConference, nil)
 
 			res, err := h.Terminated(ctx, tt.conferencecall)
 			if err != nil {

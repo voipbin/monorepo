@@ -54,7 +54,7 @@ func Test_processEvent_processEventFMFlowDeleted(t *testing.T) {
 				numberHandler: mockNumber,
 			}
 
-			mockNumber.EXPECT().EventFlowDeleted(gomock.Any(), tt.expectFlow.Return(nil)
+			mockNumber.EXPECT().EventFlowDeleted(gomock.Any(), tt.expectFlow).Return(nil)
 
 			h.processEvent(tt.event)
 		})

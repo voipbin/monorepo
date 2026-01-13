@@ -85,7 +85,7 @@ func Test_CampaigncallGets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().CampaignV1CampaigncallGets(ctx, tt.agent.CustomerID, tt.token, tt.size.Return(tt.responseCampaigncalls, nil)
+			mockReq.EXPECT().CampaignV1CampaigncallGets(ctx, tt.agent.CustomerID, tt.token, tt.size).Return(tt.responseCampaigncalls, nil)
 
 			res, err := h.CampaigncallGets(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {
@@ -173,8 +173,8 @@ func Test_campaigncallGetsByCampaignID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().CampaignV1CampaignGet(ctx, tt.campaignID.Return(tt.responseCampaign, nil)
-			mockReq.EXPECT().CampaignV1CampaigncallGetsByCampaignID(ctx, tt.campaignID, tt.pageToken, tt.pageSize.Return(tt.responseCampaigncalls, nil)
+			mockReq.EXPECT().CampaignV1CampaignGet(ctx, tt.campaignID).Return(tt.responseCampaign, nil)
+			mockReq.EXPECT().CampaignV1CampaigncallGetsByCampaignID(ctx, tt.campaignID, tt.pageToken, tt.pageSize).Return(tt.responseCampaigncalls, nil)
 			res, err := h.CampaigncallGetsByCampaignID(ctx, tt.agent, tt.campaignID, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -238,7 +238,7 @@ func Test_CampaigncallGet(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().CampaignV1CampaigncallGet(ctx, tt.campaigncallID.Return(tt.response, nil)
+			mockReq.EXPECT().CampaignV1CampaigncallGet(ctx, tt.campaigncallID).Return(tt.response, nil)
 			res, err := h.CampaigncallGet(ctx, tt.agent, tt.campaigncallID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -303,8 +303,8 @@ func Test_CampaigncallDelete(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().CampaignV1CampaigncallGet(ctx, tt.id.Return(tt.responseCampaigncall, nil)
-			mockReq.EXPECT().CampaignV1CampaigncallDelete(ctx, tt.id.Return(tt.responseCampaigncall, nil)
+			mockReq.EXPECT().CampaignV1CampaigncallGet(ctx, tt.id).Return(tt.responseCampaigncall, nil)
+			mockReq.EXPECT().CampaignV1CampaigncallDelete(ctx, tt.id).Return(tt.responseCampaigncall, nil)
 			res, err := h.CampaigncallDelete(ctx, tt.agent, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

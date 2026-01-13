@@ -82,7 +82,7 @@ func Test_ServiceAgentCustomerGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.agent.CustomerID.Return(tt.responseCustomer, nil)
+			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.agent.CustomerID).Return(tt.responseCustomer, nil)
 
 			res, err := h.ServiceAgentCustomerGet(ctx, tt.agent)
 			if err != nil {

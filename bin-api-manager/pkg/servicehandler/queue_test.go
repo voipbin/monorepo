@@ -26,7 +26,7 @@ func Test_QueueGets(t *testing.T) {
 		pageToken string
 		pageSize  uint64
 
-		expectFilters map[string]string
+		expectFilters map[qmqueue.Field]any
 
 		responseQueues []qmqueue.Queue
 		expectRes      []*qmqueue.WebhookMessage
@@ -45,9 +45,9 @@ func Test_QueueGets(t *testing.T) {
 			"2021-03-01 01:00:00.995000",
 			10,
 
-			map[string]string{
-				"customer_id": "5f621078-8e5f-11ee-97b2-cfe7337b701c",
-				"deleted":     "false",
+			map[qmqueue.Field]any{
+				qmqueue.FieldCustomerID: "5f621078-8e5f-11ee-97b2-cfe7337b701c",
+				qmqueue.FieldDeleted:    false,
 			},
 
 			[]qmqueue.Queue{
@@ -81,7 +81,7 @@ func Test_QueueGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().QueueV1QueueGets(ctx, tt.pageToken, tt.pageSize, tt.expectFilters.Return(tt.responseQueues, nil)
+			mockReq.EXPECT().QueueV1QueueGets(ctx, tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.responseQueues, nil)
 
 			res, err := h.QueueGets(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
@@ -147,7 +147,7 @@ func Test_QueueGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().QueueV1QueueGet(ctx, tt.id.Return(tt.response, nil)
+			mockReq.EXPECT().QueueV1QueueGet(ctx, tt.id).Return(tt.response, nil)
 
 			res, err := h.QueueGet(ctx, tt.agent, tt.id)
 			if err != nil {
@@ -237,7 +237,7 @@ func Test_QueueCreate(t *testing.T) {
 				tt.waitFlowID,
 				tt.timeoutWait,
 				tt.timeoutService,
-			.Return(tt.response, nil)
+			).Return(tt.response, nil)
 
 			res, err := h.QueueCreate(
 				ctx,
@@ -315,8 +315,8 @@ func Test_QueueDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().QueueV1QueueGet(ctx, tt.queueID.Return(tt.response, nil)
-			mockReq.EXPECT().QueueV1QueueDelete(ctx, tt.queueID.Return(tt.response, nil)
+			mockReq.EXPECT().QueueV1QueueGet(ctx, tt.queueID).Return(tt.response, nil)
+			mockReq.EXPECT().QueueV1QueueDelete(ctx, tt.queueID).Return(tt.response, nil)
 
 			res, err := h.QueueDelete(ctx, tt.customer, tt.queueID)
 			if err != nil {
@@ -400,7 +400,7 @@ func Test_QueueUpdate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().QueueV1QueueGet(ctx, tt.queueID.Return(tt.response, nil)
+			mockReq.EXPECT().QueueV1QueueGet(ctx, tt.queueID).Return(tt.response, nil)
 			mockReq.EXPECT().QueueV1QueueUpdate(
 				ctx,
 				tt.queueID,
@@ -411,7 +411,7 @@ func Test_QueueUpdate(t *testing.T) {
 				tt.waitFlowID,
 				tt.timeoutWait,
 				tt.timeoutService,
-			.Return(tt.response, nil)
+			).Return(tt.response, nil)
 
 			res, err := h.QueueUpdate(
 				ctx,
@@ -523,8 +523,8 @@ func Test_QueueUpdateTagIDs(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().QueueV1QueueGet(ctx, tt.queueID.Return(tt.response, nil)
-			mockReq.EXPECT().QueueV1QueueUpdateTagIDs(ctx, tt.queueID, tt.tagIDs.Return(tt.response, nil)
+			mockReq.EXPECT().QueueV1QueueGet(ctx, tt.queueID).Return(tt.response, nil)
+			mockReq.EXPECT().QueueV1QueueUpdateTagIDs(ctx, tt.queueID, tt.tagIDs).Return(tt.response, nil)
 
 			res, err := h.QueueUpdateTagIDs(ctx, tt.agent, tt.queueID, tt.tagIDs)
 			if err != nil {
@@ -621,8 +621,8 @@ func Test_QueueUpdateRoutingMethod(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().QueueV1QueueGet(ctx, tt.queueID.Return(tt.response, nil)
-			mockReq.EXPECT().QueueV1QueueUpdateRoutingMethod(ctx, tt.queueID, tt.routingMethod.Return(tt.response, nil)
+			mockReq.EXPECT().QueueV1QueueGet(ctx, tt.queueID).Return(tt.response, nil)
+			mockReq.EXPECT().QueueV1QueueUpdateRoutingMethod(ctx, tt.queueID, tt.routingMethod).Return(tt.response, nil)
 
 			res, err := h.QueueUpdateRoutingMethod(ctx, tt.agent, tt.queueID, tt.routingMethod)
 			if err != nil {

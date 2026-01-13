@@ -131,22 +131,22 @@ func Test_Start_referencetype_call(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1CallGet(ctx, tt.referenceID.Return(tt.responseCall, nil)
+			mockReq.EXPECT().CallV1CallGet(ctx, tt.referenceID).Return(tt.responseCall, nil)
 
 			// streaming start
-			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 
 			if tt.direction == transcribe.DirectionBoth {
-				mockStreaming.EXPECT().Start(ctx, tt.customerID, tt.responseUUID, tt.referenceType, tt.referenceID, tt.language, transcript.DirectionIn.Return(tt.responseStreamings[0], nil)
-				mockStreaming.EXPECT().Start(ctx, tt.customerID, tt.responseUUID, tt.referenceType, tt.referenceID, tt.language, transcript.DirectionOut.Return(tt.responseStreamings[1], nil)
+				mockStreaming.EXPECT().Start(ctx, tt.customerID, tt.responseUUID, tt.referenceType, tt.referenceID, tt.language, transcript.DirectionIn).Return(tt.responseStreamings[0], nil)
+				mockStreaming.EXPECT().Start(ctx, tt.customerID, tt.responseUUID, tt.referenceType, tt.referenceID, tt.language, transcript.DirectionOut).Return(tt.responseStreamings[1], nil)
 			} else {
-				mockStreaming.EXPECT().Start(ctx, tt.customerID, tt.responseUUID, tt.referenceType, tt.referenceID, tt.language, tt.direction.Return(tt.responseStreamings[0], nil)
+				mockStreaming.EXPECT().Start(ctx, tt.customerID, tt.responseUUID, tt.referenceType, tt.referenceID, tt.language, tt.direction).Return(tt.responseStreamings[0], nil)
 			}
 
 			// create
-			mockDB.EXPECT().TranscribeCreate(ctx, tt.expectTranscribe.Return(nil)
-			mockDB.EXPECT().TranscribeGet(ctx, gomock.Any(.Return(tt.responseTranscribe, nil)
-			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.activeflowID, gomock.Any(.Return(nil)
+			mockDB.EXPECT().TranscribeCreate(ctx, tt.expectTranscribe).Return(nil)
+			mockDB.EXPECT().TranscribeGet(ctx, gomock.Any()).Return(tt.responseTranscribe, nil)
+			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.activeflowID, gomock.Any()).Return(nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), gomock.Any(), gomock.Any())
 
 			res, err := h.Start(ctx, tt.customerID, tt.activeflowID, tt.onEndFlowID, tt.referenceType, tt.referenceID, tt.language, tt.direction)
@@ -232,10 +232,10 @@ func Test_isValidReference(t *testing.T) {
 
 			switch tt.referenceType {
 			case transcribe.ReferenceTypeCall:
-				mockReq.EXPECT().CallV1CallGet(ctx, tt.referenceID.Return(tt.responseCall, nil)
+				mockReq.EXPECT().CallV1CallGet(ctx, tt.referenceID).Return(tt.responseCall, nil)
 
 			case transcribe.ReferenceTypeConfbridge:
-				mockReq.EXPECT().CallV1ConfbridgeGet(ctx, tt.referenceID.Return(tt.responseConfbridge, nil)
+				mockReq.EXPECT().CallV1ConfbridgeGet(ctx, tt.referenceID).Return(tt.responseConfbridge, nil)
 			}
 
 			res := h.isValidReference(ctx, tt.referenceType, tt.referenceID)
@@ -327,17 +327,17 @@ func Test_startLive(t *testing.T) {
 			ctx := context.Background()
 
 			// create
-			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
-			mockDB.EXPECT().TranscribeCreate(ctx, gomock.Any(.Return(nil)
-			mockDB.EXPECT().TranscribeGet(ctx, gomock.Any(.Return(tt.responseTranscribe, nil)
-			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.activeflowID, gomock.Any(.Return(nil)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockDB.EXPECT().TranscribeCreate(ctx, gomock.Any()).Return(nil)
+			mockDB.EXPECT().TranscribeGet(ctx, gomock.Any()).Return(tt.responseTranscribe, nil)
+			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.activeflowID, gomock.Any()).Return(nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseTranscribe.CustomerID, transcribe.EventTypeTranscribeCreated, tt.responseTranscribe)
 
 			if tt.direction == transcribe.DirectionBoth {
-				mockStreaming.EXPECT().Start(ctx, tt.customerID, tt.responseUUID, tt.referenceType, tt.referenceID, tt.language, transcript.DirectionIn.Return(tt.responseStreamings[0], nil)
-				mockStreaming.EXPECT().Start(ctx, tt.customerID, tt.responseUUID, tt.referenceType, tt.referenceID, tt.language, transcript.DirectionOut.Return(tt.responseStreamings[1], nil)
+				mockStreaming.EXPECT().Start(ctx, tt.customerID, tt.responseUUID, tt.referenceType, tt.referenceID, tt.language, transcript.DirectionIn).Return(tt.responseStreamings[0], nil)
+				mockStreaming.EXPECT().Start(ctx, tt.customerID, tt.responseUUID, tt.referenceType, tt.referenceID, tt.language, transcript.DirectionOut).Return(tt.responseStreamings[1], nil)
 			} else {
-				mockStreaming.EXPECT().Start(ctx, tt.customerID, tt.responseUUID, tt.referenceType, tt.referenceID, tt.language, tt.direction.Return(tt.responseStreamings[0], nil)
+				mockStreaming.EXPECT().Start(ctx, tt.customerID, tt.responseUUID, tt.referenceType, tt.referenceID, tt.language, tt.direction).Return(tt.responseStreamings[0], nil)
 			}
 
 			res, err := h.startLive(ctx, tt.customerID, tt.activeflowID, tt.onEndFlowID, tt.referenceType, tt.referenceID, tt.language, tt.direction)

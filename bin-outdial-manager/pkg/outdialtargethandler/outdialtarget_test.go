@@ -62,8 +62,8 @@ func Test_Create(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().OutdialTargetCreate(ctx, gomock.Any().Return(nil)
-			mockDB.EXPECT().OutdialTargetGet(ctx, gomock.Any().Return(&outdialtarget.OutdialTarget{}, nil)
+			mockDB.EXPECT().OutdialTargetCreate(ctx, gomock.Any()).Return(nil)
+			mockDB.EXPECT().OutdialTargetGet(ctx, gomock.Any()).Return(&outdialtarget.OutdialTarget{}, nil)
 
 			_, err := h.Create(
 				ctx,
@@ -114,8 +114,8 @@ func Test_Delete(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().OutdialTargetDelete(ctx, tt.outdialID.Return(nil)
-			mockDB.EXPECT().OutdialTargetGet(ctx, tt.outdialID.Return(&outdialtarget.OutdialTarget{}, nil)
+			mockDB.EXPECT().OutdialTargetDelete(ctx, tt.outdialID).Return(nil)
+			mockDB.EXPECT().OutdialTargetGet(ctx, tt.outdialID).Return(&outdialtarget.OutdialTarget{}, nil)
 
 			_, err := h.Delete(ctx, tt.outdialID)
 			if err != nil {
@@ -160,7 +160,7 @@ func Test_GetsByOutdialID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().OutdialTargetGets(ctx, tt.token, tt.limit, gomock.Any().Return([]*outdialtarget.OutdialTarget{}, nil)
+			mockDB.EXPECT().OutdialTargetGets(ctx, tt.token, tt.limit, gomock.Any()).Return([]*outdialtarget.OutdialTarget{}, nil)
 			_, err := h.GetsByOutdialID(ctx, tt.outdialID, tt.token, tt.limit)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -212,7 +212,7 @@ func Test_GetAvailable(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().OutdialTargetGetAvailable(ctx, tt.outdialID, tt.tryCount0, tt.tryCount1, tt.tryCount2, tt.tryCount3, tt.tryCount4, tt.limit.Return([]*outdialtarget.OutdialTarget{}, nil)
+			mockDB.EXPECT().OutdialTargetGetAvailable(ctx, tt.outdialID, tt.tryCount0, tt.tryCount1, tt.tryCount2, tt.tryCount3, tt.tryCount4, tt.limit).Return([]*outdialtarget.OutdialTarget{}, nil)
 			_, err := h.GetAvailable(ctx, tt.outdialID, tt.tryCount0, tt.tryCount1, tt.tryCount2, tt.tryCount3, tt.tryCount4, tt.limit)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

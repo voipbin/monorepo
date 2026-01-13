@@ -95,13 +95,13 @@ func Test_OutplanCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
-			mockCache.EXPECT().OutplanSet(ctx, gomock.Any().Return(nil)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().OutplanSet(ctx, gomock.Any()).Return(nil)
 			if err := h.OutplanCreate(context.Background(), tt.outplan); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().OutplanGet(gomock.Any(), tt.outplan.ID.Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().OutplanGet(gomock.Any(), tt.outplan.ID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().OutplanSet(gomock.Any(), gomock.Any())
 			res, err := h.OutplanGet(ctx, tt.outplan.ID)
 			if err != nil {
@@ -195,19 +195,19 @@ func Test_OutplanDelete(t *testing.T) {
 				cache: mockCache,
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().OutplanSet(gomock.Any(), gomock.Any())
 			if err := h.OutplanCreate(context.Background(), tt.outplan); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().OutplanSet(gomock.Any(), gomock.Any())
 			if err := h.OutplanDelete(context.Background(), tt.outplan.ID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().OutplanGet(gomock.Any(), tt.outplan.ID.Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().OutplanGet(gomock.Any(), tt.outplan.ID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().OutplanSet(gomock.Any(), gomock.Any())
 			res, err := h.OutplanGet(context.Background(), tt.outplan.ID)
 			if err != nil {
@@ -424,8 +424,8 @@ func Test_OutplanGetsByCustomerID(t *testing.T) {
 			ctx := context.Background()
 
 			for _, p := range tt.outplans {
-				mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurtime)
-				mockCache.EXPECT().OutplanSet(ctx, gomock.Any().Return(nil)
+				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurtime)
+				mockCache.EXPECT().OutplanSet(ctx, gomock.Any()).Return(nil)
 				if err := h.OutplanCreate(ctx, p); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
 				}
@@ -527,19 +527,19 @@ func Test_OutplanUpdateBasicInfo(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
-			mockCache.EXPECT().OutplanSet(ctx, gomock.Any().Return(nil)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().OutplanSet(ctx, gomock.Any()).Return(nil)
 			if err := h.OutplanCreate(context.Background(), tt.outplan); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
-			mockCache.EXPECT().OutplanSet(ctx, gomock.Any().Return(nil)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().OutplanSet(ctx, gomock.Any()).Return(nil)
 			if err := h.OutplanUpdateBasicInfo(ctx, tt.outplan.ID, tt.outplanName, tt.detail); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().OutplanGet(gomock.Any(), tt.outplan.ID.Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().OutplanGet(gomock.Any(), tt.outplan.ID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().OutplanSet(gomock.Any(), gomock.Any())
 			res, err := h.OutplanGet(ctx, tt.outplan.ID)
 			if err != nil {
@@ -645,19 +645,19 @@ func Test_OutplanUpdateDialInfo(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
-			mockCache.EXPECT().OutplanSet(ctx, gomock.Any().Return(nil)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().OutplanSet(ctx, gomock.Any()).Return(nil)
 			if err := h.OutplanCreate(ctx, tt.outplan); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
-			mockCache.EXPECT().OutplanSet(ctx, gomock.Any().Return(nil)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().OutplanSet(ctx, gomock.Any()).Return(nil)
 			if err := h.OutplanUpdateDialInfo(ctx, tt.outplan.ID, tt.source, tt.dialTimeout, tt.tryInterval, tt.maxTryCount0, tt.maxTryCount1, tt.maxTryCount2, tt.maxTryCount3, tt.maxTryCount4); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().OutplanGet(gomock.Any(), tt.outplan.ID.Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().OutplanGet(gomock.Any(), tt.outplan.ID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().OutplanSet(gomock.Any(), gomock.Any())
 			res, err := h.OutplanGet(ctx, tt.outplan.ID)
 			if err != nil {

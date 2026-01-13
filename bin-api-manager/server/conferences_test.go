@@ -124,7 +124,7 @@ func Test_conferencesPOST(t *testing.T) {
 				tt.expectedTimeout,
 				tt.expectedPreFlowID,
 				tt.expectedPostFlowID,
-			.Return(tt.responseConference, nil)
+			).Return(tt.responseConference, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -187,7 +187,7 @@ func TestConferencesIDGET(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().ConferenceGet(req.Context(), &tt.agent, tt.expectConferenceID.Return(tt.responseConference, nil)
+			mockSvc.EXPECT().ConferenceGet(req.Context(), &tt.agent, tt.expectConferenceID).Return(tt.responseConference, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -249,7 +249,7 @@ func Test_conferencesIDDELETE(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().ConferenceDelete(req.Context(), &tt.agent, tt.expectConferenceID.Return(tt.responseConference, nil)
+			mockSvc.EXPECT().ConferenceDelete(req.Context(), &tt.agent, tt.expectConferenceID).Return(tt.responseConference, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -340,7 +340,7 @@ func Test_conferencesIDPUT(t *testing.T) {
 				tt.expectedTimeout,
 				tt.expectedPreFlowID,
 				tt.expectedPostFlowID,
-			.Return(tt.responseConference, nil)
+			).Return(tt.responseConference, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -410,7 +410,7 @@ func Test_conferencesIDRecordingStartPOST(t *testing.T) {
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 
-			mockSvc.EXPECT().ConferenceRecordingStart(req.Context(), &tt.agent, tt.expectedConferenceID, tt.expectedFormat, tt.expectedDuration, tt.expectedOnEndFlowID.Return(tt.responseConference, nil)
+			mockSvc.EXPECT().ConferenceRecordingStart(req.Context(), &tt.agent, tt.expectedConferenceID, tt.expectedFormat, tt.expectedDuration, tt.expectedOnEndFlowID).Return(tt.responseConference, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -472,7 +472,7 @@ func Test_conferencesIDRecordingStopPOST(t *testing.T) {
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().ConferenceRecordingStop(req.Context(), &tt.agent, tt.expectConferenceID.Return(tt.responseConference, nil)
+			mockSvc.EXPECT().ConferenceRecordingStop(req.Context(), &tt.agent, tt.expectConferenceID).Return(tt.responseConference, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -540,7 +540,7 @@ func Test_conferencesIDTranscribeStartPOST(t *testing.T) {
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 
-			mockSvc.EXPECT().ConferenceTranscribeStart(req.Context(), &tt.agent, tt.expectConferenceID, tt.expectLanguage.Return(tt.responseConference, nil)
+			mockSvc.EXPECT().ConferenceTranscribeStart(req.Context(), &tt.agent, tt.expectConferenceID, tt.expectLanguage).Return(tt.responseConference, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -602,7 +602,7 @@ func Test_conferencesIDTranscribeStopPOST(t *testing.T) {
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().ConferenceTranscribeStop(req.Context(), &tt.agent, tt.expectConferenceID.Return(tt.responseConference, nil)
+			mockSvc.EXPECT().ConferenceTranscribeStop(req.Context(), &tt.agent, tt.expectConferenceID).Return(tt.responseConference, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -663,7 +663,7 @@ func Test_conferencesIDMediaStreamGET(t *testing.T) {
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ConferenceMediaStreamStart(req.Context(), &tt.agent, tt.expectConferenceID, tt.expectEncapsulation, c.Writer, req.Return(nil)
+			mockSvc.EXPECT().ConferenceMediaStreamStart(req.Context(), &tt.agent, tt.expectConferenceID, tt.expectEncapsulation, c.Writer, req).Return(nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

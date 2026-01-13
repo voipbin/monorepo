@@ -231,37 +231,37 @@ func Test_Start_incoming_typeConferenceStart(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockChannel.EXPECT().HangingUpWithDelay(ctx, gomock.Any(), gomock.Any(), defaultTimeoutCallDuration.Return(&channel.Channel{}, nil)
+			mockChannel.EXPECT().HangingUpWithDelay(ctx, gomock.Any(), gomock.Any(), defaultTimeoutCallDuration).Return(&channel.Channel{}, nil)
 
-			mockChannel.EXPECT().AddressGetSource(tt.channel, commonaddress.TypeSIP.Return(tt.responseSource)
-			mockChannel.EXPECT().AddressGetDestination(tt.channel, commonaddress.TypeConference.Return(tt.responseDestination)
+			mockChannel.EXPECT().AddressGetSource(tt.channel, commonaddress.TypeSIP).Return(tt.responseSource)
+			mockChannel.EXPECT().AddressGetDestination(tt.channel, commonaddress.TypeConference).Return(tt.responseDestination)
 
-			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUIDCall)
-			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, uuid.FromStringOrNil(tt.channel.DestinationNumber).Return(tt.responseConference, nil)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDCall)
+			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, uuid.FromStringOrNil(tt.channel.DestinationNumber)).Return(tt.responseConference, nil)
 
 			// addCallBridge
-			mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, tt.responseConference.CustomerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1.Return(true, nil)
-			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUIDBridge)
-			mockBridge.EXPECT().Start(ctx, tt.channel.AsteriskID, tt.responseUUIDBridge.String(), tt.expectBridgeName, []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}.Return(tt.responseBridge, nil)
-			mockBridge.EXPECT().ChannelJoin(ctx, tt.responseUUIDBridge.String(), tt.channel.ID, "", false, false.Return(nil)
+			mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, tt.responseConference.CustomerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDBridge)
+			mockBridge.EXPECT().Start(ctx, tt.channel.AsteriskID, tt.responseUUIDBridge.String(), tt.expectBridgeName, []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}).Return(tt.responseBridge, nil)
+			mockBridge.EXPECT().ChannelJoin(ctx, tt.responseUUIDBridge.String(), tt.channel.ID, "", false, false).Return(nil)
 
-			mockReq.EXPECT().AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, tt.responseConference.CustomerID, *tt.responseSource.Return(nil, fmt.Errorf(""))
+			mockReq.EXPECT().AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, tt.responseConference.CustomerID, *tt.responseSource).Return(nil, fmt.Errorf(""))
 
-			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.responseConference.CustomerID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), tt.expectActions, uuid.Nil, false.Return(tt.responseFlow, nil)
+			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.responseConference.CustomerID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), tt.expectActions, uuid.Nil, false).Return(tt.responseFlow, nil)
 
-			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, uuid.Nil, tt.responseConference.CustomerID, tt.responseFlow.ID, fmactiveflow.ReferenceTypeCall, gomock.Any(), uuid.Nil.Return(tt.responseActiveflow, nil)
+			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, uuid.Nil, tt.responseConference.CustomerID, tt.responseFlow.ID, fmactiveflow.ReferenceTypeCall, gomock.Any(), uuid.Nil).Return(tt.responseActiveflow, nil)
 
-			mockDB.EXPECT().CallCreate(ctx, tt.expectCall.Return(nil)
-			mockDB.EXPECT().CallGet(ctx, gomock.Any().Return(tt.responseCall, nil)
+			mockDB.EXPECT().CallCreate(ctx, tt.expectCall).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, gomock.Any()).Return(tt.responseCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallCreated, tt.responseCall)
-			mockReq.EXPECT().CallV1CallHealth(ctx, tt.responseCall.ID, defaultHealthDelay, 0.Return(nil)
+			mockReq.EXPECT().CallV1CallHealth(ctx, tt.responseCall.ID, defaultHealthDelay, 0).Return(nil)
 
 			// setVariables
-			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any().Return(nil).AnyTimes()
+			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 
 			// action next part.
-			mockDB.EXPECT().CallSetActionNextHold(ctx, gomock.Any(), gomock.Any().Return(nil)
-			mockReq.EXPECT().FlowV1ActiveflowGetNextAction(ctx, gomock.Any(), fmaction.IDStart.Return(nil, fmt.Errorf(""))
+			mockDB.EXPECT().CallSetActionNextHold(ctx, gomock.Any(), gomock.Any()).Return(nil)
+			mockReq.EXPECT().FlowV1ActiveflowGetNextAction(ctx, gomock.Any(), fmaction.IDStart).Return(nil, fmt.Errorf(""))
 
 			if err := h.Start(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -286,7 +286,7 @@ func Test_StartCallHandle_IncomingTypeFlow(t *testing.T) {
 		responseActiveflow  *fmactiveflow.Activeflow
 		responseCall        *call.Call
 
-		expectFilters map[string]string
+		expectFilters map[number.Field]any
 		expectCall    *call.Call
 	}
 
@@ -356,9 +356,9 @@ func Test_StartCallHandle_IncomingTypeFlow(t *testing.T) {
 				},
 			},
 
-			map[string]string{
-				"number":  "+123456789",
-				"deleted": "false",
+			map[number.Field]any{
+				number.FieldNumber:  "+123456789",
+				number.FieldDeleted: false,
 			},
 			&call.Call{
 				Identity: commonidentity.Identity{
@@ -424,35 +424,35 @@ func Test_StartCallHandle_IncomingTypeFlow(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockChannel.EXPECT().HangingUpWithDelay(ctx, tt.channel.ID, ari.ChannelCauseCallDurationTimeout, defaultTimeoutCallDuration.Return(&channel.Channel{}, nil)
+			mockChannel.EXPECT().HangingUpWithDelay(ctx, tt.channel.ID, ari.ChannelCauseCallDurationTimeout, defaultTimeoutCallDuration).Return(&channel.Channel{}, nil)
 
-			mockChannel.EXPECT().AddressGetSource(tt.channel, commonaddress.TypeTel.Return(tt.responseSource)
-			mockChannel.EXPECT().AddressGetDestination(tt.channel, commonaddress.TypeTel.Return(tt.responseDestination)
+			mockChannel.EXPECT().AddressGetSource(tt.channel, commonaddress.TypeTel).Return(tt.responseSource)
+			mockChannel.EXPECT().AddressGetDestination(tt.channel, commonaddress.TypeTel).Return(tt.responseDestination)
 
-			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUIDCall)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDCall)
 
-			mockReq.EXPECT().NumberV1NumberGets(ctx, "", uint64(1), tt.expectFilters.Return(tt.responseNumbers, nil)
-			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, uuid.Nil, tt.responseNumbers[0].CustomerID, tt.responseNumbers[0].CallFlowID, fmactiveflow.ReferenceTypeCall, gomock.Any(), uuid.Nil.Return(tt.responseActiveflow, nil)
+			mockReq.EXPECT().NumberV1NumberGets(ctx, "", uint64(1), tt.expectFilters).Return(tt.responseNumbers, nil)
+			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, uuid.Nil, tt.responseNumbers[0].CustomerID, tt.responseNumbers[0].CallFlowID, fmactiveflow.ReferenceTypeCall, gomock.Any(), uuid.Nil).Return(tt.responseActiveflow, nil)
 
-			mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, tt.responseNumbers[0].CustomerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1.Return(true, nil)
+			mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, tt.responseNumbers[0].CustomerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
 
-			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUIDBridge)
-			mockBridge.EXPECT().Start(ctx, tt.channel.AsteriskID, tt.responseUUIDBridge.String(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}.Return(tt.responseBridge, nil)
-			mockBridge.EXPECT().ChannelJoin(ctx, tt.responseUUIDBridge.String(), tt.channel.ID, "", false, false.Return(nil)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDBridge)
+			mockBridge.EXPECT().Start(ctx, tt.channel.AsteriskID, tt.responseUUIDBridge.String(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}).Return(tt.responseBridge, nil)
+			mockBridge.EXPECT().ChannelJoin(ctx, tt.responseUUIDBridge.String(), tt.channel.ID, "", false, false).Return(nil)
 
-			mockReq.EXPECT().AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, tt.responseNumbers[0].CustomerID, *tt.responseSource.Return(nil, fmt.Errorf(""))
+			mockReq.EXPECT().AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, tt.responseNumbers[0].CustomerID, *tt.responseSource).Return(nil, fmt.Errorf(""))
 
-			mockDB.EXPECT().CallCreate(ctx, tt.expectCall.Return(nil)
-			mockDB.EXPECT().CallGet(ctx, tt.responseUUIDCall.Return(tt.responseCall, nil)
+			mockDB.EXPECT().CallCreate(ctx, tt.expectCall).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.responseUUIDCall).Return(tt.responseCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallCreated, tt.responseCall)
-			mockReq.EXPECT().CallV1CallHealth(ctx, tt.responseCall.ID, defaultHealthDelay, 0.Return(nil)
+			mockReq.EXPECT().CallV1CallHealth(ctx, tt.responseCall.ID, defaultHealthDelay, 0).Return(nil)
 
 			// setVariables
-			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any().Return(nil).AnyTimes()
+			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 
 			// action next part.
-			mockDB.EXPECT().CallSetActionNextHold(ctx, gomock.Any(), gomock.Any().Return(nil)
-			mockReq.EXPECT().FlowV1ActiveflowGetNextAction(ctx, gomock.Any(), fmaction.IDStart.Return(nil, fmt.Errorf(""))
+			mockDB.EXPECT().CallSetActionNextHold(ctx, gomock.Any(), gomock.Any()).Return(nil)
+			mockReq.EXPECT().FlowV1ActiveflowGetNextAction(ctx, gomock.Any(), fmaction.IDStart).Return(nil, fmt.Errorf(""))
 
 			if err := h.Start(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -540,14 +540,14 @@ func Test_StartCallHandle_Outgoing(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(utilhandler.TimeGetCurTime()).AnyTimes()
-			mockChannel.EXPECT().HangingUpWithDelay(ctx, tt.channel.ID, ari.ChannelCauseCallDurationTimeout, defaultTimeoutCallDuration.Return(&channel.Channel{}, nil)
+			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime()).AnyTimes()
+			mockChannel.EXPECT().HangingUpWithDelay(ctx, tt.channel.ID, ari.ChannelCauseCallDurationTimeout, defaultTimeoutCallDuration).Return(&channel.Channel{}, nil)
 
-			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUIDBridge)
-			mockBridge.EXPECT().Start(ctx, tt.channel.AsteriskID, tt.responseUUIDBridge.String(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}.Return(tt.responseBridge, nil)
-			mockBridge.EXPECT().ChannelJoin(ctx, tt.responseUUIDBridge.String(), tt.channel.ID, "", false, false.Return(nil)
-			mockDB.EXPECT().CallSetBridgeID(ctx, tt.expectCallID, gomock.Any().Return(nil)
-			mockChannel.EXPECT().Dial(ctx, tt.channel.ID, tt.channel.ID, defaultDialTimeout.Return(nil)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDBridge)
+			mockBridge.EXPECT().Start(ctx, tt.channel.AsteriskID, tt.responseUUIDBridge.String(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeProxyMedia}).Return(tt.responseBridge, nil)
+			mockBridge.EXPECT().ChannelJoin(ctx, tt.responseUUIDBridge.String(), tt.channel.ID, "", false, false).Return(nil)
+			mockDB.EXPECT().CallSetBridgeID(ctx, tt.expectCallID, gomock.Any()).Return(nil)
+			mockChannel.EXPECT().Dial(ctx, tt.channel.ID, tt.channel.ID, defaultDialTimeout).Return(nil)
 
 			if err := h.Start(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -617,9 +617,9 @@ func Test_StartHandlerContextExternalMedia(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockExternal.EXPECT().Get(ctx, tt.expectExternalMediaID.Return(tt.responseExternalMedia, nil)
+			mockExternal.EXPECT().Get(ctx, tt.expectExternalMediaID).Return(tt.responseExternalMedia, nil)
 
-			mockBridge.EXPECT().ChannelJoin(ctx, tt.expectBridgeID, tt.channel.ID, "", false, false.Return(nil)
+			mockBridge.EXPECT().ChannelJoin(ctx, tt.expectBridgeID, tt.channel.ID, "", false, false).Return(nil)
 			if err := h.Start(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -672,7 +672,7 @@ func Test_StartHandlerContextExternalSnoop(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockBridge.EXPECT().ChannelJoin(ctx, tt.expectBridgeID, tt.channel.ID, "", false, false.Return(nil)
+			mockBridge.EXPECT().ChannelJoin(ctx, tt.expectBridgeID, tt.channel.ID, "", false, false).Return(nil)
 			if err := h.Start(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -726,8 +726,8 @@ func Test_Start_ContextJoinCall(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockBridge.EXPECT().ChannelJoin(ctx, tt.expectBridgeID, tt.channel.ID, "", false, false.Return(nil)
-			mockChannel.EXPECT().Dial(ctx, tt.channel.ID, "", defaultDialTimeout.Return(nil)
+			mockBridge.EXPECT().ChannelJoin(ctx, tt.expectBridgeID, tt.channel.ID, "", false, false).Return(nil)
+			mockChannel.EXPECT().Dial(ctx, tt.channel.ID, "", defaultDialTimeout).Return(nil)
 
 			if err := h.Start(context.Background(), tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -812,9 +812,9 @@ func Test_getAddressOwner(t *testing.T) {
 			ctx := context.Background()
 
 			if tt.expectAgentID != uuid.Nil {
-				mockReq.EXPECT().AgentV1AgentGet(ctx, tt.expectAgentID.Return(tt.responseAgent, nil)
+				mockReq.EXPECT().AgentV1AgentGet(ctx, tt.expectAgentID).Return(tt.responseAgent, nil)
 			} else {
-				mockReq.EXPECT().AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, tt.customerID, *tt.address.Return(tt.responseAgent, nil)
+				mockReq.EXPECT().AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, tt.customerID, *tt.address).Return(tt.responseAgent, nil)
 			}
 
 			resOwnerType, resOwnerID, err := h.getAddressOwner(ctx, tt.customerID, tt.address)

@@ -66,10 +66,10 @@ func Test_Create(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockBucket.EXPECT().OSGetFilepath(ctx, tt.expectFilename.Return(tt.responseFilePath)
-			mockBucket.EXPECT().OSGetMediaFilepath(ctx, tt.expectFilename.Return(tt.responseMediaFilepath)
-			mockBucket.EXPECT().OSFileExist(ctx, tt.responseFilePath.Return(false)
-			mockAudio.EXPECT().AudioCreate(ctx, tt.callID, tt.text, tt.language, tt.gender, tt.responseFilePath.Return(nil)
+			mockBucket.EXPECT().OSGetFilepath(ctx, tt.expectFilename).Return(tt.responseFilePath)
+			mockBucket.EXPECT().OSGetMediaFilepath(ctx, tt.expectFilename).Return(tt.responseMediaFilepath)
+			mockBucket.EXPECT().OSFileExist(ctx, tt.responseFilePath).Return(false)
+			mockAudio.EXPECT().AudioCreate(ctx, tt.callID, tt.text, tt.language, tt.gender, tt.responseFilePath).Return(nil)
 
 			res, err := h.Create(ctx, tt.callID, tt.text, tt.language, tt.gender)
 			if err != nil {

@@ -9,6 +9,7 @@ import (
 	cmcustomer "monorepo/bin-customer-manager/models/customer"
 	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
 	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
+	tmtranscript "monorepo/bin-transcribe-manager/models/transcript"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -195,9 +196,9 @@ func (h *summaryHandler) startReferenceTypeTranscribe(
 	})
 
 	// get transcripts
-	filters := map[string]string{
-		"deleted":       "false",
-		"transcribe_id": referenceID.String(),
+	filters := map[tmtranscript.Field]any{
+		tmtranscript.FieldDeleted:      false,
+		tmtranscript.FieldTranscribeID: referenceID.String(),
 	}
 	ts, err := h.reqHandler.TranscribeV1TranscriptGets(ctx, "", 1000, filters)
 	if err != nil {
@@ -261,9 +262,9 @@ func (h *summaryHandler) startReferenceTypeRecording(
 	log.WithField("transcribe", tr).Debugf("Finished transcribe. transcribe_id: %s", tr.ID)
 
 	// get transcripts
-	filters := map[string]string{
-		"deleted":       "false",
-		"transcribe_id": tr.ID.String(),
+	filters := map[tmtranscript.Field]any{
+		tmtranscript.FieldDeleted:      false,
+		tmtranscript.FieldTranscribeID: tr.ID.String(),
 	}
 	transcripts, err := h.reqHandler.TranscribeV1TranscriptGets(ctx, "", 1000, filters)
 	if err != nil {

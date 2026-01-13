@@ -109,13 +109,13 @@ func Test_AICreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().AISet(ctx, gomock.Any())
 			if err := h.AICreate(ctx, tt.ai); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().AIGet(ctx, tt.ai.ID.Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().AIGet(ctx, tt.ai.ID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().AISet(ctx, gomock.Any())
 			res, err := h.AIGet(ctx, tt.ai.ID)
 			if err != nil {
@@ -178,19 +178,19 @@ func Test_AIDelete(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().AISet(ctx, gomock.Any())
 			if err := h.AICreate(ctx, tt.ai); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().AISet(ctx, gomock.Any())
 			if errDel := h.AIDelete(ctx, tt.id); errDel != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errDel)
 			}
 
-			mockCache.EXPECT().AIGet(ctx, tt.id.Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().AIGet(ctx, tt.id).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().AISet(ctx, gomock.Any())
 			res, err := h.AIGet(ctx, tt.id)
 			if err != nil {
@@ -295,7 +295,7 @@ func Test_AIGets(t *testing.T) {
 			ctx := context.Background()
 
 			for _, cf := range tt.ais {
-				mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 				mockCache.EXPECT().AISet(ctx, gomock.Any())
 				if errCreate := h.AICreate(ctx, cf); errCreate != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", errCreate)
@@ -392,19 +392,19 @@ func Test_AIUpdate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().AISet(ctx, gomock.Any())
 			if err := h.AICreate(ctx, tt.ai); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().AISet(ctx, gomock.Any())
 			if errUpdate := h.AIUpdate(ctx, tt.id, tt.fields); errUpdate != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errUpdate)
 			}
 
-			mockCache.EXPECT().AIGet(ctx, tt.id.Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().AIGet(ctx, tt.id).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().AISet(ctx, gomock.Any())
 			res, err := h.AIGet(ctx, tt.id)
 			if err != nil {

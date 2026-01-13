@@ -7,6 +7,7 @@ import (
 	cscustomer "monorepo/bin-customer-manager/models/customer"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -111,7 +112,13 @@ func (h *serviceHandler) CustomerGets(ctx context.Context, a *amagent.Agent, siz
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	tmp, err := h.reqHandler.CustomerV1CustomerGets(ctx, token, size, filters)
+	// Convert string filters to typed filters
+	typedFilters, err := h.convertCustomerFilters(filters)
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := h.reqHandler.CustomerV1CustomerGets(ctx, token, size, typedFilters)
 	if err != nil {
 		log.Errorf("Could not get customers info. err: %v", err)
 		return nil, err
@@ -245,4 +252,27 @@ func (h *serviceHandler) CustomerUpdateBillingAccountID(ctx context.Context, a *
 	}
 
 	return res.ConvertWebhookMessage(), nil
+}
+
+// convertCustomerFilters converts map[string]string to map[cscustomer.Field]any
+func (h *serviceHandler) convertCustomerFilters(filters map[string]string) (map[cscustomer.Field]any, error) {
+	// Convert to map[string]any first
+	srcAny := make(map[string]any, len(filters))
+	for k, v := range filters {
+		srcAny[k] = v
+	}
+
+	// Use reflection-based converter
+	typed, err := commondatabasehandler.ConvertMapToTypedMap(srcAny, cscustomer.Customer{})
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert string keys to Field type
+	result := make(map[cscustomer.Field]any, len(typed))
+	for k, v := range typed {
+		result[cscustomer.Field(k)] = v
+	}
+
+	return result, nil
 }

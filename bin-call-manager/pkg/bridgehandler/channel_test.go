@@ -61,8 +61,8 @@ func Test_ChannelKick(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().BridgeGet(gomock.Any(), tt.id.Return(tt.responseBridge, nil)
-			mockReq.EXPECT().AstBridgeRemoveChannel(ctx, tt.responseBridge.AsteriskID, tt.responseBridge.ID, tt.channelID.Return(nil)
+			mockDB.EXPECT().BridgeGet(gomock.Any(), tt.id).Return(tt.responseBridge, nil)
+			mockReq.EXPECT().AstBridgeRemoveChannel(ctx, tt.responseBridge.AsteriskID, tt.responseBridge.ID, tt.channelID).Return(nil)
 
 			if err := h.ChannelKick(ctx, tt.id, tt.channelID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -125,8 +125,8 @@ func Test_ChannelJoin(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().BridgeGet(gomock.Any(), tt.id.Return(tt.responseBridge, nil)
-			mockReq.EXPECT().AstBridgeAddChannel(ctx, tt.responseBridge.AsteriskID, tt.responseBridge.ID, tt.channelID, tt.role, tt.absorbDTMF, tt.mute.Return(nil)
+			mockDB.EXPECT().BridgeGet(gomock.Any(), tt.id).Return(tt.responseBridge, nil)
+			mockReq.EXPECT().AstBridgeAddChannel(ctx, tt.responseBridge.AsteriskID, tt.responseBridge.ID, tt.channelID, tt.role, tt.absorbDTMF, tt.mute).Return(nil)
 
 			if err := h.ChannelJoin(ctx, tt.id, tt.channelID, tt.role, tt.absorbDTMF, tt.mute); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

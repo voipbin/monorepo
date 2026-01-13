@@ -80,7 +80,7 @@ func Test_TagsPOST(t *testing.T) {
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().TagCreate(req.Context(), &tt.agent, tt.expectName, tt.expectDetail.Return(tt.responseTag, nil)
+			mockSvc.EXPECT().TagCreate(req.Context(), &tt.agent, tt.expectName, tt.expectDetail).Return(tt.responseTag, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -185,7 +185,7 @@ func TestTagsGET(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().TagGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken.Return(tt.responseTags, nil)
+			mockSvc.EXPECT().TagGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseTags, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -257,7 +257,7 @@ func TestTagsDelete(t *testing.T) {
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().TagDelete(req.Context(), &tt.agent, tt.expectTagID.Return(tt.responseTag, nil)
+			mockSvc.EXPECT().TagDelete(req.Context(), &tt.agent, tt.expectTagID).Return(tt.responseTag, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -329,7 +329,7 @@ func TestTagsIDGet(t *testing.T) {
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().TagGet(req.Context(), &tt.agent, tt.expectTagID.Return(tt.responseTag, nil)
+			mockSvc.EXPECT().TagGet(req.Context(), &tt.agent, tt.expectTagID).Return(tt.responseTag, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -407,7 +407,7 @@ func Test_TagsIDPut(t *testing.T) {
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().TagUpdate(req.Context(), &tt.agent, tt.expectTagID, tt.expectName, tt.expectDetail.Return(tt.responseTag, nil)
+			mockSvc.EXPECT().TagUpdate(req.Context(), &tt.agent, tt.expectTagID, tt.expectName, tt.expectDetail).Return(tt.responseTag, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

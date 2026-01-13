@@ -98,7 +98,7 @@ func Test_CreateStack(t *testing.T) {
 			}
 
 			if tt.responseUUID != uuid.Nil {
-				mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
+				mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			}
 
 			res := h.CreateStack(tt.stackID, tt.actions, tt.returnStackID, tt.returnActionID)

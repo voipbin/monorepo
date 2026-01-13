@@ -120,7 +120,7 @@ func Test_processV1ConversationsGet(t *testing.T) {
 				conversationHandler: mockConversation,
 			}
 
-			mockConversation.EXPECT().Gets(gomock.Any(), tt.expectPageToken, tt.expectPageSize, gomock.Any().Return(tt.responseConversations, nil)
+			mockConversation.EXPECT().Gets(gomock.Any(), tt.expectPageToken, tt.expectPageSize, gomock.Any()).Return(tt.responseConversations, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -213,7 +213,7 @@ func Test_processV1ConversationsPost(t *testing.T) {
 				tt.expectedDialogID,
 				tt.expectedSelf,
 				tt.expectedPeer,
-			.Return(tt.responseConversation, nil)
+			).Return(tt.responseConversation, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -274,7 +274,7 @@ func Test_processV1ConversationsIDGet(t *testing.T) {
 				conversationHandler: mockConversation,
 			}
 
-			mockConversation.EXPECT().Get(gomock.Any(), tt.expectID.Return(tt.resultData, nil)
+			mockConversation.EXPECT().Get(gomock.Any(), tt.expectID).Return(tt.resultData, nil)
 			res, err := h.processRequest(tt.responseConversation)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -342,7 +342,7 @@ func Test_processV1ConversationsIDPut(t *testing.T) {
 				conversationHandler: mockConversation,
 			}
 
-			mockConversation.EXPECT().Update(gomock.Any(), tt.expectedConversationID, gomock.Any(.Return(tt.responseConversation, nil)
+			mockConversation.EXPECT().Update(gomock.Any(), tt.expectedConversationID, gomock.Any()).Return(tt.responseConversation, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

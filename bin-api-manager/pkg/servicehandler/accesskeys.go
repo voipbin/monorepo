@@ -93,9 +93,9 @@ func (h *serviceHandler) AccesskeyRawGetByToken(ctx context.Context, token strin
 	})
 
 	// filters
-	filters := map[string]string{
-		"token":   token,
-		"deleted": "false",
+	filters := map[csaccesskey.Field]any{
+		csaccesskey.FieldToken:   token,
+		csaccesskey.FieldDeleted: false,
 	}
 
 	tmps, err := h.reqHandler.CustomerV1AccesskeyGets(ctx, "", 10, filters)
@@ -133,9 +133,9 @@ func (h *serviceHandler) AccesskeyGets(ctx context.Context, a *amagent.Agent, si
 	}
 
 	// filters
-	filters := map[string]string{
-		"customer_id": a.CustomerID.String(),
-		"deleted":     "false", // we don't need deleted items
+	filters := map[csaccesskey.Field]any{
+		csaccesskey.FieldCustomerID: a.CustomerID,
+		csaccesskey.FieldDeleted:    false, // we don't need deleted items
 	}
 
 	tmps, err := h.reqHandler.CustomerV1AccesskeyGets(ctx, token, size, filters)

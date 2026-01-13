@@ -5,6 +5,7 @@ import (
 	"fmt"
 	amagent "monorepo/bin-agent-manager/models/agent"
 	ammessage "monorepo/bin-ai-manager/models/message"
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -61,7 +62,14 @@ func (h *serviceHandler) AImessageGetsByAIcallID(ctx context.Context, a *amagent
 		"deleted":   "false",
 		"aicall_id": aicallID.String(),
 	}
-	tmps, err := h.reqHandler.AIV1MessageGetsByAIcallID(ctx, aicallID, token, size, filters)
+
+	// Convert string filters to typed filters
+	typedFilters, err := h.convertAImessageFilters(filters)
+	if err != nil {
+		return nil, fmt.Errorf("could not convert filters. err: %v", err)
+	}
+
+	tmps, err := h.reqHandler.AIV1MessageGetsByAIcallID(ctx, aicallID, token, size, typedFilters)
 	if err != nil {
 		return nil, fmt.Errorf("could not find ai messages info. err: %v", err)
 	}
@@ -73,6 +81,29 @@ func (h *serviceHandler) AImessageGetsByAIcallID(ctx context.Context, a *amagent
 	}
 
 	return res, nil
+}
+
+// convertAImessageFilters converts map[string]string to map[ammessage.Field]any
+func (h *serviceHandler) convertAImessageFilters(filters map[string]string) (map[ammessage.Field]any, error) {
+	// Convert to map[string]any first
+	srcAny := make(map[string]any, len(filters))
+	for k, v := range filters {
+		srcAny[k] = v
+	}
+
+	// Use reflection-based converter
+	typed, err := commondatabasehandler.ConvertMapToTypedMap(srcAny, ammessage.Message{})
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert string keys to Field type
+	result := make(map[ammessage.Field]any, len(typed))
+	for k, v := range typed {
+		result[ammessage.Field(k)] = v
+	}
+
+	return result, nil
 }
 
 // AImessageGet gets the ai message of the given id.

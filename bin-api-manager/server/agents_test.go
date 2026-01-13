@@ -119,7 +119,7 @@ func Test_PostAgents(t *testing.T) {
 			req, _ := http.NewRequest("POST", "/agents", bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().AgentCreate(req.Context(), &tt.agent, tt.expectedUsername, tt.expectedPassword, tt.expectedName, tt.expectedDetail, tt.expectedRingMethod, tt.expectedPermission, tt.expectedTagIDs, tt.expectedAddresses.Return(tt.responseAgent, nil)
+			mockSvc.EXPECT().AgentCreate(req.Context(), &tt.agent, tt.expectedUsername, tt.expectedPassword, tt.expectedName, tt.expectedDetail, tt.expectedRingMethod, tt.expectedPermission, tt.expectedTagIDs, tt.expectedAddresses).Return(tt.responseAgent, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -260,7 +260,7 @@ func Test_GetAgents(t *testing.T) {
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().AgentGets(req.Context(), &tt.agent, tt.expectedPageSize, tt.expectedPageToken, tt.expectedFilters.Return(tt.responseAgents, nil)
+			mockSvc.EXPECT().AgentGets(req.Context(), &tt.agent, tt.expectedPageSize, tt.expectedPageToken, tt.expectedFilters).Return(tt.responseAgents, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -333,7 +333,7 @@ func Test_PutAgentsIdStatus(t *testing.T) {
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 
-			mockSvc.EXPECT().AgentUpdateStatus(req.Context(), &tt.agent, tt.expectedAgentID, tt.expectedStatus.Return(tt.responseAgent, nil)
+			mockSvc.EXPECT().AgentUpdateStatus(req.Context(), &tt.agent, tt.expectedAgentID, tt.expectedStatus).Return(tt.responseAgent, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -405,7 +405,7 @@ func Test_PutAgentsIdPermission(t *testing.T) {
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 
-			mockSvc.EXPECT().AgentUpdatePermission(req.Context(), &tt.agent, tt.expectedAgentID, tt.expectedPermission.Return(tt.responseAgent, nil)
+			mockSvc.EXPECT().AgentUpdatePermission(req.Context(), &tt.agent, tt.expectedAgentID, tt.expectedPermission).Return(tt.responseAgent, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -477,7 +477,7 @@ func Test_PutAgentsIdPassword(t *testing.T) {
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 
-			mockSvc.EXPECT().AgentUpdatePassword(req.Context(), &tt.agent, tt.expectedAgentID, tt.expectedPassword.Return(tt.responseAgent, nil)
+			mockSvc.EXPECT().AgentUpdatePassword(req.Context(), &tt.agent, tt.expectedAgentID, tt.expectedPassword).Return(tt.responseAgent, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

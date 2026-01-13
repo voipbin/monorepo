@@ -113,7 +113,7 @@ func Test_v1DialroutesGet(t *testing.T) {
 				providerHandler: mockProvider,
 			}
 
-			mockRoute.EXPECT().DialrouteGets(gomock.Any(), tt.customerID, tt.target.Return(tt.responseDialroutes, nil)
+			mockRoute.EXPECT().DialrouteGets(gomock.Any(), tt.customerID, tt.target).Return(tt.responseDialroutes, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

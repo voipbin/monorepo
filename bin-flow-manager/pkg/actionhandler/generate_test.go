@@ -213,7 +213,7 @@ func Test_generateFlowActions(t *testing.T) {
 			ctx := context.Background()
 
 			for i := range len(tt.responseUUIDs) {
-				mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUIDs[i])
+				mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDs[i])
 			}
 
 			res, err := h.GenerateFlowActions(ctx, tt.actions)

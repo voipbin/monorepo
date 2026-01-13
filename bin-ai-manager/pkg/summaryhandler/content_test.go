@@ -112,7 +112,7 @@ func Test_contentGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.activeflowID.Return(tt.responseVariable, nil)
+			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.activeflowID).Return(tt.responseVariable, nil)
 
 			tmpContent, err := json.Marshal(tt.expectedRequestContent)
 			if err != nil {
@@ -127,7 +127,7 @@ func Test_contentGet(t *testing.T) {
 					},
 				},
 			}
-			mockOpenai.EXPECT().Send(ctx, tmpRequestContent.Return(tt.responseOpenai, nil)
+			mockOpenai.EXPECT().Send(ctx, tmpRequestContent).Return(tt.responseOpenai, nil)
 
 			res, err := h.contentGet(ctx, tt.activeflowID, tt.transcripts)
 			if err != nil {
@@ -157,8 +157,8 @@ func Test_contentProcessReferenceTypeConference(t *testing.T) {
 
 		expectedFilterSummary     map[summary.Field]any
 		expectedReferenceID       uuid.UUID
-		expectedFilterTranscribe  map[string]string
-		expectedFilterTranscripts map[string]string
+		expectedFilterTranscribe  map[tmtranscribe.Field]any
+		expectedFilterTranscripts map[tmtranscript.Field]any
 		expectedActiveflowID      uuid.UUID
 		expectedSummaryContent    string
 	}{
@@ -221,14 +221,14 @@ func Test_contentProcessReferenceTypeConference(t *testing.T) {
 				summary.FieldReferenceID: uuid.FromStringOrNil("12793fb8-0d78-11f0-b745-5bd13769c11a"),
 			},
 			expectedReferenceID: uuid.FromStringOrNil("12793fb8-0d78-11f0-b745-5bd13769c11a"),
-			expectedFilterTranscribe: map[string]string{
-				"deleted":      "false",
-				"customer_id":  cmcustomer.IDAIManager.String(),
-				"reference_id": "4e0cb7d0-0d78-11f0-bba8-27fe297783c9",
+			expectedFilterTranscribe: map[tmtranscribe.Field]any{
+				tmtranscribe.FieldDeleted:     false,
+				tmtranscribe.FieldCustomerID:  cmcustomer.IDAIManager.String(),
+				tmtranscribe.FieldReferenceID: "4e0cb7d0-0d78-11f0-bba8-27fe297783c9",
 			},
-			expectedFilterTranscripts: map[string]string{
-				"deleted":       "false",
-				"transcribe_id": "4e316e40-0d78-11f0-b125-a79d64ccad15",
+			expectedFilterTranscripts: map[tmtranscript.Field]any{
+				tmtranscript.FieldDeleted:      false,
+				tmtranscript.FieldTranscribeID: "4e316e40-0d78-11f0-b125-a79d64ccad15",
 			},
 			expectedActiveflowID:   uuid.FromStringOrNil("4eb1732e-0d78-11f0-adc7-070b3fa7186b"),
 			expectedSummaryContent: "response content",
@@ -256,20 +256,20 @@ func Test_contentProcessReferenceTypeConference(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().SummaryGets(ctx, uint64(1), "", gomock.Any().Return(tt.responseSummaries, nil)
-			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.expectedReferenceID.Return(tt.responseConference, nil)
+			mockDB.EXPECT().SummaryGets(ctx, uint64(1), "", gomock.Any()).Return(tt.responseSummaries, nil)
+			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.expectedReferenceID).Return(tt.responseConference, nil)
 
 			// contentGetTranscripts
-			mockReq.EXPECT().TranscribeV1TranscribeGets(ctx, "", uint64(1), tt.expectedFilterTranscribe.Return(tt.responseTranscribes, nil)
-			mockReq.EXPECT().TranscribeV1TranscriptGets(ctx, "", uint64(1000), tt.expectedFilterTranscripts.Return(tt.responseTranscripts, nil)
+			mockReq.EXPECT().TranscribeV1TranscribeGets(ctx, "", uint64(1), tt.expectedFilterTranscribe).Return(tt.responseTranscribes, nil)
+			mockReq.EXPECT().TranscribeV1TranscriptGets(ctx, "", uint64(1000), tt.expectedFilterTranscripts).Return(tt.responseTranscripts, nil)
 
 			// contentGet
-			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.expectedActiveflowID.Return(tt.responseVariable, nil)
-			mockOpenai.EXPECT().Send(ctx, gomock.Any().Return(tt.responseSend, nil)
+			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.expectedActiveflowID).Return(tt.responseVariable, nil)
+			mockOpenai.EXPECT().Send(ctx, gomock.Any()).Return(tt.responseSend, nil)
 
 			// UpdateStatusDone
-			mockDB.EXPECT().SummaryUpdate(ctx, tt.responseSummaries[0].ID, gomock.Any().Return(nil)
-			mockDB.EXPECT().SummaryGet(ctx, tt.responseSummaries[0].ID.Return(tt.responseSummaries[0], nil)
+			mockDB.EXPECT().SummaryUpdate(ctx, tt.responseSummaries[0].ID, gomock.Any()).Return(nil)
+			mockDB.EXPECT().SummaryGet(ctx, tt.responseSummaries[0].ID).Return(tt.responseSummaries[0], nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseSummaries[0].CustomerID, summary.EventTypeUpdated, tt.responseSummaries[0])
 
 			if err := h.contentProcessReferenceTypeConference(ctx, tt.conferenceID); err != nil {

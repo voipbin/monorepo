@@ -54,7 +54,7 @@ func Test_Get(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConversationGet(ctx, tt.id.Return(tt.responseConversation, nil)
+			mockDB.EXPECT().ConversationGet(ctx, tt.id).Return(tt.responseConversation, nil)
 
 			res, err := h.Get(ctx, tt.id)
 			if err != nil {
@@ -149,10 +149,10 @@ func Test_Create(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 
-			mockDB.EXPECT().ConversationCreate(ctx, tt.expectConversation.Return(nil)
-			mockDB.EXPECT().ConversationGet(ctx, gomock.Any().Return(tt.responseConversation, nil)
+			mockDB.EXPECT().ConversationCreate(ctx, tt.expectConversation).Return(nil)
+			mockDB.EXPECT().ConversationGet(ctx, gomock.Any()).Return(tt.responseConversation, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseConversation.CustomerID, conversation.EventTypeConversationCreated, tt.responseConversation)
 
 			_, err := h.Create(ctx, tt.customerID, tt.conversationName, tt.detail, tt.referenceType, tt.referenceID, tt.self, tt.peer)
@@ -209,7 +209,7 @@ func Test_Gets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConversationGets(ctx, tt.pageSize, tt.pageToken, tt.filters.Return(tt.responseConversations, nil)
+			mockDB.EXPECT().ConversationGets(ctx, tt.pageSize, tt.pageToken, tt.filters).Return(tt.responseConversations, nil)
 
 			res, err := h.Gets(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
@@ -265,8 +265,8 @@ func Test_Update(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConversationUpdate(ctx, tt.id, tt.fields.Return(nil)
-			mockDB.EXPECT().ConversationGet(ctx, tt.id.Return(tt.responseConversation, nil)
+			mockDB.EXPECT().ConversationUpdate(ctx, tt.id, tt.fields).Return(nil)
+			mockDB.EXPECT().ConversationGet(ctx, tt.id).Return(tt.responseConversation, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseConversation.CustomerID, conversation.EventTypeConversationUpdated, tt.responseConversation)
 
 			res, err := h.Update(ctx, tt.id, tt.fields)

@@ -27,7 +27,7 @@ func Test_QueuecallGets(t *testing.T) {
 		pageSize  uint64
 
 		responseQueuecalls []qmqueuecall.Queuecall
-		expectFilters      map[string]string
+		expectFilters map[qmqueuecall.Field]any
 		expectRes          []*qmqueuecall.WebhookMessage
 	}
 
@@ -51,9 +51,9 @@ func Test_QueuecallGets(t *testing.T) {
 					},
 				},
 			},
-			map[string]string{
-				"customer_id": "5f621078-8e5f-11ee-97b2-cfe7337b701c",
-				"deleted":     "false",
+			map[qmqueuecall.Field]any{
+				qmqueuecall.FieldCustomerID: "5f621078-8e5f-11ee-97b2-cfe7337b701c",
+				qmqueuecall.FieldDeleted:    false,
 			},
 			[]*qmqueuecall.WebhookMessage{
 				{
@@ -79,7 +79,7 @@ func Test_QueuecallGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().QueueV1QueuecallGets(ctx, tt.pageToken, tt.pageSize, tt.expectFilters.Return(tt.responseQueuecalls, nil)
+			mockReq.EXPECT().QueueV1QueuecallGets(ctx, tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.responseQueuecalls, nil)
 
 			res, err := h.QueuecallGets(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
@@ -145,7 +145,7 @@ func Test_QueuecallGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().QueueV1QueuecallGet(ctx, tt.id.Return(tt.response, nil)
+			mockReq.EXPECT().QueueV1QueuecallGet(ctx, tt.id).Return(tt.response, nil)
 
 			res, err := h.QueuecallGet(ctx, tt.agent, tt.id)
 			if err != nil {
@@ -211,8 +211,8 @@ func Test_QueuecallDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().QueueV1QueuecallGet(ctx, tt.id.Return(tt.response, nil)
-			mockReq.EXPECT().QueueV1QueuecallDelete(ctx, tt.id.Return(tt.response, nil)
+			mockReq.EXPECT().QueueV1QueuecallGet(ctx, tt.id).Return(tt.response, nil)
+			mockReq.EXPECT().QueueV1QueuecallDelete(ctx, tt.id).Return(tt.response, nil)
 
 			res, err := h.QueuecallDelete(ctx, tt.agent, tt.id)
 			if err != nil {
@@ -278,8 +278,8 @@ func Test_QueuecallKick(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().QueueV1QueuecallGet(ctx, tt.queuecallID.Return(tt.responseQueuecall, nil)
-			mockReq.EXPECT().QueueV1QueuecallKick(ctx, tt.queuecallID.Return(tt.responseQueuecall, nil)
+			mockReq.EXPECT().QueueV1QueuecallGet(ctx, tt.queuecallID).Return(tt.responseQueuecall, nil)
+			mockReq.EXPECT().QueueV1QueuecallKick(ctx, tt.queuecallID).Return(tt.responseQueuecall, nil)
 
 			res, err := h.QueuecallKick(ctx, tt.agent, tt.queuecallID)
 			if err != nil {
@@ -346,8 +346,8 @@ func Test_QueuecallKickByReferenceID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().QueueV1QueuecallGetByReferenceID(ctx, tt.referenceID.Return(tt.responseQueuecall, nil)
-			mockReq.EXPECT().QueueV1QueuecallKick(ctx, tt.responseQueuecall.ID.Return(tt.responseQueuecall, nil)
+			mockReq.EXPECT().QueueV1QueuecallGetByReferenceID(ctx, tt.referenceID).Return(tt.responseQueuecall, nil)
+			mockReq.EXPECT().QueueV1QueuecallKick(ctx, tt.responseQueuecall.ID).Return(tt.responseQueuecall, nil)
 
 			res, err := h.QueuecallKickByReferenceID(ctx, tt.agent, tt.referenceID)
 			if err != nil {

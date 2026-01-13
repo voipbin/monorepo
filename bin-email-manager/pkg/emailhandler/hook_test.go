@@ -63,8 +63,8 @@ func Test_Hook(t *testing.T) {
 			ctx := context.Background()
 
 			for i := range tt.expectIDs {
-				mockDB.EXPECT().EmailUpdateStatus(ctx, tt.expectIDs[i], tt.expectStatuses[i].Return(nil)
-				mockDB.EXPECT().EmailGet(ctx, tt.expectIDs[i].Return(&email.Email{}, nil)
+				mockDB.EXPECT().EmailUpdateStatus(ctx, tt.expectIDs[i], tt.expectStatuses[i]).Return(nil)
+				mockDB.EXPECT().EmailGet(ctx, tt.expectIDs[i]).Return(&email.Email{}, nil)
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), email.EventTypeUpdated, gomock.Any())
 			}
 
@@ -123,8 +123,8 @@ func Test_hookSendgrid(t *testing.T) {
 			ctx := context.Background()
 
 			for i := range tt.expectIDs {
-				mockDB.EXPECT().EmailUpdateStatus(ctx, tt.expectIDs[i], tt.expectStatuses[i].Return(nil)
-				mockDB.EXPECT().EmailGet(ctx, tt.expectIDs[i].Return(&email.Email{}, nil)
+				mockDB.EXPECT().EmailUpdateStatus(ctx, tt.expectIDs[i], tt.expectStatuses[i]).Return(nil)
+				mockDB.EXPECT().EmailGet(ctx, tt.expectIDs[i]).Return(&email.Email{}, nil)
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), email.EventTypeUpdated, gomock.Any())
 			}
 

@@ -101,13 +101,13 @@ func Test_SummaryCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().SummarySet(ctx, gomock.Any())
 			if err := h.SummaryCreate(ctx, tt.summary); err != nil {
 				t.Errorf("Unexpected error: %v", err)
 			}
 
-			mockCache.EXPECT().SummaryGet(ctx, tt.summary.ID.Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().SummaryGet(ctx, tt.summary.ID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().SummarySet(ctx, gomock.Any())
 			res, err := h.SummaryGet(ctx, tt.summary.ID)
 			if err != nil {
@@ -203,19 +203,19 @@ func Test_SummaryUpdate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().SummarySet(ctx, gomock.Any())
 			if err := h.SummaryCreate(ctx, tt.summary); err != nil {
 				t.Errorf("Unexpected error: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().SummarySet(ctx, gomock.Any())
 			if errUpdate := h.SummaryUpdate(ctx, tt.id, tt.fields); errUpdate != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errUpdate)
 			}
 
-			mockCache.EXPECT().SummaryGet(ctx, tt.summary.ID.Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().SummaryGet(ctx, tt.summary.ID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().SummarySet(ctx, gomock.Any())
 			res, err := h.SummaryGet(ctx, tt.summary.ID)
 			if err != nil {

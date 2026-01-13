@@ -92,7 +92,7 @@ func Test_PostEmails(t *testing.T) {
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().EmailSend(req.Context(), &tt.agent, tt.expectDestinations, tt.expectSubject, tt.expectContent, tt.expectAttachments.Return(tt.responseEmail, nil)
+			mockSvc.EXPECT().EmailSend(req.Context(), &tt.agent, tt.expectDestinations, tt.expectSubject, tt.expectContent, tt.expectAttachments).Return(tt.responseEmail, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -166,7 +166,7 @@ func Test_GetEmails(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().EmailGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken.Return(tt.responseEmails, nil)
+			mockSvc.EXPECT().EmailGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseEmails, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -234,7 +234,7 @@ func Test_GetEmailsId(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().EmailGet(req.Context(), &tt.agent, tt.expectEmailID.Return(tt.responseEmail, nil)
+			mockSvc.EXPECT().EmailGet(req.Context(), &tt.agent, tt.expectEmailID).Return(tt.responseEmail, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -302,7 +302,7 @@ func Test_DeleteemailsId(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().EmailDelete(req.Context(), &tt.agent, tt.expectEmailID.Return(tt.responseEmail, nil)
+			mockSvc.EXPECT().EmailDelete(req.Context(), &tt.agent, tt.expectEmailID).Return(tt.responseEmail, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

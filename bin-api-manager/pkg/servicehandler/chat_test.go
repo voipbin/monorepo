@@ -81,7 +81,7 @@ func Test_ChatCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ChatV1ChatCreate(ctx, tt.agent.CustomerID, tt.chatType, tt.ownerID, tt.participantIDs, tt.chatName, tt.detail.Return(tt.response, nil)
+			mockReq.EXPECT().ChatV1ChatCreate(ctx, tt.agent.CustomerID, tt.chatType, tt.ownerID, tt.participantIDs, tt.chatName, tt.detail).Return(tt.response, nil)
 
 			res, err := h.ChatCreate(ctx, tt.agent, tt.chatType, tt.ownerID, tt.participantIDs, tt.chatName, tt.detail)
 			if err != nil {
@@ -106,7 +106,7 @@ func Test_ChatGetsByCustomerID(t *testing.T) {
 
 		response []chatchat.Chat
 
-		expectFilters map[string]string
+		expectFilters map[chatchat.Field]any
 		expectRes     []*chatchat.WebhookMessage
 	}{
 		{
@@ -129,9 +129,9 @@ func Test_ChatGetsByCustomerID(t *testing.T) {
 				},
 			},
 
-			map[string]string{
-				"customer_id": "5f621078-8e5f-11ee-97b2-cfe7337b701c",
-				"deleted":     "false",
+			map[chatchat.Field]any{
+				chatchat.FieldCustomerID: "5f621078-8e5f-11ee-97b2-cfe7337b701c",
+				chatchat.FieldDeleted:    false,
 			},
 			[]*chatchat.WebhookMessage{
 				{
@@ -158,7 +158,7 @@ func Test_ChatGetsByCustomerID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ChatV1ChatGets(ctx, tt.token, tt.size, tt.expectFilters.Return(tt.response, nil)
+			mockReq.EXPECT().ChatV1ChatGets(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.response, nil)
 
 			res, err := h.ChatGetsByCustomerID(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {
@@ -222,7 +222,7 @@ func Test_ChatGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().ChatV1ChatGet(ctx, tt.chatID.Return(tt.response, nil)
+			mockReq.EXPECT().ChatV1ChatGet(ctx, tt.chatID).Return(tt.response, nil)
 
 			res, err := h.ChatGet(ctx, tt.agent, tt.chatID)
 			if err != nil {
@@ -281,8 +281,8 @@ func Test_ChatDelete(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ChatV1ChatGet(ctx, tt.chatID.Return(tt.responseChat, nil)
-			mockReq.EXPECT().ChatV1ChatDelete(ctx, tt.chatID.Return(tt.responseChat, nil)
+			mockReq.EXPECT().ChatV1ChatGet(ctx, tt.chatID).Return(tt.responseChat, nil)
+			mockReq.EXPECT().ChatV1ChatDelete(ctx, tt.chatID).Return(tt.responseChat, nil)
 
 			_, err := h.ChatDelete(ctx, tt.agent, tt.chatID)
 			if err != nil {
@@ -349,8 +349,8 @@ func Test_ChatUpdateBasicInfo(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ChatV1ChatGet(ctx, tt.chatID.Return(tt.responseChat, nil)
-			mockReq.EXPECT().ChatV1ChatUpdateBasicInfo(ctx, tt.chatID, tt.chatName, tt.detail.Return(tt.responseChat, nil)
+			mockReq.EXPECT().ChatV1ChatGet(ctx, tt.chatID).Return(tt.responseChat, nil)
+			mockReq.EXPECT().ChatV1ChatUpdateBasicInfo(ctx, tt.chatID, tt.chatName, tt.detail).Return(tt.responseChat, nil)
 
 			res, err := h.ChatUpdateBasicInfo(ctx, tt.agent, tt.chatID, tt.chatName, tt.detail)
 			if err != nil {
@@ -419,8 +419,8 @@ func Test_ChatUpdateOwnerID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ChatV1ChatGet(ctx, tt.chatID.Return(tt.responseChat, nil)
-			mockReq.EXPECT().ChatV1ChatUpdateRoomOwnerID(ctx, tt.chatID, tt.ownerID.Return(tt.responseChat, nil)
+			mockReq.EXPECT().ChatV1ChatGet(ctx, tt.chatID).Return(tt.responseChat, nil)
+			mockReq.EXPECT().ChatV1ChatUpdateRoomOwnerID(ctx, tt.chatID, tt.ownerID).Return(tt.responseChat, nil)
 
 			res, err := h.ChatUpdateRoomOwnerID(ctx, tt.agent, tt.chatID, tt.ownerID)
 			if err != nil {
@@ -489,8 +489,8 @@ func Test_ChatAddParticipantID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ChatV1ChatGet(ctx, tt.chatID.Return(tt.responseChat, nil)
-			mockReq.EXPECT().ChatV1ChatAddParticipantID(ctx, tt.chatID, tt.participantID.Return(tt.responseChat, nil)
+			mockReq.EXPECT().ChatV1ChatGet(ctx, tt.chatID).Return(tt.responseChat, nil)
+			mockReq.EXPECT().ChatV1ChatAddParticipantID(ctx, tt.chatID, tt.participantID).Return(tt.responseChat, nil)
 
 			res, err := h.ChatAddParticipantID(ctx, tt.agent, tt.chatID, tt.participantID)
 			if err != nil {
@@ -559,8 +559,8 @@ func Test_ChatRemoveParticipantID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ChatV1ChatGet(ctx, tt.chatID.Return(tt.responseChat, nil)
-			mockReq.EXPECT().ChatV1ChatRemoveParticipantID(ctx, tt.chatID, tt.participantID.Return(tt.responseChat, nil)
+			mockReq.EXPECT().ChatV1ChatGet(ctx, tt.chatID).Return(tt.responseChat, nil)
+			mockReq.EXPECT().ChatV1ChatRemoveParticipantID(ctx, tt.chatID, tt.participantID).Return(tt.responseChat, nil)
 
 			res, err := h.ChatRemoveParticipantID(ctx, tt.agent, tt.chatID, tt.participantID)
 			if err != nil {

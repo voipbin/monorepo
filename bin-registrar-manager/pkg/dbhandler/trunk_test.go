@@ -109,13 +109,13 @@ func Test_TrunkCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().TrunkSet(ctx, gomock.Any())
 			if err := h.TrunkCreate(ctx, tt.trunk); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().TrunkGet(ctx, tt.trunk.ID.Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().TrunkGet(ctx, tt.trunk.ID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().TrunkSet(ctx, gomock.Any())
 			res, err := h.TrunkGet(ctx, tt.trunk.ID)
 			if err != nil {
@@ -126,8 +126,8 @@ func Test_TrunkCreate(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(utilhandler.TimeGetCurTime())
-			mockCache.EXPECT().TrunkGetByDomainName(ctx, tt.trunk.DomainName.Return(nil, fmt.Errorf(""))
+			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+			mockCache.EXPECT().TrunkGetByDomainName(ctx, tt.trunk.DomainName).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().TrunkSet(ctx, gomock.Any())
 			res, err = h.TrunkGetByDomainName(ctx, tt.trunk.DomainName)
 			if err != nil {
@@ -219,7 +219,7 @@ func Test_TrunkGets(t *testing.T) {
 			ctx := context.Background()
 
 			for _, d := range tt.data {
-				mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 				mockCache.EXPECT().TrunkSet(gomock.Any(), gomock.Any())
 				if err := h.TrunkCreate(ctx, &d); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -314,19 +314,19 @@ func Test_TrunkUpdate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().TrunkSet(ctx, gomock.Any())
 			if err := h.TrunkCreate(ctx, tt.trunkCreate); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().TrunkSet(ctx, gomock.Any())
 			if err := h.TrunkUpdate(ctx, tt.id, tt.fields); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().TrunkGet(ctx, tt.trunkCreate.ID.Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().TrunkGet(ctx, tt.trunkCreate.ID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().TrunkSet(ctx, gomock.Any())
 			res, err := h.TrunkGet(ctx, tt.trunkCreate.ID)
 			if err != nil {

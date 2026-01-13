@@ -102,10 +102,10 @@ func Test_BillingStart(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockAccount.EXPECT().GetByCustomerID(ctx, tt.customerID.Return(tt.responseAccount, nil)
-			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
-			mockDB.EXPECT().BillingCreate(ctx, tt.expectBilling.Return(nil)
-			mockDB.EXPECT().BillingGet(ctx, tt.responseUUID.Return(tt.responseBilling, nil)
+			mockAccount.EXPECT().GetByCustomerID(ctx, tt.customerID).Return(tt.responseAccount, nil)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockDB.EXPECT().BillingCreate(ctx, tt.expectBilling).Return(nil)
+			mockDB.EXPECT().BillingGet(ctx, tt.responseUUID).Return(tt.responseBilling, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, billing.EventTypeBillingCreated, tt.responseBilling)
 
 			if err := h.BillingStart(ctx, tt.customerID, tt.referenceType, tt.referenceID, tt.tmBillingStart, tt.source, tt.destination); err != nil {
@@ -204,17 +204,17 @@ func Test_BillingStart_number_sms(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockAccount.EXPECT().GetByCustomerID(ctx, tt.customerID.Return(tt.responseAccount, nil)
-			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
-			mockDB.EXPECT().BillingCreate(ctx, tt.expectBilling.Return(nil)
-			mockDB.EXPECT().BillingGet(ctx, tt.responseUUID.Return(tt.responseBilling, nil)
+			mockAccount.EXPECT().GetByCustomerID(ctx, tt.customerID).Return(tt.responseAccount, nil)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockDB.EXPECT().BillingCreate(ctx, tt.expectBilling).Return(nil)
+			mockDB.EXPECT().BillingGet(ctx, tt.responseUUID).Return(tt.responseBilling, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, billing.EventTypeBillingCreated, tt.responseBilling)
 
 			// billing end
-			mockDB.EXPECT().BillingSetStatusEnd(ctx, tt.responseBilling.ID, float32(1), tt.tmBillingStart.Return(nil)
-			mockDB.EXPECT().BillingGet(ctx, tt.responseBilling.ID.Return(tt.responseBilling, nil)
+			mockDB.EXPECT().BillingSetStatusEnd(ctx, tt.responseBilling.ID, float32(1), tt.tmBillingStart).Return(nil)
+			mockDB.EXPECT().BillingGet(ctx, tt.responseBilling.ID).Return(tt.responseBilling, nil)
 
-			mockAccount.EXPECT().SubtractBalance(ctx, tt.responseBilling.AccountID, tt.responseBilling.CostTotal.Return(tt.responseAccount, nil)
+			mockAccount.EXPECT().SubtractBalance(ctx, tt.responseBilling.AccountID, tt.responseBilling.CostTotal).Return(tt.responseAccount, nil)
 
 			if err := h.BillingStart(ctx, tt.customerID, tt.referenceType, tt.referenceID, tt.tmBillingStart, tt.source, tt.destination); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -333,14 +333,14 @@ func Test_BillingEnd(t *testing.T) {
 			ctx := context.Background()
 
 			if tt.billing.ReferenceType == billing.ReferenceTypeCall {
-				mockUtil.EXPECT().TimeParse(tt.responseBilling.TMBillingStart.Return(utilhandler.TimeParse(tt.responseBilling.TMBillingStart))
-				mockUtil.EXPECT().TimeParse(tt.tmBillingEnd.Return(utilhandler.TimeParse(tt.tmBillingEnd))
+				mockUtil.EXPECT().TimeParse(tt.responseBilling.TMBillingStart).Return(utilhandler.TimeParse(tt.responseBilling.TMBillingStart))
+				mockUtil.EXPECT().TimeParse(tt.tmBillingEnd).Return(utilhandler.TimeParse(tt.tmBillingEnd))
 			}
 
-			mockDB.EXPECT().BillingSetStatusEnd(ctx, tt.responseBilling.ID, tt.expectBillingUnitCount, tt.tmBillingEnd.Return(nil)
-			mockDB.EXPECT().BillingGet(ctx, tt.responseBilling.ID.Return(tt.responseBilling, nil)
+			mockDB.EXPECT().BillingSetStatusEnd(ctx, tt.responseBilling.ID, tt.expectBillingUnitCount, tt.tmBillingEnd).Return(nil)
+			mockDB.EXPECT().BillingGet(ctx, tt.responseBilling.ID).Return(tt.responseBilling, nil)
 
-			mockAccount.EXPECT().SubtractBalance(ctx, tt.responseBilling.AccountID, tt.responseBilling.CostTotal.Return(tt.responseAccount, nil)
+			mockAccount.EXPECT().SubtractBalance(ctx, tt.responseBilling.AccountID, tt.responseBilling.CostTotal).Return(tt.responseAccount, nil)
 
 			if err := h.BillingEnd(ctx, tt.billing, tt.tmBillingEnd, tt.source, tt.destination); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

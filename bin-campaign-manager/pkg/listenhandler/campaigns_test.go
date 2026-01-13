@@ -94,7 +94,7 @@ func Test_v1CampaignsPost(t *testing.T) {
 				campaignHandler: mockCampaign,
 			}
 
-			mockCampaign.EXPECT().Create(gomock.Any(), tt.id, tt.customerID, tt.campaignType, tt.campaignName, tt.detail, tt.actions, tt.serviceLevel, tt.endHandle, tt.outplanID, tt.outdialID, tt.queueID, tt.nextCampaignID.Return(tt.responseCampaign, nil)
+			mockCampaign.EXPECT().Create(gomock.Any(), tt.id, tt.customerID, tt.campaignType, tt.campaignName, tt.detail, tt.actions, tt.serviceLevel, tt.endHandle, tt.outplanID, tt.outdialID, tt.queueID, tt.nextCampaignID).Return(tt.responseCampaign, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -162,7 +162,7 @@ func Test_v1CampaignsGet(t *testing.T) {
 				campaignHandler: mockCampaign,
 			}
 
-			mockCampaign.EXPECT().GetsByCustomerID(gomock.Any(), tt.customerID, tt.pageToken, tt.pageSize.Return(tt.responseCampaigns, nil)
+			mockCampaign.EXPECT().GetsByCustomerID(gomock.Any(), tt.customerID, tt.pageToken, tt.pageSize).Return(tt.responseCampaigns, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -224,7 +224,7 @@ func Test_v1CampaignsIDGet(t *testing.T) {
 				campaignHandler: mockCampaign,
 			}
 
-			mockCampaign.EXPECT().Get(gomock.Any(), tt.campaignID.Return(tt.responseCampaign, nil)
+			mockCampaign.EXPECT().Get(gomock.Any(), tt.campaignID).Return(tt.responseCampaign, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -286,7 +286,7 @@ func Test_v1CampaignsIDDelete(t *testing.T) {
 				campaignHandler: mockCampaign,
 			}
 
-			mockCampaign.EXPECT().Delete(gomock.Any(), tt.campaignID.Return(tt.responseCampaign, nil)
+			mockCampaign.EXPECT().Delete(gomock.Any(), tt.campaignID).Return(tt.responseCampaign, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -359,7 +359,7 @@ func Test_v1CampaignsIDPut(t *testing.T) {
 				campaignHandler: mockCampaign,
 			}
 
-			mockCampaign.EXPECT().UpdateBasicInfo(gomock.Any(), tt.campaignID, tt.campaignName, tt.detail, tt.campaignType, tt.serviceLevel, tt.endHandle.Return(tt.responseCampaign, nil)
+			mockCampaign.EXPECT().UpdateBasicInfo(gomock.Any(), tt.campaignID, tt.campaignName, tt.detail, tt.campaignType, tt.serviceLevel, tt.endHandle).Return(tt.responseCampaign, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -509,7 +509,7 @@ func Test_v1CampaignsIDStatus(t *testing.T) {
 				campaignHandler: mockCampaign,
 			}
 
-			mockCampaign.EXPECT().UpdateStatus(gomock.Any(), tt.campaignID, tt.status.Return(tt.responseCampaign, nil)
+			mockCampaign.EXPECT().UpdateStatus(gomock.Any(), tt.campaignID, tt.status).Return(tt.responseCampaign, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -574,7 +574,7 @@ func Test_v1CampaignsIDServiceLevelPut(t *testing.T) {
 				campaignHandler: mockCampaign,
 			}
 
-			mockCampaign.EXPECT().UpdateServiceLevel(gomock.Any(), tt.campaignID, tt.serviceLevel.Return(tt.responseCampaign, nil)
+			mockCampaign.EXPECT().UpdateServiceLevel(gomock.Any(), tt.campaignID, tt.serviceLevel).Return(tt.responseCampaign, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -643,7 +643,7 @@ func Test_v1CampaignsIDActionsPut(t *testing.T) {
 				campaignHandler: mockCampaign,
 			}
 
-			mockCampaign.EXPECT().UpdateActions(gomock.Any(), tt.campaignID, tt.actions.Return(tt.responseCampaign, nil)
+			mockCampaign.EXPECT().UpdateActions(gomock.Any(), tt.campaignID, tt.actions).Return(tt.responseCampaign, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -714,7 +714,7 @@ func Test_v1CampaignsIDResourceInfoPut(t *testing.T) {
 				campaignHandler: mockCampaign,
 			}
 
-			mockCampaign.EXPECT().UpdateResourceInfo(gomock.Any(), tt.campaignID, tt.outplanID, tt.outdialID, tt.queueID, tt.nextCampaignID.Return(tt.responseCampaign, nil)
+			mockCampaign.EXPECT().UpdateResourceInfo(gomock.Any(), tt.campaignID, tt.outplanID, tt.outdialID, tt.queueID, tt.nextCampaignID).Return(tt.responseCampaign, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -779,7 +779,7 @@ func Test_v1CampaignsIDNextCampaignIDPut(t *testing.T) {
 				campaignHandler: mockCampaign,
 			}
 
-			mockCampaign.EXPECT().UpdateNextCampaignID(gomock.Any(), tt.campaignID, tt.nextCampaignID.Return(tt.responseCampaign, nil)
+			mockCampaign.EXPECT().UpdateNextCampaignID(gomock.Any(), tt.campaignID, tt.nextCampaignID).Return(tt.responseCampaign, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

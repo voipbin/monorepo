@@ -36,7 +36,13 @@ func (h *serviceHandler) ServiceAgentAgentGets(ctx context.Context, a *amagent.A
 		"deleted":     "false", // we don't need deleted items
 	}
 
-	tmps, err := h.agentGets(ctx, size, token, filters)
+	// Convert string filters to typed filters
+	typedFilters, err := h.convertAgentFilters(filters)
+	if err != nil {
+		return nil, err
+	}
+
+	tmps, err := h.agentGets(ctx, size, token, typedFilters)
 	if err != nil {
 		log.Errorf("Could not chatrooms info. err: %v", err)
 		return nil, err
@@ -73,3 +79,4 @@ func (h *serviceHandler) ServiceAgentAgentGet(ctx context.Context, a *amagent.Ag
 	res := tmp.ConvertWebhookMessage()
 	return res, nil
 }
+

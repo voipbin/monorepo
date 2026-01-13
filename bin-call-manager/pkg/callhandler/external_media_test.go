@@ -80,7 +80,7 @@ func Test_ExternalMediaStart(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID.Return(tt.responseCall, nil)
+			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
 			mockExternal.EXPECT().Start(
 				ctx,
 				tt.externalMediaID,
@@ -93,9 +93,9 @@ func Test_ExternalMediaStart(t *testing.T) {
 				tt.format,
 				tt.directionListen,
 				tt.directionSpeak,
-			.Return(tt.responseExternalMedia, nil)
-			mockDB.EXPECT().CallSetExternalMediaID(ctx, tt.id, tt.responseExternalMedia.ID.Return(nil)
-			mockDB.EXPECT().CallGet(ctx, tt.id.Return(tt.responseCall, nil)
+			).Return(tt.responseExternalMedia, nil)
+			mockDB.EXPECT().CallSetExternalMediaID(ctx, tt.id, tt.responseExternalMedia.ID).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
 
 			res, err := h.ExternalMediaStart(
 				ctx,
@@ -164,10 +164,10 @@ func Test_ExternalMediaStop(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CallGet(ctx, tt.id.Return(tt.responseCall, nil)
-			mockExternal.EXPECT().Stop(ctx, tt.responseCall.ExternalMediaID.Return(&externalmedia.ExternalMedia{}, nil)
-			mockDB.EXPECT().CallSetExternalMediaID(ctx, tt.id, uuid.Nil.Return(nil)
-			mockDB.EXPECT().CallGet(ctx, tt.id.Return(tt.responseCall, nil)
+			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
+			mockExternal.EXPECT().Stop(ctx, tt.responseCall.ExternalMediaID).Return(&externalmedia.ExternalMedia{}, nil)
+			mockDB.EXPECT().CallSetExternalMediaID(ctx, tt.id, uuid.Nil).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
 
 			res, err := h.ExternalMediaStop(ctx, tt.id)
 			if err != nil {
@@ -243,13 +243,13 @@ func Test_ExternalMediaStop_error(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CallGet(ctx, tt.id.Return(tt.responseCall, tt.responseCallError)
+			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, tt.responseCallError)
 			if tt.responseCallError == nil {
 				if tt.responseCall.ExternalMediaID != uuid.Nil {
-					mockExternal.EXPECT().Stop(ctx, tt.responseCall.ExternalMediaID.Return(&externalmedia.ExternalMedia{}, tt.responseExternalMediaError)
+					mockExternal.EXPECT().Stop(ctx, tt.responseCall.ExternalMediaID).Return(&externalmedia.ExternalMedia{}, tt.responseExternalMediaError)
 					if tt.responseExternalMediaError == nil {
-						mockDB.EXPECT().CallSetExternalMediaID(ctx, tt.id, tt.responseExternalMedia.Return(nil)
-						mockDB.EXPECT().CallGet(ctx, tt.id.Return(tt.responseCall, nil)
+						mockDB.EXPECT().CallSetExternalMediaID(ctx, tt.id, tt.responseExternalMedia).Return(nil)
+						mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
 					}
 				}
 			}

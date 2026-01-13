@@ -59,9 +59,9 @@ func Test_EventHandleActiveflowDeleted(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CampaigncallUpdateStatusAndResult(ctx, tt.campaigncall.ID, campaigncall.StatusDone, campaigncall.ResultSuccess.Return(nil)
-			mockDB.EXPECT().CampaigncallGet(ctx, tt.campaigncall.ID.Return(tt.response, nil)
-			mockReq.EXPECT().OutdialV1OutdialtargetUpdateStatus(ctx, tt.response.OutdialTargetID, omoutdialtarget.StatusDone.Return(&omoutdialtarget.OutdialTarget{}, nil)
+			mockDB.EXPECT().CampaigncallUpdateStatusAndResult(ctx, tt.campaigncall.ID, campaigncall.StatusDone, campaigncall.ResultSuccess).Return(nil)
+			mockDB.EXPECT().CampaigncallGet(ctx, tt.campaigncall.ID).Return(tt.response, nil)
+			mockReq.EXPECT().OutdialV1OutdialtargetUpdateStatus(ctx, tt.response.OutdialTargetID, omoutdialtarget.StatusDone).Return(&omoutdialtarget.OutdialTarget{}, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.response.CustomerID, campaigncall.EventTypeCampaigncallUpdated, tt.response)
 
 			_, err := h.EventHandleActiveflowDeleted(ctx, tt.campaigncall)
@@ -286,9 +286,9 @@ func Test_EventHandleReferenceCallHungup(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CampaigncallUpdateStatusAndResult(ctx, tt.campaigncall.ID, campaigncall.StatusDone, tt.expectResult.Return(nil)
-			mockDB.EXPECT().CampaigncallGet(ctx, tt.campaigncall.ID.Return(tt.response, nil)
-			mockReq.EXPECT().OutdialV1OutdialtargetUpdateStatus(ctx, tt.response.OutdialTargetID, tt.expectStatus.Return(&omoutdialtarget.OutdialTarget{}, nil)
+			mockDB.EXPECT().CampaigncallUpdateStatusAndResult(ctx, tt.campaigncall.ID, campaigncall.StatusDone, tt.expectResult).Return(nil)
+			mockDB.EXPECT().CampaigncallGet(ctx, tt.campaigncall.ID).Return(tt.response, nil)
+			mockReq.EXPECT().OutdialV1OutdialtargetUpdateStatus(ctx, tt.response.OutdialTargetID, tt.expectStatus).Return(&omoutdialtarget.OutdialTarget{}, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.response.CustomerID, campaigncall.EventTypeCampaigncallUpdated, tt.response)
 
 			_, err := h.EventHandleReferenceCallHungup(ctx, tt.call, tt.campaigncall)

@@ -7,6 +7,7 @@ import (
 	amaicall "monorepo/bin-ai-manager/models/aicall"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -78,7 +79,13 @@ func (h *serviceHandler) AIcallGetsByCustomerID(ctx context.Context, a *amagent.
 		"customer_id": a.CustomerID.String(),
 	}
 
-	tmps, err := h.reqHandler.AIV1AIcallGets(ctx, token, size, filters)
+	// Convert string filters to typed filters
+	typedFilters, err := h.convertAIcallFilters(filters)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not convert filters")
+	}
+
+	tmps, err := h.reqHandler.AIV1AIcallGets(ctx, token, size, typedFilters)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get aicalls info")
 	}
@@ -91,6 +98,29 @@ func (h *serviceHandler) AIcallGetsByCustomerID(ctx context.Context, a *amagent.
 	}
 
 	return res, nil
+}
+
+// convertAIcallFilters converts map[string]string to map[amaicall.Field]any
+func (h *serviceHandler) convertAIcallFilters(filters map[string]string) (map[amaicall.Field]any, error) {
+	// Convert to map[string]any first
+	srcAny := make(map[string]any, len(filters))
+	for k, v := range filters {
+		srcAny[k] = v
+	}
+
+	// Use reflection-based converter
+	typed, err := commondatabasehandler.ConvertMapToTypedMap(srcAny, amaicall.AIcall{})
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert string keys to Field type
+	result := make(map[amaicall.Field]any, len(typed))
+	for k, v := range typed {
+		result[amaicall.Field(k)] = v
+	}
+
+	return result, nil
 }
 
 // AIcallGet gets the aicall of the given id.

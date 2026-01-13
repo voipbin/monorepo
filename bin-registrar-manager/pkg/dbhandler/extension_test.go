@@ -94,13 +94,13 @@ func Test_ExtensionCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ExtensionSet(ctx, gomock.Any())
 			if err := h.ExtensionCreate(ctx, tt.ext); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().ExtensionGet(ctx, tt.ext.ID.Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ExtensionGet(ctx, tt.ext.ID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().ExtensionSet(ctx, gomock.Any())
 			res, err := h.ExtensionGet(ctx, tt.ext.ID)
 			if err != nil {
@@ -111,7 +111,7 @@ func Test_ExtensionCreate(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 
-			mockCache.EXPECT().ExtensionGetByEndpointID(ctx, tt.ext.EndpointID.Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ExtensionGetByEndpointID(ctx, tt.ext.EndpointID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().ExtensionSet(ctx, gomock.Any())
 			resGetByExtension, err := h.ExtensionGetByEndpointID(ctx, tt.ext.EndpointID)
 			if err != nil {
@@ -207,13 +207,13 @@ func Test_ExtensionGetByExtension(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ExtensionSet(ctx, gomock.Any())
 			if err := h.ExtensionCreate(ctx, tt.ext); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().ExtensionGetByCustomerIDANDExtension(ctx, tt.customerID, tt.exten.Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ExtensionGetByCustomerIDANDExtension(ctx, tt.customerID, tt.exten).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().ExtensionSet(ctx, gomock.Any())
 			res, err := h.ExtensionGetByExtension(ctx, tt.customerID, tt.exten)
 			if err != nil {
@@ -303,19 +303,19 @@ func Test_ExtensionDelete(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ExtensionSet(ctx, gomock.Any())
 			if err := h.ExtensionCreate(ctx, tt.ext); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ExtensionSet(ctx, gomock.Any())
 			if err := h.ExtensionDelete(ctx, tt.ext.ID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().ExtensionGet(ctx, tt.ext.ID.Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ExtensionGet(ctx, tt.ext.ID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().ExtensionSet(ctx, gomock.Any())
 			res, err := h.ExtensionGet(ctx, tt.ext.ID)
 			if err != nil {
@@ -407,19 +407,19 @@ func Test_ExtensionUpdate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ExtensionSet(gomock.Any(), gomock.Any())
 			if err := h.ExtensionCreate(ctx, tt.extensionCreate); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ExtensionSet(gomock.Any(), gomock.Any())
 			if err := h.ExtensionUpdate(ctx, tt.id, tt.fields); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().ExtensionGet(gomock.Any(), tt.extensionCreate.ID.Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ExtensionGet(gomock.Any(), tt.extensionCreate.ID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().ExtensionSet(gomock.Any(), gomock.Any())
 			res, err := h.ExtensionGet(context.Background(), tt.extensionCreate.ID)
 			if err != nil {
@@ -515,7 +515,7 @@ func Test_ExtensionGets(t *testing.T) {
 			ctx := context.Background()
 
 			for _, d := range tt.extensions {
-				mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 				mockCache.EXPECT().ExtensionSet(gomock.Any(), gomock.Any())
 				if err := h.ExtensionCreate(ctx, &d); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)

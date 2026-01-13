@@ -71,7 +71,7 @@ func Test_v1SpeechesPost(t *testing.T) {
 				ttsHandler:  mockTTS,
 			}
 
-			mockTTS.EXPECT().Create(gomock.Any(), tt.expectCallID, tt.expectText, tt.expectLanguage, tt.expectGender.Return(tt.responseTTS, nil)
+			mockTTS.EXPECT().Create(gomock.Any(), tt.expectCallID, tt.expectText, tt.expectLanguage, tt.expectGender).Return(tt.responseTTS, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

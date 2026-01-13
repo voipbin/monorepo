@@ -59,7 +59,7 @@ func Test_v1AccountsPost(t *testing.T) {
 				accountHandler: mockAccount,
 			}
 
-			mockAccount.EXPECT().Create(gomock.Any(), tt.customerID.Return(tt.responseAccount, nil)
+			mockAccount.EXPECT().Create(gomock.Any(), tt.customerID).Return(tt.responseAccount, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -129,7 +129,7 @@ func Test_v1AccountsGet(t *testing.T) {
 				accountHandler: mockAccount,
 			}
 
-			mockAccount.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, gomock.Any(.Return(tt.responseAccounts, nil)
+			mockAccount.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, gomock.Any()).Return(tt.responseAccounts, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -185,7 +185,7 @@ func Test_v1AccountsIDGet(t *testing.T) {
 				accountHandler: mockAccount,
 			}
 
-			mockAccount.EXPECT().Get(gomock.Any(), tt.responseFile.ID.Return(tt.responseFile, nil)
+			mockAccount.EXPECT().Get(gomock.Any(), tt.responseFile.ID).Return(tt.responseFile, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -241,7 +241,7 @@ func Test_v1AccountsIDDelete(t *testing.T) {
 				accountHandler: mockAccount,
 			}
 
-			mockAccount.EXPECT().Delete(gomock.Any(), tt.responseFile.ID.Return(tt.responseFile, nil)
+			mockAccount.EXPECT().Delete(gomock.Any(), tt.responseFile.ID).Return(tt.responseFile, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

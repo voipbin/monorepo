@@ -99,8 +99,8 @@ func Test_ConversationMessageGetsByConversationID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ConversationV1ConversationGet(ctx, tt.conversationID.Return(tt.responseConversation, nil)
-			mockReq.EXPECT().ConversationV1MessageGets(ctx, tt.pageToken, tt.pageSize, tt.expectFilters.Return(tt.responseMessages, nil)
+			mockReq.EXPECT().ConversationV1ConversationGet(ctx, tt.conversationID).Return(tt.responseConversation, nil)
+			mockReq.EXPECT().ConversationV1MessageGets(ctx, tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.responseMessages, nil)
 
 			res, err := h.ConversationMessageGetsByConversationID(ctx, tt.customer, tt.conversationID, tt.pageSize, tt.pageToken)
 			if err != nil {
@@ -178,8 +178,8 @@ func Test_ConversationMessageSend(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ConversationV1ConversationGet(ctx, tt.conversationID.Return(tt.responseConversation, nil)
-			mockReq.EXPECT().ConversationV1MessageSend(ctx, tt.conversationID, tt.text, tt.medias.Return(tt.responseMessage, nil)
+			mockReq.EXPECT().ConversationV1ConversationGet(ctx, tt.conversationID).Return(tt.responseConversation, nil)
+			mockReq.EXPECT().ConversationV1MessageSend(ctx, tt.conversationID, tt.text, tt.medias).Return(tt.responseMessage, nil)
 
 			res, err := h.ConversationMessageSend(ctx, tt.customer, tt.conversationID, tt.text, tt.medias)
 			if err != nil {

@@ -60,7 +60,7 @@ func Test_accesskeyGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CustomerV1AccesskeyGet(ctx, tt.accesskeyID.Return(tt.responseAccesskey, nil)
+			mockReq.EXPECT().CustomerV1AccesskeyGet(ctx, tt.accesskeyID).Return(tt.responseAccesskey, nil)
 
 			res, err := h.accesskeyGet(ctx, tt.agent, tt.accesskeyID)
 			if err != nil {
@@ -128,7 +128,7 @@ func Test_AccesskeyCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CustomerV1AccesskeyCreate(ctx, tt.agent.CustomerID, tt.accesskeyName, tt.detail, tt.expire.Return(tt.responseAccesskey, nil)
+			mockReq.EXPECT().CustomerV1AccesskeyCreate(ctx, tt.agent.CustomerID, tt.accesskeyName, tt.detail, tt.expire).Return(tt.responseAccesskey, nil)
 
 			res, err := h.AccesskeyCreate(ctx, tt.agent, tt.accesskeyName, tt.detail, tt.expire)
 			if err != nil {
@@ -196,7 +196,7 @@ func Test_AccesskeyGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CustomerV1AccesskeyGet(ctx, tt.accesskeyID.Return(tt.responseAccesskey, nil)
+			mockReq.EXPECT().CustomerV1AccesskeyGet(ctx, tt.accesskeyID).Return(tt.responseAccesskey, nil)
 
 			res, err := h.AccesskeyGet(ctx, tt.agent, tt.accesskeyID)
 			if err != nil {
@@ -218,7 +218,7 @@ func Test_AccesskeyGets(t *testing.T) {
 		agent   *amagent.Agent
 		size    uint64
 		token   string
-		filters map[string]string
+		filters map[csaccesskey.Field]any
 
 		response  []csaccesskey.Accesskey
 		expectRes []*csaccesskey.WebhookMessage
@@ -234,9 +234,9 @@ func Test_AccesskeyGets(t *testing.T) {
 			},
 			10,
 			"2020-09-20 03:23:20.995000",
-			map[string]string{
-				"customer_id": "51639bbe-8e5e-11ee-afc4-4fbef5d3d983",
-				"deleted":     "false",
+			map[csaccesskey.Field]any{
+				csaccesskey.FieldCustomerID: uuid.FromStringOrNil("51639bbe-8e5e-11ee-afc4-4fbef5d3d983"),
+				csaccesskey.FieldDeleted:    false,
 			},
 
 			[]csaccesskey.Accesskey{
@@ -261,9 +261,9 @@ func Test_AccesskeyGets(t *testing.T) {
 			},
 			10,
 			"2020-09-20 03:23:20.995000",
-			map[string]string{
-				"customer_id": "51639bbe-8e5e-11ee-afc4-4fbef5d3d983",
-				"deleted":     "false",
+			map[csaccesskey.Field]any{
+				csaccesskey.FieldCustomerID: uuid.FromStringOrNil("51639bbe-8e5e-11ee-afc4-4fbef5d3d983"),
+				csaccesskey.FieldDeleted:    false,
 			},
 
 			[]csaccesskey.Accesskey{
@@ -300,7 +300,7 @@ func Test_AccesskeyGets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().CustomerV1AccesskeyGets(ctx, tt.token, tt.size, tt.filters.Return(tt.response, nil)
+			mockReq.EXPECT().CustomerV1AccesskeyGets(ctx, tt.token, tt.size, tt.filters).Return(tt.response, nil)
 
 			res, err := h.AccesskeyGets(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {
@@ -360,8 +360,8 @@ func Test_AccesskeyDelete(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().CustomerV1AccesskeyGet(ctx, tt.accesskeyID.Return(tt.responseAccesskey, nil)
-			mockReq.EXPECT().CustomerV1AccesskeyDelete(ctx, tt.accesskeyID.Return(tt.responseAccesskey, nil)
+			mockReq.EXPECT().CustomerV1AccesskeyGet(ctx, tt.accesskeyID).Return(tt.responseAccesskey, nil)
+			mockReq.EXPECT().CustomerV1AccesskeyDelete(ctx, tt.accesskeyID).Return(tt.responseAccesskey, nil)
 
 			_, err := h.AccesskeyDelete(ctx, tt.agent, tt.accesskeyID)
 			if err != nil {
@@ -430,8 +430,8 @@ func Test_AccesskeyUpdate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().AgentV1AgentGet(ctx, tt.agentID.Return(tt.responseAgent, nil)
-			mockReq.EXPECT().AgentV1AgentUpdateAddresses(ctx, tt.agentID, tt.addresses.Return(tt.responseAgent, nil)
+			mockReq.EXPECT().AgentV1AgentGet(ctx, tt.agentID).Return(tt.responseAgent, nil)
+			mockReq.EXPECT().AgentV1AgentUpdateAddresses(ctx, tt.agentID, tt.addresses).Return(tt.responseAgent, nil)
 
 			res, err := h.AgentUpdateAddresses(ctx, tt.agent, tt.agentID, tt.addresses)
 			if err != nil {

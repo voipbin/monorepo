@@ -105,9 +105,9 @@ func Test_Create(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
-			mockDB.EXPECT().QueueCreate(ctx, gomock.Any().Return(nil)
-			mockDB.EXPECT().QueueGet(ctx, gomock.Any().Return(tt.responseQueue, nil)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockDB.EXPECT().QueueCreate(ctx, gomock.Any()).Return(nil)
+			mockDB.EXPECT().QueueGet(ctx, gomock.Any()).Return(tt.responseQueue, nil)
 
 			res, err := h.Create(
 				ctx,

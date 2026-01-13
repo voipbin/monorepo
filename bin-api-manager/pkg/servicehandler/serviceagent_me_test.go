@@ -63,7 +63,7 @@ func Test_ServiceAgentMeGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AgentV1AgentGet(ctx, tt.agent.ID.Return(tt.responseAgent, nil)
+			mockReq.EXPECT().AgentV1AgentGet(ctx, tt.agent.ID).Return(tt.responseAgent, nil)
 
 			res, err := h.ServiceAgentMeGet(ctx, tt.agent)
 			if err != nil {
@@ -129,7 +129,7 @@ func Test_ServiceAgentMeUpdate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AgentV1AgentUpdate(ctx, tt.agent.ID, tt.agentName, tt.detail, tt.ringMethod.Return(tt.responseAgent, nil)
+			mockReq.EXPECT().AgentV1AgentUpdate(ctx, tt.agent.ID, tt.agentName, tt.detail, tt.ringMethod).Return(tt.responseAgent, nil)
 
 			res, err := h.ServiceAgentMeUpdate(ctx, tt.agent, tt.agentName, tt.detail, tt.ringMethod)
 			if err != nil {
@@ -196,7 +196,7 @@ func Test_ServiceAgentMeUpdateAddresses(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AgentV1AgentUpdateAddresses(ctx, tt.agent.ID, tt.addresses.Return(tt.responseAgent, nil)
+			mockReq.EXPECT().AgentV1AgentUpdateAddresses(ctx, tt.agent.ID, tt.addresses).Return(tt.responseAgent, nil)
 
 			res, err := h.ServiceAgentMeUpdateAddresses(ctx, tt.agent, tt.addresses)
 			if err != nil {
@@ -258,7 +258,7 @@ func Test_ServiceAgentMeUpdateStatus(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AgentV1AgentUpdateStatus(ctx, tt.agent.ID, tt.status.Return(tt.responseAgent, nil)
+			mockReq.EXPECT().AgentV1AgentUpdateStatus(ctx, tt.agent.ID, tt.status).Return(tt.responseAgent, nil)
 
 			res, err := h.ServiceAgentMeUpdateStatus(ctx, tt.agent, tt.status)
 			if err != nil {
@@ -320,7 +320,7 @@ func Test_ServiceAgentMeUpdatePassword(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AgentV1AgentUpdatePassword(ctx, gomock.Any(), tt.agent.ID, tt.password.Return(tt.responseAgent, nil)
+			mockReq.EXPECT().AgentV1AgentUpdatePassword(ctx, gomock.Any(), tt.agent.ID, tt.password).Return(tt.responseAgent, nil)
 
 			res, err := h.ServiceAgentMeUpdatePassword(ctx, tt.agent, tt.password)
 			if err != nil {

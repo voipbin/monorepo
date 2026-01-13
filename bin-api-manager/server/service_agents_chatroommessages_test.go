@@ -76,7 +76,7 @@ func Test_PostServiceAgentsChatroommessages(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
-			mockSvc.EXPECT().ServiceAgentChatroommessageCreate(req.Context(), &tt.agent, tt.expectedChatroomID, tt.expectedText, tt.expectedMedias.Return(tt.responseChatroommessage, nil)
+			mockSvc.EXPECT().ServiceAgentChatroommessageCreate(req.Context(), &tt.agent, tt.expectedChatroomID, tt.expectedText, tt.expectedMedias).Return(tt.responseChatroommessage, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -154,7 +154,7 @@ func Test_GetServiceAgentsChatroommessages(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().ServiceAgentChatroommessageGets(req.Context(), &tt.agent, tt.expectChatroomID, tt.expectPageSize, tt.expectPageToken.Return(tt.responseChatroommessages, nil)
+			mockSvc.EXPECT().ServiceAgentChatroommessageGets(req.Context(), &tt.agent, tt.expectChatroomID, tt.expectPageSize, tt.expectPageToken).Return(tt.responseChatroommessages, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -221,7 +221,7 @@ func Test_GetServiceAgentsChatroommessagesId(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().ServiceAgentChatroommessageGet(req.Context(), &tt.agent, tt.expectChatroommessageID.Return(tt.responseChatroommessage, nil)
+			mockSvc.EXPECT().ServiceAgentChatroommessageGet(req.Context(), &tt.agent, tt.expectChatroommessageID).Return(tt.responseChatroommessage, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -288,7 +288,7 @@ func Test_DeleteServiceAgentsChatroommessagesId(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().ServiceAgentChatroommessageDelete(req.Context(), &tt.agent, tt.expectChatroommessageID.Return(tt.responseChatroommessage, nil)
+			mockSvc.EXPECT().ServiceAgentChatroommessageDelete(req.Context(), &tt.agent, tt.expectChatroommessageID).Return(tt.responseChatroommessage, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

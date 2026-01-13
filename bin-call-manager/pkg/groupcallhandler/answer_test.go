@@ -59,8 +59,8 @@ func Test_AnswerCall(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().GroupcallSetAnswerCallID(ctx, tt.groupcallID, tt.answerCallID.Return(nil)
-			mockDB.EXPECT().GroupcallGet(ctx, tt.groupcallID.Return(tt.responseGroupcall, nil)
+			mockDB.EXPECT().GroupcallSetAnswerCallID(ctx, tt.groupcallID, tt.answerCallID).Return(nil)
+			mockDB.EXPECT().GroupcallGet(ctx, tt.groupcallID).Return(tt.responseGroupcall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseGroupcall.CustomerID, groupcall.EventTypeGroupcallProgressing, tt.responseGroupcall)
 
 			if errAnswer := h.AnswerCall(ctx, tt.groupcallID, tt.answerCallID); errAnswer != nil {
@@ -143,23 +143,23 @@ func Test_AnswerGroupcall(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().GroupcallSetAnswerGroupcallID(ctx, tt.groupcallID, tt.answerGroupcallID.Return(nil)
-			mockDB.EXPECT().GroupcallGet(ctx, tt.groupcallID.Return(tt.responseGroupcall, nil)
+			mockDB.EXPECT().GroupcallSetAnswerGroupcallID(ctx, tt.groupcallID, tt.answerGroupcallID).Return(nil)
+			mockDB.EXPECT().GroupcallGet(ctx, tt.groupcallID).Return(tt.responseGroupcall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseGroupcall.CustomerID, groupcall.EventTypeGroupcallProgressing, tt.responseGroupcall)
 
 			if tt.responseGroupcall.MasterGroupcallID != uuid.Nil {
-				mockReq.EXPECT().CallV1GroupcallUpdateAnswerGroupcallID(ctx, tt.responseGroupcall.MasterCallID, tt.responseGroupcall.ID.Return(&groupcall.Groupcall{}, nil)
+				mockReq.EXPECT().CallV1GroupcallUpdateAnswerGroupcallID(ctx, tt.responseGroupcall.MasterCallID, tt.responseGroupcall.ID).Return(&groupcall.Groupcall{}, nil)
 			} else {
 				// hangup others
 				for _, groupcallID := range tt.responseGroupcall.GroupcallIDs {
-					mockReq.EXPECT().CallV1GroupcallHangupOthers(ctx, groupcallID.Return(nil)
+					mockReq.EXPECT().CallV1GroupcallHangupOthers(ctx, groupcallID).Return(nil)
 				}
 
 				for _, callID := range tt.responseGroupcall.CallIDs {
 					if callID == tt.responseGroupcall.AnswerCallID {
 						continue
 					}
-					mockReq.EXPECT().CallV1CallHangup(ctx, callID.Return(&call.Call{}, nil)
+					mockReq.EXPECT().CallV1CallHangup(ctx, callID).Return(&call.Call{}, nil)
 				}
 			}
 
@@ -242,18 +242,18 @@ func Test_answerCommon(t *testing.T) {
 			ctx := context.Background()
 
 			if tt.groupcall.MasterGroupcallID != uuid.Nil {
-				mockReq.EXPECT().CallV1GroupcallUpdateAnswerGroupcallID(ctx, tt.groupcall.MasterCallID, tt.groupcall.ID.Return(&groupcall.Groupcall{}, nil)
+				mockReq.EXPECT().CallV1GroupcallUpdateAnswerGroupcallID(ctx, tt.groupcall.MasterCallID, tt.groupcall.ID).Return(&groupcall.Groupcall{}, nil)
 			} else {
 				// hangup others
 				for _, groupcallID := range tt.groupcall.GroupcallIDs {
-					mockReq.EXPECT().CallV1GroupcallHangupOthers(ctx, groupcallID.Return(nil)
+					mockReq.EXPECT().CallV1GroupcallHangupOthers(ctx, groupcallID).Return(nil)
 				}
 
 				for _, callID := range tt.groupcall.CallIDs {
 					if callID == tt.groupcall.AnswerCallID {
 						continue
 					}
-					mockReq.EXPECT().CallV1CallHangup(ctx, callID.Return(&call.Call{}, nil)
+					mockReq.EXPECT().CallV1CallHangup(ctx, callID).Return(&call.Call{}, nil)
 				}
 			}
 

@@ -66,12 +66,12 @@ func Test_EventCustomerCreated(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(utilhandler.TimeGetCurTime()).AnyTimes()
-			mockDB.EXPECT().AccountGets(ctx, gomock.Any(), uint64(1), tt.expectFilters.Return([]*account.Account{}, nil)
+			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime()).AnyTimes()
+			mockDB.EXPECT().AccountGets(ctx, gomock.Any(), uint64(1), tt.expectFilters).Return([]*account.Account{}, nil)
 
-			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
-			mockDB.EXPECT().AccountCreate(ctx, tt.expectAccount.Return(nil)
-			mockDB.EXPECT().AccountGet(ctx, tt.responseUUID.Return(tt.expectAccount, nil)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockDB.EXPECT().AccountCreate(ctx, tt.expectAccount).Return(nil)
+			mockDB.EXPECT().AccountGet(ctx, tt.responseUUID).Return(tt.expectAccount, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, account.EventTypeAccountCreated, tt.expectAccount)
 
 			if err := h.EventCustomerCreated(ctx, tt.customer); err != nil {
@@ -127,14 +127,14 @@ func Test_EventCustomerDeleted(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(utilhandler.TimeGetCurTime()).AnyTimes()
-			mockDB.EXPECT().AccountGets(ctx, gomock.Any(), uint64(1), tt.expectFilters.Return(tt.responseAccounts, nil)
+			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime()).AnyTimes()
+			mockDB.EXPECT().AccountGets(ctx, gomock.Any(), uint64(1), tt.expectFilters).Return(tt.responseAccounts, nil)
 
 			// delete
 			for _, f := range tt.responseAccounts {
 
-				mockDB.EXPECT().AccountDelete(ctx, f.ID.Return(nil)
-				mockDB.EXPECT().AccountGet(ctx, f.ID.Return(f, nil)
+				mockDB.EXPECT().AccountDelete(ctx, f.ID).Return(nil)
+				mockDB.EXPECT().AccountGet(ctx, f.ID).Return(f, nil)
 				mockNotify.EXPECT().PublishEvent(ctx, account.EventTypeAccountDeleted, f)
 			}
 

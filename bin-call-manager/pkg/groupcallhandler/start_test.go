@@ -224,32 +224,32 @@ func Test_Start_ringall(t *testing.T) {
 			ctx := context.Background()
 
 			for _, id := range tt.responseUUIDs {
-				mockUtil.EXPECT().UUIDCreate(.Return(id)
+				mockUtil.EXPECT().UUIDCreate().Return(id)
 			}
 
 			// getDialAddressesAndRingMethod
 			switch tt.destinations[0].Type {
 			case commonaddress.TypeAgent:
-				mockReq.EXPECT().AgentV1AgentGet(ctx, tt.responseAgent.ID.Return(tt.responseAgent, nil)
+				mockReq.EXPECT().AgentV1AgentGet(ctx, tt.responseAgent.ID).Return(tt.responseAgent, nil)
 			case commonaddress.TypeExtension:
-				mockReq.EXPECT().RegistrarV1ContactGets(ctx, tt.customerID, tt.destinations[0].Target.Return(tt.responseAgent, nil)
+				mockReq.EXPECT().RegistrarV1ContactGets(ctx, tt.customerID, tt.destinations[0].Target).Return(tt.responseAgent, nil)
 			}
 
 			// getAddressOwner
 			if tt.destinations[0].Type == commonaddress.TypeAgent {
-				mockReq.EXPECT().AgentV1AgentGet(ctx, tt.responseAgent.ID.Return(tt.responseAgent, nil)
+				mockReq.EXPECT().AgentV1AgentGet(ctx, tt.responseAgent.ID).Return(tt.responseAgent, nil)
 			} else {
-				mockReq.EXPECT().AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, tt.customerID, tt.destinations[0].Return(tt.responseAgent, nil)
+				mockReq.EXPECT().AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, tt.customerID, tt.destinations[0]).Return(tt.responseAgent, nil)
 			}
 
 			// create
-			mockDB.EXPECT().GroupcallCreate(ctx, tt.expectGroupcall.Return(nil)
-			mockDB.EXPECT().GroupcallGet(ctx, gomock.Any().Return(tt.expectGroupcall, nil)
+			mockDB.EXPECT().GroupcallCreate(ctx, tt.expectGroupcall).Return(nil)
+			mockDB.EXPECT().GroupcallGet(ctx, gomock.Any()).Return(tt.expectGroupcall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectGroupcall.CustomerID, groupcall.EventTypeGroupcallCreated, tt.expectGroupcall)
 
 			// create chained call
 			for i, destination := range tt.expectCallDestinations {
-				mockReq.EXPECT().CallV1CallCreateWithID(ctx, tt.expectCallIDs[i], tt.customerID, tt.flowID, uuid.Nil, tt.masterCallID, tt.source, destination, tt.expectGroupcall.ID, false, false.Return(&call.Call{}, nil)
+				mockReq.EXPECT().CallV1CallCreateWithID(ctx, tt.expectCallIDs[i], tt.customerID, tt.flowID, uuid.Nil, tt.masterCallID, tt.source, destination, tt.expectGroupcall.ID, false, false).Return(&call.Call{}, nil)
 			}
 
 			// create chained groupcall
@@ -263,9 +263,9 @@ func Test_Start_ringall(t *testing.T) {
 						},
 						RingMethod: agagent.RingMethodRingAll,
 					}
-					mockReq.EXPECT().AgentV1AgentGet(ctx, gomock.Any().Return(tmpAgent, nil)
+					mockReq.EXPECT().AgentV1AgentGet(ctx, gomock.Any()).Return(tmpAgent, nil)
 				}
-				mockReq.EXPECT().CallV1GroupcallCreate(ctx, tt.expectGroupcallIDs[i], tt.customerID, tt.flowID, *tt.source, gomock.Any(), tt.masterCallID, tt.expectGroupcall.ID, ringMethod, groupcall.AnswerMethodHangupOthers.Return(&groupcall.Groupcall{}, nil)
+				mockReq.EXPECT().CallV1GroupcallCreate(ctx, tt.expectGroupcallIDs[i], tt.customerID, tt.flowID, *tt.source, gomock.Any(), tt.masterCallID, tt.expectGroupcall.ID, ringMethod, groupcall.AnswerMethodHangupOthers).Return(&groupcall.Groupcall{}, nil)
 			}
 
 			res, err := h.Start(ctx, tt.id, tt.customerID, tt.flowID, tt.source, tt.destinations, tt.masterCallID, tt.masterGroupcallID, tt.ringMethod, tt.answerMethod)
@@ -358,16 +358,16 @@ func Test_Start_linear(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 
-			mockDB.EXPECT().GroupcallCreate(ctx, gomock.Any().Return(nil)
-			mockDB.EXPECT().GroupcallGet(ctx, gomock.Any().Return(tt.responseGroupcall, nil)
+			mockDB.EXPECT().GroupcallCreate(ctx, gomock.Any()).Return(nil)
+			mockDB.EXPECT().GroupcallGet(ctx, gomock.Any()).Return(tt.responseGroupcall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseGroupcall.CustomerID, groupcall.EventTypeGroupcallCreated, tt.responseGroupcall)
 
 			if tt.destinations[0].Type == commonaddress.TypeAgent {
 				// todo: need to add the test
 			} else {
-				mockReq.EXPECT().CallV1CallCreateWithID(ctx, tt.responseUUID, tt.customerID, tt.flowID, uuid.Nil, tt.masterCallID, tt.source, &tt.destinations[0], tt.responseGroupcall.ID, false, false.Return(&call.Call{}, nil)
+				mockReq.EXPECT().CallV1CallCreateWithID(ctx, tt.responseUUID, tt.customerID, tt.flowID, uuid.Nil, tt.masterCallID, tt.source, &tt.destinations[0], tt.responseGroupcall.ID, false, false).Return(&call.Call{}, nil)
 			}
 
 			res, err := h.Start(ctx, tt.id, tt.customerID, tt.flowID, tt.source, tt.destinations, tt.masterCallID, tt.masterGroupcallID, groupcall.RingMethodLinear, tt.answerMethod)

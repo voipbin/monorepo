@@ -107,7 +107,7 @@ func Test_CallsPOST(t *testing.T) {
 			req, _ := http.NewRequest("POST", "/calls", bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CallCreate(req.Context(), &tt.agent, tt.expectFlowID, tt.expectActions, tt.expectSource, tt.expectDestinations.Return(tt.responseCalls, tt.responseGroupcalls, nil)
+			mockSvc.EXPECT().CallCreate(req.Context(), &tt.agent, tt.expectFlowID, tt.expectActions, tt.expectSource, tt.expectDestinations).Return(tt.responseCalls, tt.responseGroupcalls, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -219,7 +219,7 @@ func Test_CallsGET(t *testing.T) {
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().CallGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken.Return(tt.responseCalls, nil)
+			mockSvc.EXPECT().CallGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseCalls, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -289,7 +289,7 @@ func Test_CallsIDGET(t *testing.T) {
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().CallGet(req.Context(), &tt.agent, tt.responseCall.ID.Return(tt.responseCall, nil)
+			mockSvc.EXPECT().CallGet(req.Context(), &tt.agent, tt.responseCall.ID).Return(tt.responseCall, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
@@ -356,7 +356,7 @@ func Test_callsIDDELETE(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().CallDelete(req.Context(), &tt.agent, tt.expectCallID.Return(tt.responseCall, nil)
+			mockSvc.EXPECT().CallDelete(req.Context(), &tt.agent, tt.expectCallID).Return(tt.responseCall, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -424,7 +424,7 @@ func Test_callsIDHangupPOST(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, nil)
-			mockSvc.EXPECT().CallHangup(req.Context(), &tt.agent, tt.expectCallID.Return(tt.responseCall, nil)
+			mockSvc.EXPECT().CallHangup(req.Context(), &tt.agent, tt.expectCallID).Return(tt.responseCall, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -494,7 +494,7 @@ func Test_CallsIDTalkPOST(t *testing.T) {
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CallTalk(req.Context(), &tt.agent, tt.expectCallID, tt.expectText, tt.expectGender, tt.expectLanguage.Return(nil)
+			mockSvc.EXPECT().CallTalk(req.Context(), &tt.agent, tt.expectCallID, tt.expectText, tt.expectGender, tt.expectLanguage).Return(nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -552,7 +552,7 @@ func Test_CallsIDHoldPOST(t *testing.T) {
 			req, _ := http.NewRequest("POST", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CallHoldOn(req.Context(), &tt.agent, tt.expectCallID.Return(nil)
+			mockSvc.EXPECT().CallHoldOn(req.Context(), &tt.agent, tt.expectCallID).Return(nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -610,7 +610,7 @@ func Test_CallsIDHoldDELETE(t *testing.T) {
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CallHoldOff(req.Context(), &tt.agent, tt.expectCallID.Return(nil)
+			mockSvc.EXPECT().CallHoldOff(req.Context(), &tt.agent, tt.expectCallID).Return(nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -672,7 +672,7 @@ func Test_CallsIDMutePOST(t *testing.T) {
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CallMuteOn(req.Context(), &tt.agent, tt.expectCallID, tt.expectDirection.Return(nil)
+			mockSvc.EXPECT().CallMuteOn(req.Context(), &tt.agent, tt.expectCallID, tt.expectDirection).Return(nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -734,7 +734,7 @@ func Test_CallsIDMuteDELETE(t *testing.T) {
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CallMuteOff(req.Context(), &tt.agent, tt.expectCallID, tt.expectDirection.Return(nil)
+			mockSvc.EXPECT().CallMuteOff(req.Context(), &tt.agent, tt.expectCallID, tt.expectDirection).Return(nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -792,7 +792,7 @@ func Test_CallsIDMOHPOST(t *testing.T) {
 			req, _ := http.NewRequest("POST", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CallMOHOn(req.Context(), &tt.agent, tt.expectCallID.Return(nil)
+			mockSvc.EXPECT().CallMOHOn(req.Context(), &tt.agent, tt.expectCallID).Return(nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -850,7 +850,7 @@ func Test_CallsIDMOHDELETE(t *testing.T) {
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CallMOHOff(req.Context(), &tt.agent, tt.expectCallID.Return(nil)
+			mockSvc.EXPECT().CallMOHOff(req.Context(), &tt.agent, tt.expectCallID).Return(nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -908,7 +908,7 @@ func Test_CallsIDSilencePOST(t *testing.T) {
 			req, _ := http.NewRequest("POST", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CallSilenceOn(req.Context(), &tt.agent, tt.expectCallID.Return(nil)
+			mockSvc.EXPECT().CallSilenceOn(req.Context(), &tt.agent, tt.expectCallID).Return(nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -966,7 +966,7 @@ func Test_CallsIDSilenceDELETE(t *testing.T) {
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CallSilenceOff(req.Context(), &tt.agent, tt.expectCallID.Return(nil)
+			mockSvc.EXPECT().CallSilenceOff(req.Context(), &tt.agent, tt.expectCallID).Return(nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -1026,7 +1026,7 @@ func Test_callsIDMediaStreamGET(t *testing.T) {
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CallMediaStreamStart(req.Context(), &tt.agent, tt.expectCallID, tt.expectEncapsulation, c.Writer, req.Return(nil)
+			mockSvc.EXPECT().CallMediaStreamStart(req.Context(), &tt.agent, tt.expectCallID, tt.expectEncapsulation, c.Writer, req).Return(nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -1114,7 +1114,7 @@ func Test_PostCallsIdRecordingStart(t *testing.T) {
 				tt.expectedEndOfKey,
 				tt.expectedDuration,
 				tt.expectedOnEndFlowID,
-			.Return(tt.responseCall, nil)
+			).Return(tt.responseCall, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -1180,7 +1180,7 @@ func Test_PostCallsIdRecordingStop(t *testing.T) {
 			req, _ := http.NewRequest("POST", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CallRecordingStop(req.Context(), &tt.agent, tt.expectedCallID.Return(tt.responseCall, nil)
+			mockSvc.EXPECT().CallRecordingStop(req.Context(), &tt.agent, tt.expectedCallID).Return(tt.responseCall, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

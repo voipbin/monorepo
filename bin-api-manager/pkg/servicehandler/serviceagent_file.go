@@ -7,6 +7,7 @@ import (
 	"mime/multipart"
 	amagent "monorepo/bin-agent-manager/models/agent"
 	smfile "monorepo/bin-storage-manager/models/file"
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -84,7 +85,13 @@ func (h *serviceHandler) ServiceAgentFileGets(ctx context.Context, a *amagent.Ag
 	}
 
 	// get files
-	files, err := h.reqHandler.StorageV1FileGets(ctx, token, size, filters)
+	// Convert string filters to typed filters
+	typedFilters, err := h.convertFileFilters(filters)
+	if err != nil {
+		return nil, err
+	}
+
+	files, err := h.reqHandler.StorageV1FileGets(ctx, token, size, typedFilters)
 	if err != nil {
 		log.Errorf("Could not get files info from the storage-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find files info. err: %v", err)
@@ -156,4 +163,27 @@ func (h *serviceHandler) ServiceAgentFileDelete(ctx context.Context, a *amagent.
 
 	res := tmp.ConvertWebhookMessage()
 	return res, nil
+}
+
+// convertFileFilters converts map[string]string to map[smfile.Field]any
+func (h *serviceHandler) convertFileFilters(filters map[string]string) (map[smfile.Field]any, error) {
+	// Convert to map[string]any first
+	srcAny := make(map[string]any, len(filters))
+	for k, v := range filters {
+		srcAny[k] = v
+	}
+
+	// Use reflection-based converter
+	typed, err := commondatabasehandler.ConvertMapToTypedMap(srcAny, smfile.File{})
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert string keys to Field type
+	result := make(map[smfile.Field]any, len(typed))
+	for k, v := range typed {
+		result[smfile.Field(k)] = v
+	}
+
+	return result, nil
 }

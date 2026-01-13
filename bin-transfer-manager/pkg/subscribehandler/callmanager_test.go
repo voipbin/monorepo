@@ -65,8 +65,8 @@ func Test_processEventCMGroupcallProgressing(t *testing.T) {
 				transferHandler: mockTransfer,
 			}
 
-			mockTransfer.EXPECT().GetByGroupcallID(gomock.Any(), tt.expectGroupcall.ID.Return(tt.responseTransfer, nil)
-			mockTransfer.EXPECT().TransfereeAnswer(gomock.Any(), tt.responseTransfer, tt.expectGroupcall.Return(nil)
+			mockTransfer.EXPECT().GetByGroupcallID(gomock.Any(), tt.expectGroupcall.ID).Return(tt.responseTransfer, nil)
+			mockTransfer.EXPECT().TransfereeAnswer(gomock.Any(), tt.responseTransfer, tt.expectGroupcall).Return(nil)
 			h.processEvent(tt.event)
 		})
 	}
@@ -117,8 +117,8 @@ func Test_processEventCMGroupcallHangup(t *testing.T) {
 				transferHandler: mockTransfer,
 			}
 
-			mockTransfer.EXPECT().GetByGroupcallID(gomock.Any(), tt.expectGroupcall.ID.Return(tt.responseTransfer, nil)
-			mockTransfer.EXPECT().TransfereeHangup(gomock.Any(), tt.responseTransfer, tt.expectGroupcall.Return(nil)
+			mockTransfer.EXPECT().GetByGroupcallID(gomock.Any(), tt.expectGroupcall.ID).Return(tt.responseTransfer, nil)
+			mockTransfer.EXPECT().TransfereeHangup(gomock.Any(), tt.responseTransfer, tt.expectGroupcall).Return(nil)
 			h.processEvent(tt.event)
 		})
 	}
@@ -168,8 +168,8 @@ func Test_processEventCMCallHangup(t *testing.T) {
 				transferHandler: mockTransfer,
 			}
 
-			mockTransfer.EXPECT().GetByTransfererCallID(gomock.Any(), tt.expectCall.ID.Return(tt.responseTransfer, nil)
-			mockTransfer.EXPECT().TransfererHangup(gomock.Any(), tt.responseTransfer, tt.expectCall.Return(nil)
+			mockTransfer.EXPECT().GetByTransfererCallID(gomock.Any(), tt.expectCall.ID).Return(tt.responseTransfer, nil)
+			mockTransfer.EXPECT().TransfererHangup(gomock.Any(), tt.responseTransfer, tt.expectCall).Return(nil)
 			h.processEvent(tt.event)
 		})
 	}

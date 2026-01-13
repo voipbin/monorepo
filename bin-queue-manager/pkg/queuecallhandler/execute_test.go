@@ -102,18 +102,18 @@ func Test_Execute(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().QueuecallGet(ctx, tt.id.Return(tt.responseQueuecall, nil)
+			mockDB.EXPECT().QueuecallGet(ctx, tt.id).Return(tt.responseQueuecall, nil)
 
 			// generateFlowForAgentCall
-			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.responseQueuecall.CustomerID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), tt.expcetFlowActions, uuid.Nil, false.Return(tt.responseFlow, nil)
+			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.responseQueuecall.CustomerID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), tt.expcetFlowActions, uuid.Nil, false).Return(tt.responseFlow, nil)
 
-			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.responseQueuecall.CustomerID, tt.responseFlow.ID, tt.responseQueuecall.ReferenceID, &tt.responseQueuecall.Source, tt.expectDestinations, false, false.Return([]*cmcall.Call{}, []*cmgroupcall.Groupcall{}, nil)
+			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.responseQueuecall.CustomerID, tt.responseFlow.ID, tt.responseQueuecall.ReferenceID, &tt.responseQueuecall.Source, tt.expectDestinations, false, false).Return([]*cmcall.Call{}, []*cmgroupcall.Groupcall{}, nil)
 
 			//UpdateStatusConnecting
-			mockDB.EXPECT().QueuecallSetStatusConnecting(ctx, tt.responseQueuecall.ID, tt.agentID.Return(nil)
-			mockDB.EXPECT().QueuecallGet(ctx, tt.responseQueuecall.ID.Return(tt.responseQueuecall, nil)
+			mockDB.EXPECT().QueuecallSetStatusConnecting(ctx, tt.responseQueuecall.ID, tt.agentID).Return(nil)
+			mockDB.EXPECT().QueuecallGet(ctx, tt.responseQueuecall.ID).Return(tt.responseQueuecall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallConnecting, tt.responseQueuecall)
-			mockReq.EXPECT().FlowV1ActiveflowUpdateForwardActionID(ctx, tt.responseQueuecall.ReferenceActiveflowID, tt.responseQueuecall.ForwardActionID, true.Return(nil)
+			mockReq.EXPECT().FlowV1ActiveflowUpdateForwardActionID(ctx, tt.responseQueuecall.ReferenceActiveflowID, tt.responseQueuecall.ForwardActionID, true).Return(nil)
 
 			res, err := h.Execute(ctx, tt.id, tt.agentID)
 			if err != nil {
@@ -177,7 +177,7 @@ func Test_generateFlowForAgentCall(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.customerID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), tt.expectActions, uuid.Nil, false.Return(tt.responseFlow, nil)
+			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.customerID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), tt.expectActions, uuid.Nil, false).Return(tt.responseFlow, nil)
 
 			res, err := h.generateFlowForAgentCall(ctx, tt.customerID, tt.conferenceID)
 			if err != nil {

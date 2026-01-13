@@ -72,13 +72,13 @@ func Test_CustomerCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().CustomerSet(ctx, gomock.Any()).AnyTimes()
 			if err := h.CustomerCreate(ctx, tt.customer); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().CustomerGet(ctx, tt.customer.ID.Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CustomerGet(ctx, tt.customer.ID).Return(nil, fmt.Errorf(""))
 			res, err := h.CustomerGet(ctx, tt.customer.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -130,14 +130,14 @@ func TestCustomerDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
-			mockCache.EXPECT().CustomerGet(ctx, tt.customer.ID.Return(nil, fmt.Errorf("")).AnyTimes()
-			mockCache.EXPECT().CustomerSet(ctx, gomock.Any().Return(nil).AnyTimes()
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().CustomerGet(ctx, tt.customer.ID).Return(nil, fmt.Errorf("")).AnyTimes()
+			mockCache.EXPECT().CustomerSet(ctx, gomock.Any()).Return(nil).AnyTimes()
 			if err := h.CustomerCreate(ctx, tt.customer); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			if err := h.CustomerDelete(ctx, tt.customer.ID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -216,7 +216,7 @@ func Test_CustomerGets(t *testing.T) {
 			ctx := context.Background()
 
 			for _, u := range tt.customers {
-				mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 				mockCache.EXPECT().CustomerSet(ctx, gomock.Any())
 				if err := h.CustomerCreate(ctx, u); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -335,20 +335,20 @@ func Test_CustomerUpdate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
-			mockCache.EXPECT().CustomerSet(ctx, gomock.Any().Return(nil)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().CustomerSet(ctx, gomock.Any()).Return(nil)
 			if err := h.CustomerCreate(ctx, tt.customer); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
-			mockCache.EXPECT().CustomerSet(ctx, gomock.Any().Return(nil)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().CustomerSet(ctx, gomock.Any()).Return(nil)
 			if err := h.CustomerUpdate(ctx, tt.customer.ID, tt.updateFields); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().CustomerGet(ctx, gomock.Any().Return(nil, fmt.Errorf(""))
-			mockCache.EXPECT().CustomerSet(ctx, gomock.Any().Return(nil)
+			mockCache.EXPECT().CustomerGet(ctx, gomock.Any()).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CustomerSet(ctx, gomock.Any()).Return(nil)
 			res, err := h.CustomerGet(ctx, tt.customer.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -410,8 +410,8 @@ func Test_CustomerUpdateBillingAccountID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
-			mockCache.EXPECT().CustomerSet(gomock.Any(), gomock.Any().Return(nil)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().CustomerSet(gomock.Any(), gomock.Any()).Return(nil)
 			if err := h.CustomerCreate(context.Background(), tt.customer); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -420,14 +420,14 @@ func Test_CustomerUpdateBillingAccountID(t *testing.T) {
 				customer.FieldBillingAccountID: tt.billingAccountID,
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
-			mockCache.EXPECT().CustomerSet(gomock.Any(), gomock.Any().Return(nil)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().CustomerSet(gomock.Any(), gomock.Any()).Return(nil)
 			if err := h.CustomerUpdate(ctx, tt.customer.ID, fields); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().CustomerGet(gomock.Any(), gomock.Any().Return(nil, fmt.Errorf(""))
-			mockCache.EXPECT().CustomerSet(gomock.Any(), gomock.Any().Return(nil)
+			mockCache.EXPECT().CustomerGet(gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CustomerSet(gomock.Any(), gomock.Any()).Return(nil)
 			res, err := h.CustomerGet(ctx, tt.customer.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

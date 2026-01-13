@@ -95,10 +95,10 @@ func Test_EventCMDTMFReceived(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AIcallGetByReferenceID(ctx, tt.expectedReferenceID.Return(tt.responseAIcall, nil)
-			mockReq.EXPECT().PipecatV1PipecatcallGet(ctx, tt.expectedPipecatcallID.Return(tt.responsePipecatcall, nil)
-			mockMessage.EXPECT().Create(ctx, tt.responseAIcall.CustomerID, tt.responseAIcall.ID, message.DirectionOutgoing, message.RoleUser, tt.expectedMessageText, nil, "".Return(tt.responseMessage, nil)
-			mockReq.EXPECT().PipecatV1MessageSend(ctx, tt.responsePipecatcall.HostID, tt.expectedPipecatcallID, tt.responseMessage.ID.String(), tt.expectedMessageText, true, true.Return(nil, nil)
+			mockDB.EXPECT().AIcallGetByReferenceID(ctx, tt.expectedReferenceID).Return(tt.responseAIcall, nil)
+			mockReq.EXPECT().PipecatV1PipecatcallGet(ctx, tt.expectedPipecatcallID).Return(tt.responsePipecatcall, nil)
+			mockMessage.EXPECT().Create(ctx, tt.responseAIcall.CustomerID, tt.responseAIcall.ID, message.DirectionOutgoing, message.RoleUser, tt.expectedMessageText, nil, "").Return(tt.responseMessage, nil)
+			mockReq.EXPECT().PipecatV1MessageSend(ctx, tt.responsePipecatcall.HostID, tt.expectedPipecatcallID, tt.responseMessage.ID.String(), tt.expectedMessageText, true, true).Return(nil, nil)
 
 			h.EventCMDTMFReceived(ctx, tt.evt)
 		})
@@ -163,8 +163,8 @@ func Test_EventPMPipecatcallInitialized(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AIcallGet(ctx, tt.expectedAICallID.Return(tt.responseAIcall, nil)
-			mockReq.EXPECT().CallV1CallMediaStop(ctx, tt.expectedCallID.Return(nil)
+			mockDB.EXPECT().AIcallGet(ctx, tt.expectedAICallID).Return(tt.responseAIcall, nil)
+			mockReq.EXPECT().CallV1CallMediaStop(ctx, tt.expectedCallID).Return(nil)
 
 			h.EventPMPipecatcallInitialized(ctx, tt.evt)
 		})

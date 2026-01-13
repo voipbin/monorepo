@@ -49,7 +49,7 @@ func Test_VariableCreate(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().VariableGet(ctx, tt.variable.ID.Return(tt.expectedRes, nil)
+			mockCache.EXPECT().VariableGet(ctx, tt.variable.ID).Return(tt.expectedRes, nil)
 			res, err := h.VariableGet(ctx, tt.variable.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -101,7 +101,7 @@ func Test_VariableUpdate(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().VariableSet(ctx, tt.updateVariable.Return(nil)
+			mockCache.EXPECT().VariableSet(ctx, tt.updateVariable).Return(nil)
 			if err := h.VariableUpdate(context.Background(), tt.updateVariable); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

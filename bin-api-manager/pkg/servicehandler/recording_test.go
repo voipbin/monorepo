@@ -29,7 +29,7 @@ func Test_RecordingGets(t *testing.T) {
 
 		responseRecording []cmrecording.Recording
 
-		expectFilters map[string]string
+		expectFilters map[cmrecording.Field]any
 		expectRes     []*cmrecording.WebhookMessage
 	}
 
@@ -67,9 +67,9 @@ func Test_RecordingGets(t *testing.T) {
 				},
 			},
 
-			map[string]string{
-				"customer_id": "5f621078-8e5f-11ee-97b2-cfe7337b701c",
-				"deleted":     "false",
+			map[cmrecording.Field]any{
+				cmrecording.FieldCustomerID: "5f621078-8e5f-11ee-97b2-cfe7337b701c",
+				cmrecording.FieldDeleted:    false,
 			},
 			[]*cmrecording.WebhookMessage{
 				{
@@ -102,7 +102,7 @@ func Test_RecordingGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1RecordingGets(ctx, tt.token, tt.size, tt.expectFilters.Return(tt.responseRecording, nil)
+			mockReq.EXPECT().CallV1RecordingGets(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseRecording, nil)
 
 			res, err := h.RecordingGets(ctx, tt.agent, tt.size, tt.token)
 
@@ -172,8 +172,8 @@ func Test_RecordingDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1RecordingGet(ctx, tt.recordingID.Return(tt.responseRecording, nil)
-			mockReq.EXPECT().CallV1RecordingDelete(ctx, tt.recordingID.Return(tt.responseRecording, nil)
+			mockReq.EXPECT().CallV1RecordingGet(ctx, tt.recordingID).Return(tt.responseRecording, nil)
+			mockReq.EXPECT().CallV1RecordingDelete(ctx, tt.recordingID).Return(tt.responseRecording, nil)
 
 			res, err := h.RecordingDelete(ctx, tt.agent, tt.recordingID)
 			if err != nil {

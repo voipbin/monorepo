@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"monorepo/bin-ai-manager/models/summary"
 	cmcustomer "monorepo/bin-customer-manager/models/customer"
+	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
 	tmtranscript "monorepo/bin-transcribe-manager/models/transcript"
 
 	"github.com/gofrs/uuid"
@@ -128,10 +129,10 @@ func (h *summaryHandler) contentGetTranscripts(ctx context.Context, referenceID 
 	})
 
 	// get transcribe
-	transcribeFilters := map[string]string{
-		"deleted":      "false",
-		"customer_id":  cmcustomer.IDAIManager.String(),
-		"reference_id": referenceID.String(),
+	transcribeFilters := map[tmtranscribe.Field]any{
+		tmtranscribe.FieldDeleted:     false,
+		tmtranscribe.FieldCustomerID:  cmcustomer.IDAIManager.String(),
+		tmtranscribe.FieldReferenceID: referenceID.String(),
 	}
 
 	tr, err := h.reqHandler.TranscribeV1TranscribeGets(ctx, "", 1, transcribeFilters)
@@ -142,9 +143,9 @@ func (h *summaryHandler) contentGetTranscripts(ctx context.Context, referenceID 
 	}
 	log.WithField("transcribe", tr).Debugf("Found transcribe. transcribe_id: %s", tr[0].ID)
 
-	transcriptFilters := map[string]string{
-		"deleted":       "false",
-		"transcribe_id": tr[0].ID.String(),
+	transcriptFilters := map[tmtranscript.Field]any{
+		tmtranscript.FieldDeleted:      false,
+		tmtranscript.FieldTranscribeID: tr[0].ID.String(),
 	}
 	res, err := h.reqHandler.TranscribeV1TranscriptGets(ctx, "", 1000, transcriptFilters)
 	if err != nil {

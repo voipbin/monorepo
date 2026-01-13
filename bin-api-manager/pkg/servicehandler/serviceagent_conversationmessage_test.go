@@ -102,8 +102,8 @@ func Test_ServiceAgentConversationMessageGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().ConversationV1ConversationGet(ctx, tt.conversationID.Return(tt.responseConversation, nil)
-			mockReq.EXPECT().ConversationV1MessageGets(ctx, tt.token, tt.size, tt.expectFilters.Return(tt.responseMessages, nil)
+			mockReq.EXPECT().ConversationV1ConversationGet(ctx, tt.conversationID).Return(tt.responseConversation, nil)
+			mockReq.EXPECT().ConversationV1MessageGets(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseMessages, nil)
 
 			res, err := h.ServiceAgentConversationMessageGets(ctx, tt.agent, tt.conversationID, tt.size, tt.token)
 			if err != nil {
@@ -184,8 +184,8 @@ func Test_ServiceAgentConversationMessageSend(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().ConversationV1ConversationGet(ctx, tt.conversationID.Return(tt.responseConversation, nil)
-			mockReq.EXPECT().ConversationV1MessageSend(ctx, tt.conversationID, tt.text, tt.medias.Return(tt.responseConversationMessage, nil)
+			mockReq.EXPECT().ConversationV1ConversationGet(ctx, tt.conversationID).Return(tt.responseConversation, nil)
+			mockReq.EXPECT().ConversationV1MessageSend(ctx, tt.conversationID, tt.text, tt.medias).Return(tt.responseConversationMessage, nil)
 
 			res, err := h.ServiceAgentConversationMessageSend(ctx, tt.agent, tt.conversationID, tt.text, tt.medias)
 			if err != nil {

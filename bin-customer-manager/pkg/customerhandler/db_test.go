@@ -55,7 +55,7 @@ func Test_Gets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CustomerGets(gomock.Any(), tt.size, tt.token, tt.filters.Return(tt.result, nil)
+			mockDB.EXPECT().CustomerGets(gomock.Any(), tt.size, tt.token, tt.filters).Return(tt.result, nil)
 			_, err := h.Gets(ctx, tt.size, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -81,7 +81,7 @@ func Test_Create(t *testing.T) {
 		responseHash string
 
 		expectedFilterCustomer map[customer.Field]any
-		expectedFilterAgent    map[string]string
+		expectedFilterAgent    map[amagent.Field]any
 		expectedCustomer       *customer.Customer
 	}{
 		{
@@ -102,9 +102,9 @@ func Test_Create(t *testing.T) {
 				customer.FieldDeleted: false,
 				customer.FieldEmail:   "test@voipbin.net",
 			},
-			expectedFilterAgent: map[string]string{
-				"deleted":  "false",
-				"username": "test@voipbin.net",
+			expectedFilterAgent: map[amagent.Field]any{
+				amagent.FieldDeleted:  false,
+				amagent.FieldUsername: "test@voipbin.net",
 			},
 			expectedCustomer: &customer.Customer{
 				ID:               uuid.FromStringOrNil("4b9ff112-02ec-11ee-b037-5b5c308ec044"),
@@ -138,14 +138,14 @@ func Test_Create(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().EmailIsValid(tt.email.Return(true)
-			mockDB.EXPECT().CustomerGets(ctx, gomock.Any(), gomock.Any(), tt.expectedFilterCustomer.Return([]*customer.Customer{}, nil)
-			mockReq.EXPECT().AgentV1AgentGets(ctx, gomock.Any(), gomock.Any(), tt.expectedFilterAgent.Return([]amagent.Agent{}, nil)
+			mockUtil.EXPECT().EmailIsValid(tt.email).Return(true)
+			mockDB.EXPECT().CustomerGets(ctx, gomock.Any(), gomock.Any(), tt.expectedFilterCustomer).Return([]*customer.Customer{}, nil)
+			mockReq.EXPECT().AgentV1AgentGets(ctx, gomock.Any(), gomock.Any(), tt.expectedFilterAgent).Return([]amagent.Agent{}, nil)
 
-			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
-			mockDB.EXPECT().CustomerCreate(ctx, tt.expectedCustomer.Return(nil)
-			mockDB.EXPECT().CustomerGet(ctx, tt.responseUUID.Return(&customer.Customer{}, nil)
-			mockNotify.EXPECT().PublishEvent(ctx, customer.EventTypeCustomerCreated, gomock.Any().Return()
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockDB.EXPECT().CustomerCreate(ctx, tt.expectedCustomer).Return(nil)
+			mockDB.EXPECT().CustomerGet(ctx, tt.responseUUID).Return(&customer.Customer{}, nil)
+			mockNotify.EXPECT().PublishEvent(ctx, customer.EventTypeCustomerCreated, gomock.Any()).Return()
 
 			_, err := h.Create(ctx, tt.userName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI)
 			if err != nil {
@@ -188,9 +188,9 @@ func Test_dbDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().CustomerDelete(gomock.Any(), tt.id.Return(nil)
-			mockDB.EXPECT().CustomerGet(gomock.Any(), tt.id.Return(tt.responseCustomer, nil)
-			mockNotify.EXPECT().PublishEvent(gomock.Any(), customer.EventTypeCustomerDeleted, tt.responseCustomer.Return()
+			mockDB.EXPECT().CustomerDelete(gomock.Any(), tt.id).Return(nil)
+			mockDB.EXPECT().CustomerGet(gomock.Any(), tt.id).Return(tt.responseCustomer, nil)
+			mockNotify.EXPECT().PublishEvent(gomock.Any(), customer.EventTypeCustomerDeleted, tt.responseCustomer).Return()
 
 			_, err := h.dbDelete(ctx, tt.id)
 			if err != nil {
@@ -246,9 +246,9 @@ func Test_UpdateBasicInfo(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CustomerUpdate(gomock.Any(), tt.id, gomock.Any().Return(nil)
-			mockDB.EXPECT().CustomerGet(gomock.Any(), gomock.Any().Return(&customer.Customer{}, nil)
-			mockNotify.EXPECT().PublishEvent(gomock.Any(), customer.EventTypeCustomerUpdated, gomock.Any().Return()
+			mockDB.EXPECT().CustomerUpdate(gomock.Any(), tt.id, gomock.Any()).Return(nil)
+			mockDB.EXPECT().CustomerGet(gomock.Any(), gomock.Any()).Return(&customer.Customer{}, nil)
+			mockNotify.EXPECT().PublishEvent(gomock.Any(), customer.EventTypeCustomerUpdated, gomock.Any()).Return()
 
 			_, err := h.UpdateBasicInfo(ctx, tt.id, tt.customerName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI)
 			if err != nil {
@@ -289,9 +289,9 @@ func Test_UpdateBillingAccountID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().CustomerUpdate(gomock.Any(), tt.id, gomock.Any().Return(nil)
-			mockDB.EXPECT().CustomerGet(gomock.Any(), tt.id.Return(&customer.Customer{}, nil)
-			mockNotify.EXPECT().PublishEvent(gomock.Any(), customer.EventTypeCustomerUpdated, gomock.Any().Return()
+			mockDB.EXPECT().CustomerUpdate(gomock.Any(), tt.id, gomock.Any()).Return(nil)
+			mockDB.EXPECT().CustomerGet(gomock.Any(), tt.id).Return(&customer.Customer{}, nil)
+			mockNotify.EXPECT().PublishEvent(gomock.Any(), customer.EventTypeCustomerUpdated, gomock.Any()).Return()
 
 			_, err := h.UpdateBillingAccountID(ctx, tt.id, tt.billingAccountID)
 			if err != nil {

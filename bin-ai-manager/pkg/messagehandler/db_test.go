@@ -106,9 +106,9 @@ func Test_Create(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
-			mockDB.EXPECT().MessageCreate(ctx, tt.expectMessage.Return(nil)
-			mockDB.EXPECT().MessageGet(ctx, tt.responseUUID.Return(tt.expectMessage, nil)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockDB.EXPECT().MessageCreate(ctx, tt.expectMessage).Return(nil)
+			mockDB.EXPECT().MessageGet(ctx, tt.responseUUID).Return(tt.expectMessage, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectMessage.CustomerID, message.EventTypeMessageCreated, tt.expectMessage)
 
 			res, err := h.Create(ctx, tt.customerID, tt.aicallID, tt.direction, tt.role, tt.content, tt.toolCalls, tt.toolCallID)
@@ -171,7 +171,7 @@ func Test_Gets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().MessageGets(ctx, tt.size, tt.token, gomock.Any().Return(tt.responseMessages, nil)
+			mockDB.EXPECT().MessageGets(ctx, tt.size, tt.token, gomock.Any()).Return(tt.responseMessages, nil)
 
 			res, err := h.Gets(ctx, tt.aicallID, tt.size, tt.token, tt.filters)
 			if err != nil {
@@ -223,7 +223,7 @@ func Test_Get(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().MessageGet(ctx, tt.id.Return(tt.responseMessage, nil)
+			mockDB.EXPECT().MessageGet(ctx, tt.id).Return(tt.responseMessage, nil)
 
 			res, err := h.Get(ctx, tt.id)
 			if err != nil {

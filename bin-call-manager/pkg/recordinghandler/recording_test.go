@@ -149,20 +149,20 @@ func Test_recordingReferenceTypeCall(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1CallGet(ctx, tt.referenceID.Return(tt.responseCall, nil)
-			mockChannel.EXPECT().Get(ctx, tt.responseCall.ChannelID.Return(tt.responseCallChannel, nil)
-			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
-			mockUtil.EXPECT().TimeGetCurTimeRFC3339(.Return(tt.responseCurTimeRFC)
+			mockReq.EXPECT().CallV1CallGet(ctx, tt.referenceID).Return(tt.responseCall, nil)
+			mockChannel.EXPECT().Get(ctx, tt.responseCall.ChannelID).Return(tt.responseCallChannel, nil)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockUtil.EXPECT().TimeGetCurTimeRFC3339().Return(tt.responseCurTimeRFC)
 			for i, direction := range []channel.SnoopDirection{channel.SnoopDirectionIn, channel.SnoopDirectionOut} {
-				mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUIDsChannelIDs[i])
-				mockChannel.EXPECT().StartSnoop(ctx, tt.expectTargetChannelID, tt.expectChannelIDs[i], tt.expectArgs[i], direction, channel.SnoopDirectionNone.Return(tt.responseChannels[i], nil)
+				mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDsChannelIDs[i])
+				mockChannel.EXPECT().StartSnoop(ctx, tt.expectTargetChannelID, tt.expectChannelIDs[i], tt.expectArgs[i], direction, channel.SnoopDirectionNone).Return(tt.responseChannels[i], nil)
 			}
 
-			mockDB.EXPECT().RecordingCreate(ctx, tt.expectRecording.Return(nil)
-			mockDB.EXPECT().RecordingGet(ctx, tt.expectRecording.ID.Return(tt.expectRecording, nil)
+			mockDB.EXPECT().RecordingCreate(ctx, tt.expectRecording).Return(nil)
+			mockDB.EXPECT().RecordingGet(ctx, tt.expectRecording.ID).Return(tt.expectRecording, nil)
 
 			// variableUpdateToReferenceInfo
-			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.activeflowID, gomock.Any().Return(nil)
+			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.activeflowID, gomock.Any()).Return(nil)
 
 			res, err := h.recordingReferenceTypeCall(ctx, tt.activeflowID, tt.referenceID, tt.format, tt.endOfSilence, tt.endOfKey, tt.duration, tt.onEndFlowID)
 			if err != nil {
@@ -276,12 +276,12 @@ func Test_recordingReferenceTypeConfbridge(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1ConfbridgeGet(ctx, tt.referenceID.Return(tt.responseConfbridge, nil)
-			mockBridge.EXPECT().Get(ctx, tt.responseConfbridge.BridgeID.Return(tt.responseBridge, nil)
-			mockUtil.EXPECT().TimeGetCurTimeRFC3339(.Return(tt.responseCurTimeRFC)
-			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
-			mockDB.EXPECT().RecordingCreate(ctx, tt.expectRecording.Return(nil)
-			mockDB.EXPECT().RecordingGet(ctx, tt.expectRecording.ID.Return(tt.responseRecording, nil)
+			mockReq.EXPECT().CallV1ConfbridgeGet(ctx, tt.referenceID).Return(tt.responseConfbridge, nil)
+			mockBridge.EXPECT().Get(ctx, tt.responseConfbridge.BridgeID).Return(tt.responseBridge, nil)
+			mockUtil.EXPECT().TimeGetCurTimeRFC3339().Return(tt.responseCurTimeRFC)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockDB.EXPECT().RecordingCreate(ctx, tt.expectRecording).Return(nil)
+			mockDB.EXPECT().RecordingGet(ctx, tt.expectRecording.ID).Return(tt.responseRecording, nil)
 			mockReq.EXPECT().AstBridgeRecord(
 				ctx,
 				tt.responseBridge.AsteriskID,

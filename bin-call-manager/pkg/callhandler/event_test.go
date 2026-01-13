@@ -76,15 +76,15 @@ func Test_EventCUCustomerDeleted(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().CallGets(ctx, uint64(1000), "", gomock.Any().Return(tt.responseCalls, nil)
+			mockDB.EXPECT().CallGets(ctx, uint64(1000), "", gomock.Any()).Return(tt.responseCalls, nil)
 
 			// delete each calls
 			for _, c := range tt.responseCalls {
-				mockDB.EXPECT().CallGet(ctx, c.ID.Return(c, nil)
+				mockDB.EXPECT().CallGet(ctx, c.ID).Return(c, nil)
 
 				// dbDelete
-				mockDB.EXPECT().CallDelete(ctx, c.ID.Return(nil)
-				mockDB.EXPECT().CallGet(ctx, c.ID.Return(c, nil)
+				mockDB.EXPECT().CallDelete(ctx, c.ID).Return(nil)
+				mockDB.EXPECT().CallGet(ctx, c.ID).Return(c, nil)
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, c.CustomerID, call.EventTypeCallDeleted, c)
 
 			}

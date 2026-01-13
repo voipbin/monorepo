@@ -62,11 +62,11 @@ func Test_Create(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 
-			mockDB.EXPECT().AccountGets(ctx, "", uint64(1), tt.expectFilters.Return([]*account.Account{}, nil)
-			mockDB.EXPECT().AccountCreate(ctx, tt.expectAccount.Return(nil)
-			mockDB.EXPECT().AccountGet(ctx, tt.responseUUID.Return(tt.responseAccount, nil)
+			mockDB.EXPECT().AccountGets(ctx, "", uint64(1), tt.expectFilters).Return([]*account.Account{}, nil)
+			mockDB.EXPECT().AccountCreate(ctx, tt.expectAccount).Return(nil)
+			mockDB.EXPECT().AccountGet(ctx, tt.responseUUID).Return(tt.responseAccount, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, account.EventTypeAccountCreated, tt.responseAccount)
 
 			res, err := h.Create(ctx, tt.customerID)
@@ -116,7 +116,7 @@ func Test_Get(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AccountGet(ctx, tt.id.Return(tt.responseAccount, nil)
+			mockDB.EXPECT().AccountGet(ctx, tt.id).Return(tt.responseAccount, nil)
 
 			res, err := h.Get(ctx, tt.id)
 			if err != nil {
@@ -173,7 +173,7 @@ func Test_Gets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AccountGets(ctx, tt.token, tt.size, tt.filters.Return(tt.responseAccounts, nil)
+			mockDB.EXPECT().AccountGets(ctx, tt.token, tt.size, tt.filters).Return(tt.responseAccounts, nil)
 
 			res, err := h.Gets(ctx, tt.token, tt.size, tt.filters)
 			if err != nil {
@@ -222,8 +222,8 @@ func Test_Delete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AccountDelete(ctx, tt.id.Return(nil)
-			mockDB.EXPECT().AccountGet(ctx, tt.id.Return(tt.responseAccount, nil)
+			mockDB.EXPECT().AccountDelete(ctx, tt.id).Return(nil)
+			mockDB.EXPECT().AccountGet(ctx, tt.id).Return(tt.responseAccount, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, account.EventTypeAccountDeleted, tt.responseAccount)
 
 			res, err := h.Delete(ctx, tt.id)
@@ -277,8 +277,8 @@ func Test_IncreaseFileInfo(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AccountIncreaseFileInfo(ctx, tt.id, tt.filecount, tt.filesize.Return(nil)
-			mockDB.EXPECT().AccountGet(ctx, tt.id.Return(tt.responseAccount, nil)
+			mockDB.EXPECT().AccountIncreaseFileInfo(ctx, tt.id, tt.filecount, tt.filesize).Return(nil)
+			mockDB.EXPECT().AccountGet(ctx, tt.id).Return(tt.responseAccount, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, account.EventTypeAccountUpdated, tt.responseAccount)
 
 			res, err := h.IncreaseFileInfo(ctx, tt.id, tt.filecount, tt.filesize)
@@ -332,8 +332,8 @@ func Test_DecreaseFileInfo(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AccountDecreaseFileInfo(ctx, tt.id, tt.filecount, tt.filesize.Return(nil)
-			mockDB.EXPECT().AccountGet(ctx, tt.id.Return(tt.responseAccount, nil)
+			mockDB.EXPECT().AccountDecreaseFileInfo(ctx, tt.id, tt.filecount, tt.filesize).Return(nil)
+			mockDB.EXPECT().AccountGet(ctx, tt.id).Return(tt.responseAccount, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, account.EventTypeAccountUpdated, tt.responseAccount)
 
 			res, err := h.DecreaseFileInfo(ctx, tt.id, tt.filecount, tt.filesize)
@@ -394,7 +394,7 @@ func Test_ValidateFileInfoByCustomerID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AccountGets(ctx, "", uint64(1), tt.expectFilters.Return(tt.responseAccounts, nil)
+			mockDB.EXPECT().AccountGets(ctx, "", uint64(1), tt.expectFilters).Return(tt.responseAccounts, nil)
 
 			res, err := h.ValidateFileInfoByCustomerID(ctx, tt.customerID, tt.filecount, tt.filesize)
 			if err != nil {

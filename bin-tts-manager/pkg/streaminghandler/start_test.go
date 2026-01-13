@@ -84,7 +84,7 @@ func Test_Start(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockNotify.EXPECT().PublishEvent(ctx, streaming.EventTypeStreamingCreated, gomock.Any())
 			mockReq.EXPECT().CallV1ExternalMediaStart(
 				ctx,
@@ -98,7 +98,7 @@ func Test_Start(t *testing.T) {
 				defaultFormat,
 				cmexternalmedia.DirectionNone,
 				cmexternalmedia.Direction(tt.direction),
-			.Return(tt.responseExternalMedia, nil)
+			).Return(tt.responseExternalMedia, nil)
 
 			_, err := h.Start(ctx, tt.customerID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.language, tt.gender, tt.direction)
 			if err != nil {

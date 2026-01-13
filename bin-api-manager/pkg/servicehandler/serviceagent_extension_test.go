@@ -106,7 +106,7 @@ func Test_ServiceAgentExtensionGets(t *testing.T) {
 
 			for i, address := range tt.agent.Addresses {
 				extensionID := uuid.FromStringOrNil(address.Target)
-				mockReq.EXPECT().RegistrarV1ExtensionGet(ctx, extensionID.Return(tt.responseExtensions[i], nil)
+				mockReq.EXPECT().RegistrarV1ExtensionGet(ctx, extensionID).Return(tt.responseExtensions[i], nil)
 			}
 
 			res, err := h.ServiceAgentExtensionGets(ctx, tt.agent)

@@ -78,7 +78,7 @@ func Test_processV1ServicesTypeQueuecallPost(t *testing.T) {
 				tt.activeflowID,
 				tt.referenceType,
 				tt.referenceID,
-			.Return(tt.responseService, nil)
+			).Return(tt.responseService, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

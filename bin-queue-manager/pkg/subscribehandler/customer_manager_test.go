@@ -54,8 +54,8 @@ func Test_processEvent_processEventCUCustomerDeleted(t *testing.T) {
 				queuecallHandler: mockQueuecall,
 			}
 
-			mockQueuecall.EXPECT().EventCUCustomerDeleted(gomock.Any(), tt.expectCustomer.Return(nil)
-			mockQueue.EXPECT().EventCUCustomerDeleted(gomock.Any(), tt.expectCustomer.Return(nil)
+			mockQueuecall.EXPECT().EventCUCustomerDeleted(gomock.Any(), tt.expectCustomer).Return(nil)
+			mockQueue.EXPECT().EventCUCustomerDeleted(gomock.Any(), tt.expectCustomer).Return(nil)
 
 			h.processEvent(tt.event)
 		})

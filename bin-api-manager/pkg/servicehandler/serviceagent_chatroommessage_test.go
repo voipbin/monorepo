@@ -79,7 +79,7 @@ func Test_ServiceAgentChatroommessageGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().ChatV1MessagechatroomGet(ctx, tt.chatroomMessageID.Return(tt.responseChatroomMessage, nil)
+			mockReq.EXPECT().ChatV1MessagechatroomGet(ctx, tt.chatroomMessageID).Return(tt.responseChatroomMessage, nil)
 
 			res, err := h.ServiceAgentChatroommessageGet(ctx, tt.agent, tt.chatroomMessageID)
 			if err != nil {
@@ -106,7 +106,7 @@ func Test_ServiceAgentChatroommessageGets(t *testing.T) {
 		responseChatroom         *chatchatroom.Chatroom
 		responseChatroomMessages []chatmessagechatroom.Messagechatroom
 
-		expectFilters map[string]string
+		expectFilters map[chatmessagechatroom.Field]any
 		expectRes     []*chatmessagechatroom.WebhookMessage
 	}
 
@@ -146,9 +146,9 @@ func Test_ServiceAgentChatroommessageGets(t *testing.T) {
 				},
 			},
 
-			expectFilters: map[string]string{
-				"chatroom_id": "dc5d2e98-3baa-11ef-8f73-6791414eb608",
-				"deleted":     "false",
+			expectFilters: map[chatmessagechatroom.Field]any{
+				chatmessagechatroom.FieldChatroomID: "dc5d2e98-3baa-11ef-8f73-6791414eb608",
+				chatmessagechatroom.FieldDeleted:    false,
 			},
 			expectRes: []*chatmessagechatroom.WebhookMessage{
 				{
@@ -179,8 +179,8 @@ func Test_ServiceAgentChatroommessageGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().ChatV1ChatroomGet(ctx, tt.chatroomID.Return(tt.responseChatroom, nil)
-			mockReq.EXPECT().ChatV1MessagechatroomGets(ctx, tt.token, tt.size, tt.expectFilters.Return(tt.responseChatroomMessages, nil)
+			mockReq.EXPECT().ChatV1ChatroomGet(ctx, tt.chatroomID).Return(tt.responseChatroom, nil)
+			mockReq.EXPECT().ChatV1MessagechatroomGets(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseChatroomMessages, nil)
 
 			res, err := h.ServiceAgentChatroommessageGets(ctx, tt.agent, tt.chatroomID, tt.size, tt.token)
 			if err != nil {
@@ -210,7 +210,7 @@ func Test_ServiceAgentChatroommessageCreate(t *testing.T) {
 		responseMessageChatrooms []chatmessagechatroom.Messagechatroom
 
 		expectSource  commonaddress.Address
-		expectFilters map[string]string
+		expectFilters map[chatmessagechatroom.Field]any
 		expectRes     *chatmessagechatroom.WebhookMessage
 	}
 
@@ -266,9 +266,9 @@ func Test_ServiceAgentChatroommessageCreate(t *testing.T) {
 				Target:     "5cd8c836-3b9f-11ef-98ac-db226570f09a",
 				TargetName: "test name",
 			},
-			expectFilters: map[string]string{
-				"chatroom_id":    "69648f42-3bac-11ef-aa57-9fde22132b67",
-				"messagechat_id": "b3d48d38-3bad-11ef-926f-efbf47b2f0f5",
+			expectFilters: map[chatmessagechatroom.Field]any{
+				chatmessagechatroom.FieldChatroomID:    "69648f42-3bac-11ef-aa57-9fde22132b67",
+				chatmessagechatroom.FieldMessagechatID: "b3d48d38-3bad-11ef-926f-efbf47b2f0f5",
 			},
 			expectRes: &chatmessagechatroom.WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -293,7 +293,7 @@ func Test_ServiceAgentChatroommessageCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().ChatV1ChatroomGet(ctx, tt.chatroomID.Return(tt.responseChatroom, nil)
+			mockReq.EXPECT().ChatV1ChatroomGet(ctx, tt.chatroomID).Return(tt.responseChatroom, nil)
 			mockReq.EXPECT().ChatV1MessagechatCreate(
 				ctx,
 				tt.agent.CustomerID,
@@ -302,9 +302,9 @@ func Test_ServiceAgentChatroommessageCreate(t *testing.T) {
 				chatmessagechat.TypeNormal,
 				tt.message,
 				tt.medias,
-			.Return(tt.responseMessageChat, nil)
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
-			mockReq.EXPECT().ChatV1MessagechatroomGets(ctx, tt.responseCurTime, uint64(1), tt.expectFilters.Return(tt.responseMessageChatrooms, nil)
+			).Return(tt.responseMessageChat, nil)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockReq.EXPECT().ChatV1MessagechatroomGets(ctx, tt.responseCurTime, uint64(1), tt.expectFilters).Return(tt.responseMessageChatrooms, nil)
 
 			res, err := h.ServiceAgentChatroommessageCreate(ctx, tt.agent, tt.chatroomID, tt.message, tt.medias)
 			if err != nil {

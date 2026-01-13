@@ -75,10 +75,10 @@ func Test_PlaybackStop(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id.Return(tt.responseChannel, nil)
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id).Return(tt.responseChannel, nil)
 
 			if tt.responseChannel.PlaybackID != "" {
-				mockReq.EXPECT().AstPlaybackStop(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.PlaybackID.Return(nil)
+				mockReq.EXPECT().AstPlaybackStop(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.PlaybackID).Return(nil)
 			}
 
 			if err := h.PlaybackStop(ctx, tt.id); err != nil {
@@ -140,8 +140,8 @@ func Test_Play(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id.Return(tt.responseChannel, nil)
-			mockReq.EXPECT().AstChannelPlay(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID, tt.medias, tt.language, tt.offsetms, tt.skipms, tt.playbackID.Return(&ari.Playback{}, nil)
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id).Return(tt.responseChannel, nil)
+			mockReq.EXPECT().AstChannelPlay(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID, tt.medias, tt.language, tt.offsetms, tt.skipms, tt.playbackID).Return(&ari.Playback{}, nil)
 
 			if err := h.Play(ctx, tt.id, tt.playbackID, tt.medias, tt.language, tt.offsetms, tt.skipms); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

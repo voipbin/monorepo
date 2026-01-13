@@ -148,24 +148,24 @@ func Test_Join(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id.Return(tt.responseConfbridge, nil)
-			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID.Return(tt.rsponseCall, nil)
+			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id).Return(tt.responseConfbridge, nil)
+			mockReq.EXPECT().CallV1CallGet(ctx, tt.callID).Return(tt.rsponseCall, nil)
 
 			if tt.responseConfbridge.BridgeID != "" {
-				mockBridge.EXPECT().IsExist(ctx, tt.responseConfbridge.BridgeID.Return(true)
+				mockBridge.EXPECT().IsExist(ctx, tt.responseConfbridge.BridgeID).Return(true)
 			} else {
-				mockDB.EXPECT().ConfbridgeGet(ctx, tt.responseConfbridge.ID.Return(tt.responseConfbridge, nil)
-				mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUIDBridge)
-				mockBridge.EXPECT().Start(ctx, requesthandler.AsteriskIDConference, tt.responseUUIDBridge.String(), tt.expectBridgeArgs, tt.expectBridgeTypes.Return(tt.responseBridge, nil)
+				mockDB.EXPECT().ConfbridgeGet(ctx, tt.responseConfbridge.ID).Return(tt.responseConfbridge, nil)
+				mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDBridge)
+				mockBridge.EXPECT().Start(ctx, requesthandler.AsteriskIDConference, tt.responseUUIDBridge.String(), tt.expectBridgeArgs, tt.expectBridgeTypes).Return(tt.responseBridge, nil)
 
-				mockDB.EXPECT().ConfbridgeSetBridgeID(ctx, tt.id, tt.responseBridge.ID.Return(nil)
-				mockDB.EXPECT().ConfbridgeGet(ctx, tt.responseConfbridge.ID.Return(tt.responseConfbridge, nil)
+				mockDB.EXPECT().ConfbridgeSetBridgeID(ctx, tt.id, tt.responseBridge.ID).Return(nil)
+				mockDB.EXPECT().ConfbridgeGet(ctx, tt.responseConfbridge.ID).Return(tt.responseConfbridge, nil)
 			}
-			mockBridge.EXPECT().Get(ctx, tt.responseConfbridge.BridgeID.Return(tt.responseBridge, nil)
-			mockCache.EXPECT().AsteriskAddressInternalGet(ctx, tt.responseBridge.AsteriskID.Return(tt.responseAsteriskAddressInternal, nil)
+			mockBridge.EXPECT().Get(ctx, tt.responseConfbridge.BridgeID).Return(tt.responseBridge, nil)
+			mockCache.EXPECT().AsteriskAddressInternalGet(ctx, tt.responseBridge.AsteriskID).Return(tt.responseAsteriskAddressInternal, nil)
 
-			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUIDChannel)
-			mockChannel.EXPECT().StartChannelWithBaseChannel(ctx, tt.rsponseCall.ChannelID, tt.responseUUIDChannel.String(), tt.expectChannelArgs, tt.expectChannelDialDestination, "", "vp8", "", tt.expectReqVariables.Return(&channel.Channel{}, nil)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDChannel)
+			mockChannel.EXPECT().StartChannelWithBaseChannel(ctx, tt.rsponseCall.ChannelID, tt.responseUUIDChannel.String(), tt.expectChannelArgs, tt.expectChannelDialDestination, "", "vp8", "", tt.expectReqVariables).Return(&channel.Channel{}, nil)
 
 			if err := h.Join(ctx, tt.id, tt.callID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -252,11 +252,11 @@ func Test_createConfbridgeBridge(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id.Return(tt.responseConfbridge, nil)
-			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
-			mockBridge.EXPECT().Start(ctx, requesthandler.AsteriskIDConference, tt.responseUUID.String(), tt.expectBridgeName, tt.expectBridgeTypes.Return(tt.responseBridge, nil)
-			mockDB.EXPECT().ConfbridgeSetBridgeID(ctx, tt.responseConfbridge.ID, tt.responseBridge.ID.Return(nil)
-			mockDB.EXPECT().ConfbridgeGet(ctx, tt.responseConfbridge.ID.Return(tt.responseConfbridge, nil)
+			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id).Return(tt.responseConfbridge, nil)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockBridge.EXPECT().Start(ctx, requesthandler.AsteriskIDConference, tt.responseUUID.String(), tt.expectBridgeName, tt.expectBridgeTypes).Return(tt.responseBridge, nil)
+			mockDB.EXPECT().ConfbridgeSetBridgeID(ctx, tt.responseConfbridge.ID, tt.responseBridge.ID).Return(nil)
+			mockDB.EXPECT().ConfbridgeGet(ctx, tt.responseConfbridge.ID).Return(tt.responseConfbridge, nil)
 
 			res, err := h.createConfbridgeBridge(ctx, tt.id)
 			if err != nil {
@@ -316,8 +316,8 @@ func Test_createEndpointTarget(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockBridge.EXPECT().Get(ctx, tt.confbridge.BridgeID.Return(tt.bridge, nil)
-			mockCache.EXPECT().AsteriskAddressInternalGet(ctx, tt.bridge.AsteriskID.Return(tt.asteriskAddress, nil)
+			mockBridge.EXPECT().Get(ctx, tt.confbridge.BridgeID).Return(tt.bridge, nil)
+			mockCache.EXPECT().AsteriskAddressInternalGet(ctx, tt.bridge.AsteriskID).Return(tt.asteriskAddress, nil)
 
 			res, err := h.createEndpointTarget(ctx, tt.confbridge)
 			if err != nil {

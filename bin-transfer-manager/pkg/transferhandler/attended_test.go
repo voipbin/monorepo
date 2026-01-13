@@ -73,14 +73,14 @@ func Test_attendedInit(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1ConfbridgeGet(ctx, tt.transfererCall.ConfbridgeID.Return(tt.responseConfbridge, nil)
+			mockReq.EXPECT().CallV1ConfbridgeGet(ctx, tt.transfererCall.ConfbridgeID).Return(tt.responseConfbridge, nil)
 
 			for _, callID := range tt.responseConfbridge.ChannelCallIDs {
 				if callID == tt.transfererCall.ID {
 					continue
 				}
-				mockReq.EXPECT().CallV1CallMusicOnHoldOn(ctx, callID.Return(nil)
-				mockReq.EXPECT().CallV1CallMuteOn(ctx, callID, cmcall.MuteDirectionIn.Return(nil)
+				mockReq.EXPECT().CallV1CallMusicOnHoldOn(ctx, callID).Return(nil)
+				mockReq.EXPECT().CallV1CallMuteOn(ctx, callID, cmcall.MuteDirectionIn).Return(nil)
 			}
 
 			if err := h.attendedBlock(ctx, tt.transfererCall); err != nil {
@@ -138,14 +138,14 @@ func Test_attendedCancel(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1ConfbridgeGet(ctx, tt.transfererCall.ConfbridgeID.Return(tt.responseConfbridge, nil)
+			mockReq.EXPECT().CallV1ConfbridgeGet(ctx, tt.transfererCall.ConfbridgeID).Return(tt.responseConfbridge, nil)
 
 			for _, callID := range tt.responseConfbridge.ChannelCallIDs {
 				if callID == tt.transfererCall.ID {
 					continue
 				}
-				mockReq.EXPECT().CallV1CallMusicOnHoldOff(ctx, callID.Return(nil)
-				mockReq.EXPECT().CallV1CallMuteOff(ctx, callID, cmcall.MuteDirectionIn.Return(nil)
+				mockReq.EXPECT().CallV1CallMusicOnHoldOff(ctx, callID).Return(nil)
+				mockReq.EXPECT().CallV1CallMuteOff(ctx, callID, cmcall.MuteDirectionIn).Return(nil)
 			}
 
 			if err := h.attendedUnblock(ctx, tt.transfererCall); err != nil {
@@ -267,9 +267,9 @@ func Test_attendedExecute(t *testing.T) {
 				uuid.Nil,
 				cmgroupcall.RingMethodRingAll,
 				cmgroupcall.AnswerMethodHangupOthers,
-			.Return(tt.responseGroupcall, nil)
-			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUIDTransfer)
-			mockDB.EXPECT().TransferCreate(ctx, tt.expectTransfer.Return(nil)
+			).Return(tt.responseGroupcall, nil)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDTransfer)
+			mockDB.EXPECT().TransferCreate(ctx, tt.expectTransfer).Return(nil)
 
 			res, err := h.attendedExecute(ctx, tt.transfererCall, tt.flow, tt.transfereeAddresses)
 			if err != nil {

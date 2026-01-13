@@ -102,19 +102,19 @@ func Test_Send_sendLine(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockAccount.EXPECT().Get(ctx, tt.conversation.AccountID.Return(tt.responseAccount, nil)
+			mockAccount.EXPECT().Get(ctx, tt.conversation.AccountID).Return(tt.responseAccount, nil)
 
 			// create
-			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
-			mockDB.EXPECT().MessageCreate(ctx, tt.expectMessage.Return(nil)
-			mockDB.EXPECT().MessageGet(ctx, gomock.Any().Return(tt.expectMessage, nil)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockDB.EXPECT().MessageCreate(ctx, tt.expectMessage).Return(nil)
+			mockDB.EXPECT().MessageGet(ctx, gomock.Any()).Return(tt.expectMessage, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectMessage.CustomerID, message.EventTypeMessageCreated, tt.expectMessage)
 
-			mockLine.EXPECT().Send(ctx, tt.conversation, tt.responseAccount, tt.text, tt.medias.Return(nil)
+			mockLine.EXPECT().Send(ctx, tt.conversation, tt.responseAccount, tt.text, tt.medias).Return(nil)
 
 			// update
-			mockDB.EXPECT().MessageUpdate(ctx, tt.expectMessage.ID, tt.expectUpdateFields.Return(nil)
-			mockDB.EXPECT().MessageGet(ctx, tt.expectMessage.ID.Return(tt.expectMessage, nil)
+			mockDB.EXPECT().MessageUpdate(ctx, tt.expectMessage.ID, tt.expectUpdateFields).Return(nil)
+			mockDB.EXPECT().MessageGet(ctx, tt.expectMessage.ID).Return(tt.expectMessage, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectMessage.CustomerID, message.EventTypeMessageUpdated, tt.expectMessage)
 
 			res, err := h.Send(ctx, tt.conversation, tt.text, tt.medias)
@@ -203,12 +203,12 @@ func Test_Send_sendSMS(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUIDSmsID)
-			mockDB.EXPECT().MessageCreate(ctx, tt.expectMessage.Return(nil)
-			mockDB.EXPECT().MessageGet(ctx, tt.expectMessage.ID.Return(tt.expectMessage, nil)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDSmsID)
+			mockDB.EXPECT().MessageCreate(ctx, tt.expectMessage).Return(nil)
+			mockDB.EXPECT().MessageGet(ctx, tt.expectMessage.ID).Return(tt.expectMessage, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectMessage.CustomerID, message.EventTypeMessageCreated, tt.expectMessage)
 
-			mockSms.EXPECT().Send(ctx, tt.conversation, tt.responseUUIDSmsID, tt.text.Return(nil)
+			mockSms.EXPECT().Send(ctx, tt.conversation, tt.responseUUIDSmsID, tt.text).Return(nil)
 
 			res, err := h.Send(ctx, tt.conversation, tt.text, tt.medias)
 			if err != nil {

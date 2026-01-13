@@ -31,7 +31,7 @@ func Test_initSock(t *testing.T) {
 				sock: mockSock,
 			}
 
-			mockSock.EXPECT().Connect(zmq4.SUB, sockAddress.Return(nil)
+			mockSock.EXPECT().Connect(zmq4.SUB, sockAddress).Return(nil)
 
 			if err := h.initSock(); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -124,7 +124,7 @@ func Test_Subscribe(t *testing.T) {
 			}
 
 			if !tt.duplicated {
-				mockSock.EXPECT().Subscribe(tt.topic.Return(nil)
+				mockSock.EXPECT().Subscribe(tt.topic).Return(nil)
 			}
 
 			if err := h.Subscribe(tt.topic); err != nil {
@@ -189,7 +189,7 @@ func Test_Unsubscribe(t *testing.T) {
 				topics: tt.topics,
 			}
 
-			mockSock.EXPECT().Unsubscribe(tt.topic.Return(nil)
+			mockSock.EXPECT().Unsubscribe(tt.topic).Return(nil)
 
 			if err := h.Unsubscribe(tt.topic); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

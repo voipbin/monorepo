@@ -87,7 +87,7 @@ func Test_ConversationAccountGetsByCustomerID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().ConversationV1AccountGets(ctx, tt.pageToken, tt.pageSize, tt.expectFilters.Return(tt.responseAccounts, nil)
+			mockReq.EXPECT().ConversationV1AccountGets(ctx, tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.responseAccounts, nil)
 			res, err := h.ConversationAccountGetsByCustomerID(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -152,7 +152,7 @@ func Test_ConversationAccountGet(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ConversationV1AccountGet(ctx, tt.accountID.Return(tt.response, nil)
+			mockReq.EXPECT().ConversationV1AccountGet(ctx, tt.accountID).Return(tt.response, nil)
 			res, err := h.ConversationAccountGet(ctx, tt.agent, tt.accountID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -226,7 +226,7 @@ func Test_ConversationAccountCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ConversationV1AccountCreate(ctx, tt.agent.CustomerID, tt.accountType, tt.accountName, tt.detail, tt.secret, tt.token.Return(tt.response, nil)
+			mockReq.EXPECT().ConversationV1AccountCreate(ctx, tt.agent.CustomerID, tt.accountType, tt.accountName, tt.detail, tt.secret, tt.token).Return(tt.response, nil)
 			res, err := h.ConversationAccountCreate(ctx, tt.agent, tt.accountType, tt.accountName, tt.detail, tt.secret, tt.token)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -298,8 +298,8 @@ func Test_ConversationAccountUpdate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ConversationV1AccountGet(ctx, tt.accountID.Return(tt.response, nil)
-			mockReq.EXPECT().ConversationV1AccountUpdate(ctx, tt.accountID, tt.fileds.Return(tt.response, nil)
+			mockReq.EXPECT().ConversationV1AccountGet(ctx, tt.accountID).Return(tt.response, nil)
+			mockReq.EXPECT().ConversationV1AccountUpdate(ctx, tt.accountID, tt.fileds).Return(tt.response, nil)
 			res, err := h.ConversationAccountUpdate(ctx, tt.agent, tt.accountID, tt.fileds)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -364,8 +364,8 @@ func Test_ConversationAccountDelete(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ConversationV1AccountGet(ctx, tt.accountID.Return(tt.response, nil)
-			mockReq.EXPECT().ConversationV1AccountDelete(ctx, tt.accountID.Return(tt.response, nil)
+			mockReq.EXPECT().ConversationV1AccountGet(ctx, tt.accountID).Return(tt.response, nil)
+			mockReq.EXPECT().ConversationV1AccountDelete(ctx, tt.accountID).Return(tt.response, nil)
 			res, err := h.ConversationAccountDelete(ctx, tt.agent, tt.accountID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

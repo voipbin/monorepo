@@ -83,9 +83,9 @@ func Test_Create(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
-			mockDB.EXPECT().AccountCreate(ctx, tt.expectAccount.Return(nil)
-			mockDB.EXPECT().AccountGet(ctx, tt.responseUUID.Return(tt.responseAccount, nil)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockDB.EXPECT().AccountCreate(ctx, tt.expectAccount).Return(nil)
+			mockDB.EXPECT().AccountGet(ctx, tt.responseUUID).Return(tt.responseAccount, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, account.EventTypeAccountCreated, tt.responseAccount)
 
 			res, err := h.Create(ctx, tt.customerID, tt.accountName, tt.detail, tt.paymentType, tt.paymentMethod)
@@ -140,7 +140,7 @@ func Test_Get(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AccountGet(ctx, tt.id.Return(tt.responseAccount, nil)
+			mockDB.EXPECT().AccountGet(ctx, tt.id).Return(tt.responseAccount, nil)
 
 			res, err := h.Get(ctx, tt.id)
 			if err != nil {
@@ -201,8 +201,8 @@ func Test_GetByCustomerID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.customerID.Return(tt.responseCustomer, nil)
-			mockDB.EXPECT().AccountGet(ctx, tt.responseCustomer.BillingAccountID.Return(tt.responseAccount, nil)
+			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.customerID).Return(tt.responseCustomer, nil)
+			mockDB.EXPECT().AccountGet(ctx, tt.responseCustomer.BillingAccountID).Return(tt.responseAccount, nil)
 
 			res, err := h.GetByCustomerID(ctx, tt.customerID)
 			if err != nil {
@@ -269,7 +269,7 @@ func Test_GetsByCustomerID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AccountGets(ctx, tt.size, tt.token, tt.filters.Return(tt.responseAccounts, nil)
+			mockDB.EXPECT().AccountGets(ctx, tt.size, tt.token, tt.filters).Return(tt.responseAccounts, nil)
 
 			res, err := h.Gets(ctx, tt.size, tt.token, tt.filters)
 			if err != nil {
@@ -325,8 +325,8 @@ func Test_SubtractBalance(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AccountSubtractBalance(ctx, tt.accountID, tt.balance.Return(nil)
-			mockDB.EXPECT().AccountGet(ctx, tt.accountID.Return(tt.responseAccount, nil)
+			mockDB.EXPECT().AccountSubtractBalance(ctx, tt.accountID, tt.balance).Return(nil)
+			mockDB.EXPECT().AccountGet(ctx, tt.accountID).Return(tt.responseAccount, nil)
 
 			res, err := h.SubtractBalance(ctx, tt.accountID, tt.balance)
 			if err != nil {
@@ -382,8 +382,8 @@ func Test_AddBalance(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AccountAddBalance(ctx, tt.accountID, tt.balance.Return(nil)
-			mockDB.EXPECT().AccountGet(ctx, tt.accountID.Return(tt.responseAccount, nil)
+			mockDB.EXPECT().AccountAddBalance(ctx, tt.accountID, tt.balance).Return(nil)
+			mockDB.EXPECT().AccountGet(ctx, tt.accountID).Return(tt.responseAccount, nil)
 
 			res, err := h.AddBalance(ctx, tt.accountID, tt.balance)
 			if err != nil {
@@ -437,8 +437,8 @@ func Test_Delete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AccountDelete(ctx, tt.accountID.Return(nil)
-			mockDB.EXPECT().AccountGet(ctx, tt.accountID.Return(tt.responseAccount, nil)
+			mockDB.EXPECT().AccountDelete(ctx, tt.accountID).Return(nil)
+			mockDB.EXPECT().AccountGet(ctx, tt.accountID).Return(tt.responseAccount, nil)
 
 			res, err := h.Delete(ctx, tt.accountID)
 			if err != nil {
@@ -501,8 +501,8 @@ func Test_dbUpdateBasicInfo(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AccountUpdate(ctx, tt.id, tt.expectFields.Return(nil)
-			mockDB.EXPECT().AccountGet(ctx, tt.id.Return(tt.responseAccounts, nil)
+			mockDB.EXPECT().AccountUpdate(ctx, tt.id, tt.expectFields).Return(nil)
+			mockDB.EXPECT().AccountGet(ctx, tt.id).Return(tt.responseAccounts, nil)
 
 			res, err := h.dbUpdateBasicInfo(ctx, tt.id, tt.accountName, tt.detail)
 			if err != nil {

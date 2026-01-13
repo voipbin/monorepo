@@ -93,7 +93,7 @@ func Test_receiveMessageFrameTypeMessage(t *testing.T) {
 				utilHandler:   mockUtil,
 			}
 
-			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockNotify.EXPECT().PublishEvent(tt.se.Ctx, tt.expectEvent, tt.expectMessage)
 
 			if err := h.receiveMessageFrameTypeMessage(tt.se, tt.m); err != nil {
@@ -155,8 +155,8 @@ func Test_runnerWebsocketHandleAudio(t *testing.T) {
 				audiosocketHandler: mockAudio,
 			}
 
-			mockAudio.EXPECT().GetDataSamples(tt.sampleRate, tt.data.Return(tt.responseDataSamples, nil)
-			mockAudio.EXPECT().Write(tt.se.Ctx, tt.se.AsteriskConn, tt.expectWriteData.Return(nil)
+			mockAudio.EXPECT().GetDataSamples(tt.sampleRate, tt.data).Return(tt.responseDataSamples, nil)
+			mockAudio.EXPECT().Write(tt.se.Ctx, tt.se.AsteriskConn, tt.expectWriteData).Return(nil)
 
 			if err := h.runnerWebsocketHandleAudio(tt.se, tt.sampleRate, tt.numChannels, tt.data); err != nil {
 				t.Errorf("unexpected error: %v", err)

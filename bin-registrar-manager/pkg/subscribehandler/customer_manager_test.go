@@ -54,8 +54,8 @@ func Test_processEvent_processEventCMCustomerDeleted(t *testing.T) {
 				trunkHandler:     mockTrunk,
 			}
 
-			mockExtension.EXPECT().EventCUCustomerDeleted(gomock.Any(), tt.expectCustomer.Return(nil)
-			mockTrunk.EXPECT().EventCUCustomerDeleted(gomock.Any(), tt.expectCustomer.Return(nil)
+			mockExtension.EXPECT().EventCUCustomerDeleted(gomock.Any(), tt.expectCustomer).Return(nil)
+			mockTrunk.EXPECT().EventCUCustomerDeleted(gomock.Any(), tt.expectCustomer).Return(nil)
 
 			h.processEvent(tt.event)
 		})

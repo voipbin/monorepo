@@ -148,17 +148,17 @@ func Test_Send(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, tt.customerID, bmbilling.ReferenceTypeSMS, "", len(tt.destinations).Return(true, nil)
+			mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, tt.customerID, bmbilling.ReferenceTypeSMS, "", len(tt.destinations)).Return(true, nil)
 
-			mockDB.EXPECT().MessageCreate(ctx, tt.expectMessage.Return(nil)
-			mockDB.EXPECT().MessageGet(ctx, tt.id.Return(tt.responseMessage, nil)
+			mockDB.EXPECT().MessageCreate(ctx, tt.expectMessage).Return(nil)
+			mockDB.EXPECT().MessageGet(ctx, tt.id).Return(tt.responseMessage, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseMessage.CustomerID, message.EventTypeMessageCreated, tt.responseMessage)
 
-			mockTelnyx.EXPECT().SendMessage(ctx, tt.id, tt.responseMessage.Source, tt.expectTargets, tt.text.Return(tt.responseSend, nil).AnyTimes()
-			mockBird.EXPECT().SendMessage(ctx, tt.id, tt.responseMessage.Source, tt.expectTargets, tt.text.Return(tt.responseSend, nil).AnyTimes()
+			mockTelnyx.EXPECT().SendMessage(ctx, tt.id, tt.responseMessage.Source, tt.expectTargets, tt.text).Return(tt.responseSend, nil).AnyTimes()
+			mockBird.EXPECT().SendMessage(ctx, tt.id, tt.responseMessage.Source, tt.expectTargets, tt.text).Return(tt.responseSend, nil).AnyTimes()
 
-			mockDB.EXPECT().MessageUpdateTargets(ctx, tt.id, gomock.AnyOf(message.ProviderNameTelnyx, message.ProviderNameMessagebird), tt.responseSend.Return(nil)
-			mockDB.EXPECT().MessageGet(ctx, tt.id.Return(tt.responseMessage, nil)
+			mockDB.EXPECT().MessageUpdateTargets(ctx, tt.id, gomock.AnyOf(message.ProviderNameTelnyx, message.ProviderNameMessagebird), tt.responseSend).Return(nil)
+			mockDB.EXPECT().MessageGet(ctx, tt.id).Return(tt.responseMessage, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseMessage.CustomerID, message.EventTypeMessageUpdated, tt.responseMessage)
 
 			res, err := h.Send(ctx, tt.id, tt.customerID, tt.source, tt.destinations, tt.text)

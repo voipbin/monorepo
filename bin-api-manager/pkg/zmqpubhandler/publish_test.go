@@ -28,7 +28,7 @@ func Test_init(t *testing.T) {
 				sock: mockZMQ,
 			}
 
-			mockZMQ.EXPECT().Bind(zmq4.PUB, sockAddress.Return(nil)
+			mockZMQ.EXPECT().Bind(zmq4.PUB, sockAddress).Return(nil)
 
 			if err := h.initSock(); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -60,7 +60,7 @@ func Test_Publish(t *testing.T) {
 				sock: mockZMQ,
 			}
 
-			mockZMQ.EXPECT().Publish(tt.topic, tt.message.Return(nil)
+			mockZMQ.EXPECT().Publish(tt.topic, tt.message).Return(nil)
 
 			if err := h.Publish(tt.topic, tt.message); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

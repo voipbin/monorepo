@@ -130,7 +130,7 @@ func Test_v1ActiveflowsPost(t *testing.T) {
 				activeflowHandler: mockActive,
 			}
 
-			mockActive.EXPECT().Create(gomock.Any(), tt.expectedID, tt.expectedCustomerID, tt.expectedRefereceType, tt.expectedRefereceID, tt.expectedReferenceActiveflowID, tt.expectedFlowID.Return(tt.responseActiveflow, nil)
+			mockActive.EXPECT().Create(gomock.Any(), tt.expectedID, tt.expectedCustomerID, tt.expectedRefereceType, tt.expectedRefereceID, tt.expectedReferenceActiveflowID, tt.expectedFlowID).Return(tt.responseActiveflow, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -262,7 +262,7 @@ func Test_v1ActiveflowsGet(t *testing.T) {
 				activeflowHandler: mockActiveflowHandler,
 			}
 
-			// mockUtil.EXPECT().URLParseFilters(gomock.Any(.Return(tt.responseFilters)
+			// mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
 			mockActiveflowHandler.EXPECT().Gets(gomock.Any(), tt.expectedToken, tt.expectedSize, gomock.Any()).Return(tt.responseActiveflows, nil)
 
 			res, err := h.processRequest(tt.request)
@@ -327,7 +327,7 @@ func Test_v1ActiveflowsIDNextGet(t *testing.T) {
 				activeflowHandler: mockActive,
 			}
 
-			mockActive.EXPECT().ExecuteNextAction(gomock.Any(), tt.expectedCallID, tt.expectedCurrentActionID.Return(&tt.responseAction, nil)
+			mockActive.EXPECT().ExecuteNextAction(gomock.Any(), tt.expectedCallID, tt.expectedCurrentActionID).Return(&tt.responseAction, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -405,7 +405,7 @@ func Test_v1ActiveflowsIDForwardActionIDPut(t *testing.T) {
 				activeflowHandler: mockActive,
 			}
 
-			mockActive.EXPECT().SetForwardActionID(gomock.Any(), tt.expectedCallID, tt.expectedForwardActionID, tt.expectedForwardNow.Return(nil)
+			mockActive.EXPECT().SetForwardActionID(gomock.Any(), tt.expectedCallID, tt.expectedForwardActionID, tt.expectedForwardNow).Return(nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -522,7 +522,7 @@ func Test_v1ActiveflowsIDGet(t *testing.T) {
 				activeflowHandler: mockActive,
 			}
 
-			mockActive.EXPECT().Get(gomock.Any(), tt.expectedActiveflowID.Return(tt.responseActiveflow, nil)
+			mockActive.EXPECT().Get(gomock.Any(), tt.expectedActiveflowID).Return(tt.responseActiveflow, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -584,7 +584,7 @@ func Test_v1ActiveflowsIDDelete(t *testing.T) {
 				activeflowHandler: mockActive,
 			}
 
-			mockActive.EXPECT().Delete(gomock.Any(), tt.expectedActiveflowID.Return(tt.responseActiveflow, nil)
+			mockActive.EXPECT().Delete(gomock.Any(), tt.expectedActiveflowID).Return(tt.responseActiveflow, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -644,7 +644,7 @@ func Test_v1ActiveflowsIDStopPost(t *testing.T) {
 				activeflowHandler: mockActive,
 			}
 
-			mockActive.EXPECT().Stop(gomock.Any(), tt.expectedActiveflowID.Return(tt.responseActiveflow, nil)
+			mockActive.EXPECT().Stop(gomock.Any(), tt.expectedActiveflowID).Return(tt.responseActiveflow, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -712,7 +712,7 @@ func Test_v1ActiveflowsIDAddActionsPost(t *testing.T) {
 				activeflowHandler: mockActive,
 			}
 
-			mockActive.EXPECT().AddActions(gomock.Any(), tt.expectedActiveflowID, tt.expectedActions.Return(tt.responseActiveflow, nil)
+			mockActive.EXPECT().AddActions(gomock.Any(), tt.expectedActiveflowID, tt.expectedActions).Return(tt.responseActiveflow, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -780,7 +780,7 @@ func Test_v1ActiveflowsIDPushActionsPost(t *testing.T) {
 				activeflowHandler: mockActive,
 			}
 
-			mockActive.EXPECT().PushActions(gomock.Any(), tt.expectedActiveflowID, tt.expectedActions.Return(tt.responseActiveflow, nil)
+			mockActive.EXPECT().PushActions(gomock.Any(), tt.expectedActiveflowID, tt.expectedActions).Return(tt.responseActiveflow, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -835,7 +835,7 @@ func Test_v1ActiveflowsIDServiceStop(t *testing.T) {
 				activeflowHandler: mockActive,
 			}
 
-			mockActive.EXPECT().ServiceStop(gomock.Any(), tt.expectedActiveflowID, tt.expectedServiceID.Return(nil)
+			mockActive.EXPECT().ServiceStop(gomock.Any(), tt.expectedActiveflowID, tt.expectedServiceID).Return(nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -890,7 +890,7 @@ func Test_v1ActiveflowsIDContinuePost(t *testing.T) {
 				activeflowHandler: mockActive,
 			}
 
-			mockActive.EXPECT().ExecuteContinue(gomock.Any(), tt.expectedActiveflowID, tt.expectedCurrentActionID.Return(nil)
+			mockActive.EXPECT().ExecuteContinue(gomock.Any(), tt.expectedActiveflowID, tt.expectedCurrentActionID).Return(nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

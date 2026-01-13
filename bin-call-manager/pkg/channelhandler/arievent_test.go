@@ -140,16 +140,16 @@ func Test_ARIStasisStart(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChannelSetStasisInfo(ctx, tt.expectID, tt.expectType, tt.expectStasisName, tt.expectStasisData, tt.expectDirection.Return(nil)
-			mockDB.EXPECT().ChannelGet(ctx, tt.expectID.Return(tt.responseChannel, nil)
+			mockDB.EXPECT().ChannelSetStasisInfo(ctx, tt.expectID, tt.expectType, tt.expectStasisName, tt.expectStasisData, tt.expectDirection).Return(nil)
+			mockDB.EXPECT().ChannelGet(ctx, tt.expectID).Return(tt.responseChannel, nil)
 
-			mockDB.EXPECT().ChannelSetSIPCallID(ctx, tt.expectID, tt.expectSIPCallID.Return(nil)
-			mockDB.EXPECT().ChannelSetDataItem(ctx, tt.expectID, "sip_pai", tt.expectSIPPai.Return(nil)
-			mockDB.EXPECT().ChannelSetDataItem(ctx, tt.expectID, "sip_privacy", tt.expectSIPPrivacy.Return(nil)
-			mockDB.EXPECT().ChannelSetSIPTransport(ctx, tt.expectID, tt.expectSIPTransport.Return(nil)
-			mockDB.EXPECT().ChannelGet(ctx, tt.expectID.Return(tt.responseChannel, nil)
+			mockDB.EXPECT().ChannelSetSIPCallID(ctx, tt.expectID, tt.expectSIPCallID).Return(nil)
+			mockDB.EXPECT().ChannelSetDataItem(ctx, tt.expectID, "sip_pai", tt.expectSIPPai).Return(nil)
+			mockDB.EXPECT().ChannelSetDataItem(ctx, tt.expectID, "sip_privacy", tt.expectSIPPrivacy).Return(nil)
+			mockDB.EXPECT().ChannelSetSIPTransport(ctx, tt.expectID, tt.expectSIPTransport).Return(nil)
+			mockDB.EXPECT().ChannelGet(ctx, tt.expectID).Return(tt.responseChannel, nil)
 
-			mockDB.EXPECT().ChannelGet(ctx, tt.expectID.Return(tt.responseChannel, nil)
+			mockDB.EXPECT().ChannelGet(ctx, tt.expectID).Return(tt.responseChannel, nil)
 
 			res, err := h.ARIStasisStart(ctx, tt.event)
 			if err != nil {
@@ -336,14 +336,14 @@ func Test_ARIChannelStateChange_outgoing_statusUp(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChannelSetStateAnswer(ctx, tt.event.Channel.ID, tt.event.Channel.State.Return(nil)
-			mockDB.EXPECT().ChannelGet(ctx, tt.event.Channel.ID.Return(tt.responseChannel, nil)
+			mockDB.EXPECT().ChannelSetStateAnswer(ctx, tt.event.Channel.ID, tt.event.Channel.State).Return(nil)
+			mockDB.EXPECT().ChannelGet(ctx, tt.event.Channel.ID).Return(tt.responseChannel, nil)
 
 			// set sip_call_id
-			mockRequest.EXPECT().AstChannelVariableGet(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID, `CHANNEL(pjsip,call-id)`.Return(tt.responseValCallID, nil)
-			mockDB.EXPECT().ChannelSetSIPCallID(ctx, tt.responseChannel.ID, tt.responseValCallID.Return(nil)
+			mockRequest.EXPECT().AstChannelVariableGet(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID, `CHANNEL(pjsip,call-id)`).Return(tt.responseValCallID, nil)
+			mockDB.EXPECT().ChannelSetSIPCallID(ctx, tt.responseChannel.ID, tt.responseValCallID).Return(nil)
 
-			mockDB.EXPECT().ChannelGet(ctx, tt.responseChannel.ID.Return(tt.responseChannel, nil)
+			mockDB.EXPECT().ChannelGet(ctx, tt.responseChannel.ID).Return(tt.responseChannel, nil)
 
 			res, err := h.ARIChannelStateChange(ctx, tt.event)
 			if err != nil {

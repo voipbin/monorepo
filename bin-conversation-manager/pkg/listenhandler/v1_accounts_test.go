@@ -116,7 +116,7 @@ func Test_processV1AccountsGet(t *testing.T) {
 				accountHandler: mockAccount,
 			}
 
-			mockAccount.EXPECT().Gets(gomock.Any(), tt.expectPageToken, tt.expectPageSize, gomock.Any().Return(tt.responseAccounts, nil)
+			mockAccount.EXPECT().Gets(gomock.Any(), tt.expectPageToken, tt.expectPageSize, gomock.Any()).Return(tt.responseAccounts, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -189,7 +189,7 @@ func Test_processV1AccountsPost(t *testing.T) {
 				accountHandler: mockAccount,
 			}
 
-			mockAccount.EXPECT().Create(gomock.Any(), tt.expectCustomerID, tt.expectType, tt.expectName, tt.expectDetail, tt.expectSecret, tt.expectToken.Return(tt.responseAccount, nil)
+			mockAccount.EXPECT().Create(gomock.Any(), tt.expectCustomerID, tt.expectType, tt.expectName, tt.expectDetail, tt.expectSecret, tt.expectToken).Return(tt.responseAccount, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -250,7 +250,7 @@ func Test_processV1AccountsIDGet(t *testing.T) {
 				accountHandler: mockAccount,
 			}
 
-			mockAccount.EXPECT().Get(gomock.Any(), tt.expectID.Return(tt.responseAccount, nil)
+			mockAccount.EXPECT().Get(gomock.Any(), tt.expectID).Return(tt.responseAccount, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -320,7 +320,7 @@ func Test_processV1AccountsIDPut(t *testing.T) {
 				accountHandler: mockAccount,
 			}
 
-			mockAccount.EXPECT().Update(gomock.Any(), tt.expectID, gomock.Any(.Return(tt.responseAccount, nil)
+			mockAccount.EXPECT().Update(gomock.Any(), tt.expectID, gomock.Any()).Return(tt.responseAccount, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -381,7 +381,7 @@ func Test_processV1AccountsIDDelete(t *testing.T) {
 				accountHandler: mockAccount,
 			}
 
-			mockAccount.EXPECT().Delete(gomock.Any(), tt.expectID.Return(tt.responseAccount, nil)
+			mockAccount.EXPECT().Delete(gomock.Any(), tt.expectID).Return(tt.responseAccount, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

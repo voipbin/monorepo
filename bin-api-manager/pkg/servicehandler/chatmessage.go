@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	chatmedia "monorepo/bin-chat-manager/models/media"
 	chatmessagechat "monorepo/bin-chat-manager/models/messagechat"
@@ -129,7 +130,15 @@ func (h *serviceHandler) ChatmessageGetsByChatID(ctx context.Context, a *amagent
 		"deleted": "false",
 		"chat_id": chatID.String(),
 	}
-	tmps, err := h.reqHandler.ChatV1MessagechatGets(ctx, token, size, filters)
+
+	// Convert string filters to typed filters
+	typedFilters, err := h.convertChatMessageFilters(filters)
+	if err != nil {
+		log.Errorf("Could not convert filters. err: %v", err)
+		return nil, err
+	}
+
+	tmps, err := h.reqHandler.ChatV1MessagechatGets(ctx, token, size, typedFilters)
 	if err != nil {
 		log.Errorf("Could not get chats info from the chat-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find chats info. err: %v", err)
@@ -143,6 +152,29 @@ func (h *serviceHandler) ChatmessageGetsByChatID(ctx context.Context, a *amagent
 	}
 
 	return res, nil
+}
+
+// convertChatMessageFilters converts map[string]string to map[chatmessagechat.Field]any
+func (h *serviceHandler) convertChatMessageFilters(filters map[string]string) (map[chatmessagechat.Field]any, error) {
+	// Convert to map[string]any first
+	srcAny := make(map[string]any, len(filters))
+	for k, v := range filters {
+		srcAny[k] = v
+	}
+
+	// Use reflection-based converter
+	typed, err := commondatabasehandler.ConvertMapToTypedMap(srcAny, chatmessagechat.Messagechat{})
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert string keys to Field type
+	result := make(map[chatmessagechat.Field]any, len(typed))
+	for k, v := range typed {
+		result[chatmessagechat.Field(k)] = v
+	}
+
+	return result, nil
 }
 
 // ChatmessageGet gets the chatmessage of the given id.

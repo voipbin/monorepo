@@ -61,7 +61,7 @@ func Test_Gets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().AgentGets(gomock.Any(), tt.size, tt.token, tt.filters.Return(tt.result, nil)
+			mockDB.EXPECT().AgentGets(gomock.Any(), tt.size, tt.token, tt.filters).Return(tt.result, nil)
 			_, err := h.Gets(ctx, tt.size, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -153,15 +153,15 @@ func Test_Create(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().EmailIsValid(tt.username.Return(true)
+			mockUtil.EXPECT().EmailIsValid(tt.username).Return(true)
 
-			mockDB.EXPECT().AgentGetByUsername(ctx, tt.username.Return(nil, fmt.Errorf("not found"))
+			mockDB.EXPECT().AgentGetByUsername(ctx, tt.username).Return(nil, fmt.Errorf("not found"))
 
-			mockUtil.EXPECT().HashGenerate(tt.password, defaultPasswordHashCost.Return(tt.responseHash, nil)
+			mockUtil.EXPECT().HashGenerate(tt.password, defaultPasswordHashCost).Return(tt.responseHash, nil)
 
-			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
-			mockDB.EXPECT().AgentCreate(ctx, tt.expectedAgent.Return(nil)
-			mockDB.EXPECT().AgentGet(ctx, gomock.Any().Return(tt.responseAgent, nil)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockDB.EXPECT().AgentCreate(ctx, tt.expectedAgent).Return(nil)
+			mockDB.EXPECT().AgentGet(ctx, gomock.Any()).Return(tt.responseAgent, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAgent.CustomerID, agent.EventTypeAgentCreated, tt.responseAgent)
 
 			res, err := h.Create(ctx, tt.customerID, tt.username, tt.password, tt.agentName, tt.detail, tt.ringMethod, tt.permission, tt.tags, tt.addresses)
@@ -222,10 +222,10 @@ func Test_Delete(t *testing.T) {
 			ctx := context.Background()
 
 			// is only admin
-			mockDB.EXPECT().AgentGet(ctx, tt.id.Return(tt.responseAgent, nil)
+			mockDB.EXPECT().AgentGet(ctx, tt.id).Return(tt.responseAgent, nil)
 
-			mockDB.EXPECT().AgentDelete(ctx, tt.id.Return(nil)
-			mockDB.EXPECT().AgentGet(ctx, tt.id.Return(tt.responseAgent, nil)
+			mockDB.EXPECT().AgentDelete(ctx, tt.id).Return(nil)
+			mockDB.EXPECT().AgentGet(ctx, tt.id).Return(tt.responseAgent, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAgent.CustomerID, agent.EventTypeAgentDeleted, tt.responseAgent)
 
 			_, err := h.Delete(ctx, tt.id)
@@ -280,8 +280,8 @@ func Test_deleteForce(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AgentDelete(ctx, tt.id.Return(nil)
-			mockDB.EXPECT().AgentGet(ctx, tt.id.Return(tt.responseAgent, nil)
+			mockDB.EXPECT().AgentDelete(ctx, tt.id).Return(nil)
+			mockDB.EXPECT().AgentGet(ctx, tt.id).Return(tt.responseAgent, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAgent.CustomerID, agent.EventTypeAgentDeleted, tt.responseAgent)
 
 			_, err := h.deleteForce(ctx, tt.id)
@@ -340,8 +340,8 @@ func Test_UpdateStatus(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().AgentSetStatus(ctx, tt.id, tt.status.Return(nil)
-			mockDB.EXPECT().AgentGet(ctx, tt.id.Return(tt.responseAgent, nil)
+			mockDB.EXPECT().AgentSetStatus(ctx, tt.id, tt.status).Return(nil)
+			mockDB.EXPECT().AgentGet(ctx, tt.id).Return(tt.responseAgent, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAgent.CustomerID, agent.EventTypeAgentStatusUpdated, tt.responseAgent)
 
 			_, err := h.UpdateStatus(ctx, tt.id, tt.status)
@@ -395,7 +395,7 @@ func Test_GetByCustomerIDAndAddress(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AgentGetByCustomerIDAndAddress(ctx, tt.customerID, tt.address.Return(tt.responseAgent, nil)
+			mockDB.EXPECT().AgentGetByCustomerIDAndAddress(ctx, tt.customerID, tt.address).Return(tt.responseAgent, nil)
 
 			res, err := h.GetByCustomerIDAndAddress(ctx, tt.customerID, tt.address)
 			if err != nil {
@@ -459,9 +459,9 @@ func Test_UpdatePermission(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AgentGet(ctx, tt.id.Return(tt.agentBefore, nil)
-			mockDB.EXPECT().AgentSetPermission(ctx, tt.id, tt.permission.Return(nil)
-			mockDB.EXPECT().AgentGet(ctx, tt.id.Return(tt.agentAfter, nil)
+			mockDB.EXPECT().AgentGet(ctx, tt.id).Return(tt.agentBefore, nil)
+			mockDB.EXPECT().AgentSetPermission(ctx, tt.id, tt.permission).Return(nil)
+			mockDB.EXPECT().AgentGet(ctx, tt.id).Return(tt.agentAfter, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.agentAfter.CustomerID, agent.EventTypeAgentUpdated, tt.agentAfter)
 
 			res, err := h.UpdatePermission(ctx, tt.id, tt.permission)
@@ -498,7 +498,7 @@ func Test_UpdatePermission_error(t *testing.T) {
 			agentBefore: nil,
 			adminList:   nil,
 			mockFunc: func(mockDB *dbhandler.MockDBHandler, id uuid.UUID, perm agent.Permission, before *agent.Agent, list []*agent.Agent) {
-				mockDB.EXPECT().AgentGet(gomock.Any(), id.Return(nil, fmt.Errorf("not found"))
+				mockDB.EXPECT().AgentGet(gomock.Any(), id).Return(nil, fmt.Errorf("not found"))
 			},
 		},
 		{
@@ -525,8 +525,8 @@ func Test_UpdatePermission_error(t *testing.T) {
 			},
 			mockFunc: func(mockDB *dbhandler.MockDBHandler, id uuid.UUID, perm agent.Permission, before *agent.Agent, list []*agent.Agent) {
 				// isOnlyAdmin
-				mockDB.EXPECT().AgentGet(gomock.Any(), id.Return(before, nil)
-				mockDB.EXPECT().AgentGets(gomock.Any(), uint64(1000), "", map[agent.Field]any{agent.FieldCustomerID: before.CustomerID, agent.FieldDeleted: false}.Return(list, nil)
+				mockDB.EXPECT().AgentGet(gomock.Any(), id).Return(before, nil)
+				mockDB.EXPECT().AgentGets(gomock.Any(), uint64(1000), "", map[agent.Field]any{agent.FieldCustomerID: before.CustomerID, agent.FieldDeleted: false}).Return(list, nil)
 			},
 		},
 	}
@@ -599,8 +599,8 @@ func Test_UpdatePermissionRaw(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AgentSetPermission(ctx, tt.id, tt.permission.Return(nil)
-			mockDB.EXPECT().AgentGet(ctx, tt.id.Return(tt.agentAfter, nil)
+			mockDB.EXPECT().AgentSetPermission(ctx, tt.id, tt.permission).Return(nil)
+			mockDB.EXPECT().AgentGet(ctx, tt.id).Return(tt.agentAfter, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.agentAfter.CustomerID, agent.EventTypeAgentUpdated, tt.agentAfter)
 
 			res, err := h.UpdatePermissionRaw(ctx, tt.id, tt.permission)
@@ -744,8 +744,8 @@ func Test_isOnlyAdmin(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AgentGet(ctx, tt.id.Return(tt.responseAgent, nil)
-			mockDB.EXPECT().AgentGets(ctx, uint64(1000), "", tt.expectFilters.Return(tt.responseAgents, nil)
+			mockDB.EXPECT().AgentGet(ctx, tt.id).Return(tt.responseAgent, nil)
+			mockDB.EXPECT().AgentGets(ctx, uint64(1000), "", tt.expectFilters).Return(tt.responseAgents, nil)
 
 			res := h.isOnlyAdmin(ctx, tt.id)
 			if res != tt.expectRes {
@@ -809,17 +809,17 @@ func Test_UpdateAddresses(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AgentGet(ctx, tt.id.Return(tt.responseAgent, nil)
+			mockDB.EXPECT().AgentGet(ctx, tt.id).Return(tt.responseAgent, nil)
 			for _, addr := range tt.addresses {
 				switch addr.Type {
 				case commonaddress.TypeExtension:
-					mockReq.EXPECT().RegistrarV1ExtensionGet(ctx, uuid.FromStringOrNil(addr.Target).Return(tt.responseExtension, nil)
+					mockReq.EXPECT().RegistrarV1ExtensionGet(ctx, uuid.FromStringOrNil(addr.Target)).Return(tt.responseExtension, nil)
 				}
 
-				mockDB.EXPECT().AgentGetByCustomerIDAndAddress(ctx, tt.responseAgent.CustomerID, &addr.Return(nil, nil)
+				mockDB.EXPECT().AgentGetByCustomerIDAndAddress(ctx, tt.responseAgent.CustomerID, &addr).Return(nil, nil)
 			}
-			mockDB.EXPECT().AgentSetAddresses(ctx, tt.id, tt.addresses.Return(nil)
-			mockDB.EXPECT().AgentGet(ctx, tt.id.Return(tt.responseAgent, nil)
+			mockDB.EXPECT().AgentSetAddresses(ctx, tt.id, tt.addresses).Return(nil)
+			mockDB.EXPECT().AgentGet(ctx, tt.id).Return(tt.responseAgent, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, agent.EventTypeAgentUpdated, tt.responseAgent)
 
 			res, err := h.UpdateAddresses(ctx, tt.id, tt.addresses)

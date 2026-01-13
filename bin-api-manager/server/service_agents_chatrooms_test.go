@@ -78,7 +78,7 @@ func Test_GetServiceAgentsChatrooms(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().ServiceAgentChatroomGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken.Return(tt.responseChatrooms, nil)
+			mockSvc.EXPECT().ServiceAgentChatroomGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseChatrooms, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -162,7 +162,7 @@ func Test_PostServiceAgentsChatrooms(t *testing.T) {
 				tt.expectParticipantIDs,
 				tt.expectName,
 				tt.expectDetail,
-			.Return(tt.responseChatroom, nil)
+			).Return(tt.responseChatroom, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -230,7 +230,7 @@ func Test_GetServiceAgentsChatroomsId(t *testing.T) {
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().ServiceAgentChatroomGet(req.Context(), &tt.agent, tt.expectChatroomID.Return(tt.responseChatroom, nil)
+			mockSvc.EXPECT().ServiceAgentChatroomGet(req.Context(), &tt.agent, tt.expectChatroomID).Return(tt.responseChatroom, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -298,7 +298,7 @@ func Test_DeleteServiceAgentsChatroomsId(t *testing.T) {
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().ServiceAgentChatroomDelete(req.Context(), &tt.agent, tt.expectChatroomID.Return(tt.responseChatroom, nil)
+			mockSvc.EXPECT().ServiceAgentChatroomDelete(req.Context(), &tt.agent, tt.expectChatroomID).Return(tt.responseChatroom, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -373,7 +373,7 @@ func Test_PutServiceAgentsChatroomsId(t *testing.T) {
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ServiceAgentChatroomUpdateBasicInfo(req.Context(), &tt.agent, tt.expectChatroomID, tt.expectName, tt.expectDetail.Return(tt.responseChatroom, nil)
+			mockSvc.EXPECT().ServiceAgentChatroomUpdateBasicInfo(req.Context(), &tt.agent, tt.expectChatroomID, tt.expectName, tt.expectDetail).Return(tt.responseChatroom, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

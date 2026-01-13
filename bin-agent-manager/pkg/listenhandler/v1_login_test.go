@@ -64,7 +64,7 @@ func Test_ProcessV1LoginPost(t *testing.T) {
 				agentHandler: mockCustomer,
 			}
 
-			mockCustomer.EXPECT().Login(gomock.Any(), tt.username, tt.password.Return(tt.responseAgent, nil)
+			mockCustomer.EXPECT().Login(gomock.Any(), tt.username, tt.password).Return(tt.responseAgent, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

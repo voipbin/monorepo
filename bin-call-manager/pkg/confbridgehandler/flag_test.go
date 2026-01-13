@@ -126,9 +126,9 @@ func Test_FlagAdd(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id.Return(tt.responseConfbridge, nil)
-			mockDB.EXPECT().ConfbridgeSetFlags(ctx, tt.id, tt.expectFlags.Return(nil)
-			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id.Return(tt.responseConfbridge, nil)
+			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id).Return(tt.responseConfbridge, nil)
+			mockDB.EXPECT().ConfbridgeSetFlags(ctx, tt.id, tt.expectFlags).Return(nil)
+			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id).Return(tt.responseConfbridge, nil)
 
 			res, err := h.FlagAdd(ctx, tt.id, tt.flag)
 			if err != nil {
@@ -200,9 +200,9 @@ func Test_FlagRemove(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id.Return(tt.responseConfbridge, nil)
-			mockDB.EXPECT().ConfbridgeSetFlags(ctx, tt.id, tt.expectFlags.Return(nil)
-			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id.Return(tt.responseConfbridge, nil)
+			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id).Return(tt.responseConfbridge, nil)
+			mockDB.EXPECT().ConfbridgeSetFlags(ctx, tt.id, tt.expectFlags).Return(nil)
+			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id).Return(tt.responseConfbridge, nil)
 
 			res, err := h.FlagRemove(ctx, tt.id, tt.flag)
 			if err != nil {

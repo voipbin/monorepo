@@ -88,23 +88,23 @@ func Test_campaignRun(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().CampaignGet(ctx, tt.id.Return(tt.responseCampaign, nil)
+			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.responseCampaign, nil)
 
 			// validate resource
 			if tt.responseCampaign.OutplanID != uuid.Nil {
-				mockOutplan.EXPECT().Get(ctx, tt.responseCampaign.OutplanID.Return(tt.responseOutplan, nil)
+				mockOutplan.EXPECT().Get(ctx, tt.responseCampaign.OutplanID).Return(tt.responseOutplan, nil)
 			}
 			if tt.responseCampaign.OutdialID != uuid.Nil {
-				mockReq.EXPECT().OutdialV1OutdialGet(ctx, tt.responseCampaign.OutdialID.Return(tt.responseOutdial, nil)
+				mockReq.EXPECT().OutdialV1OutdialGet(ctx, tt.responseCampaign.OutdialID).Return(tt.responseOutdial, nil)
 			}
 			if tt.responseCampaign.QueueID != uuid.Nil {
-				mockReq.EXPECT().QueueV1QueueGet(ctx, tt.responseCampaign.QueueID.Return(tt.responseQueue, nil)
+				mockReq.EXPECT().QueueV1QueueGet(ctx, tt.responseCampaign.QueueID).Return(tt.responseQueue, nil)
 			}
 
-			mockDB.EXPECT().CampaignUpdateStatusAndExecute(ctx, tt.id, campaign.StatusRun, campaign.ExecuteRun.Return(nil)
-			mockDB.EXPECT().CampaignGet(ctx, tt.id.Return(tt.responseCampaign, nil)
+			mockDB.EXPECT().CampaignUpdateStatusAndExecute(ctx, tt.id, campaign.StatusRun, campaign.ExecuteRun).Return(nil)
+			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.responseCampaign, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCampaign.CustomerID, campaign.EventTypeCampaignStatusRun, tt.responseCampaign)
-			mockReq.EXPECT().CampaignV1CampaignExecute(ctx, tt.id, 1000.Return(nil)
+			mockReq.EXPECT().CampaignV1CampaignExecute(ctx, tt.id, 1000).Return(nil)
 
 			res, err := h.campaignRun(ctx, tt.id)
 			if err != nil {

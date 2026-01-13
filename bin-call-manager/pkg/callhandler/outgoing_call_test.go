@@ -167,33 +167,33 @@ func Test_CreateCallOutgoing_TypeSIP(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, tt.activeflowID, tt.customerID, tt.flowID, fmactiveflow.ReferenceTypeCall, tt.id, uuid.Nil.Return(tt.responseActiveflow, nil)
+			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, tt.activeflowID, tt.customerID, tt.flowID, fmactiveflow.ReferenceTypeCall, tt.id, uuid.Nil).Return(tt.responseActiveflow, nil)
 
-			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUIDChannel)
-			mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, tt.customerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1.Return(true, nil)
-			mockReq.EXPECT().AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, tt.customerID, tt.destination.Return(tt.responseAgent, nil)
-			mockDB.EXPECT().CallCreate(ctx, tt.expectCall.Return(nil)
-			mockDB.EXPECT().CallGet(ctx, tt.id.Return(tt.expectCall, nil)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDChannel)
+			mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, tt.customerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
+			mockReq.EXPECT().AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, tt.customerID, tt.destination).Return(tt.responseAgent, nil)
+			mockDB.EXPECT().CallCreate(ctx, tt.expectCall).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.expectCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectCall.CustomerID, call.EventTypeCallCreated, tt.expectCall)
-			mockReq.EXPECT().CallV1CallHealth(ctx, tt.expectCall.ID, defaultHealthDelay, 0.Return(nil)
+			mockReq.EXPECT().CallV1CallHealth(ctx, tt.expectCall.ID, defaultHealthDelay, 0).Return(nil)
 
 			// setVariables
-			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any().Return(nil).AnyTimes()
+			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 
 			if tt.masterCallID != uuid.Nil {
-				mockDB.EXPECT().CallTXStart(tt.masterCallID.Return(nil, &call.Call{}, nil)
-				mockDB.EXPECT().CallTXAddChainedCallID(gomock.Any(), tt.masterCallID, tt.expectCall.ID.Return(nil)
-				mockDB.EXPECT().CallSetMasterCallID(ctx, tt.expectCall.ID, tt.masterCallID.Return(nil)
+				mockDB.EXPECT().CallTXStart(tt.masterCallID).Return(nil, &call.Call{}, nil)
+				mockDB.EXPECT().CallTXAddChainedCallID(gomock.Any(), tt.masterCallID, tt.expectCall.ID).Return(nil)
+				mockDB.EXPECT().CallSetMasterCallID(ctx, tt.expectCall.ID, tt.masterCallID).Return(nil)
 				mockDB.EXPECT().CallTXFinish(gomock.Any(), true)
 
-				mockDB.EXPECT().CallGet(ctx, tt.masterCallID.Return(&call.Call{}, nil)
+				mockDB.EXPECT().CallGet(ctx, tt.masterCallID).Return(&call.Call{}, nil)
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), call.EventTypeCallUpdated, gomock.Any())
 
-				mockDB.EXPECT().CallGet(ctx, tt.expectCall.ID.Return(&call.Call{}, nil)
+				mockDB.EXPECT().CallGet(ctx, tt.expectCall.ID).Return(&call.Call{}, nil)
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), call.EventTypeCallUpdated, gomock.Any())
 			}
 
-			mockChannel.EXPECT().StartChannel(ctx, requesthandler.AsteriskIDCall, gomock.Any(), tt.expectArgs, tt.expectEndpointDst, "", "", "", tt.expectVariables.Return(&channel.Channel{}, nil)
+			mockChannel.EXPECT().StartChannel(ctx, requesthandler.AsteriskIDCall, gomock.Any(), tt.expectArgs, tt.expectEndpointDst, "", "", "", tt.expectVariables).Return(&channel.Channel{}, nil)
 
 			res, err := h.CreateCallOutgoing(ctx, tt.id, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, uuid.Nil, tt.source, tt.destination, tt.earlyExecution, tt.connect)
 			if err != nil {
@@ -362,39 +362,39 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, tt.activeflowID, tt.customerID, tt.flowID, fmactiveflow.ReferenceTypeCall, tt.id, uuid.Nil.Return(tt.responseActiveflow, nil)
+			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, tt.activeflowID, tt.customerID, tt.flowID, fmactiveflow.ReferenceTypeCall, tt.id, uuid.Nil).Return(tt.responseActiveflow, nil)
 			// getDialURI
-			mockReq.EXPECT().RouteV1DialrouteGets(ctx, tt.expectCall.CustomerID, tt.expectDialrouteTarget.Return(tt.responseRoutes, nil)
+			mockReq.EXPECT().RouteV1DialrouteGets(ctx, tt.expectCall.CustomerID, tt.expectDialrouteTarget).Return(tt.responseRoutes, nil)
 
-			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUIDChannel)
-			mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, tt.customerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1.Return(true, nil)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDChannel)
+			mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, tt.customerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
 
-			mockReq.EXPECT().AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, tt.customerID, tt.destination.Return(tt.responseAgent, nil)
+			mockReq.EXPECT().AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, tt.customerID, tt.destination).Return(tt.responseAgent, nil)
 
-			mockDB.EXPECT().CallCreate(ctx, tt.expectCall.Return(nil)
-			mockDB.EXPECT().CallGet(ctx, tt.id.Return(tt.expectCall, nil)
+			mockDB.EXPECT().CallCreate(ctx, tt.expectCall).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.expectCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectCall.CustomerID, call.EventTypeCallCreated, tt.expectCall)
-			mockReq.EXPECT().CallV1CallHealth(ctx, tt.expectCall.ID, defaultHealthDelay, 0.Return(nil)
+			mockReq.EXPECT().CallV1CallHealth(ctx, tt.expectCall.ID, defaultHealthDelay, 0).Return(nil)
 
 			// setVariables
-			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any().Return(nil).AnyTimes()
+			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 
 			if tt.masterCallID != uuid.Nil {
-				mockDB.EXPECT().CallTXStart(tt.masterCallID.Return(nil, &call.Call{}, nil)
-				mockDB.EXPECT().CallTXAddChainedCallID(gomock.Any(), tt.masterCallID, tt.expectCall.ID.Return(nil)
-				mockDB.EXPECT().CallSetMasterCallID(ctx, tt.expectCall.ID, tt.masterCallID.Return(nil)
+				mockDB.EXPECT().CallTXStart(tt.masterCallID).Return(nil, &call.Call{}, nil)
+				mockDB.EXPECT().CallTXAddChainedCallID(gomock.Any(), tt.masterCallID, tt.expectCall.ID).Return(nil)
+				mockDB.EXPECT().CallSetMasterCallID(ctx, tt.expectCall.ID, tt.masterCallID).Return(nil)
 				mockDB.EXPECT().CallTXFinish(gomock.Any(), true)
 
-				mockDB.EXPECT().CallGet(ctx, tt.masterCallID.Return(&call.Call{}, nil)
+				mockDB.EXPECT().CallGet(ctx, tt.masterCallID).Return(&call.Call{}, nil)
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), call.EventTypeCallUpdated, gomock.Any())
 
-				mockDB.EXPECT().CallGet(ctx, tt.expectCall.ID.Return(&call.Call{}, nil)
+				mockDB.EXPECT().CallGet(ctx, tt.expectCall.ID).Return(&call.Call{}, nil)
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), call.EventTypeCallUpdated, gomock.Any())
 			}
 
-			mockReq.EXPECT().RouteV1ProviderGet(ctx, tt.expectProviderID.Return(tt.responseProvider, nil)
+			mockReq.EXPECT().RouteV1ProviderGet(ctx, tt.expectProviderID).Return(tt.responseProvider, nil)
 
-			mockChannel.EXPECT().StartChannel(ctx, requesthandler.AsteriskIDCall, gomock.Any(), tt.expectArgs, tt.expectEndpointDst, "", "", "", tt.expectVariables.Return(&channel.Channel{}, nil)
+			mockChannel.EXPECT().StartChannel(ctx, requesthandler.AsteriskIDCall, gomock.Any(), tt.expectArgs, tt.expectEndpointDst, "", "", "", tt.expectVariables).Return(&channel.Channel{}, nil)
 
 			res, err := h.CreateCallOutgoing(ctx, tt.id, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, uuid.Nil, tt.source, tt.destination, tt.earlyExecution, tt.connect)
 			if err != nil {
@@ -470,7 +470,7 @@ func Test_createCallsOutgoingGroupcall_endpoint(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockGroupcall.EXPECT().Start(ctx, uuid.Nil, tt.customerID, tt.flowID, tt.source, []commonaddress.Address{*tt.destination}, tt.masterCallID, uuid.Nil, groupcall.RingMethodRingAll, groupcall.AnswerMethodHangupOthers.Return(tt.responseGroupcall, nil)
+			mockGroupcall.EXPECT().Start(ctx, uuid.Nil, tt.customerID, tt.flowID, tt.source, []commonaddress.Address{*tt.destination}, tt.masterCallID, uuid.Nil, groupcall.RingMethodRingAll, groupcall.AnswerMethodHangupOthers).Return(tt.responseGroupcall, nil)
 
 			res, err := h.createCallsOutgoingGroupcall(ctx, tt.customerID, tt.flowID, tt.masterCallID, tt.source, tt.destination)
 			if err != nil {
@@ -546,7 +546,7 @@ func Test_createCallsOutgoingGroupcall_agent(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockGroupcall.EXPECT().Start(ctx, uuid.Nil, tt.customerID, tt.flowID, tt.source, []commonaddress.Address{*tt.destination}, tt.masterCallID, uuid.Nil, groupcall.RingMethodRingAll, groupcall.AnswerMethodHangupOthers.Return(tt.responseGroupcall, nil)
+			mockGroupcall.EXPECT().Start(ctx, uuid.Nil, tt.customerID, tt.flowID, tt.source, []commonaddress.Address{*tt.destination}, tt.masterCallID, uuid.Nil, groupcall.RingMethodRingAll, groupcall.AnswerMethodHangupOthers).Return(tt.responseGroupcall, nil)
 
 			res, err := h.createCallsOutgoingGroupcall(ctx, tt.customerID, tt.flowID, tt.masterCallID, tt.source, tt.destination)
 			if err != nil {
@@ -620,7 +620,7 @@ func Test_getDialURI_Tel(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().RouteV1ProviderGet(ctx, tt.expectProviderID.Return(tt.responseProvider, nil)
+			mockReq.EXPECT().RouteV1ProviderGet(ctx, tt.expectProviderID).Return(tt.responseProvider, nil)
 
 			res, err := h.getDialURI(ctx, tt.call)
 			if err != nil {
@@ -849,8 +849,8 @@ func Test_createChannel(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().RouteV1ProviderGet(ctx, tt.expectProviderID.Return(tt.responseProvider, nil)
-			mockChannel.EXPECT().StartChannel(ctx, requesthandler.AsteriskIDCall, tt.call.ChannelID, tt.expectArgs, tt.expectDialURI, "", "", "", tt.expectVariables.Return(&channel.Channel{}, nil)
+			mockReq.EXPECT().RouteV1ProviderGet(ctx, tt.expectProviderID).Return(tt.responseProvider, nil)
+			mockChannel.EXPECT().StartChannel(ctx, requesthandler.AsteriskIDCall, tt.call.ChannelID, tt.expectArgs, tt.expectDialURI, "", "", "", tt.expectVariables).Return(&channel.Channel{}, nil)
 
 			if err := h.createChannelOutgoing(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1003,15 +1003,15 @@ func Test_createFailoverChannel(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUIDChannel)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDChannel)
 
 			// updateForRouteFailover
-			mockDB.EXPECT().CallSetForRouteFailover(ctx, tt.call.ID, tt.responseUUIDChannel.String(), tt.expectDialrouteID.Return(nil)
-			mockDB.EXPECT().CallGet(ctx, tt.call.ID.Return(tt.responseCall, nil)
+			mockDB.EXPECT().CallSetForRouteFailover(ctx, tt.call.ID, tt.responseUUIDChannel.String(), tt.expectDialrouteID).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.responseCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallUpdated, tt.responseCall)
 
-			mockReq.EXPECT().RouteV1ProviderGet(ctx, tt.expectProviderID.Return(tt.responseProvider, nil)
-			mockChannel.EXPECT().StartChannel(ctx, requesthandler.AsteriskIDCall, tt.responseCall.ChannelID, tt.expectArgs, tt.expectDialURI, "", "", "", tt.expectVariables.Return(&channel.Channel{}, nil)
+			mockReq.EXPECT().RouteV1ProviderGet(ctx, tt.expectProviderID).Return(tt.responseProvider, nil)
+			mockChannel.EXPECT().StartChannel(ctx, requesthandler.AsteriskIDCall, tt.responseCall.ChannelID, tt.expectArgs, tt.expectDialURI, "", "", "", tt.expectVariables).Return(&channel.Channel{}, nil)
 
 			res, err := h.createFailoverChannel(ctx, tt.call)
 			if err != nil {
@@ -1225,7 +1225,7 @@ func Test_getDialroutes(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().RouteV1DialrouteGets(ctx, tt.customerID, tt.expectTarget.Return(tt.responseDialroutes, nil)
+			mockReq.EXPECT().RouteV1DialrouteGets(ctx, tt.customerID, tt.expectTarget).Return(tt.responseDialroutes, nil)
 
 			res, err := h.getDialroutes(ctx, tt.customerID, tt.destination)
 			if err != nil {
@@ -1426,7 +1426,7 @@ func Test_getGroupcallRingMethod_destination_type_agent(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AgentV1AgentGet(ctx, uuid.FromStringOrNil(tt.destination.Target).Return(tt.responseAgent, nil)
+			mockReq.EXPECT().AgentV1AgentGet(ctx, uuid.FromStringOrNil(tt.destination.Target)).Return(tt.responseAgent, nil)
 
 			res, err := h.getGroupcallRingMethod(ctx, tt.destination)
 			if err != nil {

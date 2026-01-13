@@ -91,11 +91,11 @@ func Test_EventCUCustomerDeleted(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AccountGets(ctx, uint64(1000), "", tt.expectFilters.Return(tt.responseAccounts, nil)
+			mockDB.EXPECT().AccountGets(ctx, uint64(1000), "", tt.expectFilters).Return(tt.responseAccounts, nil)
 
 			for _, a := range tt.responseAccounts {
-				mockDB.EXPECT().AccountDelete(ctx, a.ID.Return(nil)
-				mockDB.EXPECT().AccountGet(ctx, a.ID.Return(a, nil)
+				mockDB.EXPECT().AccountDelete(ctx, a.ID).Return(nil)
+				mockDB.EXPECT().AccountGet(ctx, a.ID).Return(a, nil)
 			}
 
 			if err := h.EventCUCustomerDeleted(ctx, tt.customer); err != nil {
@@ -151,12 +151,12 @@ func Test_EventCUCustomerCreated(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
-			mockDB.EXPECT().AccountCreate(ctx, gomock.Any().Return(nil)
-			mockDB.EXPECT().AccountGet(ctx, tt.responseUUID.Return(tt.responseAccount, nil)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockDB.EXPECT().AccountCreate(ctx, gomock.Any()).Return(nil)
+			mockDB.EXPECT().AccountGet(ctx, tt.responseUUID).Return(tt.responseAccount, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, account.EventTypeAccountCreated, tt.responseAccount)
 
-			mockReq.EXPECT().CustomerV1CustomerUpdateBillingAccountID(ctx, tt.customer.ID, tt.responseAccount.ID.Return(tt.customer, nil)
+			mockReq.EXPECT().CustomerV1CustomerUpdateBillingAccountID(ctx, tt.customer.ID, tt.responseAccount.ID).Return(tt.customer, nil)
 
 			if err := h.EventCUCustomerCreated(ctx, tt.customer); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

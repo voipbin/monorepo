@@ -103,13 +103,13 @@ func Test_BillingCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().BillingSet(ctx, gomock.Any())
 			if err := h.BillingCreate(ctx, tt.billing); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().BillingGet(ctx, tt.billing.ID.Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().BillingGet(ctx, tt.billing.ID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().BillingSet(ctx, gomock.Any())
 			res, err := h.BillingGet(context.Background(), tt.billing.ID)
 			if err != nil {
@@ -120,7 +120,7 @@ func Test_BillingCreate(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 
-			mockCache.EXPECT().BillingGetByReferenceID(ctx, tt.billing.ReferenceID.Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().BillingGetByReferenceID(ctx, tt.billing.ReferenceID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().BillingSet(ctx, gomock.Any())
 			resByReference, err := h.BillingGetByReferenceID(ctx, tt.billing.ReferenceID)
 			if err != nil {
@@ -209,7 +209,7 @@ func Test_BillingGets(t *testing.T) {
 			ctx := context.Background()
 
 			for _, c := range tt.billings {
-				mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 				mockCache.EXPECT().BillingSet(ctx, gomock.Any())
 				if err := h.BillingCreate(ctx, c); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -293,19 +293,19 @@ func Test_BillingSetStatusEnd(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().BillingSet(ctx, gomock.Any())
 			if err := h.BillingCreate(ctx, tt.billing); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().BillingSet(ctx, gomock.Any())
 			if err := h.BillingSetStatusEnd(ctx, tt.id, tt.billingDuration, tt.timestamp); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().BillingGet(ctx, tt.billing.ID.Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().BillingGet(ctx, tt.billing.ID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().BillingSet(ctx, gomock.Any())
 			res, err := h.BillingGet(ctx, tt.id)
 			if err != nil {
@@ -375,19 +375,19 @@ func Test_BillingSetStatus(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().BillingSet(ctx, gomock.Any())
 			if err := h.BillingCreate(ctx, tt.billing); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().BillingSet(ctx, gomock.Any())
 			if err := h.BillingSetStatus(ctx, tt.id, tt.status); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().BillingGet(ctx, tt.billing.ID.Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().BillingGet(ctx, tt.billing.ID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().BillingSet(ctx, gomock.Any())
 			res, err := h.BillingGet(ctx, tt.id)
 			if err != nil {
@@ -453,19 +453,19 @@ func Test_BillingDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().BillingSet(ctx, gomock.Any())
 			if err := h.BillingCreate(ctx, tt.billing); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().BillingSet(ctx, gomock.Any())
 			if err := h.BillingDelete(ctx, tt.id); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().BillingGet(ctx, tt.billing.ID.Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().BillingGet(ctx, tt.billing.ID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().BillingSet(ctx, gomock.Any())
 			res, err := h.BillingGet(ctx, tt.id)
 			if err != nil {

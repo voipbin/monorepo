@@ -129,9 +129,9 @@ func Test_startIncomingDomainTypeTrunk(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockChannel.EXPECT().AddressGetSource(tt.channel, commonaddress.TypeTel.Return(tt.responseSource)
-			mockChannel.EXPECT().AddressGetDestination(tt.channel, commonaddress.TypeTel.Return(tt.responseDestination)
-			mockReq.EXPECT().RegistrarV1TrunkGetByDomainName(ctx, tt.expectDomainName.Return(tt.responseTrunk, nil)
+			mockChannel.EXPECT().AddressGetSource(tt.channel, commonaddress.TypeTel).Return(tt.responseSource)
+			mockChannel.EXPECT().AddressGetDestination(tt.channel, commonaddress.TypeTel).Return(tt.responseDestination)
+			mockReq.EXPECT().RegistrarV1TrunkGetByDomainName(ctx, tt.expectDomainName).Return(tt.responseTrunk, nil)
 
 			mockReq.EXPECT().FlowV1FlowCreate(
 				ctx,
@@ -172,11 +172,11 @@ func Test_startIncomingDomainTypeTrunk(t *testing.T) {
 			})
 
 			// startCallTypeFlow
-			mockUtil.EXPECT().UUIDCreate(.Return(utilhandler.UUIDCreate())
-			mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, tt.expectCustomerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1.Return(true, nil)
-			mockUtil.EXPECT().UUIDCreate(.Return(utilhandler.UUIDCreate())
-			mockBridge.EXPECT().Start(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any().Return(nil, fmt.Errorf(""))
-			mockChannel.EXPECT().HangingUp(ctx, gomock.Any(), gomock.Any().Return(&channel.Channel{}, nil)
+			mockUtil.EXPECT().UUIDCreate().Return(utilhandler.UUIDCreate())
+			mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, tt.expectCustomerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
+			mockUtil.EXPECT().UUIDCreate().Return(utilhandler.UUIDCreate())
+			mockBridge.EXPECT().Start(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf(""))
+			mockChannel.EXPECT().HangingUp(ctx, gomock.Any(), gomock.Any()).Return(&channel.Channel{}, nil)
 
 			if err := h.startIncomingDomainTypeTrunk(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -53,8 +53,8 @@ func Test_processEvent_processEventCMCustomerDeleted(t *testing.T) {
 				activeflowHandler: mockActive,
 			}
 
-			mockFlow.EXPECT().EventCustomerDeleted(gomock.Any(), tt.expectedCustomer.Return(nil)
-			mockActive.EXPECT().EventCustomerDeleted(gomock.Any(), tt.expectedCustomer.Return(nil)
+			mockFlow.EXPECT().EventCustomerDeleted(gomock.Any(), tt.expectedCustomer).Return(nil)
+			mockActive.EXPECT().EventCustomerDeleted(gomock.Any(), tt.expectedCustomer).Return(nil)
 
 			h.processEvent(tt.event)
 		})

@@ -68,7 +68,7 @@ func Test_Gets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().RecordingGets(ctx, tt.size, tt.token, gomock.Any().Return(tt.responseRecordings, nil)
+			mockDB.EXPECT().RecordingGets(ctx, tt.size, tt.token, gomock.Any()).Return(tt.responseRecordings, nil)
 			res, err := h.Gets(ctx, tt.size, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -90,7 +90,7 @@ func Test_Delete(t *testing.T) {
 
 		responseRecording *recording.Recording
 		responseFiles     []smfile.File
-		expectFilers      map[string]string
+		expectFilters     map[smfile.Field]any
 	}{
 		{
 			name: "normal",
@@ -114,10 +114,10 @@ func Test_Delete(t *testing.T) {
 					},
 				},
 			},
-			expectFilers: map[string]string{
-				"reference_type": string(smfile.ReferenceTypeRecording),
-				"reference_id":   "84df7daa-8eb9-11ed-b16e-4b8732219a4e",
-				"deleted":        "false",
+			expectFilters: map[smfile.Field]any{
+				smfile.FieldReferenceType: string(smfile.ReferenceTypeRecording),
+				smfile.FieldReferenceID:   "84df7daa-8eb9-11ed-b16e-4b8732219a4e",
+				smfile.FieldDeleted:       false,
 			},
 		},
 	}
@@ -138,12 +138,12 @@ func Test_Delete(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().RecordingDelete(ctx, tt.recordingID.Return(nil)
-			mockDB.EXPECT().RecordingGet(ctx, tt.recordingID.Return(tt.responseRecording, nil)
+			mockDB.EXPECT().RecordingDelete(ctx, tt.recordingID).Return(nil)
+			mockDB.EXPECT().RecordingGet(ctx, tt.recordingID).Return(tt.responseRecording, nil)
 
-			mockReq.EXPECT().StorageV1FileGets(gomock.Any(), "", uint64(1000), tt.expectFilers.Return(tt.responseFiles, nil)
+			mockReq.EXPECT().StorageV1FileGets(gomock.Any(), "", uint64(1000), tt.expectFilters).Return(tt.responseFiles, nil)
 			for _, f := range tt.responseFiles {
-				mockReq.EXPECT().StorageV1FileDelete(ctx, f.ID, 60000.Return(&smfile.File{}, nil)
+				mockReq.EXPECT().StorageV1FileDelete(ctx, f.ID, 60000).Return(&smfile.File{}, nil)
 			}
 
 			res, err := h.Delete(ctx, tt.recordingID)
@@ -171,7 +171,7 @@ func Test_deleteRecordingFiles(t *testing.T) {
 
 		responseFiles []smfile.File
 
-		expectFilters map[string]string
+		expectFilters map[smfile.Field]any
 	}{
 		{
 			name: "normal",
@@ -200,10 +200,10 @@ func Test_deleteRecordingFiles(t *testing.T) {
 					},
 				},
 			},
-			expectFilters: map[string]string{
-				"reference_type": string(smfile.ReferenceTypeRecording),
-				"reference_id":   "1e8bcc64-1d5d-11ef-9738-7bc321400c35",
-				"deleted":        "false",
+			expectFilters: map[smfile.Field]any{
+				smfile.FieldReferenceType: string(smfile.ReferenceTypeRecording),
+				smfile.FieldReferenceID:   "1e8bcc64-1d5d-11ef-9738-7bc321400c35",
+				smfile.FieldDeleted:       false,
 			},
 		},
 	}
@@ -222,9 +222,9 @@ func Test_deleteRecordingFiles(t *testing.T) {
 				db:         mockDB,
 			}
 
-			mockReq.EXPECT().StorageV1FileGets(gomock.Any(), "", uint64(1000), tt.expectFilters.Return(tt.responseFiles, nil)
+			mockReq.EXPECT().StorageV1FileGets(gomock.Any(), "", uint64(1000), tt.expectFilters).Return(tt.responseFiles, nil)
 			for _, f := range tt.responseFiles {
-				mockReq.EXPECT().StorageV1FileDelete(gomock.Any(), f.ID, 60000.Return(&smfile.File{}, nil)
+				mockReq.EXPECT().StorageV1FileDelete(gomock.Any(), f.ID, 60000).Return(&smfile.File{}, nil)
 			}
 
 			h.deleteRecordingFiles(tt.recording)

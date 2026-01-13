@@ -55,8 +55,8 @@ func Test_Destroy(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().BridgeGet(gomock.Any(), tt.id.Return(tt.responseBridge, nil)
-			mockReq.EXPECT().AstBridgeDelete(ctx, tt.responseBridge.AsteriskID, tt.responseBridge.ID.Return(nil)
+			mockDB.EXPECT().BridgeGet(gomock.Any(), tt.id).Return(tt.responseBridge, nil)
+			mockReq.EXPECT().AstBridgeDelete(ctx, tt.responseBridge.AsteriskID, tt.responseBridge.ID).Return(nil)
 
 			if errDestroy := h.Destroy(ctx, tt.id); errDestroy != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errDestroy)

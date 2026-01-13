@@ -53,7 +53,7 @@ func Test_processEvent_processEventCMCustomerCreated(t *testing.T) {
 				fileHandler:    mockFile,
 			}
 
-			mockAccount.EXPECT().EventCustomerCreated(gomock.Any(), tt.expectCustomer.Return(nil)
+			mockAccount.EXPECT().EventCustomerCreated(gomock.Any(), tt.expectCustomer).Return(nil)
 
 			h.processEvent(tt.event)
 		})
@@ -99,8 +99,8 @@ func Test_processEvent_processEventCMCustomerDeleted(t *testing.T) {
 				fileHandler:    mockFile,
 			}
 
-			mockFile.EXPECT().EventCustomerDeleted(gomock.Any(), tt.expectCustomer.Return(nil)
-			mockAccount.EXPECT().EventCustomerDeleted(gomock.Any(), tt.expectCustomer.Return(nil)
+			mockFile.EXPECT().EventCustomerDeleted(gomock.Any(), tt.expectCustomer).Return(nil)
+			mockAccount.EXPECT().EventCustomerDeleted(gomock.Any(), tt.expectCustomer).Return(nil)
 
 			h.processEvent(tt.event)
 		})

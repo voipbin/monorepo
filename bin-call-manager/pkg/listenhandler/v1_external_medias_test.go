@@ -94,7 +94,7 @@ func Test_processV1ExternalMediasPost(t *testing.T) {
 				tt.expectFormat,
 				tt.expectDirectionListen,
 				tt.expectDirectionSpeak,
-			.Return(tt.responseExternalMedia, nil)
+			).Return(tt.responseExternalMedia, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -191,8 +191,8 @@ func Test_processV1ExternalMediasGet(t *testing.T) {
 				externalMediaHandler: mockExternalMedia,
 			}
 
-			mockUtil.EXPECT().URLParseFilters(gomock.Any().Return(tt.responseFilters)
-			mockExternalMedia.EXPECT().Gets(gomock.Any(), tt.pageSize, tt.pageToken, gomock.Any().Return(tt.responseExternalMedias, nil)
+			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
+			mockExternalMedia.EXPECT().Gets(gomock.Any(), tt.pageSize, tt.pageToken, gomock.Any()).Return(tt.responseExternalMedias, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -252,7 +252,7 @@ func Test_processV1ExternalMediasIDGet(t *testing.T) {
 				externalMediaHandler: mockExternal,
 			}
 
-			mockExternal.EXPECT().Get(gomock.Any(), tt.expectID.Return(tt.responseExternalMedia, nil)
+			mockExternal.EXPECT().Get(gomock.Any(), tt.expectID).Return(tt.responseExternalMedia, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -312,7 +312,7 @@ func Test_processV1ExternalMediasIDDelete(t *testing.T) {
 				externalMediaHandler: mockExternal,
 			}
 
-			mockExternal.EXPECT().Stop(gomock.Any(), tt.expectID.Return(tt.responseExternalMedia, nil)
+			mockExternal.EXPECT().Stop(gomock.Any(), tt.expectID).Return(tt.responseExternalMedia, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

@@ -131,17 +131,17 @@ func Test_Talk(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CallGet(ctx, tt.callID.Return(tt.responseCall, nil)
+			mockDB.EXPECT().CallGet(ctx, tt.callID).Return(tt.responseCall, nil)
 
 			if tt.responseCall.Status != call.StatusProgressing {
-				mockChannel.EXPECT().Answer(ctx, tt.responseCall.ChannelID.Return(nil)
+				mockChannel.EXPECT().Answer(ctx, tt.responseCall.ChannelID).Return(nil)
 			}
 
-			mockReq.EXPECT().TTSV1SpeecheCreate(ctx, tt.responseCall.ID, tt.text, tmtts.Gender(tt.gender), tt.language, 10000.Return(tt.responseTTS, nil)
+			mockReq.EXPECT().TTSV1SpeecheCreate(ctx, tt.responseCall.ID, tt.text, tmtts.Gender(tt.gender), tt.language, 10000).Return(tt.responseTTS, nil)
 			if !tt.runNext {
-				mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUIDActionID)
+				mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDActionID)
 			}
-			mockChannel.EXPECT().Play(ctx, tt.responseCall.ChannelID, tt.expectPlaybackID, tt.expectURI, "", 0, 0.Return(nil)
+			mockChannel.EXPECT().Play(ctx, tt.responseCall.ChannelID, tt.expectPlaybackID, tt.expectURI, "", 0, 0).Return(nil)
 
 			if err := h.Talk(ctx, tt.callID, tt.runNext, tt.text, tt.gender, tt.language); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -237,8 +237,8 @@ func Test_Play(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CallGet(ctx, tt.callID.Return(tt.responseCall, nil)
-			mockChannel.EXPECT().Play(ctx, tt.responseCall.ChannelID, tt.expectplaybackID, tt.expectURI, "", 0, 0.Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.callID).Return(tt.responseCall, nil)
+			mockChannel.EXPECT().Play(ctx, tt.responseCall.ChannelID, tt.expectplaybackID, tt.expectURI, "", 0, 0).Return(nil)
 
 			if err := h.Play(ctx, tt.callID, tt.runNext, tt.urls); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -289,8 +289,8 @@ func Test_MediaStop(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CallGet(ctx, tt.callID.Return(tt.responseCall, nil)
-			mockChannel.EXPECT().PlaybackStop(ctx, tt.responseCall.ChannelID.Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.callID).Return(tt.responseCall, nil)
+			mockChannel.EXPECT().PlaybackStop(ctx, tt.responseCall.ChannelID).Return(nil)
 
 			if err := h.MediaStop(ctx, tt.callID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

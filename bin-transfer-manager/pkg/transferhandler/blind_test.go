@@ -126,8 +126,8 @@ func Test_blindExecute(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1CallHangup(ctx, tt.transfererCall.ID.Return(&cmcall.Call{}, nil)
-			mockReq.EXPECT().CallV1ConfbridgeRing(ctx, tt.transfererCall.ConfbridgeID.Return(nil)
+			mockReq.EXPECT().CallV1CallHangup(ctx, tt.transfererCall.ID).Return(&cmcall.Call{}, nil)
+			mockReq.EXPECT().CallV1ConfbridgeRing(ctx, tt.transfererCall.ConfbridgeID).Return(nil)
 			mockReq.EXPECT().CallV1GroupcallCreate(
 				ctx,
 				uuid.Nil,
@@ -139,9 +139,9 @@ func Test_blindExecute(t *testing.T) {
 				uuid.Nil,
 				cmgroupcall.RingMethodRingAll,
 				cmgroupcall.AnswerMethodHangupOthers,
-			.Return(tt.responseGroupcall, nil)
-			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUIDTransfer)
-			mockDB.EXPECT().TransferCreate(ctx, tt.expectTransfer.Return(nil)
+			).Return(tt.responseGroupcall, nil)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDTransfer)
+			mockDB.EXPECT().TransferCreate(ctx, tt.expectTransfer).Return(nil)
 
 			res, err := h.blindExecute(ctx, tt.transfererCall, tt.flow, tt.transfereeAddresses)
 			if err != nil {
@@ -188,7 +188,7 @@ func Test_blindBlock(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1ConfbridgeFlagAdd(ctx, tt.confbridgeID, cmconfbridge.FlagNoAutoLeave.Return(&cmconfbridge.Confbridge{}, nil)
+			mockReq.EXPECT().CallV1ConfbridgeFlagAdd(ctx, tt.confbridgeID, cmconfbridge.FlagNoAutoLeave).Return(&cmconfbridge.Confbridge{}, nil)
 
 			if err := h.blindBlock(ctx, tt.confbridgeID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -230,7 +230,7 @@ func Test_blindUnblock(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1ConfbridgeFlagRemove(ctx, tt.confbridgeID, cmconfbridge.FlagNoAutoLeave.Return(&cmconfbridge.Confbridge{}, nil)
+			mockReq.EXPECT().CallV1ConfbridgeFlagRemove(ctx, tt.confbridgeID, cmconfbridge.FlagNoAutoLeave).Return(&cmconfbridge.Confbridge{}, nil)
 
 			if err := h.blindUnblock(ctx, tt.confbridgeID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

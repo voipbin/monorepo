@@ -110,8 +110,8 @@ func Test_Create(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChannelCreate(ctx, tt.expectChannel.Return(nil)
-			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id.Return(tt.responseChannel, nil)
+			mockDB.EXPECT().ChannelCreate(ctx, tt.expectChannel).Return(nil)
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id).Return(tt.responseChannel, nil)
 			mockReq.EXPECT().CallV1ChannelHealth(gomock.Any(), tt.responseChannel.ID, defaultHealthDelay, 0)
 
 			res, err := h.Create(
@@ -187,7 +187,7 @@ func Test_Get(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id.Return(tt.responseChannel, nil)
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id).Return(tt.responseChannel, nil)
 
 			res, err := h.Get(ctx, tt.id)
 			if err != nil {
@@ -247,7 +247,7 @@ func Test_getWithTimeout(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id.Return(tt.responseChannel, nil)
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id).Return(tt.responseChannel, nil)
 
 			res, err := h.getWithTimeout(ctx, tt.id, defaultExistTimeout)
 			if err != nil {
@@ -307,8 +307,8 @@ func Test_Delete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChannelEndAndDelete(ctx, tt.id, tt.cause.Return(nil)
-			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id.Return(tt.responseChannel, nil)
+			mockDB.EXPECT().ChannelEndAndDelete(ctx, tt.id, tt.cause).Return(nil)
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id).Return(tt.responseChannel, nil)
 			res, err := h.Delete(ctx, tt.id, tt.cause)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -365,7 +365,7 @@ func Test_SetDataItem(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChannelSetDataItem(ctx, tt.id, tt.key, tt.valuse.Return(nil)
+			mockDB.EXPECT().ChannelSetDataItem(ctx, tt.id, tt.key, tt.valuse).Return(nil)
 			if err := h.SetDataItem(ctx, tt.id, tt.key, tt.valuse); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -415,10 +415,10 @@ func Test_SetSIPTransport(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChannelSetSIPTransport(ctx, tt.id, tt.transport.Return(nil)
+			mockDB.EXPECT().ChannelSetSIPTransport(ctx, tt.id, tt.transport).Return(nil)
 
 			// goroutine
-			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id.Return(&channel.Channel{}, nil)
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id).Return(&channel.Channel{}, nil)
 
 			if err := h.SetSIPTransport(ctx, tt.id, tt.transport); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -471,10 +471,10 @@ func Test_SetDirection(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChannelSetDirection(ctx, tt.id, tt.direction.Return(nil)
+			mockDB.EXPECT().ChannelSetDirection(ctx, tt.id, tt.direction).Return(nil)
 
 			// goroutine
-			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id.Return(&channel.Channel{}, nil)
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id).Return(&channel.Channel{}, nil)
 
 			if err := h.SetDirection(ctx, tt.id, tt.direction); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -527,7 +527,7 @@ func Test_SetType(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChannelSetType(ctx, tt.id, tt.channelType.Return(nil)
+			mockDB.EXPECT().ChannelSetType(ctx, tt.id, tt.channelType).Return(nil)
 			if err := h.SetType(ctx, tt.id, tt.channelType); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -609,11 +609,11 @@ func Test_UpdateState(t *testing.T) {
 
 			switch tt.state {
 			case ari.ChannelStateUp:
-				mockDB.EXPECT().ChannelSetStateAnswer(ctx, tt.id, tt.state.Return(nil)
+				mockDB.EXPECT().ChannelSetStateAnswer(ctx, tt.id, tt.state).Return(nil)
 			case ari.ChannelStateRing, ari.ChannelStateRinging:
-				mockDB.EXPECT().ChannelSetStateRinging(ctx, tt.id, tt.state.Return(nil)
+				mockDB.EXPECT().ChannelSetStateRinging(ctx, tt.id, tt.state).Return(nil)
 			}
-			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id.Return(tt.responseChannel, nil)
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id).Return(tt.responseChannel, nil)
 
 			res, err := h.UpdateState(ctx, tt.id, tt.state)
 			if err != nil {
@@ -663,7 +663,7 @@ func Test_setSIPCallID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChannelSetSIPCallID(ctx, tt.id, tt.sipCallID.Return(nil)
+			mockDB.EXPECT().ChannelSetSIPCallID(ctx, tt.id, tt.sipCallID).Return(nil)
 
 			if err := h.setSIPCallID(ctx, tt.id, tt.sipCallID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -708,7 +708,7 @@ func Test_setSIPPai(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChannelSetDataItem(ctx, tt.id, "sip_pai", tt.sipPai.Return(nil)
+			mockDB.EXPECT().ChannelSetDataItem(ctx, tt.id, "sip_pai", tt.sipPai).Return(nil)
 
 			if err := h.setSIPPai(ctx, tt.id, tt.sipPai); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -753,7 +753,7 @@ func Test_setSIPPrivacy(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChannelSetDataItem(ctx, tt.id, "sip_privacy", tt.sipPrivacy.Return(nil)
+			mockDB.EXPECT().ChannelSetDataItem(ctx, tt.id, "sip_privacy", tt.sipPrivacy).Return(nil)
 
 			if err := h.setSIPPrivacy(ctx, tt.id, tt.sipPrivacy); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -804,8 +804,8 @@ func Test_UpdateStasisName(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChannelSetStasis(ctx, tt.id, tt.stasisName.Return(nil)
-			mockDB.EXPECT().ChannelGet(ctx, tt.id.Return(tt.responseChannel, nil)
+			mockDB.EXPECT().ChannelSetStasis(ctx, tt.id, tt.stasisName).Return(nil)
+			mockDB.EXPECT().ChannelGet(ctx, tt.id).Return(tt.responseChannel, nil)
 
 			res, err := h.UpdateStasisName(ctx, tt.id, tt.stasisName)
 			if err != nil {
@@ -865,8 +865,8 @@ func Test_UpdateBridgeID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChannelSetBridgeID(ctx, tt.id, tt.bridgeID.Return(nil)
-			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id.Return(tt.responseChannel, nil)
+			mockDB.EXPECT().ChannelSetBridgeID(ctx, tt.id, tt.bridgeID).Return(nil)
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id).Return(tt.responseChannel, nil)
 
 			res, err := h.UpdateBridgeID(ctx, tt.id, tt.bridgeID)
 			if err != nil {
@@ -926,8 +926,8 @@ func Test_UpdatePlaybackID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChannelSetPlaybackID(ctx, tt.id, tt.playbackID.Return(nil)
-			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id.Return(tt.responseChannel, nil)
+			mockDB.EXPECT().ChannelSetPlaybackID(ctx, tt.id, tt.playbackID).Return(nil)
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id).Return(tt.responseChannel, nil)
 
 			res, err := h.UpdatePlaybackID(ctx, tt.id, tt.playbackID)
 			if err != nil {
@@ -987,8 +987,8 @@ func Test_UpdateMuteDirection(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChannelSetMuteDirection(ctx, tt.id, tt.muteDirection.Return(nil)
-			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id.Return(tt.responseChannel, nil)
+			mockDB.EXPECT().ChannelSetMuteDirection(ctx, tt.id, tt.muteDirection).Return(nil)
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id).Return(tt.responseChannel, nil)
 
 			res, err := h.UpdateMuteDirection(ctx, tt.id, tt.muteDirection)
 			if err != nil {

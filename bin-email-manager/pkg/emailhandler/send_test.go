@@ -59,8 +59,8 @@ func Test_Send(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockSendgrid.EXPECT().Send(ctx, tt.email.Return(tt.responseProviderReferenceID, nil)
-			mockDB.EXPECT().EmailUpdateProviderReferenceID(ctx, tt.email.ID, tt.responseProviderReferenceID.Return(nil)
+			mockSendgrid.EXPECT().Send(ctx, tt.email).Return(tt.responseProviderReferenceID, nil)
+			mockDB.EXPECT().EmailUpdateProviderReferenceID(ctx, tt.email.ID, tt.responseProviderReferenceID).Return(nil)
 
 			h.Send(ctx, tt.email)
 		})

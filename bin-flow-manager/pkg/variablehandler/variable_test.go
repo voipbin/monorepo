@@ -51,8 +51,8 @@ func Test_Create(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().VariableCreate(ctx, tt.expectedRes.Return(nil)
-			mockDB.EXPECT().VariableGet(ctx, tt.activeflowID.Return(tt.expectedRes, nil)
+			mockDB.EXPECT().VariableCreate(ctx, tt.expectedRes).Return(nil)
+			mockDB.EXPECT().VariableGet(ctx, tt.activeflowID).Return(tt.expectedRes, nil)
 
 			res, err := h.Create(ctx, tt.activeflowID, tt.variables)
 			if err != nil {
@@ -107,7 +107,7 @@ func Test_Set(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().VariableUpdate(ctx, tt.variable.Return(nil)
+			mockDB.EXPECT().VariableUpdate(ctx, tt.variable).Return(nil)
 
 			if err := h.Set(ctx, tt.variable); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -188,8 +188,8 @@ func Test_SetVariable(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().VariableGet(ctx, tt.id.Return(tt.responseVariable, nil)
-			mockDB.EXPECT().VariableUpdate(ctx, tt.expectedUpdateVariable.Return(nil)
+			mockDB.EXPECT().VariableGet(ctx, tt.id).Return(tt.responseVariable, nil)
+			mockDB.EXPECT().VariableUpdate(ctx, tt.expectedUpdateVariable).Return(nil)
 
 			if err := h.SetVariable(ctx, tt.id, tt.variables); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -246,8 +246,8 @@ func Test_DeleteVariable(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().VariableGet(ctx, tt.id.Return(tt.responseVariable, nil)
-			mockDB.EXPECT().VariableUpdate(ctx, tt.expectedUpdateVariable.Return(nil)
+			mockDB.EXPECT().VariableGet(ctx, tt.id).Return(tt.responseVariable, nil)
+			mockDB.EXPECT().VariableUpdate(ctx, tt.expectedUpdateVariable).Return(nil)
 
 			if err := h.DeleteVariable(ctx, tt.id, tt.key); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -63,8 +63,8 @@ func Test_HangingUp(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id.Return(tt.responseChannel, nil)
-			mockReq.EXPECT().AstChannelHangup(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID, tt.cause, 0.Return(nil)
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id).Return(tt.responseChannel, nil)
+			mockReq.EXPECT().AstChannelHangup(ctx, tt.responseChannel.AsteriskID, tt.responseChannel.ID, tt.cause, 0).Return(nil)
 
 			res, err := h.HangingUp(ctx, tt.id, tt.cause)
 			if err != nil {

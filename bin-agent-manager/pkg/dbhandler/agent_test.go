@@ -177,13 +177,13 @@ func Test_AgentCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().AgentSet(gomock.Any(), gomock.Any())
 			if err := h.AgentCreate(ctx, tt.agent); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().AgentGet(gomock.Any(), tt.agent.ID.Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().AgentGet(gomock.Any(), tt.agent.ID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().AgentSet(gomock.Any(), gomock.Any())
 			res, err := h.AgentGet(ctx, tt.agent.ID)
 			if err != nil {
@@ -246,19 +246,19 @@ func Test_AgentDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().AgentSet(ctx, gomock.Any())
 			if err := h.AgentCreate(ctx, tt.agent); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().AgentSet(ctx, gomock.Any())
 			if err := h.AgentDelete(ctx, tt.agent.ID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().AgentGet(ctx, tt.agent.ID.Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().AgentGet(ctx, tt.agent.ID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().AgentSet(ctx, gomock.Any())
 			res, err := h.AgentGet(ctx, tt.agent.ID)
 			if err != nil {
@@ -406,9 +406,9 @@ func Test_AgentGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockCache.EXPECT().AgentSet(gomock.Any(), gomock.Any().Return(nil).AnyTimes()
+			mockCache.EXPECT().AgentSet(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 			for _, u := range tt.agents {
-				mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 				if err := h.AgentCreate(ctx, u); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
 				}
@@ -506,21 +506,21 @@ func Test_AgentSetAddresses(t *testing.T) {
 			ctx := context.Background()
 
 			for _, u := range tt.agents {
-				mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 				mockCache.EXPECT().AgentSet(ctx, gomock.Any())
 				if err := h.AgentCreate(ctx, u); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
 				}
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().AgentSet(ctx, gomock.Any())
 			err := h.AgentSetAddresses(ctx, tt.id, tt.addresses)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().AgentGet(ctx, tt.id.Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().AgentGet(ctx, tt.id).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().AgentSet(ctx, gomock.Any())
 			res, err := h.AgentGet(ctx, tt.id)
 			if err != nil {

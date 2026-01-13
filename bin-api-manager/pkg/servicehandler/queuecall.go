@@ -7,6 +7,7 @@ import (
 	qmqueuecall "monorepo/bin-queue-manager/models/queuecall"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -109,7 +110,13 @@ func (h *serviceHandler) QueuecallGets(ctx context.Context, a *amagent.Agent, si
 		"deleted":     "false", // we don't need deleted items
 	}
 
-	tmps, err := h.reqHandler.QueueV1QueuecallGets(ctx, token, size, filters)
+	// Convert string filters to typed filters
+	typedFilters, err := h.convertQueuecallFilters(filters)
+	if err != nil {
+		return nil, err
+	}
+
+	tmps, err := h.reqHandler.QueueV1QueuecallGets(ctx, token, size, typedFilters)
 	if err != nil {
 		log.Errorf("Could not get queues from the queue-manager. err: %v", err)
 		return nil, err
@@ -218,4 +225,27 @@ func (h *serviceHandler) QueuecallKickByReferenceID(ctx context.Context, a *amag
 
 	res := tmp.ConvertWebhookMessage()
 	return res, nil
+}
+
+// convertQueuecallFilters converts map[string]string to map[qmqueuecall.Field]any
+func (h *serviceHandler) convertQueuecallFilters(filters map[string]string) (map[qmqueuecall.Field]any, error) {
+	// Convert to map[string]any first
+	srcAny := make(map[string]any, len(filters))
+	for k, v := range filters {
+		srcAny[k] = v
+	}
+
+	// Use reflection-based converter
+	typed, err := commondatabasehandler.ConvertMapToTypedMap(srcAny, qmqueuecall.Queuecall{})
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert string keys to Field type
+	result := make(map[qmqueuecall.Field]any, len(typed))
+	for k, v := range typed {
+		result[qmqueuecall.Field(k)] = v
+	}
+
+	return result, nil
 }

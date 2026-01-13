@@ -113,7 +113,7 @@ func Test_queuecallsGet(t *testing.T) {
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().QueuecallGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken.Return(tt.responseCalls, nil)
+			mockSvc.EXPECT().QueuecallGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseCalls, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -185,7 +185,7 @@ func Test_queuecallsIDGet(t *testing.T) {
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().QueuecallGet(req.Context(), &tt.agent, tt.responseQueuecall.ID.Return(tt.responseQueuecall, nil)
+			mockSvc.EXPECT().QueuecallGet(req.Context(), &tt.agent, tt.responseQueuecall.ID).Return(tt.responseQueuecall, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -256,7 +256,7 @@ func Test_queuecallsIDDelete(t *testing.T) {
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().QueuecallDelete(req.Context(), &tt.agent, tt.expectQueuecallID.Return(tt.responseQueuecall, nil)
+			mockSvc.EXPECT().QueuecallDelete(req.Context(), &tt.agent, tt.expectQueuecallID).Return(tt.responseQueuecall, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -327,7 +327,7 @@ func Test_queuecallsIDKickPOST(t *testing.T) {
 
 			req, _ := http.NewRequest("POST", tt.requQuery, nil)
 
-			mockSvc.EXPECT().QueuecallKick(req.Context(), &tt.agent, tt.expectQueuecallID.Return(tt.responseQueuecall, nil)
+			mockSvc.EXPECT().QueuecallKick(req.Context(), &tt.agent, tt.expectQueuecallID).Return(tt.responseQueuecall, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
@@ -397,7 +397,7 @@ func Test_queuecallsReferenceIDIDKickPOST(t *testing.T) {
 
 			req, _ := http.NewRequest("POST", tt.requQuery, nil)
 
-			mockSvc.EXPECT().QueuecallKickByReferenceID(req.Context(), &tt.agent, tt.expectReferenceID.Return(tt.responseQueuecall, nil)
+			mockSvc.EXPECT().QueuecallKickByReferenceID(req.Context(), &tt.agent, tt.expectReferenceID).Return(tt.responseQueuecall, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)

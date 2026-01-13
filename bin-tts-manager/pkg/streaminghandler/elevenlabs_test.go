@@ -194,7 +194,7 @@ func Test_getVoiceID_getVoiceIDByVariable(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.activeflowID.Return(tt.responseVariable, nil)
+			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.activeflowID).Return(tt.responseVariable, nil)
 
 			result := h.getVoiceID(ctx, tt.activeflowID, "", "")
 			if result != tt.expectedRes {

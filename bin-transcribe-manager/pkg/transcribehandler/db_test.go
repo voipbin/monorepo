@@ -64,8 +64,8 @@ func Test_dbDelete(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().TranscribeDelete(ctx, tt.id.Return(nil)
-			mockDB.EXPECT().TranscribeGet(ctx, tt.id.Return(tt.responseTranscribe, nil)
+			mockDB.EXPECT().TranscribeDelete(ctx, tt.id).Return(nil)
+			mockDB.EXPECT().TranscribeGet(ctx, tt.id).Return(tt.responseTranscribe, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, transcribe.EventTypeTranscribeDeleted, gomock.Any())
 
 			res, err := h.dbDelete(ctx, tt.id)

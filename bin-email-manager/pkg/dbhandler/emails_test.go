@@ -116,14 +116,14 @@ func Test_EmailCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().EmailSet(gomock.Any(), gomock.Any())
 			if errCreate := h.EmailCreate(ctx, tt.email); errCreate != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errCreate)
 			}
 
-			mockCache.EXPECT().EmailGet(gomock.Any(), tt.email.ID.Return(nil, fmt.Errorf(""))
-			mockCache.EXPECT().EmailSet(gomock.Any(), gomock.Any().Return(nil)
+			mockCache.EXPECT().EmailGet(gomock.Any(), tt.email.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().EmailSet(gomock.Any(), gomock.Any()).Return(nil)
 			resCreate, err := h.EmailGet(ctx, tt.email.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -133,14 +133,14 @@ func Test_EmailCreate(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.email, resCreate)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
-			mockCache.EXPECT().EmailSet(gomock.Any(), gomock.Any().Return(nil)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().EmailSet(gomock.Any(), gomock.Any()).Return(nil)
 			if errUpdate := h.EmailUpdateStatus(ctx, tt.email.ID, email.StatusDelivered); errUpdate != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errUpdate)
 			}
 
-			mockCache.EXPECT().EmailGet(gomock.Any(), tt.email.ID.Return(nil, fmt.Errorf(""))
-			mockCache.EXPECT().EmailSet(gomock.Any(), gomock.Any().Return(nil)
+			mockCache.EXPECT().EmailGet(gomock.Any(), tt.email.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().EmailSet(gomock.Any(), gomock.Any()).Return(nil)
 			resUpdate, err := h.EmailGet(ctx, tt.email.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -154,14 +154,14 @@ func Test_EmailCreate(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.email, resUpdate)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
-			mockCache.EXPECT().EmailSet(gomock.Any(), gomock.Any().Return(nil)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().EmailSet(gomock.Any(), gomock.Any()).Return(nil)
 			if errUpdate := h.EmailDelete(ctx, tt.email.ID); errUpdate != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errUpdate)
 			}
 
-			mockCache.EXPECT().EmailGet(gomock.Any(), tt.email.ID.Return(nil, fmt.Errorf(""))
-			mockCache.EXPECT().EmailSet(gomock.Any(), gomock.Any().Return(nil)
+			mockCache.EXPECT().EmailGet(gomock.Any(), tt.email.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().EmailSet(gomock.Any(), gomock.Any()).Return(nil)
 			resDelete, err := h.EmailGet(ctx, tt.email.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -261,7 +261,7 @@ func Test_EmailGets(t *testing.T) {
 			ctx := context.Background()
 
 			for _, e := range tt.emails {
-				mockUtil.EXPECT().TimeGetCurTime(.Return(utilhandler.TimeGetCurTime())
+				mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
 				mockCache.EXPECT().EmailSet(ctx, gomock.Any())
 				if err := h.EmailCreate(ctx, &e); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -341,20 +341,20 @@ func Test_EmailUpdateProviderReferenceID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().EmailSet(ctx, gomock.Any())
 			if err := h.EmailCreate(ctx, tt.email); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
-			mockCache.EXPECT().EmailSet(gomock.Any(), gomock.Any().Return(nil)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().EmailSet(gomock.Any(), gomock.Any()).Return(nil)
 			if errUpdate := h.EmailUpdateProviderReferenceID(ctx, tt.id, tt.providerReferenceID); errUpdate != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errUpdate)
 			}
 
-			mockCache.EXPECT().EmailGet(gomock.Any(), tt.email.ID.Return(nil, fmt.Errorf(""))
-			mockCache.EXPECT().EmailSet(gomock.Any(), gomock.Any().Return(nil)
+			mockCache.EXPECT().EmailGet(gomock.Any(), tt.email.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().EmailSet(gomock.Any(), gomock.Any()).Return(nil)
 			res, err := h.EmailGet(ctx, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

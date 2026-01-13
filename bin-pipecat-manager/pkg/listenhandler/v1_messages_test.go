@@ -75,7 +75,7 @@ func Test_processV1MessagesPost(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockPipecatcall.EXPECT().SendMessage(ctx, tt.expectPipecatcallID, tt.expectMessageID, tt.expectMessageText, tt.expectRunImmediately, tt.expectAudioResponse.Return(tt.responseMessage, nil)
+			mockPipecatcall.EXPECT().SendMessage(ctx, tt.expectPipecatcallID, tt.expectMessageID, tt.expectMessageText, tt.expectRunImmediately, tt.expectAudioResponse).Return(tt.responseMessage, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

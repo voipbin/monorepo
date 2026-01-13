@@ -76,12 +76,12 @@ func Test_RenewNumbers_renewNumbersByTMRenew(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().NumberGetsByTMRenew(ctx, tt.tmRenew, uint64(100), map[number.Field]any{number.FieldDeleted: false}.Return(tt.responseNumbers, nil)
+			mockDB.EXPECT().NumberGetsByTMRenew(ctx, tt.tmRenew, uint64(100), map[number.Field]any{number.FieldDeleted: false}).Return(tt.responseNumbers, nil)
 			for _, n := range tt.responseNumbers {
-				mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, n.CustomerID, bmbilling.ReferenceTypeNumber, "us", 1.Return(true, nil)
-				mockUtil.EXPECT().TimeGetCurTime(.Return("2021-02-26 18:26:49.000")
-				mockDB.EXPECT().NumberUpdate(ctx, n.ID, gomock.Any().Return(nil)
-				mockDB.EXPECT().NumberGet(ctx, n.ID.Return(n, nil)
+				mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, n.CustomerID, bmbilling.ReferenceTypeNumber, "us", 1).Return(true, nil)
+				mockUtil.EXPECT().TimeGetCurTime().Return("2021-02-26 18:26:49.000")
+				mockDB.EXPECT().NumberUpdate(ctx, n.ID, gomock.Any()).Return(nil)
+				mockDB.EXPECT().NumberGet(ctx, n.ID).Return(n, nil)
 				mockNotify.EXPECT().PublishEvent(ctx, number.EventTypeNumberRenewed, n)
 			}
 
@@ -158,13 +158,13 @@ func Test_RenewNumbers_renewNumbersByDays(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTimeAdd(tt.expectTimeAdd.Return(tt.responseCurTime)
-			mockDB.EXPECT().NumberGetsByTMRenew(ctx, tt.responseCurTime, uint64(100), map[number.Field]any{number.FieldDeleted: false}.Return(tt.responseNumbers, nil)
+			mockUtil.EXPECT().TimeGetCurTimeAdd(tt.expectTimeAdd).Return(tt.responseCurTime)
+			mockDB.EXPECT().NumberGetsByTMRenew(ctx, tt.responseCurTime, uint64(100), map[number.Field]any{number.FieldDeleted: false}).Return(tt.responseNumbers, nil)
 			for _, n := range tt.responseNumbers {
-				mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, n.CustomerID, bmbilling.ReferenceTypeNumber, "us", 1.Return(true, nil)
-				mockUtil.EXPECT().TimeGetCurTime(.Return("2021-02-26 18:26:49.000")
-				mockDB.EXPECT().NumberUpdate(ctx, n.ID, gomock.Any().Return(nil)
-				mockDB.EXPECT().NumberGet(ctx, n.ID.Return(n, nil)
+				mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, n.CustomerID, bmbilling.ReferenceTypeNumber, "us", 1).Return(true, nil)
+				mockUtil.EXPECT().TimeGetCurTime().Return("2021-02-26 18:26:49.000")
+				mockDB.EXPECT().NumberUpdate(ctx, n.ID, gomock.Any()).Return(nil)
+				mockDB.EXPECT().NumberGet(ctx, n.ID).Return(n, nil)
 				mockNotify.EXPECT().PublishEvent(ctx, number.EventTypeNumberRenewed, n)
 			}
 
@@ -241,13 +241,13 @@ func Test_RenewNumbers_renewNumbersByHours(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTimeAdd(tt.expectTimeAdd.Return(tt.responseCurTime)
-			mockDB.EXPECT().NumberGetsByTMRenew(ctx, tt.responseCurTime, uint64(100), map[number.Field]any{number.FieldDeleted: false}.Return(tt.responseNumbers, nil)
+			mockUtil.EXPECT().TimeGetCurTimeAdd(tt.expectTimeAdd).Return(tt.responseCurTime)
+			mockDB.EXPECT().NumberGetsByTMRenew(ctx, tt.responseCurTime, uint64(100), map[number.Field]any{number.FieldDeleted: false}).Return(tt.responseNumbers, nil)
 			for _, n := range tt.responseNumbers {
-				mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, n.CustomerID, bmbilling.ReferenceTypeNumber, "us", 1.Return(true, nil)
-				mockUtil.EXPECT().TimeGetCurTime(.Return("2021-02-26 18:26:49.000")
-				mockDB.EXPECT().NumberUpdate(ctx, n.ID, gomock.Any().Return(nil)
-				mockDB.EXPECT().NumberGet(ctx, n.ID.Return(n, nil)
+				mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, n.CustomerID, bmbilling.ReferenceTypeNumber, "us", 1).Return(true, nil)
+				mockUtil.EXPECT().TimeGetCurTime().Return("2021-02-26 18:26:49.000")
+				mockDB.EXPECT().NumberUpdate(ctx, n.ID, gomock.Any()).Return(nil)
+				mockDB.EXPECT().NumberGet(ctx, n.ID).Return(n, nil)
 				mockNotify.EXPECT().PublishEvent(ctx, number.EventTypeNumberRenewed, n)
 			}
 

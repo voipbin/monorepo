@@ -87,10 +87,10 @@ func Test_EventCMCallProgressing(t *testing.T) {
 			ctx := context.Background()
 
 			// BillingStart
-			mockAccount.EXPECT().GetByCustomerID(ctx, tt.call.CustomerID.Return(tt.responseAccount, nil)
-			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
-			mockDB.EXPECT().BillingCreate(ctx, tt.expectBilling.Return(nil)
-			mockDB.EXPECT().BillingGet(ctx, tt.responseUUID.Return(tt.expectBilling, nil)
+			mockAccount.EXPECT().GetByCustomerID(ctx, tt.call.CustomerID).Return(tt.responseAccount, nil)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockDB.EXPECT().BillingCreate(ctx, tt.expectBilling).Return(nil)
+			mockDB.EXPECT().BillingGet(ctx, tt.responseUUID).Return(tt.expectBilling, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, billing.EventTypeBillingCreated, tt.expectBilling)
 
 			if err := h.EventCMCallProgressing(ctx, tt.call); err != nil {
@@ -172,15 +172,15 @@ func Test_EventCMCallHangup(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().BillingGetByReferenceID(ctx, tt.call.ID.Return(tt.responseBilling, nil)
+			mockDB.EXPECT().BillingGetByReferenceID(ctx, tt.call.ID).Return(tt.responseBilling, nil)
 
 			// BillingEnd
-			mockUtil.EXPECT().TimeParse(tt.responseBilling.TMBillingStart.Return(utilhandler.TimeParse(tt.responseBilling.TMBillingStart))
-			mockUtil.EXPECT().TimeParse(tt.call.TMHangup.Return(utilhandler.TimeParse(tt.call.TMHangup))
-			mockDB.EXPECT().BillingSetStatusEnd(ctx, tt.responseBilling.ID, tt.expectBillingDuration, tt.call.TMHangup.Return(nil)
-			mockDB.EXPECT().BillingGet(ctx, tt.responseBilling.ID.Return(tt.responseBilling, nil)
+			mockUtil.EXPECT().TimeParse(tt.responseBilling.TMBillingStart).Return(utilhandler.TimeParse(tt.responseBilling.TMBillingStart))
+			mockUtil.EXPECT().TimeParse(tt.call.TMHangup).Return(utilhandler.TimeParse(tt.call.TMHangup))
+			mockDB.EXPECT().BillingSetStatusEnd(ctx, tt.responseBilling.ID, tt.expectBillingDuration, tt.call.TMHangup).Return(nil)
+			mockDB.EXPECT().BillingGet(ctx, tt.responseBilling.ID).Return(tt.responseBilling, nil)
 
-			mockAccount.EXPECT().SubtractBalance(ctx, tt.responseBilling.AccountID, tt.responseBilling.CostTotal.Return(tt.responseAccount, nil)
+			mockAccount.EXPECT().SubtractBalance(ctx, tt.responseBilling.AccountID, tt.responseBilling.CostTotal).Return(tt.responseAccount, nil)
 
 			if err := h.EventCMCallHangup(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -277,16 +277,16 @@ func Test_EventMMMessageCreated(t *testing.T) {
 
 			for i := range tt.message.Targets {
 				// BillingStart
-				mockAccount.EXPECT().GetByCustomerID(ctx, tt.message.CustomerID.Return(tt.responseAccount, nil)
-				mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUIDs[i])
-				mockDB.EXPECT().BillingCreate(ctx, tt.expectBillings[i].Return(nil)
-				mockDB.EXPECT().BillingGet(ctx, tt.responseUUIDs[i].Return(tt.expectBillings[i], nil)
+				mockAccount.EXPECT().GetByCustomerID(ctx, tt.message.CustomerID).Return(tt.responseAccount, nil)
+				mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDs[i])
+				mockDB.EXPECT().BillingCreate(ctx, tt.expectBillings[i]).Return(nil)
+				mockDB.EXPECT().BillingGet(ctx, tt.responseUUIDs[i]).Return(tt.expectBillings[i], nil)
 				mockNotify.EXPECT().PublishEvent(ctx, billing.EventTypeBillingCreated, tt.expectBillings[i])
 
 				// BillingEnd
-				mockDB.EXPECT().BillingSetStatusEnd(ctx, tt.expectBillings[i].ID, float32(1), tt.expectBillings[i].TMBillingStart.Return(nil)
-				mockDB.EXPECT().BillingGet(ctx, tt.expectBillings[i].ID.Return(tt.expectBillings[i], nil)
-				mockAccount.EXPECT().SubtractBalance(ctx, tt.expectBillings[i].AccountID, tt.expectBillings[i].CostTotal.Return(tt.responseAccount, nil)
+				mockDB.EXPECT().BillingSetStatusEnd(ctx, tt.expectBillings[i].ID, float32(1), tt.expectBillings[i].TMBillingStart).Return(nil)
+				mockDB.EXPECT().BillingGet(ctx, tt.expectBillings[i].ID).Return(tt.expectBillings[i], nil)
+				mockAccount.EXPECT().SubtractBalance(ctx, tt.expectBillings[i].AccountID, tt.expectBillings[i].CostTotal).Return(tt.responseAccount, nil)
 			}
 
 			if err := h.EventMMMessageCreated(ctx, tt.message); err != nil {
@@ -362,16 +362,16 @@ func Test_EventNMNumberCreated(t *testing.T) {
 			ctx := context.Background()
 
 			// BillingStart
-			mockAccount.EXPECT().GetByCustomerID(ctx, tt.number.CustomerID.Return(tt.responseAccount, nil)
-			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
-			mockDB.EXPECT().BillingCreate(ctx, tt.expectBilling.Return(nil)
-			mockDB.EXPECT().BillingGet(ctx, tt.responseUUID.Return(tt.expectBilling, nil)
+			mockAccount.EXPECT().GetByCustomerID(ctx, tt.number.CustomerID).Return(tt.responseAccount, nil)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockDB.EXPECT().BillingCreate(ctx, tt.expectBilling).Return(nil)
+			mockDB.EXPECT().BillingGet(ctx, tt.responseUUID).Return(tt.expectBilling, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, billing.EventTypeBillingCreated, tt.expectBilling)
 
 			// BillingEnd
-			mockDB.EXPECT().BillingSetStatusEnd(ctx, tt.expectBilling.ID, float32(1), tt.expectBilling.TMBillingStart.Return(nil)
-			mockDB.EXPECT().BillingGet(ctx, tt.expectBilling.ID.Return(tt.expectBilling, nil)
-			mockAccount.EXPECT().SubtractBalance(ctx, tt.expectBilling.AccountID, tt.expectBilling.CostTotal.Return(tt.responseAccount, nil)
+			mockDB.EXPECT().BillingSetStatusEnd(ctx, tt.expectBilling.ID, float32(1), tt.expectBilling.TMBillingStart).Return(nil)
+			mockDB.EXPECT().BillingGet(ctx, tt.expectBilling.ID).Return(tt.expectBilling, nil)
+			mockAccount.EXPECT().SubtractBalance(ctx, tt.expectBilling.AccountID, tt.expectBilling.CostTotal).Return(tt.responseAccount, nil)
 
 			if err := h.EventNMNumberCreated(ctx, tt.number); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -447,16 +447,16 @@ func Test_EventNMNumberRenewed(t *testing.T) {
 			ctx := context.Background()
 
 			// BillingStart
-			mockAccount.EXPECT().GetByCustomerID(ctx, tt.number.CustomerID.Return(tt.responseAccount, nil)
-			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
-			mockDB.EXPECT().BillingCreate(ctx, tt.expectBilling.Return(nil)
-			mockDB.EXPECT().BillingGet(ctx, tt.responseUUID.Return(tt.expectBilling, nil)
+			mockAccount.EXPECT().GetByCustomerID(ctx, tt.number.CustomerID).Return(tt.responseAccount, nil)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockDB.EXPECT().BillingCreate(ctx, tt.expectBilling).Return(nil)
+			mockDB.EXPECT().BillingGet(ctx, tt.responseUUID).Return(tt.expectBilling, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, billing.EventTypeBillingCreated, tt.expectBilling)
 
 			// BillingEnd
-			mockDB.EXPECT().BillingSetStatusEnd(ctx, tt.expectBilling.ID, float32(1), tt.expectBilling.TMBillingStart.Return(nil)
-			mockDB.EXPECT().BillingGet(ctx, tt.expectBilling.ID.Return(tt.expectBilling, nil)
-			mockAccount.EXPECT().SubtractBalance(ctx, tt.expectBilling.AccountID, tt.expectBilling.CostTotal.Return(tt.responseAccount, nil)
+			mockDB.EXPECT().BillingSetStatusEnd(ctx, tt.expectBilling.ID, float32(1), tt.expectBilling.TMBillingStart).Return(nil)
+			mockDB.EXPECT().BillingGet(ctx, tt.expectBilling.ID).Return(tt.expectBilling, nil)
+			mockAccount.EXPECT().SubtractBalance(ctx, tt.expectBilling.AccountID, tt.expectBilling.CostTotal).Return(tt.responseAccount, nil)
 
 			if err := h.EventNMNumberRenewed(ctx, tt.number); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

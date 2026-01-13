@@ -75,7 +75,7 @@ func Test_extensionsGET(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().ServiceAgentExtensionGets(req.Context(), &tt.agent.Return(tt.responseExtensions, nil)
+			mockSvc.EXPECT().ServiceAgentExtensionGets(req.Context(), &tt.agent).Return(tt.responseExtensions, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -141,7 +141,7 @@ func Test_extensionsIDGET(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().ServiceAgentExtensionGet(req.Context(), &tt.agent, tt.expectedExtensionID.Return(tt.responseExtension, nil)
+			mockSvc.EXPECT().ServiceAgentExtensionGet(req.Context(), &tt.agent, tt.expectedExtensionID).Return(tt.responseExtension, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

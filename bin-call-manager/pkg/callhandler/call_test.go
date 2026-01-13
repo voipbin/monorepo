@@ -67,11 +67,11 @@ func Test_Delete(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CallGet(ctx, tt.id.Return(tt.responseCall, nil)
+			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
 
 			// dbDelete
-			mockDB.EXPECT().CallDelete(ctx, tt.id.Return(nil)
-			mockDB.EXPECT().CallGet(ctx, tt.id.Return(tt.responseCall, nil)
+			mockDB.EXPECT().CallDelete(ctx, tt.id).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallDeleted, tt.responseCall)
 
 			res, err := h.Delete(ctx, tt.id)

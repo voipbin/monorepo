@@ -64,8 +64,8 @@ func Test_IsValidBalance(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().CustomerGet(ctx, tt.customerID.Return(tt.responseCustomer, nil)
-			mockReq.EXPECT().BillingV1AccountIsValidBalance(ctx, tt.responseCustomer.BillingAccountID, tt.billingType, tt.country, tt.count.Return(tt.responseValid, nil)
+			mockDB.EXPECT().CustomerGet(ctx, tt.customerID).Return(tt.responseCustomer, nil)
+			mockReq.EXPECT().BillingV1AccountIsValidBalance(ctx, tt.responseCustomer.BillingAccountID, tt.billingType, tt.country, tt.count).Return(tt.responseValid, nil)
 
 			res, err := h.IsValidBalance(ctx, tt.customerID, tt.billingType, tt.country, tt.count)
 			if err != nil {

@@ -121,8 +121,8 @@ func Test_EventHandlerRecordingStarted(t *testing.T) {
 
 			ctx := context.Background()
 			if strings.HasSuffix(tt.event.Recording.Name, "_in") {
-				mockRecording.EXPECT().GetByRecordingName(ctx, tt.expectRecordingName.Return(tt.responseRecording, nil)
-				mockRecording.EXPECT().Started(ctx, tt.responseRecording.ID.Return(tt.responseRecording, nil)
+				mockRecording.EXPECT().GetByRecordingName(ctx, tt.expectRecordingName).Return(tt.responseRecording, nil)
+				mockRecording.EXPECT().Started(ctx, tt.responseRecording.ID).Return(tt.responseRecording, nil)
 			}
 
 			if err := h.EventHandlerRecordingStarted(ctx, tt.event); err != nil {
@@ -208,8 +208,8 @@ func Test_EventHandlerRecordingFinished_call(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockRecording.EXPECT().GetByRecordingName(ctx, tt.expectRecordingName.Return(tt.responseRecording, nil)
-			mockRecording.EXPECT().Stopped(ctx, tt.responseRecording.ID.Return(tt.responseRecording, nil)
+			mockRecording.EXPECT().GetByRecordingName(ctx, tt.expectRecordingName).Return(tt.responseRecording, nil)
+			mockRecording.EXPECT().Stopped(ctx, tt.responseRecording.ID).Return(tt.responseRecording, nil)
 
 			if err := h.EventHandlerRecordingFinished(ctx, tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -68,14 +68,14 @@ func Test_EventCallHangup(t *testing.T) {
 			ctx := context.Background()
 
 			// stop()
-			mockDB.EXPECT().ActiveflowGet(ctx, tt.call.ActiveflowID.Return(tt.responseActiveflow, nil)
+			mockDB.EXPECT().ActiveflowGet(ctx, tt.call.ActiveflowID).Return(tt.responseActiveflow, nil)
 			switch tt.responseActiveflow.ReferenceType {
 			case activeflow.ReferenceTypeCall:
-				mockReq.EXPECT().CallV1CallHangup(ctx, tt.responseActiveflow.ReferenceID.Return(&cmcall.Call{}, nil)
+				mockReq.EXPECT().CallV1CallHangup(ctx, tt.responseActiveflow.ReferenceID).Return(&cmcall.Call{}, nil)
 			}
 
-			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.responseActiveflow.ID, tt.expectUpdateFields.Return(nil)
-			mockDB.EXPECT().ActiveflowGet(ctx, tt.responseActiveflow.ID.Return(tt.responseActiveflow, nil)
+			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.responseActiveflow.ID, tt.expectUpdateFields).Return(nil)
+			mockDB.EXPECT().ActiveflowGet(ctx, tt.responseActiveflow.ID).Return(tt.responseActiveflow, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseActiveflow.CustomerID, activeflow.EventTypeActiveflowUpdated, tt.responseActiveflow)
 
 			if err := h.EventCallHangup(ctx, tt.call); err != nil {
@@ -143,15 +143,15 @@ func Test_EventCustomerDeleted(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(utilhandler.TimeGetCurTime())
-			mockDB.EXPECT().ActiveflowGets(ctx, gomock.Any(), uint64(1000), tt.expectFilters.Return(tt.responseActiveflows, nil)
+			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+			mockDB.EXPECT().ActiveflowGets(ctx, gomock.Any(), uint64(1000), tt.expectFilters).Return(tt.responseActiveflows, nil)
 
 			// delete
 			for _, af := range tt.responseActiveflows {
-				mockDB.EXPECT().ActiveflowGet(ctx, af.ID.Return(af, nil)
+				mockDB.EXPECT().ActiveflowGet(ctx, af.ID).Return(af, nil)
 
-				mockDB.EXPECT().ActiveflowDelete(ctx, af.ID.Return(nil)
-				mockDB.EXPECT().ActiveflowGet(ctx, af.ID.Return(af, nil)
+				mockDB.EXPECT().ActiveflowDelete(ctx, af.ID).Return(nil)
+				mockDB.EXPECT().ActiveflowGet(ctx, af.ID).Return(af, nil)
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, af.CustomerID, activeflow.EventTypeActiveflowDeleted, af)
 			}
 

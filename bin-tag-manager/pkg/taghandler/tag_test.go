@@ -63,7 +63,7 @@ func Test_Gets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().TagGets(ctx, tt.size, tt.token, tt.filters.Return(tt.responseTags, nil)
+			mockDB.EXPECT().TagGets(ctx, tt.size, tt.token, tt.filters).Return(tt.responseTags, nil)
 			res, err := h.Gets(ctx, tt.size, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -113,7 +113,7 @@ func Test_Get(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().TagGet(ctx, tt.id.Return(tt.responseTag, nil)
+			mockDB.EXPECT().TagGet(ctx, tt.id).Return(tt.responseTag, nil)
 			res, err := h.Get(ctx, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -167,8 +167,8 @@ func Test_UpdateBasicInfo(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().TagSetBasicInfo(ctx, tt.id, tt.tagName, tt.detail.Return(nil)
-			mockDB.EXPECT().TagGet(ctx, tt.id.Return(tt.responseTag, nil)
+			mockDB.EXPECT().TagSetBasicInfo(ctx, tt.id, tt.tagName, tt.detail).Return(nil)
+			mockDB.EXPECT().TagGet(ctx, tt.id).Return(tt.responseTag, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, tag.EventTypeTagUpdated, tt.responseTag)
 			res, err := h.UpdateBasicInfo(ctx, tt.id, tt.tagName, tt.detail)
 			if err != nil {
@@ -225,7 +225,7 @@ func Test_Create(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDB.EXPECT().TagCreate(ctx, &tag.Tag{
 				Identity: commonidentity.Identity{
 					ID:         tt.responseUUID,
@@ -233,8 +233,8 @@ func Test_Create(t *testing.T) {
 				},
 				Name:   tt.tagName,
 				Detail: tt.detail,
-			}.Return(nil)
-			mockDB.EXPECT().TagGet(ctx, tt.responseUUID.Return(tt.responseTag, nil)
+			}).Return(nil)
+			mockDB.EXPECT().TagGet(ctx, tt.responseUUID).Return(tt.responseTag, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, tag.EventTypeTagCreated, tt.responseTag)
 
 			res, err := h.Create(ctx, tt.customerID, tt.tagName, tt.detail)
@@ -296,8 +296,8 @@ func Test_Delete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().TagDelete(ctx, tt.id.Return(nil)
-			mockDB.EXPECT().TagGet(ctx, tt.id.Return(tt.responseTag, nil)
+			mockDB.EXPECT().TagDelete(ctx, tt.id).Return(nil)
+			mockDB.EXPECT().TagGet(ctx, tt.id).Return(tt.responseTag, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, tag.EventTypeTagDeleted, tt.responseTag)
 
 			res, err := h.Delete(ctx, tt.id)

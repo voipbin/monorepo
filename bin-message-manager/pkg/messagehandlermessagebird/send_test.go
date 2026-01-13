@@ -128,7 +128,7 @@ func Test_marshal(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockExternalReq.EXPECT().MessagebirdSendMessage(ctx, tt.expectSender, tt.expectReceivers, tt.text.Return(tt.responseSend, nil)
+			mockExternalReq.EXPECT().MessagebirdSendMessage(ctx, tt.expectSender, tt.expectReceivers, tt.text).Return(tt.responseSend, nil)
 
 			res, err := h.SendMessage(ctx, tt.id, tt.sender, tt.targets, tt.text)
 			if err != nil {

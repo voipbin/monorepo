@@ -116,16 +116,16 @@ func Test_Create(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockAction.EXPECT().GenerateFlowActions(ctx, tt.actions.Return(tt.actions, nil)
-			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
+			mockAction.EXPECT().GenerateFlowActions(ctx, tt.actions).Return(tt.actions, nil)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(utilhandler.TimeGetCurTime())
+			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
 			if tt.persist == true {
-				mockDB.EXPECT().FlowCreate(ctx, gomock.Any().Return(nil)
-				mockDB.EXPECT().FlowGet(ctx, gomock.Any().Return(tt.responseFlow, nil)
+				mockDB.EXPECT().FlowCreate(ctx, gomock.Any()).Return(nil)
+				mockDB.EXPECT().FlowGet(ctx, gomock.Any()).Return(tt.responseFlow, nil)
 			} else {
-				mockDB.EXPECT().FlowSetToCache(ctx, gomock.Any().Return(nil)
-				mockDB.EXPECT().FlowGet(ctx, gomock.Any().Return(tt.responseFlow, nil)
+				mockDB.EXPECT().FlowSetToCache(ctx, gomock.Any()).Return(nil)
+				mockDB.EXPECT().FlowGet(ctx, gomock.Any()).Return(tt.responseFlow, nil)
 			}
 			mockNotify.EXPECT().PublishEvent(ctx, flow.EventTypeFlowCreated, tt.responseFlow)
 
@@ -168,7 +168,7 @@ func Test_FlowGet(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockDB.EXPECT().FlowGet(ctx, tt.flow.ID.Return(tt.flow, nil)
+			mockDB.EXPECT().FlowGet(ctx, tt.flow.ID).Return(tt.flow, nil)
 
 			_, err := h.Get(ctx, tt.flow.ID)
 			if err != nil {
@@ -213,8 +213,8 @@ func Test_Delete(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockDB.EXPECT().FlowDelete(ctx, tt.flowID.Return(nil)
-			mockDB.EXPECT().FlowGet(ctx, tt.flowID.Return(tt.responseRes, nil)
+			mockDB.EXPECT().FlowDelete(ctx, tt.flowID).Return(nil)
+			mockDB.EXPECT().FlowGet(ctx, tt.flowID).Return(tt.responseRes, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, flow.EventTypeFlowDeleted, tt.responseRes)
 
 			res, err := h.Delete(ctx, tt.flowID)
@@ -275,7 +275,7 @@ func Test_Gets(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockDB.EXPECT().FlowGets(ctx, tt.token, tt.limit, tt.filters.Return(tt.responseFlows, nil)
+			mockDB.EXPECT().FlowGets(ctx, tt.token, tt.limit, tt.filters).Return(tt.responseFlows, nil)
 
 			res, err := h.Gets(ctx, tt.token, tt.limit, tt.filters)
 			if err != nil {
@@ -372,11 +372,11 @@ func Test_Update(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().FlowUpdate(ctx, tt.id, tt.expectUpdateFiedls.Return(nil)
-			mockDB.EXPECT().FlowGet(ctx, tt.id.Return(tt.responseFlow, nil)
+			mockDB.EXPECT().FlowUpdate(ctx, tt.id, tt.expectUpdateFiedls).Return(nil)
+			mockDB.EXPECT().FlowGet(ctx, tt.id).Return(tt.responseFlow, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, flow.EventTypeFlowUpdated, tt.responseFlow)
 
-			mockAction.EXPECT().GenerateFlowActions(ctx, tt.actions.Return(tt.actions, nil)
+			mockAction.EXPECT().GenerateFlowActions(ctx, tt.actions).Return(tt.actions, nil)
 			res, err := h.Update(ctx, tt.id, tt.flowName, tt.detail, tt.actions, tt.onCompleteFlowID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -466,11 +466,11 @@ func Test_FlowUpdateActions(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().FlowUpdate(ctx, tt.id, tt.expectedUpdateFields.Return(nil)
-			mockDB.EXPECT().FlowGet(ctx, tt.id.Return(tt.responseFlow, nil)
+			mockDB.EXPECT().FlowUpdate(ctx, tt.id, tt.expectedUpdateFields).Return(nil)
+			mockDB.EXPECT().FlowGet(ctx, tt.id).Return(tt.responseFlow, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, flow.EventTypeFlowUpdated, tt.responseFlow)
 
-			mockAction.EXPECT().GenerateFlowActions(ctx, tt.actions.Return(tt.actions, nil)
+			mockAction.EXPECT().GenerateFlowActions(ctx, tt.actions).Return(tt.actions, nil)
 			res, err := h.UpdateActions(ctx, tt.id, tt.actions)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -82,8 +82,8 @@ func Test_RecordingfileGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1RecordingGet(ctx, tt.id.Return(tt.responseRecording, nil)
-			mockReq.EXPECT().StorageV1CompressfileCreate(ctx, tt.expectReferenceIDs, []uuid.UUID{}, 300000.Return(tt.responseComressfile, nil)
+			mockReq.EXPECT().CallV1RecordingGet(ctx, tt.id).Return(tt.responseRecording, nil)
+			mockReq.EXPECT().StorageV1CompressfileCreate(ctx, tt.expectReferenceIDs, []uuid.UUID{}, 300000).Return(tt.responseComressfile, nil)
 
 			res, err := h.RecordingfileGet(ctx, tt.agent, tt.id)
 			if err != nil {

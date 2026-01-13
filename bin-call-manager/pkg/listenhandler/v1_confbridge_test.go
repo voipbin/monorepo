@@ -98,7 +98,7 @@ func Test_processV1ConfbridgePost(t *testing.T) {
 				confbridgeHandler: mockConfbridge,
 			}
 
-			mockConfbridge.EXPECT().Create(gomock.Any(), tt.expectedCustomerID, tt.expectedActiveflowID, tt.expectedReferenceType, tt.expectedReferneceID, tt.expectedConfbridgeType.Return(tt.responseConfbridge, nil)
+			mockConfbridge.EXPECT().Create(gomock.Any(), tt.expectedCustomerID, tt.expectedActiveflowID, tt.expectedReferenceType, tt.expectedReferneceID, tt.expectedConfbridgeType).Return(tt.responseConfbridge, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -161,7 +161,7 @@ func Test_processV1ConfbridgesIDDelete(t *testing.T) {
 				confbridgeHandler: mockConfbridge,
 			}
 
-			mockConfbridge.EXPECT().Delete(gomock.Any(), tt.id.Return(tt.responseConfbridge, nil)
+			mockConfbridge.EXPECT().Delete(gomock.Any(), tt.id).Return(tt.responseConfbridge, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -218,7 +218,7 @@ func TestProcessV1ConfbridgesIDCallsIDDelete(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockConfbridge.EXPECT().Kick(gomock.All(), tt.confbridgeID, tt.callID.Return(nil)
+			mockConfbridge.EXPECT().Kick(gomock.All(), tt.confbridgeID, tt.callID).Return(nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -275,7 +275,7 @@ func TestProcessV1ConfbridgesIDCallsIDPost(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			mockConfbridge.EXPECT().Join(gomock.All(), tt.confbridgeID, tt.callID.Return(nil)
+			mockConfbridge.EXPECT().Join(gomock.All(), tt.confbridgeID, tt.callID).Return(nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -363,7 +363,7 @@ func Test_processV1ConfbridgesIDExternalMediaPost(t *testing.T) {
 				tt.expectTransport,
 				tt.expectConnectionType,
 				tt.expectFormat,
-			.Return(tt.responseConfbridge, nil)
+			).Return(tt.responseConfbridge, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -428,7 +428,7 @@ func Test_processV1ConfbridgesIDExternalMediaDelete(t *testing.T) {
 				confbridgeHandler: mockConfbridge,
 			}
 
-			mockConfbridge.EXPECT().ExternalMediaStop(gomock.Any(), tt.expectConfbridgeID.Return(tt.responseConfbridge, nil)
+			mockConfbridge.EXPECT().ExternalMediaStop(gomock.Any(), tt.expectConfbridgeID).Return(tt.responseConfbridge, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -506,7 +506,7 @@ func Test_processV1ConfbridgesIDRecordingStartPost(t *testing.T) {
 				confbridgeHandler: mockConfbridge,
 			}
 
-			mockConfbridge.EXPECT().RecordingStart(gomock.Any(), tt.expectID, tt.expectFormat, tt.expectEndOfSilence, tt.expectEndOfKey, tt.expectDuration, tt.expectOnEndFlowID.Return(tt.responseConfbridge, nil)
+			mockConfbridge.EXPECT().RecordingStart(gomock.Any(), tt.expectID, tt.expectFormat, tt.expectEndOfSilence, tt.expectEndOfKey, tt.expectDuration, tt.expectOnEndFlowID).Return(tt.responseConfbridge, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -569,7 +569,7 @@ func Test_processV1ConfbridgesIDRecordingStopPost(t *testing.T) {
 				sockHandler:       mockSock,
 				confbridgeHandler: mockConfbridge,
 			}
-			mockConfbridge.EXPECT().RecordingStop(gomock.Any(), tt.expectID.Return(tt.responseCall, nil)
+			mockConfbridge.EXPECT().RecordingStop(gomock.Any(), tt.expectID).Return(tt.responseCall, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -635,7 +635,7 @@ func Test_processV1ConfbridgesIDFlagsPost(t *testing.T) {
 				sockHandler:       mockSock,
 				confbridgeHandler: mockConfbridge,
 			}
-			mockConfbridge.EXPECT().FlagAdd(gomock.Any(), tt.expectID, tt.expectFlag.Return(tt.responseConfbridge, nil)
+			mockConfbridge.EXPECT().FlagAdd(gomock.Any(), tt.expectID, tt.expectFlag).Return(tt.responseConfbridge, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -701,7 +701,7 @@ func Test_processV1ConfbridgesIDFlagsDelete(t *testing.T) {
 				sockHandler:       mockSock,
 				confbridgeHandler: mockConfbridge,
 			}
-			mockConfbridge.EXPECT().FlagRemove(gomock.Any(), tt.expectID, tt.expectFlag.Return(tt.responseConfbridge, nil)
+			mockConfbridge.EXPECT().FlagRemove(gomock.Any(), tt.expectID, tt.expectFlag).Return(tt.responseConfbridge, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -763,7 +763,7 @@ func Test_processV1ConfbridgesIDTerminatePost(t *testing.T) {
 				sockHandler:       mockSock,
 				confbridgeHandler: mockConfbridge,
 			}
-			mockConfbridge.EXPECT().Terminating(gomock.Any(), tt.expectID.Return(tt.responseConfbridge, nil)
+			mockConfbridge.EXPECT().Terminating(gomock.Any(), tt.expectID).Return(tt.responseConfbridge, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -823,7 +823,7 @@ func Test_processV1ConfbridgesIDRingPost(t *testing.T) {
 				sockHandler:       mockSock,
 				confbridgeHandler: mockConfbridge,
 			}
-			mockConfbridge.EXPECT().Ring(gomock.Any(), tt.expectID.Return(nil)
+			mockConfbridge.EXPECT().Ring(gomock.Any(), tt.expectID).Return(nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -883,7 +883,7 @@ func Test_processV1ConfbridgesIDAnswerPost(t *testing.T) {
 				sockHandler:       mockSock,
 				confbridgeHandler: mockConfbridge,
 			}
-			mockConfbridge.EXPECT().Answer(gomock.Any(), tt.expectID.Return(nil)
+			mockConfbridge.EXPECT().Answer(gomock.Any(), tt.expectID).Return(nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

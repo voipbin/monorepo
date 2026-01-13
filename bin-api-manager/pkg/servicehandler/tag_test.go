@@ -68,7 +68,7 @@ func Test_TagCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().TagV1TagCreate(ctx, tt.agent.CustomerID, tt.tagName, tt.detail.Return(tt.response, nil)
+			mockReq.EXPECT().TagV1TagCreate(ctx, tt.agent.CustomerID, tt.tagName, tt.detail).Return(tt.response, nil)
 
 			res, err := h.TagCreate(ctx, tt.agent, tt.tagName, tt.detail)
 			if err != nil {
@@ -173,7 +173,7 @@ func Test_TagGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().TagV1TagGets(ctx, tt.agent.CustomerID, tt.token, tt.size.Return(tt.response, nil)
+			mockReq.EXPECT().TagV1TagGets(ctx, tt.agent.CustomerID, tt.token, tt.size).Return(tt.response, nil)
 
 			res, err := h.TagGets(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {
@@ -237,7 +237,7 @@ func Test_TagGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().TagV1TagGet(ctx, tt.tagID.Return(tt.response, nil)
+			mockReq.EXPECT().TagV1TagGet(ctx, tt.tagID).Return(tt.response, nil)
 
 			res, err := h.TagGet(ctx, tt.agent, tt.tagID)
 			if err != nil {
@@ -301,8 +301,8 @@ func Test_TagDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().TagV1TagGet(ctx, tt.tagID.Return(tt.resTagGet, nil)
-			mockReq.EXPECT().TagV1TagDelete(ctx, tt.tagID.Return(tt.resTagGet, nil)
+			mockReq.EXPECT().TagV1TagGet(ctx, tt.tagID).Return(tt.resTagGet, nil)
+			mockReq.EXPECT().TagV1TagDelete(ctx, tt.tagID).Return(tt.resTagGet, nil)
 
 			res, err := h.TagDelete(ctx, tt.agent, tt.tagID)
 			if err != nil {
@@ -370,8 +370,8 @@ func Test_TagUpdate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().TagV1TagGet(ctx, tt.tagID.Return(tt.resTagGet, nil)
-			mockReq.EXPECT().TagV1TagUpdate(ctx, tt.tagID, tt.tagName, tt.detail.Return(tt.resTagGet, nil)
+			mockReq.EXPECT().TagV1TagGet(ctx, tt.tagID).Return(tt.resTagGet, nil)
+			mockReq.EXPECT().TagV1TagUpdate(ctx, tt.tagID, tt.tagName, tt.detail).Return(tt.resTagGet, nil)
 
 			res, err := h.TagUpdate(ctx, tt.customer, tt.tagID, tt.tagName, tt.detail)
 			if err != nil {

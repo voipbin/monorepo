@@ -94,9 +94,9 @@ func Test_Create(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
-			mockDB.EXPECT().MessageCreate(ctx, tt.expectMessage.Return(nil)
-			mockDB.EXPECT().MessageGet(ctx, tt.responseUUID.Return(tt.responseMessage, nil)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockDB.EXPECT().MessageCreate(ctx, tt.expectMessage).Return(nil)
+			mockDB.EXPECT().MessageGet(ctx, tt.responseUUID).Return(tt.responseMessage, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseMessage.CustomerID, message.EventTypeMessageCreated, tt.responseMessage)
 			res, err := h.Create(ctx, uuid.Nil, tt.customerID, tt.conversationID, tt.direction, tt.status, tt.referenceType, tt.referenceID, tt.transactionID, tt.text, tt.medias)
 			if err != nil {
@@ -149,8 +149,8 @@ func Test_Delete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().MessageDelete(ctx, tt.id.Return(nil)
-			mockDB.EXPECT().MessageGet(ctx, tt.id.Return(tt.responseMessage, nil)
+			mockDB.EXPECT().MessageDelete(ctx, tt.id).Return(nil)
+			mockDB.EXPECT().MessageGet(ctx, tt.id).Return(tt.responseMessage, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseMessage.CustomerID, message.EventTypeMessageDeleted, tt.responseMessage)
 
 			res, err := h.Delete(ctx, tt.id)
@@ -210,7 +210,7 @@ func Test_Gets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().MessageGets(ctx, tt.pageToken, tt.pageSize, tt.filters.Return(tt.responseMessages, nil)
+			mockDB.EXPECT().MessageGets(ctx, tt.pageToken, tt.pageSize, tt.filters).Return(tt.responseMessages, nil)
 
 			res, err := h.Gets(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {

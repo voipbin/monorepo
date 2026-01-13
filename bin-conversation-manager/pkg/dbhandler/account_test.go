@@ -97,13 +97,13 @@ func Test_AccountCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().AccountSet(ctx, gomock.Any())
 			if err := h.AccountCreate(ctx, tt.account); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().AccountGet(ctx, tt.account.ID.Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().AccountGet(ctx, tt.account.ID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().AccountSet(ctx, gomock.Any())
 			res, err := h.AccountGet(ctx, tt.account.ID)
 			if err != nil {
@@ -180,19 +180,19 @@ func Test_AccountSet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().AccountSet(ctx, gomock.Any())
 			if err := h.AccountCreate(ctx, tt.account); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
-			mockCache.EXPECT().AccountSet(gomock.Any(), gomock.Any().Return(nil)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().AccountSet(gomock.Any(), gomock.Any()).Return(nil)
 			if err := h.AccountSet(ctx, tt.id, tt.accountName, tt.detail, tt.secret, tt.token); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().AccountGet(ctx, tt.account.ID.Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().AccountGet(ctx, tt.account.ID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().AccountSet(ctx, gomock.Any())
 			res, err := h.AccountGet(ctx, tt.id)
 			if err != nil {
@@ -238,7 +238,7 @@ func Test_AccountGet(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockCache.EXPECT().AccountGet(gomock.Any(), gomock.Any().Return(tt.responseAccount, nil)
+			mockCache.EXPECT().AccountGet(gomock.Any(), gomock.Any()).Return(tt.responseAccount, nil)
 
 			res, err := h.AccountGet(ctx, tt.accountID)
 			if err != nil {
@@ -329,7 +329,7 @@ func Test_AccountGets(t *testing.T) {
 			ctx := context.Background()
 
 			for _, c := range tt.accounts {
-				mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 				mockCache.EXPECT().AccountSet(gomock.Any(), gomock.Any())
 				if err := h.AccountCreate(ctx, c); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -402,14 +402,14 @@ func Test_AccountDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().AccountSet(ctx, gomock.Any())
 			if err := h.AccountCreate(ctx, tt.account); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime(.Return(tt.responseCurTime)
-			mockCache.EXPECT().AccountGet(ctx, tt.account.ID.Return(nil, fmt.Errorf(""))
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockCache.EXPECT().AccountGet(ctx, tt.account.ID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().AccountSet(ctx, gomock.Any())
 			if errDelete := h.AccountDelete(ctx, tt.account.ID); errDelete != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errDelete)

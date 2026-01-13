@@ -71,11 +71,11 @@ func Test_Delete(t *testing.T) {
 			ctx := context.Background()
 
 			// Terminating
-			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id.Return(tt.responseConfbridge, nil)
+			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id).Return(tt.responseConfbridge, nil)
 
 			// dbDelete
-			mockDB.EXPECT().ConfbridgeDelete(ctx, tt.id.Return(nil)
-			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id.Return(tt.responseConfbridge, nil)
+			mockDB.EXPECT().ConfbridgeDelete(ctx, tt.id).Return(nil)
+			mockDB.EXPECT().ConfbridgeGet(ctx, tt.id).Return(tt.responseConfbridge, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, confbridge.EventTypeConfbridgeDeleted, tt.responseConfbridge)
 
 			res, err := h.Delete(ctx, tt.id)

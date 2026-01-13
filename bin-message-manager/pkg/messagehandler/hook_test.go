@@ -33,7 +33,7 @@ func Test_Hook(t *testing.T) {
 		responseNumbers []nmnumber.Number
 		responseMessage *message.Message
 
-		expectFilters map[string]string
+		expectFilters map[nmnumber.Field]any
 	}{
 		{
 			name: "normal",
@@ -101,9 +101,9 @@ func Test_Hook(t *testing.T) {
 			},
 			responseMessage: &message.Message{},
 
-			expectFilters: map[string]string{
-				"number":  "+15734531118",
-				"deleted": "false",
+			expectFilters: map[nmnumber.Field]any{
+				nmnumber.FieldNumber:  "+15734531118",
+				nmnumber.FieldDeleted: false,
 			},
 		},
 	}
@@ -130,11 +130,11 @@ func Test_Hook(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().NumberV1NumberGets(ctx, "", uint64(1), tt.expectFilters.Return(tt.responseNumbers, nil)
+			mockReq.EXPECT().NumberV1NumberGets(ctx, "", uint64(1), tt.expectFilters).Return(tt.responseNumbers, nil)
 
-			mockUtil.EXPECT().UUIDCreate(.Return(tt.responseUUID)
-			mockDB.EXPECT().MessageCreate(ctx, gomock.Any().Return(nil)
-			mockDB.EXPECT().MessageGet(ctx, gomock.Any().Return(tt.responseMessage, nil)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockDB.EXPECT().MessageCreate(ctx, gomock.Any()).Return(nil)
+			mockDB.EXPECT().MessageGet(ctx, gomock.Any()).Return(tt.responseMessage, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), message.EventTypeMessageCreated, gomock.Any())
 
 			if errHook := h.Hook(ctx, tt.uri, tt.data); errHook != nil {

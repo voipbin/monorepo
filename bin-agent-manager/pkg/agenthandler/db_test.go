@@ -60,7 +60,7 @@ func Test_dbGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AgentGets(gomock.Any(), tt.size, tt.token, tt.filters.Return(tt.responseAgents, nil)
+			mockDB.EXPECT().AgentGets(gomock.Any(), tt.size, tt.token, tt.filters).Return(tt.responseAgents, nil)
 			_, err := h.dbGets(ctx, tt.size, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -109,8 +109,8 @@ func Test_dbLogin(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AgentGetByUsername(ctx, tt.username.Return(tt.responseAgents, nil)
-			mockUtil.EXPECT().HashCheckPassword(tt.password, tt.responseAgents.PasswordHash.Return(true)
+			mockDB.EXPECT().AgentGetByUsername(ctx, tt.username).Return(tt.responseAgents, nil)
+			mockUtil.EXPECT().HashCheckPassword(tt.password, tt.responseAgents.PasswordHash).Return(true)
 
 			res, err := h.dbLogin(ctx, tt.username, tt.password)
 			if err != nil {
@@ -168,8 +168,8 @@ func Test_dbUpdateInfo(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AgentSetBasicInfo(ctx, tt.id, tt.agentName, tt.detail, tt.ringMethod.Return(nil)
-			mockDB.EXPECT().AgentGet(ctx, tt.id.Return(tt.responseAgent, nil)
+			mockDB.EXPECT().AgentSetBasicInfo(ctx, tt.id, tt.agentName, tt.detail, tt.ringMethod).Return(nil)
+			mockDB.EXPECT().AgentGet(ctx, tt.id).Return(tt.responseAgent, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, agent.EventTypeAgentUpdated, tt.responseAgent)
 			res, err := h.dbUpdateInfo(ctx, tt.id, tt.agentName, tt.detail, tt.ringMethod)
 			if err != nil {
@@ -227,9 +227,9 @@ func Test_dbUpdatePassword(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().HashGenerate(tt.password, defaultPasswordHashCost.Return(tt.responseHash, nil)
-			mockDB.EXPECT().AgentSetPasswordHash(ctx, tt.id, tt.responseHash.Return(nil)
-			mockDB.EXPECT().AgentGet(ctx, tt.id.Return(tt.responseAgent, nil)
+			mockUtil.EXPECT().HashGenerate(tt.password, defaultPasswordHashCost).Return(tt.responseHash, nil)
+			mockDB.EXPECT().AgentSetPasswordHash(ctx, tt.id, tt.responseHash).Return(nil)
+			mockDB.EXPECT().AgentGet(ctx, tt.id).Return(tt.responseAgent, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, agent.EventTypeAgentUpdated, tt.responseAgent)
 
 			res, err := h.dbUpdatePassword(ctx, tt.id, tt.password)
@@ -284,8 +284,8 @@ func Test_dbUpdatePermission(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AgentSetPermission(ctx, tt.id, tt.permission.Return(nil)
-			mockDB.EXPECT().AgentGet(ctx, tt.id.Return(tt.responseAgent, nil)
+			mockDB.EXPECT().AgentSetPermission(ctx, tt.id, tt.permission).Return(nil)
+			mockDB.EXPECT().AgentGet(ctx, tt.id).Return(tt.responseAgent, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAgent.CustomerID, agent.EventTypeAgentUpdated, tt.responseAgent)
 
 			res, err := h.dbUpdatePermission(ctx, tt.id, tt.permission)
@@ -343,8 +343,8 @@ func Test_dbUpdateTagIDs(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AgentSetTagIDs(ctx, tt.id, tt.tagIDs.Return(nil)
-			mockDB.EXPECT().AgentGet(ctx, tt.id.Return(tt.responseAgent, nil)
+			mockDB.EXPECT().AgentSetTagIDs(ctx, tt.id, tt.tagIDs).Return(nil)
+			mockDB.EXPECT().AgentGet(ctx, tt.id).Return(tt.responseAgent, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, agent.EventTypeAgentUpdated, tt.responseAgent)
 
 			res, err := h.dbUpdateTagIDs(ctx, tt.id, tt.tagIDs)
@@ -406,8 +406,8 @@ func Test_dbUpdateAddresses(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AgentSetAddresses(ctx, tt.id, tt.addresses.Return(nil)
-			mockDB.EXPECT().AgentGet(ctx, tt.id.Return(tt.responseAgent, nil)
+			mockDB.EXPECT().AgentSetAddresses(ctx, tt.id, tt.addresses).Return(nil)
+			mockDB.EXPECT().AgentGet(ctx, tt.id).Return(tt.responseAgent, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, agent.EventTypeAgentUpdated, tt.responseAgent)
 
 			res, err := h.dbUpdateAddresses(ctx, tt.id, tt.addresses)
@@ -462,8 +462,8 @@ func Test_dbUpdateStatus(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AgentSetStatus(ctx, tt.id, tt.status.Return(nil)
-			mockDB.EXPECT().AgentGet(ctx, tt.id.Return(tt.responseAgent, nil)
+			mockDB.EXPECT().AgentSetStatus(ctx, tt.id, tt.status).Return(nil)
+			mockDB.EXPECT().AgentGet(ctx, tt.id).Return(tt.responseAgent, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAgent.CustomerID, agent.EventTypeAgentStatusUpdated, tt.responseAgent)
 
 			res, err := h.dbUpdateStatus(ctx, tt.id, tt.status)

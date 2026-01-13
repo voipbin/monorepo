@@ -59,7 +59,7 @@ func Test_v1OutdialtargetsIDGet(t *testing.T) {
 				outdialTargetHandler: mockOutdialTargetHandler,
 			}
 
-			mockOutdialTargetHandler.EXPECT().Get(gomock.Any(), tt.outdialtargetID.Return(tt.responseOutdialtarget, nil)
+			mockOutdialTargetHandler.EXPECT().Get(gomock.Any(), tt.outdialtargetID).Return(tt.responseOutdialtarget, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -114,7 +114,7 @@ func Test_v1OutdialtargetsIDDelete(t *testing.T) {
 				outdialTargetHandler: mockOutdialTargetHandler,
 			}
 
-			mockOutdialTargetHandler.EXPECT().Delete(gomock.Any(), tt.outdialtargetID.Return(&outdialtarget.OutdialTarget{}, nil)
+			mockOutdialTargetHandler.EXPECT().Delete(gomock.Any(), tt.outdialtargetID).Return(&outdialtarget.OutdialTarget{}, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -172,7 +172,7 @@ func Test_v1OutdialtargetsIDProgressingPost(t *testing.T) {
 				outdialTargetHandler: mockOutdialTargetHandler,
 			}
 
-			mockOutdialTargetHandler.EXPECT().UpdateProgressing(gomock.Any(), tt.outdialtargetID, tt.destinationIndex.Return(&outdialtarget.OutdialTarget{}, nil)
+			mockOutdialTargetHandler.EXPECT().UpdateProgressing(gomock.Any(), tt.outdialtargetID, tt.destinationIndex).Return(&outdialtarget.OutdialTarget{}, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -231,7 +231,7 @@ func Test_v1OutdialtargetsIDStatusPut(t *testing.T) {
 				outdialTargetHandler: mockOutdialTargetHandler,
 			}
 
-			mockOutdialTargetHandler.EXPECT().UpdateStatus(gomock.Any(), tt.outdialtargetID, tt.status.Return(&outdialtarget.OutdialTarget{}, nil)
+			mockOutdialTargetHandler.EXPECT().UpdateStatus(gomock.Any(), tt.outdialtargetID, tt.status).Return(&outdialtarget.OutdialTarget{}, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
