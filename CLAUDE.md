@@ -282,20 +282,29 @@ List each affected project with specific changes:
 - bin-conference-manager: Updated conference creation logic
 ```
 
-**Complete Example:**
+**Complete Example (Narrative Style):**
 ```
 VOIP-1190: Refactor database handlers to use commondatabasehandler pattern
 
-- bin-ai-manager: Add db tags and typed Field constants to models
-- bin-api-manager: Update filters to use typed field maps
-- bin-billing-manager: Migrate to commondatabasehandler utilities
-- bin-call-manager: Refactor dbhandler to use PrepareFields/ScanRow
-- bin-campaign-manager: Update CRUD operations with typed filters
-- bin-chat-manager: Add field.go files for all models
-- bin-conference-manager: Implement generic Update() method
-- bin-common-handler: Add PrepareFields and ScanRow utilities
-- bin-customer-manager: Migrate database operations to new pattern
-... (list all affected services)
+Successfully refactored 22 microservices to adopt standardized commondatabasehandler
+pattern from bin-common-handler, improving type safety and code consistency across
+the entire monorepo.
+
+- bin-common-handler: Provides PrepareFields(), ScanRow(), ApplyFields(), and
+  GetDBFields() utilities for standardized database operations
+- bin-ai-manager: Adds db tags to ai, aicall, message, and summary models with
+  typed Field constants for type-safe database operations
+- bin-ai-manager: Migrates all dbhandler operations to use PrepareFields() for
+  INSERT/UPDATE and ScanRow() for result scanning
+- bin-call-manager: Adds field.go files for call, confbridge, groupcall, and
+  recording models with typed Field constants
+- bin-call-manager: Refactors all database queries to use Squirrel SetMap()
+  with PrepareFields() instead of Columns().Values()
+- bin-conference-manager: Adds ConvertStringMapToFieldMap() helper functions
+  for filter conversion from external APIs
+... (continue for all affected services)
+
+Test results: All 28 services passing (477 files modified)
 ```
 
 **Merge Commit Format:**
@@ -312,7 +321,10 @@ Merge VOIP-[ticket-number]: Brief description
 2. **Be specific** - Describe what changed in each project, not just "updated"
 3. **Keep title concise** - Detailed changes go in the body
 4. **Use present tense** - "Add feature" not "Added feature"
-5. **Group related changes** - If multiple services have the same change, you can group them
+5. **Use dashes (`-`) for bullet points** - Never use asterisks (`*`)
+6. **Add narrative summary** - For large changes, include a summary paragraph before the bullet list
+7. **Multiple bullets per service** - Complex changes should have multiple detailed bullets
+8. **Include test results** - Add summary line at the end (e.g., "Test results: All 28 services passing")
 
 **Good examples:**
 ```
