@@ -258,6 +258,92 @@ go mod tidy && go mod vendor && go generate ./...
 
 **Never commit changes to public-facing models without verifying OpenAPI schemas are synchronized.**
 
+## Git Workflow: Commit Message Format
+
+**CRITICAL: This is a monorepo containing multiple projects. Commit messages MUST specify which projects were affected.**
+
+### Commit Message Structure
+
+**Title (first line):**
+```
+VOIP-[ticket-number]: Brief description of change
+```
+or
+```
+NOJIRA-Underscored_Description
+```
+
+**Body (subsequent lines):**
+List each affected project with specific changes:
+```
+- bin-common-handler: Fixed type handling in database mapper
+- bin-flow-manager: Updated flow execution to use new types
+- bin-call-manager: Refactored call handler to support new interface
+- bin-conference-manager: Updated conference creation logic
+```
+
+**Complete Example:**
+```
+VOIP-1190: Refactor database handlers to use commondatabasehandler pattern
+
+- bin-ai-manager: Add db tags and typed Field constants to models
+- bin-api-manager: Update filters to use typed field maps
+- bin-billing-manager: Migrate to commondatabasehandler utilities
+- bin-call-manager: Refactor dbhandler to use PrepareFields/ScanRow
+- bin-campaign-manager: Update CRUD operations with typed filters
+- bin-chat-manager: Add field.go files for all models
+- bin-conference-manager: Implement generic Update() method
+- bin-common-handler: Add PrepareFields and ScanRow utilities
+- bin-customer-manager: Migrate database operations to new pattern
+... (list all affected services)
+```
+
+**Merge Commit Format:**
+```
+Merge VOIP-[ticket-number]: Brief description
+
+- bin-service-1: What changed
+- bin-service-2: What changed
+```
+
+### Rules
+
+1. **Always list affected projects** - Even if it's just one project
+2. **Be specific** - Describe what changed in each project, not just "updated"
+3. **Keep title concise** - Detailed changes go in the body
+4. **Use present tense** - "Add feature" not "Added feature"
+5. **Group related changes** - If multiple services have the same change, you can group them
+
+**Good examples:**
+```
+VOIP-1234: Add JWT authentication support
+
+- bin-api-manager: Implement JWT middleware and token validation
+- bin-customer-manager: Add token generation endpoints
+- bin-common-handler: Add JWT utility functions
+```
+
+```
+NOJIRA-Fix_database_connection_leak
+
+- bin-call-manager: Close database connections in defer statements
+- bin-conference-manager: Add connection pool timeout handling
+```
+
+**Bad examples:**
+```
+Fixed bug  ❌ (No ticket number, no affected projects)
+```
+
+```
+VOIP-1234: Updated everything  ❌ (Not specific, no project list)
+```
+
+```
+VOIP-1234: Add feature
+- Updated files  ❌ (Not specific about which projects)
+```
+
 ## Git Workflow: Branch Management
 
 **CRITICAL: Before making ANY changes or commits, ALWAYS check the current branch first.**
