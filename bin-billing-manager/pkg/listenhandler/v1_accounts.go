@@ -19,47 +19,6 @@ import (
 	"monorepo/bin-billing-manager/pkg/listenhandler/models/response"
 )
 
-// urlFiltersToAccountFilters converts URL string filters to typed account.Field filters
-func (h *listenHandler) urlFiltersToAccountFilters(u *url.URL) map[account.Field]any {
-	filters := make(map[account.Field]any)
-
-	// parse all URL query parameters
-	for key, values := range u.Query() {
-		// skip pagination params
-		if key == PageSize || key == PageToken {
-			continue
-		}
-
-		if len(values) == 0 {
-			continue
-		}
-		value := values[0]
-
-		// map to typed fields
-		switch key {
-		case "customer_id":
-			if id := uuid.FromStringOrNil(value); id != uuid.Nil {
-				filters[account.FieldCustomerID] = id
-			}
-		case "deleted":
-			switch value {
-			case "false":
-				filters[account.FieldDeleted] = false
-			case "true":
-				filters[account.FieldDeleted] = true
-			}
-		case "type":
-			filters[account.FieldType] = value
-		case "payment_type":
-			filters[account.FieldPaymentType] = value
-		case "payment_method":
-			filters[account.FieldPaymentMethod] = value
-		}
-	}
-
-	return filters
-}
-
 // processV1AccountsGet handles GET /v1/accounts request
 func (h *listenHandler) processV1AccountsGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{

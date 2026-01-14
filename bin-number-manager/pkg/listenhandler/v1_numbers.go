@@ -224,24 +224,6 @@ func (h *listenHandler) processV1NumbersGet(ctx context.Context, m *sock.Request
 	return res, nil
 }
 
-// convertToTypedFilters converts string filters to typed filters
-func convertToTypedFilters(stringFilters map[string]string) map[number.Field]any {
-	filters := make(map[number.Field]any)
-
-	for k, v := range stringFilters {
-		switch k {
-		case "customer_id", "call_flow_id", "message_flow_id":
-			filters[number.Field(k)] = uuid.FromStringOrNil(v)
-		case "deleted":
-			filters[number.FieldDeleted] = v == "true"
-		default:
-			filters[number.Field(k)] = v
-		}
-	}
-
-	return filters
-}
-
 // processV1NumbersIDFlowIDsPut handles PUT /v1/numbers/<id>/flow_id request
 func (h *listenHandler) processV1NumbersIDFlowIDsPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
