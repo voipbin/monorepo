@@ -3,6 +3,7 @@ package databasehandler
 import (
 	"fmt"
 	"reflect"
+	"strings"
 	"sync"
 
 	"github.com/gofrs/uuid"
@@ -48,7 +49,13 @@ func ConvertMapToTypedMap(src map[string]any, modelStruct any) (map[string]any, 
 			field := structType.Field(i)
 			dbTag := field.Tag.Get("db")
 			if dbTag != "" && dbTag != "-" {
-				fieldTypeMap[dbTag] = field.Type
+				// Extract field name from db tag (before comma if present)
+				// Example: "customer_id,uuid" -> "customer_id"
+				fieldName := dbTag
+				if commaIdx := strings.IndexByte(dbTag, ','); commaIdx != -1 {
+					fieldName = dbTag[:commaIdx]
+				}
+				fieldTypeMap[fieldName] = field.Type
 			}
 		}
 		fieldTypeCache.Store(structType, fieldTypeMap)

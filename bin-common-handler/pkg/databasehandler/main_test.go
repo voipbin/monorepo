@@ -109,3 +109,103 @@ func Test_ApplyFields(t *testing.T) {
 		})
 	}
 }
+
+func Test_ConvertMapToTypedMap_CommaInDBTag(t *testing.T) {
+	// This test verifies the fix for db tags with comma-separated values
+	// Example: `db:"customer_id,uuid"` should be parsed as field name "customer_id"
+	type TestStruct struct {
+		ID         uuid.UUID `db:"id,uuid"`
+		CustomerID uuid.UUID `db:"customer_id,uuid"`
+		Name       string    `db:"name"`
+		Active     bool      `db:"active"`
+	}
+
+	customerUUID := uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b")
+
+	tests := []struct {
+		name    string
+		input   map[string]any
+		want    map[string]any
+		wantErr bool
+	}{
+		{
+			name: "customer_id with UUID string should be converted to uuid.UUID",
+			input: map[string]any{
+				"customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+				"deleted":     false,
+			},
+			want: map[string]any{
+				"customer_id": customerUUID,
+				"deleted":     false,
+			},
+			wantErr: false,
+		},
+		{
+			name: "id with UUID string should be converted to uuid.UUID",
+			input: map[string]any{
+				"id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+			},
+			want: map[string]any{
+				"id": customerUUID,
+			},
+			wantErr: false,
+		},
+		{
+			name: "multiple UUID fields with comma-separated db tags",
+			input: map[string]any{
+				"id":          "5e4a0680-804e-11ec-8477-2fea5968d85b",
+				"customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+				"name":        "Test Name",
+			},
+			want: map[string]any{
+				"id":          customerUUID,
+				"customer_id": customerUUID,
+				"name":        "Test Name",
+			},
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ConvertMapToTypedMap(tt.input, TestStruct{})
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ConvertMapToTypedMap() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if err != nil {
+				return
+			}
+
+			// Compare each field
+			for key, wantVal := range tt.want {
+				gotVal, exists := got[key]
+				if !exists {
+					t.Errorf("expected key %q not found in result", key)
+					continue
+				}
+
+				// Special handling for UUID comparison
+				if wantUUID, ok := wantVal.(uuid.UUID); ok {
+					gotUUID, ok := gotVal.(uuid.UUID)
+					if !ok {
+						t.Errorf("key %q: expected uuid.UUID, got %T", key, gotVal)
+						continue
+					}
+					if gotUUID != wantUUID {
+						t.Errorf("key %q: got UUID %v, want %v", key, gotUUID, wantUUID)
+					}
+				} else if gotVal != wantVal {
+					t.Errorf("key %q: got %v, want %v", key, gotVal, wantVal)
+				}
+			}
+
+			// Check for unexpected keys
+			for key := range got {
+				if _, expected := tt.want[key]; !expected {
+					t.Errorf("unexpected key %q in result with value %v", key, got[key])
+				}
+			}
+		})
+	}
+}
