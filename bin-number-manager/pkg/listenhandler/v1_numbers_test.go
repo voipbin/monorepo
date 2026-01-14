@@ -7,7 +7,6 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
-	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -245,7 +244,6 @@ func Test_processV1NumbersGet(t *testing.T) {
 		pageSize  uint64
 		pageToken string
 
-		responseFilters map[string]string
 		responseNumbers []*number.Number
 
 		expectTypedFilters map[number.Field]any
@@ -261,10 +259,6 @@ func Test_processV1NumbersGet(t *testing.T) {
 			10,
 			"2021-03-01 03:30:17.000000",
 
-			map[string]string{
-				"customer_id": "bfc9a3de-eca8-11ee-967c-87c3c0ddb3d2",
-				"deleted":     "false",
-			},
 			[]*number.Number{
 				{
 					Identity: commonidentity.Identity{
@@ -284,12 +278,13 @@ func Test_processV1NumbersGet(t *testing.T) {
 
 			map[number.Field]any{
 				number.FieldCustomerID: uuid.FromStringOrNil("bfc9a3de-eca8-11ee-967c-87c3c0ddb3d2"),
-				number.FieldDeleted:    true, // "false" -> true (negated)
+				number.FieldDeleted:    false,
 			},
 
 			&sock.Request{
-				URI:    "/v1/numbers?page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000&filter_customer_id=bfc9a3de-eca8-11ee-967c-87c3c0ddb3d2&filter_deleted=false",
+				URI:    "/v1/numbers?page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000",
 				Method: sock.RequestMethodGet,
+				Data:   []byte(`{"customer_id":"bfc9a3de-eca8-11ee-967c-87c3c0ddb3d2","deleted":false}`),
 			},
 			&sock.Response{
 				StatusCode: 200,
@@ -303,10 +298,6 @@ func Test_processV1NumbersGet(t *testing.T) {
 			10,
 			"2021-03-01 03:30:17.000000",
 
-			map[string]string{
-				"customer_id": "dcff90a8-eca8-11ee-8816-0fa58b162524",
-				"deleted":     "false",
-			},
 			[]*number.Number{
 				{
 					Identity: commonidentity.Identity{
@@ -340,12 +331,13 @@ func Test_processV1NumbersGet(t *testing.T) {
 
 			map[number.Field]any{
 				number.FieldCustomerID: uuid.FromStringOrNil("dcff90a8-eca8-11ee-8816-0fa58b162524"),
-				number.FieldDeleted:    true, // "false" -> true (negated)
+				number.FieldDeleted:    false,
 			},
 
 			&sock.Request{
-				URI:    "/v1/numbers?page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000&filter_customer_id=dcff90a8-eca8-11ee-8816-0fa58b162524&filter_deleted=false",
+				URI:    "/v1/numbers?page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000",
 				Method: sock.RequestMethodGet,
+				Data:   []byte(`{"customer_id":"dcff90a8-eca8-11ee-8816-0fa58b162524","deleted":false}`),
 			},
 			&sock.Response{
 				StatusCode: 200,
@@ -360,17 +352,14 @@ func Test_processV1NumbersGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockNumber := numberhandler.NewMockNumberHandler(mc)
 
 			h := &listenHandler{
-				utilHandler:   mockUtil,
 				sockHandler:   mockSock,
 				numberHandler: mockNumber,
 			}
 
-			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
 			mockNumber.EXPECT().Gets(gomock.Any(), tt.pageSize, tt.pageToken, gomock.Any()).Return(tt.responseNumbers, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
