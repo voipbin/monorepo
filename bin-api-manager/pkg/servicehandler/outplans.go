@@ -123,7 +123,10 @@ func (h *serviceHandler) OutplanGetsByCustomerID(ctx context.Context, a *amagent
 	}
 
 	// get outplans
-	outplans, err := h.reqHandler.CampaignV1OutplanGetsByCustomerID(ctx, a.CustomerID, token, size)
+	filters := map[caoutplan.Field]any{
+		caoutplan.FieldCustomerID: a.CustomerID,
+	}
+	outplans, err := h.reqHandler.CampaignV1OutplanGets(ctx, token, size, filters)
 	if err != nil {
 		log.Errorf("Could not get outplans info from the campaign-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find outplans info. err: %v", err)

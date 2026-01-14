@@ -28,7 +28,11 @@ func (h *serviceHandler) AvailableNumberGets(ctx context.Context, a *amagent.Age
 	}
 
 	// get available numbers
-	tmps, err := h.reqHandler.NumberV1AvailableNumberGets(ctx, a.CustomerID, size, countryCode)
+	filters := map[string]any{
+		"customer_id":  a.CustomerID,
+		"country_code": countryCode,
+	}
+	tmps, err := h.reqHandler.NumberV1AvailableNumberGets(ctx, size, filters)
 	if err != nil {
 		log.Infof("Could not get available numbers info. err: %v", err)
 		return nil, err

@@ -319,8 +319,7 @@ func Test_OutdialV1OutdialtargetGetsByOutdialID(t *testing.T) {
 			ctx := context.Background()
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
-
-			res, err := reqHandler.OutdialV1OutdialtargetGetsByOutdialID(ctx, tt.outdialID, tt.pageToken, tt.pageSize)
+		res, err := reqHandler.OutdialV1OutdialtargetGetsByOutdialID(ctx, tt.outdialID, tt.pageToken, tt.pageSize)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

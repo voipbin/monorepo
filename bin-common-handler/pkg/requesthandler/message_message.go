@@ -10,6 +10,7 @@ import (
 	mmrequest "monorepo/bin-message-manager/pkg/listenhandler/models/request"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 
 	"monorepo/bin-common-handler/models/address"
 	"monorepo/bin-common-handler/models/sock"
@@ -46,11 +47,16 @@ func (r *requestHandler) MessageV1MessageSend(ctx context.Context, id uuid.UUID,
 	return &res, nil
 }
 
-// MessageV1MessageGet gets the messages
-func (r *requestHandler) MessageV1MessageGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]mmmessage.Message, error) {
-	uri := fmt.Sprintf("/v1/messages?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
+// MessageV1MessageGets gets the messages
+func (r *requestHandler) MessageV1MessageGets(ctx context.Context, pageToken string, pageSize uint64, filters map[mmmessage.Field]any) ([]mmmessage.Message, error) {
+	uri := fmt.Sprintf("/v1/messages?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
-	tmp, err := r.sendRequestMessage(ctx, uri, sock.RequestMethodGet, "message/messages", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	m, err := json.Marshal(filters)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not marshal filters")
+	}
+
+	tmp, err := r.sendRequestMessage(ctx, uri, sock.RequestMethodGet, "message/messages", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}

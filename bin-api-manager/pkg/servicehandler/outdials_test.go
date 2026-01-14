@@ -158,7 +158,7 @@ func Test_OutdialGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().OutdialV1OutdialGetsByCustomerID(ctx, tt.agent.CustomerID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
+			mockReq.EXPECT().OutdialV1OutdialGets(ctx, tt.pageToken, tt.pageSize, gomock.Any()).Return(tt.response, nil)
 			res, err := h.OutdialGetsByCustomerID(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

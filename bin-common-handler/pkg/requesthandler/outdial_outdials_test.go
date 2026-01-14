@@ -79,7 +79,7 @@ func Test_OutdialV1OutdialCreate(t *testing.T) {
 	}
 }
 
-func Test_OutdialV1OutdialGetsByCustomerID(t *testing.T) {
+func Test_OutdialV1OutdialGets(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -103,9 +103,10 @@ func Test_OutdialV1OutdialGetsByCustomerID(t *testing.T) {
 
 			"bin-manager.outdial-manager.request",
 			&sock.Request{
-				URI:      fmt.Sprintf("/v1/outdials?page_token=%s&page_size=10&customer_id=74b94c72-b650-11ec-a5cf-ff01639e276f", url.QueryEscape("2021-03-02 03:23:20.995000")),
+				URI:      fmt.Sprintf("/v1/outdials?page_token=%s&page_size=10", url.QueryEscape("2021-03-02 03:23:20.995000")),
 				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
+			Data:     []byte(`{"customer_id":"74b94c72-b650-11ec-a5cf-ff01639e276f"}`),
 			},
 			&sock.Response{
 				StatusCode: 200,
@@ -136,7 +137,10 @@ func Test_OutdialV1OutdialGetsByCustomerID(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.OutdialV1OutdialGetsByCustomerID(ctx, tt.customerID, tt.pageToken, tt.pageSize)
+			filters := map[omoutdial.Field]any{
+				omoutdial.FieldCustomerID: tt.customerID,
+			}
+			res, err := reqHandler.OutdialV1OutdialGets(ctx, tt.pageToken, tt.pageSize, filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

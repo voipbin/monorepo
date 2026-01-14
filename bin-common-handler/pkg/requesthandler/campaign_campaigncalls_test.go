@@ -47,9 +47,10 @@ func Test_CampaignV1CampaigncallGets(t *testing.T) {
 
 			"bin-manager.campaign-manager.request",
 			&sock.Request{
-				URI:      fmt.Sprintf("/v1/campaigncalls?page_token=%s&page_size=10&customer_id=61e0b6f6-6e2a-11ee-8da5-ef7ab5511ed0", url.QueryEscape("2020-09-20 03:23:20.995000")),
+				URI:      fmt.Sprintf("/v1/campaigncalls?page_token=%s&page_size=10", url.QueryEscape("2020-09-20 03:23:20.995000")),
 				Method:   sock.RequestMethodGet,
-				DataType: ContentTypeNone,
+				DataType: ContentTypeJSON,
+			Data:     []byte(`{"customer_id":"61e0b6f6-6e2a-11ee-8da5-ef7ab5511ed0"}`),
 			},
 			[]cacampaigncall.Campaigncall{
 				{
@@ -74,7 +75,10 @@ func Test_CampaignV1CampaigncallGets(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CampaignV1CampaigncallGets(ctx, tt.customerID, tt.pageToken, tt.pageSize)
+			filters := map[cacampaigncall.Field]any{
+			cacampaigncall.FieldCustomerID: tt.customerID,
+		}
+		res, err := reqHandler.CampaignV1CampaigncallGets(ctx, tt.pageToken, tt.pageSize, filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -116,9 +120,10 @@ func Test_CampaignV1CampaigncallGetsByCampaignID(t *testing.T) {
 
 			"bin-manager.campaign-manager.request",
 			&sock.Request{
-				URI:      fmt.Sprintf("/v1/campaigncalls?page_token=%s&page_size=10&campaign_id=b2b0be5a-c859-11ec-acc0-c75b05c4cd00", url.QueryEscape("2020-09-20 03:23:20.995000")),
+				URI:      fmt.Sprintf("/v1/campaigncalls?page_token=%s&page_size=10", url.QueryEscape("2020-09-20 03:23:20.995000")),
 				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
+				Data:     []byte(`{"campaign_id":"b2b0be5a-c859-11ec-acc0-c75b05c4cd00"}`),
 			},
 			[]cacampaigncall.Campaigncall{
 				{
@@ -143,7 +148,10 @@ func Test_CampaignV1CampaigncallGetsByCampaignID(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CampaignV1CampaigncallGetsByCampaignID(ctx, tt.campaignID, tt.pageToken, tt.pageSize)
+			filters := map[cacampaigncall.Field]any{
+				cacampaigncall.FieldCampaignID: tt.campaignID,
+			}
+			res, err := reqHandler.CampaignV1CampaigncallGets(ctx, tt.pageToken, tt.pageSize, filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

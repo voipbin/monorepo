@@ -177,7 +177,11 @@ func (h *groupcallHandler) getDialDestinationsAddressTypeExtension(ctx context.C
 		"destination": destination,
 	})
 
-	contacts, err := h.reqHandler.RegistrarV1ContactGets(ctx, customerID, destination.TargetName)
+	filters := map[string]any{
+		"customer_id": customerID,
+		"extension":   destination.TargetName,
+	}
+	contacts, err := h.reqHandler.RegistrarV1ContactGets(ctx, filters)
 	if err != nil {
 		log.Errorf("Could not get extension info. err: %v", err)
 		return nil, errors.Wrap(err, "Could not get extension info.")

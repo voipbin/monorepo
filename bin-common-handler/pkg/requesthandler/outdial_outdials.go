@@ -11,6 +11,7 @@ import (
 	omrequest "monorepo/bin-outdial-manager/pkg/listenhandler/models/request"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 )
 
 // OutdialV1OutdialCreate creates a new outdial.
@@ -50,13 +51,18 @@ func (r *requestHandler) OutdialV1OutdialCreate(ctx context.Context, customerID,
 	return &res, nil
 }
 
-// OutdialV1OutdialGetsByCustomerID sends a request to outdial-manager
+// OutdialV1OutdialGets sends a request to outdial-manager
 // to get a list of outdials.
 // Returns list of outdials
-func (r *requestHandler) OutdialV1OutdialGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]omoutdial.Outdial, error) {
-	uri := fmt.Sprintf("/v1/outdials?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
+func (r *requestHandler) OutdialV1OutdialGets(ctx context.Context, pageToken string, pageSize uint64, filters map[omoutdial.Field]any) ([]omoutdial.Outdial, error) {
+	uri := fmt.Sprintf("/v1/outdials?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
-	tmp, err := r.sendRequestOutdial(ctx, uri, sock.RequestMethodGet, "outdial/outdials", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	m, err := json.Marshal(filters)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not marshal filters")
+	}
+
+	tmp, err := r.sendRequestOutdial(ctx, uri, sock.RequestMethodGet, "outdial/outdials", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}

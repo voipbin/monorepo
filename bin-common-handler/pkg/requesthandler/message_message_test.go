@@ -39,9 +39,10 @@ func Test_MessageV1MessageGets(t *testing.T) {
 
 			"bin-manager.message-manager.request",
 			&sock.Request{
-				URI:      "/v1/messages?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&customer_id=2970f4e8-a2b1-11ec-b21d-a7848e946530",
+				URI:      "/v1/messages?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
+			Data:     []byte(`{"customer_id":"2970f4e8-a2b1-11ec-b21d-a7848e946530"}`),
 			},
 			&sock.Response{
 				StatusCode: 200,
@@ -65,9 +66,10 @@ func Test_MessageV1MessageGets(t *testing.T) {
 
 			"bin-manager.message-manager.request",
 			&sock.Request{
-				URI:      "/v1/messages?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10&customer_id=6f0e7d2c-a2b1-11ec-88c4-af58c97aff78",
-				Method:   sock.RequestMethodGet,
+				URI:      "/v1/messages?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
+			Method:   sock.RequestMethodGet,
 				DataType: "application/json",
+			Data:     []byte(`{"customer_id":"6f0e7d2c-a2b1-11ec-88c4-af58c97aff78"}`),
 			},
 			&sock.Response{
 				StatusCode: 200,
@@ -102,7 +104,10 @@ func Test_MessageV1MessageGets(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.MessageV1MessageGets(ctx, tt.customerID, tt.pageToken, tt.pageSize)
+			filters := map[mmmessage.Field]any{
+				mmmessage.FieldCustomerID: tt.customerID,
+			}
+			res, err := reqHandler.MessageV1MessageGets(ctx, tt.pageToken, tt.pageSize, filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

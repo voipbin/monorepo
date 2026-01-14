@@ -74,7 +74,7 @@ func Test_MessageGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().MessageV1MessageGets(ctx, tt.agent.CustomerID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
+			mockReq.EXPECT().MessageV1MessageGets(ctx, tt.pageToken, tt.pageSize, gomock.Any()).Return(tt.response, nil)
 
 			res, err := h.MessageGets(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {

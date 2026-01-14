@@ -139,7 +139,7 @@ func Test_RouteGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().RouteV1RouteGets(ctx, tt.pageToken, tt.pageSize).Return(tt.responseRoutes, nil)
+			mockReq.EXPECT().RouteV1RouteGets(ctx, tt.pageToken, tt.pageSize, gomock.Any()).Return(tt.responseRoutes, nil)
 
 			res, err := h.RouteGets(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
@@ -211,7 +211,7 @@ func Test_RouteGetsByCustomerID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().RouteV1RouteGetsByCustomerID(ctx, tt.customerID, tt.pageToken, tt.pageSize).Return(tt.responseRoutes, nil)
+			mockReq.EXPECT().RouteV1RouteGets(ctx, tt.pageToken, tt.pageSize, gomock.Any()).Return(tt.responseRoutes, nil)
 
 			res, err := h.RouteGetsByCustomerID(ctx, tt.agent, tt.customerID, tt.pageSize, tt.pageToken)
 			if err != nil {

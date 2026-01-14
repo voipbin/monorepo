@@ -11,6 +11,7 @@ import (
 	rmrequest "monorepo/bin-route-manager/pkg/listenhandler/models/request"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 )
 
 // RouteV1RouteCreate sends a request to route-manager
@@ -131,32 +132,18 @@ func (r *requestHandler) RouteV1RouteUpdate(
 	return &res, nil
 }
 
-// RouteV1RouteGetsByCustomerID sends a request to route-manager
-// to getting a list of route info.
-// it returns detail list of route info if it succeed.
-func (r *requestHandler) RouteV1RouteGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]rmroute.Route, error) {
-	uri := fmt.Sprintf("/v1/routes?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
-
-	tmp, err := r.sendRequestRoute(ctx, uri, sock.RequestMethodGet, "route/routes", requestTimeoutDefault, 0, ContentTypeNone, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	var res []rmroute.Route
-	if errParse := parseResponse(tmp, &res); errParse != nil {
-		return nil, errParse
-	}
-
-	return res, nil
-}
-
 // RouteV1RouteGets sends a request to route-manager
 // to getting a list of route info.
 // it returns detail list of route info if it succeed.
-func (r *requestHandler) RouteV1RouteGets(ctx context.Context, pageToken string, pageSize uint64) ([]rmroute.Route, error) {
+func (r *requestHandler) RouteV1RouteGets(ctx context.Context, pageToken string, pageSize uint64, filters map[rmroute.Field]any) ([]rmroute.Route, error) {
 	uri := fmt.Sprintf("/v1/routes?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
-	tmp, err := r.sendRequestRoute(ctx, uri, sock.RequestMethodGet, "route/routes", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	m, err := json.Marshal(filters)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not marshal filters")
+	}
+
+	tmp, err := r.sendRequestRoute(ctx, uri, sock.RequestMethodGet, "route/routes", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}

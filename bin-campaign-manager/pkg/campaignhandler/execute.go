@@ -375,7 +375,10 @@ func (h *campaignHandler) isDialable(ctx context.Context, campaignID uuid.UUID, 
 	}
 
 	// get available agents
-	agents, err := h.reqHandler.QueueV1QueueGetAgents(ctx, queueID, amagent.StatusAvailable)
+	filters := map[amagent.Field]any{
+		amagent.FieldStatus: amagent.StatusAvailable,
+	}
+	agents, err := h.reqHandler.QueueV1QueueGetAgents(ctx, queueID, filters)
 	if err != nil {
 		log.Errorf("Could not get available agents. err: %v", err)
 		return false

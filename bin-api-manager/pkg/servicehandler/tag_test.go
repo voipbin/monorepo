@@ -173,7 +173,7 @@ func Test_TagGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().TagV1TagGets(ctx, tt.agent.CustomerID, tt.token, tt.size).Return(tt.response, nil)
+			mockReq.EXPECT().TagV1TagGets(ctx, tt.token, tt.size, gomock.Any()).Return(tt.response, nil)
 
 			res, err := h.TagGets(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {

@@ -10,6 +10,7 @@ import (
 	carequest "monorepo/bin-campaign-manager/pkg/listenhandler/models/request"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 
 	"monorepo/bin-common-handler/models/address"
 	"monorepo/bin-common-handler/models/sock"
@@ -65,13 +66,18 @@ func (r *requestHandler) CampaignV1OutplanCreate(
 	return &res, nil
 }
 
-// CampaignV1OutplanGetsByCustomerID sends a request to campaign-manager
-// to getting a list of outplans of the given customer id.
+// CampaignV1OutplanGets sends a request to campaign-manager
+// to getting a list of outplans.
 // it returns detail list of outplans if it succeed.
-func (r *requestHandler) CampaignV1OutplanGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]caoutplan.Outplan, error) {
-	uri := fmt.Sprintf("/v1/outplans?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
+func (r *requestHandler) CampaignV1OutplanGets(ctx context.Context, pageToken string, pageSize uint64, filters map[caoutplan.Field]any) ([]caoutplan.Outplan, error) {
+	uri := fmt.Sprintf("/v1/outplans?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
-	tmp, err := r.sendRequestCampaign(ctx, uri, sock.RequestMethodGet, "campaign/outplans", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	m, err := json.Marshal(filters)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not marshal filters")
+	}
+
+	tmp, err := r.sendRequestCampaign(ctx, uri, sock.RequestMethodGet, "campaign/outplans", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}

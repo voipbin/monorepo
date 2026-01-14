@@ -118,7 +118,7 @@ func Test_CampaignV1OutplanCreate(t *testing.T) {
 	}
 }
 
-func Test_CampaignV1OutplanGetsByCustomerID(t *testing.T) {
+func Test_CampaignV1OutplanGets(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -148,9 +148,10 @@ func Test_CampaignV1OutplanGetsByCustomerID(t *testing.T) {
 
 			"bin-manager.campaign-manager.request",
 			&sock.Request{
-				URI:      fmt.Sprintf("/v1/outplans?page_token=%s&page_size=10&customer_id=4b1deb60-a784-4207-b1d8-a96df6bae951", url.QueryEscape("2020-09-20 03:23:20.995000")),
+				URI:      fmt.Sprintf("/v1/outplans?page_token=%s&page_size=10", url.QueryEscape("2020-09-20 03:23:20.995000")),
 				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
+			Data:     []byte(`{"customer_id":"4b1deb60-a784-4207-b1d8-a96df6bae951"}`),
 			},
 			[]caoutplan.Outplan{
 				{
@@ -175,7 +176,10 @@ func Test_CampaignV1OutplanGetsByCustomerID(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CampaignV1OutplanGetsByCustomerID(ctx, tt.customerID, tt.pageToken, tt.pageSize)
+			filters := map[caoutplan.Field]any{
+				caoutplan.FieldCustomerID: tt.customerID,
+			}
+			res, err := reqHandler.CampaignV1OutplanGets(ctx, tt.pageToken, tt.pageSize, filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

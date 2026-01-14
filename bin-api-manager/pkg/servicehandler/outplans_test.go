@@ -234,7 +234,7 @@ func Test_OutplanGetsByCustomerID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CampaignV1OutplanGetsByCustomerID(ctx, tt.agent.CustomerID, tt.pageToken, tt.pageSize).Return(tt.response, nil)
+			mockReq.EXPECT().CampaignV1OutplanGets(ctx, tt.pageToken, tt.pageSize, gomock.Any()).Return(tt.response, nil)
 			res, err := h.OutplanGetsByCustomerID(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
