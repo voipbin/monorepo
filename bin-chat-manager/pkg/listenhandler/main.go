@@ -18,8 +18,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 
-	"monorepo/bin-chat-manager/models/chat"
-	"monorepo/bin-chat-manager/models/chatroom"
 	"monorepo/bin-chat-manager/models/messagechat"
 	"monorepo/bin-chat-manager/models/messagechatroom"
 	"monorepo/bin-chat-manager/pkg/chathandler"
@@ -300,50 +298,6 @@ func getFilters(u *url.URL) map[string]string {
 		}
 	}
 
-	return res
-}
-
-// convertToChatFilters converts string filters to typed chat filters
-func convertToChatFilters(strFilters map[string]string) map[chat.Field]any {
-	res := make(map[chat.Field]any)
-	for k, v := range strFilters {
-		switch k {
-		case "customer_id":
-			res[chat.FieldCustomerID] = uuid.FromStringOrNil(v)
-		case "type":
-			res[chat.FieldType] = chat.Type(v)
-		case "room_owner_id":
-			res[chat.FieldRoomOwnerID] = uuid.FromStringOrNil(v)
-		case "participant_ids":
-			res[chat.FieldParticipantIDs] = v // string for participant_ids filter
-		case "deleted":
-			res[chat.FieldDeleted] = v == "true"
-		default:
-			// skip unknown filters
-		}
-	}
-	return res
-}
-
-// convertToChatroomFilters converts string filters to typed chatroom filters
-func convertToChatroomFilters(strFilters map[string]string) map[chatroom.Field]any {
-	res := make(map[chatroom.Field]any)
-	for k, v := range strFilters {
-		switch k {
-		case "customer_id":
-			res[chatroom.FieldCustomerID] = uuid.FromStringOrNil(v)
-		case "owner_id":
-			res[chatroom.FieldOwnerID] = uuid.FromStringOrNil(v)
-		case "chat_id":
-			res[chatroom.FieldChatID] = uuid.FromStringOrNil(v)
-		case "type":
-			res[chatroom.FieldType] = chatroom.Type(v)
-		case "deleted":
-			res[chatroom.FieldDeleted] = v == "true"
-		default:
-			// skip unknown filters
-		}
-	}
 	return res
 }
 

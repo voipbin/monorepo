@@ -3,6 +3,7 @@ package listenhandler
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/url"
 	"strconv"
 	"strings"
@@ -12,39 +13,55 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-chat-manager/models/chatroom"
 	"monorepo/bin-chat-manager/pkg/listenhandler/models/request"
 )
 
 // v1ChatroomsGet handles /v1/chatrooms GET request
 func (h *listenHandler) v1ChatroomsGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func": "v1ChatroomsGet",
+		"func":    "v1ChatroomsGet",
+		"request": m,
 	})
-	log.WithField("request", m).Debug("Received request.")
 
 	u, err := url.Parse(m.URI)
 	if err != nil {
 		return nil, err
 	}
 
-	// parse the pagination params
+	// parse the pagination params from URI
 	tmpSize, _ := strconv.Atoi(u.Query().Get(PageSize))
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// get owner_id
-	ownerID := uuid.FromStringOrNil(u.Query().Get("owner_id"))
-
-	// get filters
-	strFilters := getFilters(u)
-	if strFilters["owner_id"] == "" {
-		strFilters["owner_id"] = ownerID.String()
+	// Parse filters from request data (body)
+	var filters map[string]any
+	if len(m.Data) > 0 {
+		if err := json.Unmarshal(m.Data, &filters); err != nil {
+			log.Errorf("Could not unmarshal filters. err: %v", err)
+			return nil, fmt.Errorf("could not unmarshal filters: %w", err)
+		}
 	}
-	filters := convertToChatroomFilters(strFilters)
 
-	tmp, err := h.chatroomHandler.Gets(ctx, pageToken, pageSize, filters)
+	log.WithFields(logrus.Fields{
+		"filters":          filters,
+		"filters_raw_data": string(m.Data),
+	}).Debug("v1ChatroomsGet: Parsed filters from request body")
+
+	// Convert string map to typed field map
+	typedFilters, err := chatroom.ConvertStringMapToFieldMap(filters)
 	if err != nil {
-		log.Errorf("Could not get chats by GetsByOwnerID. err: %v", err)
+		log.Errorf("Could not convert filters. err: %v", err)
+		return nil, fmt.Errorf("could not convert filters: %w", err)
+	}
+
+	log.WithFields(logrus.Fields{
+		"typed_filters": typedFilters,
+	}).Debug("v1ChatroomsGet: Converted filters to typed field map (check UUID types)")
+
+	tmp, err := h.chatroomHandler.Gets(ctx, pageToken, pageSize, typedFilters)
+	if err != nil {
+		log.Errorf("Could not get chatrooms. err: %v", err)
 		return nil, err
 	}
 
