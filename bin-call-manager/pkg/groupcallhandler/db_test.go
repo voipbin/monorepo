@@ -161,7 +161,7 @@ func Test_Gets(t *testing.T) {
 
 		size    uint64
 		token   string
-		filters map[string]string
+		filters map[groupcall.Field]any
 
 		responseGroupcalls []*groupcall.Groupcall
 	}{
@@ -170,8 +170,8 @@ func Test_Gets(t *testing.T) {
 
 			size:  10,
 			token: "2023-01-18 03:22:18.995000",
-			filters: map[string]string{
-				"customer_id": "b3944c9c-bd7c-11ed-874c-6b6fb342a46d",
+			filters: map[groupcall.Field]any{
+				groupcall.FieldCustomerID: uuid.FromStringOrNil("b3944c9c-bd7c-11ed-874c-6b6fb342a46d"),
 			},
 
 			responseGroupcalls: []*groupcall.Groupcall{

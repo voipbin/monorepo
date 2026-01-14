@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"monorepo/bin-common-handler/models/sock"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -15,24 +16,6 @@ import (
 	"monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-agent-manager/pkg/listenhandler/models/request"
 )
-
-// convertAgentFilters converts URL query filters to typed agent filters
-func convertAgentFilters(rawFilters map[string]string) map[agent.Field]any {
-	filters := make(map[agent.Field]any)
-	for k, v := range rawFilters {
-		switch k {
-		case "customer_id":
-			filters[agent.FieldCustomerID] = uuid.FromStringOrNil(v)
-		case "deleted":
-			filters[agent.FieldDeleted] = v == "true"
-		case "status":
-			filters[agent.FieldStatus] = agent.Status(v)
-		default:
-			filters[agent.Field(k)] = v
-		}
-	}
-	return filters
-}
 
 // processV1AgentsGet handles GET /v1/agents request
 func (h *listenHandler) processV1AgentsGet(ctx context.Context, req *sock.Request) (*sock.Response, error) {
@@ -47,16 +30,25 @@ func (h *listenHandler) processV1AgentsGet(ctx context.Context, req *sock.Reques
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// parse the filters and convert to typed filters
-	rawFilters := h.utilHandler.URLParseFilters(u)
-	filters := convertAgentFilters(rawFilters)
-
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "processV1AgentsGet",
-		"size":    pageSize,
-		"token":   pageToken,
-		"filters": filters,
+		"func":  "processV1AgentsGet",
+		"size":  pageSize,
+		"token": pageToken,
 	})
+
+	// get filters from request body
+	tmpFilters, err := utilhandler.ParseFiltersFromRequestBody(req.Data)
+	if err != nil {
+		log.Errorf("Could not parse filters. err: %v", err)
+		return simpleResponse(400), nil
+	}
+
+	// convert to typed filters
+	filters, err := utilhandler.ConvertFilters[agent.FieldStruct, agent.Field](agent.FieldStruct{}, tmpFilters)
+	if err != nil {
+		log.Errorf("Could not convert filters. err: %v", err)
+		return simpleResponse(400), nil
+	}
 
 	tmp, err := h.agentHandler.Gets(ctx, pageSize, pageToken, filters)
 	if err != nil {

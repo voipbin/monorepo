@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"monorepo/bin-common-handler/models/sock"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -76,8 +77,19 @@ func (h *listenHandler) processV1AccountsGet(ctx context.Context, m *sock.Reques
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// get filters
-	filters := h.urlFiltersToAccountFilters(u)
+	// get filters from request body
+	tmpFilters, err := utilhandler.ParseFiltersFromRequestBody(m.Data)
+	if err != nil {
+		log.Errorf("Could not parse filters. err: %v", err)
+		return simpleResponse(400), nil
+	}
+
+	// convert to typed filters
+	filters, err := utilhandler.ConvertFilters[account.FieldStruct, account.Field](account.FieldStruct{}, tmpFilters)
+	if err != nil {
+		log.Errorf("Could not convert filters. err: %v", err)
+		return simpleResponse(400), nil
+	}
 
 	as, err := h.accountHandler.Gets(ctx, pageSize, pageToken, filters)
 	if err != nil {

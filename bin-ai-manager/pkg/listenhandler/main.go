@@ -5,19 +5,12 @@ package listenhandler
 import (
 	"context"
 	"fmt"
-	"net/url"
 	"regexp"
-	"strings"
 	"time"
 
-	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 
-	"monorepo/bin-ai-manager/models/ai"
-	"monorepo/bin-ai-manager/models/aicall"
-	"monorepo/bin-ai-manager/models/message"
-	"monorepo/bin-ai-manager/models/summary"
 	"monorepo/bin-ai-manager/pkg/aicallhandler"
 	"monorepo/bin-ai-manager/pkg/aihandler"
 	"monorepo/bin-ai-manager/pkg/messagehandler"
@@ -25,6 +18,7 @@ import (
 	"monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 )
 
 // pagination parameters
@@ -43,6 +37,8 @@ type listenHandler struct {
 	sockHandler   sockhandler.SockHandler
 	queueListen   string
 	exchangeDelay string
+
+	utilHandler utilhandler.UtilHandler
 
 	aiHandler      aihandler.AIHandler
 	aicallHandler  aicallhandler.AIcallHandler
@@ -112,106 +108,13 @@ func simpleResponse(code int) *sock.Response {
 	}
 }
 
-// getFilters parses the query and returns filters
-func getFilters(u *url.URL) map[string]string {
-	res := map[string]string{}
-
-	keys := make([]string, 0, len(u.Query()))
-	for k := range u.Query() {
-		keys = append(keys, k)
-	}
-
-	for _, k := range keys {
-		if strings.HasPrefix(k, "filter_") {
-			tmp, _ := strings.CutPrefix(k, "filter_")
-			res[tmp] = u.Query().Get(k)
-		}
-	}
-
-	return res
-}
-
-// convertToAIFilters converts string filters to ai.Field filters
-func convertToAIFilters(filters map[string]string) map[ai.Field]any {
-	res := make(map[ai.Field]any)
-	for k, v := range filters {
-		switch k {
-		case "customer_id":
-			res[ai.FieldCustomerID] = uuid.FromStringOrNil(v)
-		case "deleted":
-			res[ai.FieldDeleted] = v == "true"
-		default:
-			res[ai.Field(k)] = v
-		}
-	}
-	return res
-}
-
-// convertToAIcallFilters converts string filters to aicall.Field filters
-func convertToAIcallFilters(filters map[string]string) map[aicall.Field]any {
-	res := make(map[aicall.Field]any)
-	for k, v := range filters {
-		switch k {
-		case "customer_id":
-			res[aicall.FieldCustomerID] = uuid.FromStringOrNil(v)
-		case "ai_id":
-			res[aicall.FieldAIID] = uuid.FromStringOrNil(v)
-		case "activeflow_id":
-			res[aicall.FieldActiveflowID] = uuid.FromStringOrNil(v)
-		case "reference_id":
-			res[aicall.FieldReferenceID] = uuid.FromStringOrNil(v)
-		case "deleted":
-			res[aicall.FieldDeleted] = v == "true"
-		default:
-			res[aicall.Field(k)] = v
-		}
-	}
-	return res
-}
-
-// convertToMessageFilters converts string filters to message.Field filters
-func convertToMessageFilters(filters map[string]string) map[message.Field]any {
-	res := make(map[message.Field]any)
-	for k, v := range filters {
-		switch k {
-		case "customer_id":
-			res[message.FieldCustomerID] = uuid.FromStringOrNil(v)
-		case "aicall_id":
-			res[message.FieldAIcallID] = uuid.FromStringOrNil(v)
-		case "deleted":
-			res[message.FieldDeleted] = v == "true"
-		default:
-			res[message.Field(k)] = v
-		}
-	}
-	return res
-}
-
-// convertToSummaryFilters converts string filters to summary.Field filters
-func convertToSummaryFilters(filters map[string]string) map[summary.Field]any {
-	res := make(map[summary.Field]any)
-	for k, v := range filters {
-		switch k {
-		case "customer_id":
-			res[summary.FieldCustomerID] = uuid.FromStringOrNil(v)
-		case "activeflow_id":
-			res[summary.FieldActiveflowID] = uuid.FromStringOrNil(v)
-		case "reference_id":
-			res[summary.FieldReferenceID] = uuid.FromStringOrNil(v)
-		case "deleted":
-			res[summary.FieldDeleted] = v == "true"
-		default:
-			res[summary.Field(k)] = v
-		}
-	}
-	return res
-}
-
 // NewListenHandler return ListenHandler interface
 func NewListenHandler(
 	sockHandler sockhandler.SockHandler,
 	queueListen string,
 	exchangeDelay string,
+
+	utilHandler utilhandler.UtilHandler,
 
 	aiHandler aihandler.AIHandler,
 	aicallHandler aicallhandler.AIcallHandler,
@@ -222,6 +125,8 @@ func NewListenHandler(
 		sockHandler:   sockHandler,
 		queueListen:   queueListen,
 		exchangeDelay: exchangeDelay,
+
+		utilHandler: utilHandler,
 
 		aiHandler:      aiHandler,
 		aicallHandler:  aicallHandler,

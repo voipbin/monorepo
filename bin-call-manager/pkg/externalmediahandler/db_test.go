@@ -237,7 +237,7 @@ func Test_Gets(t *testing.T) {
 	tests := []struct {
 		name string
 
-		filters map[string]string
+		filters map[externalmedia.Field]any
 
 		responseExternalMedia *externalmedia.ExternalMedia
 
@@ -247,8 +247,8 @@ func Test_Gets(t *testing.T) {
 		{
 			"normal",
 
-			map[string]string{
-				"reference_id": "d441ee34-e825-11ee-b63c-47956736e3ae",
+			map[externalmedia.Field]any{
+				externalmedia.FieldReferenceID: uuid.FromStringOrNil("d441ee34-e825-11ee-b63c-47956736e3ae"),
 			},
 
 			&externalmedia.ExternalMedia{

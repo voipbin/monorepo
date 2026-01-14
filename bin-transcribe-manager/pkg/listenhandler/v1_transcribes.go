@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"monorepo/bin-common-handler/models/sock"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -73,9 +74,19 @@ func (h *listenHandler) processV1TranscribesGet(ctx context.Context, m *sock.Req
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// parse the filters and convert to typed filters
-	stringFilters := h.utilHandler.URLParseFilters(u)
-	filters := convertTranscribeFilters(stringFilters)
+	// get filters from request body
+	tmpFilters, err := utilhandler.ParseFiltersFromRequestBody(m.Data)
+	if err != nil {
+		log.Errorf("Could not parse filters. err: %v", err)
+		return simpleResponse(400), nil
+	}
+
+	// convert to typed filters
+	filters, err := utilhandler.ConvertFilters[transcribe.FieldStruct, transcribe.Field](transcribe.FieldStruct{}, tmpFilters)
+	if err != nil {
+		log.Errorf("Could not convert filters. err: %v", err)
+		return simpleResponse(400), nil
+	}
 
 	tmp, err := h.transcribeHandler.Gets(ctx, pageSize, pageToken, filters)
 	if err != nil {
@@ -96,38 +107,6 @@ func (h *listenHandler) processV1TranscribesGet(ctx context.Context, m *sock.Req
 	}
 
 	return res, nil
-}
-
-// convertTranscribeFilters converts string filters to typed transcribe filters
-func convertTranscribeFilters(stringFilters map[string]string) map[transcribe.Field]any {
-	filters := make(map[transcribe.Field]any)
-
-	for k, v := range stringFilters {
-		switch k {
-		case "customer_id":
-			filters[transcribe.FieldCustomerID] = uuid.FromStringOrNil(v)
-		case "activeflow_id":
-			filters[transcribe.FieldActiveflowID] = uuid.FromStringOrNil(v)
-		case "on_end_flow_id":
-			filters[transcribe.FieldOnEndFlowID] = uuid.FromStringOrNil(v)
-		case "reference_id":
-			filters[transcribe.FieldReferenceID] = uuid.FromStringOrNil(v)
-		case "host_id":
-			filters[transcribe.FieldHostID] = uuid.FromStringOrNil(v)
-		case "deleted":
-			filters[transcribe.FieldDeleted] = (v == "true")
-		case "reference_type":
-			filters[transcribe.FieldReferenceType] = transcribe.ReferenceType(v)
-		case "status":
-			filters[transcribe.FieldStatus] = transcribe.Status(v)
-		case "language":
-			filters[transcribe.FieldLanguage] = v
-		case "direction":
-			filters[transcribe.FieldDirection] = transcribe.Direction(v)
-		}
-	}
-
-	return filters
 }
 
 // processV1TranscribesIDGet handles GET /v1/transcribes/<id> request

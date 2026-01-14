@@ -33,6 +33,9 @@ type UtilHandler interface {
 	// url helpers
 	URLParseFilters(u *url.URL) map[string]string
 	URLMergeFilters(uri string, filters map[string]string) string
+
+	// filter helpers
+	ParseFiltersFromRequestBody(data []byte) (map[string]any, error)
 }
 
 type utilHandler struct{}
@@ -40,4 +43,9 @@ type utilHandler struct{}
 // NewUtilHandler defines
 func NewUtilHandler() UtilHandler {
 	return &utilHandler{}
+}
+
+// ParseFiltersFromRequestBody implements UtilHandler
+func (h *utilHandler) ParseFiltersFromRequestBody(data []byte) (map[string]any, error) {
+	return ParseFiltersFromRequestBody(data)
 }

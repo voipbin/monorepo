@@ -11,12 +11,9 @@ import (
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
-	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 
-	"monorepo/bin-registrar-manager/models/extension"
-	"monorepo/bin-registrar-manager/models/trunk"
 	"monorepo/bin-registrar-manager/pkg/contacthandler"
 	"monorepo/bin-registrar-manager/pkg/extensionhandler"
 	"monorepo/bin-registrar-manager/pkg/trunkhandler"
@@ -251,38 +248,4 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	}).Debugf("Sending back the resulut. method: %s, uri: %s", m.Method, m.URI)
 
 	return response, err
-}
-
-// convertToTrunkFilters converts string filters to typed trunk.Field filters
-func convertToTrunkFilters(stringFilters map[string]string) map[trunk.Field]any {
-	filters := make(map[trunk.Field]any)
-	for k, v := range stringFilters {
-		switch k {
-		case "customer_id":
-			filters[trunk.FieldCustomerID] = uuid.FromStringOrNil(v)
-		case "deleted":
-			filters[trunk.FieldDeleted] = v == "true"
-		case "domain_name":
-			filters[trunk.FieldDomainName] = v
-		default:
-			filters[trunk.Field(k)] = v
-		}
-	}
-	return filters
-}
-
-// convertToExtensionFilters converts string filters to typed extension.Field filters
-func convertToExtensionFilters(stringFilters map[string]string) map[extension.Field]any {
-	filters := make(map[extension.Field]any)
-	for k, v := range stringFilters {
-		switch k {
-		case "customer_id":
-			filters[extension.FieldCustomerID] = uuid.FromStringOrNil(v)
-		case "deleted":
-			filters[extension.FieldDeleted] = v == "true"
-		default:
-			filters[extension.Field(k)] = v
-		}
-	}
-	return filters
 }

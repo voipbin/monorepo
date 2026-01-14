@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"monorepo/bin-common-handler/models/sock"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -33,16 +34,18 @@ func (h *listenHandler) processV1MessagesGet(ctx context.Context, m *sock.Reques
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// parse the filters
-	urlFilters := h.utilHandler.URLParseFilters(u)
-	filters := make(map[message.Field]any)
-	for k, v := range urlFilters {
-		// convert customer_id to UUID type
-		if k == "customer_id" {
-			filters[message.Field(k)] = uuid.FromStringOrNil(v)
-		} else {
-			filters[message.Field(k)] = v
-		}
+	// get filters from request body
+	tmpFilters, err := h.utilHandler.ParseFiltersFromRequestBody(m.Data)
+	if err != nil {
+		log.Errorf("Could not parse filters. err: %v", err)
+		return simpleResponse(400), nil
+	}
+
+	// convert to typed filters
+	filters, err := utilhandler.ConvertFilters[message.FieldStruct, message.Field](message.FieldStruct{}, tmpFilters)
+	if err != nil {
+		log.Errorf("Could not convert filters. err: %v", err)
+		return simpleResponse(400), nil
 	}
 
 	messages, err := h.messageHandler.Gets(ctx, pageToken, pageSize, filters)

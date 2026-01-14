@@ -3,6 +3,7 @@ package groupcallhandler
 import (
 	"context"
 
+	"monorepo/bin-call-manager/models/groupcall"
 	cucustomer "monorepo/bin-customer-manager/models/customer"
 
 	"github.com/pkg/errors"
@@ -18,9 +19,9 @@ func (h *groupcallHandler) EventCUCustomerDeleted(ctx context.Context, cu *cucus
 	log.Debugf("Deleting all groupcalls of the customer. customer_id: %s", cu.ID)
 
 	// get all groupcalls of the customer
-	filters := map[string]string{
-		"customer_id": cu.ID.String(),
-		"deleted":     "false",
+	filters := map[groupcall.Field]any{
+		groupcall.FieldCustomerID: cu.ID,
+		groupcall.FieldDeleted:    false,
 	}
 	groupcalls, err := h.Gets(ctx, 1000, "", filters)
 	if err != nil {

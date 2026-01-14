@@ -22,9 +22,9 @@ func (h *callHandler) EventCUCustomerDeleted(ctx context.Context, cu *cucustomer
 	log.Debugf("Deleting all calls of the customer. customer_id: %s", cu.ID)
 
 	// get all calls of the customer
-	filters := map[string]string{
-		"customer_id": cu.ID.String(),
-		"deleted":     "false",
+	filters := map[call.Field]any{
+		call.FieldCustomerID: cu.ID,
+		call.FieldDeleted:    false,
 	}
 	calls, err := h.Gets(ctx, 1000, "", filters)
 	if err != nil {

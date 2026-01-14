@@ -8,7 +8,6 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
-	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -133,7 +132,6 @@ func Test_processV1GroupcallsGet(t *testing.T) {
 		name    string
 		request *sock.Request
 
-		responseFilters    map[string]string
 		responseGroupcalls []*groupcall.Groupcall
 
 		expectPageSize  uint64
@@ -143,8 +141,9 @@ func Test_processV1GroupcallsGet(t *testing.T) {
 		{
 			name: "normal",
 			request: &sock.Request{
-				URI:    "/v1/groupcalls?page_size=10&page_token=2023-05-03%2021:35:02.809&filter_customer_id=256d8080-bd7e-11ed-b083-93a9d3f167e7&filter_deleted=false",
+				URI:    "/v1/groupcalls?page_size=10&page_token=2023-05-03%2021:35:02.809",
 				Method: sock.RequestMethodGet,
+				Data:   []byte(`{"customer_id":"256d8080-bd7e-11ed-b083-93a9d3f167e7","deleted":false}`),
 			},
 			responseGroupcalls: []*groupcall.Groupcall{
 				{
@@ -159,10 +158,6 @@ func Test_processV1GroupcallsGet(t *testing.T) {
 				},
 			},
 
-			responseFilters: map[string]string{
-				"customer_id": "256d8080-bd7e-11ed-b083-93a9d3f167e7",
-				"deleted":     "false",
-			},
 			expectPageSize:  10,
 			expectPageToken: "2023-05-03 21:35:02.809",
 			expectRes: &sock.Response{
@@ -178,19 +173,16 @@ func Test_processV1GroupcallsGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockCall := callhandler.NewMockCallHandler(mc)
 			mockGroupcall := groupcallhandler.NewMockGroupcallHandler(mc)
 
 			h := &listenHandler{
-				utilHandler:      mockUtil,
 				sockHandler:      mockSock,
 				callHandler:      mockCall,
 				groupcallHandler: mockGroupcall,
 			}
 
-			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
 			mockGroupcall.EXPECT().Gets(gomock.Any(), tt.expectPageSize, tt.expectPageToken, gomock.Any()).Return(tt.responseGroupcalls, nil)
 
 			res, err := h.processRequest(tt.request)

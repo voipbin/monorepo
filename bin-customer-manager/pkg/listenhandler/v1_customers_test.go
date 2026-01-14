@@ -8,7 +8,6 @@ import (
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
-	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -25,7 +24,6 @@ func Test_processV1CustomersGet(t *testing.T) {
 		size    uint64
 		token   string
 
-		responseFilters   map[string]string
 		expectFilters     map[customer.Field]any
 		responseCustomers []*customer.Customer
 		expectRes         *sock.Response
@@ -36,13 +34,11 @@ func Test_processV1CustomersGet(t *testing.T) {
 				URI:      "/v1/customers?page_size=10&page_token=2021-11-23%2017:55:39.712000",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
+				Data:     []byte(`{"deleted":false}`),
 			},
 			10,
 			"2021-11-23 17:55:39.712000",
 
-			map[string]string{
-				"deleted": "false",
-			},
 			map[customer.Field]any{
 				customer.FieldDeleted: false,
 			},
@@ -66,13 +62,11 @@ func Test_processV1CustomersGet(t *testing.T) {
 				URI:      "/v1/customers?page_size=10&page_token=2021-11-23%2017:55:39.712000",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
+				Data:     []byte(`{"deleted":false}`),
 			},
 			10,
 			"2021-11-23 17:55:39.712000",
 
-			map[string]string{
-				"deleted": "false",
-			},
 			map[customer.Field]any{
 				customer.FieldDeleted: false,
 			},
@@ -100,16 +94,13 @@ func Test_processV1CustomersGet(t *testing.T) {
 			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockCustomer := customerhandler.NewMockCustomerHandler(mc)
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
 
 			h := &listenHandler{
 				sockHandler:     mockSock,
 				reqHandler:      mockReq,
-				utilHandler:     mockUtil,
 				customerHandler: mockCustomer,
 			}
 
-			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
 			mockCustomer.EXPECT().Gets(gomock.Any(), tt.size, tt.token, gomock.Any()).Return(tt.responseCustomers, nil)
 
 			res, err := h.processRequest(tt.request)

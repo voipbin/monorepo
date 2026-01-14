@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"monorepo/bin-common-handler/models/sock"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -29,22 +30,26 @@ func (h *listenHandler) processV1TagsGet(ctx context.Context, req *sock.Request)
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// get customer_id
-	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
-
-	// build filters
-	filters := map[tag.Field]any{
-		tag.FieldCustomerID: customerID,
-		tag.FieldDeleted:    false,
-	}
-
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "processV1TagsGet",
-		"customer_id": customerID,
-		"size":        pageSize,
-		"token":       pageToken,
+		"func":  "processV1TagsGet",
+		"size":  pageSize,
+		"token": pageToken,
 	})
 	log.WithField("request", req).Debug("Received request.")
+
+	// get filters from request body
+	tmpFilters, err := utilhandler.ParseFiltersFromRequestBody(req.Data)
+	if err != nil {
+		log.Errorf("Could not parse filters. err: %v", err)
+		return simpleResponse(400), nil
+	}
+
+	// convert to typed filters
+	filters, err := utilhandler.ConvertFilters[tag.FieldStruct, tag.Field](tag.FieldStruct{}, tmpFilters)
+	if err != nil {
+		log.Errorf("Could not convert filters. err: %v", err)
+		return simpleResponse(400), nil
+	}
 
 	tmp, err := h.tagHandler.Gets(ctx, pageSize, pageToken, filters)
 	if err != nil {

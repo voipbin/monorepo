@@ -4,7 +4,6 @@ import (
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
-	"monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-customer-manager/models/accesskey"
 	"monorepo/bin-customer-manager/pkg/accesskeyhandler"
 	reflect "reflect"
@@ -23,7 +22,6 @@ func Test_processV1AccesskeysGet(t *testing.T) {
 		size    uint64
 		token   string
 
-		responseFilters    map[string]string
 		expectFilters      map[accesskey.Field]any
 		responseAccesskeys []*accesskey.Accesskey
 		expectRes          *sock.Response
@@ -34,13 +32,11 @@ func Test_processV1AccesskeysGet(t *testing.T) {
 				URI:      "/v1/accesskeys?page_size=10&page_token=2021-11-23%2017:55:39.712000",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
+				Data:     []byte(`{"deleted":false}`),
 			},
 			10,
 			"2021-11-23 17:55:39.712000",
 
-			map[string]string{
-				"deleted": "false",
-			},
 			map[accesskey.Field]any{
 				accesskey.FieldDeleted: false,
 			},
@@ -61,13 +57,11 @@ func Test_processV1AccesskeysGet(t *testing.T) {
 				URI:      "/v1/accesskeys?page_size=10&page_token=2021-11-23%2017:55:39.712000",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
+				Data:     []byte(`{"deleted":false}`),
 			},
 			10,
 			"2021-11-23 17:55:39.712000",
 
-			map[string]string{
-				"deleted": "false",
-			},
 			map[accesskey.Field]any{
 				accesskey.FieldDeleted: false,
 			},
@@ -95,16 +89,13 @@ func Test_processV1AccesskeysGet(t *testing.T) {
 			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockAccesskey := accesskeyhandler.NewMockAccesskeyHandler(mc)
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
 
 			h := &listenHandler{
 				sockHandler:      mockSock,
 				reqHandler:       mockReq,
-				utilHandler:      mockUtil,
 				accesskeyHandler: mockAccesskey,
 			}
 
-			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
 			mockAccesskey.EXPECT().Gets(gomock.Any(), tt.size, tt.token, gomock.Any()).Return(tt.responseAccesskeys, nil)
 
 			res, err := h.processRequest(tt.request)

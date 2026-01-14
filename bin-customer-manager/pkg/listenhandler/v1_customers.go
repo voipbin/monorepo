@@ -9,6 +9,7 @@ import (
 
 	bmbilling "monorepo/bin-billing-manager/models/billing"
 	"monorepo/bin-common-handler/models/sock"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -36,9 +37,19 @@ func (h *listenHandler) processV1CustomersGet(ctx context.Context, m *sock.Reque
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// parse the filters and convert to typed filters
-	stringFilters := h.utilHandler.URLParseFilters(u)
-	filters := convertCustomerFilters(stringFilters)
+	// get filters from request body
+	tmpFilters, err := utilhandler.ParseFiltersFromRequestBody(m.Data)
+	if err != nil {
+		log.Errorf("Could not parse filters. err: %v", err)
+		return simpleResponse(400), nil
+	}
+
+	// convert to typed filters
+	filters, err := utilhandler.ConvertFilters[customer.FieldStruct, customer.Field](customer.FieldStruct{}, tmpFilters)
+	if err != nil {
+		log.Errorf("Could not convert filters. err: %v", err)
+		return simpleResponse(400), nil
+	}
 
 	tmp, err := h.customerHandler.Gets(ctx, pageSize, pageToken, filters)
 	if err != nil {
@@ -60,27 +71,6 @@ func (h *listenHandler) processV1CustomersGet(ctx context.Context, m *sock.Reque
 	}
 
 	return res, nil
-}
-
-// convertCustomerFilters converts string filters to typed customer.Field filters
-func convertCustomerFilters(stringFilters map[string]string) map[customer.Field]any {
-	filters := make(map[customer.Field]any)
-	for k, v := range stringFilters {
-		switch k {
-		case "deleted":
-			switch v {
-			case "false":
-				filters[customer.FieldDeleted] = false
-			case "true":
-				filters[customer.FieldDeleted] = true
-			}
-		case "billing_account_id":
-			filters[customer.FieldBillingAccountID] = uuid.FromStringOrNil(v)
-		default:
-			filters[customer.Field(k)] = v
-		}
-	}
-	return filters
 }
 
 // processV1CustomersPost handles Post /v1/customers request

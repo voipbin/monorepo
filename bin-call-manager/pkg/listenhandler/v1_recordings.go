@@ -7,7 +7,9 @@ import (
 	"strconv"
 	"strings"
 
+	"monorepo/bin-call-manager/models/recording"
 	"monorepo/bin-common-handler/models/sock"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -32,7 +34,19 @@ func (h *listenHandler) processV1RecordingsGet(ctx context.Context, m *sock.Requ
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	filters := h.utilHandler.URLParseFilters(u)
+	// get filters from request body
+	tmpFilters, err := utilhandler.ParseFiltersFromRequestBody(m.Data)
+	if err != nil {
+		log.Errorf("Could not parse filters. err: %v", err)
+		return simpleResponse(400), nil
+	}
+
+	// convert to typed filters
+	filters, err := utilhandler.ConvertFilters[recording.FieldStruct, recording.Field](recording.FieldStruct{}, tmpFilters)
+	if err != nil {
+		log.Errorf("Could not convert filters. err: %v", err)
+		return simpleResponse(400), nil
+	}
 
 	tmps, err := h.recordingHandler.Gets(ctx, pageSize, pageToken, filters)
 	if err != nil {

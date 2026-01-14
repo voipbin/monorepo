@@ -9,7 +9,6 @@ import (
 
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
-	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -27,7 +26,6 @@ func Test_ProcessV1AgentsGet(t *testing.T) {
 		pageSize  uint64
 		pageToken string
 
-		responseFilters  map[string]string
 		convertedFilters map[agent.Field]any
 		responseAgents   []*agent.Agent
 		expectRes        *sock.Response
@@ -35,20 +33,15 @@ func Test_ProcessV1AgentsGet(t *testing.T) {
 		{
 			name: "normal",
 			request: &sock.Request{
-				URI:      "/v1/agents?page_size=10&page_token=2021-11-23%2017:55:39.712000&filter_customer_id=5fd7f9b8-cb37-11ee-bd29-f30560a6ac86&filter_tag_ids=f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a,08789a66-b236-11ee-8a51-b31bbd98fe91&filter_deleted=false&filter_status=available",
+				URI:      "/v1/agents?page_size=10&page_token=2021-11-23%2017:55:39.712000",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
+				Data:     []byte(`{"customer_id":"5fd7f9b8-cb37-11ee-bd29-f30560a6ac86","tag_ids":"f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a,08789a66-b236-11ee-8a51-b31bbd98fe91","deleted":false,"status":"available"}`),
 			},
 
 			pageSize:  10,
 			pageToken: "2021-11-23 17:55:39.712000",
 
-			responseFilters: map[string]string{
-				"customer_id": "5fd7f9b8-cb37-11ee-bd29-f30560a6ac86",
-				"deleted":     "false",
-				"status":      string(agent.StatusAvailable),
-				"tag_ids":     "f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a,08789a66-b236-11ee-8a51-b31bbd98fe91",
-			},
 			convertedFilters: map[agent.Field]any{
 				agent.FieldCustomerID: uuid.FromStringOrNil("5fd7f9b8-cb37-11ee-bd29-f30560a6ac86"),
 				agent.FieldDeleted:    false,
@@ -95,15 +88,12 @@ func Test_ProcessV1AgentsGet(t *testing.T) {
 
 			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockAgent := agenthandler.NewMockAgentHandler(mc)
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
 
 			h := &listenHandler{
 				sockHandler:  mockSock,
 				agentHandler: mockAgent,
-				utilHandler:  mockUtil,
 			}
 
-			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
 			mockAgent.EXPECT().Gets(gomock.Any(), tt.pageSize, tt.pageToken, gomock.Any()).Return(tt.responseAgents, nil)
 
 			res, err := h.processRequest(tt.request)

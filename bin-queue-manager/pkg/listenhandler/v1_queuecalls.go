@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"monorepo/bin-common-handler/models/sock"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -34,15 +35,16 @@ func (h *listenHandler) processV1QueuecallsGet(ctx context.Context, m *sock.Requ
 	pageToken := u.Query().Get(PageToken)
 
 	// get filters from request body
-	var req map[string]any
-	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
-		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+	tmpFilters, err := utilhandler.ParseFiltersFromRequestBody(m.Data)
+	if err != nil {
+		log.Errorf("Could not parse filters. err: %v", err)
 		return simpleResponse(400), nil
 	}
 
-	filters, err := queuecall.ConvertStringMapToFieldMap(req)
+	// convert to typed filters
+	filters, err := utilhandler.ConvertFilters[queuecall.FieldStruct, queuecall.Field](queuecall.FieldStruct{}, tmpFilters)
 	if err != nil {
-		log.Debugf("Could not convert the filters. err: %v", err)
+		log.Errorf("Could not convert filters. err: %v", err)
 		return simpleResponse(400), nil
 	}
 

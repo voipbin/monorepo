@@ -10,7 +10,6 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
-	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	fmaction "monorepo/bin-flow-manager/models/action"
 
@@ -96,8 +95,9 @@ func Test_processV1CallsGet(t *testing.T) {
 			name: "normal",
 
 			request: &sock.Request{
-				URI:    "/v1/calls?page_size=10&page_token=2020-05-03%2021:35:02.809&customer_id=ac03d4ea-7f50-11ec-908d-d39407ab524d&filter_deleted=false",
+				URI:    "/v1/calls?page_size=10&page_token=2020-05-03%2021:35:02.809",
 				Method: sock.RequestMethodGet,
+				Data:   []byte(`{"customer_id":"ac03d4ea-7f50-11ec-908d-d39407ab524d","deleted":false}`),
 			},
 			pageSize:  10,
 			pageToken: "2020-05-03 21:35:02.809",
@@ -124,8 +124,9 @@ func Test_processV1CallsGet(t *testing.T) {
 			name: "2 items",
 
 			request: &sock.Request{
-				URI:    "/v1/calls?page_size=10&page_token=2020-05-03%2021:35:02.809&customer_id=ac35aeb6-7f50-11ec-b7c5-abac92baf1fb&filter_deleted=false",
+				URI:    "/v1/calls?page_size=10&page_token=2020-05-03%2021:35:02.809",
 				Method: sock.RequestMethodGet,
+				Data:   []byte(`{"customer_id":"ac35aeb6-7f50-11ec-b7c5-abac92baf1fb","deleted":false}`),
 			},
 			pageSize:  10,
 			pageToken: "2020-05-03 21:35:02.809",
@@ -161,17 +162,14 @@ func Test_processV1CallsGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockCall := callhandler.NewMockCallHandler(mc)
 
 			h := &listenHandler{
-				utilHandler: mockUtil,
 				sockHandler: mockSock,
 				callHandler: mockCall,
 			}
 
-			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
 			mockCall.EXPECT().Gets(gomock.Any(), tt.pageSize, tt.pageToken, gomock.Any()).Return(tt.responseCalls, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {

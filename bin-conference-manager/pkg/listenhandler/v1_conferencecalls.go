@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"monorepo/bin-common-handler/models/sock"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -33,9 +34,15 @@ func (h *listenHandler) processV1ConferencecallsGet(ctx context.Context, m *sock
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// get filters
-	tmpFilters := h.utilHandler.URLParseFilters(u)
-	filters, err := conferencecall.ConvertStringMapToFieldMap(tmpFilters)
+	// get filters from request body
+	tmpFilters, err := utilhandler.ParseFiltersFromRequestBody(m.Data)
+	if err != nil {
+		log.Errorf("Could not parse filters. err: %v", err)
+		return simpleResponse(400), nil
+	}
+
+	// convert to typed filters
+	filters, err := utilhandler.ConvertFilters[conferencecall.FieldStruct, conferencecall.Field](conferencecall.FieldStruct{}, tmpFilters)
 	if err != nil {
 		log.Errorf("Could not convert filters. err: %v", err)
 		return simpleResponse(400), nil

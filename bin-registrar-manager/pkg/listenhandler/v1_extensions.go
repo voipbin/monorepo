@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"monorepo/bin-common-handler/models/sock"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -202,14 +203,18 @@ func (h *listenHandler) processV1ExtensionsGet(ctx context.Context, m *sock.Requ
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// get customer_id
-	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
+	// get filters from request body
+	tmpFilters, err := utilhandler.ParseFiltersFromRequestBody(m.Data)
+	if err != nil {
+		log.Errorf("Could not parse filters. err: %v", err)
+		return simpleResponse(400), nil
+	}
 
-	// parse the filters and convert to typed filters
-	stringFilters := h.utilHandler.URLParseFilters(u)
-	filters := convertToExtensionFilters(stringFilters)
-	if customerID != uuid.Nil {
-		filters[extension.FieldCustomerID] = customerID
+	// convert to typed filters
+	filters, err := utilhandler.ConvertFilters[extension.FieldStruct, extension.Field](extension.FieldStruct{}, tmpFilters)
+	if err != nil {
+		log.Errorf("Could not convert filters. err: %v", err)
+		return simpleResponse(400), nil
 	}
 
 	extensions, err := h.extensionHandler.Gets(ctx, pageToken, pageSize, filters)

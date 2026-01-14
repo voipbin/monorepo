@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"monorepo/bin-common-handler/models/sock"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	fmaction "monorepo/bin-flow-manager/models/action"
 
@@ -38,8 +39,19 @@ func (h *listenHandler) processV1CallsGet(ctx context.Context, m *sock.Request) 
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// get filters
-	filters := h.utilHandler.URLParseFilters(u)
+	// get filters from request body
+	tmpFilters, err := utilhandler.ParseFiltersFromRequestBody(m.Data)
+	if err != nil {
+		log.Errorf("Could not parse filters. err: %v", err)
+		return simpleResponse(400), nil
+	}
+
+	// convert to typed filters
+	filters, err := utilhandler.ConvertFilters[call.FieldStruct, call.Field](call.FieldStruct{}, tmpFilters)
+	if err != nil {
+		log.Errorf("Could not convert filters. err: %v", err)
+		return simpleResponse(400), nil
+	}
 
 	calls, err := h.callHandler.Gets(ctx, pageSize, pageToken, filters)
 	if err != nil {

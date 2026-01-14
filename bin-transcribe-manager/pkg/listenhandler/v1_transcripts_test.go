@@ -7,7 +7,6 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
-	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -26,8 +25,7 @@ func Test_processV1TranscriptsGet(t *testing.T) {
 		pageSize  uint64
 		pageToken string
 
-		responseFilters map[string]string
-		expectFilters   map[transcript.Field]any
+		expectFilters map[transcript.Field]any
 
 		responseTranscripts []*transcript.Transcript
 		expectRes           *sock.Response
@@ -35,16 +33,14 @@ func Test_processV1TranscriptsGet(t *testing.T) {
 		{
 			name: "normal",
 			request: &sock.Request{
-				URI:    "/v1/transcripts?page_size=10&page_token=2020-05-03%2021:35:02.809&filter_transcribe_id=4f08e520-821d-11ed-844e-67fdcb950f6f",
+				URI:    "/v1/transcripts?page_size=10&page_token=2020-05-03%2021:35:02.809",
 				Method: sock.RequestMethodGet,
+				Data:   []byte(`{"transcribe_id":"4f08e520-821d-11ed-844e-67fdcb950f6f"}`),
 			},
 
 			pageSize:  10,
 			pageToken: "2020-05-03 21:35:02.809",
 
-			responseFilters: map[string]string{
-				"transcribe_id": "4f08e520-821d-11ed-844e-67fdcb950f6f",
-			},
 			expectFilters: map[transcript.Field]any{
 				transcript.FieldTranscribeID: uuid.FromStringOrNil("4f08e520-821d-11ed-844e-67fdcb950f6f"),
 			},
@@ -65,16 +61,14 @@ func Test_processV1TranscriptsGet(t *testing.T) {
 		{
 			name: "2 items",
 			request: &sock.Request{
-				URI:    "/v1/transcripts?page_size=10&page_token=2020-05-03%2021:35:02.809&filter_transcribe_id=43b608e6-821e-11ed-9611-e329cba76cc9",
+				URI:    "/v1/transcripts?page_size=10&page_token=2020-05-03%2021:35:02.809",
 				Method: sock.RequestMethodGet,
+				Data:   []byte(`{"transcribe_id":"43b608e6-821e-11ed-9611-e329cba76cc9"}`),
 			},
 
 			pageSize:  10,
 			pageToken: "2020-05-03 21:35:02.809",
 
-			responseFilters: map[string]string{
-				"transcribe_id": "43b608e6-821e-11ed-9611-e329cba76cc9",
-			},
 			expectFilters: map[transcript.Field]any{
 				transcript.FieldTranscribeID: uuid.FromStringOrNil("43b608e6-821e-11ed-9611-e329cba76cc9"),
 			},
@@ -104,18 +98,15 @@ func Test_processV1TranscriptsGet(t *testing.T) {
 			defer mc.Finish()
 
 			mockSock := sockhandler.NewMockSockHandler(mc)
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockTranscribe := transcribehandler.NewMockTranscribeHandler(mc)
 			mockTranscript := transcripthandler.NewMockTranscriptHandler(mc)
 
 			h := &listenHandler{
 				sockHandler:       mockSock,
-				utilHandler:       mockUtil,
 				transcribeHandler: mockTranscribe,
 				transcriptHandler: mockTranscript,
 			}
 
-			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
 			mockTranscript.EXPECT().Gets(gomock.Any(), tt.pageSize, tt.pageToken, gomock.Any()).Return(tt.responseTranscripts, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {

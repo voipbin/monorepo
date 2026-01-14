@@ -85,6 +85,21 @@ func (mr *MockUtilHandlerMockRecorder) HashGenerate(org, cost any) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HashGenerate", reflect.TypeOf((*MockUtilHandler)(nil).HashGenerate), org, cost)
 }
 
+// ParseFiltersFromRequestBody mocks base method.
+func (m *MockUtilHandler) ParseFiltersFromRequestBody(data []byte) (map[string]any, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ParseFiltersFromRequestBody", data)
+	ret0, _ := ret[0].(map[string]any)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ParseFiltersFromRequestBody indicates an expected call of ParseFiltersFromRequestBody.
+func (mr *MockUtilHandlerMockRecorder) ParseFiltersFromRequestBody(data any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ParseFiltersFromRequestBody", reflect.TypeOf((*MockUtilHandler)(nil).ParseFiltersFromRequestBody), data)
+}
+
 // StringGenerateRandom mocks base method.
 func (m *MockUtilHandler) StringGenerateRandom(size int) (string, error) {
 	m.ctrl.T.Helper()

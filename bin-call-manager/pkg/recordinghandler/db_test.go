@@ -26,7 +26,7 @@ func Test_Gets(t *testing.T) {
 
 		size    uint64
 		token   string
-		filters map[string]string
+		filters map[recording.Field]any
 
 		responseRecordings []*recording.Recording
 	}{
@@ -35,8 +35,8 @@ func Test_Gets(t *testing.T) {
 
 			size:  10,
 			token: "2020-05-03%2021:35:02.809",
-			filters: map[string]string{
-				"customer_id": "fc5f8d06-8ff0-11ed-b07c-2776de9bed19",
+			filters: map[recording.Field]any{
+				recording.FieldCustomerID: uuid.FromStringOrNil("fc5f8d06-8ff0-11ed-b07c-2776de9bed19"),
 			},
 
 			responseRecordings: []*recording.Recording{

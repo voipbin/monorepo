@@ -7,7 +7,6 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
-	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -24,22 +23,18 @@ func Test_processV1RecordingsGet(t *testing.T) {
 		pageSize  uint64
 		pageToken string
 
-		responseFilters    map[string]string
 		responseRecordings []*recording.Recording
 		expectRes          *sock.Response
 	}{
 		{
 			name: "normal",
 			request: &sock.Request{
-				URI:    "/v1/recordings?page_size=10&page_token=2020-05-03%2021:35:02.809&filter_customer_id=c15af818-7f51-11ec-8eeb-f733ba8df393",
+				URI:    "/v1/recordings?page_size=10&page_token=2020-05-03%2021:35:02.809",
 				Method: sock.RequestMethodGet,
+				Data:   []byte(`{"customer_id":"c15af818-7f51-11ec-8eeb-f733ba8df393"}`),
 			},
 			pageSize:  10,
 			pageToken: "2020-05-03 21:35:02.809",
-
-			responseFilters: map[string]string{
-				"customer_id": "c15af818-7f51-11ec-8eeb-f733ba8df393",
-			},
 			responseRecordings: []*recording.Recording{
 				{
 					Identity: commonidentity.Identity{
@@ -68,19 +63,16 @@ func Test_processV1RecordingsGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockCall := callhandler.NewMockCallHandler(mc)
 			mockRecording := recordinghandler.NewMockRecordingHandler(mc)
 
 			h := &listenHandler{
-				utilHandler:      mockUtil,
 				sockHandler:      mockSock,
 				callHandler:      mockCall,
 				recordingHandler: mockRecording,
 			}
 
-			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
 			mockRecording.EXPECT().Gets(gomock.Any(), tt.pageSize, tt.pageToken, gomock.Any()).Return(tt.responseRecordings, nil)
 
 			res, err := h.processRequest(tt.request)

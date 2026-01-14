@@ -6,7 +6,6 @@ import (
 
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
-	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -118,15 +117,15 @@ func Test_processV1ExternalMediasGet(t *testing.T) {
 		pageToken string
 
 		responseExternalMedias []*externalmedia.ExternalMedia
-		responseFilters        map[string]string
 		expectRes              *sock.Response
 	}{
 		{
 			name: "normal",
 
 			request: &sock.Request{
-				URI:    "/v1/external-medias?page_size=10&page_token=2020-05-03%2021:35:02.809&reference_id=0971d7c4-e829-11ee-a17d-b320c527e478",
+				URI:    "/v1/external-medias?page_size=10&page_token=2020-05-03%2021:35:02.809",
 				Method: sock.RequestMethodGet,
+				Data:   []byte(`{"reference_id":"0971d7c4-e829-11ee-a17d-b320c527e478"}`),
 			},
 			pageSize:  10,
 			pageToken: "2020-05-03 21:35:02.809",
@@ -135,9 +134,6 @@ func Test_processV1ExternalMediasGet(t *testing.T) {
 				{
 					ID: uuid.FromStringOrNil("28db3628-e829-11ee-a39e-83e2f12ec29f"),
 				},
-			},
-			responseFilters: map[string]string{
-				"reference_id": "0971d7c4-e829-11ee-a17d-b320c527e478",
 			},
 			expectRes: &sock.Response{
 				StatusCode: 200,
@@ -149,8 +145,9 @@ func Test_processV1ExternalMediasGet(t *testing.T) {
 			name: "2 items",
 
 			request: &sock.Request{
-				URI:    "/v1/external-medias?page_size=10&page_token=2020-05-03%2021:35:02.809&filter_reference_id=98d20344-e829-11ee-992d-fbe3942f7a49",
+				URI:    "/v1/external-medias?page_size=10&page_token=2020-05-03%2021:35:02.809",
 				Method: sock.RequestMethodGet,
+				Data:   []byte(`{"reference_id":"98d20344-e829-11ee-992d-fbe3942f7a49"}`),
 			},
 			pageSize:  10,
 			pageToken: "2020-05-03 21:35:02.809",
@@ -162,9 +159,6 @@ func Test_processV1ExternalMediasGet(t *testing.T) {
 				{
 					ID: uuid.FromStringOrNil("992a4cca-e829-11ee-83e5-4bc5ace56a63"),
 				},
-			},
-			responseFilters: map[string]string{
-				"reference_id": "98d20344-e829-11ee-992d-fbe3942f7a49",
 			},
 			expectRes: &sock.Response{
 				StatusCode: 200,
@@ -179,19 +173,16 @@ func Test_processV1ExternalMediasGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockCall := callhandler.NewMockCallHandler(mc)
 			mockExternalMedia := externalmediahandler.NewMockExternalMediaHandler(mc)
 
 			h := &listenHandler{
-				utilHandler:          mockUtil,
 				sockHandler:          mockSock,
 				callHandler:          mockCall,
 				externalMediaHandler: mockExternalMedia,
 			}
 
-			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
 			mockExternalMedia.EXPECT().Gets(gomock.Any(), tt.pageSize, tt.pageToken, gomock.Any()).Return(tt.responseExternalMedias, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {

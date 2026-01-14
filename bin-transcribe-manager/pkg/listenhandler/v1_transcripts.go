@@ -7,8 +7,8 @@ import (
 	"strconv"
 
 	"monorepo/bin-common-handler/models/sock"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
-	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-transcribe-manager/models/transcript"
@@ -31,9 +31,19 @@ func (h *listenHandler) processV1TranscriptsGet(ctx context.Context, m *sock.Req
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// parse the filters and convert to typed filters
-	stringFilters := h.utilHandler.URLParseFilters(u)
-	filters := convertTranscriptFilters(stringFilters)
+	// get filters from request body
+	tmpFilters, err := utilhandler.ParseFiltersFromRequestBody(m.Data)
+	if err != nil {
+		log.Errorf("Could not parse filters. err: %v", err)
+		return simpleResponse(400), nil
+	}
+
+	// convert to typed filters
+	filters, err := utilhandler.ConvertFilters[transcript.FieldStruct, transcript.Field](transcript.FieldStruct{}, tmpFilters)
+	if err != nil {
+		log.Errorf("Could not convert filters. err: %v", err)
+		return simpleResponse(400), nil
+	}
 
 	tmp, err := h.transcriptHandler.Gets(ctx, pageSize, pageToken, filters)
 	if err != nil {
@@ -54,24 +64,4 @@ func (h *listenHandler) processV1TranscriptsGet(ctx context.Context, m *sock.Req
 	}
 
 	return res, nil
-}
-
-// convertTranscriptFilters converts string filters to typed transcript filters
-func convertTranscriptFilters(stringFilters map[string]string) map[transcript.Field]any {
-	filters := make(map[transcript.Field]any)
-
-	for k, v := range stringFilters {
-		switch k {
-		case "customer_id":
-			filters[transcript.FieldCustomerID] = uuid.FromStringOrNil(v)
-		case "transcribe_id":
-			filters[transcript.FieldTranscribeID] = uuid.FromStringOrNil(v)
-		case "deleted":
-			filters[transcript.FieldDeleted] = (v == "true")
-		case "direction":
-			filters[transcript.FieldDirection] = transcript.Direction(v)
-		}
-	}
-
-	return filters
 }

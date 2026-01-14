@@ -25,7 +25,7 @@ import (
 // GroupcallHandler is interface for service handle
 type GroupcallHandler interface {
 	Get(ctx context.Context, id uuid.UUID) (*groupcall.Groupcall, error)
-	Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*groupcall.Groupcall, error)
+	Gets(ctx context.Context, size uint64, token string, filters map[groupcall.Field]any) ([]*groupcall.Groupcall, error)
 	UpdateAnswerCallID(ctx context.Context, id uuid.UUID, callID uuid.UUID) (*groupcall.Groupcall, error)
 	Delete(ctx context.Context, id uuid.UUID) (*groupcall.Groupcall, error)
 
