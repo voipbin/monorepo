@@ -118,7 +118,7 @@ func Test_CompressCreate(t *testing.T) {
 			for i, id := range tt.fileIDs {
 				mockFile.EXPECT().Get(ctx, id).Return(tt.responseFilesByFileIDs[i], nil)
 			}
-			for i, _ := range tt.referenceIDs {
+			for i := range tt.referenceIDs {
 				mockFile.EXPECT().Gets(ctx, "", uint64(1000), gomock.Any()).Return(tt.responseFilesByReferenceIDs[i], nil)
 			}
 
@@ -228,7 +228,7 @@ func Test_compressGetFilesByReferenceIDs(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			for i, _ := range tt.referenceIDs {
+			for i := range tt.referenceIDs {
 				mockFile.EXPECT().Gets(ctx, "", uint64(1000), gomock.Any()).Return(tt.responseFiles[i], nil)
 			}
 
