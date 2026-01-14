@@ -104,7 +104,7 @@ func Test_EmailGets(t *testing.T) {
 		pageSize  uint64
 
 		responseEmails []ememail.Email
-		expectFilters  map[string]string
+		expectFilters map[ememail.Field]any
 		expectRes      []*ememail.WebhookMessage
 	}{
 		{
@@ -131,9 +131,9 @@ func Test_EmailGets(t *testing.T) {
 					},
 				},
 			},
-			expectFilters: map[string]string{
-				"customer_id": "5f621078-8e5f-11ee-97b2-cfe7337b701c",
-				"deleted":     "false",
+			expectFilters: map[ememail.Field]any{
+				ememail.FieldCustomerID: "5f621078-8e5f-11ee-97b2-cfe7337b701c",
+				ememail.FieldDeleted:    false,
 			},
 			expectRes: []*ememail.WebhookMessage{
 				{
@@ -167,9 +167,9 @@ func Test_EmailGets(t *testing.T) {
 					},
 				},
 			},
-			expectFilters: map[string]string{
-				"customer_id": "5f621078-8e5f-11ee-97b2-cfe7337b701c",
-				"deleted":     "false",
+			expectFilters: map[ememail.Field]any{
+				ememail.FieldCustomerID: "5f621078-8e5f-11ee-97b2-cfe7337b701c",
+				ememail.FieldDeleted:    false,
 			},
 			expectRes: []*ememail.WebhookMessage{
 				{

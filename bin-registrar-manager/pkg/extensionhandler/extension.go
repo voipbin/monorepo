@@ -12,6 +12,7 @@ import (
 	"monorepo/bin-registrar-manager/models/astendpoint"
 	"monorepo/bin-registrar-manager/models/common"
 	"monorepo/bin-registrar-manager/models/extension"
+	"monorepo/bin-registrar-manager/models/sipauth"
 )
 
 // Create creates a new extension
@@ -132,7 +133,7 @@ func (h *extensionHandler) GetByExtension(ctx context.Context, customerID uuid.U
 }
 
 // Gets returns list of extensions
-func (h *extensionHandler) Gets(ctx context.Context, token string, limit uint64, filters map[string]string) ([]*extension.Extension, error) {
+func (h *extensionHandler) Gets(ctx context.Context, token string, limit uint64, filters map[extension.Field]any) ([]*extension.Extension, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "Gets",
 		"filters": filters,
@@ -148,12 +149,10 @@ func (h *extensionHandler) Gets(ctx context.Context, token string, limit uint64,
 }
 
 // Update updates a exists extension
-func (h *extensionHandler) Update(ctx context.Context, id uuid.UUID, name string, detail string, password string) (*extension.Extension, error) {
+func (h *extensionHandler) Update(ctx context.Context, id uuid.UUID, fields map[extension.Field]any) (*extension.Extension, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"extension_id": id,
-		"name":         name,
-		"detail":       detail,
-		"password":     password,
+		"fields":       fields,
 	})
 
 	// create a update extension
@@ -163,18 +162,21 @@ func (h *extensionHandler) Update(ctx context.Context, id uuid.UUID, name string
 		return nil, err
 	}
 
-	// update ast_auth
-	auth := &astauth.AstAuth{
-		ID:       &ext.AuthID,
-		Password: &ext.Password,
-	}
-	if err := h.dbAst.AstAuthUpdate(ctx, auth); err != nil {
-		log.Errorf("Could not update the ast_auth info. err: %v", err)
-		return nil, err
+	// update ast_auth if password is being updated
+	if password, ok := fields[extension.FieldPassword]; ok {
+		passwordStr := password.(string)
+		auth := &astauth.AstAuth{
+			ID:       &ext.AuthID,
+			Password: &passwordStr,
+		}
+		if err := h.dbAst.AstAuthUpdate(ctx, auth); err != nil {
+			log.Errorf("Could not update the ast_auth info. err: %v", err)
+			return nil, err
+		}
 	}
 
 	// update extension
-	if err := h.dbBin.ExtensionUpdate(ctx, id, name, detail, password); err != nil {
+	if err := h.dbBin.ExtensionUpdate(ctx, id, fields); err != nil {
 		log.Errorf("Could not update the extension info. err: %v", err)
 		return nil, err
 	}
@@ -188,7 +190,14 @@ func (h *extensionHandler) Update(ctx context.Context, id uuid.UUID, name string
 
 	// update sipauth
 	sip := res.GenerateSIPAuth()
-	if err := h.dbBin.SIPAuthUpdateAll(ctx, sip); err != nil {
+	sipFields := map[sipauth.Field]any{
+		sipauth.FieldAuthTypes:  sip.AuthTypes,
+		sipauth.FieldRealm:      sip.Realm,
+		sipauth.FieldUsername:   sip.Username,
+		sipauth.FieldPassword:   sip.Password,
+		sipauth.FieldAllowedIPs: sip.AllowedIPs,
+	}
+	if err := h.dbBin.SIPAuthUpdate(ctx, sip.ID, sipFields); err != nil {
 		log.Errorf("Could not update sip auth. err: %v", err)
 		return nil, err
 	}

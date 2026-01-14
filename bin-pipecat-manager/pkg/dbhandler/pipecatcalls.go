@@ -3,8 +3,8 @@ package dbhandler
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
+
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-pipecat-manager/models/pipecatcall"
 
@@ -14,66 +14,15 @@ import (
 )
 
 var (
-	pipecatcallsTable  = "pipecat_pipecatcalls"
-	pipecatcallsFields = []string{
-		string(pipecatcall.FieldID),
-		string(pipecatcall.FieldCustomerID),
-
-		string(pipecatcall.FieldActiveflowID),
-		string(pipecatcall.FieldReferenceType),
-		string(pipecatcall.FieldReferenceID),
-
-		string(pipecatcall.FieldHostID),
-
-		string(pipecatcall.FieldLLMType),
-		string(pipecatcall.FieldLLMMessages),
-
-		string(pipecatcall.FieldSTTType),
-		string(pipecatcall.FieldSTTLanguage),
-
-		string(pipecatcall.FieldTTSType),
-		string(pipecatcall.FieldTTSLanguage),
-		string(pipecatcall.FieldTTSVoiceID),
-
-		string(pipecatcall.FieldTMCreate),
-		string(pipecatcall.FieldTMUpdate),
-		string(pipecatcall.FieldTMDelete),
-	}
+	pipecatcallsTable = "pipecat_pipecatcalls"
 )
 
+// pipecatcallGetFromRow gets the pipecatcall from the row.
 func (h *handler) pipecatcallGetFromRow(row *sql.Rows) (*pipecatcall.Pipecatcall, error) {
-	var llmMessages string
-
 	res := &pipecatcall.Pipecatcall{}
-	if err := row.Scan(
-		&res.ID,
-		&res.CustomerID,
 
-		&res.ActiveflowID,
-		&res.ReferenceType,
-		&res.ReferenceID,
-
-		&res.HostID,
-
-		&res.LLMType,
-		&llmMessages,
-
-		&res.STTType,
-		&res.STTLanguage,
-
-		&res.TTSType,
-		&res.TTSLanguage,
-		&res.TTSVoiceID,
-
-		&res.TMCreate,
-		&res.TMUpdate,
-		&res.TMDelete,
-	); err != nil {
+	if err := commondatabasehandler.ScanRow(row, res); err != nil {
 		return nil, fmt.Errorf("could not scan the row. pipecatcallGetFromRow. err: %v", err)
-	}
-
-	if err := json.Unmarshal([]byte(llmMessages), &res.LLMMessages); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the data. PipecatcallGet. err: %v", err)
 	}
 
 	return res, nil
@@ -82,38 +31,21 @@ func (h *handler) pipecatcallGetFromRow(row *sql.Rows) (*pipecatcall.Pipecatcall
 func (h *handler) PipecatcallCreate(ctx context.Context, f *pipecatcall.Pipecatcall) error {
 	now := h.utilHandler.TimeGetCurTime()
 
-	tmpLLMMessages, err := json.Marshal(f.LLMMessages)
+	// Set timestamps
+	f.TMCreate = now
+	f.TMUpdate = commondatabasehandler.DefaultTimeStamp
+	f.TMDelete = commondatabasehandler.DefaultTimeStamp
+
+	// Use PrepareFields to get field map
+	fields, err := commondatabasehandler.PrepareFields(f)
 	if err != nil {
-		return fmt.Errorf("could not marshal messages. PipecatcallCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. PipecatcallCreate. err: %v", err)
 	}
 
+	// Use SetMap instead of Columns/Values
 	sb := squirrel.
 		Insert(pipecatcallsTable).
-		Columns(pipecatcallsFields...).
-		Values(
-			f.ID.Bytes(),
-			f.CustomerID.Bytes(),
-
-			f.ActiveflowID.Bytes(),
-			f.ReferenceType,
-			f.ReferenceID.Bytes(),
-
-			f.HostID,
-
-			f.LLMType,
-			tmpLLMMessages,
-
-			f.STTType,
-			f.STTLanguage,
-
-			f.TTSType,
-			f.TTSLanguage,
-			f.TTSVoiceID,
-
-			now,                                    // tm_create
-			commondatabasehandler.DefaultTimeStamp, // tm_update
-			commondatabasehandler.DefaultTimeStamp, // tm_delete
-		).
+		SetMap(fields).
 		PlaceholderFormat(squirrel.Question)
 
 	query, args, err := sb.ToSql()
@@ -162,9 +94,11 @@ func (h *handler) pipecatcallGetFromCache(ctx context.Context, id uuid.UUID) (*p
 	return res, nil
 }
 
+// pipecatcallGetFromDB gets the pipecatcall info from the db.
 func (h *handler) pipecatcallGetFromDB(ctx context.Context, id uuid.UUID) (*pipecatcall.Pipecatcall, error) {
+	fields := commondatabasehandler.GetDBFields(&pipecatcall.Pipecatcall{})
 	query, args, err := squirrel.
-		Select(pipecatcallsFields...).
+		Select(fields...).
 		From(pipecatcallsTable).
 		Where(squirrel.Eq{string(pipecatcall.FieldID): id.Bytes()}).
 		PlaceholderFormat(squirrel.Question).
@@ -220,30 +154,23 @@ func (h *handler) PipecatcallUpdate(ctx context.Context, id uuid.UUID, fields ma
 
 	fields[pipecatcall.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
 
-	return h.pipecatcallUpdate(ctx, id, fields)
-}
-
-func (h *handler) pipecatcallUpdate(ctx context.Context, id uuid.UUID, fields map[pipecatcall.Field]any) error {
-	if len(fields) == 0 {
-		return nil
-	}
-
 	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
-		return fmt.Errorf("pipecatcallUpdate: prepare fields failed: %w", err)
+		return fmt.Errorf("PipecatcallUpdate: prepare fields failed: %w", err)
 	}
 
 	q := squirrel.Update(pipecatcallsTable).
 		SetMap(tmpFields).
-		Where(squirrel.Eq{"id": id.Bytes()})
+		Where(squirrel.Eq{string(pipecatcall.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
 
 	sqlStr, args, err := q.ToSql()
 	if err != nil {
-		return fmt.Errorf("pipecatcallUpdate: build SQL failed: %w", err)
+		return fmt.Errorf("PipecatcallUpdate: build SQL failed: %w", err)
 	}
 
-	if _, err := h.db.Exec(sqlStr, args...); err != nil {
-		return fmt.Errorf("pipecatcallUpdate: exec failed: %w", err)
+	if _, err := h.db.ExecContext(ctx, sqlStr, args...); err != nil {
+		return fmt.Errorf("PipecatcallUpdate: exec failed: %w", err)
 	}
 
 	_ = h.pipecatcallUpdateToCache(ctx, id)
@@ -251,16 +178,40 @@ func (h *handler) pipecatcallUpdate(ctx context.Context, id uuid.UUID, fields ma
 }
 
 func (h *handler) PipecatcallDelete(ctx context.Context, id uuid.UUID) error {
+	ts := h.utilHandler.TimeGetCurTime()
 
-	now := h.utilHandler.TimeGetCurTime()
 	fields := map[pipecatcall.Field]any{
-		pipecatcall.FieldTMDelete: now,
-		pipecatcall.FieldTMUpdate: now,
+		pipecatcall.FieldTMUpdate: ts,
+		pipecatcall.FieldTMDelete: ts,
 	}
 
-	if errUpdate := h.pipecatcallUpdate(ctx, id, fields); errUpdate != nil {
-		return fmt.Errorf("could not update pipecatcall for delete. PipecatcallDelete. err: %v", errUpdate)
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
+	if err != nil {
+		return fmt.Errorf("PipecatcallDelete: prepare fields failed: %w", err)
 	}
 
+	sb := squirrel.Update(pipecatcallsTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(pipecatcall.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := sb.ToSql()
+	if err != nil {
+		return fmt.Errorf("PipecatcallDelete: build SQL failed: %w", err)
+	}
+
+	result, err := h.db.ExecContext(ctx, sqlStr, args...)
+	if err != nil {
+		return fmt.Errorf("PipecatcallDelete: exec failed: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return errors.Wrapf(err, "could not get rows affected: %v", err)
+	} else if rowsAffected == 0 {
+		return ErrNotFound
+	}
+
+	_ = h.pipecatcallUpdateToCache(ctx, id)
 	return nil
 }

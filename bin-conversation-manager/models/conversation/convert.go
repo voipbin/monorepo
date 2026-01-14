@@ -1,63 +1,23 @@
 package conversation
 
 import (
-	"encoding/json"
-	"fmt"
-	commonaddress "monorepo/bin-common-handler/models/address"
-
-	"github.com/gofrs/uuid"
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 )
 
+// ConvertStringMapToFieldMap converts a map with string keys to a map with conversation.Field keys,
+// using reflection-based type conversion from bin-common-handler.
 func ConvertStringMapToFieldMap(src map[string]any) (map[Field]any, error) {
-	res := make(map[Field]any, len(src))
-
-	for key, val := range src {
-		field := Field(key)
-
-		switch field {
-		case FieldDeleted:
-			parsed, ok := val.(bool)
-			if !ok {
-				return nil, fmt.Errorf("expected bool for %s", key)
-			}
-			res[field] = parsed
-
-		case FieldID, FieldCustomerID, FieldOwnerID, FieldAccountID:
-			str, ok := val.(string)
-			if !ok {
-				return nil, fmt.Errorf("expected string for uuid field %s", key)
-			}
-			id := uuid.FromStringOrNil(str)
-			res[field] = id
-
-		case FieldType:
-			str, ok := val.(string)
-			if !ok {
-				return nil, fmt.Errorf("expected string for type field %s", key)
-			}
-			res[field] = Type(str)
-
-		case FieldSelf, FieldPeer:
-			var addr commonaddress.Address
-			switch v := val.(type) {
-			case string:
-				if err := json.Unmarshal([]byte(v), &addr); err != nil {
-					return nil, fmt.Errorf("invalid address JSON string: %v", err)
-				}
-			case map[string]any:
-				b, _ := json.Marshal(v)
-				if err := json.Unmarshal(b, &addr); err != nil {
-					return nil, fmt.Errorf("invalid address object: %v", err)
-				}
-			default:
-				return nil, fmt.Errorf("unsupported address type for %s", key)
-			}
-			res[field] = addr
-
-		default:
-			res[field] = val
-		}
+	// Use reflection-based converter with Conversation struct
+	typed, err := commondatabasehandler.ConvertMapToTypedMap(src, Conversation{})
+	if err != nil {
+		return nil, err
 	}
 
-	return res, nil
+	// Convert string keys to Field type
+	result := make(map[Field]any, len(typed))
+	for k, v := range typed {
+		result[Field(k)] = v
+	}
+
+	return result, nil
 }

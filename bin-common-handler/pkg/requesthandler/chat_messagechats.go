@@ -11,6 +11,7 @@ import (
 	chatrequest "monorepo/bin-chat-manager/pkg/listenhandler/models/request"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 	"monorepo/bin-common-handler/models/sock"
@@ -79,13 +80,15 @@ func (r *requestHandler) ChatV1MessagechatGet(ctx context.Context, messagechatID
 // ChatV1MessagechatGets sends a request to chat-manager
 // to getting a list of messagechat info.
 // it returns detail list of chat info if it succeed.
-func (r *requestHandler) ChatV1MessagechatGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]chatmessagechat.Messagechat, error) {
+func (r *requestHandler) ChatV1MessagechatGets(ctx context.Context, pageToken string, pageSize uint64, filters map[chatmessagechat.Field]any) ([]chatmessagechat.Messagechat, error) {
 	uri := fmt.Sprintf("/v1/messagechats?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
-	// parse filters
-	uri = r.utilHandler.URLMergeFilters(uri, filters)
+	m, err := json.Marshal(filters)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not marshal filters")
+	}
 
-	tmp, err := r.sendRequestChat(ctx, uri, sock.RequestMethodGet, "chat/messagechats", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestChat(ctx, uri, sock.RequestMethodGet, "chat/messagechats", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}

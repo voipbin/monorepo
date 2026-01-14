@@ -25,7 +25,7 @@ func Test_EventCUCustomerDeleted(t *testing.T) {
 		customer       *cmcustomer.Customer
 		responseTrunks []*trunk.Trunk
 
-		expectFilter map[string]string
+		expectFilter map[trunk.Field]any
 	}{
 		{
 			name: "normal",
@@ -46,9 +46,9 @@ func Test_EventCUCustomerDeleted(t *testing.T) {
 				},
 			},
 
-			expectFilter: map[string]string{
-				"customer_id": "e5412000-f09b-11ee-9f74-5b05e21bb6fc",
-				"deleted":     "false",
+			expectFilter: map[trunk.Field]any{
+				trunk.FieldCustomerID: uuid.FromStringOrNil("e5412000-f09b-11ee-9f74-5b05e21bb6fc"),
+				trunk.FieldDeleted:    false,
 			},
 		},
 	}

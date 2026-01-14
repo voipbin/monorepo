@@ -473,7 +473,7 @@ func Test_startIncomingDomainTypeRegistrarDestinationTypeExtension(t *testing.T)
 		responseFlow        *fmflow.Flow
 
 		expectCustomerID uuid.UUID
-		expectFilters    map[string]string
+		expectFilters    map[rmextension.Field]any
 		expectActions    []fmaction.Action
 	}{
 		{
@@ -517,10 +517,10 @@ func Test_startIncomingDomainTypeRegistrarDestinationTypeExtension(t *testing.T)
 			},
 
 			expectCustomerID: uuid.FromStringOrNil("49c42d3c-57eb-11ee-95a1-2778bda73d76"),
-			expectFilters: map[string]string{
-				"customer_id": "49c42d3c-57eb-11ee-95a1-2778bda73d76",
-				"deleted":     "false",
-				"extension":   "test-destination",
+			expectFilters: map[rmextension.Field]any{
+				rmextension.FieldCustomerID: "49c42d3c-57eb-11ee-95a1-2778bda73d76",
+				rmextension.FieldDeleted:    false,
+				rmextension.FieldExtension:  "test-destination",
 			},
 			expectActions: []fmaction.Action{
 				{
@@ -636,7 +636,7 @@ func Test_parseAddressTypeExtension(t *testing.T) {
 		responseExtensions []rmextension.Extension
 
 		expectExtensionID uuid.UUID
-		expectFilters     map[string]string
+		expectFilters     map[rmextension.Field]any
 		expectRes         *commonaddress.Address
 	}{
 		{
@@ -682,10 +682,10 @@ func Test_parseAddressTypeExtension(t *testing.T) {
 				},
 			},
 
-			expectFilters: map[string]string{
-				"customer_id": "b556c3d4-3071-11ef-bb2d-ab2af3aa5a97",
-				"deleted":     "false",
-				"extension":   "3000",
+			expectFilters: map[rmextension.Field]any{
+				rmextension.FieldCustomerID: "b556c3d4-3071-11ef-bb2d-ab2af3aa5a97",
+				rmextension.FieldDeleted:    false,
+				rmextension.FieldExtension:  "3000",
 			},
 			expectRes: &commonaddress.Address{
 				Type:       commonaddress.TypeExtension,

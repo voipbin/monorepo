@@ -72,8 +72,8 @@ func Test_FileCreate(t *testing.T) {
 				URIDownload:      "https://test.com/uri_download",
 				TMDownloadExpire: "2024-05-18 03:22:17.995000",
 				TMCreate:         "2024-05-18 03:22:17.995000",
-				TMUpdate:         DefaultTimeStamp,
-				TMDelete:         DefaultTimeStamp,
+				TMUpdate:         "9999-01-01 00:00:00.000000",
+				TMDelete:         "9999-01-01 00:00:00.000000",
 			},
 		},
 	}
@@ -120,7 +120,7 @@ func Test_FileGets(t *testing.T) {
 		files []file.File
 
 		size    uint64
-		filters map[string]string
+		filters map[file.Field]any
 
 		responseCurTime string
 		expectRes       []*file.File
@@ -145,9 +145,9 @@ func Test_FileGets(t *testing.T) {
 			},
 
 			10,
-			map[string]string{
-				"customer_id": "a42851e0-13f2-11ef-a75e-57b5fc5932e1",
-				"deleted":     "false",
+			map[file.Field]any{
+				file.FieldCustomerID: uuid.FromStringOrNil("a42851e0-13f2-11ef-a75e-57b5fc5932e1"),
+				file.FieldDeleted:    false,
 			},
 
 			"2024-05-16 03:22:17.995000",
@@ -159,8 +159,8 @@ func Test_FileGets(t *testing.T) {
 					},
 					Name:     "test1",
 					TMCreate: "2024-05-16 03:22:17.995000",
-					TMUpdate: DefaultTimeStamp,
-					TMDelete: DefaultTimeStamp,
+					TMUpdate: "9999-01-01 00:00:00.000000",
+					TMDelete: "9999-01-01 00:00:00.000000",
 				},
 				{
 					Identity: commonidentity.Identity{
@@ -169,8 +169,8 @@ func Test_FileGets(t *testing.T) {
 					},
 					Name:     "test2",
 					TMCreate: "2024-05-16 03:22:17.995000",
-					TMUpdate: DefaultTimeStamp,
-					TMDelete: DefaultTimeStamp,
+					TMUpdate: "9999-01-01 00:00:00.000000",
+					TMDelete: "9999-01-01 00:00:00.000000",
 				},
 			},
 		},
@@ -216,8 +216,7 @@ func Test_FileUpdate(t *testing.T) {
 		name string
 		file *file.File
 
-		fileName string
-		detail   string
+		updateFields map[file.Field]any
 
 		expectRes *file.File
 	}{
@@ -229,8 +228,10 @@ func Test_FileUpdate(t *testing.T) {
 				},
 			},
 
-			"test name",
-			"test detail",
+			map[file.Field]any{
+				file.FieldName:   "test name",
+				file.FieldDetail: "test detail",
+			},
 
 			&file.File{
 				Identity: commonidentity.Identity{
@@ -265,7 +266,7 @@ func Test_FileUpdate(t *testing.T) {
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
 			mockCache.EXPECT().FileSet(ctx, gomock.Any())
-			if err := h.FileUpdate(ctx, tt.file.ID, tt.fileName, tt.detail); err != nil {
+			if err := h.FileUpdate(ctx, tt.file.ID, tt.updateFields); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
@@ -338,7 +339,7 @@ func Test_FileDelete(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if res.TMDelete == DefaultTimeStamp {
+			if res.TMDelete == "9999-01-01 00:00:00.000000" {
 				t.Errorf("Wrong match. expect: any other, got: %s", res.TMDelete)
 			}
 

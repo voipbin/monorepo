@@ -110,7 +110,7 @@ func TestCustomerDelete(t *testing.T) {
 			expectRes: &customer.Customer{
 				ID:       uuid.FromStringOrNil("45adb3e8-7c65-11ec-8720-8f643ab80535"),
 				TMCreate: "2020-04-18 03:22:17.995000",
-				TMUpdate: DefaultTimeStamp,
+				TMUpdate: "2020-04-18 03:22:17.995000",
 				TMDelete: "2020-04-18 03:22:17.995000",
 			},
 		},
@@ -161,7 +161,7 @@ func Test_CustomerGets(t *testing.T) {
 		customers []*customer.Customer
 		size      uint64
 		token     string
-		filters   map[string]string
+		filters   map[customer.Field]any
 
 		responseCurTime string
 		expectRes       []*customer.Customer
@@ -178,8 +178,8 @@ func Test_CustomerGets(t *testing.T) {
 			},
 			size:  2,
 			token: "2020-04-18 03:22:17.995001",
-			filters: map[string]string{
-				"deleted": "false",
+			filters: map[customer.Field]any{
+				customer.FieldDeleted: false,
 			},
 
 			responseCurTime: "2020-04-18 03:22:17.995000",
@@ -235,25 +235,19 @@ func Test_CustomerGets(t *testing.T) {
 	}
 }
 
-func Test_CustomerSetBasicInfo(t *testing.T) {
+func Test_CustomerUpdate(t *testing.T) {
 
 	tests := []struct {
 		name     string
 		customer *customer.Customer
 
-		customerName  string
-		detail        string
-		email         string
-		phoneNumber   string
-		address       string
-		webhookMethod customer.WebhookMethod
-		webhookURI    string
+		updateFields map[customer.Field]any
 
 		responseCurTime string
 		expectRes       *customer.Customer
 	}{
 		{
-			name: "all",
+			name: "basic_info",
 			customer: &customer.Customer{
 				ID:            uuid.FromStringOrNil("a3697e6a-7c72-11ec-8fdf-dbda7d8fab3e"),
 				Name:          "test4",
@@ -265,13 +259,15 @@ func Test_CustomerSetBasicInfo(t *testing.T) {
 				WebhookURI:    "localhost.com",
 			},
 
-			customerName:  "test4 new",
-			detail:        "detail4 new",
-			email:         "test@test.com",
-			phoneNumber:   "+821100000001",
-			address:       "middle of nowhere",
-			webhookMethod: customer.WebhookMethodPost,
-			webhookURI:    "test.com",
+			updateFields: map[customer.Field]any{
+				customer.FieldName:          "test4 new",
+				customer.FieldDetail:        "detail4 new",
+				customer.FieldEmail:         "test@test.com",
+				customer.FieldPhoneNumber:   "+821100000001",
+				customer.FieldAddress:       "middle of nowhere",
+				customer.FieldWebhookMethod: customer.WebhookMethodPost,
+				customer.FieldWebhookURI:    "test.com",
+			},
 
 			responseCurTime: "2020-04-18 03:22:17.995000",
 			expectRes: &customer.Customer{
@@ -301,13 +297,15 @@ func Test_CustomerSetBasicInfo(t *testing.T) {
 				WebhookURI:    "localhost.com",
 			},
 
-			customerName:  "",
-			detail:        "",
-			email:         "",
-			phoneNumber:   "",
-			address:       "",
-			webhookMethod: customer.WebhookMethodNone,
-			webhookURI:    "",
+			updateFields: map[customer.Field]any{
+				customer.FieldName:          "",
+				customer.FieldDetail:        "",
+				customer.FieldEmail:         "",
+				customer.FieldPhoneNumber:   "",
+				customer.FieldAddress:       "",
+				customer.FieldWebhookMethod: customer.WebhookMethodNone,
+				customer.FieldWebhookURI:    "",
+			},
 
 			responseCurTime: "2020-04-18 03:22:17.995000",
 			expectRes: &customer.Customer{
@@ -345,17 +343,7 @@ func Test_CustomerSetBasicInfo(t *testing.T) {
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().CustomerSet(ctx, gomock.Any()).Return(nil)
-			if err := h.CustomerSetBasicInfo(
-				ctx,
-				tt.customer.ID,
-				tt.customerName,
-				tt.detail,
-				tt.email,
-				tt.phoneNumber,
-				tt.address,
-				tt.webhookMethod,
-				tt.webhookURI,
-			); err != nil {
+			if err := h.CustomerUpdate(ctx, tt.customer.ID, tt.updateFields); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
@@ -373,7 +361,7 @@ func Test_CustomerSetBasicInfo(t *testing.T) {
 	}
 }
 
-func Test_CustomerSetBillingAccountID(t *testing.T) {
+func Test_CustomerUpdateBillingAccountID(t *testing.T) {
 
 	tests := []struct {
 		name     string
@@ -428,9 +416,13 @@ func Test_CustomerSetBillingAccountID(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
+			fields := map[customer.Field]any{
+				customer.FieldBillingAccountID: tt.billingAccountID,
+			}
+
 			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().CustomerSet(gomock.Any(), gomock.Any()).Return(nil)
-			if err := h.CustomerSetBillingAccountID(ctx, tt.customer.ID, tt.billingAccountID); err != nil {
+			if err := h.CustomerUpdate(ctx, tt.customer.ID, fields); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 

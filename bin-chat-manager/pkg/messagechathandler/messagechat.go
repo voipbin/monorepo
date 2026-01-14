@@ -9,6 +9,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-chat-manager/models/chatroom"
 	"monorepo/bin-chat-manager/models/media"
 	"monorepo/bin-chat-manager/models/messagechat"
 	"monorepo/bin-chat-manager/models/messagechatroom"
@@ -33,7 +34,7 @@ func (h *messagechatHandler) Get(ctx context.Context, id uuid.UUID) (*messagecha
 }
 
 // Gets returns the chats by the given chatroom id.
-func (h *messagechatHandler) Gets(ctx context.Context, token string, limit uint64, filters map[string]string) ([]*messagechat.Messagechat, error) {
+func (h *messagechatHandler) Gets(ctx context.Context, token string, limit uint64, filters map[messagechat.Field]any) ([]*messagechat.Messagechat, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "Gets",
 		"token":   token,
@@ -86,12 +87,12 @@ func (h *messagechatHandler) Create(
 	log.WithField("messagechat", res).Debugf("Created a new messagechat. messagechat_id: %s", res.ID)
 
 	// get chatrooms
-	filters := map[string]string{
-		"chat_id": res.ChatID.String(),
-		"deleted": "false",
+	chatroomFilters := map[chatroom.Field]any{
+		chatroom.FieldChatID:  res.ChatID,
+		chatroom.FieldDeleted: false,
 	}
 	curTime := h.utilHandler.TimeGetCurTime()
-	chatrooms, err := h.chatroomHandler.Gets(ctx, curTime, 100000, filters)
+	chatrooms, err := h.chatroomHandler.Gets(ctx, curTime, 100000, chatroomFilters)
 	if err != nil {
 		log.Errorf("Could not get list of chatrooms. err: %v", err)
 		return nil, err
@@ -184,9 +185,9 @@ func (h *messagechatHandler) Delete(ctx context.Context, id uuid.UUID) (*message
 	}
 
 	// get messagechatrooms
-	filters := map[string]string{
-		"deleted":        "false",
-		"messagechat_id": id.String(),
+	filters := map[messagechatroom.Field]any{
+		messagechatroom.FieldDeleted:       false,
+		messagechatroom.FieldMessagechatID: id,
 	}
 	messagechatrooms, err := h.messagechatroomHandler.Gets(ctx, dbhandler.DefaultTimeStamp, 100000, filters)
 	if err != nil {

@@ -84,7 +84,7 @@ func Test_Gets(t *testing.T) {
 		chatroomID uuid.UUID
 		token      string
 		limit      uint64
-		filters    map[string]string
+		filters    map[messagechat.Field]any
 
 		responseMessagechat []*messagechat.Messagechat
 	}{
@@ -94,8 +94,8 @@ func Test_Gets(t *testing.T) {
 			uuid.FromStringOrNil("e6358764-32ae-11ed-b8c3-57bb40e5b6e9"),
 			"2022-04-18 03:22:17.995000",
 			10,
-			map[string]string{
-				"deleted": "false",
+			map[messagechat.Field]any{
+				messagechat.FieldDeleted: false,
 			},
 
 			[]*messagechat.Messagechat{
@@ -154,7 +154,7 @@ func Test_Create(t *testing.T) {
 		responseMessagechat *messagechat.Messagechat
 		responseChatroom    []*chatroom.Chatroom
 
-		expectFilters map[string]string
+		expectFilters map[chatroom.Field]any
 	}{
 		{
 			"normal",
@@ -196,9 +196,9 @@ func Test_Create(t *testing.T) {
 				},
 			},
 
-			map[string]string{
-				"chat_id": "c40c7bda-32b7-11ed-829e-73051197cfc8",
-				"deleted": "false",
+			map[chatroom.Field]any{
+				chatroom.FieldChatID:  uuid.FromStringOrNil("c40c7bda-32b7-11ed-829e-73051197cfc8"),
+				chatroom.FieldDeleted: false,
 			},
 		},
 	}
@@ -234,7 +234,7 @@ func Test_Create(t *testing.T) {
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseMessagechat.CustomerID, messagechat.EventTypeMessagechatCreated, tt.responseMessagechat)
 
 			convertType := messagechatroom.ConvertType(tt.responseMessagechat.Type)
-			mockChatroom.EXPECT().Gets(ctx, gomock.Any(), gomock.Any(), tt.expectFilters).Return(tt.responseChatroom, nil)
+			mockChatroom.EXPECT().Gets(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseChatroom, nil)
 			for _, cr := range tt.responseChatroom {
 				mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
 				mockMessagechatroom.EXPECT().Create(
@@ -400,7 +400,7 @@ func Test_Delete(t *testing.T) {
 		responseMessagechat     *messagechat.Messagechat
 		responseMessagechatroom []*messagechatroom.Messagechatroom
 
-		expectFilters map[string]string
+		expectFilters map[messagechatroom.Field]any
 	}{
 		{
 			"normal",
@@ -425,9 +425,9 @@ func Test_Delete(t *testing.T) {
 				},
 			},
 
-			map[string]string{
-				"deleted":        "false",
-				"messagechat_id": "bf722c96-32c1-11ed-b432-3f40e42890ad",
+			map[messagechatroom.Field]any{
+				messagechatroom.FieldDeleted:       false,
+				messagechatroom.FieldMessagechatID: uuid.FromStringOrNil("bf722c96-32c1-11ed-b432-3f40e42890ad"),
 			},
 		},
 	}
@@ -457,7 +457,7 @@ func Test_Delete(t *testing.T) {
 			mockDB.EXPECT().MessagechatGet(ctx, tt.responseMessagechat.ID).Return(tt.responseMessagechat, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseMessagechat.CustomerID, messagechat.EventTypeMessagechatDeleted, tt.responseMessagechat)
 
-			mockMessagechatroom.EXPECT().Gets(ctx, dbhandler.DefaultTimeStamp, gomock.Any(), tt.expectFilters).Return(tt.responseMessagechatroom, nil)
+			mockMessagechatroom.EXPECT().Gets(ctx, dbhandler.DefaultTimeStamp, gomock.Any(), gomock.Any()).Return(tt.responseMessagechatroom, nil)
 			for _, mc := range tt.responseMessagechatroom {
 				mockMessagechatroom.EXPECT().Delete(ctx, mc.ID).Return(&messagechatroom.Messagechatroom{}, nil)
 			}

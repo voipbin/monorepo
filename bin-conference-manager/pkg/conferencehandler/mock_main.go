@@ -119,7 +119,7 @@ func (mr *MockConferenceHandlerMockRecorder) GetByConfbridgeID(ctx, id any) *gom
 }
 
 // Gets mocks base method.
-func (m *MockConferenceHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*conference.Conference, error) {
+func (m *MockConferenceHandler) Gets(ctx context.Context, size uint64, token string, filters map[conference.Field]any) ([]*conference.Conference, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Gets", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*conference.Conference)

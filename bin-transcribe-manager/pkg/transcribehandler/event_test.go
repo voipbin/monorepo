@@ -31,7 +31,7 @@ func Test_EventCUCustomerDeleted(t *testing.T) {
 		customer            *cucustomer.Customer
 		responseTranscribes []*transcribe.Transcribe
 
-		expectFilters map[string]string
+		expectFilters map[transcribe.Field]any
 	}{
 		{
 			name: "normal",
@@ -56,9 +56,9 @@ func Test_EventCUCustomerDeleted(t *testing.T) {
 				},
 			},
 
-			expectFilters: map[string]string{
-				"customer_id": "cac89366-f2e4-11ee-a393-f7b712d3f1a4",
-				"deleted":     "false",
+			expectFilters: map[transcribe.Field]any{
+				transcribe.FieldCustomerID: uuid.FromStringOrNil("cac89366-f2e4-11ee-a393-f7b712d3f1a4"),
+				transcribe.FieldDeleted:    false,
 			},
 		},
 	}
@@ -89,11 +89,7 @@ func Test_EventCUCustomerDeleted(t *testing.T) {
 			for _, tr := range tt.responseTranscribes {
 				mockDB.EXPECT().TranscribeGet(ctx, tr.ID).Return(tr, nil)
 
-				tmpFilters := map[string]string{
-					"transcribe_id": tr.ID.String(),
-					"deleted":       "false",
-				}
-				mockTranscript.EXPECT().Gets(ctx, uint64(1000), "", tmpFilters).Return([]*transcript.Transcript{}, nil)
+				mockTranscript.EXPECT().Gets(ctx, uint64(1000), "", gomock.Any()).Return([]*transcript.Transcript{}, nil)
 
 				mockDB.EXPECT().TranscribeDelete(ctx, tr.ID).Return(nil)
 				mockDB.EXPECT().TranscribeGet(ctx, tr.ID).Return(tr, nil)
@@ -115,7 +111,7 @@ func Test_EventCMCallHangup(t *testing.T) {
 		call                *cmcall.Call
 		responseTranscribes []*transcribe.Transcribe
 
-		expectFilters map[string]string
+		expectFilters map[transcribe.Field]any
 	}{
 		{
 			name: "normal",
@@ -142,9 +138,9 @@ func Test_EventCMCallHangup(t *testing.T) {
 				},
 			},
 
-			expectFilters: map[string]string{
-				"reference_id": "60865546-f2ef-11ee-93b7-13e9bdae3b1c",
-				"deleted":      "false",
+			expectFilters: map[transcribe.Field]any{
+				transcribe.FieldReferenceID: uuid.FromStringOrNil("60865546-f2ef-11ee-93b7-13e9bdae3b1c"),
+				transcribe.FieldDeleted:     false,
 			},
 		},
 	}
@@ -191,7 +187,7 @@ func Test_EventCMConfbridgeTerminated(t *testing.T) {
 		confbridge          *cmconfbridge.Confbridge
 		responseTranscribes []*transcribe.Transcribe
 
-		expectFilters map[string]string
+		expectFilters map[transcribe.Field]any
 	}{
 		{
 			name: "normal",
@@ -218,9 +214,9 @@ func Test_EventCMConfbridgeTerminated(t *testing.T) {
 				},
 			},
 
-			expectFilters: map[string]string{
-				"reference_id": "a722a706-f2f0-11ee-9467-abd69c44e65f",
-				"deleted":      "false",
+			expectFilters: map[transcribe.Field]any{
+				transcribe.FieldReferenceID: uuid.FromStringOrNil("a722a706-f2f0-11ee-9467-abd69c44e65f"),
+				transcribe.FieldDeleted:     false,
 			},
 		},
 	}

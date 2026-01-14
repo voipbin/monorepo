@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -118,7 +119,7 @@ func (h *numberHandler) dbGet(ctx context.Context, id uuid.UUID) (*number.Number
 }
 
 // dbList returns list of numbers info of the given customer_id
-func (h *numberHandler) dbList(ctx context.Context, pageSize uint64, pageToken string, filters map[string]string) ([]*number.Number, error) {
+func (h *numberHandler) dbList(ctx context.Context, pageSize uint64, pageToken string, filters map[number.Field]any) ([]*number.Number, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":       "dbList",
 		"page_size":  pageSize,
@@ -137,77 +138,33 @@ func (h *numberHandler) dbList(ctx context.Context, pageSize uint64, pageToken s
 	return numbers, nil
 }
 
-// dbUpdateInfo updates the number
-func (h *numberHandler) dbUpdateInfo(ctx context.Context, id uuid.UUID, callFlowID uuid.UUID, messageFlowID uuid.UUID, name string, detail string) (*number.Number, error) {
+// dbUpdate updates a number with the given fields.
+func (h *numberHandler) dbUpdate(ctx context.Context, id uuid.UUID, fields map[number.Field]any, eventType string) (*number.Number, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":            "dbUpdateInfo",
-		"number_id":       id,
-		"call_flow_id":    callFlowID,
-		"message_flow_id": messageFlowID,
-		"name":            name,
-		"detail":          detail,
-	})
-	log.Debugf("Updating the number info. number_id: %s", id)
-
-	if err := h.db.NumberUpdateInfo(ctx, id, callFlowID, messageFlowID, name, detail); err != nil {
-		log.Errorf("Could not set flow_id to number. number_id: %s, err:%v", id, err)
-		return nil, err
-	}
-
-	res, err := h.db.NumberGet(ctx, id)
-	if err != nil {
-		log.Errorf("Could not get the updated number. number_id: %s, err: %v", id, err)
-		return nil, err
-	}
-	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, number.EventTypeNumberUpdated, res)
-
-	return res, nil
-}
-
-// dbUpdateFlowID updates the number's flow_id
-func (h *numberHandler) dbUpdateFlowID(ctx context.Context, id uuid.UUID, callFlowID uuid.UUID, messageFlowID uuid.UUID) (*number.Number, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":            "dbUpdateFlowID",
-		"number_id":       id,
-		"call_flow_id":    callFlowID,
-		"message_flow_id": messageFlowID,
-	})
-	log.Debugf("UpdateFlowID. number_id: %s", id)
-
-	if err := h.db.NumberUpdateFlowID(ctx, id, callFlowID, messageFlowID); err != nil {
-		log.Errorf("Could not update the flow_id. number_id: %s, err:%v", id, err)
-		return nil, err
-	}
-
-	res, err := h.db.NumberGet(ctx, id)
-	if err != nil {
-		log.Errorf("Could not get the updated number. number_id: %s, err: %v", id, err)
-		return nil, err
-	}
-	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, number.EventTypeNumberUpdated, res)
-
-	return res, nil
-}
-
-// dbUpdateRenew updates the number's tm_renew
-func (h *numberHandler) dbUpdateRenew(ctx context.Context, id uuid.UUID) (*number.Number, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":      "dbUpdateRenew",
+		"func":      "dbUpdate",
 		"number_id": id,
+		"fields":    fields,
 	})
-	log.Debugf("UpdateRenew. number_id: %s", id)
+	log.Debugf("Updating number. number_id: %s", id)
 
-	if err := h.db.NumberUpdateTMRenew(ctx, id); err != nil {
-		log.Errorf("Could not update the tm_renew. number_id: %s, err:%v", id, err)
-		return nil, err
+	if err := h.db.NumberUpdate(ctx, id, fields); err != nil {
+		log.Errorf("Could not update the number. number_id: %s, err:%v", id, err)
+		return nil, errors.Wrapf(err, "could not update number")
 	}
 
 	res, err := h.db.NumberGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get the updated number. number_id: %s, err: %v", id, err)
-		return nil, err
+		return nil, errors.Wrapf(err, "could not get the updated number")
 	}
-	h.notifyHandler.PublishEvent(ctx, number.EventTypeNumberRenewed, res)
+
+	// Publish event based on event type
+	switch eventType {
+	case number.EventTypeNumberRenewed:
+		h.notifyHandler.PublishEvent(ctx, eventType, res)
+	default:
+		h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, eventType, res)
+	}
 
 	return res, nil
 }
@@ -219,8 +176,8 @@ func (h *numberHandler) dbListByTMRenew(ctx context.Context, tmRenew string) ([]
 		"tm_renew": tmRenew,
 	})
 
-	filters := map[string]string{
-		"deleted": "false",
+	filters := map[number.Field]any{
+		number.FieldDeleted: false,
 	}
 
 	res, err := h.db.NumberGetsByTMRenew(ctx, tmRenew, 100, filters)

@@ -8,6 +8,7 @@ import (
 
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
@@ -32,6 +33,7 @@ type ListenHandler interface {
 
 type listenHandler struct {
 	sockHandler sockhandler.SockHandler
+	utilHandler utilhandler.UtilHandler
 
 	messageHandler messagehandler.MessageHandler
 }
@@ -83,6 +85,7 @@ func simpleResponse(code int) *sock.Response {
 func NewListenHandler(sockHandler sockhandler.SockHandler, messageHandler messagehandler.MessageHandler) ListenHandler {
 	h := &listenHandler{
 		sockHandler:    sockHandler,
+		utilHandler:    utilhandler.NewUtilHandler(),
 		messageHandler: messageHandler,
 	}
 

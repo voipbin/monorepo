@@ -241,7 +241,7 @@ func Test_TrunkGets(t *testing.T) {
 
 		response []rmtrunk.Trunk
 
-		expectFilters map[string]string
+		expectFilters map[rmtrunk.Field]any
 		expectRes     []*rmtrunk.WebhookMessage
 	}
 
@@ -271,9 +271,9 @@ func Test_TrunkGets(t *testing.T) {
 				},
 			},
 
-			map[string]string{
-				"customer_id": "5f621078-8e5f-11ee-97b2-cfe7337b701c",
-				"deleted":     "false",
+			map[rmtrunk.Field]any{
+				rmtrunk.FieldCustomerID: "5f621078-8e5f-11ee-97b2-cfe7337b701c",
+				rmtrunk.FieldDeleted:    false,
 			},
 			[]*rmtrunk.WebhookMessage{
 				{

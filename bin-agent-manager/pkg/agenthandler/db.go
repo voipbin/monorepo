@@ -14,7 +14,7 @@ import (
 )
 
 // dbGets returns agents
-func (h *agentHandler) dbGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*agent.Agent, error) {
+func (h *agentHandler) dbGets(ctx context.Context, size uint64, token string, filters map[agent.Field]any) ([]*agent.Agent, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "dbGets",
 		"size":    size,

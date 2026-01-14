@@ -239,7 +239,7 @@ func (mr *MockDBHandlerMockRecorder) CallGetByChannelID(ctx, channelID any) *gom
 }
 
 // CallGets mocks base method.
-func (m *MockDBHandler) CallGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*call.Call, error) {
+func (m *MockDBHandler) CallGets(ctx context.Context, size uint64, token string, filters map[call.Field]any) ([]*call.Call, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallGets", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*call.Call)
@@ -545,6 +545,20 @@ func (m *MockDBHandler) CallTXStart(id uuid.UUID) (*sql.Tx, *call.Call, error) {
 func (mr *MockDBHandlerMockRecorder) CallTXStart(id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallTXStart", reflect.TypeOf((*MockDBHandler)(nil).CallTXStart), id)
+}
+
+// CallUpdate mocks base method.
+func (m *MockDBHandler) CallUpdate(ctx context.Context, id uuid.UUID, fields map[call.Field]any) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallUpdate", ctx, id, fields)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CallUpdate indicates an expected call of CallUpdate.
+func (mr *MockDBHandlerMockRecorder) CallUpdate(ctx, id, fields any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallUpdate", reflect.TypeOf((*MockDBHandler)(nil).CallUpdate), ctx, id, fields)
 }
 
 // ChannelCreate mocks base method.
@@ -889,7 +903,7 @@ func (mr *MockDBHandlerMockRecorder) ConfbridgeGetByBridgeID(ctx, bridgeID any) 
 }
 
 // ConfbridgeGets mocks base method.
-func (m *MockDBHandler) ConfbridgeGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*confbridge.Confbridge, error) {
+func (m *MockDBHandler) ConfbridgeGets(ctx context.Context, size uint64, token string, filters map[confbridge.Field]any) ([]*confbridge.Confbridge, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConfbridgeGets", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*confbridge.Confbridge)
@@ -985,6 +999,20 @@ func (m *MockDBHandler) ConfbridgeSetStatus(ctx context.Context, id uuid.UUID, s
 func (mr *MockDBHandlerMockRecorder) ConfbridgeSetStatus(ctx, id, status any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfbridgeSetStatus", reflect.TypeOf((*MockDBHandler)(nil).ConfbridgeSetStatus), ctx, id, status)
+}
+
+// ConfbridgeUpdate mocks base method.
+func (m *MockDBHandler) ConfbridgeUpdate(ctx context.Context, id uuid.UUID, fields map[confbridge.Field]any) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConfbridgeUpdate", ctx, id, fields)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ConfbridgeUpdate indicates an expected call of ConfbridgeUpdate.
+func (mr *MockDBHandlerMockRecorder) ConfbridgeUpdate(ctx, id, fields any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfbridgeUpdate", reflect.TypeOf((*MockDBHandler)(nil).ConfbridgeUpdate), ctx, id, fields)
 }
 
 // ExternalMediaDelete mocks base method.
@@ -1117,7 +1145,7 @@ func (mr *MockDBHandlerMockRecorder) GroupcallGet(ctx, id any) *gomock.Call {
 }
 
 // GroupcallGets mocks base method.
-func (m *MockDBHandler) GroupcallGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*groupcall.Groupcall, error) {
+func (m *MockDBHandler) GroupcallGets(ctx context.Context, size uint64, token string, filters map[groupcall.Field]any) ([]*groupcall.Groupcall, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GroupcallGets", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*groupcall.Groupcall)
@@ -1201,6 +1229,20 @@ func (mr *MockDBHandlerMockRecorder) GroupcallSetStatus(ctx, id, status any) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupcallSetStatus", reflect.TypeOf((*MockDBHandler)(nil).GroupcallSetStatus), ctx, id, status)
 }
 
+// GroupcallUpdate mocks base method.
+func (m *MockDBHandler) GroupcallUpdate(ctx context.Context, id uuid.UUID, fields map[groupcall.Field]any) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GroupcallUpdate", ctx, id, fields)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GroupcallUpdate indicates an expected call of GroupcallUpdate.
+func (mr *MockDBHandlerMockRecorder) GroupcallUpdate(ctx, id, fields any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupcallUpdate", reflect.TypeOf((*MockDBHandler)(nil).GroupcallUpdate), ctx, id, fields)
+}
+
 // RecordingCreate mocks base method.
 func (m *MockDBHandler) RecordingCreate(ctx context.Context, c *recording.Recording) error {
 	m.ctrl.T.Helper()
@@ -1260,7 +1302,7 @@ func (mr *MockDBHandlerMockRecorder) RecordingGetByRecordingName(ctx, recordingN
 }
 
 // RecordingGets mocks base method.
-func (m *MockDBHandler) RecordingGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*recording.Recording, error) {
+func (m *MockDBHandler) RecordingGets(ctx context.Context, size uint64, token string, filters map[recording.Field]any) ([]*recording.Recording, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RecordingGets", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*recording.Recording)
@@ -1286,4 +1328,18 @@ func (m *MockDBHandler) RecordingSetStatus(ctx context.Context, id uuid.UUID, st
 func (mr *MockDBHandlerMockRecorder) RecordingSetStatus(ctx, id, status any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingSetStatus", reflect.TypeOf((*MockDBHandler)(nil).RecordingSetStatus), ctx, id, status)
+}
+
+// RecordingUpdate mocks base method.
+func (m *MockDBHandler) RecordingUpdate(ctx context.Context, id uuid.UUID, fields map[recording.Field]any) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RecordingUpdate", ctx, id, fields)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RecordingUpdate indicates an expected call of RecordingUpdate.
+func (mr *MockDBHandlerMockRecorder) RecordingUpdate(ctx, id, fields any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingUpdate", reflect.TypeOf((*MockDBHandler)(nil).RecordingUpdate), ctx, id, fields)
 }

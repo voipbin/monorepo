@@ -3,136 +3,58 @@ package dbhandler
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
-	"strconv"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
+
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"monorepo/bin-chat-manager/models/chatroom"
 )
 
 const (
-	// select query for chat get
-	chatroomSelect = `
-	select
-		id,
-		customer_id,
-		owner_type,
-		owner_id,
-
-		type,
-		chat_id,
-
-		room_owner_id,
-		participant_ids,
-
-		name,
-		detail,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	from
-		chat_chatrooms
-	`
+	chatroomTable = "chat_chatrooms"
 )
 
-// chatroomGetFromRow gets the chat from the row.
+// chatroomGetFromRow gets the chatroom from the row.
 func (h *handler) chatroomGetFromRow(row *sql.Rows) (*chatroom.Chatroom, error) {
-	var participantIDs string
-
 	res := &chatroom.Chatroom{}
-	if err := row.Scan(
-		&res.ID,
-		&res.CustomerID,
-		&res.OwnerType,
-		&res.OwnerID,
 
-		&res.Type,
-		&res.ChatID,
-
-		&res.RoomOwnerID,
-		&participantIDs,
-
-		&res.Name,
-		&res.Detail,
-
-		&res.TMCreate,
-		&res.TMUpdate,
-		&res.TMDelete,
-	); err != nil {
+	if err := commondatabasehandler.ScanRow(row, res); err != nil {
 		return nil, fmt.Errorf("could not scan the row. chatroomGetFromRow. err: %v", err)
-	}
-
-	if err := json.Unmarshal([]byte(participantIDs), &res.ParticipantIDs); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the data. chatroomGetFromRow. err: %v", err)
 	}
 
 	return res, nil
 }
 
-// ChatroomCreate creates a new chat record
+// ChatroomCreate creates a new chatroom record
 func (h *handler) ChatroomCreate(ctx context.Context, c *chatroom.Chatroom) error {
+	now := h.utilHandler.TimeGetCurTime()
 
-	q := `insert into chat_chatrooms(
-		id,
-		customer_id,
-		owner_type,
-		owner_id,
+	// Set timestamps
+	c.TMCreate = now
+	c.TMUpdate = commondatabasehandler.DefaultTimeStamp
+	c.TMDelete = commondatabasehandler.DefaultTimeStamp
 
-		type,
-		chat_id,
-
-		room_owner_id,
-		participant_ids,
-
-		name,
-		detail,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	) values(
-		?, ?, ?, ?,
-		?, ?,
-		?, ?,
-		?, ?,
-		?, ?, ?
-		)`
-	stmt, err := h.db.PrepareContext(ctx, q)
+	// Use PrepareFields to get field map
+	fields, err := commondatabasehandler.PrepareFields(c)
 	if err != nil {
-		return fmt.Errorf("could not prepare. ChatroomCreate. err: %v", err)
-	}
-	defer func() {
-		_ = stmt.Close()
-	}()
-
-	participantIDs, err := json.Marshal(c.ParticipantIDs)
-	if err != nil {
-		return fmt.Errorf("could not marshal actions. ChatroomCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. ChatroomCreate. err: %v", err)
 	}
 
-	_, err = stmt.ExecContext(ctx,
-		c.ID.Bytes(),
-		c.CustomerID.Bytes(),
-		c.OwnerType,
-		c.OwnerID.Bytes(),
+	// Use SetMap instead of Columns/Values
+	sb := squirrel.
+		Insert(chatroomTable).
+		SetMap(fields).
+		PlaceholderFormat(squirrel.Question)
 
-		c.Type,
-		c.ChatID.Bytes(),
-
-		c.RoomOwnerID.Bytes(),
-		participantIDs,
-
-		c.Name,
-		c.Detail,
-
-		c.TMCreate,
-		c.TMUpdate,
-		c.TMDelete,
-	)
+	query, args, err := sb.ToSql()
 	if err != nil {
+		return fmt.Errorf("could not build query. ChatroomCreate. err: %v", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
 		return fmt.Errorf("could not execute query. ChatroomCreate. err: %v", err)
 	}
 
@@ -141,9 +63,8 @@ func (h *handler) ChatroomCreate(ctx context.Context, c *chatroom.Chatroom) erro
 	return nil
 }
 
-// chatroomUpdateToCache gets the chat from the DB and update the cache.
+// chatroomUpdateToCache gets the chatroom from the DB and update the cache.
 func (h *handler) chatroomUpdateToCache(ctx context.Context, id uuid.UUID) error {
-
 	res, err := h.chatroomGetFromDB(ctx, id)
 	if err != nil {
 		return err
@@ -156,7 +77,7 @@ func (h *handler) chatroomUpdateToCache(ctx context.Context, id uuid.UUID) error
 	return nil
 }
 
-// chatroomSetToCache sets the given chat to the cache
+// chatroomSetToCache sets the given chatroom to the cache
 func (h *handler) chatroomSetToCache(ctx context.Context, f *chatroom.Chatroom) error {
 	if err := h.cache.ChatroomSet(ctx, f); err != nil {
 		return err
@@ -165,9 +86,8 @@ func (h *handler) chatroomSetToCache(ctx context.Context, f *chatroom.Chatroom) 
 	return nil
 }
 
-// chatroomGetFromCache returns chat from the cache if possible.
+// chatroomGetFromCache returns chatroom from the cache if possible.
 func (h *handler) chatroomGetFromCache(ctx context.Context, id uuid.UUID) (*chatroom.Chatroom, error) {
-
 	// get from cache
 	res, err := h.cache.ChatroomGet(ctx, id)
 	if err != nil {
@@ -177,22 +97,20 @@ func (h *handler) chatroomGetFromCache(ctx context.Context, id uuid.UUID) (*chat
 	return res, nil
 }
 
-// chatroomGetFromDB gets the chat info from the db.
+// chatroomGetFromDB gets the chatroom info from the db.
 func (h *handler) chatroomGetFromDB(ctx context.Context, id uuid.UUID) (*chatroom.Chatroom, error) {
-
-	// prepare
-	q := fmt.Sprintf("%s where id = ?", chatroomSelect)
-
-	stmt, err := h.db.PrepareContext(ctx, q)
+	fields := commondatabasehandler.GetDBFields(&chatroom.Chatroom{})
+	query, args, err := squirrel.
+		Select(fields...).
+		From(chatroomTable).
+		Where(squirrel.Eq{string(chatroom.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not prepare. chatroomGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. chatroomGetFromDB. err: %v", err)
 	}
-	defer func() {
-		_ = stmt.Close()
-	}()
 
-	// query
-	row, err := stmt.QueryContext(ctx, id.Bytes())
+	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. chatroomGetFromDB. err: %v", err)
 	}
@@ -201,6 +119,9 @@ func (h *handler) chatroomGetFromDB(ctx context.Context, id uuid.UUID) (*chatroo
 	}()
 
 	if !row.Next() {
+		if err := row.Err(); err != nil {
+			return nil, fmt.Errorf("row iteration error. chatroomGetFromDB. err: %v", err)
+		}
 		return nil, ErrNotFound
 	}
 
@@ -214,7 +135,6 @@ func (h *handler) chatroomGetFromDB(ctx context.Context, id uuid.UUID) (*chatroo
 
 // ChatroomGet returns chatroom.
 func (h *handler) ChatroomGet(ctx context.Context, id uuid.UUID) (*chatroom.Chatroom, error) {
-
 	res, err := h.chatroomGetFromCache(ctx, id)
 	if err == nil {
 		return res, nil
@@ -231,41 +151,31 @@ func (h *handler) ChatroomGet(ctx context.Context, id uuid.UUID) (*chatroom.Chat
 }
 
 // ChatroomGets returns list of chatrooms.
-func (h *handler) ChatroomGets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*chatroom.Chatroom, error) {
-
-	// prepare
-	q := fmt.Sprintf(`%s
-	where
-		tm_create < ?
-	`, chatroomSelect)
-
-	values := []interface{}{
-		token,
+func (h *handler) ChatroomGets(ctx context.Context, token string, size uint64, filters map[chatroom.Field]any) ([]*chatroom.Chatroom, error) {
+	if token == "" {
+		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	for k, v := range filters {
-		switch k {
-		case "customer_id", "owner_id", "room_owner_id", "chat_id":
-			tmp := uuid.FromStringOrNil(v)
-			q = fmt.Sprintf("%s and %s = ?", q, k)
-			values = append(values, tmp.Bytes())
+	fields := commondatabasehandler.GetDBFields(&chatroom.Chatroom{})
+	sb := squirrel.
+		Select(fields...).
+		From(chatroomTable).
+		Where(squirrel.Lt{string(chatroom.FieldTMCreate): token}).
+		OrderBy(string(chatroom.FieldTMCreate) + " DESC").
+		Limit(size).
+		PlaceholderFormat(squirrel.Question)
 
-		case "deleted":
-			if v == "false" {
-				q = fmt.Sprintf("%s and tm_delete >= ?", q)
-				values = append(values, DefaultTimeStamp)
-			}
-
-		default:
-			q = fmt.Sprintf("%s and %s = ?", q, k)
-			values = append(values, v)
-		}
+	sb, err := commondatabasehandler.ApplyFields(sb, filters)
+	if err != nil {
+		return nil, fmt.Errorf("could not apply filters. ChatroomGets. err: %v", err)
 	}
 
-	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
-	values = append(values, strconv.FormatUint(size, 10))
+	query, args, err := sb.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. ChatroomGets. err: %v", err)
+	}
 
-	rows, err := h.db.Query(q, values...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ChatroomGets. err: %v", err)
 	}
@@ -273,57 +183,97 @@ func (h *handler) ChatroomGets(ctx context.Context, token string, size uint64, f
 		_ = rows.Close()
 	}()
 
-	var res []*chatroom.Chatroom
+	res := []*chatroom.Chatroom{}
 	for rows.Next() {
 		u, err := h.chatroomGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not scan the row. ChatroomGets. err: %v", err)
+			return nil, fmt.Errorf("could not get data. ChatroomGets, err: %v", err)
 		}
-
 		res = append(res, u)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error. ChatroomGets. err: %v", err)
 	}
 
 	return res, nil
 }
 
-// ChatroomUpdateBasicInfo updates the basic information.
-func (h *handler) ChatroomUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error {
-	q := `
-	update chat_chatrooms set
-		name = ?,
-		detail = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	if _, err := h.db.Exec(q, name, detail, h.utilHandler.TimeGetCurTime(), id.Bytes()); err != nil {
-		return fmt.Errorf("could not execute the query. ChatroomUpdateBasicInfo. err: %v", err)
+// ChatroomUpdate updates the chatroom with the given fields.
+func (h *handler) ChatroomUpdate(ctx context.Context, id uuid.UUID, fields map[chatroom.Field]any) error {
+	if len(fields) == 0 {
+		return nil
 	}
 
-	// set to the cache
-	_ = h.chatroomUpdateToCache(ctx, id)
+	fields[chatroom.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
 
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
+	if err != nil {
+		return fmt.Errorf("ChatroomUpdate: prepare fields failed: %w", err)
+	}
+
+	q := squirrel.Update(chatroomTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(chatroom.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := q.ToSql()
+	if err != nil {
+		return fmt.Errorf("ChatroomUpdate: build SQL failed: %w", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, sqlStr, args...); err != nil {
+		return fmt.Errorf("ChatroomUpdate: exec failed: %w", err)
+	}
+
+	_ = h.chatroomUpdateToCache(ctx, id)
 	return nil
 }
 
-// ChatroomDelete deletes the given chat
-func (h *handler) ChatroomDelete(ctx context.Context, id uuid.UUID) error {
-	q := `
-	update chat_chatrooms set
-		tm_delete = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
+// ChatroomUpdateBasicInfo updates the basic information.
+func (h *handler) ChatroomUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error {
+	fields := map[chatroom.Field]any{
+		chatroom.FieldName:   name,
+		chatroom.FieldDetail: detail,
+	}
+	return h.ChatroomUpdate(ctx, id, fields)
+}
 
+// ChatroomDelete deletes the given chatroom
+func (h *handler) ChatroomDelete(ctx context.Context, id uuid.UUID) error {
 	ts := h.utilHandler.TimeGetCurTime()
 
-	if _, err := h.db.Exec(q, ts, ts, id.Bytes()); err != nil {
-		return fmt.Errorf("could not execute the query. ChatroomDelete. err: %v", err)
+	fields := map[chatroom.Field]any{
+		chatroom.FieldTMUpdate: ts,
+		chatroom.FieldTMDelete: ts,
 	}
 
-	// delete cache
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
+	if err != nil {
+		return fmt.Errorf("ChatroomDelete: prepare fields failed: %w", err)
+	}
+
+	sb := squirrel.Update(chatroomTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(chatroom.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := sb.ToSql()
+	if err != nil {
+		return fmt.Errorf("ChatroomDelete: build SQL failed: %w", err)
+	}
+
+	result, err := h.db.ExecContext(ctx, sqlStr, args...)
+	if err != nil {
+		return fmt.Errorf("ChatroomDelete: exec failed: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("could not get rows affected: %w", err)
+	} else if rowsAffected == 0 {
+		return ErrNotFound
+	}
+
 	_ = h.chatroomUpdateToCache(ctx, id)
 
 	return nil

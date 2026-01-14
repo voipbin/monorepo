@@ -140,7 +140,7 @@ func Test_BillingGets(t *testing.T) {
 		name     string
 		billings []*billing.Billing
 
-		filters map[string]string
+		filters map[billing.Field]any
 
 		responseCurTime string
 		expectRes       []*billing.Billing
@@ -164,8 +164,8 @@ func Test_BillingGets(t *testing.T) {
 				},
 			},
 
-			filters: map[string]string{
-				"customer_id": "a9db1420-07ae-11ee-ab10-1ffa68fea7d8",
+			filters: map[billing.Field]any{
+				billing.FieldCustomerID: uuid.FromStringOrNil("a9db1420-07ae-11ee-ab10-1ffa68fea7d8"),
 			},
 
 			responseCurTime: "2023-06-08 03:22:17.995000",

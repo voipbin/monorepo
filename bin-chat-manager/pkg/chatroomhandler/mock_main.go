@@ -103,7 +103,7 @@ func (mr *MockChatroomHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
 }
 
 // Gets mocks base method.
-func (m *MockChatroomHandler) Gets(ctx context.Context, token string, limit uint64, filters map[string]string) ([]*chatroom.Chatroom, error) {
+func (m *MockChatroomHandler) Gets(ctx context.Context, token string, limit uint64, filters map[chatroom.Field]any) ([]*chatroom.Chatroom, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Gets", ctx, token, limit, filters)
 	ret0, _ := ret[0].([]*chatroom.Chatroom)

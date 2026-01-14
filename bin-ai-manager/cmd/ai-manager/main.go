@@ -13,6 +13,7 @@ import (
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/sirupsen/logrus"
@@ -173,10 +174,13 @@ func runListen(
 	messageHandler messagehandler.MessageHandler,
 	summaryHandler summaryhandler.SummaryHandler,
 ) error {
+	utilHandler := utilhandler.NewUtilHandler()
+
 	listenHandler := listenhandler.NewListenHandler(
 		sockHandler,
 		string(commonoutline.QueueNameAIRequest),
 		string(commonoutline.QueueNameDelay),
+		utilHandler,
 		aiHandler,
 		aicallhandler,
 		messageHandler,

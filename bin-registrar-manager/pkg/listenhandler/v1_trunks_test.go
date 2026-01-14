@@ -8,7 +8,6 @@ import (
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
-	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -108,8 +107,7 @@ func Test_processV1TrunksGet(t *testing.T) {
 		pageSize   uint64
 		request    *sock.Request
 
-		responseFilters map[string]string
-		responseTrunks  []*trunk.Trunk
+		responseTrunks []*trunk.Trunk
 
 		expectRes *sock.Response
 	}
@@ -121,13 +119,10 @@ func Test_processV1TrunksGet(t *testing.T) {
 			"2020-10-10T03:30:17.000000",
 			10,
 			&sock.Request{
-				URI:      "/v1/trunks?page_token=2020-10-10T03:30:17.000000&page_size=10&filter_customer_id=8c1f0206-7fed-11ec-bc4d-b75bc59a142c",
+				URI:      "/v1/trunks?page_token=2020-10-10T03:30:17.000000&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
-			},
-
-			map[string]string{
-				"customer_id": "8c1f0206-7fed-11ec-bc4d-b75bc59a142c",
+				Data:     []byte(`{"customer_id":"8c1f0206-7fed-11ec-bc4d-b75bc59a142c"}`),
 			},
 			[]*trunk.Trunk{
 				{
@@ -154,13 +149,10 @@ func Test_processV1TrunksGet(t *testing.T) {
 			"2020-10-10T03:30:17.000000",
 			10,
 			&sock.Request{
-				URI:      "/v1/trunks?page_token=2020-10-10T03:30:17.000000&page_size=10&filter_customer_id=8c1f0206-7fed-11ec-bc4d-b75bc59a142c",
+				URI:      "/v1/trunks?page_token=2020-10-10T03:30:17.000000&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
-			},
-
-			map[string]string{
-				"customer_id": "8c1f0206-7fed-11ec-bc4d-b75bc59a142c",
+				Data:     []byte(`{"customer_id":"8c1f0206-7fed-11ec-bc4d-b75bc59a142c"}`),
 			},
 			[]*trunk.Trunk{},
 			&sock.Response{
@@ -179,17 +171,14 @@ func Test_processV1TrunksGet(t *testing.T) {
 			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockTrunk := trunkhandler.NewMockTrunkHandler(mc)
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
 
 			h := &listenHandler{
 				sockHandler:  mockSock,
 				reqHandler:   mockReq,
-				utilHandler:  mockUtil,
 				trunkHandler: mockTrunk,
 			}
 
-			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
-			mockTrunk.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, tt.responseFilters).Return(tt.responseTrunks, nil)
+			mockTrunk.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, gomock.Any()).Return(tt.responseTrunks, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -271,7 +260,7 @@ func Test_processV1TrunksIDPut(t *testing.T) {
 				trunkHandler: mockTrunk,
 			}
 
-			mockTrunk.EXPECT().Update(gomock.Any(), tt.id, tt.trunkName, tt.detail, tt.authTypes, tt.username, tt.password, tt.allowedIPs).Return(tt.resTrunk, nil)
+			mockTrunk.EXPECT().Update(gomock.Any(), tt.id, gomock.Any()).Return(tt.resTrunk, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

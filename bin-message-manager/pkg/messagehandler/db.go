@@ -10,20 +10,16 @@ import (
 	"monorepo/bin-message-manager/models/target"
 )
 
-// dbGets returns list of messges info of the given customer_id
-func (h *messageHandler) dbGets(ctx context.Context, customerID uuid.UUID, pageSize uint64, pageToken string) ([]*message.Message, error) {
+// dbGets returns list of messges info with filters
+func (h *messageHandler) dbGets(ctx context.Context, token string, size uint64, filters map[message.Field]any) ([]*message.Message, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "dbGets",
-		"customer_id": customerID,
+		"func":    "dbGets",
+		"filters": filters,
 	})
 
-	if pageToken == "" {
-		pageToken = h.utilHandler.TimeGetCurTime()
-	}
-
-	res, err := h.db.MessageGets(ctx, customerID, pageSize, pageToken)
+	res, err := h.db.MessageGets(ctx, token, size, filters)
 	if err != nil {
-		log.Errorf("Could not get messages. customer_id: %s, err:%v", customerID, err)
+		log.Errorf("Could not get messages. err:%v", err)
 		return nil, err
 	}
 

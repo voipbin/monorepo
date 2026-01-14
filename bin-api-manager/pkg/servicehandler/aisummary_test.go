@@ -118,7 +118,7 @@ func Test_AISummaryGetsByCustomerID(t *testing.T) {
 		agent   *amagent.Agent
 		size    uint64
 		token   string
-		filters map[string]string
+		filters map[amsummary.Field]any
 
 		response  []amsummary.Summary
 		expectRes []*amsummary.WebhookMessage
@@ -135,9 +135,9 @@ func Test_AISummaryGetsByCustomerID(t *testing.T) {
 			},
 			size:  10,
 			token: "2020-09-20 03:23:20.995000",
-			filters: map[string]string{
-				"deleted":     "false",
-				"customer_id": "2017e1fe-0ccb-11f0-9c4f-73268b39a2cc",
+			filters: map[amsummary.Field]any{
+				amsummary.FieldDeleted:    false,
+				amsummary.FieldCustomerID: "2017e1fe-0ccb-11f0-9c4f-73268b39a2cc",
 			},
 
 			response: []amsummary.Summary{

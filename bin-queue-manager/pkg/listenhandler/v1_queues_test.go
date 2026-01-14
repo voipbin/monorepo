@@ -6,7 +6,6 @@ import (
 
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
-	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
@@ -117,7 +116,7 @@ func Test_processV1QueuesGet(t *testing.T) {
 
 		request *sock.Request
 
-		responseFilters map[string]string
+		responseFilters map[queue.Field]any
 		responseQueues  []*queue.Queue
 
 		expectedPageSize  uint64
@@ -127,13 +126,15 @@ func Test_processV1QueuesGet(t *testing.T) {
 		{
 			name: "normal",
 			request: &sock.Request{
-				URI:    "/v1/queues?page_size=10&page_token=2020-05-03%2021:35:02.809&filter_customer_id=570b5094-7f55-11ec-b5cd-1b925f9028af&filter_deleted=false",
-				Method: sock.RequestMethodGet,
+				URI:      "/v1/queues?page_size=10&page_token=2020-05-03%2021:35:02.809",
+				Method:   sock.RequestMethodGet,
+				DataType: "application/json",
+				Data:     []byte(`{"customer_id":"570b5094-7f55-11ec-b5cd-1b925f9028af","deleted":false}`),
 			},
 
-			responseFilters: map[string]string{
-				"customer_id": "570b5094-7f55-11ec-b5cd-1b925f9028af",
-				"deleted":     "false",
+			responseFilters: map[queue.Field]any{
+				queue.FieldCustomerID: uuid.FromStringOrNil("570b5094-7f55-11ec-b5cd-1b925f9028af"),
+				queue.FieldDeleted:    false,
 			},
 			responseQueues: []*queue.Queue{
 				{
@@ -154,13 +155,15 @@ func Test_processV1QueuesGet(t *testing.T) {
 		{
 			name: "2 items",
 			request: &sock.Request{
-				URI:    "/v1/queues?page_size=10&page_token=2020-05-03%2021:35:02.809&customer_id=6a7ce2b4-7f55-11ec-a666-8b44aa06d0db&filter_deleted=false",
-				Method: sock.RequestMethodGet,
+				URI:      "/v1/queues?page_size=10&page_token=2020-05-03%2021:35:02.809",
+				Method:   sock.RequestMethodGet,
+				DataType: "application/json",
+				Data:     []byte(`{"customer_id":"6a7ce2b4-7f55-11ec-a666-8b44aa06d0db","deleted":false}`),
 			},
 
-			responseFilters: map[string]string{
-				"customer_id": "6a7ce2b4-7f55-11ec-a666-8b44aa06d0db",
-				"deleted":     "false",
+			responseFilters: map[queue.Field]any{
+				queue.FieldCustomerID: uuid.FromStringOrNil("6a7ce2b4-7f55-11ec-a666-8b44aa06d0db"),
+				queue.FieldDeleted:    false,
 			},
 			responseQueues: []*queue.Queue{
 				{
@@ -190,19 +193,15 @@ func Test_processV1QueuesGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockQueue := queuehandler.NewMockQueueHandler(mc)
 
 			h := &listenHandler{
-				utilHanlder: mockUtil,
-				sockHandler: mockSock,
-
+				sockHandler:  mockSock,
 				queueHandler: mockQueue,
 			}
 
-			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
-			mockQueue.EXPECT().Gets(gomock.Any(), tt.expectedPageSize, tt.expectedPageToken, tt.responseFilters).Return(tt.responseQueues, nil)
+			mockQueue.EXPECT().Gets(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseQueues, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

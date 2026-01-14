@@ -74,6 +74,9 @@ func Test_validateCreate(t *testing.T) {
 
 		responseCustomer *customer.Customer
 		expectedRes      bool
+
+		expectedFilterCustomer map[customer.Field]any
+		expectedFilterAgent    map[amagent.Field]any
 	}{
 		{
 			name: "normal1",
@@ -86,6 +89,15 @@ func Test_validateCreate(t *testing.T) {
 			},
 
 			expectedRes: true,
+
+			expectedFilterCustomer: map[customer.Field]any{
+				customer.FieldDeleted: false,
+				customer.FieldEmail:   "test@voipbin.net",
+			},
+			expectedFilterAgent: map[amagent.Field]any{
+				amagent.FieldDeleted:  false,
+				amagent.FieldUsername: "test@voipbin.net",
+			},
 		},
 	}
 
@@ -108,18 +120,8 @@ func Test_validateCreate(t *testing.T) {
 			ctx := context.Background()
 
 			mockUtil.EXPECT().EmailIsValid(tt.email).Return(true)
-
-			filterCustomer := map[string]string{
-				"deleted": "false",
-				"email":   tt.email,
-			}
-			mockDB.EXPECT().CustomerGets(gomock.Any(), uint64(100), "", filterCustomer).Return([]*customer.Customer{}, nil)
-
-			filterAgent := map[string]string{
-				"deleted":  "false",
-				"username": tt.email,
-			}
-			mockReq.EXPECT().AgentV1AgentGets(gomock.Any(), "", uint64(100), filterAgent).Return([]amagent.Agent{}, nil)
+			mockDB.EXPECT().CustomerGets(gomock.Any(), uint64(100), "", tt.expectedFilterCustomer).Return([]*customer.Customer{}, nil)
+			mockReq.EXPECT().AgentV1AgentGets(gomock.Any(), "", uint64(100), tt.expectedFilterAgent).Return([]amagent.Agent{}, nil)
 
 			res := h.validateCreate(ctx, tt.email)
 			if res != tt.expectedRes {

@@ -10,29 +10,29 @@ import (
 type Confbridge struct {
 	commonidentity.Identity
 
-	ActiveflowID  uuid.UUID     `json:"activeflow_id,omitempty"`  // activeflow id
-	ReferenceType ReferenceType `json:"reference_type,omitempty"` // reference type
-	ReferenceID   uuid.UUID     `json:"reference_id,omitempty"`   // reference id
+	ActiveflowID  uuid.UUID     `json:"activeflow_id,omitempty" db:"activeflow_id,uuid"`  // activeflow id
+	ReferenceType ReferenceType `json:"reference_type,omitempty" db:"reference_type"`     // reference type
+	ReferenceID   uuid.UUID     `json:"reference_id,omitempty" db:"reference_id,uuid"`    // reference id
 
-	Type     Type   `json:"type"`
-	Status   Status `json:"status"`
-	BridgeID string `json:"bridge_id"` // bridge id
-	Flags    []Flag `json:"flags"`     // list of flags
+	Type     Type   `json:"type" db:"type"`
+	Status   Status `json:"status" db:"status"`
+	BridgeID string `json:"bridge_id" db:"bridge_id"` // bridge id
+	Flags    []Flag `json:"flags" db:"flags,json"`    // list of flags
 
-	ChannelCallIDs map[string]uuid.UUID `json:"channel_call_ids"` // channelid:callid
+	ChannelCallIDs map[string]uuid.UUID `json:"channel_call_ids" db:"channel_call_ids,json"` // channelid:callid
 
 	// recording id for currently recording this confbridge. if recording is ongoing, the recording request will be rejected.
 	// but this is optional. by the recording handler, it is possible to recording the confbridge without this limitation and
 	// it will not set the recording id here.
-	RecordingID  uuid.UUID   `json:"recording_id"`
-	RecordingIDs []uuid.UUID `json:"recording_ids"` // list of recording ids.
+	RecordingID  uuid.UUID   `json:"recording_id" db:"recording_id,uuid"`
+	RecordingIDs []uuid.UUID `json:"recording_ids" db:"recording_ids,json"` // list of recording ids.
 
 	// current external media id
-	ExternalMediaID uuid.UUID `json:"external_media_id"`
+	ExternalMediaID uuid.UUID `json:"external_media_id" db:"external_media_id,uuid"`
 
-	TMCreate string `json:"tm_create"`
-	TMUpdate string `json:"tm_update"`
-	TMDelete string `json:"tm_delete"`
+	TMCreate string `json:"tm_create" db:"tm_create"`
+	TMUpdate string `json:"tm_update" db:"tm_update"`
+	TMDelete string `json:"tm_delete" db:"tm_delete"`
 }
 
 type ReferenceType string

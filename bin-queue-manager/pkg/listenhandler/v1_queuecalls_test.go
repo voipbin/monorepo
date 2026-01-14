@@ -8,7 +8,6 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
-	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -26,7 +25,7 @@ func Test_processV1QueuecallsGet(t *testing.T) {
 
 		pageSize        uint64
 		pageToken       string
-		responseFilters map[string]string
+		responseFilters map[queuecall.Field]any
 
 		queuecalls []*queuecall.Queuecall
 
@@ -35,18 +34,20 @@ func Test_processV1QueuecallsGet(t *testing.T) {
 		{
 			name: "normal",
 			request: &sock.Request{
-				URI:    "/v1/queuecalls?page_size=10&page_token=2020-05-03%2021:35:02.809&filter_customer_id=f9f94078-7f54-11ec-8387-9fe49204286f&filter_deleted=false&filter_queue_id=d885e09e-b14e-11ee-95f5-37ef89c64b7a&filter_status=waiting",
-				Method: sock.RequestMethodGet,
+				URI:      "/v1/queuecalls?page_size=10&page_token=2020-05-03%2021:35:02.809",
+				Method:   sock.RequestMethodGet,
+				DataType: "application/json",
+				Data:     []byte(`{"customer_id":"f9f94078-7f54-11ec-8387-9fe49204286f","deleted":false,"queue_id":"d885e09e-b14e-11ee-95f5-37ef89c64b7a","status":"waiting"}`),
 			},
 
 			pageSize:  10,
 			pageToken: "2020-05-03 21:35:02.809",
 
-			responseFilters: map[string]string{
-				"customer_id": "f9f94078-7f54-11ec-8387-9fe49204286f",
-				"deleted":     "false",
-				"queue_id":    "d885e09e-b14e-11ee-95f5-37ef89c64b7a",
-				"status":      "waiting",
+			responseFilters: map[queuecall.Field]any{
+				queuecall.FieldCustomerID: uuid.FromStringOrNil("f9f94078-7f54-11ec-8387-9fe49204286f"),
+				queuecall.FieldDeleted:    false,
+				queuecall.FieldQueueID:    uuid.FromStringOrNil("d885e09e-b14e-11ee-95f5-37ef89c64b7a"),
+				queuecall.FieldStatus:     queuecall.StatusWaiting,
 			},
 
 			queuecalls: []*queuecall.Queuecall{
@@ -66,15 +67,17 @@ func Test_processV1QueuecallsGet(t *testing.T) {
 		{
 			name: "2 items",
 			request: &sock.Request{
-				URI:    "/v1/queuecalls?page_size=10&page_token=2020-05-03%2021:35:02.809&filter_customer_id=13529ca4-7f55-11ec-b445-c3f90a718170&filter_deleted=false",
-				Method: sock.RequestMethodGet,
+				URI:      "/v1/queuecalls?page_size=10&page_token=2020-05-03%2021:35:02.809",
+				Method:   sock.RequestMethodGet,
+				DataType: "application/json",
+				Data:     []byte(`{"customer_id":"13529ca4-7f55-11ec-b445-c3f90a718170","deleted":false}`),
 			},
 
 			pageSize:  10,
 			pageToken: "2020-05-03 21:35:02.809",
-			responseFilters: map[string]string{
-				"customer_id": "13529ca4-7f55-11ec-b445-c3f90a718170",
-				"deleted":     "false",
+			responseFilters: map[queuecall.Field]any{
+				queuecall.FieldCustomerID: uuid.FromStringOrNil("13529ca4-7f55-11ec-b445-c3f90a718170"),
+				queuecall.FieldDeleted:    false,
 			},
 
 			queuecalls: []*queuecall.Queuecall{
@@ -104,19 +107,15 @@ func Test_processV1QueuecallsGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockQueuecall := queuecallhandler.NewMockQueuecallHandler(mc)
 
 			h := &listenHandler{
-				utilHanlder: mockUtil,
-				sockHandler: mockSock,
-
+				sockHandler:      mockSock,
 				queuecallHandler: mockQueuecall,
 			}
 
-			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
-			mockQueuecall.EXPECT().Gets(gomock.Any(), tt.pageSize, tt.pageToken, tt.responseFilters).Return(tt.queuecalls, nil)
+			mockQueuecall.EXPECT().Gets(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.queuecalls, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -9,25 +9,25 @@ import (
 type Extension struct {
 	commonidentity.Identity
 
-	Name   string `json:"name"`
-	Detail string `json:"detail"`
+	Name   string `json:"name" db:"name"`
+	Detail string `json:"detail" db:"detail"`
 
 	// asterisk resources
-	EndpointID string `json:"endpoint_id"`
-	AORID      string `json:"aor_id"`
-	AuthID     string `json:"auth_id"`
+	EndpointID string `json:"endpoint_id" db:"endpoint_id"`
+	AORID      string `json:"aor_id" db:"aor_id"`
+	AuthID     string `json:"auth_id" db:"auth_id"`
 
-	Extension string `json:"extension"`
+	Extension string `json:"extension" db:"extension"`
 
-	DomainName string `json:"domain_name"`
+	DomainName string `json:"domain_name" db:"domain_name"`
 
-	Realm    string `json:"realm"`    // DO NOT CHANGE. This used by the kamailio's INVITE validation
-	Username string `json:"username"` // DO NOT CHANGE. This used by the kamailio's INVITE validation
-	Password string `json:"password"` // DO NOT CHANGE. This used by the kamailio's INVITE validation
+	Realm    string `json:"realm" db:"realm"`       // DO NOT CHANGE. This used by the kamailio's INVITE validation
+	Username string `json:"username" db:"username"` // DO NOT CHANGE. This used by the kamailio's INVITE validation
+	Password string `json:"password" db:"password"` // DO NOT CHANGE. This used by the kamailio's INVITE validation
 
-	TMCreate string `json:"tm_create"`
-	TMUpdate string `json:"tm_update"`
-	TMDelete string `json:"tm_delete"`
+	TMCreate string `json:"tm_create" db:"tm_create"`
+	TMUpdate string `json:"tm_update" db:"tm_update"`
+	TMDelete string `json:"tm_delete" db:"tm_delete"`
 }
 
 // GenerateSIPAuth returns sipauth of the given extension

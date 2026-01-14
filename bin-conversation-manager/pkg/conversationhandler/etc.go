@@ -10,9 +10,9 @@ import (
 )
 
 func (h *conversationHandler) NumberGet(ctx context.Context, number string) (*nmnumber.Number, error) {
-	filters := map[string]string{
-		"number":  number,
-		"deleted": "false",
+	filters := map[nmnumber.Field]any{
+		nmnumber.FieldNumber:  number,
+		nmnumber.FieldDeleted: false,
 	}
 
 	tmps, err := h.reqHandler.NumberV1NumberGets(ctx, "", 1, filters)

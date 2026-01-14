@@ -11,18 +11,21 @@ import (
 	cfrequest "monorepo/bin-conference-manager/pkg/listenhandler/models/request"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 )
 
 // ConferenceV1ConferencecallGets sends a request to conference-manager
 // to getting a list of conferencecalls info.
 // it returns detail list of conferencecalls info if it succeed.
-func (r *requestHandler) ConferenceV1ConferencecallGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]cfconferencecall.Conferencecall, error) {
+func (r *requestHandler) ConferenceV1ConferencecallGets(ctx context.Context, pageToken string, pageSize uint64, filters map[cfconferencecall.Field]any) ([]cfconferencecall.Conferencecall, error) {
 	uri := fmt.Sprintf("/v1/conferencecalls?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
-	// parse filters
-	uri = r.utilHandler.URLMergeFilters(uri, filters)
+	m, err := json.Marshal(filters)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not marshal filters")
+	}
 
-	tmp, err := r.sendRequestConference(ctx, uri, sock.RequestMethodGet, "conference/conferencecalls", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestConference(ctx, uri, sock.RequestMethodGet, "conference/conferencecalls", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}

@@ -8,6 +8,7 @@ import (
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -22,8 +23,9 @@ func Test_OutdialTargetCallCreate(t *testing.T) {
 
 	mockCache := cachehandler.NewMockCacheHandler(mc)
 	h := handler{
-		db:    dbTest,
-		cache: mockCache,
+		db:          dbTest,
+		cache:       mockCache,
+		utilHandler: utilhandler.NewUtilHandler(),
 	}
 
 	tests := []struct {
@@ -193,19 +195,18 @@ func Test_OutdialTargetCallCreate(t *testing.T) {
 	}
 }
 
-func Test_OutdialTargetCallGetsByOutdialIDAndStatus(t *testing.T) {
+func Test_OutdialTargetCallGets(t *testing.T) {
 
 	tests := []struct {
 		name               string
 		outdialTargetCalls []*outdialtargetcall.OutdialTargetCall
 
-		outdialID uuid.UUID
-		status    outdialtargetcall.Status
+		filters map[outdialtargetcall.Field]any
 
 		expectRes []*outdialtargetcall.OutdialTargetCall
 	}{
 		{
-			"1 item",
+			"filter by outdial_id and status - 1 item",
 			[]*outdialtargetcall.OutdialTargetCall{
 				{
 					Identity: commonidentity.Identity{
@@ -227,8 +228,10 @@ func Test_OutdialTargetCallGetsByOutdialIDAndStatus(t *testing.T) {
 				},
 			},
 
-			uuid.FromStringOrNil("a39ef300-b1de-11ec-be84-23ef6b7b9999"),
-			outdialtargetcall.StatusProgressing,
+			map[outdialtargetcall.Field]any{
+				outdialtargetcall.FieldOutdialID: uuid.FromStringOrNil("a39ef300-b1de-11ec-be84-23ef6b7b9999"),
+				outdialtargetcall.FieldStatus:    outdialtargetcall.StatusProgressing,
+			},
 
 			[]*outdialtargetcall.OutdialTargetCall{
 				{
@@ -252,7 +255,7 @@ func Test_OutdialTargetCallGetsByOutdialIDAndStatus(t *testing.T) {
 			},
 		},
 		{
-			"2 items",
+			"filter by outdial_id and status - 2 items",
 			[]*outdialtargetcall.OutdialTargetCall{
 				{
 					Identity: commonidentity.Identity{
@@ -292,8 +295,10 @@ func Test_OutdialTargetCallGetsByOutdialIDAndStatus(t *testing.T) {
 				},
 			},
 
-			uuid.FromStringOrNil("fb752900-b1de-11ec-a188-632f7f0a767c"),
-			outdialtargetcall.StatusProgressing,
+			map[outdialtargetcall.Field]any{
+				outdialtargetcall.FieldOutdialID: uuid.FromStringOrNil("fb752900-b1de-11ec-a188-632f7f0a767c"),
+				outdialtargetcall.FieldStatus:    outdialtargetcall.StatusProgressing,
+			},
 
 			[]*outdialtargetcall.OutdialTargetCall{
 				{
@@ -334,60 +339,8 @@ func Test_OutdialTargetCallGetsByOutdialIDAndStatus(t *testing.T) {
 				},
 			},
 		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockCache := cachehandler.NewMockCacheHandler(mc)
-			h := handler{
-				db:    dbTest,
-				cache: mockCache,
-			}
-
-			ctx := context.Background()
-
-			for _, targetCall := range tt.outdialTargetCalls {
-
-				mockCache.EXPECT().OutdialTargetCallSet(ctx, targetCall).Return(nil)
-				if targetCall.ActiveflowID != uuid.Nil {
-					mockCache.EXPECT().OutdialTargetCallSetByActiveflowID(ctx, targetCall).Return(nil)
-				}
-				if targetCall.ReferenceID != uuid.Nil {
-					mockCache.EXPECT().OutdialTargetCallSetByReferenceID(ctx, targetCall).Return(nil)
-				}
-				if err := h.OutdialTargetCallCreate(ctx, targetCall); err != nil {
-					t.Errorf("Wrong match. expect: ok, got: %v", err)
-				}
-			}
-
-			res, err := h.OutdialTargetCallGetsByOutdialIDAndStatus(ctx, tt.outdialID, tt.status)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if reflect.DeepEqual(tt.expectRes, res) == false {
-				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectRes, res)
-			}
-		})
-	}
-}
-
-func Test_OutdialTargetCallGetsByCampaignIDAndStatus(t *testing.T) {
-
-	tests := []struct {
-		name               string
-		outdialTargetCalls []*outdialtargetcall.OutdialTargetCall
-
-		campaignID uuid.UUID
-		status     outdialtargetcall.Status
-
-		expectRes []*outdialtargetcall.OutdialTargetCall
-	}{
 		{
-			"1 item",
+			"filter by campaign_id and status - 1 item",
 			[]*outdialtargetcall.OutdialTargetCall{
 				{
 					Identity: commonidentity.Identity{
@@ -409,8 +362,10 @@ func Test_OutdialTargetCallGetsByCampaignIDAndStatus(t *testing.T) {
 				},
 			},
 
-			uuid.FromStringOrNil("785e03f8-b2a0-11ec-8fb4-9f19d7e07207"),
-			outdialtargetcall.StatusProgressing,
+			map[outdialtargetcall.Field]any{
+				outdialtargetcall.FieldCampaignID: uuid.FromStringOrNil("785e03f8-b2a0-11ec-8fb4-9f19d7e07207"),
+				outdialtargetcall.FieldStatus:     outdialtargetcall.StatusProgressing,
+			},
 
 			[]*outdialtargetcall.OutdialTargetCall{
 				{
@@ -434,7 +389,7 @@ func Test_OutdialTargetCallGetsByCampaignIDAndStatus(t *testing.T) {
 			},
 		},
 		{
-			"2 items",
+			"filter by campaign_id and status - 2 items",
 			[]*outdialtargetcall.OutdialTargetCall{
 				{
 					Identity: commonidentity.Identity{
@@ -474,8 +429,10 @@ func Test_OutdialTargetCallGetsByCampaignIDAndStatus(t *testing.T) {
 				},
 			},
 
-			uuid.FromStringOrNil("b1080ce8-b2a1-11ec-962f-3322bc600589"),
-			outdialtargetcall.StatusProgressing,
+			map[outdialtargetcall.Field]any{
+				outdialtargetcall.FieldCampaignID: uuid.FromStringOrNil("b1080ce8-b2a1-11ec-962f-3322bc600589"),
+				outdialtargetcall.FieldStatus:     outdialtargetcall.StatusProgressing,
+			},
 
 			[]*outdialtargetcall.OutdialTargetCall{
 				{
@@ -525,8 +482,9 @@ func Test_OutdialTargetCallGetsByCampaignIDAndStatus(t *testing.T) {
 
 			mockCache := cachehandler.NewMockCacheHandler(mc)
 			h := handler{
-				db:    dbTest,
-				cache: mockCache,
+				db:          dbTest,
+				cache:       mockCache,
+				utilHandler: utilhandler.NewUtilHandler(),
 			}
 
 			ctx := context.Background()
@@ -545,7 +503,7 @@ func Test_OutdialTargetCallGetsByCampaignIDAndStatus(t *testing.T) {
 				}
 			}
 
-			res, err := h.OutdialTargetCallGetsByCampaignIDAndStatus(ctx, tt.campaignID, tt.status)
+			res, err := h.OutdialTargetCallGets(ctx, GetCurTime(), 100, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -556,3 +514,4 @@ func Test_OutdialTargetCallGetsByCampaignIDAndStatus(t *testing.T) {
 		})
 	}
 }
+

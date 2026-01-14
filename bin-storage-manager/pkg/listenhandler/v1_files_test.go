@@ -4,7 +4,6 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
-	"monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-storage-manager/models/file"
 	"monorepo/bin-storage-manager/pkg/storagehandler"
 	"reflect"
@@ -101,24 +100,25 @@ func Test_v1FilesGet(t *testing.T) {
 		pageToken string
 		pageSize  uint64
 
-		responseFilters map[string]string
-		responseFiles   []*file.File
+		expectFilters map[file.Field]any
+		responseFiles []*file.File
 
 		expectRes *sock.Response
 	}{
 		{
 			"1 item",
 			&sock.Request{
-				URI:      "/v1/files?page_token=2020-10-10T03:30:17.000000&page_size=10&filter_customer_id=bd47c576-15ea-11ef-93f4-7b6a665b785d&filter_deleted=false",
+				URI:      "/v1/files?page_token=2020-10-10T03:30:17.000000&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
+				Data:     []byte(`{"customer_id":"bd47c576-15ea-11ef-93f4-7b6a665b785d","deleted":false}`),
 			},
 
 			"2020-10-10T03:30:17.000000",
 			10,
-			map[string]string{
-				"customer_id": "bd47c576-15ea-11ef-93f4-7b6a665b785d",
-				"deleted":     "false",
+			map[file.Field]any{
+				file.FieldCustomerID: uuid.FromStringOrNil("bd47c576-15ea-11ef-93f4-7b6a665b785d"),
+				file.FieldDeleted:    false,
 			},
 
 			[]*file.File{
@@ -141,17 +141,14 @@ func Test_v1FilesGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockStorage := storagehandler.NewMockStorageHandler(mc)
 			h := &listenHandler{
-				utilHandler:    mockUtil,
 				sockHandler:    mockSock,
 				storageHandler: mockStorage,
 			}
 
-			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
-			mockStorage.EXPECT().FileGets(gomock.Any(), tt.pageToken, tt.pageSize, tt.responseFilters).Return(tt.responseFiles, nil)
+			mockStorage.EXPECT().FileGets(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseFiles, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

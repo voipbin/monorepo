@@ -102,7 +102,7 @@ func Test_ChatroommessageCreate(t *testing.T) {
 		responseMessagechatroom []chatmessagechatroom.Messagechatroom
 
 		expectSource  commonaddress.Address
-		expectFilters map[string]string
+		expectFilters map[chatmessagechatroom.Field]any
 		expectRes     *chatmessagechatroom.WebhookMessage
 	}{
 		{
@@ -153,7 +153,7 @@ func Test_ChatroommessageCreate(t *testing.T) {
 				Target:     "d152e69e-105b-11ee-b395-eb18426de979",
 				TargetName: "test name",
 			},
-			expectFilters: map[string]string{
+			expectFilters: map[chatmessagechatroom.Field]any{
 				"chatroom_id":    "e59dcafa-bbf6-11ee-914f-ab362a70a1cf",
 				"messagechat_id": "2fe4994e-bbf8-11ee-ba94-137f44f6810a",
 			},
@@ -211,7 +211,7 @@ func Test_ChatroommessageGetsByChatroomID(t *testing.T) {
 		responseChatroom *chatchatroom.Chatroom
 		response         []chatmessagechatroom.Messagechatroom
 
-		expectFilters map[string]string
+		expectFilters map[chatmessagechatroom.Field]any
 		expectRes     []*chatmessagechatroom.WebhookMessage
 	}{
 		{
@@ -241,9 +241,9 @@ func Test_ChatroommessageGetsByChatroomID(t *testing.T) {
 				},
 			},
 
-			map[string]string{
-				"deleted":     "false",
-				"chatroom_id": "a416bb54-3778-11ed-9eb3-4b926f921d68",
+			map[chatmessagechatroom.Field]any{
+				chatmessagechatroom.FieldDeleted:    false,
+				chatmessagechatroom.FieldChatroomID: "a416bb54-3778-11ed-9eb3-4b926f921d68",
 			},
 			[]*chatmessagechatroom.WebhookMessage{
 				{

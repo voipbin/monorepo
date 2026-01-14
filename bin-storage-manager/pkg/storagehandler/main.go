@@ -31,7 +31,7 @@ type StorageHandler interface {
 		filepath string,
 	) (*file.File, error)
 	FileGet(ctx context.Context, id uuid.UUID) (*file.File, error)
-	FileGets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*file.File, error)
+	FileGets(ctx context.Context, token string, size uint64, filters map[file.Field]any) ([]*file.File, error)
 	FileDelete(ctx context.Context, id uuid.UUID) (*file.File, error)
 
 	RecordingGet(ctx context.Context, id uuid.UUID) (*bucketfile.BucketFile, error)

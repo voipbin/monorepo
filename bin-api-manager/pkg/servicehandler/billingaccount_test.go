@@ -154,7 +154,7 @@ func Test_BillingAccountGets(t *testing.T) {
 		token string
 
 		responseBillingAcounts []bmaccount.Account
-		expectFilters          map[string]string
+		expectFilters          map[bmaccount.Field]any
 		expectRes              []*bmaccount.WebhookMessage
 	}{
 		{
@@ -181,9 +181,9 @@ func Test_BillingAccountGets(t *testing.T) {
 					},
 				},
 			},
-			expectFilters: map[string]string{
-				"customer_id": "5f621078-8e5f-11ee-97b2-cfe7337b701c",
-				"deleted":     "false",
+			expectFilters: map[bmaccount.Field]any{
+				bmaccount.FieldCustomerID: "5f621078-8e5f-11ee-97b2-cfe7337b701c",
+				bmaccount.FieldDeleted:    false,
 			},
 			expectRes: []*bmaccount.WebhookMessage{
 				{

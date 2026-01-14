@@ -104,7 +104,7 @@ func Test_AImessageGetsByAIcallID(t *testing.T) {
 		responseAIcall *amaicall.AIcall
 		response       []ammessage.Message
 
-		expectFilters map[string]string
+		expectFilters map[ammessage.Field]any
 		expectRes     []*ammessage.WebhookMessage
 	}{
 		{
@@ -139,9 +139,9 @@ func Test_AImessageGetsByAIcallID(t *testing.T) {
 				},
 			},
 
-			expectFilters: map[string]string{
-				"deleted":   "false",
-				"aicall_id": "24d250de-f31d-11ef-846e-9ba3307567d6",
+			expectFilters: map[ammessage.Field]any{
+				ammessage.FieldDeleted:  false,
+				ammessage.FieldAIcallID: "24d250de-f31d-11ef-846e-9ba3307567d6",
 			},
 			expectRes: []*ammessage.WebhookMessage{
 				{

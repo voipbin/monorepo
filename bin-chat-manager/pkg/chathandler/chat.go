@@ -15,6 +15,8 @@ import (
 	"monorepo/bin-chat-manager/pkg/dbhandler"
 )
 
+var _ = chatroom.FieldDeleted // ensure import is used
+
 // Get returns the chat
 func (h *chatHandler) Get(ctx context.Context, id uuid.UUID) (*chat.Chat, error) {
 	log := logrus.WithFields(logrus.Fields{
@@ -33,7 +35,7 @@ func (h *chatHandler) Get(ctx context.Context, id uuid.UUID) (*chat.Chat, error)
 }
 
 // Gets returns the chats by the given customer id.
-func (h *chatHandler) Gets(ctx context.Context, token string, limit uint64, filters map[string]string) ([]*chat.Chat, error) {
+func (h *chatHandler) Gets(ctx context.Context, token string, limit uint64, filters map[chat.Field]any) ([]*chat.Chat, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "Gets",
 		"token":   token,
@@ -246,9 +248,9 @@ func (h *chatHandler) AddParticipantID(ctx context.Context, id uuid.UUID, partic
 		return nil, err
 	}
 
-	filters := map[string]string{
-		"deleted": "false",
-		"chat_id": id.String(),
+	filters := map[chatroom.Field]any{
+		chatroom.FieldDeleted: false,
+		chatroom.FieldChatID:  id,
 	}
 
 	// get chatrooms
@@ -349,9 +351,9 @@ func (h *chatHandler) RemoveParticipantID(ctx context.Context, id uuid.UUID, par
 	}
 
 	// get chatrooms
-	filters := map[string]string{
-		"deleted": "false",
-		"chat_id": id.String(),
+	filters := map[chatroom.Field]any{
+		chatroom.FieldDeleted: false,
+		chatroom.FieldChatID:  id,
 	}
 	curTime := h.utilHandler.TimeGetCurTime()
 	chatrooms, err := h.chatroomHandler.Gets(ctx, curTime, 100000, filters)
@@ -455,11 +457,11 @@ func (h *chatHandler) isExist(ctx context.Context, customerID uuid.UUID, chatTyp
 	tmpParticipantIDs := sortUUIDs(participantIDs)
 	tmpParticipantIDsString := convertUUIDsToCommaSeparatedString(tmpParticipantIDs)
 
-	filters := map[string]string{
-		"customer_id":     customerID.String(),
-		"type":            string(chatType),
-		"participant_ids": tmpParticipantIDsString,
-		"deleted":         "false",
+	filters := map[chat.Field]any{
+		chat.FieldCustomerID:     customerID,
+		chat.FieldType:           chatType,
+		chat.FieldParticipantIDs: tmpParticipantIDsString,
+		chat.FieldDeleted:        false,
 	}
 
 	tmp, err := h.db.ChatGets(ctx, "", 1, filters)

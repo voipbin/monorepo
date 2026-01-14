@@ -8,6 +8,7 @@ import (
 	chatchatroom "monorepo/bin-chat-manager/models/chatroom"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -99,8 +100,15 @@ func (h *serviceHandler) chatroomGetsByFilters(ctx context.Context, size uint64,
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
+	// Convert string filters to typed filters
+	typedFilters, err := h.convertChatroomFilters(filters)
+	if err != nil {
+		log.Errorf("Could not convert filters. err: %v", err)
+		return nil, err
+	}
+
 	// get chatrooms
-	res, err := h.reqHandler.ChatV1ChatroomGets(ctx, token, size, filters)
+	res, err := h.reqHandler.ChatV1ChatroomGets(ctx, token, size, typedFilters)
 	if err != nil {
 		log.Errorf("Could not get chats info from the chat-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find chats info. err: %v", err)
@@ -126,7 +134,14 @@ func (h *serviceHandler) chatroomGetByChatIDAndOwnerID(ctx context.Context, a *a
 		"owner_id": ownerID.String(),
 	}
 
-	tmps, err := h.reqHandler.ChatV1ChatroomGets(ctx, h.utilHandler.TimeGetCurTime(), 1, filters)
+	// Convert string filters to typed filters
+	typedFilters, err := h.convertChatroomFilters(filters)
+	if err != nil {
+		log.Errorf("Could not convert filters. err: %v", err)
+		return nil, err
+	}
+
+	tmps, err := h.reqHandler.ChatV1ChatroomGets(ctx, h.utilHandler.TimeGetCurTime(), 1, typedFilters)
 	if err != nil {
 		log.Errorf("Could not get chatroom info from the chat-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find chatroom info. err: %v", err)
@@ -318,4 +333,27 @@ func (h *serviceHandler) ChatroomCreate(ctx context.Context, a *amagent.Agent, p
 	log.WithField("chatroom", res).Debugf("Created chatroom. chatroom_id: %s", res.ID)
 
 	return res, nil
+}
+
+// convertChatroomFilters converts map[string]string to map[chatchatroom.Field]any
+func (h *serviceHandler) convertChatroomFilters(filters map[string]string) (map[chatchatroom.Field]any, error) {
+	// Convert to map[string]any first
+	srcAny := make(map[string]any, len(filters))
+	for k, v := range filters {
+		srcAny[k] = v
+	}
+
+	// Use reflection-based converter
+	typed, err := commondatabasehandler.ConvertMapToTypedMap(srcAny, chatchatroom.Chatroom{})
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert string keys to Field type
+	result := make(map[chatchatroom.Field]any, len(typed))
+	for k, v := range typed {
+		result[chatchatroom.Field(k)] = v
+	}
+
+	return result, nil
 }

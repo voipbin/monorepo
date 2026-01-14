@@ -160,7 +160,7 @@ func Test_StorageFileGets(t *testing.T) {
 		token string
 
 		responseStorageFiles []smfile.File
-		expectFilters        map[string]string
+		expectFilters        map[smfile.Field]any
 		expectRes            []*smfile.WebhookMessage
 	}{
 		{
@@ -187,10 +187,10 @@ func Test_StorageFileGets(t *testing.T) {
 					},
 				},
 			},
-			expectFilters: map[string]string{
-				"customer_id": "69dc78e8-1bd8-11ef-9710-ffa2bc5ebf93",
-				"deleted":     "false",
-				"owner_id":    "6998ca62-1bd8-11ef-bfe1-f3c47f813931",
+			expectFilters: map[smfile.Field]any{
+				smfile.FieldCustomerID: "69dc78e8-1bd8-11ef-9710-ffa2bc5ebf93",
+				smfile.FieldDeleted:    false,
+				smfile.FieldOwnerID:    "6998ca62-1bd8-11ef-bfe1-f3c47f813931",
 			},
 			expectRes: []*smfile.WebhookMessage{
 				{

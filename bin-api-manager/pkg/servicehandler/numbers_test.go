@@ -31,7 +31,7 @@ func Test_OrderNumberGets(t *testing.T) {
 
 		response []nmnumber.Number
 
-		expectFilters map[string]string
+		expectFilters map[nmnumber.Field]any
 		expectRes     []*nmnumber.WebhookMessage
 	}{
 		{
@@ -54,9 +54,9 @@ func Test_OrderNumberGets(t *testing.T) {
 				},
 			},
 
-			map[string]string{
-				"customer_id": "5f621078-8e5f-11ee-97b2-cfe7337b701c",
-				"deleted":     "false",
+			map[nmnumber.Field]any{
+				nmnumber.FieldCustomerID: "5f621078-8e5f-11ee-97b2-cfe7337b701c",
+				nmnumber.FieldDeleted:    false,
 			},
 			[]*nmnumber.WebhookMessage{
 				{

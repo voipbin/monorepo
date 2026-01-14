@@ -54,32 +54,23 @@ type DBHandler interface {
 	ExtensionCreate(ctx context.Context, b *extension.Extension) error
 	ExtensionDelete(ctx context.Context, id uuid.UUID) error
 	ExtensionGet(ctx context.Context, id uuid.UUID) (*extension.Extension, error)
-	ExtensionGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*extension.Extension, error)
+	ExtensionGets(ctx context.Context, size uint64, token string, filters map[extension.Field]any) ([]*extension.Extension, error)
 	ExtensionGetByEndpointID(ctx context.Context, endpoint string) (*extension.Extension, error)
 	ExtensionGetByExtension(ctx context.Context, customerID uuid.UUID, ext string) (*extension.Extension, error)
-	ExtensionUpdate(ctx context.Context, id uuid.UUID, name string, detail string, password string) error
+	ExtensionUpdate(ctx context.Context, id uuid.UUID, fields map[extension.Field]any) error
 
 	// SIPAuth
 	SIPAuthCreate(ctx context.Context, t *sipauth.SIPAuth) error
-	SIPAuthUpdateAll(ctx context.Context, t *sipauth.SIPAuth) error
+	SIPAuthUpdate(ctx context.Context, id uuid.UUID, fields map[sipauth.Field]any) error
 	SIPAuthDelete(ctx context.Context, id uuid.UUID) error
 	SIPAuthGet(ctx context.Context, id uuid.UUID) (*sipauth.SIPAuth, error)
 
 	// Trunk
 	TrunkCreate(ctx context.Context, t *trunk.Trunk) error
-	TrunkUpdateBasicInfo(
-		ctx context.Context,
-		id uuid.UUID,
-		name string,
-		detail string,
-		authTypes []sipauth.AuthType,
-		username string,
-		password string,
-		allowedIPs []string,
-	) error
+	TrunkUpdate(ctx context.Context, id uuid.UUID, fields map[trunk.Field]any) error
 	TrunkGet(ctx context.Context, id uuid.UUID) (*trunk.Trunk, error)
 	TrunkGetByDomainName(ctx context.Context, domainName string) (*trunk.Trunk, error)
-	TrunkGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*trunk.Trunk, error)
+	TrunkGets(ctx context.Context, size uint64, token string, filters map[trunk.Field]any) ([]*trunk.Trunk, error)
 	TrunkDelete(ctx context.Context, id uuid.UUID) error
 }
 

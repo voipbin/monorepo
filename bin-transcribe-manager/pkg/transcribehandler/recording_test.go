@@ -118,7 +118,9 @@ func Test_startRecording(t *testing.T) {
 			mockTranscript.EXPECT().Recording(ctx, tt.customerID, tt.responseTranscribe.ID, tt.recordingID, tt.language).Return([]*transcript.Transcript{}, nil)
 
 			// update status
-			mockDB.EXPECT().TranscribeSetStatus(ctx, tt.responseTranscribe.ID, transcribe.StatusDone).Return(nil)
+			mockDB.EXPECT().TranscribeUpdate(ctx, tt.responseTranscribe.ID, map[transcribe.Field]any{
+				transcribe.FieldStatus: transcribe.StatusDone,
+			}).Return(nil)
 			mockDB.EXPECT().TranscribeGet(ctx, tt.responseTranscribe.ID).Return(tt.responseTranscribe, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseTranscribe.CustomerID, transcribe.EventTypeTranscribeDone, tt.responseTranscribe)
 

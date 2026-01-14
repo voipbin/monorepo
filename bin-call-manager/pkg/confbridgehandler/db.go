@@ -85,8 +85,13 @@ func (h *confbridgeHandler) GetByBridgeID(ctx context.Context, bridgeID string) 
 
 // Gets returns confbridge of the given filters
 func (h *confbridgeHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*confbridge.Confbridge, error) {
+	// Convert string filters to typed filters
+	typedFilters := make(map[confbridge.Field]any)
+	for k, v := range filters {
+		typedFilters[confbridge.Field(k)] = v
+	}
 
-	res, err := h.db.ConfbridgeGets(ctx, size, token, filters)
+	res, err := h.db.ConfbridgeGets(ctx, size, token, typedFilters)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get the confbridges. size: %d, token: %s, filters: %v", size, token, filters)
 	}

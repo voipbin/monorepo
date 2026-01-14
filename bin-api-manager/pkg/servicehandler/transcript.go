@@ -7,6 +7,7 @@ import (
 	tmtranscript "monorepo/bin-transcribe-manager/models/transcript"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -39,7 +40,13 @@ func (h *serviceHandler) TranscriptGets(ctx context.Context, a *amagent.Agent, t
 		"deleted":       "false",
 	}
 
-	tmps, err := h.reqHandler.TranscribeV1TranscriptGets(ctx, "", 100, filters)
+	// Convert string filters to typed filters
+	typedFilters, err := h.convertTranscriptFilters(filters)
+	if err != nil {
+		return nil, err
+	}
+
+	tmps, err := h.reqHandler.TranscribeV1TranscriptGets(ctx, "", 100, typedFilters)
 	if err != nil {
 		log.Errorf("Could not get transcripts from the transcribe-manager. err: %v", err)
 		return nil, err
@@ -52,4 +59,27 @@ func (h *serviceHandler) TranscriptGets(ctx context.Context, a *amagent.Agent, t
 	}
 
 	return res, nil
+}
+
+// convertTranscriptFilters converts map[string]string to map[tmtranscript.Field]any
+func (h *serviceHandler) convertTranscriptFilters(filters map[string]string) (map[tmtranscript.Field]any, error) {
+	// Convert to map[string]any first
+	srcAny := make(map[string]any, len(filters))
+	for k, v := range filters {
+		srcAny[k] = v
+	}
+
+	// Use reflection-based converter
+	typed, err := commondatabasehandler.ConvertMapToTypedMap(srcAny, tmtranscript.Transcript{})
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert string keys to Field type
+	result := make(map[tmtranscript.Field]any, len(typed))
+	for k, v := range typed {
+		result[tmtranscript.Field(k)] = v
+	}
+
+	return result, nil
 }

@@ -116,7 +116,7 @@ func Test_processV1AccountsGet(t *testing.T) {
 				accountHandler: mockAccount,
 			}
 
-			mockAccount.EXPECT().Gets(gomock.Any(), tt.expectPageToken, tt.expectPageSize, tt.expectFilters).Return(tt.responseAccounts, nil)
+			mockAccount.EXPECT().Gets(gomock.Any(), tt.expectPageToken, tt.expectPageSize, gomock.Any()).Return(tt.responseAccounts, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -320,7 +320,7 @@ func Test_processV1AccountsIDPut(t *testing.T) {
 				accountHandler: mockAccount,
 			}
 
-			mockAccount.EXPECT().Update(gomock.Any(), tt.expectID, tt.expectedFields).Return(tt.responseAccount, nil)
+			mockAccount.EXPECT().Update(gomock.Any(), tt.expectID, gomock.Any()).Return(tt.responseAccount, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

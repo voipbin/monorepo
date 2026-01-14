@@ -34,9 +34,9 @@ func (h *queueHandler) Execute(ctx context.Context, id uuid.UUID) {
 		return
 	}
 
-	filters := map[string]string{
-		"queue_id": q.ID.String(),
-		"status":   string(queuecall.StatusWaiting),
+	filters := map[queuecall.Field]any{
+		queuecall.FieldQueueID: q.ID.String(),
+		queuecall.FieldStatus:  string(queuecall.StatusWaiting),
 	}
 
 	// get queuecalls

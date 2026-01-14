@@ -87,7 +87,7 @@ func (mr *MockDBHandlerMockRecorder) AccesskeyGet(ctx, id any) *gomock.Call {
 }
 
 // AccesskeyGets mocks base method.
-func (m *MockDBHandler) AccesskeyGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*accesskey.Accesskey, error) {
+func (m *MockDBHandler) AccesskeyGets(ctx context.Context, size uint64, token string, filters map[accesskey.Field]any) ([]*accesskey.Accesskey, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AccesskeyGets", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*accesskey.Accesskey)
@@ -101,18 +101,18 @@ func (mr *MockDBHandlerMockRecorder) AccesskeyGets(ctx, size, token, filters any
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccesskeyGets", reflect.TypeOf((*MockDBHandler)(nil).AccesskeyGets), ctx, size, token, filters)
 }
 
-// AccesskeySetBasicInfo mocks base method.
-func (m *MockDBHandler) AccesskeySetBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error {
+// AccesskeyUpdate mocks base method.
+func (m *MockDBHandler) AccesskeyUpdate(ctx context.Context, id uuid.UUID, fields map[accesskey.Field]any) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AccesskeySetBasicInfo", ctx, id, name, detail)
+	ret := m.ctrl.Call(m, "AccesskeyUpdate", ctx, id, fields)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// AccesskeySetBasicInfo indicates an expected call of AccesskeySetBasicInfo.
-func (mr *MockDBHandlerMockRecorder) AccesskeySetBasicInfo(ctx, id, name, detail any) *gomock.Call {
+// AccesskeyUpdate indicates an expected call of AccesskeyUpdate.
+func (mr *MockDBHandlerMockRecorder) AccesskeyUpdate(ctx, id, fields any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccesskeySetBasicInfo", reflect.TypeOf((*MockDBHandler)(nil).AccesskeySetBasicInfo), ctx, id, name, detail)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccesskeyUpdate", reflect.TypeOf((*MockDBHandler)(nil).AccesskeyUpdate), ctx, id, fields)
 }
 
 // CustomerCreate mocks base method.
@@ -159,7 +159,7 @@ func (mr *MockDBHandlerMockRecorder) CustomerGet(ctx, id any) *gomock.Call {
 }
 
 // CustomerGets mocks base method.
-func (m *MockDBHandler) CustomerGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*customer.Customer, error) {
+func (m *MockDBHandler) CustomerGets(ctx context.Context, size uint64, token string, filters map[customer.Field]any) ([]*customer.Customer, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CustomerGets", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*customer.Customer)
@@ -173,30 +173,16 @@ func (mr *MockDBHandlerMockRecorder) CustomerGets(ctx, size, token, filters any)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerGets", reflect.TypeOf((*MockDBHandler)(nil).CustomerGets), ctx, size, token, filters)
 }
 
-// CustomerSetBasicInfo mocks base method.
-func (m *MockDBHandler) CustomerSetBasicInfo(ctx context.Context, id uuid.UUID, name, detail, email, phoneNumber, address string, webhookMethod customer.WebhookMethod, webhookURI string) error {
+// CustomerUpdate mocks base method.
+func (m *MockDBHandler) CustomerUpdate(ctx context.Context, id uuid.UUID, fields map[customer.Field]any) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CustomerSetBasicInfo", ctx, id, name, detail, email, phoneNumber, address, webhookMethod, webhookURI)
+	ret := m.ctrl.Call(m, "CustomerUpdate", ctx, id, fields)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// CustomerSetBasicInfo indicates an expected call of CustomerSetBasicInfo.
-func (mr *MockDBHandlerMockRecorder) CustomerSetBasicInfo(ctx, id, name, detail, email, phoneNumber, address, webhookMethod, webhookURI any) *gomock.Call {
+// CustomerUpdate indicates an expected call of CustomerUpdate.
+func (mr *MockDBHandlerMockRecorder) CustomerUpdate(ctx, id, fields any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerSetBasicInfo", reflect.TypeOf((*MockDBHandler)(nil).CustomerSetBasicInfo), ctx, id, name, detail, email, phoneNumber, address, webhookMethod, webhookURI)
-}
-
-// CustomerSetBillingAccountID mocks base method.
-func (m *MockDBHandler) CustomerSetBillingAccountID(ctx context.Context, id, billingAccountID uuid.UUID) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CustomerSetBillingAccountID", ctx, id, billingAccountID)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// CustomerSetBillingAccountID indicates an expected call of CustomerSetBillingAccountID.
-func (mr *MockDBHandlerMockRecorder) CustomerSetBillingAccountID(ctx, id, billingAccountID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerSetBillingAccountID", reflect.TypeOf((*MockDBHandler)(nil).CustomerSetBillingAccountID), ctx, id, billingAccountID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerUpdate", reflect.TypeOf((*MockDBHandler)(nil).CustomerUpdate), ctx, id, fields)
 }

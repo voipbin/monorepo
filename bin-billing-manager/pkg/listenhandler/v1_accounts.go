@@ -8,10 +8,12 @@ import (
 	"strings"
 
 	"monorepo/bin-common-handler/models/sock"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-billing-manager/models/account"
 	"monorepo/bin-billing-manager/models/billing"
 	"monorepo/bin-billing-manager/pkg/listenhandler/models/request"
 	"monorepo/bin-billing-manager/pkg/listenhandler/models/response"
@@ -34,8 +36,19 @@ func (h *listenHandler) processV1AccountsGet(ctx context.Context, m *sock.Reques
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// get filters
-	filters := h.utilHandler.URLParseFilters(u)
+	// get filters from request body
+	tmpFilters, err := utilhandler.ParseFiltersFromRequestBody(m.Data)
+	if err != nil {
+		log.Errorf("Could not parse filters. err: %v", err)
+		return simpleResponse(400), nil
+	}
+
+	// convert to typed filters
+	filters, err := utilhandler.ConvertFilters[account.FieldStruct, account.Field](account.FieldStruct{}, tmpFilters)
+	if err != nil {
+		log.Errorf("Could not convert filters. err: %v", err)
+		return simpleResponse(400), nil
+	}
 
 	as, err := h.accountHandler.Gets(ctx, pageSize, pageToken, filters)
 	if err != nil {
@@ -195,40 +208,6 @@ func (h *listenHandler) processV1AccountsIDDelete(ctx context.Context, m *sock.R
 
 	return res, nil
 }
-
-// // processV1AccountsCustomerIDIDGet handles GET /v1/accounts/customer_id/<cusotmer-id> request
-// func (h *listenHandler) processV1AccountsCustomerIDIDGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
-// 	log := logrus.WithFields(logrus.Fields{
-// 		"func":    "processV1AccountsCustomerIDIDGet",
-// 		"request": m,
-// 	})
-
-// 	uriItems := strings.Split(m.URI, "/")
-// 	if len(uriItems) < 4 {
-// 		return simpleResponse(400), nil
-// 	}
-
-// 	customerID := uuid.FromStringOrNil(uriItems[4])
-
-// 	c, err := h.accountHandler.GetByCustomerID(ctx, customerID)
-// 	if err != nil {
-// 		log.Errorf("Could not get account info. err: %v", err)
-// 		return simpleResponse(404), nil
-// 	}
-
-// 	data, err := json.Marshal(c)
-// 	if err != nil {
-// 		return simpleResponse(404), nil
-// 	}
-
-// 	res := &sock.Response{
-// 		StatusCode: 200,
-// 		DataType:   "application/json",
-// 		Data:       data,
-// 	}
-
-// 	return res, nil
-// }
 
 // processV1AccountsIDBalanceAddForcePost handles POST /v1/accounts/<account-id>/balance_add_force request
 func (h *listenHandler) processV1AccountsIDBalanceAddForcePost(ctx context.Context, m *sock.Request) (*sock.Response, error) {

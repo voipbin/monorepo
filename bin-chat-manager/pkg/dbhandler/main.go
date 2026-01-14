@@ -8,6 +8,7 @@ import (
 	"errors"
 	"sort"
 
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
@@ -25,7 +26,8 @@ type DBHandler interface {
 	ChatCreate(ctx context.Context, c *chat.Chat) error
 	ChatDelete(ctx context.Context, id uuid.UUID) error
 	ChatGet(ctx context.Context, id uuid.UUID) (*chat.Chat, error)
-	ChatGets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*chat.Chat, error)
+	ChatGets(ctx context.Context, token string, size uint64, filters map[chat.Field]any) ([]*chat.Chat, error)
+	ChatUpdate(ctx context.Context, id uuid.UUID, fields map[chat.Field]any) error
 	ChatUpdateRoomOwnerID(ctx context.Context, id uuid.UUID, ownerID uuid.UUID) error
 	ChatUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error
 	ChatUpdateParticipantID(ctx context.Context, id uuid.UUID, participantIDs []uuid.UUID) error
@@ -33,7 +35,8 @@ type DBHandler interface {
 	// chatroom
 	ChatroomCreate(ctx context.Context, c *chatroom.Chatroom) error
 	ChatroomGet(ctx context.Context, id uuid.UUID) (*chatroom.Chatroom, error)
-	ChatroomGets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*chatroom.Chatroom, error)
+	ChatroomGets(ctx context.Context, token string, size uint64, filters map[chatroom.Field]any) ([]*chatroom.Chatroom, error)
+	ChatroomUpdate(ctx context.Context, id uuid.UUID, fields map[chatroom.Field]any) error
 	ChatroomUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error
 	ChatroomDelete(ctx context.Context, id uuid.UUID) error
 	ChatroomAddParticipantID(ctx context.Context, id, participantID uuid.UUID) error
@@ -42,13 +45,15 @@ type DBHandler interface {
 	// messagechat
 	MessagechatCreate(ctx context.Context, m *messagechat.Messagechat) error
 	MessagechatGet(ctx context.Context, id uuid.UUID) (*messagechat.Messagechat, error)
-	MessagechatGets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*messagechat.Messagechat, error)
+	MessagechatGets(ctx context.Context, token string, size uint64, filters map[messagechat.Field]any) ([]*messagechat.Messagechat, error)
+	MessagechatUpdate(ctx context.Context, id uuid.UUID, fields map[messagechat.Field]any) error
 	MessagechatDelete(ctx context.Context, id uuid.UUID) error
 
 	// messagechatroom
 	MessagechatroomCreate(ctx context.Context, m *messagechatroom.Messagechatroom) error
 	MessagechatroomGet(ctx context.Context, id uuid.UUID) (*messagechatroom.Messagechatroom, error)
-	MessagechatroomGets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*messagechatroom.Messagechatroom, error)
+	MessagechatroomGets(ctx context.Context, token string, size uint64, filters map[messagechatroom.Field]any) ([]*messagechatroom.Messagechatroom, error)
+	MessagechatroomUpdate(ctx context.Context, id uuid.UUID, fields map[messagechatroom.Field]any) error
 	MessagechatroomDelete(ctx context.Context, id uuid.UUID) error
 }
 
@@ -65,8 +70,8 @@ var (
 )
 
 // list of default values
-const (
-	DefaultTimeStamp = "9999-01-01 00:00:000"
+var (
+	DefaultTimeStamp = commondatabasehandler.DefaultTimeStamp
 )
 
 // NewHandler creates DBHandler

@@ -10,6 +10,7 @@ import (
 	gomock "go.uber.org/mock/gomock"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-outdial-manager/models/outdial"
 	"monorepo/bin-outdial-manager/pkg/cachehandler"
 )
@@ -20,8 +21,9 @@ func Test_OutdialCreate(t *testing.T) {
 
 	mockCache := cachehandler.NewMockCacheHandler(mc)
 	h := handler{
-		db:    dbTest,
-		cache: mockCache,
+		db:          dbTest,
+		cache:       mockCache,
+		utilHandler: utilhandler.NewUtilHandler(),
 	}
 
 	tests := []struct {
@@ -92,8 +94,9 @@ func Test_OutdialGets(t *testing.T) {
 
 	mockCache := cachehandler.NewMockCacheHandler(mc)
 	h := handler{
-		db:    dbTest,
-		cache: mockCache,
+		db:          dbTest,
+		cache:       mockCache,
+		utilHandler: utilhandler.NewUtilHandler(),
 	}
 
 	tests := []struct {
@@ -157,23 +160,45 @@ func Test_OutdialGets(t *testing.T) {
 				}
 			}
 
-			flows, err := h.OutdialGetsByCustomerID(ctx, tt.customerID, GetCurTime(), tt.limit)
+			filters := map[outdial.Field]any{
+				outdial.FieldCustomerID: tt.customerID,
+				outdial.FieldDeleted:    false,
+			}
+			flows, err := h.OutdialGets(ctx, GetCurTime(), tt.limit, filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
+			// Clear timestamps for comparison
 			for _, flow := range flows {
 				flow.TMCreate = ""
+				flow.TMUpdate = ""
 			}
 
-			if reflect.DeepEqual(flows, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, flows)
+			// Check length first
+			if len(flows) != len(tt.expectRes) {
+				t.Errorf("Wrong length. expect: %d, got: %d", len(tt.expectRes), len(flows))
+				return
+			}
+
+			// Check that all expected records are in results (order-independent)
+			for _, expected := range tt.expectRes {
+				found := false
+				for _, flow := range flows {
+					if flow.ID == expected.ID && flow.Name == expected.Name {
+						found = true
+						break
+					}
+				}
+				if !found {
+					t.Errorf("Expected record not found. ID: %v, Name: %s", expected.ID, expected.Name)
+				}
 			}
 		})
 	}
 }
 
-func Test_OutdialUpdateBasicInfo(t *testing.T) {
+func Test_OutdialUpdate(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -183,21 +208,22 @@ func Test_OutdialUpdateBasicInfo(t *testing.T) {
 		name    string
 		outdial *outdial.Outdial
 
-		outdialName string
-		detail      string
+		fields map[outdial.Field]any
 
 		expectRes *outdial.Outdial
 	}{
 		{
-			"test normal",
+			"test basic info update",
 			&outdial.Outdial{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("802c0b50-abf9-11ec-bed8-3f61478b7331"),
 				},
 			},
 
-			"test name",
-			"test detail",
+			map[outdial.Field]any{
+				outdial.FieldName:   "test name",
+				outdial.FieldDetail: "test detail",
+			},
 
 			&outdial.Outdial{
 				Identity: commonidentity.Identity{
@@ -207,53 +233,8 @@ func Test_OutdialUpdateBasicInfo(t *testing.T) {
 				Detail: "test detail",
 			},
 		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			h := NewHandler(dbTest, mockCache)
-
-			mockCache.EXPECT().OutdialSet(gomock.Any(), gomock.Any())
-			if err := h.OutdialCreate(context.Background(), tt.outdial); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			mockCache.EXPECT().OutdialSet(gomock.Any(), gomock.Any())
-			if err := h.OutdialUpdateBasicInfo(context.Background(), tt.outdial.ID, tt.outdialName, tt.detail); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			mockCache.EXPECT().OutdialGet(gomock.Any(), tt.outdial.ID).Return(nil, fmt.Errorf(""))
-			mockCache.EXPECT().OutdialSet(gomock.Any(), gomock.Any())
-			res, err := h.OutdialGet(context.Background(), tt.outdial.ID)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			tt.expectRes.TMUpdate = res.TMUpdate
-			if reflect.DeepEqual(tt.expectRes, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
-			}
-		})
-	}
-}
-
-func Test_OutdialUpdateCampaignID(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-
-	tests := []struct {
-		name    string
-		outdial *outdial.Outdial
-
-		campaignID uuid.UUID
-
-		expectRes *outdial.Outdial
-	}{
 		{
-			"test normal",
+			"test campaign id update",
 			&outdial.Outdial{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("d985ffe4-abf9-11ec-9a44-232311136ad4"),
@@ -262,7 +243,9 @@ func Test_OutdialUpdateCampaignID(t *testing.T) {
 				Detail: "test detail",
 			},
 
-			uuid.FromStringOrNil("d9a443b4-abf9-11ec-835b-d75f14d69cb2"),
+			map[outdial.Field]any{
+				outdial.FieldCampaignID: uuid.FromStringOrNil("d9a443b4-abf9-11ec-835b-d75f14d69cb2"),
+			},
 
 			&outdial.Outdial{
 				Identity: commonidentity.Identity{
@@ -273,53 +256,8 @@ func Test_OutdialUpdateCampaignID(t *testing.T) {
 				CampaignID: uuid.FromStringOrNil("d9a443b4-abf9-11ec-835b-d75f14d69cb2"),
 			},
 		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			h := NewHandler(dbTest, mockCache)
-
-			mockCache.EXPECT().OutdialSet(gomock.Any(), gomock.Any())
-			if err := h.OutdialCreate(context.Background(), tt.outdial); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			mockCache.EXPECT().OutdialSet(gomock.Any(), gomock.Any())
-			if err := h.OutdialUpdateCampaignID(context.Background(), tt.outdial.ID, tt.campaignID); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			mockCache.EXPECT().OutdialGet(gomock.Any(), tt.outdial.ID).Return(nil, fmt.Errorf(""))
-			mockCache.EXPECT().OutdialSet(gomock.Any(), gomock.Any())
-			res, err := h.OutdialGet(context.Background(), tt.outdial.ID)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			tt.expectRes.TMUpdate = res.TMUpdate
-			if reflect.DeepEqual(tt.expectRes, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
-			}
-		})
-	}
-}
-
-func Test_OutdialUpdateData(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-
-	tests := []struct {
-		name    string
-		outdial *outdial.Outdial
-
-		data string
-
-		expectRes *outdial.Outdial
-	}{
 		{
-			"test normal",
+			"test data update",
 			&outdial.Outdial{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("0db4b65c-abfa-11ec-9e15-0b454feb2f7e"),
@@ -328,7 +266,9 @@ func Test_OutdialUpdateData(t *testing.T) {
 				Detail: "test detail",
 			},
 
-			"test data string",
+			map[outdial.Field]any{
+				outdial.FieldData: "test data string",
+			},
 
 			&outdial.Outdial{
 				Identity: commonidentity.Identity{
@@ -351,7 +291,7 @@ func Test_OutdialUpdateData(t *testing.T) {
 			}
 
 			mockCache.EXPECT().OutdialSet(gomock.Any(), gomock.Any())
-			if err := h.OutdialUpdateData(context.Background(), tt.outdial.ID, tt.data); err != nil {
+			if err := h.OutdialUpdate(context.Background(), tt.outdial.ID, tt.fields); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 

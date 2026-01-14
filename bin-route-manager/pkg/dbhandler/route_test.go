@@ -3,10 +3,12 @@ package dbhandler
 import (
 	"context"
 	"fmt"
-	reflect "reflect"
+	"reflect"
 	"testing"
 
 	"monorepo/bin-common-handler/pkg/utilhandler"
+
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -36,8 +38,8 @@ func Test_RouteCreate(t *testing.T) {
 			&route.Route{
 				ID:       uuid.FromStringOrNil("df43b28c-4334-11ed-800b-1365aa60a589"),
 				TMCreate: "2020-04-18 03:22:17.995000",
-				TMUpdate: DefaultTimeStamp,
-				TMDelete: DefaultTimeStamp,
+				TMUpdate: commondatabasehandler.DefaultTimeStamp,
+				TMDelete: commondatabasehandler.DefaultTimeStamp,
 			},
 		},
 		{
@@ -59,8 +61,8 @@ func Test_RouteCreate(t *testing.T) {
 				Priority:   1,
 				Target:     "all",
 				TMCreate:   "2020-04-18 03:22:17.995000",
-				TMUpdate:   DefaultTimeStamp,
-				TMDelete:   DefaultTimeStamp,
+				TMUpdate:   commondatabasehandler.DefaultTimeStamp,
+				TMDelete:   commondatabasehandler.DefaultTimeStamp,
 			},
 		},
 	}
@@ -149,7 +151,8 @@ func Test_RouteGets(t *testing.T) {
 				}
 			}
 
-			res, err := h.RouteGets(ctx, utilhandler.TimeGetCurTime(), tt.limit)
+			filters := map[route.Field]any{}
+			res, err := h.RouteGets(ctx, utilhandler.TimeGetCurTime(), tt.limit, filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -182,14 +185,14 @@ func Test_RouteGetsByCustomerID(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("3fc93770-4336-11ed-a641-73b648571f6b"),
 					TMCreate:   "2020-04-18 03:22:17.995000",
 					TMUpdate:   "2020-04-18 03:22:17.995000",
-					TMDelete:   DefaultTimeStamp,
+					TMDelete:   commondatabasehandler.DefaultTimeStamp,
 				},
 				{
 					ID:         uuid.FromStringOrNil("40335d58-4336-11ed-b1ec-57f4e8d28783"),
 					CustomerID: uuid.FromStringOrNil("3fc93770-4336-11ed-a641-73b648571f6b"),
 					TMCreate:   "2020-04-18 03:22:17.995000",
 					TMUpdate:   "2020-04-18 03:22:17.995000",
-					TMDelete:   DefaultTimeStamp,
+					TMDelete:   commondatabasehandler.DefaultTimeStamp,
 				},
 			},
 
@@ -203,15 +206,15 @@ func Test_RouteGetsByCustomerID(t *testing.T) {
 					ID:         uuid.FromStringOrNil("40335d58-4336-11ed-b1ec-57f4e8d28783"),
 					CustomerID: uuid.FromStringOrNil("3fc93770-4336-11ed-a641-73b648571f6b"),
 					TMCreate:   "2020-04-18 03:22:17.995000",
-					TMUpdate:   DefaultTimeStamp,
-					TMDelete:   DefaultTimeStamp,
+					TMUpdate:   commondatabasehandler.DefaultTimeStamp,
+					TMDelete:   commondatabasehandler.DefaultTimeStamp,
 				},
 				{
 					ID:         uuid.FromStringOrNil("4004e982-4336-11ed-99fc-53e93440d555"),
 					CustomerID: uuid.FromStringOrNil("3fc93770-4336-11ed-a641-73b648571f6b"),
 					TMCreate:   "2020-04-18 03:22:17.995000",
-					TMUpdate:   DefaultTimeStamp,
-					TMDelete:   DefaultTimeStamp,
+					TMUpdate:   commondatabasehandler.DefaultTimeStamp,
+					TMDelete:   commondatabasehandler.DefaultTimeStamp,
 				},
 			},
 		},
@@ -240,7 +243,10 @@ func Test_RouteGetsByCustomerID(t *testing.T) {
 				}
 			}
 
-			res, err := h.RouteGetsByCustomerID(ctx, tt.customerID, utilhandler.TimeGetCurTime(), tt.limit)
+			filters := map[route.Field]any{
+				route.FieldCustomerID: tt.customerID,
+			}
+			res, err := h.RouteGets(ctx, utilhandler.TimeGetCurTime(), tt.limit, filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -260,6 +266,7 @@ func Test_RouteGetsByCustomerIDWithTarget(t *testing.T) {
 
 		customerID uuid.UUID
 		target     string
+		token      string
 
 		responseCurTime string
 
@@ -284,27 +291,31 @@ func Test_RouteGetsByCustomerIDWithTarget(t *testing.T) {
 
 			uuid.FromStringOrNil("b048bb00-4337-11ed-96f0-4b0f7dc31ba1"),
 			"all",
+			"2020-05-18 03:22:18.995000", // token should be after the TMCreate
 
 			"2020-05-18 03:22:17.995000",
 
+			// Results are ordered by TMCreate DESC, ID DESC
+			// Since both have same TMCreate, they're ordered by ID DESC
+			// b0af5b76 > b07cc8aa lexicographically, so b0af5b76 comes first
 			[]*route.Route{
-				{
-					ID:         uuid.FromStringOrNil("b07cc8aa-4337-11ed-9c1f-6f01ee46218f"),
-					CustomerID: uuid.FromStringOrNil("b048bb00-4337-11ed-96f0-4b0f7dc31ba1"),
-					Target:     "all",
-					Priority:   1,
-					TMCreate:   "2020-05-18 03:22:17.995000",
-					TMUpdate:   DefaultTimeStamp,
-					TMDelete:   DefaultTimeStamp,
-				},
 				{
 					ID:         uuid.FromStringOrNil("b0af5b76-4337-11ed-b068-3394fb21fec1"),
 					CustomerID: uuid.FromStringOrNil("b048bb00-4337-11ed-96f0-4b0f7dc31ba1"),
 					Target:     "all",
 					Priority:   2,
 					TMCreate:   "2020-05-18 03:22:17.995000",
-					TMUpdate:   DefaultTimeStamp,
-					TMDelete:   DefaultTimeStamp,
+					TMUpdate:   commondatabasehandler.DefaultTimeStamp,
+					TMDelete:   commondatabasehandler.DefaultTimeStamp,
+				},
+				{
+					ID:         uuid.FromStringOrNil("b07cc8aa-4337-11ed-9c1f-6f01ee46218f"),
+					CustomerID: uuid.FromStringOrNil("b048bb00-4337-11ed-96f0-4b0f7dc31ba1"),
+					Target:     "all",
+					Priority:   1,
+					TMCreate:   "2020-05-18 03:22:17.995000",
+					TMUpdate:   commondatabasehandler.DefaultTimeStamp,
+					TMDelete:   commondatabasehandler.DefaultTimeStamp,
 				},
 			},
 		},
@@ -332,7 +343,11 @@ func Test_RouteGetsByCustomerIDWithTarget(t *testing.T) {
 				}
 			}
 
-			res, err := h.RouteGetsByCustomerIDWithTarget(ctx, tt.customerID, tt.target)
+			filters := map[route.Field]any{
+				route.FieldCustomerID: tt.customerID,
+				route.FieldTarget:     tt.target,
+			}
+			res, err := h.RouteGets(ctx, tt.token, 1000, filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -356,7 +371,7 @@ func Test_RouteDelete(t *testing.T) {
 				ID:       uuid.FromStringOrNil("76fc1f26-4338-11ed-bd70-1ba6021f2c4c"),
 				TMCreate: "2020-04-18T03:22:17.995000",
 				TMUpdate: "2020-04-18T03:22:17.995000",
-				TMDelete: DefaultTimeStamp,
+				TMDelete: commondatabasehandler.DefaultTimeStamp,
 			},
 		},
 	}
@@ -388,7 +403,7 @@ func Test_RouteDelete(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if res.TMDelete == DefaultTimeStamp {
+			if res.TMDelete == commondatabasehandler.DefaultTimeStamp {
 				t.Errorf("Wrong match. expect: any other, got: %s", res.TMDelete)
 			}
 		})
@@ -402,12 +417,8 @@ func Test_RouteUpdate(t *testing.T) {
 
 		data *route.Route
 
-		id         uuid.UUID
-		routeName  string
-		detail     string
-		providerID uuid.UUID
-		priority   int
-		target     string
+		id           uuid.UUID
+		updateFields map[route.Field]any
 
 		responseCurTime string
 
@@ -424,12 +435,14 @@ func Test_RouteUpdate(t *testing.T) {
 				Target:     "all",
 			},
 
-			id:         uuid.FromStringOrNil("e8776eb6-432f-11ed-acde-b7089222dfd9"),
-			routeName:  "update name",
-			detail:     "update detail",
-			providerID: uuid.FromStringOrNil("f7855bcc-6b54-11ee-a216-bbb1db932bc9"),
-			priority:   2,
-			target:     "+82",
+			id: uuid.FromStringOrNil("e8776eb6-432f-11ed-acde-b7089222dfd9"),
+			updateFields: map[route.Field]any{
+				route.FieldName:       "update name",
+				route.FieldDetail:     "update detail",
+				route.FieldProviderID: uuid.FromStringOrNil("f7855bcc-6b54-11ee-a216-bbb1db932bc9"),
+				route.FieldPriority:   2,
+				route.FieldTarget:     "+82",
+			},
 
 			responseCurTime: "2020-05-18 03:22:17.995000",
 
@@ -443,7 +456,7 @@ func Test_RouteUpdate(t *testing.T) {
 				Target:     "+82",
 				TMCreate:   "2020-05-18 03:22:17.995000",
 				TMUpdate:   "2020-05-18 03:22:17.995000",
-				TMDelete:   DefaultTimeStamp,
+				TMDelete:   commondatabasehandler.DefaultTimeStamp,
 			},
 		},
 	}
@@ -469,7 +482,7 @@ func Test_RouteUpdate(t *testing.T) {
 			}
 
 			mockCache.EXPECT().RouteSet(ctx, gomock.Any())
-			if err := h.RouteUpdate(ctx, tt.id, tt.routeName, tt.detail, tt.providerID, tt.priority, tt.target); err != nil {
+			if err := h.RouteUpdate(ctx, tt.id, tt.updateFields); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 

@@ -102,7 +102,7 @@ func Test_TranscribeGets(t *testing.T) {
 
 		response []tmtranscribe.Transcribe
 
-		expectFilters map[string]string
+		expectFilters map[tmtranscribe.Field]any
 		expectRes     []*tmtranscribe.WebhookMessage
 	}{
 		{
@@ -130,9 +130,9 @@ func Test_TranscribeGets(t *testing.T) {
 				},
 			},
 
-			map[string]string{
-				"customer_id": "5f621078-8e5f-11ee-97b2-cfe7337b701c",
-				"deleted":     "false",
+			map[tmtranscribe.Field]any{
+				tmtranscribe.FieldCustomerID: "5f621078-8e5f-11ee-97b2-cfe7337b701c",
+				tmtranscribe.FieldDeleted:    false,
 			},
 			[]*tmtranscribe.WebhookMessage{
 				{

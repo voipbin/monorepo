@@ -6,6 +6,7 @@ import (
 	amagent "monorepo/bin-agent-manager/models/agent"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	ememail "monorepo/bin-email-manager/models/email"
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -67,7 +68,13 @@ func (h *serviceHandler) EmailGets(ctx context.Context, a *amagent.Agent, size u
 		"deleted":     "false", // we don't need deleted items
 	}
 
-	tmps, err := h.reqHandler.EmailV1EmailGets(ctx, token, size, filters)
+	// Convert string filters to typed filters
+	typedFilters, err := h.convertEmailFilters(filters)
+	if err != nil {
+		return nil, err
+	}
+
+	tmps, err := h.reqHandler.EmailV1EmailGets(ctx, token, size, typedFilters)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get emails")
 	}
@@ -119,4 +126,27 @@ func (h *serviceHandler) EmailDelete(ctx context.Context, a *amagent.Agent, id u
 
 	res := tmp.ConvertWebhookMessage()
 	return res, nil
+}
+
+// convertEmailFilters converts map[string]string to map[ememail.Field]any
+func (h *serviceHandler) convertEmailFilters(filters map[string]string) (map[ememail.Field]any, error) {
+	// Convert to map[string]any first
+	srcAny := make(map[string]any, len(filters))
+	for k, v := range filters {
+		srcAny[k] = v
+	}
+
+	// Use reflection-based converter
+	typed, err := commondatabasehandler.ConvertMapToTypedMap(srcAny, ememail.Email{})
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert string keys to Field type
+	result := make(map[ememail.Field]any, len(typed))
+	for k, v := range typed {
+		result[ememail.Field(k)] = v
+	}
+
+	return result, nil
 }

@@ -8,7 +8,6 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
-	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -27,7 +26,6 @@ func Test_processV1ConferencecallsGet(t *testing.T) {
 		pageSize  uint64
 		pageToken string
 
-		responseFilters     map[string]string
 		responseConferences []*conferencecall.Conferencecall
 		expectRes           *sock.Response
 	}{
@@ -35,16 +33,12 @@ func Test_processV1ConferencecallsGet(t *testing.T) {
 			"normal",
 
 			&sock.Request{
-				URI:    "/v1/conferencecalls?page_size=10&page_token=2020-05-03%2021:35:02.809&filter_customer_id=54197ee2-50c3-11ee-ba48-af437ce87cbf&filter_deleted=false",
+				URI:    "/v1/conferencecalls?page_size=10&page_token=2020-05-03%2021:35:02.809",
 				Method: sock.RequestMethodGet,
+				Data:   []byte(`{"customer_id":"54197ee2-50c3-11ee-ba48-af437ce87cbf","deleted":false}`),
 			},
 			10,
 			"2020-05-03 21:35:02.809",
-
-			map[string]string{
-				"customer_id": "54197ee2-50c3-11ee-ba48-af437ce87cbf",
-				"deleted":     "false",
-			},
 
 			[]*conferencecall.Conferencecall{
 				{
@@ -66,18 +60,15 @@ func Test_processV1ConferencecallsGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockConf := conferencecallhandler.NewMockConferencecallHandler(mc)
 
 			h := &listenHandler{
-				utilHandler:           mockUtil,
 				sockHandler:           mockSock,
 				conferencecallHandler: mockConf,
 			}
 
-			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
-			mockConf.EXPECT().Gets(gomock.Any(), tt.pageSize, tt.pageToken, tt.responseFilters).Return(tt.responseConferences, nil)
+			mockConf.EXPECT().Gets(gomock.Any(), tt.pageSize, tt.pageToken, gomock.Any()).Return(tt.responseConferences, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -130,13 +121,11 @@ func Test_processV1ConferencecallsIDGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockConf := conferencehandler.NewMockConferenceHandler(mc)
 			mockConferencecall := conferencecallhandler.NewMockConferencecallHandler(mc)
 
 			h := &listenHandler{
-				utilHandler:           mockUtil,
 				sockHandler:           mockSock,
 				conferenceHandler:     mockConf,
 				conferencecallHandler: mockConferencecall,

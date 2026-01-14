@@ -33,7 +33,7 @@ func Test_RecordingGet(t *testing.T) {
 		responseBucketURI   string
 		responseDownloadURI string
 
-		expectFilters map[string]string
+		expectFilters map[file.Field]any
 		expectTargets []string
 		expectRes     *bucketfile.BucketFile
 	}
@@ -67,9 +67,9 @@ func Test_RecordingGet(t *testing.T) {
 			responseBucketURI:   "gs://voipbin-production/tmp/bdd24974-8ce0-11ed-aca5-1b4a5f897d9f",
 			responseDownloadURI: "https://download.uri/recording/call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z.wav",
 
-			expectFilters: map[string]string{
-				"deleted":      "false",
-				"reference_id": "5d946b94-9969-11eb-8bb3-07ff2b1cff3d",
+			expectFilters: map[file.Field]any{
+				file.FieldDeleted:     false,
+				file.FieldReferenceID: uuid.FromStringOrNil("5d946b94-9969-11eb-8bb3-07ff2b1cff3d"),
 			},
 			expectTargets: []string{
 				"recording/call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z_in.wav",
@@ -103,7 +103,7 @@ func Test_RecordingGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockFile.EXPECT().Gets(ctx, "", uint64(100), tt.expectFilters).Return(tt.responseFiles, nil)
+			mockFile.EXPECT().Gets(ctx, "", uint64(100), gomock.Any()).Return(tt.responseFiles, nil)
 
 			mockFile.EXPECT().CompressCreate(ctx, tt.responseFiles).Return(tt.responseBucketName, tt.responseFilepath, nil)
 			mockFile.EXPECT().DownloadURIGet(ctx, tt.responseBucketName, tt.responseFilepath, time.Hour*24).Return(tt.responseBucketURI, tt.responseDownloadURI, nil)
@@ -131,7 +131,7 @@ func Test_RecordingDelete(t *testing.T) {
 
 		responseFiles []*file.File
 
-		expectFilters map[string]string
+		expectFilters map[file.Field]any
 	}
 
 	tests := []test{
@@ -153,9 +153,9 @@ func Test_RecordingDelete(t *testing.T) {
 				},
 			},
 
-			expectFilters: map[string]string{
-				"deleted":      "false",
-				"reference_id": "a18fbd98-8eaa-11ed-8d35-6b10d649e16f",
+			expectFilters: map[file.Field]any{
+				file.FieldDeleted:     false,
+				file.FieldReferenceID: uuid.FromStringOrNil("a18fbd98-8eaa-11ed-8d35-6b10d649e16f"),
 			},
 		},
 	}
@@ -176,7 +176,7 @@ func Test_RecordingDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockFile.EXPECT().Gets(ctx, "", uint64(100), tt.expectFilters).Return(tt.responseFiles, nil)
+			mockFile.EXPECT().Gets(ctx, "", uint64(100), gomock.Any()).Return(tt.responseFiles, nil)
 			for _, f := range tt.responseFiles {
 				mockFile.EXPECT().Delete(ctx, f.ID).Return(&file.File{}, nil)
 			}

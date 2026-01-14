@@ -112,7 +112,7 @@ func Test_Create_OrderNumberTelnyx(t *testing.T) {
 			mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, tt.customerID, bmbilling.ReferenceTypeNumber, "", 1).Return(true, nil)
 
 			mockTelnyx.EXPECT().NumberPurchase(tt.number).Return(tt.responseTelnyx, nil)
-			mockDB.EXPECT().NumberGets(ctx, uint64(1), "", map[string]string{"deleted": "false", "number": tt.number}).Return([]*number.Number{}, nil)
+			mockDB.EXPECT().NumberGets(ctx, uint64(1), "", map[number.Field]any{number.FieldDeleted: false, number.FieldNumber: tt.number}).Return([]*number.Number{}, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDB.EXPECT().NumberCreate(ctx, tt.expectNumber).Return(nil)
 			mockDB.EXPECT().NumberGet(ctx, gomock.Any()).Return(tt.responseNumber, nil)
@@ -225,7 +225,7 @@ func Test_Register(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().NumberGets(ctx, uint64(1), "", map[string]string{"deleted": "false", "number": tt.number}).Return(tt.responseGets, nil)
+			mockDB.EXPECT().NumberGets(ctx, uint64(1), "", map[number.Field]any{number.FieldDeleted: false, number.FieldNumber: tt.number}).Return(tt.responseGets, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDB.EXPECT().NumberCreate(ctx, tt.expectCreateNumber).Return(nil)
@@ -296,7 +296,7 @@ func Test_Register_error(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().NumberGets(ctx, uint64(1), "", map[string]string{"deleted": "false", "number": tt.number}).Return(tt.mockGetsResult, tt.mockGetsErr)
+			mockDB.EXPECT().NumberGets(ctx, uint64(1), "", map[number.Field]any{number.FieldDeleted: false, number.FieldNumber: tt.number}).Return(tt.mockGetsResult, tt.mockGetsErr)
 
 			_, err := h.Register(ctx, tt.customerID, tt.number, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail, number.ProviderNameNone, "", number.StatusActive, false, false)
 			if err == nil {
@@ -306,16 +306,13 @@ func Test_Register_error(t *testing.T) {
 	}
 }
 
-func Test_UpdateInfo(t *testing.T) {
+func Test_Update(t *testing.T) {
 
 	tests := []struct {
 		name string
 
-		id            uuid.UUID
-		callFlowID    uuid.UUID
-		messageFlowID uuid.UUID
-		numberName    string
-		detail        string
+		id     uuid.UUID
+		fields map[number.Field]any
 
 		responseNumber *number.Number
 	}{
@@ -323,10 +320,12 @@ func Test_UpdateInfo(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("1f4ec1a4-8806-11ec-9012-7f3e92770a1f"),
-			uuid.FromStringOrNil("a3b2e2be-20a2-11ee-9802-374336cc5af7"),
-			uuid.FromStringOrNil("a3ed47f6-20a2-11ee-baa5-0b63182446cf"),
-			"update name",
-			"update detail",
+			map[number.Field]any{
+				number.FieldCallFlowID:    uuid.FromStringOrNil("a3b2e2be-20a2-11ee-9802-374336cc5af7"),
+				number.FieldMessageFlowID: uuid.FromStringOrNil("a3ed47f6-20a2-11ee-baa5-0b63182446cf"),
+				number.FieldName:          "update name",
+				number.FieldDetail:        "update detail",
+			},
 
 			&number.Number{
 				Identity: commonidentity.Identity{
@@ -366,10 +365,10 @@ func Test_UpdateInfo(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().NumberGet(gomock.Any(), tt.id).Return(tt.responseNumber, nil).AnyTimes()
-			mockDB.EXPECT().NumberUpdateInfo(gomock.Any(), tt.id, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail).Return(nil)
+			mockDB.EXPECT().NumberUpdate(gomock.Any(), tt.id, tt.fields).Return(nil)
+			mockDB.EXPECT().NumberGet(gomock.Any(), tt.id).Return(tt.responseNumber, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.responseNumber.CustomerID, number.EventTypeNumberUpdated, tt.responseNumber)
-			res, err := h.UpdateInfo(ctx, tt.id, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail)
+			res, err := h.Update(ctx, tt.id, tt.fields)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -388,7 +387,7 @@ func Test_Gets(t *testing.T) {
 
 		pageSize  uint64
 		pageToken string
-		filters   map[string]string
+		filters   map[number.Field]any
 
 		responseNumbers []*number.Number
 	}
@@ -399,9 +398,9 @@ func Test_Gets(t *testing.T) {
 
 			10,
 			"2021-02-26 18:26:49.000",
-			map[string]string{
-				"customer_id": "0b22cb36-eca8-11ee-a178-2f4c3561dcfd",
-				"deleted":     "false",
+			map[number.Field]any{
+				number.FieldCustomerID: uuid.FromStringOrNil("0b22cb36-eca8-11ee-a178-2f4c3561dcfd"),
+				number.FieldDeleted:    false,
 			},
 
 			[]*number.Number{
@@ -426,9 +425,9 @@ func Test_Gets(t *testing.T) {
 
 			10,
 			"2021-02-26 18:26:49.000",
-			map[string]string{
-				"customer_id": "17ea600e-eca8-11ee-b3c1-576ea96bdbfb",
-				"deleted":     "false",
+			map[number.Field]any{
+				number.FieldCustomerID: uuid.FromStringOrNil("17ea600e-eca8-11ee-b3c1-576ea96bdbfb"),
+				number.FieldDeleted:    false,
 			},
 
 			[]*number.Number{},

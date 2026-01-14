@@ -218,7 +218,7 @@ func Test_ConfbridgeGets(t *testing.T) {
 		name        string
 		confbridges []*confbridge.Confbridge
 
-		filters map[string]string
+		filters map[confbridge.Field]any
 
 		responseCurTime string
 
@@ -243,9 +243,9 @@ func Test_ConfbridgeGets(t *testing.T) {
 				},
 			},
 
-			filters: map[string]string{
-				"customer_id": "e14965b4-f0ca-11ee-9715-3bb35c382030",
-				"deleted":     "false",
+			filters: map[confbridge.Field]any{
+				confbridge.FieldCustomerID: uuid.FromStringOrNil("e14965b4-f0ca-11ee-9715-3bb35c382030"),
+				confbridge.FieldDeleted:    false,
 			},
 
 			responseCurTime: "2020-04-18 03:22:17.995000",
@@ -285,9 +285,9 @@ func Test_ConfbridgeGets(t *testing.T) {
 			"empty",
 			[]*confbridge.Confbridge{},
 
-			map[string]string{
-				"customer_id": "e173bd1e-f0ca-11ee-8744-976dc414fbc2",
-				"deleted":     "true",
+			map[confbridge.Field]any{
+				confbridge.FieldCustomerID: uuid.FromStringOrNil("e173bd1e-f0ca-11ee-8744-976dc414fbc2"),
+				confbridge.FieldDeleted:    false,
 			},
 
 			"2020-04-18 03:22:17.995000",

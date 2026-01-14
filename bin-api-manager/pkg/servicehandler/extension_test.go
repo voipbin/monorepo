@@ -334,7 +334,7 @@ func Test_ExtensionGets(t *testing.T) {
 		agent         *amagent.Agent
 		pageToken     string
 		pageSize      uint64
-		expectFilters map[string]string
+		expectFilters map[rmextension.Field]any
 
 		response  []rmextension.Extension
 		expectRes []*rmextension.WebhookMessage
@@ -352,9 +352,9 @@ func Test_ExtensionGets(t *testing.T) {
 			},
 			"2020-10-20T01:00:00.995000",
 			10,
-			map[string]string{
-				"customer_id": "5f621078-8e5f-11ee-97b2-cfe7337b701c",
-				"deleted":     "false",
+			map[rmextension.Field]any{
+				rmextension.FieldCustomerID: "5f621078-8e5f-11ee-97b2-cfe7337b701c",
+				rmextension.FieldDeleted:    false,
 			},
 
 			[]rmextension.Extension{

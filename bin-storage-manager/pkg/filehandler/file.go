@@ -137,7 +137,7 @@ func (h *fileHandler) Get(ctx context.Context, id uuid.UUID) (*file.File, error)
 }
 
 // Gets returns list of files
-func (h *fileHandler) Gets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*file.File, error) {
+func (h *fileHandler) Gets(ctx context.Context, token string, size uint64, filters map[file.Field]any) ([]*file.File, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "Gets",
 		"token": token,

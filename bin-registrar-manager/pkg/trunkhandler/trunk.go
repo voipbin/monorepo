@@ -119,7 +119,7 @@ func (h *trunkHandler) GetByDomainName(ctx context.Context, domainName string) (
 }
 
 // Gets returns list of trunks
-func (h *trunkHandler) Gets(ctx context.Context, token string, limit uint64, filters map[string]string) ([]*trunk.Trunk, error) {
+func (h *trunkHandler) Gets(ctx context.Context, token string, limit uint64, filters map[trunk.Field]any) ([]*trunk.Trunk, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "Gets",
 		"filters": filters,
@@ -135,20 +135,15 @@ func (h *trunkHandler) Gets(ctx context.Context, token string, limit uint64, fil
 }
 
 // Update updates the trunk info
-func (h *trunkHandler) Update(ctx context.Context, id uuid.UUID, name string, detail string, authTypes []sipauth.AuthType, username string, password string, allowedIPs []string) (*trunk.Trunk, error) {
+func (h *trunkHandler) Update(ctx context.Context, id uuid.UUID, fields map[trunk.Field]any) (*trunk.Trunk, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "Update",
-		"trunk_id":    id,
-		"name":        name,
-		"detail":      detail,
-		"auth_type":   authTypes,
-		"username":    username,
-		"password":    password,
-		"allowed_ips": allowedIPs,
+		"func":     "Update",
+		"trunk_id": id,
+		"fields":   fields,
 	})
 
 	// update
-	if errUpdate := h.db.TrunkUpdateBasicInfo(ctx, id, name, detail, authTypes, username, password, allowedIPs); errUpdate != nil {
+	if errUpdate := h.db.TrunkUpdate(ctx, id, fields); errUpdate != nil {
 		log.Errorf("Could not update the trunk. err: %v", errUpdate)
 		return nil, errUpdate
 	}
@@ -160,7 +155,14 @@ func (h *trunkHandler) Update(ctx context.Context, id uuid.UUID, name string, de
 
 	// update sipauth
 	sip := res.GenerateSIPAuth()
-	if err := h.db.SIPAuthUpdateAll(ctx, sip); err != nil {
+	sipFields := map[sipauth.Field]any{
+		sipauth.FieldAuthTypes:  sip.AuthTypes,
+		sipauth.FieldRealm:      sip.Realm,
+		sipauth.FieldUsername:   sip.Username,
+		sipauth.FieldPassword:   sip.Password,
+		sipauth.FieldAllowedIPs: sip.AllowedIPs,
+	}
+	if err := h.db.SIPAuthUpdate(ctx, sip.ID, sipFields); err != nil {
 		log.Errorf("Could not update sip auth. err: %v", err)
 		return nil, err
 	}

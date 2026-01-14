@@ -4,21 +4,21 @@ import "github.com/gofrs/uuid"
 
 // Route defines
 type Route struct {
-	ID         uuid.UUID `json:"id"`
-	CustomerID uuid.UUID `json:"customer_id"`
+	ID         uuid.UUID `json:"id" db:"id,uuid"`
+	CustomerID uuid.UUID `json:"customer_id" db:"customer_id,uuid"`
 
-	Name   string `json:"name"`
-	Detail string `json:"detail"`
+	Name   string `json:"name" db:"name"`
+	Detail string `json:"detail" db:"detail"`
 
-	ProviderID uuid.UUID `json:"provider_id"`
-	Priority   int       `json:"priority"`
+	ProviderID uuid.UUID `json:"provider_id" db:"provider_id,uuid"`
+	Priority   int       `json:"priority" db:"priority"`
 
-	Target string `json:"target"` // country code or all
+	Target string `json:"target" db:"target"` // country code or all
 
 	// timestamp
-	TMCreate string `json:"tm_create"`
-	TMUpdate string `json:"tm_update"`
-	TMDelete string `json:"tm_delete"`
+	TMCreate string `json:"tm_create" db:"tm_create"`
+	TMUpdate string `json:"tm_update" db:"tm_update"`
+	TMDelete string `json:"tm_delete" db:"tm_delete"`
 }
 
 // list of defined target

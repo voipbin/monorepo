@@ -8,10 +8,12 @@ import (
 	"strings"
 
 	"monorepo/bin-common-handler/models/sock"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-queue-manager/models/queuecall"
 	"monorepo/bin-queue-manager/pkg/listenhandler/models/request"
 )
 
@@ -32,8 +34,19 @@ func (h *listenHandler) processV1QueuecallsGet(ctx context.Context, m *sock.Requ
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// get filters
-	filters := h.utilHanlder.URLParseFilters(u)
+	// get filters from request body
+	tmpFilters, err := utilhandler.ParseFiltersFromRequestBody(m.Data)
+	if err != nil {
+		log.Errorf("Could not parse filters. err: %v", err)
+		return simpleResponse(400), nil
+	}
+
+	// convert to typed filters
+	filters, err := utilhandler.ConvertFilters[queuecall.FieldStruct, queuecall.Field](queuecall.FieldStruct{}, tmpFilters)
+	if err != nil {
+		log.Errorf("Could not convert filters. err: %v", err)
+		return simpleResponse(400), nil
+	}
 
 	tmp, err := h.queuecallHandler.Gets(ctx, pageSize, pageToken, filters)
 	if err != nil {

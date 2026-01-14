@@ -4,8 +4,8 @@ import "github.com/gofrs/uuid"
 
 // Owner represents the owner of the given resource
 type Owner struct {
-	OwnerType OwnerType `json:"owner_type"` // resource's owner type
-	OwnerID   uuid.UUID `json:"owner_id"`   // resource's owner id
+	OwnerType OwnerType `json:"owner_type" db:"owner_type"` // resource's owner type
+	OwnerID   uuid.UUID `json:"owner_id" db:"owner_id,uuid"` // resource's owner id
 }
 
 // OwnerType defines

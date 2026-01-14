@@ -8,10 +8,12 @@ import (
 	"strings"
 
 	"monorepo/bin-common-handler/models/sock"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-registrar-manager/models/extension"
 	"monorepo/bin-registrar-manager/pkg/listenhandler/models/request"
 )
 
@@ -120,7 +122,13 @@ func (h *listenHandler) processV1ExtensionsIDPut(ctx context.Context, m *sock.Re
 		return simpleResponse(400), nil
 	}
 
-	tmp, err := h.extensionHandler.Update(ctx, extensionID, req.Name, req.Detail, req.Password)
+	fields := map[extension.Field]any{
+		extension.FieldName:     req.Name,
+		extension.FieldDetail:   req.Detail,
+		extension.FieldPassword: req.Password,
+	}
+
+	tmp, err := h.extensionHandler.Update(ctx, extensionID, fields)
 	if err != nil {
 		log.Errorf("Could not update the extension info. err: %v", err)
 		return nil, err
@@ -195,13 +203,18 @@ func (h *listenHandler) processV1ExtensionsGet(ctx context.Context, m *sock.Requ
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// get customer_id
-	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
+	// get filters from request body
+	tmpFilters, err := utilhandler.ParseFiltersFromRequestBody(m.Data)
+	if err != nil {
+		log.Errorf("Could not parse filters. err: %v", err)
+		return simpleResponse(400), nil
+	}
 
-	// parse the filters
-	filters := h.utilHandler.URLParseFilters(u)
-	if customerID != uuid.Nil {
-		filters["customer_id"] = customerID.String()
+	// convert to typed filters
+	filters, err := utilhandler.ConvertFilters[extension.FieldStruct, extension.Field](extension.FieldStruct{}, tmpFilters)
+	if err != nil {
+		log.Errorf("Could not convert filters. err: %v", err)
+		return simpleResponse(400), nil
 	}
 
 	extensions, err := h.extensionHandler.Gets(ctx, pageToken, pageSize, filters)

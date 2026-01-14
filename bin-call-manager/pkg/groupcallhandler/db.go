@@ -106,7 +106,7 @@ func (h *groupcallHandler) Get(ctx context.Context, id uuid.UUID) (*groupcall.Gr
 }
 
 // Gets returns list of groupcalls.
-func (h *groupcallHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*groupcall.Groupcall, error) {
+func (h *groupcallHandler) Gets(ctx context.Context, size uint64, token string, filters map[groupcall.Field]any) ([]*groupcall.Groupcall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "Gets",
 		"filters": filters,

@@ -4,69 +4,24 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"strconv"
 
+	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
+
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"monorepo/bin-billing-manager/models/billing"
 )
 
 const (
-	// select query for call get
-	billingSelect = `
-	select
-		id,
-		customer_id,
-		account_id,
-
-		status,
-
-		reference_type,
-		reference_id,
-
-		cost_per_unit,
-		cost_total,
-
-		billing_unit_count,
-
-		tm_billing_start,
-		tm_billing_end,
-
-		tm_create,
-		tm_update,
-		tm_delete
-
-	from
-		billing_billings
-	`
+	billingsTable = "billing_billings"
 )
 
 // billingGetFromRow gets the billing from the row.
 func (h *handler) billingGetFromRow(row *sql.Rows) (*billing.Billing, error) {
-
 	res := &billing.Billing{}
-	if err := row.Scan(
-		&res.ID,
-		&res.CustomerID,
-		&res.AccountID,
 
-		&res.Status,
-
-		&res.ReferenceType,
-		&res.ReferenceID,
-
-		&res.CostPerUnit,
-		&res.CostTotal,
-
-		&res.BillingUnitCount,
-
-		&res.TMBillingStart,
-		&res.TMBillingEnd,
-
-		&res.TMCreate,
-		&res.TMUpdate,
-		&res.TMDelete,
-	); err != nil {
+	if err := commondatabasehandler.ScanRow(row, res); err != nil {
 		return nil, fmt.Errorf("could not scan the row. billingGetFromRow. err: %v", err)
 	}
 
@@ -75,61 +30,23 @@ func (h *handler) billingGetFromRow(row *sql.Rows) (*billing.Billing, error) {
 
 // BillingCreate creates new billing record.
 func (h *handler) BillingCreate(ctx context.Context, c *billing.Billing) error {
-	q := `insert into billing_billings(
-		id,
-		customer_id,
-		account_id,
+	c.TMCreate = h.utilHandler.TimeGetCurTime()
+	c.TMUpdate = DefaultTimeStamp
+	c.TMDelete = DefaultTimeStamp
 
-		status,
-
-		reference_type,
-		reference_id,
-
-		cost_per_unit,
-		cost_total,
-
-		billing_unit_count,
-
-		tm_billing_start,
-		tm_billing_end,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	) values(
-		?, ?, ?,
-		?,
-		?, ?,
-		?, ?,
-		?,
-		?, ?,
-		?, ?, ?
-	)`
-
-	_, err := h.db.Exec(q,
-		c.ID.Bytes(),
-		c.CustomerID.Bytes(),
-		c.AccountID.Bytes(),
-
-		c.Status,
-
-		c.ReferenceType,
-		c.ReferenceID.Bytes(),
-
-		c.CostPerUnit,
-		c.CostTotal,
-
-		c.BillingUnitCount,
-
-		c.TMBillingStart,
-		c.TMBillingEnd,
-
-		h.utilHandler.TimeGetCurTime(),
-		DefaultTimeStamp,
-		DefaultTimeStamp,
-	)
+	fields, err := commondatabasehandler.PrepareFields(c)
 	if err != nil {
-		return fmt.Errorf("could not execute. BillingCreate. err: %v", err)
+		return fmt.Errorf("BillingCreate: could not prepare fields. err: %v", err)
+	}
+
+	query, args, err := sq.Insert(billingsTable).SetMap(fields).ToSql()
+	if err != nil {
+		return fmt.Errorf("BillingCreate: could not build query. err: %v", err)
+	}
+
+	_, err = h.db.Exec(query, args...)
+	if err != nil {
+		return fmt.Errorf("BillingCreate: could not execute query. err: %v", err)
 	}
 
 	// update the cache
@@ -140,8 +57,6 @@ func (h *handler) BillingCreate(ctx context.Context, c *billing.Billing) error {
 
 // billingGetFromCache returns billing from the cache.
 func (h *handler) billingGetFromCache(ctx context.Context, id uuid.UUID) (*billing.Billing, error) {
-
-	// get from cache
 	res, err := h.cache.BillingGet(ctx, id)
 	if err != nil {
 		return nil, err
@@ -152,8 +67,6 @@ func (h *handler) billingGetFromCache(ctx context.Context, id uuid.UUID) (*billi
 
 // billingGetByReferenceIDFromCache returns billing of the given reference id from the cache.
 func (h *handler) billingGetByReferenceIDFromCache(ctx context.Context, referenceID uuid.UUID) (*billing.Billing, error) {
-
-	// get from cache
 	res, err := h.cache.BillingGetByReferenceID(ctx, referenceID)
 	if err != nil {
 		return nil, err
@@ -164,25 +77,29 @@ func (h *handler) billingGetByReferenceIDFromCache(ctx context.Context, referenc
 
 // billingGetFromDB returns billing from the DB.
 func (h *handler) billingGetFromDB(ctx context.Context, id uuid.UUID) (*billing.Billing, error) {
+	cols := commondatabasehandler.GetDBFields(billing.Billing{})
 
-	// prepare
-	q := fmt.Sprintf("%s where id = ?", billingSelect)
-
-	row, err := h.db.Query(q, id.Bytes())
+	query, args, err := sq.Select(cols...).
+		From(billingsTable).
+		Where(sq.Eq{"id": id.Bytes()}).
+		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not query. billingGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("billingGetFromDB: could not build query. err: %v", err)
 	}
-	defer func() {
-		_ = row.Close()
-	}()
 
-	if !row.Next() {
+	rows, err := h.db.Query(query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("billingGetFromDB: could not query. err: %v", err)
+	}
+	defer func() { _ = rows.Close() }()
+
+	if !rows.Next() {
 		return nil, ErrNotFound
 	}
 
-	res, err := h.billingGetFromRow(row)
+	res, err := h.billingGetFromRow(rows)
 	if err != nil {
-		return nil, fmt.Errorf("could not get billing. billingGetFromDB, err: %v", err)
+		return nil, fmt.Errorf("billingGetFromDB: could not scan row. err: %v", err)
 	}
 
 	return res, nil
@@ -190,25 +107,29 @@ func (h *handler) billingGetFromDB(ctx context.Context, id uuid.UUID) (*billing.
 
 // billingGetByReferenceIDFromDB returns billing of the given reference id from the DB.
 func (h *handler) billingGetByReferenceIDFromDB(ctx context.Context, referenceID uuid.UUID) (*billing.Billing, error) {
+	cols := commondatabasehandler.GetDBFields(billing.Billing{})
 
-	// prepare
-	q := fmt.Sprintf("%s where reference_id = ?", billingSelect)
-
-	row, err := h.db.Query(q, referenceID.Bytes())
+	query, args, err := sq.Select(cols...).
+		From(billingsTable).
+		Where(sq.Eq{"reference_id": referenceID.Bytes()}).
+		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not query. billingGetByReferenceIDFromDB. err: %v", err)
+		return nil, fmt.Errorf("billingGetByReferenceIDFromDB: could not build query. err: %v", err)
 	}
-	defer func() {
-		_ = row.Close()
-	}()
 
-	if !row.Next() {
+	rows, err := h.db.Query(query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("billingGetByReferenceIDFromDB: could not query. err: %v", err)
+	}
+	defer func() { _ = rows.Close() }()
+
+	if !rows.Next() {
 		return nil, ErrNotFound
 	}
 
-	res, err := h.billingGetFromRow(row)
+	res, err := h.billingGetFromRow(rows)
 	if err != nil {
-		return nil, fmt.Errorf("could not get billing. billingGetByReferenceIDFromDB, err: %v", err)
+		return nil, fmt.Errorf("billingGetByReferenceIDFromDB: could not scan row. err: %v", err)
 	}
 
 	return res, nil
@@ -216,7 +137,6 @@ func (h *handler) billingGetByReferenceIDFromDB(ctx context.Context, referenceID
 
 // billingUpdateToCache gets the billing from the DB and update the cache.
 func (h *handler) billingUpdateToCache(ctx context.Context, id uuid.UUID) error {
-
 	res, err := h.billingGetFromDB(ctx, id)
 	if err != nil {
 		return err
@@ -240,7 +160,6 @@ func (h *handler) billingSetToCache(ctx context.Context, c *billing.Billing) err
 
 // BillingGet returns billing.
 func (h *handler) BillingGet(ctx context.Context, id uuid.UUID) (*billing.Billing, error) {
-
 	res, err := h.billingGetFromCache(ctx, id)
 	if err == nil {
 		return res, nil
@@ -259,7 +178,6 @@ func (h *handler) BillingGet(ctx context.Context, id uuid.UUID) (*billing.Billin
 
 // BillingGetByReferenceID returns billing by reference id.
 func (h *handler) BillingGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*billing.Billing, error) {
-
 	res, err := h.billingGetByReferenceIDFromCache(ctx, referenceID)
 	if err == nil {
 		return res, nil
@@ -277,68 +195,82 @@ func (h *handler) BillingGetByReferenceID(ctx context.Context, referenceID uuid.
 }
 
 // BillingGets returns a list of billing.
-func (h *handler) BillingGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*billing.Billing, error) {
-
-	// prepare
-	q := fmt.Sprintf(`%s
-	where
-		tm_create < ?
-	`, billingSelect)
-
+func (h *handler) BillingGets(ctx context.Context, size uint64, token string, filters map[billing.Field]any) ([]*billing.Billing, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	values := []interface{}{
-		token,
-	}
+	cols := commondatabasehandler.GetDBFields(billing.Billing{})
 
-	for k, v := range filters {
-		switch k {
-		case "customer_id", "account_id", "reference_id":
-			q = fmt.Sprintf("%s and %s = ?", q, k)
-			tmp := uuid.FromStringOrNil(v)
-			values = append(values, tmp.Bytes())
+	builder := sq.Select(cols...).
+		From(billingsTable).
+		Where(sq.Lt{"tm_create": token}).
+		OrderBy("tm_create desc").
+		Limit(size)
 
-		case "deleted":
-			if v == "false" {
-				q = fmt.Sprintf("%s and tm_delete >= ?", q)
-				values = append(values, DefaultTimeStamp)
-			}
-
-		default:
-			q = fmt.Sprintf("%s and %s = ?", q, k)
-			values = append(values, v)
-		}
-	}
-
-	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
-	values = append(values, strconv.FormatUint(size, 10))
-
-	rows, err := h.db.Query(q, values...)
+	builder, err := commondatabasehandler.ApplyFields(builder, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. BillingGets. err: %v", err)
+		return nil, fmt.Errorf("BillingGets: could not apply filters. err: %v", err)
 	}
-	defer func() {
-		_ = rows.Close()
-	}()
+
+	query, args, err := builder.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("BillingGets: could not build query. err: %v", err)
+	}
+
+	rows, err := h.db.Query(query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("BillingGets: could not query. err: %v", err)
+	}
+	defer func() { _ = rows.Close() }()
 
 	res := []*billing.Billing{}
 	for rows.Next() {
 		u, err := h.billingGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not get data. BillingGets, err: %v", err)
+			return nil, fmt.Errorf("BillingGets: could not scan row. err: %v", err)
 		}
-
 		res = append(res, u)
 	}
 
 	return res, nil
 }
 
+// BillingUpdate updates the billing fields.
+func (h *handler) BillingUpdate(ctx context.Context, id uuid.UUID, fields map[billing.Field]any) error {
+	updateFields := make(map[string]any)
+	for k, v := range fields {
+		updateFields[string(k)] = v
+	}
+	updateFields["tm_update"] = h.utilHandler.TimeGetCurTime()
+
+	preparedFields, err := commondatabasehandler.PrepareFields(updateFields)
+	if err != nil {
+		return fmt.Errorf("BillingUpdate: could not prepare fields. err: %v", err)
+	}
+
+	query, args, err := sq.Update(billingsTable).
+		SetMap(preparedFields).
+		Where(sq.Eq{"id": id.Bytes()}).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("BillingUpdate: could not build query. err: %v", err)
+	}
+
+	_, err = h.db.Exec(query, args...)
+	if err != nil {
+		return fmt.Errorf("BillingUpdate: could not execute. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.billingUpdateToCache(ctx, id)
+
+	return nil
+}
+
 // BillingSetStatusEnd sets the billing status to end
 func (h *handler) BillingSetStatusEnd(ctx context.Context, id uuid.UUID, billingDuration float32, timestamp string) error {
-	// prepare
+	// prepare - using raw SQL for the formula
 	q := `
 	update
 		billing_billings
@@ -363,47 +295,33 @@ func (h *handler) BillingSetStatusEnd(ctx context.Context, id uuid.UUID, billing
 	return nil
 }
 
-// BillingSetStatusEnd sets the billing status
+// BillingSetStatus sets the billing status
 func (h *handler) BillingSetStatus(ctx context.Context, id uuid.UUID, status billing.Status) error {
-	// prepare
-	q := `
-	update
-		billing_billings
-	set
-		status = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q, status, h.utilHandler.TimeGetCurTime(), id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. BillingSetStatus. err: %v", err)
+	fields := map[billing.Field]any{
+		billing.FieldStatus: status,
 	}
 
-	// update the cache
-	_ = h.billingUpdateToCache(ctx, id)
-
-	return nil
+	return h.BillingUpdate(ctx, id, fields)
 }
 
 // BillingDelete deletes the billing
 func (h *handler) BillingDelete(ctx context.Context, id uuid.UUID) error {
-	// prepare
-	q := `
-	update
-		billing_billings
-	set
-		tm_update = ?,
-		tm_delete = ?
-	where
-		id = ?
-	`
-
 	ts := h.utilHandler.TimeGetCurTime()
-	_, err := h.db.Exec(q, ts, ts, id.Bytes())
+
+	query, args, err := sq.Update(billingsTable).
+		SetMap(map[string]any{
+			"tm_update": ts,
+			"tm_delete": ts,
+		}).
+		Where(sq.Eq{"id": id.Bytes()}).
+		ToSql()
 	if err != nil {
-		return fmt.Errorf("could not execute. BillingDelete. err: %v", err)
+		return fmt.Errorf("BillingDelete: could not build query. err: %v", err)
+	}
+
+	_, err = h.db.Exec(query, args...)
+	if err != nil {
+		return fmt.Errorf("BillingDelete: could not execute. err: %v", err)
 	}
 
 	// update the cache

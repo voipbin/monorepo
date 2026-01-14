@@ -4,23 +4,28 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/url"
+
 	amsummary "monorepo/bin-ai-manager/models/summary"
 	amrequest "monorepo/bin-ai-manager/pkg/listenhandler/models/request"
 	"monorepo/bin-common-handler/models/sock"
-	"net/url"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 )
 
 // AIV1SummaryGets sends a request to ai-manager
 // to getting a list of summaries info.
 // it returns detail list of ais info if it succeed.
-func (r *requestHandler) AIV1SummaryGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]amsummary.Summary, error) {
+func (r *requestHandler) AIV1SummaryGets(ctx context.Context, pageToken string, pageSize uint64, filters map[amsummary.Field]any) ([]amsummary.Summary, error) {
 	uri := fmt.Sprintf("/v1/summaries?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
-	uri = r.utilHandler.URLMergeFilters(uri, filters)
+	m, err := json.Marshal(filters)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not marshal filters")
+	}
 
-	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodGet, "ai/summaries", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodGet, "ai/summaries", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}

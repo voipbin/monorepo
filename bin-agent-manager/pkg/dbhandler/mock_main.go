@@ -117,7 +117,7 @@ func (mr *MockDBHandlerMockRecorder) AgentGetByUsername(ctx, username any) *gomo
 }
 
 // AgentGets mocks base method.
-func (m *MockDBHandler) AgentGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*agent.Agent, error) {
+func (m *MockDBHandler) AgentGets(ctx context.Context, size uint64, token string, filters map[agent.Field]any) ([]*agent.Agent, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AgentGets", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*agent.Agent)
@@ -213,4 +213,18 @@ func (m *MockDBHandler) AgentSetTagIDs(ctx context.Context, id uuid.UUID, tags [
 func (mr *MockDBHandlerMockRecorder) AgentSetTagIDs(ctx, id, tags any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentSetTagIDs", reflect.TypeOf((*MockDBHandler)(nil).AgentSetTagIDs), ctx, id, tags)
+}
+
+// AgentUpdate mocks base method.
+func (m *MockDBHandler) AgentUpdate(ctx context.Context, id uuid.UUID, fields map[agent.Field]any) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AgentUpdate", ctx, id, fields)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AgentUpdate indicates an expected call of AgentUpdate.
+func (mr *MockDBHandlerMockRecorder) AgentUpdate(ctx, id, fields any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentUpdate", reflect.TypeOf((*MockDBHandler)(nil).AgentUpdate), ctx, id, fields)
 }

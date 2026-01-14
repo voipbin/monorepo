@@ -72,7 +72,7 @@ func (h *aiHandler) Get(ctx context.Context, id uuid.UUID) (*ai.AI, error) {
 }
 
 // Gets returns list of ais.
-func (h *aiHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*ai.AI, error) {
+func (h *aiHandler) Gets(ctx context.Context, size uint64, token string, filters map[ai.Field]any) ([]*ai.AI, error) {
 	res, err := h.db.AIGets(ctx, size, token, filters)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get ais")
@@ -111,7 +111,20 @@ func (h *aiHandler) dbUpdate(
 	ttsVoice string,
 	sttType ai.STTType,
 ) (*ai.AI, error) {
-	if err := h.db.AISetInfo(ctx, id, name, detail, engineType, engineModel, engineData, engineKey, initPrompt, ttsType, ttsVoice, sttType); err != nil {
+	fields := map[ai.Field]any{
+		ai.FieldName:        name,
+		ai.FieldDetail:      detail,
+		ai.FieldEngineType:  engineType,
+		ai.FieldEngineModel: engineModel,
+		ai.FieldEngineData:  engineData,
+		ai.FieldEngineKey:   engineKey,
+		ai.FieldInitPrompt:  initPrompt,
+		ai.FieldTTSType:     ttsType,
+		ai.FieldTTSVoiceID:  ttsVoice,
+		ai.FieldSTTType:     sttType,
+	}
+
+	if err := h.db.AIUpdate(ctx, id, fields); err != nil {
 		return nil, errors.Wrapf(err, "could not update ai")
 	}
 

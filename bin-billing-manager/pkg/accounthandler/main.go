@@ -23,7 +23,7 @@ type AccountHandler interface {
 	Create(ctx context.Context, customerID uuid.UUID, name string, detail string, paymentType account.PaymentType, payemntMethod account.PaymentMethod) (*account.Account, error)
 	Get(ctx context.Context, id uuid.UUID) (*account.Account, error)
 	GetByCustomerID(ctx context.Context, customerID uuid.UUID) (*account.Account, error)
-	Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*account.Account, error)
+	Gets(ctx context.Context, size uint64, token string, filters map[account.Field]any) ([]*account.Account, error)
 	SubtractBalance(ctx context.Context, accountID uuid.UUID, balance float32) (*account.Account, error)
 	AddBalance(ctx context.Context, accountID uuid.UUID, balance float32) (*account.Account, error)
 	UpdateBasicInfo(ctx context.Context, id uuid.UUID, name string, detail string) (*account.Account, error)

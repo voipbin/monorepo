@@ -281,7 +281,7 @@ func Test_ExtensionDelete(t *testing.T) {
 				Password:   "eb605618-6ebc-11eb-a421-4bbf5d9a2fac",
 
 				TMCreate: "2021-02-26 18:26:49.000",
-				TMUpdate: DefaultTimeStamp,
+				TMUpdate: "2021-02-26 18:26:49.000",
 				TMDelete: "2021-02-26 18:26:49.000",
 			},
 		},
@@ -332,13 +332,11 @@ func Test_ExtensionDelete(t *testing.T) {
 func Test_ExtensionUpdate(t *testing.T) {
 
 	type test struct {
-		name      string
-		extension *extension.Extension
+		name            string
+		extensionCreate *extension.Extension
 
-		id            uuid.UUID
-		extensionName string
-		detail        string
-		password      string
+		id     uuid.UUID
+		fields map[extension.Field]any
 
 		responseCurTime string
 		expectRes       *extension.Extension
@@ -364,9 +362,11 @@ func Test_ExtensionUpdate(t *testing.T) {
 			},
 
 			uuid.FromStringOrNil("e3ebc6fe-711b-11eb-8385-ef7ccec2e41a"),
-			"update name",
-			"update detail",
-			"update password",
+			map[extension.Field]any{
+				extension.FieldName:     "update name",
+				extension.FieldDetail:   "update detail",
+				extension.FieldPassword: "update password",
+			},
 
 			"2021-02-26 18:26:49.000",
 			&extension.Extension{
@@ -409,19 +409,19 @@ func Test_ExtensionUpdate(t *testing.T) {
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ExtensionSet(gomock.Any(), gomock.Any())
-			if err := h.ExtensionCreate(ctx, tt.extension); err != nil {
+			if err := h.ExtensionCreate(ctx, tt.extensionCreate); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().ExtensionSet(gomock.Any(), gomock.Any())
-			if err := h.ExtensionUpdate(ctx, tt.id, tt.extensionName, tt.detail, tt.password); err != nil {
+			if err := h.ExtensionUpdate(ctx, tt.id, tt.fields); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().ExtensionGet(gomock.Any(), tt.extension.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().ExtensionGet(gomock.Any(), tt.extensionCreate.ID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().ExtensionSet(gomock.Any(), gomock.Any())
-			res, err := h.ExtensionGet(context.Background(), tt.extension.ID)
+			res, err := h.ExtensionGet(context.Background(), tt.extensionCreate.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -440,7 +440,7 @@ func Test_ExtensionGets(t *testing.T) {
 		extensions []extension.Extension
 
 		limit   uint64
-		filters map[string]string
+		filters map[extension.Field]any
 
 		responseCurTime string
 		expectRes       []*extension.Extension
@@ -467,9 +467,9 @@ func Test_ExtensionGets(t *testing.T) {
 			},
 
 			10,
-			map[string]string{
-				"deleted":     "false",
-				"customer_id": "f3bcb6d0-cdc8-11ee-82a8-430793535c91",
+			map[extension.Field]any{
+				extension.FieldDeleted:    false,
+				extension.FieldCustomerID: uuid.FromStringOrNil("f3bcb6d0-cdc8-11ee-82a8-430793535c91"),
 			},
 
 			"2021-02-26 18:26:49.000",

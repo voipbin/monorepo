@@ -3,7 +3,6 @@ package dbhandler
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
 
 	"github.com/Masterminds/squirrel"
@@ -11,85 +10,19 @@ import (
 	"github.com/pkg/errors"
 
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
-	"monorepo/bin-conversation-manager/models/media"
 	"monorepo/bin-conversation-manager/models/message"
-)
-
-const (
-	messageSelect = `
-	select
-		id,
-		customer_id,
-
-		conversation_id,
-		direction,
-		status,
-
-		reference_type,
-		reference_id,
-
-		transaction_id,
-
- 		text,
-		medias,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	from
-		conversation_messages
-	`
 )
 
 var (
 	messagesTable = "conversation_messages"
-
-	messagesFields = []string{ // This now matches the conversation_dbhandler.go style
-		string(message.FieldID),
-		string(message.FieldCustomerID),
-		string(message.FieldConversationID),
-		string(message.FieldDirection),
-		string(message.FieldStatus),
-		string(message.FieldReferenceType),
-		string(message.FieldReferenceID),
-		string(message.FieldTransactionID),
-		string(message.FieldText),
-		string(message.FieldMedias),
-		string(message.FieldTMCreate),
-		string(message.FieldTMUpdate),
-		string(message.FieldTMDelete),
-	}
 )
 
 // messageGetFromRow gets the message from the row.
 func (h *handler) messageGetFromRow(row *sql.Rows) (*message.Message, error) {
-	var mediasJSON sql.NullString
-
 	res := &message.Message{}
-	if err := row.Scan(
-		&res.ID,
-		&res.CustomerID,
-		&res.ConversationID,
-		&res.Direction,
-		&res.Status,
-		&res.ReferenceType,
-		&res.ReferenceID,
-		&res.TransactionID,
-		&res.Text,
-		&mediasJSON,
-		&res.TMCreate,
-		&res.TMUpdate,
-		&res.TMDelete,
-	); err != nil {
-		return nil, fmt.Errorf("could not scan the row. messageGetFromRow. err: %v", err)
-	}
 
-	if !mediasJSON.Valid || mediasJSON.String == "" {
-		res.Medias = []media.Media{}
-	} else {
-		if err := json.Unmarshal([]byte(mediasJSON.String), &res.Medias); err != nil {
-			return nil, fmt.Errorf("could not unmarshal Medias. messageGetFromRow. err: %v", err)
-		}
+	if err := commondatabasehandler.ScanRow(row, res); err != nil {
+		return nil, fmt.Errorf("could not scan the row. messageGetFromRow. err: %v", err)
 	}
 
 	return res, nil
@@ -99,29 +32,21 @@ func (h *handler) messageGetFromRow(row *sql.Rows) (*message.Message, error) {
 func (h *handler) MessageCreate(ctx context.Context, msg *message.Message) error {
 	now := h.utilHandler.TimeGetCurTime()
 
-	mediasBytes, err := json.Marshal(msg.Medias)
+	// Set timestamps
+	msg.TMCreate = now
+	msg.TMUpdate = commondatabasehandler.DefaultTimeStamp
+	msg.TMDelete = commondatabasehandler.DefaultTimeStamp
+
+	// Use PrepareFields to get field map
+	fields, err := commondatabasehandler.PrepareFields(msg)
 	if err != nil {
-		return fmt.Errorf("could not marshal medias. MessageCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. MessageCreate. err: %v", err)
 	}
 
+	// Use SetMap instead of Columns/Values
 	sb := squirrel.
 		Insert(messagesTable).
-		Columns(messagesFields...).
-		Values(
-			msg.ID.Bytes(),
-			msg.CustomerID.Bytes(),
-			msg.ConversationID.Bytes(),
-			msg.Direction,
-			msg.Status,
-			msg.ReferenceType,
-			msg.ReferenceID.Bytes(),
-			msg.TransactionID,
-			msg.Text,
-			mediasBytes,
-			now,
-			commondatabasehandler.DefaultTimeStamp,
-			commondatabasehandler.DefaultTimeStamp,
-		).
+		SetMap(fields).
 		PlaceholderFormat(squirrel.Question)
 
 	query, args, err := sb.ToSql()
@@ -139,8 +64,9 @@ func (h *handler) MessageCreate(ctx context.Context, msg *message.Message) error
 
 // messageGetFromDB gets the message info from the db.
 func (h *handler) messageGetFromDB(ctx context.Context, id uuid.UUID) (*message.Message, error) {
+	fields := commondatabasehandler.GetDBFields(&message.Message{})
 	query, args, err := squirrel.
-		Select(messagesFields...).
+		Select(fields...).
 		From(messagesTable).
 		Where(squirrel.Eq{string(message.FieldID): id.Bytes()}).
 		PlaceholderFormat(squirrel.Question).
@@ -166,7 +92,6 @@ func (h *handler) messageGetFromDB(ctx context.Context, id uuid.UUID) (*message.
 
 	res, err := h.messageGetFromRow(rows)
 	if err != nil {
-		// Error wrapping style from conversationGetFromDB
 		return nil, errors.Wrapf(err, "could not get message. messageGetFromDB. id: %s. err: %v", id, err)
 	}
 	return res, nil
@@ -226,14 +151,15 @@ func (h *handler) MessageGet(ctx context.Context, id uuid.UUID) (*message.Messag
 	return res, nil
 }
 
-// // MessageGets returns messages.
+// MessageGets returns messages.
 func (h *handler) MessageGets(ctx context.Context, token string, size uint64, filters map[message.Field]any) ([]*message.Message, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
+	fields := commondatabasehandler.GetDBFields(&message.Message{})
 	sb := squirrel.
-		Select(messagesFields...).
+		Select(fields...).
 		From(messagesTable).
 		Where(squirrel.Lt{string(message.FieldTMCreate): token}).
 		OrderBy(string(message.FieldTMCreate) + " DESC").
@@ -276,20 +202,27 @@ func (h *handler) MessageGets(ctx context.Context, token string, size uint64, fi
 
 // MessageGetsByTransactionID returns message by the transaction_id.
 func (h *handler) MessageGetsByTransactionID(ctx context.Context, transactionID string, token string, limit uint64) ([]*message.Message, error) {
+	if token == "" {
+		token = h.utilHandler.TimeGetCurTime()
+	}
 
-	// prepare
-	q := fmt.Sprintf(`
-		%s
-		where
-			tm_delete >= ?
-			and transaction_id = ?
-			and tm_create < ?
-		order by
-			tm_create desc, id desc
-		limit ?
-	`, messageSelect)
+	fields := commondatabasehandler.GetDBFields(&message.Message{})
+	sb := squirrel.
+		Select(fields...).
+		From(messagesTable).
+		Where(squirrel.GtOrEq{string(message.FieldTMDelete): commondatabasehandler.DefaultTimeStamp}).
+		Where(squirrel.Eq{string(message.FieldTransactionID): transactionID}).
+		Where(squirrel.Lt{string(message.FieldTMCreate): token}).
+		OrderBy(string(message.FieldTMCreate) + " DESC", string(message.FieldID) + " DESC").
+		Limit(limit).
+		PlaceholderFormat(squirrel.Question)
 
-	rows, err := h.db.Query(q, commondatabasehandler.DefaultTimeStamp, transactionID, token, limit)
+	query, args, err := sb.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. MessageGetsByTransactionID. err: %v", err)
+	}
+
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. MessageGetsByTransactionID. err: %v", err)
 	}
@@ -312,29 +245,11 @@ func (h *handler) MessageGetsByTransactionID(ctx context.Context, transactionID 
 
 // MessageUpdateStatus updates the message's status.
 func (h *handler) MessageUpdateStatus(ctx context.Context, id uuid.UUID, status message.Status) error {
-
-	q := `
-	update conversation_messages set
-		status = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	ts := h.utilHandler.TimeGetCurTime()
-	_, err := h.db.Exec(q,
-		status,
-		ts,
-		id.Bytes(),
-	)
-	if err != nil {
-		return fmt.Errorf("could not execute. MessageUpdateStatus. err: %v", err)
+	fields := map[message.Field]any{
+		message.FieldStatus: status,
 	}
 
-	// update the cache
-	_ = h.messageUpdateToCache(ctx, id)
-
-	return nil
+	return h.MessageUpdate(ctx, id, fields)
 }
 
 func (h *handler) MessageUpdate(ctx context.Context, id uuid.UUID, fields map[message.Field]any) error {
@@ -378,13 +293,18 @@ func (h *handler) MessageUpdate(ctx context.Context, id uuid.UUID, fields map[me
 func (h *handler) MessageDelete(ctx context.Context, id uuid.UUID) error {
 	ts := h.utilHandler.TimeGetCurTime()
 
-	updateMap := map[string]any{
-		string(message.FieldTMUpdate): ts,
-		string(message.FieldTMDelete): ts,
+	fields := map[message.Field]any{
+		message.FieldTMUpdate: ts,
+		message.FieldTMDelete: ts,
+	}
+
+	preparedFields, err := commondatabasehandler.PrepareFields(fields)
+	if err != nil {
+		return fmt.Errorf("MessageDelete: prepare fields failed: %w", err)
 	}
 
 	sb := squirrel.Update(messagesTable).
-		SetMap(updateMap).
+		SetMap(preparedFields).
 		Where(squirrel.Eq{string(message.FieldID): id.Bytes()}).
 		PlaceholderFormat(squirrel.Question)
 

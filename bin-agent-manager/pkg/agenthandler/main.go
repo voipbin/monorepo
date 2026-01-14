@@ -30,7 +30,7 @@ type AgentHandler interface {
 	Delete(ctx context.Context, id uuid.UUID) (*agent.Agent, error)
 	Get(ctx context.Context, id uuid.UUID) (*agent.Agent, error)
 	GetByCustomerIDAndAddress(ctx context.Context, customerID uuid.UUID, addr *commonaddress.Address) (*agent.Agent, error)
-	Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*agent.Agent, error)
+	Gets(ctx context.Context, size uint64, token string, filters map[agent.Field]any) ([]*agent.Agent, error)
 	Login(ctx context.Context, username, password string) (*agent.Agent, error)
 	UpdateAddresses(ctx context.Context, id uuid.UUID, addresses []commonaddress.Address) (*agent.Agent, error)
 	UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, ringMethod agent.RingMethod) (*agent.Agent, error)

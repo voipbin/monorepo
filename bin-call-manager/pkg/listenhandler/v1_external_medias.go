@@ -7,12 +7,13 @@ import (
 	"strconv"
 	"strings"
 
+	"monorepo/bin-call-manager/models/externalmedia"
 	"monorepo/bin-common-handler/models/sock"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	"monorepo/bin-call-manager/models/externalmedia"
 	"monorepo/bin-call-manager/pkg/listenhandler/models/request"
 )
 
@@ -33,8 +34,19 @@ func (h *listenHandler) processV1ExternalMediasGet(ctx context.Context, m *sock.
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// get filters
-	filters := h.utilHandler.URLParseFilters(u)
+	// get filters from request body
+	tmpFilters, err := utilhandler.ParseFiltersFromRequestBody(m.Data)
+	if err != nil {
+		log.Errorf("Could not parse filters. err: %v", err)
+		return simpleResponse(400), nil
+	}
+
+	// convert to typed filters
+	filters, err := utilhandler.ConvertFilters[externalmedia.FieldStruct, externalmedia.Field](externalmedia.FieldStruct{}, tmpFilters)
+	if err != nil {
+		log.Errorf("Could not convert filters. err: %v", err)
+		return simpleResponse(400), nil
+	}
 
 	tmps, err := h.externalMediaHandler.Gets(ctx, pageSize, pageToken, filters)
 	if err != nil {

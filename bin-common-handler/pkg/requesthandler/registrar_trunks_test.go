@@ -14,7 +14,6 @@ import (
 	"monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
-	"monorepo/bin-common-handler/pkg/utilhandler"
 )
 
 func Test_RegistrarV1TrunkCreate(t *testing.T) {
@@ -101,11 +100,10 @@ func Test_RegistrarV1TrunkGets(t *testing.T) {
 
 		pageToken string
 		pageSize  uint64
-		filters   map[string]string
+		filters   map[rmtrunk.Field]any
 
 		response *sock.Response
 
-		expectURL     string
 		expectTarget  string
 		expectRequest *sock.Request
 		expectRes     []rmtrunk.Trunk
@@ -115,8 +113,8 @@ func Test_RegistrarV1TrunkGets(t *testing.T) {
 
 			pageToken: "2020-09-20 03:23:20.995000",
 			pageSize:  10,
-			filters: map[string]string{
-				"deleted": "false",
+			filters: map[rmtrunk.Field]any{
+				rmtrunk.FieldDeleted: false,
 			},
 
 			response: &sock.Response{
@@ -124,12 +122,12 @@ func Test_RegistrarV1TrunkGets(t *testing.T) {
 				Data:       []byte(`[{"id":"b215904a-549b-11ee-874c-7f01e2fb3e8c"}]`),
 			},
 
-			expectURL:    "/v1/trunks?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10",
 			expectTarget: "bin-manager.registrar-manager.request",
 			expectRequest: &sock.Request{
-				URI:      "/v1/trunks?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10&filter_deleted=false",
+				URI:      "/v1/trunks?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10",
 				Method:   sock.RequestMethodGet,
-				DataType: ContentTypeNone,
+				DataType: "application/json",
+				Data:     []byte(`{"deleted":false}`),
 			},
 			expectRes: []rmtrunk.Trunk{
 				{
@@ -147,14 +145,11 @@ func Test_RegistrarV1TrunkGets(t *testing.T) {
 			defer mc.Finish()
 
 			mockSock := sockhandler.NewMockSockHandler(mc)
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			reqHandler := requestHandler{
-				sock:        mockSock,
-				utilHandler: mockUtil,
+				sock: mockSock,
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.RegistrarV1TrunkGets(ctx, tt.pageToken, tt.pageSize, tt.filters)

@@ -4,7 +4,6 @@ import (
 	"context"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
-	"monorepo/bin-common-handler/pkg/utilhandler"
 	smaccount "monorepo/bin-storage-manager/models/account"
 	"reflect"
 	"testing"
@@ -82,11 +81,10 @@ func Test_StorageV1AccountGets(t *testing.T) {
 
 		pageToken string
 		pageSize  uint64
-		filters   map[string]string
+		filters   map[smaccount.Field]any
 
 		response *sock.Response
 
-		expectURL     string
 		expectTarget  string
 		expectRequest *sock.Request
 		expectResult  []smaccount.Account
@@ -96,8 +94,8 @@ func Test_StorageV1AccountGets(t *testing.T) {
 
 			"2020-09-20 03:23:20.995000",
 			10,
-			map[string]string{
-				"deleted": "false",
+			map[smaccount.Field]any{
+				smaccount.FieldDeleted: false,
 			},
 
 			&sock.Response{
@@ -106,12 +104,12 @@ func Test_StorageV1AccountGets(t *testing.T) {
 				Data:       []byte(`[{"id":"44e914de-1bc8-11ef-ad71-0be6fe3f98ef"},{"id":"45176d8e-1bc8-11ef-9ab1-b3373adf14ce"}]`),
 			},
 
-			"/v1/accounts?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10",
 			"bin-manager.storage-manager.request",
 			&sock.Request{
-				URI:      "/v1/accounts?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10&filter_deleted=false",
+				URI:      "/v1/accounts?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10",
 				Method:   sock.RequestMethodGet,
-				DataType: ContentTypeNone,
+				DataType: "application/json",
+				Data:     []byte(`{"deleted":false}`),
 			},
 			[]smaccount.Account{
 				{
@@ -130,14 +128,11 @@ func Test_StorageV1AccountGets(t *testing.T) {
 			defer mc.Finish()
 
 			mockSock := sockhandler.NewMockSockHandler(mc)
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			reqHandler := requestHandler{
-				sock:        mockSock,
-				utilHandler: mockUtil,
+				sock: mockSock,
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.StorageV1AccountGets(ctx, tt.pageToken, tt.pageSize, tt.filters)

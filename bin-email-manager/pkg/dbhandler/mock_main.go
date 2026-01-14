@@ -86,7 +86,7 @@ func (mr *MockDBHandlerMockRecorder) EmailGet(ctx, id any) *gomock.Call {
 }
 
 // EmailGets mocks base method.
-func (m *MockDBHandler) EmailGets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*email.Email, error) {
+func (m *MockDBHandler) EmailGets(ctx context.Context, token string, size uint64, filters map[email.Field]any) ([]*email.Email, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "EmailGets", ctx, token, size, filters)
 	ret0, _ := ret[0].([]*email.Email)
@@ -98,6 +98,20 @@ func (m *MockDBHandler) EmailGets(ctx context.Context, token string, size uint64
 func (mr *MockDBHandlerMockRecorder) EmailGets(ctx, token, size, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EmailGets", reflect.TypeOf((*MockDBHandler)(nil).EmailGets), ctx, token, size, filters)
+}
+
+// EmailUpdate mocks base method.
+func (m *MockDBHandler) EmailUpdate(ctx context.Context, id uuid.UUID, fields map[email.Field]any) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EmailUpdate", ctx, id, fields)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EmailUpdate indicates an expected call of EmailUpdate.
+func (mr *MockDBHandlerMockRecorder) EmailUpdate(ctx, id, fields any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EmailUpdate", reflect.TypeOf((*MockDBHandler)(nil).EmailUpdate), ctx, id, fields)
 }
 
 // EmailUpdateProviderReferenceID mocks base method.

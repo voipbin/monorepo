@@ -244,7 +244,7 @@ func Test_ConferenceGets(t *testing.T) {
 		limit uint64
 
 		response      []cfconference.Conference
-		expectFilters map[string]string
+		expectFilters map[cfconference.Field]any
 		expectRes     []*cfconference.WebhookMessage
 	}{
 		{
@@ -268,10 +268,10 @@ func Test_ConferenceGets(t *testing.T) {
 					},
 				},
 			},
-			map[string]string{
-				"customer_id": "5f621078-8e5f-11ee-97b2-cfe7337b701c",
-				"deleted":     "false",
-				"type":        string(cfconference.TypeConference),
+			map[cfconference.Field]any{
+				cfconference.FieldCustomerID: "5f621078-8e5f-11ee-97b2-cfe7337b701c",
+				cfconference.FieldDeleted:    false,
+				cfconference.FieldType:       string(cfconference.TypeConference),
 			},
 			[]*cfconference.WebhookMessage{
 				{

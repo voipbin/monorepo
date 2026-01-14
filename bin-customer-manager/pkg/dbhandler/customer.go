@@ -3,64 +3,26 @@ package dbhandler
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
-	"strconv"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
+
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"monorepo/bin-customer-manager/models/customer"
 )
 
 const (
-	// select query for call get
-	customerSelect = `
-	select
-		id,
-
-		name,
-		detail,
-
-		email,
-		phone_number,
-		address,
-
-		webhook_method,
-		webhook_uri,
-
-		billing_account_id,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	from
-		customer_customers
-	`
+	customerTable = "customer_customers"
 )
 
 // customerGetFromRow gets the customer from the row.
 func (h *handler) customerGetFromRow(row *sql.Rows) (*customer.Customer, error) {
 	res := &customer.Customer{}
-	if err := row.Scan(
-		&res.ID,
 
-		&res.Name,
-		&res.Detail,
-
-		&res.Email,
-		&res.PhoneNumber,
-		&res.Address,
-
-		&res.WebhookMethod,
-		&res.WebhookURI,
-
-		&res.BillingAccountID,
-
-		&res.TMCreate,
-		&res.TMUpdate,
-		&res.TMDelete,
-	); err != nil {
-		return nil, fmt.Errorf("dbhandler: Could not scan the row. customerGetFromRow. err: %v", err)
+	if err := commondatabasehandler.ScanRow(row, res); err != nil {
+		return nil, fmt.Errorf("could not scan the row. customerGetFromRow. err: %v", err)
 	}
 
 	return res, nil
@@ -68,57 +30,32 @@ func (h *handler) customerGetFromRow(row *sql.Rows) (*customer.Customer, error) 
 
 // CustomerCreate creates new customer record and returns the created customer record.
 func (h *handler) CustomerCreate(ctx context.Context, c *customer.Customer) error {
-	q := `insert into customer_customers(
-		id,
+	now := h.utilHandler.TimeGetCurTime()
 
-		name,
-		detail,
+	// Set timestamps
+	c.TMCreate = now
+	c.TMUpdate = DefaultTimeStamp
+	c.TMDelete = DefaultTimeStamp
 
-		email,
-		phone_number,
-		address,
-
-		webhook_method,
-		webhook_uri,
-
-
-		billing_account_id,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	) values(
-		?,
-		?, ?,
-		?, ?, ?,
-		?, ?,
-		?,
-		?, ?, ?
-		)
-	`
-
-	ts := h.utilHandler.TimeGetCurTime()
-	_, err := h.db.Exec(q,
-		c.ID.Bytes(),
-
-		c.Name,
-		c.Detail,
-
-		c.Email,
-		c.PhoneNumber,
-		c.Address,
-
-		c.WebhookMethod,
-		c.WebhookURI,
-
-		c.BillingAccountID.Bytes(),
-
-		ts,
-		DefaultTimeStamp,
-		DefaultTimeStamp,
-	)
+	// Use PrepareFields to get field map
+	fields, err := commondatabasehandler.PrepareFields(c)
 	if err != nil {
-		return fmt.Errorf("could not execute. CustomerCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. CustomerCreate. err: %v", err)
+	}
+
+	// Use SetMap instead of Columns/Values
+	sb := squirrel.
+		Insert(customerTable).
+		SetMap(fields).
+		PlaceholderFormat(squirrel.Question)
+
+	query, args, err := sb.ToSql()
+	if err != nil {
+		return fmt.Errorf("could not build query. CustomerCreate. err: %v", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
+		return fmt.Errorf("could not execute query. CustomerCreate. err: %v", err)
 	}
 
 	// update the cache
@@ -165,11 +102,18 @@ func (h *handler) customerGetFromCache(ctx context.Context, id uuid.UUID) (*cust
 
 // customerGetFromDB returns customer from the DB.
 func (h *handler) customerGetFromDB(ctx context.Context, id uuid.UUID) (*customer.Customer, error) {
+	fields := commondatabasehandler.GetDBFields(&customer.Customer{})
+	query, args, err := squirrel.
+		Select(fields...).
+		From(customerTable).
+		Where(squirrel.Eq{string(customer.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build sql. customerGetFromDB. err: %v", err)
+	}
 
-	// prepare
-	q := fmt.Sprintf("%s where id = ?", customerSelect)
-
-	row, err := h.db.Query(q, id.Bytes())
+	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. customerGetFromDB. err: %v", err)
 	}
@@ -178,12 +122,15 @@ func (h *handler) customerGetFromDB(ctx context.Context, id uuid.UUID) (*custome
 	}()
 
 	if !row.Next() {
+		if err := row.Err(); err != nil {
+			return nil, fmt.Errorf("row iteration error. customerGetFromDB. err: %v", err)
+		}
 		return nil, ErrNotFound
 	}
 
 	res, err := h.customerGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("dbhandler: Could not scan the row. customerGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not get data from row. customerGetFromDB. id: %s, err: %v", id, err)
 	}
 
 	return res, nil
@@ -208,46 +155,31 @@ func (h *handler) CustomerGet(ctx context.Context, id uuid.UUID) (*customer.Cust
 }
 
 // CustomerGets returns customers.
-func (h *handler) CustomerGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*customer.Customer, error) {
-
-	// prepare
-	q := fmt.Sprintf(`%s
-	where
-		tm_create < ?
-	`, customerSelect)
-
+func (h *handler) CustomerGets(ctx context.Context, size uint64, token string, filters map[customer.Field]any) ([]*customer.Customer, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	values := []interface{}{
-		token,
+	fields := commondatabasehandler.GetDBFields(&customer.Customer{})
+	sb := squirrel.
+		Select(fields...).
+		From(customerTable).
+		Where(squirrel.Lt{string(customer.FieldTMCreate): token}).
+		OrderBy(string(customer.FieldTMCreate) + " DESC").
+		Limit(size).
+		PlaceholderFormat(squirrel.Question)
+
+	sb, err := commondatabasehandler.ApplyFields(sb, filters)
+	if err != nil {
+		return nil, fmt.Errorf("could not apply filters. CustomerGets. err: %v", err)
 	}
 
-	for k, v := range filters {
-		switch k {
-
-		case "deleted":
-			if v == "false" {
-				q = fmt.Sprintf("%s and tm_delete >= ?", q)
-				values = append(values, DefaultTimeStamp)
-			}
-
-		case "billing_account_id":
-			q = fmt.Sprintf("%s and billing_account_id = ?", q)
-			tmp := uuid.FromStringOrNil(v)
-			values = append(values, tmp.Bytes())
-
-		default:
-			q = fmt.Sprintf("%s and %s = ?", q, k)
-			values = append(values, v)
-		}
+	query, args, err := sb.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. CustomerGets. err: %v", err)
 	}
 
-	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
-	values = append(values, strconv.FormatUint(size, 10))
-
-	rows, err := h.db.Query(q, values...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. CustomerGets. err: %v", err)
 	}
@@ -255,149 +187,86 @@ func (h *handler) CustomerGets(ctx context.Context, size uint64, token string, f
 		_ = rows.Close()
 	}()
 
-	var res []*customer.Customer
+	res := []*customer.Customer{}
 	for rows.Next() {
 		u, err := h.customerGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("dbhandler: Could not scan the row. CustomerGets. err: %v", err)
+			return nil, fmt.Errorf("could not get data. CustomerGets, err: %v", err)
 		}
-
 		res = append(res, u)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error. CustomerGets. err: %v", err)
 	}
 
 	return res, nil
 }
 
+// CustomerUpdate updates customer fields.
+func (h *handler) CustomerUpdate(ctx context.Context, id uuid.UUID, fields map[customer.Field]any) error {
+	if len(fields) == 0 {
+		return nil
+	}
+
+	fields[customer.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
+
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
+	if err != nil {
+		return fmt.Errorf("CustomerUpdate: prepare fields failed: %w", err)
+	}
+
+	q := squirrel.Update(customerTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(customer.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := q.ToSql()
+	if err != nil {
+		return fmt.Errorf("CustomerUpdate: build SQL failed: %w", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, sqlStr, args...); err != nil {
+		return fmt.Errorf("CustomerUpdate: exec failed: %w", err)
+	}
+
+	_ = h.customerUpdateToCache(ctx, id)
+	return nil
+}
+
 // CustomerDelete deletes the customer.
 func (h *handler) CustomerDelete(ctx context.Context, id uuid.UUID) error {
-	// prepare
-	q := `
-	update
-		customer_customers
-	set
-		tm_delete = ?
-	where
-		id = ?
-	`
-
 	ts := h.utilHandler.TimeGetCurTime()
-	_, err := h.db.Exec(q, ts, id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. CustomerDelete. err: %v", err)
+
+	fields := map[customer.Field]any{
+		customer.FieldTMUpdate: ts,
+		customer.FieldTMDelete: ts,
 	}
 
-	// update the cache
-	_ = h.customerUpdateToCache(ctx, id)
-
-	return nil
-}
-
-// CustomerSetBasicInfo sets the customer's basic info.
-func (h *handler) CustomerSetBasicInfo(
-	ctx context.Context,
-	id uuid.UUID,
-	name string,
-	detail string,
-	email string,
-	phoneNumber string,
-	address string,
-	webhookMethod customer.WebhookMethod,
-	webhookURI string,
-) error {
-	// prepare
-	q := `
-	update
-		customer_customers
-	set
-		name = ?,
-		detail = ?,
-		email = ?,
-		phone_number = ?,
-		address = ?,
-		webhook_method = ?,
-		webhook_uri = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-	_, err := h.db.Exec(q, name, detail, email, phoneNumber, address, webhookMethod, webhookURI, h.utilHandler.TimeGetCurTime(), id.Bytes())
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
-		return fmt.Errorf("could not execute. CustomerSetBasicInfo. err: %v", err)
+		return fmt.Errorf("CustomerDelete: prepare fields failed: %w", err)
 	}
 
-	// update the cache
-	_ = h.customerUpdateToCache(ctx, id)
+	sb := squirrel.Update(customerTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(customer.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
 
-	return nil
-}
-
-// CustomerSetPermission sets the customer's permission.
-func (h *handler) CustomerSetPermissionIDs(ctx context.Context, id uuid.UUID, permissionIDs []uuid.UUID) error {
-	// prepare
-	q := `
-	update
-		customer_customers
-	set
-		permission_ids = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	tmpPermissionIDs, err := json.Marshal(permissionIDs)
+	sqlStr, args, err := sb.ToSql()
 	if err != nil {
-		return err
+		return fmt.Errorf("CustomerDelete: build SQL failed: %w", err)
 	}
 
-	_, err = h.db.Exec(q, tmpPermissionIDs, h.utilHandler.TimeGetCurTime(), id.Bytes())
+	result, err := h.db.ExecContext(ctx, sqlStr, args...)
 	if err != nil {
-		return fmt.Errorf("could not execute. CustomerSetPermission. err: %v", err)
+		return fmt.Errorf("CustomerDelete: exec failed: %w", err)
 	}
 
-	// update the cache
-	_ = h.customerUpdateToCache(ctx, id)
-
-	return nil
-}
-
-// CustomerSetPasswordHash sets the customer's password_hash.
-func (h *handler) CustomerSetPasswordHash(ctx context.Context, id uuid.UUID, passwordHash string) error {
-	// prepare
-	q := `
-	update
-		customer_customers
-	set
-		password_hash = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-	_, err := h.db.Exec(q, passwordHash, h.utilHandler.TimeGetCurTime(), id.Bytes())
+	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return fmt.Errorf("could not execute. CustomerSetPasswordHash. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.customerUpdateToCache(ctx, id)
-
-	return nil
-}
-
-// CustomerSetBillingAccountID sets the customer's billing_account_id.
-func (h *handler) CustomerSetBillingAccountID(ctx context.Context, id uuid.UUID, billingAccountID uuid.UUID) error {
-	// prepare
-	q := `
-	update
-		customer_customers
-	set
-		billing_account_id = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-	_, err := h.db.Exec(q, billingAccountID.Bytes(), h.utilHandler.TimeGetCurTime(), id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. CustomerSetBillingAccountID. err: %v", err)
+		return fmt.Errorf("could not get rows affected: %w", err)
+	} else if rowsAffected == 0 {
+		return ErrNotFound
 	}
 
 	// update the cache

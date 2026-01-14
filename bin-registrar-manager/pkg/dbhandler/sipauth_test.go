@@ -102,13 +102,13 @@ func Test_SIPAuthCreate(t *testing.T) {
 	}
 }
 
-func Test_SIPAuthUpdateAll(t *testing.T) {
+func Test_SIPAuthUpdate(t *testing.T) {
 
 	type test struct {
 		name    string
 		sipauth *sipauth.SIPAuth
 
-		update *sipauth.SIPAuth
+		updateFields map[sipauth.Field]any
 
 		responseCurTime string
 		expectRes       *sipauth.SIPAuth
@@ -127,14 +127,12 @@ func Test_SIPAuthUpdateAll(t *testing.T) {
 				AllowedIPs:    []string{"1.2.3.4", "1.2.3.5"},
 			},
 
-			&sipauth.SIPAuth{
-				ID:            uuid.FromStringOrNil("3859e9de-cda6-11ee-b6c1-678b4af08a31"),
-				ReferenceType: sipauth.ReferenceTypeTrunk,
-				AuthTypes:     []sipauth.AuthType{sipauth.AuthTypeBasic, sipauth.AuthTypeIP},
-				Realm:         "update.trunk.voipbin.net",
-				Username:      "updateusername",
-				Password:      "updatepassword",
-				AllowedIPs:    []string{"1.2.3.6", "1.2.3.7"},
+			map[sipauth.Field]any{
+				sipauth.FieldAuthTypes:  []sipauth.AuthType{sipauth.AuthTypeBasic, sipauth.AuthTypeIP},
+				sipauth.FieldRealm:      "update.trunk.voipbin.net",
+				sipauth.FieldUsername:   "updateusername",
+				sipauth.FieldPassword:   "updatepassword",
+				sipauth.FieldAllowedIPs: []string{"1.2.3.6", "1.2.3.7"},
 			},
 
 			"2021-02-26 18:26:49.000",
@@ -151,7 +149,7 @@ func Test_SIPAuthUpdateAll(t *testing.T) {
 			},
 		},
 		{
-			"empty",
+			"empty update",
 			&sipauth.SIPAuth{
 				ID:            uuid.FromStringOrNil("3829303c-cda6-11ee-9273-672228e0f5ba"),
 				ReferenceType: sipauth.ReferenceTypeTrunk,
@@ -162,8 +160,12 @@ func Test_SIPAuthUpdateAll(t *testing.T) {
 				AllowedIPs:    []string{"1.2.3.4", "1.2.3.5"},
 			},
 
-			&sipauth.SIPAuth{
-				ID: uuid.FromStringOrNil("3829303c-cda6-11ee-9273-672228e0f5ba"),
+			map[sipauth.Field]any{
+				sipauth.FieldAuthTypes:  []sipauth.AuthType{},
+				sipauth.FieldRealm:      "",
+				sipauth.FieldUsername:   "",
+				sipauth.FieldPassword:   "",
+				sipauth.FieldAllowedIPs: []string{},
 			},
 
 			"2021-02-26 18:26:49.000",
@@ -199,7 +201,7 @@ func Test_SIPAuthUpdateAll(t *testing.T) {
 			}
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			if err := h.SIPAuthUpdateAll(ctx, tt.update); err != nil {
+			if err := h.SIPAuthUpdate(ctx, tt.sipauth.ID, tt.updateFields); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 

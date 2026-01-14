@@ -125,7 +125,7 @@ func (h *callHandler) Create(
 }
 
 // Gets returns list of calls.
-func (h *callHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*call.Call, error) {
+func (h *callHandler) Gets(ctx context.Context, size uint64, token string, filters map[call.Field]any) ([]*call.Call, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "Gets",
 		"filters": filters,

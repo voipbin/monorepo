@@ -17,7 +17,11 @@ func (h *queueHandler) Delete(ctx context.Context, id uuid.UUID) (*queue.Queue, 
 	})
 	log.Debug("Deleting the queue info.")
 
-	if err := h.db.QueueSetExecute(ctx, id, queue.ExecuteStop); err != nil {
+	// Update execute to stop using the generic Update method
+	fields := map[queue.Field]any{
+		queue.FieldExecute: queue.ExecuteStop,
+	}
+	if err := h.db.QueueUpdate(ctx, id, fields); err != nil {
 		log.Errorf("Could not update the queue execute to stop. err: %v", err)
 		return nil, err
 	}

@@ -16,21 +16,21 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-// DBHandler interface for call_manager database handle
+// DBHandler interface for storage_manager database handle
 type DBHandler interface {
-	AccountCreate(ctx context.Context, f *account.Account) error
+	AccountCreate(ctx context.Context, a *account.Account) error
 	AccountGet(ctx context.Context, id uuid.UUID) (*account.Account, error)
-	AccountGets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*account.Account, error)
+	AccountGets(ctx context.Context, token string, size uint64, filters map[account.Field]any) ([]*account.Account, error)
+	AccountUpdate(ctx context.Context, id uuid.UUID, fields map[account.Field]any) error
 	AccountIncreaseFileInfo(ctx context.Context, id uuid.UUID, filecount int64, filesize int64) error
 	AccountDecreaseFileInfo(ctx context.Context, id uuid.UUID, filecount int64, filesize int64) error
 	AccountDelete(ctx context.Context, id uuid.UUID) error
 
 	FileCreate(ctx context.Context, f *file.File) error
 	FileGet(ctx context.Context, id uuid.UUID) (*file.File, error)
-	FileGets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*file.File, error)
-	FileUpdate(ctx context.Context, id uuid.UUID, name, detail string) error
+	FileGets(ctx context.Context, token string, size uint64, filters map[file.Field]any) ([]*file.File, error)
+	FileUpdate(ctx context.Context, id uuid.UUID, fields map[file.Field]any) error
 	FileDelete(ctx context.Context, id uuid.UUID) error
-	FileUpdateDownloadInfo(ctx context.Context, id uuid.UUID, uriDownload string, tmDownloadExpire string) error
 }
 
 // handler database handler
@@ -43,11 +43,6 @@ type handler struct {
 // handler errors
 var (
 	ErrNotFound = errors.New("record not found")
-)
-
-// list of default values
-const (
-	DefaultTimeStamp = "9999-01-01 00:00:000"
 )
 
 // NewHandler creates DBHandler

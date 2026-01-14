@@ -73,7 +73,7 @@ func (mr *MockTranscriptHandlerMockRecorder) Delete(ctx, id any) *gomock.Call {
 }
 
 // Gets mocks base method.
-func (m *MockTranscriptHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*transcript.Transcript, error) {
+func (m *MockTranscriptHandler) Gets(ctx context.Context, size uint64, token string, filters map[transcript.Field]any) ([]*transcript.Transcript, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Gets", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*transcript.Transcript)

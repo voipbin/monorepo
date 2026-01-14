@@ -148,7 +148,7 @@ func (mr *MockAccountHandlerMockRecorder) GetByCustomerID(ctx, customerID any) *
 }
 
 // Gets mocks base method.
-func (m *MockAccountHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*account.Account, error) {
+func (m *MockAccountHandler) Gets(ctx context.Context, size uint64, token string, filters map[account.Field]any) ([]*account.Account, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Gets", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*account.Account)

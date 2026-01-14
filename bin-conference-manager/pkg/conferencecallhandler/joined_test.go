@@ -56,7 +56,9 @@ func Test_Joined(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConferencecallUpdateStatus(ctx, tt.conferencecall.ID, conferencecall.StatusJoined).Return(nil)
+			mockDB.EXPECT().ConferencecallUpdate(ctx, tt.conferencecall.ID, map[conferencecall.Field]any{
+				conferencecall.FieldStatus: conferencecall.StatusJoined,
+			}).Return(nil)
 			mockDB.EXPECT().ConferencecallGet(ctx, tt.conferencecall.ID).Return(tt.conferencecall, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, conferencecall.EventTypeConferencecallJoined, tt.conferencecall)
 

@@ -180,7 +180,7 @@ func Test_GetsByCustomerID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().OutdialGetsByCustomerID(ctx, tt.customerID, tt.token, tt.limit).Return([]*outdial.Outdial{}, nil)
+			mockDB.EXPECT().OutdialGets(ctx, tt.token, tt.limit, gomock.Any()).Return([]*outdial.Outdial{}, nil)
 
 			_, err := h.GetsByCustomerID(ctx, tt.customerID, tt.token, tt.limit)
 			if err != nil {
@@ -224,7 +224,7 @@ func Test_UpdateBasicInfo(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().OutdialUpdateBasicInfo(ctx, tt.id, tt.updateName, tt.detail).Return(nil)
+			mockDB.EXPECT().OutdialUpdate(ctx, tt.id, gomock.Any()).Return(nil)
 			mockDB.EXPECT().OutdialGet(ctx, tt.id).Return(&outdial.Outdial{}, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), outdial.EventTypeOutdialUpdated, gomock.Any())
 
@@ -268,7 +268,7 @@ func Test_UpdateCampaignID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().OutdialUpdateCampaignID(ctx, tt.id, tt.campaignID).Return(nil)
+			mockDB.EXPECT().OutdialUpdate(ctx, tt.id, gomock.Any()).Return(nil)
 			mockDB.EXPECT().OutdialGet(ctx, tt.id).Return(&outdial.Outdial{}, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), outdial.EventTypeOutdialUpdated, gomock.Any())
 
@@ -312,7 +312,7 @@ func Test_UpdateData(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().OutdialUpdateData(ctx, tt.id, tt.data).Return(nil)
+			mockDB.EXPECT().OutdialUpdate(ctx, tt.id, gomock.Any()).Return(nil)
 			mockDB.EXPECT().OutdialGet(ctx, tt.id).Return(&outdial.Outdial{}, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), outdial.EventTypeOutdialUpdated, gomock.Any())
 

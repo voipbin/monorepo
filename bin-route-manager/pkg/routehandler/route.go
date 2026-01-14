@@ -82,12 +82,12 @@ func (h *routeHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUI
 	var res []*route.Route
 	var err error
 
-	if customerID == uuid.Nil {
-		res, err = h.db.RouteGets(ctx, token, limit)
-	} else {
-		res, err = h.db.RouteGetsByCustomerID(ctx, customerID, token, limit)
+	filters := map[route.Field]any{}
+	if customerID != uuid.Nil {
+		filters[route.FieldCustomerID] = customerID
 	}
 
+	res, err = h.db.RouteGets(ctx, token, limit, filters)
 	if err != nil {
 		log.Errorf("Could not get routes. err: %v", err)
 		return nil, err
@@ -96,23 +96,33 @@ func (h *routeHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUI
 	return res, nil
 }
 
-// RouteGetsByCustomerID returns list of routes
+// GetsByTarget returns list of routes
 func (h *routeHandler) GetsByTarget(ctx context.Context, customerID uuid.UUID, target string) ([]*route.Route, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":        "RouteGetsByTarget",
+			"func":        "GetsByTarget",
 			"customer_id": customerID,
 			"target":      target,
 		})
 	log.Debug("Getting routes.")
 
-	routeTargets, err := h.db.RouteGetsByCustomerIDWithTarget(ctx, customerID, target)
+	// Get routes for specific target
+	filtersTarget := map[route.Field]any{
+		route.FieldCustomerID: customerID,
+		route.FieldTarget:     target,
+	}
+	routeTargets, err := h.db.RouteGets(ctx, "", 1000, filtersTarget)
 	if err != nil {
 		log.Errorf("Could not get routes for target. err: %v", err)
 		return nil, err
 	}
 
-	routeAll, err := h.db.RouteGetsByCustomerIDWithTarget(ctx, customerID, route.TargetAll)
+	// Get routes for "all" target
+	filtersAll := map[route.Field]any{
+		route.FieldCustomerID: customerID,
+		route.FieldTarget:     route.TargetAll,
+	}
+	routeAll, err := h.db.RouteGets(ctx, "", 1000, filtersAll)
 	if err != nil {
 		log.Errorf("Could not get routes for all target. err: %v", err)
 	}
@@ -176,7 +186,15 @@ func (h *routeHandler) Update(ctx context.Context, id uuid.UUID, name string, de
 		"target":      target,
 	}).Debug("Updating the route.")
 
-	if errUpdate := h.db.RouteUpdate(ctx, id, name, detail, providerID, priority, target); errUpdate != nil {
+	fields := map[route.Field]any{
+		route.FieldName:       name,
+		route.FieldDetail:     detail,
+		route.FieldProviderID: providerID,
+		route.FieldPriority:   priority,
+		route.FieldTarget:     target,
+	}
+
+	if errUpdate := h.db.RouteUpdate(ctx, id, fields); errUpdate != nil {
 		log.Errorf("Could not update the route info. err: %v", errUpdate)
 		return nil, errors.Wrap(errUpdate, "could not update the route info")
 	}

@@ -66,9 +66,9 @@ func (h *messageHandler) hookTelnyx(ctx context.Context, data []byte) (*message.
 	log.Debugf("Parsed destination number. destination_number: %s", destinationNumber)
 
 	// get number info
-	filters := map[string]string{
-		"number":  destinationNumber,
-		"deleted": "false",
+	filters := map[nmnumber.Field]any{
+		nmnumber.FieldNumber:  destinationNumber,
+		nmnumber.FieldDeleted: false,
 	}
 	numbs, err := h.reqHandler.NumberV1NumberGets(ctx, "", 1, filters)
 	if err != nil {

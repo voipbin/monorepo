@@ -106,7 +106,7 @@ func Test_ChatGetsByCustomerID(t *testing.T) {
 
 		response []chatchat.Chat
 
-		expectFilters map[string]string
+		expectFilters map[chatchat.Field]any
 		expectRes     []*chatchat.WebhookMessage
 	}{
 		{
@@ -129,9 +129,9 @@ func Test_ChatGetsByCustomerID(t *testing.T) {
 				},
 			},
 
-			map[string]string{
-				"customer_id": "5f621078-8e5f-11ee-97b2-cfe7337b701c",
-				"deleted":     "false",
+			map[chatchat.Field]any{
+				chatchat.FieldCustomerID: "5f621078-8e5f-11ee-97b2-cfe7337b701c",
+				chatchat.FieldDeleted:    false,
 			},
 			[]*chatchat.WebhookMessage{
 				{

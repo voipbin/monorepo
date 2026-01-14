@@ -7,8 +7,11 @@ import (
 	"strconv"
 
 	"monorepo/bin-common-handler/models/sock"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/sirupsen/logrus"
+
+	"monorepo/bin-transcribe-manager/models/transcript"
 )
 
 // processV1TranscriptsGet handles GET /v1/transcripts request
@@ -28,12 +31,23 @@ func (h *listenHandler) processV1TranscriptsGet(ctx context.Context, m *sock.Req
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// parse the filters
-	filters := h.utilHandler.URLParseFilters(u)
+	// get filters from request body
+	tmpFilters, err := utilhandler.ParseFiltersFromRequestBody(m.Data)
+	if err != nil {
+		log.Errorf("Could not parse filters. err: %v", err)
+		return simpleResponse(400), nil
+	}
+
+	// convert to typed filters
+	filters, err := utilhandler.ConvertFilters[transcript.FieldStruct, transcript.Field](transcript.FieldStruct{}, tmpFilters)
+	if err != nil {
+		log.Errorf("Could not convert filters. err: %v", err)
+		return simpleResponse(400), nil
+	}
 
 	tmp, err := h.transcriptHandler.Gets(ctx, pageSize, pageToken, filters)
 	if err != nil {
-		log.Errorf("Could not get transcribes. err: %v", err)
+		log.Errorf("Could not get transcripts. err: %v", err)
 		return simpleResponse(500), nil
 	}
 

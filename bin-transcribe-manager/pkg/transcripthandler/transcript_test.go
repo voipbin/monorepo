@@ -108,20 +108,20 @@ func Test_Gets(t *testing.T) {
 
 		size    uint64
 		token   string
-		filters map[string]string
+		filters map[transcript.Field]any
 
 		responseTranscripts []*transcript.Transcript
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			10,
-			"2020-05-03%2021:35:02.809",
-			map[string]string{
-				"customer_id": "cf322d78-ed98-11ee-813d-1ff686765c1f",
+			size:  10,
+			token: "2020-05-03%2021:35:02.809",
+			filters: map[transcript.Field]any{
+				transcript.FieldCustomerID: uuid.FromStringOrNil("cf322d78-ed98-11ee-813d-1ff686765c1f"),
 			},
 
-			[]*transcript.Transcript{
+			responseTranscripts: []*transcript.Transcript{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("cf8dc02a-ed98-11ee-bc86-53c66222068a"),

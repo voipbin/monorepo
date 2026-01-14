@@ -276,7 +276,7 @@ func Test_EventCUCustomerDeleted(t *testing.T) {
 
 		responseQueuecalls []*queuecall.Queuecall
 
-		expectFilters map[string]string
+		expectFilters map[queuecall.Field]any
 	}{
 		{
 			name: "normal",
@@ -312,9 +312,9 @@ func Test_EventCUCustomerDeleted(t *testing.T) {
 				},
 			},
 
-			expectFilters: map[string]string{
-				"customer_id": "51813b9e-f08b-11ee-ae42-e79a06af2749",
-				"deleted":     "false",
+			expectFilters: map[queuecall.Field]any{
+				queuecall.FieldCustomerID: uuid.FromStringOrNil("51813b9e-f08b-11ee-ae42-e79a06af2749"),
+				queuecall.FieldDeleted:    false,
 			},
 		},
 	}

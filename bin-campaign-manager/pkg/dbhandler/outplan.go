@@ -1,156 +1,65 @@
 package dbhandler
 
 import (
-	context "context"
+	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
 
-	commonaddress "monorepo/bin-common-handler/models/address"
-
+	"github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
+
+	commonaddress "monorepo/bin-common-handler/models/address"
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"monorepo/bin-campaign-manager/models/outplan"
 )
 
 const (
-	// select query for outplan get
-	outplanSelect = `
-	select
-		id,
-		customer_id,
-
-		name,
-		detail,
-
-		source,
-
-		dial_timeout,
-		try_interval,
-
-		max_try_count_0,
-		max_try_count_1,
-		max_try_count_2,
-		max_try_count_3,
-		max_try_count_4,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	from
-		campaign_outplans
-	`
+	outplansTable = "campaign_outplans"
 )
 
 // outplanGetFromRow gets the outplan from the row.
 func (h *handler) outplanGetFromRow(row *sql.Rows) (*outplan.Outplan, error) {
-	var source string
-
 	res := &outplan.Outplan{}
-	if err := row.Scan(
-		&res.ID,
-		&res.CustomerID,
 
-		&res.Name,
-		&res.Detail,
-
-		&source,
-
-		&res.DialTimeout,
-		&res.TryInterval,
-
-		&res.MaxTryCount0,
-		&res.MaxTryCount1,
-		&res.MaxTryCount2,
-		&res.MaxTryCount3,
-		&res.MaxTryCount4,
-
-		&res.TMCreate,
-		&res.TMUpdate,
-		&res.TMDelete,
-	); err != nil {
+	if err := commondatabasehandler.ScanRow(row, res); err != nil {
 		return nil, fmt.Errorf("could not scan the row. outplanGetFromRow. err: %v", err)
-	}
-
-	if errSource := json.Unmarshal([]byte(source), &res.Source); errSource != nil {
-		return nil, fmt.Errorf("could not unmarshal the source. outplanGetFromRow. err: %v", errSource)
 	}
 
 	return res, nil
 }
 
 // OutplanCreate insert a new plan record
-func (h *handler) OutplanCreate(ctx context.Context, t *outplan.Outplan) error {
+func (h *handler) OutplanCreate(ctx context.Context, o *outplan.Outplan) error {
+	now := h.util.TimeGetCurTime()
 
-	q := `insert into campaign_outplans(
-		id,
-		customer_id,
+	// Set timestamps
+	o.TMCreate = now
+	o.TMUpdate = commondatabasehandler.DefaultTimeStamp
+	o.TMDelete = commondatabasehandler.DefaultTimeStamp
 
-		name,
-		detail,
-
-		source,
-
-		dial_timeout,
-		try_interval,
-
-		max_try_count_0,
-		max_try_count_1,
-		max_try_count_2,
-		max_try_count_3,
-		max_try_count_4,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	) values(
-		?, ?,
-		?, ?,
-		?,
-		?, ?,
-		?, ?, ?, ?, ?,
-		?, ?, ?
-		)`
-	stmt, err := h.db.PrepareContext(ctx, q)
+	// Use PrepareFields to get field map
+	fields, err := commondatabasehandler.PrepareFields(o)
 	if err != nil {
-		return fmt.Errorf("could not prepare. OutplanCreate. err: %v", err)
-	}
-	defer func() {
-		_ = stmt.Close()
-	}()
-
-	source, err := json.Marshal(t.Source)
-	if err != nil {
-		return fmt.Errorf("could not marshal source. OutplanCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. OutplanCreate. err: %v", err)
 	}
 
-	_, err = stmt.ExecContext(ctx,
-		t.ID.Bytes(),
-		t.CustomerID.Bytes(),
+	// Use SetMap instead of Columns/Values
+	sb := squirrel.
+		Insert(outplansTable).
+		SetMap(fields).
+		PlaceholderFormat(squirrel.Question)
 
-		t.Name,
-		t.Detail,
-
-		source,
-
-		t.DialTimeout,
-		t.TryInterval,
-
-		t.MaxTryCount0,
-		t.MaxTryCount1,
-		t.MaxTryCount2,
-		t.MaxTryCount3,
-		t.MaxTryCount4,
-
-		h.util.TimeGetCurTime(),
-		DefaultTimeStamp,
-		DefaultTimeStamp,
-	)
+	query, args, err := sb.ToSql()
 	if err != nil {
+		return fmt.Errorf("could not build query. OutplanCreate. err: %v", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
 		return fmt.Errorf("could not execute query. OutplanCreate. err: %v", err)
 	}
 
-	_ = h.outplanUpdateToCache(ctx, t.ID)
+	_ = h.outplanUpdateToCache(ctx, o.ID)
 
 	return nil
 }
@@ -193,20 +102,18 @@ func (h *handler) outplanGetFromCache(ctx context.Context, id uuid.UUID) (*outpl
 
 // outplanGetFromDB gets the outplan info from the db.
 func (h *handler) outplanGetFromDB(ctx context.Context, id uuid.UUID) (*outplan.Outplan, error) {
-
-	// prepare
-	q := fmt.Sprintf("%s where id = ?", outplanSelect)
-
-	stmt, err := h.db.PrepareContext(ctx, q)
+	fields := commondatabasehandler.GetDBFields(&outplan.Outplan{})
+	query, args, err := squirrel.
+		Select(fields...).
+		From(outplansTable).
+		Where(squirrel.Eq{string(outplan.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not prepare. outplanGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. outplanGetFromDB. err: %v", err)
 	}
-	defer func() {
-		_ = stmt.Close()
-	}()
 
-	// query
-	row, err := stmt.QueryContext(ctx, id.Bytes())
+	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. outplanGetFromDB. err: %v", err)
 	}
@@ -215,6 +122,9 @@ func (h *handler) outplanGetFromDB(ctx context.Context, id uuid.UUID) (*outplan.
 	}()
 
 	if !row.Next() {
+		if err := row.Err(); err != nil {
+			return nil, fmt.Errorf("row iteration error. outplanGetFromDB. err: %v", err)
+		}
 		return nil, ErrNotFound
 	}
 
@@ -228,17 +138,30 @@ func (h *handler) outplanGetFromDB(ctx context.Context, id uuid.UUID) (*outplan.
 
 // OutplanDelete deletes the given outplan
 func (h *handler) OutplanDelete(ctx context.Context, id uuid.UUID) error {
-	q := `
-	update campaign_outplans set
-		tm_delete = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
 	ts := h.util.TimeGetCurTime()
-	if _, err := h.db.Exec(q, ts, ts, id.Bytes()); err != nil {
-		return fmt.Errorf("could not execute the query. OutplanDelete. err: %v", err)
+
+	fields := map[outplan.Field]any{
+		outplan.FieldTMUpdate: ts,
+		outplan.FieldTMDelete: ts,
+	}
+
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
+	if err != nil {
+		return fmt.Errorf("OutplanDelete: prepare fields failed: %w", err)
+	}
+
+	sb := squirrel.Update(outplansTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(outplan.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := sb.ToSql()
+	if err != nil {
+		return fmt.Errorf("OutplanDelete: build SQL failed: %w", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, sqlStr, args...); err != nil {
+		return fmt.Errorf("OutplanDelete: exec failed: %w", err)
 	}
 
 	// update cache
@@ -265,64 +188,106 @@ func (h *handler) OutplanGet(ctx context.Context, id uuid.UUID) (*outplan.Outpla
 	return res, nil
 }
 
-// OutplanGetsByCustomerID returns list of outplans.
-func (h *handler) OutplanGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*outplan.Outplan, error) {
+// OutplanGets returns list of outplans with filters.
+func (h *handler) OutplanGets(ctx context.Context, token string, size uint64, filters map[outplan.Field]any) ([]*outplan.Outplan, error) {
+	if token == "" {
+		token = h.util.TimeGetCurTime()
+	}
 
-	// prepare
-	q := fmt.Sprintf(`
-		%s
-		where
-			tm_delete >= ?
-			and customer_id = ?
-			and tm_create < ?
-		order by
-			tm_create desc, id desc
-		limit ?
-	`, outplanSelect)
+	fields := commondatabasehandler.GetDBFields(&outplan.Outplan{})
+	sb := squirrel.
+		Select(fields...).
+		From(outplansTable).
+		Where(squirrel.Lt{string(outplan.FieldTMCreate): token}).
+		OrderBy(string(outplan.FieldTMCreate) + " DESC", string(outplan.FieldID) + " DESC").
+		Limit(size).
+		PlaceholderFormat(squirrel.Question)
 
-	rows, err := h.db.Query(q, DefaultTimeStamp, customerID.Bytes(), token, limit)
+	sb, err := commondatabasehandler.ApplyFields(sb, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. OutplanGetsByCustomerID. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. OutplanGets. err: %v", err)
+	}
+
+	query, args, err := sb.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. OutplanGets. err: %v", err)
+	}
+
+	rows, err := h.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. OutplanGets. err: %v", err)
 	}
 	defer func() {
 		_ = rows.Close()
 	}()
 
-	var res []*outplan.Outplan
+	res := []*outplan.Outplan{}
 	for rows.Next() {
 		u, err := h.outplanGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not scan the row. OutplanGetsByCustomerID. err: %v", err)
+			return nil, fmt.Errorf("could not get data. OutplanGets, err: %v", err)
 		}
-
 		res = append(res, u)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error. OutplanGets. err: %v", err)
 	}
 
 	return res, nil
 }
 
-// OutplanUpdateBasicInfo updates outplan's basic information.
-func (h *handler) OutplanUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error {
-	q := `
-	update campaign_outplans set
-		name = ?,
-		detail = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	if _, err := h.db.Exec(q, name, detail, h.util.TimeGetCurTime(), id.Bytes()); err != nil {
-		return fmt.Errorf("could not execute the query. OutplanUpdateBasicInfo. err: %v", err)
+// OutplanGetsByCustomerID returns list of outplans.
+func (h *handler) OutplanGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*outplan.Outplan, error) {
+	filters := map[outplan.Field]any{
+		outplan.FieldCustomerID: customerID,
+		outplan.FieldDeleted:    false,
 	}
 
-	// set to the cache
-	_ = h.outplanUpdateToCache(ctx, id)
+	return h.OutplanGets(ctx, token, limit, filters)
+}
 
+// OutplanUpdate updates outplan fields.
+func (h *handler) OutplanUpdate(ctx context.Context, id uuid.UUID, fields map[outplan.Field]any) error {
+	if len(fields) == 0 {
+		return nil
+	}
+
+	fields[outplan.FieldTMUpdate] = h.util.TimeGetCurTime()
+
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
+	if err != nil {
+		return fmt.Errorf("OutplanUpdate: prepare fields failed: %w", err)
+	}
+
+	q := squirrel.Update(outplansTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(outplan.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := q.ToSql()
+	if err != nil {
+		return fmt.Errorf("OutplanUpdate: build SQL failed: %w", err)
+	}
+
+	if _, err := h.db.Exec(sqlStr, args...); err != nil {
+		return fmt.Errorf("OutplanUpdate: exec failed: %w", err)
+	}
+
+	_ = h.outplanUpdateToCache(ctx, id)
 	return nil
 }
 
-// OutplanUpdateDialInfo updates outplan's action related information.
+// OutplanUpdateBasicInfo updates outplan's basic information.
+func (h *handler) OutplanUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error {
+	fields := map[outplan.Field]any{
+		outplan.FieldName:   name,
+		outplan.FieldDetail: detail,
+	}
+
+	return h.OutplanUpdate(ctx, id, fields)
+}
+
+// OutplanUpdateDialInfo updates outplan's dial related information.
 func (h *handler) OutplanUpdateDialInfo(
 	ctx context.Context,
 	id uuid.UUID,
@@ -335,32 +300,16 @@ func (h *handler) OutplanUpdateDialInfo(
 	maxTryCount3 int,
 	maxTryCount4 int,
 ) error {
-	q := `
-	update campaign_outplans set
-		source = ?,
-		dial_timeout = ?,
-		try_interval = ?,
-		max_try_count_0 = ?,
-		max_try_count_1 = ?,
-		max_try_count_2 = ?,
-		max_try_count_3 = ?,
-		max_try_count_4 = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	tmpSource, err := json.Marshal(source)
-	if err != nil {
-		return fmt.Errorf("could not marshal source. OutplanCreate. err: %v", err)
+	fields := map[outplan.Field]any{
+		outplan.FieldSource:       source,
+		outplan.FieldDialTimeout:  dialTimeout,
+		outplan.FieldTryInterval:  tryInterval,
+		outplan.FieldMaxTryCount0: maxTryCount0,
+		outplan.FieldMaxTryCount1: maxTryCount1,
+		outplan.FieldMaxTryCount2: maxTryCount2,
+		outplan.FieldMaxTryCount3: maxTryCount3,
+		outplan.FieldMaxTryCount4: maxTryCount4,
 	}
 
-	if _, err := h.db.Exec(q, tmpSource, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4, h.util.TimeGetCurTime(), id.Bytes()); err != nil {
-		return fmt.Errorf("could not execute the query. OutplanUpdateDialInfo. err: %v", err)
-	}
-
-	// set to the cache
-	_ = h.outplanUpdateToCache(ctx, id)
-
-	return nil
+	return h.OutplanUpdate(ctx, id, fields)
 }

@@ -148,7 +148,7 @@ func Test_StorageAccountGets(t *testing.T) {
 		token string
 
 		responseStorageAcounts []smaccount.Account
-		expectFilters          map[string]string
+		expectFilters          map[smaccount.Field]any
 		expectRes              []*smaccount.WebhookMessage
 	}{
 		{
@@ -171,8 +171,8 @@ func Test_StorageAccountGets(t *testing.T) {
 					ID: uuid.FromStringOrNil("6a5476cc-1bd8-11ef-9863-3b26eb47b0e0"),
 				},
 			},
-			expectFilters: map[string]string{
-				"deleted": "false",
+			expectFilters: map[smaccount.Field]any{
+				smaccount.FieldDeleted: false,
 			},
 			expectRes: []*smaccount.WebhookMessage{
 				{

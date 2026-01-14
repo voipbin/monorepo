@@ -831,7 +831,7 @@ func Test_CallGets(t *testing.T) {
 		pageSize  uint64
 
 		responseCalls []cmcall.Call
-		expectFilters map[string]string
+		expectFilters map[cmcall.Field]any
 		expectRes     []*cmcall.WebhookMessage
 	}{
 		{
@@ -854,9 +854,9 @@ func Test_CallGets(t *testing.T) {
 					},
 				},
 			},
-			map[string]string{
-				"customer_id": "5f621078-8e5f-11ee-97b2-cfe7337b701c",
-				"deleted":     "false",
+			map[cmcall.Field]any{
+				cmcall.FieldCustomerID: "5f621078-8e5f-11ee-97b2-cfe7337b701c",
+				cmcall.FieldDeleted:    false,
 			},
 			[]*cmcall.WebhookMessage{
 				{

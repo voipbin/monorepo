@@ -88,7 +88,7 @@ func (mr *MockAIHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
 }
 
 // Gets mocks base method.
-func (m *MockAIHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*ai.AI, error) {
+func (m *MockAIHandler) Gets(ctx context.Context, size uint64, token string, filters map[ai.Field]any) ([]*ai.AI, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Gets", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*ai.AI)

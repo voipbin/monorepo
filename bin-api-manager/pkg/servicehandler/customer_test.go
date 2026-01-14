@@ -37,7 +37,7 @@ func Test_CustomerCreate(t *testing.T) {
 		responseAgent          *amagent.Agent
 		responseBillingAccount *bmaccount.Account
 
-		expectFilters map[string]string
+		expectFilters map[cscustomer.Field]any
 		expectRes     *cscustomer.WebhookMessage
 	}
 
@@ -74,7 +74,7 @@ func Test_CustomerCreate(t *testing.T) {
 				},
 			},
 
-			expectFilters: map[string]string{
+			expectFilters: map[cscustomer.Field]any{
 				"deleted":  "false",
 				"username": "test@test.com",
 			},
@@ -182,10 +182,11 @@ func Test_CustomerGets(t *testing.T) {
 	type test struct {
 		name string
 
-		agent   *amagent.Agent
-		size    uint64
-		token   string
-		filters map[string]string
+		agent         *amagent.Agent
+		size          uint64
+		token         string
+		filters       map[string]string
+		expectFilters map[cscustomer.Field]any
 
 		responseCustomers []cscustomer.Customer
 		expectRes         []*cscustomer.WebhookMessage
@@ -206,6 +207,9 @@ func Test_CustomerGets(t *testing.T) {
 			"2020-09-20T03:23:20.995000",
 			map[string]string{
 				"deleted": "false",
+			},
+			map[cscustomer.Field]any{
+				cscustomer.FieldDeleted: false,
 			},
 
 			[]cscustomer.Customer{
@@ -235,7 +239,7 @@ func Test_CustomerGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CustomerV1CustomerGets(ctx, tt.token, tt.size, tt.filters).Return(tt.responseCustomers, nil)
+			mockReq.EXPECT().CustomerV1CustomerGets(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseCustomers, nil)
 
 			res, err := h.CustomerGets(ctx, tt.agent, tt.size, tt.token, tt.filters)
 			if err != nil {

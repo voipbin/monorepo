@@ -14,7 +14,7 @@ import (
 )
 
 // Gets returns agents
-func (h *agentHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*agent.Agent, error) {
+func (h *agentHandler) Gets(ctx context.Context, size uint64, token string, filters map[agent.Field]any) ([]*agent.Agent, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "Gets",
 		"size":    size,
@@ -166,9 +166,9 @@ func (h *agentHandler) isOnlyAdmin(ctx context.Context, id uuid.UUID) bool {
 	}
 
 	// get agents
-	filters := map[string]string{
-		"customer_id": a.CustomerID.String(),
-		"deleted":     "false",
+	filters := map[agent.Field]any{
+		agent.FieldCustomerID: a.CustomerID,
+		agent.FieldDeleted:    false,
 	}
 
 	agents, err := h.dbGets(ctx, 1000, "", filters)

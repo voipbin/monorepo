@@ -354,10 +354,10 @@ func (h *callHandler) parseAddressTypeExtension(ctx context.Context, customerID 
 		log.Debugf("The destination target has invalid uuid. target: %s", address.Target)
 
 		// get extension info
-		filters := map[string]string{
-			"customer_id": customerID.String(),
-			"deleted":     "false",
-			"extension":   address.Target,
+		filters := map[rmextension.Field]any{
+			rmextension.FieldCustomerID: customerID.String(),
+			rmextension.FieldDeleted:    false,
+			rmextension.FieldExtension:  address.Target,
 		}
 		tmps, err := h.reqHandler.RegistrarV1ExtensionGets(ctx, "", 1, filters)
 		if err != nil {

@@ -33,7 +33,7 @@ func Test_ChatroomGetsByOwnerID(t *testing.T) {
 		responseAgent *amagent.Agent
 		response      []chatchatroom.Chatroom
 
-		expectFilters map[string]string
+		expectFilters map[chatchatroom.Field]any
 		expectRes     []*chatchatroom.WebhookMessage
 	}{
 		{
@@ -65,9 +65,9 @@ func Test_ChatroomGetsByOwnerID(t *testing.T) {
 				},
 			},
 
-			map[string]string{
-				"deleted":  "false",
-				"owner_id": "d152e69e-105b-11ee-b395-eb18426de979",
+			map[chatchatroom.Field]any{
+				chatchatroom.FieldDeleted: false,
+				chatchatroom.FieldOwnerID: "d152e69e-105b-11ee-b395-eb18426de979",
 			},
 			[]*chatchatroom.WebhookMessage{
 				{
@@ -184,7 +184,7 @@ func Test_chatroomGetByChatIDAndOwnerID(t *testing.T) {
 
 		responseChatrooms []chatchatroom.Chatroom
 
-		expectFilters map[string]string
+		expectFilters map[chatchatroom.Field]any
 		expectRes     *chatchatroom.WebhookMessage
 	}{
 		{
@@ -208,10 +208,10 @@ func Test_chatroomGetByChatIDAndOwnerID(t *testing.T) {
 				},
 			},
 
-			expectFilters: map[string]string{
-				"deleted":  "false",
+			expectFilters: map[chatchatroom.Field]any{
+				chatchatroom.FieldDeleted: false,
 				"chat_id":  "731a0de8-bc02-11ee-9606-1b8395e94244",
-				"owner_id": "734e22c2-bc02-11ee-b7b0-9f9f9f508f1b",
+				chatchatroom.FieldOwnerID: "734e22c2-bc02-11ee-b7b0-9f9f9f508f1b",
 			},
 			expectRes: &chatchatroom.WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -335,7 +335,7 @@ func Test_ChatroomCreate(t *testing.T) {
 		responseChatrooms []chatchatroom.Chatroom
 
 		expectType    chatchat.Type
-		expectFilters map[string]string
+		expectFilters map[chatchatroom.Field]any
 		expectRes     *chatchatroom.WebhookMessage
 	}{
 		{
@@ -377,10 +377,10 @@ func Test_ChatroomCreate(t *testing.T) {
 			},
 
 			expectType: chatchat.TypeNormal,
-			expectFilters: map[string]string{
-				"deleted":  "false",
+			expectFilters: map[chatchatroom.Field]any{
+				chatchatroom.FieldDeleted: false,
 				"chat_id":  "3eb7bbde-bc04-11ee-933b-f38aea616771",
-				"owner_id": "d152e69e-105b-11ee-b395-eb18426de979",
+				chatchatroom.FieldOwnerID: "d152e69e-105b-11ee-b395-eb18426de979",
 			},
 			expectRes: &chatchatroom.WebhookMessage{
 				Identity: commonidentity.Identity{

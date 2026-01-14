@@ -7,6 +7,7 @@ import (
 	rmextension "monorepo/bin-registrar-manager/models/extension"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -138,7 +139,13 @@ func (h *serviceHandler) ExtensionGets(ctx context.Context, a *amagent.Agent, si
 	}
 
 	// get extensions
-	exts, err := h.reqHandler.RegistrarV1ExtensionGets(ctx, token, size, filters)
+	// Convert string filters to typed filters
+	typedFilters, err := h.convertExtensionFilters(filters)
+	if err != nil {
+		return nil, err
+	}
+
+	exts, err := h.reqHandler.RegistrarV1ExtensionGets(ctx, token, size, typedFilters)
 	if err != nil {
 		log.Errorf("Could not get extensions info from the registrar-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find extensions info. err: %v", err)
@@ -182,4 +189,27 @@ func (h *serviceHandler) ExtensionUpdate(ctx context.Context, a *amagent.Agent, 
 
 	res := tmp.ConvertWebhookMessage()
 	return res, nil
+}
+
+// convertExtensionFilters converts map[string]string to map[rmextension.Field]any
+func (h *serviceHandler) convertExtensionFilters(filters map[string]string) (map[rmextension.Field]any, error) {
+	// Convert to map[string]any first
+	srcAny := make(map[string]any, len(filters))
+	for k, v := range filters {
+		srcAny[k] = v
+	}
+
+	// Use reflection-based converter
+	typed, err := commondatabasehandler.ConvertMapToTypedMap(srcAny, rmextension.Extension{})
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert string keys to Field type
+	result := make(map[rmextension.Field]any, len(typed))
+	for k, v := range typed {
+		result[rmextension.Field(k)] = v
+	}
+
+	return result, nil
 }

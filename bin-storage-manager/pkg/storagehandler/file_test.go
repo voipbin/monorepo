@@ -149,7 +149,7 @@ func Test_FileGets(t *testing.T) {
 
 		token   string
 		size    uint64
-		filters map[string]string
+		filters map[file.Field]any
 
 		responseFiles []*file.File
 	}
@@ -160,8 +160,8 @@ func Test_FileGets(t *testing.T) {
 
 			token: "2024-05-16 03:22:17.995000",
 			size:  10,
-			filters: map[string]string{
-				"customer_id": "c6f2b776-1535-11ef-a098-b38ca4e3bbb1",
+			filters: map[file.Field]any{
+				file.FieldCustomerID: uuid.FromStringOrNil("c6f2b776-1535-11ef-a098-b38ca4e3bbb1"),
 			},
 
 			responseFiles: []*file.File{
@@ -192,7 +192,7 @@ func Test_FileGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockFile.EXPECT().Gets(ctx, tt.token, tt.size, tt.filters).Return(tt.responseFiles, nil)
+			mockFile.EXPECT().Gets(ctx, tt.token, tt.size, gomock.Any()).Return(tt.responseFiles, nil)
 
 			res, err := h.FileGets(ctx, tt.token, tt.size, tt.filters)
 			if err != nil {

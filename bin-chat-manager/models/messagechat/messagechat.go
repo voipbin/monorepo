@@ -13,17 +13,17 @@ import (
 type Messagechat struct {
 	commonidentity.Identity
 
-	ChatID uuid.UUID `json:"chat_id"`
+	ChatID uuid.UUID `json:"chat_id" db:"chat_id,uuid"`
 
 	// message defines
-	Source *commonaddress.Address `json:"source"`
-	Type   Type                   `json:"type"`
-	Text   string                 `json:"text"`
-	Medias []media.Media          `json:"medias"`
+	Source *commonaddress.Address `json:"source" db:"source,json"`
+	Type   Type                   `json:"type" db:"type"`
+	Text   string                 `json:"text" db:"text"`
+	Medias []media.Media          `json:"medias" db:"medias,json"`
 
-	TMCreate string `json:"tm_create"`
-	TMUpdate string `json:"tm_update"`
-	TMDelete string `json:"tm_delete"`
+	TMCreate string `json:"tm_create" db:"tm_create"`
+	TMUpdate string `json:"tm_update" db:"tm_update"`
+	TMDelete string `json:"tm_delete" db:"tm_delete"`
 }
 
 // Type define

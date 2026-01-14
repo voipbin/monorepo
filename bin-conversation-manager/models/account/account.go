@@ -8,17 +8,17 @@ import (
 type Account struct {
 	commonidentity.Identity
 
-	Type Type `json:"type,omitempty"` // represent the type of account. could be message(sms/mms), line, etc.
+	Type Type `json:"type,omitempty" db:"type"` // represent the type of account. could be message(sms/mms), line, etc.
 
-	Name   string `json:"name,omitempty"`   // name of the account
-	Detail string `json:"detail,omitempty"` // detail of the account
+	Name   string `json:"name,omitempty" db:"name"`     // name of the account
+	Detail string `json:"detail,omitempty" db:"detail"` // detail of the account
 
-	Secret string `json:"secret,omitempty"` // secret
-	Token  string `json:"token,omitempty"`  // usually api token
+	Secret string `json:"secret,omitempty" db:"secret"` // secret
+	Token  string `json:"token,omitempty" db:"token"`   // usually api token
 
-	TMCreate string `json:"tm_create,omitempty"`
-	TMUpdate string `json:"tm_update,omitempty"`
-	TMDelete string `json:"tm_delete,omitempty"`
+	TMCreate string `json:"tm_create,omitempty" db:"tm_create"`
+	TMUpdate string `json:"tm_update,omitempty" db:"tm_update"`
+	TMDelete string `json:"tm_delete,omitempty" db:"tm_delete"`
 }
 
 // Field defines the fields for the Account entity.

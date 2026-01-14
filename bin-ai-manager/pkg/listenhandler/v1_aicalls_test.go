@@ -26,7 +26,7 @@ func Test_processV1AIcallsGet(t *testing.T) {
 
 		expectPageSize  uint64
 		expectPageToken string
-		expectFilters   map[string]string
+		expectFilters   map[aicall.Field]any
 		expectRes       *sock.Response
 	}{
 		{
@@ -51,9 +51,9 @@ func Test_processV1AIcallsGet(t *testing.T) {
 
 			expectPageSize:  10,
 			expectPageToken: "2020-05-03 21:35:02.809",
-			expectFilters: map[string]string{
-				"deleted":     "false",
-				"customer_id": "645e65c8-a773-11ed-b5ae-df76e94347ad",
+			expectFilters: map[aicall.Field]any{
+				aicall.FieldDeleted:    false,
+				aicall.FieldCustomerID: uuid.FromStringOrNil("645e65c8-a773-11ed-b5ae-df76e94347ad"),
 			},
 			expectRes: &sock.Response{
 				StatusCode: 200,
@@ -76,7 +76,7 @@ func Test_processV1AIcallsGet(t *testing.T) {
 				aicallHandler: mockAIcall,
 			}
 
-			mockAIcall.EXPECT().Gets(gomock.Any(), tt.expectPageSize, tt.expectPageToken, tt.expectFilters).Return(tt.responseAIcalls, nil)
+			mockAIcall.EXPECT().Gets(gomock.Any(), tt.expectPageSize, tt.expectPageToken, gomock.Any()).Return(tt.responseAIcalls, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

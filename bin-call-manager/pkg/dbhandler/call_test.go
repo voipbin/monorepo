@@ -235,7 +235,7 @@ func Test_CallGets(t *testing.T) {
 		name  string
 		calls []*call.Call
 
-		filters map[string]string
+		filters map[call.Field]any
 
 		responseCurTime string
 
@@ -260,9 +260,9 @@ func Test_CallGets(t *testing.T) {
 				},
 			},
 
-			filters: map[string]string{
-				"customer_id": "739625ca-7f43-11ec-8d25-4f519d029295",
-				"deleted":     "false",
+			filters: map[call.Field]any{
+				call.FieldCustomerID: uuid.FromStringOrNil("739625ca-7f43-11ec-8d25-4f519d029295"),
+				call.FieldDeleted:    false,
 			},
 
 			responseCurTime: "2020-04-18 03:22:17.995000",
@@ -312,9 +312,9 @@ func Test_CallGets(t *testing.T) {
 			name:  "empty",
 			calls: []*call.Call{},
 
-			filters: map[string]string{
-				"customer_id": "cd1bc551-c4e8-45c8-a457-d41d65e1f18c",
-				"deleted":     "true",
+			filters: map[call.Field]any{
+				call.FieldCustomerID: uuid.FromStringOrNil("cd1bc551-c4e8-45c8-a457-d41d65e1f18c"),
+				call.FieldDeleted:    false,
 			},
 
 			responseCurTime: "2020-04-18 03:22:17.995000",
@@ -449,9 +449,9 @@ func Test_CallGets_delete(t *testing.T) {
 				_ = h.CallDelete(ctx, id)
 			}
 
-			filters := map[string]string{
-				"customer_id": tt.customerID.String(),
-				"deleted":     "false",
+			filters := map[call.Field]any{
+				call.FieldCustomerID: tt.customerID,
+				call.FieldDeleted:    false,
 			}
 
 			res, err := h.CallGets(ctx, 10, utilhandler.TimeGetCurTime(), filters)

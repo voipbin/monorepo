@@ -23,7 +23,7 @@ func Test_Create(t *testing.T) {
 		responseUUID    uuid.UUID
 		responseAccount *account.Account
 
-		expectFilters map[string]string
+		expectFilters map[account.Field]any
 		expectAccount *account.Account
 	}{
 		{
@@ -36,9 +36,9 @@ func Test_Create(t *testing.T) {
 				ID: uuid.FromStringOrNil("95ebf6c4-1530-11ef-932d-037065591eab"),
 			},
 
-			expectFilters: map[string]string{
-				"deleted":     "false",
-				"customer_id": "955fa98a-1530-11ef-94b7-cfc6e6161c56",
+			expectFilters: map[account.Field]any{
+				account.FieldDeleted:    false,
+				account.FieldCustomerID: uuid.FromStringOrNil("955fa98a-1530-11ef-94b7-cfc6e6161c56"),
 			},
 			expectAccount: &account.Account{
 				ID:         uuid.FromStringOrNil("9e444942-199b-11ef-ad96-27cf40005448"),
@@ -137,7 +137,7 @@ func Test_Gets(t *testing.T) {
 
 		token   string
 		size    uint64
-		filters map[string]string
+		filters map[account.Field]any
 
 		responseAccounts []*account.Account
 	}{
@@ -146,8 +146,8 @@ func Test_Gets(t *testing.T) {
 
 			token: "2024-05-16 03:22:17.995000",
 			size:  10,
-			filters: map[string]string{
-				"customer_id": "5d2c486c-199e-11ef-9826-5b645642ab65",
+			filters: map[account.Field]any{
+				account.FieldCustomerID: uuid.FromStringOrNil("5d2c486c-199e-11ef-9826-5b645642ab65"),
 			},
 
 			responseAccounts: []*account.Account{
@@ -358,7 +358,7 @@ func Test_ValidateFileInfoByCustomerID(t *testing.T) {
 		filesize   int64
 
 		responseAccounts []*account.Account
-		expectFilters    map[string]string
+		expectFilters    map[account.Field]any
 	}{
 		{
 			name: "normal",
@@ -372,9 +372,9 @@ func Test_ValidateFileInfoByCustomerID(t *testing.T) {
 					ID: uuid.FromStringOrNil("22fb7260-19aa-11ef-970a-8fd8ab8e92c0"),
 				},
 			},
-			expectFilters: map[string]string{
-				"deleted":     "false",
-				"customer_id": "1f156e1c-19aa-11ef-84fa-1facf3d5fbf1",
+			expectFilters: map[account.Field]any{
+				account.FieldDeleted:    false,
+				account.FieldCustomerID: uuid.FromStringOrNil("1f156e1c-19aa-11ef-84fa-1facf3d5fbf1"),
 			},
 		},
 	}

@@ -162,7 +162,7 @@ func (mr *MockAgentHandlerMockRecorder) GetByCustomerIDAndAddress(ctx, customerI
 }
 
 // Gets mocks base method.
-func (m *MockAgentHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*agent.Agent, error) {
+func (m *MockAgentHandler) Gets(ctx context.Context, size uint64, token string, filters map[agent.Field]any) ([]*agent.Agent, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Gets", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*agent.Agent)

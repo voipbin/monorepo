@@ -165,7 +165,7 @@ func Test_Gets(t *testing.T) {
 
 		token   string
 		size    uint64
-		filters map[string]string
+		filters map[email.Field]any
 
 		responseEmails []*email.Email
 		expectRes      []*email.Email
@@ -175,8 +175,8 @@ func Test_Gets(t *testing.T) {
 
 			token: "2025-03-14 03:23:20.995000",
 			size:  10,
-			filters: map[string]string{
-				"deleted": "false",
+			filters: map[email.Field]any{
+				email.FieldDeleted: "false",
 			},
 
 			responseEmails: []*email.Email{

@@ -69,10 +69,9 @@ func (h *summaryHandler) Get(ctx context.Context, id uuid.UUID) (*summary.Summar
 }
 
 func (h *summaryHandler) GetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*summary.Summary, error) {
-
-	filters := map[string]string{
-		"deleted":      "false",
-		"reference_id": referenceID.String(),
+	filters := map[summary.Field]any{
+		summary.FieldDeleted:     false,
+		summary.FieldReferenceID: referenceID,
 	}
 
 	tmps, err := h.db.SummaryGets(ctx, 1, "", filters)
@@ -87,7 +86,7 @@ func (h *summaryHandler) GetByReferenceID(ctx context.Context, referenceID uuid.
 	return res, nil
 }
 
-func (h *summaryHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*summary.Summary, error) {
+func (h *summaryHandler) Gets(ctx context.Context, size uint64, token string, filters map[summary.Field]any) ([]*summary.Summary, error) {
 	res, err := h.db.SummaryGets(ctx, size, token, filters)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get data")
@@ -102,11 +101,11 @@ func (h *summaryHandler) GetByCustomerIDAndReferenceIDAndLanguage(
 	referenceID uuid.UUID,
 	language string,
 ) (*summary.Summary, error) {
-	filters := map[string]string{
-		"deleted":      "false",
-		"customer_id":  customerID.String(),
-		"reference_id": referenceID.String(),
-		"language":     language,
+	filters := map[summary.Field]any{
+		summary.FieldDeleted:     false,
+		summary.FieldCustomerID:  customerID,
+		summary.FieldReferenceID: referenceID,
+		summary.FieldLanguage:    language,
 	}
 	res, err := h.Gets(ctx, 1000, "", filters)
 	if err != nil {
@@ -135,9 +134,13 @@ func (h *summaryHandler) Delete(ctx context.Context, id uuid.UUID) (*summary.Sum
 	return res, nil
 }
 
-// UpdateStatusDone deletes the summary.
+// UpdateStatusDone updates the summary status to done.
 func (h *summaryHandler) UpdateStatusDone(ctx context.Context, id uuid.UUID, content string) (*summary.Summary, error) {
-	if err := h.db.SummaryUpdateStatusDone(ctx, id, content); err != nil {
+	fields := map[summary.Field]any{
+		summary.FieldStatus:  summary.StatusDone,
+		summary.FieldContent: content,
+	}
+	if err := h.db.SummaryUpdate(ctx, id, fields); err != nil {
 		return nil, errors.Wrapf(err, "could not update the summary")
 	}
 

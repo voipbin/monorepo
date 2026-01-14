@@ -27,29 +27,16 @@ type DBHandler interface {
 	ConferenceEnd(ctx context.Context, id uuid.UUID) error
 	ConferenceGet(ctx context.Context, id uuid.UUID) (*conference.Conference, error)
 	ConferenceGetByConfbridgeID(ctx context.Context, confbridgeID uuid.UUID) (*conference.Conference, error)
-	ConferenceGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*conference.Conference, error)
+	ConferenceGets(ctx context.Context, size uint64, token string, filters map[conference.Field]any) ([]*conference.Conference, error)
 	ConferenceRemoveConferencecallID(ctx context.Context, id, callID uuid.UUID) error
-	ConferenceSet(
-		ctx context.Context,
-		id uuid.UUID,
-		name string,
-		detail string,
-		data map[string]interface{},
-		timeout int,
-		preFlowID uuid.UUID,
-		postFlowID uuid.UUID,
-	) error
-	ConferenceSetData(ctx context.Context, id uuid.UUID, data map[string]interface{}) error
-	ConferenceSetRecordingID(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) error
-	ConferenceSetStatus(ctx context.Context, id uuid.UUID, status conference.Status) error
-	ConferenceSetTranscribeID(ctx context.Context, id uuid.UUID, transcribeID uuid.UUID) error
+	ConferenceUpdate(ctx context.Context, id uuid.UUID, fields map[conference.Field]any) error
 
 	// conferencecalls
 	ConferencecallCreate(ctx context.Context, cf *conferencecall.Conferencecall) error
 	ConferencecallGet(ctx context.Context, id uuid.UUID) (*conferencecall.Conferencecall, error)
-	ConferencecallGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*conferencecall.Conferencecall, error)
+	ConferencecallGets(ctx context.Context, size uint64, token string, filters map[conferencecall.Field]any) ([]*conferencecall.Conferencecall, error)
 	ConferencecallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*conferencecall.Conferencecall, error)
-	ConferencecallUpdateStatus(ctx context.Context, id uuid.UUID, status conferencecall.Status) error
+	ConferencecallUpdate(ctx context.Context, id uuid.UUID, fields map[conferencecall.Field]any) error
 	ConferencecallDelete(ctx context.Context, id uuid.UUID) error
 }
 

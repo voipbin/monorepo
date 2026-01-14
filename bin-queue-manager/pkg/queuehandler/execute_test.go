@@ -31,8 +31,8 @@ func Test_Execute(t *testing.T) {
 		responseQueuecall []queuecall.Queuecall
 		responseAgent     []amagent.Agent
 
-		expectFiltersQueue map[string]string
-		expectFiltersAgent map[string]string
+		expectFiltersQueue map[queuecall.Field]any
+		expectFiltersAgent map[amagent.Field]any
 	}{
 		{
 			"normal",
@@ -66,15 +66,15 @@ func Test_Execute(t *testing.T) {
 				},
 			},
 
-			map[string]string{
-				"queue_id": "558dc9da-d1ae-11ec-b9f8-e323caeb57c4",
-				"status":   string(queuecall.StatusWaiting),
+			map[queuecall.Field]any{
+				queuecall.FieldQueueID: "558dc9da-d1ae-11ec-b9f8-e323caeb57c4",
+				queuecall.FieldStatus:  string(queuecall.StatusWaiting),
 			},
-			map[string]string{
-				"deleted":     "false",
-				"customer_id": "a3361ad8-d1af-11ec-865d-cf7070170a25",
-				"tag_ids":     "a3a6841c-d1af-11ec-8844-c7602a790709",
-				"status":      string(amagent.StatusAvailable),
+			map[amagent.Field]any{
+				amagent.FieldDeleted:    false,
+				amagent.FieldCustomerID: "a3361ad8-d1af-11ec-865d-cf7070170a25",
+				amagent.FieldTagIDs:     "a3a6841c-d1af-11ec-8844-c7602a790709",
+				amagent.FieldStatus:     string(amagent.StatusAvailable),
 			},
 		},
 	}

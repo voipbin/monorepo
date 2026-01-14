@@ -29,8 +29,8 @@ func Test_TranscriptCreate(t *testing.T) {
 
 	tests := []test{
 		{
-			"all items",
-			&transcript.Transcript{
+			name: "all items",
+			transcript: &transcript.Transcript{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("6029f7a0-7e2f-11ed-b9d0-5f9428aa8958"),
 					CustomerID: uuid.FromStringOrNil("605f0d64-7e2f-11ed-bfc9-3b8a21f4c79c"),
@@ -41,8 +41,8 @@ func Test_TranscriptCreate(t *testing.T) {
 				TMTranscript: "0000-00-00 00:00:01.00000",
 			},
 
-			"2021-01-01 00:00:00.000",
-			&transcript.Transcript{
+			responseCurTime: "2021-01-01 00:00:00.000",
+			expectRes: &transcript.Transcript{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("6029f7a0-7e2f-11ed-b9d0-5f9428aa8958"),
 					CustomerID: uuid.FromStringOrNil("605f0d64-7e2f-11ed-bfc9-3b8a21f4c79c"),
@@ -56,15 +56,15 @@ func Test_TranscriptCreate(t *testing.T) {
 			},
 		},
 		{
-			"empty",
-			&transcript.Transcript{
+			name: "empty",
+			transcript: &transcript.Transcript{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("f2757f08-7e2f-11ed-a6c5-af8cdad93769"),
 				},
 			},
 
-			"2021-01-01 00:00:00.000",
-			&transcript.Transcript{
+			responseCurTime: "2021-01-01 00:00:00.000",
+			expectRes: &transcript.Transcript{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("f2757f08-7e2f-11ed-a6c5-af8cdad93769"),
 				},
@@ -115,14 +115,14 @@ func Test_TranscriptGets(t *testing.T) {
 		name        string
 		transcripts []*transcript.Transcript
 
-		filters map[string]string
+		filters map[transcript.Field]any
 
 		responseCurTime string
 		expectRes       []*transcript.Transcript
 	}{
 		{
-			"normal",
-			[]*transcript.Transcript{
+			name: "normal",
+			transcripts: []*transcript.Transcript{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("4db68b46-7e30-11ed-8c50-0fe723a2648a"),
@@ -131,13 +131,13 @@ func Test_TranscriptGets(t *testing.T) {
 				},
 			},
 
-			map[string]string{
-				"transcribe_id": "4dda38ac-7e30-11ed-876b-3bf1eb420c31",
-				"deleted":       "false",
+			filters: map[transcript.Field]any{
+				transcript.FieldTranscribeID: uuid.FromStringOrNil("4dda38ac-7e30-11ed-876b-3bf1eb420c31"),
+				transcript.FieldDeleted:      false,
 			},
 
-			"2021-01-01 00:00:00.000",
-			[]*transcript.Transcript{
+			responseCurTime: "2021-01-01 00:00:00.000",
+			expectRes: []*transcript.Transcript{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("4db68b46-7e30-11ed-8c50-0fe723a2648a"),
@@ -149,19 +149,19 @@ func Test_TranscriptGets(t *testing.T) {
 			},
 		},
 		{
-			"empty",
-			[]*transcript.Transcript{},
+			name:        "empty",
+			transcripts: []*transcript.Transcript{},
 
-			map[string]string{
-				"customer_id": "8077cdec-7e30-11ed-93c6-efc2ead67105",
+			filters: map[transcript.Field]any{
+				transcript.FieldCustomerID: uuid.FromStringOrNil("8077cdec-7e30-11ed-93c6-efc2ead67105"),
 			},
 
-			"",
-			[]*transcript.Transcript{},
+			responseCurTime: "",
+			expectRes:       []*transcript.Transcript{},
 		},
 		{
-			"2 items",
-			[]*transcript.Transcript{
+			name: "2 items",
+			transcripts: []*transcript.Transcript{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("892afd74-7e30-11ed-808f-578ac2e92b40"),
@@ -176,13 +176,13 @@ func Test_TranscriptGets(t *testing.T) {
 				},
 			},
 
-			map[string]string{
-				"transcribe_id": "89560596-7e30-11ed-b714-e7b0632f17e9",
-				"deleted":       "false",
+			filters: map[transcript.Field]any{
+				transcript.FieldTranscribeID: uuid.FromStringOrNil("89560596-7e30-11ed-b714-e7b0632f17e9"),
+				transcript.FieldDeleted:      false,
 			},
 
-			"2021-01-01 00:00:00.000",
-			[]*transcript.Transcript{
+			responseCurTime: "2021-01-01 00:00:00.000",
+			expectRes: []*transcript.Transcript{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("892afd74-7e30-11ed-808f-578ac2e92b40"),
@@ -252,15 +252,15 @@ func Test_TranscriptDelete(t *testing.T) {
 
 	tests := []test{
 		{
-			"normal",
-			&transcript.Transcript{
+			name: "normal",
+			transcript: &transcript.Transcript{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("15f2b1f4-f197-11ee-b786-7b9a797be96c"),
 				},
 			},
 
-			"2021-01-01 00:00:00.000",
-			&transcript.Transcript{
+			responseCurTime: "2021-01-01 00:00:00.000",
+			expectRes: &transcript.Transcript{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("15f2b1f4-f197-11ee-b786-7b9a797be96c"),
 				},

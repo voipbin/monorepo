@@ -130,7 +130,7 @@ func (h *aicallHandler) GetByReferenceID(ctx context.Context, referenceID uuid.U
 }
 
 // Gets returns list of aicalls.
-func (h *aicallHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*aicall.AIcall, error) {
+func (h *aicallHandler) Gets(ctx context.Context, size uint64, token string, filters map[aicall.Field]any) ([]*aicall.AIcall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "Gets",
 		"size":    size,
@@ -148,7 +148,10 @@ func (h *aicallHandler) Gets(ctx context.Context, size uint64, token string, fil
 }
 
 func (h *aicallHandler) UpdatePipecatcallID(ctx context.Context, id uuid.UUID, pipecatcallID uuid.UUID) (*aicall.AIcall, error) {
-	if errUpdate := h.db.AIcallUpdatePipecatcallID(ctx, id, pipecatcallID); errUpdate != nil {
+	fields := map[aicall.Field]any{
+		aicall.FieldPipecatcallID: pipecatcallID,
+	}
+	if errUpdate := h.db.AIcallUpdate(ctx, id, fields); errUpdate != nil {
 		return nil, errors.Wrapf(errUpdate, "could not update the pipecatcall id for existing aicall. aicall_id: %s", id)
 	}
 
@@ -162,8 +165,10 @@ func (h *aicallHandler) UpdatePipecatcallID(ctx context.Context, id uuid.UUID, p
 
 // UpdateStatusTerminating updates the status to terminating
 func (h *aicallHandler) UpdateStatus(ctx context.Context, id uuid.UUID, status aicall.Status) (*aicall.AIcall, error) {
-
-	if errUpdate := h.db.AIcallUpdateStatus(ctx, id, status); errUpdate != nil {
+	fields := map[aicall.Field]any{
+		aicall.FieldStatus: status,
+	}
+	if errUpdate := h.db.AIcallUpdate(ctx, id, fields); errUpdate != nil {
 		return nil, errors.Wrapf(errUpdate, "could not update the status to terminating. aicall_id: %s", id)
 	}
 

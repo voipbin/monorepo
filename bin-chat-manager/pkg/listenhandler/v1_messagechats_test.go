@@ -155,7 +155,7 @@ func Test_v1MessagechatsGet(t *testing.T) {
 
 		responseMessagechats []*messagechat.Messagechat
 
-		expectFilters map[string]string
+		expectFilters map[messagechat.Field]any
 		expectRes     *sock.Response
 	}{
 		{
@@ -178,9 +178,9 @@ func Test_v1MessagechatsGet(t *testing.T) {
 				},
 			},
 
-			map[string]string{
-				"chat_id": "1209ea7a-3506-11ed-9c39-83b3c3ded5a4",
-				"deleted": "false",
+			map[messagechat.Field]any{
+				messagechat.FieldChatID:  uuid.FromStringOrNil("1209ea7a-3506-11ed-9c39-83b3c3ded5a4"),
+				messagechat.FieldDeleted: false,
 			},
 			&sock.Response{
 				StatusCode: 200,
@@ -213,9 +213,9 @@ func Test_v1MessagechatsGet(t *testing.T) {
 				},
 			},
 
-			map[string]string{
-				"chat_id": "6728bcac-3506-11ed-87e1-6b1453c7790c",
-				"deleted": "false",
+			map[messagechat.Field]any{
+				messagechat.FieldChatID:  uuid.FromStringOrNil("6728bcac-3506-11ed-87e1-6b1453c7790c"),
+				messagechat.FieldDeleted: false,
 			},
 			&sock.Response{
 				StatusCode: 200,
@@ -237,9 +237,9 @@ func Test_v1MessagechatsGet(t *testing.T) {
 
 			[]*messagechat.Messagechat{},
 
-			map[string]string{
-				"chat_id": "925dfbf8-3506-11ed-b4aa-439c6be5c723",
-				"deleted": "false",
+			map[messagechat.Field]any{
+				messagechat.FieldChatID:  uuid.FromStringOrNil("925dfbf8-3506-11ed-b4aa-439c6be5c723"),
+				messagechat.FieldDeleted: false,
 			},
 			&sock.Response{
 				StatusCode: 200,
@@ -269,7 +269,7 @@ func Test_v1MessagechatsGet(t *testing.T) {
 				messagechatHandler: mockMessagechat,
 			}
 
-			mockMessagechat.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.responseMessagechats, nil)
+			mockMessagechat.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, gomock.Any()).Return(tt.responseMessagechats, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

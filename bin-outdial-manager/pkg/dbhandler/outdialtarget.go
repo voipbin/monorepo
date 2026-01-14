@@ -3,47 +3,17 @@ package dbhandler
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
 
-	commonaddress "monorepo/bin-common-handler/models/address"
-
+	"github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
 
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-outdial-manager/models/outdialtarget"
 )
 
 const (
-	// select query for outdial get
-	outdialTargetSelect = `
-	select
-		id,
-		outdial_id,
-
-		name,
-		detail,
-
-		data,
-		status,
-
-		destination_0,
-		destination_1,
-		destination_2,
-		destination_3,
-		destination_4,
-
-		try_count_0,
-		try_count_1,
-		try_count_2,
-		try_count_3,
-		try_count_4,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	from
-		outdial_outdialtargets
-	`
+	outdialtargetsTable = "outdial_outdialtargets"
 
 	// select query for available outdialtarget get
 	outdialTargetSelectAvailable = `
@@ -91,116 +61,47 @@ const (
 
 // outdialTargetGetFromRow gets the outdialtarget from the row.
 func (h *handler) outdialTargetGetFromRow(row *sql.Rows) (*outdialtarget.OutdialTarget, error) {
-	var destination0 sql.NullString
-	var destination1 sql.NullString
-	var destination2 sql.NullString
-	var destination3 sql.NullString
-	var destination4 sql.NullString
-
 	res := &outdialtarget.OutdialTarget{}
-	if err := row.Scan(
-		&res.ID,
-		&res.OutdialID,
 
-		&res.Name,
-		&res.Detail,
-
-		&res.Data,
-		&res.Status,
-
-		&destination0,
-		&destination1,
-		&destination2,
-		&destination3,
-		&destination4,
-
-		&res.TryCount0,
-		&res.TryCount1,
-		&res.TryCount2,
-		&res.TryCount3,
-		&res.TryCount4,
-
-		&res.TMCreate,
-		&res.TMUpdate,
-		&res.TMDelete,
-	); err != nil {
+	if err := commondatabasehandler.ScanRow(row, res); err != nil {
 		return nil, fmt.Errorf("could not scan the row. outdialTargetGetFromRow. err: %v", err)
-	}
-
-	if destination0.Valid {
-		if errDestination := json.Unmarshal([]byte(destination0.String), &res.Destination0); errDestination != nil {
-			return nil, fmt.Errorf("could not unmarshal the destination0. outdialTargetGetFromRow. err: %v", errDestination)
-		}
-	}
-
-	if destination1.Valid {
-		if errDestination := json.Unmarshal([]byte(destination1.String), &res.Destination1); errDestination != nil {
-			return nil, fmt.Errorf("could not unmarshal the destination1. outdialTargetGetFromRow. err: %v", errDestination)
-		}
-	}
-
-	if destination2.Valid {
-		if errDestination := json.Unmarshal([]byte(destination2.String), &res.Destination2); errDestination != nil {
-			return nil, fmt.Errorf("could not unmarshal the destination2. outdialTargetGetFromRow. err: %v", errDestination)
-		}
-	}
-
-	if destination3.Valid {
-		if errDestination := json.Unmarshal([]byte(destination3.String), &res.Destination3); errDestination != nil {
-			return nil, fmt.Errorf("could not unmarshal the destination3. outdialTargetGetFromRow. err: %v", errDestination)
-		}
-	}
-
-	if destination4.Valid {
-		if errDestination := json.Unmarshal([]byte(destination4.String), &res.Destination4); errDestination != nil {
-			return nil, fmt.Errorf("could not unmarshal the destination4. outdialTargetGetFromRow. err: %v", errDestination)
-		}
 	}
 
 	return res, nil
 }
 
-// outdialTargetGetFromRow gets the outdialtarget from the row.
+// outdialTargetGetFromRowForAvailable gets the outdialtarget from the row for available query.
+// This method handles the extra columns (des_0 to des_4) in the available query.
 func (h *handler) outdialTargetGetFromRowForAvailable(row *sql.Rows) (*outdialtarget.OutdialTarget, error) {
-	var destination0 sql.NullString
-	var destination1 sql.NullString
-	var destination2 sql.NullString
-	var destination3 sql.NullString
-	var destination4 sql.NullString
-
-	var des0 int
-	var des1 int
-	var des2 int
-	var des3 int
-	var des4 int
-
 	res := &outdialtarget.OutdialTarget{}
+	var des0, des1, des2, des3, des4 sql.NullInt64
+
+	var id, outdialID sql.NullString
+	var name, detail, data, status sql.NullString
+	var destination0, destination1, destination2, destination3, destination4 sql.NullString
+	var tryCount0, tryCount1, tryCount2, tryCount3, tryCount4 sql.NullInt64
+	var tmCreate, tmUpdate, tmDelete sql.NullString
+
 	if err := row.Scan(
-		&res.ID,
-		&res.OutdialID,
-
-		&res.Name,
-		&res.Detail,
-
-		&res.Data,
-		&res.Status,
-
+		&id,
+		&outdialID,
+		&name,
+		&detail,
+		&data,
+		&status,
 		&destination0,
 		&destination1,
 		&destination2,
 		&destination3,
 		&destination4,
-
-		&res.TryCount0,
-		&res.TryCount1,
-		&res.TryCount2,
-		&res.TryCount3,
-		&res.TryCount4,
-
-		&res.TMCreate,
-		&res.TMUpdate,
-		&res.TMDelete,
-
+		&tryCount0,
+		&tryCount1,
+		&tryCount2,
+		&tryCount3,
+		&tryCount4,
+		&tmCreate,
+		&tmUpdate,
+		&tmDelete,
 		&des0,
 		&des1,
 		&des2,
@@ -210,33 +111,74 @@ func (h *handler) outdialTargetGetFromRowForAvailable(row *sql.Rows) (*outdialta
 		return nil, fmt.Errorf("could not scan the row. outdialTargetGetFromRowForAvailable. err: %v", err)
 	}
 
-	if destination0.Valid {
-		if errDestination := json.Unmarshal([]byte(destination0.String), &res.Destination0); errDestination != nil {
-			return nil, fmt.Errorf("could not unmarshal the destination0. outdialTargetGetFromRowForAvailable. err: %v", errDestination)
-		}
+	// Convert scanned values to struct
+	if id.Valid {
+		res.ID, _ = uuid.FromBytes([]byte(id.String))
+	}
+	if outdialID.Valid {
+		res.OutdialID, _ = uuid.FromBytes([]byte(outdialID.String))
+	}
+	if name.Valid {
+		res.Name = name.String
+	}
+	if detail.Valid {
+		res.Detail = detail.String
+	}
+	if data.Valid {
+		res.Data = data.String
+	}
+	if status.Valid {
+		res.Status = outdialtarget.Status(status.String)
+	}
+	if tryCount0.Valid {
+		res.TryCount0 = int(tryCount0.Int64)
+	}
+	if tryCount1.Valid {
+		res.TryCount1 = int(tryCount1.Int64)
+	}
+	if tryCount2.Valid {
+		res.TryCount2 = int(tryCount2.Int64)
+	}
+	if tryCount3.Valid {
+		res.TryCount3 = int(tryCount3.Int64)
+	}
+	if tryCount4.Valid {
+		res.TryCount4 = int(tryCount4.Int64)
+	}
+	if tmCreate.Valid {
+		res.TMCreate = tmCreate.String
+	}
+	if tmUpdate.Valid {
+		res.TMUpdate = tmUpdate.String
+	}
+	if tmDelete.Valid {
+		res.TMDelete = tmDelete.String
 	}
 
-	if destination1.Valid {
-		if errDestination := json.Unmarshal([]byte(destination1.String), &res.Destination1); errDestination != nil {
-			return nil, fmt.Errorf("could not unmarshal the destination1. outdialTargetGetFromRowForAvailable. err: %v", errDestination)
+	// Parse destinations (JSON fields)
+	if destination0.Valid && len(destination0.String) > 0 {
+		if err := parseDestination(destination0.String, &res.Destination0); err != nil {
+			return nil, fmt.Errorf("could not parse destination0: %v", err)
 		}
 	}
-
-	if destination2.Valid {
-		if errDestination := json.Unmarshal([]byte(destination2.String), &res.Destination2); errDestination != nil {
-			return nil, fmt.Errorf("could not unmarshal the destination2. outdialTargetGetFromRowForAvailable. err: %v", errDestination)
+	if destination1.Valid && len(destination1.String) > 0 {
+		if err := parseDestination(destination1.String, &res.Destination1); err != nil {
+			return nil, fmt.Errorf("could not parse destination1: %v", err)
 		}
 	}
-
-	if destination3.Valid {
-		if errDestination := json.Unmarshal([]byte(destination3.String), &res.Destination3); errDestination != nil {
-			return nil, fmt.Errorf("could not unmarshal the destination3. outdialTargetGetFromRowForAvailable. err: %v", errDestination)
+	if destination2.Valid && len(destination2.String) > 0 {
+		if err := parseDestination(destination2.String, &res.Destination2); err != nil {
+			return nil, fmt.Errorf("could not parse destination2: %v", err)
 		}
 	}
-
-	if destination4.Valid {
-		if errDestination := json.Unmarshal([]byte(destination4.String), &res.Destination4); errDestination != nil {
-			return nil, fmt.Errorf("could not unmarshal the destination4. outdialTargetGetFromRowForAvailable. err: %v", errDestination)
+	if destination3.Valid && len(destination3.String) > 0 {
+		if err := parseDestination(destination3.String, &res.Destination3); err != nil {
+			return nil, fmt.Errorf("could not parse destination3: %v", err)
+		}
+	}
+	if destination4.Valid && len(destination4.String) > 0 {
+		if err := parseDestination(destination4.String, &res.Destination4); err != nil {
+			return nil, fmt.Errorf("could not parse destination4: %v", err)
 		}
 	}
 
@@ -245,115 +187,24 @@ func (h *handler) outdialTargetGetFromRowForAvailable(row *sql.Rows) (*outdialta
 
 // OutdialTargetCreate insert a new outdialtarget record
 func (h *handler) OutdialTargetCreate(ctx context.Context, t *outdialtarget.OutdialTarget) error {
-
-	q := `insert into outdial_outdialtargets(
-		id,
-		outdial_id,
-
-		name,
-		detail,
-
-		data,
-		status,
-
-		destination_0,
-		destination_1,
-		destination_2,
-		destination_3,
-		destination_4,
-
-		try_count_0,
-		try_count_1,
-		try_count_2,
-		try_count_3,
-		try_count_4,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	) values(
-		?, ?,
-		?, ?,
-		?, ?,
-		?, ?, ?, ?, ?,
-		?, ?, ?, ?, ?,
-		?, ?, ?
-		)`
-	stmt, err := h.db.PrepareContext(ctx, q)
+	// Use PrepareFields to get field map
+	fields, err := commondatabasehandler.PrepareFields(t)
 	if err != nil {
-		return fmt.Errorf("could not prepare. OutdialTargetCreate. err: %v", err)
-	}
-	defer func() {
-		_ = stmt.Close()
-	}()
-
-	var destination0 []byte = nil
-	if t.Destination0 != nil {
-		destination0, err = json.Marshal(t.Destination0)
-		if err != nil {
-			return fmt.Errorf("could not marshal destination0. OutdialTargetCreate. err: %v", err)
-		}
+		return fmt.Errorf("could not prepare fields. OutdialTargetCreate. err: %v", err)
 	}
 
-	var destination1 []byte = nil
-	if t.Destination1 != nil {
-		destination1, err = json.Marshal(t.Destination1)
-		if err != nil {
-			return fmt.Errorf("could not marshal destination1. OutdialTargetCreate. err: %v", err)
-		}
-	}
+	// Use SetMap instead of Columns/Values
+	sb := squirrel.
+		Insert(outdialtargetsTable).
+		SetMap(fields).
+		PlaceholderFormat(squirrel.Question)
 
-	var destination2 []byte = nil
-	if t.Destination2 != nil {
-		destination2, err = json.Marshal(t.Destination2)
-		if err != nil {
-			return fmt.Errorf("could not marshal destination2. OutdialTargetCreate. err: %v", err)
-		}
-	}
-
-	var destination3 []byte = nil
-	if t.Destination3 != nil {
-		destination3, err = json.Marshal(t.Destination3)
-		if err != nil {
-			return fmt.Errorf("could not marshal destination3. OutdialTargetCreate. err: %v", err)
-		}
-	}
-
-	var destination4 []byte = nil
-	if t.Destination4 != nil {
-		destination4, err = json.Marshal(t.Destination4)
-		if err != nil {
-			return fmt.Errorf("could not marshal destination4. OutdialTargetCreate. err: %v", err)
-		}
-	}
-
-	_, err = stmt.ExecContext(ctx,
-		t.ID.Bytes(),
-		t.OutdialID.Bytes(),
-
-		t.Name,
-		t.Detail,
-
-		t.Data,
-		t.Status,
-
-		destination0,
-		destination1,
-		destination2,
-		destination3,
-		destination4,
-
-		t.TryCount0,
-		t.TryCount1,
-		t.TryCount2,
-		t.TryCount3,
-		t.TryCount4,
-
-		t.TMCreate,
-		t.TMUpdate,
-		t.TMDelete,
-	)
+	query, args, err := sb.ToSql()
 	if err != nil {
+		return fmt.Errorf("could not build query. OutdialTargetCreate. err: %v", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
 		return fmt.Errorf("could not execute query. OutdialTargetCreate. err: %v", err)
 	}
 
@@ -400,20 +251,18 @@ func (h *handler) outdialTargetGetFromCache(ctx context.Context, id uuid.UUID) (
 
 // outdialTargetGetFromDB gets the outdialTarget info from the db.
 func (h *handler) outdialTargetGetFromDB(ctx context.Context, id uuid.UUID) (*outdialtarget.OutdialTarget, error) {
-
-	// prepare
-	q := fmt.Sprintf("%s where id = ?", outdialTargetSelect)
-
-	stmt, err := h.db.PrepareContext(ctx, q)
+	fields := commondatabasehandler.GetDBFields(&outdialtarget.OutdialTarget{})
+	query, args, err := squirrel.
+		Select(fields...).
+		From(outdialtargetsTable).
+		Where(squirrel.Eq{string(outdialtarget.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not prepare. outdialTargetGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. outdialTargetGetFromDB. err: %v", err)
 	}
-	defer func() {
-		_ = stmt.Close()
-	}()
 
-	// query
-	row, err := stmt.QueryContext(ctx, id.Bytes())
+	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. outdialTargetGetFromDB. err: %v", err)
 	}
@@ -422,12 +271,15 @@ func (h *handler) outdialTargetGetFromDB(ctx context.Context, id uuid.UUID) (*ou
 	}()
 
 	if !row.Next() {
+		if err := row.Err(); err != nil {
+			return nil, fmt.Errorf("row iteration error. outdialTargetGetFromDB. err: %v", err)
+		}
 		return nil, ErrNotFound
 	}
 
 	res, err := h.outdialTargetGetFromRow(row)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not get data from row. outdialTargetGetFromDB. id: %s, err: %v", id, err)
 	}
 
 	return res, nil
@@ -451,202 +303,113 @@ func (h *handler) OutdialTargetGet(ctx context.Context, id uuid.UUID) (*outdialt
 	return res, nil
 }
 
-// OutdialTargetGetsByOutdialID returns list of outdialtargets.
-func (h *handler) OutdialTargetGetsByOutdialID(ctx context.Context, outdialID uuid.UUID, token string, limit uint64) ([]*outdialtarget.OutdialTarget, error) {
+// OutdialTargetGets returns list of outdialtargets.
+func (h *handler) OutdialTargetGets(ctx context.Context, token string, size uint64, filters map[outdialtarget.Field]any) ([]*outdialtarget.OutdialTarget, error) {
+	if token == "" {
+		token = h.utilHandler.TimeGetCurTime()
+	}
 
-	// prepare
-	q := fmt.Sprintf(`
-		%s
-		where
-			tm_delete >= ?
-			and outdial_id = ?
-			and tm_create < ?
-		order by
-			tm_create desc, id desc
-		limit ?
-	`, outdialTargetSelect)
+	fields := commondatabasehandler.GetDBFields(&outdialtarget.OutdialTarget{})
+	sb := squirrel.
+		Select(fields...).
+		From(outdialtargetsTable).
+		Where(squirrel.Lt{string(outdialtarget.FieldTMCreate): token}).
+		OrderBy(string(outdialtarget.FieldTMCreate) + " DESC").
+		Limit(size).
+		PlaceholderFormat(squirrel.Question)
 
-	rows, err := h.db.Query(q, DefaultTimeStamp, outdialID.Bytes(), token, limit)
+	sb, err := commondatabasehandler.ApplyFields(sb, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. OutdialTargetGetsByOutdialID. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. OutdialTargetGets. err: %v", err)
+	}
+
+	query, args, err := sb.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. OutdialTargetGets. err: %v", err)
+	}
+
+	rows, err := h.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. OutdialTargetGets. err: %v", err)
 	}
 	defer func() {
 		_ = rows.Close()
 	}()
 
-	var res []*outdialtarget.OutdialTarget
+	res := []*outdialtarget.OutdialTarget{}
 	for rows.Next() {
 		u, err := h.outdialTargetGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not scan the row. OutdialTargetGetsByOutdialID. err: %v", err)
+			return nil, fmt.Errorf("could not get data. OutdialTargetGets, err: %v", err)
 		}
-
 		res = append(res, u)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error. OutdialTargetGets. err: %v", err)
 	}
 
 	return res, nil
 }
 
-// OutdialTargetUpdateDestinations updates outdialtarget's destinations.
-func (h *handler) OutdialTargetUpdateDestinations(
-	ctx context.Context,
-	id uuid.UUID,
-	destination0 *commonaddress.Address,
-	destination1 *commonaddress.Address,
-	destination2 *commonaddress.Address,
-	destination3 *commonaddress.Address,
-	destination4 *commonaddress.Address,
-) error {
-	q := `
-	update outdial_outdialtargets set
-		destination_0 = ?,
-		destination_1 = ?,
-		destination_2 = ?,
-		destination_3 = ?,
-		destination_4 = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	var err error
-	var tmpDestination0 []byte = nil
-	if destination0 != nil {
-		tmpDestination0, err = json.Marshal(destination0)
-		if err != nil {
-			return fmt.Errorf("could not marshal destination0. OutdialTargetCreate. err: %v", err)
-		}
+// OutdialTargetUpdate updates the outdialtarget with given fields.
+func (h *handler) OutdialTargetUpdate(ctx context.Context, id uuid.UUID, fields map[outdialtarget.Field]any) error {
+	if len(fields) == 0 {
+		return nil
 	}
 
-	var tmpDestination1 []byte = nil
-	if destination1 != nil {
-		tmpDestination1, err = json.Marshal(destination1)
-		if err != nil {
-			return fmt.Errorf("could not marshal destination1. OutdialTargetCreate. err: %v", err)
-		}
+	fields[outdialtarget.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
+
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
+	if err != nil {
+		return fmt.Errorf("OutdialTargetUpdate: prepare fields failed: %w", err)
 	}
 
-	var tmpDestination2 []byte = nil
-	if destination2 != nil {
-		tmpDestination2, err = json.Marshal(destination2)
-		if err != nil {
-			return fmt.Errorf("could not marshal destination2. OutdialTargetCreate. err: %v", err)
-		}
+	q := squirrel.Update(outdialtargetsTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(outdialtarget.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := q.ToSql()
+	if err != nil {
+		return fmt.Errorf("OutdialTargetUpdate: build SQL failed: %w", err)
 	}
 
-	var tmpDestination3 []byte = nil
-	if destination3 != nil {
-		tmpDestination3, err = json.Marshal(destination3)
-		if err != nil {
-			return fmt.Errorf("could not marshal destination3. OutdialTargetCreate. err: %v", err)
-		}
+	if _, err := h.db.ExecContext(ctx, sqlStr, args...); err != nil {
+		return fmt.Errorf("OutdialTargetUpdate: exec failed: %w", err)
 	}
 
-	var tmpDestination4 []byte = nil
-	if destination4 != nil {
-		tmpDestination4, err = json.Marshal(destination4)
-		if err != nil {
-			return fmt.Errorf("could not marshal destination4. OutdialTargetCreate. err: %v", err)
-		}
-	}
-
-	if _, err := h.db.Exec(
-		q,
-		tmpDestination0,
-		tmpDestination1,
-		tmpDestination2,
-		tmpDestination3,
-		tmpDestination4,
-		GetCurTime(),
-		id.Bytes(),
-	); err != nil {
-		return fmt.Errorf("could not execute the query. OutdialTargetUpdateDestinations. err: %v", err)
-	}
-
-	// set to the cache
 	_ = h.outdialTargetUpdateToCache(ctx, id)
-
-	return nil
-
-}
-
-// OutdialTargetUpdateStatus updates outdialtarget's status.
-func (h *handler) OutdialTargetUpdateStatus(ctx context.Context, id uuid.UUID, status outdialtarget.Status) error {
-	q := `
-	update outdial_outdialtargets set
-		status = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	if _, err := h.db.Exec(q, status, GetCurTime(), id.Bytes()); err != nil {
-		return fmt.Errorf("could not execute the query. OutdialTargetUpdateDestinations. err: %v", err)
-	}
-
-	// set to the cache
-	_ = h.outdialTargetUpdateToCache(ctx, id)
-
 	return nil
 }
 
-// OutdialTargetUpdateBasicInfo updates outdialtarget's basic info.
-func (h *handler) OutdialTargetUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error {
-	q := `
-	update outdial_outdialtargets set
-		name = ?,
-		detail = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	if _, err := h.db.Exec(q, name, detail, GetCurTime(), id.Bytes()); err != nil {
-		return fmt.Errorf("could not execute the query. OutdialTargetUpdateBasicInfo. err: %v", err)
-	}
-
-	// set to the cache
-	_ = h.outdialTargetUpdateToCache(ctx, id)
-
-	return nil
-}
-
-// OutdialTargetUpdateData updates outdialtarget's data.
-func (h *handler) OutdialTargetUpdateData(ctx context.Context, id uuid.UUID, data string) error {
-	q := `
-	update outdial_outdialtargets set
-		data = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	if _, err := h.db.Exec(q, data, GetCurTime(), id.Bytes()); err != nil {
-		return fmt.Errorf("could not execute the query. OutdialTargetUpdateData. err: %v", err)
-	}
-
-	// set to the cache
-	_ = h.outdialTargetUpdateToCache(ctx, id)
-
-	return nil
-}
-
-// OutdialTargetDelete delets the outdialtarget.
+// OutdialTargetDelete deletes the outdialtarget.
 func (h *handler) OutdialTargetDelete(ctx context.Context, id uuid.UUID) error {
-	q := `
-	update outdial_outdialtargets set
-		tm_delete = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
+	ts := h.utilHandler.TimeGetCurTime()
 
-	ts := GetCurTime()
-	if _, err := h.db.Exec(q, ts, ts, id.Bytes()); err != nil {
-		return fmt.Errorf("could not execute the query. OutdialTargetDelete. err: %v", err)
+	fields := map[outdialtarget.Field]any{
+		outdialtarget.FieldTMUpdate: ts,
+		outdialtarget.FieldTMDelete: ts,
 	}
 
-	// set to the cache
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
+	if err != nil {
+		return fmt.Errorf("OutdialTargetDelete: prepare fields failed: %w", err)
+	}
+
+	sb := squirrel.Update(outdialtargetsTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(outdialtarget.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := sb.ToSql()
+	if err != nil {
+		return fmt.Errorf("OutdialTargetDelete: build SQL failed: %w", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, sqlStr, args...); err != nil {
+		return fmt.Errorf("could not execute. OutdialTargetDelete. err: %v", err)
+	}
+
 	_ = h.outdialTargetUpdateToCache(ctx, id)
 
 	return nil
@@ -663,8 +426,8 @@ func (h *handler) OutdialTargetUpdateProgressing(ctx context.Context, id uuid.UU
 		id = ?
 	`, destinationIndex, destinationIndex)
 
-	if _, err := h.db.Exec(q, outdialtarget.StatusProgressing, GetCurTime(), id.Bytes()); err != nil {
-		return fmt.Errorf("could not execute the query. OutdialTargetUpdateBasicInfo. err: %v", err)
+	if _, err := h.db.Exec(q, outdialtarget.StatusProgressing, h.utilHandler.TimeGetCurTime(), id.Bytes()); err != nil {
+		return fmt.Errorf("could not execute the query. OutdialTargetUpdateProgressing. err: %v", err)
 	}
 
 	// set to the cache

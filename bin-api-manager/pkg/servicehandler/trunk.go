@@ -8,6 +8,7 @@ import (
 	rmtrunk "monorepo/bin-registrar-manager/models/trunk"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -137,7 +138,13 @@ func (h *serviceHandler) TrunkGets(ctx context.Context, a *amagent.Agent, size u
 	}
 
 	// get tmps
-	tmps, err := h.reqHandler.RegistrarV1TrunkGets(ctx, token, size, filters)
+	// Convert string filters to typed filters
+	typedFilters, err := h.convertTrunkFilters(filters)
+	if err != nil {
+		return nil, err
+	}
+
+	tmps, err := h.reqHandler.RegistrarV1TrunkGets(ctx, token, size, typedFilters)
 	if err != nil {
 		log.Errorf("Could not get trunks info from the registrar-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find trunks info. err: %v", err)
@@ -186,4 +193,27 @@ func (h *serviceHandler) TrunkUpdateBasicInfo(ctx context.Context, a *amagent.Ag
 
 	res := tmp.ConvertWebhookMessage()
 	return res, nil
+}
+
+// convertTrunkFilters converts map[string]string to map[rmtrunk.Field]any
+func (h *serviceHandler) convertTrunkFilters(filters map[string]string) (map[rmtrunk.Field]any, error) {
+	// Convert to map[string]any first
+	srcAny := make(map[string]any, len(filters))
+	for k, v := range filters {
+		srcAny[k] = v
+	}
+
+	// Use reflection-based converter
+	typed, err := commondatabasehandler.ConvertMapToTypedMap(srcAny, rmtrunk.Trunk{})
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert string keys to Field type
+	result := make(map[rmtrunk.Field]any, len(typed))
+	for k, v := range typed {
+		result[rmtrunk.Field(k)] = v
+	}
+
+	return result, nil
 }

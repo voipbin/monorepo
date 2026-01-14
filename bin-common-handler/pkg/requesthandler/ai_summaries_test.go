@@ -7,7 +7,6 @@ import (
 	"monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
-	"monorepo/bin-common-handler/pkg/utilhandler"
 	"reflect"
 	"testing"
 
@@ -22,11 +21,10 @@ func Test_AIV1SummaryGets(t *testing.T) {
 
 		pageToken string
 		pageSize  uint64
-		filters   map[string]string
+		filters   map[amsummary.Field]any
 
 		response *sock.Response
 
-		expectURL     string
 		expectTarget  string
 		expectRequest *sock.Request
 		expectRes     []amsummary.Summary
@@ -36,9 +34,9 @@ func Test_AIV1SummaryGets(t *testing.T) {
 
 			pageToken: "2020-09-20 03:23:20.995000",
 			pageSize:  10,
-			filters: map[string]string{
-				"deleted":     "false",
-				"customer_id": "8e6595e6-0bb0-11f0-b462-43d51b0d2d1f",
+			filters: map[amsummary.Field]any{
+				amsummary.FieldDeleted:    false,
+				amsummary.FieldCustomerID: uuid.FromStringOrNil("8e6595e6-0bb0-11f0-b462-43d51b0d2d1f"),
 			},
 
 			response: &sock.Response{
@@ -47,11 +45,12 @@ func Test_AIV1SummaryGets(t *testing.T) {
 				Data:       []byte(`[{"id":"8ea18d12-0bb0-11f0-9081-cb954d06e7e9"},{"id":"8ec63202-0bb0-11f0-b9bd-8b0b90e07b50"}]`),
 			},
 
-			expectURL:    "/v1/summaries?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10",
 			expectTarget: string(outline.QueueNameAIRequest),
 			expectRequest: &sock.Request{
-				URI:    "/v1/summaries?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10&filter_customer_id=8e6595e6-0bb0-11f0-b462-43d51b0d2d1f&filter_deleted=false",
-				Method: sock.RequestMethodGet,
+				URI:      "/v1/summaries?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10",
+				Method:   sock.RequestMethodGet,
+				DataType: "application/json",
+				Data:     []byte(`{"customer_id":"8e6595e6-0bb0-11f0-b462-43d51b0d2d1f","deleted":false}`),
 			},
 			expectRes: []amsummary.Summary{
 				{
@@ -74,14 +73,11 @@ func Test_AIV1SummaryGets(t *testing.T) {
 			defer mc.Finish()
 
 			mockSock := sockhandler.NewMockSockHandler(mc)
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			h := requestHandler{
-				sock:        mockSock,
-				utilHandler: mockUtil,
+				sock: mockSock,
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := h.AIV1SummaryGets(ctx, tt.pageToken, tt.pageSize, tt.filters)

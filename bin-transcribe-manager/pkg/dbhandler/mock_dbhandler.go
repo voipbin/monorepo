@@ -73,20 +73,6 @@ func (mr *MockDBHandlerMockRecorder) StreamingGet(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StreamingGet", reflect.TypeOf((*MockDBHandler)(nil).StreamingGet), ctx, id)
 }
 
-// TranscribeAddTranscript mocks base method.
-func (m *MockDBHandler) TranscribeAddTranscript(ctx context.Context, id uuid.UUID, t *transcript.Transcript) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TranscribeAddTranscript", ctx, id, t)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// TranscribeAddTranscript indicates an expected call of TranscribeAddTranscript.
-func (mr *MockDBHandlerMockRecorder) TranscribeAddTranscript(ctx, id, t any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscribeAddTranscript", reflect.TypeOf((*MockDBHandler)(nil).TranscribeAddTranscript), ctx, id, t)
-}
-
 // TranscribeCreate mocks base method.
 func (m *MockDBHandler) TranscribeCreate(ctx context.Context, t *transcribe.Transcribe) error {
 	m.ctrl.T.Helper()
@@ -146,7 +132,7 @@ func (mr *MockDBHandlerMockRecorder) TranscribeGetByReferenceIDAndLanguage(ctx, 
 }
 
 // TranscribeGets mocks base method.
-func (m *MockDBHandler) TranscribeGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*transcribe.Transcribe, error) {
+func (m *MockDBHandler) TranscribeGets(ctx context.Context, size uint64, token string, filters map[transcribe.Field]any) ([]*transcribe.Transcribe, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TranscribeGets", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*transcribe.Transcribe)
@@ -160,18 +146,18 @@ func (mr *MockDBHandlerMockRecorder) TranscribeGets(ctx, size, token, filters an
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscribeGets", reflect.TypeOf((*MockDBHandler)(nil).TranscribeGets), ctx, size, token, filters)
 }
 
-// TranscribeSetStatus mocks base method.
-func (m *MockDBHandler) TranscribeSetStatus(ctx context.Context, id uuid.UUID, status transcribe.Status) error {
+// TranscribeUpdate mocks base method.
+func (m *MockDBHandler) TranscribeUpdate(ctx context.Context, id uuid.UUID, fields map[transcribe.Field]any) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TranscribeSetStatus", ctx, id, status)
+	ret := m.ctrl.Call(m, "TranscribeUpdate", ctx, id, fields)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// TranscribeSetStatus indicates an expected call of TranscribeSetStatus.
-func (mr *MockDBHandlerMockRecorder) TranscribeSetStatus(ctx, id, status any) *gomock.Call {
+// TranscribeUpdate indicates an expected call of TranscribeUpdate.
+func (mr *MockDBHandlerMockRecorder) TranscribeUpdate(ctx, id, fields any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscribeSetStatus", reflect.TypeOf((*MockDBHandler)(nil).TranscribeSetStatus), ctx, id, status)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscribeUpdate", reflect.TypeOf((*MockDBHandler)(nil).TranscribeUpdate), ctx, id, fields)
 }
 
 // TranscriptCreate mocks base method.
@@ -218,7 +204,7 @@ func (mr *MockDBHandlerMockRecorder) TranscriptGet(ctx, id any) *gomock.Call {
 }
 
 // TranscriptGets mocks base method.
-func (m *MockDBHandler) TranscriptGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*transcript.Transcript, error) {
+func (m *MockDBHandler) TranscriptGets(ctx context.Context, size uint64, token string, filters map[transcript.Field]any) ([]*transcript.Transcript, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TranscriptGets", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*transcript.Transcript)
@@ -230,4 +216,18 @@ func (m *MockDBHandler) TranscriptGets(ctx context.Context, size uint64, token s
 func (mr *MockDBHandlerMockRecorder) TranscriptGets(ctx, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscriptGets", reflect.TypeOf((*MockDBHandler)(nil).TranscriptGets), ctx, size, token, filters)
+}
+
+// TranscriptUpdate mocks base method.
+func (m *MockDBHandler) TranscriptUpdate(ctx context.Context, id uuid.UUID, fields map[transcript.Field]any) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TranscriptUpdate", ctx, id, fields)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// TranscriptUpdate indicates an expected call of TranscriptUpdate.
+func (mr *MockDBHandlerMockRecorder) TranscriptUpdate(ctx, id, fields any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscriptUpdate", reflect.TypeOf((*MockDBHandler)(nil).TranscriptUpdate), ctx, id, fields)
 }

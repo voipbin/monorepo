@@ -41,8 +41,8 @@ func Test_AccountCreate(t *testing.T) {
 				TotalFileSize:  1024,
 
 				TMCreate: "2024-05-18 03:22:17.995000",
-				TMUpdate: DefaultTimeStamp,
-				TMDelete: DefaultTimeStamp,
+				TMUpdate: "9999-01-01 00:00:00.000000",
+				TMDelete: "9999-01-01 00:00:00.000000",
 			},
 		},
 	}
@@ -88,7 +88,7 @@ func Test_AccountGets(t *testing.T) {
 		accounts []account.Account
 
 		size    uint64
-		filters map[string]string
+		filters map[account.Field]any
 
 		responseCurTime string
 		expectRes       []*account.Account
@@ -107,9 +107,9 @@ func Test_AccountGets(t *testing.T) {
 			},
 
 			10,
-			map[string]string{
-				"customer_id": "52642a32-198d-11ef-ae41-7f16629231ae",
-				"deleted":     "false",
+			map[account.Field]any{
+				account.FieldCustomerID: uuid.FromStringOrNil("52642a32-198d-11ef-ae41-7f16629231ae"),
+				account.FieldDeleted:    false,
 			},
 
 			"2024-05-16 03:22:17.995000",
@@ -118,15 +118,15 @@ func Test_AccountGets(t *testing.T) {
 					ID:         uuid.FromStringOrNil("5227c0ce-198d-11ef-b06c-a744dbfcde74"),
 					CustomerID: uuid.FromStringOrNil("52642a32-198d-11ef-ae41-7f16629231ae"),
 					TMCreate:   "2024-05-16 03:22:17.995000",
-					TMUpdate:   DefaultTimeStamp,
-					TMDelete:   DefaultTimeStamp,
+					TMUpdate:   "9999-01-01 00:00:00.000000",
+					TMDelete:   "9999-01-01 00:00:00.000000",
 				},
 				{
 					ID:         uuid.FromStringOrNil("529e6936-198d-11ef-afd6-57ccd5f20689"),
 					CustomerID: uuid.FromStringOrNil("52642a32-198d-11ef-ae41-7f16629231ae"),
 					TMCreate:   "2024-05-16 03:22:17.995000",
-					TMUpdate:   DefaultTimeStamp,
-					TMDelete:   DefaultTimeStamp,
+					TMUpdate:   "9999-01-01 00:00:00.000000",
+					TMDelete:   "9999-01-01 00:00:00.000000",
 				},
 			},
 		},
@@ -204,7 +204,7 @@ func Test_AccountIncreaseFileInfo(t *testing.T) {
 
 				TMCreate: "2024-05-18 03:22:17.995000",
 				TMUpdate: "2024-05-18 03:22:17.995000",
-				TMDelete: DefaultTimeStamp,
+				TMDelete: "9999-01-01 00:00:00.000000",
 			},
 		},
 	}
@@ -285,7 +285,7 @@ func Test_AccountDecreaseFileInfo(t *testing.T) {
 
 				TMCreate: "2024-05-18 03:22:17.995000",
 				TMUpdate: "2024-05-18 03:22:17.995000",
-				TMDelete: DefaultTimeStamp,
+				TMDelete: "9999-01-01 00:00:00.000000",
 			},
 		},
 	}

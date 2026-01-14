@@ -3,11 +3,12 @@ package dbhandler
 import (
 	"context"
 	"fmt"
+	"reflect"
+	"testing"
+
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-customer-manager/models/accesskey"
 	"monorepo/bin-customer-manager/pkg/cachehandler"
-	"reflect"
-	"testing"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -102,7 +103,7 @@ func Test_AccesskeyDelete(t *testing.T) {
 			expectRes: &accesskey.Accesskey{
 				ID:       uuid.FromStringOrNil("20a71b30-a759-11ef-b8fe-835b9e771719"),
 				TMCreate: "2020-04-18 03:22:17.995000",
-				TMUpdate: DefaultTimeStamp,
+				TMUpdate: "2020-04-18 03:22:17.995000",
 				TMDelete: "2020-04-18 03:22:17.995000",
 			},
 		},
@@ -153,7 +154,7 @@ func Test_AccesskeyGets(t *testing.T) {
 		accesskeys []*accesskey.Accesskey
 		size       uint64
 		token      string
-		filters    map[string]string
+		filters    map[accesskey.Field]any
 
 		responseCurTime string
 		expectRes       []*accesskey.Accesskey
@@ -172,8 +173,8 @@ func Test_AccesskeyGets(t *testing.T) {
 			},
 			size:  2,
 			token: "2020-04-18 03:22:17.995001",
-			filters: map[string]string{
-				"deleted": "false",
+			filters: map[accesskey.Field]any{
+				accesskey.FieldDeleted: false,
 			},
 
 			responseCurTime: "2020-04-18 03:22:17.995000",
@@ -210,9 +211,9 @@ func Test_AccesskeyGets(t *testing.T) {
 			},
 			size:  2,
 			token: "2020-04-18 03:22:17.995001",
-			filters: map[string]string{
-				"deleted": "false",
-				"token":   "d09df996-ab0f-11ef-862c-e3a5ac697296",
+			filters: map[accesskey.Field]any{
+				accesskey.FieldDeleted: false,
+				accesskey.FieldToken:   "d09df996-ab0f-11ef-862c-e3a5ac697296",
 			},
 
 			responseCurTime: "2020-04-18 03:22:17.995000",
@@ -264,14 +265,13 @@ func Test_AccesskeyGets(t *testing.T) {
 	}
 }
 
-func Test_AccessKeySetBasicInfo(t *testing.T) {
+func Test_AccesskeyUpdate(t *testing.T) {
 
 	tests := []struct {
 		name      string
 		accesskey *accesskey.Accesskey
 
-		accesskeyName string
-		detail        string
+		updateFields map[accesskey.Field]any
 
 		responseCurTime string
 		expectRes       *accesskey.Accesskey
@@ -284,8 +284,10 @@ func Test_AccessKeySetBasicInfo(t *testing.T) {
 				Detail: "detail4",
 			},
 
-			accesskeyName: "update name",
-			detail:        "update detail",
+			updateFields: map[accesskey.Field]any{
+				accesskey.FieldName:   "update name",
+				accesskey.FieldDetail: "update detail",
+			},
 
 			responseCurTime: "2020-04-18 03:22:17.995000",
 			expectRes: &accesskey.Accesskey{
@@ -305,8 +307,10 @@ func Test_AccessKeySetBasicInfo(t *testing.T) {
 				Detail: "detail4",
 			},
 
-			accesskeyName: "",
-			detail:        "",
+			updateFields: map[accesskey.Field]any{
+				accesskey.FieldName:   "",
+				accesskey.FieldDetail: "",
+			},
 
 			responseCurTime: "2020-04-18 03:22:17.995000",
 			expectRes: &accesskey.Accesskey{
@@ -342,12 +346,7 @@ func Test_AccessKeySetBasicInfo(t *testing.T) {
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().AccesskeySet(ctx, gomock.Any()).Return(nil)
-			if err := h.AccesskeySetBasicInfo(
-				ctx,
-				tt.accesskey.ID,
-				tt.accesskeyName,
-				tt.detail,
-			); err != nil {
+			if err := h.AccesskeyUpdate(ctx, tt.accesskey.ID, tt.updateFields); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 

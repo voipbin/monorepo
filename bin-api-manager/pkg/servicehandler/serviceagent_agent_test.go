@@ -23,7 +23,7 @@ func Test_ServiceAgentAgentGets(t *testing.T) {
 		token string
 
 		responseAgents []amagent.Agent
-		expectFilters  map[string]string
+		expectFilters  map[amagent.Field]any
 		expectRes      []*amagent.WebhookMessage
 	}
 
@@ -53,9 +53,9 @@ func Test_ServiceAgentAgentGets(t *testing.T) {
 					},
 				},
 			},
-			expectFilters: map[string]string{
-				"customer_id": "5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9",
-				"deleted":     "false",
+			expectFilters: map[amagent.Field]any{
+				amagent.FieldCustomerID: "5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9",
+				amagent.FieldDeleted:    false,
 			},
 			expectRes: []*amagent.WebhookMessage{
 				{

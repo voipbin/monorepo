@@ -154,7 +154,7 @@ func (mr *MockAIcallHandlerMockRecorder) GetByReferenceID(ctx, referenceID any) 
 }
 
 // Gets mocks base method.
-func (m *MockAIcallHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*aicall.AIcall, error) {
+func (m *MockAIcallHandler) Gets(ctx context.Context, size uint64, token string, filters map[aicall.Field]any) ([]*aicall.AIcall, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Gets", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*aicall.AIcall)

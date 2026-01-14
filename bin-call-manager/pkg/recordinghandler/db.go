@@ -82,7 +82,7 @@ func (h *recordingHandler) Create(
 }
 
 // Gets returns list of recordings of the given filters
-func (h *recordingHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*recording.Recording, error) {
+func (h *recordingHandler) Gets(ctx context.Context, size uint64, token string, filters map[recording.Field]any) ([]*recording.Recording, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "Gets",
 		"filters": filters,
@@ -162,10 +162,10 @@ func (h *recordingHandler) deleteRecordingFiles(r *recording.Recording) {
 	ctx := context.Background()
 
 	// get files
-	filters := map[string]string{
-		"reference_type": string(smfile.ReferenceTypeRecording),
-		"reference_id":   r.ID.String(),
-		"deleted":        "false",
+	filters := map[smfile.Field]any{
+		smfile.FieldReferenceType: string(smfile.ReferenceTypeRecording),
+		smfile.FieldReferenceID:   r.ID.String(),
+		smfile.FieldDeleted:       false,
 	}
 
 	files, err := h.reqHandler.StorageV1FileGets(ctx, "", 1000, filters)

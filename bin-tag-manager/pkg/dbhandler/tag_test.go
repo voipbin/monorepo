@@ -89,8 +89,8 @@ func Test_TagGets(t *testing.T) {
 		name string
 		tags []*tag.Tag
 
-		customerID uuid.UUID
-		size       uint64
+		size    uint64
+		filters map[tag.Field]any
 
 		responseCurTime string
 		expectRes       []*tag.Tag
@@ -116,8 +116,11 @@ func Test_TagGets(t *testing.T) {
 				},
 			},
 
-			customerID: uuid.FromStringOrNil("b63b9ce0-7fe1-11ec-8e99-6f2254a33c54"),
-			size:       2,
+			size: 2,
+			filters: map[tag.Field]any{
+				tag.FieldCustomerID: uuid.FromStringOrNil("b63b9ce0-7fe1-11ec-8e99-6f2254a33c54"),
+				tag.FieldDeleted:    false,
+			},
 
 			responseCurTime: "2020-04-18 03:22:17.995000",
 			expectRes: []*tag.Tag{
@@ -169,7 +172,7 @@ func Test_TagGets(t *testing.T) {
 				}
 			}
 
-			res, err := h.TagGets(ctx, tt.customerID, tt.size, utilhandler.TimeGetCurTime())
+			res, err := h.TagGets(ctx, tt.size, utilhandler.TimeGetCurTime(), tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. UserGet expect: ok, got: %v", err)
 			}

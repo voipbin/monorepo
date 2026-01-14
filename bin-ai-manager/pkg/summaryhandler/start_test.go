@@ -266,7 +266,7 @@ func Test_startReferenceTypeTranscribe(t *testing.T) {
 		responseUUID        uuid.UUID
 		responseActiveflow  *fmactiveflow.Activeflow
 
-		expectedFiltersTranscripts map[string]string
+		expectedFiltersTranscripts map[tmtranscript.Field]any
 		expectedSummary            *summary.Summary
 		expectedVariables          map[string]string
 	}{
@@ -312,9 +312,9 @@ func Test_startReferenceTypeTranscribe(t *testing.T) {
 				},
 			},
 
-			expectedFiltersTranscripts: map[string]string{
-				"deleted":       "false",
-				"transcribe_id": "705f227a-0ba0-11f0-aa84-b3acfd22daa1",
+			expectedFiltersTranscripts: map[tmtranscript.Field]any{
+				tmtranscript.FieldDeleted:      false,
+				tmtranscript.FieldTranscribeID: "705f227a-0ba0-11f0-aa84-b3acfd22daa1",
 			},
 			expectedSummary: &summary.Summary{
 				Identity: commonidentity.Identity{
@@ -418,7 +418,7 @@ func Test_startReferenceTypeRecording(t *testing.T) {
 		responseUUID        uuid.UUID
 		responseActiveflow  *fmactiveflow.Activeflow
 
-		expectedFiltersTranscripts map[string]string
+		expectedFiltersTranscripts map[tmtranscript.Field]any
 		expectedSummary            *summary.Summary
 		expectedVariables          map[string]string
 	}{
@@ -469,9 +469,9 @@ func Test_startReferenceTypeRecording(t *testing.T) {
 				},
 			},
 
-			expectedFiltersTranscripts: map[string]string{
-				"deleted":       "false",
-				"transcribe_id": "5885ec42-0b9b-11f0-99ba-4b3106d01f9b",
+			expectedFiltersTranscripts: map[tmtranscript.Field]any{
+				tmtranscript.FieldDeleted:      false,
+				tmtranscript.FieldTranscribeID: "5885ec42-0b9b-11f0-99ba-4b3106d01f9b",
 			},
 			expectedSummary: &summary.Summary{
 				Identity: commonidentity.Identity{

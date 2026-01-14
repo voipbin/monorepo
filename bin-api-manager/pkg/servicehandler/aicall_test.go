@@ -122,7 +122,7 @@ func Test_AIcallGetsByCustomerID(t *testing.T) {
 		agent   *amagent.Agent
 		size    uint64
 		token   string
-		filters map[string]string
+		filters map[amaicall.Field]any
 
 		response  []amaicall.AIcall
 		expectRes []*amaicall.WebhookMessage
@@ -139,9 +139,9 @@ func Test_AIcallGetsByCustomerID(t *testing.T) {
 			},
 			size:  10,
 			token: "2020-09-20 03:23:20.995000",
-			filters: map[string]string{
-				"deleted":     "false",
-				"customer_id": "5f621078-8e5f-11ee-97b2-cfe7337b701c",
+			filters: map[amaicall.Field]any{
+				amaicall.FieldDeleted:    false,
+				amaicall.FieldCustomerID: "5f621078-8e5f-11ee-97b2-cfe7337b701c",
 			},
 
 			response: []amaicall.AIcall{

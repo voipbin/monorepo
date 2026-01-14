@@ -372,7 +372,7 @@ func (mr *MockCallHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
 }
 
 // Gets mocks base method.
-func (m *MockCallHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*call.Call, error) {
+func (m *MockCallHandler) Gets(ctx context.Context, size uint64, token string, filters map[call.Field]any) ([]*call.Call, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Gets", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*call.Call)

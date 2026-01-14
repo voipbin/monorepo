@@ -3,66 +3,28 @@ package dbhandler
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"sort"
-	"strconv"
 	"strings"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
+
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"monorepo/bin-chat-manager/models/chat"
 )
 
 const (
-	// select query for chat get
-	chatSelect = `
-	select
-		id,
-		customer_id,
-
-		type,
-
-		room_owner_id,
-		participant_ids,
-
-		name,
-		detail,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	from
-		chat_chats
-	`
+	chatTable = "chat_chats"
 )
 
 // chatGetFromRow gets the chat from the row.
 func (h *handler) chatGetFromRow(row *sql.Rows) (*chat.Chat, error) {
-	var participantIDs string
-
 	res := &chat.Chat{}
-	if err := row.Scan(
-		&res.ID,
-		&res.CustomerID,
 
-		&res.Type,
-
-		&res.RoomOwnerID,
-		&participantIDs,
-
-		&res.Name,
-		&res.Detail,
-
-		&res.TMCreate,
-		&res.TMUpdate,
-		&res.TMDelete,
-	); err != nil {
+	if err := commondatabasehandler.ScanRow(row, res); err != nil {
 		return nil, fmt.Errorf("could not scan the row. chatGetFromRow. err: %v", err)
-	}
-
-	if err := json.Unmarshal([]byte(participantIDs), &res.ParticipantIDs); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the data. chatGetFromRow. err: %v", err)
 	}
 
 	return res, nil
@@ -70,60 +32,34 @@ func (h *handler) chatGetFromRow(row *sql.Rows) (*chat.Chat, error) {
 
 // ChatCreate creates a new chat record
 func (h *handler) ChatCreate(ctx context.Context, c *chat.Chat) error {
+	now := h.utilHandler.TimeGetCurTime()
 
-	q := `insert into chat_chats(
-		id,
-		customer_id,
+	// Set timestamps
+	c.TMCreate = now
+	c.TMUpdate = commondatabasehandler.DefaultTimeStamp
+	c.TMDelete = commondatabasehandler.DefaultTimeStamp
 
-		type,
+	// Sort participant IDs before storing
+	c.ParticipantIDs = sortUUIDs(c.ParticipantIDs)
 
-		room_owner_id,
-		participant_ids,
-
-		name,
-		detail,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	) values(
-		?, ?,
-		?,
-		?, ?,
-		?, ?,
-		?, ?, ?
-		)`
-	stmt, err := h.db.PrepareContext(ctx, q)
+	// Use PrepareFields to get field map
+	fields, err := commondatabasehandler.PrepareFields(c)
 	if err != nil {
-		return fmt.Errorf("could not prepare. ChatCreate. err: %v", err)
-	}
-	defer func() {
-		_ = stmt.Close()
-	}()
-
-	tmpParticipantIDs := sortUUIDs(c.ParticipantIDs)
-	participantIDs, err := json.Marshal(tmpParticipantIDs)
-	if err != nil {
-		return fmt.Errorf("could not marshal actions. ChatCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. ChatCreate. err: %v", err)
 	}
 
-	_, err = stmt.ExecContext(ctx,
-		c.ID.Bytes(),
-		c.CustomerID.Bytes(),
+	// Use SetMap instead of Columns/Values
+	sb := squirrel.
+		Insert(chatTable).
+		SetMap(fields).
+		PlaceholderFormat(squirrel.Question)
 
-		c.Type,
-
-		c.RoomOwnerID.Bytes(),
-		participantIDs,
-
-		c.Name,
-		c.Detail,
-
-		c.TMCreate,
-		c.TMUpdate,
-		c.TMDelete,
-	)
+	query, args, err := sb.ToSql()
 	if err != nil {
+		return fmt.Errorf("could not build query. ChatCreate. err: %v", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
 		return fmt.Errorf("could not execute query. ChatCreate. err: %v", err)
 	}
 
@@ -134,7 +70,6 @@ func (h *handler) ChatCreate(ctx context.Context, c *chat.Chat) error {
 
 // chatUpdateToCache gets the chat from the DB and update the cache.
 func (h *handler) chatUpdateToCache(ctx context.Context, id uuid.UUID) error {
-
 	res, err := h.chatGetFromDB(ctx, id)
 	if err != nil {
 		return err
@@ -158,7 +93,6 @@ func (h *handler) chatSetToCache(ctx context.Context, c *chat.Chat) error {
 
 // chatGetFromCache returns chat from the cache if possible.
 func (h *handler) chatGetFromCache(ctx context.Context, id uuid.UUID) (*chat.Chat, error) {
-
 	// get from cache
 	res, err := h.cache.ChatGet(ctx, id)
 	if err != nil {
@@ -170,20 +104,18 @@ func (h *handler) chatGetFromCache(ctx context.Context, id uuid.UUID) (*chat.Cha
 
 // chatGetFromDB gets the chat info from the db.
 func (h *handler) chatGetFromDB(ctx context.Context, id uuid.UUID) (*chat.Chat, error) {
-
-	// prepare
-	q := fmt.Sprintf("%s where id = ?", chatSelect)
-
-	stmt, err := h.db.PrepareContext(ctx, q)
+	fields := commondatabasehandler.GetDBFields(&chat.Chat{})
+	query, args, err := squirrel.
+		Select(fields...).
+		From(chatTable).
+		Where(squirrel.Eq{string(chat.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not prepare. chatGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. chatGetFromDB. err: %v", err)
 	}
-	defer func() {
-		_ = stmt.Close()
-	}()
 
-	// query
-	row, err := stmt.QueryContext(ctx, id.Bytes())
+	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. chatGetFromDB. err: %v", err)
 	}
@@ -192,6 +124,9 @@ func (h *handler) chatGetFromDB(ctx context.Context, id uuid.UUID) (*chat.Chat, 
 	}()
 
 	if !row.Next() {
+		if err := row.Err(); err != nil {
+			return nil, fmt.Errorf("row iteration error. chatGetFromDB. err: %v", err)
+		}
 		return nil, ErrNotFound
 	}
 
@@ -205,7 +140,6 @@ func (h *handler) chatGetFromDB(ctx context.Context, id uuid.UUID) (*chat.Chat, 
 
 // ChatGet returns chat.
 func (h *handler) ChatGet(ctx context.Context, id uuid.UUID) (*chat.Chat, error) {
-
 	res, err := h.chatGetFromCache(ctx, id)
 	if err == nil {
 		return res, nil
@@ -222,60 +156,48 @@ func (h *handler) ChatGet(ctx context.Context, id uuid.UUID) (*chat.Chat, error)
 }
 
 // ChatGets returns list of chats.
-func (h *handler) ChatGets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*chat.Chat, error) {
-
+func (h *handler) ChatGets(ctx context.Context, token string, size uint64, filters map[chat.Field]any) ([]*chat.Chat, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	// prepare
-	q := fmt.Sprintf(`%s
-		where
-			tm_create < ?
-		`, chatSelect)
+	fields := commondatabasehandler.GetDBFields(&chat.Chat{})
+	sb := squirrel.
+		Select(fields...).
+		From(chatTable).
+		Where(squirrel.Lt{string(chat.FieldTMCreate): token}).
+		OrderBy(string(chat.FieldTMCreate) + " DESC").
+		Limit(size).
+		PlaceholderFormat(squirrel.Question)
 
-	values := []interface{}{
-		token,
-	}
-
+	// Handle participant_ids filter separately (special case)
+	participantIDsFilter := ""
 	for k, v := range filters {
-		switch k {
-		case "customer_id", "room_owner_id":
-			tmp := uuid.FromStringOrNil(v)
-			q = fmt.Sprintf("%s and %s = ?", q, k)
-			values = append(values, tmp.Bytes())
-
-		case "deleted":
-			if v == "false" {
-				q = fmt.Sprintf("%s and tm_delete >= ?", q)
-				values = append(values, DefaultTimeStamp)
+		if k == chat.FieldParticipantIDs {
+			if strVal, ok := v.(string); ok {
+				participantIDsFilter = h.chatFilterParseParticipantIDs(strVal)
+				delete(filters, k)
 			}
-
-		case "type":
-			q = fmt.Sprintf("%s and type = ?", q)
-			values = append(values, v)
-
-		case "participant_ids":
-			tmp := h.chatFilterParseParticipantIDs(v)
-			if tmp == "" {
-				// has no participant ids
-				continue
-			}
-			values = append(values, tmp)
-
-			q = fmt.Sprintf("%s and participant_ids = json_array(?)", q)
-
-		default:
-			q = fmt.Sprintf("%s and %s = ?", q, k)
-			values = append(values, v)
-
+			break
 		}
 	}
 
-	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
-	values = append(values, strconv.FormatUint(size, 10))
+	sb, err := commondatabasehandler.ApplyFields(sb, filters)
+	if err != nil {
+		return nil, fmt.Errorf("could not apply filters. ChatGets. err: %v", err)
+	}
 
-	rows, err := h.db.Query(q, values...)
+	// Apply participant_ids filter if present
+	if participantIDsFilter != "" {
+		sb = sb.Where("participant_ids = json_array(?)", participantIDsFilter)
+	}
+
+	query, args, err := sb.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. ChatGets. err: %v", err)
+	}
+
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ChatGets. err: %v", err)
 	}
@@ -283,14 +205,16 @@ func (h *handler) ChatGets(ctx context.Context, token string, size uint64, filte
 		_ = rows.Close()
 	}()
 
-	var res []*chat.Chat
+	res := []*chat.Chat{}
 	for rows.Next() {
 		u, err := h.chatGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not scan the row. ChatGets. err: %v", err)
+			return nil, fmt.Errorf("could not get data. ChatGets, err: %v", err)
 		}
-
 		res = append(res, u)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error. ChatGets. err: %v", err)
 	}
 
 	return res, nil
@@ -317,44 +241,89 @@ func (h *handler) chatFilterParseParticipantIDs(participantIDs string) string {
 	return res
 }
 
-// ChatUpdateBasicInfo updates the basic information.
-func (h *handler) ChatUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error {
-	q := `
-	update chat_chats set
-		name = ?,
-		detail = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	if _, err := h.db.Exec(q, name, detail, h.utilHandler.TimeGetCurTime(), id.Bytes()); err != nil {
-		return fmt.Errorf("could not execute the query. ChatUpdateBasicInfo. err: %v", err)
+// ChatUpdate updates the chat with the given fields.
+func (h *handler) ChatUpdate(ctx context.Context, id uuid.UUID, fields map[chat.Field]any) error {
+	if len(fields) == 0 {
+		return nil
 	}
 
-	// set to the cache
-	_ = h.chatUpdateToCache(ctx, id)
+	fields[chat.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
 
+	// Sort participant IDs if they are being updated
+	if participantIDs, ok := fields[chat.FieldParticipantIDs]; ok {
+		if ids, ok := participantIDs.([]uuid.UUID); ok {
+			fields[chat.FieldParticipantIDs] = sortUUIDs(ids)
+		}
+	}
+
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
+	if err != nil {
+		return fmt.Errorf("ChatUpdate: prepare fields failed: %w", err)
+	}
+
+	q := squirrel.Update(chatTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(chat.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := q.ToSql()
+	if err != nil {
+		return fmt.Errorf("ChatUpdate: build SQL failed: %w", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, sqlStr, args...); err != nil {
+		return fmt.Errorf("ChatUpdate: exec failed: %w", err)
+	}
+
+	_ = h.chatUpdateToCache(ctx, id)
 	return nil
+}
+
+// ChatUpdateBasicInfo updates the basic information.
+func (h *handler) ChatUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error {
+	fields := map[chat.Field]any{
+		chat.FieldName:   name,
+		chat.FieldDetail: detail,
+	}
+	return h.ChatUpdate(ctx, id, fields)
 }
 
 // ChatDelete deletes the given chat
 func (h *handler) ChatDelete(ctx context.Context, id uuid.UUID) error {
-	q := `
-	update chat_chats set
-		tm_delete = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
 	ts := h.utilHandler.TimeGetCurTime()
 
-	if _, err := h.db.Exec(q, ts, ts, id.Bytes()); err != nil {
-		return fmt.Errorf("could not execute the query. ChatDelete. err: %v", err)
+	fields := map[chat.Field]any{
+		chat.FieldTMUpdate: ts,
+		chat.FieldTMDelete: ts,
 	}
 
-	// delete cache
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
+	if err != nil {
+		return fmt.Errorf("ChatDelete: prepare fields failed: %w", err)
+	}
+
+	sb := squirrel.Update(chatTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(chat.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := sb.ToSql()
+	if err != nil {
+		return fmt.Errorf("ChatDelete: build SQL failed: %w", err)
+	}
+
+	result, err := h.db.ExecContext(ctx, sqlStr, args...)
+	if err != nil {
+		return fmt.Errorf("ChatDelete: exec failed: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("could not get rows affected: %w", err)
+	} else if rowsAffected == 0 {
+		return ErrNotFound
+	}
+
 	_ = h.chatUpdateToCache(ctx, id)
 
 	return nil
@@ -362,48 +331,16 @@ func (h *handler) ChatDelete(ctx context.Context, id uuid.UUID) error {
 
 // ChatUpdateRoomOwnerID updates the chat's owner_id.
 func (h *handler) ChatUpdateRoomOwnerID(ctx context.Context, id uuid.UUID, roomOwnerID uuid.UUID) error {
-	q := `
-	update chat_chats set
-		room_owner_id = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	if _, err := h.db.Exec(q, roomOwnerID.Bytes(), h.utilHandler.TimeGetCurTime(), id.Bytes()); err != nil {
-		return fmt.Errorf("could not execute the query. ChatUpdateRoomOwnerID. err: %v", err)
+	fields := map[chat.Field]any{
+		chat.FieldRoomOwnerID: roomOwnerID,
 	}
-
-	// set to the cache
-	_ = h.chatUpdateToCache(ctx, id)
-
-	return nil
+	return h.ChatUpdate(ctx, id, fields)
 }
 
 // ChatUpdateParticipantID updates the given participant_id to the participant_ids.
 func (h *handler) ChatUpdateParticipantID(ctx context.Context, id uuid.UUID, participantIDs []uuid.UUID) error {
-	// prepare
-	q := `
-	update chat_chats set
-		participant_ids = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	tmpParticipantIDs := sortUUIDs(participantIDs)
-	tmp, err := json.Marshal(tmpParticipantIDs)
-	if err != nil {
-		return fmt.Errorf("could not marshal actions. ChatUpdateParticipantID. err: %v", err)
+	fields := map[chat.Field]any{
+		chat.FieldParticipantIDs: participantIDs,
 	}
-
-	_, err = h.db.Exec(q, tmp, h.utilHandler.TimeGetCurTime(), id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. ChatUpdateParticipantID. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.chatUpdateToCache(ctx, id)
-
-	return nil
+	return h.ChatUpdate(ctx, id, fields)
 }

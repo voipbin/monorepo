@@ -11,6 +11,7 @@ import (
 	nmrequest "monorepo/bin-number-manager/pkg/listenhandler/models/request"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 )
 
 // NumberV1NumberGet sends a request to number-manager
@@ -35,14 +36,16 @@ func (r *requestHandler) NumberV1NumberGet(ctx context.Context, numberID uuid.UU
 // NumberV1NumberGets sends a request to number-manager
 // to get a list of numbers.
 // Returns list of numbers
-func (r *requestHandler) NumberV1NumberGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]nmnumber.Number, error) {
+func (r *requestHandler) NumberV1NumberGets(ctx context.Context, pageToken string, pageSize uint64, filters map[nmnumber.Field]any) ([]nmnumber.Number, error) {
 
 	uri := fmt.Sprintf("/v1/numbers?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
-	// parse filters
-	uri = r.utilHandler.URLMergeFilters(uri, filters)
+	m, err := json.Marshal(filters)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not marshal filters")
+	}
 
-	tmp, err := r.sendRequestNumber(ctx, uri, sock.RequestMethodGet, "number/numbers", 15000, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestNumber(ctx, uri, sock.RequestMethodGet, "number/numbers", 15000, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}

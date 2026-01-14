@@ -7,6 +7,8 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+
+	"monorepo/bin-registrar-manager/models/extension"
 )
 
 // EventCUCustomerDeleted handles the customer-manager's customer_deleted event
@@ -18,9 +20,9 @@ func (h *extensionHandler) EventCUCustomerDeleted(ctx context.Context, cu *cucus
 	log.Debugf("Deleting all extension of the customer. customer_id: %s", cu.ID)
 
 	// get all extensions in customer
-	filters := map[string]string{
-		"customer_id": cu.ID.String(),
-		"deleted":     "false",
+	filters := map[extension.Field]any{
+		extension.FieldCustomerID: cu.ID,
+		extension.FieldDeleted:    false,
 	}
 	extensions, err := h.Gets(ctx, "", 1000, filters)
 	if err != nil {

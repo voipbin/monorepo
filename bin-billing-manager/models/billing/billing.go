@@ -10,25 +10,25 @@ import (
 type Billing struct {
 	commonidentity.Identity
 
-	AccountID uuid.UUID `json:"account_id"` // billing account
+	AccountID uuid.UUID `json:"account_id" db:"account_id,uuid"` // billing account
 
-	Status Status `json:"status"`
+	Status Status `json:"status" db:"status"`
 
-	ReferenceType ReferenceType `json:"reference_type"`
-	ReferenceID   uuid.UUID     `json:"reference_id"`
+	ReferenceType ReferenceType `json:"reference_type" db:"reference_type"`
+	ReferenceID   uuid.UUID     `json:"reference_id" db:"reference_id,uuid"`
 
-	CostPerUnit float32 `json:"cost_per_unit"`
-	CostTotal   float32 `json:"cost_total"`
+	CostPerUnit float32 `json:"cost_per_unit" db:"cost_per_unit"`
+	CostTotal   float32 `json:"cost_total" db:"cost_total"`
 
-	BillingUnitCount float32 `json:"billing_unit_count"`
+	BillingUnitCount float32 `json:"billing_unit_count" db:"billing_unit_count"`
 
-	TMBillingStart string `json:"tm_billing_start"`
-	TMBillingEnd   string `json:"tm_billing_end"`
+	TMBillingStart string `json:"tm_billing_start" db:"tm_billing_start"`
+	TMBillingEnd   string `json:"tm_billing_end" db:"tm_billing_end"`
 
 	// timestamp
-	TMCreate string `json:"tm_create"`
-	TMUpdate string `json:"tm_update"`
-	TMDelete string `json:"tm_delete"`
+	TMCreate string `json:"tm_create" db:"tm_create"`
+	TMUpdate string `json:"tm_update" db:"tm_update"`
+	TMDelete string `json:"tm_delete" db:"tm_delete"`
 }
 
 // ReferenceType define

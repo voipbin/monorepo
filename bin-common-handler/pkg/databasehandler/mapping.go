@@ -125,6 +125,13 @@ func convertValueForDB(value interface{}, conversionType string) (interface{}, e
 
 	// Auto-detect: complex types get JSON marshaled
 	rv := reflect.ValueOf(value)
+	// Handle pointer types - dereference and check the underlying type
+	if rv.Kind() == reflect.Ptr {
+		if rv.IsNil() {
+			return nil, nil
+		}
+		rv = rv.Elem()
+	}
 	switch rv.Kind() {
 	case reflect.Slice, reflect.Map, reflect.Struct:
 		jsonBytes, err := json.Marshal(value)

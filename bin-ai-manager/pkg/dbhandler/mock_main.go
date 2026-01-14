@@ -89,7 +89,7 @@ func (mr *MockDBHandlerMockRecorder) AIGet(ctx, id any) *gomock.Call {
 }
 
 // AIGets mocks base method.
-func (m *MockDBHandler) AIGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*ai.AI, error) {
+func (m *MockDBHandler) AIGets(ctx context.Context, size uint64, token string, filters map[ai.Field]any) ([]*ai.AI, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AIGets", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*ai.AI)
@@ -103,18 +103,18 @@ func (mr *MockDBHandlerMockRecorder) AIGets(ctx, size, token, filters any) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIGets", reflect.TypeOf((*MockDBHandler)(nil).AIGets), ctx, size, token, filters)
 }
 
-// AISetInfo mocks base method.
-func (m *MockDBHandler) AISetInfo(ctx context.Context, id uuid.UUID, name, detail string, engineType ai.EngineType, engineModel ai.EngineModel, engineData map[string]any, engineKey, initPrompt string, ttsType ai.TTSType, ttsVoiceID string, sttType ai.STTType) error {
+// AIUpdate mocks base method.
+func (m *MockDBHandler) AIUpdate(ctx context.Context, id uuid.UUID, fields map[ai.Field]any) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AISetInfo", ctx, id, name, detail, engineType, engineModel, engineData, engineKey, initPrompt, ttsType, ttsVoiceID, sttType)
+	ret := m.ctrl.Call(m, "AIUpdate", ctx, id, fields)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// AISetInfo indicates an expected call of AISetInfo.
-func (mr *MockDBHandlerMockRecorder) AISetInfo(ctx, id, name, detail, engineType, engineModel, engineData, engineKey, initPrompt, ttsType, ttsVoiceID, sttType any) *gomock.Call {
+// AIUpdate indicates an expected call of AIUpdate.
+func (mr *MockDBHandlerMockRecorder) AIUpdate(ctx, id, fields any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AISetInfo", reflect.TypeOf((*MockDBHandler)(nil).AISetInfo), ctx, id, name, detail, engineType, engineModel, engineData, engineKey, initPrompt, ttsType, ttsVoiceID, sttType)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIUpdate", reflect.TypeOf((*MockDBHandler)(nil).AIUpdate), ctx, id, fields)
 }
 
 // AIcallCreate mocks base method.
@@ -176,7 +176,7 @@ func (mr *MockDBHandlerMockRecorder) AIcallGetByReferenceID(ctx, referenceID any
 }
 
 // AIcallGets mocks base method.
-func (m *MockDBHandler) AIcallGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*aicall.AIcall, error) {
+func (m *MockDBHandler) AIcallGets(ctx context.Context, size uint64, token string, filters map[aicall.Field]any) ([]*aicall.AIcall, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AIcallGets", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*aicall.AIcall)
@@ -190,32 +190,18 @@ func (mr *MockDBHandlerMockRecorder) AIcallGets(ctx, size, token, filters any) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallGets", reflect.TypeOf((*MockDBHandler)(nil).AIcallGets), ctx, size, token, filters)
 }
 
-// AIcallUpdatePipecatcallID mocks base method.
-func (m *MockDBHandler) AIcallUpdatePipecatcallID(ctx context.Context, id, pipecatcallID uuid.UUID) error {
+// AIcallUpdate mocks base method.
+func (m *MockDBHandler) AIcallUpdate(ctx context.Context, id uuid.UUID, fields map[aicall.Field]any) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AIcallUpdatePipecatcallID", ctx, id, pipecatcallID)
+	ret := m.ctrl.Call(m, "AIcallUpdate", ctx, id, fields)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// AIcallUpdatePipecatcallID indicates an expected call of AIcallUpdatePipecatcallID.
-func (mr *MockDBHandlerMockRecorder) AIcallUpdatePipecatcallID(ctx, id, pipecatcallID any) *gomock.Call {
+// AIcallUpdate indicates an expected call of AIcallUpdate.
+func (mr *MockDBHandlerMockRecorder) AIcallUpdate(ctx, id, fields any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallUpdatePipecatcallID", reflect.TypeOf((*MockDBHandler)(nil).AIcallUpdatePipecatcallID), ctx, id, pipecatcallID)
-}
-
-// AIcallUpdateStatus mocks base method.
-func (m *MockDBHandler) AIcallUpdateStatus(ctx context.Context, id uuid.UUID, status aicall.Status) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AIcallUpdateStatus", ctx, id, status)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// AIcallUpdateStatus indicates an expected call of AIcallUpdateStatus.
-func (mr *MockDBHandlerMockRecorder) AIcallUpdateStatus(ctx, id, status any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallUpdateStatus", reflect.TypeOf((*MockDBHandler)(nil).AIcallUpdateStatus), ctx, id, status)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallUpdate", reflect.TypeOf((*MockDBHandler)(nil).AIcallUpdate), ctx, id, fields)
 }
 
 // MessageCreate mocks base method.
@@ -262,18 +248,18 @@ func (mr *MockDBHandlerMockRecorder) MessageGet(ctx, id any) *gomock.Call {
 }
 
 // MessageGets mocks base method.
-func (m *MockDBHandler) MessageGets(ctx context.Context, aicallID uuid.UUID, size uint64, token string, filters map[string]string) ([]*message.Message, error) {
+func (m *MockDBHandler) MessageGets(ctx context.Context, size uint64, token string, filters map[message.Field]any) ([]*message.Message, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MessageGets", ctx, aicallID, size, token, filters)
+	ret := m.ctrl.Call(m, "MessageGets", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*message.Message)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // MessageGets indicates an expected call of MessageGets.
-func (mr *MockDBHandlerMockRecorder) MessageGets(ctx, aicallID, size, token, filters any) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) MessageGets(ctx, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageGets", reflect.TypeOf((*MockDBHandler)(nil).MessageGets), ctx, aicallID, size, token, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageGets", reflect.TypeOf((*MockDBHandler)(nil).MessageGets), ctx, size, token, filters)
 }
 
 // SummaryCreate mocks base method.
@@ -320,7 +306,7 @@ func (mr *MockDBHandlerMockRecorder) SummaryGet(ctx, id any) *gomock.Call {
 }
 
 // SummaryGets mocks base method.
-func (m *MockDBHandler) SummaryGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*summary.Summary, error) {
+func (m *MockDBHandler) SummaryGets(ctx context.Context, size uint64, token string, filters map[summary.Field]any) ([]*summary.Summary, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SummaryGets", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*summary.Summary)
@@ -334,16 +320,16 @@ func (mr *MockDBHandlerMockRecorder) SummaryGets(ctx, size, token, filters any) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SummaryGets", reflect.TypeOf((*MockDBHandler)(nil).SummaryGets), ctx, size, token, filters)
 }
 
-// SummaryUpdateStatusDone mocks base method.
-func (m *MockDBHandler) SummaryUpdateStatusDone(ctx context.Context, id uuid.UUID, content string) error {
+// SummaryUpdate mocks base method.
+func (m *MockDBHandler) SummaryUpdate(ctx context.Context, id uuid.UUID, fields map[summary.Field]any) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SummaryUpdateStatusDone", ctx, id, content)
+	ret := m.ctrl.Call(m, "SummaryUpdate", ctx, id, fields)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// SummaryUpdateStatusDone indicates an expected call of SummaryUpdateStatusDone.
-func (mr *MockDBHandlerMockRecorder) SummaryUpdateStatusDone(ctx, id, content any) *gomock.Call {
+// SummaryUpdate indicates an expected call of SummaryUpdate.
+func (mr *MockDBHandlerMockRecorder) SummaryUpdate(ctx, id, fields any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SummaryUpdateStatusDone", reflect.TypeOf((*MockDBHandler)(nil).SummaryUpdateStatusDone), ctx, id, content)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SummaryUpdate", reflect.TypeOf((*MockDBHandler)(nil).SummaryUpdate), ctx, id, fields)
 }

@@ -5,49 +5,22 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
 
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-outdial-manager/models/outdial"
 )
 
 const (
-	// select query for outdial get
-	outdialSelect = `
-	select
-		id,
-		customer_id,
-		campaign_id,
-
-		name,
-		detail,
-
-		data,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	from
-		outdial_outdials
-	`
+	outdialsTable = "outdial_outdials"
 )
 
 // outdialGetFromRow gets the outdial from the row.
 func (h *handler) outdialGetFromRow(row *sql.Rows) (*outdial.Outdial, error) {
 	res := &outdial.Outdial{}
-	if err := row.Scan(
-		&res.ID,
-		&res.CustomerID,
-		&res.CampaignID,
 
-		&res.Name,
-		&res.Detail,
-
-		&res.Data,
-
-		&res.TMCreate,
-		&res.TMUpdate,
-		&res.TMDelete,
-	); err != nil {
+	if err := commondatabasehandler.ScanRow(row, res); err != nil {
 		return nil, fmt.Errorf("could not scan the row. outdialGetFromRow. err: %v", err)
 	}
 
@@ -56,49 +29,24 @@ func (h *handler) outdialGetFromRow(row *sql.Rows) (*outdial.Outdial, error) {
 
 // OutdialCreate insert a new outdial record
 func (h *handler) OutdialCreate(ctx context.Context, f *outdial.Outdial) error {
-
-	q := `insert into outdial_outdials(
-		id,
-		customer_id,
-		campaign_id,
-
-		name,
-		detail,
-
-		data,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	) values(
-		?, ?, ?,
-		?, ?,
-		?,
-		?, ?, ?
-		)`
-	stmt, err := h.db.PrepareContext(ctx, q)
+	// Use PrepareFields to get field map
+	fields, err := commondatabasehandler.PrepareFields(f)
 	if err != nil {
-		return fmt.Errorf("could not prepare. OutdialCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. OutdialCreate. err: %v", err)
 	}
-	defer func() {
-		_ = stmt.Close()
-	}()
 
-	_, err = stmt.ExecContext(ctx,
-		f.ID.Bytes(),
-		f.CustomerID.Bytes(),
-		f.CampaignID.Bytes(),
+	// Use SetMap instead of Columns/Values
+	sb := squirrel.
+		Insert(outdialsTable).
+		SetMap(fields).
+		PlaceholderFormat(squirrel.Question)
 
-		f.Name,
-		f.Detail,
-
-		f.Data,
-
-		f.TMCreate,
-		f.TMUpdate,
-		f.TMDelete,
-	)
+	query, args, err := sb.ToSql()
 	if err != nil {
+		return fmt.Errorf("could not build query. OutdialCreate. err: %v", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
 		return fmt.Errorf("could not execute query. OutdialCreate. err: %v", err)
 	}
 
@@ -145,20 +93,18 @@ func (h *handler) outdialGetFromCache(ctx context.Context, id uuid.UUID) (*outdi
 
 // outdialGetFromDB gets the outdial info from the db.
 func (h *handler) outdialGetFromDB(ctx context.Context, id uuid.UUID) (*outdial.Outdial, error) {
-
-	// prepare
-	q := fmt.Sprintf("%s where id = ?", outdialSelect)
-
-	stmt, err := h.db.PrepareContext(ctx, q)
+	fields := commondatabasehandler.GetDBFields(&outdial.Outdial{})
+	query, args, err := squirrel.
+		Select(fields...).
+		From(outdialsTable).
+		Where(squirrel.Eq{string(outdial.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not prepare. outdialGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. outdialGetFromDB. err: %v", err)
 	}
-	defer func() {
-		_ = stmt.Close()
-	}()
 
-	// query
-	row, err := stmt.QueryContext(ctx, id.Bytes())
+	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. outdialGetFromDB. err: %v", err)
 	}
@@ -167,12 +113,15 @@ func (h *handler) outdialGetFromDB(ctx context.Context, id uuid.UUID) (*outdial.
 	}()
 
 	if !row.Next() {
+		if err := row.Err(); err != nil {
+			return nil, fmt.Errorf("row iteration error. outdialGetFromDB. err: %v", err)
+		}
 		return nil, ErrNotFound
 	}
 
 	res, err := h.outdialGetFromRow(row)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not get data from row. outdialGetFromDB. id: %s, err: %v", id, err)
 	}
 
 	return res, nil
@@ -198,20 +147,29 @@ func (h *handler) OutdialGet(ctx context.Context, id uuid.UUID) (*outdial.Outdia
 
 // OutdialDelete deletes the outdial.
 func (h *handler) OutdialDelete(ctx context.Context, id uuid.UUID) error {
-	// prepare
-	q := `
-	update
-		outdial_outdials
-	set
-		tm_update = ?,
-		tm_delete = ?
-	where
-		id = ?
-	`
+	ts := h.utilHandler.TimeGetCurTime()
 
-	ts := GetCurTime()
-	_, err := h.db.Exec(q, ts, ts, id.Bytes())
+	fields := map[outdial.Field]any{
+		outdial.FieldTMUpdate: ts,
+		outdial.FieldTMDelete: ts,
+	}
+
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
+		return fmt.Errorf("OutdialDelete: prepare fields failed: %w", err)
+	}
+
+	sb := squirrel.Update(outdialsTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(outdial.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := sb.ToSql()
+	if err != nil {
+		return fmt.Errorf("OutdialDelete: build SQL failed: %w", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, sqlStr, args...); err != nil {
 		return fmt.Errorf("could not execute. OutdialDelete. err: %v", err)
 	}
 
@@ -221,99 +179,81 @@ func (h *handler) OutdialDelete(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
-// OutdialGetsByCustomerID returns list of outdials.
-func (h *handler) OutdialGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*outdial.Outdial, error) {
+// OutdialGets returns list of outdials.
+func (h *handler) OutdialGets(ctx context.Context, token string, size uint64, filters map[outdial.Field]any) ([]*outdial.Outdial, error) {
+	if token == "" {
+		token = h.utilHandler.TimeGetCurTime()
+	}
 
-	// prepare
-	q := fmt.Sprintf(`
-		%s
-		where
-			tm_delete >= ?
-			and customer_id = ?
-			and tm_create < ?
-		order by
-			tm_create desc, id desc
-		limit ?
-	`, outdialSelect)
+	fields := commondatabasehandler.GetDBFields(&outdial.Outdial{})
+	sb := squirrel.
+		Select(fields...).
+		From(outdialsTable).
+		Where(squirrel.Lt{string(outdial.FieldTMCreate): token}).
+		OrderBy(string(outdial.FieldTMCreate) + " DESC").
+		Limit(size).
+		PlaceholderFormat(squirrel.Question)
 
-	rows, err := h.db.Query(q, DefaultTimeStamp, customerID.Bytes(), token, limit)
+	sb, err := commondatabasehandler.ApplyFields(sb, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. OutdialGetsByCustomerID. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. OutdialGets. err: %v", err)
+	}
+
+	query, args, err := sb.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. OutdialGets. err: %v", err)
+	}
+
+	rows, err := h.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. OutdialGets. err: %v", err)
 	}
 	defer func() {
 		_ = rows.Close()
 	}()
 
-	var res []*outdial.Outdial
+	res := []*outdial.Outdial{}
 	for rows.Next() {
 		u, err := h.outdialGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not scan the row. OutdialGetsByCustomerID. err: %v", err)
+			return nil, fmt.Errorf("could not get data. OutdialGets, err: %v", err)
 		}
-
 		res = append(res, u)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error. OutdialGets. err: %v", err)
 	}
 
 	return res, nil
 }
 
-// OutdialUpdateBasicInfo updates outdial's basic information.
-func (h *handler) OutdialUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error {
-	q := `
-	update outdial_outdials set
-		name = ?,
-		detail = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	if _, err := h.db.Exec(q, name, detail, GetCurTime(), id.Bytes()); err != nil {
-		return fmt.Errorf("could not execute the query. OutdialUpdateBasicInfo. err: %v", err)
+// OutdialUpdate updates the outdial with given fields.
+func (h *handler) OutdialUpdate(ctx context.Context, id uuid.UUID, fields map[outdial.Field]any) error {
+	if len(fields) == 0 {
+		return nil
 	}
 
-	// set to the cache
-	_ = h.outdialUpdateToCache(ctx, id)
+	fields[outdial.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
 
-	return nil
-}
-
-// OutdialUpdateCampaignID updates outdial's campaign.
-func (h *handler) OutdialUpdateCampaignID(ctx context.Context, id, campaignID uuid.UUID) error {
-	q := `
-	update outdial_outdials set
-		campaign_id = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	if _, err := h.db.Exec(q, campaignID.Bytes(), GetCurTime(), id.Bytes()); err != nil {
-		return fmt.Errorf("could not execute the query. OutdialUpdateCampaignID. err: %v", err)
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
+	if err != nil {
+		return fmt.Errorf("OutdialUpdate: prepare fields failed: %w", err)
 	}
 
-	// set to the cache
-	_ = h.outdialUpdateToCache(ctx, id)
+	q := squirrel.Update(outdialsTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(outdial.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
 
-	return nil
-}
-
-// OutdialUpdateData updates outdial's data.
-func (h *handler) OutdialUpdateData(ctx context.Context, id uuid.UUID, data string) error {
-	q := `
-	update outdial_outdials set
-		data = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	if _, err := h.db.Exec(q, data, GetCurTime(), id.Bytes()); err != nil {
-		return fmt.Errorf("could not execute the query. OutdialUpdateData. err: %v", err)
+	sqlStr, args, err := q.ToSql()
+	if err != nil {
+		return fmt.Errorf("OutdialUpdate: build SQL failed: %w", err)
 	}
 
-	// set to the cache
-	_ = h.outdialUpdateToCache(ctx, id)
+	if _, err := h.db.ExecContext(ctx, sqlStr, args...); err != nil {
+		return fmt.Errorf("OutdialUpdate: exec failed: %w", err)
+	}
 
+	_ = h.outdialUpdateToCache(ctx, id)
 	return nil
 }

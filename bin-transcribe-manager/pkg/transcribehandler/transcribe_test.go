@@ -121,7 +121,7 @@ func Test_Gets(t *testing.T) {
 
 		size    uint64
 		token   string
-		filters map[string]string
+		filters map[transcribe.Field]any
 
 		responseTranscribes []*transcribe.Transcribe
 	}{
@@ -130,8 +130,8 @@ func Test_Gets(t *testing.T) {
 
 			size:  10,
 			token: "2020-05-03%2021:35:02.809",
-			filters: map[string]string{
-				"customer_id": "2fd5bd08-7f6c-11ed-8d71-67bb37305dd8",
+			filters: map[transcribe.Field]any{
+				transcribe.FieldCustomerID: uuid.FromStringOrNil("2fd5bd08-7f6c-11ed-8d71-67bb37305dd8"),
 			},
 
 			responseTranscribes: []*transcribe.Transcribe{
@@ -377,14 +377,14 @@ func Test_deleteTranscripts(t *testing.T) {
 
 		responseTranscripts []*transcript.Transcript
 
-		expectFilters map[string]string
+		expectFilters map[transcript.Field]any
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("98a1e9ea-f25e-11ee-b2b9-03b097a87225"),
+			id: uuid.FromStringOrNil("98a1e9ea-f25e-11ee-b2b9-03b097a87225"),
 
-			[]*transcript.Transcript{
+			responseTranscripts: []*transcript.Transcript{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("98e53588-f25e-11ee-9b2c-cb8f088fb4a0"),
@@ -397,9 +397,9 @@ func Test_deleteTranscripts(t *testing.T) {
 				},
 			},
 
-			map[string]string{
-				"transcribe_id": "98a1e9ea-f25e-11ee-b2b9-03b097a87225",
-				"deleted":       "false",
+			expectFilters: map[transcript.Field]any{
+				transcript.FieldTranscribeID: uuid.FromStringOrNil("98a1e9ea-f25e-11ee-b2b9-03b097a87225"),
+				transcript.FieldDeleted:      false,
 			},
 		},
 	}
@@ -422,7 +422,7 @@ func Test_deleteTranscripts(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockTranscript.EXPECT().Gets(ctx, uint64(1000), "", tt.expectFilters).Return(tt.responseTranscripts, nil)
+			mockTranscript.EXPECT().Gets(ctx, uint64(1000), "", gomock.Any()).Return(tt.responseTranscripts, nil)
 			for _, tr := range tt.responseTranscripts {
 				mockTranscript.EXPECT().Delete(ctx, tr.ID).Return(&transcript.Transcript{}, nil)
 			}
@@ -447,17 +447,17 @@ func Test_UpdateStatus(t *testing.T) {
 		expectRes          *transcribe.Transcribe
 	}{
 		{
-			"normal",
+			name: "normal",
 
-			uuid.FromStringOrNil("bec8dbda-7f6c-11ed-846e-bb48973f24fa"),
-			transcribe.StatusProgressing,
+			id:     uuid.FromStringOrNil("bec8dbda-7f6c-11ed-846e-bb48973f24fa"),
+			status: transcribe.StatusProgressing,
 
-			&transcribe.Transcribe{
+			responseTranscribe: &transcribe.Transcribe{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("bec8dbda-7f6c-11ed-846e-bb48973f24fa"),
 				},
 			},
-			&transcribe.Transcribe{
+			expectRes: &transcribe.Transcribe{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("bec8dbda-7f6c-11ed-846e-bb48973f24fa"),
 				},
@@ -484,7 +484,9 @@ func Test_UpdateStatus(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().TranscribeSetStatus(ctx, tt.id, tt.status).Return(nil)
+			mockDB.EXPECT().TranscribeUpdate(ctx, tt.id, map[transcribe.Field]any{
+				transcribe.FieldStatus: tt.status,
+			}).Return(nil)
 			mockDB.EXPECT().TranscribeGet(ctx, tt.id).Return(tt.responseTranscribe, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseTranscribe.CustomerID, transcribe.EventTypeTranscribeProgressing, tt.responseTranscribe)
 

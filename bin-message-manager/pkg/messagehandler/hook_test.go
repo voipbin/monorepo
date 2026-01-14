@@ -33,7 +33,7 @@ func Test_Hook(t *testing.T) {
 		responseNumbers []nmnumber.Number
 		responseMessage *message.Message
 
-		expectFilters map[string]string
+		expectFilters map[nmnumber.Field]any
 	}{
 		{
 			name: "normal",
@@ -101,9 +101,9 @@ func Test_Hook(t *testing.T) {
 			},
 			responseMessage: &message.Message{},
 
-			expectFilters: map[string]string{
-				"number":  "+15734531118",
-				"deleted": "false",
+			expectFilters: map[nmnumber.Field]any{
+				nmnumber.FieldNumber:  "+15734531118",
+				nmnumber.FieldDeleted: false,
 			},
 		},
 	}

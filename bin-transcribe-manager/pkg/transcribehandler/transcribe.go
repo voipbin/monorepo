@@ -9,6 +9,7 @@ import (
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-transcribe-manager/models/transcribe"
+	"monorepo/bin-transcribe-manager/models/transcript"
 	"monorepo/bin-transcribe-manager/pkg/dbhandler"
 )
 
@@ -33,7 +34,7 @@ func (h *transcribeHandler) GetByReferenceIDAndLanguage(ctx context.Context, ref
 }
 
 // Gets returns list of transcribes.
-func (h *transcribeHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*transcribe.Transcribe, error) {
+func (h *transcribeHandler) Gets(ctx context.Context, size uint64, token string, filters map[transcribe.Field]any) ([]*transcribe.Transcribe, error) {
 	res, err := h.db.TranscribeGets(ctx, size, token, filters)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get transcribes. filters: %v", filters)
@@ -155,9 +156,9 @@ func (h *transcribeHandler) deleteTranscripts(ctx context.Context, transcribeID 
 	})
 
 	// delete all transcripts
-	filters := map[string]string{
-		"transcribe_id": transcribeID.String(),
-		"deleted":       "false",
+	filters := map[transcript.Field]any{
+		transcript.FieldTranscribeID: transcribeID,
+		transcript.FieldDeleted:      false,
 	}
 
 	ts, err := h.transcriptHandler.Gets(ctx, 1000, "", filters)
@@ -180,7 +181,11 @@ func (h *transcribeHandler) deleteTranscripts(ctx context.Context, transcribeID 
 
 // UpdateStatus updates the transcribe's status
 func (h *transcribeHandler) UpdateStatus(ctx context.Context, id uuid.UUID, status transcribe.Status) (*transcribe.Transcribe, error) {
-	if errSet := h.db.TranscribeSetStatus(ctx, id, status); errSet != nil {
+	fields := map[transcribe.Field]any{
+		transcribe.FieldStatus: status,
+	}
+
+	if errSet := h.db.TranscribeUpdate(ctx, id, fields); errSet != nil {
 		return nil, errors.Wrapf(errSet, "could not update the transcribe status. transcribe_id: %s, status: %s", id, status)
 	}
 
@@ -199,5 +204,4 @@ func (h *transcribeHandler) UpdateStatus(ctx context.Context, id uuid.UUID, stat
 	}
 
 	return res, nil
-
 }

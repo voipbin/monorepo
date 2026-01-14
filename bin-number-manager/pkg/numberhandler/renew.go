@@ -79,7 +79,11 @@ func (h *numberHandler) renewNumbersByTMRenew(ctx context.Context, tmRenew strin
 		}
 
 		log.WithField("number", n).Debugf("Renewing the number. number_id: %s, number: %s", n.ID, n.Number)
-		tmp, err := h.dbUpdateRenew(ctx, n.ID)
+
+		fields := map[number.Field]any{
+			number.FieldTMRenew: h.utilHandler.TimeGetCurTime(),
+		}
+		tmp, err := h.dbUpdate(ctx, n.ID, fields, number.EventTypeNumberRenewed)
 		if err != nil {
 			log.Errorf("Could not update the number's renew info. err: %v", err)
 			continue

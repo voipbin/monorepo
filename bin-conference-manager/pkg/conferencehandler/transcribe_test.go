@@ -81,7 +81,9 @@ func Test_TranscribeStart(t *testing.T) {
 				tmtranscribe.DirectionIn,
 				30000,
 			).Return(tt.responseTranscribe, nil)
-			mockDB.EXPECT().ConferenceSetTranscribeID(ctx, tt.responseConference.ID, tt.responseTranscribe.ID).Return(nil)
+			mockDB.EXPECT().ConferenceUpdate(ctx, tt.responseConference.ID, map[conference.Field]any{
+				conference.FieldTranscribeID: tt.responseTranscribe.ID,
+			}).Return(nil)
 			mockDB.EXPECT().ConferenceAddTranscribeIDs(ctx, tt.id, tt.responseTranscribe.ID).Return(nil)
 			mockDB.EXPECT().ConferenceGet(ctx, tt.id).Return(tt.responseConference, nil)
 
@@ -147,7 +149,9 @@ func Test_TranscribeStop(t *testing.T) {
 
 			mockDB.EXPECT().ConferenceGet(ctx, tt.id).Return(tt.responseConference, nil)
 			mockReq.EXPECT().TranscribeV1TranscribeStop(ctx, tt.responseConference.TranscribeID).Return(tt.responseTranscribe, nil)
-			mockDB.EXPECT().ConferenceSetTranscribeID(ctx, tt.id, uuid.Nil).Return(nil)
+			mockDB.EXPECT().ConferenceUpdate(ctx, tt.id, map[conference.Field]any{
+				conference.FieldTranscribeID: uuid.Nil,
+			}).Return(nil)
 			mockDB.EXPECT().ConferenceGet(ctx, tt.id).Return(tt.responseConference, nil)
 
 			res, err := h.TranscribeStop(ctx, tt.id)

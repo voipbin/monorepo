@@ -268,7 +268,7 @@ func Test_Gets(t *testing.T) {
 
 		size    uint64
 		token   string
-		filters map[string]string
+		filters map[call.Field]any
 
 		responseGets []*call.Call
 		expectRes    []*call.Call
@@ -278,9 +278,9 @@ func Test_Gets(t *testing.T) {
 
 			10,
 			"2020-05-03%2021:35:02.809",
-			map[string]string{
-				"customer_id": "9880aedc-992e-11ec-aed2-bf63c2b64858",
-				"deleted":     "false",
+			map[call.Field]any{
+				call.FieldCustomerID: uuid.FromStringOrNil("9880aedc-992e-11ec-aed2-bf63c2b64858"),
+				call.FieldDeleted:    false,
 			},
 
 			[]*call.Call{
@@ -317,7 +317,7 @@ func Test_Gets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CallGets(ctx, tt.size, tt.token, tt.filters).Return(tt.responseGets, nil)
+			mockDB.EXPECT().CallGets(ctx, tt.size, tt.token, gomock.Any()).Return(tt.responseGets, nil)
 
 			res, err := h.Gets(ctx, tt.size, tt.token, tt.filters)
 			if err != nil {

@@ -258,8 +258,8 @@ func runList(cmd *cobra.Command, args []string) error {
 	limit := viper.GetInt("limit")
 	token := viper.GetString("token")
 
-	filters := map[string]string{
-		"customer_id": customerID.String(),
+	filters := map[agent.Field]any{
+		agent.FieldCustomerID: customerID,
 	}
 
 	fmt.Printf("\nRetrieving Agents... limit: %d, token: %s, filters: %v\n", limit, token, filters)

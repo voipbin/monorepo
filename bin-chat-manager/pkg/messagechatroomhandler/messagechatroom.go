@@ -32,7 +32,7 @@ func (h *messagechatroomHandler) Get(ctx context.Context, id uuid.UUID) (*messag
 }
 
 // Gets returns the list of messagechatrooms by the given filters.
-func (h *messagechatroomHandler) Gets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*messagechatroom.Messagechatroom, error) {
+func (h *messagechatroomHandler) Gets(ctx context.Context, token string, size uint64, filters map[messagechatroom.Field]any) ([]*messagechatroom.Messagechatroom, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "GetsByChatroomID",
 		"filters": filters,

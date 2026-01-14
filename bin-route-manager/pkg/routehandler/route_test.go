@@ -162,7 +162,10 @@ func Test_GetsByCustomerID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().RouteGetsByCustomerID(ctx, tt.customerID, tt.token, tt.limit).Return(tt.responseRoutes, nil)
+			filters := map[route.Field]any{
+				route.FieldCustomerID: tt.customerID,
+			}
+			mockDB.EXPECT().RouteGets(ctx, tt.token, tt.limit, filters).Return(tt.responseRoutes, nil)
 
 			res, err := h.GetsByCustomerID(ctx, tt.customerID, tt.token, tt.limit)
 			if err != nil {
@@ -213,7 +216,8 @@ func Test_GetsByCustomerID_customer_id_is_nil(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().RouteGets(ctx, tt.token, tt.limit).Return(tt.responseRoutes, nil)
+			filters := map[route.Field]any{}
+			mockDB.EXPECT().RouteGets(ctx, tt.token, tt.limit, filters).Return(tt.responseRoutes, nil)
 
 			res, err := h.GetsByCustomerID(ctx, uuid.Nil, tt.token, tt.limit)
 			if err != nil {
@@ -286,8 +290,16 @@ func Test_GetsByTarget(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().RouteGetsByCustomerIDWithTarget(ctx, tt.customerID, tt.target).Return(tt.responseRoutesCustomer, nil)
-			mockDB.EXPECT().RouteGetsByCustomerIDWithTarget(ctx, tt.customerID, route.TargetAll).Return(tt.responseRoutesAll, nil)
+			filtersTarget := map[route.Field]any{
+				route.FieldCustomerID: tt.customerID,
+				route.FieldTarget:     tt.target,
+			}
+			filtersAll := map[route.Field]any{
+				route.FieldCustomerID: tt.customerID,
+				route.FieldTarget:     route.TargetAll,
+			}
+			mockDB.EXPECT().RouteGets(ctx, "", uint64(1000), filtersTarget).Return(tt.responseRoutesCustomer, nil)
+			mockDB.EXPECT().RouteGets(ctx, "", uint64(1000), filtersAll).Return(tt.responseRoutesAll, nil)
 
 			res, err := h.GetsByTarget(ctx, tt.customerID, tt.target)
 			if err != nil {
@@ -395,14 +407,14 @@ func Test_Update(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().RouteUpdate(ctx,
-				tt.id,
-				tt.routeName,
-				tt.detail,
-				tt.providerID,
-				tt.priority,
-				tt.target,
-			).Return(nil)
+			fields := map[route.Field]any{
+				route.FieldName:       tt.routeName,
+				route.FieldDetail:     tt.detail,
+				route.FieldProviderID: tt.providerID,
+				route.FieldPriority:   tt.priority,
+				route.FieldTarget:     tt.target,
+			}
+			mockDB.EXPECT().RouteUpdate(ctx, tt.id, fields).Return(nil)
 			mockDB.EXPECT().RouteGet(ctx, tt.id).Return(tt.responseRoute, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, route.EventTypeRouteUpdated, tt.responseRoute)
 

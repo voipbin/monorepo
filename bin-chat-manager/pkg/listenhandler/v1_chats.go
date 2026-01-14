@@ -81,10 +81,11 @@ func (h *listenHandler) v1ChatsGet(ctx context.Context, m *sock.Request) (*sock.
 	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
 
 	// get filters
-	filters := getFilters(u)
-	if filters["customer_id"] == "" {
-		filters["customer_id"] = customerID.String()
+	strFilters := getFilters(u)
+	if strFilters["customer_id"] == "" {
+		strFilters["customer_id"] = customerID.String()
 	}
+	filters := convertToChatFilters(strFilters)
 
 	tmp, err := h.chatHandler.Gets(ctx, pageToken, pageSize, filters)
 	if err != nil {

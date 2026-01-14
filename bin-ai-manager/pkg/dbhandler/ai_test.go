@@ -85,7 +85,7 @@ func Test_AICreate(t *testing.T) {
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("16bbdc18-a5e0-11ed-8762-5771d36fd113"),
 				},
-				EngineData: map[string]any{},
+				EngineData: nil,
 				TMCreate:   "2023-01-03 21:35:02.809",
 				TMUpdate:   DefaultTimeStamp,
 				TMDelete:   DefaultTimeStamp,
@@ -155,7 +155,7 @@ func Test_AIDelete(t *testing.T) {
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("5b769ed2-a5e1-11ed-8ad0-5bc10434535b"),
 				},
-				EngineData: map[string]any{},
+				EngineData: nil,
 				TMCreate:   "2023-01-03 21:35:02.809",
 				TMUpdate:   "2023-01-03 21:35:02.809",
 				TMDelete:   "2023-01-03 21:35:02.809",
@@ -212,7 +212,7 @@ func Test_AIGets(t *testing.T) {
 		ais  []*ai.AI
 
 		count   int
-		filters map[string]string
+		filters map[ai.Field]any
 
 		responseCurTime string
 		expectRes       []*ai.AI
@@ -235,9 +235,9 @@ func Test_AIGets(t *testing.T) {
 			},
 
 			count: 10,
-			filters: map[string]string{
-				"deleted":     "false",
-				"customer_id": "6d35368c-a76d-11ed-9699-235c9e4a0117",
+			filters: map[ai.Field]any{
+				ai.FieldDeleted:    false,
+				ai.FieldCustomerID: uuid.FromStringOrNil("6d35368c-a76d-11ed-9699-235c9e4a0117"),
 			},
 
 			responseCurTime: "2023-01-03 21:35:02.809",
@@ -247,7 +247,7 @@ func Test_AIGets(t *testing.T) {
 						ID:         uuid.FromStringOrNil("6d060150-a76d-11ed-9e96-fb09644b04ca"),
 						CustomerID: uuid.FromStringOrNil("6d35368c-a76d-11ed-9699-235c9e4a0117"),
 					},
-					EngineData: map[string]any{},
+					EngineData: nil,
 					TMCreate:   "2023-01-03 21:35:02.809",
 					TMUpdate:   DefaultTimeStamp,
 					TMDelete:   DefaultTimeStamp,
@@ -257,7 +257,7 @@ func Test_AIGets(t *testing.T) {
 						ID:         uuid.FromStringOrNil("ad76ec88-94c9-11ed-9651-df2f9c2178aa"),
 						CustomerID: uuid.FromStringOrNil("6d35368c-a76d-11ed-9699-235c9e4a0117"),
 					},
-					EngineData: map[string]any{},
+					EngineData: nil,
 					TMCreate:   "2023-01-03 21:35:02.809",
 					TMUpdate:   DefaultTimeStamp,
 					TMDelete:   DefaultTimeStamp,
@@ -269,9 +269,9 @@ func Test_AIGets(t *testing.T) {
 			ais:  []*ai.AI{},
 
 			count: 0,
-			filters: map[string]string{
-				"deleted":     "false",
-				"customer_id": "b31d32ae-7f45-11ec-82c6-936e22306376",
+			filters: map[ai.Field]any{
+				ai.FieldDeleted:    false,
+				ai.FieldCustomerID: uuid.FromStringOrNil("b31d32ae-7f45-11ec-82c6-936e22306376"),
 			},
 
 			responseCurTime: "2023-01-03 21:35:02.809",
@@ -315,23 +315,14 @@ func Test_AIGets(t *testing.T) {
 	}
 }
 
-func Test_AISetInfo(t *testing.T) {
+func Test_AIUpdate(t *testing.T) {
 
 	tests := []struct {
 		name string
 		ai   *ai.AI
 
-		id          uuid.UUID
-		aiName      string
-		detail      string
-		engineType  ai.EngineType
-		engineModel ai.EngineModel
-		engineData  map[string]any
-		engineKey   string
-		initPrompt  string
-		ttsType     ai.TTSType
-		ttsVoiceID  string
-		sttType     ai.STTType
+		id     uuid.UUID
+		fields map[ai.Field]any
 
 		responseCurTime string
 		expectRes       *ai.AI
@@ -344,20 +335,22 @@ func Test_AISetInfo(t *testing.T) {
 				},
 			},
 
-			id:          uuid.FromStringOrNil("8bdc0568-f82e-11ed-9b13-0fb0a7490981"),
-			aiName:      "new name",
-			detail:      "new detail",
-			engineType:  ai.EngineTypeNone,
-			engineModel: ai.EngineModelOpenaiGPT3Dot5Turbo,
-			engineData: map[string]any{
-				"key1": "val1",
-				"key2": 2.0,
+			id: uuid.FromStringOrNil("8bdc0568-f82e-11ed-9b13-0fb0a7490981"),
+			fields: map[ai.Field]any{
+				ai.FieldName:        "new name",
+				ai.FieldDetail:      "new detail",
+				ai.FieldEngineType:  ai.EngineTypeNone,
+				ai.FieldEngineModel: ai.EngineModelOpenaiGPT3Dot5Turbo,
+				ai.FieldEngineData: map[string]any{
+					"key1": "val1",
+					"key2": 2.0,
+				},
+				ai.FieldEngineKey:  "new engine key",
+				ai.FieldInitPrompt: "new init prompt",
+				ai.FieldTTSType:    ai.TTSTypeCartesia,
+				ai.FieldTTSVoiceID: "new tts voice id",
+				ai.FieldSTTType:    ai.STTTypeElevenLabs,
 			},
-			engineKey:  "new engine key",
-			initPrompt: "new init prompt",
-			ttsType:    ai.TTSTypeCartesia,
-			ttsVoiceID: "new tts voice id",
-			sttType:    ai.STTTypeElevenLabs,
 
 			responseCurTime: "2023-01-03 21:35:02.809",
 			expectRes: &ai.AI{
@@ -407,8 +400,8 @@ func Test_AISetInfo(t *testing.T) {
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().AISet(ctx, gomock.Any())
-			if errDel := h.AISetInfo(ctx, tt.id, tt.aiName, tt.detail, tt.engineType, tt.engineModel, tt.engineData, tt.engineKey, tt.initPrompt, tt.ttsType, tt.ttsVoiceID, tt.sttType); errDel != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", errDel)
+			if errUpdate := h.AIUpdate(ctx, tt.id, tt.fields); errUpdate != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", errUpdate)
 			}
 
 			mockCache.EXPECT().AIGet(ctx, tt.id).Return(nil, fmt.Errorf(""))

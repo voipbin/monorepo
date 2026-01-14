@@ -25,7 +25,7 @@ func Test_EventCUCustomerDeleted(t *testing.T) {
 		customer           *cmcustomer.Customer
 		responseExtensions []*extension.Extension
 
-		expectFilter map[string]string
+		expectFilter map[extension.Field]any
 	}{
 		{
 			name: "normal",
@@ -46,9 +46,9 @@ func Test_EventCUCustomerDeleted(t *testing.T) {
 				},
 			},
 
-			expectFilter: map[string]string{
-				"customer_id": "bd908d76-f09a-11ee-9d6a-bb21638c8f10",
-				"deleted":     "false",
+			expectFilter: map[extension.Field]any{
+				extension.FieldCustomerID: uuid.FromStringOrNil("bd908d76-f09a-11ee-9d6a-bb21638c8f10"),
+				extension.FieldDeleted:    false,
 			},
 		},
 	}

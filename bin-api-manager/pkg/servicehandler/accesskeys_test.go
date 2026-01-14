@@ -218,7 +218,7 @@ func Test_AccesskeyGets(t *testing.T) {
 		agent   *amagent.Agent
 		size    uint64
 		token   string
-		filters map[string]string
+		filters map[csaccesskey.Field]any
 
 		response  []csaccesskey.Accesskey
 		expectRes []*csaccesskey.WebhookMessage
@@ -234,9 +234,9 @@ func Test_AccesskeyGets(t *testing.T) {
 			},
 			10,
 			"2020-09-20 03:23:20.995000",
-			map[string]string{
-				"customer_id": "51639bbe-8e5e-11ee-afc4-4fbef5d3d983",
-				"deleted":     "false",
+			map[csaccesskey.Field]any{
+				csaccesskey.FieldCustomerID: uuid.FromStringOrNil("51639bbe-8e5e-11ee-afc4-4fbef5d3d983"),
+				csaccesskey.FieldDeleted:    false,
 			},
 
 			[]csaccesskey.Accesskey{
@@ -261,9 +261,9 @@ func Test_AccesskeyGets(t *testing.T) {
 			},
 			10,
 			"2020-09-20 03:23:20.995000",
-			map[string]string{
-				"customer_id": "51639bbe-8e5e-11ee-afc4-4fbef5d3d983",
-				"deleted":     "false",
+			map[csaccesskey.Field]any{
+				csaccesskey.FieldCustomerID: uuid.FromStringOrNil("51639bbe-8e5e-11ee-afc4-4fbef5d3d983"),
+				csaccesskey.FieldDeleted:    false,
 			},
 
 			[]csaccesskey.Accesskey{

@@ -7,6 +7,8 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+
+	"monorepo/bin-queue-manager/models/queue"
 )
 
 // EventCustomerDeleted handles the customer-manager's customer_deleted event
@@ -18,9 +20,9 @@ func (h *queueHandler) EventCUCustomerDeleted(ctx context.Context, cu *cucustome
 	log.Debugf("Deleting all queues in customer. customer_id: %s", cu.ID)
 
 	// get all queues in customer
-	filters := map[string]string{
-		"customer_id": cu.ID.String(),
-		"deleted":     "false",
+	filters := map[queue.Field]any{
+		queue.FieldCustomerID: cu.ID,
+		queue.FieldDeleted:    false,
 	}
 	qs, err := h.Gets(ctx, 1000, "", filters)
 	if err != nil {

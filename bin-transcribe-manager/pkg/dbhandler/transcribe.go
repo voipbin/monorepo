@@ -3,86 +3,29 @@ package dbhandler
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
-	"strconv"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
 
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
+
 	"monorepo/bin-transcribe-manager/models/transcribe"
-	"monorepo/bin-transcribe-manager/models/transcript"
 )
 
 const (
-	// select query for call get
-	transcribeSelect = `
-	select
-		id,
-		customer_id,
-
-		activeflow_id,
-		on_end_flow_id,
-
-		reference_type,
-		reference_id,
-
-		status,
-		host_id,
-		language,
-		direction,
-
-		streaming_ids,
-
-		tm_create,
-		tm_update,
-		tm_delete
-
-	from
-		transcribe_transcribes
-	`
+	transcribesTable = "transcribe_transcribes"
 )
 
 // transcribeGetFromRow gets the transcribe from the row.
 func (h *handler) transcribeGetFromRow(row *sql.Rows) (*transcribe.Transcribe, error) {
-	var tmpDirection sql.NullString
-	var tmpStreamingIDs sql.NullString
-
 	res := &transcribe.Transcribe{}
-	if err := row.Scan(
-		&res.ID,
-		&res.CustomerID,
 
-		&res.ActiveflowID,
-		&res.OnEndFlowID,
-
-		&res.ReferenceType,
-		&res.ReferenceID,
-
-		&res.Status,
-		&res.HostID,
-		&res.Language,
-		&tmpDirection,
-
-		&tmpStreamingIDs,
-
-		&res.TMCreate,
-		&res.TMUpdate,
-		&res.TMDelete,
-	); err != nil {
+	if err := commondatabasehandler.ScanRow(row, res); err != nil {
 		return nil, fmt.Errorf("could not scan the row. transcribeGetFromRow. err: %v", err)
 	}
 
-	// Direction
-	if tmpDirection.Valid {
-		res.Direction = transcribe.Direction(tmpDirection.String)
-	}
-
-	// StreamingIDs
-	if tmpStreamingIDs.Valid {
-		if err := json.Unmarshal([]byte(tmpStreamingIDs.String), &res.StreamingIDs); err != nil {
-			return nil, fmt.Errorf("could not unmarshal the recording_ids. callGetFromRow. err: %v", err)
-		}
-	}
+	// Ensure StreamingIDs is not nil
 	if res.StreamingIDs == nil {
 		res.StreamingIDs = []uuid.UUID{}
 	}
@@ -90,69 +33,39 @@ func (h *handler) transcribeGetFromRow(row *sql.Rows) (*transcribe.Transcribe, e
 	return res, nil
 }
 
-// TranscribeCreate creates a new tanscribe
+// TranscribeCreate creates a new transcribe
 func (h *handler) TranscribeCreate(ctx context.Context, t *transcribe.Transcribe) error {
+	now := h.utilHandler.TimeGetCurTime()
 
+	// Set timestamps
+	t.TMCreate = now
+	t.TMUpdate = commondatabasehandler.DefaultTimeStamp
+	t.TMDelete = commondatabasehandler.DefaultTimeStamp
+
+	// Ensure StreamingIDs is not nil
 	if t.StreamingIDs == nil {
 		t.StreamingIDs = []uuid.UUID{}
 	}
-	tmpStreamingIDs, err := json.Marshal(t.StreamingIDs)
+
+	// Use PrepareFields to get field map
+	fields, err := commondatabasehandler.PrepareFields(t)
 	if err != nil {
-		return fmt.Errorf("could not marshal the streaming_ids. TranscribeCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. TranscribeCreate. err: %v", err)
 	}
 
-	q := `insert into transcribe_transcribes(
-		id,
-		customer_id,
+	// Use SetMap instead of Columns/Values
+	sb := squirrel.
+		Insert(transcribesTable).
+		SetMap(fields).
+		PlaceholderFormat(squirrel.Question)
 
-		activeflow_id,
-		on_end_flow_id,
-
-		reference_type,
-		reference_id,
-
-		status,
-		host_id,
-		language,
-		direction,
-
-		streaming_ids,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	) values(
-		?, ?,
-		?, ?,
-		?, ?,
-		?, ?, ?, ?,
-		?,
-		?, ?, ?
-		)`
-
-	_, err = h.db.Exec(q,
-		t.ID.Bytes(),
-		t.CustomerID.Bytes(),
-
-		t.ActiveflowID.Bytes(),
-		t.OnEndFlowID.Bytes(),
-
-		t.ReferenceType,
-		t.ReferenceID.Bytes(),
-
-		t.Status,
-		t.HostID.Bytes(),
-		t.Language,
-		t.Direction,
-
-		tmpStreamingIDs,
-
-		h.utilHandler.TimeGetCurTime(),
-		DefaultTimeStamp,
-		DefaultTimeStamp,
-	)
+	query, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not execute. TranscribeCreate. err: %v", err)
+		return fmt.Errorf("could not build query. TranscribeCreate. err: %v", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
+		return fmt.Errorf("could not execute query. TranscribeCreate. err: %v", err)
 	}
 
 	// update the cache
@@ -163,8 +76,7 @@ func (h *handler) TranscribeCreate(ctx context.Context, t *transcribe.Transcribe
 
 // transcribeUpdateToCache gets the transcribe from the DB and update the cache.
 func (h *handler) transcribeUpdateToCache(ctx context.Context, id uuid.UUID) error {
-
-	res, err := h.transcribeGetFromDB(id)
+	res, err := h.transcribeGetFromDB(ctx, id)
 	if err != nil {
 		return err
 	}
@@ -178,7 +90,6 @@ func (h *handler) transcribeUpdateToCache(ctx context.Context, id uuid.UUID) err
 
 // transcribeSetToCache sets the transcribe to the cache.
 func (h *handler) transcribeSetToCache(ctx context.Context, t *transcribe.Transcribe) error {
-
 	if err := h.cache.TranscribeSet(ctx, t); err != nil {
 		return err
 	}
@@ -188,7 +99,6 @@ func (h *handler) transcribeSetToCache(ctx context.Context, t *transcribe.Transc
 
 // transcribeGetFromCache gets the transcribe from the cache.
 func (h *handler) transcribeGetFromCache(ctx context.Context, id uuid.UUID) (*transcribe.Transcribe, error) {
-
 	res, err := h.cache.TranscribeGet(ctx, id)
 	if err != nil {
 		return nil, err
@@ -199,13 +109,12 @@ func (h *handler) transcribeGetFromCache(ctx context.Context, id uuid.UUID) (*tr
 
 // TranscribeGet returns transcribe.
 func (h *handler) TranscribeGet(ctx context.Context, id uuid.UUID) (*transcribe.Transcribe, error) {
-
 	res, err := h.transcribeGetFromCache(ctx, id)
 	if err == nil {
 		return res, nil
 	}
 
-	res, err = h.transcribeGetFromDB(id)
+	res, err = h.transcribeGetFromDB(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -217,26 +126,36 @@ func (h *handler) TranscribeGet(ctx context.Context, id uuid.UUID) (*transcribe.
 }
 
 // transcribeGetFromDB returns transcribe from the DB.
-func (h *handler) transcribeGetFromDB(id uuid.UUID) (*transcribe.Transcribe, error) {
-
-	// prepare
-	q := fmt.Sprintf("%s where id = ?", transcribeSelect)
-
-	row, err := h.db.Query(q, id.Bytes())
+func (h *handler) transcribeGetFromDB(ctx context.Context, id uuid.UUID) (*transcribe.Transcribe, error) {
+	fields := commondatabasehandler.GetDBFields(&transcribe.Transcribe{})
+	query, args, err := squirrel.
+		Select(fields...).
+		From(transcribesTable).
+		Where(squirrel.Eq{string(transcribe.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not query. TranscribeGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. transcribeGetFromDB. err: %v", err)
+	}
+
+	row, err := h.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. transcribeGetFromDB. err: %v", err)
 	}
 	defer func() {
 		_ = row.Close()
 	}()
 
 	if !row.Next() {
+		if err := row.Err(); err != nil {
+			return nil, fmt.Errorf("row iteration error. transcribeGetFromDB. err: %v", err)
+		}
 		return nil, ErrNotFound
 	}
 
 	res, err := h.transcribeGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("could not get transcribe. TranscribeGetFromDB, err: %v", err)
+		return nil, fmt.Errorf("could not get transcribe. transcribeGetFromDB, err: %v", err)
 	}
 
 	return res, nil
@@ -244,49 +163,30 @@ func (h *handler) transcribeGetFromDB(id uuid.UUID) (*transcribe.Transcribe, err
 
 // TranscribeDelete deletes the transcribe.
 func (h *handler) TranscribeDelete(ctx context.Context, id uuid.UUID) error {
-	// prepare
-	q := `
-	update
-		transcribe_transcribes
-	set
-		tm_delete = ?
-	where
-		id = ?
-	`
-	_, err := h.db.Exec(q, h.utilHandler.TimeGetCurTime(), id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. TranscribeDelete. err: %v", err)
+	ts := h.utilHandler.TimeGetCurTime()
+
+	fields := map[transcribe.Field]any{
+		transcribe.FieldTMUpdate: ts,
+		transcribe.FieldTMDelete: ts,
 	}
 
-	// update the cache
-	_ = h.transcribeUpdateToCache(ctx, id)
-
-	return nil
-}
-
-// TranscribeAddTranscript adds the transcript to the transcribe.
-func (h *handler) TranscribeAddTranscript(ctx context.Context, id uuid.UUID, t *transcript.Transcript) error {
-	// prepare
-	q := `
-	update transcribe_transcribes set
-		transcripts = json_array_append(
-			transcripts,
-			'$',
-			?
-		),
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	m, err := json.Marshal(t)
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
-		return fmt.Errorf("could not marshal the transcripts. TranscribeAddTranscript. err: %v", err)
+		return fmt.Errorf("TranscribeDelete: prepare fields failed: %w", err)
 	}
 
-	_, err = h.db.Exec(q, m, h.utilHandler.TimeGetCurTime(), id.Bytes())
+	sb := squirrel.Update(transcribesTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(transcribe.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not execute. TranscribeAddTranscript. err: %v", err)
+		return fmt.Errorf("TranscribeDelete: build SQL failed: %w", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, sqlStr, args...); err != nil {
+		return fmt.Errorf("TranscribeDelete: exec failed: %w", err)
 	}
 
 	// update the cache
@@ -296,43 +196,31 @@ func (h *handler) TranscribeAddTranscript(ctx context.Context, id uuid.UUID, t *
 }
 
 // TranscribeGets returns list of transcribes.
-func (h *handler) TranscribeGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*transcribe.Transcribe, error) {
-	// prepare
-	q := fmt.Sprintf(`%s
-	where
-		tm_create < ?
-	`, transcribeSelect)
-
+func (h *handler) TranscribeGets(ctx context.Context, size uint64, token string, filters map[transcribe.Field]any) ([]*transcribe.Transcribe, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	values := []interface{}{
-		token,
+	fields := commondatabasehandler.GetDBFields(&transcribe.Transcribe{})
+	sb := squirrel.
+		Select(fields...).
+		From(transcribesTable).
+		Where(squirrel.Lt{string(transcribe.FieldTMCreate): token}).
+		OrderBy(string(transcribe.FieldTMCreate) + " DESC").
+		Limit(size).
+		PlaceholderFormat(squirrel.Question)
+
+	sb, err := commondatabasehandler.ApplyFields(sb, filters)
+	if err != nil {
+		return nil, fmt.Errorf("could not apply filters. TranscribeGets. err: %v", err)
 	}
 
-	for k, v := range filters {
-		switch k {
-		case "customer_id", "activeflow_id", "on_end_flow_id", "reference_id", "host_id":
-			q = fmt.Sprintf("%s and %s = ?", q, k)
-			tmp := uuid.FromStringOrNil(v)
-			values = append(values, tmp.Bytes())
-
-		case "deleted":
-			if v == "false" {
-				q = fmt.Sprintf("%s and tm_delete >= ?", q)
-				values = append(values, DefaultTimeStamp)
-			}
-
-		default:
-			q = fmt.Sprintf("%s and %s = ?", q, k)
-			values = append(values, v)
-		}
+	query, args, err := sb.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. TranscribeGets. err: %v", err)
 	}
 
-	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
-	values = append(values, strconv.FormatUint(size, 10))
-	rows, err := h.db.Query(q, values...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. TranscribeGets. err: %v", err)
 	}
@@ -344,10 +232,12 @@ func (h *handler) TranscribeGets(ctx context.Context, size uint64, token string,
 	for rows.Next() {
 		u, err := h.transcribeGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("dbhandler: Could not scan the row. TranscribeGets. err: %v", err)
+			return nil, fmt.Errorf("could not get data. TranscribeGets, err: %v", err)
 		}
-
 		res = append(res, u)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error. TranscribeGets. err: %v", err)
 	}
 
 	return res, nil
@@ -355,19 +245,32 @@ func (h *handler) TranscribeGets(ctx context.Context, size uint64, token string,
 
 // TranscribeGetByReferenceIDAndLanguage returns transcribe of the given referenceid and language.
 func (h *handler) TranscribeGetByReferenceIDAndLanguage(ctx context.Context, referenceID uuid.UUID, language string) (*transcribe.Transcribe, error) {
+	fields := commondatabasehandler.GetDBFields(&transcribe.Transcribe{})
 
-	// prepare
-	q := fmt.Sprintf(`%s
-		where
-			reference_id = ?
-			and language = ?
-			and tm_delete >= ?
-		order by
-			tm_create
-		desc limit ?
-		`, transcribeSelect)
+	filters := map[transcribe.Field]any{
+		transcribe.FieldReferenceID: referenceID,
+		transcribe.FieldLanguage:    language,
+		transcribe.FieldDeleted:     false,
+	}
 
-	row, err := h.db.Query(q, referenceID.Bytes(), language, DefaultTimeStamp, 1)
+	sb := squirrel.
+		Select(fields...).
+		From(transcribesTable).
+		OrderBy(string(transcribe.FieldTMCreate) + " DESC").
+		Limit(1).
+		PlaceholderFormat(squirrel.Question)
+
+	sb, err := commondatabasehandler.ApplyFields(sb, filters)
+	if err != nil {
+		return nil, fmt.Errorf("could not apply filters. TranscribeGetByReferenceIDAndLanguage. err: %v", err)
+	}
+
+	query, args, err := sb.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. TranscribeGetByReferenceIDAndLanguage. err: %v", err)
+	}
+
+	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. TranscribeGetByReferenceIDAndLanguage. err: %v", err)
 	}
@@ -387,26 +290,33 @@ func (h *handler) TranscribeGetByReferenceIDAndLanguage(ctx context.Context, ref
 	return res, nil
 }
 
-// TranscribeSetStatus sets the transcribe's status
-func (h *handler) TranscribeSetStatus(ctx context.Context, id uuid.UUID, status transcribe.Status) error {
+// TranscribeUpdate updates the transcribe with the given fields.
+func (h *handler) TranscribeUpdate(ctx context.Context, id uuid.UUID, fields map[transcribe.Field]any) error {
+	if len(fields) == 0 {
+		return nil
+	}
 
-	// prepare
-	q := `
-	update
-		transcribe_transcribes
-	set
-		status = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
+	fields[transcribe.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
 
-	_, err := h.db.Exec(q, status, h.utilHandler.TimeGetCurTime(), id.Bytes())
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
-		return fmt.Errorf("could not query. TranscribeSetStatus. err: %v", err)
+		return fmt.Errorf("TranscribeUpdate: prepare fields failed: %w", err)
+	}
+
+	q := squirrel.Update(transcribesTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(transcribe.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := q.ToSql()
+	if err != nil {
+		return fmt.Errorf("TranscribeUpdate: build SQL failed: %w", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, sqlStr, args...); err != nil {
+		return fmt.Errorf("TranscribeUpdate: exec failed: %w", err)
 	}
 
 	_ = h.transcribeUpdateToCache(ctx, id)
-
 	return nil
 }

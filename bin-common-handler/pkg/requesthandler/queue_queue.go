@@ -15,18 +15,21 @@ import (
 	amagent "monorepo/bin-agent-manager/models/agent"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 )
 
 // QueueV1QueueGets sends a request to queue-manager
 // to get a list of queues.
 // Returns list of queues
-func (r *requestHandler) QueueV1QueueGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]qmqueue.Queue, error) {
+func (r *requestHandler) QueueV1QueueGets(ctx context.Context, pageToken string, pageSize uint64, filters map[qmqueue.Field]any) ([]qmqueue.Queue, error) {
 	uri := fmt.Sprintf("/v1/queues?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
-	// parse filters
-	uri = r.utilHandler.URLMergeFilters(uri, filters)
+	m, err := json.Marshal(filters)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not marshal filters")
+	}
 
-	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodGet, "queue/queues", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodGet, "queue/queues", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}

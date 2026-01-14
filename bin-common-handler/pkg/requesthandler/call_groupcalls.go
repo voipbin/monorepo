@@ -10,6 +10,7 @@ import (
 	cmrequest "monorepo/bin-call-manager/pkg/listenhandler/models/request"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 	"monorepo/bin-common-handler/models/sock"
@@ -65,13 +66,15 @@ func (r *requestHandler) CallV1GroupcallCreate(
 // CallV1GroupcallGets sends a request to call-manager
 // to getting a list of groupcall info.
 // it returns detail list of groupcall info if it succeed.
-func (r *requestHandler) CallV1GroupcallGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]cmgroupcall.Groupcall, error) {
+func (r *requestHandler) CallV1GroupcallGets(ctx context.Context, pageToken string, pageSize uint64, filters map[cmgroupcall.Field]any) ([]cmgroupcall.Groupcall, error) {
 	uri := fmt.Sprintf("/v1/groupcalls?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
-	// parse filters
-	uri = r.utilHandler.URLMergeFilters(uri, filters)
+	m, err := json.Marshal(filters)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not marshal filters")
+	}
 
-	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodGet, "call/groupcalls", 30000, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodGet, "call/groupcalls", 30000, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}

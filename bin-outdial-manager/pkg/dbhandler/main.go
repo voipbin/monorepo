@@ -5,11 +5,12 @@ package dbhandler
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
-	"strings"
-	"time"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
 
@@ -19,22 +20,21 @@ import (
 	"monorepo/bin-outdial-manager/pkg/cachehandler"
 )
 
-// DBHandler interface for call_manager database handle
+// DBHandler interface for outdial_manager database handle
 type DBHandler interface {
 	// outdial
 	OutdialCreate(ctx context.Context, f *outdial.Outdial) error
 	OutdialDelete(ctx context.Context, id uuid.UUID) error
 	OutdialGet(ctx context.Context, id uuid.UUID) (*outdial.Outdial, error)
-	OutdialGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*outdial.Outdial, error)
-	OutdialUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error
-	OutdialUpdateCampaignID(ctx context.Context, id, campaignID uuid.UUID) error
-	OutdialUpdateData(ctx context.Context, id uuid.UUID, data string) error
+	OutdialGets(ctx context.Context, token string, size uint64, filters map[outdial.Field]any) ([]*outdial.Outdial, error)
+	OutdialUpdate(ctx context.Context, id uuid.UUID, fields map[outdial.Field]any) error
 
 	// outdialtarget
 	OutdialTargetCreate(ctx context.Context, t *outdialtarget.OutdialTarget) error
 	OutdialTargetDelete(ctx context.Context, id uuid.UUID) error
 	OutdialTargetGet(ctx context.Context, id uuid.UUID) (*outdialtarget.OutdialTarget, error)
-	OutdialTargetGetsByOutdialID(ctx context.Context, outdialID uuid.UUID, token string, limit uint64) ([]*outdialtarget.OutdialTarget, error)
+	OutdialTargetGets(ctx context.Context, token string, size uint64, filters map[outdialtarget.Field]any) ([]*outdialtarget.OutdialTarget, error)
+	OutdialTargetUpdate(ctx context.Context, id uuid.UUID, fields map[outdialtarget.Field]any) error
 	OutdialTargetGetAvailable(
 		ctx context.Context,
 		outdialID uuid.UUID,
@@ -45,30 +45,22 @@ type DBHandler interface {
 		tryCount4 int,
 		limit uint64,
 	) ([]*outdialtarget.OutdialTarget, error)
-	OutdialTargetUpdateDestinations(
-		ctx context.Context,
-		id uuid.UUID,
-		destination0 *commonaddress.Address,
-		destination1 *commonaddress.Address,
-		destination2 *commonaddress.Address,
-		destination3 *commonaddress.Address,
-		destination4 *commonaddress.Address,
-	) error
-	OutdialTargetUpdateStatus(ctx context.Context, id uuid.UUID, status outdialtarget.Status) error
-	OutdialTargetUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error
-	OutdialTargetUpdateData(ctx context.Context, id uuid.UUID, data string) error
 	OutdialTargetUpdateProgressing(ctx context.Context, id uuid.UUID, destinationIndex int) error
 
 	// outdialtargetcall
 	OutdialTargetCallCreate(ctx context.Context, t *outdialtargetcall.OutdialTargetCall) error
-	OutdialTargetCallGetsByOutdialIDAndStatus(ctx context.Context, outdialID uuid.UUID, status outdialtargetcall.Status) ([]*outdialtargetcall.OutdialTargetCall, error)
-	OutdialTargetCallGetsByCampaignIDAndStatus(ctx context.Context, outdialID uuid.UUID, status outdialtargetcall.Status) ([]*outdialtargetcall.OutdialTargetCall, error)
+	OutdialTargetCallGet(ctx context.Context, id uuid.UUID) (*outdialtargetcall.OutdialTargetCall, error)
+	OutdialTargetCallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*outdialtargetcall.OutdialTargetCall, error)
+	OutdialTargetCallGetByActiveflowID(ctx context.Context, activeflowID uuid.UUID) (*outdialtargetcall.OutdialTargetCall, error)
+	OutdialTargetCallGets(ctx context.Context, token string, size uint64, filters map[outdialtargetcall.Field]any) ([]*outdialtargetcall.OutdialTargetCall, error)
+	OutdialTargetCallUpdate(ctx context.Context, id uuid.UUID, fields map[outdialtargetcall.Field]any) error
 }
 
 // handler database handler
 type handler struct {
-	db    *sql.DB
-	cache cachehandler.CacheHandler
+	db          *sql.DB
+	cache       cachehandler.CacheHandler
+	utilHandler utilhandler.UtilHandler
 }
 
 // handler errors
@@ -77,31 +69,30 @@ var (
 )
 
 // list of default values
-const (
-	DefaultTimeStamp = "9999-01-01 00:00:000"
+var (
+	DefaultTimeStamp = commondatabasehandler.DefaultTimeStamp
 )
 
 // NewHandler creates DBHandler
 func NewHandler(db *sql.DB, cache cachehandler.CacheHandler) DBHandler {
 	h := &handler{
-		db:    db,
-		cache: cache,
+		db:          db,
+		cache:       cache,
+		utilHandler: utilhandler.NewUtilHandler(),
 	}
 	return h
 }
 
-// GetCurTime return current utc time string
-func GetCurTime() string {
-	now := time.Now().UTC().String()
-	res := strings.TrimSuffix(now, " +0000 UTC")
-
-	return res
+// parseDestination parses a JSON string into an Address pointer
+func parseDestination(jsonStr string, dest **commonaddress.Address) error {
+	if jsonStr == "" {
+		return nil
+	}
+	*dest = &commonaddress.Address{}
+	return json.Unmarshal([]byte(jsonStr), *dest)
 }
 
-// GetCurTimeAdd return current utc time string
-func GetCurTimeAdd(d time.Duration) string {
-	now := time.Now().Add(d).UTC().String()
-	res := strings.TrimSuffix(now, " +0000 UTC")
-
-	return res
+// GetCurTime returns the current time in the database format.
+func GetCurTime() string {
+	return utilhandler.NewUtilHandler().TimeGetCurTime()
 }

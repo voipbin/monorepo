@@ -8,10 +8,12 @@ import (
 	"strings"
 
 	"monorepo/bin-common-handler/models/sock"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-registrar-manager/models/trunk"
 	"monorepo/bin-registrar-manager/pkg/listenhandler/models/request"
 )
 
@@ -69,13 +71,18 @@ func (h *listenHandler) processV1TrunksGet(ctx context.Context, req *sock.Reques
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// get user_id
-	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
+	// get filters from request body
+	tmpFilters, err := utilhandler.ParseFiltersFromRequestBody(req.Data)
+	if err != nil {
+		log.Errorf("Could not parse filters. err: %v", err)
+		return simpleResponse(400), nil
+	}
 
-	// parse the filters
-	filters := h.utilHandler.URLParseFilters(u)
-	if customerID != uuid.Nil {
-		filters["customer_id"] = customerID.String()
+	// convert to typed filters
+	filters, err := utilhandler.ConvertFilters[trunk.FieldStruct, trunk.Field](trunk.FieldStruct{}, tmpFilters)
+	if err != nil {
+		log.Errorf("Could not convert filters. err: %v", err)
+		return simpleResponse(400), nil
 	}
 
 	trunks, err := h.trunkHandler.Gets(ctx, pageToken, pageSize, filters)
@@ -156,7 +163,16 @@ func (h *listenHandler) processV1TrunksIDPut(ctx context.Context, req *sock.Requ
 		return simpleResponse(400), nil
 	}
 
-	tmp, err := h.trunkHandler.Update(ctx, id, reqData.Name, reqData.Detail, reqData.Authtypes, reqData.Username, reqData.Password, reqData.AllowedIPs)
+	fields := map[trunk.Field]any{
+		trunk.FieldName:       reqData.Name,
+		trunk.FieldDetail:     reqData.Detail,
+		trunk.FieldAuthTypes:  reqData.Authtypes,
+		trunk.FieldUsername:   reqData.Username,
+		trunk.FieldPassword:   reqData.Password,
+		trunk.FieldAllowedIPs: reqData.AllowedIPs,
+	}
+
+	tmp, err := h.trunkHandler.Update(ctx, id, fields)
 	if err != nil {
 		log.Errorf("Could not get domain info. err: %v", err)
 		return nil, err

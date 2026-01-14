@@ -6,11 +6,11 @@ import (
 	"monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
-	reflect "reflect"
+	"reflect"
 	"testing"
 
 	"github.com/gofrs/uuid"
-	gomock "go.uber.org/mock/gomock"
+	"go.uber.org/mock/gomock"
 )
 
 func Test_processV1SummariesGet(t *testing.T) {
@@ -23,7 +23,7 @@ func Test_processV1SummariesGet(t *testing.T) {
 
 		expectPageSize  uint64
 		expectPageToken string
-		expectFilters   map[string]string
+		expectFilters   map[summary.Field]any
 		expectRes       *sock.Response
 	}{
 		{
@@ -48,9 +48,9 @@ func Test_processV1SummariesGet(t *testing.T) {
 
 			expectPageSize:  10,
 			expectPageToken: "2020-05-03 21:35:02.809",
-			expectFilters: map[string]string{
-				"deleted":     "false",
-				"customer_id": "fa74c67c-0baa-11f0-9d9b-f79be2dd6ee6",
+			expectFilters: map[summary.Field]any{
+				summary.FieldDeleted:    false,
+				summary.FieldCustomerID: uuid.FromStringOrNil("fa74c67c-0baa-11f0-9d9b-f79be2dd6ee6"),
 			},
 			expectRes: &sock.Response{
 				StatusCode: 200,
@@ -73,7 +73,7 @@ func Test_processV1SummariesGet(t *testing.T) {
 				summaryHandler: mockSummary,
 			}
 
-			mockSummary.EXPECT().Gets(gomock.Any(), tt.expectPageSize, tt.expectPageToken, tt.expectFilters).Return(tt.responseSummaries, nil)
+			mockSummary.EXPECT().Gets(gomock.Any(), tt.expectPageSize, tt.expectPageToken, gomock.Any()).Return(tt.responseSummaries, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

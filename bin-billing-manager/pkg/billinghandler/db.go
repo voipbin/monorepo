@@ -106,7 +106,7 @@ func (h *billingHandler) GetByReferenceID(ctx context.Context, referenceID uuid.
 }
 
 // Gets returns a list of billings.
-func (h *billingHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*billing.Billing, error) {
+func (h *billingHandler) Gets(ctx context.Context, size uint64, token string, filters map[billing.Field]any) ([]*billing.Billing, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "Gets",
 		"size":    size,

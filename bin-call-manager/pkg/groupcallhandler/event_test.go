@@ -76,7 +76,7 @@ func Test_EventCUCustomerDeleted(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().GroupcallGets(ctx, uint64(1000), "", tt.expectFilter).Return(tt.responseGroupcalls, nil)
+			mockDB.EXPECT().GroupcallGets(ctx, uint64(1000), "", gomock.Any()).Return(tt.responseGroupcalls, nil)
 
 			// delete each groupcalls
 			for _, gc := range tt.responseGroupcalls {

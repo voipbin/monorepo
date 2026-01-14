@@ -180,7 +180,13 @@ func (h *serviceHandler) StorageFileGets(ctx context.Context, a *amagent.Agent, 
 	}
 
 	// get files
-	files, err := h.reqHandler.StorageV1FileGets(ctx, token, size, filters)
+	// Convert string filters to typed filters
+	typedFilters, err := h.convertFileFilters(filters)
+	if err != nil {
+		return nil, err
+	}
+
+	files, err := h.reqHandler.StorageV1FileGets(ctx, token, size, typedFilters)
 	if err != nil {
 		log.Errorf("Could not get files info from the storage-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find files info. err: %v", err)
@@ -195,3 +201,4 @@ func (h *serviceHandler) StorageFileGets(ctx context.Context, a *amagent.Agent, 
 
 	return res, nil
 }
+

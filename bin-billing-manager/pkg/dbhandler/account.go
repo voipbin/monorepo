@@ -4,61 +4,24 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"strconv"
 
+	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
+
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"monorepo/bin-billing-manager/models/account"
 )
 
 const (
-	// select query for call get
-	accountSelect = `
-	select
-		id,
-		customer_id,
-
-		type,
-
-		name,
-		detail,
-
-		balance,
-
-		payment_type,
-		payment_method,
-
-		tm_create,
-		tm_update,
-		tm_delete
-
-	from
-		billing_accounts
-	`
+	accountsTable = "billing_accounts"
 )
 
 // accountGetFromRow gets the account from the row.
 func (h *handler) accountGetFromRow(row *sql.Rows) (*account.Account, error) {
-
 	res := &account.Account{}
-	if err := row.Scan(
-		&res.ID,
-		&res.CustomerID,
 
-		&res.Type,
-
-		&res.Name,
-		&res.Detail,
-
-		&res.Balance,
-
-		&res.PaymentType,
-		&res.PaymentMethod,
-
-		&res.TMCreate,
-		&res.TMUpdate,
-		&res.TMDelete,
-	); err != nil {
+	if err := commondatabasehandler.ScanRow(row, res); err != nil {
 		return nil, fmt.Errorf("could not scan the row. accountGetFromRow. err: %v", err)
 	}
 
@@ -67,52 +30,23 @@ func (h *handler) accountGetFromRow(row *sql.Rows) (*account.Account, error) {
 
 // AccountCreate creates new account record.
 func (h *handler) AccountCreate(ctx context.Context, c *account.Account) error {
-	q := `insert into billing_accounts(
-		id,
-		customer_id,
+	c.TMCreate = h.utilHandler.TimeGetCurTime()
+	c.TMUpdate = DefaultTimeStamp
+	c.TMDelete = DefaultTimeStamp
 
-		type,
-
-		name,
-		detail,
-
-		balance,
-
-		payment_type,
-		payment_method,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	) values(
-		?, ?,
-		?,
-		?, ?,
-		?,
-		?, ?,
-		?, ?, ?
-	)`
-
-	_, err := h.db.Exec(q,
-		c.ID.Bytes(),
-		c.CustomerID.Bytes(),
-
-		c.Type,
-
-		c.Name,
-		c.Detail,
-
-		c.Balance,
-
-		c.PaymentType,
-		c.PaymentMethod,
-
-		h.utilHandler.TimeGetCurTime(),
-		DefaultTimeStamp,
-		DefaultTimeStamp,
-	)
+	fields, err := commondatabasehandler.PrepareFields(c)
 	if err != nil {
-		return fmt.Errorf("could not execute. AccountCreate. err: %v", err)
+		return fmt.Errorf("AccountCreate: could not prepare fields. err: %v", err)
+	}
+
+	query, args, err := sq.Insert(accountsTable).SetMap(fields).ToSql()
+	if err != nil {
+		return fmt.Errorf("AccountCreate: could not build query. err: %v", err)
+	}
+
+	_, err = h.db.Exec(query, args...)
+	if err != nil {
+		return fmt.Errorf("AccountCreate: could not execute query. err: %v", err)
 	}
 
 	// update the cache
@@ -123,8 +57,6 @@ func (h *handler) AccountCreate(ctx context.Context, c *account.Account) error {
 
 // accountGetFromCache returns account from the cache.
 func (h *handler) accountGetFromCache(ctx context.Context, id uuid.UUID) (*account.Account, error) {
-
-	// get from cache
 	res, err := h.cache.AccountGet(ctx, id)
 	if err != nil {
 		return nil, err
@@ -135,25 +67,29 @@ func (h *handler) accountGetFromCache(ctx context.Context, id uuid.UUID) (*accou
 
 // accountGetFromDB returns account from the DB.
 func (h *handler) accountGetFromDB(ctx context.Context, id uuid.UUID) (*account.Account, error) {
+	cols := commondatabasehandler.GetDBFields(account.Account{})
 
-	// prepare
-	q := fmt.Sprintf("%s where id = ?", accountSelect)
-
-	row, err := h.db.Query(q, id.Bytes())
+	query, args, err := sq.Select(cols...).
+		From(accountsTable).
+		Where(sq.Eq{"id": id.Bytes()}).
+		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not query. accountGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("accountGetFromDB: could not build query. err: %v", err)
 	}
-	defer func() {
-		_ = row.Close()
-	}()
 
-	if !row.Next() {
+	rows, err := h.db.Query(query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("accountGetFromDB: could not query. err: %v", err)
+	}
+	defer func() { _ = rows.Close() }()
+
+	if !rows.Next() {
 		return nil, ErrNotFound
 	}
 
-	res, err := h.accountGetFromRow(row)
+	res, err := h.accountGetFromRow(rows)
 	if err != nil {
-		return nil, fmt.Errorf("could not get account. accountGetFromDB, err: %v", err)
+		return nil, fmt.Errorf("accountGetFromDB: could not scan row. err: %v", err)
 	}
 
 	return res, nil
@@ -161,7 +97,6 @@ func (h *handler) accountGetFromDB(ctx context.Context, id uuid.UUID) (*account.
 
 // accountUpdateToCache gets the account from the DB and update the cache.
 func (h *handler) accountUpdateToCache(ctx context.Context, id uuid.UUID) error {
-
 	res, err := h.accountGetFromDB(ctx, id)
 	if err != nil {
 		return err
@@ -185,7 +120,6 @@ func (h *handler) accountSetToCache(ctx context.Context, c *account.Account) err
 
 // AccountGet returns account.
 func (h *handler) AccountGet(ctx context.Context, id uuid.UUID) (*account.Account, error) {
-
 	res, err := h.accountGetFromCache(ctx, id)
 	if err == nil {
 		return res, nil
@@ -203,59 +137,41 @@ func (h *handler) AccountGet(ctx context.Context, id uuid.UUID) (*account.Accoun
 }
 
 // AccountGets returns a list of account.
-func (h *handler) AccountGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*account.Account, error) {
-
-	// prepare
-	q := fmt.Sprintf(`%s
-	where
-		tm_create < ?
-	`, accountSelect)
-
+func (h *handler) AccountGets(ctx context.Context, size uint64, token string, filters map[account.Field]any) ([]*account.Account, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	values := []interface{}{
-		token,
-	}
+	cols := commondatabasehandler.GetDBFields(account.Account{})
 
-	for k, v := range filters {
-		switch k {
-		case "customer_id":
-			q = fmt.Sprintf("%s and %s = ?", q, k)
-			tmp := uuid.FromStringOrNil(v)
-			values = append(values, tmp.Bytes())
+	builder := sq.Select(cols...).
+		From(accountsTable).
+		Where(sq.Lt{"tm_create": token}).
+		OrderBy("tm_create desc").
+		Limit(size)
 
-		case "deleted":
-			if v == "false" {
-				q = fmt.Sprintf("%s and tm_delete >= ?", q)
-				values = append(values, DefaultTimeStamp)
-			}
-
-		default:
-			q = fmt.Sprintf("%s and %s = ?", q, k)
-			values = append(values, v)
-		}
-	}
-
-	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
-	values = append(values, strconv.FormatUint(size, 10))
-
-	rows, err := h.db.Query(q, values...)
+	builder, err := commondatabasehandler.ApplyFields(builder, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. AccountGets. err: %v", err)
+		return nil, fmt.Errorf("AccountGets: could not apply filters. err: %v", err)
 	}
-	defer func() {
-		_ = rows.Close()
-	}()
+
+	query, args, err := builder.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("AccountGets: could not build query. err: %v", err)
+	}
+
+	rows, err := h.db.Query(query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("AccountGets: could not query. err: %v", err)
+	}
+	defer func() { _ = rows.Close() }()
 
 	res := []*account.Account{}
 	for rows.Next() {
 		u, err := h.accountGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not get data. AccountGets, err: %v", err)
+			return nil, fmt.Errorf("AccountGets: could not scan row. err: %v", err)
 		}
-
 		res = append(res, u)
 	}
 
@@ -264,56 +180,38 @@ func (h *handler) AccountGets(ctx context.Context, size uint64, token string, fi
 
 // AccountGetsByCustomerID returns a list of account.
 func (h *handler) AccountGetsByCustomerID(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*account.Account, error) {
-
-	// prepare
-	q := fmt.Sprintf(`%s
-		where
-			customer_id = ?
-			and tm_create < ?
-			and tm_delete >= ?
-		order by
-			tm_create desc
-		limit ?
-		`, accountSelect)
-
-	rows, err := h.db.Query(q, customerID.Bytes(), token, DefaultTimeStamp, size)
-	if err != nil {
-		return nil, fmt.Errorf("could not query. AccountGetsByCustomerID. err: %v", err)
-	}
-	defer func() {
-		_ = rows.Close()
-	}()
-
-	res := []*account.Account{}
-	for rows.Next() {
-		u, err := h.accountGetFromRow(rows)
-		if err != nil {
-			return nil, fmt.Errorf("could not get data. AccountGetsByCustomerID, err: %v", err)
-		}
-
-		res = append(res, u)
+	filters := map[account.Field]any{
+		account.FieldCustomerID: customerID,
+		account.FieldDeleted:    false,
 	}
 
-	return res, nil
+	return h.AccountGets(ctx, size, token, filters)
 }
 
-// AccountSet sets the account
-func (h *handler) AccountSet(ctx context.Context, id uuid.UUID, name string, detail string) error {
-	// prepare
-	q := `
-	update
-		billing_accounts
-	set
-		name = ?,
-		detail = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
+// AccountUpdate updates the account fields.
+func (h *handler) AccountUpdate(ctx context.Context, id uuid.UUID, fields map[account.Field]any) error {
+	updateFields := make(map[string]any)
+	for k, v := range fields {
+		updateFields[string(k)] = v
+	}
+	updateFields["tm_update"] = h.utilHandler.TimeGetCurTime()
 
-	_, err := h.db.Exec(q, name, detail, h.utilHandler.TimeGetCurTime(), id.Bytes())
+	preparedFields, err := commondatabasehandler.PrepareFields(updateFields)
 	if err != nil {
-		return fmt.Errorf("could not execute. AccountSet. err: %v", err)
+		return fmt.Errorf("AccountUpdate: could not prepare fields. err: %v", err)
+	}
+
+	query, args, err := sq.Update(accountsTable).
+		SetMap(preparedFields).
+		Where(sq.Eq{"id": id.Bytes()}).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("AccountUpdate: could not build query. err: %v", err)
+	}
+
+	_, err = h.db.Exec(query, args...)
+	if err != nil {
+		return fmt.Errorf("AccountUpdate: could not execute. err: %v", err)
 	}
 
 	// update the cache
@@ -370,48 +268,24 @@ func (h *handler) AccountSubtractBalance(ctx context.Context, accountID uuid.UUI
 	return nil
 }
 
-// AccountSetPaymentInfo sets the account payment settings
-func (h *handler) AccountSetPaymentInfo(ctx context.Context, id uuid.UUID, paymentType account.PaymentType, paymentMethod account.PaymentMethod) error {
-	// prepare
-	q := `
-	update
-		billing_accounts
-	set
-		payment_type = ?,
-		payment_method = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q, paymentType, paymentMethod, h.utilHandler.TimeGetCurTime(), id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. AccountSetPayments. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.accountUpdateToCache(ctx, id)
-
-	return nil
-}
-
 // AccountDelete deletes the account
 func (h *handler) AccountDelete(ctx context.Context, id uuid.UUID) error {
-	// prepare
-	q := `
-	update
-		billing_accounts
-	set
-		tm_update = ?,
-		tm_delete = ?
-	where
-		id = ?
-	`
-
 	ts := h.utilHandler.TimeGetCurTime()
-	_, err := h.db.Exec(q, ts, ts, id.Bytes())
+
+	query, args, err := sq.Update(accountsTable).
+		SetMap(map[string]any{
+			"tm_update": ts,
+			"tm_delete": ts,
+		}).
+		Where(sq.Eq{"id": id.Bytes()}).
+		ToSql()
 	if err != nil {
-		return fmt.Errorf("could not execute. AccountDelete. err: %v", err)
+		return fmt.Errorf("AccountDelete: could not build query. err: %v", err)
+	}
+
+	_, err = h.db.Exec(query, args...)
+	if err != nil {
+		return fmt.Errorf("AccountDelete: could not execute. err: %v", err)
 	}
 
 	// update the cache

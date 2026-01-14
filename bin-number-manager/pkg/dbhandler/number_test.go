@@ -107,7 +107,7 @@ func Test_NumberGets(t *testing.T) {
 		name    string
 		numbers []*number.Number
 
-		filters map[string]string
+		filters map[number.Field]any
 
 		responseCurTime string
 
@@ -127,9 +127,9 @@ func Test_NumberGets(t *testing.T) {
 				},
 			},
 
-			map[string]string{
-				"customer_id": "ca8a717e-eca6-11ee-8067-1785c729a82f",
-				"deleted":     "false",
+			map[number.Field]any{
+				number.FieldCustomerID: uuid.FromStringOrNil("ca8a717e-eca6-11ee-8067-1785c729a82f"),
+				number.FieldDeleted:    false,
 			},
 
 			"2021-01-01 00:00:00.000",
@@ -153,9 +153,9 @@ func Test_NumberGets(t *testing.T) {
 			"empty",
 			[]*number.Number{},
 
-			map[string]string{
-				"deleted":     "false",
-				"customer_id": "f0395124-eca6-11ee-919f-9b86454807ab",
+			map[number.Field]any{
+				number.FieldDeleted:    false,
+				number.FieldCustomerID: uuid.FromStringOrNil("f0395124-eca6-11ee-919f-9b86454807ab"),
 			},
 
 			"2021-01-01 00:00:00.000",
@@ -284,16 +284,13 @@ func Test_NumberDelete(t *testing.T) {
 	}
 }
 
-func Test_NumberUpdateInfo(t *testing.T) {
+func Test_NumberUpdate(t *testing.T) {
 
 	type test struct {
 		name   string
-		number *number.Number
+		num    *number.Number
 
-		callFlowID    uuid.UUID
-		messageFlowID uuid.UUID
-		numberName    string
-		detail        string
+		updateFields map[number.Field]any
 
 		responseCurTime string
 		expectNumber    *number.Number
@@ -302,7 +299,7 @@ func Test_NumberUpdateInfo(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			number: &number.Number{
+			num: &number.Number{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("88df0e44-7c54-11eb-b2f8-37f9f70b06cd"),
 					CustomerID: uuid.FromStringOrNil("78da4358-7ff3-11ec-b15a-2754681def5e"),
@@ -319,10 +316,12 @@ func Test_NumberUpdateInfo(t *testing.T) {
 				EmergencyEnabled:    false,
 			},
 
-			callFlowID:    uuid.FromStringOrNil("23ff7078-20a2-11ee-934c-8371c4d02f71"),
-			messageFlowID: uuid.FromStringOrNil("24477634-20a2-11ee-b62f-4f341e77043b"),
-			numberName:    "update name",
-			detail:        "update detail",
+			updateFields: map[number.Field]any{
+				number.FieldCallFlowID:    uuid.FromStringOrNil("23ff7078-20a2-11ee-934c-8371c4d02f71"),
+				number.FieldMessageFlowID: uuid.FromStringOrNil("24477634-20a2-11ee-b62f-4f341e77043b"),
+				number.FieldName:          "update name",
+				number.FieldDetail:        "update detail",
+			},
 
 			responseCurTime: "2021-02-26 18:26:49.000",
 			expectNumber: &number.Number{
@@ -367,16 +366,16 @@ func Test_NumberUpdateInfo(t *testing.T) {
 			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime).AnyTimes()
 
 			mockCache.EXPECT().NumberSet(gomock.Any(), gomock.Any()).AnyTimes()
-			mockCache.EXPECT().NumberGet(gomock.Any(), tt.number.ID).Return(nil, fmt.Errorf("")).AnyTimes()
-			if err := h.NumberCreate(ctx, tt.number); err != nil {
+			mockCache.EXPECT().NumberGet(gomock.Any(), tt.num.ID).Return(nil, fmt.Errorf("")).AnyTimes()
+			if err := h.NumberCreate(ctx, tt.num); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if err := h.NumberUpdateInfo(ctx, tt.number.ID, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail); err != nil {
+			if err := h.NumberUpdate(ctx, tt.num.ID, tt.updateFields); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			res, err := h.NumberGet(context.Background(), tt.number.ID)
+			res, err := h.NumberGet(context.Background(), tt.num.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -392,10 +391,9 @@ func Test_NumberUpdateFlowID(t *testing.T) {
 
 	type test struct {
 		name   string
-		number *number.Number
+		num    *number.Number
 
-		callFlowID    uuid.UUID
-		messageFlowID uuid.UUID
+		updateFields map[number.Field]any
 
 		responseCurTime string
 		expectNumber    *number.Number
@@ -419,8 +417,10 @@ func Test_NumberUpdateFlowID(t *testing.T) {
 				EmergencyEnabled:    false,
 			},
 
-			uuid.FromStringOrNil("4acedf84-a85f-11ec-bdc6-27902c5c6987"),
-			uuid.FromStringOrNil("4af49f4e-a85f-11ec-ad06-676681d45adb"),
+			map[number.Field]any{
+				number.FieldCallFlowID:    uuid.FromStringOrNil("4acedf84-a85f-11ec-bdc6-27902c5c6987"),
+				number.FieldMessageFlowID: uuid.FromStringOrNil("4af49f4e-a85f-11ec-ad06-676681d45adb"),
+			},
 
 			"2021-02-26 18:26:49.000",
 			&number.Number{
@@ -464,16 +464,16 @@ func Test_NumberUpdateFlowID(t *testing.T) {
 			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime).AnyTimes()
 
 			mockCache.EXPECT().NumberSet(gomock.Any(), gomock.Any()).AnyTimes()
-			mockCache.EXPECT().NumberGet(gomock.Any(), tt.number.ID).Return(nil, fmt.Errorf("")).AnyTimes()
-			if err := h.NumberCreate(ctx, tt.number); err != nil {
+			mockCache.EXPECT().NumberGet(gomock.Any(), tt.num.ID).Return(nil, fmt.Errorf("")).AnyTimes()
+			if err := h.NumberCreate(ctx, tt.num); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if err := h.NumberUpdateFlowID(ctx, tt.number.ID, tt.callFlowID, tt.messageFlowID); err != nil {
+			if err := h.NumberUpdate(ctx, tt.num.ID, tt.updateFields); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			res, err := h.NumberGet(context.Background(), tt.number.ID)
+			res, err := h.NumberGet(context.Background(), tt.num.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -489,9 +489,9 @@ func Test_NumberUpdateCallFlowID(t *testing.T) {
 
 	type test struct {
 		name   string
-		number *number.Number
+		num    *number.Number
 
-		callFlowID uuid.UUID
+		updateFields map[number.Field]any
 
 		responseCurTime string
 		expectNumber    *number.Number
@@ -515,7 +515,9 @@ func Test_NumberUpdateCallFlowID(t *testing.T) {
 				EmergencyEnabled:    false,
 			},
 
-			uuid.FromStringOrNil("535c0ca4-8801-11ec-accb-7bd692b1c078"),
+			map[number.Field]any{
+				number.FieldCallFlowID: uuid.FromStringOrNil("535c0ca4-8801-11ec-accb-7bd692b1c078"),
+			},
 
 			"2021-02-26 18:26:49.000",
 			&number.Number{
@@ -559,16 +561,16 @@ func Test_NumberUpdateCallFlowID(t *testing.T) {
 			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime).AnyTimes()
 
 			mockCache.EXPECT().NumberSet(gomock.Any(), gomock.Any()).AnyTimes()
-			mockCache.EXPECT().NumberGet(gomock.Any(), tt.number.ID).Return(nil, fmt.Errorf("")).AnyTimes()
-			if err := h.NumberCreate(ctx, tt.number); err != nil {
+			mockCache.EXPECT().NumberGet(gomock.Any(), tt.num.ID).Return(nil, fmt.Errorf("")).AnyTimes()
+			if err := h.NumberCreate(ctx, tt.num); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if err := h.NumberUpdateCallFlowID(ctx, tt.number.ID, tt.callFlowID); err != nil {
+			if err := h.NumberUpdate(ctx, tt.num.ID, tt.updateFields); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			res, err := h.NumberGet(context.Background(), tt.number.ID)
+			res, err := h.NumberGet(context.Background(), tt.num.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -584,9 +586,9 @@ func Test_NumberUpdateMessageFlowID(t *testing.T) {
 
 	type test struct {
 		name   string
-		number *number.Number
+		num    *number.Number
 
-		flowID uuid.UUID
+		updateFields map[number.Field]any
 
 		responseCurTime string
 		expectNumber    *number.Number
@@ -610,7 +612,9 @@ func Test_NumberUpdateMessageFlowID(t *testing.T) {
 				EmergencyEnabled:    false,
 			},
 
-			uuid.FromStringOrNil("b416b062-a85e-11ec-a230-7f3aae198503"),
+			map[number.Field]any{
+				number.FieldMessageFlowID: uuid.FromStringOrNil("b416b062-a85e-11ec-a230-7f3aae198503"),
+			},
 
 			"2021-02-26 18:26:49.000",
 			&number.Number{
@@ -653,16 +657,16 @@ func Test_NumberUpdateMessageFlowID(t *testing.T) {
 			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime).AnyTimes()
 
 			mockCache.EXPECT().NumberSet(gomock.Any(), gomock.Any()).AnyTimes()
-			mockCache.EXPECT().NumberGet(gomock.Any(), tt.number.ID).Return(nil, fmt.Errorf("")).AnyTimes()
-			if err := h.NumberCreate(ctx, tt.number); err != nil {
+			mockCache.EXPECT().NumberGet(gomock.Any(), tt.num.ID).Return(nil, fmt.Errorf("")).AnyTimes()
+			if err := h.NumberCreate(ctx, tt.num); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if err := h.NumberUpdateMessageFlowID(ctx, tt.number.ID, tt.flowID); err != nil {
+			if err := h.NumberUpdate(ctx, tt.num.ID, tt.updateFields); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			res, err := h.NumberGet(context.Background(), tt.number.ID)
+			res, err := h.NumberGet(context.Background(), tt.num.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -677,10 +681,8 @@ func Test_NumberUpdateMessageFlowID(t *testing.T) {
 func Test_NumberSetTMRenew(t *testing.T) {
 
 	type test struct {
-		name   string
-		number *number.Number
-
-		id uuid.UUID
+		name string
+		num  *number.Number
 
 		responseCurTime      string
 		responseCurTimeRenew string
@@ -690,13 +692,11 @@ func Test_NumberSetTMRenew(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			number: &number.Number{
+			num: &number.Number{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("51535516-144b-11ee-8f01-3f32d4b89553"),
 				},
 			},
-
-			id: uuid.FromStringOrNil("51535516-144b-11ee-8f01-3f32d4b89553"),
 
 			responseCurTime:      "2021-02-26 18:26:49.000",
 			responseCurTimeRenew: "2021-02-27 18:26:49.000",
@@ -729,19 +729,23 @@ func Test_NumberSetTMRenew(t *testing.T) {
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().NumberSet(gomock.Any(), gomock.Any())
-			if err := h.NumberCreate(ctx, tt.number); err != nil {
+			if err := h.NumberCreate(ctx, tt.num); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTimeRenew)
 			mockCache.EXPECT().NumberSet(gomock.Any(), gomock.Any())
-			if err := h.NumberUpdateTMRenew(ctx, tt.id); err != nil {
+
+			updateFields := map[number.Field]any{
+				number.FieldTMRenew: tt.responseCurTimeRenew,
+			}
+			if err := h.NumberUpdate(ctx, tt.num.ID, updateFields); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockCache.EXPECT().NumberGet(gomock.Any(), tt.number.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().NumberGet(gomock.Any(), tt.num.ID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().NumberSet(gomock.Any(), gomock.Any())
-			res, err := h.NumberGet(context.Background(), tt.number.ID)
+			res, err := h.NumberGet(context.Background(), tt.num.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -762,7 +766,7 @@ func Test_NumberGetsByTMRenew(t *testing.T) {
 		id      uuid.UUID
 		tmRenew string
 		size    uint64
-		filters map[string]string
+		filters map[number.Field]any
 
 		responseCurTimes []string
 		expectRes        []*number.Number
@@ -797,8 +801,8 @@ func Test_NumberGetsByTMRenew(t *testing.T) {
 			id:      uuid.FromStringOrNil("51535516-144b-11ee-8f01-3f32d4b89553"),
 			tmRenew: "2020-04-12 20:26:49.000",
 			size:    100,
-			filters: map[string]string{
-				"deleted": "false",
+			filters: map[number.Field]any{
+				number.FieldDeleted: false,
 			},
 
 			responseCurTimes: []string{

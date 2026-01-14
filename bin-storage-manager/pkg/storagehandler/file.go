@@ -60,7 +60,7 @@ func (h *storageHandler) FileGet(ctx context.Context, id uuid.UUID) (*file.File,
 }
 
 // FileGets returns list of files info.
-func (h *storageHandler) FileGets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*file.File, error) {
+func (h *storageHandler) FileGets(ctx context.Context, token string, size uint64, filters map[file.Field]any) ([]*file.File, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "FileGets",
 		"token":   token,

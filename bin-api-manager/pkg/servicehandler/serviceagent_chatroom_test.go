@@ -26,7 +26,7 @@ func Test_ServiceAgentChatroomGets(t *testing.T) {
 		token string
 
 		responseChatrooms []chatchatroom.Chatroom
-		expectFilters     map[string]string
+		expectFilters     map[chatchatroom.Field]any
 		expectRes         []*chatchatroom.WebhookMessage
 	}
 
@@ -56,10 +56,10 @@ func Test_ServiceAgentChatroomGets(t *testing.T) {
 					},
 				},
 			},
-			expectFilters: map[string]string{
-				"owner_id":    "5cd8c836-3b9f-11ef-98ac-db226570f09a",
-				"customer_id": "5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9",
-				"deleted":     "false",
+			expectFilters: map[chatchatroom.Field]any{
+				chatchatroom.FieldOwnerID:    "5cd8c836-3b9f-11ef-98ac-db226570f09a",
+				chatchatroom.FieldCustomerID: "5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9",
+				chatchatroom.FieldDeleted:    false,
 			},
 			expectRes: []*chatchatroom.WebhookMessage{
 				{
@@ -264,7 +264,7 @@ func Test_ServiceAgentChatroomCreate(t *testing.T) {
 		responseChatrooms []chatchatroom.Chatroom
 
 		expectChatType chatchat.Type
-		expectFilters  map[string]string
+		expectFilters  map[chatchatroom.Field]any
 		expectRes      *chatchatroom.WebhookMessage
 	}
 
@@ -304,10 +304,10 @@ func Test_ServiceAgentChatroomCreate(t *testing.T) {
 			},
 
 			expectChatType: chatchat.TypeNormal,
-			expectFilters: map[string]string{
-				"deleted":  "false",
-				"chat_id":  "6aac6da2-3ba7-11ef-adf3-a3455d849cf3",
-				"owner_id": "5cd8c836-3b9f-11ef-98ac-db226570f09a",
+			expectFilters: map[chatchatroom.Field]any{
+				chatchatroom.FieldDeleted:  false,
+				chatchatroom.FieldChatID:   "6aac6da2-3ba7-11ef-adf3-a3455d849cf3",
+				chatchatroom.FieldOwnerID:  "5cd8c836-3b9f-11ef-98ac-db226570f09a",
 			},
 			expectRes: &chatchatroom.WebhookMessage{
 				Identity: commonidentity.Identity{

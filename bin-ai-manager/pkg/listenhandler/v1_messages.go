@@ -3,11 +3,14 @@ package listenhandler
 import (
 	"context"
 	"encoding/json"
-	"monorepo/bin-ai-manager/pkg/listenhandler/models/request"
-	"monorepo/bin-common-handler/models/sock"
 	"net/url"
 	"strconv"
 	"strings"
+
+	"monorepo/bin-ai-manager/models/message"
+	"monorepo/bin-ai-manager/pkg/listenhandler/models/request"
+	"monorepo/bin-common-handler/models/sock"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -31,20 +34,31 @@ func (h *listenHandler) processV1MessagesGet(ctx context.Context, m *sock.Reques
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// get aicall id
+	// get aicall id (still from URL for backward compatibility)
 	aicallID := uuid.FromStringOrNil(u.Query().Get("aicall_id"))
 
-	// get filters
-	filters := getFilters(u)
+	// get filters from request body
+	tmpFilters, err := utilhandler.ParseFiltersFromRequestBody(m.Data)
+	if err != nil {
+		log.Errorf("Could not parse filters. err: %v", err)
+		return simpleResponse(400), nil
+	}
+
+	// convert to typed filters
+	typedFilters, err := utilhandler.ConvertFilters[message.FieldStruct, message.Field](message.FieldStruct{}, tmpFilters)
+	if err != nil {
+		log.Errorf("Could not convert filters. err: %v", err)
+		return simpleResponse(400), nil
+	}
 
 	log = log.WithFields(logrus.Fields{
-		"customer_id": aicallID,
-		"size":        pageSize,
-		"token":       pageToken,
-		"filters":     filters,
+		"aicall_id": aicallID,
+		"size":      pageSize,
+		"token":     pageToken,
+		"filters":   typedFilters,
 	})
 
-	tmp, err := h.messageHandler.Gets(ctx, aicallID, pageSize, pageToken, filters)
+	tmp, err := h.messageHandler.Gets(ctx, aicallID, pageSize, pageToken, typedFilters)
 	if err != nil {
 		log.Debugf("Could not get messages. err: %v", err)
 		return simpleResponse(500), nil

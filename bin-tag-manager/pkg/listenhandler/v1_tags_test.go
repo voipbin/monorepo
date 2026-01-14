@@ -21,9 +21,9 @@ func TestProcessV1TagsGet(t *testing.T) {
 		name    string
 		request *sock.Request
 
-		customerID uuid.UUID
-		pageSize   uint64
-		pageToken  string
+		pageSize  uint64
+		pageToken string
+		filters   map[tag.Field]any
 
 		tags      []*tag.Tag
 		expectRes *sock.Response
@@ -36,9 +36,12 @@ func TestProcessV1TagsGet(t *testing.T) {
 				DataType: "application/json",
 			},
 
-			uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
 			10,
 			"2021-11-23 17:55:39.712000",
+			map[tag.Field]any{
+				tag.FieldCustomerID: uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
+				tag.FieldDeleted:    false,
+			},
 
 			[]*tag.Tag{
 				{
@@ -67,9 +70,12 @@ func TestProcessV1TagsGet(t *testing.T) {
 				DataType: "application/json",
 			},
 
-			uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
 			10,
 			"2021-11-23 17:55:39.712000",
+			map[tag.Field]any{
+				tag.FieldCustomerID: uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
+				tag.FieldDeleted:    false,
+			},
 
 			[]*tag.Tag{
 				{
@@ -117,7 +123,7 @@ func TestProcessV1TagsGet(t *testing.T) {
 				tagHandler: mockTag,
 			}
 
-			mockTag.EXPECT().Gets(gomock.Any(), tt.customerID, tt.pageSize, tt.pageToken).Return(tt.tags, nil)
+			mockTag.EXPECT().Gets(gomock.Any(), tt.pageSize, tt.pageToken, gomock.Any()).Return(tt.tags, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

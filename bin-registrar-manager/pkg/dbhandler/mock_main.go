@@ -323,7 +323,7 @@ func (mr *MockDBHandlerMockRecorder) ExtensionGetByExtension(ctx, customerID, ex
 }
 
 // ExtensionGets mocks base method.
-func (m *MockDBHandler) ExtensionGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*extension.Extension, error) {
+func (m *MockDBHandler) ExtensionGets(ctx context.Context, size uint64, token string, filters map[extension.Field]any) ([]*extension.Extension, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ExtensionGets", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*extension.Extension)
@@ -338,17 +338,17 @@ func (mr *MockDBHandlerMockRecorder) ExtensionGets(ctx, size, token, filters any
 }
 
 // ExtensionUpdate mocks base method.
-func (m *MockDBHandler) ExtensionUpdate(ctx context.Context, id uuid.UUID, name, detail, password string) error {
+func (m *MockDBHandler) ExtensionUpdate(ctx context.Context, id uuid.UUID, fields map[extension.Field]any) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ExtensionUpdate", ctx, id, name, detail, password)
+	ret := m.ctrl.Call(m, "ExtensionUpdate", ctx, id, fields)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ExtensionUpdate indicates an expected call of ExtensionUpdate.
-func (mr *MockDBHandlerMockRecorder) ExtensionUpdate(ctx, id, name, detail, password any) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) ExtensionUpdate(ctx, id, fields any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionUpdate", reflect.TypeOf((*MockDBHandler)(nil).ExtensionUpdate), ctx, id, name, detail, password)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionUpdate", reflect.TypeOf((*MockDBHandler)(nil).ExtensionUpdate), ctx, id, fields)
 }
 
 // SIPAuthCreate mocks base method.
@@ -394,18 +394,18 @@ func (mr *MockDBHandlerMockRecorder) SIPAuthGet(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SIPAuthGet", reflect.TypeOf((*MockDBHandler)(nil).SIPAuthGet), ctx, id)
 }
 
-// SIPAuthUpdateAll mocks base method.
-func (m *MockDBHandler) SIPAuthUpdateAll(ctx context.Context, t *sipauth.SIPAuth) error {
+// SIPAuthUpdate mocks base method.
+func (m *MockDBHandler) SIPAuthUpdate(ctx context.Context, id uuid.UUID, fields map[sipauth.Field]any) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SIPAuthUpdateAll", ctx, t)
+	ret := m.ctrl.Call(m, "SIPAuthUpdate", ctx, id, fields)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// SIPAuthUpdateAll indicates an expected call of SIPAuthUpdateAll.
-func (mr *MockDBHandlerMockRecorder) SIPAuthUpdateAll(ctx, t any) *gomock.Call {
+// SIPAuthUpdate indicates an expected call of SIPAuthUpdate.
+func (mr *MockDBHandlerMockRecorder) SIPAuthUpdate(ctx, id, fields any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SIPAuthUpdateAll", reflect.TypeOf((*MockDBHandler)(nil).SIPAuthUpdateAll), ctx, t)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SIPAuthUpdate", reflect.TypeOf((*MockDBHandler)(nil).SIPAuthUpdate), ctx, id, fields)
 }
 
 // TrunkCreate mocks base method.
@@ -467,7 +467,7 @@ func (mr *MockDBHandlerMockRecorder) TrunkGetByDomainName(ctx, domainName any) *
 }
 
 // TrunkGets mocks base method.
-func (m *MockDBHandler) TrunkGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*trunk.Trunk, error) {
+func (m *MockDBHandler) TrunkGets(ctx context.Context, size uint64, token string, filters map[trunk.Field]any) ([]*trunk.Trunk, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TrunkGets", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*trunk.Trunk)
@@ -481,16 +481,16 @@ func (mr *MockDBHandlerMockRecorder) TrunkGets(ctx, size, token, filters any) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TrunkGets", reflect.TypeOf((*MockDBHandler)(nil).TrunkGets), ctx, size, token, filters)
 }
 
-// TrunkUpdateBasicInfo mocks base method.
-func (m *MockDBHandler) TrunkUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, authTypes []sipauth.AuthType, username, password string, allowedIPs []string) error {
+// TrunkUpdate mocks base method.
+func (m *MockDBHandler) TrunkUpdate(ctx context.Context, id uuid.UUID, fields map[trunk.Field]any) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TrunkUpdateBasicInfo", ctx, id, name, detail, authTypes, username, password, allowedIPs)
+	ret := m.ctrl.Call(m, "TrunkUpdate", ctx, id, fields)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// TrunkUpdateBasicInfo indicates an expected call of TrunkUpdateBasicInfo.
-func (mr *MockDBHandlerMockRecorder) TrunkUpdateBasicInfo(ctx, id, name, detail, authTypes, username, password, allowedIPs any) *gomock.Call {
+// TrunkUpdate indicates an expected call of TrunkUpdate.
+func (mr *MockDBHandlerMockRecorder) TrunkUpdate(ctx, id, fields any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TrunkUpdateBasicInfo", reflect.TypeOf((*MockDBHandler)(nil).TrunkUpdateBasicInfo), ctx, id, name, detail, authTypes, username, password, allowedIPs)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TrunkUpdate", reflect.TypeOf((*MockDBHandler)(nil).TrunkUpdate), ctx, id, fields)
 }

@@ -88,7 +88,7 @@ func (mr *MockRecordingHandlerMockRecorder) GetByRecordingName(ctx, recordingNam
 }
 
 // Gets mocks base method.
-func (m *MockRecordingHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*recording.Recording, error) {
+func (m *MockRecordingHandler) Gets(ctx context.Context, size uint64, token string, filters map[recording.Field]any) ([]*recording.Recording, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Gets", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*recording.Recording)

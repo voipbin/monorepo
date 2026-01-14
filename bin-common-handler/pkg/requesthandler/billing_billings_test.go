@@ -9,7 +9,6 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
-	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -22,11 +21,10 @@ func Test_BillingV1BillingGets(t *testing.T) {
 
 		size    uint64
 		token   string
-		filters map[string]string
+		filters map[bmbilling.Field]any
 
 		responseBillings *sock.Response
 
-		expectURL     string
 		expectTarget  string
 		expectRequest *sock.Request
 		expectRes     []bmbilling.Billing
@@ -36,8 +34,8 @@ func Test_BillingV1BillingGets(t *testing.T) {
 
 			size:  10,
 			token: "2023-06-08 03:22:17.995000",
-			filters: map[string]string{
-				"customer_id": "84ec5606-f556-11ee-b9a0-dbdcc291145b",
+			filters: map[bmbilling.Field]any{
+				bmbilling.FieldCustomerID: uuid.FromStringOrNil("84ec5606-f556-11ee-b9a0-dbdcc291145b"),
 			},
 
 			responseBillings: &sock.Response{
@@ -46,11 +44,12 @@ func Test_BillingV1BillingGets(t *testing.T) {
 				Data:       []byte(`[{"id":"854608c2-f556-11ee-bcaa-7b93c058e8f6"},{"id":"85fdae46-f556-11ee-ba13-c3b959ad9a23"}]`),
 			},
 
-			expectURL:    "/v1/billings?page_token=2023-06-08+03%3A22%3A17.995000&page_size=10",
 			expectTarget: "bin-manager.billing-manager.request",
 			expectRequest: &sock.Request{
-				URI:    "/v1/billings?page_token=2023-06-08+03%3A22%3A17.995000&page_size=10&filter_customer_id=84ec5606-f556-11ee-b9a0-dbdcc291145b",
-				Method: sock.RequestMethodGet,
+				URI:      "/v1/billings?page_token=2023-06-08+03%3A22%3A17.995000&page_size=10",
+				Method:   sock.RequestMethodGet,
+				DataType: "application/json",
+				Data:     []byte(`{"customer_id":"84ec5606-f556-11ee-b9a0-dbdcc291145b"}`),
 			},
 			expectRes: []bmbilling.Billing{
 				{
@@ -73,14 +72,11 @@ func Test_BillingV1BillingGets(t *testing.T) {
 			defer mc.Finish()
 
 			mockSock := sockhandler.NewMockSockHandler(mc)
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			h := requestHandler{
-				sock:        mockSock,
-				utilHandler: mockUtil,
+				sock: mockSock,
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.responseBillings, nil)
 
 			res, err := h.BillingV1BillingGets(ctx, tt.token, tt.size, tt.filters)

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	cmcustomer "monorepo/bin-customer-manager/models/customer"
+	"monorepo/bin-storage-manager/models/file"
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -17,9 +18,9 @@ func (h *fileHandler) EventCustomerDeleted(ctx context.Context, cu *cmcustomer.C
 	})
 	log.Debugf("Deleting customer's all files. customer_id: %s", cu.ID)
 
-	filters := map[string]string{
-		"deleted":     "false",
-		"customer_id": cu.ID.String(),
+	filters := map[file.Field]any{
+		file.FieldDeleted:    false,
+		file.FieldCustomerID: cu.ID,
 	}
 
 	// get files

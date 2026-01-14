@@ -13,7 +13,6 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
-	"monorepo/bin-common-handler/pkg/utilhandler"
 )
 
 func Test_ConferenceV1ConferencecallGets(t *testing.T) {
@@ -23,9 +22,8 @@ func Test_ConferenceV1ConferencecallGets(t *testing.T) {
 
 		pageToken string
 		pageSize  uint64
-		filters   map[string]string
+		filters   map[cfconferencecall.Field]any
 
-		expectURL     string
 		expectTarget  string
 		expectRequest *sock.Request
 		response      *sock.Response
@@ -37,15 +35,16 @@ func Test_ConferenceV1ConferencecallGets(t *testing.T) {
 
 			"2021-03-02 03:23:20.995000",
 			10,
-			map[string]string{
-				"deleted": "false",
+			map[cfconferencecall.Field]any{
+				cfconferencecall.FieldDeleted: false,
 			},
 
-			"/v1/conferencecalls?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10",
 			"bin-manager.conference-manager.request",
 			&sock.Request{
-				URI:    "/v1/conferencecalls?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10&filter_deleted=false",
-				Method: sock.RequestMethodGet,
+				URI:      "/v1/conferencecalls?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10",
+				Method:   sock.RequestMethodGet,
+				DataType: "application/json",
+				Data:     []byte(`{"deleted":false}`),
 			},
 			&sock.Response{
 				StatusCode: 200,
@@ -74,14 +73,11 @@ func Test_ConferenceV1ConferencecallGets(t *testing.T) {
 			defer mc.Finish()
 
 			mockSock := sockhandler.NewMockSockHandler(mc)
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			reqHandler := requestHandler{
-				sock:        mockSock,
-				utilHandler: mockUtil,
+				sock: mockSock,
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.ConferenceV1ConferencecallGets(ctx, tt.pageToken, tt.pageSize, tt.filters)

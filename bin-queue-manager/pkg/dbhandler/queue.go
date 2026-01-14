@@ -3,101 +3,34 @@ package dbhandler
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
-	"strconv"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
+
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"monorepo/bin-queue-manager/models/queue"
 )
 
 const (
-	// select query for queue get
-	queueSelect = `
-	select
-		id,
-		customer_id,
-
-		name,
-		detail,
-
-		routing_method,
-		tag_ids,
-
-		execute,
-
- 		wait_flow_id,
-		coalesce(wait_queue_call_ids, "[]"),
-		wait_timeout,
-		coalesce(service_queue_call_ids, "[]"),
-		service_timeout,
-
-		total_incoming_count,
-		total_serviced_count,
-		total_abandoned_count,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	from
-		queue_queues
-	`
+	queueQueuesTable = "queue_queues"
 )
 
 // queueGetFromRow gets the queue from the row.
 func (h *handler) queueGetFromRow(row *sql.Rows) (*queue.Queue, error) {
-
-	tagIDs := ""
-	waitQueuecallIDs := ""
-	serviceQueuecallIDs := ""
-
 	res := &queue.Queue{}
-	if err := row.Scan(
-		&res.ID,
-		&res.CustomerID,
 
-		&res.Name,
-		&res.Detail,
-
-		&res.RoutingMethod,
-		&tagIDs,
-
-		&res.Execute,
-
-		&res.WaitFlowID,
-		&waitQueuecallIDs,
-		&res.WaitTimeout,
-		&serviceQueuecallIDs,
-		&res.ServiceTimeout,
-
-		&res.TotalIncomingCount,
-		&res.TotalServicedCount,
-		&res.TotalAbandonedCount,
-
-		&res.TMCreate,
-		&res.TMUpdate,
-		&res.TMDelete,
-	); err != nil {
+	if err := commondatabasehandler.ScanRow(row, res); err != nil {
 		return nil, fmt.Errorf("could not scan the row. queueGetFromRow. err: %v", err)
 	}
 
-	if err := json.Unmarshal([]byte(tagIDs), &res.TagIDs); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the tag_ids. queueGetFromRow. err: %v", err)
-	}
+	// Ensure slices are not nil
 	if res.TagIDs == nil {
 		res.TagIDs = []uuid.UUID{}
 	}
-
-	if err := json.Unmarshal([]byte(waitQueuecallIDs), &res.WaitQueuecallIDs); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the tag_ids. queueGetFromRow. err: %v", err)
-	}
 	if res.WaitQueuecallIDs == nil {
 		res.WaitQueuecallIDs = []uuid.UUID{}
-	}
-
-	if err := json.Unmarshal([]byte(serviceQueuecallIDs), &res.ServiceQueuecallIDs); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the tag_ids. queueGetFromRow. err: %v", err)
 	}
 	if res.ServiceQueuecallIDs == nil {
 		res.ServiceQueuecallIDs = []uuid.UUID{}
@@ -107,95 +40,43 @@ func (h *handler) queueGetFromRow(row *sql.Rows) (*queue.Queue, error) {
 }
 
 // QueueCreate creates new queue record and returns the created queue.
-func (h *handler) QueueCreate(ctx context.Context, a *queue.Queue) error {
-	q := `insert into queue_queues(
-		id,
-		customer_id,
+func (h *handler) QueueCreate(ctx context.Context, q *queue.Queue) error {
+	now := h.utilHandler.TimeGetCurTime()
 
-		name,
-		detail,
+	// Set timestamps
+	q.TMCreate = now
+	q.TMUpdate = DefaultTimeStamp
+	q.TMDelete = DefaultTimeStamp
 
-		routing_method,
-		tag_ids,
-
-		execute,
-
-		wait_flow_id,
-		wait_queue_call_ids,
-		wait_timeout,
-		service_queue_call_ids,
-		service_timeout,
-
-		total_incoming_count,
-		total_serviced_count,
-		total_abandoned_count,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	) values(
-		?, ?,
-		?, ?,
-		?, ?,
-		?,
-		?, ?, ?, ?, ?,
-		?, ?, ?,
-		?, ?, ?
-		)
-	`
-
-	tagIDs, err := json.Marshal(a.TagIDs)
+	// Use PrepareFields to get field map
+	fields, err := commondatabasehandler.PrepareFields(q)
 	if err != nil {
-		return fmt.Errorf("could not marshal the tag_ids. err: %v", err)
-	}
-	waitQueueCallIDs, err := json.Marshal(a.WaitQueuecallIDs)
-	if err != nil {
-		return fmt.Errorf("could not marshal the queue_call_ids. err: %v", err)
-	}
-	serviceQueueCallIDs, err := json.Marshal(a.ServiceQueuecallIDs)
-	if err != nil {
-		return fmt.Errorf("could not marshal the queue_call_ids. err: %v", err)
+		return fmt.Errorf("could not prepare fields. QueueCreate. err: %v", err)
 	}
 
-	_, err = h.db.Exec(q,
-		a.ID.Bytes(),
-		a.CustomerID.Bytes(),
+	// Use SetMap instead of Columns/Values
+	sb := squirrel.
+		Insert(queueQueuesTable).
+		SetMap(fields).
+		PlaceholderFormat(squirrel.Question)
 
-		a.Name,
-		a.Detail,
-
-		a.RoutingMethod,
-		tagIDs,
-
-		a.Execute,
-
-		a.WaitFlowID.Bytes(),
-		waitQueueCallIDs,
-		a.WaitTimeout,
-		serviceQueueCallIDs,
-		a.ServiceTimeout,
-
-		a.TotalIncomingCount,
-		a.TotalServicedCount,
-		a.TotalAbandonedCount,
-
-		h.utilHandler.TimeGetCurTime(),
-		DefaultTimeStamp,
-		DefaultTimeStamp,
-	)
+	query, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not execute. QueueCreate. err: %v", err)
+		return fmt.Errorf("could not build query. QueueCreate. err: %v", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
+		return fmt.Errorf("could not execute query. QueueCreate. err: %v", err)
 	}
 
 	// update the cache
-	_ = h.queueUpdateToCache(ctx, a.ID)
+	_ = h.queueUpdateToCache(ctx, q.ID)
 
 	return nil
 }
 
 // queueUpdateToCache gets the queue from the DB and update the cache.
 func (h *handler) queueUpdateToCache(ctx context.Context, id uuid.UUID) error {
-
 	res, err := h.queueGetFromDB(ctx, id)
 	if err != nil {
 		return err
@@ -219,7 +100,6 @@ func (h *handler) queueSetToCache(ctx context.Context, u *queue.Queue) error {
 
 // queueGetFromCache returns queue from the cache.
 func (h *handler) queueGetFromCache(ctx context.Context, id uuid.UUID) (*queue.Queue, error) {
-
 	// get from cache
 	res, err := h.cache.QueueGet(ctx, id)
 	if err != nil {
@@ -231,11 +111,18 @@ func (h *handler) queueGetFromCache(ctx context.Context, id uuid.UUID) (*queue.Q
 
 // queueGetFromDB returns queue from the DB.
 func (h *handler) queueGetFromDB(ctx context.Context, id uuid.UUID) (*queue.Queue, error) {
+	fields := commondatabasehandler.GetDBFields(&queue.Queue{})
+	query, args, err := squirrel.
+		Select(fields...).
+		From(queueQueuesTable).
+		Where(squirrel.Eq{string(queue.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build sql. queueGetFromDB. err: %v", err)
+	}
 
-	// prepare
-	q := fmt.Sprintf("%s where id = ?", queueSelect)
-
-	row, err := h.db.Query(q, id.Bytes())
+	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. queueGetFromDB. err: %v", err)
 	}
@@ -244,12 +131,15 @@ func (h *handler) queueGetFromDB(ctx context.Context, id uuid.UUID) (*queue.Queu
 	}()
 
 	if !row.Next() {
+		if err := row.Err(); err != nil {
+			return nil, fmt.Errorf("row iteration error. queueGetFromDB. err: %v", err)
+		}
 		return nil, ErrNotFound
 	}
 
 	res, err := h.queueGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("dbhandler: Could not scan the row. queueGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not get data from row. queueGetFromDB. id: %s, err: %v", id, err)
 	}
 
 	return res, nil
@@ -274,45 +164,31 @@ func (h *handler) QueueGet(ctx context.Context, id uuid.UUID) (*queue.Queue, err
 }
 
 // QueueGets returns queues.
-func (h *handler) QueueGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*queue.Queue, error) {
-	// prepare
-	q := fmt.Sprintf(`%s
-	where
-		tm_create < ?
-	`, queueSelect)
-
+func (h *handler) QueueGets(ctx context.Context, size uint64, token string, filters map[queue.Field]any) ([]*queue.Queue, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	values := []interface{}{
-		token,
+	fields := commondatabasehandler.GetDBFields(&queue.Queue{})
+	sb := squirrel.
+		Select(fields...).
+		From(queueQueuesTable).
+		Where(squirrel.Lt{string(queue.FieldTMCreate): token}).
+		OrderBy(string(queue.FieldTMCreate) + " DESC").
+		Limit(size).
+		PlaceholderFormat(squirrel.Question)
+
+	sb, err := commondatabasehandler.ApplyFields(sb, filters)
+	if err != nil {
+		return nil, fmt.Errorf("could not apply filters. QueueGets. err: %v", err)
 	}
 
-	for k, v := range filters {
-		switch k {
-		case "customer_id", "wait_flow_id":
-			q = fmt.Sprintf("%s and %s = ?", q, k)
-			tmp := uuid.FromStringOrNil(v)
-			values = append(values, tmp.Bytes())
-
-		case "deleted":
-			if v == "false" {
-				q = fmt.Sprintf("%s and tm_delete >= ?", q)
-				values = append(values, DefaultTimeStamp)
-			}
-
-		default:
-			q = fmt.Sprintf("%s and %s = ?", q, k)
-			values = append(values, v)
-
-		}
+	query, args, err := sb.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. QueueGets. err: %v", err)
 	}
 
-	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
-	values = append(values, strconv.FormatUint(size, 10))
-
-	rows, err := h.db.Query(q, values...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. QueueGets. err: %v", err)
 	}
@@ -320,36 +196,78 @@ func (h *handler) QueueGets(ctx context.Context, size uint64, token string, filt
 		_ = rows.Close()
 	}()
 
-	var res []*queue.Queue
+	res := []*queue.Queue{}
 	for rows.Next() {
 		u, err := h.queueGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("dbhandler: Could not scan the row. QueueGets. err: %v", err)
+			return nil, fmt.Errorf("could not get data. QueueGets, err: %v", err)
 		}
-
 		res = append(res, u)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error. QueueGets. err: %v", err)
 	}
 
 	return res, nil
 }
 
+// QueueUpdate updates queue fields.
+func (h *handler) QueueUpdate(ctx context.Context, id uuid.UUID, fields map[queue.Field]any) error {
+	if len(fields) == 0 {
+		return nil
+	}
+
+	fields[queue.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
+
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
+	if err != nil {
+		return fmt.Errorf("QueueUpdate: prepare fields failed: %w", err)
+	}
+
+	q := squirrel.Update(queueQueuesTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(queue.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := q.ToSql()
+	if err != nil {
+		return fmt.Errorf("QueueUpdate: build SQL failed: %w", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, sqlStr, args...); err != nil {
+		return fmt.Errorf("QueueUpdate: exec failed: %w", err)
+	}
+
+	_ = h.queueUpdateToCache(ctx, id)
+	return nil
+}
+
 // QueueDelete deletes the queue.
 func (h *handler) QueueDelete(ctx context.Context, id uuid.UUID) error {
-	// prepare
-	q := `
-	update
-		queue_queues
-	set
-		tm_update = ?,
-		tm_delete = ?
-	where
-		id = ?
-	`
+	ts := h.utilHandler.TimeGetCurTime()
 
-	t := h.utilHandler.TimeGetCurTime()
-	_, err := h.db.Exec(q, t, t, id.Bytes())
+	fields := map[queue.Field]any{
+		queue.FieldTMUpdate: ts,
+		queue.FieldTMDelete: ts,
+	}
+
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
-		return fmt.Errorf("could not execute. QueueDelete. err: %v", err)
+		return fmt.Errorf("QueueDelete: prepare fields failed: %w", err)
+	}
+
+	sb := squirrel.Update(queueQueuesTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(queue.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := sb.ToSql()
+	if err != nil {
+		return fmt.Errorf("QueueDelete: build SQL failed: %w", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, sqlStr, args...); err != nil {
+		return fmt.Errorf("QueueDelete: exec failed: %w", err)
 	}
 
 	// update the cache
@@ -357,167 +275,6 @@ func (h *handler) QueueDelete(ctx context.Context, id uuid.UUID) error {
 
 	return nil
 }
-
-// QueueSetBasicInfo sets the queue's basic info.
-func (h *handler) QueueSetBasicInfo(
-	ctx context.Context,
-	id uuid.UUID,
-	name string,
-	detail string,
-	routingMethod queue.RoutingMethod,
-	tagIDs []uuid.UUID,
-	waitFlowID uuid.UUID,
-	waitTimeout int,
-	serviceTimeout int,
-) error {
-	// prepare
-	q := `
-	update
-		queue_queues
-	set
-		name = ?,
-		detail = ?,
-		routing_method = ?,
-		tag_ids = ?,
-		wait_flow_id = ?,
-		wait_timeout = ?,
-		service_timeout = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	tmpTagIDs, err := json.Marshal(tagIDs)
-	if err != nil {
-		return fmt.Errorf("could not marshal the tag_ids. err: %v", err)
-	}
-
-	_, err = h.db.Exec(q,
-		name,
-		detail,
-		routingMethod,
-		tmpTagIDs,
-		waitFlowID.Bytes(),
-		waitTimeout,
-		serviceTimeout,
-		h.utilHandler.TimeGetCurTime(),
-		id.Bytes(),
-	)
-	if err != nil {
-		return fmt.Errorf("could not execute. QueueSetBasicInfo. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.queueUpdateToCache(ctx, id)
-
-	return nil
-}
-
-// QueueSetRoutingMethod sets the queue's routing_method.
-func (h *handler) QueueSetRoutingMethod(ctx context.Context, id uuid.UUID, routingMethod queue.RoutingMethod) error {
-	// prepare
-	q := `
-	update
-		queue_queues
-	set
-		routing_method = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-	_, err := h.db.Exec(q, routingMethod, h.utilHandler.TimeGetCurTime(), id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. QueueSetRoutingMethod. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.queueUpdateToCache(ctx, id)
-
-	return nil
-}
-
-// QueueSetTagIDs sets the queue's tag_ids.
-func (h *handler) QueueSetTagIDs(ctx context.Context, id uuid.UUID, tagIDs []uuid.UUID) error {
-	// prepare
-	q := `
-	update
-		queue_queues
-	set
-		tag_ids = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	t, err := json.Marshal(tagIDs)
-	if err != nil {
-		return fmt.Errorf("could not marshal the tag_ids. err: %v", err)
-	}
-
-	_, err = h.db.Exec(q, t, h.utilHandler.TimeGetCurTime(), id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. QueueSetTagIDs. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.queueUpdateToCache(ctx, id)
-
-	return nil
-}
-
-// QueueSetExecute sets the queue's execute.
-func (h *handler) QueueSetExecute(ctx context.Context, id uuid.UUID, execute queue.Execute) error {
-	// prepare
-	q := `
-	update
-		queue_queues
-	set
-		execute = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-	_, err := h.db.Exec(q, execute, h.utilHandler.TimeGetCurTime(), id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. QueueSetExecute. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.queueUpdateToCache(ctx, id)
-
-	return nil
-}
-
-// // QueueSetWaitActionsAndTimeouts sets the queue's wait_actions.
-// func (h *handler) QueueSetWaitActionsAndTimeouts(ctx context.Context, id uuid.UUID, waitActions []fmaction.Action, waitTimeout, serviceTimeout int) error {
-// 	// prepare
-// 	q := `
-// 	update
-// 		queue_queues
-// 	set
-// 		wait_actions = ?,
-// 		wait_timeout = ?,
-// 		service_timeout = ?,
-// 		tm_update = ?
-// 	where
-// 		id = ?
-// 	`
-
-// 	t, err := json.Marshal(waitActions)
-// 	if err != nil {
-// 		return fmt.Errorf("could not marshal the tag_ids. err: %v", err)
-// 	}
-
-// 	_, err = h.db.Exec(q, t, waitTimeout, serviceTimeout, h.utilHandler.TimeGetCurTime(), id.Bytes())
-// 	if err != nil {
-// 		return fmt.Errorf("could not execute. QueueSetWaitActionsAndTimeouts. err: %v", err)
-// 	}
-
-// 	// update the cache
-// 	_ = h.queueUpdateToCache(ctx, id)
-
-// 	return nil
-// }
 
 // QueueAddWaitQueueCallID adds the queue call id to the queue.
 // it increases the total_incoming_count + 1

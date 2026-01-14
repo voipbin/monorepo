@@ -199,10 +199,11 @@ func Test_AgentGets(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent   *amagent.Agent
-		size    uint64
-		token   string
-		filters map[string]string
+		agent         *amagent.Agent
+		size          uint64
+		token         string
+		filters       map[string]string
+		expectFilters map[amagent.Field]any
 
 		response  []amagent.Agent
 		expectRes []*amagent.WebhookMessage
@@ -220,6 +221,9 @@ func Test_AgentGets(t *testing.T) {
 			"2020-09-20 03:23:20.995000",
 			map[string]string{
 				"deleted": "false",
+			},
+			map[amagent.Field]any{
+				amagent.FieldDeleted: false,
 			},
 
 			[]amagent.Agent{
@@ -250,6 +254,9 @@ func Test_AgentGets(t *testing.T) {
 			"2020-09-20 03:23:20.995000",
 			map[string]string{
 				"deleted": "false",
+			},
+			map[amagent.Field]any{
+				amagent.FieldDeleted: false,
 			},
 
 			[]amagent.Agent{
@@ -294,7 +301,7 @@ func Test_AgentGets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().AgentV1AgentGets(ctx, tt.token, tt.size, tt.filters).Return(tt.response, nil)
+			mockReq.EXPECT().AgentV1AgentGets(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.response, nil)
 
 			res, err := h.AgentGets(ctx, tt.agent, tt.size, tt.token, tt.filters)
 			if err != nil {

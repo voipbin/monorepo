@@ -37,8 +37,8 @@ func (h *websockHandler) RunExternalMedia(ctx context.Context, w http.ResponseWr
 	log.Debugf("Created a new websocket correctly.")
 
 	// get the external media info
-	filters := map[string]string{
-		"reference_id": callID.String(),
+	filters := map[cmexternalmedia.Field]any{
+		cmexternalmedia.FieldReferenceID: callID,
 	}
 	externalMedias, err := h.reqHandler.CallV1ExternalMediaGets(ctx, "", uint64(1), filters)
 	if err != nil || len(externalMedias) == 0 {

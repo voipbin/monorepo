@@ -118,7 +118,7 @@ func (mr *MockGroupcallHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
 }
 
 // Gets mocks base method.
-func (m *MockGroupcallHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*groupcall.Groupcall, error) {
+func (m *MockGroupcallHandler) Gets(ctx context.Context, size uint64, token string, filters map[groupcall.Field]any) ([]*groupcall.Groupcall, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Gets", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*groupcall.Groupcall)

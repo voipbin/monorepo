@@ -110,7 +110,12 @@ func (h *outdialHandler) GetsByCustomerID(ctx context.Context, customerID uuid.U
 		})
 	log.Debug("Getting outdials.")
 
-	res, err := h.db.OutdialGetsByCustomerID(ctx, customerID, token, limit)
+	filters := map[outdial.Field]any{
+		outdial.FieldCustomerID: customerID,
+		outdial.FieldDeleted:    false,
+	}
+
+	res, err := h.db.OutdialGets(ctx, token, limit, filters)
 	if err != nil {
 		log.Errorf("Could not get outdials. err: %v", err)
 		return nil, err
@@ -130,7 +135,12 @@ func (h *outdialHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name
 		})
 	log.Debug("Updating outdial basic info.")
 
-	if err := h.db.OutdialUpdateBasicInfo(ctx, id, name, detail); err != nil {
+	fields := map[outdial.Field]any{
+		outdial.FieldName:   name,
+		outdial.FieldDetail: detail,
+	}
+
+	if err := h.db.OutdialUpdate(ctx, id, fields); err != nil {
 		log.Errorf("Could not update outdials. err: %v", err)
 		return nil, err
 	}
@@ -156,7 +166,11 @@ func (h *outdialHandler) UpdateCampaignID(ctx context.Context, id, campaignID uu
 		})
 	log.Debug("updating outdial campaign info.")
 
-	if err := h.db.OutdialUpdateCampaignID(ctx, id, campaignID); err != nil {
+	fields := map[outdial.Field]any{
+		outdial.FieldCampaignID: campaignID,
+	}
+
+	if err := h.db.OutdialUpdate(ctx, id, fields); err != nil {
 		log.Errorf("Could not update outdials. err: %v", err)
 		return nil, err
 	}
@@ -182,7 +196,11 @@ func (h *outdialHandler) UpdateData(ctx context.Context, id uuid.UUID, data stri
 		})
 	log.Debug("updating outdial data info.")
 
-	if err := h.db.OutdialUpdateData(ctx, id, data); err != nil {
+	fields := map[outdial.Field]any{
+		outdial.FieldData: data,
+	}
+
+	if err := h.db.OutdialUpdate(ctx, id, fields); err != nil {
 		log.Errorf("Could not update outdials. err: %v", err)
 		return nil, err
 	}

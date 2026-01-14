@@ -122,7 +122,7 @@ func Test_AccountGets(t *testing.T) {
 		name     string
 		accounts []*account.Account
 
-		filters map[string]string
+		filters map[account.Field]any
 
 		responseCurTime string
 		expectRes       []*account.Account
@@ -146,8 +146,8 @@ func Test_AccountGets(t *testing.T) {
 				},
 			},
 
-			filters: map[string]string{
-				"customer_id": "995d6060-f3d7-11ee-a179-2fd11cdd97a2",
+			filters: map[account.Field]any{
+				account.FieldCustomerID: uuid.FromStringOrNil("995d6060-f3d7-11ee-a179-2fd11cdd97a2"),
 			},
 
 			responseCurTime: "2023-06-08 03:22:17.995000",
@@ -298,15 +298,14 @@ func Test_AccountGetsByCustomerID(t *testing.T) {
 	}
 }
 
-func Test_AccountSet(t *testing.T) {
+func Test_AccountUpdate(t *testing.T) {
 
 	type test struct {
 		name    string
 		account *account.Account
 
-		id          uuid.UUID
-		accountName string
-		detail      string
+		id     uuid.UUID
+		fields map[account.Field]any
 
 		responseCurTime string
 		expectRes       *account.Account
@@ -321,9 +320,11 @@ func Test_AccountSet(t *testing.T) {
 				},
 			},
 
-			id:          uuid.FromStringOrNil("697786c6-06cc-11ee-88f6-a79092bb719c"),
-			accountName: "test name",
-			detail:      "test detail",
+			id: uuid.FromStringOrNil("697786c6-06cc-11ee-88f6-a79092bb719c"),
+			fields: map[account.Field]any{
+				account.FieldName:   "test name",
+				account.FieldDetail: "test detail",
+			},
 
 			responseCurTime: "2023-06-08 03:22:17.995000",
 			expectRes: &account.Account{
@@ -362,7 +363,7 @@ func Test_AccountSet(t *testing.T) {
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().AccountSet(ctx, gomock.Any())
-			if err := h.AccountSet(ctx, tt.id, tt.accountName, tt.detail); err != nil {
+			if err := h.AccountUpdate(ctx, tt.id, tt.fields); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
@@ -544,15 +545,14 @@ func Test_AccountSubtractBalance(t *testing.T) {
 	}
 }
 
-func Test_AccountSetPaymentInfo(t *testing.T) {
+func Test_AccountUpdatePaymentInfo(t *testing.T) {
 
 	type test struct {
 		name    string
 		account *account.Account
 
-		id            uuid.UUID
-		paymentType   account.PaymentType
-		paymentMethod account.PaymentMethod
+		id     uuid.UUID
+		fields map[account.Field]any
 
 		responseCurTime string
 		expectRes       *account.Account
@@ -567,9 +567,11 @@ func Test_AccountSetPaymentInfo(t *testing.T) {
 				},
 			},
 
-			id:            uuid.FromStringOrNil("5d0dd0e2-06cd-11ee-a292-3bc4c472124e"),
-			paymentType:   account.PaymentTypePrepaid,
-			paymentMethod: account.PaymentMethodCreditCard,
+			id: uuid.FromStringOrNil("5d0dd0e2-06cd-11ee-a292-3bc4c472124e"),
+			fields: map[account.Field]any{
+				account.FieldPaymentType:   account.PaymentTypePrepaid,
+				account.FieldPaymentMethod: account.PaymentMethodCreditCard,
+			},
 
 			responseCurTime: "2023-06-08 03:22:17.995000",
 			expectRes: &account.Account{
@@ -608,7 +610,7 @@ func Test_AccountSetPaymentInfo(t *testing.T) {
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 			mockCache.EXPECT().AccountSet(ctx, gomock.Any())
-			if err := h.AccountSetPaymentInfo(ctx, tt.id, tt.paymentType, tt.paymentMethod); err != nil {
+			if err := h.AccountUpdate(ctx, tt.id, tt.fields); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 

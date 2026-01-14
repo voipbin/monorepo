@@ -93,7 +93,7 @@ func Test_MessageCreate(t *testing.T) {
 					ID: uuid.FromStringOrNil("d62e7a58-f22b-11ef-8edc-9b57d94ff8fc"),
 				},
 				AIcallID:  uuid.FromStringOrNil("20b4c03c-f22c-11ef-abe7-3b10f3525941"),
-				ToolCalls: []message.ToolCall{},
+				ToolCalls: nil,
 				TMCreate:  "2023-01-03 21:35:02.809",
 				TMDelete:  DefaultTimeStamp,
 			},
@@ -135,7 +135,9 @@ func Test_MessageCreate(t *testing.T) {
 			}
 
 			expectRes := []*message.Message{tt.expectRes}
-			resGets, err := h.MessageGets(ctx, tt.message.AIcallID, 100, DefaultTimeStamp, map[string]string{})
+			resGets, err := h.MessageGets(ctx, 100, DefaultTimeStamp, map[message.Field]any{
+				message.FieldAIcallID: tt.message.AIcallID,
+			})
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

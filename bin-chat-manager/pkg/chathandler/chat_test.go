@@ -80,7 +80,7 @@ func Test_GetsByCustomerID(t *testing.T) {
 
 		token   string
 		limit   uint64
-		filters map[string]string
+		filters map[chat.Field]any
 
 		responseChat []*chat.Chat
 	}{
@@ -89,9 +89,9 @@ func Test_GetsByCustomerID(t *testing.T) {
 
 			"2022-04-18 03:22:17.995000",
 			10,
-			map[string]string{
-				"customer_id": "809656e2-305e-43cd-8d7b-ccb44373dddb",
-				"deleted":     "false",
+			map[chat.Field]any{
+				chat.FieldCustomerID: uuid.FromStringOrNil("809656e2-305e-43cd-8d7b-ccb44373dddb"),
+				chat.FieldDeleted:    false,
 			},
 
 			[]*chat.Chat{
@@ -222,7 +222,7 @@ func Test_Create(t *testing.T) {
 		responseUUID uuid.UUID
 		responseChat *chat.Chat
 
-		expectFilters map[string]string
+		expectFilters map[chat.Field]any
 	}{
 		{
 			"normal",
@@ -244,11 +244,11 @@ func Test_Create(t *testing.T) {
 				},
 			},
 
-			map[string]string{
-				"customer_id":     "ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4",
-				"deleted":         "false",
-				"participant_ids": "d8e0c187-44c8-4376-abab-2831f1754f5d,fbfd1fe6-bde3-4fa2-9f7b-e460807100a6",
-				"type":            "normal",
+			map[chat.Field]any{
+				chat.FieldCustomerID:     uuid.FromStringOrNil("ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4"),
+				chat.FieldDeleted:        false,
+				chat.FieldParticipantIDs: "d8e0c187-44c8-4376-abab-2831f1754f5d,fbfd1fe6-bde3-4fa2-9f7b-e460807100a6",
+				chat.FieldType:           chat.TypeNormal,
 			},
 		},
 	}
@@ -638,7 +638,7 @@ func Test_AddParticipantID(t *testing.T) {
 		responseChat      *chat.Chat
 		responseChatrooms []*chatroom.Chatroom
 
-		expectFilters        map[string]string
+		expectFilters        map[chatroom.Field]any
 		expectParticipantIDs []uuid.UUID
 	}{
 		{
@@ -668,9 +668,9 @@ func Test_AddParticipantID(t *testing.T) {
 				},
 			},
 
-			map[string]string{
-				"deleted": "false",
-				"chat_id": "2442834a-312e-11ed-8306-87672e5154fb",
+			map[chatroom.Field]any{
+				chatroom.FieldDeleted: false,
+				chatroom.FieldChatID:  uuid.FromStringOrNil("2442834a-312e-11ed-8306-87672e5154fb"),
 			},
 			[]uuid.UUID{
 				uuid.FromStringOrNil("612a6f48-312e-11ed-ac1d-ab725d46bc95"),
@@ -706,7 +706,7 @@ func Test_AddParticipantID(t *testing.T) {
 			mockDB.EXPECT().ChatGet(ctx, tt.responseChat.ID).Return(tt.responseChat, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseChat.CustomerID, chat.EventTypeChatUpdated, tt.responseChat)
 
-			mockChatroom.EXPECT().Gets(ctx, gomock.Any(), gomock.Any(), tt.expectFilters).Return(tt.responseChatrooms, nil)
+			mockChatroom.EXPECT().Gets(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseChatrooms, nil)
 			for _, cr := range tt.responseChatrooms {
 				mockChatroom.EXPECT().AddParticipantID(ctx, cr.ID, tt.participantID).Return(&chatroom.Chatroom{}, nil)
 			}
@@ -747,7 +747,7 @@ func Test_RemoveParticipantID(t *testing.T) {
 		responseChat      *chat.Chat
 		responseChatrooms []*chatroom.Chatroom
 
-		expectFilters        map[string]string
+		expectFilters        map[chatroom.Field]any
 		expectParticipantIDs []uuid.UUID
 	}{
 		{
@@ -779,9 +779,9 @@ func Test_RemoveParticipantID(t *testing.T) {
 				},
 			},
 
-			map[string]string{
-				"deleted": "false",
-				"chat_id": "25d04f5c-3134-11ed-ac20-6f4780413d87",
+			map[chatroom.Field]any{
+				chatroom.FieldDeleted: false,
+				chatroom.FieldChatID:  uuid.FromStringOrNil("25d04f5c-3134-11ed-ac20-6f4780413d87"),
 			},
 			[]uuid.UUID{
 				uuid.FromStringOrNil("2622af18-3134-11ed-9fde-a709c229f85c"),
@@ -817,7 +817,7 @@ func Test_RemoveParticipantID(t *testing.T) {
 			mockDB.EXPECT().ChatGet(ctx, tt.responseChat.ID).Return(tt.responseChat, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseChat.CustomerID, chat.EventTypeChatUpdated, tt.responseChat)
 
-			mockChatroom.EXPECT().Gets(ctx, gomock.Any(), gomock.Any(), tt.expectFilters).Return(tt.responseChatrooms, nil)
+			mockChatroom.EXPECT().Gets(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseChatrooms, nil)
 			chatroomID := uuid.Nil
 			for _, cr := range tt.responseChatrooms {
 				if cr.RoomOwnerID == tt.participantID {

@@ -4,66 +4,24 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"strconv"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
+
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"monorepo/bin-registrar-manager/models/extension"
 )
 
 const (
-	extensionSelect = `
-	select
-		id,
-		customer_id,
-
-		name,
-		detail,
-
-		endpoint_id,
-		aor_id,
-		auth_id,
-
-		extension,
-		domain_name,
-
-		realm,
-		username,
-		password,
-
-		coalesce(tm_create, '') as tm_create,
-		coalesce(tm_update, '') as tm_update,
-		coalesce(tm_delete, '') as tm_delete
-	from
-		registrar_extensions
-	`
+	extensionsTable = "registrar_extensions"
 )
 
 // extensionGetFromRow gets the extension from the row
 func (h *handler) extensionGetFromRow(row *sql.Rows) (*extension.Extension, error) {
 	res := &extension.Extension{}
-	if err := row.Scan(
-		&res.ID,
-		&res.CustomerID,
 
-		&res.Name,
-		&res.Detail,
-
-		&res.EndpointID,
-		&res.AORID,
-		&res.AuthID,
-
-		&res.Extension,
-		&res.DomainName,
-
-		&res.Realm,
-		&res.Username,
-		&res.Password,
-
-		&res.TMCreate,
-		&res.TMUpdate,
-		&res.TMDelete,
-	); err != nil {
+	if err := commondatabasehandler.ScanRow(row, res); err != nil {
 		return nil, fmt.Errorf("could not scan the row. extensionGetFromRow. err: %v", err)
 	}
 
@@ -72,61 +30,32 @@ func (h *handler) extensionGetFromRow(row *sql.Rows) (*extension.Extension, erro
 
 // ExtensionCreate creates new Extension record.
 func (h *handler) ExtensionCreate(ctx context.Context, b *extension.Extension) error {
-	q := `insert into registrar_extensions(
-		id,
-		customer_id,
+	now := h.utilHandler.TimeGetCurTime()
 
-		name,
-		detail,
+	// Set timestamps
+	b.TMCreate = now
+	b.TMUpdate = DefaultTimeStamp
+	b.TMDelete = DefaultTimeStamp
 
-		endpoint_id,
-		aor_id,
-		auth_id,
-
-		extension,
-		domain_name,
-
-		realm,
-		username,
-		password,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	) values(
-		?, ?,
-		?, ?,
-		?, ?, ?,
-		?, ?,
-		?, ?, ?,
-		?, ?, ?
-	)
-	`
-
-	_, err := h.db.Exec(q,
-		b.ID.Bytes(),
-		b.CustomerID.Bytes(),
-
-		b.Name,
-		b.Detail,
-
-		b.EndpointID,
-		b.AORID,
-		b.AuthID,
-
-		b.Extension,
-		b.DomainName,
-
-		b.Realm,
-		b.Username,
-		b.Password,
-
-		h.utilHandler.TimeGetCurTime(),
-		DefaultTimeStamp,
-		DefaultTimeStamp,
-	)
+	// Use PrepareFields to get field map
+	fields, err := commondatabasehandler.PrepareFields(b)
 	if err != nil {
-		return fmt.Errorf("could not execute. ExtensionCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. ExtensionCreate. err: %v", err)
+	}
+
+	// Use SetMap instead of Columns/Values
+	sb := squirrel.
+		Insert(extensionsTable).
+		SetMap(fields).
+		PlaceholderFormat(squirrel.Question)
+
+	query, args, err := sb.ToSql()
+	if err != nil {
+		return fmt.Errorf("could not build query. ExtensionCreate. err: %v", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
+		return fmt.Errorf("could not execute query. ExtensionCreate. err: %v", err)
 	}
 
 	// update the cache
@@ -137,24 +66,35 @@ func (h *handler) ExtensionCreate(ctx context.Context, b *extension.Extension) e
 
 // extensionGetFromDB returns Extension from the DB.
 func (h *handler) extensionGetFromDB(ctx context.Context, id uuid.UUID) (*extension.Extension, error) {
-
-	q := fmt.Sprintf("%s where id = ?", extensionSelect)
-
-	row, err := h.db.Query(q, id.Bytes())
+	fields := commondatabasehandler.GetDBFields(&extension.Extension{})
+	query, args, err := squirrel.
+		Select(fields...).
+		From(extensionsTable).
+		Where(squirrel.Eq{string(extension.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not query. ExtensionGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. extensionGetFromDB. err: %v", err)
+	}
+
+	row, err := h.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. extensionGetFromDB. err: %v", err)
 	}
 	defer func() {
 		_ = row.Close()
 	}()
 
 	if !row.Next() {
+		if err := row.Err(); err != nil {
+			return nil, fmt.Errorf("row iteration error. extensionGetFromDB. err: %v", err)
+		}
 		return nil, ErrNotFound
 	}
 
 	res, err := h.extensionGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("could not scan the row. ExtensionGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not get data from row. extensionGetFromDB. id: %s, err: %v", id, err)
 	}
 
 	return res, nil
@@ -239,7 +179,7 @@ func (h *handler) ExtensionGet(ctx context.Context, id uuid.UUID) (*extension.Ex
 	return res, nil
 }
 
-// ExtensionGetByEndpointID returns extension of the given extension.
+// ExtensionGetByEndpointID returns extension of the given endpoint.
 func (h *handler) ExtensionGetByEndpointID(ctx context.Context, endpointID string) (*extension.Extension, error) {
 
 	res, err := h.extensionGetByEndpointIDFromCache(ctx, endpointID)
@@ -247,17 +187,21 @@ func (h *handler) ExtensionGetByEndpointID(ctx context.Context, endpointID strin
 		return res, nil
 	}
 
-	// prepare
-	q := fmt.Sprintf(`
-		%s
-		where
-			endpoint_id = ?
-		order by
-			tm_create desc
-		limit 1
-	`, extensionSelect)
+	fields := commondatabasehandler.GetDBFields(&extension.Extension{})
+	sb := squirrel.
+		Select(fields...).
+		From(extensionsTable).
+		Where(squirrel.Eq{string(extension.FieldEndpointID): endpointID}).
+		OrderBy(string(extension.FieldTMCreate) + " DESC").
+		Limit(1).
+		PlaceholderFormat(squirrel.Question)
 
-	row, err := h.db.Query(q, endpointID)
+	query, args, err := sb.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build sql. ExtensionGetByEndpointID. err: %v", err)
+	}
+
+	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ExtensionGetByEndpointID. err: %v", err)
 	}
@@ -288,18 +232,22 @@ func (h *handler) ExtensionGetByExtension(ctx context.Context, customerID uuid.U
 		return res, nil
 	}
 
-	// prepare
-	q := fmt.Sprintf(`
-		%s
-		where
-			customer_id = ?
-			and extension = ?
-		order by
-			tm_create desc
-		limit 1
-	`, extensionSelect)
+	fields := commondatabasehandler.GetDBFields(&extension.Extension{})
+	sb := squirrel.
+		Select(fields...).
+		From(extensionsTable).
+		Where(squirrel.Eq{string(extension.FieldCustomerID): customerID.Bytes()}).
+		Where(squirrel.Eq{string(extension.FieldExtension): ext}).
+		OrderBy(string(extension.FieldTMCreate) + " DESC").
+		Limit(1).
+		PlaceholderFormat(squirrel.Question)
 
-	row, err := h.db.Query(q, customerID.Bytes(), ext)
+	query, args, err := sb.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build sql. ExtensionGetByExtension. err: %v", err)
+	}
+
+	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ExtensionGetByExtension. err: %v", err)
 	}
@@ -324,16 +272,30 @@ func (h *handler) ExtensionGetByExtension(ctx context.Context, customerID uuid.U
 
 // ExtensionDelete deletes given extension
 func (h *handler) ExtensionDelete(ctx context.Context, id uuid.UUID) error {
-	q := `
-	update registrar_extensions set
-		tm_delete = ?
-	where
-		id = ?
-	`
+	ts := h.utilHandler.TimeGetCurTime()
 
-	_, err := h.db.Exec(q, h.utilHandler.TimeGetCurTime(), id.Bytes())
+	fields := map[extension.Field]any{
+		extension.FieldTMUpdate: ts,
+		extension.FieldTMDelete: ts,
+	}
+
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
-		return fmt.Errorf("could not execute. ExtensionDelete. err: %v", err)
+		return fmt.Errorf("ExtensionDelete: prepare fields failed: %w", err)
+	}
+
+	sb := squirrel.Update(extensionsTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(extension.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := sb.ToSql()
+	if err != nil {
+		return fmt.Errorf("ExtensionDelete: build SQL failed: %w", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, sqlStr, args...); err != nil {
+		return fmt.Errorf("ExtensionDelete: exec failed: %w", err)
 	}
 
 	// update the cache
@@ -342,27 +304,31 @@ func (h *handler) ExtensionDelete(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
-// ExtensionUpdate updates extension record.
-func (h *handler) ExtensionUpdate(ctx context.Context, id uuid.UUID, name string, detail string, password string) error {
-	q := `
-	update registrar_extensions set
-		name = ?,
-		detail = ?,
-		password = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
+// ExtensionUpdate updates extension record with given fields.
+func (h *handler) ExtensionUpdate(ctx context.Context, id uuid.UUID, fields map[extension.Field]any) error {
+	if len(fields) == 0 {
+		return nil
+	}
 
-	_, err := h.db.Exec(q,
-		name,
-		detail,
-		password,
-		h.utilHandler.TimeGetCurTime(),
-		id.Bytes(),
-	)
+	fields[extension.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
+
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
-		return fmt.Errorf("could not execute. ExtensionUpdate. err: %v", err)
+		return fmt.Errorf("ExtensionUpdate: prepare fields failed: %w", err)
+	}
+
+	q := squirrel.Update(extensionsTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(extension.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := q.ToSql()
+	if err != nil {
+		return fmt.Errorf("ExtensionUpdate: build SQL failed: %w", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, sqlStr, args...); err != nil {
+		return fmt.Errorf("ExtensionUpdate: exec failed: %w", err)
 	}
 
 	// update the cache
@@ -372,44 +338,31 @@ func (h *handler) ExtensionUpdate(ctx context.Context, id uuid.UUID, name string
 }
 
 // ExtensionGets returns list extensions.
-func (h *handler) ExtensionGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*extension.Extension, error) {
-	// prepare
-	q := fmt.Sprintf(`%s
-	where
-		tm_create < ?
-	`, extensionSelect)
-
+func (h *handler) ExtensionGets(ctx context.Context, size uint64, token string, filters map[extension.Field]any) ([]*extension.Extension, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	values := []interface{}{
-		token,
+	fields := commondatabasehandler.GetDBFields(&extension.Extension{})
+	sb := squirrel.
+		Select(fields...).
+		From(extensionsTable).
+		Where(squirrel.Lt{string(extension.FieldTMCreate): token}).
+		OrderBy(string(extension.FieldTMCreate) + " DESC").
+		Limit(size).
+		PlaceholderFormat(squirrel.Question)
+
+	sb, err := commondatabasehandler.ApplyFields(sb, filters)
+	if err != nil {
+		return nil, fmt.Errorf("could not apply filters. ExtensionGets. err: %v", err)
 	}
 
-	for k, v := range filters {
-		switch k {
-		case "customer_id":
-			q = fmt.Sprintf("%s and customer_id = ?", q)
-			tmp := uuid.FromStringOrNil(v)
-			values = append(values, tmp.Bytes())
-
-		case "deleted":
-			if v == "false" {
-				q = fmt.Sprintf("%s and tm_delete >= ?", q)
-				values = append(values, DefaultTimeStamp)
-			}
-
-		default:
-			q = fmt.Sprintf("%s and %s = ?", q, k)
-			values = append(values, v)
-		}
+	query, args, err := sb.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. ExtensionGets. err: %v", err)
 	}
 
-	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
-	values = append(values, strconv.FormatUint(size, 10))
-
-	rows, err := h.db.Query(q, values...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ExtensionGets. err: %v", err)
 	}
@@ -417,14 +370,16 @@ func (h *handler) ExtensionGets(ctx context.Context, size uint64, token string, 
 		_ = rows.Close()
 	}()
 
-	var res []*extension.Extension
+	res := []*extension.Extension{}
 	for rows.Next() {
 		u, err := h.extensionGetFromRow(rows)
 		if err != nil {
 			return nil, fmt.Errorf("dbhandler: Could not scan the row. ExtensionGets. err: %v", err)
 		}
-
 		res = append(res, u)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error. ExtensionGets. err: %v", err)
 	}
 
 	return res, nil

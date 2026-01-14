@@ -22,18 +22,21 @@ func Test_Gets(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customerID uuid.UUID
-		size       uint64
-		token      string
+		size    uint64
+		token   string
+		filters map[tag.Field]any
 
 		responseTags []*tag.Tag
 	}{
 		{
 			name: "normal",
 
-			customerID: uuid.FromStringOrNil("a082d59c-2a00-11ee-8fb1-8bbf141432f6"),
-			size:       10,
-			token:      "2020-04-18 03:22:17.995000",
+			size:  10,
+			token: "2020-04-18 03:22:17.995000",
+			filters: map[tag.Field]any{
+				tag.FieldCustomerID: uuid.FromStringOrNil("a082d59c-2a00-11ee-8fb1-8bbf141432f6"),
+				tag.FieldDeleted:    false,
+			},
 
 			responseTags: []*tag.Tag{
 				{
@@ -60,8 +63,8 @@ func Test_Gets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().TagGets(ctx, tt.customerID, tt.size, tt.token).Return(tt.responseTags, nil)
-			res, err := h.Gets(ctx, tt.customerID, tt.size, tt.token)
+			mockDB.EXPECT().TagGets(ctx, tt.size, tt.token, tt.filters).Return(tt.responseTags, nil)
+			res, err := h.Gets(ctx, tt.size, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

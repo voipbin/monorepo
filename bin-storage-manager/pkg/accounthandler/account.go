@@ -67,9 +67,9 @@ func (h *accountHandler) getByCustomerID(ctx context.Context, customerID uuid.UU
 	})
 
 	// check the account exists
-	filters := map[string]string{
-		"deleted":     "false",
-		"customer_id": customerID.String(),
+	filters := map[account.Field]any{
+		account.FieldDeleted:    false,
+		account.FieldCustomerID: customerID,
 	}
 	tmps, err := h.Gets(ctx, "", 1, filters)
 	if err != nil {
@@ -85,7 +85,7 @@ func (h *accountHandler) getByCustomerID(ctx context.Context, customerID uuid.UU
 }
 
 // Gets returns list of account
-func (h *accountHandler) Gets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*account.Account, error) {
+func (h *accountHandler) Gets(ctx context.Context, token string, size uint64, filters map[account.Field]any) ([]*account.Account, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "Gets",
 		"token": token,

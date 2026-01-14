@@ -9,6 +9,8 @@ import (
 
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
+
 	"github.com/gofrs/uuid"
 
 	"monorepo/bin-transcribe-manager/models/streaming"
@@ -25,19 +27,19 @@ type DBHandler interface {
 	StreamingGet(ctx context.Context, id uuid.UUID) (*streaming.Streaming, error)
 
 	// transcribe
-	TranscribeAddTranscript(ctx context.Context, id uuid.UUID, t *transcript.Transcript) error
 	TranscribeCreate(ctx context.Context, t *transcribe.Transcribe) error
 	TranscribeDelete(ctx context.Context, id uuid.UUID) error
 	TranscribeGet(ctx context.Context, id uuid.UUID) (*transcribe.Transcribe, error)
 	TranscribeGetByReferenceIDAndLanguage(ctx context.Context, referenceID uuid.UUID, language string) (*transcribe.Transcribe, error)
-	TranscribeGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*transcribe.Transcribe, error)
-	TranscribeSetStatus(ctx context.Context, id uuid.UUID, status transcribe.Status) error
+	TranscribeGets(ctx context.Context, size uint64, token string, filters map[transcribe.Field]any) ([]*transcribe.Transcribe, error)
+	TranscribeUpdate(ctx context.Context, id uuid.UUID, fields map[transcribe.Field]any) error
 
 	// transcript
 	TranscriptCreate(ctx context.Context, t *transcript.Transcript) error
 	TranscriptGet(ctx context.Context, id uuid.UUID) (*transcript.Transcript, error)
-	TranscriptGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*transcript.Transcript, error)
+	TranscriptGets(ctx context.Context, size uint64, token string, filters map[transcript.Field]any) ([]*transcript.Transcript, error)
 	TranscriptDelete(ctx context.Context, id uuid.UUID) error
+	TranscriptUpdate(ctx context.Context, id uuid.UUID, fields map[transcript.Field]any) error
 }
 
 // handler database handler
@@ -49,7 +51,7 @@ type handler struct {
 
 // List of default values
 const (
-	DefaultTimeStamp = "9999-01-01 00:00:00.000000"
+	DefaultTimeStamp = commondatabasehandler.DefaultTimeStamp
 )
 
 // handler errors

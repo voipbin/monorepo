@@ -286,7 +286,7 @@ func Test_StartCallHandle_IncomingTypeFlow(t *testing.T) {
 		responseActiveflow  *fmactiveflow.Activeflow
 		responseCall        *call.Call
 
-		expectFilters map[string]string
+		expectFilters map[number.Field]any
 		expectCall    *call.Call
 	}
 
@@ -356,9 +356,9 @@ func Test_StartCallHandle_IncomingTypeFlow(t *testing.T) {
 				},
 			},
 
-			map[string]string{
-				"number":  "+123456789",
-				"deleted": "false",
+			map[number.Field]any{
+				number.FieldNumber:  "+123456789",
+				number.FieldDeleted: false,
 			},
 			&call.Call{
 				Identity: commonidentity.Identity{

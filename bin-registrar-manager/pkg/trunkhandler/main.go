@@ -34,9 +34,9 @@ type TrunkHandler interface {
 		allowedIPs []string,
 	) (*trunk.Trunk, error)
 	Get(ctx context.Context, id uuid.UUID) (*trunk.Trunk, error)
-	Gets(ctx context.Context, token string, limit uint64, filters map[string]string) ([]*trunk.Trunk, error)
+	Gets(ctx context.Context, token string, limit uint64, filters map[trunk.Field]any) ([]*trunk.Trunk, error)
 	GetByDomainName(ctx context.Context, domainName string) (*trunk.Trunk, error)
-	Update(ctx context.Context, id uuid.UUID, name string, detail string, authTypes []sipauth.AuthType, username string, password string, allowedIPs []string) (*trunk.Trunk, error)
+	Update(ctx context.Context, id uuid.UUID, fields map[trunk.Field]any) (*trunk.Trunk, error)
 	Delete(ctx context.Context, id uuid.UUID) (*trunk.Trunk, error)
 
 	EventCUCustomerDeleted(ctx context.Context, cu *cucustomer.Customer) error

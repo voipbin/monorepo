@@ -258,6 +258,104 @@ go mod tidy && go mod vendor && go generate ./...
 
 **Never commit changes to public-facing models without verifying OpenAPI schemas are synchronized.**
 
+## Git Workflow: Commit Message Format
+
+**CRITICAL: This is a monorepo containing multiple projects. Commit messages MUST specify which projects were affected.**
+
+### Commit Message Structure
+
+**Title (first line):**
+```
+VOIP-[ticket-number]: Brief description of change
+```
+or
+```
+NOJIRA-Underscored_Description
+```
+
+**Body (subsequent lines):**
+List each affected project with specific changes:
+```
+- bin-common-handler: Fixed type handling in database mapper
+- bin-flow-manager: Updated flow execution to use new types
+- bin-call-manager: Refactored call handler to support new interface
+- bin-conference-manager: Updated conference creation logic
+```
+
+**Complete Example (Narrative Style):**
+```
+VOIP-1190: Refactor database handlers to use commondatabasehandler pattern
+
+Successfully refactored 22 microservices to adopt standardized commondatabasehandler
+pattern from bin-common-handler, improving type safety and code consistency across
+the entire monorepo.
+
+- bin-common-handler: Provides PrepareFields(), ScanRow(), ApplyFields(), and
+  GetDBFields() utilities for standardized database operations
+- bin-ai-manager: Adds db tags to ai, aicall, message, and summary models with
+  typed Field constants for type-safe database operations
+- bin-ai-manager: Migrates all dbhandler operations to use PrepareFields() for
+  INSERT/UPDATE and ScanRow() for result scanning
+- bin-call-manager: Adds field.go files for call, confbridge, groupcall, and
+  recording models with typed Field constants
+- bin-call-manager: Refactors all database queries to use Squirrel SetMap()
+  with PrepareFields() instead of Columns().Values()
+- bin-conference-manager: Adds ConvertStringMapToFieldMap() helper functions
+  for filter conversion from external APIs
+... (continue for all affected services)
+
+Test results: All 28 services passing (477 files modified)
+```
+
+**Merge Commit Format:**
+```
+Merge VOIP-[ticket-number]: Brief description
+
+- bin-service-1: What changed
+- bin-service-2: What changed
+```
+
+### Rules
+
+1. **Always list affected projects** - Even if it's just one project
+2. **Be specific** - Describe what changed in each project, not just "updated"
+3. **Keep title concise** - Detailed changes go in the body
+4. **Use present tense** - "Add feature" not "Added feature"
+5. **Use dashes (`-`) for bullet points** - Never use asterisks (`*`)
+6. **Add narrative summary** - For large changes, include a summary paragraph before the bullet list
+7. **Multiple bullets per service** - Complex changes should have multiple detailed bullets
+8. **Include test results** - Add summary line at the end (e.g., "Test results: All 28 services passing")
+
+**Good examples:**
+```
+VOIP-1234: Add JWT authentication support
+
+- bin-api-manager: Implement JWT middleware and token validation
+- bin-customer-manager: Add token generation endpoints
+- bin-common-handler: Add JWT utility functions
+```
+
+```
+NOJIRA-Fix_database_connection_leak
+
+- bin-call-manager: Close database connections in defer statements
+- bin-conference-manager: Add connection pool timeout handling
+```
+
+**Bad examples:**
+```
+Fixed bug  ❌ (No ticket number, no affected projects)
+```
+
+```
+VOIP-1234: Updated everything  ❌ (Not specific, no project list)
+```
+
+```
+VOIP-1234: Add feature
+- Updated files  ❌ (Not specific about which projects)
+```
+
 ## Git Workflow: Branch Management
 
 **CRITICAL: Before making ANY changes or commits, ALWAYS check the current branch first.**

@@ -20,7 +20,7 @@ const (
 
 // AccesskeyHandler interface
 type AccesskeyHandler interface {
-	Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*accesskey.Accesskey, error)
+	Gets(ctx context.Context, size uint64, token string, filters map[accesskey.Field]any) ([]*accesskey.Accesskey, error)
 	GetsByCustomerID(ctx context.Context, size uint64, token string, customerID uuid.UUID) ([]*accesskey.Accesskey, error)
 	Get(ctx context.Context, id uuid.UUID) (*accesskey.Accesskey, error)
 	GetByToken(ctx context.Context, token string) (*accesskey.Accesskey, error)

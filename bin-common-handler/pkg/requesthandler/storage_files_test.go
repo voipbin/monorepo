@@ -5,7 +5,6 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
-	"monorepo/bin-common-handler/pkg/utilhandler"
 	smfile "monorepo/bin-storage-manager/models/file"
 	"reflect"
 	"testing"
@@ -181,11 +180,10 @@ func Test_StorageV1FileGets(t *testing.T) {
 
 		pageToken string
 		pageSize  uint64
-		filters   map[string]string
+		filters   map[smfile.Field]any
 
 		response *sock.Response
 
-		expectURL     string
 		expectTarget  string
 		expectRequest *sock.Request
 		expectResult  []smfile.File
@@ -195,8 +193,8 @@ func Test_StorageV1FileGets(t *testing.T) {
 
 			"2020-09-20 03:23:20.995000",
 			10,
-			map[string]string{
-				"customer_id": "31237c7c-1610-11ef-84b3-f728e90c5c3e",
+			map[smfile.Field]any{
+				smfile.FieldCustomerID: uuid.FromStringOrNil("31237c7c-1610-11ef-84b3-f728e90c5c3e"),
 			},
 
 			&sock.Response{
@@ -205,12 +203,12 @@ func Test_StorageV1FileGets(t *testing.T) {
 				Data:       []byte(`[{"id":"308d1de0-1610-11ef-af26-cf10522110e0"},{"id":"30f09a46-1610-11ef-99a4-4b9fef0d8729"}]`),
 			},
 
-			"/v1/files?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10",
 			"bin-manager.storage-manager.request",
 			&sock.Request{
-				URI:      "/v1/files?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10&filter_customer_id=31237c7c-1610-11ef-84b3-f728e90c5c3e",
+				URI:      "/v1/files?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10",
 				Method:   sock.RequestMethodGet,
-				DataType: ContentTypeNone,
+				DataType: "application/json",
+				Data:     []byte(`{"customer_id":"31237c7c-1610-11ef-84b3-f728e90c5c3e"}`),
 			},
 			[]smfile.File{
 				{
@@ -233,14 +231,11 @@ func Test_StorageV1FileGets(t *testing.T) {
 			defer mc.Finish()
 
 			mockSock := sockhandler.NewMockSockHandler(mc)
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			reqHandler := requestHandler{
-				sock:        mockSock,
-				utilHandler: mockUtil,
+				sock: mockSock,
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().URLMergeFilters(tt.expectURL, tt.filters).Return(utilhandler.URLMergeFilters(tt.expectURL, tt.filters))
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.StorageV1FileGets(ctx, tt.pageToken, tt.pageSize, tt.filters)

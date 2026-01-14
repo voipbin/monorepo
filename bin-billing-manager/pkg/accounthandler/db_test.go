@@ -223,7 +223,7 @@ func Test_GetsByCustomerID(t *testing.T) {
 
 		size    uint64
 		token   string
-		filters map[string]string
+		filters map[account.Field]any
 
 		responseAccounts []*account.Account
 	}
@@ -234,8 +234,8 @@ func Test_GetsByCustomerID(t *testing.T) {
 
 			size:  10,
 			token: "2023-06-07 03:22:17.995000",
-			filters: map[string]string{
-				"customer_id": "480cd15e-f3d8-11ee-8212-bfff8eb203cc",
+			filters: map[account.Field]any{
+				account.FieldCustomerID: uuid.FromStringOrNil("480cd15e-f3d8-11ee-8212-bfff8eb203cc"),
 			},
 
 			responseAccounts: []*account.Account{
@@ -461,6 +461,7 @@ func Test_dbUpdateBasicInfo(t *testing.T) {
 		accountName string
 		detail      string
 
+		expectFields     map[account.Field]any
 		responseAccounts *account.Account
 	}
 
@@ -472,6 +473,10 @@ func Test_dbUpdateBasicInfo(t *testing.T) {
 			accountName: "update name",
 			detail:      "update detail",
 
+			expectFields: map[account.Field]any{
+				account.FieldName:   "update name",
+				account.FieldDetail: "update detail",
+			},
 			responseAccounts: &account.Account{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("5fc8b882-4cce-11ee-a6be-2b19227e7197"),
@@ -496,7 +501,7 @@ func Test_dbUpdateBasicInfo(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AccountSet(ctx, tt.id, tt.accountName, tt.detail).Return(nil)
+			mockDB.EXPECT().AccountUpdate(ctx, tt.id, tt.expectFields).Return(nil)
 			mockDB.EXPECT().AccountGet(ctx, tt.id).Return(tt.responseAccounts, nil)
 
 			res, err := h.dbUpdateBasicInfo(ctx, tt.id, tt.accountName, tt.detail)

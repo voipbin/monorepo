@@ -3,7 +3,6 @@ package listenhandler
 import (
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
-	"monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-storage-manager/models/account"
 	"monorepo/bin-storage-manager/pkg/accounthandler"
 	"monorepo/bin-storage-manager/pkg/storagehandler"
@@ -83,7 +82,7 @@ func Test_v1AccountsGet(t *testing.T) {
 		pageToken string
 		pageSize  uint64
 
-		responseFilters  map[string]string
+		expectFilters    map[account.Field]any
 		responseAccounts []*account.Account
 
 		expectRes *sock.Response
@@ -91,15 +90,16 @@ func Test_v1AccountsGet(t *testing.T) {
 		{
 			"1 item",
 			&sock.Request{
-				URI:      "/v1/accounts?page_token=2020-10-10T03:30:17.000000&page_size=10&filter_deleted=false",
+				URI:      "/v1/accounts?page_token=2020-10-10T03:30:17.000000&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
+				Data:     []byte(`{"deleted":false}`),
 			},
 
 			"2020-10-10T03:30:17.000000",
 			10,
-			map[string]string{
-				"deleted": "false",
+			map[account.Field]any{
+				account.FieldDeleted: false,
 			},
 
 			[]*account.Account{
@@ -120,19 +120,16 @@ func Test_v1AccountsGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockStorage := storagehandler.NewMockStorageHandler(mc)
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
 			h := &listenHandler{
-				utilHandler:    mockUtil,
 				sockHandler:    mockSock,
 				storageHandler: mockStorage,
 				accountHandler: mockAccount,
 			}
 
-			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
-			mockAccount.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, tt.responseFilters).Return(tt.responseAccounts, nil)
+			mockAccount.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, gomock.Any()).Return(tt.responseAccounts, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

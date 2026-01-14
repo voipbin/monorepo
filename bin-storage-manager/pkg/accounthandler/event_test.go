@@ -2,6 +2,7 @@ package accounthandler
 
 import (
 	"context"
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	cucustomer "monorepo/bin-customer-manager/models/customer"
@@ -22,7 +23,7 @@ func Test_EventCustomerCreated(t *testing.T) {
 
 		responseAccounts *account.Account
 		responseUUID     uuid.UUID
-		expectFilters    map[string]string
+		expectFilters    map[account.Field]any
 		expectAccount    *account.Account
 	}{
 		{
@@ -34,13 +35,13 @@ func Test_EventCustomerCreated(t *testing.T) {
 
 			responseAccounts: &account.Account{
 				ID:       uuid.FromStringOrNil("f055b6ac-1b6d-11ef-9381-033d27b16b0d"),
-				TMDelete: dbhandler.DefaultTimeStamp,
+				TMDelete: commondatabasehandler.DefaultTimeStamp,
 			},
 			responseUUID: uuid.FromStringOrNil("f0aaee06-1b6d-11ef-acb1-87b1e9c73a2f"),
 
-			expectFilters: map[string]string{
-				"customer_id": "f02bb3b6-1b6d-11ef-9166-b349a9bf3799",
-				"deleted":     "false",
+			expectFilters: map[account.Field]any{
+				account.FieldCustomerID: uuid.FromStringOrNil("f02bb3b6-1b6d-11ef-9166-b349a9bf3799"),
+				account.FieldDeleted:    false,
 			},
 			expectAccount: &account.Account{
 				ID:         uuid.FromStringOrNil("f0aaee06-1b6d-11ef-acb1-87b1e9c73a2f"),
@@ -87,7 +88,7 @@ func Test_EventCustomerDeleted(t *testing.T) {
 
 		customer *cucustomer.Customer
 
-		expectFilters    map[string]string
+		expectFilters    map[account.Field]any
 		responseAccounts []*account.Account
 	}{
 		{
@@ -97,14 +98,14 @@ func Test_EventCustomerDeleted(t *testing.T) {
 				ID: uuid.FromStringOrNil("53812672-1b6d-11ef-9390-7bcc54eaeb10"),
 			},
 
-			expectFilters: map[string]string{
-				"customer_id": "53812672-1b6d-11ef-9390-7bcc54eaeb10",
-				"deleted":     "false",
+			expectFilters: map[account.Field]any{
+				account.FieldCustomerID: uuid.FromStringOrNil("53812672-1b6d-11ef-9390-7bcc54eaeb10"),
+				account.FieldDeleted:    false,
 			},
 			responseAccounts: []*account.Account{
 				{
 					ID:       uuid.FromStringOrNil("53b343d2-1b6d-11ef-8d3f-87f6aa5d9616"),
-					TMDelete: dbhandler.DefaultTimeStamp,
+					TMDelete: commondatabasehandler.DefaultTimeStamp,
 				},
 			},
 		},

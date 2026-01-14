@@ -105,9 +105,9 @@ func (h *queuecallHandler) EventCUCustomerDeleted(ctx context.Context, cu *cucus
 	log.Debugf("Deleting all queues in customer. customer_id: %s", cu.ID)
 
 	// get all queuecalls in customer
-	filters := map[string]string{
-		"customer_id": cu.ID.String(),
-		"deleted":     "false",
+	filters := map[queuecall.Field]any{
+		queuecall.FieldCustomerID: cu.ID,
+		queuecall.FieldDeleted:    false,
 	}
 	qs, err := h.Gets(ctx, 1000, "", filters)
 	if err != nil {

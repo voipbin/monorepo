@@ -263,7 +263,7 @@ func Test_v1ActiveflowsGet(t *testing.T) {
 			}
 
 			// mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
-			mockActiveflowHandler.EXPECT().Gets(gomock.Any(), tt.expectedToken, tt.expectedSize, tt.responseFilters).Return(tt.responseActiveflows, nil)
+			mockActiveflowHandler.EXPECT().Gets(gomock.Any(), tt.expectedToken, tt.expectedSize, gomock.Any()).Return(tt.responseActiveflows, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

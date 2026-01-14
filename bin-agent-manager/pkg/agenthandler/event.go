@@ -108,9 +108,9 @@ func (h *agentHandler) EventCustomerDeleted(ctx context.Context, cu *cmcustomer.
 	log.Debugf("Deleting all agents in customer. customer_id: %s", cu.ID)
 
 	// get all agents in customer
-	filters := map[string]string{
-		"customer_id": cu.ID.String(),
-		"deleted":     "false",
+	filters := map[agent.Field]any{
+		agent.FieldCustomerID: cu.ID,
+		agent.FieldDeleted:    false,
 	}
 	ags, err := h.Gets(ctx, 1000, h.utilHandler.TimeGetCurTime(), filters)
 	if err != nil {

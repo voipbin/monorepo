@@ -5,6 +5,7 @@ import (
 	"fmt"
 	amagent "monorepo/bin-agent-manager/models/agent"
 	smaccount "monorepo/bin-storage-manager/models/account"
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -67,7 +68,13 @@ func (h *serviceHandler) StorageAccountGetByCustomerID(ctx context.Context, a *a
 	}
 
 	// get storage accounts
-	tmps, err := h.reqHandler.StorageV1AccountGets(ctx, "", 1, filters)
+	// Convert string filters to typed filters
+	typedFilters, err := h.convertAccountFilters(filters)
+	if err != nil {
+		return nil, err
+	}
+
+	tmps, err := h.reqHandler.StorageV1AccountGets(ctx, "", 1, typedFilters)
 	if err != nil || len(tmps) == 0 {
 		log.Infof("Could not get storage account info. err: %v", err)
 		return nil, err
@@ -138,8 +145,15 @@ func (h *serviceHandler) StorageAccountGets(ctx context.Context, a *amagent.Agen
 		"deleted": "false", // we don't need deleted items
 	}
 
+	// Convert string filters to typed filters
+	typedFilters, err := h.convertAccountFilters(filters)
+	if err != nil {
+		log.Errorf("Could not convert filters. err: %v", err)
+		return nil, err
+	}
+
 	// get storage accounts
-	tmps, err := h.reqHandler.StorageV1AccountGets(ctx, token, size, filters)
+	tmps, err := h.reqHandler.StorageV1AccountGets(ctx, token, size, typedFilters)
 	if err != nil {
 		log.Infof("Could not get storage account info. err: %v", err)
 		return nil, err
@@ -178,4 +192,27 @@ func (h *serviceHandler) StorageAccountCreate(ctx context.Context, a *amagent.Ag
 
 	res := tmp.ConvertWebhookMessage()
 	return res, nil
+}
+
+// convertAccountFilters converts map[string]string to map[smaccount.Field]any
+func (h *serviceHandler) convertAccountFilters(filters map[string]string) (map[smaccount.Field]any, error) {
+	// Convert to map[string]any first
+	srcAny := make(map[string]any, len(filters))
+	for k, v := range filters {
+		srcAny[k] = v
+	}
+
+	// Use reflection-based converter
+	typed, err := commondatabasehandler.ConvertMapToTypedMap(srcAny, smaccount.Account{})
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert string keys to Field type
+	result := make(map[smaccount.Field]any, len(typed))
+	for k, v := range typed {
+		result[smaccount.Field(k)] = v
+	}
+
+	return result, nil
 }

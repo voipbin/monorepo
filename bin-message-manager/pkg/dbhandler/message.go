@@ -3,89 +3,36 @@ package dbhandler
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
 
-	commonaddress "monorepo/bin-common-handler/models/address"
-
+	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
+
+	commonaddress "monorepo/bin-common-handler/models/address"
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"monorepo/bin-message-manager/models/message"
 	"monorepo/bin-message-manager/models/target"
 )
 
 const (
-	messageSelect = `
-	select
-		id,
-		customer_id,
-		type,
-
-		source,
-		targets,
-
-		provider_name,
-		provider_reference_id,
-
-		text,
-		medias,
-		direction,
-
-		tm_create,
-		tm_update,
-		tm_delete
-
-	from
-		message_messages
-	`
+	messageTable = "message_messages"
 )
 
-// messageGetFromRow gets the message from the row.
-func (h *handler) messageGetFromRow(row *sql.Rows) (*message.Message, error) {
-
-	var source string
-	var targets string
-	var medias string
-
+// messageGetFromRow scans a single row into a Message struct using db tags
+func (h *handler) messageGetFromRow(rows *sql.Rows) (*message.Message, error) {
 	res := &message.Message{}
-	if err := row.Scan(
-		&res.ID,
-		&res.CustomerID,
-		&res.Type,
-
-		&source,
-		&targets,
-
-		&res.ProviderName,
-		&res.ProviderReferenceID,
-
-		&res.Text,
-		&medias,
-		&res.Direction,
-
-		&res.TMCreate,
-		&res.TMUpdate,
-		&res.TMDelete,
-	); err != nil {
+	if err := commondatabasehandler.ScanRow(rows, res); err != nil {
 		return nil, fmt.Errorf("could not scan the row. messageGetFromRow. err: %v", err)
 	}
 
-	if err := json.Unmarshal([]byte(source), &res.Source); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the source. messageGetFromRow. err: %v", err)
-	}
+	// Initialize nil pointers to empty values
 	if res.Source == nil {
 		res.Source = &commonaddress.Address{}
 	}
-
-	if err := json.Unmarshal([]byte(targets), &res.Targets); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the targets. messageGetFromRow. err: %v", err)
-	}
 	if res.Targets == nil {
 		res.Targets = []target.Target{}
-	}
-
-	if err := json.Unmarshal([]byte(medias), &res.Medias); err != nil {
-		return nil, fmt.Errorf("could not unmarshal the targets. messageGetFromRow. err: %v", err)
 	}
 	if res.Medias == nil {
 		res.Medias = []string{}
@@ -95,81 +42,34 @@ func (h *handler) messageGetFromRow(row *sql.Rows) (*message.Message, error) {
 }
 
 // MessageCreate creates a new message record.
-func (h *handler) MessageCreate(ctx context.Context, n *message.Message) error {
-	q := `insert into message_messages(
-		id,
-		customer_id,
-		type,
+func (h *handler) MessageCreate(ctx context.Context, m *message.Message) error {
+	m.TMCreate = h.utilHandler.TimeGetCurTime()
+	m.TMUpdate = DefaultTimeStamp
+	m.TMDelete = DefaultTimeStamp
 
-		source,
-		targets,
-
-		provider_name,
-		provider_reference_id,
-
-		text,
-		medias,
-		direction,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	) values(
-		?, ?, ?,
-		?, ?,
-		?, ?,
-		?, ?, ?,
-		?, ?, ?
-		)`
-
-	tmpSource, err := json.Marshal(n.Source)
+	// prepare fields for insert
+	fields, err := commondatabasehandler.PrepareFields(m)
 	if err != nil {
-		return fmt.Errorf("could not marshal source. MessageCreate. err: %v", err)
+		return errors.Wrap(err, "could not prepare fields. MessageCreate")
 	}
 
-	tmpTargets, err := json.Marshal(n.Targets)
+	query, args, err := sq.Insert(messageTable).SetMap(fields).ToSql()
 	if err != nil {
-		return fmt.Errorf("could not marshal targets. MessageCreate. err: %v", err)
+		return errors.Wrap(err, "could not build query. MessageCreate")
 	}
 
-	tmpMedias, err := json.Marshal(n.Medias)
+	_, err = h.db.Exec(query, args...)
 	if err != nil {
-		return fmt.Errorf("could not marshal medias. MessageCreate. err: %v", err)
+		return errors.Wrap(err, "could not execute. MessageCreate")
 	}
 
-	_, err = h.db.Exec(q,
-		n.ID.Bytes(),
-		n.CustomerID.Bytes(),
-		n.Type,
-
-		tmpSource,
-		tmpTargets,
-
-		n.ProviderName,
-		n.ProviderReferenceID,
-
-		n.Text,
-		tmpMedias,
-		n.Direction,
-
-		h.utilHandler.TimeGetCurTime(),
-		DefaultTimeStamp,
-		DefaultTimeStamp,
-	)
-	if err != nil {
-		return fmt.Errorf("could not execute. MessageCreate. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.messageUpdateToCache(ctx, n.ID)
+	_ = h.messageUpdateToCache(ctx, m.ID)
 
 	return nil
 }
 
 // messageGetFromCache returns message from the cache.
 func (h *handler) messageGetFromCache(ctx context.Context, id uuid.UUID) (*message.Message, error) {
-
-	// get from cache
 	res, err := h.cache.MessageGet(ctx, id)
 	if err != nil {
 		return nil, err
@@ -189,7 +89,6 @@ func (h *handler) messageSetToCache(ctx context.Context, m *message.Message) err
 
 // messageUpdateToCache gets the message from the DB and update the cache.
 func (h *handler) messageUpdateToCache(ctx context.Context, id uuid.UUID) error {
-
 	res, err := h.messageGetFromDB(ctx, id)
 	if err != nil {
 		return err
@@ -204,25 +103,32 @@ func (h *handler) messageUpdateToCache(ctx context.Context, id uuid.UUID) error 
 
 // messageGetFromDB returns Message info from the DB.
 func (h *handler) messageGetFromDB(ctx context.Context, id uuid.UUID) (*message.Message, error) {
+	// get column names from db tags
+	columns := commondatabasehandler.GetDBFields(&message.Message{})
 
-	// prepare
-	q := fmt.Sprintf("%s where id = ?", messageSelect)
-
-	row, err := h.db.Query(q, id.Bytes())
+	query, args, err := sq.Select(columns...).
+		From(messageTable).
+		Where(sq.Eq{"id": id.Bytes()}).
+		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not query. messageGetFromDB. err: %v", err)
+		return nil, errors.Wrap(err, "could not build query. messageGetFromDB")
+	}
+
+	rows, err := h.db.Query(query, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not query. messageGetFromDB")
 	}
 	defer func() {
-		_ = row.Close()
+		_ = rows.Close()
 	}()
 
-	if !row.Next() {
+	if !rows.Next() {
 		return nil, ErrNotFound
 	}
 
-	res, err := h.messageGetFromRow(row)
+	res, err := h.messageGetFromRow(rows)
 	if err != nil {
-		return nil, fmt.Errorf("could not get message. messageGetFromDB, err: %v", err)
+		return nil, err
 	}
 
 	return res, nil
@@ -230,7 +136,6 @@ func (h *handler) messageGetFromDB(ctx context.Context, id uuid.UUID) (*message.
 
 // MessageGet returns Message.
 func (h *handler) MessageGet(ctx context.Context, id uuid.UUID) (*message.Message, error) {
-
 	res, err := h.messageGetFromCache(ctx, id)
 	if err == nil {
 		return res, nil
@@ -241,62 +146,79 @@ func (h *handler) MessageGet(ctx context.Context, id uuid.UUID) (*message.Messag
 		return nil, err
 	}
 
-	// set to the cache
 	_ = h.messageSetToCache(ctx, res)
 
 	return res, nil
 }
 
-// NumberUpdateBasicInfo updates flow id.
-func (h *handler) MessageUpdateTargets(ctx context.Context, id uuid.UUID, provider message.ProviderName, targets []target.Target) error {
+// MessageUpdate updates a message with the given fields.
+func (h *handler) MessageUpdate(ctx context.Context, id uuid.UUID, fields map[message.Field]any) error {
+	// add update timestamp
+	fields[message.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
 
-	q := `
-	update message_messages set
-		targets = ?,
-		provider_name = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	tmpTargets, err := json.Marshal(targets)
+	// prepare fields for update
+	data, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
-		return fmt.Errorf("could not marshal targets. MessageUpdateTargets. err: %v", err)
+		return errors.Wrap(err, "could not prepare fields. MessageUpdate")
 	}
 
-	_, err = h.db.Exec(q,
-		tmpTargets,
-		provider,
-		h.utilHandler.TimeGetCurTime(),
-		id.Bytes(),
-	)
+	query, args, err := sq.Update(messageTable).
+		SetMap(data).
+		Where(sq.Eq{"id": id.Bytes()}).
+		ToSql()
 	if err != nil {
-		return fmt.Errorf("could not execute. MessageUpdateTargets. err: %v", err)
+		return errors.Wrap(err, "could not build query. MessageUpdate")
 	}
 
-	// update the cache
+	_, err = h.db.Exec(query, args...)
+	if err != nil {
+		return errors.Wrap(err, "could not execute. MessageUpdate")
+	}
+
 	_ = h.messageUpdateToCache(ctx, id)
 
 	return nil
 }
 
-// MessageGets returns a list of numbers.
-func (h *handler) MessageGets(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*message.Message, error) {
+// MessageUpdateTargets updates the targets and provider name.
+func (h *handler) MessageUpdateTargets(ctx context.Context, id uuid.UUID, provider message.ProviderName, targets []target.Target) error {
+	fields := map[message.Field]any{
+		message.FieldTargets:      targets,
+		message.FieldProviderName: provider,
+	}
 
-	// prepare
-	q := fmt.Sprintf(`%s
-		where
-			customer_id = ?
-			and tm_create < ?
-			and tm_delete >= ?
-		order by
-			tm_create
-		desc limit ?
-		`, messageSelect)
+	return h.MessageUpdate(ctx, id, fields)
+}
 
-	rows, err := h.db.Query(q, customerID.Bytes(), token, DefaultTimeStamp, size)
+// MessageGets returns a list of messages.
+func (h *handler) MessageGets(ctx context.Context, token string, size uint64, filters map[message.Field]any) ([]*message.Message, error) {
+	if token == "" {
+		token = h.utilHandler.TimeGetCurTime()
+	}
+
+	// get column names from db tags
+	columns := commondatabasehandler.GetDBFields(&message.Message{})
+
+	builder := sq.Select(columns...).
+		From(messageTable).
+		Where("tm_create < ?", token).
+		OrderBy("tm_create desc").
+		Limit(size)
+
+	// apply filters
+	builder, err := commondatabasehandler.ApplyFields(builder, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. MessageGets. err: %v", err)
+		return nil, errors.Wrap(err, "could not apply filters. MessageGets")
+	}
+
+	query, args, err := builder.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "could not build query. MessageGets")
+	}
+
+	rows, err := h.db.Query(query, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not query. MessageGets")
 	}
 	defer func() {
 		_ = rows.Close()
@@ -304,12 +226,12 @@ func (h *handler) MessageGets(ctx context.Context, customerID uuid.UUID, size ui
 
 	res := []*message.Message{}
 	for rows.Next() {
-		u, err := h.messageGetFromRow(rows)
+		m, err := h.messageGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not get data. MessageGets, err: %v", err)
+			return nil, errors.Wrap(err, "could not scan the row. MessageGets")
 		}
 
-		res = append(res, u)
+		res = append(res, m)
 	}
 
 	return res, nil
@@ -317,26 +239,31 @@ func (h *handler) MessageGets(ctx context.Context, customerID uuid.UUID, size ui
 
 // MessageDelete deletes the message.
 func (h *handler) MessageDelete(ctx context.Context, id uuid.UUID) error {
-
-	q := `
-	update message_messages set
-		tm_update = ?,
-		tm_delete = ?
-	where
-		id = ?
-	`
-
 	ts := h.utilHandler.TimeGetCurTime()
-	_, err := h.db.Exec(q,
-		ts,
-		ts,
-		id.Bytes(),
-	)
-	if err != nil {
-		return fmt.Errorf("could not execute. MessageDelete. err: %v", err)
+	fields := map[message.Field]any{
+		message.FieldTMUpdate: ts,
+		message.FieldTMDelete: ts,
 	}
 
-	// update the cache
+	// prepare fields for update
+	data, err := commondatabasehandler.PrepareFields(fields)
+	if err != nil {
+		return errors.Wrap(err, "could not prepare fields. MessageDelete")
+	}
+
+	query, args, err := sq.Update(messageTable).
+		SetMap(data).
+		Where(sq.Eq{"id": id.Bytes()}).
+		ToSql()
+	if err != nil {
+		return errors.Wrap(err, "could not build query. MessageDelete")
+	}
+
+	_, err = h.db.Exec(query, args...)
+	if err != nil {
+		return errors.Wrap(err, "could not execute. MessageDelete")
+	}
+
 	_ = h.messageUpdateToCache(ctx, id)
 
 	return nil

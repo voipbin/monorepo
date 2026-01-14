@@ -26,7 +26,7 @@ func Test_QueueGets(t *testing.T) {
 		pageToken string
 		pageSize  uint64
 
-		expectFilters map[string]string
+		expectFilters map[qmqueue.Field]any
 
 		responseQueues []qmqueue.Queue
 		expectRes      []*qmqueue.WebhookMessage
@@ -45,9 +45,9 @@ func Test_QueueGets(t *testing.T) {
 			"2021-03-01 01:00:00.995000",
 			10,
 
-			map[string]string{
-				"customer_id": "5f621078-8e5f-11ee-97b2-cfe7337b701c",
-				"deleted":     "false",
+			map[qmqueue.Field]any{
+				qmqueue.FieldCustomerID: "5f621078-8e5f-11ee-97b2-cfe7337b701c",
+				qmqueue.FieldDeleted:    false,
 			},
 
 			[]qmqueue.Queue{

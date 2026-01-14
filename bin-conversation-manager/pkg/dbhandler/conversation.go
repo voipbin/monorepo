@@ -3,7 +3,6 @@ package dbhandler
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
 
 	"github.com/Masterminds/squirrel"
@@ -18,110 +17,38 @@ import (
 )
 
 var (
-	conversationsTable  = "conversation_conversations"
-	conversationsFields = []string{
-		string(conversation.FieldID),
-		string(conversation.FieldCustomerID),
-		string(conversation.FieldOwnerType),
-		string(conversation.FieldOwnerID),
-
-		string(conversation.FieldAccountID),
-
-		string(conversation.FieldName),
-		string(conversation.FieldDetail),
-
-		string(conversation.FieldType),
-		string(conversation.FieldDialogID),
-
-		string(conversation.FieldSelf),
-		string(conversation.FieldPeer),
-
-		string(conversation.FieldTMCreate),
-		string(conversation.FieldTMUpdate),
-		string(conversation.FieldTMDelete),
-	}
+	conversationsTable = "conversation_conversations"
 )
 
 // conversationGetFromRow gets the conversation from the row.
 func (h *handler) conversationGetFromRow(row *sql.Rows) (*conversation.Conversation, error) {
-	var self sql.NullString
-	var peer sql.NullString
-
 	res := &conversation.Conversation{}
-	if err := row.Scan(
-		&res.ID,
-		&res.CustomerID,
-		&res.OwnerType,
-		&res.OwnerID,
 
-		&res.AccountID,
-
-		&res.Name,
-		&res.Detail,
-
-		&res.Type,
-		&res.DialogID,
-
-		&self,
-		&peer,
-
-		&res.TMCreate,
-		&res.TMUpdate,
-		&res.TMDelete,
-	); err != nil {
+	if err := commondatabasehandler.ScanRow(row, res); err != nil {
 		return nil, fmt.Errorf("could not scan the row. conversationGetFromRow. err: %v", err)
-	}
-
-	if !self.Valid {
-		res.Self = commonaddress.Address{}
-	} else {
-		if err := json.Unmarshal([]byte(self.String), &res.Self); err != nil {
-			return nil, fmt.Errorf("could not unmarshal the Source. conversationGetFromRow. err: %v", err)
-		}
-	}
-
-	if !peer.Valid {
-		res.Peer = commonaddress.Address{}
-	} else {
-		if err := json.Unmarshal([]byte(peer.String), &res.Peer); err != nil {
-			return nil, fmt.Errorf("could not unmarshal the Destination. conversationGetFromRow. err: %v", err)
-		}
 	}
 
 	return res, nil
 }
 
 func (h *handler) ConversationCreate(ctx context.Context, cv *conversation.Conversation) error {
-	self, err := json.Marshal(cv.Self)
-	if err != nil {
-		return fmt.Errorf("could not marshal self. ConversationCreate. err: %v", err)
-	}
-
-	peer, err := json.Marshal(cv.Peer)
-	if err != nil {
-		return fmt.Errorf("could not marshal peer. ConversationCreate. err: %v", err)
-	}
-
 	now := h.utilHandler.TimeGetCurTime()
+
+	// Set timestamps
+	cv.TMCreate = now
+	cv.TMUpdate = commondatabasehandler.DefaultTimeStamp
+	cv.TMDelete = commondatabasehandler.DefaultTimeStamp
+
+	// Use PrepareFields to get field map
+	fields, err := commondatabasehandler.PrepareFields(cv)
+	if err != nil {
+		return fmt.Errorf("could not prepare fields. ConversationCreate. err: %v", err)
+	}
+
+	// Use SetMap instead of Columns/Values
 	sb := squirrel.
 		Insert(conversationsTable).
-		Columns(conversationsFields...).
-		Values(
-			cv.ID.Bytes(),
-			cv.CustomerID.Bytes(),
-			cv.OwnerType,
-			cv.OwnerID.Bytes(),
-			cv.AccountID.Bytes(),
-			cv.Name,
-			cv.Detail,
-			cv.Type,
-			cv.DialogID,
-			self,
-			peer,
-			now,
-			commondatabasehandler.DefaultTimeStamp,
-			commondatabasehandler.DefaultTimeStamp,
-		).
+		SetMap(fields).
 		PlaceholderFormat(squirrel.Question)
 
 	query, args, err := sb.ToSql()
@@ -140,8 +67,9 @@ func (h *handler) ConversationCreate(ctx context.Context, cv *conversation.Conve
 
 // conversationGetFromDB gets the conversation info from the db.
 func (h *handler) conversationGetFromDB(ctx context.Context, id uuid.UUID) (*conversation.Conversation, error) {
+	fields := commondatabasehandler.GetDBFields(&conversation.Conversation{})
 	query, args, err := squirrel.
-		Select(conversationsFields...).
+		Select(fields...).
 		From(conversationsTable).
 		Where(squirrel.Eq{"id": id.Bytes()}).
 		PlaceholderFormat(squirrel.Question).
@@ -225,8 +153,9 @@ func (h *handler) ConversationGet(ctx context.Context, id uuid.UUID) (*conversat
 }
 
 func (h *handler) ConversationGetBySelfAndPeer(ctx context.Context, self commonaddress.Address, peer commonaddress.Address) (*conversation.Conversation, error) {
+	fields := commondatabasehandler.GetDBFields(&conversation.Conversation{})
 	sb := squirrel.
-		Select(conversationsFields...).
+		Select(fields...).
 		From(conversationsTable).
 		Where(squirrel.Expr("JSON_UNQUOTE(JSON_EXTRACT(self, '$.type')) = ?", self.Type)).
 		Where(squirrel.Expr("JSON_UNQUOTE(JSON_EXTRACT(self, '$.target')) = ?", self.Target)).
@@ -264,8 +193,9 @@ func (h *handler) ConversationGets(ctx context.Context, size uint64, token strin
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
+	fields := commondatabasehandler.GetDBFields(&conversation.Conversation{})
 	sb := squirrel.
-		Select(conversationsFields...).
+		Select(fields...).
 		From(conversationsTable).
 		Where(squirrel.Lt{string(conversation.FieldTMCreate): token}).
 		OrderBy(string(conversation.FieldTMCreate) + " DESC").
@@ -299,7 +229,7 @@ func (h *handler) ConversationGets(ctx context.Context, size uint64, token strin
 		res = append(res, u)
 	}
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error. AccountGets. err: %v", err)
+		return nil, fmt.Errorf("rows iteration error. ConversationGets. err: %v", err)
 	}
 
 	return res, nil
@@ -320,7 +250,8 @@ func (h *handler) ConversationUpdate(ctx context.Context, id uuid.UUID, fields m
 
 	q := squirrel.Update(conversationsTable).
 		SetMap(tmpFields).
-		Where(squirrel.Eq{"id": id.Bytes()})
+		Where(squirrel.Eq{"id": id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
 
 	sqlStr, args, err := q.ToSql()
 	if err != nil {

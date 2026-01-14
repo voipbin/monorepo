@@ -114,7 +114,7 @@ func (h *conferenceHandler) Create(
 }
 
 // Gets returns list of conferences.
-func (h *conferenceHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*conference.Conference, error) {
+func (h *conferenceHandler) Gets(ctx context.Context, size uint64, token string, filters map[conference.Field]any) ([]*conference.Conference, error) {
 	res, err := h.db.ConferenceGets(ctx, size, token, filters)
 	if err != nil {
 		return nil, err
@@ -171,8 +171,7 @@ func (h *conferenceHandler) GetByConfbridgeID(ctx context.Context, confbridgeID 
 	return res, nil
 }
 
-// Create is handy function for creating a conference.
-// it increases corresponded counter
+// Update is handy function for updating a conference.
 func (h *conferenceHandler) Update(
 	ctx context.Context,
 	id uuid.UUID,
@@ -200,7 +199,15 @@ func (h *conferenceHandler) Update(
 	}
 
 	// update conference
-	if errSet := h.db.ConferenceSet(ctx, id, name, detail, data, timeout, preFlowID, postFlowID); errSet != nil {
+	fields := map[conference.Field]any{
+		conference.FieldName:       name,
+		conference.FieldDetail:     detail,
+		conference.FieldData:       data,
+		conference.FieldTimeout:    timeout,
+		conference.FieldPreFlowID:  preFlowID,
+		conference.FieldPostFlowID: postFlowID,
+	}
+	if errSet := h.db.ConferenceUpdate(ctx, id, fields); errSet != nil {
 		return nil, errors.Wrapf(errSet, "Could not update the conference. conference_id: %s", id)
 	}
 
@@ -230,7 +237,10 @@ func (h *conferenceHandler) UpdateRecordingID(ctx context.Context, id uuid.UUID,
 		"recording_id":  recordingID,
 	})
 
-	if errSet := h.db.ConferenceSetRecordingID(ctx, id, recordingID); errSet != nil {
+	fields := map[conference.Field]any{
+		conference.FieldRecordingID: recordingID,
+	}
+	if errSet := h.db.ConferenceUpdate(ctx, id, fields); errSet != nil {
 		log.Errorf("Could not set the recording id. err: %v", errSet)
 		return nil, errSet
 	}
@@ -263,7 +273,10 @@ func (h *conferenceHandler) UpdateTranscribeID(ctx context.Context, id uuid.UUID
 		"transcribe_id": transcribeID,
 	})
 
-	if errSet := h.db.ConferenceSetTranscribeID(ctx, id, transcribeID); errSet != nil {
+	fields := map[conference.Field]any{
+		conference.FieldTranscribeID: transcribeID,
+	}
+	if errSet := h.db.ConferenceUpdate(ctx, id, fields); errSet != nil {
 		log.Errorf("Could not set the transcribe id. err: %v", errSet)
 		return nil, errSet
 	}
@@ -318,8 +331,11 @@ func (h *conferenceHandler) UpdateStatus(ctx context.Context, id uuid.UUID, stat
 		"status":        status,
 	})
 
-	// add the call to the conference.
-	if errUpdate := h.db.ConferenceSetStatus(ctx, id, status); errUpdate != nil {
+	// update the conference status
+	fields := map[conference.Field]any{
+		conference.FieldStatus: status,
+	}
+	if errUpdate := h.db.ConferenceUpdate(ctx, id, fields); errUpdate != nil {
 		log.Errorf("Could not update the conference status. err: %v", errUpdate)
 		return nil, errors.Wrap(errUpdate, "Could not update the conference status.")
 	}

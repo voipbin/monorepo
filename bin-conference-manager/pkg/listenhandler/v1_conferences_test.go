@@ -7,7 +7,6 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
-	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	cmrecording "monorepo/bin-call-manager/models/recording"
 
@@ -26,22 +25,18 @@ func Test_processV1ConferencesGet(t *testing.T) {
 		pageSize  uint64
 		pageToken string
 
-		responseFilters     map[string]string
 		responseConferences []*conference.Conference
 		expectRes           *sock.Response
 	}{
 		{
 			name: "normal",
 			request: &sock.Request{
-				URI:    "/v1/conferences?page_size=10&page_token=2020-05-03%2021:35:02.809&filter_customer_id=24676972-7f49-11ec-bc89-b7d33e9d3ea8",
+				URI:    "/v1/conferences?page_size=10&page_token=2020-05-03%2021:35:02.809",
 				Method: sock.RequestMethodGet,
+				Data:   []byte(`{"customer_id":"24676972-7f49-11ec-bc89-b7d33e9d3ea8"}`),
 			},
 			pageSize:  10,
 			pageToken: "2020-05-03 21:35:02.809",
-
-			responseFilters: map[string]string{
-				"customer_id": "24676972-7f49-11ec-bc89-b7d33e9d3ea8",
-			},
 			responseConferences: []*conference.Conference{
 				{
 					Identity: commonidentity.Identity{
@@ -78,18 +73,15 @@ func Test_processV1ConferencesGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockConf := conferencehandler.NewMockConferenceHandler(mc)
 
 			h := &listenHandler{
-				utilHandler:       mockUtil,
 				sockHandler:       mockSock,
 				conferenceHandler: mockConf,
 			}
 
-			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
-			mockConf.EXPECT().Gets(gomock.Any(), tt.pageSize, tt.pageToken, tt.responseFilters).Return(tt.responseConferences, nil)
+			mockConf.EXPECT().Gets(gomock.Any(), tt.pageSize, tt.pageToken, gomock.Any()).Return(tt.responseConferences, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

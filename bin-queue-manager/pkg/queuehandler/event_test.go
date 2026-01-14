@@ -26,7 +26,7 @@ func Test_EventCUCustomerDeleted(t *testing.T) {
 
 		responseQueues []*queue.Queue
 
-		expectFilters map[string]string
+		expectFilters map[queue.Field]any
 	}{
 		{
 			name: "normal",
@@ -48,9 +48,9 @@ func Test_EventCUCustomerDeleted(t *testing.T) {
 				},
 			},
 
-			expectFilters: map[string]string{
-				"customer_id": "51813b9e-f08b-11ee-ae42-e79a06af2749",
-				"deleted":     "false",
+			expectFilters: map[queue.Field]any{
+				queue.FieldCustomerID: uuid.FromStringOrNil("51813b9e-f08b-11ee-ae42-e79a06af2749"),
+				queue.FieldDeleted:    false,
 			},
 		},
 	}
@@ -76,7 +76,10 @@ func Test_EventCUCustomerDeleted(t *testing.T) {
 			mockDB.EXPECT().QueueGets(ctx, uint64(1000), "", tt.expectFilters).Return(tt.responseQueues, nil)
 
 			for _, q := range tt.responseQueues {
-				mockDB.EXPECT().QueueSetExecute(ctx, q.ID, queue.ExecuteStop).Return(nil)
+				fields := map[queue.Field]any{
+					queue.FieldExecute: queue.ExecuteStop,
+				}
+				mockDB.EXPECT().QueueUpdate(ctx, q.ID, fields).Return(nil)
 				mockDB.EXPECT().QueueDelete(ctx, q.ID).Return(nil)
 				mockDB.EXPECT().QueueGet(ctx, q.ID).Return(q, nil)
 				mockNotify.EXPECT().PublishEvent(ctx, queue.EventTypeQueueDeleted, q)

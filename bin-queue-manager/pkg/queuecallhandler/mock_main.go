@@ -172,7 +172,7 @@ func (mr *MockQueuecallHandlerMockRecorder) GetByReferenceID(ctx, referenceID an
 }
 
 // Gets mocks base method.
-func (m *MockQueuecallHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*queuecall.Queuecall, error) {
+func (m *MockQueuecallHandler) Gets(ctx context.Context, size uint64, token string, filters map[queuecall.Field]any) ([]*queuecall.Queuecall, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Gets", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*queuecall.Queuecall)

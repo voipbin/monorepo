@@ -16,6 +16,7 @@ import (
 	"monorepo/bin-flow-manager/models/action"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 	"monorepo/bin-common-handler/models/sock"
@@ -207,13 +208,15 @@ func (r *requestHandler) CallV1CallGet(ctx context.Context, callID uuid.UUID) (*
 // CallV1CallGets sends a request to call-manager
 // to getting a list of call info.
 // it returns detail list of call info if it succeed.
-func (r *requestHandler) CallV1CallGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]cmcall.Call, error) {
+func (r *requestHandler) CallV1CallGets(ctx context.Context, pageToken string, pageSize uint64, filters map[cmcall.Field]any) ([]cmcall.Call, error) {
 	uri := fmt.Sprintf("/v1/calls?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
-	// parse filters
-	uri = r.utilHandler.URLMergeFilters(uri, filters)
+	m, err := json.Marshal(filters)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not marshal filters")
+	}
 
-	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodGet, "call/calls", 30000, 0, ContentTypeNone, nil)
+	tmp, err := r.sendRequestCall(ctx, uri, sock.RequestMethodGet, "call/calls", 30000, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}

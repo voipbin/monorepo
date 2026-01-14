@@ -19,9 +19,9 @@ func (h *accountHandler) EventCUCustomerDeleted(ctx context.Context, cu *cucusto
 	log.Debugf("Deleting all accounts of the customer. customer_id: %s", cu.ID)
 
 	// get all accounts of the customer
-	filters := map[string]string{
-		"customer_id": cu.ID.String(),
-		"deleted":     "false",
+	filters := map[account.Field]any{
+		account.FieldCustomerID: cu.ID,
+		account.FieldDeleted:    false,
 	}
 	accounts, err := h.Gets(ctx, 1000, "", filters)
 	if err != nil {

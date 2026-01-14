@@ -15,41 +15,13 @@ import (
 
 var (
 	accountsTable = "conversation_accounts"
-
-	accountsFields = []string{
-		string(account.FieldID),
-		string(account.FieldCustomerID),
-		string(account.FieldType),
-		string(account.FieldName),
-		string(account.FieldDetail),
-		string(account.FieldSecret),
-		string(account.FieldToken),
-		string(account.FieldTMCreate),
-		string(account.FieldTMUpdate),
-		string(account.FieldTMDelete),
-	}
 )
 
 // accountGetFromRow gets the account from the row.
 func (h *handler) accountGetFromRow(row *sql.Rows) (*account.Account, error) {
-
 	res := &account.Account{}
-	if err := row.Scan(
-		&res.ID,
-		&res.CustomerID,
 
-		&res.Type,
-
-		&res.Name,
-		&res.Detail,
-
-		&res.Secret,
-		&res.Token,
-
-		&res.TMCreate,
-		&res.TMUpdate,
-		&res.TMDelete,
-	); err != nil {
+	if err := commondatabasehandler.ScanRow(row, res); err != nil {
 		return nil, fmt.Errorf("could not scan the row. accountGetFromRow. err: %v", err)
 	}
 
@@ -60,21 +32,21 @@ func (h *handler) accountGetFromRow(row *sql.Rows) (*account.Account, error) {
 func (h *handler) AccountCreate(ctx context.Context, ac *account.Account) error {
 	now := h.utilHandler.TimeGetCurTime()
 
+	// Set timestamps
+	ac.TMCreate = now
+	ac.TMUpdate = commondatabasehandler.DefaultTimeStamp
+	ac.TMDelete = commondatabasehandler.DefaultTimeStamp
+
+	// Use PrepareFields to get field map
+	fields, err := commondatabasehandler.PrepareFields(ac)
+	if err != nil {
+		return fmt.Errorf("could not prepare fields. AccountCreate. err: %v", err)
+	}
+
+	// Use SetMap instead of Columns/Values
 	sb := squirrel.
 		Insert(accountsTable).
-		Columns(accountsFields...). // Spread if GetQuerySelectField returns []string
-		Values(
-			ac.ID.Bytes(),
-			ac.CustomerID.Bytes(),
-			ac.Type,
-			ac.Name,
-			ac.Detail,
-			ac.Secret,
-			ac.Token,
-			now,                                    // tm_create
-			commondatabasehandler.DefaultTimeStamp, // tm_update
-			commondatabasehandler.DefaultTimeStamp, // tm_delete
-		).
+		SetMap(fields).
 		PlaceholderFormat(squirrel.Question)
 
 	query, args, err := sb.ToSql()
@@ -92,8 +64,9 @@ func (h *handler) AccountCreate(ctx context.Context, ac *account.Account) error 
 
 // accountGetFromDB gets the account info from the db.
 func (h *handler) accountGetFromDB(ctx context.Context, id uuid.UUID) (*account.Account, error) {
+	fields := commondatabasehandler.GetDBFields(&account.Account{})
 	query, args, err := squirrel.
-		Select(accountsFields...).
+		Select(fields...).
 		From(accountsTable).
 		Where(squirrel.Eq{string(account.FieldID): id.Bytes()}).
 		PlaceholderFormat(squirrel.Question).
@@ -119,9 +92,6 @@ func (h *handler) accountGetFromDB(ctx context.Context, id uuid.UUID) (*account.
 
 	res, err := h.accountGetFromRow(row)
 	if err != nil {
-		// Wrap the error from accountGetFromRow to provide more context if desired,
-		// or return it directly if it's already descriptive enough.
-		// The example uses errors.Wrapf, let's follow that.
 		return nil, errors.Wrapf(err, "could not get account from row. accountGetFromDB. id: %s", id)
 	}
 
@@ -188,8 +158,9 @@ func (h *handler) AccountGets(ctx context.Context, size uint64, token string, fi
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
+	fields := commondatabasehandler.GetDBFields(&account.Account{})
 	sb := squirrel.
-		Select(accountsFields...).
+		Select(fields...).
 		From(accountsTable).
 		Where(squirrel.Lt{string(account.FieldTMCreate): token}).
 		OrderBy(string(account.FieldTMCreate) + " DESC").
@@ -231,29 +202,14 @@ func (h *handler) AccountGets(ctx context.Context, size uint64, token string, fi
 
 // AccountSet returns sets the account info
 func (h *handler) AccountSet(ctx context.Context, id uuid.UUID, name string, detail string, secret string, token string) error {
-
-	// prepare
-	q := `
-	update conversation_accounts set
-		name = ?,
-		detail = ?,
-		secret = ?,
-		token = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	ts := h.utilHandler.TimeGetCurTime()
-	_, err := h.db.Exec(q, name, detail, secret, token, ts, id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. AccountSet. err: %v", err)
+	fields := map[account.Field]any{
+		account.FieldName:   name,
+		account.FieldDetail: detail,
+		account.FieldSecret: secret,
+		account.FieldToken:  token,
 	}
 
-	// update the cache
-	_ = h.accountUpdateToCache(ctx, id)
-
-	return nil
+	return h.AccountUpdate(ctx, id, fields)
 }
 
 // AccountUpdate updates the account info.
@@ -271,7 +227,8 @@ func (h *handler) AccountUpdate(ctx context.Context, id uuid.UUID, fields map[ac
 
 	q := squirrel.Update(accountsTable).
 		SetMap(tmpFields).
-		Where(squirrel.Eq{"id": id.Bytes()})
+		Where(squirrel.Eq{"id": id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
 
 	sqlStr, args, err := q.ToSql()
 	if err != nil {

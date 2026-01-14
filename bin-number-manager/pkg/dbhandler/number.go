@@ -4,75 +4,25 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"strconv"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
+
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"monorepo/bin-number-manager/models/number"
 )
 
 const (
-	numberSelect = `
-	select
-		id,
-		number,
-		customer_id,
-
-		call_flow_id,
-		message_flow_id,
-
-		name,
-		detail,
-
-		provider_name,
-		provider_reference_id,
-
-		status,
-
-		t38_enabled,
-		emergency_enabled,
-
-		tm_purchase,
-		tm_renew,
-
-		tm_create,
-		tm_update,
-		tm_delete
-
-	from
-		number_numbers
-	`
+	numbersTable = "number_numbers"
 )
 
-// numberGetFromRow gets the number from the row.
+// numberGetFromRow gets the number from the row using commondatabasehandler.ScanRow.
 func (h *handler) numberGetFromRow(row *sql.Rows) (*number.Number, error) {
 	res := &number.Number{}
-	if err := row.Scan(
-		&res.ID,
-		&res.Number,
-		&res.CustomerID,
 
-		&res.CallFlowID,
-		&res.MessageFlowID,
-
-		&res.Name,
-		&res.Detail,
-
-		&res.ProviderName,
-		&res.ProviderReferenceID,
-
-		&res.Status,
-
-		&res.T38Enabled,
-		&res.EmergencyEnabled,
-
-		&res.TMPurchase,
-		&res.TMRenew,
-
-		&res.TMCreate,
-		&res.TMUpdate,
-		&res.TMDelete,
-	); err != nil {
+	if err := commondatabasehandler.ScanRow(row, res); err != nil {
 		return nil, fmt.Errorf("could not scan the row. numberGetFromRow. err: %v", err)
 	}
 
@@ -81,71 +31,34 @@ func (h *handler) numberGetFromRow(row *sql.Rows) (*number.Number, error) {
 
 // NumberCreate creates a new number record.
 func (h *handler) NumberCreate(ctx context.Context, n *number.Number) error {
-	q := `insert into number_numbers(
-		id,
-		number,
-		customer_id,
+	now := h.utilHandler.TimeGetCurTime()
 
-		call_flow_id,
-		message_flow_id,
+	// Set timestamps
+	n.TMPurchase = now
+	n.TMRenew = now
+	n.TMCreate = now
+	n.TMUpdate = DefaultTimeStamp
+	n.TMDelete = DefaultTimeStamp
 
-		name,
-		detail,
-
-		provider_name,
-		provider_reference_id,
-
-		status,
-
-		t38_enabled,
-		emergency_enabled,
-
-		tm_purchase,
-		tm_renew,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	) values(
-		?, ?, ?,
-		?, ?,
-		?, ?,
-		?, ?,
-		?,
-		?, ?,
-		?, ?,
-		?, ?, ?
-		)`
-
-	ts := h.utilHandler.TimeGetCurTime()
-	_, err := h.db.Exec(q,
-		n.ID.Bytes(),
-		n.Number,
-		n.CustomerID.Bytes(),
-
-		n.CallFlowID.Bytes(),
-		n.MessageFlowID.Bytes(),
-
-		n.Name,
-		n.Detail,
-
-		n.ProviderName,
-		n.ProviderReferenceID,
-
-		n.Status,
-
-		n.T38Enabled,
-		n.EmergencyEnabled,
-
-		ts,
-		ts,
-
-		ts,
-		DefaultTimeStamp,
-		DefaultTimeStamp,
-	)
+	// Use PrepareFields to get field map
+	fields, err := commondatabasehandler.PrepareFields(n)
 	if err != nil {
-		return fmt.Errorf("could not execute. NumberCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. NumberCreate. err: %v", err)
+	}
+
+	// Use SetMap instead of Columns/Values
+	sb := squirrel.
+		Insert(numbersTable).
+		SetMap(fields).
+		PlaceholderFormat(squirrel.Question)
+
+	query, args, err := sb.ToSql()
+	if err != nil {
+		return fmt.Errorf("could not build query. NumberCreate. err: %v", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
+		return fmt.Errorf("could not execute query. NumberCreate. err: %v", err)
 	}
 
 	// update the cache
@@ -156,7 +69,6 @@ func (h *handler) NumberCreate(ctx context.Context, n *number.Number) error {
 
 // NumberGetFromCacheByNumber returns number from the cache by number.
 func (h *handler) NumberGetFromCacheByNumber(ctx context.Context, numb string) (*number.Number, error) {
-
 	// get from cache
 	res, err := h.cache.NumberGetByNumber(ctx, numb)
 	if err != nil {
@@ -168,7 +80,6 @@ func (h *handler) NumberGetFromCacheByNumber(ctx context.Context, numb string) (
 
 // numberGetFromCache returns number from the cache.
 func (h *handler) numberGetFromCache(ctx context.Context, id uuid.UUID) (*number.Number, error) {
-
 	// get from cache
 	res, err := h.cache.NumberGet(ctx, id)
 	if err != nil {
@@ -189,7 +100,6 @@ func (h *handler) numberSetToCache(ctx context.Context, num *number.Number) erro
 
 // numberUpdateToCache gets the number from the DB and update the cache.
 func (h *handler) numberUpdateToCache(ctx context.Context, id uuid.UUID) error {
-
 	res, err := h.numberGetFromDB(ctx, id)
 	if err != nil {
 		return err
@@ -204,11 +114,18 @@ func (h *handler) numberUpdateToCache(ctx context.Context, id uuid.UUID) error {
 
 // numberGetFromDB returns number info from the DB.
 func (h *handler) numberGetFromDB(ctx context.Context, id uuid.UUID) (*number.Number, error) {
+	fields := commondatabasehandler.GetDBFields(&number.Number{})
+	query, args, err := squirrel.
+		Select(fields...).
+		From(numbersTable).
+		Where(squirrel.Eq{string(number.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build sql. numberGetFromDB. err: %v", err)
+	}
 
-	// prepare
-	q := fmt.Sprintf("%s where id = ?", numberSelect)
-
-	row, err := h.db.Query(q, id.Bytes())
+	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. numberGetFromDB. err: %v", err)
 	}
@@ -217,12 +134,15 @@ func (h *handler) numberGetFromDB(ctx context.Context, id uuid.UUID) (*number.Nu
 	}()
 
 	if !row.Next() {
+		if err := row.Err(); err != nil {
+			return nil, fmt.Errorf("row iteration error. numberGetFromDB. err: %v", err)
+		}
 		return nil, ErrNotFound
 	}
 
 	res, err := h.numberGetFromRow(row)
 	if err != nil {
-		return nil, fmt.Errorf("could not get number. numberGetFromDB, err: %v", err)
+		return nil, errors.Wrapf(err, "could not get number. numberGetFromDB. id: %s", id)
 	}
 
 	return res, nil
@@ -230,7 +150,6 @@ func (h *handler) numberGetFromDB(ctx context.Context, id uuid.UUID) (*number.Nu
 
 // NumberGet returns number.
 func (h *handler) NumberGet(ctx context.Context, id uuid.UUID) (*number.Number, error) {
-
 	res, err := h.numberGetFromCache(ctx, id)
 	if err == nil {
 		return res, nil
@@ -247,52 +166,34 @@ func (h *handler) NumberGet(ctx context.Context, id uuid.UUID) (*number.Number, 
 	return res, nil
 }
 
-func (h *handler) numberGetsMergeFilters(query string, values []interface{}, filters map[string]string) (string, []interface{}) {
-
-	for k, v := range filters {
-		switch k {
-		case "customer_id", "call_flow_id", "message_flow_id":
-			query = fmt.Sprintf("%s and %s = ?", query, k)
-			tmp := uuid.FromStringOrNil(v)
-			values = append(values, tmp.Bytes())
-
-		case "deleted":
-			if v == "false" {
-				query = fmt.Sprintf("%s and tm_delete >= ?", query)
-				values = append(values, DefaultTimeStamp)
-			}
-
-		default:
-			query = fmt.Sprintf("%s and %s = ?", query, k)
-			values = append(values, v)
-		}
-	}
-
-	return query, values
-}
-
 // NumberGets returns a list of numbers.
-func (h *handler) NumberGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*number.Number, error) {
-	// prepare
-	q := fmt.Sprintf(`%s
-	where
-		tm_create < ?
-	`, numberSelect)
-
+func (h *handler) NumberGets(ctx context.Context, size uint64, token string, filters map[number.Field]any) ([]*number.Number, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	values := []interface{}{
-		token,
+	fields := commondatabasehandler.GetDBFields(&number.Number{})
+	sb := squirrel.
+		Select(fields...).
+		From(numbersTable).
+		Where(squirrel.Lt{string(number.FieldTMCreate): token}).
+		OrderBy(string(number.FieldTMCreate) + " DESC").
+		Limit(size).
+		PlaceholderFormat(squirrel.Question)
+
+	sb, err := commondatabasehandler.ApplyFields(sb, filters)
+	if err != nil {
+		return nil, fmt.Errorf("could not apply filters. NumberGets. err: %v", err)
 	}
 
-	q, values = h.numberGetsMergeFilters(q, values, filters)
-	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
-	values = append(values, strconv.FormatUint(size, 10))
-	rows, err := h.db.Query(q, values...)
+	query, args, err := sb.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not query. NumberGets err: %v", err)
+		return nil, fmt.Errorf("could not build query. NumberGets. err: %v", err)
+	}
+
+	rows, err := h.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. NumberGets. err: %v", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -302,34 +203,83 @@ func (h *handler) NumberGets(ctx context.Context, size uint64, token string, fil
 	for rows.Next() {
 		u, err := h.numberGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("dbhandler: Could not scan the row. NumberGets. err: %v", err)
+			return nil, fmt.Errorf("could not get data. NumberGets, err: %v", err)
 		}
-
 		res = append(res, u)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error. NumberGets. err: %v", err)
 	}
 
 	return res, nil
-
 }
 
-// NumberDelete sets the delte timestamp.
+// NumberUpdate updates a number with the given fields.
+func (h *handler) NumberUpdate(ctx context.Context, id uuid.UUID, fields map[number.Field]any) error {
+	if len(fields) == 0 {
+		return nil
+	}
+
+	fields[number.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
+
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
+	if err != nil {
+		return fmt.Errorf("NumberUpdate: prepare fields failed: %w", err)
+	}
+
+	q := squirrel.Update(numbersTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(number.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := q.ToSql()
+	if err != nil {
+		return fmt.Errorf("NumberUpdate: build SQL failed: %w", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, sqlStr, args...); err != nil {
+		return fmt.Errorf("NumberUpdate: exec failed: %w", err)
+	}
+
+	_ = h.numberUpdateToCache(ctx, id)
+	return nil
+}
+
+// NumberDelete sets the delete timestamp.
 func (h *handler) NumberDelete(ctx context.Context, id uuid.UUID) error {
-	// prepare
-	q := `
-		update
-			number_numbers
-		set
-			status = ?,
-			tm_update = ?,
-			tm_delete = ?
-		where
-			id = ?
-		`
-
 	ts := h.utilHandler.TimeGetCurTime()
-	_, err := h.db.Exec(q, string(number.StatusDeleted), ts, ts, id.Bytes())
+
+	fields := map[number.Field]any{
+		number.FieldStatus:   number.StatusDeleted,
+		number.FieldTMUpdate: ts,
+		number.FieldTMDelete: ts,
+	}
+
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
-		return fmt.Errorf("could not execute. NumberDelete. err: %v", err)
+		return fmt.Errorf("NumberDelete: prepare fields failed: %w", err)
+	}
+
+	sb := squirrel.Update(numbersTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(number.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := sb.ToSql()
+	if err != nil {
+		return fmt.Errorf("NumberDelete: build SQL failed: %w", err)
+	}
+
+	result, err := h.db.ExecContext(ctx, sqlStr, args...)
+	if err != nil {
+		return fmt.Errorf("NumberDelete: exec failed: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return errors.Wrapf(err, "could not get rows affected: %v", err)
+	} else if rowsAffected == 0 {
+		return ErrNotFound
 	}
 
 	// update the cache
@@ -338,160 +288,28 @@ func (h *handler) NumberDelete(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
-// NumberUpdateInfo updates basic number information.
-func (h *handler) NumberUpdateInfo(ctx context.Context, id uuid.UUID, callflowID uuid.UUID, messageFlowID uuid.UUID, name string, detail string) error {
-	q := `
-	update number_numbers set
-		call_flow_id = ?,
-		message_flow_id = ?,
-		name = ?,
-		detail = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
+// NumberGetsByTMRenew returns a list of numbers by tm_renew.
+func (h *handler) NumberGetsByTMRenew(ctx context.Context, tmRenew string, size uint64, filters map[number.Field]any) ([]*number.Number, error) {
+	fields := commondatabasehandler.GetDBFields(&number.Number{})
+	sb := squirrel.
+		Select(fields...).
+		From(numbersTable).
+		Where(squirrel.Lt{string(number.FieldTMRenew): tmRenew}).
+		OrderBy(string(number.FieldTMCreate) + " DESC").
+		Limit(size).
+		PlaceholderFormat(squirrel.Question)
 
-	_, err := h.db.Exec(q,
-		callflowID.Bytes(),
-		messageFlowID.Bytes(),
-		name,
-		detail,
-		h.utilHandler.TimeGetCurTime(),
-		id.Bytes(),
-	)
+	sb, err := commondatabasehandler.ApplyFields(sb, filters)
 	if err != nil {
-		return fmt.Errorf("could not execute. NumberUpdateBasicInfo. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. NumberGetsByTMRenew. err: %v", err)
 	}
 
-	// update the cache
-	_ = h.numberUpdateToCache(ctx, id)
-
-	return nil
-}
-
-// NumberUpdateFlowID updates number's flow id.
-func (h *handler) NumberUpdateFlowID(ctx context.Context, id uuid.UUID, callFlowID uuid.UUID, messageFlowID uuid.UUID) error {
-	q := `
-	update number_numbers set
-		call_flow_id = ?,
-		message_flow_id = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q,
-		callFlowID.Bytes(),
-		messageFlowID.Bytes(),
-		h.utilHandler.TimeGetCurTime(),
-		id.Bytes(),
-	)
+	query, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not execute. NumberUpdateFlowID. err: %v", err)
+		return nil, fmt.Errorf("could not build query. NumberGetsByTMRenew. err: %v", err)
 	}
 
-	// update the cache
-	_ = h.numberUpdateToCache(ctx, id)
-
-	return nil
-}
-
-// NumberUpdateCallFlowID updates call_flow_id.
-func (h *handler) NumberUpdateCallFlowID(ctx context.Context, id uuid.UUID, flowID uuid.UUID) error {
-	q := `
-	update number_numbers set
-		call_flow_id = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q,
-		flowID.Bytes(),
-		h.utilHandler.TimeGetCurTime(),
-		id.Bytes(),
-	)
-	if err != nil {
-		return fmt.Errorf("could not execute. NumberUpdateFlowID. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.numberUpdateToCache(ctx, id)
-
-	return nil
-}
-
-// NumberUpdateMessageFlowID updates message_flow_id.
-func (h *handler) NumberUpdateMessageFlowID(ctx context.Context, id uuid.UUID, flowID uuid.UUID) error {
-	q := `
-	update number_numbers set
-		message_flow_id = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q,
-		flowID.Bytes(),
-		h.utilHandler.TimeGetCurTime(),
-		id.Bytes(),
-	)
-	if err != nil {
-		return fmt.Errorf("could not execute. NumberUpdateMessageFlowID. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.numberUpdateToCache(ctx, id)
-
-	return nil
-}
-
-// NumberUpdateTMRenew updates the tm_renew.
-func (h *handler) NumberUpdateTMRenew(ctx context.Context, id uuid.UUID) error {
-	q := `
-	update number_numbers set
-		tm_renew = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	ts := h.utilHandler.TimeGetCurTime()
-	_, err := h.db.Exec(q,
-		ts,
-		ts,
-		id.Bytes(),
-	)
-	if err != nil {
-		return fmt.Errorf("could not execute. NumberUpdateTMRenew. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.numberUpdateToCache(ctx, id)
-
-	return nil
-}
-
-// NumberGetsByTMRenew returns a list of numbers.
-func (h *handler) NumberGetsByTMRenew(ctx context.Context, tmRenew string, size uint64, filters map[string]string) ([]*number.Number, error) {
-	// prepare
-	q := fmt.Sprintf(`%s
-		where
-			tm_renew < ?
-		`, numberSelect)
-
-	values := []interface{}{
-		tmRenew,
-	}
-
-	// merge filters
-	q, values = h.numberGetsMergeFilters(q, values, filters)
-
-	// complete the query
-	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
-	values = append(values, strconv.FormatUint(size, 10))
-
-	rows, err := h.db.Query(q, values...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. NumberGetsByTMRenew. err: %v", err)
 	}
@@ -505,10 +323,11 @@ func (h *handler) NumberGetsByTMRenew(ctx context.Context, tmRenew string, size 
 		if err != nil {
 			return nil, fmt.Errorf("could not get data. NumberGetsByTMRenew, err: %v", err)
 		}
-
 		res = append(res, u)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error. NumberGetsByTMRenew. err: %v", err)
 	}
 
 	return res, nil
-
 }

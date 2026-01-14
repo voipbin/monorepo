@@ -3,101 +3,35 @@ package dbhandler
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
-	"strconv"
 
+	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 
-	"monorepo/bin-email-manager/models/email"
-
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
+
+	"monorepo/bin-email-manager/models/email"
 )
 
 const (
-	// select query for email get
-	emailSelect = `
-	select
-		id,
-		customer_id,
-
-		activeflow_id,
-
-		provider_type,
-		provider_reference_id,
-
-		source,
-		destinations,
-
-		status,
-		subject,
-		content,
-
-		attachments,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	from
-		email_emails
-	`
+	emailTable = "email_emails"
 )
 
-// emailGetFromRow gets the email from the row.
-func (h *handler) emailGetFromRow(row *sql.Rows) (*email.Email, error) {
-	var source sql.NullString
-	var destinations sql.NullString
-	var attachments sql.NullString
-
+// emailGetFromRow scans a single row into an Email struct using db tags
+func (h *handler) emailGetFromRow(rows *sql.Rows) (*email.Email, error) {
 	res := &email.Email{}
-	if err := row.Scan(
-		&res.ID,
-		&res.CustomerID,
-
-		&res.ActiveflowID,
-
-		&res.ProviderType,
-		&res.ProviderReferenceID,
-
-		&source,
-		&destinations,
-
-		&res.Status,
-		&res.Subject,
-		&res.Content,
-
-		&attachments,
-
-		&res.TMCreate,
-		&res.TMUpdate,
-		&res.TMDelete,
-	); err != nil {
-		return nil, errors.Wrapf(err, "could not scan the row.")
+	if err := commondatabasehandler.ScanRow(rows, res); err != nil {
+		return nil, fmt.Errorf("could not scan the row. emailGetFromRow. err: %v", err)
 	}
 
-	if source.Valid {
-		if errUnmarshal := json.Unmarshal([]byte(source.String), &res.Source); errUnmarshal != nil {
-			return nil, errors.Wrapf(errUnmarshal, "could not unmarshal the data.")
-		}
-	}
+	// Initialize nil pointers to empty values
 	if res.Source == nil {
 		res.Source = &commonaddress.Address{}
 	}
-
-	if destinations.Valid {
-		if errUnmarshal := json.Unmarshal([]byte(destinations.String), &res.Destinations); errUnmarshal != nil {
-			return nil, errors.Wrapf(errUnmarshal, "could not unmarshal the data.")
-		}
-	}
 	if res.Destinations == nil {
 		res.Destinations = []commonaddress.Address{}
-	}
-
-	if attachments.Valid {
-		if errUnmarshal := json.Unmarshal([]byte(attachments.String), &res.Attachments); errUnmarshal != nil {
-			return nil, errors.Wrapf(errUnmarshal, "could not unmarshal the data.")
-		}
 	}
 	if res.Attachments == nil {
 		res.Attachments = []email.Attachment{}
@@ -106,85 +40,26 @@ func (h *handler) emailGetFromRow(row *sql.Rows) (*email.Email, error) {
 	return res, nil
 }
 
+// EmailCreate creates a new email record.
 func (h *handler) EmailCreate(ctx context.Context, e *email.Email) error {
+	e.TMCreate = h.util.TimeGetCurTime()
+	e.TMUpdate = DefaultTimeStamp
+	e.TMDelete = DefaultTimeStamp
 
-	q := `insert into email_emails(
-		id,
-		customer_id,
-
-		activeflow_id,
-
-		provider_type,
-		provider_reference_id,
-
-		source,
-		destinations,
-
-		status,
-		subject,
-		content,
-
-		attachments,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	) values(
-		?, ?,
-		?,
-		?, ?,
-		?, ?,
-		?, ?, ?,
-		?,
-		?, ?, ?
-		)`
-	stmt, err := h.db.PrepareContext(ctx, q)
+	// prepare fields for insert
+	fields, err := commondatabasehandler.PrepareFields(e)
 	if err != nil {
-		return errors.Wrapf(err, "could not prepare query.")
-	}
-	defer func() {
-		_ = stmt.Close()
-	}()
-
-	tmpSource, err := json.Marshal(e.Source)
-	if err != nil {
-		return errors.Wrapf(err, "could not marshal source.")
+		return errors.Wrap(err, "could not prepare fields. EmailCreate")
 	}
 
-	tmpDestinations, err := json.Marshal(e.Destinations)
+	query, args, err := sq.Insert(emailTable).SetMap(fields).ToSql()
 	if err != nil {
-		return errors.Wrapf(err, "could not marshal destinations.")
+		return errors.Wrap(err, "could not build query. EmailCreate")
 	}
 
-	tmpAttachments, err := json.Marshal(e.Attachments)
+	_, err = h.db.Exec(query, args...)
 	if err != nil {
-		return errors.Wrapf(err, "could not marshal attachments.")
-	}
-
-	_, err = stmt.ExecContext(ctx,
-		e.ID.Bytes(),
-		e.CustomerID.Bytes(),
-
-		e.ActiveflowID.Bytes(),
-
-		e.ProviderType,
-		e.ProviderReferenceID,
-
-		tmpSource,
-		tmpDestinations,
-
-		e.Status,
-		e.Subject,
-		e.Content,
-
-		tmpAttachments,
-
-		h.util.TimeGetCurTime(),
-		DefaultTimeStamp,
-		DefaultTimeStamp,
-	)
-	if err != nil {
-		return errors.Wrapf(err, "could not execute query.")
+		return errors.Wrap(err, "could not execute. EmailCreate")
 	}
 
 	_ = h.emailUpdateToCache(ctx, e.ID)
@@ -192,9 +67,8 @@ func (h *handler) EmailCreate(ctx context.Context, e *email.Email) error {
 	return nil
 }
 
-// emailUpdateToCache gets the email from the DB and update the cache.
+// emailUpdateToCache gets the email from the DB and updates the cache.
 func (h *handler) emailUpdateToCache(ctx context.Context, id uuid.UUID) error {
-
 	res, err := h.emailGetFromDB(ctx, id)
 	if err != nil {
 		return err
@@ -218,8 +92,6 @@ func (h *handler) emailSetToCache(ctx context.Context, e *email.Email) error {
 
 // emailGetFromCache returns email from the cache if possible.
 func (h *handler) emailGetFromCache(ctx context.Context, id uuid.UUID) (*email.Email, error) {
-
-	// get from cache
 	res, err := h.cache.EmailGet(ctx, id)
 	if err != nil {
 		return nil, err
@@ -230,32 +102,30 @@ func (h *handler) emailGetFromCache(ctx context.Context, id uuid.UUID) (*email.E
 
 // emailGetFromDB gets the email info from the db.
 func (h *handler) emailGetFromDB(ctx context.Context, id uuid.UUID) (*email.Email, error) {
+	// get column names from db tags
+	columns := commondatabasehandler.GetDBFields(&email.Email{})
 
-	// prepare
-	q := fmt.Sprintf("%s where id = ?", emailSelect)
-
-	stmt, err := h.db.PrepareContext(ctx, q)
+	query, args, err := sq.Select(columns...).
+		From(emailTable).
+		Where(sq.Eq{"id": id.Bytes()}).
+		ToSql()
 	if err != nil {
-		return nil, errors.Wrapf(err, "could not prepare query.")
+		return nil, errors.Wrap(err, "could not build query. emailGetFromDB")
+	}
+
+	rows, err := h.db.Query(query, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not query. emailGetFromDB")
 	}
 	defer func() {
-		_ = stmt.Close()
+		_ = rows.Close()
 	}()
 
-	// query
-	row, err := stmt.QueryContext(ctx, id.Bytes())
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not query.")
-	}
-	defer func() {
-		_ = row.Close()
-	}()
-
-	if !row.Next() {
+	if !rows.Next() {
 		return nil, ErrNotFound
 	}
 
-	res, err := h.emailGetFromRow(row)
+	res, err := h.emailGetFromRow(rows)
 	if err != nil {
 		return nil, err
 	}
@@ -265,7 +135,6 @@ func (h *handler) emailGetFromDB(ctx context.Context, id uuid.UUID) (*email.Emai
 
 // EmailGet returns email.
 func (h *handler) EmailGet(ctx context.Context, id uuid.UUID) (*email.Email, error) {
-
 	res, err := h.emailGetFromCache(ctx, id)
 	if err == nil {
 		return res, nil
@@ -281,46 +150,35 @@ func (h *handler) EmailGet(ctx context.Context, id uuid.UUID) (*email.Email, err
 	return res, nil
 }
 
-// EmailGets returns emails.
-func (h *handler) EmailGets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*email.Email, error) {
-	// prepare
-	q := fmt.Sprintf(`%s
-	where
-		tm_create < ?
-	`, emailSelect)
-
+// EmailGets returns emails based on filters.
+func (h *handler) EmailGets(ctx context.Context, token string, size uint64, filters map[email.Field]any) ([]*email.Email, error) {
 	if token == "" {
 		token = h.util.TimeGetCurTime()
 	}
 
-	values := []any{
-		token,
-	}
+	// get column names from db tags
+	columns := commondatabasehandler.GetDBFields(&email.Email{})
 
-	for k, v := range filters {
-		switch k {
-		case "customer_id":
-			q = fmt.Sprintf("%s and customer_id = ?", q)
-			tmp := uuid.FromStringOrNil(v)
-			values = append(values, tmp.Bytes())
+	builder := sq.Select(columns...).
+		From(emailTable).
+		Where("tm_create < ?", token).
+		OrderBy("tm_create desc").
+		Limit(size)
 
-		case "deleted":
-			if v == "false" {
-				q = fmt.Sprintf("%s and tm_delete >= ?", q)
-				values = append(values, DefaultTimeStamp)
-			}
-
-		default:
-			q = fmt.Sprintf("%s and %s = ?", q, k)
-			values = append(values, v)
-		}
-	}
-
-	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
-	values = append(values, strconv.FormatUint(size, 10))
-	rows, err := h.db.Query(q, values...)
+	// apply filters
+	builder, err := commondatabasehandler.ApplyFields(builder, filters)
 	if err != nil {
-		return nil, errors.Wrapf(err, "could not query. err: %v", err)
+		return nil, errors.Wrap(err, "could not apply filters. EmailGets")
+	}
+
+	query, args, err := builder.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "could not build query. EmailGets")
+	}
+
+	rows, err := h.db.Query(query, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not query. EmailGets")
 	}
 	defer func() {
 		_ = rows.Close()
@@ -328,30 +186,72 @@ func (h *handler) EmailGets(ctx context.Context, token string, size uint64, filt
 
 	res := []*email.Email{}
 	for rows.Next() {
-		u, err := h.emailGetFromRow(rows)
+		e, err := h.emailGetFromRow(rows)
 		if err != nil {
-			return nil, errors.Wrapf(err, "could not scan the row.")
+			return nil, errors.Wrap(err, "could not scan the row. EmailGets")
 		}
 
-		res = append(res, u)
+		res = append(res, e)
 	}
 
 	return res, nil
 }
 
+// EmailUpdate updates an email with the given fields.
+func (h *handler) EmailUpdate(ctx context.Context, id uuid.UUID, fields map[email.Field]any) error {
+	// add update timestamp
+	fields[email.FieldTMUpdate] = h.util.TimeGetCurTime()
+
+	// prepare fields for update
+	data, err := commondatabasehandler.PrepareFields(fields)
+	if err != nil {
+		return errors.Wrap(err, "could not prepare fields. EmailUpdate")
+	}
+
+	query, args, err := sq.Update(emailTable).
+		SetMap(data).
+		Where(sq.Eq{"id": id.Bytes()}).
+		ToSql()
+	if err != nil {
+		return errors.Wrap(err, "could not build query. EmailUpdate")
+	}
+
+	_, err = h.db.Exec(query, args...)
+	if err != nil {
+		return errors.Wrap(err, "could not execute. EmailUpdate")
+	}
+
+	// update the cache
+	_ = h.emailUpdateToCache(ctx, id)
+
+	return nil
+}
+
 // EmailDelete deletes the given email
 func (h *handler) EmailDelete(ctx context.Context, id uuid.UUID) error {
-	q := `
-	update email_emails set
-		tm_delete = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
 	ts := h.util.TimeGetCurTime()
-	if _, err := h.db.Exec(q, ts, ts, id.Bytes()); err != nil {
-		return errors.Wrapf(err, "could not execute the query.")
+	fields := map[email.Field]any{
+		email.FieldTMUpdate: ts,
+		email.FieldTMDelete: ts,
+	}
+
+	// prepare fields for update
+	data, err := commondatabasehandler.PrepareFields(fields)
+	if err != nil {
+		return errors.Wrap(err, "could not prepare fields. EmailDelete")
+	}
+
+	query, args, err := sq.Update(emailTable).
+		SetMap(data).
+		Where(sq.Eq{"id": id.Bytes()}).
+		ToSql()
+	if err != nil {
+		return errors.Wrap(err, "could not build query. EmailDelete")
+	}
+
+	_, err = h.db.Exec(query, args...)
+	if err != nil {
+		return errors.Wrap(err, "could not execute. EmailDelete")
 	}
 
 	_ = h.emailUpdateToCache(ctx, id)
@@ -361,40 +261,18 @@ func (h *handler) EmailDelete(ctx context.Context, id uuid.UUID) error {
 
 // EmailUpdateStatus updates the status.
 func (h *handler) EmailUpdateStatus(ctx context.Context, id uuid.UUID, status email.Status) error {
-	q := `
-	update email_emails set
-		status = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	if _, err := h.db.Exec(q, status, h.util.TimeGetCurTime(), id.Bytes()); err != nil {
-		return errors.Wrapf(err, "could not execute the query.")
+	fields := map[email.Field]any{
+		email.FieldStatus: status,
 	}
 
-	// set to the cache
-	_ = h.emailUpdateToCache(ctx, id)
-
-	return nil
+	return h.EmailUpdate(ctx, id, fields)
 }
 
 // EmailUpdateProviderReferenceID updates the provider_reference_id.
 func (h *handler) EmailUpdateProviderReferenceID(ctx context.Context, id uuid.UUID, providerReferenceID string) error {
-	q := `
-	update email_emails set
-		provider_reference_id = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	if _, err := h.db.Exec(q, providerReferenceID, h.util.TimeGetCurTime(), id.Bytes()); err != nil {
-		return errors.Wrapf(err, "could not execute the query.")
+	fields := map[email.Field]any{
+		email.FieldProviderReferenceID: providerReferenceID,
 	}
 
-	// set to the cache
-	_ = h.emailUpdateToCache(ctx, id)
-
-	return nil
+	return h.EmailUpdate(ctx, id, fields)
 }

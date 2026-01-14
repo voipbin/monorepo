@@ -7,6 +7,7 @@ import (
 	bmaccount "monorepo/bin-billing-manager/models/account"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -120,8 +121,15 @@ func (h *serviceHandler) BillingAccountGets(ctx context.Context, a *amagent.Agen
 		"deleted":     "false", // we don't need deleted items
 	}
 
+	// Convert string filters to typed filters
+	typedFilters, err := h.convertBillingAccountFilters(filters)
+	if err != nil {
+		log.Errorf("Could not convert filters. err: %v", err)
+		return nil, err
+	}
+
 	// get billing accounts
-	tmps, err := h.reqHandler.BillingV1AccountGets(ctx, token, size, filters)
+	tmps, err := h.reqHandler.BillingV1AccountGets(ctx, token, size, typedFilters)
 	if err != nil {
 		log.Infof("Could not get billing account info. err: %v", err)
 		return nil, err
@@ -135,6 +143,29 @@ func (h *serviceHandler) BillingAccountGets(ctx context.Context, a *amagent.Agen
 	}
 
 	return res, nil
+}
+
+// convertBillingAccountFilters converts map[string]string to map[bmaccount.Field]any
+func (h *serviceHandler) convertBillingAccountFilters(filters map[string]string) (map[bmaccount.Field]any, error) {
+	// Convert to map[string]any first
+	srcAny := make(map[string]any, len(filters))
+	for k, v := range filters {
+		srcAny[k] = v
+	}
+
+	// Use reflection-based converter
+	typed, err := commondatabasehandler.ConvertMapToTypedMap(srcAny, bmaccount.Account{})
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert string keys to Field type
+	result := make(map[bmaccount.Field]any, len(typed))
+	for k, v := range typed {
+		result[bmaccount.Field(k)] = v
+	}
+
+	return result, nil
 }
 
 // BillingAccountCreate sends a request to billing-manager

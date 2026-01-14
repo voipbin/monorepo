@@ -8,7 +8,6 @@ import (
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
-	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -115,7 +114,6 @@ func Test_processV1ExtensionsGet(t *testing.T) {
 		pageSize  uint64
 		request   *sock.Request
 
-		responseFilters    map[string]string
 		responseExtensions []*extension.Extension
 
 		expectRes *sock.Response
@@ -128,13 +126,10 @@ func Test_processV1ExtensionsGet(t *testing.T) {
 			pageToken: "2020-10-10T03:30:17.000000",
 			pageSize:  10,
 			request: &sock.Request{
-				URI:      "/v1/extensions?page_token=2020-10-10T03:30:17.000000&page_size=10&filter_customer_id=1b642fde-4ff1-11ee-8b2f-2f40ea091b7d",
+				URI:      "/v1/extensions?page_token=2020-10-10T03:30:17.000000&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
-			},
-
-			responseFilters: map[string]string{
-				"filter_customer_id": "1b642fde-4ff1-11ee-8b2f-2f40ea091b7d",
+				Data:     []byte(`{"customer_id":"1b642fde-4ff1-11ee-8b2f-2f40ea091b7d"}`),
 			},
 			responseExtensions: []*extension.Extension{
 				{
@@ -161,13 +156,10 @@ func Test_processV1ExtensionsGet(t *testing.T) {
 			pageToken: "2020-10-10T03:30:17.000000",
 			pageSize:  10,
 			request: &sock.Request{
-				URI:      "/v1/extensions?page_token=2020-10-10T03:30:17.000000&page_size=10&filter_customer_id=1b991686-4ff1-11ee-89fd-2f283e362ada",
+				URI:      "/v1/extensions?page_token=2020-10-10T03:30:17.000000&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
-			},
-
-			responseFilters: map[string]string{
-				"filter_customer_id": "1b991686-4ff1-11ee-89fd-2f283e362ada",
+				Data:     []byte(`{"customer_id":"1b991686-4ff1-11ee-89fd-2f283e362ada"}`),
 			},
 			responseExtensions: []*extension.Extension{},
 			expectRes: &sock.Response{
@@ -186,17 +178,14 @@ func Test_processV1ExtensionsGet(t *testing.T) {
 			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockExtension := extensionhandler.NewMockExtensionHandler(mc)
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
 
 			h := &listenHandler{
 				sockHandler:      mockSock,
 				reqHandler:       mockReq,
-				utilHandler:      mockUtil,
 				extensionHandler: mockExtension,
 			}
 
-			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
-			mockExtension.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, tt.responseFilters).Return(tt.responseExtensions, nil)
+			mockExtension.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, gomock.Any()).Return(tt.responseExtensions, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -279,7 +268,7 @@ func Test_processV1ExtensionsPut(t *testing.T) {
 				extensionHandler: mockExtension,
 			}
 
-			mockExtension.EXPECT().Update(gomock.Any(), tt.expectID, tt.expectName, tt.expectDetail, tt.expectPassword).Return(tt.resExt, nil)
+			mockExtension.EXPECT().Update(gomock.Any(), tt.expectID, gomock.Any()).Return(tt.resExt, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

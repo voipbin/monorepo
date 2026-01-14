@@ -3,78 +3,26 @@ package dbhandler
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
-	"strconv"
 
-	commonaddress "monorepo/bin-common-handler/models/address"
-
+	"github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
 
-	"monorepo/bin-chat-manager/models/media"
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
+
 	"monorepo/bin-chat-manager/models/messagechat"
 )
 
 const (
-	// select query for messagechat get
-	messagechatSelect = `
-	select
-		id,
-		customer_id,
-
-		chat_id,
-
-		source,
-		type,
-		text,
-		medias,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	from
-		chat_messagechats
-	`
+	messagechatTable = "chat_messagechats"
 )
 
 // messagechatGetFromRow gets the messagechat from the row.
 func (h *handler) messagechatGetFromRow(row *sql.Rows) (*messagechat.Messagechat, error) {
-	var source sql.NullString
-	var medias sql.NullString
-
 	res := &messagechat.Messagechat{}
-	if err := row.Scan(
-		&res.ID,
-		&res.CustomerID,
 
-		&res.ChatID,
-
-		&source,
-		&res.Type,
-		&res.Text,
-		&medias,
-
-		&res.TMCreate,
-		&res.TMUpdate,
-		&res.TMDelete,
-	); err != nil {
+	if err := commondatabasehandler.ScanRow(row, res); err != nil {
 		return nil, fmt.Errorf("could not scan the row. messagechatGetFromRow. err: %v", err)
-	}
-
-	if source.Valid {
-		if err := json.Unmarshal([]byte(source.String), &res.Source); err != nil {
-			return nil, fmt.Errorf("could not unmarshal the data. messagechatGetFromRow. err: %v", err)
-		}
-	} else {
-		res.Source = &commonaddress.Address{}
-	}
-
-	if medias.Valid {
-		if err := json.Unmarshal([]byte(medias.String), &res.Medias); err != nil {
-			return nil, fmt.Errorf("could not unmarshal the data. messagechatGetFromRow. err: %v", err)
-		}
-	} else {
-		res.Medias = []media.Media{}
 	}
 
 	return res, nil
@@ -82,61 +30,31 @@ func (h *handler) messagechatGetFromRow(row *sql.Rows) (*messagechat.Messagechat
 
 // MessagechatCreate creates a new messagechat record
 func (h *handler) MessagechatCreate(ctx context.Context, m *messagechat.Messagechat) error {
+	now := h.utilHandler.TimeGetCurTime()
 
-	q := `insert into chat_messagechats(
-		id,
-		customer_id,
+	// Set timestamps
+	m.TMCreate = now
+	m.TMUpdate = commondatabasehandler.DefaultTimeStamp
+	m.TMDelete = commondatabasehandler.DefaultTimeStamp
 
-		chat_id,
-
-		source,
-		type,
-		text,
-		medias,
-
-		tm_create,
-		tm_update,
-		tm_delete
-	) values(
-		?, ?,
-		?,
-		?, ?, ?, ?,
-		?, ?, ?
-		)`
-	stmt, err := h.db.PrepareContext(ctx, q)
+	// Use PrepareFields to get field map
+	fields, err := commondatabasehandler.PrepareFields(m)
 	if err != nil {
-		return fmt.Errorf("could not prepare. MessagechatCreate. err: %v", err)
-	}
-	defer func() {
-		_ = stmt.Close()
-	}()
-
-	source, err := json.Marshal(m.Source)
-	if err != nil {
-		return fmt.Errorf("could not marshal source. MessagechatCreate. err: %v", err)
+		return fmt.Errorf("could not prepare fields. MessagechatCreate. err: %v", err)
 	}
 
-	medias, err := json.Marshal(m.Medias)
+	// Use SetMap instead of Columns/Values
+	sb := squirrel.
+		Insert(messagechatTable).
+		SetMap(fields).
+		PlaceholderFormat(squirrel.Question)
+
+	query, args, err := sb.ToSql()
 	if err != nil {
-		return fmt.Errorf("could not marshal medias. MessagechatCreate. err: %v", err)
+		return fmt.Errorf("could not build query. MessagechatCreate. err: %v", err)
 	}
 
-	_, err = stmt.ExecContext(ctx,
-		m.ID.Bytes(),
-		m.CustomerID.Bytes(),
-
-		m.ChatID.Bytes(),
-
-		source,
-		m.Type,
-		m.Text,
-		medias,
-
-		m.TMCreate,
-		m.TMUpdate,
-		m.TMDelete,
-	)
-	if err != nil {
+	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
 		return fmt.Errorf("could not execute query. MessagechatCreate. err: %v", err)
 	}
 
@@ -147,7 +65,6 @@ func (h *handler) MessagechatCreate(ctx context.Context, m *messagechat.Messagec
 
 // messagechatUpdateToCache gets the messagechat from the DB and update the cache.
 func (h *handler) messagechatUpdateToCache(ctx context.Context, id uuid.UUID) error {
-
 	res, err := h.messagechatGetFromDB(ctx, id)
 	if err != nil {
 		return err
@@ -171,7 +88,6 @@ func (h *handler) messagechatSetToCache(ctx context.Context, m *messagechat.Mess
 
 // messagechatGetFromCache returns messagechat from the cache if possible.
 func (h *handler) messagechatGetFromCache(ctx context.Context, id uuid.UUID) (*messagechat.Messagechat, error) {
-
 	// get from cache
 	res, err := h.cache.MessagechatGet(ctx, id)
 	if err != nil {
@@ -183,20 +99,18 @@ func (h *handler) messagechatGetFromCache(ctx context.Context, id uuid.UUID) (*m
 
 // messagechatGetFromDB gets the messagechat info from the db.
 func (h *handler) messagechatGetFromDB(ctx context.Context, id uuid.UUID) (*messagechat.Messagechat, error) {
-
-	// prepare
-	q := fmt.Sprintf("%s where id = ?", messagechatSelect)
-
-	stmt, err := h.db.PrepareContext(ctx, q)
+	fields := commondatabasehandler.GetDBFields(&messagechat.Messagechat{})
+	query, args, err := squirrel.
+		Select(fields...).
+		From(messagechatTable).
+		Where(squirrel.Eq{string(messagechat.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not prepare. messagechatGetFromDB. err: %v", err)
+		return nil, fmt.Errorf("could not build sql. messagechatGetFromDB. err: %v", err)
 	}
-	defer func() {
-		_ = stmt.Close()
-	}()
 
-	// query
-	row, err := stmt.QueryContext(ctx, id.Bytes())
+	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. messagechatGetFromDB. err: %v", err)
 	}
@@ -205,6 +119,9 @@ func (h *handler) messagechatGetFromDB(ctx context.Context, id uuid.UUID) (*mess
 	}()
 
 	if !row.Next() {
+		if err := row.Err(); err != nil {
+			return nil, fmt.Errorf("row iteration error. messagechatGetFromDB. err: %v", err)
+		}
 		return nil, ErrNotFound
 	}
 
@@ -218,7 +135,6 @@ func (h *handler) messagechatGetFromDB(ctx context.Context, id uuid.UUID) (*mess
 
 // MessagechatGet returns messagechat.
 func (h *handler) MessagechatGet(ctx context.Context, id uuid.UUID) (*messagechat.Messagechat, error) {
-
 	res, err := h.messagechatGetFromCache(ctx, id)
 	if err == nil {
 		return res, nil
@@ -235,47 +151,31 @@ func (h *handler) MessagechatGet(ctx context.Context, id uuid.UUID) (*messagecha
 }
 
 // MessagechatGets returns list of message chat.
-func (h *handler) MessagechatGets(ctx context.Context, token string, size uint64, filters map[string]string) ([]*messagechat.Messagechat, error) {
-
-	// prepare
-	q := fmt.Sprintf(`%s
-	where
-		tm_create < ?
-	`, messagechatSelect)
-
-	values := []interface{}{
-		token,
+func (h *handler) MessagechatGets(ctx context.Context, token string, size uint64, filters map[messagechat.Field]any) ([]*messagechat.Messagechat, error) {
+	if token == "" {
+		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	for k, v := range filters {
-		switch k {
-		case "customer_id":
-			tmp := uuid.FromStringOrNil(v)
-			q = fmt.Sprintf("%s and customer_id = ?", q)
-			values = append(values, tmp.Bytes())
+	fields := commondatabasehandler.GetDBFields(&messagechat.Messagechat{})
+	sb := squirrel.
+		Select(fields...).
+		From(messagechatTable).
+		Where(squirrel.Lt{string(messagechat.FieldTMCreate): token}).
+		OrderBy(string(messagechat.FieldTMCreate) + " DESC").
+		Limit(size).
+		PlaceholderFormat(squirrel.Question)
 
-		case "deleted":
-			if v == "false" {
-				q = fmt.Sprintf("%s and tm_delete >= ?", q)
-				values = append(values, DefaultTimeStamp)
-			}
-
-		case "type":
-			q = fmt.Sprintf("%s and type = ?", q)
-			values = append(values, v)
-
-		case "chat_id":
-			tmp := uuid.FromStringOrNil(v)
-			q = fmt.Sprintf("%s and chat_id = ?", q)
-			values = append(values, tmp.Bytes())
-
-		}
+	sb, err := commondatabasehandler.ApplyFields(sb, filters)
+	if err != nil {
+		return nil, fmt.Errorf("could not apply filters. MessagechatGets. err: %v", err)
 	}
 
-	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
-	values = append(values, strconv.FormatUint(size, 10))
+	query, args, err := sb.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. MessagechatGets. err: %v", err)
+	}
 
-	rows, err := h.db.Query(q, values...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. MessagechatGets. err: %v", err)
 	}
@@ -283,36 +183,88 @@ func (h *handler) MessagechatGets(ctx context.Context, token string, size uint64
 		_ = rows.Close()
 	}()
 
-	var res []*messagechat.Messagechat
+	res := []*messagechat.Messagechat{}
 	for rows.Next() {
 		u, err := h.messagechatGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not scan the row. MessagechatGets. err: %v", err)
+			return nil, fmt.Errorf("could not get data. MessagechatGets, err: %v", err)
 		}
-
 		res = append(res, u)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error. MessagechatGets. err: %v", err)
 	}
 
 	return res, nil
+}
 
+// MessagechatUpdate updates the messagechat with the given fields.
+func (h *handler) MessagechatUpdate(ctx context.Context, id uuid.UUID, fields map[messagechat.Field]any) error {
+	if len(fields) == 0 {
+		return nil
+	}
+
+	fields[messagechat.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
+
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
+	if err != nil {
+		return fmt.Errorf("MessagechatUpdate: prepare fields failed: %w", err)
+	}
+
+	q := squirrel.Update(messagechatTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(messagechat.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := q.ToSql()
+	if err != nil {
+		return fmt.Errorf("MessagechatUpdate: build SQL failed: %w", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, sqlStr, args...); err != nil {
+		return fmt.Errorf("MessagechatUpdate: exec failed: %w", err)
+	}
+
+	_ = h.messagechatUpdateToCache(ctx, id)
+	return nil
 }
 
 // MessagechatDelete deletes the given messagechat
 func (h *handler) MessagechatDelete(ctx context.Context, id uuid.UUID) error {
-	q := `
-	update chat_messagechats set
-		tm_delete = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
 	ts := h.utilHandler.TimeGetCurTime()
-	if _, err := h.db.Exec(q, ts, ts, id.Bytes()); err != nil {
-		return fmt.Errorf("could not execute the query. MessagechatDelete. err: %v", err)
+
+	fields := map[messagechat.Field]any{
+		messagechat.FieldTMUpdate: ts,
+		messagechat.FieldTMDelete: ts,
 	}
 
-	// delete cache
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
+	if err != nil {
+		return fmt.Errorf("MessagechatDelete: prepare fields failed: %w", err)
+	}
+
+	sb := squirrel.Update(messagechatTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(messagechat.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := sb.ToSql()
+	if err != nil {
+		return fmt.Errorf("MessagechatDelete: build SQL failed: %w", err)
+	}
+
+	result, err := h.db.ExecContext(ctx, sqlStr, args...)
+	if err != nil {
+		return fmt.Errorf("MessagechatDelete: exec failed: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("could not get rows affected: %w", err)
+	} else if rowsAffected == 0 {
+		return ErrNotFound
+	}
+
 	_ = h.messagechatUpdateToCache(ctx, id)
 
 	return nil

@@ -11,7 +11,7 @@ import (
 )
 
 // Gets returns list of customers
-func (h *customerHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*customer.Customer, error) {
+func (h *customerHandler) Gets(ctx context.Context, size uint64, token string, filters map[customer.Field]any) ([]*customer.Customer, error) {
 	log := logrus.WithField("func", "Gets")
 
 	res, err := h.db.CustomerGets(ctx, size, token, filters)
@@ -144,17 +144,17 @@ func (h *customerHandler) UpdateBasicInfo(
 	})
 	log.Debug("Updating the customer's basic info.")
 
-	if err := h.db.CustomerSetBasicInfo(
-		ctx,
-		id,
-		name,
-		detail,
-		email,
-		phoneNumber,
-		address,
-		webhookMethod,
-		webhookURI,
-	); err != nil {
+	fields := map[customer.Field]any{
+		customer.FieldName:          name,
+		customer.FieldDetail:        detail,
+		customer.FieldEmail:         email,
+		customer.FieldPhoneNumber:   phoneNumber,
+		customer.FieldAddress:       address,
+		customer.FieldWebhookMethod: webhookMethod,
+		customer.FieldWebhookURI:    webhookURI,
+	}
+
+	if err := h.db.CustomerUpdate(ctx, id, fields); err != nil {
 		log.Errorf("Could not update the basic info. err: %v", err)
 		return nil, err
 	}
@@ -181,7 +181,11 @@ func (h *customerHandler) UpdateBillingAccountID(ctx context.Context, id uuid.UU
 	})
 	log.Debug("Updating the customer's billing account id.")
 
-	if err := h.db.CustomerSetBillingAccountID(ctx, id, billingAccountID); err != nil {
+	fields := map[customer.Field]any{
+		customer.FieldBillingAccountID: billingAccountID,
+	}
+
+	if err := h.db.CustomerUpdate(ctx, id, fields); err != nil {
 		log.Errorf("Could not update the billing account id. err: %v", err)
 		return nil, err
 	}

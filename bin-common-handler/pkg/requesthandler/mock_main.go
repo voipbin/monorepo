@@ -155,7 +155,7 @@ func (mr *MockRequestHandlerMockRecorder) AIV1AIGet(ctx, aiID any) *gomock.Call 
 }
 
 // AIV1AIGets mocks base method.
-func (m *MockRequestHandler) AIV1AIGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]ai.AI, error) {
+func (m *MockRequestHandler) AIV1AIGets(ctx context.Context, pageToken string, pageSize uint64, filters map[ai.Field]any) ([]ai.AI, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AIV1AIGets", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]ai.AI)
@@ -215,7 +215,7 @@ func (mr *MockRequestHandlerMockRecorder) AIV1AIcallGet(ctx, aicallID any) *gomo
 }
 
 // AIV1AIcallGets mocks base method.
-func (m *MockRequestHandler) AIV1AIcallGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]aicall.AIcall, error) {
+func (m *MockRequestHandler) AIV1AIcallGets(ctx context.Context, pageToken string, pageSize uint64, filters map[aicall.Field]any) ([]aicall.AIcall, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AIV1AIcallGets", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]aicall.AIcall)
@@ -319,7 +319,7 @@ func (mr *MockRequestHandlerMockRecorder) AIV1MessageGet(ctx, messageID any) *go
 }
 
 // AIV1MessageGetsByAIcallID mocks base method.
-func (m *MockRequestHandler) AIV1MessageGetsByAIcallID(ctx context.Context, aicallID uuid.UUID, pageToken string, pageSize uint64, filters map[string]string) ([]message.Message, error) {
+func (m *MockRequestHandler) AIV1MessageGetsByAIcallID(ctx context.Context, aicallID uuid.UUID, pageToken string, pageSize uint64, filters map[message.Field]any) ([]message.Message, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AIV1MessageGetsByAIcallID", ctx, aicallID, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]message.Message)
@@ -439,7 +439,7 @@ func (mr *MockRequestHandlerMockRecorder) AIV1SummaryGet(ctx, summaryID any) *go
 }
 
 // AIV1SummaryGets mocks base method.
-func (m *MockRequestHandler) AIV1SummaryGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]summary.Summary, error) {
+func (m *MockRequestHandler) AIV1SummaryGets(ctx context.Context, pageToken string, pageSize uint64, filters map[summary.Field]any) ([]summary.Summary, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AIV1SummaryGets", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]summary.Summary)
@@ -514,7 +514,7 @@ func (mr *MockRequestHandlerMockRecorder) AgentV1AgentGetByCustomerIDAndAddress(
 }
 
 // AgentV1AgentGets mocks base method.
-func (m *MockRequestHandler) AgentV1AgentGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]agent.Agent, error) {
+func (m *MockRequestHandler) AgentV1AgentGets(ctx context.Context, pageToken string, pageSize uint64, filters map[agent.Field]any) ([]agent.Agent, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AgentV1AgentGets", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]agent.Agent)
@@ -1220,7 +1220,7 @@ func (mr *MockRequestHandlerMockRecorder) BillingV1AccountGet(ctx, accountID any
 }
 
 // BillingV1AccountGets mocks base method.
-func (m *MockRequestHandler) BillingV1AccountGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]account.Account, error) {
+func (m *MockRequestHandler) BillingV1AccountGets(ctx context.Context, pageToken string, pageSize uint64, filters map[account.Field]any) ([]account.Account, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BillingV1AccountGets", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]account.Account)
@@ -1295,7 +1295,7 @@ func (mr *MockRequestHandlerMockRecorder) BillingV1AccountUpdatePaymentInfo(ctx,
 }
 
 // BillingV1BillingGets mocks base method.
-func (m *MockRequestHandler) BillingV1BillingGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]billing.Billing, error) {
+func (m *MockRequestHandler) BillingV1BillingGets(ctx context.Context, pageToken string, pageSize uint64, filters map[billing.Field]any) ([]billing.Billing, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BillingV1BillingGets", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]billing.Billing)
@@ -1457,7 +1457,7 @@ func (mr *MockRequestHandlerMockRecorder) CallV1CallGetDigits(ctx, callID any) *
 }
 
 // CallV1CallGets mocks base method.
-func (m *MockRequestHandler) CallV1CallGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]call.Call, error) {
+func (m *MockRequestHandler) CallV1CallGets(ctx context.Context, pageToken string, pageSize uint64, filters map[call.Field]any) ([]call.Call, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallV1CallGets", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]call.Call)
@@ -1980,7 +1980,7 @@ func (mr *MockRequestHandlerMockRecorder) CallV1ExternalMediaGet(ctx, externalMe
 }
 
 // CallV1ExternalMediaGets mocks base method.
-func (m *MockRequestHandler) CallV1ExternalMediaGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]externalmedia.ExternalMedia, error) {
+func (m *MockRequestHandler) CallV1ExternalMediaGets(ctx context.Context, pageToken string, pageSize uint64, filters map[externalmedia.Field]any) ([]externalmedia.ExternalMedia, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallV1ExternalMediaGets", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]externalmedia.ExternalMedia)
@@ -2070,7 +2070,7 @@ func (mr *MockRequestHandlerMockRecorder) CallV1GroupcallGet(ctx, groupcallID an
 }
 
 // CallV1GroupcallGets mocks base method.
-func (m *MockRequestHandler) CallV1GroupcallGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]groupcall.Groupcall, error) {
+func (m *MockRequestHandler) CallV1GroupcallGets(ctx context.Context, pageToken string, pageSize uint64, filters map[groupcall.Field]any) ([]groupcall.Groupcall, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallV1GroupcallGets", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]groupcall.Groupcall)
@@ -2187,7 +2187,7 @@ func (mr *MockRequestHandlerMockRecorder) CallV1RecordingGet(ctx, id any) *gomoc
 }
 
 // CallV1RecordingGets mocks base method.
-func (m *MockRequestHandler) CallV1RecordingGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]recording.Recording, error) {
+func (m *MockRequestHandler) CallV1RecordingGets(ctx context.Context, pageToken string, pageSize uint64, filters map[recording.Field]any) ([]recording.Recording, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallV1RecordingGets", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]recording.Recording)
@@ -2620,7 +2620,7 @@ func (mr *MockRequestHandlerMockRecorder) ChatV1ChatGet(ctx, chatID any) *gomock
 }
 
 // ChatV1ChatGets mocks base method.
-func (m *MockRequestHandler) ChatV1ChatGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]chat.Chat, error) {
+func (m *MockRequestHandler) ChatV1ChatGets(ctx context.Context, pageToken string, pageSize uint64, filters map[chat.Field]any) ([]chat.Chat, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ChatV1ChatGets", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]chat.Chat)
@@ -2710,7 +2710,7 @@ func (mr *MockRequestHandlerMockRecorder) ChatV1ChatroomGet(ctx, chatroomID any)
 }
 
 // ChatV1ChatroomGets mocks base method.
-func (m *MockRequestHandler) ChatV1ChatroomGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]chatroom.Chatroom, error) {
+func (m *MockRequestHandler) ChatV1ChatroomGets(ctx context.Context, pageToken string, pageSize uint64, filters map[chatroom.Field]any) ([]chatroom.Chatroom, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ChatV1ChatroomGets", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]chatroom.Chatroom)
@@ -2785,7 +2785,7 @@ func (mr *MockRequestHandlerMockRecorder) ChatV1MessagechatGet(ctx, messagechatI
 }
 
 // ChatV1MessagechatGets mocks base method.
-func (m *MockRequestHandler) ChatV1MessagechatGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]messagechat.Messagechat, error) {
+func (m *MockRequestHandler) ChatV1MessagechatGets(ctx context.Context, pageToken string, pageSize uint64, filters map[messagechat.Field]any) ([]messagechat.Messagechat, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ChatV1MessagechatGets", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]messagechat.Messagechat)
@@ -2830,7 +2830,7 @@ func (mr *MockRequestHandlerMockRecorder) ChatV1MessagechatroomGet(ctx, messagec
 }
 
 // ChatV1MessagechatroomGets mocks base method.
-func (m *MockRequestHandler) ChatV1MessagechatroomGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]messagechatroom.Messagechatroom, error) {
+func (m *MockRequestHandler) ChatV1MessagechatroomGets(ctx context.Context, pageToken string, pageSize uint64, filters map[messagechatroom.Field]any) ([]messagechatroom.Messagechatroom, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ChatV1MessagechatroomGets", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]messagechatroom.Messagechatroom)
@@ -2904,7 +2904,7 @@ func (mr *MockRequestHandlerMockRecorder) ConferenceV1ConferenceGet(ctx, confere
 }
 
 // ConferenceV1ConferenceGets mocks base method.
-func (m *MockRequestHandler) ConferenceV1ConferenceGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]conference.Conference, error) {
+func (m *MockRequestHandler) ConferenceV1ConferenceGets(ctx context.Context, pageToken string, pageSize uint64, filters map[conference.Field]any) ([]conference.Conference, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConferenceV1ConferenceGets", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]conference.Conference)
@@ -3039,7 +3039,7 @@ func (mr *MockRequestHandlerMockRecorder) ConferenceV1ConferencecallGet(ctx, con
 }
 
 // ConferenceV1ConferencecallGets mocks base method.
-func (m *MockRequestHandler) ConferenceV1ConferencecallGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]conferencecall.Conferencecall, error) {
+func (m *MockRequestHandler) ConferenceV1ConferencecallGets(ctx context.Context, pageToken string, pageSize uint64, filters map[conferencecall.Field]any) ([]conferencecall.Conferencecall, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConferenceV1ConferencecallGets", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]conferencecall.Conferencecall)
@@ -3352,7 +3352,7 @@ func (mr *MockRequestHandlerMockRecorder) CustomerV1AccesskeyGet(ctx, accesskeyI
 }
 
 // CustomerV1AccesskeyGets mocks base method.
-func (m *MockRequestHandler) CustomerV1AccesskeyGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]accesskey.Accesskey, error) {
+func (m *MockRequestHandler) CustomerV1AccesskeyGets(ctx context.Context, pageToken string, pageSize uint64, filters map[accesskey.Field]any) ([]accesskey.Accesskey, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CustomerV1AccesskeyGets", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]accesskey.Accesskey)
@@ -3427,7 +3427,7 @@ func (mr *MockRequestHandlerMockRecorder) CustomerV1CustomerGet(ctx, customerID 
 }
 
 // CustomerV1CustomerGets mocks base method.
-func (m *MockRequestHandler) CustomerV1CustomerGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]customer.Customer, error) {
+func (m *MockRequestHandler) CustomerV1CustomerGets(ctx context.Context, pageToken string, pageSize uint64, filters map[customer.Field]any) ([]customer.Customer, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CustomerV1CustomerGets", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]customer.Customer)
@@ -3517,7 +3517,7 @@ func (mr *MockRequestHandlerMockRecorder) EmailV1EmailGet(ctx, emailID any) *gom
 }
 
 // EmailV1EmailGets mocks base method.
-func (m *MockRequestHandler) EmailV1EmailGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]email.Email, error) {
+func (m *MockRequestHandler) EmailV1EmailGets(ctx context.Context, pageToken string, pageSize uint64, filters map[email.Field]any) ([]email.Email, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "EmailV1EmailGets", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]email.Email)
@@ -4034,7 +4034,7 @@ func (mr *MockRequestHandlerMockRecorder) NumberV1NumberGet(ctx, numberID any) *
 }
 
 // NumberV1NumberGets mocks base method.
-func (m *MockRequestHandler) NumberV1NumberGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]number.Number, error) {
+func (m *MockRequestHandler) NumberV1NumberGets(ctx context.Context, pageToken string, pageSize uint64, filters map[number.Field]any) ([]number.Number, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NumberV1NumberGets", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]number.Number)
@@ -4497,7 +4497,7 @@ func (mr *MockRequestHandlerMockRecorder) QueueV1QueueGetAgents(ctx, queueID, st
 }
 
 // QueueV1QueueGets mocks base method.
-func (m *MockRequestHandler) QueueV1QueueGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]queue.Queue, error) {
+func (m *MockRequestHandler) QueueV1QueueGets(ctx context.Context, pageToken string, pageSize uint64, filters map[queue.Field]any) ([]queue.Queue, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "QueueV1QueueGets", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]queue.Queue)
@@ -4632,7 +4632,7 @@ func (mr *MockRequestHandlerMockRecorder) QueueV1QueuecallGetByReferenceID(ctx, 
 }
 
 // QueueV1QueuecallGets mocks base method.
-func (m *MockRequestHandler) QueueV1QueuecallGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]queuecall.Queuecall, error) {
+func (m *MockRequestHandler) QueueV1QueuecallGets(ctx context.Context, pageToken string, pageSize uint64, filters map[queuecall.Field]any) ([]queuecall.Queuecall, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "QueueV1QueuecallGets", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]queuecall.Queuecall)
@@ -4823,7 +4823,7 @@ func (mr *MockRequestHandlerMockRecorder) RegistrarV1ExtensionGet(ctx, extension
 }
 
 // RegistrarV1ExtensionGets mocks base method.
-func (m *MockRequestHandler) RegistrarV1ExtensionGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]extension.Extension, error) {
+func (m *MockRequestHandler) RegistrarV1ExtensionGets(ctx context.Context, pageToken string, pageSize uint64, filters map[extension.Field]any) ([]extension.Extension, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RegistrarV1ExtensionGets", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]extension.Extension)
@@ -4913,7 +4913,7 @@ func (mr *MockRequestHandlerMockRecorder) RegistrarV1TrunkGetByDomainName(ctx, d
 }
 
 // RegistrarV1TrunkGets mocks base method.
-func (m *MockRequestHandler) RegistrarV1TrunkGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]trunk.Trunk, error) {
+func (m *MockRequestHandler) RegistrarV1TrunkGets(ctx context.Context, pageToken string, pageSize uint64, filters map[trunk.Field]any) ([]trunk.Trunk, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RegistrarV1TrunkGets", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]trunk.Trunk)
@@ -5183,7 +5183,7 @@ func (mr *MockRequestHandlerMockRecorder) StorageV1AccountGet(ctx, accountID any
 }
 
 // StorageV1AccountGets mocks base method.
-func (m *MockRequestHandler) StorageV1AccountGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]account1.Account, error) {
+func (m *MockRequestHandler) StorageV1AccountGets(ctx context.Context, pageToken string, pageSize uint64, filters map[account1.Field]any) ([]account1.Account, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "StorageV1AccountGets", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]account1.Account)
@@ -5272,7 +5272,7 @@ func (mr *MockRequestHandlerMockRecorder) StorageV1FileGet(ctx, fileID any) *gom
 }
 
 // StorageV1FileGets mocks base method.
-func (m *MockRequestHandler) StorageV1FileGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]file.File, error) {
+func (m *MockRequestHandler) StorageV1FileGets(ctx context.Context, pageToken string, pageSize uint64, filters map[file.Field]any) ([]file.File, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "StorageV1FileGets", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]file.File)
@@ -5524,7 +5524,7 @@ func (mr *MockRequestHandlerMockRecorder) TranscribeV1TranscribeGet(ctx, transcr
 }
 
 // TranscribeV1TranscribeGets mocks base method.
-func (m *MockRequestHandler) TranscribeV1TranscribeGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]transcribe.Transcribe, error) {
+func (m *MockRequestHandler) TranscribeV1TranscribeGets(ctx context.Context, pageToken string, pageSize uint64, filters map[transcribe.Field]any) ([]transcribe.Transcribe, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TranscribeV1TranscribeGets", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]transcribe.Transcribe)
@@ -5583,7 +5583,7 @@ func (mr *MockRequestHandlerMockRecorder) TranscribeV1TranscribeStop(ctx, transc
 }
 
 // TranscribeV1TranscriptGets mocks base method.
-func (m *MockRequestHandler) TranscribeV1TranscriptGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]transcript.Transcript, error) {
+func (m *MockRequestHandler) TranscribeV1TranscriptGets(ctx context.Context, pageToken string, pageSize uint64, filters map[transcript.Field]any) ([]transcript.Transcript, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TranscribeV1TranscriptGets", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]transcript.Transcript)

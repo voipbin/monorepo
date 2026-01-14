@@ -33,10 +33,11 @@ func (h *listenHandler) v1MessagechatroomsGet(ctx context.Context, m *sock.Reque
 	// get owner_id
 	chatroomID := uuid.FromStringOrNil(u.Query().Get("chatroom_id"))
 
-	filters := getFilters(u)
-	if filters["chatroom_id"] == "" {
-		filters["chatroom_id"] = chatroomID.String()
+	strFilters := getFilters(u)
+	if strFilters["chatroom_id"] == "" {
+		strFilters["chatroom_id"] = chatroomID.String()
 	}
+	filters := convertToMessagechatroomFilters(strFilters)
 
 	// gets by owner id
 	tmp, err := h.messagechatroomHandler.Gets(ctx, pageToken, pageSize, filters)

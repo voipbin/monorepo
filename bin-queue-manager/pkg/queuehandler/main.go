@@ -41,7 +41,7 @@ type QueueHandler interface {
 	Delete(ctx context.Context, id uuid.UUID) (*queue.Queue, error)
 	Execute(ctx context.Context, id uuid.UUID)
 	Get(ctx context.Context, id uuid.UUID) (*queue.Queue, error)
-	Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*queue.Queue, error)
+	Gets(ctx context.Context, size uint64, token string, filters map[queue.Field]any) ([]*queue.Queue, error)
 	UpdateBasicInfo(
 		ctx context.Context,
 		id uuid.UUID,
@@ -55,7 +55,6 @@ type QueueHandler interface {
 	) (*queue.Queue, error)
 	UpdateTagIDs(ctx context.Context, id uuid.UUID, tagIDs []uuid.UUID) (*queue.Queue, error)
 	UpdateRoutingMethod(ctx context.Context, id uuid.UUID, routingMEthod queue.RoutingMethod) (*queue.Queue, error)
-	// UpdateWaitActionsAndTimeouts(ctx context.Context, id uuid.UUID, waitActions []fmaction.Action, waitTimeout, serviceTimeout int) (*queue.Queue, error)
 	UpdateExecute(ctx context.Context, id uuid.UUID, execute queue.Execute) (*queue.Queue, error)
 
 	AddWaitQueueCallID(ctx context.Context, id uuid.UUID, queuecallID uuid.UUID) (*queue.Queue, error)

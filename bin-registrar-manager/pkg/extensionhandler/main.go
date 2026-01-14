@@ -30,9 +30,9 @@ type ExtensionHandler interface {
 	) (*extension.Extension, error)
 	Delete(ctx context.Context, id uuid.UUID) (*extension.Extension, error)
 	Get(ctx context.Context, id uuid.UUID) (*extension.Extension, error)
-	Gets(ctx context.Context, token string, limit uint64, filters map[string]string) ([]*extension.Extension, error)
+	Gets(ctx context.Context, token string, limit uint64, filters map[extension.Field]any) ([]*extension.Extension, error)
 	GetByExtension(ctx context.Context, customerID uuid.UUID, ext string) (*extension.Extension, error)
-	Update(ctx context.Context, id uuid.UUID, name string, detail string, password string) (*extension.Extension, error)
+	Update(ctx context.Context, id uuid.UUID, fields map[extension.Field]any) (*extension.Extension, error)
 
 	EventCUCustomerDeleted(ctx context.Context, cu *cucustomer.Customer) error
 }

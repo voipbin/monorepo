@@ -7,6 +7,8 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+
+	"monorepo/bin-registrar-manager/models/trunk"
 )
 
 // EventCUCustomerDeleted handles the customer-manager's customer_deleted event
@@ -18,9 +20,9 @@ func (h *trunkHandler) EventCUCustomerDeleted(ctx context.Context, cu *cucustome
 	log.Debugf("Deleting all trunks of the customer. customer_id: %s", cu.ID)
 
 	// get all trunks in customer
-	filters := map[string]string{
-		"customer_id": cu.ID.String(),
-		"deleted":     "false",
+	filters := map[trunk.Field]any{
+		trunk.FieldCustomerID: cu.ID,
+		trunk.FieldDeleted:    false,
 	}
 	trunks, err := h.Gets(ctx, "", 1000, filters)
 	if err != nil {

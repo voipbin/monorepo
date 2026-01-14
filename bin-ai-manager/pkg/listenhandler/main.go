@@ -5,14 +5,8 @@ package listenhandler
 import (
 	"context"
 	"fmt"
-	"net/url"
 	"regexp"
-	"strings"
 	"time"
-
-	"monorepo/bin-common-handler/models/outline"
-	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
@@ -21,6 +15,10 @@ import (
 	"monorepo/bin-ai-manager/pkg/aihandler"
 	"monorepo/bin-ai-manager/pkg/messagehandler"
 	"monorepo/bin-ai-manager/pkg/summaryhandler"
+	"monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/models/sock"
+	"monorepo/bin-common-handler/pkg/sockhandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 )
 
 // pagination parameters
@@ -39,6 +37,8 @@ type listenHandler struct {
 	sockHandler   sockhandler.SockHandler
 	queueListen   string
 	exchangeDelay string
+
+	utilHandler utilhandler.UtilHandler
 
 	aiHandler      aihandler.AIHandler
 	aicallHandler  aicallhandler.AIcallHandler
@@ -108,30 +108,13 @@ func simpleResponse(code int) *sock.Response {
 	}
 }
 
-// getFilters parses the query and returns filters
-func getFilters(u *url.URL) map[string]string {
-	res := map[string]string{}
-
-	keys := make([]string, 0, len(u.Query()))
-	for k := range u.Query() {
-		keys = append(keys, k)
-	}
-
-	for _, k := range keys {
-		if strings.HasPrefix(k, "filter_") {
-			tmp, _ := strings.CutPrefix(k, "filter_")
-			res[tmp] = u.Query().Get(k)
-		}
-	}
-
-	return res
-}
-
 // NewListenHandler return ListenHandler interface
 func NewListenHandler(
 	sockHandler sockhandler.SockHandler,
 	queueListen string,
 	exchangeDelay string,
+
+	utilHandler utilhandler.UtilHandler,
 
 	aiHandler aihandler.AIHandler,
 	aicallHandler aicallhandler.AIcallHandler,
@@ -142,6 +125,8 @@ func NewListenHandler(
 		sockHandler:   sockHandler,
 		queueListen:   queueListen,
 		exchangeDelay: exchangeDelay,
+
+		utilHandler: utilHandler,
 
 		aiHandler:      aiHandler,
 		aicallHandler:  aicallHandler,

@@ -29,7 +29,7 @@ func Test_RecordingGets(t *testing.T) {
 
 		responseRecording []cmrecording.Recording
 
-		expectFilters map[string]string
+		expectFilters map[cmrecording.Field]any
 		expectRes     []*cmrecording.WebhookMessage
 	}
 
@@ -67,9 +67,9 @@ func Test_RecordingGets(t *testing.T) {
 				},
 			},
 
-			map[string]string{
-				"customer_id": "5f621078-8e5f-11ee-97b2-cfe7337b701c",
-				"deleted":     "false",
+			map[cmrecording.Field]any{
+				cmrecording.FieldCustomerID: "5f621078-8e5f-11ee-97b2-cfe7337b701c",
+				cmrecording.FieldDeleted:    false,
 			},
 			[]*cmrecording.WebhookMessage{
 				{

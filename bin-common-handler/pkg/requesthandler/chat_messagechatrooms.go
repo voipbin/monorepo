@@ -2,6 +2,7 @@ package requesthandler
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/url"
 
@@ -9,18 +10,21 @@ import (
 	"monorepo/bin-common-handler/models/sock"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 )
 
 // ChatV1MessagechatroomGets sends a request to chat-manager
 // to getting a list of messagechatroom info of the given chatroom id.
 // it returns detail list of messagechatroom info if it succeed.
-func (r *requestHandler) ChatV1MessagechatroomGets(ctx context.Context, pageToken string, pageSize uint64, filters map[string]string) ([]chatmessagechatroom.Messagechatroom, error) {
+func (r *requestHandler) ChatV1MessagechatroomGets(ctx context.Context, pageToken string, pageSize uint64, filters map[chatmessagechatroom.Field]any) ([]chatmessagechatroom.Messagechatroom, error) {
 	uri := fmt.Sprintf("/v1/messagechatrooms?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
-	// parse filters
-	uri = r.utilHandler.URLMergeFilters(uri, filters)
+	m, err := json.Marshal(filters)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not marshal filters")
+	}
 
-	tmp, err := r.sendRequestChat(ctx, uri, sock.RequestMethodGet, "chat/messagechatrooms", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestChat(ctx, uri, sock.RequestMethodGet, "chat/messagechatrooms", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}
