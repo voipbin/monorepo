@@ -120,6 +120,7 @@ find . -maxdepth 2 -name "go.mod" -execdir bash -c \
    go mod tidy && \
    go mod vendor && \
    go generate ./... && \
+   go clean -testcache && \
    go test ./..." \;
 ```
 
@@ -127,7 +128,13 @@ find . -maxdepth 2 -name "go.mod" -execdir bash -c \
 1. `go mod tidy` - Syncs go.mod with bin-common-handler changes (NOT `go get -u`)
 2. `go mod vendor` - Updates vendored bin-common-handler code
 3. `go generate ./...` - Regenerates mocks that depend on bin-common-handler interfaces
-4. `go test ./...` - Verifies the service still works with new bin-common-handler
+4. **`go clean -testcache`** - **CRITICAL**: Clears test cache to force actual test execution
+5. `go test ./...` - Verifies the service still works with new bin-common-handler
+
+**⚠️ WARNING: ALWAYS use `go clean -testcache` when testing after bin-common-handler changes!**
+- Go caches test results, which can hide failures introduced by your changes
+- Cached tests show "PASS" even though they never actually re-ran with the new code
+- This is the #1 cause of missing test failures in the monorepo
 
 **Step 3: Verify key services compile**
 ```bash
@@ -168,17 +175,42 @@ git commit -m "chore: update dependencies after bin-common-handler changes"
 - **Compilation errors**: Stale vendored dependencies will break builds
 - **Runtime failures**: Services may use outdated interfaces/models
 - **Test failures**: Mock regeneration required if interfaces changed
+- **Type mismatches**: Shared utility changes affect test expectations, not just interfaces
+- **Test cache masking failures**: Cached tests can hide breaking changes
 - **Inconsistent state**: Half-updated monorepo leads to subtle bugs
+
+#### Verification Checklist
+
+After changing bin-common-handler, verify EACH dependent service:
+
+- [ ] **`go mod tidy`** - Dependencies synced
+- [ ] **`go mod vendor`** - Vendored code updated
+- [ ] **`go generate ./...`** - Mocks regenerated
+- [ ] **`go clean -testcache`** - Test cache cleared ⚠️ NEVER SKIP THIS
+- [ ] **`go test ./...`** - All tests pass (actually ran, not cached)
+- [ ] **Test expectations updated** - If types/values changed in shared utilities
+- [ ] **`golangci-lint run`** - No linting issues
+- [ ] **`go build ./...`** - Compiles successfully
+
+**If ANY test fails:**
+1. Don't just regenerate mocks and retry
+2. Investigate WHAT changed in bin-common-handler
+3. Update test EXPECTATIONS to match new behavior
+4. Clear cache and re-run: `go clean -testcache && go test ./...`
 
 #### Common Mistakes to Avoid
 
+❌ **DON'T run tests without clearing cache first** - `go test` uses cached results, hiding failures
+❌ **DON'T just regenerate mocks and assume tests will pass** - Test EXPECTATIONS need updates for type changes
 ❌ **DON'T run `go get -u`** - This updates ALL dependencies, not just bin-common-handler
 ❌ **DON'T skip `go generate`** - Mocks will be stale if interfaces changed
 ❌ **DON'T skip `go test`** - Won't catch breaking changes until production
 ❌ **DON'T commit bin-common-handler alone** - All services must be updated together
 
-✅ **DO run the complete workflow** - `go mod tidy && go mod vendor && go generate && go test`
-✅ **DO verify tests pass** for all services before committing
+✅ **DO run `go clean -testcache` before testing** - Force actual test execution, not cached results
+✅ **DO update test expectations when shared utilities change types** - Especially for type conversions
+✅ **DO run the complete workflow** - `go mod tidy && go mod vendor && go generate && go clean -testcache && go test`
+✅ **DO verify tests ACTUALLY ran** (not cached) for all services before committing
 ✅ **DO commit bin-common-handler and dependency updates together** (can be separate commits in same PR)
 
 #### Troubleshooting
@@ -192,10 +224,52 @@ go clean -modcache
 go mod tidy && go mod vendor && go build ./...
 ```
 
-**If tests fail in multiple services:**
-- Check if bin-common-handler changes introduced breaking changes
-- Review interface modifications
-- Verify mock regeneration completed successfully
+**If tests fail in multiple services after bin-common-handler changes:**
+
+🚨 **CRITICAL: Test failures are NOT just about regenerating mocks!**
+
+When bin-common-handler shared utilities change (especially type conversions, data transformations, or filter handling), test EXPECTATIONS must be updated to match the new behavior.
+
+**Common scenario (like the UUID filter bug):**
+1. You modify a shared utility in bin-common-handler (e.g., database field type conversion)
+2. This changes the TYPES of values passed to mocked functions (e.g., string → uuid.UUID)
+3. Mock expectations in tests still expect the OLD types
+4. Tests fail with "expected call doesn't match" errors
+5. **Solution**: Update test expectations to use the new types, NOT just regenerate mocks
+
+**Example - What to fix when type conversions change:**
+```go
+// ❌ WRONG - Old test expectation (before fix)
+expectFilters: map[Field]any{
+    FieldCustomerID: "5e4a0680-804e-11ec-8477-2fea5968d85b",  // String
+}
+
+// ✅ CORRECT - Updated test expectation (after UUID conversion fix)
+expectFilters: map[Field]any{
+    FieldCustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),  // UUID type
+}
+
+// Alternative: Use gomock.Any() if exact matching is problematic
+mockReq.EXPECT().SomeMethod(ctx, gomock.Any()).Return(response, nil)
+```
+
+**Systematic approach to fixing test failures:**
+1. **Identify the changed behavior** in bin-common-handler
+2. **Find all test files** with failing expectations (`grep -r "FieldCustomerID" *_test.go`)
+3. **Update test expectations** to match new types/behavior
+4. **Re-run with clean cache**: `go clean -testcache && go test ./...`
+5. **Verify actual execution**: Check test ran (not cached)
+
+**Common changes requiring test expectation updates:**
+- ✅ Type conversions (string → UUID, string → int, etc.)
+- ✅ Filter map value types
+- ✅ Field name changes or additions
+- ✅ Enum value changes
+- ✅ Default value changes
+
+**DON'T just regenerate mocks and assume tests will pass!**
+- Mock interfaces may be unchanged, but VALUES passed have changed types
+- Test expectations must be manually updated to match new value types
 
 **Never commit changes to bin-common-handler without updating dependent services.**
 
