@@ -117,7 +117,7 @@ func Test_ConferencecallGets(t *testing.T) {
 				},
 			},
 			map[cfconferencecall.Field]any{
-				cfconferencecall.FieldCustomerID: "5f621078-8e5f-11ee-97b2-cfe7337b701c",
+				cfconferencecall.FieldCustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				cfconferencecall.FieldDeleted:    false,
 			},
 			[]*cfconferencecall.WebhookMessage{

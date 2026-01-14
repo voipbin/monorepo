@@ -132,7 +132,7 @@ func Test_EmailGets(t *testing.T) {
 				},
 			},
 			expectFilters: map[ememail.Field]any{
-				ememail.FieldCustomerID: "5f621078-8e5f-11ee-97b2-cfe7337b701c",
+				ememail.FieldCustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				ememail.FieldDeleted:    false,
 			},
 			expectRes: []*ememail.WebhookMessage{
@@ -168,7 +168,7 @@ func Test_EmailGets(t *testing.T) {
 				},
 			},
 			expectFilters: map[ememail.Field]any{
-				ememail.FieldCustomerID: "5f621078-8e5f-11ee-97b2-cfe7337b701c",
+				ememail.FieldCustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				ememail.FieldDeleted:    false,
 			},
 			expectRes: []*ememail.WebhookMessage{

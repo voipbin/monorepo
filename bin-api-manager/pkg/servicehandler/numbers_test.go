@@ -55,7 +55,7 @@ func Test_OrderNumberGets(t *testing.T) {
 			},
 
 			map[nmnumber.Field]any{
-				nmnumber.FieldCustomerID: "5f621078-8e5f-11ee-97b2-cfe7337b701c",
+				nmnumber.FieldCustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				nmnumber.FieldDeleted:    false,
 			},
 			[]*nmnumber.WebhookMessage{

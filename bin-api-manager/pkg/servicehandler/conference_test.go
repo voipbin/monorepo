@@ -269,7 +269,7 @@ func Test_ConferenceGets(t *testing.T) {
 				},
 			},
 			map[cfconference.Field]any{
-				cfconference.FieldCustomerID: "5f621078-8e5f-11ee-97b2-cfe7337b701c",
+				cfconference.FieldCustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				cfconference.FieldDeleted:    false,
 				cfconference.FieldType:       string(cfconference.TypeConference),
 			},

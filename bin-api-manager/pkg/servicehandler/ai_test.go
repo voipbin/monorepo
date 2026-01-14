@@ -154,7 +154,7 @@ func Test_AIGetsByCustomerID(t *testing.T) {
 			token: "2020-09-20 03:23:20.995000",
 			filters: map[amai.Field]any{
 				amai.FieldDeleted:    false,
-				amai.FieldCustomerID: "5f621078-8e5f-11ee-97b2-cfe7337b701c",
+				amai.FieldCustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 
 			response: []amai.AI{
