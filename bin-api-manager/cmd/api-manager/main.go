@@ -176,7 +176,7 @@ func runListenHTTP(serviceHandler servicehandler.ServiceHandler) {
 	app := gin.Default()
 
 	// documents
-	app.Static("/docs", "docsdev/build")
+	app.Static("/docs", "docsdev/build/html")
 	app.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	app.GET("/redoc/*any", func(c *gin.Context) {
 		c.File("gens/openapi_redoc/api.html")

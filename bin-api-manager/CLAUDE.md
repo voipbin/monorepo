@@ -107,6 +107,105 @@ API Response:
 
 See `bin-openapi-manager/CLAUDE.md` for detailed schema validation procedures.
 
+### Developer Documentation (docsdev)
+
+The `docsdev/` directory contains Sphinx-based developer documentation for the entire VoIPBIN platform. This is the main public-facing documentation for external developers.
+
+#### Documentation Structure
+
+```
+docsdev/
+├── source/               # RST source files
+│   ├── index.rst        # Main table of contents
+│   ├── intro*.rst       # Introduction and features
+│   ├── quickstart*.rst  # Getting started guides
+│   ├── *_overview.rst   # Feature overviews
+│   ├── *_tutorial.rst   # Step-by-step tutorials
+│   ├── *_struct*.rst    # Data structure references
+│   ├── glossary.rst     # Terminology definitions
+│   └── _static/         # Images and static assets
+├── build/               # Generated HTML (gitignored)
+├── conf.py              # Sphinx configuration
+└── Makefile             # Build commands
+```
+
+#### Building Documentation
+
+**Prerequisites:**
+```bash
+# Create virtual environment
+python3 -m venv .venv_docs
+source .venv_docs/bin/activate
+
+# Install Sphinx and required extensions
+pip install sphinx sphinx-rtd-theme sphinx-wagtail-theme sphinxcontrib-youtube
+```
+
+**Build HTML:**
+```bash
+cd docsdev
+make html
+
+# Or use sphinx-build directly
+sphinx-build -M html source build
+```
+
+**Output:** Generated HTML files in `build/html/` (not committed to git)
+
+**View locally:**
+```bash
+# Open in browser
+open build/html/index.html  # macOS
+xdg-open build/html/index.html  # Linux
+```
+
+#### Documentation Conventions
+
+**File Naming:**
+- `<resource>.rst` - Main resource file (includes other files)
+- `<resource>_overview.rst` - Conceptual overview
+- `<resource>_tutorial.rst` - Step-by-step guide
+- `<resource>_struct_<type>.rst` - Data structure reference
+
+**RST Style:**
+- Use `.. code::` for code blocks (not `.. code-block::`)
+- Reference other sections: `:ref:\`link-target\``
+- Use `**bold**` for emphasis, not `*italic*`
+- Keep lines under 120 characters when practical
+
+**Common Issues:**
+- Empty sections like "Common used." are embarrassing - always provide content
+- Check for typos: "Ovewview", "Acesskey", "comming", "existed"
+- Grammar: "The doesn't affect" → "This doesn't affect"
+- Consistency: "VoIPBIN" not "Voipbin" or "voipbin"
+
+#### Documentation Maintenance
+
+**When updating:**
+1. Edit RST files in `source/`
+2. Rebuild HTML: `make html`
+3. Verify changes locally in `build/html/`
+4. Only commit RST source files, not `build/` directory
+
+**Recent improvements:**
+- Fixed empty `common_overview.rst` (was only "Common used.")
+- Populated `glossary.rst` with 25+ VoIPBIN terms
+- Expanded `restful_api.rst` with API conventions and HTTP status codes
+- Fixed typos in `sdk_overview.rst` and `flow_tutorial_basic.rst`
+
+**Key sections to maintain:**
+- **Glossary** (`glossary.rst`) - Keep terminology up to date
+- **Common Overview** (`common_overview.rst`) - Document shared patterns
+- **RESTful API** (`restful_api.rst`) - API conventions and error codes
+- **Quickstart** (`quickstart*.rst`) - First-run experience for developers
+
+#### Live Documentation
+
+The documentation is published at:
+- **Developer Docs**: https://docs.voipbin.net/ (this documentation)
+- **API Reference (ReDoc)**: https://api.voipbin.net/redoc/index.html
+- **API Reference (Swagger)**: https://api.voipbin.net/swagger/index.html
+
 ## Architecture
 
 ### Monorepo Structure

@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en" data-content_root="./">
+<head>
+    <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+        <title>Architecture &mdash; voipbin  documentation</title>
+    
+    <link rel="stylesheet" type="text/css" href="_static/dist/fontawesome.css" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8e8a900e" />
+      <link rel="stylesheet" type="text/css" href="_static/dist/theme.css?v=310cf088" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+            <link rel="index" title="Index" href="genindex.html" />
+            <link rel="search" title="Search" href="search.html" />
+            <link rel="top" title="voipbin  documentation" href="#" />
+            <link rel="next" title="Accesskey" href="accesskey.html" />
+            <link rel="prev" title="SDK(Software Development Kit)" href="sdk.html" />
+    </head>
+<body>
+    <script type="text/javascript" src="_static/dist/blocking.js"></script>
+    <header class="container-fluid bg-primary">
+        <a class="btn btn-sm btn-light skip-to-content-link" href="#main">Skip to content</a>
+        <div class="container-fluid">
+            <div class="navbar navbar-expand-lg navbar-dark font-weight-bold">
+                    <a href="intro.html"
+                        title="voipbin"
+                        class="logo navbar-brand"
+                    >
+                        <img src="_static/images/voipbin-high-resolution-logo-white-transparent.png" width="45" height="80" alt="voipbin"
+                            class="logo-img"
+                        />
+                        VoIPBin Documentation
+                    </a>
+                
+                
+                    <div class="collapse navbar-collapse justify-content-end">
+                        <ul class="navbar-nav">
+                            
+                                
+                                
+                                <li class="nav-item"><a class="nav-link"  href="http://voipbin.net">Project</a></li>
+                            
+                                
+                                
+                                <li class="nav-item"><a class="nav-link"  href="https://admin.voipbin.net">Admin</a></li>
+                            
+                        </ul>
+                    </div>
+                
+                <button class="navbar-toggler btn btn-primary d-lg-none" type="button" data-toggle="collapse" data-target="#collapseSidebar" aria-expanded="false" aria-controls="collapseExample">
+                    <span class="navbar-toggler-icon"></span>
+                    <span class="sr-only">menu</span>
+                </button>
+            </div>
+        </div>
+    </header>
+    <div class="container-fluid">
+        <div class="row">
+            <aside class="col-12 col-lg-3 sidebar-container">
+                <div id="collapseSidebar" class="collapse sticky-top d-lg-block pt-5 pr-lg-4">
+<div id="searchbox" class="searchbox mb-6 px-1" role="search">
+    <form id="search-form" action="search.html" autocomplete="off" method="get" role="search">
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <div class="input-group-text border-right-0 bg-white py-3 pl-3 pr-2"><span class="fas fa-search"></span></div>
+            </div>
+            <input class="form-control py-3 pr-3 pl-1 h-100 border-left-0" type="search" name="q" placeholder="Search documentation" aria-label="Search documentation" id="searchinput" />
+        </div>
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+    </form>
+</div><div class="site-toc">
+    <nav class="toc mt-3" aria-label="Main menu">
+        <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="common.html">Common</a></li>
+<li class="toctree-l1"><a class="reference internal" href="restful_api.html">RESTful API(Application Programming Interface)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sdk.html">SDK(Software Development Kit)</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="accesskey.html">Accesskey</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="activeflow.html">Activeflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="call.html">Call</a></li>
+<li class="toctree-l1"><a class="reference internal" href="message.html">Message</a></li>
+<li class="toctree-l1"><a class="reference internal" href="email.html">Email</a></li>
+<li class="toctree-l1"><a class="reference internal" href="agent.html">Agent</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conference.html">Conference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mediastream.html">Mediastream</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conversation.html">Conversation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extension.html">Extension</a></li>
+<li class="toctree-l1"><a class="reference internal" href="number.html">Number</a></li>
+<li class="toctree-l1"><a class="reference internal" href="queue.html">Queue</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recording.html">Recording</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a></li>
+<li class="toctree-l1"><a class="reference internal" href="campaign.html">Campaign</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outdial.html">Outdial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outplan.html">Outplan</a></li>
+<li class="toctree-l1"><a class="reference internal" href="webhook.html">Webhook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="customer.html">Customer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chat.html">Chat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ai.html">AI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="provider.html">Provider</a></li>
+<li class="toctree-l1"><a class="reference internal" href="route.html">Route</a></li>
+<li class="toctree-l1"><a class="reference internal" href="variable.html">Variable</a></li>
+<li class="toctree-l1"><a class="reference internal" href="websocket.html">Websocket</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trunk.html">Trunk</a></li>
+<li class="toctree-l1"><a class="reference internal" href="billing_account.html">Billing Account</a></li>
+<li class="toctree-l1"><a class="reference internal" href="storage.html">Storage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transcribe.html">Transcribe</a></li>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+</ul>
+
+    </nav>
+    <template data-toggle-item-template>
+        <button class="btn btn-sm btn-link toctree-expand" type="button">
+            <span class="sr-only">Toggle menu contents</span>
+        </button>
+    </template>
+</div>
+                    <div class="d-lg-none border-bottom">
+                        
+                    </div>
+                </div>
+            </aside>
+            <div class="col-12 col-lg-9 pt-5">
+                <header class="row align-items-baseline">
+                    <div class="col">
+                        <nav aria-label="breadcrumb">
+    <ol class="breadcrumb m-0 p-0 bg-transparent">
+        <li class="breadcrumb-item"><a href="index.html">Docs</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Architecture</li>
+    </ol>
+</nav>
+                    </div>
+                    <div class="col-sm-12 col-lg-auto mt-3 mt-lg-3">
+                        <noscript>
+                            <p>JavaScript is required to toggle light/dark mode..</p>
+                        </noscript>
+                        <button id="wagtail-theme" class="btn btn-sm btn-light text-decoration-none" type="button">
+                            <span class="dark-only"><i class="fas fa-sun"></i> Light mode</span>
+                            <span class="light-only"><i class="fas fa-moon"></i> Dark mode</span>
+                        </button>
+    <a class="btn btn-sm btn-light text-decoration-none" href="_sources/architecture.rst.txt" rel="nofollow">
+        <span class="btn-icon"><span class="fas fa-code"></span></span>
+        <span class="btn-text">View source</span>
+    </a>
+                        
+                    </div>
+                </header>
+                <div class="row" >
+                    <div class="col-12">
+                        <hr class="w-100 my-4">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 col-lg-9 order-last order-lg-first rst-content">
+                        <main role="main" id="main">
+    <section id="architecture">
+<span id="architecture-main"></span><h1>Architecture<a class="headerlink" href="#architecture" title="Link to this heading"></a></h1>
+<section id="overview">
+<span id="architecture-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<p>VoIPbin is a cloud-based communications platform offering a diverse range of features and channels, including PSTN calls, WebRTC, SMS, SNS, Chat, call queues, conferencing, billing management, and more.
+Its architecture is designed to be scalable, reliable, and secure, enabling businesses to effectively communicate with their customers across various touchpoints.</p>
+<img alt="_images/architecture_overview_all.png" src="_images/architecture_overview_all.png" />
+<section id="core-components">
+<h3>Core Components<a class="headerlink" href="#core-components" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>Flow Manager</strong>: Orchestrates all communication flows, determining the appropriate path based on user input, system configuration, and business logic. Interacts with other components to execute defined flows, including call routing, call queuing, call transfers, conferencing, and interactions with various communication channels.</p></li>
+<li><p><strong>Media Servers</strong>: Handle real-time media processing, such as transcoding, mixing, echo cancellation, and jitter buffering, ensuring high-quality media streams for voice and video communication.</p></li>
+<li><p><strong>Signaling Servers</strong>: Manage call setup, routing, and teardown using protocols like SIP. Establish connections, negotiate codecs, and handle call control signals.</p></li>
+<li><p><strong>Database</strong>: Stores user data, call records, system configurations, and other critical information for system operation.</p></li>
+<li><p><strong>Message Queue</strong>: Facilitates asynchronous communication between components, enabling efficient message delivery and decoupling them for improved system responsiveness.</p></li>
+<li><p><strong>Load Balancer</strong>: Distributes incoming traffic across multiple servers, ensuring high availability and optimal performance.</p></li>
+<li><p><strong>Cache</strong>: Stores frequently accessed data, such as user profiles and call routing information, to improve response times and reduce the load on the database.</p></li>
+<li><p><strong>Cloud Infrastructure</strong>: Leverages cloud services like AWS, Azure, or Google Cloud for scalability, flexibility, and cost-effectiveness.</p></li>
+</ul>
+</section>
+<section id="communication-channels">
+<h3>Communication Channels<a class="headerlink" href="#communication-channels" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>PSTN Gateway</strong>: Connects to the Public Switched Telephone Network (PSTN) for traditional voice calls.</p></li>
+<li><p><strong>WebRTC Gateway</strong>: Enables real-time, browser-based voice and video communication.</p></li>
+<li><p><strong>SMS Gateway</strong>: Handles the sending and receiving of SMS messages.</p></li>
+<li><p><strong>SNS Gateway</strong>: Integrates with various social media and messaging platforms.</p></li>
+<li><p><strong>Chat Gateway</strong>: Enables real-time chat functionality within the platform.</p></li>
+</ul>
+</section>
+<section id="integration-services">
+<h3>Integration Services<a class="headerlink" href="#integration-services" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>Webhook Service</strong>: Allows for seamless integration with external applications through custom webhooks, enabling data synchronization and triggering actions based on events within the VoIPbin platform.</p></li>
+</ul>
+</section>
+<section id="key-architectural-considerations">
+<h3>Key Architectural Considerations<a class="headerlink" href="#key-architectural-considerations" title="Link to this heading"></a></h3>
+<p>The voipbin has designed based on this considerations.</p>
+<ul class="simple">
+<li><p><strong>Scalability</strong>: The system must be designed to scale seamlessly to accommodate increasing call volumes, user base, and data traffic across all communication channels.</p></li>
+<li><p><strong>Reliability</strong>: High availability and fault tolerance are critical to ensure uninterrupted service and minimize downtime. This can be achieved through redundancy, load balancing, and automated failover mechanisms.</p></li>
+<li><p><strong>Security</strong>: Robust security measures are essential to protect user data, prevent fraud, and comply with relevant regulations. This includes measures like encryption, access control, and intrusion detection.</p></li>
+<li><p><strong>Flexibility</strong>: The architecture should be flexible enough to adapt to evolving communication technologies, changing business requirements, and new features.</p></li>
+</ul>
+<p>This combined description provides a comprehensive overview of the VoIPbin system architecture, highlighting the key components, communication channels, integration services, and architectural considerations.</p>
+</section>
+</section>
+<section id="rtc-real-time-communication">
+<span id="architecture-rtc"></span><h2>RTC(Real-Time Communication)<a class="headerlink" href="#rtc-real-time-communication" title="Link to this heading"></a></h2>
+<section id="voip">
+<h3>VoIP<a class="headerlink" href="#voip" title="Link to this heading"></a></h3>
+<p>In voipbin, VoIP stacks are consist with Kamailio, Asterisk, RTPEngine.</p>
+<img alt="Architecture VoIP" src="_images/architecture_rtc_voip.png" />
+<p>The Voipbin architecture utilizes a stateless Kamailio farm, ensuring high availability and fault tolerance.
+Kamailio instances are designed to operate in a stateless mode, allowing them to scale dynamically and recover seamlessly.</p>
+<p>This configuration enables zero-downtime operations, as traffic is automatically redirected to other Kamailio instances through a load balancer whenever an instance becomes unavailable.</p>
+<p>The architecture also integrates an RTPEngine farm and an Asterisk-call farm to handle SIP signaling and RTP media streams effectively.</p>
+<ul class="simple">
+<li><p>SIP Traffic Flow: Incoming and outgoing SIP traffic is distributed by the load balancer to the Kamailio instances. Kamailio handles the signaling and routes it to the appropriate Asterisk-call instance based on the session requirements.</p></li>
+<li><p>RTP Media Flow: Media streams (RTP) are processed by the RTPEngine farm, which works in tandem with Kamailio to manage the media paths efficiently. This separation of signaling and media handling ensures scalability and optimal performance.</p></li>
+</ul>
+<p>The accompanying diagram illustrates the end-to-end flow:</p>
+<ul class="simple">
+<li><p>Calls are initiated and routed through the load balancer to the stateless Kamailio farm.</p></li>
+<li><p>SIP signaling is processed by Kamailio and routed to the appropriate Asterisk-call instance.</p></li>
+<li><p>Media streams are directed through the RTPEngine farm to handle RTP traffic.</p></li>
+</ul>
+<p>This modular design ensures that Voipbin can provide reliable, scalable, and robust VoIP services, accommodating high traffic loads while maintaining seamless operation.</p>
+</section>
+<section id="kamailio">
+<h3>Kamailio<a class="headerlink" href="#kamailio" title="Link to this heading"></a></h3>
+<p>The Kamailio is an open-source SIP server that provides a flexible and scalable platform for handling SIP signaling.</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://www.kamailio.org/">https://www.kamailio.org/</a></p></li>
+</ul>
+<p>In the voipbin, the Kamailio farm is responsible for managing SIP signaling, including call routing, registration, and authentication as the edge router.</p>
+<p>Key features of voipbin’s Kamailio include:</p>
+<ul class="simple">
+<li><p>Load balancing: Distributing incoming SIP traffic across multiple Kamailio instances to ensure optimal performance and fault tolerance.</p></li>
+<li><p>Stateless: Operating in a stateless mode to enable dynamic scaling and seamless failover. It allowes Kamailio instances to be added or removed without affecting ongoing calls.</p></li>
+</ul>
+<img alt="Architecture Kamailio" src="_images/architecture_rtc_kamailio.png" />
+<p>In the picture above, the Kamailio is receiving the SIP traffic from the client and forwarding it to the Asterisk. But the followed SIP messages are going to the different Kamailio instances.</p>
+</section>
+<section id="asterisk">
+<h3>Asterisk<a class="headerlink" href="#asterisk" title="Link to this heading"></a></h3>
+<p>Asterisk is an open-source communications platform that provides a wide range of telephony services, including call processing, voicemail, and conferencing.</p>
+<img alt="Architecture Asterisk" src="_images/architecture_rtc_asterisk.png" />
+<p>VoIPBIN employs three distinct Asterisk farms to optimize scalability, stability, and failover:</p>
+<ul class="simple">
+<li><p>Asterisk-Call: Handles call processing, including call setup, media handling, and call termination.</p></li>
+<li><p>Asterisk-Conference: Manages conference calls, including setup, participant management, and termination.</p></li>
+<li><p>Asterisk-Registrar: Handles SIP registration, including user authentication and registration lifecycle management.</p></li>
+</ul>
+<p>Each Asterisk farm operates independently to ensure modularity, allowing for targeted scaling and fault isolation. However, Asterisk-Call and Asterisk-Conference communicate when bridging calls into a conference session.</p>
+</section>
+<section id="rtpengine">
+<h3>RTPEngine<a class="headerlink" href="#rtpengine" title="Link to this heading"></a></h3>
+<p>The RTPEngine is an open-source media proxy that provides real-time transport protocol (RTP) processing and media handling capabilities.</p>
+<img alt="Architecture RTPEngine" src="_images/architecture_rtc_rtpengine.png" />
+<p>In the voipbin, RTPEngine farm is responsible for codec edge server. All transcoding and media handling are done by the RTPEngine.
+For internal, the voipbin uses ulaw codec only. But for external, it can be changed to other codecs. The RTPEngine is responsible for transcoding the codec for internal and external.</p>
+</section>
+<section id="conference">
+<h3>Conference<a class="headerlink" href="#conference" title="Link to this heading"></a></h3>
+<p>In Voipbin, conference functionality is powered by the Asterisk-Conference component.</p>
+<img alt="Architecture Conference" src="_images/architecture_rtc_conference.png" />
+<p>VoIPbin leverages a dedicated Asterisk-Conference component for handling conference calls. This approach offers several advantages:</p>
+<ul class="simple">
+<li><p>Isolation and Scalability: By separating conference handling from general call processing (handled by Asterisk-Call components), VoIPbin ensures stable and scalable conference services. This isolation minimizes the impact of conference-related issues on other call flows.</p></li>
+<li><p>Flexibility: The Asterisk-Conference component can be independently scaled and optimized based on conference usage patterns.</p></li>
+<li><p>Centralized Management: All conference-related operations, including creation, management, and termination, are managed centrally by the Asterisk-Conference component.</p></li>
+</ul>
+<section id="conference-flow">
+<h4>Conference Flow<a class="headerlink" href="#conference-flow" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>Call Initiation: When a call flow requires a conference (e.g., through “connect” or “conference_join” actions), the Flow Manager initiates a new call to the designated Asterisk-Conference component.</p></li>
+<li><p>Conference Establishment: The Asterisk-Conference component establishes a dedicated bridge for the conference participants.</p></li>
+<li><p>Participant Joining: Participants are added to the conference bridge, either simultaneously or sequentially, as determined by the call flow.</p></li>
+<li><p>Conference Interaction: Participants can interact within the conference, including voice and video communication, screen sharing (if enabled), and other conference-specific features.</p></li>
+<li><p>Conference Termination: When the conference ends (e.g., all participants leave, or the conference is explicitly terminated), the Asterisk-Conference component releases resources and cleans up the conference bridge.</p></li>
+</ul>
+</section>
+<section id="calls-as-a-special-case-of-conferencing">
+<h4>1:1 Calls as a Special Case of Conferencing<a class="headerlink" href="#calls-as-a-special-case-of-conferencing" title="Link to this heading"></a></h4>
+<p>VoIPbin considers 1:1 calls as a special case of conferencing with only two participants.
+This approach provides a consistent and unified framework for handling both 1:1 calls and multi-party conferences within the system.</p>
+<p>This kind of approach gives these advantages.</p>
+<ul class="simple">
+<li><p>Simplified Development and Maintenance: By treating 1:1 calls as conferences, VoIPbin can leverage the same underlying infrastructure and logic for both scenarios, simplifying development and maintenance.</p></li>
+<li><p>Enhanced Flexibility: This approach allows for seamless transitions between 1:1 calls and multi-party conferences, enabling dynamic changes to call scenarios as needed.</p></li>
+<li><p>Improved Resource Utilization: By utilizing the same conference infrastructure for both 1:1 calls and multi-party conferences, VoIPbin can optimize resource allocation and improve overall system efficiency.</p></li>
+</ul>
+</section>
+</section>
+<section id="sip-session-recovery">
+<h3>SIP Session Recovery<a class="headerlink" href="#sip-session-recovery" title="Link to this heading"></a></h3>
+<p>VoIPBin provides <strong>SIP session recovery</strong> to maintain active SIP sessions even when an Asterisk instance crashes unexpectedly. This feature prevents issues such as call drops, abrupt conference exits, and media channel failures by making the client perceive the session as uninterrupted.</p>
+<div class="video_wrapper" style="">
+<iframe allowfullscreen="true" src="https://www.youtube.com/embed/GMd-pOwyrtA" style="border: 0; height: 345px; width: 560px">
+</iframe></div><section id="how-it-works">
+<h4>How It Works<a class="headerlink" href="#how-it-works" title="Link to this heading"></a></h4>
+<p>When an Asterisk instance crashes, all SIP sessions managed by that instance disappear immediately. Normally, because there is no BYE message, clients experience unexpected call termination. VoIPBin recovers sessions through the following steps:</p>
+<img alt="SIP Session Recovery Flow" src="_images/architecture_rtc_sip_session_recovery_flow.png" />
+</section>
+<section id="detailed-steps">
+<h4>Detailed Steps<a class="headerlink" href="#detailed-steps" title="Link to this heading"></a></h4>
+<p>1. <strong>Crash Detection</strong>
+The <cite>sentinel-manager</cite> quickly detects the abnormal termination of an Asterisk instance.</p>
+<p>2. <strong>Session Lookup</strong>
+The internal database is queried to retrieve all sessions handled by the failed instance.</p>
+<p>3. <strong>SIP Field Collection (via HOMER)</strong>
+The HOMER API is used to obtain SIP header information such as Call-ID, From/To headers, Routes, etc.</p>
+<p>4. <strong>Create SIP Channels on Another Asterisk</strong>
+A healthy Asterisk instance is selected, and new SIP channels are created with the same SIP information as the original sessions.</p>
+<p>5. <strong>Set Recovery Channel Variables</strong>
+The following channel variables are set to ensure the new INVITE is recognized as a continuation of the original session:</p>
+<ul class="simple">
+<li><p>PJSIP_RECOVERY_FROM_DISPLAY</p></li>
+<li><p>PJSIP_RECOVERY_FROM_URI</p></li>
+<li><p>PJSIP_RECOVERY_FROM_TAG</p></li>
+<li><p>PJSIP_RECOVERY_TO_DISPLAY</p></li>
+<li><p>PJSIP_RECOVERY_TO_URI</p></li>
+<li><p>PJSIP_RECOVERY_TO_TAG</p></li>
+<li><p>Call-ID, CSeq, Routes, and other SIP headers are similarly restored.</p></li>
+</ul>
+<p>6. <strong>Send Recovery INVITE</strong>
+The INVITE reuses the original Call-ID and tags, so the client interprets it as a re-INVITE and maintains the session.</p>
+<p>7. <strong>Restore RTP and SIP Sessions</strong>
+Signaling and media are fully re-established, restoring the call to its previous state.</p>
+<p>8. <strong>Resume Flow Execution</strong>
+The recovered session resumes Flow execution from just before the crash:
+- If the user was on a call with another party, the conversation continues without interruption.
+- If the user was in a conference, they are reconnected to the same conference bridge.</p>
+</section>
+<section id="asterisk-patch-for-recovery">
+<h4>Asterisk Patch for Recovery<a class="headerlink" href="#asterisk-patch-for-recovery" title="Link to this heading"></a></h4>
+<p>To support this functionality, VoIPBin patches Asterisk’s PJSIP stack to override SIP header fields based on channel variables:</p>
+<img alt="SIP Session Recovery Flow" src="_images/architecture_rtc_sip_session_recovery_diagram.png" />
+<p>This patch allows a newly created SIP channel to impersonate the original one, making the recovery INVITE appear as a legitimate continuation of the previous session.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">val_from_display_c_str</span> <span class="o">=</span> <span class="n">pbx_builtin_getvar_helper</span><span class="p">(</span><span class="n">session</span><span class="o">-&gt;</span><span class="n">channel</span><span class="p">,</span> <span class="s2">&quot;PJSIP_RECOVERY_FROM_DISPLAY&quot;</span><span class="p">);</span>
+<span class="n">val_from_uri_c_str</span>     <span class="o">=</span> <span class="n">pbx_builtin_getvar_helper</span><span class="p">(</span><span class="n">session</span><span class="o">-&gt;</span><span class="n">channel</span><span class="p">,</span> <span class="s2">&quot;PJSIP_RECOVERY_FROM_URI&quot;</span><span class="p">);</span>
+<span class="n">val_from_tag_c_str</span>     <span class="o">=</span> <span class="n">pbx_builtin_getvar_helper</span><span class="p">(</span><span class="n">session</span><span class="o">-&gt;</span><span class="n">channel</span><span class="p">,</span> <span class="s2">&quot;PJSIP_RECOVERY_FROM_TAG&quot;</span><span class="p">);</span>
+
+<span class="n">val_to_display_c_str</span>   <span class="o">=</span> <span class="n">pbx_builtin_getvar_helper</span><span class="p">(</span><span class="n">session</span><span class="o">-&gt;</span><span class="n">channel</span><span class="p">,</span> <span class="s2">&quot;PJSIP_RECOVERY_TO_DISPLAY&quot;</span><span class="p">);</span>
+<span class="n">val_to_uri_c_str</span>       <span class="o">=</span> <span class="n">pbx_builtin_getvar_helper</span><span class="p">(</span><span class="n">session</span><span class="o">-&gt;</span><span class="n">channel</span><span class="p">,</span> <span class="s2">&quot;PJSIP_RECOVERY_TO_URI&quot;</span><span class="p">);</span>
+<span class="n">val_to_tag_c_str</span>       <span class="o">=</span> <span class="n">pbx_builtin_getvar_helper</span><span class="p">(</span><span class="n">session</span><span class="o">-&gt;</span><span class="n">channel</span><span class="p">,</span> <span class="s2">&quot;PJSIP_RECOVERY_TO_TAG&quot;</span><span class="p">);</span>
+
+<span class="o">//</span> <span class="n">Call</span><span class="o">-</span><span class="n">ID</span><span class="p">,</span> <span class="n">CSeq</span><span class="p">,</span> <span class="n">Routes</span><span class="p">,</span> <span class="ow">and</span> <span class="n">others</span> <span class="n">are</span> <span class="n">handled</span> <span class="n">similarly</span>
+</pre></div>
+</div>
+<p>The full patch is available on GitHub:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/voipbin/etc/blob/main/asterisk/add_pjsip_recovery.patch">https://github.com/voipbin/etc/blob/main/asterisk/add_pjsip_recovery.patch</a></p></li>
+</ul>
+</section>
+</section>
+</section>
+</section>
+
+</main>
+                        <nav aria-label="Page navigation" class="py-4 my-5 clearfix font-weight-bold border-top">
+    <a class="float-left" href="sdk.html" title="Previous">
+        <span aria-hidden="true">←&nbsp;</span>SDK(Software Development Kit)
+    </a>
+    <a class="float-right" href="accesskey.html" title="Next">
+        Accesskey <span aria-hidden="true">&nbsp;→</span>
+    </a>
+</nav>
+                    </div>
+                    
+                    <nav class="col-12 col-lg-3 pb-4">
+                        <div class="sticky-top toc page-toc" aria-labelledby="page-toc-heading">
+                            <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
+                            <ul>
+<li><a class="reference internal" href="#">Architecture</a><ul>
+<li><a class="reference internal" href="#overview">Overview</a><ul>
+<li><a class="reference internal" href="#core-components">Core Components</a></li>
+<li><a class="reference internal" href="#communication-channels">Communication Channels</a></li>
+<li><a class="reference internal" href="#integration-services">Integration Services</a></li>
+<li><a class="reference internal" href="#key-architectural-considerations">Key Architectural Considerations</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rtc-real-time-communication">RTC(Real-Time Communication)</a><ul>
+<li><a class="reference internal" href="#voip">VoIP</a></li>
+<li><a class="reference internal" href="#kamailio">Kamailio</a></li>
+<li><a class="reference internal" href="#asterisk">Asterisk</a></li>
+<li><a class="reference internal" href="#rtpengine">RTPEngine</a></li>
+<li><a class="reference internal" href="#conference">Conference</a><ul>
+<li><a class="reference internal" href="#conference-flow">Conference Flow</a></li>
+<li><a class="reference internal" href="#calls-as-a-special-case-of-conferencing">1:1 Calls as a Special Case of Conferencing</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sip-session-recovery">SIP Session Recovery</a><ul>
+<li><a class="reference internal" href="#how-it-works">How It Works</a></li>
+<li><a class="reference internal" href="#detailed-steps">Detailed Steps</a></li>
+<li><a class="reference internal" href="#asterisk-patch-for-recovery">Asterisk Patch for Recovery</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+                        </div>
+                    </nav>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer class="container-fluid bg-primary text-light">
+        <div class="container">
+            <div class="row">
+        <div class="col p-4">
+            
+                <nav aria-label="Footer">
+                    <ul class="nav justify-content-center mb-2">
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="http://voipbin.net">About Us</a></li>
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="http://voipbin.net">Contact</a></li>
+                        
+                    </ul>
+                </nav>
+            
+            <div class="text-center">
+                    &copy; Copyright 2024, Sungtae Kim
+            </div>
+            <div class="text-center text-white-50 font-italic mt-3">
+                <small>
+                    Created using
+                    <a class="text-white" href="https://github.com/wagtail/sphinx_wagtail_theme" rel="nofollow" target="_blank">
+                        Sphinx Wagtail Theme 6.5.0
+                    </a>
+                    and
+                    <a class="text-white" href="https://www.sphinx-doc.org/" rel="nofollow" target="_blank">
+                        Sphinx 9.1.0
+                    </a>
+                </small>
+            </div>
+        </div>
+    </div>
+        </div>
+    </footer>
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=fd6eb6e6"></script>
+        <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+        <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="_static/copybutton.js?v=f281be69"></script>
+        <script type="text/javascript" src="_static/dist/theme.js"></script>
+        <script type="text/javascript" src="_static/dist/vendor.js"></script>
+        <script type="text/javascript" src="_static/searchtools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script type="text/javascript">
+            document.addEventListener('DOMContentLoaded', function() { Search.loadIndex("searchindex.js"); });
+        </script>
+        <script type="text/javascript" id="searchindexloader"></script>
+    </body>
+</html>

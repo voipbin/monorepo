@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en" data-content_root="./">
+<head>
+    <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+        <title>Overview &mdash; voipbin  documentation</title>
+    
+    <link rel="stylesheet" type="text/css" href="_static/dist/fontawesome.css" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8e8a900e" />
+      <link rel="stylesheet" type="text/css" href="_static/dist/theme.css?v=310cf088" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+            <link rel="index" title="Index" href="genindex.html" />
+            <link rel="search" title="Search" href="search.html" />
+            <link rel="top" title="voipbin  documentation" href="#" />
+    </head>
+<body>
+    <script type="text/javascript" src="_static/dist/blocking.js"></script>
+    <header class="container-fluid bg-primary">
+        <a class="btn btn-sm btn-light skip-to-content-link" href="#main">Skip to content</a>
+        <div class="container-fluid">
+            <div class="navbar navbar-expand-lg navbar-dark font-weight-bold">
+                    <a href="intro.html"
+                        title="voipbin"
+                        class="logo navbar-brand"
+                    >
+                        <img src="_static/images/voipbin-high-resolution-logo-white-transparent.png" width="45" height="80" alt="voipbin"
+                            class="logo-img"
+                        />
+                        VoIPBin Documentation
+                    </a>
+                
+                
+                    <div class="collapse navbar-collapse justify-content-end">
+                        <ul class="navbar-nav">
+                            
+                                
+                                
+                                <li class="nav-item"><a class="nav-link"  href="http://voipbin.net">Project</a></li>
+                            
+                                
+                                
+                                <li class="nav-item"><a class="nav-link"  href="https://admin.voipbin.net">Admin</a></li>
+                            
+                        </ul>
+                    </div>
+                
+                <button class="navbar-toggler btn btn-primary d-lg-none" type="button" data-toggle="collapse" data-target="#collapseSidebar" aria-expanded="false" aria-controls="collapseExample">
+                    <span class="navbar-toggler-icon"></span>
+                    <span class="sr-only">menu</span>
+                </button>
+            </div>
+        </div>
+    </header>
+    <div class="container-fluid">
+        <div class="row">
+            <aside class="col-12 col-lg-3 sidebar-container">
+                <div id="collapseSidebar" class="collapse sticky-top d-lg-block pt-5 pr-lg-4">
+<div id="searchbox" class="searchbox mb-6 px-1" role="search">
+    <form id="search-form" action="search.html" autocomplete="off" method="get" role="search">
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <div class="input-group-text border-right-0 bg-white py-3 pl-3 pr-2"><span class="fas fa-search"></span></div>
+            </div>
+            <input class="form-control py-3 pr-3 pl-1 h-100 border-left-0" type="search" name="q" placeholder="Search documentation" aria-label="Search documentation" id="searchinput" />
+        </div>
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+    </form>
+</div><div class="site-toc">
+    <nav class="toc mt-3" aria-label="Main menu">
+        <ul>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="common.html">Common</a></li>
+<li class="toctree-l1"><a class="reference internal" href="restful_api.html">RESTful API(Application Programming Interface)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sdk.html">SDK(Software Development Kit)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="accesskey.html">Accesskey</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="activeflow.html">Activeflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="call.html">Call</a></li>
+<li class="toctree-l1"><a class="reference internal" href="message.html">Message</a></li>
+<li class="toctree-l1"><a class="reference internal" href="email.html">Email</a></li>
+<li class="toctree-l1"><a class="reference internal" href="agent.html">Agent</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conference.html">Conference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mediastream.html">Mediastream</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conversation.html">Conversation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extension.html">Extension</a></li>
+<li class="toctree-l1"><a class="reference internal" href="number.html">Number</a></li>
+<li class="toctree-l1"><a class="reference internal" href="queue.html">Queue</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recording.html">Recording</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a></li>
+<li class="toctree-l1"><a class="reference internal" href="campaign.html">Campaign</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outdial.html">Outdial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outplan.html">Outplan</a></li>
+<li class="toctree-l1"><a class="reference internal" href="webhook.html">Webhook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="customer.html">Customer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chat.html">Chat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ai.html">AI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="provider.html">Provider</a></li>
+<li class="toctree-l1"><a class="reference internal" href="route.html">Route</a></li>
+<li class="toctree-l1"><a class="reference internal" href="variable.html">Variable</a></li>
+<li class="toctree-l1"><a class="reference internal" href="websocket.html">Websocket</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trunk.html">Trunk</a></li>
+<li class="toctree-l1"><a class="reference internal" href="billing_account.html">Billing Account</a></li>
+<li class="toctree-l1"><a class="reference internal" href="storage.html">Storage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transcribe.html">Transcribe</a></li>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+</ul>
+
+    </nav>
+    <template data-toggle-item-template>
+        <button class="btn btn-sm btn-link toctree-expand" type="button">
+            <span class="sr-only">Toggle menu contents</span>
+        </button>
+    </template>
+</div>
+                    <div class="d-lg-none border-bottom">
+                        
+                    </div>
+                </div>
+            </aside>
+            <div class="col-12 col-lg-9 pt-5">
+                <header class="row align-items-baseline">
+                    <div class="col">
+                        <nav aria-label="breadcrumb">
+    <ol class="breadcrumb m-0 p-0 bg-transparent">
+        <li class="breadcrumb-item"><a href="index.html">Docs</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Overview</li>
+    </ol>
+</nav>
+                    </div>
+                    <div class="col-sm-12 col-lg-auto mt-3 mt-lg-3">
+                        <noscript>
+                            <p>JavaScript is required to toggle light/dark mode..</p>
+                        </noscript>
+                        <button id="wagtail-theme" class="btn btn-sm btn-light text-decoration-none" type="button">
+                            <span class="dark-only"><i class="fas fa-sun"></i> Light mode</span>
+                            <span class="light-only"><i class="fas fa-moon"></i> Dark mode</span>
+                        </button>
+    <a class="btn btn-sm btn-light text-decoration-none" href="_sources/ai_overview.rst.txt" rel="nofollow">
+        <span class="btn-icon"><span class="fas fa-code"></span></span>
+        <span class="btn-text">View source</span>
+    </a>
+                        
+                    </div>
+                </header>
+                <div class="row" >
+                    <div class="col-12">
+                        <hr class="w-100 my-4">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 col-lg-9 order-last order-lg-first rst-content">
+                        <main role="main" id="main">
+    <section id="overview">
+<h1>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h1>
+<p>VoIPBin’s AI is a built-in AI agent that enables automated, intelligent voice interactions during live calls. Designed for seamless integration within VoIPBin’s flow, the AI utilizes ChatGPT as its AI engine to process and respond to user inputs in real time. This allows developers to create dynamic and interactive voice experiences without requiring manual intervention.</p>
+</section>
+<section id="how-it-works">
+<h1>How it works<a class="headerlink" href="#how-it-works" title="Link to this heading"></a></h1>
+<section id="action-component">
+<h2>Action component<a class="headerlink" href="#action-component" title="Link to this heading"></a></h2>
+<p>The AI is integrated as one of the configurable components within a VoIPBin flow. When a call reaches an AI action, the system triggers the AI to generate a response based on the provided prompt. The response is then processed and played back to the caller using text-to-speech (TTS). If the response is in a structured JSON format, VoIPBin executes the defined actions accordingly.</p>
+<img alt="AI component in action builder" class="align-center" src="_images/ai_overview_overview.png" />
+</section>
+<section id="tts-stt-ai-engine">
+<h2>TTS/STT + AI Engine<a class="headerlink" href="#tts-stt-ai-engine" title="Link to this heading"></a></h2>
+<p>VoIPBin’s AI is built using TTS/STT + AI Engine, where speech-to-text (STT) converts spoken words into text, and text-to-speech (TTS) converts responses back into audio. The system processes these in real time, enabling seamless conversations.</p>
+<img alt="AI implementation using TTS/STT + AI Engine" class="align-center" src="_images/ai_overview_stt_tts.png" />
+</section>
+<section id="voice-detection-and-play-interruption">
+<h2>Voice Detection and Play Interruption:<a class="headerlink" href="#voice-detection-and-play-interruption" title="Link to this heading"></a></h2>
+<p>In addition to basic TTS and STT functionalities, VoIPBin incorporates voice detection to create a more natural conversational flow. While the AI is speaking (i.e., playing TTS media), if the system detects the caller’s voice, it immediately stops the TTS playback and routes the caller’s speech (via STT) to the AI engine. This play interruption feature ensures that if the user starts talking, their input is prioritized, enabling a dynamic interaction that more closely resembles a real conversation.</p>
+</section>
+<section id="context-retention">
+<h2>Context Retention<a class="headerlink" href="#context-retention" title="Link to this heading"></a></h2>
+<p>VoIPBin’s AI supports context saving. During a conversation, the AI remembers prior exchanges, allowing it to maintain continuity and respond based on earlier parts of the interaction. This provides a more natural and human-like dialogue experience.</p>
+</section>
+<section id="multilingual-support">
+<h2>Multilingual support<a class="headerlink" href="#multilingual-support" title="Link to this heading"></a></h2>
+<p>VoIPBin’s AI supports multiple languages. See supported languages: <a class="reference internal" href="transcribe_overview.html#transcribe-overview-supported-languages"><span class="std std-ref">supported languages</span></a>.</p>
+</section>
+<section id="external-ai-agent-integration">
+<h2>External AI Agent Integration<a class="headerlink" href="#external-ai-agent-integration" title="Link to this heading"></a></h2>
+<p>For users who prefer to use external AI services, VoIPBin offers media stream access via MCP (Media Control Protocol). This allows third-party AI engines to process voice data directly, enabling deeper customization and advanced AI capabilities.</p>
+</section>
+<section id="mcp-server">
+<h2>MCP Server<a class="headerlink" href="#mcp-server" title="Link to this heading"></a></h2>
+<p>A recommended open-source implementation is available here:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/nrjchnd/voipbin-mcp">https://github.com/nrjchnd/voipbin-mcp</a></p></li>
+</ul>
+</section>
+</section>
+<section id="using-the-ai">
+<h1>Using the AI<a class="headerlink" href="#using-the-ai" title="Link to this heading"></a></h1>
+<section id="initial-prompt">
+<h2>Initial Prompt<a class="headerlink" href="#initial-prompt" title="Link to this heading"></a></h2>
+<p>The initial prompt serves as the foundation for the AI’s behavior. A well-crafted prompt ensures accurate and relevant responses. There is no enforced limit to prompt length, but we recommend keeping this confidential to ensure consistent performance and security.</p>
+<section id="example-prompt">
+<h3>Example Prompt:<a class="headerlink" href="#example-prompt" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Pretend</span> <span class="n">you</span> <span class="n">are</span> <span class="n">an</span> <span class="n">expert</span> <span class="n">customer</span> <span class="n">service</span> <span class="n">agent</span><span class="o">.</span>
+
+<span class="n">Please</span> <span class="n">respond</span> <span class="n">kindly</span><span class="o">.</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+<section id="ai-talk">
+<h1>AI Talk<a class="headerlink" href="#ai-talk" title="Link to this heading"></a></h1>
+<p><strong>AI Talk</strong> enables real-time conversational AI with voice in VoIPBin, powered by <strong>ElevenLabs’ voice engine</strong> for natural-sounding speech.</p>
+<a class="reference internal image-reference" href="_images/ai_overview_ai_talk.png"><img alt="AI Talk component in action builder" class="align-center" src="_images/ai_overview_ai_talk.png" style="width: 300px;" />
+</a>
+<section id="key-features">
+<h2>Key Features<a class="headerlink" href="#key-features" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><strong>Real-time Voice Interaction</strong>: AI generates responses in real-time based on user input and delivers them as speech.</p></li>
+<li><p><strong>Interruption Detection &amp; Listening</strong>: If the other party speaks while the AI is talking, the system immediately <strong>stops the AI’s speech</strong> and switches to capturing the user’s voice via STT.
+This ensures a smooth and continuous conversation flow.</p></li>
+<li><p><strong>Low Latency Response</strong>: For longer prompts, AI Talk does not wait for the entire response to finish. Instead, it generates and plays speech in smaller chunks, <strong>reducing perceived response time</strong> for the user.</p></li>
+<li><p><strong>ElevenLabs Voice Engine</strong>: High-quality, natural-sounding voice output ensures the AI feels like a real conversation partner.</p></li>
+</ul>
+</section>
+<section id="built-in-elevenlabs-voice-ids">
+<h2>Built-in ElevenLabs Voice IDs<a class="headerlink" href="#built-in-elevenlabs-voice-ids" title="Link to this heading"></a></h2>
+<p>VoIPBin uses a predefined set of voice IDs for various languages and genders. Here are the default ElevenLabs Voice IDs currently in use:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Language</p></th>
+<th class="head"><p>Male Voice ID (Name)</p></th>
+<th class="head"><p>Female Voice ID (Name)</p></th>
+<th class="head"><p>Neutral Voice ID (Name)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>English (Default)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">21m00Tcm4TlvDq8ikWAM</span></code> (Adam)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">EXAVITQu4vr4xnSDxMaL</span></code> (Rachel)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">EXAVITQu4vr4xnSDxMaL</span></code> (Rachel)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Japanese</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Mv8AjrYZCBkdsmDHNwcB</span></code> (Ishibashi)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">PmgfHCGeS5b7sH90BOOJ</span></code> (Fumi)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">PmgfHCGeS5b7sH90BOOJ</span></code> (Fumi)</p></td>
+</tr>
+<tr class="row-even"><td><p>Chinese</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">MI36FIkp9wRP7cpWKPTl</span></code> (Evan)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">ZL9dtgFhmkTzAHUUtQL8</span></code> (Xiao)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">ZL9dtgFhmkTzAHUUtQL8</span></code> (Xiao)</p></td>
+</tr>
+<tr class="row-odd"><td><p>German</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">uM8iMoqaSe1eDaJiWfxf</span></code> (Felix)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">nF7t9cuYo0u3kuVI9q4B</span></code> (Dana)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">nF7t9cuYo0u3kuVI9q4B</span></code> (Dana)</p></td>
+</tr>
+<tr class="row-even"><td><p>French</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">IPgYtHTNLjC7Bq7IPHrm</span></code> (Alexandre)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">SmWACbi37pETyxxMhSpc</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">SmWACbi37pETyxxMhSpc</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Hindi</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">IvLWq57RKibBrqZGpQrC</span></code> (Leo)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">MF4J4IDTRo0AxOO4dpFR</span></code> (Devi)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">MF4J4IDTRo0AxOO4dpFR</span></code> (Devi)</p></td>
+</tr>
+<tr class="row-even"><td><p>Korean</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">nbrxrAz3eYm9NgojrmFK</span></code> (Minjoon)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">AW5wrnG1jVizOYY7R1Oo</span></code> (Jiyoung)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">AW5wrnG1jVizOYY7R1Oo</span></code> (Jiyoung)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Italian</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">iLVmqjzCGGvqtMCk6vVQ</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">b8jhBTcGAq4kQGWmKprT</span></code> (Sami)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">b8jhBTcGAq4kQGWmKprT</span></code> (Sami)</p></td>
+</tr>
+<tr class="row-even"><td><p>Spanish (Spain)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">JjHBC66wF58p4ogebCNA</span></code> (Eduardo)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">UOIqAnmS11Reiei1Ytkc</span></code> (Carolina)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">UOIqAnmS11Reiei1Ytkc</span></code> (Carolina)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Portuguese (Brazil)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">NdHRjGnnDKGnnm2c19le</span></code> (Tiago)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">CZD4BJ803C6T0alQxsR7</span></code> (Andreia)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">CZD4BJ803C6T0alQxsR7</span></code> (Andreia)</p></td>
+</tr>
+<tr class="row-even"><td><p>Dutch</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">G53Wkf3yrsXvhoQsmslL</span></code> (James)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">YUdpWWny7k5yb4QCeweX</span></code> (Ruth)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">YUdpWWny7k5yb4QCeweX</span></code> (Ruth)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Russian</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">qJBO8ZmKp4te7NTtYgzz</span></code> (Egor)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">ymDCYd8puC7gYjxIamPt</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">ymDCYd8puC7gYjxIamPt</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>Arabic</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">s83SAGdFTflAwJcAV81K</span></code> (Adeeb)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">EXAVITQu4vr4xnSDxMaL</span></code> (Farah)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">4wf10lgibMnboGJGCLrP</span></code> (Farah)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Polish</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">H5xTcsAIeS5RAykjz57a</span></code> (Alex)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">W0sqKm1Sfw1EzlCH14FQ</span></code> (Beata)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">W0sqKm1Sfw1EzlCH14FQ</span></code> (Beata)</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="other-elevenlabs-voice-id-options">
+<h2>Other ElevenLabs Voice ID Options<a class="headerlink" href="#other-elevenlabs-voice-id-options" title="Link to this heading"></a></h2>
+<p>Voipbin allows you to personalize the text-to-speech output by specifying a custom ElevenLabs Voice ID. By setting the <em>voipbin.tts.elevenlabs.voice_id</em> variable, you can override the default voice selection.</p>
+<blockquote>
+<div><p>voipbin.tts.elevenlabs.voice_id: &lt;Your Custom Voice ID&gt;</p>
+</div></blockquote>
+<p>See how to set the variables <a class="reference internal" href="variable_overview.html#variable-overview"><span class="std std-ref">here</span></a>.</p>
+</section>
+</section>
+<section id="ai-summary">
+<h1>AI Summary<a class="headerlink" href="#ai-summary" title="Link to this heading"></a></h1>
+<p>The AI Summary feature in VoIPBin generates structured summaries of call transcriptions, recordings, or conference discussions. It provides a concise summary of key points, decisions, and action items based on the provided transcription source.</p>
+<img alt="AI summary component in action builder" class="align-center" src="_images/ai_overview_summary.png" />
+<section id="supported-resources">
+<h2>Supported Resources<a class="headerlink" href="#supported-resources" title="Link to this heading"></a></h2>
+<p>AI summaries work with a single resource at a time. The supported resources are:</p>
+<p>Real-time Summary:
+* Live call transcription
+* Live conference transcription</p>
+<p>Non-Real-time Summary:
+* Transcribed recordings (post-call)
+* Recorded conferences (post-call)</p>
+</section>
+<section id="choosing-between-real-time-and-non-real-time-summaries">
+<h2>Choosing Between Real-time and Non-Real-time Summaries<a class="headerlink" href="#choosing-between-real-time-and-non-real-time-summaries" title="Link to this heading"></a></h2>
+<p>Developers must decide whether to use a real-time or non-real-time summary based on their needs:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Use Case</p></th>
+<th class="head"><p>Summary Type</p></th>
+<th class="head"><p>Recommendation</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Live call monitoring</p></td>
+<td><p>Real-time</p></td>
+<td><p>Use AI summary with a live call transcription</p></td>
+</tr>
+<tr class="row-odd"><td><p>Live conference insights</p></td>
+<td><p>Real-time</p></td>
+<td><p>Use AI summary with a live conference transcription</p></td>
+</tr>
+<tr class="row-even"><td><p>Post-call analysis</p></td>
+<td><p>Non-real-time</p></td>
+<td><p>Use AI summary with transcribe_id from a completed call</p></td>
+</tr>
+<tr class="row-odd"><td><p>Recorded conference summary</p></td>
+<td><p>Non-real-time</p></td>
+<td><p>Use AI summary with recording_id</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="ai-summary-behavior">
+<h2>AI Summary Behavior<a class="headerlink" href="#ai-summary-behavior" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>The summary action processes only one resource at a time.</p></li>
+<li><p>If multiple AI summary actions are used in a flow, each executes independently.</p></li>
+<li><p>If an AI summary action is triggered multiple times for the same resource, it only returns the most recent segment.</p></li>
+<li><p>In conference calls, the summary is unified across all participants rather than per speaker.</p></li>
+</ul>
+</section>
+<section id="ensuring-full-coverage">
+<h2>Ensuring Full Coverage<a class="headerlink" href="#ensuring-full-coverage" title="Link to this heading"></a></h2>
+<p>Since starting an AI summary action late in the call results in missing earlier conversations, developers should follow best practices:
+* Enable transcribe_start early: This ensures that transcriptions are available even if an AI summary action is triggered later.
+* Use transcribe_id instead of call_id: This allows summarizing a full transcription rather than just the latest segment.
+* For post-call summaries, use recording_id: This ensures that the full conversation is summarized from the recorded audio.</p>
+</section>
+</section>
+
+</main>
+                        
+                    </div>
+                    
+                    <nav class="col-12 col-lg-3 pb-4">
+                        <div class="sticky-top toc page-toc" aria-labelledby="page-toc-heading">
+                            <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
+                            <ul>
+<li><a class="reference internal" href="#">Overview</a></li>
+<li><a class="reference internal" href="#how-it-works">How it works</a><ul>
+<li><a class="reference internal" href="#action-component">Action component</a></li>
+<li><a class="reference internal" href="#tts-stt-ai-engine">TTS/STT + AI Engine</a></li>
+<li><a class="reference internal" href="#voice-detection-and-play-interruption">Voice Detection and Play Interruption:</a></li>
+<li><a class="reference internal" href="#context-retention">Context Retention</a></li>
+<li><a class="reference internal" href="#multilingual-support">Multilingual support</a></li>
+<li><a class="reference internal" href="#external-ai-agent-integration">External AI Agent Integration</a></li>
+<li><a class="reference internal" href="#mcp-server">MCP Server</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#using-the-ai">Using the AI</a><ul>
+<li><a class="reference internal" href="#initial-prompt">Initial Prompt</a><ul>
+<li><a class="reference internal" href="#example-prompt">Example Prompt:</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ai-talk">AI Talk</a><ul>
+<li><a class="reference internal" href="#key-features">Key Features</a></li>
+<li><a class="reference internal" href="#built-in-elevenlabs-voice-ids">Built-in ElevenLabs Voice IDs</a></li>
+<li><a class="reference internal" href="#other-elevenlabs-voice-id-options">Other ElevenLabs Voice ID Options</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ai-summary">AI Summary</a><ul>
+<li><a class="reference internal" href="#supported-resources">Supported Resources</a></li>
+<li><a class="reference internal" href="#choosing-between-real-time-and-non-real-time-summaries">Choosing Between Real-time and Non-Real-time Summaries</a></li>
+<li><a class="reference internal" href="#ai-summary-behavior">AI Summary Behavior</a></li>
+<li><a class="reference internal" href="#ensuring-full-coverage">Ensuring Full Coverage</a></li>
+</ul>
+</li>
+</ul>
+
+                        </div>
+                    </nav>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer class="container-fluid bg-primary text-light">
+        <div class="container">
+            <div class="row">
+        <div class="col p-4">
+            
+                <nav aria-label="Footer">
+                    <ul class="nav justify-content-center mb-2">
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="http://voipbin.net">About Us</a></li>
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="http://voipbin.net">Contact</a></li>
+                        
+                    </ul>
+                </nav>
+            
+            <div class="text-center">
+                    &copy; Copyright 2024, Sungtae Kim
+            </div>
+            <div class="text-center text-white-50 font-italic mt-3">
+                <small>
+                    Created using
+                    <a class="text-white" href="https://github.com/wagtail/sphinx_wagtail_theme" rel="nofollow" target="_blank">
+                        Sphinx Wagtail Theme 6.5.0
+                    </a>
+                    and
+                    <a class="text-white" href="https://www.sphinx-doc.org/" rel="nofollow" target="_blank">
+                        Sphinx 9.1.0
+                    </a>
+                </small>
+            </div>
+        </div>
+    </div>
+        </div>
+    </footer>
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=fd6eb6e6"></script>
+        <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+        <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="_static/copybutton.js?v=f281be69"></script>
+        <script type="text/javascript" src="_static/dist/theme.js"></script>
+        <script type="text/javascript" src="_static/dist/vendor.js"></script>
+        <script type="text/javascript" src="_static/searchtools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script type="text/javascript">
+            document.addEventListener('DOMContentLoaded', function() { Search.loadIndex("searchindex.js"); });
+        </script>
+        <script type="text/javascript" id="searchindexloader"></script>
+    </body>
+</html>
