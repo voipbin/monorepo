@@ -45,19 +45,7 @@ func ConvertMapToTypedMap(src map[string]any, modelStruct any) (map[string]any, 
 	} else {
 		// Build and cache field type map (only happens once per struct type)
 		fieldTypeMap = make(map[string]reflect.Type)
-		for i := 0; i < structType.NumField(); i++ {
-			field := structType.Field(i)
-			dbTag := field.Tag.Get("db")
-			if dbTag != "" && dbTag != "-" {
-				// Extract field name from db tag (before comma if present)
-				// Example: "customer_id,uuid" -> "customer_id"
-				fieldName := dbTag
-				if commaIdx := strings.IndexByte(dbTag, ','); commaIdx != -1 {
-					fieldName = dbTag[:commaIdx]
-				}
-				fieldTypeMap[fieldName] = field.Type
-			}
-		}
+		buildFieldTypeMap(structType, fieldTypeMap)
 		fieldTypeCache.Store(structType, fieldTypeMap)
 	}
 
@@ -194,5 +182,33 @@ func convertToFloat64(val any) (float64, error) {
 		return float64(v), nil
 	default:
 		return 0, fmt.Errorf("cannot convert %T to float64", val)
+	}
+}
+
+// buildFieldTypeMap recursively builds field name to type mapping including embedded struct fields
+func buildFieldTypeMap(structType reflect.Type, fieldTypeMap map[string]reflect.Type) {
+	for i := 0; i < structType.NumField(); i++ {
+		field := structType.Field(i)
+
+		// Check if field has a db tag
+		dbTag := field.Tag.Get("db")
+		if dbTag != "" && dbTag != "-" {
+			// Extract field name from db tag (before comma if present)
+			// Example: "customer_id,uuid" -> "customer_id"
+			fieldName := dbTag
+			if commaIdx := strings.IndexByte(dbTag, ','); commaIdx != -1 {
+				fieldName = dbTag[:commaIdx]
+			}
+			fieldTypeMap[fieldName] = field.Type
+		} else if field.Anonymous {
+			// Recursively process embedded struct fields
+			fieldType := field.Type
+			if fieldType.Kind() == reflect.Ptr {
+				fieldType = fieldType.Elem()
+			}
+			if fieldType.Kind() == reflect.Struct {
+				buildFieldTypeMap(fieldType, fieldTypeMap)
+			}
+		}
 	}
 }
