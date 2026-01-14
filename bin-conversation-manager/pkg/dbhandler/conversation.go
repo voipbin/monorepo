@@ -6,12 +6,12 @@ import (
 	"fmt"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
-
-	"github.com/gofrs/uuid"
 
 	"monorepo/bin-conversation-manager/models/conversation"
 )
@@ -189,6 +189,14 @@ func (h *handler) ConversationGetBySelfAndPeer(ctx context.Context, self commona
 }
 
 func (h *handler) ConversationGets(ctx context.Context, size uint64, token string, filters map[conversation.Field]any) ([]*conversation.Conversation, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "ConversationGets",
+		"size":    size,
+		"token":   token,
+		"filters": filters,
+	})
+	log.Debug("ConversationGets called with filters (check customer_id type)")
+
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}
@@ -204,6 +212,7 @@ func (h *handler) ConversationGets(ctx context.Context, size uint64, token strin
 
 	sb, err := commondatabasehandler.ApplyFields(sb, filters)
 	if err != nil {
+		log.Errorf("Failed to apply filters. err: %v", err)
 		return nil, fmt.Errorf("could not apply filters. ConversationGets. err: %v", err)
 	}
 
@@ -211,6 +220,11 @@ func (h *handler) ConversationGets(ctx context.Context, size uint64, token strin
 	if err != nil {
 		return nil, fmt.Errorf("could not build query. ConversationGets. err: %v", err)
 	}
+
+	log.WithFields(logrus.Fields{
+		"query": query,
+		"args":  args,
+	}).Debug("Generated SQL query (check if customer_id is binary UUID)")
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
