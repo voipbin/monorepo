@@ -35,7 +35,7 @@ func (h *listenHandler) processV1SummariesGet(ctx context.Context, m *sock.Reque
 	pageToken := u.Query().Get(PageToken)
 
 	// get filters from request body
-	tmpFilters, err := h.utilHandler.ParseFiltersFromRequestBody(m.Data)
+	tmpFilters, err := utilhandler.ParseFiltersFromRequestBody(m.Data)
 	if err != nil {
 		log.Errorf("Could not parse filters. err: %v", err)
 		return simpleResponse(400), nil

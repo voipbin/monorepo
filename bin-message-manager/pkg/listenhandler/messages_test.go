@@ -8,7 +8,6 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
-	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -26,8 +25,6 @@ func Test_processV1MessagesGet(t *testing.T) {
 		pageToken  string
 		filters    map[message.Field]any
 		resultData []*message.Message
-
-		responseFilters map[string]string
 
 		request  *sock.Request
 		response *sock.Response
@@ -49,13 +46,10 @@ func Test_processV1MessagesGet(t *testing.T) {
 				},
 			},
 
-			map[string]string{
-				"customer_id": "197609d6-a29b-11ec-b884-5b8a227db58a",
-			},
-
 			&sock.Request{
-				URI:    "/v1/messages?customer_id=197609d6-a29b-11ec-b884-5b8a227db58a&page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000",
+				URI:    "/v1/messages?page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000",
 				Method: sock.RequestMethodGet,
+				Data:   []byte(`{"customer_id":"197609d6-a29b-11ec-b884-5b8a227db58a"}`),
 			},
 			&sock.Response{
 				StatusCode: 200,
@@ -86,13 +80,10 @@ func Test_processV1MessagesGet(t *testing.T) {
 				},
 			},
 
-			map[string]string{
-				"customer_id": "75dd760a-a29b-11ec-ba70-cb282aa1d594",
-			},
-
 			&sock.Request{
-				URI:    "/v1/messages?customer_id=75dd760a-a29b-11ec-ba70-cb282aa1d594&page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000",
+				URI:    "/v1/messages?page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000",
 				Method: sock.RequestMethodGet,
+				Data:   []byte(`{"customer_id":"75dd760a-a29b-11ec-ba70-cb282aa1d594"}`),
 			},
 			&sock.Response{
 				StatusCode: 200,
@@ -109,15 +100,12 @@ func Test_processV1MessagesGet(t *testing.T) {
 
 			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockMessage := messagehandler.NewMockMessageHandler(mc)
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
-
+	
 			h := &listenHandler{
 				sockHandler:    mockSock,
-				utilHandler:    mockUtil,
 				messageHandler: mockMessage,
 			}
 
-			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
 			mockMessage.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, gomock.Any()).Return(tt.resultData, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
