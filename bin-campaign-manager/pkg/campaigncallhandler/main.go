@@ -50,6 +50,7 @@ type CampaigncallHandler interface {
 	) (*campaigncall.Campaigncall, error)
 	Delete(ctx context.Context, id uuid.UUID) (*campaigncall.Campaigncall, error)
 	Get(ctx context.Context, id uuid.UUID) (*campaigncall.Campaigncall, error)
+	Gets(ctx context.Context, token string, limit uint64, filters map[campaigncall.Field]any) ([]*campaigncall.Campaigncall, error)
 	GetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*campaigncall.Campaigncall, error)
 	GetByActiveflowID(ctx context.Context, activeflowID uuid.UUID) (*campaigncall.Campaigncall, error)
 	GetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error)

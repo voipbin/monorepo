@@ -3,6 +3,7 @@ package listenhandler
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/url"
 	"strconv"
 	"strings"
@@ -27,23 +28,39 @@ func (h *listenHandler) v1CampaigncallsGet(ctx context.Context, m *sock.Request)
 		return nil, err
 	}
 
-	// parse the pagination params
+	// parse the pagination params from URI
 	tmpSize, _ := strconv.Atoi(u.Query().Get(PageSize))
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
-	campaignID := uuid.FromStringOrNil(u.Query().Get("campaign_id"))
-	log.WithField("request", m).Debugf("Received request. customer_id: %s, campaign_id: %s", customerID, campaignID)
-
-	var tmp []*campaigncall.Campaigncall
-	if customerID != uuid.Nil {
-		tmp, err = h.campaigncallHandler.GetsByCustomerID(ctx, customerID, pageToken, pageSize)
-	} else {
-		tmp, err = h.campaigncallHandler.GetsByCampaignID(ctx, campaignID, pageToken, pageSize)
+	// Parse filters from request data (body)
+	var filters map[string]any
+	if len(m.Data) > 0 {
+		if err := json.Unmarshal(m.Data, &filters); err != nil {
+			log.Errorf("Could not unmarshal filters. err: %v", err)
+			return nil, fmt.Errorf("could not unmarshal filters: %w", err)
+		}
 	}
+
+	log.WithFields(logrus.Fields{
+		"filters":          filters,
+		"filters_raw_data": string(m.Data),
+	}).Debug("v1CampaigncallsGet: Parsed filters from request body")
+
+	// Convert string map to typed field map
+	typedFilters, err := campaigncall.ConvertStringMapToFieldMap(filters)
 	if err != nil {
-		log.Errorf("Could not get campaigns. err: %v", err)
+		log.Errorf("Could not convert filters. err: %v", err)
+		return nil, fmt.Errorf("could not convert filters: %w", err)
+	}
+
+	log.WithFields(logrus.Fields{
+		"typed_filters": typedFilters,
+	}).Debug("v1CampaigncallsGet: Converted filters to typed field map (check UUID types)")
+
+	tmp, err := h.campaigncallHandler.Gets(ctx, pageToken, pageSize, typedFilters)
+	if err != nil {
+		log.Errorf("Could not get campaigncalls. err: %v", err)
 		return nil, err
 	}
 

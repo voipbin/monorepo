@@ -127,6 +127,25 @@ func (h *campaigncallHandler) GetByActiveflowID(ctx context.Context, activeflowI
 	return res, nil
 }
 
+// Gets returns list of campaigncalls with filters
+func (h *campaigncallHandler) Gets(ctx context.Context, token string, limit uint64, filters map[campaigncall.Field]any) ([]*campaigncall.Campaigncall, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "Gets",
+		"token":   token,
+		"limit":   limit,
+		"filters": filters,
+	})
+	log.Debug("Getting campaigncalls with filters.")
+
+	res, err := h.db.CampaigncallGets(ctx, token, limit, filters)
+	if err != nil {
+		log.Errorf("Could not get campaigncalls. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
 // GetsByCustomerID returns list of campaigncall
 func (h *campaigncallHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error) {
 	log := logrus.WithFields(logrus.Fields{

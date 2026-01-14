@@ -164,6 +164,21 @@ func (mr *MockCampaigncallHandlerMockRecorder) GetByReferenceID(ctx, referenceID
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByReferenceID", reflect.TypeOf((*MockCampaigncallHandler)(nil).GetByReferenceID), ctx, referenceID)
 }
 
+// Gets mocks base method.
+func (m *MockCampaigncallHandler) Gets(ctx context.Context, token string, limit uint64, filters map[campaigncall.Field]any) ([]*campaigncall.Campaigncall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Gets", ctx, token, limit, filters)
+	ret0, _ := ret[0].([]*campaigncall.Campaigncall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Gets indicates an expected call of Gets.
+func (mr *MockCampaigncallHandlerMockRecorder) Gets(ctx, token, limit, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockCampaigncallHandler)(nil).Gets), ctx, token, limit, filters)
+}
+
 // GetsByCampaignID mocks base method.
 func (m *MockCampaigncallHandler) GetsByCampaignID(ctx context.Context, campaignID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error) {
 	m.ctrl.T.Helper()
