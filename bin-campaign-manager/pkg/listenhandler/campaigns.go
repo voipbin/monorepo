@@ -3,6 +3,7 @@ package listenhandler
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/url"
 	"strconv"
 	"strings"
@@ -85,7 +86,10 @@ func (h *listenHandler) v1CampaignsGet(ctx context.Context, m *sock.Request) (*s
 	// get customer_id
 	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
 
-	log.WithField("request", m).Debug("Received request.")
+	log.WithFields(logrus.Fields{
+		"customer_id":      customerID,
+		"customer_id_type": fmt.Sprintf("%T", customerID),
+	}).Debug("v1CampaignsGet: Parsed customer_id from query (check UUID type)")
 
 	tmp, err := h.campaignHandler.GetsByCustomerID(ctx, customerID, pageToken, pageSize)
 	if err != nil {

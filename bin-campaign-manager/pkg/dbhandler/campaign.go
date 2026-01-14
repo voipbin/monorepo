@@ -7,6 +7,7 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
+	"github.com/sirupsen/logrus"
 
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	fmaction "monorepo/bin-flow-manager/models/action"
@@ -190,6 +191,14 @@ func (h *handler) CampaignGet(ctx context.Context, id uuid.UUID) (*campaign.Camp
 
 // CampaignGets returns list of campaigns with filters.
 func (h *handler) CampaignGets(ctx context.Context, token string, size uint64, filters map[campaign.Field]any) ([]*campaign.Campaign, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "CampaignGets",
+		"size":    size,
+		"token":   token,
+		"filters": filters,
+	})
+	log.Debug("CampaignGets called with filters (check customer_id type)")
+
 	if token == "" {
 		token = h.util.TimeGetCurTime()
 	}
@@ -212,6 +221,11 @@ func (h *handler) CampaignGets(ctx context.Context, token string, size uint64, f
 	if err != nil {
 		return nil, fmt.Errorf("could not build query. CampaignGets. err: %v", err)
 	}
+
+	log.WithFields(logrus.Fields{
+		"query": query,
+		"args":  args,
+	}).Debug("Generated SQL query (check if customer_id is binary UUID)")
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
@@ -242,6 +256,15 @@ func (h *handler) CampaignGetsByCustomerID(ctx context.Context, customerID uuid.
 		campaign.FieldCustomerID: customerID,
 		campaign.FieldDeleted:    false,
 	}
+
+	// Debug log to verify customerID type in filters
+	log := logrus.WithFields(logrus.Fields{
+		"func":             "CampaignGetsByCustomerID",
+		"customer_id":      customerID,
+		"customer_id_type": fmt.Sprintf("%T", customerID),
+		"filters":          filters,
+	})
+	log.Debug("Created filters with customer_id (check UUID type)")
 
 	return h.CampaignGets(ctx, token, limit, filters)
 }
