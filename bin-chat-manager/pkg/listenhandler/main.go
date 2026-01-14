@@ -14,12 +14,9 @@ import (
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
-	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 
-	"monorepo/bin-chat-manager/models/messagechat"
-	"monorepo/bin-chat-manager/models/messagechatroom"
 	"monorepo/bin-chat-manager/pkg/chathandler"
 	"monorepo/bin-chat-manager/pkg/chatroomhandler"
 	"monorepo/bin-chat-manager/pkg/messagechathandler"
@@ -301,46 +298,3 @@ func getFilters(u *url.URL) map[string]string {
 	return res
 }
 
-// convertToMessagechatFilters converts string filters to typed messagechat filters
-func convertToMessagechatFilters(strFilters map[string]string) map[messagechat.Field]any {
-	res := make(map[messagechat.Field]any)
-	for k, v := range strFilters {
-		switch k {
-		case "customer_id":
-			res[messagechat.FieldCustomerID] = uuid.FromStringOrNil(v)
-		case "chat_id":
-			res[messagechat.FieldChatID] = uuid.FromStringOrNil(v)
-		case "type":
-			res[messagechat.FieldType] = messagechat.Type(v)
-		case "deleted":
-			res[messagechat.FieldDeleted] = v == "true"
-		default:
-			// skip unknown filters
-		}
-	}
-	return res
-}
-
-// convertToMessagechatroomFilters converts string filters to typed messagechatroom filters
-func convertToMessagechatroomFilters(strFilters map[string]string) map[messagechatroom.Field]any {
-	res := make(map[messagechatroom.Field]any)
-	for k, v := range strFilters {
-		switch k {
-		case "customer_id":
-			res[messagechatroom.FieldCustomerID] = uuid.FromStringOrNil(v)
-		case "chatroom_id":
-			res[messagechatroom.FieldChatroomID] = uuid.FromStringOrNil(v)
-		case "owner_id":
-			res[messagechatroom.FieldOwnerID] = uuid.FromStringOrNil(v)
-		case "messagechat_id":
-			res[messagechatroom.FieldMessagechatID] = uuid.FromStringOrNil(v)
-		case "type":
-			res[messagechatroom.FieldType] = messagechatroom.Type(v)
-		case "deleted":
-			res[messagechatroom.FieldDeleted] = v == "true"
-		default:
-			// skip unknown filters
-		}
-	}
-	return res
-}

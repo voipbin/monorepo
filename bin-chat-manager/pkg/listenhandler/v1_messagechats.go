@@ -3,6 +3,7 @@ package listenhandler
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/url"
 	"strconv"
 	"strings"
@@ -13,6 +14,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-chat-manager/models/media"
+	"monorepo/bin-chat-manager/models/messagechat"
 	"monorepo/bin-chat-manager/pkg/listenhandler/models/request"
 )
 
@@ -67,30 +69,46 @@ func (h *listenHandler) v1MessagechatsPost(ctx context.Context, m *sock.Request)
 // v1MessagechatsGet handles /v1/messagechats GET request
 func (h *listenHandler) v1MessagechatsGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func": "v1MessagechatsGet",
+		"func":    "v1MessagechatsGet",
+		"request": m,
 	})
-	log.WithField("request", m).Debug("Received request.")
 
 	u, err := url.Parse(m.URI)
 	if err != nil {
 		return nil, err
 	}
 
-	// parse the pagination params
+	// parse the pagination params from URI
 	tmpSize, _ := strconv.Atoi(u.Query().Get(PageSize))
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// get customer_id
-	chatID := uuid.FromStringOrNil(u.Query().Get("chat_id"))
-
-	strFilters := getFilters(u)
-	if strFilters["chat_id"] == "" {
-		strFilters["chat_id"] = chatID.String()
+	// Parse filters from request data (body)
+	var filters map[string]any
+	if len(m.Data) > 0 {
+		if err := json.Unmarshal(m.Data, &filters); err != nil {
+			log.Errorf("Could not unmarshal filters. err: %v", err)
+			return nil, fmt.Errorf("could not unmarshal filters: %w", err)
+		}
 	}
-	filters := convertToMessagechatFilters(strFilters)
 
-	tmp, err := h.messagechatHandler.Gets(ctx, pageToken, pageSize, filters)
+	log.WithFields(logrus.Fields{
+		"filters":          filters,
+		"filters_raw_data": string(m.Data),
+	}).Debug("v1MessagechatsGet: Parsed filters from request body")
+
+	// Convert string map to typed field map
+	typedFilters, err := messagechat.ConvertStringMapToFieldMap(filters)
+	if err != nil {
+		log.Errorf("Could not convert filters. err: %v", err)
+		return nil, fmt.Errorf("could not convert filters: %w", err)
+	}
+
+	log.WithFields(logrus.Fields{
+		"typed_filters": typedFilters,
+	}).Debug("v1MessagechatsGet: Converted filters to typed field map (check UUID types)")
+
+	tmp, err := h.messagechatHandler.Gets(ctx, pageToken, pageSize, typedFilters)
 	if err != nil {
 		log.Errorf("Could not get messagechats. err: %v", err)
 		return nil, err
