@@ -36,9 +36,10 @@ func Test_RegistrarV1ContactGets(t *testing.T) {
 
 			expectTarget: "bin-manager.registrar-manager.request",
 			expectRequest: &sock.Request{
-				URI:      "/v1/contacts?customer_id=390f34ba-57a4-11ee-a22c-d3dbf1f5af19&extension=test_exten",
+				URI:      "/v1/contacts",
 				Method:   sock.RequestMethodGet,
-				DataType: ContentTypeNone,
+				DataType: ContentTypeJSON,
+			Data:     []byte(`{"customer_id":"390f34ba-57a4-11ee-a22c-d3dbf1f5af19","extension":"test_exten"}`),
 			},
 			response: &sock.Response{
 				StatusCode: 200,
@@ -71,8 +72,12 @@ func Test_RegistrarV1ContactGets(t *testing.T) {
 
 			ctx := context.Background()
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+		filters := map[string]any{
+			"customer_id": tt.customerID,
+			"extension": tt.extension,
+		}
 
-			res, err := reqHandler.RegistrarV1ContactGets(ctx, tt.customerID, tt.extension)
+		res, err := reqHandler.RegistrarV1ContactGets(ctx, filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -106,9 +111,10 @@ func Test_RegistrarV1ContactRefresh(t *testing.T) {
 
 			expectTarget: "bin-manager.registrar-manager.request",
 			expectRequest: &sock.Request{
-				URI:      "/v1/contacts?customer_id=e168826a-57a4-11ee-818c-73dfee4986c0&extension=test_exten",
+				URI:      "/v1/contacts",
 				Method:   sock.RequestMethodPut,
-				DataType: ContentTypeNone,
+				DataType: ContentTypeJSON,
+			Data:     []byte(`{"customer_id":"e168826a-57a4-11ee-818c-73dfee4986c0","extension":"test_exten"}`),
 			},
 			response: &sock.Response{
 				StatusCode: 200,
@@ -128,8 +134,12 @@ func Test_RegistrarV1ContactRefresh(t *testing.T) {
 
 			ctx := context.Background()
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+		filters := map[string]any{
+			"customer_id": tt.customerID,
+			"extension": tt.extension,
+		}
 
-			if err := reqHandler.RegistrarV1ContactRefresh(ctx, tt.customerID, tt.extension); err != nil {
+		if err := reqHandler.RegistrarV1ContactRefresh(ctx, filters); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 

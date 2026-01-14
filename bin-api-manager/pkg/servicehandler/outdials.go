@@ -77,7 +77,10 @@ func (h *serviceHandler) OutdialGetsByCustomerID(ctx context.Context, a *amagent
 	}
 
 	// get outdials
-	outdials, err := h.reqHandler.OutdialV1OutdialGetsByCustomerID(ctx, a.CustomerID, token, size)
+	filters := map[omoutdial.Field]any{
+		omoutdial.FieldCustomerID: a.CustomerID,
+	}
+	outdials, err := h.reqHandler.OutdialV1OutdialGets(ctx, token, size, filters)
 	if err != nil {
 		log.Errorf("Could not get outdials info from the outdial-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find outdials info. err: %v", err)

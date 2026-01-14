@@ -281,7 +281,7 @@ func Test_RouteV1RouteUpdate(t *testing.T) {
 	}
 }
 
-func Test_RouteV1RouteGetsByCustomerID(t *testing.T) {
+func Test_RouteV1RouteGets_WithCustomerIDFilter(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -309,18 +309,19 @@ func Test_RouteV1RouteGetsByCustomerID(t *testing.T) {
 				Data:       []byte(`[{"id":"f6b8946a-7191-454d-9c16-7136071541b3"}]`),
 			},
 
-			"bin-manager.route-manager.request",
-			&sock.Request{
-				URI:      fmt.Sprintf("/v1/routes?page_token=%s&page_size=10&customer_id=aee4503c-2657-41c9-8f20-5848173bcecf", url.QueryEscape("2020-09-20 03:23:20.995000")),
-				Method:   sock.RequestMethodGet,
-				DataType: ContentTypeNone,
-			},
-			[]rmroute.Route{
-				{
-					ID: uuid.FromStringOrNil("f6b8946a-7191-454d-9c16-7136071541b3"),
-				},
+		"bin-manager.route-manager.request",
+		&sock.Request{
+			URI:      fmt.Sprintf("/v1/routes?page_token=%s&page_size=10", url.QueryEscape("2020-09-20 03:23:20.995000")),
+			Method:   sock.RequestMethodGet,
+			DataType: ContentTypeJSON,
+			Data:     []byte(`{"customer_id":"aee4503c-2657-41c9-8f20-5848173bcecf"}`),
+		},
+		[]rmroute.Route{
+			{
+				ID: uuid.FromStringOrNil("f6b8946a-7191-454d-9c16-7136071541b3"),
 			},
 		},
+	},
 	}
 
 	for _, tt := range tests {
@@ -335,8 +336,11 @@ func Test_RouteV1RouteGetsByCustomerID(t *testing.T) {
 
 			ctx := context.Background()
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+		filters := map[rmroute.Field]any{
+			rmroute.FieldCustomerID: tt.customerID,
+		}
 
-			res, err := reqHandler.RouteV1RouteGetsByCustomerID(ctx, tt.customerID, tt.pageToken, tt.pageSize)
+		res, err := reqHandler.RouteV1RouteGets(ctx, tt.pageToken, tt.pageSize, filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -378,7 +382,8 @@ func Test_RouteV1RouteGets(t *testing.T) {
 			&sock.Request{
 				URI:      fmt.Sprintf("/v1/routes?page_token=%s&page_size=10", url.QueryEscape("2020-09-20 03:23:20.995000")),
 				Method:   sock.RequestMethodGet,
-				DataType: ContentTypeNone,
+			DataType: ContentTypeJSON,
+			Data:     []byte(`{}`),
 			},
 			[]rmroute.Route{
 				{
@@ -400,8 +405,9 @@ func Test_RouteV1RouteGets(t *testing.T) {
 
 			ctx := context.Background()
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+		filters := map[rmroute.Field]any{}
 
-			res, err := reqHandler.RouteV1RouteGets(ctx, tt.pageToken, tt.pageSize)
+		res, err := reqHandler.RouteV1RouteGets(ctx, tt.pageToken, tt.pageSize, filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

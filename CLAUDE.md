@@ -27,6 +27,10 @@ This is the VoIPbin monorepo - a unified backend codebase for a cloud-native CPa
 
 ## CRITICAL: Before Committing Changes
 
+**⚠️ MANDATORY: ALWAYS run the verification workflow after making ANY code changes and BEFORE committing.**
+
+This applies to ALL changes: code modifications, refactoring, bug fixes, new features, or any other changes. No exceptions.
+
 ### Regular Code Changes Workflow
 
 **For normal code changes (bug fixes, features, refactoring), run this workflow BEFORE committing:**

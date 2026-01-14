@@ -11,6 +11,7 @@ import (
 	tmrequest "monorepo/bin-tag-manager/pkg/listenhandler/models/request"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 )
 
 // TagV1TagCreate sends a request to tag-manager
@@ -110,10 +111,15 @@ func (r *requestHandler) TagV1TagGet(ctx context.Context, tagID uuid.UUID) (*tmt
 
 // TagV1TagGets sends a request to tag-manager
 // to getting the list of tags.
-func (r *requestHandler) TagV1TagGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]tmtag.Tag, error) {
-	uri := fmt.Sprintf("/v1/tags?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
+func (r *requestHandler) TagV1TagGets(ctx context.Context, pageToken string, pageSize uint64, filters map[tmtag.Field]any) ([]tmtag.Tag, error) {
+	uri := fmt.Sprintf("/v1/tags?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
-	tmp, err := r.sendRequestTag(ctx, uri, sock.RequestMethodGet, "tag/tags", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	m, err := json.Marshal(filters)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not marshal filters")
+	}
+
+	tmp, err := r.sendRequestTag(ctx, uri, sock.RequestMethodGet, "tag/tags", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}

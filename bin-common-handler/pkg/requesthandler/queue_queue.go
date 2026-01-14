@@ -191,11 +191,16 @@ func (r *requestHandler) QueueV1QueueUpdateTagIDs(ctx context.Context, queueID u
 	return &res, nil
 }
 
-// QueueV1QueueGetAgents sends the request to getting the agent list of the given queue's and status.
-func (r *requestHandler) QueueV1QueueGetAgents(ctx context.Context, queueID uuid.UUID, status amagent.Status) ([]amagent.Agent, error) {
-	uri := fmt.Sprintf("/v1/queues/%s/agents?status=%s", queueID, status)
+// QueueV1QueueGetAgents sends the request to getting the agent list of the given queue.
+func (r *requestHandler) QueueV1QueueGetAgents(ctx context.Context, queueID uuid.UUID, filters map[amagent.Field]any) ([]amagent.Agent, error) {
+	uri := fmt.Sprintf("/v1/queues/%s/agents", queueID)
 
-	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodGet, "queue/queues/<queue-id>/agents", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	m, err := json.Marshal(filters)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not marshal filters")
+	}
+
+	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodGet, "queue/queues/<queue-id>/agents", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}

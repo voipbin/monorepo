@@ -13,6 +13,7 @@ import (
 	fmaction "monorepo/bin-flow-manager/models/action"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 )
 
 // CampaignV1CampaignCreate creates a new campaign.
@@ -67,13 +68,18 @@ func (r *requestHandler) CampaignV1CampaignCreate(
 	return &res, nil
 }
 
-// CampaignV1CampaignGetsByCustomerID sends a request to campaign-manager
+// CampaignV1CampaignGets sends a request to campaign-manager
 // to getting a list of campaigns.
 // it returns detail list of campaigns if it succeed.
-func (r *requestHandler) CampaignV1CampaignGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]cacampaign.Campaign, error) {
-	uri := fmt.Sprintf("/v1/campaigns?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
+func (r *requestHandler) CampaignV1CampaignGets(ctx context.Context, pageToken string, pageSize uint64, filters map[cacampaign.Field]any) ([]cacampaign.Campaign, error) {
+	uri := fmt.Sprintf("/v1/campaigns?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
-	tmp, err := r.sendRequestCampaign(ctx, uri, sock.RequestMethodGet, "campaign/campaigns", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	m, err := json.Marshal(filters)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not marshal filters")
+	}
+
+	tmp, err := r.sendRequestCampaign(ctx, uri, sock.RequestMethodGet, "campaign/campaigns", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}

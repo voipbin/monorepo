@@ -2,21 +2,25 @@ package requesthandler
 
 import (
 	"context"
-	"fmt"
-	"net/url"
+	"encoding/json"
 
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-registrar-manager/models/astcontact"
 
-	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 )
 
 // RegistrarV1ContactGets sends the /v1/contacts GET request to registrar-manager
-func (r *requestHandler) RegistrarV1ContactGets(ctx context.Context, customerID uuid.UUID, extension string) ([]astcontact.AstContact, error) {
+func (r *requestHandler) RegistrarV1ContactGets(ctx context.Context, filters map[string]any) ([]astcontact.AstContact, error) {
 
-	uri := fmt.Sprintf("/v1/contacts?customer_id=%s&extension=%s", customerID, url.QueryEscape(extension))
+	uri := "/v1/contacts"
 
-	tmp, err := r.sendRequestRegistrar(ctx, uri, sock.RequestMethodGet, "flow/actions", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	m, err := json.Marshal(filters)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not marshal filters")
+	}
+
+	tmp, err := r.sendRequestRegistrar(ctx, uri, sock.RequestMethodGet, "flow/actions", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}
@@ -30,11 +34,16 @@ func (r *requestHandler) RegistrarV1ContactGets(ctx context.Context, customerID 
 }
 
 // RegistrarV1ContactRefresh refreshes the /v1/contacts by sending the PUT request to registrar-manager
-func (r *requestHandler) RegistrarV1ContactRefresh(ctx context.Context, customerID uuid.UUID, extension string) error {
+func (r *requestHandler) RegistrarV1ContactRefresh(ctx context.Context, filters map[string]any) error {
 
-	uri := fmt.Sprintf("/v1/contacts?customer_id=%s&extension=%s", customerID, url.QueryEscape(extension))
+	uri := "/v1/contacts"
 
-	tmp, err := r.sendRequestRegistrar(ctx, uri, sock.RequestMethodPut, "call/channels/health", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	m, err := json.Marshal(filters)
+	if err != nil {
+		return errors.Wrapf(err, "could not marshal filters")
+	}
+
+	tmp, err := r.sendRequestRegistrar(ctx, uri, sock.RequestMethodPut, "call/channels/health", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return err
 	}

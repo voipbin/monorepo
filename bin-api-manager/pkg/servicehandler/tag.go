@@ -98,7 +98,10 @@ func (h *serviceHandler) TagGets(ctx context.Context, a *amagent.Agent, size uin
 		return nil, fmt.Errorf("user has no permission")
 	}
 
-	tmp, err := h.reqHandler.TagV1TagGets(ctx, a.CustomerID, token, size)
+	filters := map[tmtag.Field]any{
+		tmtag.FieldCustomerID: a.CustomerID,
+	}
+	tmp, err := h.reqHandler.TagV1TagGets(ctx, token, size, filters)
 	if err != nil {
 		log.Errorf("Could not get tags.. err: %v", err)
 		return nil, err

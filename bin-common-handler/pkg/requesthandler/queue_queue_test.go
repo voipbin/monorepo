@@ -204,9 +204,10 @@ func Test_QueueV1QueueGetAgents(t *testing.T) {
 
 			"bin-manager.queue-manager.request",
 			&sock.Request{
-				URI:      "/v1/queues/2f31ae1a-b4a2-11ec-9c56-97b273d77408/agents?status=",
+				URI:      "/v1/queues/2f31ae1a-b4a2-11ec-9c56-97b273d77408/agents",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
+			Data:     []byte(`{"status":""}`),
 			},
 			&sock.Response{
 				StatusCode: 200,
@@ -229,9 +230,10 @@ func Test_QueueV1QueueGetAgents(t *testing.T) {
 
 			"bin-manager.queue-manager.request",
 			&sock.Request{
-				URI:      "/v1/queues/2fdd4374-b4a2-11ec-929d-5b6756eada32/agents?status=available",
+				URI:      "/v1/queues/2fdd4374-b4a2-11ec-929d-5b6756eada32/agents",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
+			Data:     []byte(`{"status":"available"}`),
 			},
 			&sock.Response{
 				StatusCode: 200,
@@ -260,8 +262,11 @@ func Test_QueueV1QueueGetAgents(t *testing.T) {
 
 			ctx := context.Background()
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+		filters := map[amagent.Field]any{
+			amagent.FieldStatus: tt.status,
+		}
 
-			res, err := reqHandler.QueueV1QueueGetAgents(ctx, tt.id, tt.status)
+		res, err := reqHandler.QueueV1QueueGetAgents(ctx, tt.id, filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

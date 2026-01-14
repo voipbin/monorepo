@@ -38,9 +38,10 @@ func Test_NumberV1AvailableNumberGets(t *testing.T) {
 
 			"bin-manager.number-manager.request",
 			&sock.Request{
-				URI:      "/v1/available_numbers?page_size=10&customer_id=b7041f62-7ff5-11ec-b1dd-d7e05b3c5096&country_code=US",
+				URI:      "/v1/available_numbers?page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
+			Data:     []byte(`{"country_code":"US","customer_id":"b7041f62-7ff5-11ec-b1dd-d7e05b3c5096"}`),
 			},
 			&sock.Response{
 				StatusCode: 200,
@@ -72,7 +73,11 @@ func Test_NumberV1AvailableNumberGets(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.NumberV1AvailableNumberGets(ctx, tt.customerID, tt.pageSize, tt.countryCode)
+			filters := map[string]any{
+				"customer_id": tt.customerID,
+				"country_code": tt.countryCode,
+			}
+			res, err := reqHandler.NumberV1AvailableNumberGets(ctx, tt.pageSize, filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

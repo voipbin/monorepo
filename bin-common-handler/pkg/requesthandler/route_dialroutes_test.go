@@ -2,8 +2,6 @@ package requesthandler
 
 import (
 	"context"
-	"fmt"
-	"net/url"
 	"reflect"
 	"testing"
 
@@ -44,9 +42,10 @@ func Test_DialrouteV1RouteGets(t *testing.T) {
 
 			"bin-manager.route-manager.request",
 			&sock.Request{
-				URI:      fmt.Sprintf("/v1/dialroutes?customer_id=177ca524-52b6-11ed-bc27-67e42188fe83&target=%s", url.QueryEscape("+82")),
-				Method:   sock.RequestMethodGet,
-				DataType: ContentTypeNone,
+			URI:      "/v1/dialroutes",
+			Method:   sock.RequestMethodGet,
+			DataType: ContentTypeJSON,
+			Data:     []byte(`{"customer_id":"177ca524-52b6-11ed-bc27-67e42188fe83","target":"+82"}`),
 			},
 			[]rmroute.Route{
 				{
@@ -68,8 +67,12 @@ func Test_DialrouteV1RouteGets(t *testing.T) {
 
 			ctx := context.Background()
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+		filters := map[rmroute.Field]any{
+			rmroute.FieldCustomerID: tt.customerID,
+			rmroute.FieldTarget: tt.target,
+		}
 
-			res, err := reqHandler.RouteV1DialrouteGets(ctx, tt.customerID, tt.target)
+		res, err := reqHandler.RouteV1DialrouteGets(ctx, filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

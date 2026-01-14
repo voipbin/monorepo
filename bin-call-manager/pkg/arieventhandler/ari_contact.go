@@ -26,7 +26,11 @@ func (h *eventHandler) EventHandlerContactStatusChange(ctx context.Context, evt 
 	}
 
 	// send refresh
-	if err := h.reqHandler.RegistrarV1ContactRefresh(ctx, customerID, ext); err != nil {
+	filters := map[string]any{
+		"customer_id": customerID,
+		"extension":   ext,
+	}
+	if err := h.reqHandler.RegistrarV1ContactRefresh(ctx, filters); err != nil {
 		log.Errorf("Could not handle the ContactStatusChange message. err: %v", err)
 		return err
 	}

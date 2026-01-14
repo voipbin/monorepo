@@ -569,7 +569,7 @@ type RequestHandler interface {
 		queueID uuid.UUID,
 		nextCampaignID uuid.UUID,
 	) (*cacampaign.Campaign, error)
-	CampaignV1CampaignGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]cacampaign.Campaign, error)
+	CampaignV1CampaignGets(ctx context.Context, pageToken string, pageSize uint64, filters map[cacampaign.Field]any) ([]cacampaign.Campaign, error)
 	CampaignV1CampaignGet(ctx context.Context, id uuid.UUID) (*cacampaign.Campaign, error)
 	CampaignV1CampaignDelete(ctx context.Context, campaignID uuid.UUID) (*cacampaign.Campaign, error)
 	CampaignV1CampaignExecute(ctx context.Context, id uuid.UUID, delay int) error
@@ -589,8 +589,7 @@ type RequestHandler interface {
 	CampaignV1CampaignUpdateNextCampaignID(ctx context.Context, id uuid.UUID, nextCampaignID uuid.UUID) (*cacampaign.Campaign, error)
 
 	// campaign-manager campaigncalls
-	CampaignV1CampaigncallGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]cacampaigncall.Campaigncall, error)
-	CampaignV1CampaigncallGetsByCampaignID(ctx context.Context, campaignID uuid.UUID, pageToken string, pageSize uint64) ([]cacampaigncall.Campaigncall, error)
+	CampaignV1CampaigncallGets(ctx context.Context, pageToken string, pageSize uint64, filters map[cacampaigncall.Field]any) ([]cacampaigncall.Campaigncall, error)
 	CampaignV1CampaigncallGet(ctx context.Context, id uuid.UUID) (*cacampaigncall.Campaigncall, error)
 	CampaignV1CampaigncallDelete(ctx context.Context, id uuid.UUID) (*cacampaigncall.Campaigncall, error)
 
@@ -609,7 +608,7 @@ type RequestHandler interface {
 		maxTryCount3 int,
 		maxTryCount4 int,
 	) (*caoutplan.Outplan, error)
-	CampaignV1OutplanGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]caoutplan.Outplan, error)
+	CampaignV1OutplanGets(ctx context.Context, pageToken string, pageSize uint64, filters map[caoutplan.Field]any) ([]caoutplan.Outplan, error)
 	CampaignV1OutplanGet(ctx context.Context, id uuid.UUID) (*caoutplan.Outplan, error)
 	CampaignV1OutplanDelete(ctx context.Context, outplanID uuid.UUID) (*caoutplan.Outplan, error)
 	CampaignV1OutplanUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*caoutplan.Outplan, error)
@@ -880,13 +879,13 @@ type RequestHandler interface {
 	MessageV1Hook(ctx context.Context, hm *hmhook.Hook) error
 
 	// message-manager message
-	MessageV1MessageGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]mmmessage.Message, error)
+	MessageV1MessageGets(ctx context.Context, pageToken string, pageSize uint64, filters map[mmmessage.Field]any) ([]mmmessage.Message, error)
 	MessageV1MessageGet(ctx context.Context, id uuid.UUID) (*mmmessage.Message, error)
 	MessageV1MessageDelete(ctx context.Context, id uuid.UUID) (*mmmessage.Message, error)
 	MessageV1MessageSend(ctx context.Context, id uuid.UUID, customerID uuid.UUID, source *commonaddress.Address, destinations []commonaddress.Address, text string) (*mmmessage.Message, error)
 
 	// number-manager available-number
-	NumberV1AvailableNumberGets(ctx context.Context, customerID uuid.UUID, pageSize uint64, countryCode string) ([]nmavailablenumber.AvailableNumber, error)
+	NumberV1AvailableNumberGets(ctx context.Context, pageSize uint64, filters map[string]any) ([]nmavailablenumber.AvailableNumber, error)
 
 	// number-manager number
 	NumberV1NumberCreate(ctx context.Context, customerID uuid.UUID, num string, callFlowID uuid.UUID, messageFlowID uuid.UUID, name string, detail string) (*nmnumber.Number, error)
@@ -903,7 +902,7 @@ type RequestHandler interface {
 	OutdialV1OutdialCreate(ctx context.Context, customerID, campaignID uuid.UUID, name, detail, data string) (*omoutdial.Outdial, error)
 	OutdialV1OutdialDelete(ctx context.Context, outdialID uuid.UUID) (*omoutdial.Outdial, error)
 	OutdialV1OutdialGet(ctx context.Context, id uuid.UUID) (*omoutdial.Outdial, error)
-	OutdialV1OutdialGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]omoutdial.Outdial, error)
+	OutdialV1OutdialGets(ctx context.Context, pageToken string, pageSize uint64, filters map[omoutdial.Field]any) ([]omoutdial.Outdial, error)
 	OutdialV1OutdialUpdateBasicInfo(ctx context.Context, outdialID uuid.UUID, name, detail string) (*omoutdial.Outdial, error)
 	OutdialV1OutdialUpdateCampaignID(ctx context.Context, outdialID, campaignID uuid.UUID) (*omoutdial.Outdial, error)
 	OutdialV1OutdialUpdateData(ctx context.Context, outdialID uuid.UUID, data string) (*omoutdial.Outdial, error)
@@ -971,7 +970,7 @@ type RequestHandler interface {
 	// queue-manager queue
 	QueueV1QueueGets(ctx context.Context, pageToken string, pageSize uint64, filters map[qmqueue.Field]any) ([]qmqueue.Queue, error)
 	QueueV1QueueGet(ctx context.Context, queueID uuid.UUID) (*qmqueue.Queue, error)
-	QueueV1QueueGetAgents(ctx context.Context, queueID uuid.UUID, status amagent.Status) ([]amagent.Agent, error)
+	QueueV1QueueGetAgents(ctx context.Context, queueID uuid.UUID, filters map[amagent.Field]any) ([]amagent.Agent, error)
 	QueueV1QueueCreate(
 		ctx context.Context,
 		customerID uuid.UUID,
@@ -1018,8 +1017,8 @@ type RequestHandler interface {
 	QueueV1ServiceTypeQueuecallStart(ctx context.Context, queueID uuid.UUID, activeflowID uuid.UUID, referenceType qmqueuecall.ReferenceType, referenceID uuid.UUID) (*service.Service, error)
 
 	// registrar-manager contact
-	RegistrarV1ContactGets(ctx context.Context, customerID uuid.UUID, extension string) ([]rmastcontact.AstContact, error)
-	RegistrarV1ContactRefresh(ctx context.Context, customerID uuid.UUID, extension string) error
+	RegistrarV1ContactGets(ctx context.Context, filters map[string]any) ([]rmastcontact.AstContact, error)
+	RegistrarV1ContactRefresh(ctx context.Context, filters map[string]any) error
 
 	// registrar-manager extension
 	RegistrarV1ExtensionCreate(ctx context.Context, customerID uuid.UUID, ext string, password string, name string, detail string) (*rmextension.Extension, error)
@@ -1037,7 +1036,7 @@ type RequestHandler interface {
 	RegistrarV1TrunkUpdateBasicInfo(ctx context.Context, trunkID uuid.UUID, name string, detail string, authTypes []rmsipauth.AuthType, username string, password string, allowedIPs []string) (*rmtrunk.Trunk, error)
 
 	// route-manager dialroutes
-	RouteV1DialrouteGets(ctx context.Context, customerID uuid.UUID, target string) ([]rmroute.Route, error)
+	RouteV1DialrouteGets(ctx context.Context, filters map[rmroute.Field]any) ([]rmroute.Route, error)
 
 	// route-manager providers
 	RouteV1ProviderCreate(ctx context.Context, provierType rmprovider.Type, hostname string, techPrefix string, techPostfix string, techHeaders map[string]string, name string, detail string) (*rmprovider.Provider, error)
@@ -1077,8 +1076,7 @@ type RequestHandler interface {
 		priority int,
 		target string,
 	) (*rmroute.Route, error)
-	RouteV1RouteGets(ctx context.Context, pageToken string, pageSize uint64) ([]rmroute.Route, error)
-	RouteV1RouteGetsByCustomerID(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]rmroute.Route, error)
+	RouteV1RouteGets(ctx context.Context, pageToken string, pageSize uint64, filters map[rmroute.Field]any) ([]rmroute.Route, error)
 
 	// storage-manager account
 	StorageV1AccountCreate(ctx context.Context, customerID uuid.UUID) (*smaccount.Account, error)
@@ -1129,7 +1127,7 @@ type RequestHandler interface {
 	TagV1TagUpdate(ctx context.Context, tagID uuid.UUID, name string, detail string) (*tmtag.Tag, error)
 	TagV1TagDelete(ctx context.Context, tagID uuid.UUID) (*tmtag.Tag, error)
 	TagV1TagGet(ctx context.Context, tagID uuid.UUID) (*tmtag.Tag, error)
-	TagV1TagGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]tmtag.Tag, error)
+	TagV1TagGets(ctx context.Context, pageToken string, pageSize uint64, filters map[tmtag.Field]any) ([]tmtag.Tag, error)
 
 	// tts-manager speeches
 	TTSV1SpeecheCreate(ctx context.Context, callID uuid.UUID, text string, gender tmtts.Gender, language string, timeout int) (*tmtts.TTS, error)

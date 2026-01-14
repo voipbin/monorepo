@@ -140,10 +140,15 @@ func (r *requestHandler) RegistrarV1ExtensionGets(ctx context.Context, pageToken
 // RegistrarV1ExtensionGetByExtension sends a request to registrar-manager
 // to getting a detail extension info of the given extension.
 // it returns detail extension info if it succeed.
-func (r *requestHandler) RegistrarV1ExtensionGetByExtension(ctx context.Context, customerID uuid.UUID, extension string) (*rmextension.Extension, error) {
-	uri := fmt.Sprintf("/v1/extensions/extension/%s?customer_id=%s", extension, customerID.String())
+func (r *requestHandler) RegistrarV1ExtensionGetByExtension(ctx context.Context, extension string, filters map[rmextension.Field]any) (*rmextension.Extension, error) {
+	uri := fmt.Sprintf("/v1/extensions/extension/%s", extension)
 
-	tmp, err := r.sendRequestRegistrar(ctx, uri, sock.RequestMethodGet, "registrar/extension", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	m, err := json.Marshal(filters)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not marshal filters")
+	}
+
+	tmp, err := r.sendRequestRegistrar(ctx, uri, sock.RequestMethodGet, "registrar/extension", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}

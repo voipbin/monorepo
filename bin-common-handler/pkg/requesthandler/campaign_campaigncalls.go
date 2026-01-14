@@ -2,6 +2,7 @@ package requesthandler
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/url"
 
@@ -9,34 +10,21 @@ import (
 	"monorepo/bin-common-handler/models/sock"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 )
 
 // CampaignV1CampaigncallGets sends a request to campaign-manager
 // to getting a list of campaigncalls.
 // it returns detail list of campaigncalls if it succeed.
-func (r *requestHandler) CampaignV1CampaigncallGets(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]cacampaigncall.Campaigncall, error) {
-	uri := fmt.Sprintf("/v1/campaigncalls?page_token=%s&page_size=%d&customer_id=%s", url.QueryEscape(pageToken), pageSize, customerID)
+func (r *requestHandler) CampaignV1CampaigncallGets(ctx context.Context, pageToken string, pageSize uint64, filters map[cacampaigncall.Field]any) ([]cacampaigncall.Campaigncall, error) {
+	uri := fmt.Sprintf("/v1/campaigncalls?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
-	tmp, err := r.sendRequestCampaign(ctx, uri, sock.RequestMethodGet, "campaign/campaigncalls", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	m, err := json.Marshal(filters)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "could not marshal filters")
 	}
 
-	var res []cacampaigncall.Campaigncall
-	if errParse := parseResponse(tmp, &res); errParse != nil {
-		return nil, errParse
-	}
-
-	return res, nil
-}
-
-// CampaignV1CampaigncallGetsByCampaignID sends a request to campaign-manager
-// to getting a list of campaigncalls of the given campaign id.
-// it returns detail list of campaigncalls if it succeed.
-func (r *requestHandler) CampaignV1CampaigncallGetsByCampaignID(ctx context.Context, campaignID uuid.UUID, pageToken string, pageSize uint64) ([]cacampaigncall.Campaigncall, error) {
-	uri := fmt.Sprintf("/v1/campaigncalls?page_token=%s&page_size=%d&campaign_id=%s", url.QueryEscape(pageToken), pageSize, campaignID)
-
-	tmp, err := r.sendRequestCampaign(ctx, uri, sock.RequestMethodGet, "campaign/campaigncalls", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+	tmp, err := r.sendRequestCampaign(ctx, uri, sock.RequestMethodGet, "campaign/campaigncalls", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}

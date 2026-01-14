@@ -80,7 +80,9 @@ func (h *serviceHandler) RouteGets(ctx context.Context, a *amagent.Agent, size u
 		return nil, fmt.Errorf("agent has no permission")
 	}
 
-	tmps, err := h.reqHandler.RouteV1RouteGets(ctx, token, size)
+	// get all routes (no filtering for super admin)
+	filters := map[rmroute.Field]any{}
+	tmps, err := h.reqHandler.RouteV1RouteGets(ctx, token, size, filters)
 	if err != nil {
 		log.Errorf("Could not get routes from the route-manager. err: %v", err)
 		return nil, err
@@ -118,7 +120,10 @@ func (h *serviceHandler) RouteGetsByCustomerID(ctx context.Context, a *amagent.A
 		return nil, fmt.Errorf("agent has no permission")
 	}
 
-	tmps, err := h.reqHandler.RouteV1RouteGetsByCustomerID(ctx, customerID, token, size)
+	filters := map[rmroute.Field]any{
+		rmroute.FieldCustomerID: customerID,
+	}
+	tmps, err := h.reqHandler.RouteV1RouteGets(ctx, token, size, filters)
 	if err != nil {
 		log.Errorf("Could not get routes from the route-manager. err: %v", err)
 		return nil, err
