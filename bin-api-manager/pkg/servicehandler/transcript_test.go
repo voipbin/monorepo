@@ -68,7 +68,7 @@ func Test_TranscriptGets(t *testing.T) {
 			},
 
 			expectFilters: map[tmtranscript.Field]any{
-				tmtranscript.FieldTranscribeID: "9eafc870-8284-11ed-92de-d74d9e2342cb",
+				tmtranscript.FieldTranscribeID: uuid.FromStringOrNil("9eafc870-8284-11ed-92de-d74d9e2342cb"),
 				tmtranscript.FieldDeleted:      false,
 			},
 			expectRes: []*tmtranscript.WebhookMessage{

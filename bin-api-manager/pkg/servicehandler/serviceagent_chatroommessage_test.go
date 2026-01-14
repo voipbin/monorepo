@@ -147,7 +147,7 @@ func Test_ServiceAgentChatroommessageGets(t *testing.T) {
 			},
 
 			expectFilters: map[chatmessagechatroom.Field]any{
-				chatmessagechatroom.FieldChatroomID: "dc5d2e98-3baa-11ef-8f73-6791414eb608",
+				chatmessagechatroom.FieldChatroomID: uuid.FromStringOrNil("dc5d2e98-3baa-11ef-8f73-6791414eb608"),
 				chatmessagechatroom.FieldDeleted:    false,
 			},
 			expectRes: []*chatmessagechatroom.WebhookMessage{
@@ -267,8 +267,8 @@ func Test_ServiceAgentChatroommessageCreate(t *testing.T) {
 				TargetName: "test name",
 			},
 			expectFilters: map[chatmessagechatroom.Field]any{
-				chatmessagechatroom.FieldChatroomID:    "69648f42-3bac-11ef-aa57-9fde22132b67",
-				chatmessagechatroom.FieldMessagechatID: "b3d48d38-3bad-11ef-926f-efbf47b2f0f5",
+				chatmessagechatroom.FieldChatroomID:    uuid.FromStringOrNil("69648f42-3bac-11ef-aa57-9fde22132b67"),
+				chatmessagechatroom.FieldMessagechatID: uuid.FromStringOrNil("b3d48d38-3bad-11ef-926f-efbf47b2f0f5"),
 			},
 			expectRes: &chatmessagechatroom.WebhookMessage{
 				Identity: commonidentity.Identity{
