@@ -41,8 +41,10 @@ func TestProcessV1AvailableNumbersGet(t *testing.T) {
 			1,
 			[]*availablenumber.AvailableNumber{},
 			&sock.Request{
-				URI:    "/v1/available_numbers?country_code=US&page_size=1",
-				Method: sock.RequestMethodGet,
+				URI:      "/v1/available_numbers?page_size=1",
+				Method:   sock.RequestMethodGet,
+				DataType: "application/json",
+				Data:     []byte(`{"country_code":"US"}`),
 			},
 			&sock.Response{
 				StatusCode: 200,
@@ -66,8 +68,10 @@ func TestProcessV1AvailableNumbersGet(t *testing.T) {
 				},
 			},
 			&sock.Request{
-				URI:    "/v1/available_numbers?country_code=US&page_size=1",
-				Method: sock.RequestMethodGet,
+				URI:      "/v1/available_numbers?page_size=1",
+				Method:   sock.RequestMethodGet,
+				DataType: "application/json",
+				Data:     []byte(`{"country_code":"US"}`),
 			},
 			&sock.Response{
 				StatusCode: 200,
