@@ -664,6 +664,12 @@ const (
 	Wav PostConferencesIdRecordingStartJSONBodyFormat = "wav"
 )
 
+// Defines values for GetConversationsJSONBodyType.
+const (
+	Line    GetConversationsJSONBodyType = "line"
+	Message GetConversationsJSONBodyType = "message"
+)
+
 // AIManagerAI defines model for AIManagerAI.
 type AIManagerAI struct {
 	// CustomerId Unique identifier of the associated customer.
@@ -3746,6 +3752,24 @@ type PutConversationAccountsIdJSONBody struct {
 	Token  *string `json:"token,omitempty"`
 }
 
+// GetConversationsJSONBody defines parameters for GetConversations.
+type GetConversationsJSONBody struct {
+	// AccountId Filter by account ID
+	AccountId *openapi_types.UUID `json:"account_id,omitempty"`
+
+	// CustomerId Filter by customer ID
+	CustomerId *openapi_types.UUID `json:"customer_id,omitempty"`
+
+	// Deleted Include deleted conversations if true
+	Deleted *bool `json:"deleted,omitempty"`
+
+	// DialogId Filter by dialog ID
+	DialogId *string `json:"dialog_id,omitempty"`
+
+	// Type Filter by conversation type
+	Type *GetConversationsJSONBodyType `json:"type,omitempty"`
+}
+
 // GetConversationsParams defines parameters for GetConversations.
 type GetConversationsParams struct {
 	// PageSize The size of results.
@@ -3754,6 +3778,9 @@ type GetConversationsParams struct {
 	// PageToken The token. tm_create
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
+
+// GetConversationsJSONBodyType defines parameters for GetConversations.
+type GetConversationsJSONBodyType string
 
 // PutConversationsIdJSONBody defines parameters for PutConversationsId.
 type PutConversationsIdJSONBody struct {
@@ -4746,6 +4773,9 @@ type PostConversationAccountsJSONRequestBody PostConversationAccountsJSONBody
 
 // PutConversationAccountsIdJSONRequestBody defines body for PutConversationAccountsId for application/json ContentType.
 type PutConversationAccountsIdJSONRequestBody PutConversationAccountsIdJSONBody
+
+// GetConversationsJSONRequestBody defines body for GetConversations for application/json ContentType.
+type GetConversationsJSONRequestBody GetConversationsJSONBody
 
 // PutConversationsIdJSONRequestBody defines body for PutConversationsId for application/json ContentType.
 type PutConversationsIdJSONRequestBody PutConversationsIdJSONBody
@@ -14730,6 +14760,7 @@ func (response PutConversationAccountsId200JSONResponse) VisitPutConversationAcc
 
 type GetConversationsRequestObject struct {
 	Params GetConversationsParams
+	Body   *GetConversationsJSONRequestBody
 }
 
 type GetConversationsResponseObject interface {
@@ -21756,6 +21787,14 @@ func (sh *strictHandler) GetConversations(ctx *gin.Context, params GetConversati
 	var request GetConversationsRequestObject
 
 	request.Params = params
+
+	var body GetConversationsJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
 
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.GetConversations(ctx, request.(GetConversationsRequestObject))
