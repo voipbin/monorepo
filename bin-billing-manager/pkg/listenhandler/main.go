@@ -56,6 +56,7 @@ var (
 
 	// billings
 	regV1BillingsGet = regexp.MustCompile(`/v1/billings\?`)
+	regV1BillingGet  = regexp.MustCompile("/v1/billings/" + regUUID + "$")
 )
 
 var (
@@ -199,6 +200,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1BillingsGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1BillingsGet(ctx, m)
 		requestType = "/v1/billings"
+
+	// GET /billings/<billing-id>
+	case regV1BillingGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1BillingGet(ctx, m)
+		requestType = "/v1/billing"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found

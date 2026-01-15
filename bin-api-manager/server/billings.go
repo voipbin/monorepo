@@ -4,6 +4,8 @@ import (
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
 
+	"github.com/gofrs/uuid"
+	openapi_types "github.com/oapi-codegen/runtime/types"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
@@ -53,4 +55,39 @@ func (h *server) GetBillings(c *gin.Context, params openapi_server.GetBillingsPa
 
 	res := GenerateListResponse(tmps, nextToken)
 	c.JSON(200, res)
+}
+
+func (h *server) GetBillingsBillingId(c *gin.Context, billingId openapi_types.UUID) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "GetBillingsBillingId",
+		"request_address": c.ClientIP(),
+	})
+
+	tmp, exists := c.Get("agent")
+	if !exists {
+		log.Errorf("Could not find agent info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
+
+	// Convert openapi_types.UUID to uuid.UUID
+	billingID, err := uuid.FromString(billingId.String())
+	if err != nil {
+		log.Errorf("Invalid billing ID format. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	billing, err := h.serviceHandler.BillingGet(c.Request.Context(), &a, billingID)
+	if err != nil {
+		logrus.Errorf("Could not get billing info. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, billing)
 }

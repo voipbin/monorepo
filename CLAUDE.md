@@ -838,6 +838,199 @@ alembic -c alembic.ini downgrade <revision_id>
 - Document breaking changes in migration docstrings
 - See `bin-dbscheme-manager/CLAUDE.md` for service-specific details
 
+## API Design Principles
+
+### Atomic API Responses
+
+**CRITICAL: All API endpoints MUST return atomic data - single resource types without combining data from other services.**
+
+**The Rule:**
+API responses should contain ONLY the requested resource type, without including related data from other services or resources. Clients must make separate requests if they need related information.
+
+**Why:**
+- Maintains clear service boundaries
+- Keeps APIs simple and predictable
+- Prevents tight coupling between services
+- Makes caching and performance optimization easier
+- Reduces breaking changes when related resources evolve
+
+**Examples:**
+
+✅ **CORRECT - Atomic Response:**
+```
+GET /v1/billings/{billing-id}
+Returns: BillingManagerBilling (just the billing record)
+
+{
+  "id": "550e8400-...",
+  "account_id": "7b94f82f-...",
+  "reference_id": "8c95f93g-...",
+  "cost_total": 1.40,
+  ...
+}
+```
+
+❌ **WRONG - Combined Response:**
+```
+GET /v1/billings/{billing-id}
+Returns: Billing + Account + Reference Resource
+
+{
+  "billing": { ... },
+  "account": { "name": "...", "balance": ... },  // Don't include
+  "call": { "duration": ..., "caller_id": ... }   // Don't include
+}
+```
+
+**Exceptions to Atomic Response Rule:**
+
+1. **Pagination Metadata** - List responses can include `next_page_token` as it's directly related to the query:
+   ```json
+   {
+     "result": [...],
+     "next_page_token": "2024-01-15T10:30:00"
+   }
+   ```
+
+2. **Atomic Operation Responses** - When a single operation creates multiple related resources, the response can include all created resources:
+   ```
+   POST /v1/calls (with groupcall option)
+   Returns: { "call": {...}, "groupcall": {...} }
+
+   Reason: Call and groupcall are created atomically in one transaction,
+   so returning both is appropriate.
+   ```
+
+**How to Fetch Related Data:**
+For all other cases, clients should make separate requests:
+```
+1. GET /v1/billings/{billing-id} → Get billing record
+2. GET /v1/billing_accounts/{account-id} → Get account details (if needed)
+3. GET /v1/calls/{call-id} → Get call details (if needed)
+```
+
+### Authentication & Authorization Pattern
+
+**CRITICAL: Authentication and authorization logic belongs ONLY in bin-api-manager, NOT in internal services.**
+
+**Architecture:**
+
+```
+External Client → bin-api-manager → bin-<service>-manager
+                  (Auth Layer)      (Business Logic)
+```
+
+**bin-api-manager Responsibilities:**
+- ✅ Validate JWT tokens
+- ✅ Extract customer_id from JWT
+- ✅ Make RPC requests to internal services
+- ✅ Check authorization (resource.CustomerID == JWT customer_id)
+- ✅ Return appropriate HTTP status codes
+
+**Internal Service Responsibilities (bin-billing-manager, bin-call-manager, etc.):**
+- ✅ Process RPC requests
+- ✅ Execute business logic
+- ✅ Access database
+- ✅ Return data or errors
+- ❌ NO JWT validation
+- ❌ NO customer_id authentication checks
+- ❌ NO authorization logic
+
+**Example Flow:**
+
+```
+1. Client → GET /v1/billings/550e8400-... with JWT
+2. bin-api-manager:
+   - Validates JWT ✓
+   - Extracts customer_id: 6a93f71e-...
+   - Calls: reqHandler.BillingV1BillingGet(ctx, billingID)
+3. bin-billing-manager:
+   - Receives RPC: GET /v1/billings/550e8400-...
+   - Queries: BillingGet(ctx, billingID)
+   - Returns billing record (no customer_id check)
+4. bin-api-manager:
+   - Receives billing: { customer_id: 6a93f71e-..., ... }
+   - Checks: billing.CustomerID == JWT customer_id ✓
+   - Returns: 200 OK with billing data
+```
+
+**Authorization Check Pattern:**
+
+```go
+// ✅ CORRECT - Authorization in api-manager servicehandler
+func (h *serviceHandler) BillingGet(ctx context.Context, a *amagent.Agent, billingID uuid.UUID) (*bmbilling.WebhookMessage, error) {
+    // 1. Fetch resource
+    billing, _ := h.billingGet(ctx, billingID)
+
+    // 2. Check permission
+    if !h.hasPermission(ctx, a, billing.CustomerID, amagent.PermissionCustomerAdmin) {
+        return nil, fmt.Errorf("user has no permission")
+    }
+
+    // 3. Return resource
+    return billing.ConvertWebhookMessage(), nil
+}
+
+// ❌ WRONG - Authorization in internal service
+func (h *listenHandler) processV1BillingGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+    customerID := ctx.Value("customer_id")  // NO! Don't do this
+    billing, _ := h.billingHandler.Get(ctx, billingID)
+
+    if billing.CustomerID != customerID {  // NO! Don't do this
+        return simpleResponse(404), nil
+    }
+    // ...
+}
+```
+
+**Why This Matters:**
+- Single source of truth for authentication/authorization
+- Internal services remain simple and reusable
+- Easier to test business logic independently
+- Clear separation of concerns
+- Internal services can trust the API gateway
+
+### Permission Requirements
+
+**Billing and Billing Account resources require CustomerAdmin permission ONLY.**
+
+```go
+// Admin only - no Manager access
+if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
+    return nil, fmt.Errorf("user has no permission")
+}
+```
+
+**Pattern for resource access in servicehandler:**
+
+```go
+// Private helper - fetches resource
+func (h *serviceHandler) resourceGet(ctx context.Context, resourceID uuid.UUID) (*Resource, error) {
+    res, err := h.reqHandler.ServiceV1ResourceGet(ctx, resourceID)
+    if err != nil {
+        return nil, err
+    }
+    return res, nil
+}
+
+// Public method - checks permission
+func (h *serviceHandler) ResourceGet(ctx context.Context, a *amagent.Agent, resourceID uuid.UUID) (*WebhookMessage, error) {
+    // 1. Fetch resource
+    r, err := h.resourceGet(ctx, resourceID)
+    if err != nil {
+        return nil, err
+    }
+
+    // 2. Check permission
+    if !h.hasPermission(ctx, a, r.CustomerID, amagent.PermissionCustomerAdmin) {
+        return nil, fmt.Errorf("user has no permission")
+    }
+
+    // 3. Convert and return
+    return r.ConvertWebhookMessage(), nil
+}
+```
+
 ## Architecture
 
 ### Service Categories

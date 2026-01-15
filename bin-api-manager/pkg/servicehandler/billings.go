@@ -9,6 +9,7 @@ import (
 	amagent "monorepo/bin-agent-manager/models/agent"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
+	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 )
 
@@ -28,7 +29,7 @@ func (h *serviceHandler) BillingGets(ctx context.Context, a *amagent.Agent, size
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
 		return nil, fmt.Errorf("user has no permission")
 	}
 
@@ -83,4 +84,49 @@ func (h *serviceHandler) convertBillingFilters(filters map[string]string) (map[b
 	}
 
 	return result, nil
+}
+
+// billingGet validates the billing's ownership and returns the billing info.
+func (h *serviceHandler) billingGet(ctx context.Context, billingID uuid.UUID) (*bmbilling.Billing, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "billingGet",
+		"billing_id": billingID,
+	})
+
+	// send request
+	res, err := h.reqHandler.BillingV1BillingGet(ctx, billingID)
+	if err != nil {
+		log.Errorf("Could not get the billing info. err: %v", err)
+		return nil, err
+	}
+	log.WithField("billing", res).Debug("Received result.")
+
+	return res, nil
+}
+
+// BillingGet sends a request to billing-manager
+// to getting a billing.
+// it returns billing if it succeed.
+func (h *serviceHandler) BillingGet(ctx context.Context, a *amagent.Agent, billingID uuid.UUID) (*bmbilling.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "BillingGet",
+		"customer_id": a.CustomerID,
+		"username":    a.Username,
+		"billing_id":  billingID,
+	})
+
+	// get billing
+	b, err := h.billingGet(ctx, billingID)
+	if err != nil {
+		log.Infof("Could not get billing info. err: %v", err)
+		return nil, err
+	}
+
+	if !h.hasPermission(ctx, a, b.CustomerID, amagent.PermissionCustomerAdmin) {
+		return nil, fmt.Errorf("user has no permission")
+	}
+
+	// convert
+	res := b.ConvertWebhookMessage()
+	return res, nil
 }
