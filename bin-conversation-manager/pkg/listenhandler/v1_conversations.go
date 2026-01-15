@@ -36,9 +36,18 @@ func (h *listenHandler) processV1ConversationsGet(ctx context.Context, m *sock.R
 	pageToken := u.Query().Get(PageToken)
 
 	var req map[string]any
-	if err := json.Unmarshal(m.Data, &req); err != nil {
-		log.Errorf("Could not marshal the data. err: %v", err)
-		return nil, err
+	if len(m.Data) > 0 {
+		if err := json.Unmarshal(m.Data, &req); err != nil {
+			log.Errorf("Could not marshal the data. err: %v", err)
+			return nil, err
+		}
+	} else {
+		req = make(map[string]any)
+	}
+
+	// Apply default filter: exclude deleted conversations unless explicitly requested
+	if _, hasDeleted := req["deleted"]; !hasDeleted {
+		req["deleted"] = false
 	}
 
 	log.WithFields(logrus.Fields{

@@ -1,11 +1,43 @@
 get:
   summary: Gets a list of conversations
-  description: Gets a list of conversations with pagination.
+  description: Gets a list of conversations with pagination. Filters can be provided in the request body.
   tags:
     - Conversation
   parameters:
     - $ref: '#/components/parameters/PageSize'
     - $ref: '#/components/parameters/PageToken'
+  requestBody:
+    description: Optional filters for searching conversations
+    required: false
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            customer_id:
+              type: string
+              format: uuid
+              description: Filter by customer ID
+            account_id:
+              type: string
+              format: uuid
+              description: Filter by account ID
+            dialog_id:
+              type: string
+              description: Filter by dialog ID
+            type:
+              type: string
+              enum: [message, line]
+              description: Filter by conversation type
+            deleted:
+              type: boolean
+              description: Include deleted conversations if true
+        examples:
+          filterByCustomer:
+            summary: Filter by customer
+            value:
+              customer_id: "64a3cbd8-e863-11ec-85de-1bcd09d3872e"
+              deleted: false
   responses:
     '200':
       content:
