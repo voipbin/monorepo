@@ -24,3 +24,10 @@ type V1DataRoutesIDPut struct {
 	Priority   int       `json:"priority"`
 	Target     string    `json:"target"`
 }
+
+// V1DataRoutesGet is
+// v1 data type request struct for
+// /v1/routes GET
+type V1DataRoutesGet struct {
+	CustomerID uuid.UUID `json:"customer_id,omitempty"`
+}

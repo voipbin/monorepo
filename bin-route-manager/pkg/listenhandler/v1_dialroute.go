@@ -3,11 +3,10 @@ package listenhandler
 import (
 	"context"
 	"encoding/json"
-	"net/url"
 
 	"monorepo/bin-common-handler/models/sock"
+	"monorepo/bin-route-manager/pkg/listenhandler/models/request"
 
-	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 )
 
@@ -15,21 +14,27 @@ import (
 func (h *listenHandler) v1DialroutesGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func": "v1DialroutesGet",
+			"func":    "v1DialroutesGet",
+			"request": m,
 		},
 	)
-	log.WithField("request", m).Debug("Received request.")
 
-	u, err := url.Parse(m.URI)
-	if err != nil {
-		return nil, err
+	// Parse filters from request body
+	var reqData request.V1DataDialroutesGet
+	if len(m.Data) > 0 {
+		if err := json.Unmarshal(m.Data, &reqData); err != nil {
+			log.Errorf("Could not unmarshal filters. err: %v", err)
+			return nil, err
+		}
 	}
 
-	// get customer_id
-	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
-	target := u.Query().Get("target")
+	log.WithFields(logrus.Fields{
+		"customer_id":      reqData.CustomerID,
+		"target":           reqData.Target,
+		"filters_raw_data": string(m.Data),
+	}).Debug("v1DialroutesGet: Parsed filters from request body")
 
-	tmp, err := h.routeHandler.DialrouteGets(ctx, customerID, target)
+	tmp, err := h.routeHandler.DialrouteGets(ctx, reqData.CustomerID, reqData.Target)
 	if err != nil {
 		log.Errorf("Could not get routes for dial. err: %v", err)
 		return nil, err
