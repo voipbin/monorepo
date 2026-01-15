@@ -132,6 +132,120 @@ go run ./cmd/registrar-manager \
   --domain_name_trunk "trunk.example.com"
 ```
 
+### registrar-control CLI Tool
+
+The `registrar-control` CLI provides command-line management of SIP extensions and trunks. It follows the same patterns as `agent-control` from `bin-agent-manager`.
+
+**Build:**
+```bash
+# From monorepo root or bin-registrar-manager directory
+go build -o bin/registrar-control ./cmd/registrar-control
+
+# Verify build
+./bin/registrar-control --help
+```
+
+**Configuration:**
+The CLI uses the same configuration system as the registrar-manager service (Cobra + Viper):
+- Command-line flags (e.g., `--database_dsn_bin`, `--rabbitmq_address`)
+- Environment variables (e.g., `DATABASE_DSN_BIN`, `RABBITMQ_ADDRESS`)
+
+Required configuration:
+- `database_dsn_bin` / `DATABASE_DSN_BIN`
+- `database_dsn_asterisk` / `DATABASE_DSN_ASTERISK`
+- `rabbitmq_address` / `RABBITMQ_ADDRESS`
+- `redis_address` / `REDIS_ADDRESS`
+- `domain_name_extension` / `DOMAIN_NAME_EXTENSION`
+- `domain_name_trunk` / `DOMAIN_NAME_TRUNK`
+
+**Extension Commands:**
+
+```bash
+# Create extension (prompts for password interactively)
+registrar-control extension create \
+  --customer_id "5e4a0680-804e-11ec-8477-2fea5968d85b" \
+  --username "user1001" \
+  --extension_number "1001"
+
+# Get extension details (includes registration status and contacts)
+registrar-control extension get --id "<extension-uuid>"
+
+# List extensions for a customer
+registrar-control extension list \
+  --customer_id "5e4a0680-804e-11ec-8477-2fea5968d85b" \
+  --limit 50
+
+# List with JSON output
+registrar-control extension list \
+  --customer_id "5e4a0680-804e-11ec-8477-2fea5968d85b" \
+  --format json
+
+# Update extension password
+registrar-control extension update \
+  --id "<extension-uuid>" \
+  --password "newpass123"
+
+# Delete extension (prompts for confirmation)
+registrar-control extension delete --id "<extension-uuid>"
+
+# Delete without confirmation prompt
+registrar-control extension delete --id "<extension-uuid>" --force
+```
+
+**Trunk Commands:**
+
+```bash
+# Create trunk with basic authentication
+registrar-control trunk create \
+  --customer_id "5e4a0680-804e-11ec-8477-2fea5968d85b" \
+  --domain "voip-carrier.example.com" \
+  --name "Primary Carrier" \
+  --username "trunk_user" \
+  --password "trunk_pass"
+
+# Create trunk with IP-based authentication
+registrar-control trunk create \
+  --customer_id "5e4a0680-804e-11ec-8477-2fea5968d85b" \
+  --domain "voip-carrier2.example.com" \
+  --name "Secondary Carrier" \
+  --allowed_ips "203.0.113.1,203.0.113.2"
+
+# Create trunk with both authentication types
+registrar-control trunk create \
+  --customer_id "5e4a0680-804e-11ec-8477-2fea5968d85b" \
+  --domain "voip-carrier3.example.com" \
+  --name "Hybrid Carrier" \
+  --username "trunk_user" \
+  --password "trunk_pass" \
+  --allowed_ips "203.0.113.1,203.0.113.2"
+
+# Get trunk details (includes auth config and registration status)
+registrar-control trunk get --id "<trunk-uuid>"
+
+# List trunks for a customer
+registrar-control trunk list \
+  --customer_id "5e4a0680-804e-11ec-8477-2fea5968d85b" \
+  --format json
+
+# Update trunk allowed IPs
+registrar-control trunk update \
+  --id "<trunk-uuid>" \
+  --allowed_ips "203.0.113.1,203.0.113.2,203.0.113.3"
+
+# Delete trunk (prompts for confirmation)
+registrar-control trunk delete --id "<trunk-uuid>"
+```
+
+**Interactive Prompts:**
+- Missing required fields trigger interactive prompts
+- Password fields use `survey.Password` (hidden input)
+- Delete operations show resource details and request confirmation
+- Use `--force` flag to skip delete confirmations
+
+**Output Formats:**
+- Default: Human-readable text with formatted tables
+- JSON: Use `--format json` flag for machine-parseable output
+
 ## Code Patterns
 
 ### Handler Interface Pattern
