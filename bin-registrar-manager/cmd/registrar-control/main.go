@@ -127,3 +127,66 @@ func initTrunkHandler() (trunkhandler.TrunkHandler, error) {
 
 	return trunkhandler.NewTrunkHandler(reqHandler, dbBin, notifyHandler), nil
 }
+
+func resolveUUID(flagName string, label string) (uuid.UUID, error) {
+	res := uuid.FromStringOrNil(viper.GetString(flagName))
+	if res == uuid.Nil {
+		tmp := ""
+		prompt := &survey.Input{Message: fmt.Sprintf("%s (Required):", label)}
+		if err := survey.AskOne(prompt, &tmp, survey.WithValidator(survey.Required)); err != nil {
+			return uuid.Nil, errors.Wrap(err, "input canceled")
+		}
+
+		res = uuid.FromStringOrNil(tmp)
+		if res == uuid.Nil {
+			return uuid.Nil, fmt.Errorf("invalid format for %s: '%s' is not a valid UUID", label, tmp)
+		}
+	}
+
+	return res, nil
+}
+
+func resolveString(flagName string, label string, required bool) (string, error) {
+	res := viper.GetString(flagName)
+	if res == "" && required {
+		prompt := &survey.Input{Message: fmt.Sprintf("%s (Required):", label)}
+		if err := survey.AskOne(prompt, &res, survey.WithValidator(survey.Required)); err != nil {
+			return "", errors.Wrap(err, "input canceled")
+		}
+	}
+	return res, nil
+}
+
+func formatOutput(data interface{}, format string) error {
+	if format == "json" {
+		jsonData, err := json.MarshalIndent(data, "", "  ")
+		if err != nil {
+			return errors.Wrap(err, "failed to marshal JSON")
+		}
+		fmt.Println(string(jsonData))
+		return nil
+	}
+
+	// Human-readable format (caller provides specific formatting)
+	return nil
+}
+
+func confirmDelete(resourceType string, id uuid.UUID, details string) (bool, error) {
+	if viper.GetBool("force") {
+		return true, nil
+	}
+
+	fmt.Printf("\n--- %s Information ---\n", resourceType)
+	fmt.Print(details)
+	fmt.Println("------------------------")
+
+	confirm := false
+	prompt := &survey.Confirm{
+		Message: fmt.Sprintf("Are you sure you want to delete %s %s?", resourceType, id),
+	}
+	if err := survey.AskOne(prompt, &confirm); err != nil {
+		return false, errors.Wrap(err, "confirmation canceled")
+	}
+
+	return confirm, nil
+}
