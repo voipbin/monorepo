@@ -6,9 +6,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strings"
 
 	"monorepo/bin-registrar-manager/internal/config"
 	"monorepo/bin-registrar-manager/models/extension"
+	"monorepo/bin-registrar-manager/models/sipauth"
+	"monorepo/bin-registrar-manager/models/trunk"
 	"monorepo/bin-registrar-manager/pkg/cachehandler"
 	"monorepo/bin-registrar-manager/pkg/dbhandler"
 	"monorepo/bin-registrar-manager/pkg/extensionhandler"
@@ -71,6 +74,11 @@ func initCommand() *cobra.Command {
 
 	// Trunk subcommands
 	cmdTrunk := &cobra.Command{Use: "trunk", Short: "Trunk operations"}
+	cmdTrunk.AddCommand(cmdTrunkCreate())
+	cmdTrunk.AddCommand(cmdTrunkGet())
+	cmdTrunk.AddCommand(cmdTrunkList())
+	cmdTrunk.AddCommand(cmdTrunkUpdate())
+	cmdTrunk.AddCommand(cmdTrunkDelete())
 	cmdRoot.AddCommand(cmdTrunk)
 
 	return cmdRoot
@@ -522,5 +530,371 @@ func runExtensionDelete(cmd *cobra.Command, args []string) error {
 		"customer_id": ext.CustomerID,
 	}).Infof("Deleted extension")
 	fmt.Println("Extension deleted successfully")
+	return nil
+}
+
+// ============================================================================
+// Trunk Commands
+// ============================================================================
+
+func cmdTrunkCreate() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "create",
+		Short: "Create a new trunk",
+		RunE:  runTrunkCreate,
+	}
+
+	flags := cmd.Flags()
+	flags.String("customer_id", "", "Customer ID")
+	flags.String("domain", "", "Domain name")
+	flags.String("name", "", "Trunk name")
+	flags.String("username", "", "Username")
+	flags.String("password", "", "Password")
+	flags.String("allowed_ips", "", "Allowed IPs (comma-separated)")
+	flags.String("format", "", "Output format (json)")
+
+	return cmd
+}
+
+func runTrunkCreate(cmd *cobra.Command, args []string) error {
+	customerID, err := resolveUUID("customer_id", "Customer ID")
+	if err != nil {
+		return errors.Wrap(err, "failed to resolve customer ID")
+	}
+
+	domain, err := resolveString("domain", "Domain", true)
+	if err != nil {
+		return errors.Wrap(err, "failed to resolve domain")
+	}
+
+	name := viper.GetString("name")
+	username := viper.GetString("username")
+
+	password := viper.GetString("password")
+	if password == "" && username != "" {
+		prompt := &survey.Password{Message: "Password (Optional):"}
+		_ = survey.AskOne(prompt, &password)
+	}
+
+	// Parse allowed_ips
+	var allowedIPs []string
+	if allowedIPsStr := viper.GetString("allowed_ips"); allowedIPsStr != "" {
+		for _, ip := range strings.Split(allowedIPsStr, ",") {
+			trimmed := strings.TrimSpace(ip)
+			if trimmed != "" {
+				allowedIPs = append(allowedIPs, trimmed)
+			}
+		}
+	}
+
+	handler, err := initTrunkHandler()
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize handler")
+	}
+
+	// Determine auth types based on what was provided
+	authTypes := []sipauth.AuthType{}
+	if username != "" && password != "" {
+		authTypes = append(authTypes, sipauth.AuthTypeBasic)
+	}
+	if len(allowedIPs) > 0 {
+		authTypes = append(authTypes, sipauth.AuthTypeIP)
+	}
+
+	res, err := handler.Create(context.Background(), customerID, name, "", domain, authTypes, username, password, allowedIPs)
+	if err != nil {
+		return errors.Wrap(err, "failed to create trunk")
+	}
+
+	format := viper.GetString("format")
+	if format == "json" {
+		return formatOutput(res, "json")
+	}
+
+	// Human-readable output
+	fmt.Println("\n--- Trunk Created ---")
+	fmt.Printf("ID:           %s\n", res.ID)
+	fmt.Printf("Customer ID:  %s\n", res.CustomerID)
+	fmt.Printf("Name:         %s\n", res.Name)
+	fmt.Printf("Domain:       %s\n", res.DomainName)
+	fmt.Printf("Username:     %s\n", res.Username)
+	fmt.Printf("Allowed IPs:  %v\n", res.AllowedIPs)
+	fmt.Println("---------------------")
+
+	jsonData, _ := json.MarshalIndent(res, "", "  ")
+	fmt.Println("\n--- Raw Data (JSON) ---")
+	fmt.Println(string(jsonData))
+	fmt.Println("-----------------------")
+
+	logrus.WithFields(logrus.Fields{
+		"id":          res.ID,
+		"customer_id": res.CustomerID,
+		"username":    res.Username,
+	}).Infof("Created trunk")
+	return nil
+}
+
+func cmdTrunkGet() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "get",
+		Short: "Get a trunk by ID",
+		RunE:  runTrunkGet,
+	}
+	flags := cmd.Flags()
+	flags.String("id", "", "Trunk ID")
+	flags.String("format", "", "Output format (json)")
+	return cmd
+}
+
+func runTrunkGet(cmd *cobra.Command, args []string) error {
+	id, err := resolveUUID("id", "Trunk ID")
+	if err != nil {
+		return errors.Wrap(err, "failed to resolve trunk ID")
+	}
+
+	handler, err := initTrunkHandler()
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize handler")
+	}
+
+	fmt.Printf("\nRetrieving Trunk ID: %s...\n", id)
+	res, err := handler.Get(context.Background(), id)
+	if err != nil {
+		return errors.Wrap(err, "failed to retrieve trunk")
+	}
+
+	format := viper.GetString("format")
+	if format == "json" {
+		return formatOutput(res, "json")
+	}
+
+	// Human-readable output
+	fmt.Println("\n--- Trunk Information ---")
+	fmt.Printf("ID:           %s\n", res.ID)
+	fmt.Printf("Customer ID:  %s\n", res.CustomerID)
+	fmt.Printf("Name:         %s\n", res.Name)
+	fmt.Printf("Domain:       %s\n", res.DomainName)
+	fmt.Printf("Username:     %s\n", res.Username)
+	fmt.Printf("Allowed IPs:  %v\n", res.AllowedIPs)
+	fmt.Println("-------------------------")
+
+	jsonData, _ := json.MarshalIndent(res, "", "  ")
+	fmt.Println("\n--- Raw Data (JSON) ---")
+	fmt.Println(string(jsonData))
+	fmt.Println("-----------------------")
+
+	return nil
+}
+
+func cmdTrunkList() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "list",
+		Short: "List trunks",
+		RunE:  runTrunkList,
+	}
+	flags := cmd.Flags()
+	flags.String("customer_id", "", "Customer ID filter")
+	flags.String("domain", "", "Domain filter")
+	flags.String("username", "", "Username filter")
+	flags.String("name", "", "Name filter")
+	flags.Int("limit", 100, "Limit number of results")
+	flags.String("token", "", "Pagination token")
+	flags.String("format", "", "Output format (json)")
+	return cmd
+}
+
+func runTrunkList(cmd *cobra.Command, args []string) error {
+	customerID, err := resolveUUID("customer_id", "Customer ID")
+	if err != nil {
+		return errors.Wrap(err, "failed to resolve customer ID")
+	}
+
+	handler, err := initTrunkHandler()
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize handler")
+	}
+
+	// Build filters with typed Field constants
+	filters := make(map[trunk.Field]any)
+	filters[trunk.FieldCustomerID] = customerID
+
+	if domain := viper.GetString("domain"); domain != "" {
+		filters[trunk.FieldDomainName] = domain
+	}
+	if username := viper.GetString("username"); username != "" {
+		filters[trunk.FieldUsername] = username
+	}
+	if name := viper.GetString("name"); name != "" {
+		filters[trunk.FieldName] = name
+	}
+
+	limit := uint64(viper.GetInt("limit"))
+	token := viper.GetString("token")
+
+	fmt.Printf("\nRetrieving trunks... limit: %d, token: %s, filters: %v\n", limit, token, filters)
+	res, err := handler.Gets(context.Background(), token, limit, filters)
+	if err != nil {
+		return errors.Wrap(err, "failed to retrieve trunks")
+	}
+
+	format := viper.GetString("format")
+	if format == "json" {
+		return formatOutput(res, "json")
+	}
+
+	// Human-readable output
+	fmt.Printf("Success! Trunks count: %d\n", len(res))
+	for _, t := range res {
+		fmt.Printf(" - [%s] %s (domain: %s, username: %s)\n", t.ID, t.Name, t.DomainName, t.Username)
+	}
+
+	return nil
+}
+
+func cmdTrunkUpdate() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "update",
+		Short: "Update a trunk",
+		RunE:  runTrunkUpdate,
+	}
+	flags := cmd.Flags()
+	flags.String("id", "", "Trunk ID")
+	flags.String("password", "", "New password")
+	flags.String("username", "", "New username")
+	flags.String("name", "", "New name")
+	flags.String("domain", "", "New domain")
+	flags.String("allowed_ips", "", "New allowed IPs (comma-separated)")
+	flags.String("format", "", "Output format (json)")
+	return cmd
+}
+
+func runTrunkUpdate(cmd *cobra.Command, args []string) error {
+	id, err := resolveUUID("id", "Trunk ID")
+	if err != nil {
+		return errors.Wrap(err, "failed to resolve trunk ID")
+	}
+
+	// Check at least one update field is provided
+	hasUpdate := false
+	updates := make(map[trunk.Field]any)
+
+	if password := viper.GetString("password"); password != "" {
+		updates[trunk.FieldPassword] = password
+		hasUpdate = true
+	}
+	if username := viper.GetString("username"); username != "" {
+		updates[trunk.FieldUsername] = username
+		hasUpdate = true
+	}
+	if name := viper.GetString("name"); name != "" {
+		updates[trunk.FieldName] = name
+		hasUpdate = true
+	}
+	if domain := viper.GetString("domain"); domain != "" {
+		updates[trunk.FieldDomainName] = domain
+		hasUpdate = true
+	}
+	if allowedIPsStr := viper.GetString("allowed_ips"); allowedIPsStr != "" {
+		var allowedIPs []string
+		for _, ip := range strings.Split(allowedIPsStr, ",") {
+			trimmed := strings.TrimSpace(ip)
+			if trimmed != "" {
+				allowedIPs = append(allowedIPs, trimmed)
+			}
+		}
+		updates[trunk.FieldAllowedIPs] = allowedIPs
+		hasUpdate = true
+	}
+
+	if !hasUpdate {
+		return fmt.Errorf("at least one field must be provided for update: --password, --username, --name, --domain, or --allowed_ips")
+	}
+
+	handler, err := initTrunkHandler()
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize handler")
+	}
+
+	res, err := handler.Update(context.Background(), id, updates)
+	if err != nil {
+		return errors.Wrap(err, "failed to update trunk")
+	}
+
+	format := viper.GetString("format")
+	if format == "json" {
+		return formatOutput(res, "json")
+	}
+
+	// Human-readable output
+	fmt.Println("\n--- Trunk Updated ---")
+	fmt.Printf("ID:           %s\n", res.ID)
+	fmt.Printf("Customer ID:  %s\n", res.CustomerID)
+	fmt.Printf("Name:         %s\n", res.Name)
+	fmt.Printf("Domain:       %s\n", res.DomainName)
+	fmt.Printf("Username:     %s\n", res.Username)
+	fmt.Printf("Allowed IPs:  %v\n", res.AllowedIPs)
+	fmt.Println("---------------------")
+
+	logrus.WithFields(logrus.Fields{
+		"id":          res.ID,
+		"customer_id": res.CustomerID,
+		"username":    res.Username,
+	}).Infof("Updated trunk")
+	return nil
+}
+
+func cmdTrunkDelete() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "delete",
+		Short: "Delete a trunk",
+		RunE:  runTrunkDelete,
+	}
+	flags := cmd.Flags()
+	flags.String("id", "", "Trunk ID")
+	flags.Bool("force", false, "Skip confirmation prompt")
+	return cmd
+}
+
+func runTrunkDelete(cmd *cobra.Command, args []string) error {
+	id, err := resolveUUID("id", "Trunk ID")
+	if err != nil {
+		return errors.Wrap(err, "failed to resolve trunk ID")
+	}
+
+	handler, err := initTrunkHandler()
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize handler")
+	}
+
+	// Get trunk details for confirmation
+	t, err := handler.Get(context.Background(), id)
+	if err != nil {
+		return errors.Wrap(err, "failed to retrieve trunk")
+	}
+
+	details := fmt.Sprintf("ID:           %s\nCustomer ID:  %s\nName:         %s\nDomain:       %s\nUsername:     %s\n",
+		t.ID, t.CustomerID, t.Name, t.DomainName, t.Username)
+
+	confirmed, err := confirmDelete("Trunk", id, details)
+	if err != nil {
+		return err
+	}
+
+	if !confirmed {
+		fmt.Println("Deletion canceled")
+		return nil
+	}
+
+	fmt.Printf("\nDeleting Trunk ID: %s...\n", id)
+	_, err = handler.Delete(context.Background(), id)
+	if err != nil {
+		return errors.Wrap(err, "failed to delete trunk")
+	}
+
+	logrus.WithFields(logrus.Fields{
+		"id":          id,
+		"customer_id": t.CustomerID,
+	}).Infof("Deleted trunk")
+	fmt.Println("Trunk deleted successfully")
 	return nil
 }
