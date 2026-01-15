@@ -77,3 +77,10 @@ type V1DataQueuesIDWaitActionsPut struct {
 type V1DataQueuesIDExecutePut struct {
 	Execute queue.Execute `json:"execute"`
 }
+
+// V1DataQueuesIDAgentsGet is
+// v1 data type request struct for
+// /v1/queues/<queue-id>/agents GET
+type V1DataQueuesIDAgentsGet struct {
+	Status string `json:"status,omitempty"`
+}

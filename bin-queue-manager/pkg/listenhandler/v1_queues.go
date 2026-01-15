@@ -379,12 +379,21 @@ func (h *listenHandler) processV1QueuesIDAgentsGet(ctx context.Context, m *sock.
 
 	id := uuid.FromStringOrNil(uriItems[3])
 
-	u, err := url.Parse(m.URI)
-	if err != nil {
-		return nil, err
+	// Parse filters from request body
+	var req request.V1DataQueuesIDAgentsGet
+	if len(m.Data) > 0 {
+		if err := json.Unmarshal(m.Data, &req); err != nil {
+			log.Errorf("Could not unmarshal filters. err: %v", err)
+			return simpleResponse(400), nil
+		}
 	}
 
-	status := amagent.Status(u.Query().Get("status"))
+	log.WithFields(logrus.Fields{
+		"status":           req.Status,
+		"filters_raw_data": string(m.Data),
+	}).Debug("processV1QueuesIDAgentsGet: Parsed filters from request body")
+
+	status := amagent.Status(req.Status)
 	tmp, err := h.queueHandler.GetAgents(ctx, id, status)
 	if err != nil {
 		log.Errorf("Could not get agents. err: %v", err)
