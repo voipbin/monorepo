@@ -899,7 +899,7 @@ func Test_toolHandleGetAIcallMessages(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().AIcallGet(ctx, tt.expectAIcallID).Return(tt.responseAIcall, nil)
-			mockMessage.EXPECT().Gets(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseMessages, nil)
+			mockMessage.EXPECT().Gets(ctx, uint64(1000), gomock.Any(), gomock.Any()).Return(tt.responseMessages, nil)
 
 			res := h.toolHandleGetAIcallMessages(ctx, tt.aicall, tt.tool)
 

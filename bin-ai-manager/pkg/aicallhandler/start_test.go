@@ -208,7 +208,7 @@ func Test_startReferenceTypeCall(t *testing.T) {
 			mockReq.EXPECT().FlowV1VariableSubstitute(ctx, tt.responseAIcall.ActiveflowID, tt.ai.InitPrompt).Return(tt.ai.InitPrompt, nil)
 
 			// startPipecatcall
-			mockMessage.EXPECT().Gets(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseMessages, nil)
+			mockMessage.EXPECT().Gets(ctx, uint64(100), gomock.Any(), gomock.Any()).Return(tt.responseMessages, nil)
 			mockReq.EXPECT().PipecatV1PipecatcallStart(
 				ctx,
 				tt.responseAIcall.PipecatcallID,
@@ -474,7 +474,7 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 			mockMessage.EXPECT().Create(ctx, tt.responseAIcall.CustomerID, tt.responseAIcall.ID, message.DirectionOutgoing, message.RoleUser, tt.expectMessageContent, nil, "").Return(&message.Message{}, nil)
 
 			// startPipecatcall
-			mockMessage.EXPECT().Gets(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseMessages, nil)
+			mockMessage.EXPECT().Gets(ctx, uint64(100), gomock.Any(), gomock.Any()).Return(tt.responseMessages, nil)
 			mockReq.EXPECT().PipecatV1PipecatcallStart(
 				ctx,
 				tt.responseAIcall.PipecatcallID,
@@ -568,7 +568,7 @@ func Test_getPipecatcallMessages(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockMessage.EXPECT().Gets(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseMessages, nil)
+			mockMessage.EXPECT().Gets(ctx, uint64(100), gomock.Any(), gomock.Any()).Return(tt.responseMessages, nil)
 
 			res, err := h.getPipecatcallMessages(ctx, tt.aicall)
 			if err != nil {
@@ -814,7 +814,7 @@ func Test_startPipecatcall(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockMessage.EXPECT().Gets(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseMessages, nil)
+			mockMessage.EXPECT().Gets(ctx, uint64(100), gomock.Any(), gomock.Any()).Return(tt.responseMessages, nil)
 			mockReq.EXPECT().PipecatV1PipecatcallStart(
 				ctx,
 				tt.aicall.PipecatcallID,
@@ -1301,7 +1301,7 @@ func Test_StartTask(t *testing.T) {
 				mockMessage.EXPECT().Create(ctx, tt.expectAIcall.CustomerID, tt.expectAIcall.ID, message.DirectionOutgoing, message.RoleSystem, m, nil, "").Return(&message.Message{}, nil)
 			}
 
-			mockMessage.EXPECT().Gets(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseMessages, nil)
+			mockMessage.EXPECT().Gets(ctx, uint64(100), gomock.Any(), gomock.Any()).Return(tt.responseMessages, nil)
 			mockReq.EXPECT().PipecatV1PipecatcallStart(
 				ctx,
 				tt.expectAIcall.PipecatcallID,

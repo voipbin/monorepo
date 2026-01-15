@@ -32,8 +32,9 @@ func Test_processV1MessagesGet(t *testing.T) {
 		{
 			name: "normal",
 			request: &sock.Request{
-				URI:    "/v1/messages?page_size=10&page_token=2020-05-03%2021:35:02.809&aicall_id=445110a0-f25d-11ef-9ff1-2f4ea94a72ac&filter_deleted=false",
+				URI:    "/v1/messages?page_size=10&page_token=2020-05-03%2021:35:02.809",
 				Method: sock.RequestMethodGet,
+			Data:   []byte(`{"aicall_id":"445110a0-f25d-11ef-9ff1-2f4ea94a72ac","deleted":false}`),
 			},
 
 			responseMessages: []*message.Message{
@@ -53,7 +54,8 @@ func Test_processV1MessagesGet(t *testing.T) {
 			expectPageSize:  10,
 			expectPageToken: "2020-05-03 21:35:02.809",
 			expectFilters: map[message.Field]any{
-				message.FieldDeleted: false,
+				message.FieldAIcallID: uuid.FromStringOrNil("445110a0-f25d-11ef-9ff1-2f4ea94a72ac"),
+				message.FieldDeleted:  false,
 			},
 			expectRes: &sock.Response{
 				StatusCode: 200,
@@ -78,7 +80,7 @@ func Test_processV1MessagesGet(t *testing.T) {
 				messageHandler: mockMessage,
 			}
 
-			mockMessage.EXPECT().Gets(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseMessages, nil)
+			mockMessage.EXPECT().Gets(gomock.Any(), tt.expectPageSize, gomock.Any(), gomock.AssignableToTypeOf(tt.expectFilters)).Return(tt.responseMessages, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
