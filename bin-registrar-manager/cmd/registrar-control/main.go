@@ -8,6 +8,7 @@ import (
 	"log"
 
 	"monorepo/bin-registrar-manager/internal/config"
+	"monorepo/bin-registrar-manager/models/extension"
 	"monorepo/bin-registrar-manager/pkg/cachehandler"
 	"monorepo/bin-registrar-manager/pkg/dbhandler"
 	"monorepo/bin-registrar-manager/pkg/extensionhandler"
@@ -62,6 +63,10 @@ func initCommand() *cobra.Command {
 	// Extension subcommands
 	cmdExtension := &cobra.Command{Use: "extension", Short: "Extension operations"}
 	cmdExtension.AddCommand(cmdExtensionCreate())
+	cmdExtension.AddCommand(cmdExtensionGet())
+	cmdExtension.AddCommand(cmdExtensionList())
+	cmdExtension.AddCommand(cmdExtensionUpdate())
+	cmdExtension.AddCommand(cmdExtensionDelete())
 	cmdRoot.AddCommand(cmdExtension)
 
 	// Trunk subcommands
@@ -266,5 +271,256 @@ func runExtensionCreate(cmd *cobra.Command, args []string) error {
 		"customer_id": res.CustomerID,
 		"username":    res.Username,
 	}).Infof("Created extension")
+	return nil
+}
+
+func cmdExtensionGet() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "get",
+		Short: "Get an extension by ID",
+		RunE:  runExtensionGet,
+	}
+	flags := cmd.Flags()
+	flags.String("id", "", "Extension ID")
+	flags.String("format", "", "Output format (json)")
+	return cmd
+}
+
+func runExtensionGet(cmd *cobra.Command, args []string) error {
+	id, err := resolveUUID("id", "Extension ID")
+	if err != nil {
+		return errors.Wrap(err, "failed to resolve extension ID")
+	}
+
+	handler, err := initExtensionHandler()
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize handler")
+	}
+
+	fmt.Printf("\nRetrieving Extension ID: %s...\n", id)
+	res, err := handler.Get(context.Background(), id)
+	if err != nil {
+		return errors.Wrap(err, "failed to retrieve extension")
+	}
+
+	format := viper.GetString("format")
+	if format == "json" {
+		return formatOutput(res, "json")
+	}
+
+	// Human-readable output
+	fmt.Println("\n--- Extension Information ---")
+	fmt.Printf("ID:                %s\n", res.ID)
+	fmt.Printf("Customer ID:       %s\n", res.CustomerID)
+	fmt.Printf("Extension Number:  %s\n", res.Extension)
+	fmt.Printf("Username:          %s\n", res.Username)
+	fmt.Printf("Domain:            %s\n", res.DomainName)
+	fmt.Println("-----------------------------")
+
+	jsonData, _ := json.MarshalIndent(res, "", "  ")
+	fmt.Println("\n--- Raw Data (JSON) ---")
+	fmt.Println(string(jsonData))
+	fmt.Println("-----------------------")
+
+	return nil
+}
+
+func cmdExtensionList() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "list",
+		Short: "List extensions",
+		RunE:  runExtensionList,
+	}
+	flags := cmd.Flags()
+	flags.String("customer_id", "", "Customer ID filter")
+	flags.String("domain", "", "Domain filter")
+	flags.String("username", "", "Username filter")
+	flags.String("extension_number", "", "Extension number filter")
+	flags.Int("limit", 100, "Limit number of results")
+	flags.String("token", "", "Pagination token")
+	flags.String("format", "", "Output format (json)")
+	return cmd
+}
+
+func runExtensionList(cmd *cobra.Command, args []string) error {
+	customerID, err := resolveUUID("customer_id", "Customer ID")
+	if err != nil {
+		return errors.Wrap(err, "failed to resolve customer ID")
+	}
+
+	handler, err := initExtensionHandler()
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize handler")
+	}
+
+	// Build filters with typed Field constants
+	filters := make(map[extension.Field]any)
+	filters[extension.FieldCustomerID] = customerID
+
+	if domain := viper.GetString("domain"); domain != "" {
+		filters[extension.FieldDomainName] = domain
+	}
+	if username := viper.GetString("username"); username != "" {
+		filters[extension.FieldUsername] = username
+	}
+	if extNum := viper.GetString("extension_number"); extNum != "" {
+		filters[extension.FieldExtension] = extNum
+	}
+
+	limit := uint64(viper.GetInt("limit"))
+	token := viper.GetString("token")
+
+	fmt.Printf("\nRetrieving extensions... limit: %d, token: %s, filters: %v\n", limit, token, filters)
+	res, err := handler.Gets(context.Background(), token, limit, filters)
+	if err != nil {
+		return errors.Wrap(err, "failed to retrieve extensions")
+	}
+
+	format := viper.GetString("format")
+	if format == "json" {
+		return formatOutput(res, "json")
+	}
+
+	// Human-readable output
+	fmt.Printf("Success! Extensions count: %d\n", len(res))
+	for _, ext := range res {
+		fmt.Printf(" - [%s] %s@%s (number: %s)\n", ext.ID, ext.Username, ext.DomainName, ext.Extension)
+	}
+
+	return nil
+}
+
+func cmdExtensionUpdate() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "update",
+		Short: "Update an extension",
+		RunE:  runExtensionUpdate,
+	}
+	flags := cmd.Flags()
+	flags.String("id", "", "Extension ID")
+	flags.String("password", "", "New password")
+	flags.String("username", "", "New username")
+	flags.String("extension_number", "", "New extension number")
+	flags.String("domain", "", "New domain")
+	flags.String("format", "", "Output format (json)")
+	return cmd
+}
+
+func runExtensionUpdate(cmd *cobra.Command, args []string) error {
+	id, err := resolveUUID("id", "Extension ID")
+	if err != nil {
+		return errors.Wrap(err, "failed to resolve extension ID")
+	}
+
+	// Check at least one update field is provided
+	hasUpdate := false
+	updates := make(map[extension.Field]any)
+
+	if password := viper.GetString("password"); password != "" {
+		updates[extension.FieldPassword] = password
+		hasUpdate = true
+	}
+	if username := viper.GetString("username"); username != "" {
+		updates[extension.FieldUsername] = username
+		hasUpdate = true
+	}
+	if extNum := viper.GetString("extension_number"); extNum != "" {
+		updates[extension.FieldExtension] = extNum
+		hasUpdate = true
+	}
+	if domain := viper.GetString("domain"); domain != "" {
+		updates[extension.FieldDomainName] = domain
+		hasUpdate = true
+	}
+
+	if !hasUpdate {
+		return fmt.Errorf("at least one field must be provided for update: --password, --username, --extension_number, or --domain")
+	}
+
+	handler, err := initExtensionHandler()
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize handler")
+	}
+
+	res, err := handler.Update(context.Background(), id, updates)
+	if err != nil {
+		return errors.Wrap(err, "failed to update extension")
+	}
+
+	format := viper.GetString("format")
+	if format == "json" {
+		return formatOutput(res, "json")
+	}
+
+	// Human-readable output
+	fmt.Println("\n--- Extension Updated ---")
+	fmt.Printf("ID:                %s\n", res.ID)
+	fmt.Printf("Customer ID:       %s\n", res.CustomerID)
+	fmt.Printf("Extension Number:  %s\n", res.Extension)
+	fmt.Printf("Username:          %s\n", res.Username)
+	fmt.Printf("Domain:            %s\n", res.DomainName)
+	fmt.Println("-------------------------")
+
+	logrus.WithFields(logrus.Fields{
+		"id":         res.ID,
+		"customer_id": res.CustomerID,
+		"username":   res.Username,
+	}).Infof("Updated extension")
+	return nil
+}
+
+func cmdExtensionDelete() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "delete",
+		Short: "Delete an extension",
+		RunE:  runExtensionDelete,
+	}
+	flags := cmd.Flags()
+	flags.String("id", "", "Extension ID")
+	flags.Bool("force", false, "Skip confirmation prompt")
+	return cmd
+}
+
+func runExtensionDelete(cmd *cobra.Command, args []string) error {
+	id, err := resolveUUID("id", "Extension ID")
+	if err != nil {
+		return errors.Wrap(err, "failed to resolve extension ID")
+	}
+
+	handler, err := initExtensionHandler()
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize handler")
+	}
+
+	// Get extension details for confirmation
+	ext, err := handler.Get(context.Background(), id)
+	if err != nil {
+		return errors.Wrap(err, "failed to retrieve extension")
+	}
+
+	details := fmt.Sprintf("ID:                %s\nCustomer ID:       %s\nExtension Number:  %s\nUsername:          %s\nDomain:            %s\n",
+		ext.ID, ext.CustomerID, ext.Extension, ext.Username, ext.DomainName)
+
+	confirmed, err := confirmDelete("Extension", id, details)
+	if err != nil {
+		return err
+	}
+
+	if !confirmed {
+		fmt.Println("Deletion canceled")
+		return nil
+	}
+
+	fmt.Printf("\nDeleting Extension ID: %s...\n", id)
+	_, err = handler.Delete(context.Background(), id)
+	if err != nil {
+		return errors.Wrap(err, "failed to delete extension")
+	}
+
+	logrus.WithFields(logrus.Fields{
+		"id":         id,
+		"customer_id": ext.CustomerID,
+	}).Infof("Deleted extension")
+	fmt.Println("Extension deleted successfully")
 	return nil
 }
