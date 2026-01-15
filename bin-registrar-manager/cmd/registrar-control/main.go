@@ -61,6 +61,7 @@ func initCommand() *cobra.Command {
 
 	// Extension subcommands
 	cmdExtension := &cobra.Command{Use: "extension", Short: "Extension operations"}
+	cmdExtension.AddCommand(cmdExtensionCreate())
 	cmdRoot.AddCommand(cmdExtension)
 
 	// Trunk subcommands
@@ -189,4 +190,77 @@ func confirmDelete(resourceType string, id uuid.UUID, details string) (bool, err
 	}
 
 	return confirm, nil
+}
+
+func cmdExtensionCreate() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "create",
+		Short: "Create a new extension",
+		RunE:  runExtensionCreate,
+	}
+
+	flags := cmd.Flags()
+	flags.String("customer_id", "", "Customer ID")
+	flags.String("extension_number", "", "Extension number")
+	flags.String("username", "", "Username")
+	flags.String("password", "", "Password")
+	flags.String("domain", "", "Domain name")
+	flags.String("format", "", "Output format (json)")
+
+	return cmd
+}
+
+func runExtensionCreate(cmd *cobra.Command, args []string) error {
+	customerID, err := resolveUUID("customer_id", "Customer ID")
+	if err != nil {
+		return errors.Wrap(err, "failed to resolve customer ID")
+	}
+
+	username, err := resolveString("username", "Username", true)
+	if err != nil {
+		return errors.Wrap(err, "failed to resolve username")
+	}
+
+	password := viper.GetString("password")
+	if password == "" {
+		prompt := &survey.Password{Message: "Password (Required):"}
+		if err := survey.AskOne(prompt, &password, survey.WithValidator(survey.Required)); err != nil {
+			return errors.Wrap(err, "failed to get password")
+		}
+	}
+
+	extensionNumber := viper.GetString("extension_number")
+	domain := viper.GetString("domain")
+
+	handler, err := initExtensionHandler()
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize handler")
+	}
+
+	res, err := handler.Create(context.Background(), customerID, extensionNumber, username, password, domain)
+	if err != nil {
+		return errors.Wrap(err, "failed to create extension")
+	}
+
+	format := viper.GetString("format")
+	if format == "json" {
+		return formatOutput(res, "json")
+	}
+
+	// Human-readable output
+	fmt.Println("\n--- Extension Created ---")
+	fmt.Printf("ID:                %s\n", res.ID)
+	fmt.Printf("Customer ID:       %s\n", res.CustomerID)
+	fmt.Printf("Extension Number:  %s\n", res.Extension)
+	fmt.Printf("Username:          %s\n", res.Username)
+	fmt.Printf("Domain:            %s\n", res.DomainName)
+	fmt.Println("-------------------------")
+
+	jsonData, _ := json.MarshalIndent(res, "", "  ")
+	fmt.Println("\n--- Raw Data (JSON) ---")
+	fmt.Println(string(jsonData))
+	fmt.Println("-----------------------")
+
+	logrus.WithField("res", res).Infof("Created extension")
+	return nil
 }
