@@ -1,0 +1,41 @@
+get:
+  summary: Get a billing record by ID
+  description: Retrieves a single billing record by its unique identifier. Returns only the billing record without related account or reference resource data.
+  tags:
+    - Billing
+  parameters:
+    - name: billing-id
+      in: path
+      required: true
+      description: The unique identifier of the billing record
+      schema:
+        type: string
+        format: uuid
+      example: "550e8400-e29b-41d4-a716-446655440000"
+  responses:
+    200:
+      description: Successfully retrieved billing record
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/BillingManagerBilling'
+    400:
+      description: Invalid billing ID format or not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Invalid UUID format"
+    401:
+      description: Unauthorized - missing or invalid JWT token
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Unauthorized"

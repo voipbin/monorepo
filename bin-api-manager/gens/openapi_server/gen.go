@@ -5076,6 +5076,9 @@ type ServerInterface interface {
 	// Get list of billings
 	// (GET /billings)
 	GetBillings(c *gin.Context, params GetBillingsParams)
+	// Get a billing record by ID
+	// (GET /billings/{billing-id})
+	GetBillingsBillingId(c *gin.Context, billingId openapi_types.UUID)
 	// Get list of calls
 	// (GET /calls)
 	GetCalls(c *gin.Context, params GetCallsParams)
@@ -6920,6 +6923,30 @@ func (siw *ServerInterfaceWrapper) GetBillings(c *gin.Context) {
 	}
 
 	siw.Handler.GetBillings(c, params)
+}
+
+// GetBillingsBillingId operation middleware
+func (siw *ServerInterfaceWrapper) GetBillingsBillingId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "billing-id" -------------
+	var billingId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "billing-id", c.Param("billing-id"), &billingId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter billing-id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetBillingsBillingId(c, billingId)
 }
 
 // GetCalls operation middleware
@@ -12366,6 +12393,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.POST(options.BaseURL+"/billing_accounts/:id/balance_subtract_force", wrapper.PostBillingAccountsIdBalanceSubtractForce)
 	router.PUT(options.BaseURL+"/billing_accounts/:id/payment_info", wrapper.PutBillingAccountsIdPaymentInfo)
 	router.GET(options.BaseURL+"/billings", wrapper.GetBillings)
+	router.GET(options.BaseURL+"/billings/:billing-id", wrapper.GetBillingsBillingId)
 	router.GET(options.BaseURL+"/calls", wrapper.GetCalls)
 	router.POST(options.BaseURL+"/calls", wrapper.PostCalls)
 	router.DELETE(options.BaseURL+"/calls/:id", wrapper.DeleteCallsId)
@@ -13494,6 +13522,45 @@ type GetBillings200JSONResponse struct {
 func (response GetBillings200JSONResponse) VisitGetBillingsResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetBillingsBillingIdRequestObject struct {
+	BillingId openapi_types.UUID `json:"billing-id"`
+}
+
+type GetBillingsBillingIdResponseObject interface {
+	VisitGetBillingsBillingIdResponse(w http.ResponseWriter) error
+}
+
+type GetBillingsBillingId200JSONResponse BillingManagerBilling
+
+func (response GetBillingsBillingId200JSONResponse) VisitGetBillingsBillingIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetBillingsBillingId400JSONResponse struct {
+	Error *string `json:"error,omitempty"`
+}
+
+func (response GetBillingsBillingId400JSONResponse) VisitGetBillingsBillingIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetBillingsBillingId401JSONResponse struct {
+	Error *string `json:"error,omitempty"`
+}
+
+func (response GetBillingsBillingId401JSONResponse) VisitGetBillingsBillingIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -17612,6 +17679,9 @@ type StrictServerInterface interface {
 	// Get list of billings
 	// (GET /billings)
 	GetBillings(ctx context.Context, request GetBillingsRequestObject) (GetBillingsResponseObject, error)
+	// Get a billing record by ID
+	// (GET /billings/{billing-id})
+	GetBillingsBillingId(ctx context.Context, request GetBillingsBillingIdRequestObject) (GetBillingsBillingIdResponseObject, error)
 	// Get list of calls
 	// (GET /calls)
 	GetCalls(ctx context.Context, request GetCallsRequestObject) (GetCallsResponseObject, error)
@@ -19689,6 +19759,33 @@ func (sh *strictHandler) GetBillings(ctx *gin.Context, params GetBillingsParams)
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(GetBillingsResponseObject); ok {
 		if err := validResponse.VisitGetBillingsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetBillingsBillingId operation middleware
+func (sh *strictHandler) GetBillingsBillingId(ctx *gin.Context, billingId openapi_types.UUID) {
+	var request GetBillingsBillingIdRequestObject
+
+	request.BillingId = billingId
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetBillingsBillingId(ctx, request.(GetBillingsBillingIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetBillingsBillingId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetBillingsBillingIdResponseObject); ok {
+		if err := validResponse.VisitGetBillingsBillingIdResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

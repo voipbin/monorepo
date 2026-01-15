@@ -3774,6 +3774,8 @@ paths:
 
   /billings:
     $ref: './paths/billings/main.yaml'
+  /billings/{billing-id}:
+    $ref: './paths/billings/id.yaml'
 
   /calls/{id}/recording_start:
     $ref: './paths/calls/id_recording_start.yaml'

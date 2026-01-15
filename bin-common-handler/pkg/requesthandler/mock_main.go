@@ -1294,6 +1294,21 @@ func (mr *MockRequestHandlerMockRecorder) BillingV1AccountUpdatePaymentInfo(ctx,
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1AccountUpdatePaymentInfo", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1AccountUpdatePaymentInfo), ctx, accountID, paymentType, paymentMethod)
 }
 
+// BillingV1BillingGet mocks base method.
+func (m *MockRequestHandler) BillingV1BillingGet(ctx context.Context, billingID uuid.UUID) (*billing.Billing, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BillingV1BillingGet", ctx, billingID)
+	ret0, _ := ret[0].(*billing.Billing)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BillingV1BillingGet indicates an expected call of BillingV1BillingGet.
+func (mr *MockRequestHandlerMockRecorder) BillingV1BillingGet(ctx, billingID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1BillingGet", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1BillingGet), ctx, billingID)
+}
+
 // BillingV1BillingGets mocks base method.
 func (m *MockRequestHandler) BillingV1BillingGets(ctx context.Context, pageToken string, pageSize uint64, filters map[billing.Field]any) ([]billing.Billing, error) {
 	m.ctrl.T.Helper()

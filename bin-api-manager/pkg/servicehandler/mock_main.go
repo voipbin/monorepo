@@ -857,6 +857,21 @@ func (mr *MockServiceHandlerMockRecorder) BillingAccountUpdatePaymentInfo(ctx, a
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingAccountUpdatePaymentInfo", reflect.TypeOf((*MockServiceHandler)(nil).BillingAccountUpdatePaymentInfo), ctx, a, billingAccountID, paymentType, paymentMethod)
 }
 
+// BillingGet mocks base method.
+func (m *MockServiceHandler) BillingGet(ctx context.Context, a *agent.Agent, billingID uuid.UUID) (*billing.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BillingGet", ctx, a, billingID)
+	ret0, _ := ret[0].(*billing.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BillingGet indicates an expected call of BillingGet.
+func (mr *MockServiceHandlerMockRecorder) BillingGet(ctx, a, billingID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingGet", reflect.TypeOf((*MockServiceHandler)(nil).BillingGet), ctx, a, billingID)
+}
+
 // BillingGets mocks base method.
 func (m *MockServiceHandler) BillingGets(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*billing.WebhookMessage, error) {
 	m.ctrl.T.Helper()
