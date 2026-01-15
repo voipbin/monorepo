@@ -245,19 +245,30 @@ func (h *listenHandler) processV1ExtensionsExtensionExtensionGet(ctx context.Con
 		"request": m,
 	})
 
+	// Parse filters from request body
+	var reqData request.V1DataExtensionsExtensionExtensionGet
+	if len(m.Data) > 0 {
+		if err := json.Unmarshal(m.Data, &reqData); err != nil {
+			log.Errorf("Could not unmarshal filters. err: %v", err)
+			return nil, err
+		}
+	}
+
+	// "/v1/extensions/extension/test_ext"
 	u, err := url.Parse(m.URI)
 	if err != nil {
 		return nil, err
 	}
-
-	// get customer_id
-	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
-
-	// "/v1/extensions/extension/test_ext"
 	tmpVals := strings.Split(u.Path, "/")
 	ext := tmpVals[4]
 
-	tmp, err := h.extensionHandler.GetByExtension(ctx, customerID, ext)
+	log.WithFields(logrus.Fields{
+		"customer_id":      reqData.CustomerID,
+		"extension":        ext,
+		"filters_raw_data": string(m.Data),
+	}).Debug("processV1ExtensionsExtensionExtensionGet: Parsed filters from request body")
+
+	tmp, err := h.extensionHandler.GetByExtension(ctx, reqData.CustomerID, ext)
 	if err != nil {
 		log.Errorf("Could not get extension info. err: %v", err)
 		return nil, err

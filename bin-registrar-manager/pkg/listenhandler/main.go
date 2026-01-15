@@ -46,14 +46,14 @@ var (
 
 	// v1
 	// contacts
-	regV1ContactsGet = regexp.MustCompile(`/v1/contacts\?`)
+	regV1ContactsGet = regexp.MustCompile(`/v1/contacts(\?.*)?$`)
 
 	// extensions
 	regV1Extensions    = regexp.MustCompile("/v1/extensions$")
 	regV1ExtensionsGet = regexp.MustCompile(`/v1/extensions\?`)
 	regV1ExtensionsID  = regexp.MustCompile("/v1/extensions/" + regUUID + "$")
 	// regV1ExtensionsExtensionEndpoint     = regexp.MustCompile("/v1/extensions/endpoint/" + regAny + "$")
-	regV1ExtensionsExtensionExtensionGet = regexp.MustCompile("/v1/extensions/extension/" + regAny + `\?`)
+	regV1ExtensionsExtensionExtensionGet = regexp.MustCompile("/v1/extensions/extension/" + regAny + `(\?.*)?$`)
 
 	// trunks
 	regV1Trunks           = regexp.MustCompile("/v1/trunks$")

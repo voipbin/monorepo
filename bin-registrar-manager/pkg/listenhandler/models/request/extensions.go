@@ -25,3 +25,10 @@ type V1DataExtensionsIDPut struct {
 	Detail   string `json:"detail"`
 	Password string `json:"password"`
 }
+
+// V1DataExtensionsExtensionExtensionGet is
+// v1 data type request struct for
+// /v1/extensions/extension/{extension} GET
+type V1DataExtensionsExtensionExtensionGet struct {
+	CustomerID uuid.UUID `json:"customer_id,omitempty"`
+}
