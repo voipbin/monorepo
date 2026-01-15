@@ -22,8 +22,9 @@ Updates all 30+ services in the monorepo with the standard workflow:
 2. Run `go mod tidy` - Sync go.mod with dependencies
 3. Run `go mod vendor` - Update vendored dependencies
 4. Run `go generate ./...` - Regenerate mocks and generated code
-5. Run `go test ./...` - Verify nothing broke (unless --skip-tests)
-6. Report progress and timing
+5. Run `go mod vendor` again - Re-vendor after generate (catches dependencies added during code generation)
+6. Run `go test ./...` - Verify nothing broke (unless --skip-tests)
+7. Report progress and timing
 
 **Progress display:**
 - Shows current service being updated (e.g., [3/32])
@@ -63,14 +64,16 @@ Starting updates (estimated 15-20 minutes)...
   ✓ go mod tidy         1.2s
   ✓ go mod vendor       3.4s
   ✓ go generate ./...   2.1s
+  ✓ go mod vendor       0.2s (re-vendor after generate)
   ✓ go test ./...       8.7s (23/23 tests passed)
-  ✓ Complete           15.4s total
+  ✓ Complete           15.6s total
 
 [2/32] bin-api-manager
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   ✓ go mod tidy         1.5s
   ✓ go mod vendor       4.2s
   ✓ go generate ./...   3.8s
+  ✓ go mod vendor       0.3s (re-vendor after generate)
   ✗ go test ./...      FAILED after 12.3s
 
     Error: 1 test failed
@@ -85,8 +88,9 @@ Starting updates (estimated 15-20 minutes)...
   ✓ go mod tidy         1.3s
   ✓ go mod vendor       3.9s
   ✓ go generate ./...   2.5s
+  ✓ go mod vendor       0.2s (re-vendor after generate)
   ✓ go test ./...       7.2s (18/18 tests passed)
-  ✓ Complete           14.9s total
+  ✓ Complete           15.2s total
 
 ... (continues for all 32 services) ...
 
