@@ -646,6 +646,29 @@ golangci-lint run -v --timeout 5m
 
 Database schema changes for VoIPbin services are managed through Alembic migrations in the `bin-dbscheme-manager` service. This is the ONLY way to modify database schemas - never run manual SQL DDL statements against production databases.
 
+### ⚠️ CRITICAL: AI Security Boundaries
+
+**What AI CAN do:**
+- ✅ Create migration files (`alembic -c alembic.ini revision -m "..."`)
+- ✅ Edit migration files to add SQL in upgrade()/downgrade() functions
+- ✅ Read and explain migration file contents
+- ✅ Commit migration files to git
+
+**What AI MUST NEVER do:**
+- 🚫 Run `alembic upgrade` (applies migrations to database)
+- 🚫 Run `alembic downgrade` (rolls back database changes)
+- 🚫 Execute any SQL that modifies database schema
+- 🚫 Apply migrations automatically
+
+**Why:** Database schema changes are irreversible operations requiring:
+- Human review and explicit authorization
+- Testing on development environment first
+- VPN access to production database
+- Coordination with deployment schedule
+- Risk of data loss or service outages
+
+AI can assist with creating and reviewing migration files, but database execution requires human control.
+
 ### When to Create Migrations
 
 Create an Alembic migration whenever you:
@@ -701,8 +724,18 @@ def downgrade():
     """)
 ```
 
-**Step 5: Test migration locally (recommended)**
+**Step 5: Commit and push** (AI can do this)
 ```bash
+cd /home/pchero/gitvoipbin/monorepo
+git add bin-dbscheme-manager/bin-manager/main/versions/<hash>_*.py
+git commit -m "feat(dbscheme): add owner_type column to storage_files table"
+git push
+```
+
+**Step 6: (HUMAN ONLY) Test migration locally**
+```bash
+# 🚫 AI MUST NOT execute these commands
+
 # Apply migration to local database
 alembic -c alembic.ini upgrade head
 
@@ -714,18 +747,12 @@ alembic -c alembic.ini downgrade -1
 alembic -c alembic.ini upgrade head
 ```
 
-**Step 6: Commit and push**
-```bash
-cd /home/pchero/gitvoipbin/monorepo
-git add bin-dbscheme-manager/bin-manager/main/versions/<hash>_*.py
-git commit -m "feat(dbscheme): add owner_type column to storage_files table"
-git push
-```
-
-**Step 7: Apply to staging/production**
+**Step 7: (HUMAN ONLY) Apply to staging/production**
 
 Connect to VPN first (REQUIRED), then apply migration:
 ```bash
+# 🚫 AI MUST NOT execute these commands
+
 cd bin-dbscheme-manager/bin-manager
 alembic -c alembic.ini upgrade head
 ```

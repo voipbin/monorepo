@@ -1,6 +1,10 @@
 # create-migration
 
-Create an Alembic database migration following VoIPbin naming conventions.
+Create an Alembic database migration file following VoIPbin naming conventions.
+
+⚠️ **CRITICAL: This command ONLY creates the migration file. It does NOT apply migrations to the database.**
+
+🚫 **AI MUST NEVER run `alembic upgrade` or `alembic downgrade` commands. Database migrations require explicit human authorization.**
 
 ## Usage
 
@@ -24,15 +28,17 @@ Create an Alembic database migration following VoIPbin naming conventions.
 
 ## What This Does
 
+**This command ONLY creates a migration file. It does NOT modify the database.**
+
 1. Validates schema argument (bin-manager or asterisk)
 2. Navigates to correct directory:
    - `bin-manager` → `bin-dbscheme-manager/bin-manager/`
    - `asterisk` → `bin-dbscheme-manager/asterisk_config/`
 3. Checks if `alembic.ini` exists (errors if missing)
 4. Generates migration with proper naming: `<table>_<action>_<description>`
-5. Runs: `alembic -c alembic.ini revision -m "<migration_name>"`
+5. Runs: `alembic -c alembic.ini revision -m "<migration_name>"` (creates file only)
 6. Shows path to created migration file
-7. Displays next steps reminder
+7. Displays manual next steps for human to execute
 
 ## Examples
 
@@ -67,27 +73,28 @@ Create an Alembic database migration following VoIPbin naming conventions.
 Generated migration file:
   main/versions/b1201e50b736_storage_files_add_column_owner_type.py
 
-Next steps:
+⚠️  MANUAL NEXT STEPS (Human must execute these - AI will NOT do this):
+
   1. Edit migration file to add SQL:
      - Add SQL in upgrade() function
      - Add rollback SQL in downgrade() function
 
-  2. Test locally:
-     alembic -c alembic.ini upgrade head
-     mysql -u root -p voipbin -e "DESCRIBE storage_files;"
-
-  3. Test rollback:
-     alembic -c alembic.ini downgrade -1
-     alembic -c alembic.ini upgrade head
-
-  4. Commit migration:
+  2. Commit migration file:
      git add main/versions/b1201e50b736_*.py
      git commit -m "feat(dbscheme): add owner_type to storage_files"
 
-  5. Apply to production (VPN REQUIRED):
+  3. (HUMAN ONLY) Test locally on development database:
+     alembic -c alembic.ini upgrade head
+     mysql -u root -p voipbin -e "DESCRIBE storage_files;"
+
+  4. (HUMAN ONLY) Test rollback:
+     alembic -c alembic.ini downgrade -1
      alembic -c alembic.ini upgrade head
 
-IMPORTANT: VPN connection required for production migrations!
+  5. (HUMAN ONLY) Apply to production (VPN REQUIRED):
+     alembic -c alembic.ini upgrade head
+
+🚫 AI MUST NEVER execute steps 3-5. Database changes require human authorization.
 ```
 
 ## Error Handling
@@ -113,13 +120,34 @@ Valid schemas:
   - asterisk (for asterisk database)
 ```
 
+## Security Boundaries
+
+**What AI CAN do:**
+- ✅ Create migration files (`alembic revision`)
+- ✅ Edit migration files to add SQL
+- ✅ Commit migration files to git
+- ✅ Show migration file contents
+- ✅ Explain migration SQL
+
+**What AI MUST NEVER do:**
+- 🚫 Run `alembic upgrade` (applies migration to database)
+- 🚫 Run `alembic downgrade` (rolls back database changes)
+- 🚫 Execute migration SQL directly against database
+- 🚫 Modify database schema outside of creating migration files
+
+**Rationale:** Database schema changes are irreversible operations that can cause data loss or service outages. They require:
+- Human review and approval
+- Testing on development environment first
+- Coordination with deployment schedule
+- VPN access to production database
+
 ## Why This Command Exists
 
 - 315 existing migrations show this is a frequent operation
 - Strict naming convention must be followed exactly
 - Easy to create migration in wrong directory
 - `-c alembic.ini` flag commonly forgotten
-- VPN requirement for production often overlooked
+- Automates safe file creation while preventing unsafe database operations
 - Saves 2-3 minutes per migration
 - Prevents migration naming inconsistencies
 
