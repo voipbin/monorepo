@@ -55,8 +55,8 @@ func Test_ServiceAgentCallGets(t *testing.T) {
 				},
 			},
 			expectFilters: map[cmcall.Field]any{
-				cmcall.FieldOwnerID:    "5cd8c836-3b9f-11ef-98ac-db226570f09a",
-				cmcall.FieldCustomerID: "5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9",
+				cmcall.FieldOwnerID:    uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
+				cmcall.FieldCustomerID: uuid.FromStringOrNil("5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9"),
 				cmcall.FieldDeleted:    false,
 			},
 			expectRes: []*cmcall.WebhookMessage{

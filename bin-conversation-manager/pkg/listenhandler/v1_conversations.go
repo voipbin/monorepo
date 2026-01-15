@@ -36,16 +36,33 @@ func (h *listenHandler) processV1ConversationsGet(ctx context.Context, m *sock.R
 	pageToken := u.Query().Get(PageToken)
 
 	var req map[string]any
-	if err := json.Unmarshal(m.Data, &req); err != nil {
-		log.Errorf("Could not marshal the data. err: %v", err)
-		return nil, err
+	if len(m.Data) > 0 {
+		if err := json.Unmarshal(m.Data, &req); err != nil {
+			log.Errorf("Could not marshal the data. err: %v", err)
+			return nil, err
+		}
+	} else {
+		req = make(map[string]any)
 	}
+
+	// Apply default filter: exclude deleted conversations unless explicitly requested
+	if _, hasDeleted := req["deleted"]; !hasDeleted {
+		req["deleted"] = false
+	}
+
+	log.WithFields(logrus.Fields{
+		"raw_filters": req,
+	}).Debug("Received filters from API request (check customer_id value type)")
 
 	fields, err := conversation.ConvertStringMapToFieldMap(req)
 	if err != nil {
 		log.Errorf("Could not convert the filters. err: %v", err)
 		return simpleResponse(400), nil
 	}
+
+	log.WithFields(logrus.Fields{
+		"converted_filters": fields,
+	}).Debug("Filters after conversion (customer_id should be uuid.UUID)")
 
 	tmps, err := h.conversationHandler.Gets(ctx, pageToken, pageSize, fields)
 	if err != nil {

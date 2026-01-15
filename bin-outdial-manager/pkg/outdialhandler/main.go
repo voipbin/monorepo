@@ -33,6 +33,7 @@ type OutdialHandler interface {
 	) (*outdial.Outdial, error)
 	Delete(ctx context.Context, id uuid.UUID) (*outdial.Outdial, error)
 	Get(ctx context.Context, id uuid.UUID) (*outdial.Outdial, error)
+	Gets(ctx context.Context, token string, limit uint64, filters map[outdial.Field]any) ([]*outdial.Outdial, error)
 	GetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*outdial.Outdial, error)
 	UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*outdial.Outdial, error)
 	UpdateCampaignID(ctx context.Context, id, campaignID uuid.UUID) (*outdial.Outdial, error)

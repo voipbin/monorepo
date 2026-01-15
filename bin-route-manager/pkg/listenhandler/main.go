@@ -46,11 +46,11 @@ var (
 
 	// routes
 	regV1Routes    = regexp.MustCompile("/v1/routes$")
-	regV1RoutesGet = regexp.MustCompile(`/v1/routes\?`)
+	regV1RoutesGet = regexp.MustCompile(`/v1/routes(\?.*)?$`)
 	regV1RoutesID  = regexp.MustCompile("/v1/routes/" + regUUID + "$")
 
 	// dialroutes
-	regV1DialroutesGet = regexp.MustCompile(`/v1/dialroutes\?`)
+	regV1DialroutesGet = regexp.MustCompile(`/v1/dialroutes(\?.*)?$`)
 )
 
 var (

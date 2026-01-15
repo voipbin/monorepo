@@ -66,25 +66,36 @@ func (h *listenHandler) v1RoutesPost(ctx context.Context, m *sock.Request) (*soc
 func (h *listenHandler) v1RoutesGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func": "v1RoutesGet",
+			"func":    "v1RoutesGet",
+			"request": m,
 		},
 	)
-	log.WithField("request", m).Debug("Received request.")
 
 	u, err := url.Parse(m.URI)
 	if err != nil {
 		return nil, err
 	}
 
-	// parse the pagination params
+	// parse the pagination params from URI
 	tmpSize, _ := strconv.Atoi(u.Query().Get(PageSize))
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// get customer_id
-	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
+	// Parse filters from request body
+	var reqData request.V1DataRoutesGet
+	if len(m.Data) > 0 {
+		if err := json.Unmarshal(m.Data, &reqData); err != nil {
+			log.Errorf("Could not unmarshal filters. err: %v", err)
+			return nil, err
+		}
+	}
 
-	tmp, err := h.routeHandler.GetsByCustomerID(ctx, customerID, pageToken, pageSize)
+	log.WithFields(logrus.Fields{
+		"customer_id":      reqData.CustomerID,
+		"filters_raw_data": string(m.Data),
+	}).Debug("v1RoutesGet: Parsed filters from request body")
+
+	tmp, err := h.routeHandler.GetsByCustomerID(ctx, reqData.CustomerID, pageToken, pageSize)
 	if err != nil {
 		log.Errorf("Could not get routes. err: %v", err)
 		return nil, err

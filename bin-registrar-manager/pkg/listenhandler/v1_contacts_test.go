@@ -33,8 +33,10 @@ func Test_processV1ContactsGet(t *testing.T) {
 			uuid.FromStringOrNil("2f905272-5653-11ee-b4df-f3faa1c18732"),
 			"test",
 			&sock.Request{
-				URI:    "/v1/contacts?customer_id=2f905272-5653-11ee-b4df-f3faa1c18732&extension=test",
-				Method: sock.RequestMethodGet,
+				URI:      "/v1/contacts",
+				Method:   sock.RequestMethodGet,
+				DataType: "application/json",
+				Data:     []byte(`{"customer_id":"2f905272-5653-11ee-b4df-f3faa1c18732","extension":"test"}`),
 			},
 			[]*astcontact.AstContact{
 				{
@@ -66,9 +68,10 @@ func Test_processV1ContactsGet(t *testing.T) {
 			uuid.FromStringOrNil("4962c82e-5653-11ee-96e1-4fca4502226b"),
 			"test2",
 			&sock.Request{
-				URI:      "/v1/contacts?customer_id=4962c82e-5653-11ee-96e1-4fca4502226b&extension=test2",
+				URI:      "/v1/contacts",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
+				Data:     []byte(`{"customer_id":"4962c82e-5653-11ee-96e1-4fca4502226b","extension":"test2"}`),
 			},
 			[]*astcontact.AstContact{},
 			&sock.Response{
@@ -127,9 +130,10 @@ func Test_processV1ContactsPut(t *testing.T) {
 			uuid.FromStringOrNil("883ce9bc-5707-11ee-b053-1ba4c0db8a30"),
 			"test-extension",
 			&sock.Request{
-				URI:      "/v1/contacts?customer_id=883ce9bc-5707-11ee-b053-1ba4c0db8a30&extension=test-extension",
+				URI:      "/v1/contacts",
 				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
+				Data:     []byte(`{"customer_id":"883ce9bc-5707-11ee-b053-1ba4c0db8a30","extension":"test-extension"}`),
 			},
 			&sock.Response{
 				StatusCode: 200,

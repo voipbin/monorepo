@@ -49,7 +49,7 @@ var (
 	reqV1QueuesID              = regexp.MustCompile("/v1/queues/" + regUUID + "$")
 	reqV1QueuesIDTagIDs        = regexp.MustCompile("/v1/queues/" + regUUID + "/tag_ids$")
 	reqV1QueuesIDRoutingMethod = regexp.MustCompile("/v1/queues/" + regUUID + "/routing_method$")
-	reqV1QueuesIDAgentsGet     = regexp.MustCompile("/v1/queues/" + regUUID + `/agents\?`)
+	reqV1QueuesIDAgentsGet     = regexp.MustCompile("/v1/queues/" + regUUID + `/agents(\?.*)?$`)
 	reqV1QueuesIDExecute       = regexp.MustCompile("/v1/queues/" + regUUID + "/execute$")
 	reqV1QueuesIDExecuteRun    = regexp.MustCompile("/v1/queues/" + regUUID + "/execute_run$")
 

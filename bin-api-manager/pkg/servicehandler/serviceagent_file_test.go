@@ -188,9 +188,9 @@ func Test_StorageFileGets(t *testing.T) {
 				},
 			},
 			expectFilters: map[smfile.Field]any{
-				smfile.FieldCustomerID: "69dc78e8-1bd8-11ef-9710-ffa2bc5ebf93",
+				smfile.FieldCustomerID: uuid.FromStringOrNil("69dc78e8-1bd8-11ef-9710-ffa2bc5ebf93"),
 				smfile.FieldDeleted:    false,
-				smfile.FieldOwnerID:    "6998ca62-1bd8-11ef-bfe1-f3c47f813931",
+				smfile.FieldOwnerID:    uuid.FromStringOrNil("6998ca62-1bd8-11ef-bfe1-f3c47f813931"),
 			},
 			expectRes: []*smfile.WebhookMessage{
 				{

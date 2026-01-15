@@ -21,9 +21,9 @@ func Test_v1CampaigncallsGet_campaignID(t *testing.T) {
 		name    string
 		request *sock.Request
 
-		pageToken  string
-		pageSize   uint64
-		campaignID uuid.UUID
+		pageToken string
+		pageSize  uint64
+		filters   map[campaigncall.Field]any
 
 		responseCampaigns []*campaigncall.Campaigncall
 
@@ -32,14 +32,17 @@ func Test_v1CampaigncallsGet_campaignID(t *testing.T) {
 		{
 			"normal",
 			&sock.Request{
-				URI:      "/v1/campaigncalls?page_token=2020-10-10%2003:30:17.000000&page_size=10&campaign_id=d448b208-c849-11ec-8ea9-130b51c62f3e",
+				URI:      "/v1/campaigncalls?page_token=2020-10-10%2003:30:17.000000&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
+				Data:     []byte(`{"campaign_id":"d448b208-c849-11ec-8ea9-130b51c62f3e"}`),
 			},
 
 			"2020-10-10 03:30:17.000000",
 			10,
-			uuid.FromStringOrNil("d448b208-c849-11ec-8ea9-130b51c62f3e"),
+			map[campaigncall.Field]any{
+				campaigncall.FieldCampaignID: uuid.FromStringOrNil("d448b208-c849-11ec-8ea9-130b51c62f3e"),
+			},
 
 			[]*campaigncall.Campaigncall{
 				{
@@ -70,7 +73,7 @@ func Test_v1CampaigncallsGet_campaignID(t *testing.T) {
 				campaigncallHandler: mockCampaigncall,
 			}
 
-			mockCampaigncall.EXPECT().GetsByCampaignID(gomock.Any(), tt.campaignID, tt.pageToken, tt.pageSize).Return(tt.responseCampaigns, nil)
+			mockCampaigncall.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, tt.filters).Return(tt.responseCampaigns, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -89,9 +92,9 @@ func Test_v1CampaigncallsGet_customerID(t *testing.T) {
 		name    string
 		request *sock.Request
 
-		pageToken  string
-		pageSize   uint64
-		customerID uuid.UUID
+		pageToken string
+		pageSize  uint64
+		filters   map[campaigncall.Field]any
 
 		responseCampaigns []*campaigncall.Campaigncall
 
@@ -100,13 +103,17 @@ func Test_v1CampaigncallsGet_customerID(t *testing.T) {
 		{
 			"normal",
 			&sock.Request{
-				URI:    "/v1/campaigncalls?page_token=2020-10-10%2003:30:17.000000&page_size=10&customer_id=a5b9fbf6-6e31-11ee-98a3-33e454942a48",
-				Method: sock.RequestMethodGet,
+				URI:      "/v1/campaigncalls?page_token=2020-10-10%2003:30:17.000000&page_size=10",
+				Method:   sock.RequestMethodGet,
+				DataType: "application/json",
+				Data:     []byte(`{"customer_id":"a5b9fbf6-6e31-11ee-98a3-33e454942a48"}`),
 			},
 
 			"2020-10-10 03:30:17.000000",
 			10,
-			uuid.FromStringOrNil("a5b9fbf6-6e31-11ee-98a3-33e454942a48"),
+			map[campaigncall.Field]any{
+				campaigncall.FieldCustomerID: uuid.FromStringOrNil("a5b9fbf6-6e31-11ee-98a3-33e454942a48"),
+			},
 
 			[]*campaigncall.Campaigncall{
 				{
@@ -137,7 +144,7 @@ func Test_v1CampaigncallsGet_customerID(t *testing.T) {
 				campaigncallHandler: mockCampaigncall,
 			}
 
-			mockCampaigncall.EXPECT().GetsByCustomerID(gomock.Any(), tt.customerID, tt.pageToken, tt.pageSize).Return(tt.responseCampaigns, nil)
+			mockCampaigncall.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, tt.filters).Return(tt.responseCampaigns, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

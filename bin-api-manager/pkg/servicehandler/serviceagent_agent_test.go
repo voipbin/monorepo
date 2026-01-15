@@ -54,7 +54,7 @@ func Test_ServiceAgentAgentGets(t *testing.T) {
 				},
 			},
 			expectFilters: map[amagent.Field]any{
-				amagent.FieldCustomerID: "5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9",
+				amagent.FieldCustomerID: uuid.FromStringOrNil("5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9"),
 				amagent.FieldDeleted:    false,
 			},
 			expectRes: []*amagent.WebhookMessage{

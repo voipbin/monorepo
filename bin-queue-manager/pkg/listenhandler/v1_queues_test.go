@@ -676,9 +676,10 @@ func Test_processV1QueuesIDAgentsGet(t *testing.T) {
 		{
 			name: "available",
 			request: &sock.Request{
-				URI:      "/v1/queues/2e2ca500-b49e-11ec-bde5-4f7293129cfd/agents?status=available",
+				URI:      "/v1/queues/2e2ca500-b49e-11ec-bde5-4f7293129cfd/agents",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
+				Data:     []byte(`{"status":"available"}`),
 			},
 
 			responseAgents: []amagent.Agent{

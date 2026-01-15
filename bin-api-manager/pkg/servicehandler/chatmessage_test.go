@@ -141,7 +141,7 @@ func Test_ChatmessageGetsByChatID(t *testing.T) {
 
 			expectFilters: map[chatmessagechat.Field]any{
 				chatmessagechat.FieldDeleted: false,
-				chatmessagechat.FieldChatID: "8ec6c9be-3774-11ed-a626-73312e33dc72",
+				chatmessagechat.FieldChatID: uuid.FromStringOrNil("8ec6c9be-3774-11ed-a626-73312e33dc72"),
 			},
 			expectRes: []*chatmessagechat.WebhookMessage{
 				{

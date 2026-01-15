@@ -74,24 +74,28 @@ func Test_v1OutdialsPost(t *testing.T) {
 func Test_v1OutdialsGet(t *testing.T) {
 
 	tests := []struct {
-		name       string
-		customerID uuid.UUID
-		pageToken  string
-		pageSize   uint64
-		request    *sock.Request
-		outdials   []*outdial.Outdial
+		name      string
+		filters   map[outdial.Field]any
+		pageToken string
+		pageSize  uint64
+		request   *sock.Request
+		outdials  []*outdial.Outdial
 
 		expectRes *sock.Response
 	}{
 		{
 			"1 item",
-			uuid.FromStringOrNil("3ffc0038-b36c-11ec-8de7-df466e08d7fc"),
+			map[outdial.Field]any{
+				outdial.FieldCustomerID: uuid.FromStringOrNil("3ffc0038-b36c-11ec-8de7-df466e08d7fc"),
+				outdial.FieldDeleted:    false,
+			},
 			"2020-10-10T03:30:17.000000",
 			10,
 			&sock.Request{
-				URI:      "/v1/outdials?page_token=2020-10-10T03:30:17.000000&page_size=10&customer_id=3ffc0038-b36c-11ec-8de7-df466e08d7fc",
+				URI:      "/v1/outdials?page_token=2020-10-10T03:30:17.000000&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
+				Data:     []byte(`{"customer_id":"3ffc0038-b36c-11ec-8de7-df466e08d7fc","deleted":false}`),
 			},
 			[]*outdial.Outdial{
 				{
@@ -108,13 +112,17 @@ func Test_v1OutdialsGet(t *testing.T) {
 		},
 		{
 			"2 items",
-			uuid.FromStringOrNil("974f7298-b36c-11ec-9d42-07020f9318fb"),
+			map[outdial.Field]any{
+				outdial.FieldCustomerID: uuid.FromStringOrNil("974f7298-b36c-11ec-9d42-07020f9318fb"),
+				outdial.FieldDeleted:    false,
+			},
 			"2020-10-10T03:30:17.000000",
 			10,
 			&sock.Request{
-				URI:      "/v1/outdials?page_token=2020-10-10T03:30:17.000000&page_size=10&customer_id=974f7298-b36c-11ec-9d42-07020f9318fb",
+				URI:      "/v1/outdials?page_token=2020-10-10T03:30:17.000000&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
+				Data:     []byte(`{"customer_id":"974f7298-b36c-11ec-9d42-07020f9318fb","deleted":false}`),
 			},
 			[]*outdial.Outdial{
 				{
@@ -151,7 +159,7 @@ func Test_v1OutdialsGet(t *testing.T) {
 				outdialTargetHandler: mockOutdialTarget,
 			}
 
-			mockOutdial.EXPECT().GetsByCustomerID(gomock.Any(), tt.customerID, tt.pageToken, tt.pageSize).Return(tt.outdials, nil)
+			mockOutdial.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, tt.filters).Return(tt.outdials, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -358,10 +366,10 @@ func Test_v1OutdialsIDAvailableGet(t *testing.T) {
 		{
 			"normal",
 			&sock.Request{
-				URI:      "/v1/outdials/c9668112-b36d-11ec-9e02-0f190974012d/available?try_count_0=3&try_count_1=0&try_count_2=0&try_count_3=0&try_count_4=0&limit=1",
+				URI:      "/v1/outdials/c9668112-b36d-11ec-9e02-0f190974012d/available",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
-				Data:     nil,
+				Data:     []byte(`{"try_count_0":3,"try_count_1":0,"try_count_2":0,"try_count_3":0,"try_count_4":0,"limit":1}`),
 			},
 
 			uuid.FromStringOrNil("c9668112-b36d-11ec-9e02-0f190974012d"),

@@ -46,7 +46,7 @@ func Test_QueueGets(t *testing.T) {
 			10,
 
 			map[qmqueue.Field]any{
-				qmqueue.FieldCustomerID: "5f621078-8e5f-11ee-97b2-cfe7337b701c",
+				qmqueue.FieldCustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				qmqueue.FieldDeleted:    false,
 			},
 

@@ -3,34 +3,36 @@ package listenhandler
 import (
 	"context"
 	"encoding/json"
-	"net/url"
 
 	"monorepo/bin-common-handler/models/sock"
+	"monorepo/bin-registrar-manager/pkg/listenhandler/models/request"
 
-	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 )
 
 // processV1ContactsGet handles /v1/contacts GET request
 func (h *listenHandler) processV1ContactsGet(ctx context.Context, req *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func": "processV1ContactsGet",
+		"func":    "processV1ContactsGet",
+		"request": req,
 	})
 
-	u, err := url.Parse(req.URI)
-	if err != nil {
-		return nil, err
+	// Parse filters from request body
+	var reqData request.V1DataContactsGet
+	if len(req.Data) > 0 {
+		if err := json.Unmarshal(req.Data, &reqData); err != nil {
+			log.Errorf("Could not unmarshal filters. err: %v", err)
+			return nil, err
+		}
 	}
 
-	// get customer_id, ext
-	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
-	ext, err := url.QueryUnescape(u.Query().Get("extension"))
-	if err != nil {
-		log.Errorf("Could not unescape the parameter. err: %v", err)
-		return nil, err
-	}
+	log.WithFields(logrus.Fields{
+		"customer_id":      reqData.CustomerID,
+		"extension":        reqData.Extension,
+		"filters_raw_data": string(req.Data),
+	}).Debug("processV1ContactsGet: Parsed filters from request body")
 
-	resContacts, err := h.contactHandler.ContactGetsByExtension(ctx, customerID, ext)
+	resContacts, err := h.contactHandler.ContactGetsByExtension(ctx, reqData.CustomerID, reqData.Extension)
 	if err != nil {
 		log.Errorf("Could not get contacts. err: %v", err)
 		return nil, err
@@ -54,24 +56,27 @@ func (h *listenHandler) processV1ContactsGet(ctx context.Context, req *sock.Requ
 // processV1ContactsPut handles /v1/contatcs PUT request
 func (h *listenHandler) processV1ContactsPut(ctx context.Context, req *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func": "processV1ContactsPut",
+		"func":    "processV1ContactsPut",
+		"request": req,
 	})
 
-	u, err := url.Parse(req.URI)
-	if err != nil {
-		return nil, err
+	// Parse filters from request body
+	var reqData request.V1DataContactsPut
+	if len(req.Data) > 0 {
+		if err := json.Unmarshal(req.Data, &reqData); err != nil {
+			log.Errorf("Could not unmarshal filters. err: %v", err)
+			return nil, err
+		}
 	}
 
-	// get customer_id, ext
-	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
-	ext, err := url.QueryUnescape(u.Query().Get("extension"))
-	if err != nil {
-		log.Errorf("Could not unescape the parameter. err: %v", err)
-		return nil, err
-	}
+	log.WithFields(logrus.Fields{
+		"customer_id":      reqData.CustomerID,
+		"extension":        reqData.Extension,
+		"filters_raw_data": string(req.Data),
+	}).Debug("processV1ContactsPut: Parsed filters from request body")
 
-	if err := h.contactHandler.ContactRefreshByEndpoint(ctx, customerID, ext); err != nil {
-		log.Errorf("Could not refresh the contact info. customer_id: %s, extension: %s, err: %v", customerID, ext, err)
+	if err := h.contactHandler.ContactRefreshByEndpoint(ctx, reqData.CustomerID, reqData.Extension); err != nil {
+		log.Errorf("Could not refresh the contact info. customer_id: %s, extension: %s, err: %v", reqData.CustomerID, reqData.Extension, err)
 		return nil, err
 	}
 

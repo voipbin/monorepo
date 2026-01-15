@@ -131,7 +131,7 @@ func Test_TranscribeGets(t *testing.T) {
 			},
 
 			map[tmtranscribe.Field]any{
-				tmtranscribe.FieldCustomerID: "5f621078-8e5f-11ee-97b2-cfe7337b701c",
+				tmtranscribe.FieldCustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				tmtranscribe.FieldDeleted:    false,
 			},
 			[]*tmtranscribe.WebhookMessage{

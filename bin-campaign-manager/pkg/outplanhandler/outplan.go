@@ -108,6 +108,25 @@ func (h *outplanHandler) Delete(ctx context.Context, id uuid.UUID) (*outplan.Out
 	return res, nil
 }
 
+// Gets returns list of outplans with filters
+func (h *outplanHandler) Gets(ctx context.Context, token string, limit uint64, filters map[outplan.Field]any) ([]*outplan.Outplan, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "Gets",
+		"token":   token,
+		"limit":   limit,
+		"filters": filters,
+	})
+	log.Debug("Getting outplans with filters.")
+
+	res, err := h.db.OutplanGets(ctx, token, limit, filters)
+	if err != nil {
+		log.Errorf("Could not get outplans. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
 // GetsByCustomerID returns list of outplans
 func (h *outplanHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*outplan.Outplan, error) {
 	log := logrus.WithFields(logrus.Fields{

@@ -3,6 +3,7 @@ package listenhandler
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/url"
 	"strconv"
 	"strings"
@@ -12,6 +13,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-campaign-manager/models/campaign"
 	"monorepo/bin-campaign-manager/pkg/listenhandler/models/request"
 )
 
@@ -77,17 +79,37 @@ func (h *listenHandler) v1CampaignsGet(ctx context.Context, m *sock.Request) (*s
 		return nil, err
 	}
 
-	// parse the pagination params
+	// parse the pagination params from URI
 	tmpSize, _ := strconv.Atoi(u.Query().Get(PageSize))
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// get customer_id
-	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
+	// Parse filters from request data (body)
+	var filters map[string]any
+	if len(m.Data) > 0 {
+		if err := json.Unmarshal(m.Data, &filters); err != nil {
+			log.Errorf("Could not unmarshal filters. err: %v", err)
+			return nil, fmt.Errorf("could not unmarshal filters: %w", err)
+		}
+	}
 
-	log.WithField("request", m).Debug("Received request.")
+	log.WithFields(logrus.Fields{
+		"filters":          filters,
+		"filters_raw_data": string(m.Data),
+	}).Debug("v1CampaignsGet: Parsed filters from request body")
 
-	tmp, err := h.campaignHandler.GetsByCustomerID(ctx, customerID, pageToken, pageSize)
+	// Convert string map to typed field map
+	typedFilters, err := campaign.ConvertStringMapToFieldMap(filters)
+	if err != nil {
+		log.Errorf("Could not convert filters. err: %v", err)
+		return nil, fmt.Errorf("could not convert filters: %w", err)
+	}
+
+	log.WithFields(logrus.Fields{
+		"typed_filters": typedFilters,
+	}).Debug("v1CampaignsGet: Converted filters to typed field map (check customer_id type)")
+
+	tmp, err := h.campaignHandler.Gets(ctx, pageToken, pageSize, typedFilters)
 	if err != nil {
 		log.Errorf("Could not get campaigns. err: %v", err)
 		return nil, err

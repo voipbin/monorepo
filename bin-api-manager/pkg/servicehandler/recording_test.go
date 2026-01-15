@@ -68,7 +68,7 @@ func Test_RecordingGets(t *testing.T) {
 			},
 
 			map[cmrecording.Field]any{
-				cmrecording.FieldCustomerID: "5f621078-8e5f-11ee-97b2-cfe7337b701c",
+				cmrecording.FieldCustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				cmrecording.FieldDeleted:    false,
 			},
 			[]*cmrecording.WebhookMessage{

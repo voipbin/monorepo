@@ -141,7 +141,7 @@ func Test_AImessageGetsByAIcallID(t *testing.T) {
 
 			expectFilters: map[ammessage.Field]any{
 				ammessage.FieldDeleted:  false,
-				ammessage.FieldAIcallID: "24d250de-f31d-11ef-846e-9ba3307567d6",
+				ammessage.FieldAIcallID: uuid.FromStringOrNil("24d250de-f31d-11ef-846e-9ba3307567d6"),
 			},
 			expectRes: []*ammessage.WebhookMessage{
 				{

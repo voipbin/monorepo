@@ -272,7 +272,7 @@ func Test_TrunkGets(t *testing.T) {
 			},
 
 			map[rmtrunk.Field]any{
-				rmtrunk.FieldCustomerID: "5f621078-8e5f-11ee-97b2-cfe7337b701c",
+				rmtrunk.FieldCustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				rmtrunk.FieldDeleted:    false,
 			},
 			[]*rmtrunk.WebhookMessage{

@@ -18,7 +18,13 @@ import (
 // to getting a list of messages info of the given aicall id.
 // it returns detail list of message info if it succeed.
 func (r *requestHandler) AIV1MessageGetsByAIcallID(ctx context.Context, aicallID uuid.UUID, pageToken string, pageSize uint64, filters map[cbmessage.Field]any) ([]cbmessage.Message, error) {
-	uri := fmt.Sprintf("/v1/messages?page_token=%s&page_size=%d&aicall_id=%s", url.QueryEscape(pageToken), pageSize, aicallID)
+	uri := fmt.Sprintf("/v1/messages?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
+
+	// Add aicall_id to filters
+	if filters == nil {
+		filters = make(map[cbmessage.Field]any)
+	}
+	filters[cbmessage.FieldAIcallID] = aicallID
 
 	m, err := json.Marshal(filters)
 	if err != nil {

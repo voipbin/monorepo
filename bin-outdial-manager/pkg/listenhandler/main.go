@@ -39,11 +39,11 @@ var (
 
 	// outdials
 	regV1Outdials             = regexp.MustCompile("/v1/outdials$")
-	regV1OutdialsGet          = regexp.MustCompile(`/v1/outdials\?`)
+	regV1OutdialsGet          = regexp.MustCompile(`/v1/outdials(\?.*)?$`)
 	regV1OutdialsID           = regexp.MustCompile("/v1/outdials/" + regUUID + "$")
-	regV1OutdialsIDAvailable  = regexp.MustCompile("/v1/outdials/" + regUUID + `/available\?`)
+	regV1OutdialsIDAvailable  = regexp.MustCompile("/v1/outdials/" + regUUID + `/available(\?.*)?$`)
 	regV1OutdialsIDTargets    = regexp.MustCompile("/v1/outdials/" + regUUID + "/targets$")
-	regV1OutdialsIDTargetsGet = regexp.MustCompile("/v1/outdials/" + regUUID + `/targets\?`)
+	regV1OutdialsIDTargetsGet = regexp.MustCompile("/v1/outdials/" + regUUID + `/targets(\?.*)?$`)
 	regV1OutdialsIDCampaignID = regexp.MustCompile("/v1/outdials/" + regUUID + "/campaign_id$")
 	regV1OutdialsIDData       = regexp.MustCompile("/v1/outdials/" + regUUID + "/data$")
 

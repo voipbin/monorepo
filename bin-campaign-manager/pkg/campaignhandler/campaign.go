@@ -168,6 +168,25 @@ func (h *campaignHandler) Get(ctx context.Context, id uuid.UUID) (*campaign.Camp
 	return res, nil
 }
 
+// Gets returns list of campaigns with filters
+func (h *campaignHandler) Gets(ctx context.Context, token string, limit uint64, filters map[campaign.Field]any) ([]*campaign.Campaign, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "Gets",
+		"token":   token,
+		"limit":   limit,
+		"filters": filters,
+	})
+	log.Debug("Getting campaigns with filters.")
+
+	res, err := h.db.CampaignGets(ctx, token, limit, filters)
+	if err != nil {
+		log.Errorf("Could not get campaigns. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
 // GetsByCustomerID returns list of campaigns
 func (h *campaignHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*campaign.Campaign, error) {
 	log := logrus.WithFields(

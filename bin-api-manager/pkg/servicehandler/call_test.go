@@ -855,7 +855,7 @@ func Test_CallGets(t *testing.T) {
 				},
 			},
 			map[cmcall.Field]any{
-				cmcall.FieldCustomerID: "5f621078-8e5f-11ee-97b2-cfe7337b701c",
+				cmcall.FieldCustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				cmcall.FieldDeleted:    false,
 			},
 			[]*cmcall.WebhookMessage{

@@ -108,9 +108,9 @@ func Test_v1OutplansGet(t *testing.T) {
 		name    string
 		request *sock.Request
 
-		pageToken  string
-		pageSize   uint64
-		customerID uuid.UUID
+		pageToken string
+		pageSize  uint64
+		filters   map[outplan.Field]any
 
 		responseOutplans []*outplan.Outplan
 
@@ -119,14 +119,17 @@ func Test_v1OutplansGet(t *testing.T) {
 		{
 			"normal",
 			&sock.Request{
-				URI:      "/v1/outplans?page_token=2020-10-10%2003:30:17.000000&page_size=10&customer_id=4890c13c-c467-11ec-add3-77ebc79554b0",
+				URI:      "/v1/outplans?page_token=2020-10-10%2003:30:17.000000&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
+				Data:     []byte(`{"customer_id":"4890c13c-c467-11ec-add3-77ebc79554b0"}`),
 			},
 
 			"2020-10-10 03:30:17.000000",
 			10,
-			uuid.FromStringOrNil("4890c13c-c467-11ec-add3-77ebc79554b0"),
+			map[outplan.Field]any{
+				outplan.FieldCustomerID: uuid.FromStringOrNil("4890c13c-c467-11ec-add3-77ebc79554b0"),
+			},
 
 			[]*outplan.Outplan{
 				{
@@ -157,7 +160,7 @@ func Test_v1OutplansGet(t *testing.T) {
 				outplanHandler: mockOutplan,
 			}
 
-			mockOutplan.EXPECT().GetsByCustomerID(gomock.Any(), tt.customerID, tt.pageToken, tt.pageSize).Return(tt.responseOutplans, nil)
+			mockOutplan.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, tt.filters).Return(tt.responseOutplans, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -360,8 +360,10 @@ func Test_processV1ExtensionsExtensionExtensionGet(t *testing.T) {
 			"normal",
 
 			&sock.Request{
-				URI:    `/v1/extensions/extension/test_ext?customer_id=14529572-5650-11ee-8bac-8f91175c7ceb`,
-				Method: sock.RequestMethodGet,
+				URI:      `/v1/extensions/extension/test_ext`,
+				Method:   sock.RequestMethodGet,
+				DataType: "application/json",
+				Data:     []byte(`{"customer_id":"14529572-5650-11ee-8bac-8f91175c7ceb"}`),
 			},
 
 			&extension.Extension{

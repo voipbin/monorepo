@@ -154,8 +154,8 @@ func Test_ChatroommessageCreate(t *testing.T) {
 				TargetName: "test name",
 			},
 			expectFilters: map[chatmessagechatroom.Field]any{
-				"chatroom_id":    "e59dcafa-bbf6-11ee-914f-ab362a70a1cf",
-				"messagechat_id": "2fe4994e-bbf8-11ee-ba94-137f44f6810a",
+				chatmessagechatroom.FieldChatroomID:    uuid.FromStringOrNil("e59dcafa-bbf6-11ee-914f-ab362a70a1cf"),
+				chatmessagechatroom.FieldMessagechatID: uuid.FromStringOrNil("2fe4994e-bbf8-11ee-ba94-137f44f6810a"),
 			},
 			expectRes: &chatmessagechatroom.WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -243,7 +243,7 @@ func Test_ChatroommessageGetsByChatroomID(t *testing.T) {
 
 			map[chatmessagechatroom.Field]any{
 				chatmessagechatroom.FieldDeleted:    false,
-				chatmessagechatroom.FieldChatroomID: "a416bb54-3778-11ed-9eb3-4b926f921d68",
+				chatmessagechatroom.FieldChatroomID: uuid.FromStringOrNil("a416bb54-3778-11ed-9eb3-4b926f921d68"),
 			},
 			[]*chatmessagechatroom.WebhookMessage{
 				{

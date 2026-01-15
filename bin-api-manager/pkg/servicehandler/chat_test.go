@@ -130,7 +130,7 @@ func Test_ChatGetsByCustomerID(t *testing.T) {
 			},
 
 			map[chatchat.Field]any{
-				chatchat.FieldCustomerID: "5f621078-8e5f-11ee-97b2-cfe7337b701c",
+				chatchat.FieldCustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				chatchat.FieldDeleted:    false,
 			},
 			[]*chatchat.WebhookMessage{

@@ -141,7 +141,7 @@ func Test_AIcallGetsByCustomerID(t *testing.T) {
 			token: "2020-09-20 03:23:20.995000",
 			filters: map[amaicall.Field]any{
 				amaicall.FieldDeleted:    false,
-				amaicall.FieldCustomerID: "5f621078-8e5f-11ee-97b2-cfe7337b701c",
+				amaicall.FieldCustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			},
 
 			response: []amaicall.AIcall{

@@ -137,7 +137,7 @@ func Test_AISummaryGetsByCustomerID(t *testing.T) {
 			token: "2020-09-20 03:23:20.995000",
 			filters: map[amsummary.Field]any{
 				amsummary.FieldDeleted:    false,
-				amsummary.FieldCustomerID: "2017e1fe-0ccb-11f0-9c4f-73268b39a2cc",
+				amsummary.FieldCustomerID: uuid.FromStringOrNil("2017e1fe-0ccb-11f0-9c4f-73268b39a2cc"),
 			},
 
 			response: []amsummary.Summary{
