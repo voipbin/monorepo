@@ -225,7 +225,12 @@ func (h *handler) TrunkGetByDomainName(ctx context.Context, domainName string) (
 
 	res, err := h.trunkGetByDomainNameFromCache(ctx, domainName)
 	if err == nil {
-		return res, nil
+		// Check if cached trunk is deleted (soft delete check)
+		if res.TMDelete >= commondatabasehandler.DefaultTimeStamp {
+			return res, nil
+		}
+		// Cached trunk is deleted, treat as not found
+		res = nil
 	}
 
 	filters := map[trunk.Field]any{
