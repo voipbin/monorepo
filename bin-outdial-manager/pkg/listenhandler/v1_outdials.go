@@ -3,6 +3,7 @@ package listenhandler
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/url"
 	"strconv"
 	"strings"
@@ -12,6 +13,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-outdial-manager/models/outdial"
 	"monorepo/bin-outdial-manager/pkg/listenhandler/models/request"
 )
 
@@ -61,28 +63,47 @@ func (h *listenHandler) v1OutdialsPost(ctx context.Context, m *sock.Request) (*s
 
 // v1OutdialsGet handles /v1/outdials GET request
 func (h *listenHandler) v1OutdialsGet(ctx context.Context, req *sock.Request) (*sock.Response, error) {
-
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func": "v1OutdialsGet",
-		},
-	)
-	log.WithField("request", req).Debug("Executing v1OutdialsGet.")
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "v1OutdialsGet",
+		"request": req,
+	})
 
 	u, err := url.Parse(req.URI)
 	if err != nil {
 		return nil, err
 	}
 
-	// parse the pagination params
+	// parse the pagination params from URI
 	tmpSize, _ := strconv.Atoi(u.Query().Get(PageSize))
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// get customer_id
-	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
+	// Parse filters from request data (body)
+	var filters map[string]any
+	if len(req.Data) > 0 {
+		if err := json.Unmarshal(req.Data, &filters); err != nil {
+			log.Errorf("Could not unmarshal filters. err: %v", err)
+			return nil, fmt.Errorf("could not unmarshal filters: %w", err)
+		}
+	}
 
-	tmp, err := h.outdialHandler.GetsByCustomerID(ctx, customerID, pageToken, pageSize)
+	log.WithFields(logrus.Fields{
+		"filters":          filters,
+		"filters_raw_data": string(req.Data),
+	}).Debug("v1OutdialsGet: Parsed filters from request body")
+
+	// Convert string map to typed field map
+	typedFilters, err := outdial.ConvertStringMapToFieldMap(filters)
+	if err != nil {
+		log.Errorf("Could not convert filters. err: %v", err)
+		return nil, fmt.Errorf("could not convert filters: %w", err)
+	}
+
+	log.WithFields(logrus.Fields{
+		"typed_filters": typedFilters,
+	}).Debug("v1OutdialsGet: Converted filters to typed field map (check UUID types)")
+
+	tmp, err := h.outdialHandler.Gets(ctx, pageToken, pageSize, typedFilters)
 	if err != nil {
 		logrus.Errorf("Could not get outdials. err: %v", err)
 		return nil, err
@@ -319,7 +340,6 @@ func (h *listenHandler) v1OutdialsIDDataPut(ctx context.Context, m *sock.Request
 
 // v1OutdialsIDAvailableGet handles /v1/outdials/<outdial-id>/available GET request
 func (h *listenHandler) v1OutdialsIDAvailableGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
-
 	u, err := url.Parse(m.URI)
 	if err != nil {
 		return nil, err
@@ -328,22 +348,60 @@ func (h *listenHandler) v1OutdialsIDAvailableGet(ctx context.Context, m *sock.Re
 	tmpVals := strings.Split(u.Path, "/")
 	id := uuid.FromStringOrNil(tmpVals[3])
 
-	log := logrus.WithFields(
-		logrus.Fields{
-			"func":       "v1OutdialsIDAvailableGet",
-			"outdial_id": id,
-		},
-	)
-	log.WithField("request", m).Debug("Executing v1OutdialsIDAvailableGet.")
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "v1OutdialsIDAvailableGet",
+		"outdial_id": id,
+		"request":    m,
+	})
 
-	// parse the params
-	tryCount0, _ := strconv.Atoi(u.Query().Get("try_count_0"))
-	tryCount1, _ := strconv.Atoi(u.Query().Get("try_count_1"))
-	tryCount2, _ := strconv.Atoi(u.Query().Get("try_count_2"))
-	tryCount3, _ := strconv.Atoi(u.Query().Get("try_count_3"))
-	tryCount4, _ := strconv.Atoi(u.Query().Get("try_count_4"))
-	tmpLimit, _ := strconv.Atoi(u.Query().Get("limit"))
-	limit := uint64(tmpLimit)
+	// Parse filters from request data (body)
+	var filters map[string]any
+	if len(m.Data) > 0 {
+		if err := json.Unmarshal(m.Data, &filters); err != nil {
+			log.Errorf("Could not unmarshal filters. err: %v", err)
+			return nil, fmt.Errorf("could not unmarshal filters: %w", err)
+		}
+	}
+
+	log.WithFields(logrus.Fields{
+		"filters":          filters,
+		"filters_raw_data": string(m.Data),
+	}).Debug("v1OutdialsIDAvailableGet: Parsed filters from request body")
+
+	// Extract parameters from filters
+	tryCount0, tryCount1, tryCount2, tryCount3, tryCount4 := 0, 0, 0, 0, 0
+	limit := uint64(0)
+
+	if tc0, ok := filters["try_count_0"]; ok {
+		if tc0Float, ok := tc0.(float64); ok {
+			tryCount0 = int(tc0Float)
+		}
+	}
+	if tc1, ok := filters["try_count_1"]; ok {
+		if tc1Float, ok := tc1.(float64); ok {
+			tryCount1 = int(tc1Float)
+		}
+	}
+	if tc2, ok := filters["try_count_2"]; ok {
+		if tc2Float, ok := tc2.(float64); ok {
+			tryCount2 = int(tc2Float)
+		}
+	}
+	if tc3, ok := filters["try_count_3"]; ok {
+		if tc3Float, ok := tc3.(float64); ok {
+			tryCount3 = int(tc3Float)
+		}
+	}
+	if tc4, ok := filters["try_count_4"]; ok {
+		if tc4Float, ok := tc4.(float64); ok {
+			tryCount4 = int(tc4Float)
+		}
+	}
+	if lim, ok := filters["limit"]; ok {
+		if limFloat, ok := lim.(float64); ok {
+			limit = uint64(limFloat)
+		}
+	}
 
 	tmp, err := h.outdialTargetHandler.GetAvailable(ctx, id, tryCount0, tryCount1, tryCount2, tryCount3, tryCount4, limit)
 	if err != nil {
