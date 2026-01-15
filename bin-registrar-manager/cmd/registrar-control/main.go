@@ -261,6 +261,10 @@ func runExtensionCreate(cmd *cobra.Command, args []string) error {
 	fmt.Println(string(jsonData))
 	fmt.Println("-----------------------")
 
-	logrus.WithField("res", res).Infof("Created extension")
+	logrus.WithFields(logrus.Fields{
+		"id":          res.ID,
+		"customer_id": res.CustomerID,
+		"username":    res.Username,
+	}).Infof("Created extension")
 	return nil
 }
