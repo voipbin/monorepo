@@ -1,0 +1,174 @@
+# Fix AIMessages Empty List Bug
+
+**Date:** 2026-01-16
+**Author:** Claude Code
+**Status:** Design
+
+## Problem
+
+The `/v1.0/aimessages?page_size=100&aicall_id=e4e0632f-a109-4355-91fb-b68f54411486` endpoint returns an empty list even when messages exist in the database.
+
+## Root Cause
+
+`bin-ai-manager/pkg/listenhandler/v1_messages.go` violates the monorepo's filter handling pattern by parsing `aicall_id` from URL query parameters instead of request body.
+
+**Current (incorrect) flow:**
+1. `bin-api-manager` sends `aicall_id` in request body via `requesthandler`
+2. `bin-ai-manager/v1_messages.go:38` parses `aicall_id` from URL query parameter → gets `uuid.Nil` (not found)
+3. `messageHandler.Gets()` receives `uuid.Nil` and **overwrites** the correct filter from body
+4. Database query searches for `aicall_id = NULL` → empty result
+
+**Monorepo Pattern (correct):**
+- **Pagination only** from URL: `page_size`, `page_token`
+- **All filters** from request body (JSON)
+- Reference: `bin-agent-manager/pkg/listenhandler/v1_agents.go:20-53`
+
+## Solution
+
+### Change 1: Remove URL Parsing of aicall_id
+
+**File:** `bin-ai-manager/pkg/listenhandler/v1_messages.go`
+
+```go
+// REMOVE line 37-38:
+// get aicall id (still from URL for backward compatibility)
+aicallID := uuid.FromStringOrNil(u.Query().Get("aicall_id"))
+```
+
+### Change 2: Update messageHandler.Gets Signature
+
+**File:** `bin-ai-manager/pkg/messagehandler/main.go`
+
+```go
+// OLD signature:
+Gets(ctx context.Context, aicallID uuid.UUID, size uint64, token string, filters map[message.Field]any) ([]*message.Message, error)
+
+// NEW signature (remove aicallID parameter):
+Gets(ctx context.Context, size uint64, token string, filters map[message.Field]any) ([]*message.Message, error)
+```
+
+### Change 3: Update messageHandler.Gets Implementation
+
+**File:** `bin-ai-manager/pkg/messagehandler/db.go`
+
+```go
+// OLD implementation:
+func (h *messageHandler) Gets(ctx context.Context, aicallID uuid.UUID, size uint64, token string, filters map[message.Field]any) ([]*message.Message, error) {
+    // Add aicall_id to filters
+    if filters == nil {
+        filters = make(map[message.Field]any)
+    }
+    filters[message.FieldAIcallID] = aicallID  // ← OVERWRITES correct filter!
+
+    res, err := h.db.MessageGets(ctx, size, token, filters)
+    // ...
+}
+
+// NEW implementation (remove aicallID manipulation):
+func (h *messageHandler) Gets(ctx context.Context, size uint64, token string, filters map[message.Field]any) ([]*message.Message, error) {
+    // Filters already contain aicall_id from request body - don't overwrite
+
+    res, err := h.db.MessageGets(ctx, size, token, filters)
+    if err != nil {
+        return nil, err
+    }
+
+    return res, nil
+}
+```
+
+### Change 4: Update listenhandler Call Site
+
+**File:** `bin-ai-manager/pkg/listenhandler/v1_messages.go`
+
+```go
+// OLD call (line 61):
+tmp, err := h.messageHandler.Gets(ctx, aicallID, pageSize, pageToken, typedFilters)
+
+// NEW call:
+tmp, err := h.messageHandler.Gets(ctx, pageSize, pageToken, typedFilters)
+```
+
+### Change 5: Update Tests
+
+**File:** `bin-ai-manager/pkg/messagehandler/db_test.go`
+
+Update test calls to match new signature (remove aicallID parameter).
+
+## Validation
+
+### Before Fix
+```bash
+# Request from bin-api-manager sends aicall_id in body
+curl -X GET https://api.voipbin.net/v1.0/aimessages \
+  -H "Content-Type: application/json" \
+  -d '{"aicall_id": "e4e0632f-a109-4355-91fb-b68f54411486"}'
+
+# Result: [] (empty list)
+# Reason: URL parsing gets uuid.Nil, overwrites body filter
+```
+
+### After Fix
+```bash
+# Same request
+curl -X GET https://api.voipbin.net/v1.0/aimessages \
+  -H "Content-Type: application/json" \
+  -d '{"aicall_id": "e4e0632f-a109-4355-91fb-b68f54411486"}'
+
+# Result: [message1, message2, ...] (correct list)
+# Reason: Body filter used directly, no overwriting
+```
+
+### Database Query Generated
+
+**Before (incorrect):**
+```sql
+SELECT * FROM ai_messages
+WHERE aicall_id = NULL  -- uuid.Nil from URL
+  AND tm_create < '2026-01-16 12:00:00'
+ORDER BY tm_create DESC
+LIMIT 100;
+-- Returns: 0 rows
+```
+
+**After (correct):**
+```sql
+SELECT * FROM ai_messages
+WHERE aicall_id = UNHEX('e4e0632fa1094355-91fbb68f54411486')  -- from body
+  AND tm_create < '2026-01-16 12:00:00'
+ORDER BY tm_create DESC
+LIMIT 100;
+-- Returns: matching messages
+```
+
+## Verification Workflow
+
+After making changes, run from `bin-ai-manager/`:
+```bash
+go mod tidy && \
+go mod vendor && \
+go generate ./... && \
+go clean -testcache && \
+go test ./... && \
+golangci-lint run -v --timeout 5m
+```
+
+## Files Changed
+
+1. `bin-ai-manager/pkg/listenhandler/v1_messages.go` - Remove URL parsing
+2. `bin-ai-manager/pkg/messagehandler/main.go` - Update interface signature
+3. `bin-ai-manager/pkg/messagehandler/db.go` - Update implementation
+4. `bin-ai-manager/pkg/messagehandler/db_test.go` - Update tests
+5. `bin-ai-manager/pkg/messagehandler/mock_main.go` - Regenerated by `go generate`
+
+## Impact
+
+- **Breaking change:** No - external API unchanged (still accepts filters in body)
+- **Internal change:** Yes - messageHandler.Gets signature changed
+- **Test updates:** Yes - mock regeneration and test parameter updates required
+- **Other services:** None - this bug is unique to bin-ai-manager
+
+## References
+
+- Correct pattern: `bin-agent-manager/pkg/listenhandler/v1_agents.go:20-53`
+- Monorepo filter parsing guide: `CLAUDE.md` section "Parsing Filters from Request Body"

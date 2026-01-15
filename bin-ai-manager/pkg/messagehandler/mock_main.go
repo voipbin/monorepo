@@ -110,16 +110,16 @@ func (mr *MockMessageHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
 }
 
 // Gets mocks base method.
-func (m *MockMessageHandler) Gets(ctx context.Context, aicallID uuid.UUID, size uint64, token string, filters map[message.Field]any) ([]*message.Message, error) {
+func (m *MockMessageHandler) Gets(ctx context.Context, size uint64, token string, filters map[message.Field]any) ([]*message.Message, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Gets", ctx, aicallID, size, token, filters)
+	ret := m.ctrl.Call(m, "Gets", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*message.Message)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Gets indicates an expected call of Gets.
-func (mr *MockMessageHandlerMockRecorder) Gets(ctx, aicallID, size, token, filters any) *gomock.Call {
+func (mr *MockMessageHandlerMockRecorder) Gets(ctx, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockMessageHandler)(nil).Gets), ctx, aicallID, size, token, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockMessageHandler)(nil).Gets), ctx, size, token, filters)
 }

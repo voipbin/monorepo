@@ -203,7 +203,7 @@ func Test_ServiceStart_serviceStartReferenceTypeCall(t *testing.T) {
 				).Return(&message.Message{}, nil)
 			}
 
-			mockMessage.EXPECT().Gets(ctx, tt.expectAIcall.ID, gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseMessages, nil)
+			mockMessage.EXPECT().Gets(ctx, uint64(100), gomock.Any(), gomock.Any()).Return(tt.responseMessages, nil)
 
 			mockReq.EXPECT().PipecatV1PipecatcallStart(
 				ctx,
@@ -394,7 +394,7 @@ func Test_ServiceStart_serviceStartReferenceTypeConversation(t *testing.T) {
 
 			mockMessage.EXPECT().Create(ctx, tt.responseAIcall.CustomerID, tt.responseAIcall.ID, message.DirectionOutgoing, message.RoleUser, tt.expectMessageText, nil, "").Return(&message.Message{}, nil)
 
-			mockMessage.EXPECT().Gets(ctx, tt.responseAIcall.ID, gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseMessages, nil)
+			mockMessage.EXPECT().Gets(ctx, uint64(100), gomock.Any(), gomock.Any()).Return(tt.responseMessages, nil)
 
 			mockReq.EXPECT().PipecatV1PipecatcallStart(
 				ctx,
@@ -568,7 +568,7 @@ func Test_ServiceStartTypeTask(t *testing.T) {
 				).Return(&message.Message{}, nil)
 			}
 
-			mockMessage.EXPECT().Gets(ctx, tt.expectAIcall.ID, gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseMessages, nil)
+			mockMessage.EXPECT().Gets(ctx, uint64(100), gomock.Any(), gomock.Any()).Return(tt.responseMessages, nil)
 
 			// start pipecatcall
 			mockReq.EXPECT().PipecatV1PipecatcallStart(
