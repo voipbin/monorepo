@@ -364,6 +364,7 @@ func runExtensionList(cmd *cobra.Command, args []string) error {
 	// Build filters with typed Field constants
 	filters := make(map[extension.Field]any)
 	filters[extension.FieldCustomerID] = customerID
+	filters[extension.FieldDeleted] = false // Only show active extensions (not deleted)
 
 	if domain := viper.GetString("domain"); domain != "" {
 		filters[extension.FieldDomainName] = domain
@@ -717,6 +718,7 @@ func runTrunkList(cmd *cobra.Command, args []string) error {
 	// Build filters with typed Field constants
 	filters := make(map[trunk.Field]any)
 	filters[trunk.FieldCustomerID] = customerID
+	filters[trunk.FieldDeleted] = false // Only show active trunks (not deleted)
 
 	if domain := viper.GetString("domain"); domain != "" {
 		filters[trunk.FieldDomainName] = domain

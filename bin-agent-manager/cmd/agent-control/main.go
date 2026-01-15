@@ -260,6 +260,7 @@ func runList(cmd *cobra.Command, args []string) error {
 
 	filters := map[agent.Field]any{
 		agent.FieldCustomerID: customerID,
+		agent.FieldDeleted:    false, // Only show active agents (not deleted)
 	}
 
 	fmt.Printf("\nRetrieving Agents... limit: %d, token: %s, filters: %v\n", limit, token, filters)
