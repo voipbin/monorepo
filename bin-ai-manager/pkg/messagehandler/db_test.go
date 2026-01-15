@@ -128,21 +128,20 @@ func Test_Gets(t *testing.T) {
 	tests := []struct {
 		name string
 
-		aicallID uuid.UUID
-		size     uint64
-		token    string
-		filters  map[message.Field]any
+		size    uint64
+		token   string
+		filters map[message.Field]any
 
 		responseMessages []*message.Message
 	}{
 		{
 			name: "normal",
 
-			aicallID: uuid.FromStringOrNil("5774f2dc-f262-11ef-b704-bb967f775316"),
-			size:     10,
-			token:    "2023-01-03 21:35:02.809",
+			size:  10,
+			token: "2023-01-03 21:35:02.809",
 			filters: map[message.Field]any{
-				message.FieldDeleted: false,
+				message.FieldAIcallID: uuid.FromStringOrNil("5774f2dc-f262-11ef-b704-bb967f775316"),
+				message.FieldDeleted:  false,
 			},
 
 			responseMessages: []*message.Message{
@@ -173,7 +172,7 @@ func Test_Gets(t *testing.T) {
 
 			mockDB.EXPECT().MessageGets(ctx, tt.size, tt.token, gomock.Any()).Return(tt.responseMessages, nil)
 
-			res, err := h.Gets(ctx, tt.aicallID, tt.size, tt.token, tt.filters)
+			res, err := h.Gets(ctx, tt.size, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

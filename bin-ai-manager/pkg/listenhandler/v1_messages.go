@@ -34,9 +34,6 @@ func (h *listenHandler) processV1MessagesGet(ctx context.Context, m *sock.Reques
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// get aicall id (still from URL for backward compatibility)
-	aicallID := uuid.FromStringOrNil(u.Query().Get("aicall_id"))
-
 	// get filters from request body
 	tmpFilters, err := utilhandler.ParseFiltersFromRequestBody(m.Data)
 	if err != nil {
@@ -52,13 +49,12 @@ func (h *listenHandler) processV1MessagesGet(ctx context.Context, m *sock.Reques
 	}
 
 	log = log.WithFields(logrus.Fields{
-		"aicall_id": aicallID,
-		"size":      pageSize,
-		"token":     pageToken,
-		"filters":   typedFilters,
+		"size":    pageSize,
+		"token":   pageToken,
+		"filters": typedFilters,
 	})
 
-	tmp, err := h.messageHandler.Gets(ctx, aicallID, pageSize, pageToken, typedFilters)
+	tmp, err := h.messageHandler.Gets(ctx, pageSize, pageToken, typedFilters)
 	if err != nil {
 		log.Debugf("Could not get messages. err: %v", err)
 		return simpleResponse(500), nil

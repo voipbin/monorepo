@@ -1102,6 +1102,36 @@ Variables use format `${variable.key}`:
 
 This pattern was implemented as part of the `commondatabasehandler` refactoring. See `docs/plans/2026-01-14-listenhandler-filter-parsing-implementation-plan.md` for complete implementation details.
 
+**🚨 CRITICAL RULE: NEVER parse filter data from URL query parameters**
+
+**ONLY pagination parameters** (`page_size`, `page_token`) should be parsed from URL query parameters:
+```go
+// ✅ CORRECT - Parse pagination from URL
+tmpSize, _ := strconv.Atoi(u.Query().Get(PageSize))
+pageSize := uint64(tmpSize)
+pageToken := u.Query().Get(PageToken)
+
+// ✅ CORRECT - Parse filters from request body
+tmpFilters, err := utilhandler.ParseFiltersFromRequestBody(m.Data)
+typedFilters, err := utilhandler.ConvertFilters[resource.FieldStruct, resource.Field](...)
+```
+
+```go
+// ❌ WRONG - Never parse filter data from URL
+aicallID := uuid.FromStringOrNil(u.Query().Get("aicall_id"))  // BUG!
+customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))  // BUG!
+
+// These will be uuid.Nil because requesthandler sends them in body, not URL
+// This causes empty query results and is a common bug pattern
+```
+
+**Why this is critical:**
+- `bin-common-handler/pkg/requesthandler` sends **ALL filters in request body**, not URL
+- Parsing from URL gets `uuid.Nil` or empty strings → database queries return empty results
+- This bug was found in `bin-ai-manager/v1_messages.go` (see `docs/plans/2026-01-16-fix-aimessages-empty-list-bug-design.md`)
+
+**Reference implementation:** `bin-agent-manager/pkg/listenhandler/v1_agents.go:20-53`
+
 **How it works:**
 
 **Step 1: Define FieldStruct in model package**

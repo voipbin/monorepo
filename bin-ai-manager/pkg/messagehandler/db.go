@@ -64,13 +64,7 @@ func (h *messageHandler) Get(ctx context.Context, id uuid.UUID) (*message.Messag
 	return res, nil
 }
 
-func (h *messageHandler) Gets(ctx context.Context, aicallID uuid.UUID, size uint64, token string, filters map[message.Field]any) ([]*message.Message, error) {
-	// Add aicall_id to filters
-	if filters == nil {
-		filters = make(map[message.Field]any)
-	}
-	filters[message.FieldAIcallID] = aicallID
-
+func (h *messageHandler) Gets(ctx context.Context, size uint64, token string, filters map[message.Field]any) ([]*message.Message, error) {
 	res, err := h.db.MessageGets(ctx, size, token, filters)
 	if err != nil {
 		return nil, err
