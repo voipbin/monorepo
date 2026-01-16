@@ -439,7 +439,7 @@ func Test_FlowGets(t *testing.T) {
 
 			mockReq.EXPECT().FlowV1FlowList(ctx, tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.responseFlows, nil)
 
-			res, err := h.FlowGets(ctx, tt.agent, tt.pageSize, tt.pageToken)
+			res, err := h.FlowList(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

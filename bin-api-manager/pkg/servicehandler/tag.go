@@ -81,7 +81,7 @@ func (h *serviceHandler) TagGet(ctx context.Context, a *amagent.Agent, id uuid.U
 
 // TagGets sends a request to agent-manager
 // to getting a list of tags.
-func (h *serviceHandler) TagGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*tmtag.WebhookMessage, error) {
+func (h *serviceHandler) TagList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*tmtag.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "TagGets",
 		"customer_id": a.CustomerID,

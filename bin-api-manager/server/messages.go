@@ -41,7 +41,7 @@ func (h *server) GetMessages(c *gin.Context, params openapi_server.GetMessagesPa
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.MessageGets(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.MessageList(c.Request.Context(), &a, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get messages list. err: %v", err)
 		c.AbortWithStatus(400)

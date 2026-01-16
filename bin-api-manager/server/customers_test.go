@@ -172,7 +172,7 @@ func Test_customersGet(t *testing.T) {
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CustomerGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken, tt.expectFilters).Return(tt.responseCustomers, nil)
+			mockSvc.EXPECT().CustomerList(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken, tt.expectFilters).Return(tt.responseCustomers, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

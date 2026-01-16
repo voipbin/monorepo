@@ -137,7 +137,7 @@ func Test_ProviderGets(t *testing.T) {
 
 			mockReq.EXPECT().RouteV1ProviderList(ctx, tt.pageToken, tt.pageSize).Return(tt.responseProviders, nil)
 
-			res, err := h.ProviderGets(ctx, tt.agent, tt.pageSize, tt.pageToken)
+			res, err := h.ProviderList(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

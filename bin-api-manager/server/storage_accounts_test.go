@@ -77,7 +77,7 @@ func Test_storageAccountsGet(t *testing.T) {
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().StorageAccountGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseAccounts, nil)
+			mockSvc.EXPECT().StorageAccountList(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseAccounts, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

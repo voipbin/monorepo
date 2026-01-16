@@ -80,7 +80,7 @@ func (h *server) GetTrunks(c *gin.Context, params openapi_server.GetTrunksParams
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.TrunkGets(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.TrunkList(c.Request.Context(), &a, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get a trunk list. err: %v", err)
 		c.AbortWithStatus(400)

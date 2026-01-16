@@ -26,7 +26,7 @@ func (h *server) GetServiceAgentsExtensions(c *gin.Context, params openapi_serve
 		"agent": a,
 	})
 
-	tmps, err := h.serviceHandler.ServiceAgentExtensionGets(c.Request.Context(), &a)
+	tmps, err := h.serviceHandler.ServiceAgentExtensionList(c.Request.Context(), &a)
 	if err != nil {
 		log.Errorf("Could not get extensions info. err: %v", err)
 		c.AbortWithStatus(400)

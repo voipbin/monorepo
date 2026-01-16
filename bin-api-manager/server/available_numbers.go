@@ -43,7 +43,7 @@ func (h *server) GetAvailableNumbers(c *gin.Context, params openapi_server.GetAv
 		return
 	}
 
-	tmps, err := h.serviceHandler.AvailableNumberGets(c.Request.Context(), &a, pageSize, countryCode)
+	tmps, err := h.serviceHandler.AvailableNumberList(c.Request.Context(), &a, pageSize, countryCode)
 	if err != nil {
 		log.Errorf("Could not get available numbers. err: %v", err)
 		c.AbortWithStatus(500)

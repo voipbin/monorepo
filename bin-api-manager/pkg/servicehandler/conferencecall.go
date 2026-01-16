@@ -59,7 +59,7 @@ func (h *serviceHandler) ConferencecallGet(ctx context.Context, a *amagent.Agent
 
 // ConferencecallGets gets the list of conferencecall.
 // It returns list of conferencecalls if it succeed.
-func (h *serviceHandler) ConferencecallGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*cfconferencecall.WebhookMessage, error) {
+func (h *serviceHandler) ConferencecallList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*cfconferencecall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ConferencecallGets",
 		"customer_id": a.CustomerID,

@@ -95,7 +95,7 @@ func (h *server) GetBillingAccounts(c *gin.Context, params openapi_server.GetBil
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.BillingAccountGets(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.BillingAccountList(c.Request.Context(), &a, pageSize, pageToken)
 	if err != nil {
 		logrus.Errorf("Could not get billing accounts info. err: %v", err)
 		c.AbortWithStatus(400)

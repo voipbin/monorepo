@@ -115,7 +115,7 @@ func (h *serviceHandler) ExtensionGet(ctx context.Context, a *amagent.Agent, id 
 
 // ExtensionGetsByCustomerID gets the list of extensions of the given customer id.
 // It returns list of extensions if it succeed.
-func (h *serviceHandler) ExtensionGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*rmextension.WebhookMessage, error) {
+func (h *serviceHandler) ExtensionList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*rmextension.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "ExtensionGetsByCustomerID",
 		"agent": a,

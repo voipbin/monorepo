@@ -84,7 +84,7 @@ func Test_OrderNumberGets(t *testing.T) {
 
 			mockReq.EXPECT().NumberV1NumberList(ctx, tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.response, nil)
 
-			res, err := h.NumberGets(ctx, tt.agent, tt.pageSize, tt.pageToken)
+			res, err := h.NumberList(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

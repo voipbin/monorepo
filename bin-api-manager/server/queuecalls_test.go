@@ -113,7 +113,7 @@ func Test_queuecallsGet(t *testing.T) {
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().QueuecallGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseCalls, nil)
+			mockSvc.EXPECT().QueuecallList(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseCalls, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

@@ -219,7 +219,7 @@ func Test_CallsGET(t *testing.T) {
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().CallGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseCalls, nil)
+			mockSvc.EXPECT().CallList(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseCalls, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

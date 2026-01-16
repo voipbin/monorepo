@@ -217,7 +217,7 @@ func Test_BillingAccountGets(t *testing.T) {
 
 			mockReq.EXPECT().BillingV1AccountList(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseBillingAcounts, nil)
 
-			res, err := h.BillingAccountGets(ctx, tt.agent, tt.size, tt.token)
+			res, err := h.BillingAccountList(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

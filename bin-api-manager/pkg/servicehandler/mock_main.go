@@ -392,19 +392,19 @@ func (mr *MockServiceHandlerMockRecorder) AccesskeyGet(ctx, a, accesskeyID any) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccesskeyGet", reflect.TypeOf((*MockServiceHandler)(nil).AccesskeyGet), ctx, a, accesskeyID)
 }
 
-// AccesskeyGets mocks base method.
-func (m *MockServiceHandler) AccesskeyGets(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*accesskey.WebhookMessage, error) {
+// AccesskeyList mocks base method.
+func (m *MockServiceHandler) AccesskeyList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*accesskey.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AccesskeyGets", ctx, a, size, token)
+	ret := m.ctrl.Call(m, "AccesskeyList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*accesskey.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// AccesskeyGets indicates an expected call of AccesskeyGets.
-func (mr *MockServiceHandlerMockRecorder) AccesskeyGets(ctx, a, size, token any) *gomock.Call {
+// AccesskeyList indicates an expected call of AccesskeyList.
+func (mr *MockServiceHandlerMockRecorder) AccesskeyList(ctx, a, size, token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccesskeyGets", reflect.TypeOf((*MockServiceHandler)(nil).AccesskeyGets), ctx, a, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccesskeyList", reflect.TypeOf((*MockServiceHandler)(nil).AccesskeyList), ctx, a, size, token)
 }
 
 // AccesskeyRawGetByToken mocks base method.
@@ -482,19 +482,19 @@ func (mr *MockServiceHandlerMockRecorder) ActiveflowGet(ctx, a, activeflowID any
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveflowGet", reflect.TypeOf((*MockServiceHandler)(nil).ActiveflowGet), ctx, a, activeflowID)
 }
 
-// ActiveflowGets mocks base method.
-func (m *MockServiceHandler) ActiveflowGets(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*activeflow.WebhookMessage, error) {
+// ActiveflowList mocks base method.
+func (m *MockServiceHandler) ActiveflowList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*activeflow.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ActiveflowGets", ctx, a, size, token)
+	ret := m.ctrl.Call(m, "ActiveflowList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*activeflow.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ActiveflowGets indicates an expected call of ActiveflowGets.
-func (mr *MockServiceHandlerMockRecorder) ActiveflowGets(ctx, a, size, token any) *gomock.Call {
+// ActiveflowList indicates an expected call of ActiveflowList.
+func (mr *MockServiceHandlerMockRecorder) ActiveflowList(ctx, a, size, token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveflowGets", reflect.TypeOf((*MockServiceHandler)(nil).ActiveflowGets), ctx, a, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveflowList", reflect.TypeOf((*MockServiceHandler)(nil).ActiveflowList), ctx, a, size, token)
 }
 
 // ActiveflowStop mocks base method.
@@ -557,19 +557,19 @@ func (mr *MockServiceHandlerMockRecorder) AgentGet(ctx, a, agentID any) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentGet", reflect.TypeOf((*MockServiceHandler)(nil).AgentGet), ctx, a, agentID)
 }
 
-// AgentGets mocks base method.
-func (m *MockServiceHandler) AgentGets(ctx context.Context, a *agent.Agent, size uint64, token string, filters map[string]string) ([]*agent.WebhookMessage, error) {
+// AgentList mocks base method.
+func (m *MockServiceHandler) AgentList(ctx context.Context, a *agent.Agent, size uint64, token string, filters map[string]string) ([]*agent.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AgentGets", ctx, a, size, token, filters)
+	ret := m.ctrl.Call(m, "AgentList", ctx, a, size, token, filters)
 	ret0, _ := ret[0].([]*agent.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// AgentGets indicates an expected call of AgentGets.
-func (mr *MockServiceHandlerMockRecorder) AgentGets(ctx, a, size, token, filters any) *gomock.Call {
+// AgentList indicates an expected call of AgentList.
+func (mr *MockServiceHandlerMockRecorder) AgentList(ctx, a, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentGets", reflect.TypeOf((*MockServiceHandler)(nil).AgentGets), ctx, a, size, token, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentList", reflect.TypeOf((*MockServiceHandler)(nil).AgentList), ctx, a, size, token, filters)
 }
 
 // AgentUpdate mocks base method.
@@ -722,19 +722,19 @@ func (mr *MockServiceHandlerMockRecorder) AuthLogin(ctx, username, password any)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AuthLogin", reflect.TypeOf((*MockServiceHandler)(nil).AuthLogin), ctx, username, password)
 }
 
-// AvailableNumberGets mocks base method.
-func (m *MockServiceHandler) AvailableNumberGets(ctx context.Context, a *agent.Agent, size uint64, countryCode string) ([]*availablenumber.WebhookMessage, error) {
+// AvailableNumberList mocks base method.
+func (m *MockServiceHandler) AvailableNumberList(ctx context.Context, a *agent.Agent, size uint64, countryCode string) ([]*availablenumber.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AvailableNumberGets", ctx, a, size, countryCode)
+	ret := m.ctrl.Call(m, "AvailableNumberList", ctx, a, size, countryCode)
 	ret0, _ := ret[0].([]*availablenumber.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// AvailableNumberGets indicates an expected call of AvailableNumberGets.
-func (mr *MockServiceHandlerMockRecorder) AvailableNumberGets(ctx, a, size, countryCode any) *gomock.Call {
+// AvailableNumberList indicates an expected call of AvailableNumberList.
+func (mr *MockServiceHandlerMockRecorder) AvailableNumberList(ctx, a, size, countryCode any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AvailableNumberGets", reflect.TypeOf((*MockServiceHandler)(nil).AvailableNumberGets), ctx, a, size, countryCode)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AvailableNumberList", reflect.TypeOf((*MockServiceHandler)(nil).AvailableNumberList), ctx, a, size, countryCode)
 }
 
 // BillingAccountAddBalanceForce mocks base method.
@@ -797,19 +797,19 @@ func (mr *MockServiceHandlerMockRecorder) BillingAccountGet(ctx, a, billingAccou
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingAccountGet", reflect.TypeOf((*MockServiceHandler)(nil).BillingAccountGet), ctx, a, billingAccountID)
 }
 
-// BillingAccountGets mocks base method.
-func (m *MockServiceHandler) BillingAccountGets(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*account.WebhookMessage, error) {
+// BillingAccountList mocks base method.
+func (m *MockServiceHandler) BillingAccountList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*account.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "BillingAccountGets", ctx, a, size, token)
+	ret := m.ctrl.Call(m, "BillingAccountList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*account.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// BillingAccountGets indicates an expected call of BillingAccountGets.
-func (mr *MockServiceHandlerMockRecorder) BillingAccountGets(ctx, a, size, token any) *gomock.Call {
+// BillingAccountList indicates an expected call of BillingAccountList.
+func (mr *MockServiceHandlerMockRecorder) BillingAccountList(ctx, a, size, token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingAccountGets", reflect.TypeOf((*MockServiceHandler)(nil).BillingAccountGets), ctx, a, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingAccountList", reflect.TypeOf((*MockServiceHandler)(nil).BillingAccountList), ctx, a, size, token)
 }
 
 // BillingAccountSubtractBalanceForce mocks base method.
@@ -872,19 +872,19 @@ func (mr *MockServiceHandlerMockRecorder) BillingGet(ctx, a, billingID any) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingGet", reflect.TypeOf((*MockServiceHandler)(nil).BillingGet), ctx, a, billingID)
 }
 
-// BillingGets mocks base method.
-func (m *MockServiceHandler) BillingGets(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*billing.WebhookMessage, error) {
+// BillingList mocks base method.
+func (m *MockServiceHandler) BillingList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*billing.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "BillingGets", ctx, a, size, token)
+	ret := m.ctrl.Call(m, "BillingList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*billing.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// BillingGets indicates an expected call of BillingGets.
-func (mr *MockServiceHandlerMockRecorder) BillingGets(ctx, a, size, token any) *gomock.Call {
+// BillingList indicates an expected call of BillingList.
+func (mr *MockServiceHandlerMockRecorder) BillingList(ctx, a, size, token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingGets", reflect.TypeOf((*MockServiceHandler)(nil).BillingGets), ctx, a, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingList", reflect.TypeOf((*MockServiceHandler)(nil).BillingList), ctx, a, size, token)
 }
 
 // CallCreate mocks base method.
@@ -933,21 +933,6 @@ func (mr *MockServiceHandlerMockRecorder) CallGet(ctx, a, callID any) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallGet", reflect.TypeOf((*MockServiceHandler)(nil).CallGet), ctx, a, callID)
 }
 
-// CallGets mocks base method.
-func (m *MockServiceHandler) CallGets(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*call.WebhookMessage, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallGets", ctx, a, size, token)
-	ret0, _ := ret[0].([]*call.WebhookMessage)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CallGets indicates an expected call of CallGets.
-func (mr *MockServiceHandlerMockRecorder) CallGets(ctx, a, size, token any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallGets", reflect.TypeOf((*MockServiceHandler)(nil).CallGets), ctx, a, size, token)
-}
-
 // CallHangup mocks base method.
 func (m *MockServiceHandler) CallHangup(ctx context.Context, a *agent.Agent, callID uuid.UUID) (*call.WebhookMessage, error) {
 	m.ctrl.T.Helper()
@@ -989,6 +974,21 @@ func (m *MockServiceHandler) CallHoldOn(ctx context.Context, a *agent.Agent, cal
 func (mr *MockServiceHandlerMockRecorder) CallHoldOn(ctx, a, callID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallHoldOn", reflect.TypeOf((*MockServiceHandler)(nil).CallHoldOn), ctx, a, callID)
+}
+
+// CallList mocks base method.
+func (m *MockServiceHandler) CallList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*call.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallList", ctx, a, size, token)
+	ret0, _ := ret[0].([]*call.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CallList indicates an expected call of CallList.
+func (mr *MockServiceHandlerMockRecorder) CallList(ctx, a, size, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallList", reflect.TypeOf((*MockServiceHandler)(nil).CallList), ctx, a, size, token)
 }
 
 // CallMOHOff mocks base method.
@@ -1313,21 +1313,6 @@ func (mr *MockServiceHandlerMockRecorder) CampaigncallGet(ctx, a, campaigncallID
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaigncallGet", reflect.TypeOf((*MockServiceHandler)(nil).CampaigncallGet), ctx, a, campaigncallID)
 }
 
-// CampaigncallGets mocks base method.
-func (m *MockServiceHandler) CampaigncallGets(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*campaigncall.WebhookMessage, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CampaigncallGets", ctx, a, size, token)
-	ret0, _ := ret[0].([]*campaigncall.WebhookMessage)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CampaigncallGets indicates an expected call of CampaigncallGets.
-func (mr *MockServiceHandlerMockRecorder) CampaigncallGets(ctx, a, size, token any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaigncallGets", reflect.TypeOf((*MockServiceHandler)(nil).CampaigncallGets), ctx, a, size, token)
-}
-
 // CampaigncallGetsByCampaignID mocks base method.
 func (m *MockServiceHandler) CampaigncallGetsByCampaignID(ctx context.Context, a *agent.Agent, campaignID uuid.UUID, size uint64, token string) ([]*campaigncall.WebhookMessage, error) {
 	m.ctrl.T.Helper()
@@ -1341,6 +1326,21 @@ func (m *MockServiceHandler) CampaigncallGetsByCampaignID(ctx context.Context, a
 func (mr *MockServiceHandlerMockRecorder) CampaigncallGetsByCampaignID(ctx, a, campaignID, size, token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaigncallGetsByCampaignID", reflect.TypeOf((*MockServiceHandler)(nil).CampaigncallGetsByCampaignID), ctx, a, campaignID, size, token)
+}
+
+// CampaigncallList mocks base method.
+func (m *MockServiceHandler) CampaigncallList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*campaigncall.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CampaigncallList", ctx, a, size, token)
+	ret0, _ := ret[0].([]*campaigncall.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CampaigncallList indicates an expected call of CampaigncallList.
+func (mr *MockServiceHandlerMockRecorder) CampaigncallList(ctx, a, size, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaigncallList", reflect.TypeOf((*MockServiceHandler)(nil).CampaigncallList), ctx, a, size, token)
 }
 
 // ChatAddParticipantID mocks base method.
@@ -1703,19 +1703,19 @@ func (mr *MockServiceHandlerMockRecorder) ConferenceGet(ctx, a, id any) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceGet", reflect.TypeOf((*MockServiceHandler)(nil).ConferenceGet), ctx, a, id)
 }
 
-// ConferenceGets mocks base method.
-func (m *MockServiceHandler) ConferenceGets(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*conference.WebhookMessage, error) {
+// ConferenceList mocks base method.
+func (m *MockServiceHandler) ConferenceList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*conference.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConferenceGets", ctx, a, size, token)
+	ret := m.ctrl.Call(m, "ConferenceList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*conference.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ConferenceGets indicates an expected call of ConferenceGets.
-func (mr *MockServiceHandlerMockRecorder) ConferenceGets(ctx, a, size, token any) *gomock.Call {
+// ConferenceList indicates an expected call of ConferenceList.
+func (mr *MockServiceHandlerMockRecorder) ConferenceList(ctx, a, size, token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceGets", reflect.TypeOf((*MockServiceHandler)(nil).ConferenceGets), ctx, a, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceList", reflect.TypeOf((*MockServiceHandler)(nil).ConferenceList), ctx, a, size, token)
 }
 
 // ConferenceMediaStreamStart mocks base method.
@@ -1822,21 +1822,6 @@ func (mr *MockServiceHandlerMockRecorder) ConferencecallGet(ctx, a, id any) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferencecallGet", reflect.TypeOf((*MockServiceHandler)(nil).ConferencecallGet), ctx, a, id)
 }
 
-// ConferencecallGets mocks base method.
-func (m *MockServiceHandler) ConferencecallGets(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*conferencecall.WebhookMessage, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConferencecallGets", ctx, a, size, token)
-	ret0, _ := ret[0].([]*conferencecall.WebhookMessage)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ConferencecallGets indicates an expected call of ConferencecallGets.
-func (mr *MockServiceHandlerMockRecorder) ConferencecallGets(ctx, a, size, token any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferencecallGets", reflect.TypeOf((*MockServiceHandler)(nil).ConferencecallGets), ctx, a, size, token)
-}
-
 // ConferencecallKick mocks base method.
 func (m *MockServiceHandler) ConferencecallKick(ctx context.Context, a *agent.Agent, conferencecallID uuid.UUID) (*conferencecall.WebhookMessage, error) {
 	m.ctrl.T.Helper()
@@ -1850,6 +1835,21 @@ func (m *MockServiceHandler) ConferencecallKick(ctx context.Context, a *agent.Ag
 func (mr *MockServiceHandlerMockRecorder) ConferencecallKick(ctx, a, conferencecallID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferencecallKick", reflect.TypeOf((*MockServiceHandler)(nil).ConferencecallKick), ctx, a, conferencecallID)
+}
+
+// ConferencecallList mocks base method.
+func (m *MockServiceHandler) ConferencecallList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*conferencecall.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConferencecallList", ctx, a, size, token)
+	ret0, _ := ret[0].([]*conferencecall.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConferencecallList indicates an expected call of ConferencecallList.
+func (mr *MockServiceHandlerMockRecorder) ConferencecallList(ctx, a, size, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferencecallList", reflect.TypeOf((*MockServiceHandler)(nil).ConferencecallList), ctx, a, size, token)
 }
 
 // ConversationAccountCreate mocks base method.
@@ -2047,19 +2047,19 @@ func (mr *MockServiceHandlerMockRecorder) CustomerGet(ctx, a, customerID any) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerGet", reflect.TypeOf((*MockServiceHandler)(nil).CustomerGet), ctx, a, customerID)
 }
 
-// CustomerGets mocks base method.
-func (m *MockServiceHandler) CustomerGets(ctx context.Context, a *agent.Agent, size uint64, token string, filters map[string]string) ([]*customer.WebhookMessage, error) {
+// CustomerList mocks base method.
+func (m *MockServiceHandler) CustomerList(ctx context.Context, a *agent.Agent, size uint64, token string, filters map[string]string) ([]*customer.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CustomerGets", ctx, a, size, token, filters)
+	ret := m.ctrl.Call(m, "CustomerList", ctx, a, size, token, filters)
 	ret0, _ := ret[0].([]*customer.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// CustomerGets indicates an expected call of CustomerGets.
-func (mr *MockServiceHandlerMockRecorder) CustomerGets(ctx, a, size, token, filters any) *gomock.Call {
+// CustomerList indicates an expected call of CustomerList.
+func (mr *MockServiceHandlerMockRecorder) CustomerList(ctx, a, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerGets", reflect.TypeOf((*MockServiceHandler)(nil).CustomerGets), ctx, a, size, token, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerList", reflect.TypeOf((*MockServiceHandler)(nil).CustomerList), ctx, a, size, token, filters)
 }
 
 // CustomerUpdate mocks base method.
@@ -2122,19 +2122,19 @@ func (mr *MockServiceHandlerMockRecorder) EmailGet(ctx, a, id any) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EmailGet", reflect.TypeOf((*MockServiceHandler)(nil).EmailGet), ctx, a, id)
 }
 
-// EmailGets mocks base method.
-func (m *MockServiceHandler) EmailGets(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*email.WebhookMessage, error) {
+// EmailList mocks base method.
+func (m *MockServiceHandler) EmailList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*email.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "EmailGets", ctx, a, size, token)
+	ret := m.ctrl.Call(m, "EmailList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*email.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// EmailGets indicates an expected call of EmailGets.
-func (mr *MockServiceHandlerMockRecorder) EmailGets(ctx, a, size, token any) *gomock.Call {
+// EmailList indicates an expected call of EmailList.
+func (mr *MockServiceHandlerMockRecorder) EmailList(ctx, a, size, token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EmailGets", reflect.TypeOf((*MockServiceHandler)(nil).EmailGets), ctx, a, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EmailList", reflect.TypeOf((*MockServiceHandler)(nil).EmailList), ctx, a, size, token)
 }
 
 // EmailSend mocks base method.
@@ -2197,19 +2197,19 @@ func (mr *MockServiceHandlerMockRecorder) ExtensionGet(ctx, a, id any) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionGet", reflect.TypeOf((*MockServiceHandler)(nil).ExtensionGet), ctx, a, id)
 }
 
-// ExtensionGets mocks base method.
-func (m *MockServiceHandler) ExtensionGets(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*extension.WebhookMessage, error) {
+// ExtensionList mocks base method.
+func (m *MockServiceHandler) ExtensionList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*extension.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ExtensionGets", ctx, a, size, token)
+	ret := m.ctrl.Call(m, "ExtensionList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*extension.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ExtensionGets indicates an expected call of ExtensionGets.
-func (mr *MockServiceHandlerMockRecorder) ExtensionGets(ctx, a, size, token any) *gomock.Call {
+// ExtensionList indicates an expected call of ExtensionList.
+func (mr *MockServiceHandlerMockRecorder) ExtensionList(ctx, a, size, token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionGets", reflect.TypeOf((*MockServiceHandler)(nil).ExtensionGets), ctx, a, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionList", reflect.TypeOf((*MockServiceHandler)(nil).ExtensionList), ctx, a, size, token)
 }
 
 // ExtensionUpdate mocks base method.
@@ -2272,19 +2272,19 @@ func (mr *MockServiceHandlerMockRecorder) FlowGet(ctx, a, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowGet", reflect.TypeOf((*MockServiceHandler)(nil).FlowGet), ctx, a, id)
 }
 
-// FlowGets mocks base method.
-func (m *MockServiceHandler) FlowGets(ctx context.Context, a *agent.Agent, pageSize uint64, pageToken string) ([]*flow.WebhookMessage, error) {
+// FlowList mocks base method.
+func (m *MockServiceHandler) FlowList(ctx context.Context, a *agent.Agent, pageSize uint64, pageToken string) ([]*flow.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlowGets", ctx, a, pageSize, pageToken)
+	ret := m.ctrl.Call(m, "FlowList", ctx, a, pageSize, pageToken)
 	ret0, _ := ret[0].([]*flow.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// FlowGets indicates an expected call of FlowGets.
-func (mr *MockServiceHandlerMockRecorder) FlowGets(ctx, a, pageSize, pageToken any) *gomock.Call {
+// FlowList indicates an expected call of FlowList.
+func (mr *MockServiceHandlerMockRecorder) FlowList(ctx, a, pageSize, pageToken any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowGets", reflect.TypeOf((*MockServiceHandler)(nil).FlowGets), ctx, a, pageSize, pageToken)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowList", reflect.TypeOf((*MockServiceHandler)(nil).FlowList), ctx, a, pageSize, pageToken)
 }
 
 // FlowUpdate mocks base method.
@@ -2347,21 +2347,6 @@ func (mr *MockServiceHandlerMockRecorder) GroupcallGet(ctx, a, groupcallID any) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupcallGet", reflect.TypeOf((*MockServiceHandler)(nil).GroupcallGet), ctx, a, groupcallID)
 }
 
-// GroupcallGets mocks base method.
-func (m *MockServiceHandler) GroupcallGets(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*groupcall.WebhookMessage, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GroupcallGets", ctx, a, size, token)
-	ret0, _ := ret[0].([]*groupcall.WebhookMessage)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GroupcallGets indicates an expected call of GroupcallGets.
-func (mr *MockServiceHandlerMockRecorder) GroupcallGets(ctx, a, size, token any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupcallGets", reflect.TypeOf((*MockServiceHandler)(nil).GroupcallGets), ctx, a, size, token)
-}
-
 // GroupcallHangup mocks base method.
 func (m *MockServiceHandler) GroupcallHangup(ctx context.Context, a *agent.Agent, groupcallID uuid.UUID) (*groupcall.WebhookMessage, error) {
 	m.ctrl.T.Helper()
@@ -2375,6 +2360,21 @@ func (m *MockServiceHandler) GroupcallHangup(ctx context.Context, a *agent.Agent
 func (mr *MockServiceHandlerMockRecorder) GroupcallHangup(ctx, a, groupcallID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupcallHangup", reflect.TypeOf((*MockServiceHandler)(nil).GroupcallHangup), ctx, a, groupcallID)
+}
+
+// GroupcallList mocks base method.
+func (m *MockServiceHandler) GroupcallList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*groupcall.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GroupcallList", ctx, a, size, token)
+	ret0, _ := ret[0].([]*groupcall.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GroupcallList indicates an expected call of GroupcallList.
+func (mr *MockServiceHandlerMockRecorder) GroupcallList(ctx, a, size, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupcallList", reflect.TypeOf((*MockServiceHandler)(nil).GroupcallList), ctx, a, size, token)
 }
 
 // MessageDelete mocks base method.
@@ -2407,19 +2407,19 @@ func (mr *MockServiceHandlerMockRecorder) MessageGet(ctx, a, id any) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageGet", reflect.TypeOf((*MockServiceHandler)(nil).MessageGet), ctx, a, id)
 }
 
-// MessageGets mocks base method.
-func (m *MockServiceHandler) MessageGets(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*message1.WebhookMessage, error) {
+// MessageList mocks base method.
+func (m *MockServiceHandler) MessageList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*message1.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MessageGets", ctx, a, size, token)
+	ret := m.ctrl.Call(m, "MessageList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*message1.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// MessageGets indicates an expected call of MessageGets.
-func (mr *MockServiceHandlerMockRecorder) MessageGets(ctx, a, size, token any) *gomock.Call {
+// MessageList indicates an expected call of MessageList.
+func (mr *MockServiceHandlerMockRecorder) MessageList(ctx, a, size, token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageGets", reflect.TypeOf((*MockServiceHandler)(nil).MessageGets), ctx, a, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageList", reflect.TypeOf((*MockServiceHandler)(nil).MessageList), ctx, a, size, token)
 }
 
 // MessageSend mocks base method.
@@ -2482,19 +2482,19 @@ func (mr *MockServiceHandlerMockRecorder) NumberGet(ctx, a, id any) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberGet", reflect.TypeOf((*MockServiceHandler)(nil).NumberGet), ctx, a, id)
 }
 
-// NumberGets mocks base method.
-func (m *MockServiceHandler) NumberGets(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*number.WebhookMessage, error) {
+// NumberList mocks base method.
+func (m *MockServiceHandler) NumberList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*number.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NumberGets", ctx, a, size, token)
+	ret := m.ctrl.Call(m, "NumberList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*number.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// NumberGets indicates an expected call of NumberGets.
-func (mr *MockServiceHandlerMockRecorder) NumberGets(ctx, a, size, token any) *gomock.Call {
+// NumberList indicates an expected call of NumberList.
+func (mr *MockServiceHandlerMockRecorder) NumberList(ctx, a, size, token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberGets", reflect.TypeOf((*MockServiceHandler)(nil).NumberGets), ctx, a, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberList", reflect.TypeOf((*MockServiceHandler)(nil).NumberList), ctx, a, size, token)
 }
 
 // NumberRenew mocks base method.
@@ -2842,19 +2842,19 @@ func (mr *MockServiceHandlerMockRecorder) ProviderGet(ctx, a, providerID any) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProviderGet", reflect.TypeOf((*MockServiceHandler)(nil).ProviderGet), ctx, a, providerID)
 }
 
-// ProviderGets mocks base method.
-func (m *MockServiceHandler) ProviderGets(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*provider.WebhookMessage, error) {
+// ProviderList mocks base method.
+func (m *MockServiceHandler) ProviderList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*provider.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ProviderGets", ctx, a, size, token)
+	ret := m.ctrl.Call(m, "ProviderList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*provider.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ProviderGets indicates an expected call of ProviderGets.
-func (mr *MockServiceHandlerMockRecorder) ProviderGets(ctx, a, size, token any) *gomock.Call {
+// ProviderList indicates an expected call of ProviderList.
+func (mr *MockServiceHandlerMockRecorder) ProviderList(ctx, a, size, token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProviderGets", reflect.TypeOf((*MockServiceHandler)(nil).ProviderGets), ctx, a, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProviderList", reflect.TypeOf((*MockServiceHandler)(nil).ProviderList), ctx, a, size, token)
 }
 
 // ProviderUpdate mocks base method.
@@ -2917,19 +2917,19 @@ func (mr *MockServiceHandlerMockRecorder) QueueGet(ctx, a, queueID any) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueGet", reflect.TypeOf((*MockServiceHandler)(nil).QueueGet), ctx, a, queueID)
 }
 
-// QueueGets mocks base method.
-func (m *MockServiceHandler) QueueGets(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*queue.WebhookMessage, error) {
+// QueueList mocks base method.
+func (m *MockServiceHandler) QueueList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*queue.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QueueGets", ctx, a, size, token)
+	ret := m.ctrl.Call(m, "QueueList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*queue.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// QueueGets indicates an expected call of QueueGets.
-func (mr *MockServiceHandlerMockRecorder) QueueGets(ctx, a, size, token any) *gomock.Call {
+// QueueList indicates an expected call of QueueList.
+func (mr *MockServiceHandlerMockRecorder) QueueList(ctx, a, size, token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueGets", reflect.TypeOf((*MockServiceHandler)(nil).QueueGets), ctx, a, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueList", reflect.TypeOf((*MockServiceHandler)(nil).QueueList), ctx, a, size, token)
 }
 
 // QueueUpdate mocks base method.
@@ -3007,21 +3007,6 @@ func (mr *MockServiceHandlerMockRecorder) QueuecallGet(ctx, a, queueID any) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallGet", reflect.TypeOf((*MockServiceHandler)(nil).QueuecallGet), ctx, a, queueID)
 }
 
-// QueuecallGets mocks base method.
-func (m *MockServiceHandler) QueuecallGets(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*queuecall.WebhookMessage, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QueuecallGets", ctx, a, size, token)
-	ret0, _ := ret[0].([]*queuecall.WebhookMessage)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// QueuecallGets indicates an expected call of QueuecallGets.
-func (mr *MockServiceHandlerMockRecorder) QueuecallGets(ctx, a, size, token any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallGets", reflect.TypeOf((*MockServiceHandler)(nil).QueuecallGets), ctx, a, size, token)
-}
-
 // QueuecallKick mocks base method.
 func (m *MockServiceHandler) QueuecallKick(ctx context.Context, a *agent.Agent, queuecallID uuid.UUID) (*queuecall.WebhookMessage, error) {
 	m.ctrl.T.Helper()
@@ -3050,6 +3035,21 @@ func (m *MockServiceHandler) QueuecallKickByReferenceID(ctx context.Context, a *
 func (mr *MockServiceHandlerMockRecorder) QueuecallKickByReferenceID(ctx, a, referenceID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallKickByReferenceID", reflect.TypeOf((*MockServiceHandler)(nil).QueuecallKickByReferenceID), ctx, a, referenceID)
+}
+
+// QueuecallList mocks base method.
+func (m *MockServiceHandler) QueuecallList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*queuecall.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QueuecallList", ctx, a, size, token)
+	ret0, _ := ret[0].([]*queuecall.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// QueuecallList indicates an expected call of QueuecallList.
+func (mr *MockServiceHandlerMockRecorder) QueuecallList(ctx, a, size, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallList", reflect.TypeOf((*MockServiceHandler)(nil).QueuecallList), ctx, a, size, token)
 }
 
 // RecordingDelete mocks base method.
@@ -3082,19 +3082,19 @@ func (mr *MockServiceHandlerMockRecorder) RecordingGet(ctx, a, id any) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingGet", reflect.TypeOf((*MockServiceHandler)(nil).RecordingGet), ctx, a, id)
 }
 
-// RecordingGets mocks base method.
-func (m *MockServiceHandler) RecordingGets(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*recording.WebhookMessage, error) {
+// RecordingList mocks base method.
+func (m *MockServiceHandler) RecordingList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*recording.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RecordingGets", ctx, a, size, token)
+	ret := m.ctrl.Call(m, "RecordingList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*recording.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// RecordingGets indicates an expected call of RecordingGets.
-func (mr *MockServiceHandlerMockRecorder) RecordingGets(ctx, a, size, token any) *gomock.Call {
+// RecordingList indicates an expected call of RecordingList.
+func (mr *MockServiceHandlerMockRecorder) RecordingList(ctx, a, size, token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingGets", reflect.TypeOf((*MockServiceHandler)(nil).RecordingGets), ctx, a, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingList", reflect.TypeOf((*MockServiceHandler)(nil).RecordingList), ctx, a, size, token)
 }
 
 // RecordingfileGet mocks base method.
@@ -3157,21 +3157,6 @@ func (mr *MockServiceHandlerMockRecorder) RouteGet(ctx, a, routeID any) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteGet", reflect.TypeOf((*MockServiceHandler)(nil).RouteGet), ctx, a, routeID)
 }
 
-// RouteGets mocks base method.
-func (m *MockServiceHandler) RouteGets(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*route.WebhookMessage, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RouteGets", ctx, a, size, token)
-	ret0, _ := ret[0].([]*route.WebhookMessage)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// RouteGets indicates an expected call of RouteGets.
-func (mr *MockServiceHandlerMockRecorder) RouteGets(ctx, a, size, token any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteGets", reflect.TypeOf((*MockServiceHandler)(nil).RouteGets), ctx, a, size, token)
-}
-
 // RouteGetsByCustomerID mocks base method.
 func (m *MockServiceHandler) RouteGetsByCustomerID(ctx context.Context, a *agent.Agent, customerID uuid.UUID, size uint64, token string) ([]*route.WebhookMessage, error) {
 	m.ctrl.T.Helper()
@@ -3185,6 +3170,21 @@ func (m *MockServiceHandler) RouteGetsByCustomerID(ctx context.Context, a *agent
 func (mr *MockServiceHandlerMockRecorder) RouteGetsByCustomerID(ctx, a, customerID, size, token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteGetsByCustomerID", reflect.TypeOf((*MockServiceHandler)(nil).RouteGetsByCustomerID), ctx, a, customerID, size, token)
+}
+
+// RouteList mocks base method.
+func (m *MockServiceHandler) RouteList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*route.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RouteList", ctx, a, size, token)
+	ret0, _ := ret[0].([]*route.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RouteList indicates an expected call of RouteList.
+func (mr *MockServiceHandlerMockRecorder) RouteList(ctx, a, size, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteList", reflect.TypeOf((*MockServiceHandler)(nil).RouteList), ctx, a, size, token)
 }
 
 // RouteUpdate mocks base method.
@@ -3217,19 +3217,19 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentAgentGet(ctx, a, agentID a
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentAgentGet", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentAgentGet), ctx, a, agentID)
 }
 
-// ServiceAgentAgentGets mocks base method.
-func (m *MockServiceHandler) ServiceAgentAgentGets(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*agent.WebhookMessage, error) {
+// ServiceAgentAgentList mocks base method.
+func (m *MockServiceHandler) ServiceAgentAgentList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*agent.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ServiceAgentAgentGets", ctx, a, size, token)
+	ret := m.ctrl.Call(m, "ServiceAgentAgentList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*agent.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ServiceAgentAgentGets indicates an expected call of ServiceAgentAgentGets.
-func (mr *MockServiceHandlerMockRecorder) ServiceAgentAgentGets(ctx, a, size, token any) *gomock.Call {
+// ServiceAgentAgentList indicates an expected call of ServiceAgentAgentList.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentAgentList(ctx, a, size, token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentAgentGets", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentAgentGets), ctx, a, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentAgentList", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentAgentList), ctx, a, size, token)
 }
 
 // ServiceAgentCallDelete mocks base method.
@@ -3262,19 +3262,19 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentCallGet(ctx, a, callID any
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentCallGet", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentCallGet), ctx, a, callID)
 }
 
-// ServiceAgentCallGets mocks base method.
-func (m *MockServiceHandler) ServiceAgentCallGets(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*call.WebhookMessage, error) {
+// ServiceAgentCallList mocks base method.
+func (m *MockServiceHandler) ServiceAgentCallList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*call.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ServiceAgentCallGets", ctx, a, size, token)
+	ret := m.ctrl.Call(m, "ServiceAgentCallList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*call.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ServiceAgentCallGets indicates an expected call of ServiceAgentCallGets.
-func (mr *MockServiceHandlerMockRecorder) ServiceAgentCallGets(ctx, a, size, token any) *gomock.Call {
+// ServiceAgentCallList indicates an expected call of ServiceAgentCallList.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentCallList(ctx, a, size, token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentCallGets", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentCallGets), ctx, a, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentCallList", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentCallList), ctx, a, size, token)
 }
 
 // ServiceAgentChatroomCreate mocks base method.
@@ -3322,19 +3322,19 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentChatroomGet(ctx, a, chatro
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentChatroomGet", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentChatroomGet), ctx, a, chatroomID)
 }
 
-// ServiceAgentChatroomGets mocks base method.
-func (m *MockServiceHandler) ServiceAgentChatroomGets(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*chatroom.WebhookMessage, error) {
+// ServiceAgentChatroomList mocks base method.
+func (m *MockServiceHandler) ServiceAgentChatroomList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*chatroom.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ServiceAgentChatroomGets", ctx, a, size, token)
+	ret := m.ctrl.Call(m, "ServiceAgentChatroomList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*chatroom.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ServiceAgentChatroomGets indicates an expected call of ServiceAgentChatroomGets.
-func (mr *MockServiceHandlerMockRecorder) ServiceAgentChatroomGets(ctx, a, size, token any) *gomock.Call {
+// ServiceAgentChatroomList indicates an expected call of ServiceAgentChatroomList.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentChatroomList(ctx, a, size, token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentChatroomGets", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentChatroomGets), ctx, a, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentChatroomList", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentChatroomList), ctx, a, size, token)
 }
 
 // ServiceAgentChatroomUpdateBasicInfo mocks base method.
@@ -3397,19 +3397,19 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentChatroommessageGet(ctx, a,
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentChatroommessageGet", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentChatroommessageGet), ctx, a, id)
 }
 
-// ServiceAgentChatroommessageGets mocks base method.
-func (m *MockServiceHandler) ServiceAgentChatroommessageGets(ctx context.Context, a *agent.Agent, chatroomID uuid.UUID, size uint64, token string) ([]*messagechatroom.WebhookMessage, error) {
+// ServiceAgentChatroommessageList mocks base method.
+func (m *MockServiceHandler) ServiceAgentChatroommessageList(ctx context.Context, a *agent.Agent, chatroomID uuid.UUID, size uint64, token string) ([]*messagechatroom.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ServiceAgentChatroommessageGets", ctx, a, chatroomID, size, token)
+	ret := m.ctrl.Call(m, "ServiceAgentChatroommessageList", ctx, a, chatroomID, size, token)
 	ret0, _ := ret[0].([]*messagechatroom.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ServiceAgentChatroommessageGets indicates an expected call of ServiceAgentChatroommessageGets.
-func (mr *MockServiceHandlerMockRecorder) ServiceAgentChatroommessageGets(ctx, a, chatroomID, size, token any) *gomock.Call {
+// ServiceAgentChatroommessageList indicates an expected call of ServiceAgentChatroommessageList.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentChatroommessageList(ctx, a, chatroomID, size, token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentChatroommessageGets", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentChatroommessageGets), ctx, a, chatroomID, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentChatroommessageList", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentChatroommessageList), ctx, a, chatroomID, size, token)
 }
 
 // ServiceAgentConversationGet mocks base method.
@@ -3427,34 +3427,34 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentConversationGet(ctx, a, co
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentConversationGet", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentConversationGet), ctx, a, conversationID)
 }
 
-// ServiceAgentConversationGets mocks base method.
-func (m *MockServiceHandler) ServiceAgentConversationGets(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*conversation.WebhookMessage, error) {
+// ServiceAgentConversationList mocks base method.
+func (m *MockServiceHandler) ServiceAgentConversationList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*conversation.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ServiceAgentConversationGets", ctx, a, size, token)
+	ret := m.ctrl.Call(m, "ServiceAgentConversationList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*conversation.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ServiceAgentConversationGets indicates an expected call of ServiceAgentConversationGets.
-func (mr *MockServiceHandlerMockRecorder) ServiceAgentConversationGets(ctx, a, size, token any) *gomock.Call {
+// ServiceAgentConversationList indicates an expected call of ServiceAgentConversationList.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentConversationList(ctx, a, size, token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentConversationGets", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentConversationGets), ctx, a, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentConversationList", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentConversationList), ctx, a, size, token)
 }
 
-// ServiceAgentConversationMessageGets mocks base method.
-func (m *MockServiceHandler) ServiceAgentConversationMessageGets(ctx context.Context, a *agent.Agent, conversationID uuid.UUID, size uint64, token string) ([]*message0.WebhookMessage, error) {
+// ServiceAgentConversationMessageList mocks base method.
+func (m *MockServiceHandler) ServiceAgentConversationMessageList(ctx context.Context, a *agent.Agent, conversationID uuid.UUID, size uint64, token string) ([]*message0.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ServiceAgentConversationMessageGets", ctx, a, conversationID, size, token)
+	ret := m.ctrl.Call(m, "ServiceAgentConversationMessageList", ctx, a, conversationID, size, token)
 	ret0, _ := ret[0].([]*message0.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ServiceAgentConversationMessageGets indicates an expected call of ServiceAgentConversationMessageGets.
-func (mr *MockServiceHandlerMockRecorder) ServiceAgentConversationMessageGets(ctx, a, conversationID, size, token any) *gomock.Call {
+// ServiceAgentConversationMessageList indicates an expected call of ServiceAgentConversationMessageList.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentConversationMessageList(ctx, a, conversationID, size, token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentConversationMessageGets", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentConversationMessageGets), ctx, a, conversationID, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentConversationMessageList", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentConversationMessageList), ctx, a, conversationID, size, token)
 }
 
 // ServiceAgentConversationMessageSend mocks base method.
@@ -3502,19 +3502,19 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentExtensionGet(ctx, a, exten
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentExtensionGet", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentExtensionGet), ctx, a, extensionID)
 }
 
-// ServiceAgentExtensionGets mocks base method.
-func (m *MockServiceHandler) ServiceAgentExtensionGets(ctx context.Context, a *agent.Agent) ([]*extension.WebhookMessage, error) {
+// ServiceAgentExtensionList mocks base method.
+func (m *MockServiceHandler) ServiceAgentExtensionList(ctx context.Context, a *agent.Agent) ([]*extension.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ServiceAgentExtensionGets", ctx, a)
+	ret := m.ctrl.Call(m, "ServiceAgentExtensionList", ctx, a)
 	ret0, _ := ret[0].([]*extension.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ServiceAgentExtensionGets indicates an expected call of ServiceAgentExtensionGets.
-func (mr *MockServiceHandlerMockRecorder) ServiceAgentExtensionGets(ctx, a any) *gomock.Call {
+// ServiceAgentExtensionList indicates an expected call of ServiceAgentExtensionList.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentExtensionList(ctx, a any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentExtensionGets", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentExtensionGets), ctx, a)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentExtensionList", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentExtensionList), ctx, a)
 }
 
 // ServiceAgentFileCreate mocks base method.
@@ -3562,19 +3562,19 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentFileGet(ctx, a, id any) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentFileGet", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentFileGet), ctx, a, id)
 }
 
-// ServiceAgentFileGets mocks base method.
-func (m *MockServiceHandler) ServiceAgentFileGets(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*file.WebhookMessage, error) {
+// ServiceAgentFileList mocks base method.
+func (m *MockServiceHandler) ServiceAgentFileList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*file.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ServiceAgentFileGets", ctx, a, size, token)
+	ret := m.ctrl.Call(m, "ServiceAgentFileList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*file.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ServiceAgentFileGets indicates an expected call of ServiceAgentFileGets.
-func (mr *MockServiceHandlerMockRecorder) ServiceAgentFileGets(ctx, a, size, token any) *gomock.Call {
+// ServiceAgentFileList indicates an expected call of ServiceAgentFileList.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentFileList(ctx, a, size, token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentFileGets", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentFileGets), ctx, a, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentFileList", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentFileList), ctx, a, size, token)
 }
 
 // ServiceAgentMeGet mocks base method.
@@ -3712,19 +3712,19 @@ func (mr *MockServiceHandlerMockRecorder) StorageAccountGetByCustomerID(ctx, a a
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageAccountGetByCustomerID", reflect.TypeOf((*MockServiceHandler)(nil).StorageAccountGetByCustomerID), ctx, a)
 }
 
-// StorageAccountGets mocks base method.
-func (m *MockServiceHandler) StorageAccountGets(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*account1.WebhookMessage, error) {
+// StorageAccountList mocks base method.
+func (m *MockServiceHandler) StorageAccountList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*account1.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StorageAccountGets", ctx, a, size, token)
+	ret := m.ctrl.Call(m, "StorageAccountList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*account1.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// StorageAccountGets indicates an expected call of StorageAccountGets.
-func (mr *MockServiceHandlerMockRecorder) StorageAccountGets(ctx, a, size, token any) *gomock.Call {
+// StorageAccountList indicates an expected call of StorageAccountList.
+func (mr *MockServiceHandlerMockRecorder) StorageAccountList(ctx, a, size, token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageAccountGets", reflect.TypeOf((*MockServiceHandler)(nil).StorageAccountGets), ctx, a, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageAccountList", reflect.TypeOf((*MockServiceHandler)(nil).StorageAccountList), ctx, a, size, token)
 }
 
 // StorageFileCreate mocks base method.
@@ -3772,19 +3772,19 @@ func (mr *MockServiceHandlerMockRecorder) StorageFileGet(ctx, a, id any) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageFileGet", reflect.TypeOf((*MockServiceHandler)(nil).StorageFileGet), ctx, a, id)
 }
 
-// StorageFileGets mocks base method.
-func (m *MockServiceHandler) StorageFileGets(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*file.WebhookMessage, error) {
+// StorageFileList mocks base method.
+func (m *MockServiceHandler) StorageFileList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*file.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StorageFileGets", ctx, a, size, token)
+	ret := m.ctrl.Call(m, "StorageFileList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*file.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// StorageFileGets indicates an expected call of StorageFileGets.
-func (mr *MockServiceHandlerMockRecorder) StorageFileGets(ctx, a, size, token any) *gomock.Call {
+// StorageFileList indicates an expected call of StorageFileList.
+func (mr *MockServiceHandlerMockRecorder) StorageFileList(ctx, a, size, token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageFileGets", reflect.TypeOf((*MockServiceHandler)(nil).StorageFileGets), ctx, a, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageFileList", reflect.TypeOf((*MockServiceHandler)(nil).StorageFileList), ctx, a, size, token)
 }
 
 // TagCreate mocks base method.
@@ -3832,19 +3832,19 @@ func (mr *MockServiceHandlerMockRecorder) TagGet(ctx, a, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TagGet", reflect.TypeOf((*MockServiceHandler)(nil).TagGet), ctx, a, id)
 }
 
-// TagGets mocks base method.
-func (m *MockServiceHandler) TagGets(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*tag.WebhookMessage, error) {
+// TagList mocks base method.
+func (m *MockServiceHandler) TagList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*tag.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TagGets", ctx, a, size, token)
+	ret := m.ctrl.Call(m, "TagList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*tag.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// TagGets indicates an expected call of TagGets.
-func (mr *MockServiceHandlerMockRecorder) TagGets(ctx, a, size, token any) *gomock.Call {
+// TagList indicates an expected call of TagList.
+func (mr *MockServiceHandlerMockRecorder) TagList(ctx, a, size, token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TagGets", reflect.TypeOf((*MockServiceHandler)(nil).TagGets), ctx, a, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TagList", reflect.TypeOf((*MockServiceHandler)(nil).TagList), ctx, a, size, token)
 }
 
 // TagUpdate mocks base method.
@@ -3892,19 +3892,19 @@ func (mr *MockServiceHandlerMockRecorder) TranscribeGet(ctx, a, routeID any) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscribeGet", reflect.TypeOf((*MockServiceHandler)(nil).TranscribeGet), ctx, a, routeID)
 }
 
-// TranscribeGets mocks base method.
-func (m *MockServiceHandler) TranscribeGets(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*transcribe.WebhookMessage, error) {
+// TranscribeList mocks base method.
+func (m *MockServiceHandler) TranscribeList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*transcribe.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TranscribeGets", ctx, a, size, token)
+	ret := m.ctrl.Call(m, "TranscribeList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*transcribe.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// TranscribeGets indicates an expected call of TranscribeGets.
-func (mr *MockServiceHandlerMockRecorder) TranscribeGets(ctx, a, size, token any) *gomock.Call {
+// TranscribeList indicates an expected call of TranscribeList.
+func (mr *MockServiceHandlerMockRecorder) TranscribeList(ctx, a, size, token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscribeGets", reflect.TypeOf((*MockServiceHandler)(nil).TranscribeGets), ctx, a, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscribeList", reflect.TypeOf((*MockServiceHandler)(nil).TranscribeList), ctx, a, size, token)
 }
 
 // TranscribeStart mocks base method.
@@ -3937,19 +3937,19 @@ func (mr *MockServiceHandlerMockRecorder) TranscribeStop(ctx, a, transcribeID an
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscribeStop", reflect.TypeOf((*MockServiceHandler)(nil).TranscribeStop), ctx, a, transcribeID)
 }
 
-// TranscriptGets mocks base method.
-func (m *MockServiceHandler) TranscriptGets(ctx context.Context, a *agent.Agent, transcribeID uuid.UUID) ([]*transcript.WebhookMessage, error) {
+// TranscriptList mocks base method.
+func (m *MockServiceHandler) TranscriptList(ctx context.Context, a *agent.Agent, transcribeID uuid.UUID) ([]*transcript.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TranscriptGets", ctx, a, transcribeID)
+	ret := m.ctrl.Call(m, "TranscriptList", ctx, a, transcribeID)
 	ret0, _ := ret[0].([]*transcript.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// TranscriptGets indicates an expected call of TranscriptGets.
-func (mr *MockServiceHandlerMockRecorder) TranscriptGets(ctx, a, transcribeID any) *gomock.Call {
+// TranscriptList indicates an expected call of TranscriptList.
+func (mr *MockServiceHandlerMockRecorder) TranscriptList(ctx, a, transcribeID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscriptGets", reflect.TypeOf((*MockServiceHandler)(nil).TranscriptGets), ctx, a, transcribeID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscriptList", reflect.TypeOf((*MockServiceHandler)(nil).TranscriptList), ctx, a, transcribeID)
 }
 
 // TransferStart mocks base method.
@@ -4012,19 +4012,19 @@ func (mr *MockServiceHandlerMockRecorder) TrunkGet(ctx, a, id any) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TrunkGet", reflect.TypeOf((*MockServiceHandler)(nil).TrunkGet), ctx, a, id)
 }
 
-// TrunkGets mocks base method.
-func (m *MockServiceHandler) TrunkGets(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*trunk.WebhookMessage, error) {
+// TrunkList mocks base method.
+func (m *MockServiceHandler) TrunkList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*trunk.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TrunkGets", ctx, a, size, token)
+	ret := m.ctrl.Call(m, "TrunkList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*trunk.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// TrunkGets indicates an expected call of TrunkGets.
-func (mr *MockServiceHandlerMockRecorder) TrunkGets(ctx, a, size, token any) *gomock.Call {
+// TrunkList indicates an expected call of TrunkList.
+func (mr *MockServiceHandlerMockRecorder) TrunkList(ctx, a, size, token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TrunkGets", reflect.TypeOf((*MockServiceHandler)(nil).TrunkGets), ctx, a, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TrunkList", reflect.TypeOf((*MockServiceHandler)(nil).TrunkList), ctx, a, size, token)
 }
 
 // TrunkUpdateBasicInfo mocks base method.

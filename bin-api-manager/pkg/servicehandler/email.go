@@ -52,7 +52,7 @@ func (h *serviceHandler) EmailSend(
 
 // EmailGets gets the list of email of the given customer id.
 // It returns list of emails if it succeed.
-func (h *serviceHandler) EmailGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*ememail.WebhookMessage, error) {
+func (h *serviceHandler) EmailList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*ememail.WebhookMessage, error) {
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		return nil, fmt.Errorf("user has no permission")

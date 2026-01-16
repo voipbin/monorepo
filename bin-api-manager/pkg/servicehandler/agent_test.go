@@ -303,7 +303,7 @@ func Test_AgentGets(t *testing.T) {
 
 			mockReq.EXPECT().AgentV1AgentList(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.response, nil)
 
-			res, err := h.AgentGets(ctx, tt.agent, tt.size, tt.token, tt.filters)
+			res, err := h.AgentList(ctx, tt.agent, tt.size, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

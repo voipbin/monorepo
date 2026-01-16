@@ -61,7 +61,7 @@ func (h *serviceHandler) RouteGet(ctx context.Context, a *amagent.Agent, routeID
 // RouteGets sends a request to route-manager
 // to getting a list of routes.
 // it returns route info if it succeed.
-func (h *serviceHandler) RouteGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*rmroute.WebhookMessage, error) {
+func (h *serviceHandler) RouteList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*rmroute.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":     "RouteGets",
 		"username": a.Username,

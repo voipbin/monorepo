@@ -88,7 +88,7 @@ func Test_ServiceAgentAgentGets(t *testing.T) {
 
 			mockReq.EXPECT().AgentV1AgentList(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseAgents, nil)
 
-			res, err := h.ServiceAgentAgentGets(ctx, tt.agent, tt.size, tt.token)
+			res, err := h.ServiceAgentAgentList(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

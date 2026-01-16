@@ -131,7 +131,7 @@ func (h *serviceHandler) CallGet(ctx context.Context, a *amagent.Agent, callID u
 // CallGets sends a request to call-manager
 // to getting a list of calls.
 // it returns list of calls if it succeed.
-func (h *serviceHandler) CallGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*cmcall.WebhookMessage, error) {
+func (h *serviceHandler) CallList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*cmcall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CallGets",
 		"customer_id": a.CustomerID,

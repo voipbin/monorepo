@@ -40,7 +40,7 @@ func (h *server) GetNumbers(c *gin.Context, params openapi_server.GetNumbersPara
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.NumberGets(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.NumberList(c.Request.Context(), &a, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get a order number list. err: %v", err)
 		c.AbortWithStatus(400)

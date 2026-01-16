@@ -13,7 +13,7 @@ import (
 // ServiceAgentChatroomGets sends a request to chat-manager
 // to getting the given agent's list of chatrooms.
 // it returns list of chatrooms if it succeed.
-func (h *serviceHandler) ServiceAgentChatroomGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*chatchatroom.WebhookMessage, error) {
+func (h *serviceHandler) ServiceAgentChatroomList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*chatchatroom.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ServiceAgentChatroomGets",
 		"customer_id": a.CustomerID,

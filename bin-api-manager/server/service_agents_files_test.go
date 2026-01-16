@@ -79,7 +79,7 @@ func Test_GetServiceAgentsFiles(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().ServiceAgentFileGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseFiles, nil)
+			mockSvc.EXPECT().ServiceAgentFileList(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseFiles, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

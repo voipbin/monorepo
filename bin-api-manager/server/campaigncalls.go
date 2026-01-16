@@ -40,7 +40,7 @@ func (h *server) GetCampaigncalls(c *gin.Context, params openapi_server.GetCampa
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.CampaigncallGets(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.CampaigncallList(c.Request.Context(), &a, pageSize, pageToken)
 	if err != nil {
 		logrus.Errorf("Could not get campaigncalls info. err: %v", err)
 		c.AbortWithStatus(400)

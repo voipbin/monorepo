@@ -104,7 +104,7 @@ func Test_RecordingGets(t *testing.T) {
 
 			mockReq.EXPECT().CallV1RecordingList(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseRecording, nil)
 
-			res, err := h.RecordingGets(ctx, tt.agent, tt.size, tt.token)
+			res, err := h.RecordingList(ctx, tt.agent, tt.size, tt.token)
 
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

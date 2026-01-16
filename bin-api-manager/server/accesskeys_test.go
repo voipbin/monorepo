@@ -128,7 +128,7 @@ func Test_GetAccesskeys(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().AccesskeyGets(req.Context(), &tt.agent, tt.expectedPageSize, tt.expectedPageToken).Return(tt.responseAccesskeys, nil)
+			mockSvc.EXPECT().AccesskeyList(req.Context(), &tt.agent, tt.expectedPageSize, tt.expectedPageToken).Return(tt.responseAccesskeys, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

@@ -86,7 +86,7 @@ func (h *server) GetEmails(c *gin.Context, params openapi_server.GetEmailsParams
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.EmailGets(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.EmailList(c.Request.Context(), &a, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get email list. err: %v", err)
 		c.AbortWithStatus(400)

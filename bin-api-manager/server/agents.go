@@ -55,7 +55,7 @@ func (h *server) GetAgents(c *gin.Context, params openapi_server.GetAgentsParams
 		filters["status"] = string(*params.Status)
 	}
 
-	tmps, err := h.serviceHandler.AgentGets(c.Request.Context(), &a, pageSize, pageToken, filters)
+	tmps, err := h.serviceHandler.AgentList(c.Request.Context(), &a, pageSize, pageToken, filters)
 	if err != nil {
 		log.Errorf("Could not get agents info. err: %v", err)
 		c.AbortWithStatus(400)

@@ -40,7 +40,7 @@ func (h *server) GetServiceAgentsChatrooms(c *gin.Context, params openapi_server
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.ServiceAgentChatroomGets(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.ServiceAgentChatroomList(c.Request.Context(), &a, pageSize, pageToken)
 	if err != nil {
 		logrus.Errorf("Could not get calls info. err: %v", err)
 		c.AbortWithStatus(400)

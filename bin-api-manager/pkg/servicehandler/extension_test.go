@@ -400,7 +400,7 @@ func Test_ExtensionGets(t *testing.T) {
 
 			mockReq.EXPECT().RegistrarV1ExtensionList(ctx, tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.response, nil)
 
-			res, err := h.ExtensionGets(ctx, tt.agent, tt.pageSize, tt.pageToken)
+			res, err := h.ExtensionList(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

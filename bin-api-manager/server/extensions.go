@@ -74,7 +74,7 @@ func (h *server) GetExtensions(c *gin.Context, params openapi_server.GetExtensio
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.ExtensionGets(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.ExtensionList(c.Request.Context(), &a, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get a extensions list. err: %v", err)
 		c.AbortWithStatus(400)

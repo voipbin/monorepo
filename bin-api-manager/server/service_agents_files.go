@@ -79,7 +79,7 @@ func (h *server) GetServiceAgentsFiles(c *gin.Context, params openapi_server.Get
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.ServiceAgentFileGets(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.ServiceAgentFileList(c.Request.Context(), &a, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get a file list. err: %v", err)
 		c.AbortWithStatus(400)

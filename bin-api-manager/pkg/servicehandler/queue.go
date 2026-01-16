@@ -60,7 +60,7 @@ func (h *serviceHandler) QueueGet(ctx context.Context, a *amagent.Agent, queueID
 // QueueGets sends a request to queue-manager
 // to getting a list of queues.
 // it returns queue info if it succeed.
-func (h *serviceHandler) QueueGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*qmqueue.WebhookMessage, error) {
+func (h *serviceHandler) QueueList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*qmqueue.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "QueueGets",
 		"customer_id": a.CustomerID,

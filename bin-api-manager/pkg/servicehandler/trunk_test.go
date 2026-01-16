@@ -306,7 +306,7 @@ func Test_TrunkGets(t *testing.T) {
 
 			mockReq.EXPECT().RegistrarV1TrunkList(ctx, tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.response, nil)
 
-			res, err := h.TrunkGets(ctx, tt.agent, tt.pageSize, tt.pageToken)
+			res, err := h.TrunkList(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

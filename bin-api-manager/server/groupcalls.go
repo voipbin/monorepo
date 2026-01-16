@@ -88,7 +88,7 @@ func (h *server) GetGroupcalls(c *gin.Context, params openapi_server.GetGroupcal
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.GroupcallGets(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.GroupcallList(c.Request.Context(), &a, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get a groupcall list. err: %v", err)
 		c.AbortWithStatus(400)

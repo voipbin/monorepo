@@ -42,7 +42,7 @@ func (h *serviceHandler) ServiceAgentChatroommessageGet(ctx context.Context, a *
 // ServiceAgentChatroommessageGets sends a request to chat-manager
 // to getting the given chatroom's list of chatroom message.
 // it returns list of chatroom messages if it succeed.
-func (h *serviceHandler) ServiceAgentChatroommessageGets(ctx context.Context, a *amagent.Agent, chatroomID uuid.UUID, size uint64, token string) ([]*chatmessagechatroom.WebhookMessage, error) {
+func (h *serviceHandler) ServiceAgentChatroommessageList(ctx context.Context, a *amagent.Agent, chatroomID uuid.UUID, size uint64, token string) ([]*chatmessagechatroom.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ServiceAgentChatroommessageGets",
 		"agent":       a,

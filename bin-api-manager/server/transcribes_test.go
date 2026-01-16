@@ -169,7 +169,7 @@ func Test_transcribesGET(t *testing.T) {
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().TranscribeGets(req.Context(), &tt.agent, tt.expectedPageSize, tt.expectedPageToken).Return(tt.responseTranscribes, nil)
+			mockSvc.EXPECT().TranscribeList(req.Context(), &tt.agent, tt.expectedPageSize, tt.expectedPageToken).Return(tt.responseTranscribes, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

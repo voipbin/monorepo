@@ -116,7 +116,7 @@ func (h *serviceHandler) FlowGet(ctx context.Context, a *amagent.Agent, id uuid.
 
 // FlowGets gets the list of flow of the given customer id.
 // It returns list of flows if it succeed.
-func (h *serviceHandler) FlowGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*fmflow.WebhookMessage, error) {
+func (h *serviceHandler) FlowList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*fmflow.WebhookMessage, error) {
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		return nil, fmt.Errorf("user has no permission")

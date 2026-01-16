@@ -172,7 +172,7 @@ func Test_trunksGET(t *testing.T) {
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().TrunkGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseTrunks, nil)
+			mockSvc.EXPECT().TrunkList(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseTrunks, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

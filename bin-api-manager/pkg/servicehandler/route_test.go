@@ -141,7 +141,7 @@ func Test_RouteGets(t *testing.T) {
 
 			mockReq.EXPECT().RouteV1RouteList(ctx, tt.pageToken, tt.pageSize, gomock.Any()).Return(tt.responseRoutes, nil)
 
-			res, err := h.RouteGets(ctx, tt.agent, tt.pageSize, tt.pageToken)
+			res, err := h.RouteList(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

@@ -50,7 +50,7 @@ func (h *server) GetRecordings(c *gin.Context, params openapi_server.GetRecordin
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.RecordingGets(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.RecordingList(c.Request.Context(), &a, pageSize, pageToken)
 	if err != nil {
 		logrus.Errorf("Could not get a recordings. err: %v", err)
 		c.AbortWithStatus(400)

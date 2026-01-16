@@ -85,7 +85,7 @@ func (h *server) GetCustomers(c *gin.Context, params openapi_server.GetCustomers
 		"deleted": "false",
 	}
 
-	tmps, err := h.serviceHandler.CustomerGets(c.Request.Context(), &a, pageSize, pageToken, filters)
+	tmps, err := h.serviceHandler.CustomerList(c.Request.Context(), &a, pageSize, pageToken, filters)
 	if err != nil {
 		log.Errorf("Could not get a customers list. err: %v", err)
 		c.AbortWithStatus(400)

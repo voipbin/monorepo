@@ -163,7 +163,7 @@ func Test_ServiceAgentConversationGets(t *testing.T) {
 
 			mockReq.EXPECT().ConversationV1ConversationList(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseConversations, nil)
 
-			res, err := h.ServiceAgentConversationGets(ctx, tt.agent, tt.size, tt.token)
+			res, err := h.ServiceAgentConversationList(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

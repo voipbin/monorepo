@@ -106,7 +106,7 @@ func Test_providersGet(t *testing.T) {
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().ProviderGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseProviders, nil)
+			mockSvc.EXPECT().ProviderList(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseProviders, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

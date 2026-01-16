@@ -146,7 +146,7 @@ func (h *server) GetCalls(c *gin.Context, params openapi_server.GetCallsParams) 
 		log.Debugf("Invalid requested page size. Set to default. page_size: %d", pageSize)
 	}
 
-	tmps, err := h.serviceHandler.CallGets(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.CallList(c.Request.Context(), &a, pageSize, pageToken)
 	if err != nil {
 		logrus.Errorf("Could not get calls info. err: %v", err)
 		c.AbortWithStatus(400)

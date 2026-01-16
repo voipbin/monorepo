@@ -185,7 +185,7 @@ func TestTagsGET(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().TagGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseTags, nil)
+			mockSvc.EXPECT().TagList(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseTags, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

@@ -158,7 +158,7 @@ func Test_ExtensionsGET(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().ExtensionGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseExntesions, nil)
+			mockSvc.EXPECT().ExtensionList(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseExntesions, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

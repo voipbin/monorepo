@@ -884,7 +884,7 @@ func Test_CallGets(t *testing.T) {
 
 			mockReq.EXPECT().CallV1CallList(ctx, tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.responseCalls, nil)
 
-			res, err := h.CallGets(ctx, tt.agent, tt.pageSize, tt.pageToken)
+			res, err := h.CallList(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

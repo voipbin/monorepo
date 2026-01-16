@@ -98,7 +98,7 @@ func (h *serviceHandler) BillingAccountDelete(ctx context.Context, a *amagent.Ag
 // BillingAccountGets sends a request to billing-manager
 // to getting a list of billing accounts.
 // it returns list of billing accounts if it succeed.
-func (h *serviceHandler) BillingAccountGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*bmaccount.WebhookMessage, error) {
+func (h *serviceHandler) BillingAccountList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*bmaccount.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "BillingAccountGets",
 		"customer_id": a.CustomerID,

@@ -75,7 +75,7 @@ func Test_MessagesGET(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().MessageGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseGets, nil)
+			mockSvc.EXPECT().MessageList(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseGets, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

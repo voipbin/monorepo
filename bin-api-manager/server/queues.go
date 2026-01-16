@@ -42,7 +42,7 @@ func (h *server) GetQueues(c *gin.Context, params openapi_server.GetQueuesParams
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.QueueGets(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.QueueList(c.Request.Context(), &a, pageSize, pageToken)
 	if err != nil {
 		logrus.Errorf("Could not get queues info. err: %v", err)
 		c.AbortWithStatus(400)

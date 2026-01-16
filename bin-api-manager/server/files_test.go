@@ -236,7 +236,7 @@ func Test_filesGET(t *testing.T) {
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().StorageFileGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseFile, nil)
+			mockSvc.EXPECT().StorageFileList(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseFile, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

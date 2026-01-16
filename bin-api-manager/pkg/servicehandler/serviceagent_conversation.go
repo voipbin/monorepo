@@ -30,7 +30,7 @@ func (h *serviceHandler) ServiceAgentConversationGet(ctx context.Context, a *ama
 // ServiceAgentConversationGets sends a request to conversation-manager
 // to getting the list of conversation.
 // it returns list of chatroom messages if it succeed.
-func (h *serviceHandler) ServiceAgentConversationGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*cvconversation.WebhookMessage, error) {
+func (h *serviceHandler) ServiceAgentConversationList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*cvconversation.WebhookMessage, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}
@@ -41,7 +41,7 @@ func (h *serviceHandler) ServiceAgentConversationGets(ctx context.Context, a *am
 		cvconversation.FieldOwnerID: a.ID,
 	}
 
-	tmps, err := h.conversationGets(ctx, a, size, token, filters)
+	tmps, err := h.conversationList(ctx, a, size, token, filters)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not get the conversations.")
 	}

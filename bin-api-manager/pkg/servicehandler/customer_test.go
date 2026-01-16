@@ -241,7 +241,7 @@ func Test_CustomerGets(t *testing.T) {
 
 			mockReq.EXPECT().CustomerV1CustomerList(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseCustomers, nil)
 
-			res, err := h.CustomerGets(ctx, tt.agent, tt.size, tt.token, tt.filters)
+			res, err := h.CustomerList(ctx, tt.agent, tt.size, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

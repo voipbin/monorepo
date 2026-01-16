@@ -113,7 +113,7 @@ func Test_conferencecallsGET(t *testing.T) {
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().ConferencecallGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseConferencecalls, nil)
+			mockSvc.EXPECT().ConferencecallList(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseConferencecalls, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

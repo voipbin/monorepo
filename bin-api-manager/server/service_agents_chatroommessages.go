@@ -83,7 +83,7 @@ func (h *server) GetServiceAgentsChatroommessages(c *gin.Context, params openapi
 
 	chatroomID := uuid.FromStringOrNil(params.ChatroomId)
 
-	tmps, err := h.serviceHandler.ServiceAgentChatroommessageGets(c.Request.Context(), &a, chatroomID, pageSize, pageToken)
+	tmps, err := h.serviceHandler.ServiceAgentChatroommessageList(c.Request.Context(), &a, chatroomID, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get a chatroommessage list. err: %v", err)
 		c.AbortWithStatus(400)

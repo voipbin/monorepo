@@ -16,7 +16,7 @@ import (
 // BillingGets sends a request to billing-manager
 // to getting a list of billings.
 // it returns list of billings if it succeed.
-func (h *serviceHandler) BillingGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*bmbilling.WebhookMessage, error) {
+func (h *serviceHandler) BillingList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*bmbilling.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "BillingGets",
 		"customer_id": a.CustomerID,

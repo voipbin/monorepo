@@ -123,7 +123,7 @@ func (h *serviceHandler) StorageAccountDelete(ctx context.Context, a *amagent.Ag
 // StorageAccountGets sends a request to storage-manager
 // to getting a list of storage accounts.
 // it returns list of storage accounts if it succeed.
-func (h *serviceHandler) StorageAccountGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*smaccount.WebhookMessage, error) {
+func (h *serviceHandler) StorageAccountList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*smaccount.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "StorageAccountGets",
 		"customer_id": a.CustomerID,

@@ -79,7 +79,7 @@ func (h *server) GetStorageFiles(c *gin.Context, params openapi_server.GetStorag
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.StorageFileGets(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.StorageFileList(c.Request.Context(), &a, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get a file list. err: %v", err)
 		c.AbortWithStatus(400)

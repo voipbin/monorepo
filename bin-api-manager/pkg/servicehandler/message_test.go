@@ -76,7 +76,7 @@ func Test_MessageGets(t *testing.T) {
 
 			mockReq.EXPECT().MessageV1MessageList(ctx, tt.pageToken, tt.pageSize, gomock.Any()).Return(tt.response, nil)
 
-			res, err := h.MessageGets(ctx, tt.agent, tt.pageSize, tt.pageToken)
+			res, err := h.MessageList(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

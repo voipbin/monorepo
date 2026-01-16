@@ -64,7 +64,7 @@ func (h *serviceHandler) RecordingGet(ctx context.Context, a *amagent.Agent, id 
 // RecordingGets sends a request to call-manager
 // to getting a list of calls.
 // it returns list of calls if it succeed.
-func (h *serviceHandler) RecordingGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*cmrecording.WebhookMessage, error) {
+func (h *serviceHandler) RecordingList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*cmrecording.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "RecordingGets",
 		"customer_id": a.CustomerID,

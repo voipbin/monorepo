@@ -87,7 +87,7 @@ func Test_CampaigncallGets(t *testing.T) {
 
 			mockReq.EXPECT().CampaignV1CampaigncallList(ctx, tt.token, tt.size, gomock.Any()).Return(tt.responseCampaigncalls, nil)
 
-			res, err := h.CampaigncallGets(ctx, tt.agent, tt.size, tt.token)
+			res, err := h.CampaigncallList(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

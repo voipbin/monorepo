@@ -15,7 +15,7 @@ import (
 // ServiceAgentConversationMessageGets sends a request to conversation-manager
 // to getting the list of conversation messages of the given conversation id.
 // it returns list of conversation messages if it succeed.
-func (h *serviceHandler) ServiceAgentConversationMessageGets(ctx context.Context, a *amagent.Agent, conversationID uuid.UUID, size uint64, token string) ([]*cvmessage.WebhookMessage, error) {
+func (h *serviceHandler) ServiceAgentConversationMessageList(ctx context.Context, a *amagent.Agent, conversationID uuid.UUID, size uint64, token string) ([]*cvmessage.WebhookMessage, error) {
 	cv, err := h.conversationGet(ctx, conversationID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not get conversation.")

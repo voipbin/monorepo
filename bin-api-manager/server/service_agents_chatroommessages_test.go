@@ -154,7 +154,7 @@ func Test_GetServiceAgentsChatroommessages(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().ServiceAgentChatroommessageGets(req.Context(), &tt.agent, tt.expectChatroomID, tt.expectPageSize, tt.expectPageToken).Return(tt.responseChatroommessages, nil)
+			mockSvc.EXPECT().ServiceAgentChatroommessageList(req.Context(), &tt.agent, tt.expectChatroomID, tt.expectPageSize, tt.expectPageToken).Return(tt.responseChatroommessages, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

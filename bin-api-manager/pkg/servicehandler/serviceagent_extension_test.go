@@ -109,7 +109,7 @@ func Test_ServiceAgentExtensionGets(t *testing.T) {
 				mockReq.EXPECT().RegistrarV1ExtensionGet(ctx, extensionID).Return(tt.responseExtensions[i], nil)
 			}
 
-			res, err := h.ServiceAgentExtensionGets(ctx, tt.agent)
+			res, err := h.ServiceAgentExtensionList(ctx, tt.agent)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

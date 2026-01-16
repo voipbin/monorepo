@@ -77,7 +77,7 @@ func TestAvailableNumbersGET(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().AvailableNumberGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectCountryCode).Return(tt.responseAvailableNumbers, nil)
+			mockSvc.EXPECT().AvailableNumberList(req.Context(), &tt.agent, tt.expectPageSize, tt.expectCountryCode).Return(tt.responseAvailableNumbers, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

@@ -166,7 +166,7 @@ func Test_GetEmails(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().EmailGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseEmails, nil)
+			mockSvc.EXPECT().EmailList(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseEmails, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
