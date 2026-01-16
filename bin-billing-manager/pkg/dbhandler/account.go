@@ -136,8 +136,8 @@ func (h *handler) AccountGet(ctx context.Context, id uuid.UUID) (*account.Accoun
 	return res, nil
 }
 
-// AccountGets returns a list of account.
-func (h *handler) AccountGets(ctx context.Context, size uint64, token string, filters map[account.Field]any) ([]*account.Account, error) {
+// AccountList returns a list of account.
+func (h *handler) AccountList(ctx context.Context, size uint64, token string, filters map[account.Field]any) ([]*account.Account, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}
@@ -152,17 +152,17 @@ func (h *handler) AccountGets(ctx context.Context, size uint64, token string, fi
 
 	builder, err := commondatabasehandler.ApplyFields(builder, filters)
 	if err != nil {
-		return nil, fmt.Errorf("AccountGets: could not apply filters. err: %v", err)
+		return nil, fmt.Errorf("AccountList: could not apply filters. err: %v", err)
 	}
 
 	query, args, err := builder.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("AccountGets: could not build query. err: %v", err)
+		return nil, fmt.Errorf("AccountList: could not build query. err: %v", err)
 	}
 
 	rows, err := h.db.Query(query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("AccountGets: could not query. err: %v", err)
+		return nil, fmt.Errorf("AccountList: could not query. err: %v", err)
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -170,7 +170,7 @@ func (h *handler) AccountGets(ctx context.Context, size uint64, token string, fi
 	for rows.Next() {
 		u, err := h.accountGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("AccountGets: could not scan row. err: %v", err)
+			return nil, fmt.Errorf("AccountList: could not scan row. err: %v", err)
 		}
 		res = append(res, u)
 	}
@@ -178,14 +178,14 @@ func (h *handler) AccountGets(ctx context.Context, size uint64, token string, fi
 	return res, nil
 }
 
-// AccountGetsByCustomerID returns a list of account.
-func (h *handler) AccountGetsByCustomerID(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*account.Account, error) {
+// AccountListByCustomerID returns a list of account.
+func (h *handler) AccountListByCustomerID(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*account.Account, error) {
 	filters := map[account.Field]any{
 		account.FieldCustomerID: customerID,
 		account.FieldDeleted:    false,
 	}
 
-	return h.AccountGets(ctx, size, token, filters)
+	return h.AccountList(ctx, size, token, filters)
 }
 
 // AccountUpdate updates the account fields.

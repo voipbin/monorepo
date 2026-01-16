@@ -105,16 +105,16 @@ func (h *billingHandler) GetByReferenceID(ctx context.Context, referenceID uuid.
 	return res, nil
 }
 
-// Gets returns a list of billings.
-func (h *billingHandler) Gets(ctx context.Context, size uint64, token string, filters map[billing.Field]any) ([]*billing.Billing, error) {
+// List returns a list of billings.
+func (h *billingHandler) List(ctx context.Context, size uint64, token string, filters map[billing.Field]any) ([]*billing.Billing, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "Gets",
+		"func":    "List",
 		"size":    size,
 		"token":   token,
 		"filters": filters,
 	})
 
-	res, err := h.db.BillingGets(ctx, size, token, filters)
+	res, err := h.db.BillingList(ctx, size, token, filters)
 	if err != nil {
 		log.Errorf("Could not get billings. err: %v", err)
 		return nil, errors.Wrap(err, "could not get billings")

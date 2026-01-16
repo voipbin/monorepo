@@ -160,19 +160,19 @@ func (mr *MockBillingHandlerMockRecorder) GetByReferenceID(ctx, referenceID any)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByReferenceID", reflect.TypeOf((*MockBillingHandler)(nil).GetByReferenceID), ctx, referenceID)
 }
 
-// Gets mocks base method.
-func (m *MockBillingHandler) Gets(ctx context.Context, size uint64, token string, filters map[billing.Field]any) ([]*billing.Billing, error) {
+// List mocks base method.
+func (m *MockBillingHandler) List(ctx context.Context, size uint64, token string, filters map[billing.Field]any) ([]*billing.Billing, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Gets", ctx, size, token, filters)
+	ret := m.ctrl.Call(m, "List", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*billing.Billing)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Gets indicates an expected call of Gets.
-func (mr *MockBillingHandlerMockRecorder) Gets(ctx, size, token, filters any) *gomock.Call {
+// List indicates an expected call of List.
+func (mr *MockBillingHandlerMockRecorder) List(ctx, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockBillingHandler)(nil).Gets), ctx, size, token, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockBillingHandler)(nil).List), ctx, size, token, filters)
 }
 
 // UpdateStatusEnd mocks base method.

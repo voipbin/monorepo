@@ -23,7 +23,7 @@ func (h *accountHandler) EventCUCustomerDeleted(ctx context.Context, cu *cucusto
 		account.FieldCustomerID: cu.ID,
 		account.FieldDeleted:    false,
 	}
-	accounts, err := h.Gets(ctx, 1000, "", filters)
+	accounts, err := h.List(ctx, 1000, "", filters)
 	if err != nil {
 		log.Errorf("Could not gets accounts list. err: %v", err)
 		return errors.Wrap(err, "could not get accounts list")

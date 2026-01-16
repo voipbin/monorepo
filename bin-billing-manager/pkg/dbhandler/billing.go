@@ -194,8 +194,8 @@ func (h *handler) BillingGetByReferenceID(ctx context.Context, referenceID uuid.
 	return res, nil
 }
 
-// BillingGets returns a list of billing.
-func (h *handler) BillingGets(ctx context.Context, size uint64, token string, filters map[billing.Field]any) ([]*billing.Billing, error) {
+// BillingList returns a list of billing.
+func (h *handler) BillingList(ctx context.Context, size uint64, token string, filters map[billing.Field]any) ([]*billing.Billing, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}
@@ -210,17 +210,17 @@ func (h *handler) BillingGets(ctx context.Context, size uint64, token string, fi
 
 	builder, err := commondatabasehandler.ApplyFields(builder, filters)
 	if err != nil {
-		return nil, fmt.Errorf("BillingGets: could not apply filters. err: %v", err)
+		return nil, fmt.Errorf("BillingList: could not apply filters. err: %v", err)
 	}
 
 	query, args, err := builder.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("BillingGets: could not build query. err: %v", err)
+		return nil, fmt.Errorf("BillingList: could not build query. err: %v", err)
 	}
 
 	rows, err := h.db.Query(query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("BillingGets: could not query. err: %v", err)
+		return nil, fmt.Errorf("BillingList: could not query. err: %v", err)
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -228,7 +228,7 @@ func (h *handler) BillingGets(ctx context.Context, size uint64, token string, fi
 	for rows.Next() {
 		u, err := h.billingGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("BillingGets: could not scan row. err: %v", err)
+			return nil, fmt.Errorf("BillingList: could not scan row. err: %v", err)
 		}
 		res = append(res, u)
 	}

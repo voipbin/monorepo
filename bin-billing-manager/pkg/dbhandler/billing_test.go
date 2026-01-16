@@ -134,7 +134,7 @@ func Test_BillingCreate(t *testing.T) {
 	}
 }
 
-func Test_BillingGets(t *testing.T) {
+func Test_BillingList(t *testing.T) {
 
 	type test struct {
 		name     string
@@ -216,7 +216,7 @@ func Test_BillingGets(t *testing.T) {
 				}
 			}
 
-			res, err := h.BillingGets(ctx, 1000, utilhandler.TimeGetCurTime(), tt.filters)
+			res, err := h.BillingList(ctx, 1000, utilhandler.TimeGetCurTime(), tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
