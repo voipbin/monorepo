@@ -177,7 +177,7 @@ func TestCustomerGet(t *testing.T) {
 	}
 }
 
-func Test_CustomerGets(t *testing.T) {
+func Test_CustomerList(t *testing.T) {
 
 	type test struct {
 		name string

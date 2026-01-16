@@ -19,7 +19,7 @@ import (
 	"monorepo/bin-api-manager/pkg/dbhandler"
 )
 
-func Test_TranscriptGets(t *testing.T) {
+func Test_TranscriptList(t *testing.T) {
 
 	type test struct {
 		name string

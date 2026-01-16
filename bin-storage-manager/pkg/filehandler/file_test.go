@@ -65,7 +65,7 @@ func Test_Get(t *testing.T) {
 	}
 }
 
-func Test_Gets(t *testing.T) {
+func Test_List(t *testing.T) {
 
 	tests := []struct {
 		name string

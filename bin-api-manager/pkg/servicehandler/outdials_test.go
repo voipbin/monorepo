@@ -94,7 +94,7 @@ func Test_OutdialCreate(t *testing.T) {
 	}
 }
 
-func Test_OutdialGets(t *testing.T) {
+func Test_OutdialList(t *testing.T) {
 
 	tests := []struct {
 		name      string

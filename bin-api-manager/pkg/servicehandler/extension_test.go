@@ -327,7 +327,7 @@ func Test_ExtensionGet(t *testing.T) {
 	}
 }
 
-func Test_ExtensionGets(t *testing.T) {
+func Test_ExtensionList(t *testing.T) {
 
 	type test struct {
 		name          string

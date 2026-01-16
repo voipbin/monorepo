@@ -18,7 +18,7 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 )
 
-func Test_BillingGets(t *testing.T) {
+func Test_BillingList(t *testing.T) {
 
 	tests := []struct {
 		name string

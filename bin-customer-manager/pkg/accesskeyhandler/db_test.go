@@ -16,7 +16,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func Test_Gets(t *testing.T) {
+func Test_List(t *testing.T) {
 
 	tests := []struct {
 		name    string
@@ -64,7 +64,7 @@ func Test_Gets(t *testing.T) {
 	}
 }
 
-func Test_GetsByCustomerID(t *testing.T) {
+func Test_ListByCustomerID(t *testing.T) {
 
 	tests := []struct {
 		name string

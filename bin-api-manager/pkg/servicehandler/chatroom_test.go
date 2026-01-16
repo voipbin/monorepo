@@ -20,7 +20,7 @@ import (
 	"monorepo/bin-api-manager/pkg/dbhandler"
 )
 
-func Test_ChatroomGetsByOwnerID(t *testing.T) {
+func Test_ChatroomListByOwnerID(t *testing.T) {
 
 	tests := []struct {
 		name string

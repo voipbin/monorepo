@@ -81,7 +81,7 @@ func Test_ProviderGet(t *testing.T) {
 	}
 }
 
-func Test_ProviderGets(t *testing.T) {
+func Test_ProviderList(t *testing.T) {
 
 	type test struct {
 		name string

@@ -91,7 +91,7 @@ func Test_TranscribeGet(t *testing.T) {
 	}
 }
 
-func Test_TranscribeGets(t *testing.T) {
+func Test_TranscribeList(t *testing.T) {
 
 	tests := []struct {
 		name string

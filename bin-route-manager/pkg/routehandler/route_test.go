@@ -179,7 +179,7 @@ func Test_ListByCustomerID(t *testing.T) {
 	}
 }
 
-func Test_GetsByCustomerID_customer_id_is_nil(t *testing.T) {
+func Test_ListByCustomerID_customer_id_is_nil(t *testing.T) {
 
 	tests := []struct {
 		name string

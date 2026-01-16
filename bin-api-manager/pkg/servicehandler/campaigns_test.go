@@ -108,7 +108,7 @@ func Test_CampaignCreate(t *testing.T) {
 	}
 }
 
-func Test_CampaignGetsByCustomerID(t *testing.T) {
+func Test_CampaignListByCustomerID(t *testing.T) {
 
 	tests := []struct {
 		name      string

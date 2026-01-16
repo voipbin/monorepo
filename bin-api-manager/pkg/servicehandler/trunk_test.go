@@ -231,7 +231,7 @@ func Test_TrunkGet(t *testing.T) {
 	}
 }
 
-func Test_TrunkGets(t *testing.T) {
+func Test_TrunkList(t *testing.T) {
 
 	type test struct {
 		name      string

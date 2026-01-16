@@ -82,7 +82,7 @@ func Test_TagCreate(t *testing.T) {
 	}
 }
 
-func Test_TagGets(t *testing.T) {
+func Test_TagList(t *testing.T) {
 
 	tests := []struct {
 		name string

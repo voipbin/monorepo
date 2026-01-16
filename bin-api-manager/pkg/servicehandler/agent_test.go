@@ -194,7 +194,7 @@ func Test_AgentGet(t *testing.T) {
 	}
 }
 
-func Test_AgentGets(t *testing.T) {
+func Test_AgentList(t *testing.T) {
 
 	tests := []struct {
 		name string

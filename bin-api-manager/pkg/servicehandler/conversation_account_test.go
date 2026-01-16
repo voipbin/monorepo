@@ -18,7 +18,7 @@ import (
 	"monorepo/bin-api-manager/pkg/dbhandler"
 )
 
-func Test_ConversationAccountGetsByCustomerID(t *testing.T) {
+func Test_ConversationAccountListByCustomerID(t *testing.T) {
 
 	tests := []struct {
 		name      string

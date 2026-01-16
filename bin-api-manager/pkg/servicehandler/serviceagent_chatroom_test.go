@@ -16,7 +16,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func Test_ServiceAgentChatroomGets(t *testing.T) {
+func Test_ServiceAgentChatroomList(t *testing.T) {
 
 	type test struct {
 		name string

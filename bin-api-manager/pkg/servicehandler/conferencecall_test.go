@@ -83,7 +83,7 @@ func Test_ConferencecallGet(t *testing.T) {
 	}
 }
 
-func Test_ConferencecallGets(t *testing.T) {
+func Test_ConferencecallList(t *testing.T) {
 
 	tests := []struct {
 		name  string

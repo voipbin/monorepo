@@ -258,7 +258,7 @@ func Test_RouteListByCustomerID(t *testing.T) {
 	}
 }
 
-func Test_RouteGetsByCustomerIDWithTarget(t *testing.T) {
+func Test_RouteListByCustomerIDWithTarget(t *testing.T) {
 
 	tests := []struct {
 		name   string

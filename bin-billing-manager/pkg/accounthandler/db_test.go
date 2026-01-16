@@ -216,7 +216,7 @@ func Test_GetByCustomerID(t *testing.T) {
 	}
 }
 
-func Test_GetsByCustomerID(t *testing.T) {
+func Test_ListByCustomerID(t *testing.T) {
 
 	type test struct {
 		name string

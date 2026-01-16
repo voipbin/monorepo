@@ -20,7 +20,7 @@ import (
 	"monorepo/bin-api-manager/pkg/dbhandler"
 )
 
-func Test_OrderNumberGets(t *testing.T) {
+func Test_OrderNumberList(t *testing.T) {
 
 	tests := []struct {
 		name  string

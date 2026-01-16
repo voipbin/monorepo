@@ -227,7 +227,7 @@ func Test_Delete(t *testing.T) {
 	}
 }
 
-func Test_GetsByCustomerID(t *testing.T) {
+func Test_ListByCustomerID(t *testing.T) {
 
 	tests := []struct {
 		name       string

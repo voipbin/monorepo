@@ -1,6 +1,6 @@
 package requestexternal
 
-// func TestTelnyxAvailableNumberGets(t *testing.T) {
+// func TestTelnyxAvailableNumberList(t *testing.T) {
 // 	mc := gomock.NewController(t)
 // 	defer mc.Finish()
 

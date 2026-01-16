@@ -295,7 +295,7 @@ func Test_FlowGet(t *testing.T) {
 	}
 }
 
-func Test_FlowGets(t *testing.T) {
+func Test_FlowList(t *testing.T) {
 
 	tests := []struct {
 		name      string

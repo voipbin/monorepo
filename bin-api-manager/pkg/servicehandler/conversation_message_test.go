@@ -16,7 +16,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func Test_ConversationMessageGetsByConversationID(t *testing.T) {
+func Test_ConversationMessageListByConversationID(t *testing.T) {
 
 	tests := []struct {
 		name string

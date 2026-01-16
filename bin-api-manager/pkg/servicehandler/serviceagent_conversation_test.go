@@ -86,7 +86,7 @@ func Test_ServiceAgentConversationGet(t *testing.T) {
 	}
 }
 
-func Test_ServiceAgentConversationGets(t *testing.T) {
+func Test_ServiceAgentConversationList(t *testing.T) {
 
 	type test struct {
 		name string

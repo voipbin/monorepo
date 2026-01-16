@@ -240,7 +240,7 @@ func Test_GetByActiveflowID(t *testing.T) {
 	}
 }
 
-func Test_GetsByCustomerID(t *testing.T) {
+func Test_ListByCustomerID(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -281,7 +281,7 @@ func Test_GetsByCustomerID(t *testing.T) {
 	}
 }
 
-func Test_GetsByCampaignID(t *testing.T) {
+func Test_ListByCampaignID(t *testing.T) {
 
 	tests := []struct {
 		name       string
@@ -320,7 +320,7 @@ func Test_GetsByCampaignID(t *testing.T) {
 	}
 }
 
-func Test_GetsByCampaignIDAndStatus(t *testing.T) {
+func Test_ListByCampaignIDAndStatus(t *testing.T) {
 
 	tests := []struct {
 		name       string
@@ -361,7 +361,7 @@ func Test_GetsByCampaignIDAndStatus(t *testing.T) {
 	}
 }
 
-func Test_GetsOngoingByCampaignID(t *testing.T) {
+func Test_ListOngoingByCampaignID(t *testing.T) {
 
 	tests := []struct {
 		name       string

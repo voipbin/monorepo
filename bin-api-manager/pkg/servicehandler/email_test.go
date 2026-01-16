@@ -95,7 +95,7 @@ func Test_EmailSend(t *testing.T) {
 	}
 }
 
-func Test_EmailGets(t *testing.T) {
+func Test_EmailList(t *testing.T) {
 
 	tests := []struct {
 		name      string

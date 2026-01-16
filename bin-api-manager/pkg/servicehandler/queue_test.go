@@ -18,7 +18,7 @@ import (
 	"monorepo/bin-api-manager/pkg/dbhandler"
 )
 
-func Test_QueueGets(t *testing.T) {
+func Test_QueueList(t *testing.T) {
 
 	type test struct {
 		name      string

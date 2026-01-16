@@ -17,7 +17,7 @@ import (
 	"monorepo/bin-api-manager/pkg/dbhandler"
 )
 
-func Test_AvailableNumberGets(t *testing.T) {
+func Test_AvailableNumberList(t *testing.T) {
 
 	tests := []struct {
 		name        string

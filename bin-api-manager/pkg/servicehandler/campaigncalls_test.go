@@ -19,7 +19,7 @@ import (
 	"monorepo/bin-api-manager/pkg/dbhandler"
 )
 
-func Test_CampaigncallGets(t *testing.T) {
+func Test_CampaigncallList(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -99,7 +99,7 @@ func Test_CampaigncallGets(t *testing.T) {
 	}
 }
 
-func Test_campaigncallGetsByCampaignID(t *testing.T) {
+func Test_campaigncallListByCampaignID(t *testing.T) {
 
 	tests := []struct {
 		name       string

@@ -19,7 +19,7 @@ import (
 	"monorepo/bin-api-manager/pkg/dbhandler"
 )
 
-func Test_MessageGets(t *testing.T) {
+func Test_MessageList(t *testing.T) {
 
 	tests := []struct {
 		name string

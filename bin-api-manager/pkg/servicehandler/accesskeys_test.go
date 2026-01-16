@@ -210,7 +210,7 @@ func Test_AccesskeyGet(t *testing.T) {
 	}
 }
 
-func Test_AccesskeyGets(t *testing.T) {
+func Test_AccesskeyList(t *testing.T) {
 
 	tests := []struct {
 		name string

@@ -14,7 +14,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func Test_ServiceAgentCallGets(t *testing.T) {
+func Test_ServiceAgentCallList(t *testing.T) {
 
 	type test struct {
 		name string

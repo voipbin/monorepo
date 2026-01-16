@@ -322,7 +322,7 @@ func Test_ActiveflowGet(t *testing.T) {
 	}
 }
 
-func Test_ActiveflowGets(t *testing.T) {
+func Test_ActiveflowList(t *testing.T) {
 
 	tests := []struct {
 		name string

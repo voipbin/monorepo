@@ -13,7 +13,7 @@ import (
 	"monorepo/bin-registrar-manager/pkg/dbhandler"
 )
 
-func Test_ContactGetsByDomainID(t *testing.T) {
+func Test_ContactListByDomainID(t *testing.T) {
 
 	type test struct {
 		name string

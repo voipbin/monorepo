@@ -821,7 +821,7 @@ func Test_CallMuteOff(t *testing.T) {
 	}
 }
 
-func Test_CallGets(t *testing.T) {
+func Test_CallList(t *testing.T) {
 
 	tests := []struct {
 		name  string

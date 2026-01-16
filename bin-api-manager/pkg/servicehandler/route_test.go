@@ -83,7 +83,7 @@ func Test_RouteGet(t *testing.T) {
 	}
 }
 
-func Test_RouteGets(t *testing.T) {
+func Test_RouteList(t *testing.T) {
 
 	type test struct {
 		name string
@@ -153,7 +153,7 @@ func Test_RouteGets(t *testing.T) {
 	}
 }
 
-func Test_RouteGetsByCustomerID(t *testing.T) {
+func Test_RouteListByCustomerID(t *testing.T) {
 
 	type test struct {
 		name string

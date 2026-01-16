@@ -110,7 +110,7 @@ func Test_AISummaryCreate_referencetype_call(t *testing.T) {
 	}
 }
 
-func Test_AISummaryGetsByCustomerID(t *testing.T) {
+func Test_AISummaryListByCustomerID(t *testing.T) {
 
 	tests := []struct {
 		name string

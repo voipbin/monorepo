@@ -125,7 +125,7 @@ func Test_Delete(t *testing.T) {
 	}
 }
 
-func Test_GetsByOutdialID(t *testing.T) {
+func Test_ListByOutdialID(t *testing.T) {
 
 	tests := []struct {
 		name string

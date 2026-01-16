@@ -93,7 +93,7 @@ func Test_ServiceAgentChatroommessageGet(t *testing.T) {
 	}
 }
 
-func Test_ServiceAgentChatroommessageGets(t *testing.T) {
+func Test_ServiceAgentChatroommessageList(t *testing.T) {
 
 	type test struct {
 		name string

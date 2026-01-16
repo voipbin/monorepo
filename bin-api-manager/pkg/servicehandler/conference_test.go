@@ -234,7 +234,7 @@ func Test_ConferenceDelete(t *testing.T) {
 	}
 }
 
-func Test_ConferenceGets(t *testing.T) {
+func Test_ConferenceList(t *testing.T) {
 
 	tests := []struct {
 		name  string

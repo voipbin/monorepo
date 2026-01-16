@@ -227,7 +227,7 @@ func Test_OutdialtargetGet(t *testing.T) {
 	}
 }
 
-func Test_OutdialtargetGetsByOutdialID(t *testing.T) {
+func Test_OutdialtargetListByOutdialID(t *testing.T) {
 
 	type test struct {
 		name      string

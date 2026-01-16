@@ -198,7 +198,7 @@ func Test_ChatroommessageCreate(t *testing.T) {
 	}
 }
 
-func Test_ChatroommessageGetsByChatroomID(t *testing.T) {
+func Test_ChatroommessageListByChatroomID(t *testing.T) {
 
 	tests := []struct {
 		name string

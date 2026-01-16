@@ -150,7 +150,7 @@ func Test_ServiceAgentFileDelete(t *testing.T) {
 	}
 }
 
-func Test_StorageFileGets(t *testing.T) {
+func Test_StorageFileList(t *testing.T) {
 
 	tests := []struct {
 		name string

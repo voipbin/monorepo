@@ -144,7 +144,7 @@ func Test_BillingAccountDelete(t *testing.T) {
 	}
 }
 
-func Test_BillingAccountGets(t *testing.T) {
+func Test_BillingAccountList(t *testing.T) {
 
 	tests := []struct {
 		name string

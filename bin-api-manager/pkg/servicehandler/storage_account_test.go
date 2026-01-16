@@ -138,7 +138,7 @@ func Test_StorageAccountDelete(t *testing.T) {
 	}
 }
 
-func Test_StorageAccountGets(t *testing.T) {
+func Test_StorageAccountList(t *testing.T) {
 
 	tests := []struct {
 		name string
