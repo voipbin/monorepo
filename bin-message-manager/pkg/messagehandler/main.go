@@ -27,7 +27,7 @@ const (
 // MessageHandler defines
 type MessageHandler interface {
 	Get(ctx context.Context, id uuid.UUID) (*message.Message, error)
-	Gets(ctx context.Context, token string, size uint64, filters map[message.Field]any) ([]*message.Message, error)
+	List(ctx context.Context, token string, size uint64, filters map[message.Field]any) ([]*message.Message, error)
 	Delete(ctx context.Context, id uuid.UUID) (*message.Message, error)
 
 	Send(ctx context.Context, id uuid.UUID, customerID uuid.UUID, source *commonaddress.Address, destinations []commonaddress.Address, text string) (*message.Message, error)

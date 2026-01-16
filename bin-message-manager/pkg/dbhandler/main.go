@@ -21,7 +21,7 @@ type DBHandler interface {
 	MessageCreate(ctx context.Context, n *message.Message) error
 	MessageDelete(ctx context.Context, id uuid.UUID) error
 	MessageGet(ctx context.Context, id uuid.UUID) (*message.Message, error)
-	MessageGets(ctx context.Context, token string, size uint64, filters map[message.Field]any) ([]*message.Message, error)
+	MessageList(ctx context.Context, token string, size uint64, filters map[message.Field]any) ([]*message.Message, error)
 	MessageUpdate(ctx context.Context, id uuid.UUID, fields map[message.Field]any) error
 	MessageUpdateTargets(ctx context.Context, id uuid.UUID, provider message.ProviderName, targets []target.Target) error
 }
