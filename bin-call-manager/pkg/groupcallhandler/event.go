@@ -23,7 +23,7 @@ func (h *groupcallHandler) EventCUCustomerDeleted(ctx context.Context, cu *cucus
 		groupcall.FieldCustomerID: cu.ID,
 		groupcall.FieldDeleted:    false,
 	}
-	groupcalls, err := h.Gets(ctx, 1000, "", filters)
+	groupcalls, err := h.List(ctx, 1000, "", filters)
 	if err != nil {
 		log.Errorf("Could not gets calls list. err: %v", err)
 		return errors.Wrap(err, "could not get calls list")

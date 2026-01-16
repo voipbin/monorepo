@@ -105,14 +105,14 @@ func (h *groupcallHandler) Get(ctx context.Context, id uuid.UUID) (*groupcall.Gr
 	return res, nil
 }
 
-// Gets returns list of groupcalls.
-func (h *groupcallHandler) Gets(ctx context.Context, size uint64, token string, filters map[groupcall.Field]any) ([]*groupcall.Groupcall, error) {
+// List returns list of groupcalls.
+func (h *groupcallHandler) List(ctx context.Context, size uint64, token string, filters map[groupcall.Field]any) ([]*groupcall.Groupcall, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "Gets",
+		"func": "List",
 		"filters": filters,
 	})
 
-	res, err := h.db.GroupcallGets(ctx, size, token, filters)
+	res, err := h.db.GroupcallList(ctx, size, token, filters)
 	if err != nil {
 		log.Errorf("Could not get calls. err: %v", err)
 		return nil, err

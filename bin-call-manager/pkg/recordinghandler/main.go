@@ -23,7 +23,7 @@ type RecordingHandler interface {
 	Delete(ctx context.Context, id uuid.UUID) (*recording.Recording, error)
 	Get(ctx context.Context, id uuid.UUID) (*recording.Recording, error)
 	GetByRecordingName(ctx context.Context, recordingName string) (*recording.Recording, error)
-	Gets(ctx context.Context, size uint64, token string, filters map[recording.Field]any) ([]*recording.Recording, error)
+	List(ctx context.Context, size uint64, token string, filters map[recording.Field]any) ([]*recording.Recording, error)
 	Start(
 		ctx context.Context,
 		activeflowID uuid.UUID,

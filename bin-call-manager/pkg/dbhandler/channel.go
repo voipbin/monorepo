@@ -653,7 +653,7 @@ func (h *handler) ChannelSetMuteDirection(ctx context.Context, id string, muteDi
 	return nil
 }
 
-func (h *handler) ChannelGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*channel.Channel, error) {
+func (h *handler) ChannelList(ctx context.Context, size uint64, token string, filters map[string]string) ([]*channel.Channel, error) {
 	// prepare
 	q := fmt.Sprintf(`%s
 	where

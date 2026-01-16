@@ -43,7 +43,7 @@ type DBHandler interface {
 	CallDelete(ctx context.Context, id uuid.UUID) error
 	CallGet(ctx context.Context, id uuid.UUID) (*call.Call, error)
 	CallGetByChannelID(ctx context.Context, channelID string) (*call.Call, error)
-	CallGets(ctx context.Context, size uint64, token string, filters map[call.Field]any) ([]*call.Call, error)
+	CallList(ctx context.Context, size uint64, token string, filters map[call.Field]any) ([]*call.Call, error)
 	CallUpdate(ctx context.Context, id uuid.UUID, fields map[call.Field]any) error
 	CallRemoveChainedCallID(ctx context.Context, id, chainedCallID uuid.UUID) error
 	CallSetActionAndActionNextHold(ctx context.Context, id uuid.UUID, action *fmaction.Action, hold bool) error
@@ -71,7 +71,7 @@ type DBHandler interface {
 	ChannelCreate(ctx context.Context, channel *channel.Channel) error
 	ChannelEndAndDelete(ctx context.Context, id string, hangup ari.ChannelCause) error
 	ChannelGet(ctx context.Context, id string) (*channel.Channel, error)
-	ChannelGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*channel.Channel, error)
+	ChannelList(ctx context.Context, size uint64, token string, filters map[string]string) ([]*channel.Channel, error)
 	ChannelGetsForRecovery(
 		ctx context.Context,
 		asteriskID string,
@@ -101,7 +101,7 @@ type DBHandler interface {
 	ConfbridgeDelete(ctx context.Context, id uuid.UUID) error
 	ConfbridgeGet(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error)
 	ConfbridgeGetByBridgeID(ctx context.Context, bridgeID string) (*confbridge.Confbridge, error)
-	ConfbridgeGets(ctx context.Context, size uint64, token string, filters map[confbridge.Field]any) ([]*confbridge.Confbridge, error)
+	ConfbridgeList(ctx context.Context, size uint64, token string, filters map[confbridge.Field]any) ([]*confbridge.Confbridge, error)
 	ConfbridgeUpdate(ctx context.Context, id uuid.UUID, fields map[confbridge.Field]any) error
 	ConfbridgeRemoveChannelCallID(ctx context.Context, id uuid.UUID, channelID string) error
 	ConfbridgeSetBridgeID(ctx context.Context, id uuid.UUID, bridgeID string) error
@@ -118,7 +118,7 @@ type DBHandler interface {
 
 	// groupcall
 	GroupcallGet(ctx context.Context, id uuid.UUID) (*groupcall.Groupcall, error)
-	GroupcallGets(ctx context.Context, size uint64, token string, filters map[groupcall.Field]any) ([]*groupcall.Groupcall, error)
+	GroupcallList(ctx context.Context, size uint64, token string, filters map[groupcall.Field]any) ([]*groupcall.Groupcall, error)
 	GroupcallUpdate(ctx context.Context, id uuid.UUID, fields map[groupcall.Field]any) error
 	GroupcallCreate(ctx context.Context, data *groupcall.Groupcall) error
 	GroupcallDecreaseCallCount(ctx context.Context, id uuid.UUID) error
@@ -135,7 +135,7 @@ type DBHandler interface {
 	RecordingDelete(ctx context.Context, id uuid.UUID) error
 	RecordingGet(ctx context.Context, id uuid.UUID) (*recording.Recording, error)
 	RecordingGetByRecordingName(ctx context.Context, recordingName string) (*recording.Recording, error)
-	RecordingGets(ctx context.Context, size uint64, token string, filters map[recording.Field]any) ([]*recording.Recording, error)
+	RecordingList(ctx context.Context, size uint64, token string, filters map[recording.Field]any) ([]*recording.Recording, error)
 	RecordingUpdate(ctx context.Context, id uuid.UUID, fields map[recording.Field]any) error
 	RecordingSetStatus(ctx context.Context, id uuid.UUID, status recording.Status) error
 }

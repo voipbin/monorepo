@@ -175,9 +175,9 @@ func Test_Gets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConfbridgeGets(ctx, tt.size, tt.token, gomock.Any()).Return(tt.responseGets, nil)
+			mockDB.EXPECT().ConfbridgeList(ctx, tt.size, tt.token, gomock.Any()).Return(tt.responseGets, nil)
 
-			res, err := h.Gets(ctx, tt.size, tt.token, tt.filters)
+			res, err := h.List(ctx, tt.size, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

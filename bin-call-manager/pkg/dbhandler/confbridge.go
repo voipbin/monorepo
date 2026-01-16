@@ -213,7 +213,7 @@ func (h *handler) ConfbridgeGetByBridgeID(ctx context.Context, bridgeID string) 
 }
 
 // ConfbridgeGets returns a list of confbridges.
-func (h *handler) ConfbridgeGets(ctx context.Context, size uint64, token string, filters map[confbridge.Field]any) ([]*confbridge.Confbridge, error) {
+func (h *handler) ConfbridgeList(ctx context.Context, size uint64, token string, filters map[confbridge.Field]any) ([]*confbridge.Confbridge, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}

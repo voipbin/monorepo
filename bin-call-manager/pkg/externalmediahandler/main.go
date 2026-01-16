@@ -22,7 +22,7 @@ import (
 // ExternalMediaHandler defines
 type ExternalMediaHandler interface {
 	Get(ctx context.Context, id uuid.UUID) (*externalmedia.ExternalMedia, error)
-	Gets(ctx context.Context, size uint64, token string, filters map[externalmedia.Field]any) ([]*externalmedia.ExternalMedia, error)
+	List(ctx context.Context, size uint64, token string, filters map[externalmedia.Field]any) ([]*externalmedia.ExternalMedia, error)
 	Start(
 		ctx context.Context,
 		id uuid.UUID,

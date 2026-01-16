@@ -114,7 +114,7 @@ func (h *handler) GroupcallGet(ctx context.Context, id uuid.UUID) (*groupcall.Gr
 }
 
 // GroupcallGets returns a list of groupcalls.
-func (h *handler) GroupcallGets(ctx context.Context, size uint64, token string, filters map[groupcall.Field]any) ([]*groupcall.Groupcall, error) {
+func (h *handler) GroupcallList(ctx context.Context, size uint64, token string, filters map[groupcall.Field]any) ([]*groupcall.Groupcall, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}

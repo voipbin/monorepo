@@ -53,7 +53,7 @@ func (h *listenHandler) processV1CallsGet(ctx context.Context, m *sock.Request) 
 		return simpleResponse(400), nil
 	}
 
-	calls, err := h.callHandler.Gets(ctx, pageSize, pageToken, filters)
+	calls, err := h.callHandler.List(ctx, pageSize, pageToken, filters)
 	if err != nil {
 		log.Errorf("Could not get calls. err: %v", err)
 		return simpleResponse(500), nil

@@ -48,7 +48,7 @@ func (h *listenHandler) processV1ExternalMediasGet(ctx context.Context, m *sock.
 		return simpleResponse(400), nil
 	}
 
-	tmps, err := h.externalMediaHandler.Gets(ctx, pageSize, pageToken, filters)
+	tmps, err := h.externalMediaHandler.List(ctx, pageSize, pageToken, filters)
 	if err != nil {
 		log.Errorf("Could not get external medias. err: %v", err)
 		return simpleResponse(500), nil

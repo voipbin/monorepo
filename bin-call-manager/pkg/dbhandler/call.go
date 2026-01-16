@@ -154,7 +154,7 @@ func (h *handler) CallGetByChannelID(ctx context.Context, channelID string) (*ca
 }
 
 // CallGets returns a list of calls.
-func (h *handler) CallGets(ctx context.Context, size uint64, token string, filters map[call.Field]any) ([]*call.Call, error) {
+func (h *handler) CallList(ctx context.Context, size uint64, token string, filters map[call.Field]any) ([]*call.Call, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}

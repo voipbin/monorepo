@@ -81,14 +81,14 @@ func (h *recordingHandler) Create(
 	return res, nil
 }
 
-// Gets returns list of recordings of the given filters
-func (h *recordingHandler) Gets(ctx context.Context, size uint64, token string, filters map[recording.Field]any) ([]*recording.Recording, error) {
+// List returns list of recordings of the given filters
+func (h *recordingHandler) List(ctx context.Context, size uint64, token string, filters map[recording.Field]any) ([]*recording.Recording, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "Gets",
+		"func": "List",
 		"filters": filters,
 	})
 
-	res, err := h.db.RecordingGets(ctx, size, token, filters)
+	res, err := h.db.RecordingList(ctx, size, token, filters)
 	if err != nil {
 		log.Errorf("Could not get reocordings. err: %v", err)
 		return nil, err

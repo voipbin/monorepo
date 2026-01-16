@@ -212,7 +212,7 @@ func Test_ConfbridgeGetByBridgeID(t *testing.T) {
 	}
 }
 
-func Test_ConfbridgeGets(t *testing.T) {
+func Test_ConfbridgeList(t *testing.T) {
 
 	type test struct {
 		name        string
@@ -317,7 +317,7 @@ func Test_ConfbridgeGets(t *testing.T) {
 				_ = h.ConfbridgeCreate(ctx, c)
 			}
 
-			res, err := h.ConfbridgeGets(ctx, 10, utilhandler.TimeGetCurTime(), tt.filters)
+			res, err := h.ConfbridgeList(ctx, 10, utilhandler.TimeGetCurTime(), tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

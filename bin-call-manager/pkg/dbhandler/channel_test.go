@@ -1630,7 +1630,7 @@ func Test_ChannelSetMuteDirection(t *testing.T) {
 	}
 }
 
-func Test_ChannelGets(t *testing.T) {
+func Test_ChannelList(t *testing.T) {
 
 	type test struct {
 		name     string
@@ -1734,7 +1734,7 @@ func Test_ChannelGets(t *testing.T) {
 				_ = h.ChannelCreate(ctx, c)
 			}
 
-			res, err := h.ChannelGets(ctx, 10, utilhandler.TimeGetCurTime(), tt.filters)
+			res, err := h.ChannelList(ctx, 10, utilhandler.TimeGetCurTime(), tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -1746,7 +1746,7 @@ func Test_ChannelGets(t *testing.T) {
 	}
 }
 
-func Test_ChannelGetsForRecovery(t *testing.T) {
+func Test_ChannelListForRecovery(t *testing.T) {
 
 	type test struct {
 		name     string

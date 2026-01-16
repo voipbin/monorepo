@@ -73,7 +73,7 @@ func Test_processV1RecordingsGet(t *testing.T) {
 				recordingHandler: mockRecording,
 			}
 
-			mockRecording.EXPECT().Gets(gomock.Any(), tt.pageSize, tt.pageToken, gomock.Any()).Return(tt.responseRecordings, nil)
+			mockRecording.EXPECT().List(gomock.Any(), tt.pageSize, tt.pageToken, gomock.Any()).Return(tt.responseRecordings, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

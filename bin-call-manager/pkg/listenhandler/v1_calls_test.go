@@ -170,7 +170,7 @@ func Test_processV1CallsGet(t *testing.T) {
 				callHandler: mockCall,
 			}
 
-			mockCall.EXPECT().Gets(gomock.Any(), tt.pageSize, tt.pageToken, gomock.Any()).Return(tt.responseCalls, nil)
+			mockCall.EXPECT().List(gomock.Any(), tt.pageSize, tt.pageToken, gomock.Any()).Return(tt.responseCalls, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

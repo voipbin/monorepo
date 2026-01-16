@@ -151,7 +151,7 @@ func Test_RecordingCreate(t *testing.T) {
 	}
 }
 
-func Test_RecordingGets(t *testing.T) {
+func Test_RecordingList(t *testing.T) {
 
 	type test struct {
 		name string
@@ -254,7 +254,7 @@ func Test_RecordingGets(t *testing.T) {
 				_ = h.RecordingCreate(ctx, recording)
 			}
 
-			res, err := h.RecordingGets(ctx, 10, utilhandler.TimeGetCurTime(), tt.filters)
+			res, err := h.RecordingList(ctx, 10, utilhandler.TimeGetCurTime(), tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

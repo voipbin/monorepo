@@ -183,7 +183,7 @@ func Test_processV1GroupcallsGet(t *testing.T) {
 				groupcallHandler: mockGroupcall,
 			}
 
-			mockGroupcall.EXPECT().Gets(gomock.Any(), tt.expectPageSize, tt.expectPageToken, gomock.Any()).Return(tt.responseGroupcalls, nil)
+			mockGroupcall.EXPECT().List(gomock.Any(), tt.expectPageSize, tt.expectPageToken, gomock.Any()).Return(tt.responseGroupcalls, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

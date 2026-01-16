@@ -26,7 +26,7 @@ func (h *callHandler) EventCUCustomerDeleted(ctx context.Context, cu *cucustomer
 		call.FieldCustomerID: cu.ID,
 		call.FieldDeleted:    false,
 	}
-	calls, err := h.Gets(ctx, 1000, "", filters)
+	calls, err := h.List(ctx, 1000, "", filters)
 	if err != nil {
 		log.Errorf("Could not gets calls list. err: %v", err)
 		return errors.Wrap(err, "could not get calls list")

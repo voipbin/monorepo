@@ -285,7 +285,7 @@ func Test_Gets(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().ExternalMediaGetByReferenceID(ctx, tt.expectReferenceID).Return(tt.responseExternalMedia, nil)
-			res, err := h.Gets(ctx, 1, "", tt.filters)
+			res, err := h.List(ctx, 1, "", tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

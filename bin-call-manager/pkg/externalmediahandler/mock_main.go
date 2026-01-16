@@ -73,19 +73,19 @@ func (mr *MockExternalMediaHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockExternalMediaHandler)(nil).Get), ctx, id)
 }
 
-// Gets mocks base method.
-func (m *MockExternalMediaHandler) Gets(ctx context.Context, size uint64, token string, filters map[externalmedia.Field]any) ([]*externalmedia.ExternalMedia, error) {
+// List mocks base method.
+func (m *MockExternalMediaHandler) List(ctx context.Context, size uint64, token string, filters map[externalmedia.Field]any) ([]*externalmedia.ExternalMedia, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Gets", ctx, size, token, filters)
+	ret := m.ctrl.Call(m, "List", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*externalmedia.ExternalMedia)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Gets indicates an expected call of Gets.
-func (mr *MockExternalMediaHandlerMockRecorder) Gets(ctx, size, token, filters any) *gomock.Call {
+// List indicates an expected call of List.
+func (mr *MockExternalMediaHandlerMockRecorder) List(ctx, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockExternalMediaHandler)(nil).Gets), ctx, size, token, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockExternalMediaHandler)(nil).List), ctx, size, token, filters)
 }
 
 // Start mocks base method.

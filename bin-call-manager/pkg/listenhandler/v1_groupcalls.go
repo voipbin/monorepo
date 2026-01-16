@@ -49,7 +49,7 @@ func (h *listenHandler) processV1GroupcallsGet(ctx context.Context, m *sock.Requ
 		return simpleResponse(400), nil
 	}
 
-	tmp, err := h.groupcallHandler.Gets(ctx, pageSize, pageToken, filters)
+	tmp, err := h.groupcallHandler.List(ctx, pageSize, pageToken, filters)
 	if err != nil {
 		log.Errorf("Could not get recordings. err: %v", err)
 		return simpleResponse(500), nil
