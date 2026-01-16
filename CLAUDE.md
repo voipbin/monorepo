@@ -387,10 +387,30 @@ Test results: All 28 services passing (477 files modified)
 
 **Merge Commit Format:**
 ```
-Merge VOIP-[ticket-number]: Brief description
+VOIP-[ticket-number]: Brief description of change
+
+[Narrative summary paragraph explaining what was accomplished, the impact,
+and high-level context. 2-3 sentences recommended for larger changes.]
 
 - bin-service-1: What changed
 - bin-service-2: What changed
+- bin-service-3: What changed
+```
+
+**Example:**
+```
+docs: Add CLAUDE.md reorganization design document
+
+Created comprehensive design document to reorganize CLAUDE.md documentation structure
+across the monorepo. Establishes clear boundaries between monorepo-wide rules in root
+CLAUDE.md and service-specific implementation details in service CLAUDE.md files,
+resolving confusion about where to document new information.
+
+- docs: Define clear boundaries between root and service-specific CLAUDE.md files
+- docs: Establish decision framework for where to document new information
+- docs: Plan content migration from root to service-specific files (api-manager, flow-manager, billing-manager)
+- docs: Add notes strategy for shared patterns used across multiple services
+- docs: Document implementation plan with 5 phases and risk mitigation
 ```
 
 ### Rules
@@ -400,9 +420,9 @@ Merge VOIP-[ticket-number]: Brief description
 3. **Keep title concise** - Detailed changes go in the body
 4. **Use present tense** - "Add feature" not "Added feature"
 5. **Use dashes (`-`) for bullet points** - Never use asterisks (`*`)
-6. **Add narrative summary** - For large changes, include a summary paragraph before the bullet list
+6. **Add narrative summary** - For significant changes (new features, refactoring, multi-service updates), include 2-3 sentence summary paragraph before the bullet list explaining what was accomplished and the impact
 7. **Multiple bullets per service** - Complex changes should have multiple detailed bullets
-8. **Include test results** - Add summary line at the end (e.g., "Test results: All 28 services passing")
+8. **Include test results** - For large changes, add summary line at the end (e.g., "Test results: All 28 services passing")
 
 **Good examples:**
 ```
