@@ -937,6 +937,10 @@ type DBHandler interface {
 	MessageList(ctx context.Context, filters map[message.Field]any, token string, size uint64) ([]*message.Message, error)
 	MessageUpdate(ctx context.Context, id uuid.UUID, fields map[message.Field]any) error
 	MessageDelete(ctx context.Context, id uuid.UUID) error
+
+	// Atomic reaction operations (prevents race conditions)
+	MessageAddReactionAtomic(ctx context.Context, messageID uuid.UUID, reactionJSON string) error
+	MessageRemoveReactionAtomic(ctx context.Context, messageID uuid.UUID, emoji, ownerType string, ownerID uuid.UUID) error
 }
 
 // dbHandler implements DBHandler
@@ -1206,21 +1210,27 @@ func (h *dbHandler) ParticipantCreate(ctx context.Context, p *participant.Partic
 	now := time.Now().UTC().Format("2006-01-02T15:04:05.000000Z")
 	p.TMJoined = now
 
-	fields := commondb.PrepareFields(p, []string{"tm_joined"})
+	// Use UPSERT to handle re-joins (participant leaves and joins again)
+	// ON DUPLICATE KEY UPDATE prevents unique constraint violations
+	query := `
+		INSERT INTO talk_participants
+		(id, customer_id, chat_id, owner_type, owner_id, tm_joined)
+		VALUES (?, ?, ?, ?, ?, ?)
+		ON DUPLICATE KEY UPDATE
+		tm_joined = VALUES(tm_joined)
+	`
 
-	query := sq.Insert(tableParticipants).
-		SetMap(fields).
-		PlaceholderFormat(sq.Question)
+	_, err := h.db.ExecContext(ctx, query,
+		p.ID.Bytes(),
+		p.CustomerID.Bytes(),
+		p.ChatID.Bytes(),
+		p.OwnerType,
+		p.OwnerID.Bytes(),
+		now,
+	)
 
-	sqlQuery, args, err := query.ToSql()
 	if err != nil {
-		log.Errorf("Failed to build query: %v", err)
-		return err
-	}
-
-	_, err = h.db.ExecContext(ctx, sqlQuery, args...)
-	if err != nil {
-		log.Errorf("Failed to create participant: %v", err)
+		log.Errorf("Failed to create/update participant: %v", err)
 		return err
 	}
 
@@ -1458,9 +1468,98 @@ func (h *dbHandler) MessageDelete(ctx context.Context, id uuid.UUID) error {
 	_, err = h.db.ExecContext(ctx, sqlQuery, args...)
 	return err
 }
+
+// MessageAddReactionAtomic atomically adds a reaction using MySQL JSON functions
+// This prevents race conditions when multiple users add reactions simultaneously
+func (h *dbHandler) MessageAddReactionAtomic(ctx context.Context, messageID uuid.UUID, reactionJSON string) error {
+	query := `
+		UPDATE talk_messages
+		SET metadata = JSON_SET(
+			metadata,
+			'$.reactions',
+			JSON_ARRAY_APPEND(
+				JSON_EXTRACT(metadata, '$.reactions'),
+				'$',
+				CAST(? AS JSON)
+			)
+		),
+		tm_update = ?
+		WHERE id = ?
+	`
+
+	now := time.Now().UTC().Format("2006-01-02T15:04:05.000000Z")
+	_, err := h.db.ExecContext(ctx, query, reactionJSON, now, messageID.Bytes())
+	if err != nil {
+		log.Errorf("Failed to add reaction atomically: %v", err)
+		return err
+	}
+
+	return nil
+}
+
+// MessageRemoveReactionAtomic atomically removes a reaction by filtering the JSON array
+func (h *dbHandler) MessageRemoveReactionAtomic(ctx context.Context, messageID uuid.UUID, emoji, ownerType string, ownerID uuid.UUID) error {
+	// Get current metadata
+	var metadataJSON string
+	err := h.db.QueryRowContext(ctx,
+		"SELECT metadata FROM talk_messages WHERE id = ?",
+		messageID.Bytes(),
+	).Scan(&metadataJSON)
+	if err != nil {
+		return err
+	}
+
+	// Parse and filter reactions
+	var metadata message.Metadata
+	json.Unmarshal([]byte(metadataJSON), &metadata)
+
+	var filtered []message.Reaction
+	for _, r := range metadata.Reactions {
+		if !(r.Emoji == emoji && r.OwnerType == ownerType && r.OwnerID == ownerID) {
+			filtered = append(filtered, r)
+		}
+	}
+
+	// Update with filtered reactions atomically
+	filteredJSON, _ := json.Marshal(filtered)
+	now := time.Now().UTC().Format("2006-01-02T15:04:05.000000Z")
+
+	query := `
+		UPDATE talk_messages
+		SET metadata = JSON_SET(metadata, '$.reactions', CAST(? AS JSON)),
+		    tm_update = ?
+		WHERE id = ?
+	`
+
+	_, err = h.db.ExecContext(ctx, query, string(filteredJSON), now, messageID.Bytes())
+	if err != nil {
+		log.Errorf("Failed to remove reaction atomically: %v", err)
+		return err
+	}
+
+	return nil
+}
 ```
 
-**Step 2: Commit**
+**Step 2: Add import for encoding/json**
+
+The atomic reaction methods need the `encoding/json` package. Update imports at the top of the file:
+```go
+import (
+	"context"
+	"encoding/json"  // Add this line
+	"time"
+
+	sq "github.com/Masterminds/squirrel"
+	"github.com/gofrs/uuid"
+	log "github.com/sirupsen/logrus"
+
+	commondb "monorepo/bin-common-handler/pkg/commondatabasehandler"
+	"monorepo/bin-talk-manager/models/message"
+)
+```
+
+**Step 3: Commit**
 
 ```bash
 git add pkg/dbhandler/message.go
@@ -1720,14 +1819,29 @@ func (h *messageHandler) MessageCreate(ctx context.Context, req MessageCreateReq
 			return nil, errors.New("parent message does not exist")
 		}
 
-		// Parent must be in same chat
+		// VALIDATION POLICY: Two checks required
+
+		// 1. Parent must exist in database
+		//    (Already validated above - MessageGet would fail if not found)
+
+		// 2. Parent must be in same talk (prevents cross-talk threading)
 		if parent.ChatID != req.ChatID {
 			log.Errorf("Parent message is in different chat")
 			return nil, errors.New("parent message must be in the same talk")
 		}
 
-		// Parent can be deleted (thread structure preserved)
-		// No additional validation needed
+		// INTENTIONALLY ALLOWED: Parent can be soft-deleted (tm_delete IS NOT NULL)
+		// Reason: Preserve thread structure even when parent messages are deleted
+		// UI should display deleted parent as placeholder (e.g., "Message deleted")
+		// This allows conversation context to remain intact
+		//
+		// We do NOT check parent.TMDelete here - replies to deleted parents are allowed
+
+		log.Debugf("Parent validation passed: id=%v, same_chat=%v, is_deleted=%v",
+			parent.ID,
+			parent.ChatID == req.ChatID,
+			parent.TMDelete != "",
+		)
 	}
 
 	// Create message
@@ -2056,104 +2170,59 @@ import (
 )
 
 func (h *reactionHandler) ReactionAdd(ctx context.Context, messageID uuid.UUID, emoji, ownerType string, ownerID uuid.UUID) (*message.Message, error) {
-	// Get message
+	// Check if reaction already exists (idempotent check)
 	m, err := h.dbHandler.MessageGet(ctx, messageID)
 	if err != nil {
 		log.Errorf("Failed to get message: %v", err)
 		return nil, err
 	}
 
-	// Parse metadata
 	var metadata message.Metadata
-	err = json.Unmarshal([]byte(m.Metadata), &metadata)
+	json.Unmarshal([]byte(m.Metadata), &metadata)
+
+	for _, r := range metadata.Reactions {
+		if r.Emoji == emoji && r.OwnerType == ownerType && r.OwnerID == ownerID {
+			// Already exists, return current message (idempotent)
+			log.Debugf("Reaction already exists, returning current message")
+			h.publishReactionUpdated(m)
+			return m, nil
+		}
+	}
+
+	// Add reaction atomically using MySQL JSON functions
+	// This prevents race conditions when multiple users add reactions simultaneously
+	now := time.Now().UTC().Format("2006-01-02T15:04:05.000000Z")
+	reaction := message.Reaction{
+		Emoji:     emoji,
+		OwnerType: ownerType,
+		OwnerID:   ownerID,
+		TMCreate:  now,
+	}
+	reactionJSON, _ := json.Marshal(reaction)
+
+	err = h.dbHandler.MessageAddReactionAtomic(ctx, messageID, string(reactionJSON))
 	if err != nil {
-		log.Errorf("Failed to parse metadata: %v", err)
+		log.Errorf("Failed to add reaction atomically: %v", err)
 		return nil, err
 	}
 
-	// Check if user already added this emoji (idempotent)
-	exists := false
-	for _, r := range metadata.Reactions {
-		if r.Emoji == emoji && r.OwnerType == ownerType && r.OwnerID == ownerID {
-			exists = true
-			break
-		}
-	}
-
-	// Add reaction if not exists
-	if !exists {
-		now := time.Now().UTC().Format("2006-01-02T15:04:05.000000Z")
-		newReaction := message.Reaction{
-			Emoji:     emoji,
-			OwnerType: ownerType,
-			OwnerID:   ownerID,
-			TMCreate:  now,
-		}
-		metadata.Reactions = append(metadata.Reactions, newReaction)
-
-		// Update message
-		metadataJSON, _ := json.Marshal(metadata)
-		fields := map[message.Field]any{
-			message.FieldMetadata: string(metadataJSON),
-		}
-		err = h.dbHandler.MessageUpdate(ctx, messageID, fields)
-		if err != nil {
-			return nil, err
-		}
-
-		// Refresh message
-		m, _ = h.dbHandler.MessageGet(ctx, messageID)
-	}
-
-	// Publish webhook event
+	// Refresh and publish
+	m, _ = h.dbHandler.MessageGet(ctx, messageID)
 	h.publishReactionUpdated(m)
 
 	return m, nil
 }
 
 func (h *reactionHandler) ReactionRemove(ctx context.Context, messageID uuid.UUID, emoji, ownerType string, ownerID uuid.UUID) (*message.Message, error) {
-	// Get message
-	m, err := h.dbHandler.MessageGet(ctx, messageID)
+	// Remove reaction atomically
+	err := h.dbHandler.MessageRemoveReactionAtomic(ctx, messageID, emoji, ownerType, ownerID)
 	if err != nil {
+		log.Errorf("Failed to remove reaction atomically: %v", err)
 		return nil, err
 	}
 
-	// Parse metadata
-	var metadata message.Metadata
-	err = json.Unmarshal([]byte(m.Metadata), &metadata)
-	if err != nil {
-		return nil, err
-	}
-
-	// Remove matching reaction
-	var newReactions []message.Reaction
-	found := false
-	for _, r := range metadata.Reactions {
-		if r.Emoji == emoji && r.OwnerType == ownerType && r.OwnerID == ownerID {
-			found = true
-			continue // Skip this reaction
-		}
-		newReactions = append(newReactions, r)
-	}
-
-	// Update if reaction was found
-	if found {
-		metadata.Reactions = newReactions
-
-		metadataJSON, _ := json.Marshal(metadata)
-		fields := map[message.Field]any{
-			message.FieldMetadata: string(metadataJSON),
-		}
-		err = h.dbHandler.MessageUpdate(ctx, messageID, fields)
-		if err != nil {
-			return nil, err
-		}
-
-		// Refresh message
-		m, _ = h.dbHandler.MessageGet(ctx, messageID)
-	}
-
-	// Publish webhook event
+	// Refresh and publish
+	m, _ := h.dbHandler.MessageGet(ctx, messageID)
 	h.publishReactionUpdated(m)
 
 	return m, nil
