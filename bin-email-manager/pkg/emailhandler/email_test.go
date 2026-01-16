@@ -227,9 +227,9 @@ func Test_Gets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().EmailGets(ctx, tt.token, tt.size, tt.filters).Return(tt.responseEmails, nil)
+			mockDB.EXPECT().EmailList(ctx, tt.token, tt.size, tt.filters).Return(tt.responseEmails, nil)
 
-			res, err := h.Gets(ctx, tt.token, tt.size, tt.filters)
+			res, err := h.List(ctx, tt.token, tt.size, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

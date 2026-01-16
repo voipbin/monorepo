@@ -144,7 +144,7 @@ func Test_v1EmailsGet(t *testing.T) {
 			}
 
 			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
-			mockEmail.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, gomock.Any()).Return(tt.responseEmails, nil)
+			mockEmail.EXPECT().List(gomock.Any(), tt.pageToken, tt.pageSize, gomock.Any()).Return(tt.responseEmails, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

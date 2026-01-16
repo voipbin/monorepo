@@ -150,8 +150,8 @@ func (h *handler) EmailGet(ctx context.Context, id uuid.UUID) (*email.Email, err
 	return res, nil
 }
 
-// EmailGets returns emails based on filters.
-func (h *handler) EmailGets(ctx context.Context, token string, size uint64, filters map[email.Field]any) ([]*email.Email, error) {
+// EmailList returns emails based on filters.
+func (h *handler) EmailList(ctx context.Context, token string, size uint64, filters map[email.Field]any) ([]*email.Email, error) {
 	if token == "" {
 		token = h.util.TimeGetCurTime()
 	}
@@ -168,17 +168,17 @@ func (h *handler) EmailGets(ctx context.Context, token string, size uint64, filt
 	// apply filters
 	builder, err := commondatabasehandler.ApplyFields(builder, filters)
 	if err != nil {
-		return nil, errors.Wrap(err, "could not apply filters. EmailGets")
+		return nil, errors.Wrap(err, "could not apply filters. EmailList")
 	}
 
 	query, args, err := builder.ToSql()
 	if err != nil {
-		return nil, errors.Wrap(err, "could not build query. EmailGets")
+		return nil, errors.Wrap(err, "could not build query. EmailList")
 	}
 
 	rows, err := h.db.Query(query, args...)
 	if err != nil {
-		return nil, errors.Wrap(err, "could not query. EmailGets")
+		return nil, errors.Wrap(err, "could not query. EmailList")
 	}
 	defer func() {
 		_ = rows.Close()
@@ -188,7 +188,7 @@ func (h *handler) EmailGets(ctx context.Context, token string, size uint64, filt
 	for rows.Next() {
 		e, err := h.emailGetFromRow(rows)
 		if err != nil {
-			return nil, errors.Wrap(err, "could not scan the row. EmailGets")
+			return nil, errors.Wrap(err, "could not scan the row. EmailList")
 		}
 
 		res = append(res, e)

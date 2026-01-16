@@ -85,19 +85,19 @@ func (mr *MockDBHandlerMockRecorder) EmailGet(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EmailGet", reflect.TypeOf((*MockDBHandler)(nil).EmailGet), ctx, id)
 }
 
-// EmailGets mocks base method.
-func (m *MockDBHandler) EmailGets(ctx context.Context, token string, size uint64, filters map[email.Field]any) ([]*email.Email, error) {
+// EmailList mocks base method.
+func (m *MockDBHandler) EmailList(ctx context.Context, token string, size uint64, filters map[email.Field]any) ([]*email.Email, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "EmailGets", ctx, token, size, filters)
+	ret := m.ctrl.Call(m, "EmailList", ctx, token, size, filters)
 	ret0, _ := ret[0].([]*email.Email)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// EmailGets indicates an expected call of EmailGets.
-func (mr *MockDBHandlerMockRecorder) EmailGets(ctx, token, size, filters any) *gomock.Call {
+// EmailList indicates an expected call of EmailList.
+func (mr *MockDBHandlerMockRecorder) EmailList(ctx, token, size, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EmailGets", reflect.TypeOf((*MockDBHandler)(nil).EmailGets), ctx, token, size, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EmailList", reflect.TypeOf((*MockDBHandler)(nil).EmailList), ctx, token, size, filters)
 }
 
 // EmailUpdate mocks base method.

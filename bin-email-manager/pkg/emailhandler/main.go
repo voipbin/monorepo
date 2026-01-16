@@ -35,7 +35,7 @@ type EmailHandler interface {
 		attachments []email.Attachment,
 	) (*email.Email, error)
 	Get(ctx context.Context, id uuid.UUID) (*email.Email, error)
-	Gets(ctx context.Context, token string, size uint64, filters map[email.Field]any) ([]*email.Email, error)
+	List(ctx context.Context, token string, size uint64, filters map[email.Field]any) ([]*email.Email, error)
 	Delete(ctx context.Context, id uuid.UUID) (*email.Email, error)
 
 	Hook(ctx context.Context, uri string, data []byte) error

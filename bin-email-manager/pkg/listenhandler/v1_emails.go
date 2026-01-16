@@ -33,7 +33,7 @@ func (h *listenHandler) v1EmailsGet(ctx context.Context, m *sock.Request) (*sock
 		filters[email.Field(k)] = v
 	}
 
-	tmp, err := h.emailHandler.Gets(ctx, pageToken, pageSize, filters)
+	tmp, err := h.emailHandler.List(ctx, pageToken, pageSize, filters)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get emails")
 	}

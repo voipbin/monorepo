@@ -88,21 +88,6 @@ func (mr *MockEmailHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockEmailHandler)(nil).Get), ctx, id)
 }
 
-// Gets mocks base method.
-func (m *MockEmailHandler) Gets(ctx context.Context, token string, size uint64, filters map[email.Field]any) ([]*email.Email, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Gets", ctx, token, size, filters)
-	ret0, _ := ret[0].([]*email.Email)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Gets indicates an expected call of Gets.
-func (mr *MockEmailHandlerMockRecorder) Gets(ctx, token, size, filters any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockEmailHandler)(nil).Gets), ctx, token, size, filters)
-}
-
 // Hook mocks base method.
 func (m *MockEmailHandler) Hook(ctx context.Context, uri string, data []byte) error {
 	m.ctrl.T.Helper()
@@ -115,4 +100,19 @@ func (m *MockEmailHandler) Hook(ctx context.Context, uri string, data []byte) er
 func (mr *MockEmailHandlerMockRecorder) Hook(ctx, uri, data any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Hook", reflect.TypeOf((*MockEmailHandler)(nil).Hook), ctx, uri, data)
+}
+
+// List mocks base method.
+func (m *MockEmailHandler) List(ctx context.Context, token string, size uint64, filters map[email.Field]any) ([]*email.Email, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "List", ctx, token, size, filters)
+	ret0, _ := ret[0].([]*email.Email)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// List indicates an expected call of List.
+func (mr *MockEmailHandlerMockRecorder) List(ctx, token, size, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockEmailHandler)(nil).List), ctx, token, size, filters)
 }
