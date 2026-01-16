@@ -48,7 +48,7 @@ func (h *listenHandler) processV1AccountsGet(ctx context.Context, m *sock.Reques
 		return simpleResponse(400), nil
 	}
 
-	tmps, err := h.accountHandler.Gets(ctx, pageToken, pageSize, filters)
+	tmps, err := h.accountHandler.List(ctx, pageToken, pageSize, filters)
 	if err != nil {
 		log.Debugf("Could not get conversations. err: %v", err)
 		return simpleResponse(500), nil

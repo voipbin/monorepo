@@ -210,9 +210,9 @@ func Test_Gets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().MessageGets(ctx, tt.pageToken, tt.pageSize, tt.filters).Return(tt.responseMessages, nil)
+			mockDB.EXPECT().MessageList(ctx, tt.pageToken, tt.pageSize, tt.filters).Return(tt.responseMessages, nil)
 
-			res, err := h.Gets(ctx, tt.pageToken, tt.pageSize, tt.filters)
+			res, err := h.List(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

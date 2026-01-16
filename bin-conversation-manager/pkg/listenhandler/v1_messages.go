@@ -79,7 +79,7 @@ func (h *listenHandler) processV1MessagesGet(ctx context.Context, m *sock.Reques
 		return simpleResponse(400), nil
 	}
 
-	tmp, err := h.messageHandler.Gets(ctx, pageToken, pageSize, filters)
+	tmp, err := h.messageHandler.List(ctx, pageToken, pageSize, filters)
 	if err != nil {
 		log.Errorf("Could not get conversation message. err: %v", err)
 		return nil, err

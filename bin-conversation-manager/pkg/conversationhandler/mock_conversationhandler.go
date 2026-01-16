@@ -89,21 +89,6 @@ func (mr *MockConversationHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockConversationHandler)(nil).Get), ctx, id)
 }
 
-// Gets mocks base method.
-func (m *MockConversationHandler) Gets(ctx context.Context, pageToken string, pageSize uint64, filters map[conversation.Field]any) ([]*conversation.Conversation, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Gets", ctx, pageToken, pageSize, filters)
-	ret0, _ := ret[0].([]*conversation.Conversation)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Gets indicates an expected call of Gets.
-func (mr *MockConversationHandlerMockRecorder) Gets(ctx, pageToken, pageSize, filters any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockConversationHandler)(nil).Gets), ctx, pageToken, pageSize, filters)
-}
-
 // Hook mocks base method.
 func (m *MockConversationHandler) Hook(ctx context.Context, uri string, data []byte) error {
 	m.ctrl.T.Helper()
@@ -116,6 +101,21 @@ func (m *MockConversationHandler) Hook(ctx context.Context, uri string, data []b
 func (mr *MockConversationHandlerMockRecorder) Hook(ctx, uri, data any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Hook", reflect.TypeOf((*MockConversationHandler)(nil).Hook), ctx, uri, data)
+}
+
+// List mocks base method.
+func (m *MockConversationHandler) List(ctx context.Context, pageToken string, pageSize uint64, filters map[conversation.Field]any) ([]*conversation.Conversation, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "List", ctx, pageToken, pageSize, filters)
+	ret0, _ := ret[0].([]*conversation.Conversation)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// List indicates an expected call of List.
+func (mr *MockConversationHandlerMockRecorder) List(ctx, pageToken, pageSize, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockConversationHandler)(nil).List), ctx, pageToken, pageSize, filters)
 }
 
 // MessageSend mocks base method.

@@ -64,7 +64,7 @@ func (h *listenHandler) processV1ConversationsGet(ctx context.Context, m *sock.R
 		"converted_filters": fields,
 	}).Debug("Filters after conversion (customer_id should be uuid.UUID)")
 
-	tmps, err := h.conversationHandler.Gets(ctx, pageToken, pageSize, fields)
+	tmps, err := h.conversationHandler.List(ctx, pageToken, pageSize, fields)
 	if err != nil {
 		log.Debugf("Could not get conversations. err: %v", err)
 		return simpleResponse(500), nil

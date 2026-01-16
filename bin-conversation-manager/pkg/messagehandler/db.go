@@ -89,9 +89,9 @@ func (h *messageHandler) Delete(ctx context.Context, id uuid.UUID) (*message.Mes
 	return res, nil
 }
 
-// Gets returns list of messages of the given filters
-func (h *messageHandler) Gets(ctx context.Context, pageToken string, pageSize uint64, filters map[message.Field]any) ([]*message.Message, error) {
-	res, err := h.db.MessageGets(ctx, pageToken, pageSize, filters)
+// List returns list of messages of the given filters
+func (h *messageHandler) List(ctx context.Context, pageToken string, pageSize uint64, filters map[message.Field]any) ([]*message.Message, error) {
+	res, err := h.db.MessageList(ctx, pageToken, pageSize, filters)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not get messages.")
 	}

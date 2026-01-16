@@ -152,7 +152,7 @@ func (h *handler) MessageGet(ctx context.Context, id uuid.UUID) (*message.Messag
 }
 
 // MessageGets returns messages.
-func (h *handler) MessageGets(ctx context.Context, token string, size uint64, filters map[message.Field]any) ([]*message.Message, error) {
+func (h *handler) MessageList(ctx context.Context, token string, size uint64, filters map[message.Field]any) ([]*message.Message, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}

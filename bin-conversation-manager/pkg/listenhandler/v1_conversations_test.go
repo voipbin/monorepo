@@ -120,7 +120,7 @@ func Test_processV1ConversationsGet(t *testing.T) {
 				conversationHandler: mockConversation,
 			}
 
-			mockConversation.EXPECT().Gets(gomock.Any(), tt.expectPageToken, tt.expectPageSize, gomock.Any()).Return(tt.responseConversations, nil)
+			mockConversation.EXPECT().List(gomock.Any(), tt.expectPageToken, tt.expectPageSize, gomock.Any()).Return(tt.responseConversations, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

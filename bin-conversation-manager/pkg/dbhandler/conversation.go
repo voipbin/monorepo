@@ -188,7 +188,7 @@ func (h *handler) ConversationGetBySelfAndPeer(ctx context.Context, self commona
 	return res, nil
 }
 
-func (h *handler) ConversationGets(ctx context.Context, size uint64, token string, filters map[conversation.Field]any) ([]*conversation.Conversation, error) {
+func (h *handler) ConversationList(ctx context.Context, size uint64, token string, filters map[conversation.Field]any) ([]*conversation.Conversation, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "ConversationGets",
 		"size":    size,

@@ -79,14 +79,14 @@ func (h *accountHandler) Get(ctx context.Context, id uuid.UUID) (*account.Accoun
 	return res, nil
 }
 
-// Gets returns list of accounts of the given filters
-func (h *accountHandler) Gets(ctx context.Context, pageToken string, pageSize uint64, filters map[account.Field]any) ([]*account.Account, error) {
+// List returns list of accounts of the given filters
+func (h *accountHandler) List(ctx context.Context, pageToken string, pageSize uint64, filters map[account.Field]any) ([]*account.Account, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "Gets",
+		"func": "List",
 		"filters": filters,
 	})
 
-	res, err := h.db.AccountGets(ctx, pageSize, pageToken, filters)
+	res, err := h.db.AccountList(ctx, pageSize, pageToken, filters)
 	if err != nil {
 		log.Errorf("Could not get messages. err: %v", err)
 		return nil, err
