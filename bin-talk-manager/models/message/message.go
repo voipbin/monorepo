@@ -1,6 +1,8 @@
 package message
 
 import (
+	"encoding/json"
+
 	"github.com/gofrs/uuid"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 )
@@ -54,4 +56,52 @@ type WebhookMessage struct {
 type Media struct {
 	Type string `json:"type"` // "file", "link", "address", "agent"
 	// Add specific fields as needed based on Type
+}
+
+// ConvertWebhookMessage converts Message to WebhookMessage
+func (m *Message) ConvertWebhookMessage() (*WebhookMessage, error) {
+	// Parse Medias JSON string to []Media
+	var medias []Media
+	if m.Medias != "" {
+		if err := json.Unmarshal([]byte(m.Medias), &medias); err != nil {
+			return nil, err
+		}
+	}
+
+	// Parse Metadata JSON string to Metadata struct
+	var metadata Metadata
+	if m.Metadata != "" {
+		if err := json.Unmarshal([]byte(m.Metadata), &metadata); err != nil {
+			return nil, err
+		}
+	}
+
+	return &WebhookMessage{
+		Identity: m.Identity,
+		Owner:    m.Owner,
+		ChatID:   m.ChatID,
+		ParentID: m.ParentID,
+		Type:     m.Type,
+		Text:     m.Text,
+		Medias:   medias,
+		Metadata: metadata,
+		TMCreate: m.TMCreate,
+		TMUpdate: m.TMUpdate,
+		TMDelete: m.TMDelete,
+	}, nil
+}
+
+// CreateWebhookEvent generates WebhookEvent JSON
+func (m *Message) CreateWebhookEvent() ([]byte, error) {
+	e, err := m.ConvertWebhookMessage()
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := json.Marshal(e)
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
 }
