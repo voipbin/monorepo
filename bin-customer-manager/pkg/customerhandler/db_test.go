@@ -55,8 +55,8 @@ func Test_Gets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CustomerGets(gomock.Any(), tt.size, tt.token, tt.filters).Return(tt.result, nil)
-			_, err := h.Gets(ctx, tt.size, tt.token, tt.filters)
+			mockDB.EXPECT().CustomerList(gomock.Any(), tt.size, tt.token, tt.filters).Return(tt.result, nil)
+			_, err := h.List(ctx, tt.size, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -139,7 +139,7 @@ func Test_Create(t *testing.T) {
 			ctx := context.Background()
 
 			mockUtil.EXPECT().EmailIsValid(tt.email).Return(true)
-			mockDB.EXPECT().CustomerGets(ctx, gomock.Any(), gomock.Any(), tt.expectedFilterCustomer).Return([]*customer.Customer{}, nil)
+			mockDB.EXPECT().CustomerList(ctx, gomock.Any(), gomock.Any(), tt.expectedFilterCustomer).Return([]*customer.Customer{}, nil)
 			mockReq.EXPECT().AgentV1AgentList(ctx, gomock.Any(), gomock.Any(), tt.expectedFilterAgent).Return([]amagent.Agent{}, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)

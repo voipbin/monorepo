@@ -101,7 +101,7 @@ func Test_processV1CustomersGet(t *testing.T) {
 				customerHandler: mockCustomer,
 			}
 
-			mockCustomer.EXPECT().Gets(gomock.Any(), tt.size, tt.token, gomock.Any()).Return(tt.responseCustomers, nil)
+			mockCustomer.EXPECT().List(gomock.Any(), tt.size, tt.token, gomock.Any()).Return(tt.responseCustomers, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

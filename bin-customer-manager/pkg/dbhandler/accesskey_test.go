@@ -147,7 +147,7 @@ func Test_AccesskeyDelete(t *testing.T) {
 	}
 }
 
-func Test_AccesskeyGets(t *testing.T) {
+func Test_AccesskeyList(t *testing.T) {
 
 	tests := []struct {
 		name       string
@@ -253,7 +253,7 @@ func Test_AccesskeyGets(t *testing.T) {
 				}
 			}
 
-			res, err := h.AccesskeyGets(ctx, tt.size, tt.token, tt.filters)
+			res, err := h.AccesskeyList(ctx, tt.size, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. UserGet expect: ok, got: %v", err)
 			}

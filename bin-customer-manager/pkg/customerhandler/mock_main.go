@@ -88,21 +88,6 @@ func (mr *MockCustomerHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockCustomerHandler)(nil).Get), ctx, id)
 }
 
-// Gets mocks base method.
-func (m *MockCustomerHandler) Gets(ctx context.Context, size uint64, token string, filters map[customer.Field]any) ([]*customer.Customer, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Gets", ctx, size, token, filters)
-	ret0, _ := ret[0].([]*customer.Customer)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Gets indicates an expected call of Gets.
-func (mr *MockCustomerHandlerMockRecorder) Gets(ctx, size, token, filters any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockCustomerHandler)(nil).Gets), ctx, size, token, filters)
-}
-
 // IsValidBalance mocks base method.
 func (m *MockCustomerHandler) IsValidBalance(ctx context.Context, customerID uuid.UUID, billingType billing.ReferenceType, country string, count int) (bool, error) {
 	m.ctrl.T.Helper()
@@ -116,6 +101,21 @@ func (m *MockCustomerHandler) IsValidBalance(ctx context.Context, customerID uui
 func (mr *MockCustomerHandlerMockRecorder) IsValidBalance(ctx, customerID, billingType, country, count any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsValidBalance", reflect.TypeOf((*MockCustomerHandler)(nil).IsValidBalance), ctx, customerID, billingType, country, count)
+}
+
+// List mocks base method.
+func (m *MockCustomerHandler) List(ctx context.Context, size uint64, token string, filters map[customer.Field]any) ([]*customer.Customer, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "List", ctx, size, token, filters)
+	ret0, _ := ret[0].([]*customer.Customer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// List indicates an expected call of List.
+func (mr *MockCustomerHandlerMockRecorder) List(ctx, size, token, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockCustomerHandler)(nil).List), ctx, size, token, filters)
 }
 
 // UpdateBasicInfo mocks base method.

@@ -120,7 +120,7 @@ func Test_validateCreate(t *testing.T) {
 			ctx := context.Background()
 
 			mockUtil.EXPECT().EmailIsValid(tt.email).Return(true)
-			mockDB.EXPECT().CustomerGets(gomock.Any(), uint64(100), "", tt.expectedFilterCustomer).Return([]*customer.Customer{}, nil)
+			mockDB.EXPECT().CustomerList(gomock.Any(), uint64(100), "", tt.expectedFilterCustomer).Return([]*customer.Customer{}, nil)
 			mockReq.EXPECT().AgentV1AgentList(gomock.Any(), "", uint64(100), tt.expectedFilterAgent).Return([]amagent.Agent{}, nil)
 
 			res := h.validateCreate(ctx, tt.email)

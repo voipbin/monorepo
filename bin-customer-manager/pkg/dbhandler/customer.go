@@ -155,7 +155,7 @@ func (h *handler) CustomerGet(ctx context.Context, id uuid.UUID) (*customer.Cust
 }
 
 // CustomerGets returns customers.
-func (h *handler) CustomerGets(ctx context.Context, size uint64, token string, filters map[customer.Field]any) ([]*customer.Customer, error) {
+func (h *handler) CustomerList(ctx context.Context, size uint64, token string, filters map[customer.Field]any) ([]*customer.Customer, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}

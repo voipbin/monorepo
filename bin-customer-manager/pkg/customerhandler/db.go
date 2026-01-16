@@ -10,11 +10,11 @@ import (
 	"monorepo/bin-customer-manager/models/customer"
 )
 
-// Gets returns list of customers
-func (h *customerHandler) Gets(ctx context.Context, size uint64, token string, filters map[customer.Field]any) ([]*customer.Customer, error) {
-	log := logrus.WithField("func", "Gets")
+// List returns list of customers
+func (h *customerHandler) List(ctx context.Context, size uint64, token string, filters map[customer.Field]any) ([]*customer.Customer, error) {
+	log := logrus.WithField("func", "List")
 
-	res, err := h.db.CustomerGets(ctx, size, token, filters)
+	res, err := h.db.CustomerList(ctx, size, token, filters)
 	if err != nil {
 		log.Errorf("Could not get customer info. err: %v", err)
 		return nil, err

@@ -50,7 +50,7 @@ func (h *listenHandler) processV1AccesskeysGet(ctx context.Context, m *sock.Requ
 		return simpleResponse(400), nil
 	}
 
-	tmp, err := h.accesskeyHandler.Gets(ctx, pageSize, pageToken, filters)
+	tmp, err := h.accesskeyHandler.List(ctx, pageSize, pageToken, filters)
 	if err != nil {
 		log.Errorf("Could not get accesskyes info. err: %v", err)
 		return simpleResponse(500), nil

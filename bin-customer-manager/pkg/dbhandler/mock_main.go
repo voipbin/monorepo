@@ -86,19 +86,19 @@ func (mr *MockDBHandlerMockRecorder) AccesskeyGet(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccesskeyGet", reflect.TypeOf((*MockDBHandler)(nil).AccesskeyGet), ctx, id)
 }
 
-// AccesskeyGets mocks base method.
-func (m *MockDBHandler) AccesskeyGets(ctx context.Context, size uint64, token string, filters map[accesskey.Field]any) ([]*accesskey.Accesskey, error) {
+// AccesskeyList mocks base method.
+func (m *MockDBHandler) AccesskeyList(ctx context.Context, size uint64, token string, filters map[accesskey.Field]any) ([]*accesskey.Accesskey, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AccesskeyGets", ctx, size, token, filters)
+	ret := m.ctrl.Call(m, "AccesskeyList", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*accesskey.Accesskey)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// AccesskeyGets indicates an expected call of AccesskeyGets.
-func (mr *MockDBHandlerMockRecorder) AccesskeyGets(ctx, size, token, filters any) *gomock.Call {
+// AccesskeyList indicates an expected call of AccesskeyList.
+func (mr *MockDBHandlerMockRecorder) AccesskeyList(ctx, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccesskeyGets", reflect.TypeOf((*MockDBHandler)(nil).AccesskeyGets), ctx, size, token, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccesskeyList", reflect.TypeOf((*MockDBHandler)(nil).AccesskeyList), ctx, size, token, filters)
 }
 
 // AccesskeyUpdate mocks base method.
@@ -158,19 +158,19 @@ func (mr *MockDBHandlerMockRecorder) CustomerGet(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerGet", reflect.TypeOf((*MockDBHandler)(nil).CustomerGet), ctx, id)
 }
 
-// CustomerGets mocks base method.
-func (m *MockDBHandler) CustomerGets(ctx context.Context, size uint64, token string, filters map[customer.Field]any) ([]*customer.Customer, error) {
+// CustomerList mocks base method.
+func (m *MockDBHandler) CustomerList(ctx context.Context, size uint64, token string, filters map[customer.Field]any) ([]*customer.Customer, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CustomerGets", ctx, size, token, filters)
+	ret := m.ctrl.Call(m, "CustomerList", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*customer.Customer)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// CustomerGets indicates an expected call of CustomerGets.
-func (mr *MockDBHandlerMockRecorder) CustomerGets(ctx, size, token, filters any) *gomock.Call {
+// CustomerList indicates an expected call of CustomerList.
+func (mr *MockDBHandlerMockRecorder) CustomerList(ctx, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerGets", reflect.TypeOf((*MockDBHandler)(nil).CustomerGets), ctx, size, token, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerList", reflect.TypeOf((*MockDBHandler)(nil).CustomerList), ctx, size, token, filters)
 }
 
 // CustomerUpdate mocks base method.

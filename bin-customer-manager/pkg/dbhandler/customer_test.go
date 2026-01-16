@@ -154,7 +154,7 @@ func TestCustomerDelete(t *testing.T) {
 	}
 }
 
-func Test_CustomerGets(t *testing.T) {
+func Test_CustomerList(t *testing.T) {
 
 	tests := []struct {
 		name      string
@@ -223,7 +223,7 @@ func Test_CustomerGets(t *testing.T) {
 				}
 			}
 
-			res, err := h.CustomerGets(ctx, tt.size, tt.token, tt.filters)
+			res, err := h.CustomerList(ctx, tt.size, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. UserGet expect: ok, got: %v", err)
 			}

@@ -96,7 +96,7 @@ func Test_processV1AccesskeysGet(t *testing.T) {
 				accesskeyHandler: mockAccesskey,
 			}
 
-			mockAccesskey.EXPECT().Gets(gomock.Any(), tt.size, tt.token, gomock.Any()).Return(tt.responseAccesskeys, nil)
+			mockAccesskey.EXPECT().List(gomock.Any(), tt.size, tt.token, gomock.Any()).Return(tt.responseAccesskeys, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

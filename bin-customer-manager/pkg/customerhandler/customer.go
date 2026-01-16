@@ -57,7 +57,7 @@ func (h *customerHandler) validateCreate(ctx context.Context, email string) bool
 		customer.FieldDeleted: false,
 		customer.FieldEmail:   email,
 	}
-	tmps, err := h.Gets(ctx, 100, "", filterCustomer)
+	tmps, err := h.List(ctx, 100, "", filterCustomer)
 	if err != nil {
 		log.Errorf("Could not get the customer info. err: %v", err)
 		return false
