@@ -340,16 +340,23 @@ go mod tidy && go mod vendor && go generate ./...
 
 **CRITICAL: This is a monorepo containing multiple projects. Commit messages MUST specify which projects were affected.**
 
+**CRITICAL: Commit title MUST match the branch name exactly.**
+
 ### Commit Message Structure
 
 **Title (first line):**
+
+The commit title MUST match the branch name exactly (same format, all lowercase with hyphens):
+
 ```
-VOIP-[ticket-number]: Brief description of change
+VOIP-[ticket-number]-brief-description-of-change
 ```
-or
+or (when no JIRA ticket)
 ```
-NOJIRA-Underscored_Description
+NOJIRA-brief-description-of-change
 ```
+
+**Important:** Title uses the same format as branch name (all lowercase with hyphens)
 
 **Body (subsequent lines):**
 List each affected project with specific changes:
@@ -362,7 +369,7 @@ List each affected project with specific changes:
 
 **Complete Example (Narrative Style):**
 ```
-VOIP-1190: Refactor database handlers to use commondatabasehandler pattern
+VOIP-1190-refactor-database-handlers-to-use-commondatabasehandler
 
 Successfully refactored 22 microservices to adopt standardized commondatabasehandler
 pattern from bin-common-handler, improving type safety and code consistency across
@@ -385,12 +392,12 @@ the entire monorepo.
 Test results: All 28 services passing (477 files modified)
 ```
 
-**Merge Commit Format:**
+**Commit Format (matches branch name):**
 ```
-VOIP-[ticket-number]: Brief description of change
+VOIP-[ticket-number]-brief-description-of-change
 
 [Narrative summary paragraph explaining what was accomplished, the impact,
-and high-level context. 2-3 sentences recommended for larger changes.]
+and high-level context. 2-3 sentences recommended for significant changes.]
 
 - bin-service-1: What changed
 - bin-service-2: What changed
@@ -399,7 +406,7 @@ and high-level context. 2-3 sentences recommended for larger changes.]
 
 **Example:**
 ```
-docs: Add CLAUDE.md reorganization design document
+NOJIRA-add-claude-md-reorganization-design
 
 Created comprehensive design document to reorganize CLAUDE.md documentation structure
 across the monorepo. Establishes clear boundaries between monorepo-wide rules in root
@@ -426,7 +433,7 @@ resolving confusion about where to document new information.
 
 **Good examples:**
 ```
-VOIP-1234: Add JWT authentication support
+VOIP-1234-add-jwt-authentication-support
 
 - bin-api-manager: Implement JWT middleware and token validation
 - bin-customer-manager: Add token generation endpoints
@@ -434,7 +441,7 @@ VOIP-1234: Add JWT authentication support
 ```
 
 ```
-NOJIRA-Fix_database_connection_leak
+NOJIRA-fix-database-connection-leak
 
 - bin-call-manager: Close database connections in defer statements
 - bin-conference-manager: Add connection pool timeout handling
@@ -446,11 +453,11 @@ Fixed bug  ❌ (No ticket number, no affected projects)
 ```
 
 ```
-VOIP-1234: Updated everything  ❌ (Not specific, no project list)
+VOIP-1234: Updated everything  ❌ (Old format with colon, not specific, no project list)
 ```
 
 ```
-VOIP-1234: Add feature
+VOIP-1234-add-feature
 - Updated files  ❌ (Not specific about which projects)
 ```
 
@@ -461,14 +468,14 @@ VOIP-1234: Add feature
 **If the current branch is `main`:**
 1. **STOP - DO NOT make commits on main**
 2. Ask the user to create a feature branch first
-3. Suggest a branch name following this convention: `NOJIRA-Underscored_change_summary`
+3. Suggest a branch name following this convention: `NOJIRA-brief-description` or `VOIP-1234-brief-description`
 4. Wait for user confirmation before proceeding with any code changes
 
 **Example prompt when starting work:**
 ```
 You're currently on the main branch. It's recommended to create a feature branch before making changes.
 
-Suggested branch name: NOJIRA-Fix_conference_customer_id
+Suggested branch name: NOJIRA-fix-conference-customer-id
 
 Would you like to:
 1. Create and switch to this branch
@@ -482,28 +489,32 @@ Would you like to:
 git branch --show-current
 
 # Step 2: If on main, create feature branch BEFORE any edits
-git checkout -b NOJIRA-Descriptive_change_summary
+git checkout -b NOJIRA-descriptive-change-summary
 
 # Step 3: Make your code changes
 
 # Step 4: Run the verification workflow BEFORE committing (from section above)
 go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m
 
-# Step 5: Commit changes
+# Step 5: Commit changes (title matches branch name)
 git add .
-git commit -m "Descriptive commit message"
+git commit -m "NOJIRA-descriptive-change-summary
+
+- project-name: What changed
+- project-name: What changed"
 
 # Step 6: Push to remote
-git push -u origin NOJIRA-Descriptive_change_summary
+git push -u origin NOJIRA-descriptive-change-summary
 ```
 
 **Branch naming convention:**
-- Format: `NOJIRA-Underscored_change_or_plan_summary`
+- Format: `NOJIRA-brief-description` or `VOIP-[ticket]-brief-description`
+- Use lowercase with hyphens separating words
+- Commit title MUST match branch name exactly
 - Examples:
-  - `NOJIRA-Fix_conference_customer_id`
-  - `NOJIRA-Add_user_authentication`
-  - `NOJIRA-Refactor_flow_manager_cobra_viper`
-- Use underscores (_) to separate words
+  - `NOJIRA-fix-conference-customer-id`
+  - `NOJIRA-add-user-authentication`
+  - `VOIP-1234-refactor-flow-manager`
 - Keep it concise but descriptive
 
 **Only proceed with working on main if the user explicitly confirms.**
@@ -536,10 +547,12 @@ git commit -m "some change"  # NEVER DO THIS ON MAIN
 ```bash
 # ✅ CORRECT - Create branch first
 git branch --show-current  # shows: main
-git checkout -b NOJIRA-Descriptive_change_name  # Create feature branch FIRST
+git checkout -b NOJIRA-descriptive-change-name  # Create feature branch FIRST
 # ... make changes to files ...
 git add .
-git commit -m "some change"  # Safe - on feature branch
+git commit -m "NOJIRA-descriptive-change-name
+
+- project-name: What changed"  # Safe - on feature branch, title matches branch
 ```
 
 **Exception:**
