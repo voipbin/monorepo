@@ -109,7 +109,7 @@ func (h *queuecallHandler) EventCUCustomerDeleted(ctx context.Context, cu *cucus
 		queuecall.FieldCustomerID: cu.ID,
 		queuecall.FieldDeleted:    false,
 	}
-	qs, err := h.Gets(ctx, 1000, "", filters)
+	qs, err := h.List(ctx, 1000, "", filters)
 	if err != nil {
 		log.Errorf("Could not gets queuecalls list. err: %v", err)
 		return errors.Wrap(err, "could not get queuecalls list")

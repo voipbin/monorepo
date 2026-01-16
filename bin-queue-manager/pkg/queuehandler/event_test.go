@@ -73,7 +73,7 @@ func Test_EventCUCustomerDeleted(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().QueueGets(ctx, uint64(1000), "", tt.expectFilters).Return(tt.responseQueues, nil)
+			mockDB.EXPECT().QueueList(ctx, uint64(1000), "", tt.expectFilters).Return(tt.responseQueues, nil)
 
 			for _, q := range tt.responseQueues {
 				fields := map[queue.Field]any{

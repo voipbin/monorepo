@@ -171,21 +171,6 @@ func (mr *MockQueuecallHandlerMockRecorder) GetByReferenceID(ctx, referenceID an
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByReferenceID", reflect.TypeOf((*MockQueuecallHandler)(nil).GetByReferenceID), ctx, referenceID)
 }
 
-// Gets mocks base method.
-func (m *MockQueuecallHandler) Gets(ctx context.Context, size uint64, token string, filters map[queuecall.Field]any) ([]*queuecall.Queuecall, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Gets", ctx, size, token, filters)
-	ret0, _ := ret[0].([]*queuecall.Queuecall)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Gets indicates an expected call of Gets.
-func (mr *MockQueuecallHandlerMockRecorder) Gets(ctx, size, token, filters any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockQueuecallHandler)(nil).Gets), ctx, size, token, filters)
-}
-
 // HealthCheck mocks base method.
 func (m *MockQueuecallHandler) HealthCheck(ctx context.Context, id uuid.UUID, retryCount int) {
 	m.ctrl.T.Helper()
@@ -226,6 +211,21 @@ func (m *MockQueuecallHandler) KickByReferenceID(ctx context.Context, referenceI
 func (mr *MockQueuecallHandlerMockRecorder) KickByReferenceID(ctx, referenceID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "KickByReferenceID", reflect.TypeOf((*MockQueuecallHandler)(nil).KickByReferenceID), ctx, referenceID)
+}
+
+// List mocks base method.
+func (m *MockQueuecallHandler) List(ctx context.Context, size uint64, token string, filters map[queuecall.Field]any) ([]*queuecall.Queuecall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "List", ctx, size, token, filters)
+	ret0, _ := ret[0].([]*queuecall.Queuecall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// List indicates an expected call of List.
+func (mr *MockQueuecallHandlerMockRecorder) List(ctx, size, token, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockQueuecallHandler)(nil).List), ctx, size, token, filters)
 }
 
 // ServiceStart mocks base method.

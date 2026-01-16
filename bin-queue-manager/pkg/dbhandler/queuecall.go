@@ -206,8 +206,8 @@ func (h *handler) QueuecallGetByReferenceID(ctx context.Context, referenceID uui
 	return res, nil
 }
 
-// QueuecallGets returns queuecalls.
-func (h *handler) QueuecallGets(ctx context.Context, size uint64, token string, filters map[queuecall.Field]any) ([]*queuecall.Queuecall, error) {
+// QueuecallList returns queuecalls.
+func (h *handler) QueuecallList(ctx context.Context, size uint64, token string, filters map[queuecall.Field]any) ([]*queuecall.Queuecall, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}

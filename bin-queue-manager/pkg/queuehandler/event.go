@@ -24,7 +24,7 @@ func (h *queueHandler) EventCUCustomerDeleted(ctx context.Context, cu *cucustome
 		queue.FieldCustomerID: cu.ID,
 		queue.FieldDeleted:    false,
 	}
-	qs, err := h.Gets(ctx, 1000, "", filters)
+	qs, err := h.List(ctx, 1000, "", filters)
 	if err != nil {
 		log.Errorf("Could not gets queues list. err: %v", err)
 		return errors.Wrap(err, "could not get queues list")
