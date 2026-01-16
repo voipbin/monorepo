@@ -65,7 +65,7 @@ func Test_EventHandleActiveflowDeletedWithStoppableCampaign(t *testing.T) {
 			// isstoppable
 			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
 			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
-			mockCampaigncall.EXPECT().GetsOngoingByCampaignID(ctx, tt.id, gomock.Any(), uint64(1)).Return([]*campaigncall.Campaigncall{}, nil)
+			mockCampaigncall.EXPECT().ListOngoingByCampaignID(ctx, tt.id, gomock.Any(), uint64(1)).Return([]*campaigncall.Campaigncall{}, nil)
 
 			// updateStatusStop
 			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
@@ -127,7 +127,7 @@ func Test_EventHandleReferenceCallHungupWithStoppableCampaign(t *testing.T) {
 			// isstoppable
 			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
 			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
-			mockCampaigncall.EXPECT().GetsOngoingByCampaignID(ctx, tt.id, gomock.Any(), uint64(1)).Return([]*campaigncall.Campaigncall{}, nil)
+			mockCampaigncall.EXPECT().ListOngoingByCampaignID(ctx, tt.id, gomock.Any(), uint64(1)).Return([]*campaigncall.Campaigncall{}, nil)
 
 			// updateStatusStop
 			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)

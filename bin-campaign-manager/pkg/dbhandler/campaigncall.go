@@ -226,7 +226,7 @@ func (h *handler) CampaigncallGetByActiveflowID(ctx context.Context, activeflowI
 }
 
 // CampaigncallGets returns list of campaigncalls with filters.
-func (h *handler) CampaigncallGets(ctx context.Context, token string, size uint64, filters map[campaigncall.Field]any) ([]*campaigncall.Campaigncall, error) {
+func (h *handler) CampaigncallList(ctx context.Context, token string, size uint64, filters map[campaigncall.Field]any) ([]*campaigncall.Campaigncall, error) {
 	if token == "" {
 		token = h.util.TimeGetCurTime()
 	}
@@ -274,35 +274,35 @@ func (h *handler) CampaigncallGets(ctx context.Context, token string, size uint6
 }
 
 // CampaigncallGetsByCustomerID returns list of campaigncall.
-func (h *handler) CampaigncallGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error) {
+func (h *handler) CampaigncallListByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error) {
 	filters := map[campaigncall.Field]any{
 		campaigncall.FieldCustomerID: customerID,
 	}
 
-	return h.CampaigncallGets(ctx, token, limit, filters)
+	return h.CampaigncallList(ctx, token, limit, filters)
 }
 
 // CampaigncallGetsByCampaignID returns list of campaigncall.
-func (h *handler) CampaigncallGetsByCampaignID(ctx context.Context, campaignID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error) {
+func (h *handler) CampaigncallListByCampaignID(ctx context.Context, campaignID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error) {
 	filters := map[campaigncall.Field]any{
 		campaigncall.FieldCampaignID: campaignID,
 	}
 
-	return h.CampaigncallGets(ctx, token, limit, filters)
+	return h.CampaigncallList(ctx, token, limit, filters)
 }
 
 // CampaigncallGetsByCampaignIDAndStatus returns list of campaigncall.
-func (h *handler) CampaigncallGetsByCampaignIDAndStatus(ctx context.Context, campaignID uuid.UUID, status campaigncall.Status, token string, limit uint64) ([]*campaigncall.Campaigncall, error) {
+func (h *handler) CampaigncallListByCampaignIDAndStatus(ctx context.Context, campaignID uuid.UUID, status campaigncall.Status, token string, limit uint64) ([]*campaigncall.Campaigncall, error) {
 	filters := map[campaigncall.Field]any{
 		campaigncall.FieldCampaignID: campaignID,
 		campaigncall.FieldStatus:     status,
 	}
 
-	return h.CampaigncallGets(ctx, token, limit, filters)
+	return h.CampaigncallList(ctx, token, limit, filters)
 }
 
 // CampaigncallGetsOngoingByCampaignID returns list of ongoing campaigncalls (dialing or progressing).
-func (h *handler) CampaigncallGetsOngoingByCampaignID(ctx context.Context, campaignID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error) {
+func (h *handler) CampaigncallListOngoingByCampaignID(ctx context.Context, campaignID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error) {
 	if token == "" {
 		token = h.util.TimeGetCurTime()
 	}

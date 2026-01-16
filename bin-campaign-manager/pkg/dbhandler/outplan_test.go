@@ -222,7 +222,7 @@ func Test_OutplanDelete(t *testing.T) {
 	}
 }
 
-func Test_OutplanGetsByCustomerID(t *testing.T) {
+func Test_OutplanListByCustomerID(t *testing.T) {
 	tests := []struct {
 		name     string
 		outplans []*outplan.Outplan
@@ -431,7 +431,7 @@ func Test_OutplanGetsByCustomerID(t *testing.T) {
 				}
 			}
 
-			res, err := h.OutplanGetsByCustomerID(ctx, tt.customerID, tt.token, tt.limit)
+			res, err := h.OutplanListByCustomerID(ctx, tt.customerID, tt.token, tt.limit)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

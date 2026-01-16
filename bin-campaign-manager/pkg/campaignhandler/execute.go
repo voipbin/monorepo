@@ -385,7 +385,7 @@ func (h *campaignHandler) isDialable(ctx context.Context, campaignID uuid.UUID, 
 	}
 
 	// get queuecall dialings
-	dialings, err := h.campaigncallHandler.GetsByCampaignIDAndStatus(ctx, campaignID, campaigncall.StatusDialing, dbhandler.DefaultTimeStamp, 100)
+	dialings, err := h.campaigncallHandler.ListByCampaignIDAndStatus(ctx, campaignID, campaigncall.StatusDialing, dbhandler.DefaultTimeStamp, 100)
 	if err != nil {
 		log.Errorf("Could not get campaigncalls. err: %v", err)
 		return false

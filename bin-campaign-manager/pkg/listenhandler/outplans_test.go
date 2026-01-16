@@ -160,7 +160,7 @@ func Test_v1OutplansGet(t *testing.T) {
 				outplanHandler: mockOutplan,
 			}
 
-			mockOutplan.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, tt.filters).Return(tt.responseOutplans, nil)
+			mockOutplan.EXPECT().List(gomock.Any(), tt.pageToken, tt.pageSize, tt.filters).Return(tt.responseOutplans, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

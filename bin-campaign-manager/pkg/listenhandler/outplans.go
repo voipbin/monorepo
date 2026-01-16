@@ -108,7 +108,7 @@ func (h *listenHandler) v1OutplansGet(ctx context.Context, m *sock.Request) (*so
 		"typed_filters": typedFilters,
 	}).Debug("v1OutplansGet: Converted filters to typed field map (check UUID types)")
 
-	tmp, err := h.outplanHandler.Gets(ctx, pageToken, pageSize, typedFilters)
+	tmp, err := h.outplanHandler.List(ctx, pageToken, pageSize, typedFilters)
 	if err != nil {
 		log.Errorf("Could not get outplans. err: %v", err)
 		return nil, err

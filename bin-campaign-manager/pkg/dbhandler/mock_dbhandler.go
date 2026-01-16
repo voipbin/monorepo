@@ -89,34 +89,34 @@ func (mr *MockDBHandlerMockRecorder) CampaignGet(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignGet", reflect.TypeOf((*MockDBHandler)(nil).CampaignGet), ctx, id)
 }
 
-// CampaignGets mocks base method.
-func (m *MockDBHandler) CampaignGets(ctx context.Context, token string, size uint64, filters map[campaign.Field]any) ([]*campaign.Campaign, error) {
+// CampaignList mocks base method.
+func (m *MockDBHandler) CampaignList(ctx context.Context, token string, size uint64, filters map[campaign.Field]any) ([]*campaign.Campaign, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CampaignGets", ctx, token, size, filters)
+	ret := m.ctrl.Call(m, "CampaignList", ctx, token, size, filters)
 	ret0, _ := ret[0].([]*campaign.Campaign)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// CampaignGets indicates an expected call of CampaignGets.
-func (mr *MockDBHandlerMockRecorder) CampaignGets(ctx, token, size, filters any) *gomock.Call {
+// CampaignList indicates an expected call of CampaignList.
+func (mr *MockDBHandlerMockRecorder) CampaignList(ctx, token, size, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignGets", reflect.TypeOf((*MockDBHandler)(nil).CampaignGets), ctx, token, size, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignList", reflect.TypeOf((*MockDBHandler)(nil).CampaignList), ctx, token, size, filters)
 }
 
-// CampaignGetsByCustomerID mocks base method.
-func (m *MockDBHandler) CampaignGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*campaign.Campaign, error) {
+// CampaignListByCustomerID mocks base method.
+func (m *MockDBHandler) CampaignListByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*campaign.Campaign, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CampaignGetsByCustomerID", ctx, customerID, token, limit)
+	ret := m.ctrl.Call(m, "CampaignListByCustomerID", ctx, customerID, token, limit)
 	ret0, _ := ret[0].([]*campaign.Campaign)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// CampaignGetsByCustomerID indicates an expected call of CampaignGetsByCustomerID.
-func (mr *MockDBHandlerMockRecorder) CampaignGetsByCustomerID(ctx, customerID, token, limit any) *gomock.Call {
+// CampaignListByCustomerID indicates an expected call of CampaignListByCustomerID.
+func (mr *MockDBHandlerMockRecorder) CampaignListByCustomerID(ctx, customerID, token, limit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignGetsByCustomerID", reflect.TypeOf((*MockDBHandler)(nil).CampaignGetsByCustomerID), ctx, customerID, token, limit)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignListByCustomerID", reflect.TypeOf((*MockDBHandler)(nil).CampaignListByCustomerID), ctx, customerID, token, limit)
 }
 
 // CampaignUpdate mocks base method.
@@ -346,79 +346,79 @@ func (mr *MockDBHandlerMockRecorder) CampaigncallGetByReferenceID(ctx, reference
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaigncallGetByReferenceID", reflect.TypeOf((*MockDBHandler)(nil).CampaigncallGetByReferenceID), ctx, referenceID)
 }
 
-// CampaigncallGets mocks base method.
-func (m *MockDBHandler) CampaigncallGets(ctx context.Context, token string, size uint64, filters map[campaigncall.Field]any) ([]*campaigncall.Campaigncall, error) {
+// CampaigncallList mocks base method.
+func (m *MockDBHandler) CampaigncallList(ctx context.Context, token string, size uint64, filters map[campaigncall.Field]any) ([]*campaigncall.Campaigncall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CampaigncallGets", ctx, token, size, filters)
+	ret := m.ctrl.Call(m, "CampaigncallList", ctx, token, size, filters)
 	ret0, _ := ret[0].([]*campaigncall.Campaigncall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// CampaigncallGets indicates an expected call of CampaigncallGets.
-func (mr *MockDBHandlerMockRecorder) CampaigncallGets(ctx, token, size, filters any) *gomock.Call {
+// CampaigncallList indicates an expected call of CampaigncallList.
+func (mr *MockDBHandlerMockRecorder) CampaigncallList(ctx, token, size, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaigncallGets", reflect.TypeOf((*MockDBHandler)(nil).CampaigncallGets), ctx, token, size, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaigncallList", reflect.TypeOf((*MockDBHandler)(nil).CampaigncallList), ctx, token, size, filters)
 }
 
-// CampaigncallGetsByCampaignID mocks base method.
-func (m *MockDBHandler) CampaigncallGetsByCampaignID(ctx context.Context, campaignID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error) {
+// CampaigncallListByCampaignID mocks base method.
+func (m *MockDBHandler) CampaigncallListByCampaignID(ctx context.Context, campaignID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CampaigncallGetsByCampaignID", ctx, campaignID, token, limit)
+	ret := m.ctrl.Call(m, "CampaigncallListByCampaignID", ctx, campaignID, token, limit)
 	ret0, _ := ret[0].([]*campaigncall.Campaigncall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// CampaigncallGetsByCampaignID indicates an expected call of CampaigncallGetsByCampaignID.
-func (mr *MockDBHandlerMockRecorder) CampaigncallGetsByCampaignID(ctx, campaignID, token, limit any) *gomock.Call {
+// CampaigncallListByCampaignID indicates an expected call of CampaigncallListByCampaignID.
+func (mr *MockDBHandlerMockRecorder) CampaigncallListByCampaignID(ctx, campaignID, token, limit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaigncallGetsByCampaignID", reflect.TypeOf((*MockDBHandler)(nil).CampaigncallGetsByCampaignID), ctx, campaignID, token, limit)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaigncallListByCampaignID", reflect.TypeOf((*MockDBHandler)(nil).CampaigncallListByCampaignID), ctx, campaignID, token, limit)
 }
 
-// CampaigncallGetsByCampaignIDAndStatus mocks base method.
-func (m *MockDBHandler) CampaigncallGetsByCampaignIDAndStatus(ctx context.Context, campaignID uuid.UUID, status campaigncall.Status, token string, limit uint64) ([]*campaigncall.Campaigncall, error) {
+// CampaigncallListByCampaignIDAndStatus mocks base method.
+func (m *MockDBHandler) CampaigncallListByCampaignIDAndStatus(ctx context.Context, campaignID uuid.UUID, status campaigncall.Status, token string, limit uint64) ([]*campaigncall.Campaigncall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CampaigncallGetsByCampaignIDAndStatus", ctx, campaignID, status, token, limit)
+	ret := m.ctrl.Call(m, "CampaigncallListByCampaignIDAndStatus", ctx, campaignID, status, token, limit)
 	ret0, _ := ret[0].([]*campaigncall.Campaigncall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// CampaigncallGetsByCampaignIDAndStatus indicates an expected call of CampaigncallGetsByCampaignIDAndStatus.
-func (mr *MockDBHandlerMockRecorder) CampaigncallGetsByCampaignIDAndStatus(ctx, campaignID, status, token, limit any) *gomock.Call {
+// CampaigncallListByCampaignIDAndStatus indicates an expected call of CampaigncallListByCampaignIDAndStatus.
+func (mr *MockDBHandlerMockRecorder) CampaigncallListByCampaignIDAndStatus(ctx, campaignID, status, token, limit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaigncallGetsByCampaignIDAndStatus", reflect.TypeOf((*MockDBHandler)(nil).CampaigncallGetsByCampaignIDAndStatus), ctx, campaignID, status, token, limit)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaigncallListByCampaignIDAndStatus", reflect.TypeOf((*MockDBHandler)(nil).CampaigncallListByCampaignIDAndStatus), ctx, campaignID, status, token, limit)
 }
 
-// CampaigncallGetsByCustomerID mocks base method.
-func (m *MockDBHandler) CampaigncallGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error) {
+// CampaigncallListByCustomerID mocks base method.
+func (m *MockDBHandler) CampaigncallListByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CampaigncallGetsByCustomerID", ctx, customerID, token, limit)
+	ret := m.ctrl.Call(m, "CampaigncallListByCustomerID", ctx, customerID, token, limit)
 	ret0, _ := ret[0].([]*campaigncall.Campaigncall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// CampaigncallGetsByCustomerID indicates an expected call of CampaigncallGetsByCustomerID.
-func (mr *MockDBHandlerMockRecorder) CampaigncallGetsByCustomerID(ctx, customerID, token, limit any) *gomock.Call {
+// CampaigncallListByCustomerID indicates an expected call of CampaigncallListByCustomerID.
+func (mr *MockDBHandlerMockRecorder) CampaigncallListByCustomerID(ctx, customerID, token, limit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaigncallGetsByCustomerID", reflect.TypeOf((*MockDBHandler)(nil).CampaigncallGetsByCustomerID), ctx, customerID, token, limit)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaigncallListByCustomerID", reflect.TypeOf((*MockDBHandler)(nil).CampaigncallListByCustomerID), ctx, customerID, token, limit)
 }
 
-// CampaigncallGetsOngoingByCampaignID mocks base method.
-func (m *MockDBHandler) CampaigncallGetsOngoingByCampaignID(ctx context.Context, campaignID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error) {
+// CampaigncallListOngoingByCampaignID mocks base method.
+func (m *MockDBHandler) CampaigncallListOngoingByCampaignID(ctx context.Context, campaignID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CampaigncallGetsOngoingByCampaignID", ctx, campaignID, token, limit)
+	ret := m.ctrl.Call(m, "CampaigncallListOngoingByCampaignID", ctx, campaignID, token, limit)
 	ret0, _ := ret[0].([]*campaigncall.Campaigncall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// CampaigncallGetsOngoingByCampaignID indicates an expected call of CampaigncallGetsOngoingByCampaignID.
-func (mr *MockDBHandlerMockRecorder) CampaigncallGetsOngoingByCampaignID(ctx, campaignID, token, limit any) *gomock.Call {
+// CampaigncallListOngoingByCampaignID indicates an expected call of CampaigncallListOngoingByCampaignID.
+func (mr *MockDBHandlerMockRecorder) CampaigncallListOngoingByCampaignID(ctx, campaignID, token, limit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaigncallGetsOngoingByCampaignID", reflect.TypeOf((*MockDBHandler)(nil).CampaigncallGetsOngoingByCampaignID), ctx, campaignID, token, limit)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaigncallListOngoingByCampaignID", reflect.TypeOf((*MockDBHandler)(nil).CampaigncallListOngoingByCampaignID), ctx, campaignID, token, limit)
 }
 
 // CampaigncallUpdate mocks base method.
@@ -506,34 +506,34 @@ func (mr *MockDBHandlerMockRecorder) OutplanGet(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutplanGet", reflect.TypeOf((*MockDBHandler)(nil).OutplanGet), ctx, id)
 }
 
-// OutplanGets mocks base method.
-func (m *MockDBHandler) OutplanGets(ctx context.Context, token string, size uint64, filters map[outplan.Field]any) ([]*outplan.Outplan, error) {
+// OutplanList mocks base method.
+func (m *MockDBHandler) OutplanList(ctx context.Context, token string, size uint64, filters map[outplan.Field]any) ([]*outplan.Outplan, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "OutplanGets", ctx, token, size, filters)
+	ret := m.ctrl.Call(m, "OutplanList", ctx, token, size, filters)
 	ret0, _ := ret[0].([]*outplan.Outplan)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// OutplanGets indicates an expected call of OutplanGets.
-func (mr *MockDBHandlerMockRecorder) OutplanGets(ctx, token, size, filters any) *gomock.Call {
+// OutplanList indicates an expected call of OutplanList.
+func (mr *MockDBHandlerMockRecorder) OutplanList(ctx, token, size, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutplanGets", reflect.TypeOf((*MockDBHandler)(nil).OutplanGets), ctx, token, size, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutplanList", reflect.TypeOf((*MockDBHandler)(nil).OutplanList), ctx, token, size, filters)
 }
 
-// OutplanGetsByCustomerID mocks base method.
-func (m *MockDBHandler) OutplanGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*outplan.Outplan, error) {
+// OutplanListByCustomerID mocks base method.
+func (m *MockDBHandler) OutplanListByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*outplan.Outplan, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "OutplanGetsByCustomerID", ctx, customerID, token, limit)
+	ret := m.ctrl.Call(m, "OutplanListByCustomerID", ctx, customerID, token, limit)
 	ret0, _ := ret[0].([]*outplan.Outplan)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// OutplanGetsByCustomerID indicates an expected call of OutplanGetsByCustomerID.
-func (mr *MockDBHandlerMockRecorder) OutplanGetsByCustomerID(ctx, customerID, token, limit any) *gomock.Call {
+// OutplanListByCustomerID indicates an expected call of OutplanListByCustomerID.
+func (mr *MockDBHandlerMockRecorder) OutplanListByCustomerID(ctx, customerID, token, limit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutplanGetsByCustomerID", reflect.TypeOf((*MockDBHandler)(nil).OutplanGetsByCustomerID), ctx, customerID, token, limit)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutplanListByCustomerID", reflect.TypeOf((*MockDBHandler)(nil).OutplanListByCustomerID), ctx, customerID, token, limit)
 }
 
 // OutplanUpdate mocks base method.

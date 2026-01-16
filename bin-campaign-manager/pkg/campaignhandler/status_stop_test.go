@@ -247,7 +247,7 @@ func Test_isStoppable(t *testing.T) {
 
 			if tt.response.Execute == campaign.ExecuteStop {
 				mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
-				mockCampaigncall.EXPECT().GetsOngoingByCampaignID(ctx, tt.id, gomock.Any(), uint64(1)).Return(tt.responseCampaigncall, nil)
+				mockCampaigncall.EXPECT().ListOngoingByCampaignID(ctx, tt.id, gomock.Any(), uint64(1)).Return(tt.responseCampaigncall, nil)
 			}
 
 			res := h.isStoppable(ctx, tt.id)

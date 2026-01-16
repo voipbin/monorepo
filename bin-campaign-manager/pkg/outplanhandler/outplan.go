@@ -108,17 +108,17 @@ func (h *outplanHandler) Delete(ctx context.Context, id uuid.UUID) (*outplan.Out
 	return res, nil
 }
 
-// Gets returns list of outplans with filters
-func (h *outplanHandler) Gets(ctx context.Context, token string, limit uint64, filters map[outplan.Field]any) ([]*outplan.Outplan, error) {
+// List returns list of outplans with filters
+func (h *outplanHandler) List(ctx context.Context, token string, limit uint64, filters map[outplan.Field]any) ([]*outplan.Outplan, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "Gets",
+		"func":    "List",
 		"token":   token,
 		"limit":   limit,
 		"filters": filters,
 	})
 	log.Debug("Getting outplans with filters.")
 
-	res, err := h.db.OutplanGets(ctx, token, limit, filters)
+	res, err := h.db.OutplanList(ctx, token, limit, filters)
 	if err != nil {
 		log.Errorf("Could not get outplans. err: %v", err)
 		return nil, err
@@ -128,7 +128,7 @@ func (h *outplanHandler) Gets(ctx context.Context, token string, limit uint64, f
 }
 
 // GetsByCustomerID returns list of outplans
-func (h *outplanHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*outplan.Outplan, error) {
+func (h *outplanHandler) ListByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*outplan.Outplan, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "GetsByCustomerID",
 		"customer_id": customerID,
@@ -137,7 +137,7 @@ func (h *outplanHandler) GetsByCustomerID(ctx context.Context, customerID uuid.U
 	})
 	log.Debug("Getting outplans.")
 
-	res, err := h.db.OutplanGetsByCustomerID(ctx, customerID, token, limit)
+	res, err := h.db.OutplanListByCustomerID(ctx, customerID, token, limit)
 	if err != nil {
 		log.Errorf("Could not get outplans. err: %v", err)
 		return nil, err

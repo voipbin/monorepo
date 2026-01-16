@@ -258,9 +258,9 @@ func Test_GetsByCustomerID(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockDB.EXPECT().CampaignGetsByCustomerID(ctx, tt.customerID, tt.token, tt.limit).Return(nil, nil)
+			mockDB.EXPECT().CampaignListByCustomerID(ctx, tt.customerID, tt.token, tt.limit).Return(nil, nil)
 
-			_, err := h.GetsByCustomerID(ctx, tt.customerID, tt.token, tt.limit)
+			_, err := h.ListByCustomerID(ctx, tt.customerID, tt.token, tt.limit)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -825,7 +825,7 @@ func Test_updateExecuteStopAndCampaignIsStoppable(t *testing.T) {
 			// isstoppable
 			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
 			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
-			mockCampaigncall.EXPECT().GetsOngoingByCampaignID(ctx, tt.id, gomock.Any(), uint64(1)).Return([]*campaigncall.Campaigncall{}, nil)
+			mockCampaigncall.EXPECT().ListOngoingByCampaignID(ctx, tt.id, gomock.Any(), uint64(1)).Return([]*campaigncall.Campaigncall{}, nil)
 
 			// updateStatusStop
 			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)

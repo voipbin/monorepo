@@ -58,7 +58,7 @@ func (h *listenHandler) v1CampaigncallsGet(ctx context.Context, m *sock.Request)
 		"typed_filters": typedFilters,
 	}).Debug("v1CampaigncallsGet: Converted filters to typed field map (check UUID types)")
 
-	tmp, err := h.campaigncallHandler.Gets(ctx, pageToken, pageSize, typedFilters)
+	tmp, err := h.campaigncallHandler.List(ctx, pageToken, pageSize, typedFilters)
 	if err != nil {
 		log.Errorf("Could not get campaigncalls. err: %v", err)
 		return nil, err

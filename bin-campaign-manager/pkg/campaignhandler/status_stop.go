@@ -145,7 +145,7 @@ func (h *campaignHandler) isStoppable(ctx context.Context, id uuid.UUID) bool {
 	}
 
 	// get campaign calls
-	ccs, err := h.campaigncallHandler.GetsOngoingByCampaignID(ctx, c.ID, h.util.TimeGetCurTime(), 1)
+	ccs, err := h.campaigncallHandler.ListOngoingByCampaignID(ctx, c.ID, h.util.TimeGetCurTime(), 1)
 	if err != nil {
 		log.Errorf("Could not get ongoing campaigncalls. err: %s", err)
 	}

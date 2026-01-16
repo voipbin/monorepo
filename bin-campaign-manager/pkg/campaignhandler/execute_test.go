@@ -588,7 +588,7 @@ func Test_isDialable(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().QueueV1QueueGetAgents(ctx, tt.queueID, gomock.Any()).Return(tt.responseAgents, nil)
-			mockCampaigncall.EXPECT().GetsByCampaignIDAndStatus(ctx, tt.campaignID, campaigncall.StatusDialing, gomock.Any(), uint64(100)).Return(tt.responseCampaingcalls, nil)
+			mockCampaigncall.EXPECT().ListByCampaignIDAndStatus(ctx, tt.campaignID, campaigncall.StatusDialing, gomock.Any(), uint64(100)).Return(tt.responseCampaingcalls, nil)
 
 			res := h.isDialable(ctx, tt.campaignID, tt.queueID, tt.serviceLevel)
 

@@ -49,8 +49,8 @@ type CampaignHandler interface {
 	) (*campaign.Campaign, error)
 	Delete(ctx context.Context, id uuid.UUID) (*campaign.Campaign, error)
 	Get(ctx context.Context, id uuid.UUID) (*campaign.Campaign, error)
-	Gets(ctx context.Context, token string, limit uint64, filters map[campaign.Field]any) ([]*campaign.Campaign, error)
-	GetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*campaign.Campaign, error)
+	List(ctx context.Context, token string, limit uint64, filters map[campaign.Field]any) ([]*campaign.Campaign, error)
+	ListByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*campaign.Campaign, error)
 
 	UpdateBasicInfo(ctx context.Context,
 		id uuid.UUID,

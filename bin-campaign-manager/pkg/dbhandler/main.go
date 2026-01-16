@@ -29,8 +29,8 @@ type DBHandler interface {
 	OutplanCreate(ctx context.Context, t *outplan.Outplan) error
 	OutplanDelete(ctx context.Context, id uuid.UUID) error
 	OutplanGet(ctx context.Context, id uuid.UUID) (*outplan.Outplan, error)
-	OutplanGets(ctx context.Context, token string, size uint64, filters map[outplan.Field]any) ([]*outplan.Outplan, error)
-	OutplanGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*outplan.Outplan, error)
+	OutplanList(ctx context.Context, token string, size uint64, filters map[outplan.Field]any) ([]*outplan.Outplan, error)
+	OutplanListByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*outplan.Outplan, error)
 	OutplanUpdate(ctx context.Context, id uuid.UUID, fields map[outplan.Field]any) error
 	OutplanUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error
 	OutplanUpdateDialInfo(
@@ -50,8 +50,8 @@ type DBHandler interface {
 	CampaignCreate(ctx context.Context, t *campaign.Campaign) error
 	CampaignDelete(ctx context.Context, id uuid.UUID) error
 	CampaignGet(ctx context.Context, id uuid.UUID) (*campaign.Campaign, error)
-	CampaignGets(ctx context.Context, token string, size uint64, filters map[campaign.Field]any) ([]*campaign.Campaign, error)
-	CampaignGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*campaign.Campaign, error)
+	CampaignList(ctx context.Context, token string, size uint64, filters map[campaign.Field]any) ([]*campaign.Campaign, error)
+	CampaignListByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*campaign.Campaign, error)
 	CampaignUpdate(ctx context.Context, id uuid.UUID, fields map[campaign.Field]any) error
 	CampaignUpdateBasicInfo(
 		ctx context.Context,
@@ -78,11 +78,11 @@ type DBHandler interface {
 	CampaigncallGet(ctx context.Context, id uuid.UUID) (*campaigncall.Campaigncall, error)
 	CampaigncallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*campaigncall.Campaigncall, error)
 	CampaigncallGetByActiveflowID(ctx context.Context, activeflowID uuid.UUID) (*campaigncall.Campaigncall, error)
-	CampaigncallGets(ctx context.Context, token string, size uint64, filters map[campaigncall.Field]any) ([]*campaigncall.Campaigncall, error)
-	CampaigncallGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error)
-	CampaigncallGetsByCampaignID(ctx context.Context, campaignID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error)
-	CampaigncallGetsByCampaignIDAndStatus(ctx context.Context, campaignID uuid.UUID, status campaigncall.Status, token string, limit uint64) ([]*campaigncall.Campaigncall, error)
-	CampaigncallGetsOngoingByCampaignID(ctx context.Context, campaignID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error)
+	CampaigncallList(ctx context.Context, token string, size uint64, filters map[campaigncall.Field]any) ([]*campaigncall.Campaigncall, error)
+	CampaigncallListByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error)
+	CampaigncallListByCampaignID(ctx context.Context, campaignID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error)
+	CampaigncallListByCampaignIDAndStatus(ctx context.Context, campaignID uuid.UUID, status campaigncall.Status, token string, limit uint64) ([]*campaigncall.Campaigncall, error)
+	CampaigncallListOngoingByCampaignID(ctx context.Context, campaignID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error)
 	CampaigncallUpdate(ctx context.Context, id uuid.UUID, fields map[campaigncall.Field]any) error
 	CampaigncallUpdateStatus(ctx context.Context, id uuid.UUID, status campaigncall.Status) error
 	CampaigncallUpdateStatusAndResult(ctx context.Context, id uuid.UUID, status campaigncall.Status, result campaigncall.Result) error

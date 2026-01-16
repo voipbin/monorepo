@@ -178,8 +178,8 @@ func Test_GetsByCustomerID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().OutplanGetsByCustomerID(ctx, tt.customerID, tt.token, tt.limit).Return([]*outplan.Outplan{}, nil)
-			_, err := h.GetsByCustomerID(ctx, tt.customerID, tt.token, tt.limit)
+			mockDB.EXPECT().OutplanListByCustomerID(ctx, tt.customerID, tt.token, tt.limit).Return([]*outplan.Outplan{}, nil)
+			_, err := h.ListByCustomerID(ctx, tt.customerID, tt.token, tt.limit)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

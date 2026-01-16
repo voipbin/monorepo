@@ -128,34 +128,34 @@ func (mr *MockCampaignHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockCampaignHandler)(nil).Get), ctx, id)
 }
 
-// Gets mocks base method.
-func (m *MockCampaignHandler) Gets(ctx context.Context, token string, limit uint64, filters map[campaign.Field]any) ([]*campaign.Campaign, error) {
+// List mocks base method.
+func (m *MockCampaignHandler) List(ctx context.Context, token string, limit uint64, filters map[campaign.Field]any) ([]*campaign.Campaign, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Gets", ctx, token, limit, filters)
+	ret := m.ctrl.Call(m, "List", ctx, token, limit, filters)
 	ret0, _ := ret[0].([]*campaign.Campaign)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Gets indicates an expected call of Gets.
-func (mr *MockCampaignHandlerMockRecorder) Gets(ctx, token, limit, filters any) *gomock.Call {
+// List indicates an expected call of List.
+func (mr *MockCampaignHandlerMockRecorder) List(ctx, token, limit, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockCampaignHandler)(nil).Gets), ctx, token, limit, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockCampaignHandler)(nil).List), ctx, token, limit, filters)
 }
 
-// GetsByCustomerID mocks base method.
-func (m *MockCampaignHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*campaign.Campaign, error) {
+// ListByCustomerID mocks base method.
+func (m *MockCampaignHandler) ListByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*campaign.Campaign, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetsByCustomerID", ctx, customerID, token, limit)
+	ret := m.ctrl.Call(m, "ListByCustomerID", ctx, customerID, token, limit)
 	ret0, _ := ret[0].([]*campaign.Campaign)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetsByCustomerID indicates an expected call of GetsByCustomerID.
-func (mr *MockCampaignHandlerMockRecorder) GetsByCustomerID(ctx, customerID, token, limit any) *gomock.Call {
+// ListByCustomerID indicates an expected call of ListByCustomerID.
+func (mr *MockCampaignHandlerMockRecorder) ListByCustomerID(ctx, customerID, token, limit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByCustomerID", reflect.TypeOf((*MockCampaignHandler)(nil).GetsByCustomerID), ctx, customerID, token, limit)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListByCustomerID", reflect.TypeOf((*MockCampaignHandler)(nil).ListByCustomerID), ctx, customerID, token, limit)
 }
 
 // UpdateActions mocks base method.
