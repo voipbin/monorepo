@@ -179,6 +179,23 @@ Variables follow format: `${variable.key}` or `${voipbin.activeflow.id}`. Built-
 ### Stack Management
 Stacks enable nested flow execution. When pushing actions (e.g., via `patch_flow`), a new stack is created. When a stack completes, it pops back to the parent stack.
 
+## Flow Execution Pattern
+
+**Key Concepts:**
+1. **Flow** = template with action sequence (stored in database)
+2. **Activeflow** = running instance attached to call (contains execution state)
+3. **Actions dispatched to appropriate managers** via RabbitMQ (call-manager, ai-manager, etc.)
+4. **Stack-based execution** for nested flows (branch, call actions)
+
+**Variable Substitution:**
+
+Variables use format `${variable.key}`:
+- `${voipbin.activeflow.id}` - Built-in activeflow metadata (ID, customer_id, reference_id, etc.)
+- `${voipbin.call.caller_id}` - Call information from call-manager (caller_id, callee_id, status, etc.)
+- Custom variables stored per activeflow (set via action options or external updates)
+
+**Variable substitution happens automatically** before actions are dispatched to target managers. The variablehandler replaces all `${variable.key}` placeholders with actual values from activeflow state and call data.
+
 ## Testing
 
 - Tests use `go.uber.org/mock` for mocking dependencies

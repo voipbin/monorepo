@@ -942,127 +942,7 @@ For all other cases, clients should make separate requests:
 3. GET /v1/calls/{call-id} → Get call details (if needed)
 ```
 
-### Authentication & Authorization Pattern
-
-**CRITICAL: Authentication and authorization logic belongs ONLY in bin-api-manager, NOT in internal services.**
-
-**Architecture:**
-
-```
-External Client → bin-api-manager → bin-<service>-manager
-                  (Auth Layer)      (Business Logic)
-```
-
-**bin-api-manager Responsibilities:**
-- ✅ Validate JWT tokens
-- ✅ Extract customer_id from JWT
-- ✅ Make RPC requests to internal services
-- ✅ Check authorization (resource.CustomerID == JWT customer_id)
-- ✅ Return appropriate HTTP status codes
-
-**Internal Service Responsibilities (bin-billing-manager, bin-call-manager, etc.):**
-- ✅ Process RPC requests
-- ✅ Execute business logic
-- ✅ Access database
-- ✅ Return data or errors
-- ❌ NO JWT validation
-- ❌ NO customer_id authentication checks
-- ❌ NO authorization logic
-
-**Example Flow:**
-
-```
-1. Client → GET /v1/billings/550e8400-... with JWT
-2. bin-api-manager:
-   - Validates JWT ✓
-   - Extracts customer_id: 6a93f71e-...
-   - Calls: reqHandler.BillingV1BillingGet(ctx, billingID)
-3. bin-billing-manager:
-   - Receives RPC: GET /v1/billings/550e8400-...
-   - Queries: BillingGet(ctx, billingID)
-   - Returns billing record (no customer_id check)
-4. bin-api-manager:
-   - Receives billing: { customer_id: 6a93f71e-..., ... }
-   - Checks: billing.CustomerID == JWT customer_id ✓
-   - Returns: 200 OK with billing data
-```
-
-**Authorization Check Pattern:**
-
-```go
-// ✅ CORRECT - Authorization in api-manager servicehandler
-func (h *serviceHandler) BillingGet(ctx context.Context, a *amagent.Agent, billingID uuid.UUID) (*bmbilling.WebhookMessage, error) {
-    // 1. Fetch resource
-    billing, _ := h.billingGet(ctx, billingID)
-
-    // 2. Check permission
-    if !h.hasPermission(ctx, a, billing.CustomerID, amagent.PermissionCustomerAdmin) {
-        return nil, fmt.Errorf("user has no permission")
-    }
-
-    // 3. Return resource
-    return billing.ConvertWebhookMessage(), nil
-}
-
-// ❌ WRONG - Authorization in internal service
-func (h *listenHandler) processV1BillingGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
-    customerID := ctx.Value("customer_id")  // NO! Don't do this
-    billing, _ := h.billingHandler.Get(ctx, billingID)
-
-    if billing.CustomerID != customerID {  // NO! Don't do this
-        return simpleResponse(404), nil
-    }
-    // ...
-}
-```
-
-**Why This Matters:**
-- Single source of truth for authentication/authorization
-- Internal services remain simple and reusable
-- Easier to test business logic independently
-- Clear separation of concerns
-- Internal services can trust the API gateway
-
-### Permission Requirements
-
-**Billing and Billing Account resources require CustomerAdmin permission ONLY.**
-
-```go
-// Admin only - no Manager access
-if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
-    return nil, fmt.Errorf("user has no permission")
-}
-```
-
-**Pattern for resource access in servicehandler:**
-
-```go
-// Private helper - fetches resource
-func (h *serviceHandler) resourceGet(ctx context.Context, resourceID uuid.UUID) (*Resource, error) {
-    res, err := h.reqHandler.ServiceV1ResourceGet(ctx, resourceID)
-    if err != nil {
-        return nil, err
-    }
-    return res, nil
-}
-
-// Public method - checks permission
-func (h *serviceHandler) ResourceGet(ctx context.Context, a *amagent.Agent, resourceID uuid.UUID) (*WebhookMessage, error) {
-    // 1. Fetch resource
-    r, err := h.resourceGet(ctx, resourceID)
-    if err != nil {
-        return nil, err
-    }
-
-    // 2. Check permission
-    if !h.hasPermission(ctx, a, r.CustomerID, amagent.PermissionCustomerAdmin) {
-        return nil, fmt.Errorf("user has no permission")
-    }
-
-    // 3. Convert and return
-    return r.ConvertWebhookMessage(), nil
-}
-```
+**Note:** For authentication and authorization patterns, see `bin-api-manager/CLAUDE.md`.
 
 ## Architecture
 
@@ -1308,21 +1188,11 @@ When changing `bin-common-handler` or `bin-openapi-manager`:
 4. Update all affected services' vendor directories if using vendoring
 5. Coordinate deployment - shared changes affect multiple services
 
-### Working with Flow-Manager
-
-**Flow Execution Pattern:**
-1. Flow = template with action sequence
-2. Activeflow = running instance attached to call
-3. Actions dispatched to appropriate managers via RabbitMQ
-4. Stack-based execution for nested flows (branch, call actions)
-
-**Variable Substitution:**
-Variables use format `${variable.key}`:
-- `${voipbin.activeflow.id}` - Built-in activeflow metadata
-- `${voipbin.call.caller_id}` - Call information from call-manager
-- Custom variables stored per activeflow
+**Note:** For flow execution patterns and variable substitution, see `bin-flow-manager/CLAUDE.md`.
 
 ### Parsing Filters from Request Body
+
+**Note:** This is a monorepo-wide pattern for all services that expose list endpoints (GET /v1/resources). Implemented using `bin-common-handler/pkg/utilhandler`. See individual service CLAUDE.md files for service-specific filter field definitions.
 
 **Pattern:** All list endpoints parse filters from request body (JSON), not URL query parameters.
 
@@ -1445,6 +1315,36 @@ For full implementation details, see:
 - `bin-common-handler/pkg/utilhandler/filters.go` - Generic filter parsing functions
 - `docs/plans/2026-01-14-listenhandler-filter-parsing-implementation-plan.md` - Complete implementation guide
 
+## Where to Document New Information
+
+Use this decision tree when adding new documentation:
+
+**Does this apply to ALL services in the monorepo?**
+- **YES** → Add to Root CLAUDE.md
+  - Examples:
+    - New verification step required for all services
+    - New git workflow rule
+    - New shared pattern from bin-common-handler
+    - Changes to RabbitMQ communication pattern
+
+**NO → Does it affect 2+ services?**
+  - **YES → Is it a workflow spanning services?**
+    - **YES** → Add to Root CLAUDE.md "Common Workflows"
+      - Example: "Adding a New API Endpoint" (touches openapi-manager + api-manager + target service)
+    - **NO → Is it a shared pattern/gotcha?**
+      - **YES** → Add to Root CLAUDE.md "Shared Patterns" with note
+        - Example: "Parsing Filters from Request Body"
+        - **Note format:** Explain what the pattern is for, which services use it, when to apply it
+      - **NO** → Add to each affected service's CLAUDE.md
+        - Example: How conference-manager and call-manager handle recordings
+
+  - **NO** → Add to Service-Specific CLAUDE.md
+    - Examples:
+      - Service-specific API endpoints
+      - Handler patterns unique to this service
+      - Service-specific testing approaches
+      - Domain-specific implementation details
+
 ## Key Dependencies
 
 **All Services:**
@@ -1512,6 +1412,8 @@ For full implementation details, see:
 ### Common Gotchas
 
 #### UUID Fields and DB Tags
+
+**Note:** This affects all services using the `commondatabasehandler` pattern. Critical for database queries to work correctly across the monorepo.
 
 **CRITICAL: UUID fields MUST use the `,uuid` db tag for proper type conversion.**
 

@@ -291,6 +291,133 @@ Runtime configuration via CLI flags (defined in `main.go`):
 - Tests co-located with source files (`*_test.go`)
 - Mock files: `mock_*.go` in respective packages
 
+## Authentication & Authorization
+
+### Authentication & Authorization Pattern
+
+**CRITICAL: Authentication and authorization logic belongs ONLY in bin-api-manager, NOT in internal services.**
+
+**Architecture:**
+
+```
+External Client → bin-api-manager → bin-<service>-manager
+                  (Auth Layer)      (Business Logic)
+```
+
+**bin-api-manager Responsibilities:**
+- ✅ Validate JWT tokens
+- ✅ Extract customer_id from JWT
+- ✅ Make RPC requests to internal services
+- ✅ Check authorization (resource.CustomerID == JWT customer_id)
+- ✅ Return appropriate HTTP status codes
+
+**Internal Service Responsibilities (bin-billing-manager, bin-call-manager, etc.):**
+- ✅ Process RPC requests
+- ✅ Execute business logic
+- ✅ Access database
+- ✅ Return data or errors
+- ❌ NO JWT validation
+- ❌ NO customer_id authentication checks
+- ❌ NO authorization logic
+
+**Example Flow:**
+
+```
+1. Client → GET /v1/billings/550e8400-... with JWT
+2. bin-api-manager:
+   - Validates JWT ✓
+   - Extracts customer_id: 6a93f71e-...
+   - Calls: reqHandler.BillingV1BillingGet(ctx, billingID)
+3. bin-billing-manager:
+   - Receives RPC: GET /v1/billings/550e8400-...
+   - Queries: BillingGet(ctx, billingID)
+   - Returns billing record (no customer_id check)
+4. bin-api-manager:
+   - Receives billing: { customer_id: 6a93f71e-..., ... }
+   - Checks: billing.CustomerID == JWT customer_id ✓
+   - Returns: 200 OK with billing data
+```
+
+**Authorization Check Pattern:**
+
+```go
+// ✅ CORRECT - Authorization in api-manager servicehandler
+func (h *serviceHandler) BillingGet(ctx context.Context, a *amagent.Agent, billingID uuid.UUID) (*bmbilling.WebhookMessage, error) {
+    // 1. Fetch resource
+    billing, _ := h.billingGet(ctx, billingID)
+
+    // 2. Check permission
+    if !h.hasPermission(ctx, a, billing.CustomerID, amagent.PermissionCustomerAdmin) {
+        return nil, fmt.Errorf("user has no permission")
+    }
+
+    // 3. Return resource
+    return billing.ConvertWebhookMessage(), nil
+}
+
+// ❌ WRONG - Authorization in internal service
+func (h *listenHandler) processV1BillingGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+    customerID := ctx.Value("customer_id")  // NO! Don't do this
+    billing, _ := h.billingHandler.Get(ctx, billingID)
+
+    if billing.CustomerID != customerID {  // NO! Don't do this
+        return simpleResponse(404), nil
+    }
+    // ...
+}
+```
+
+**Why This Matters:**
+- Single source of truth for authentication/authorization
+- Internal services remain simple and reusable
+- Easier to test business logic independently
+- Clear separation of concerns
+- Internal services can trust the API gateway
+
+### Permission Requirements
+
+**General Pattern for resource access in servicehandler:**
+
+```go
+// Private helper - fetches resource
+func (h *serviceHandler) resourceGet(ctx context.Context, resourceID uuid.UUID) (*Resource, error) {
+    res, err := h.reqHandler.ServiceV1ResourceGet(ctx, resourceID)
+    if err != nil {
+        return nil, err
+    }
+    return res, nil
+}
+
+// Public method - checks permission
+func (h *serviceHandler) ResourceGet(ctx context.Context, a *amagent.Agent, resourceID uuid.UUID) (*WebhookMessage, error) {
+    // 1. Fetch resource
+    r, err := h.resourceGet(ctx, resourceID)
+    if err != nil {
+        return nil, err
+    }
+
+    // 2. Check permission
+    if !h.hasPermission(ctx, a, r.CustomerID, amagent.PermissionCustomerAdmin) {
+        return nil, fmt.Errorf("user has no permission")
+    }
+
+    // 3. Convert and return
+    return r.ConvertWebhookMessage(), nil
+}
+```
+
+**Resource-Specific Permission Requirements:**
+
+**Billing and Billing Account resources:**
+- Require CustomerAdmin permission ONLY (no Manager access)
+
+```go
+// Admin only - no Manager access
+if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
+    return nil, fmt.Errorf("user has no permission")
+}
+```
+
 ## Common Workflows
 
 ### Adding a New API Endpoint
