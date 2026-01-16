@@ -138,7 +138,7 @@ func Test_StorageAccountDelete(t *testing.T) {
 	}
 }
 
-func Test_StorageAccountGets(t *testing.T) {
+func Test_StorageAccountList(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -202,7 +202,7 @@ func Test_StorageAccountGets(t *testing.T) {
 
 			mockReq.EXPECT().StorageV1AccountList(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseStorageAcounts, nil)
 
-			res, err := h.StorageAccountGets(ctx, tt.agent, tt.size, tt.token)
+			res, err := h.StorageAccountList(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

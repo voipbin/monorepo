@@ -112,7 +112,7 @@ func Test_Create_OrderNumberTelnyx(t *testing.T) {
 			mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, tt.customerID, bmbilling.ReferenceTypeNumber, "", 1).Return(true, nil)
 
 			mockTelnyx.EXPECT().NumberPurchase(tt.number).Return(tt.responseTelnyx, nil)
-			mockDB.EXPECT().NumberGets(ctx, uint64(1), "", map[number.Field]any{number.FieldDeleted: false, number.FieldNumber: tt.number}).Return([]*number.Number{}, nil)
+			mockDB.EXPECT().NumberList(ctx, uint64(1), "", map[number.Field]any{number.FieldDeleted: false, number.FieldNumber: tt.number}).Return([]*number.Number{}, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDB.EXPECT().NumberCreate(ctx, tt.expectNumber).Return(nil)
 			mockDB.EXPECT().NumberGet(ctx, gomock.Any()).Return(tt.responseNumber, nil)
@@ -225,7 +225,7 @@ func Test_Register(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().NumberGets(ctx, uint64(1), "", map[number.Field]any{number.FieldDeleted: false, number.FieldNumber: tt.number}).Return(tt.responseGets, nil)
+			mockDB.EXPECT().NumberList(ctx, uint64(1), "", map[number.Field]any{number.FieldDeleted: false, number.FieldNumber: tt.number}).Return(tt.responseGets, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDB.EXPECT().NumberCreate(ctx, tt.expectCreateNumber).Return(nil)
@@ -296,7 +296,7 @@ func Test_Register_error(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().NumberGets(ctx, uint64(1), "", map[number.Field]any{number.FieldDeleted: false, number.FieldNumber: tt.number}).Return(tt.mockGetsResult, tt.mockGetsErr)
+			mockDB.EXPECT().NumberList(ctx, uint64(1), "", map[number.Field]any{number.FieldDeleted: false, number.FieldNumber: tt.number}).Return(tt.mockGetsResult, tt.mockGetsErr)
 
 			_, err := h.Register(ctx, tt.customerID, tt.number, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail, number.ProviderNameNone, "", number.StatusActive, false, false)
 			if err == nil {
@@ -380,7 +380,7 @@ func Test_Update(t *testing.T) {
 	}
 }
 
-func Test_Gets(t *testing.T) {
+func Test_List(t *testing.T) {
 
 	type test struct {
 		name string
@@ -452,9 +452,9 @@ func Test_Gets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().NumberGets(ctx, tt.pageSize, tt.pageToken, tt.filters).Return(tt.responseNumbers, nil)
+			mockDB.EXPECT().NumberList(ctx, tt.pageSize, tt.pageToken, tt.filters).Return(tt.responseNumbers, nil)
 
-			res, err := h.Gets(ctx, tt.pageSize, tt.pageToken, tt.filters)
+			res, err := h.List(ctx, tt.pageSize, tt.pageToken, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

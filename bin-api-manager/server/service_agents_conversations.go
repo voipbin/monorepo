@@ -41,7 +41,7 @@ func (h *server) GetServiceAgentsConversations(c *gin.Context, params openapi_se
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.ServiceAgentConversationGets(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.ServiceAgentConversationList(c.Request.Context(), &a, pageSize, pageToken)
 	if err != nil {
 		logrus.Errorf("Could not get calls info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -129,7 +129,7 @@ func (h *server) GetServiceAgentsConversationsIdMessages(c *gin.Context, id stri
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.ServiceAgentConversationMessageGets(c.Request.Context(), &a, target, pageSize, pageToken)
+	tmps, err := h.serviceHandler.ServiceAgentConversationMessageList(c.Request.Context(), &a, target, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get a conversation message list. err: %v", err)
 		c.AbortWithStatus(400)

@@ -48,7 +48,7 @@ func (h *listenHandler) processV1QueuecallsGet(ctx context.Context, m *sock.Requ
 		return simpleResponse(400), nil
 	}
 
-	tmp, err := h.queuecallHandler.Gets(ctx, pageSize, pageToken, filters)
+	tmp, err := h.queuecallHandler.List(ctx, pageSize, pageToken, filters)
 	if err != nil {
 		log.Errorf("Could not get queuecalls info. err: %v", err)
 		return simpleResponse(500), nil

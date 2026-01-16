@@ -380,7 +380,7 @@ func runExtensionList(cmd *cobra.Command, args []string) error {
 	token := viper.GetString("token")
 
 	fmt.Printf("\nRetrieving extensions... limit: %d, token: %s, filters: %v\n", limit, token, filters)
-	res, err := handler.Gets(context.Background(), token, limit, filters)
+	res, err := handler.List(context.Background(), token, limit, filters)
 	if err != nil {
 		return errors.Wrap(err, "failed to retrieve extensions")
 	}
@@ -734,7 +734,7 @@ func runTrunkList(cmd *cobra.Command, args []string) error {
 	token := viper.GetString("token")
 
 	fmt.Printf("\nRetrieving trunks... limit: %d, token: %s, filters: %v\n", limit, token, filters)
-	res, err := handler.Gets(context.Background(), token, limit, filters)
+	res, err := handler.List(context.Background(), token, limit, filters)
 	if err != nil {
 		return errors.Wrap(err, "failed to retrieve trunks")
 	}

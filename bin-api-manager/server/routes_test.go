@@ -211,7 +211,7 @@ func Test_routesGet_without_customer_id(t *testing.T) {
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().RouteGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseRoutes, nil)
+			mockSvc.EXPECT().RouteList(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseRoutes, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

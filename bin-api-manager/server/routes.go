@@ -49,7 +49,7 @@ func (h *server) GetRoutes(c *gin.Context, params openapi_server.GetRoutesParams
 		customerID := uuid.FromStringOrNil(*params.CustomerId)
 		tmps, err = h.serviceHandler.RouteGetsByCustomerID(c.Request.Context(), &a, customerID, pageSize, pageToken)
 	} else {
-		tmps, err = h.serviceHandler.RouteGets(c.Request.Context(), &a, pageSize, pageToken)
+		tmps, err = h.serviceHandler.RouteList(c.Request.Context(), &a, pageSize, pageToken)
 	}
 	if err != nil {
 		logrus.Errorf("Could not get routes info. err: %v", err)

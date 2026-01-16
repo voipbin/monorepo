@@ -97,21 +97,6 @@ func (mr *MockDBHandlerMockRecorder) NumberGet(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberGet", reflect.TypeOf((*MockDBHandler)(nil).NumberGet), ctx, id)
 }
 
-// NumberGets mocks base method.
-func (m *MockDBHandler) NumberGets(ctx context.Context, size uint64, token string, filters map[number.Field]any) ([]*number.Number, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NumberGets", ctx, size, token, filters)
-	ret0, _ := ret[0].([]*number.Number)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// NumberGets indicates an expected call of NumberGets.
-func (mr *MockDBHandlerMockRecorder) NumberGets(ctx, size, token, filters any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberGets", reflect.TypeOf((*MockDBHandler)(nil).NumberGets), ctx, size, token, filters)
-}
-
 // NumberGetsByTMRenew mocks base method.
 func (m *MockDBHandler) NumberGetsByTMRenew(ctx context.Context, tmRenew string, size uint64, filters map[number.Field]any) ([]*number.Number, error) {
 	m.ctrl.T.Helper()
@@ -125,6 +110,21 @@ func (m *MockDBHandler) NumberGetsByTMRenew(ctx context.Context, tmRenew string,
 func (mr *MockDBHandlerMockRecorder) NumberGetsByTMRenew(ctx, tmRenew, size, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberGetsByTMRenew", reflect.TypeOf((*MockDBHandler)(nil).NumberGetsByTMRenew), ctx, tmRenew, size, filters)
+}
+
+// NumberList mocks base method.
+func (m *MockDBHandler) NumberList(ctx context.Context, size uint64, token string, filters map[number.Field]any) ([]*number.Number, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NumberList", ctx, size, token, filters)
+	ret0, _ := ret[0].([]*number.Number)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NumberList indicates an expected call of NumberList.
+func (mr *MockDBHandlerMockRecorder) NumberList(ctx, size, token, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberList", reflect.TypeOf((*MockDBHandler)(nil).NumberList), ctx, size, token, filters)
 }
 
 // NumberUpdate mocks base method.

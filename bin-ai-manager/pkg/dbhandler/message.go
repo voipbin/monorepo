@@ -149,7 +149,7 @@ func (h *handler) MessageDelete(ctx context.Context, id uuid.UUID) error {
 }
 
 // MessageGets returns a list of messages.
-func (h *handler) MessageGets(ctx context.Context, size uint64, token string, filters map[message.Field]any) ([]*message.Message, error) {
+func (h *handler) MessageList(ctx context.Context, size uint64, token string, filters map[message.Field]any) ([]*message.Message, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}
@@ -164,17 +164,17 @@ func (h *handler) MessageGets(ctx context.Context, size uint64, token string, fi
 
 	builder, err := commondatabasehandler.ApplyFields(builder, filters)
 	if err != nil {
-		return nil, fmt.Errorf("MessageGets: could not apply filters. err: %v", err)
+		return nil, fmt.Errorf("MessageList: could not apply filters. err: %v", err)
 	}
 
 	query, args, err := builder.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("MessageGets: could not build query. err: %v", err)
+		return nil, fmt.Errorf("MessageList: could not build query. err: %v", err)
 	}
 
 	rows, err := h.db.Query(query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("MessageGets: could not query. err: %v", err)
+		return nil, fmt.Errorf("MessageList: could not query. err: %v", err)
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -182,7 +182,7 @@ func (h *handler) MessageGets(ctx context.Context, size uint64, token string, fi
 	for rows.Next() {
 		u := &message.Message{}
 		if err := commondatabasehandler.ScanRow(rows, u); err != nil {
-			return nil, fmt.Errorf("MessageGets: could not scan row. err: %v", err)
+			return nil, fmt.Errorf("MessageList: could not scan row. err: %v", err)
 		}
 		res = append(res, u)
 	}

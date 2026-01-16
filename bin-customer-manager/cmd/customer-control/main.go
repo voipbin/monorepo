@@ -173,7 +173,7 @@ func runList(cmd *cobra.Command, args []string) error {
 
 	fmt.Printf("\nRetrieving Customers (limit: %d, token: %s)...\n", limit, token)
 
-	res, err := handler.Gets(context.Background(), uint64(limit), token, nil)
+	res, err := handler.List(context.Background(), uint64(limit), token, nil)
 	if err != nil {
 		return errors.Wrap(err, "failed to retrieve customers")
 	}

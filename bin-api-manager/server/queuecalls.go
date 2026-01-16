@@ -41,7 +41,7 @@ func (h *server) GetQueuecalls(c *gin.Context, params openapi_server.GetQueuecal
 	}
 
 	// get tmps
-	tmps, err := h.serviceHandler.QueuecallGets(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.QueuecallList(c.Request.Context(), &a, pageSize, pageToken)
 	if err != nil {
 		logrus.Errorf("Could not get queuecalls info. err: %v", err)
 		c.AbortWithStatus(400)

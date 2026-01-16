@@ -371,21 +371,6 @@ func (mr *MockCallHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockCallHandler)(nil).Get), ctx, id)
 }
 
-// Gets mocks base method.
-func (m *MockCallHandler) Gets(ctx context.Context, size uint64, token string, filters map[call.Field]any) ([]*call.Call, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Gets", ctx, size, token, filters)
-	ret0, _ := ret[0].([]*call.Call)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Gets indicates an expected call of Gets.
-func (mr *MockCallHandlerMockRecorder) Gets(ctx, size, token, filters any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockCallHandler)(nil).Gets), ctx, size, token, filters)
-}
-
 // HangingUp mocks base method.
 func (m *MockCallHandler) HangingUp(ctx context.Context, id uuid.UUID, reason call.HangupReason) (*call.Call, error) {
 	m.ctrl.T.Helper()
@@ -454,6 +439,21 @@ func (m *MockCallHandler) HoldOn(ctx context.Context, id uuid.UUID) error {
 func (mr *MockCallHandlerMockRecorder) HoldOn(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HoldOn", reflect.TypeOf((*MockCallHandler)(nil).HoldOn), ctx, id)
+}
+
+// List mocks base method.
+func (m *MockCallHandler) List(ctx context.Context, size uint64, token string, filters map[call.Field]any) ([]*call.Call, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "List", ctx, size, token, filters)
+	ret0, _ := ret[0].([]*call.Call)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// List indicates an expected call of List.
+func (mr *MockCallHandlerMockRecorder) List(ctx, size, token, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockCallHandler)(nil).List), ctx, size, token, filters)
 }
 
 // MOHOff mocks base method.

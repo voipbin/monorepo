@@ -99,7 +99,7 @@ func (h *storageHandler) compressGetFilesByReferenceIDs(ctx context.Context, ref
 			file.FieldReferenceID: id,
 		}
 
-		tmps, err := h.FileGets(ctx, "", 1000, filters)
+		tmps, err := h.FileList(ctx, "", 1000, filters)
 		if err != nil {
 			log.Errorf("Could not get file info. err: %v", err)
 			continue

@@ -150,8 +150,8 @@ func (h *handler) RouteGet(ctx context.Context, id uuid.UUID) (*route.Route, err
 	return res, nil
 }
 
-// RouteGets returns list of routes.
-func (h *handler) RouteGets(ctx context.Context, token string, limit uint64, filters map[route.Field]any) ([]*route.Route, error) {
+// RouteList returns list of routes.
+func (h *handler) RouteList(ctx context.Context, token string, limit uint64, filters map[route.Field]any) ([]*route.Route, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}

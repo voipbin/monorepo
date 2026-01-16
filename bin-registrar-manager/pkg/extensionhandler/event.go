@@ -24,7 +24,7 @@ func (h *extensionHandler) EventCUCustomerDeleted(ctx context.Context, cu *cucus
 		extension.FieldCustomerID: cu.ID,
 		extension.FieldDeleted:    false,
 	}
-	extensions, err := h.Gets(ctx, "", 1000, filters)
+	extensions, err := h.List(ctx, "", 1000, filters)
 	if err != nil {
 		log.Errorf("Could not gets extensions list. err: %v", err)
 		return errors.Wrap(err, "could not get extensions list")

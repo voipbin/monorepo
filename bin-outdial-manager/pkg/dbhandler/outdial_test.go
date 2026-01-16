@@ -88,7 +88,7 @@ func Test_OutdialCreate(t *testing.T) {
 	}
 }
 
-func Test_OutdialGets(t *testing.T) {
+func Test_OutdialList(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -164,7 +164,7 @@ func Test_OutdialGets(t *testing.T) {
 				outdial.FieldCustomerID: tt.customerID,
 				outdial.FieldDeleted:    false,
 			}
-			flows, err := h.OutdialGets(ctx, GetCurTime(), tt.limit, filters)
+			flows, err := h.OutdialList(ctx, GetCurTime(), tt.limit, filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

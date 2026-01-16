@@ -16,7 +16,7 @@ import (
 	"monorepo/bin-queue-manager/pkg/dbhandler"
 )
 
-func Test_Gets(t *testing.T) {
+func Test_List(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -64,9 +64,9 @@ func Test_Gets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().QueueGets(ctx, tt.pageSize, tt.token, tt.filters).Return(tt.responseQueues, nil)
+			mockDB.EXPECT().QueueList(ctx, tt.pageSize, tt.token, tt.filters).Return(tt.responseQueues, nil)
 
-			res, err := h.Gets(ctx, tt.pageSize, tt.token, tt.filters)
+			res, err := h.List(ctx, tt.pageSize, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

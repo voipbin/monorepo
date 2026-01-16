@@ -44,7 +44,7 @@ func (h *activeflowHandler) EventCustomerDeleted(ctx context.Context, cu *cmcust
 		activeflow.FieldCustomerID: cu.ID,
 		activeflow.FieldDeleted:    false,
 	}
-	afs, err := h.Gets(ctx, h.utilHandler.TimeGetCurTime(), 1000, filters)
+	afs, err := h.List(ctx, h.utilHandler.TimeGetCurTime(), 1000, filters)
 	if err != nil {
 		log.Errorf("Could not gets flows list. err: %v", err)
 		return errors.Wrap(err, "could not get activeflows list")

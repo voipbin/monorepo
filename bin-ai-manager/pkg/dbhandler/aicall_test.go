@@ -406,7 +406,7 @@ func Test_AIcallDelete(t *testing.T) {
 	}
 }
 
-func Test_AIcallGets(t *testing.T) {
+func Test_AIcallList(t *testing.T) {
 
 	tests := []struct {
 		name    string
@@ -505,7 +505,7 @@ func Test_AIcallGets(t *testing.T) {
 				}
 			}
 
-			res, err := h.AIcallGets(ctx, 10, utilhandler.TimeGetCurTime(), tt.filters)
+			res, err := h.AIcallList(ctx, 10, utilhandler.TimeGetCurTime(), tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

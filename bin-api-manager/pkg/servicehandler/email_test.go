@@ -95,7 +95,7 @@ func Test_EmailSend(t *testing.T) {
 	}
 }
 
-func Test_EmailGets(t *testing.T) {
+func Test_EmailList(t *testing.T) {
 
 	tests := []struct {
 		name      string
@@ -197,7 +197,7 @@ func Test_EmailGets(t *testing.T) {
 
 			mockReq.EXPECT().EmailV1EmailList(ctx, tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.responseEmails, nil)
 
-			res, err := h.EmailGets(ctx, tt.agent, tt.pageSize, tt.pageToken)
+			res, err := h.EmailList(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

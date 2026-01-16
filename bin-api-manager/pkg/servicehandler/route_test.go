@@ -83,7 +83,7 @@ func Test_RouteGet(t *testing.T) {
 	}
 }
 
-func Test_RouteGets(t *testing.T) {
+func Test_RouteList(t *testing.T) {
 
 	type test struct {
 		name string
@@ -141,7 +141,7 @@ func Test_RouteGets(t *testing.T) {
 
 			mockReq.EXPECT().RouteV1RouteList(ctx, tt.pageToken, tt.pageSize, gomock.Any()).Return(tt.responseRoutes, nil)
 
-			res, err := h.RouteGets(ctx, tt.agent, tt.pageSize, tt.pageToken)
+			res, err := h.RouteList(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -153,7 +153,7 @@ func Test_RouteGets(t *testing.T) {
 	}
 }
 
-func Test_RouteGetsByCustomerID(t *testing.T) {
+func Test_RouteListByCustomerID(t *testing.T) {
 
 	type test struct {
 		name string

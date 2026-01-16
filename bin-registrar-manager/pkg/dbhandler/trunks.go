@@ -238,7 +238,7 @@ func (h *handler) TrunkGetByDomainName(ctx context.Context, domainName string) (
 		trunk.FieldDeleted:    false,
 	}
 
-	tmp, err := h.TrunkGets(ctx, 1, "", filters)
+	tmp, err := h.TrunkList(ctx, 1, "", filters)
 	if err != nil {
 		return nil, err
 	}
@@ -255,8 +255,8 @@ func (h *handler) TrunkGetByDomainName(ctx context.Context, domainName string) (
 	return res, nil
 }
 
-// TrunkGets returns trunks.
-func (h *handler) TrunkGets(ctx context.Context, size uint64, token string, filters map[trunk.Field]any) ([]*trunk.Trunk, error) {
+// TrunkList returns trunks.
+func (h *handler) TrunkList(ctx context.Context, size uint64, token string, filters map[trunk.Field]any) ([]*trunk.Trunk, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}

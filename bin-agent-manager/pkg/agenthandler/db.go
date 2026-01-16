@@ -13,16 +13,16 @@ import (
 	"monorepo/bin-agent-manager/models/agent"
 )
 
-// dbGets returns agents
-func (h *agentHandler) dbGets(ctx context.Context, size uint64, token string, filters map[agent.Field]any) ([]*agent.Agent, error) {
+// dbList returns agents
+func (h *agentHandler) dbList(ctx context.Context, size uint64, token string, filters map[agent.Field]any) ([]*agent.Agent, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "dbGets",
+		"func":    "dbList",
 		"size":    size,
 		"token":   token,
 		"filters": filters,
 	})
 
-	res, err := h.db.AgentGets(ctx, size, token, filters)
+	res, err := h.db.AgentList(ctx, size, token, filters)
 	if err != nil {
 		log.Errorf("Could not get agents info. err: %v", err)
 		return nil, err

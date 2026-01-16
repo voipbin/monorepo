@@ -10,8 +10,8 @@ import (
 	"monorepo/bin-route-manager/models/route"
 )
 
-// DialrouteGets returns routes for dialing
-func (h *routeHandler) DialrouteGets(ctx context.Context, customerID uuid.UUID, target string) ([]*route.Route, error) {
+// DialrouteList returns routes for dialing
+func (h *routeHandler) DialrouteList(ctx context.Context, customerID uuid.UUID, target string) ([]*route.Route, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "DialrouteGets",
 		"customer_id": customerID,
@@ -19,14 +19,14 @@ func (h *routeHandler) DialrouteGets(ctx context.Context, customerID uuid.UUID, 
 	})
 
 	// get customer based route
-	customerRoutes, err := h.GetsByTarget(ctx, customerID, target)
+	customerRoutes, err := h.ListByTarget(ctx, customerID, target)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not get customer routes")
 	}
 	log.WithField("customer_route", customerRoutes).Debugf("Found customer routes")
 
 	// get default based route
-	defaultRoutes, err := h.GetsByTarget(ctx, route.CustomerIDBasicRoute, target)
+	defaultRoutes, err := h.ListByTarget(ctx, route.CustomerIDBasicRoute, target)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not get default routes")
 	}

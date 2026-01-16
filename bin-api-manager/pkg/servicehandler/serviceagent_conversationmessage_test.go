@@ -16,7 +16,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func Test_ServiceAgentConversationMessageGets(t *testing.T) {
+func Test_ServiceAgentConversationMessageList(t *testing.T) {
 
 	type test struct {
 		name string
@@ -105,7 +105,7 @@ func Test_ServiceAgentConversationMessageGets(t *testing.T) {
 			mockReq.EXPECT().ConversationV1ConversationGet(ctx, tt.conversationID).Return(tt.responseConversation, nil)
 			mockReq.EXPECT().ConversationV1MessageList(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseMessages, nil)
 
-			res, err := h.ServiceAgentConversationMessageGets(ctx, tt.agent, tt.conversationID, tt.size, tt.token)
+			res, err := h.ServiceAgentConversationMessageList(ctx, tt.agent, tt.conversationID, tt.size, tt.token)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

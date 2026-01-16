@@ -34,7 +34,7 @@ func (h *listenHandler) v1DialroutesGet(ctx context.Context, m *sock.Request) (*
 		"filters_raw_data": string(m.Data),
 	}).Debug("v1DialroutesGet: Parsed filters from request body")
 
-	tmp, err := h.routeHandler.DialrouteGets(ctx, reqData.CustomerID, reqData.Target)
+	tmp, err := h.routeHandler.DialrouteList(ctx, reqData.CustomerID, reqData.Target)
 	if err != nil {
 		log.Errorf("Could not get routes for dial. err: %v", err)
 		return nil, err

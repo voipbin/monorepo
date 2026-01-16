@@ -150,7 +150,7 @@ func Test_ServiceAgentFileDelete(t *testing.T) {
 	}
 }
 
-func Test_StorageFileGets(t *testing.T) {
+func Test_StorageFileList(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -224,7 +224,7 @@ func Test_StorageFileGets(t *testing.T) {
 
 			mockReq.EXPECT().StorageV1FileList(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseStorageFiles, nil)
 
-			res, err := h.ServiceAgentFileGets(ctx, tt.agent, tt.size, tt.token)
+			res, err := h.ServiceAgentFileList(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

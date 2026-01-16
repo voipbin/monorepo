@@ -48,7 +48,7 @@ func (h *listenHandler) processV1ConferencesGet(ctx context.Context, m *sock.Req
 		return simpleResponse(400), nil
 	}
 
-	confs, err := h.conferenceHandler.Gets(ctx, pageSize, pageToken, filters)
+	confs, err := h.conferenceHandler.List(ctx, pageSize, pageToken, filters)
 	if err != nil {
 		log.Debugf("Could not get conferences. err: %v", err)
 		return simpleResponse(500), nil

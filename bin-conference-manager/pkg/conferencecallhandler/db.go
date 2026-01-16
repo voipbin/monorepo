@@ -69,10 +69,10 @@ func (h *conferencecallHandler) Create(
 	return res, nil
 }
 
-// Gets returns list of conferencecalls.
-func (h *conferencecallHandler) Gets(ctx context.Context, size uint64, token string, filters map[conferencecall.Field]any) ([]*conferencecall.Conferencecall, error) {
+// List returns list of conferencecalls.
+func (h *conferencecallHandler) List(ctx context.Context, size uint64, token string, filters map[conferencecall.Field]any) ([]*conferencecall.Conferencecall, error) {
 
-	res, err := h.db.ConferencecallGets(ctx, size, token, filters)
+	res, err := h.db.ConferencecallList(ctx, size, token, filters)
 	if err != nil {
 		return nil, err
 	}

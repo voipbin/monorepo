@@ -151,7 +151,7 @@ func (h *handler) ChatroomGet(ctx context.Context, id uuid.UUID) (*chatroom.Chat
 }
 
 // ChatroomGets returns list of chatrooms.
-func (h *handler) ChatroomGets(ctx context.Context, token string, size uint64, filters map[chatroom.Field]any) ([]*chatroom.Chatroom, error) {
+func (h *handler) ChatroomList(ctx context.Context, token string, size uint64, filters map[chatroom.Field]any) ([]*chatroom.Chatroom, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}

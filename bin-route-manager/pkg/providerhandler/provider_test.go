@@ -127,7 +127,7 @@ func Test_Create(t *testing.T) {
 	}
 }
 
-func Test_Gets(t *testing.T) {
+func Test_List(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -166,9 +166,9 @@ func Test_Gets(t *testing.T) {
 			ctx := context.Background()
 
 			filters := map[provider.Field]any{}
-			mockDB.EXPECT().ProviderGets(ctx, tt.token, tt.limit, filters).Return(tt.responseProviders, nil)
+			mockDB.EXPECT().ProviderList(ctx, tt.token, tt.limit, filters).Return(tt.responseProviders, nil)
 
-			res, err := h.Gets(ctx, tt.token, tt.limit)
+			res, err := h.List(ctx, tt.token, tt.limit)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

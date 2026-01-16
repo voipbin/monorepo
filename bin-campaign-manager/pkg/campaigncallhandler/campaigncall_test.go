@@ -240,7 +240,7 @@ func Test_GetByActiveflowID(t *testing.T) {
 	}
 }
 
-func Test_GetsByCustomerID(t *testing.T) {
+func Test_ListByCustomerID(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -271,9 +271,9 @@ func Test_GetsByCustomerID(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockDB.EXPECT().CampaigncallGetsByCustomerID(ctx, tt.customerID, tt.token, tt.limit).Return(nil, nil)
+			mockDB.EXPECT().CampaigncallListByCustomerID(ctx, tt.customerID, tt.token, tt.limit).Return(nil, nil)
 
-			_, err := h.GetsByCustomerID(ctx, tt.customerID, tt.token, tt.limit)
+			_, err := h.ListByCustomerID(ctx, tt.customerID, tt.token, tt.limit)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -281,7 +281,7 @@ func Test_GetsByCustomerID(t *testing.T) {
 	}
 }
 
-func Test_GetsByCampaignID(t *testing.T) {
+func Test_ListByCampaignID(t *testing.T) {
 
 	tests := []struct {
 		name       string
@@ -310,9 +310,9 @@ func Test_GetsByCampaignID(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockDB.EXPECT().CampaigncallGetsByCampaignID(ctx, tt.campaignID, tt.token, tt.limit).Return(nil, nil)
+			mockDB.EXPECT().CampaigncallListByCampaignID(ctx, tt.campaignID, tt.token, tt.limit).Return(nil, nil)
 
-			_, err := h.GetsByCampaignID(ctx, tt.campaignID, tt.token, tt.limit)
+			_, err := h.ListByCampaignID(ctx, tt.campaignID, tt.token, tt.limit)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -320,7 +320,7 @@ func Test_GetsByCampaignID(t *testing.T) {
 	}
 }
 
-func Test_GetsByCampaignIDAndStatus(t *testing.T) {
+func Test_ListByCampaignIDAndStatus(t *testing.T) {
 
 	tests := []struct {
 		name       string
@@ -351,9 +351,9 @@ func Test_GetsByCampaignIDAndStatus(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockDB.EXPECT().CampaigncallGetsByCampaignIDAndStatus(ctx, tt.campaignID, tt.status, tt.token, tt.limit).Return(nil, nil)
+			mockDB.EXPECT().CampaigncallListByCampaignIDAndStatus(ctx, tt.campaignID, tt.status, tt.token, tt.limit).Return(nil, nil)
 
-			_, err := h.GetsByCampaignIDAndStatus(ctx, tt.campaignID, tt.status, tt.token, tt.limit)
+			_, err := h.ListByCampaignIDAndStatus(ctx, tt.campaignID, tt.status, tt.token, tt.limit)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -361,7 +361,7 @@ func Test_GetsByCampaignIDAndStatus(t *testing.T) {
 	}
 }
 
-func Test_GetsOngoingByCampaignID(t *testing.T) {
+func Test_ListOngoingByCampaignID(t *testing.T) {
 
 	tests := []struct {
 		name       string
@@ -390,9 +390,9 @@ func Test_GetsOngoingByCampaignID(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockDB.EXPECT().CampaigncallGetsOngoingByCampaignID(ctx, tt.campaignID, tt.token, tt.limit).Return(nil, nil)
+			mockDB.EXPECT().CampaigncallListOngoingByCampaignID(ctx, tt.campaignID, tt.token, tt.limit).Return(nil, nil)
 
-			_, err := h.GetsOngoingByCampaignID(ctx, tt.campaignID, tt.token, tt.limit)
+			_, err := h.ListOngoingByCampaignID(ctx, tt.campaignID, tt.token, tt.limit)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

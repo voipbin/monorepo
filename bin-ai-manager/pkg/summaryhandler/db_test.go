@@ -178,7 +178,7 @@ func Test_Get(t *testing.T) {
 	}
 }
 
-func Test_Gets(t *testing.T) {
+func Test_List(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -232,9 +232,9 @@ func Test_Gets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().SummaryGets(ctx, tt.size, tt.token, tt.filters).Return(tt.responseSummaries, nil)
+			mockDB.EXPECT().SummaryList(ctx, tt.size, tt.token, tt.filters).Return(tt.responseSummaries, nil)
 
-			res, err := h.Gets(ctx, tt.size, tt.token, tt.filters)
+			res, err := h.List(ctx, tt.size, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -312,7 +312,7 @@ func Test_GetByCustomerIDAndReferenceIDAndLanguage(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().SummaryGets(ctx, uint64(1000), "", tt.expectedFilters).Return(tt.responseSummaries, nil)
+			mockDB.EXPECT().SummaryList(ctx, uint64(1000), "", tt.expectedFilters).Return(tt.responseSummaries, nil)
 
 			res, err := h.GetByCustomerIDAndReferenceIDAndLanguage(ctx, tt.customerID, tt.referenceID, tt.language)
 			if err != nil {

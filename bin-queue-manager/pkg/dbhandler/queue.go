@@ -163,8 +163,8 @@ func (h *handler) QueueGet(ctx context.Context, id uuid.UUID) (*queue.Queue, err
 	return res, nil
 }
 
-// QueueGets returns queues.
-func (h *handler) QueueGets(ctx context.Context, size uint64, token string, filters map[queue.Field]any) ([]*queue.Queue, error) {
+// QueueList returns queues.
+func (h *handler) QueueList(ctx context.Context, size uint64, token string, filters map[queue.Field]any) ([]*queue.Queue, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}

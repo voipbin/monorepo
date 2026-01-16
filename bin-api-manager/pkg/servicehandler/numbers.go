@@ -38,7 +38,7 @@ func (h *serviceHandler) numberGet(ctx context.Context, id uuid.UUID) (*nmnumber
 // NumberGets sends a request to getting a list of numbers
 // It sends a request to the number-manager to getting a list of numbers.
 // it returns list of numbers if it succeed.
-func (h *serviceHandler) NumberGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*nmnumber.WebhookMessage, error) {
+func (h *serviceHandler) NumberList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*nmnumber.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "NumberGets",
 		"customer_id": a.CustomerID,

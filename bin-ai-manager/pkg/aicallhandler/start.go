@@ -180,7 +180,7 @@ func (h *aicallHandler) startReferenceTypeNone(
 func (h *aicallHandler) getPipecatcallMessages(ctx context.Context, c *aicall.AIcall) ([]map[string]any, error) {
 
 	// retrieve previous messages
-	tmpMessages, err := h.messageHandler.Gets(ctx, 100, "", map[message.Field]any{
+	tmpMessages, err := h.messageHandler.List(ctx, 100, "", map[message.Field]any{
 		message.FieldAIcallID: c.ID,
 	})
 	if err != nil {

@@ -36,7 +36,7 @@ func (h *serviceHandler) messageGet(ctx context.Context, messageID uuid.UUID) (*
 // MessageGets sends a request to getting a list of messages
 // It sends a request to the message-manager to getting a list of messages.
 // it returns list of messages if it succeed.
-func (h *serviceHandler) MessageGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*mmmessage.WebhookMessage, error) {
+func (h *serviceHandler) MessageList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*mmmessage.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "MessageGets",
 		"customer_id": a.CustomerID,

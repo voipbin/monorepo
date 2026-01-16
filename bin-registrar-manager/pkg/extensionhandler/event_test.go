@@ -73,7 +73,7 @@ func Test_EventCUCustomerDeleted(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDBBin.EXPECT().ExtensionGets(ctx, uint64(1000), gomock.Any(), tt.expectFilter).Return(tt.responseExtensions, nil)
+			mockDBBin.EXPECT().ExtensionList(ctx, uint64(1000), gomock.Any(), tt.expectFilter).Return(tt.responseExtensions, nil)
 
 			for _, e := range tt.responseExtensions {
 

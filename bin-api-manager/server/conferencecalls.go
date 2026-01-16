@@ -40,7 +40,7 @@ func (h *server) GetConferencecalls(c *gin.Context, params openapi_server.GetCon
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.ConferencecallGets(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.ConferencecallList(c.Request.Context(), &a, pageSize, pageToken)
 	if err != nil {
 		logrus.Errorf("Could not create a flow for outoing call. err: %v", err)
 		c.AbortWithStatus(400)

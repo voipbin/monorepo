@@ -125,7 +125,7 @@ func Test_Delete(t *testing.T) {
 	}
 }
 
-func Test_GetsByOutdialID(t *testing.T) {
+func Test_ListByOutdialID(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -160,7 +160,7 @@ func Test_GetsByOutdialID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().OutdialTargetGets(ctx, tt.token, tt.limit, gomock.Any()).Return([]*outdialtarget.OutdialTarget{}, nil)
+			mockDB.EXPECT().OutdialTargetList(ctx, tt.token, tt.limit, gomock.Any()).Return([]*outdialtarget.OutdialTarget{}, nil)
 			_, err := h.GetsByOutdialID(ctx, tt.outdialID, tt.token, tt.limit)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

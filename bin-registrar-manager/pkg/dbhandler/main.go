@@ -54,7 +54,7 @@ type DBHandler interface {
 	ExtensionCreate(ctx context.Context, b *extension.Extension) error
 	ExtensionDelete(ctx context.Context, id uuid.UUID) error
 	ExtensionGet(ctx context.Context, id uuid.UUID) (*extension.Extension, error)
-	ExtensionGets(ctx context.Context, size uint64, token string, filters map[extension.Field]any) ([]*extension.Extension, error)
+	ExtensionList(ctx context.Context, size uint64, token string, filters map[extension.Field]any) ([]*extension.Extension, error)
 	ExtensionGetByEndpointID(ctx context.Context, endpoint string) (*extension.Extension, error)
 	ExtensionGetByExtension(ctx context.Context, customerID uuid.UUID, ext string) (*extension.Extension, error)
 	ExtensionUpdate(ctx context.Context, id uuid.UUID, fields map[extension.Field]any) error
@@ -70,7 +70,7 @@ type DBHandler interface {
 	TrunkUpdate(ctx context.Context, id uuid.UUID, fields map[trunk.Field]any) error
 	TrunkGet(ctx context.Context, id uuid.UUID) (*trunk.Trunk, error)
 	TrunkGetByDomainName(ctx context.Context, domainName string) (*trunk.Trunk, error)
-	TrunkGets(ctx context.Context, size uint64, token string, filters map[trunk.Field]any) ([]*trunk.Trunk, error)
+	TrunkList(ctx context.Context, size uint64, token string, filters map[trunk.Field]any) ([]*trunk.Trunk, error)
 	TrunkDelete(ctx context.Context, id uuid.UUID) error
 }
 

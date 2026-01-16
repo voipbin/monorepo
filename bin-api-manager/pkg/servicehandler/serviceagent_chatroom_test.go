@@ -16,7 +16,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func Test_ServiceAgentChatroomGets(t *testing.T) {
+func Test_ServiceAgentChatroomList(t *testing.T) {
 
 	type test struct {
 		name string
@@ -92,7 +92,7 @@ func Test_ServiceAgentChatroomGets(t *testing.T) {
 
 			mockReq.EXPECT().ChatV1ChatroomList(ctx, tt.token, tt.size, gomock.Any()).Return(tt.responseChatrooms, nil)
 
-			res, err := h.ServiceAgentChatroomGets(ctx, tt.agent, tt.size, tt.token)
+			res, err := h.ServiceAgentChatroomList(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

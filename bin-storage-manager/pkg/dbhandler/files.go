@@ -161,8 +161,8 @@ func (h *handler) FileGet(ctx context.Context, id uuid.UUID) (*file.File, error)
 	return res, nil
 }
 
-// FileGets returns files.
-func (h *handler) FileGets(ctx context.Context, token string, size uint64, filters map[file.Field]any) ([]*file.File, error) {
+// FileList returns files.
+func (h *handler) FileList(ctx context.Context, token string, size uint64, filters map[file.Field]any) ([]*file.File, error) {
 	if token == "" {
 		token = h.util.TimeGetCurTime()
 	}

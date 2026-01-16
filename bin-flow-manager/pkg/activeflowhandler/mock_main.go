@@ -176,19 +176,19 @@ func (mr *MockActiveflowHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockActiveflowHandler)(nil).Get), ctx, id)
 }
 
-// Gets mocks base method.
-func (m *MockActiveflowHandler) Gets(ctx context.Context, token string, size uint64, filters map[activeflow.Field]any) ([]*activeflow.Activeflow, error) {
+// List mocks base method.
+func (m *MockActiveflowHandler) List(ctx context.Context, token string, size uint64, filters map[activeflow.Field]any) ([]*activeflow.Activeflow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Gets", ctx, token, size, filters)
+	ret := m.ctrl.Call(m, "List", ctx, token, size, filters)
 	ret0, _ := ret[0].([]*activeflow.Activeflow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Gets indicates an expected call of Gets.
-func (mr *MockActiveflowHandlerMockRecorder) Gets(ctx, token, size, filters any) *gomock.Call {
+// List indicates an expected call of List.
+func (mr *MockActiveflowHandlerMockRecorder) List(ctx, token, size, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockActiveflowHandler)(nil).Gets), ctx, token, size, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockActiveflowHandler)(nil).List), ctx, token, size, filters)
 }
 
 // PopStackWithStackID mocks base method.

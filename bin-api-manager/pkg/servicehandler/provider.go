@@ -59,7 +59,7 @@ func (h *serviceHandler) ProviderGet(ctx context.Context, a *amagent.Agent, prov
 // ProviderGets sends a request to route-manager
 // to getting a list of providers.
 // it returns providers info if it succeed.
-func (h *serviceHandler) ProviderGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*rmprovider.WebhookMessage, error) {
+func (h *serviceHandler) ProviderList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*rmprovider.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ProviderGets",
 		"customer_id": a.CustomerID,

@@ -98,7 +98,7 @@ func Test_MessagechatCreate(t *testing.T) {
 	}
 }
 
-func Test_MessagechatGets(t *testing.T) {
+func Test_MessagechatList(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -164,7 +164,7 @@ func Test_MessagechatGets(t *testing.T) {
 				}
 			}
 
-			cs, err := h.MessagechatGets(ctx, utilhandler.TimeGetCurTime(), tt.limit, tt.filters)
+			cs, err := h.MessagechatList(ctx, utilhandler.TimeGetCurTime(), tt.limit, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

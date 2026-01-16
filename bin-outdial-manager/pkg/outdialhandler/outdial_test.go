@@ -146,7 +146,7 @@ func Test_Get(t *testing.T) {
 	}
 }
 
-func Test_GetsByCustomerID(t *testing.T) {
+func Test_ListByCustomerID(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -180,7 +180,7 @@ func Test_GetsByCustomerID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().OutdialGets(ctx, tt.token, tt.limit, gomock.Any()).Return([]*outdial.Outdial{}, nil)
+			mockDB.EXPECT().OutdialList(ctx, tt.token, tt.limit, gomock.Any()).Return([]*outdial.Outdial{}, nil)
 
 			_, err := h.GetsByCustomerID(ctx, tt.customerID, tt.token, tt.limit)
 			if err != nil {

@@ -1408,6 +1408,53 @@ Use this decision tree when adding new documentation:
 2. **Write table-driven tests** - Follow existing test patterns
 3. **Use structured logging** - Include context fields with `logrus.WithFields()`
 4. **Handle errors properly** - Wrap errors with `github.com/pkg/errors`
+5. **Follow Go naming conventions** - See "Go Naming Conventions" section below
+
+#### Go Naming Conventions
+
+**CRITICAL: Use `List` not `Gets` for collection retrieval methods.**
+
+Following Go standard library conventions (e.g., `os.ReadDir`, `database/sql.Query`), methods that return collections should use `List` naming:
+
+```go
+// ✅ CORRECT - Use List for collection retrieval
+func (h *handler) CallList(ctx context.Context, filters map[Field]any) ([]*Call, error)
+func (h *handler) CallListByCustomerID(ctx context.Context, customerID uuid.UUID) ([]*Call, error)
+
+// ❌ WRONG - Don't use Gets
+func (h *handler) CallGets(ctx context.Context, filters map[Field]any) ([]*Call, error)
+func (h *handler) CallGetsByCustomerID(ctx context.Context, customerID uuid.UUID) ([]*Call, error)
+```
+
+**Naming patterns:**
+- **Single item retrieval:** `Get` (e.g., `CallGet(ctx, id)`)
+- **Collection retrieval:** `List` (e.g., `CallList(ctx, filters)`)
+- **Filtered collections:** `ListBy*` (e.g., `CallListByCustomerID(ctx, customerID)`)
+
+**Test function names:**
+- `Test_Get` - Tests single item retrieval
+- `Test_List` - Tests collection retrieval
+- `Test_ListByCustomerID` - Tests filtered collection retrieval
+
+**Function comments:**
+```go
+// ✅ CORRECT
+// List returns list of calls with filters
+func (h *handler) CallList(ctx context.Context, filters map[Field]any) ([]*Call, error)
+
+// ListByCustomerID returns list of calls by customer ID
+func (h *handler) CallListByCustomerID(ctx context.Context, customerID uuid.UUID) ([]*Call, error)
+
+// ❌ WRONG - Don't use Gets in comments
+// Gets returns list of calls
+func (h *handler) CallList(ctx context.Context, filters map[Field]any) ([]*Call, error)
+```
+
+**Why this matters:**
+- Consistency with Go standard library conventions
+- Makes code more idiomatic and easier to understand
+- Aligns with community best practices (effective Go, code review comments)
+- `Gets` is not a standard Go verb and sounds awkward
 
 ### Common Gotchas
 

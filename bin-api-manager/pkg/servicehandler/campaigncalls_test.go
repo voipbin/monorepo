@@ -19,7 +19,7 @@ import (
 	"monorepo/bin-api-manager/pkg/dbhandler"
 )
 
-func Test_CampaigncallGets(t *testing.T) {
+func Test_CampaigncallList(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -87,7 +87,7 @@ func Test_CampaigncallGets(t *testing.T) {
 
 			mockReq.EXPECT().CampaignV1CampaigncallList(ctx, tt.token, tt.size, gomock.Any()).Return(tt.responseCampaigncalls, nil)
 
-			res, err := h.CampaigncallGets(ctx, tt.agent, tt.size, tt.token)
+			res, err := h.CampaigncallList(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -99,7 +99,7 @@ func Test_CampaigncallGets(t *testing.T) {
 	}
 }
 
-func Test_campaigncallGetsByCampaignID(t *testing.T) {
+func Test_campaigncallListByCampaignID(t *testing.T) {
 
 	tests := []struct {
 		name       string

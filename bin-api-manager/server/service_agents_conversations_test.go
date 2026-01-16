@@ -80,7 +80,7 @@ func Test_conversationsGET(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().ServiceAgentConversationGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseConversations, nil)
+			mockSvc.EXPECT().ServiceAgentConversationList(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseConversations, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

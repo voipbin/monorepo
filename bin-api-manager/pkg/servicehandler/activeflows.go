@@ -132,7 +132,7 @@ func (h *serviceHandler) ActiveflowGet(ctx context.Context, a *amagent.Agent, ac
 // ActiveflowGets sends a request to flow-manager
 // to getting a list of activeflows.
 // it returns list of activeflows if it succeed.
-func (h *serviceHandler) ActiveflowGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*fmactiveflow.WebhookMessage, error) {
+func (h *serviceHandler) ActiveflowList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*fmactiveflow.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ActiveflowGets",
 		"customer_id": a.CustomerID,

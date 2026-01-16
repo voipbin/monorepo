@@ -42,7 +42,7 @@ func (h *server) GetActiveflows(c *gin.Context, params openapi_server.GetActivef
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.ActiveflowGets(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.ActiveflowList(c.Request.Context(), &a, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get calls info. err: %v", err)
 		c.AbortWithStatus(400)

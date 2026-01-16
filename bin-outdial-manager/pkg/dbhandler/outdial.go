@@ -179,8 +179,8 @@ func (h *handler) OutdialDelete(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
-// OutdialGets returns list of outdials.
-func (h *handler) OutdialGets(ctx context.Context, token string, size uint64, filters map[outdial.Field]any) ([]*outdial.Outdial, error) {
+// OutdialList returns list of outdials.
+func (h *handler) OutdialList(ctx context.Context, token string, size uint64, filters map[outdial.Field]any) ([]*outdial.Outdial, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}
@@ -196,17 +196,17 @@ func (h *handler) OutdialGets(ctx context.Context, token string, size uint64, fi
 
 	sb, err := commondatabasehandler.ApplyFields(sb, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not apply filters. OutdialGets. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. OutdialList. err: %v", err)
 	}
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. OutdialGets. err: %v", err)
+		return nil, fmt.Errorf("could not build query. OutdialList. err: %v", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. OutdialGets. err: %v", err)
+		return nil, fmt.Errorf("could not query. OutdialList. err: %v", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -216,12 +216,12 @@ func (h *handler) OutdialGets(ctx context.Context, token string, size uint64, fi
 	for rows.Next() {
 		u, err := h.outdialGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not get data. OutdialGets, err: %v", err)
+			return nil, fmt.Errorf("could not get data. OutdialList, err: %v", err)
 		}
 		res = append(res, u)
 	}
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error. OutdialGets. err: %v", err)
+		return nil, fmt.Errorf("rows iteration error. OutdialList. err: %v", err)
 	}
 
 	return res, nil

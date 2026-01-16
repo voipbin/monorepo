@@ -48,7 +48,7 @@ func (h *listenHandler) processV1RecordingsGet(ctx context.Context, m *sock.Requ
 		return simpleResponse(400), nil
 	}
 
-	tmps, err := h.recordingHandler.Gets(ctx, pageSize, pageToken, filters)
+	tmps, err := h.recordingHandler.List(ctx, pageSize, pageToken, filters)
 	if err != nil {
 		log.Debugf("Could not get recordings. err: %v", err)
 		return simpleResponse(500), nil

@@ -19,7 +19,7 @@ import (
 	"monorepo/bin-api-manager/pkg/dbhandler"
 )
 
-func Test_TranscriptGets(t *testing.T) {
+func Test_TranscriptList(t *testing.T) {
 
 	type test struct {
 		name string
@@ -103,7 +103,7 @@ func Test_TranscriptGets(t *testing.T) {
 			mockReq.EXPECT().TranscribeV1TranscribeGet(ctx, tt.transcribeID).Return(tt.responseTranscribe, nil)
 			mockReq.EXPECT().TranscribeV1TranscriptList(ctx, "", uint64(100), tt.expectFilters).Return(tt.responseTranscripts, nil)
 
-			res, err := h.TranscriptGets(ctx, tt.agent, tt.transcribeID)
+			res, err := h.TranscriptList(ctx, tt.agent, tt.transcribeID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

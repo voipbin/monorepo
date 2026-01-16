@@ -68,8 +68,8 @@ func (h *routeHandler) Create(
 	return res, nil
 }
 
-// GetsByCustomerID returns list of routes of the given customerID
-func (h *routeHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*route.Route, error) {
+// ListByCustomerID returns list of routes of the given customerID
+func (h *routeHandler) ListByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*route.Route, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":        "GetsByCustomerID",
@@ -87,7 +87,7 @@ func (h *routeHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUI
 		filters[route.FieldCustomerID] = customerID
 	}
 
-	res, err = h.db.RouteGets(ctx, token, limit, filters)
+	res, err = h.db.RouteList(ctx, token, limit, filters)
 	if err != nil {
 		log.Errorf("Could not get routes. err: %v", err)
 		return nil, err
@@ -96,8 +96,8 @@ func (h *routeHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUI
 	return res, nil
 }
 
-// GetsByTarget returns list of routes
-func (h *routeHandler) GetsByTarget(ctx context.Context, customerID uuid.UUID, target string) ([]*route.Route, error) {
+// ListByTarget returns list of routes
+func (h *routeHandler) ListByTarget(ctx context.Context, customerID uuid.UUID, target string) ([]*route.Route, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":        "GetsByTarget",
@@ -111,7 +111,7 @@ func (h *routeHandler) GetsByTarget(ctx context.Context, customerID uuid.UUID, t
 		route.FieldCustomerID: customerID,
 		route.FieldTarget:     target,
 	}
-	routeTargets, err := h.db.RouteGets(ctx, "", 1000, filtersTarget)
+	routeTargets, err := h.db.RouteList(ctx, "", 1000, filtersTarget)
 	if err != nil {
 		log.Errorf("Could not get routes for target. err: %v", err)
 		return nil, err
@@ -122,7 +122,7 @@ func (h *routeHandler) GetsByTarget(ctx context.Context, customerID uuid.UUID, t
 		route.FieldCustomerID: customerID,
 		route.FieldTarget:     route.TargetAll,
 	}
-	routeAll, err := h.db.RouteGets(ctx, "", 1000, filtersAll)
+	routeAll, err := h.db.RouteList(ctx, "", 1000, filtersAll)
 	if err != nil {
 		log.Errorf("Could not get routes for all target. err: %v", err)
 	}

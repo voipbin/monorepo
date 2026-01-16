@@ -18,7 +18,7 @@ import (
 	"monorepo/bin-api-manager/pkg/dbhandler"
 )
 
-func Test_QueuecallGets(t *testing.T) {
+func Test_QueuecallList(t *testing.T) {
 
 	type test struct {
 		name      string
@@ -81,7 +81,7 @@ func Test_QueuecallGets(t *testing.T) {
 
 			mockReq.EXPECT().QueueV1QueuecallList(ctx, tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.responseQueuecalls, nil)
 
-			res, err := h.QueuecallGets(ctx, tt.agent, tt.pageSize, tt.pageToken)
+			res, err := h.QueuecallList(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

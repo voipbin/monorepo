@@ -87,19 +87,19 @@ func (mr *MockProviderHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockProviderHandler)(nil).Get), ctx, id)
 }
 
-// Gets mocks base method.
-func (m *MockProviderHandler) Gets(ctx context.Context, token string, limit uint64) ([]*provider.Provider, error) {
+// List mocks base method.
+func (m *MockProviderHandler) List(ctx context.Context, token string, limit uint64) ([]*provider.Provider, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Gets", ctx, token, limit)
+	ret := m.ctrl.Call(m, "List", ctx, token, limit)
 	ret0, _ := ret[0].([]*provider.Provider)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Gets indicates an expected call of Gets.
-func (mr *MockProviderHandlerMockRecorder) Gets(ctx, token, limit any) *gomock.Call {
+// List indicates an expected call of List.
+func (mr *MockProviderHandlerMockRecorder) List(ctx, token, limit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockProviderHandler)(nil).Gets), ctx, token, limit)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockProviderHandler)(nil).List), ctx, token, limit)
 }
 
 // Update mocks base method.

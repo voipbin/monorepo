@@ -142,7 +142,7 @@ func Test_QueuecallCreate(t *testing.T) {
 	}
 }
 
-func Test_QueuecallGets(t *testing.T) {
+func Test_QueuecallList(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -372,7 +372,7 @@ func Test_QueuecallGets(t *testing.T) {
 				}
 			}
 
-			res, err := h.QueuecallGets(ctx, tt.size, utilhandler.TimeGetCurTime(), tt.filters)
+			res, err := h.QueuecallList(ctx, tt.size, utilhandler.TimeGetCurTime(), tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. UserGet expect: ok, got: %v", err)
 			}

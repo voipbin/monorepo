@@ -31,13 +31,13 @@ type DBHandler interface {
 	TranscribeDelete(ctx context.Context, id uuid.UUID) error
 	TranscribeGet(ctx context.Context, id uuid.UUID) (*transcribe.Transcribe, error)
 	TranscribeGetByReferenceIDAndLanguage(ctx context.Context, referenceID uuid.UUID, language string) (*transcribe.Transcribe, error)
-	TranscribeGets(ctx context.Context, size uint64, token string, filters map[transcribe.Field]any) ([]*transcribe.Transcribe, error)
+	TranscribeList(ctx context.Context, size uint64, token string, filters map[transcribe.Field]any) ([]*transcribe.Transcribe, error)
 	TranscribeUpdate(ctx context.Context, id uuid.UUID, fields map[transcribe.Field]any) error
 
 	// transcript
 	TranscriptCreate(ctx context.Context, t *transcript.Transcript) error
 	TranscriptGet(ctx context.Context, id uuid.UUID) (*transcript.Transcript, error)
-	TranscriptGets(ctx context.Context, size uint64, token string, filters map[transcript.Field]any) ([]*transcript.Transcript, error)
+	TranscriptList(ctx context.Context, size uint64, token string, filters map[transcript.Field]any) ([]*transcript.Transcript, error)
 	TranscriptDelete(ctx context.Context, id uuid.UUID) error
 	TranscriptUpdate(ctx context.Context, id uuid.UUID, fields map[transcript.Field]any) error
 }

@@ -23,25 +23,25 @@ type DBHandler interface {
 	AICreate(ctx context.Context, c *ai.AI) error
 	AIDelete(ctx context.Context, id uuid.UUID) error
 	AIGet(ctx context.Context, id uuid.UUID) (*ai.AI, error)
-	AIGets(ctx context.Context, size uint64, token string, filters map[ai.Field]any) ([]*ai.AI, error)
+	AIList(ctx context.Context, size uint64, token string, filters map[ai.Field]any) ([]*ai.AI, error)
 	AIUpdate(ctx context.Context, id uuid.UUID, fields map[ai.Field]any) error
 
 	AIcallCreate(ctx context.Context, cb *aicall.AIcall) error
 	AIcallDelete(ctx context.Context, id uuid.UUID) error
 	AIcallGet(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error)
 	AIcallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*aicall.AIcall, error)
-	AIcallGets(ctx context.Context, size uint64, token string, filters map[aicall.Field]any) ([]*aicall.AIcall, error)
+	AIcallList(ctx context.Context, size uint64, token string, filters map[aicall.Field]any) ([]*aicall.AIcall, error)
 	AIcallUpdate(ctx context.Context, id uuid.UUID, fields map[aicall.Field]any) error
 
 	MessageCreate(ctx context.Context, c *message.Message) error
 	MessageGet(ctx context.Context, id uuid.UUID) (*message.Message, error)
-	MessageGets(ctx context.Context, size uint64, token string, filters map[message.Field]any) ([]*message.Message, error)
+	MessageList(ctx context.Context, size uint64, token string, filters map[message.Field]any) ([]*message.Message, error)
 	MessageDelete(ctx context.Context, id uuid.UUID) error
 
 	SummaryCreate(ctx context.Context, c *summary.Summary) error
 	SummaryGet(ctx context.Context, id uuid.UUID) (*summary.Summary, error)
 	SummaryDelete(ctx context.Context, id uuid.UUID) error
-	SummaryGets(ctx context.Context, size uint64, token string, filters map[summary.Field]any) ([]*summary.Summary, error)
+	SummaryList(ctx context.Context, size uint64, token string, filters map[summary.Field]any) ([]*summary.Summary, error)
 	SummaryUpdate(ctx context.Context, id uuid.UUID, fields map[summary.Field]any) error
 }
 

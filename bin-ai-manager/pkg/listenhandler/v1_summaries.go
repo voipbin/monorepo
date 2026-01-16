@@ -54,7 +54,7 @@ func (h *listenHandler) processV1SummariesGet(ctx context.Context, m *sock.Reque
 		"filters": typedFilters,
 	})
 
-	tmp, err := h.summaryHandler.Gets(ctx, pageSize, pageToken, typedFilters)
+	tmp, err := h.summaryHandler.List(ctx, pageSize, pageToken, typedFilters)
 	if err != nil {
 		log.Debugf("Could not get items. err: %v", err)
 		return simpleResponse(500), nil

@@ -116,7 +116,7 @@ func Test_AccountCreate(t *testing.T) {
 	}
 }
 
-func Test_AccountGets(t *testing.T) {
+func Test_AccountList(t *testing.T) {
 
 	type test struct {
 		name     string
@@ -195,7 +195,7 @@ func Test_AccountGets(t *testing.T) {
 				_ = h.AccountCreate(ctx, c)
 			}
 
-			res, err := h.AccountGets(ctx, uint64(1000), utilhandler.TimeGetCurTime(), tt.filters)
+			res, err := h.AccountList(ctx, uint64(1000), utilhandler.TimeGetCurTime(), tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -207,7 +207,7 @@ func Test_AccountGets(t *testing.T) {
 	}
 }
 
-func Test_AccountGetsByCustomerID(t *testing.T) {
+func Test_AccountListByCustomerID(t *testing.T) {
 
 	type test struct {
 		name     string
@@ -286,7 +286,7 @@ func Test_AccountGetsByCustomerID(t *testing.T) {
 				_ = h.AccountCreate(ctx, c)
 			}
 
-			res, err := h.AccountGetsByCustomerID(ctx, tt.customerID, tt.size, utilhandler.TimeGetCurTime())
+			res, err := h.AccountListByCustomerID(ctx, tt.customerID, tt.size, utilhandler.TimeGetCurTime())
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

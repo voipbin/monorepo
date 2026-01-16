@@ -16,7 +16,7 @@ import (
 // TranscriptGets sends a request to transcribe-manager
 // to getting a list of transcribes.
 // it returns list of transcribe info if it succeed.
-func (h *serviceHandler) TranscriptGets(ctx context.Context, a *amagent.Agent, transcribeID uuid.UUID) ([]*tmtranscript.WebhookMessage, error) {
+func (h *serviceHandler) TranscriptList(ctx context.Context, a *amagent.Agent, transcribeID uuid.UUID) ([]*tmtranscript.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "TranscribeGets",
 		"customer_id":   a.CustomerID,

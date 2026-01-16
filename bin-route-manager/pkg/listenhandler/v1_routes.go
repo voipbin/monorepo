@@ -95,7 +95,7 @@ func (h *listenHandler) v1RoutesGet(ctx context.Context, m *sock.Request) (*sock
 		"filters_raw_data": string(m.Data),
 	}).Debug("v1RoutesGet: Parsed filters from request body")
 
-	tmp, err := h.routeHandler.GetsByCustomerID(ctx, reqData.CustomerID, pageToken, pageSize)
+	tmp, err := h.routeHandler.ListByCustomerID(ctx, reqData.CustomerID, pageToken, pageSize)
 	if err != nil {
 		log.Errorf("Could not get routes. err: %v", err)
 		return nil, err

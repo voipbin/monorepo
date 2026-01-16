@@ -89,19 +89,19 @@ func (mr *MockMessageHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockMessageHandler)(nil).Get), ctx, id)
 }
 
-// Gets mocks base method.
-func (m *MockMessageHandler) Gets(ctx context.Context, pageToken string, pageSize uint64, filters map[message.Field]any) ([]*message.Message, error) {
+// List mocks base method.
+func (m *MockMessageHandler) List(ctx context.Context, pageToken string, pageSize uint64, filters map[message.Field]any) ([]*message.Message, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Gets", ctx, pageToken, pageSize, filters)
+	ret := m.ctrl.Call(m, "List", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]*message.Message)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Gets indicates an expected call of Gets.
-func (mr *MockMessageHandlerMockRecorder) Gets(ctx, pageToken, pageSize, filters any) *gomock.Call {
+// List indicates an expected call of List.
+func (mr *MockMessageHandlerMockRecorder) List(ctx, pageToken, pageSize, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockMessageHandler)(nil).Gets), ctx, pageToken, pageSize, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockMessageHandler)(nil).List), ctx, pageToken, pageSize, filters)
 }
 
 // Send mocks base method.

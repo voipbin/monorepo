@@ -183,7 +183,7 @@ func Test_processV1ExternalMediasGet(t *testing.T) {
 				externalMediaHandler: mockExternalMedia,
 			}
 
-			mockExternalMedia.EXPECT().Gets(gomock.Any(), tt.pageSize, tt.pageToken, gomock.Any()).Return(tt.responseExternalMedias, nil)
+			mockExternalMedia.EXPECT().List(gomock.Any(), tt.pageSize, tt.pageToken, gomock.Any()).Return(tt.responseExternalMedias, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

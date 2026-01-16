@@ -160,19 +160,19 @@ func (mr *MockQueueHandlerMockRecorder) GetAgents(ctx, id, status any) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgents", reflect.TypeOf((*MockQueueHandler)(nil).GetAgents), ctx, id, status)
 }
 
-// Gets mocks base method.
-func (m *MockQueueHandler) Gets(ctx context.Context, size uint64, token string, filters map[queue.Field]any) ([]*queue.Queue, error) {
+// List mocks base method.
+func (m *MockQueueHandler) List(ctx context.Context, size uint64, token string, filters map[queue.Field]any) ([]*queue.Queue, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Gets", ctx, size, token, filters)
+	ret := m.ctrl.Call(m, "List", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*queue.Queue)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Gets indicates an expected call of Gets.
-func (mr *MockQueueHandlerMockRecorder) Gets(ctx, size, token, filters any) *gomock.Call {
+// List indicates an expected call of List.
+func (mr *MockQueueHandlerMockRecorder) List(ctx, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockQueueHandler)(nil).Gets), ctx, size, token, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockQueueHandler)(nil).List), ctx, size, token, filters)
 }
 
 // RemoveQueuecallID mocks base method.

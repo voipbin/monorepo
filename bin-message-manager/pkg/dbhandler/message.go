@@ -190,8 +190,8 @@ func (h *handler) MessageUpdateTargets(ctx context.Context, id uuid.UUID, provid
 	return h.MessageUpdate(ctx, id, fields)
 }
 
-// MessageGets returns a list of messages.
-func (h *handler) MessageGets(ctx context.Context, token string, size uint64, filters map[message.Field]any) ([]*message.Message, error) {
+// MessageList returns a list of messages.
+func (h *handler) MessageList(ctx context.Context, token string, size uint64, filters map[message.Field]any) ([]*message.Message, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}
@@ -208,17 +208,17 @@ func (h *handler) MessageGets(ctx context.Context, token string, size uint64, fi
 	// apply filters
 	builder, err := commondatabasehandler.ApplyFields(builder, filters)
 	if err != nil {
-		return nil, errors.Wrap(err, "could not apply filters. MessageGets")
+		return nil, errors.Wrap(err, "could not apply filters. MessageList")
 	}
 
 	query, args, err := builder.ToSql()
 	if err != nil {
-		return nil, errors.Wrap(err, "could not build query. MessageGets")
+		return nil, errors.Wrap(err, "could not build query. MessageList")
 	}
 
 	rows, err := h.db.Query(query, args...)
 	if err != nil {
-		return nil, errors.Wrap(err, "could not query. MessageGets")
+		return nil, errors.Wrap(err, "could not query. MessageList")
 	}
 	defer func() {
 		_ = rows.Close()
@@ -228,7 +228,7 @@ func (h *handler) MessageGets(ctx context.Context, token string, size uint64, fi
 	for rows.Next() {
 		m, err := h.messageGetFromRow(rows)
 		if err != nil {
-			return nil, errors.Wrap(err, "could not scan the row. MessageGets")
+			return nil, errors.Wrap(err, "could not scan the row. MessageList")
 		}
 
 		res = append(res, m)

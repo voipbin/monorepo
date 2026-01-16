@@ -112,7 +112,7 @@ func Test_ProviderCreate(t *testing.T) {
 	}
 }
 
-func Test_ProviderGets(t *testing.T) {
+func Test_ProviderList(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -187,7 +187,7 @@ func Test_ProviderGets(t *testing.T) {
 			}
 
 			filters := map[provider.Field]any{}
-			res, err := h.ProviderGets(ctx, tt.token, tt.limit, filters)
+			res, err := h.ProviderList(ctx, tt.token, tt.limit, filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

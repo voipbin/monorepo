@@ -40,7 +40,7 @@ func (h *server) GetStorageAccounts(c *gin.Context, params openapi_server.GetSto
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.StorageAccountGets(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.StorageAccountList(c.Request.Context(), &a, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get a storage list. err: %v", err)
 		c.AbortWithStatus(400)

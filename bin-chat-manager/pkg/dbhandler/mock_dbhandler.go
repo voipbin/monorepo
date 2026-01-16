@@ -88,19 +88,19 @@ func (mr *MockDBHandlerMockRecorder) ChatGet(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatGet", reflect.TypeOf((*MockDBHandler)(nil).ChatGet), ctx, id)
 }
 
-// ChatGets mocks base method.
-func (m *MockDBHandler) ChatGets(ctx context.Context, token string, size uint64, filters map[chat.Field]any) ([]*chat.Chat, error) {
+// ChatList mocks base method.
+func (m *MockDBHandler) ChatList(ctx context.Context, token string, size uint64, filters map[chat.Field]any) ([]*chat.Chat, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChatGets", ctx, token, size, filters)
+	ret := m.ctrl.Call(m, "ChatList", ctx, token, size, filters)
 	ret0, _ := ret[0].([]*chat.Chat)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ChatGets indicates an expected call of ChatGets.
-func (mr *MockDBHandlerMockRecorder) ChatGets(ctx, token, size, filters any) *gomock.Call {
+// ChatList indicates an expected call of ChatList.
+func (mr *MockDBHandlerMockRecorder) ChatList(ctx, token, size, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatGets", reflect.TypeOf((*MockDBHandler)(nil).ChatGets), ctx, token, size, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatList", reflect.TypeOf((*MockDBHandler)(nil).ChatList), ctx, token, size, filters)
 }
 
 // ChatUpdate mocks base method.
@@ -216,19 +216,19 @@ func (mr *MockDBHandlerMockRecorder) ChatroomGet(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatroomGet", reflect.TypeOf((*MockDBHandler)(nil).ChatroomGet), ctx, id)
 }
 
-// ChatroomGets mocks base method.
-func (m *MockDBHandler) ChatroomGets(ctx context.Context, token string, size uint64, filters map[chatroom.Field]any) ([]*chatroom.Chatroom, error) {
+// ChatroomList mocks base method.
+func (m *MockDBHandler) ChatroomList(ctx context.Context, token string, size uint64, filters map[chatroom.Field]any) ([]*chatroom.Chatroom, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChatroomGets", ctx, token, size, filters)
+	ret := m.ctrl.Call(m, "ChatroomList", ctx, token, size, filters)
 	ret0, _ := ret[0].([]*chatroom.Chatroom)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ChatroomGets indicates an expected call of ChatroomGets.
-func (mr *MockDBHandlerMockRecorder) ChatroomGets(ctx, token, size, filters any) *gomock.Call {
+// ChatroomList indicates an expected call of ChatroomList.
+func (mr *MockDBHandlerMockRecorder) ChatroomList(ctx, token, size, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatroomGets", reflect.TypeOf((*MockDBHandler)(nil).ChatroomGets), ctx, token, size, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatroomList", reflect.TypeOf((*MockDBHandler)(nil).ChatroomList), ctx, token, size, filters)
 }
 
 // ChatroomRemoveParticipantID mocks base method.
@@ -316,19 +316,19 @@ func (mr *MockDBHandlerMockRecorder) MessagechatGet(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessagechatGet", reflect.TypeOf((*MockDBHandler)(nil).MessagechatGet), ctx, id)
 }
 
-// MessagechatGets mocks base method.
-func (m *MockDBHandler) MessagechatGets(ctx context.Context, token string, size uint64, filters map[messagechat.Field]any) ([]*messagechat.Messagechat, error) {
+// MessagechatList mocks base method.
+func (m *MockDBHandler) MessagechatList(ctx context.Context, token string, size uint64, filters map[messagechat.Field]any) ([]*messagechat.Messagechat, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MessagechatGets", ctx, token, size, filters)
+	ret := m.ctrl.Call(m, "MessagechatList", ctx, token, size, filters)
 	ret0, _ := ret[0].([]*messagechat.Messagechat)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// MessagechatGets indicates an expected call of MessagechatGets.
-func (mr *MockDBHandlerMockRecorder) MessagechatGets(ctx, token, size, filters any) *gomock.Call {
+// MessagechatList indicates an expected call of MessagechatList.
+func (mr *MockDBHandlerMockRecorder) MessagechatList(ctx, token, size, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessagechatGets", reflect.TypeOf((*MockDBHandler)(nil).MessagechatGets), ctx, token, size, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessagechatList", reflect.TypeOf((*MockDBHandler)(nil).MessagechatList), ctx, token, size, filters)
 }
 
 // MessagechatUpdate mocks base method.
@@ -388,19 +388,19 @@ func (mr *MockDBHandlerMockRecorder) MessagechatroomGet(ctx, id any) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessagechatroomGet", reflect.TypeOf((*MockDBHandler)(nil).MessagechatroomGet), ctx, id)
 }
 
-// MessagechatroomGets mocks base method.
-func (m *MockDBHandler) MessagechatroomGets(ctx context.Context, token string, size uint64, filters map[messagechatroom.Field]any) ([]*messagechatroom.Messagechatroom, error) {
+// MessagechatroomList mocks base method.
+func (m *MockDBHandler) MessagechatroomList(ctx context.Context, token string, size uint64, filters map[messagechatroom.Field]any) ([]*messagechatroom.Messagechatroom, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MessagechatroomGets", ctx, token, size, filters)
+	ret := m.ctrl.Call(m, "MessagechatroomList", ctx, token, size, filters)
 	ret0, _ := ret[0].([]*messagechatroom.Messagechatroom)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// MessagechatroomGets indicates an expected call of MessagechatroomGets.
-func (mr *MockDBHandlerMockRecorder) MessagechatroomGets(ctx, token, size, filters any) *gomock.Call {
+// MessagechatroomList indicates an expected call of MessagechatroomList.
+func (mr *MockDBHandlerMockRecorder) MessagechatroomList(ctx, token, size, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessagechatroomGets", reflect.TypeOf((*MockDBHandler)(nil).MessagechatroomGets), ctx, token, size, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessagechatroomList", reflect.TypeOf((*MockDBHandler)(nil).MessagechatroomList), ctx, token, size, filters)
 }
 
 // MessagechatroomUpdate mocks base method.

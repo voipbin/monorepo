@@ -94,7 +94,7 @@ func Test_ProcessV1AgentsGet(t *testing.T) {
 				agentHandler: mockAgent,
 			}
 
-			mockAgent.EXPECT().Gets(gomock.Any(), tt.pageSize, tt.pageToken, gomock.Any()).Return(tt.responseAgents, nil)
+			mockAgent.EXPECT().List(gomock.Any(), tt.pageSize, tt.pageToken, gomock.Any()).Return(tt.responseAgents, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

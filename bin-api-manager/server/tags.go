@@ -144,7 +144,7 @@ func (h *server) GetTags(c *gin.Context, params openapi_server.GetTagsParams) {
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.TagGets(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.TagList(c.Request.Context(), &a, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get tags info. err: %v", err)
 		c.AbortWithStatus(400)

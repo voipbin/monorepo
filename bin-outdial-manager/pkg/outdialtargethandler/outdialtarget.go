@@ -114,7 +114,7 @@ func (h *outdialTargetHandler) Delete(ctx context.Context, id uuid.UUID) (*outdi
 	return res, nil
 }
 
-// GetsByOutdialID returns list of outdialtargets
+// ListByOutdialID returns list of outdialtargets
 func (h *outdialTargetHandler) GetsByOutdialID(ctx context.Context, outdialID uuid.UUID, token string, limit uint64) ([]*outdialtarget.OutdialTarget, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
@@ -127,7 +127,7 @@ func (h *outdialTargetHandler) GetsByOutdialID(ctx context.Context, outdialID uu
 		outdialtarget.FieldDeleted:   false,
 	}
 
-	res, err := h.db.OutdialTargetGets(ctx, token, limit, filters)
+	res, err := h.db.OutdialTargetList(ctx, token, limit, filters)
 	if err != nil {
 		log.Errorf("Could not create the outdial. err: %v", err)
 		return nil, err

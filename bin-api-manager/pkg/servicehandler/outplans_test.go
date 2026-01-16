@@ -170,7 +170,7 @@ func Test_OutplanDelete(t *testing.T) {
 	}
 }
 
-func Test_OutplanGetsByCustomerID(t *testing.T) {
+func Test_OutplanListByCustomerID(t *testing.T) {
 
 	tests := []struct {
 		name      string

@@ -63,7 +63,7 @@ func (h *numberHandler) EventFlowDeleted(ctx context.Context, f *fmflow.Flow) er
 			number.FieldCallFlowID: f.ID,
 			number.FieldDeleted:    false,
 		}
-		numbs, err := h.db.NumberGets(ctx, 1000, ts, filters)
+		numbs, err := h.db.NumberList(ctx, 1000, ts, filters)
 		if err != nil || len(numbs) <= 0 {
 			break
 		}
@@ -91,7 +91,7 @@ func (h *numberHandler) EventFlowDeleted(ctx context.Context, f *fmflow.Flow) er
 			number.FieldMessageFlowID: f.ID,
 			number.FieldDeleted:       false,
 		}
-		numbs, err := h.db.NumberGets(ctx, 1000, ts, filters)
+		numbs, err := h.db.NumberList(ctx, 1000, ts, filters)
 		if err != nil || len(numbs) <= 0 {
 			break
 		}

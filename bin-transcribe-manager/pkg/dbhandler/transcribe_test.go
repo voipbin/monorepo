@@ -128,7 +128,7 @@ func Test_TranscribeCreate(t *testing.T) {
 	}
 }
 
-func Test_TranscribeGets(t *testing.T) {
+func Test_TranscribeList(t *testing.T) {
 
 	tests := []struct {
 		name        string
@@ -253,7 +253,7 @@ func Test_TranscribeGets(t *testing.T) {
 				}
 			}
 
-			res, err := h.TranscribeGets(ctx, 10, utilhandler.TimeGetCurTime(), tt.filters)
+			res, err := h.TranscribeList(ctx, 10, utilhandler.TimeGetCurTime(), tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

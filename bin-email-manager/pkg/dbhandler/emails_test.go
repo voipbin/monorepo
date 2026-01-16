@@ -178,7 +178,7 @@ func Test_EmailCreate(t *testing.T) {
 	}
 }
 
-func Test_EmailGets(t *testing.T) {
+func Test_EmailList(t *testing.T) {
 
 	tests := []struct {
 		name   string
@@ -268,7 +268,7 @@ func Test_EmailGets(t *testing.T) {
 				}
 			}
 
-			res, err := h.EmailGets(ctx, utilhandler.TimeGetCurTime(), tt.size, tt.filters)
+			res, err := h.EmailList(ctx, utilhandler.TimeGetCurTime(), tt.size, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

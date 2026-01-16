@@ -42,8 +42,8 @@ type OutplanHandler interface {
 	) (*outplan.Outplan, error)
 	Delete(ctx context.Context, id uuid.UUID) (*outplan.Outplan, error)
 	Get(ctx context.Context, id uuid.UUID) (*outplan.Outplan, error)
-	Gets(ctx context.Context, token string, limit uint64, filters map[outplan.Field]any) ([]*outplan.Outplan, error)
-	GetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*outplan.Outplan, error)
+	List(ctx context.Context, token string, limit uint64, filters map[outplan.Field]any) ([]*outplan.Outplan, error)
+	ListByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*outplan.Outplan, error)
 	UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*outplan.Outplan, error)
 	UpdateDialInfo(ctx context.Context, id uuid.UUID, source *commonaddress.Address, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4 int) (*outplan.Outplan, error)
 }

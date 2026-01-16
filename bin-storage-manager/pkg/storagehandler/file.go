@@ -59,8 +59,8 @@ func (h *storageHandler) FileGet(ctx context.Context, id uuid.UUID) (*file.File,
 	return res, nil
 }
 
-// FileGets returns list of files info.
-func (h *storageHandler) FileGets(ctx context.Context, token string, size uint64, filters map[file.Field]any) ([]*file.File, error) {
+// FileList returns list of files info.
+func (h *storageHandler) FileList(ctx context.Context, token string, size uint64, filters map[file.Field]any) ([]*file.File, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "FileGets",
 		"token":   token,
@@ -68,7 +68,7 @@ func (h *storageHandler) FileGets(ctx context.Context, token string, size uint64
 		"filters": filters,
 	})
 
-	res, err := h.fileHandler.Gets(ctx, token, size, filters)
+	res, err := h.fileHandler.List(ctx, token, size, filters)
 	if err != nil {
 		log.Errorf("Could not get file. err: %v", err)
 		return nil, err

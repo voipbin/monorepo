@@ -147,21 +147,6 @@ func (mr *MockAccountHandlerMockRecorder) GetByCustomerID(ctx, customerID any) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByCustomerID", reflect.TypeOf((*MockAccountHandler)(nil).GetByCustomerID), ctx, customerID)
 }
 
-// Gets mocks base method.
-func (m *MockAccountHandler) Gets(ctx context.Context, size uint64, token string, filters map[account.Field]any) ([]*account.Account, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Gets", ctx, size, token, filters)
-	ret0, _ := ret[0].([]*account.Account)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Gets indicates an expected call of Gets.
-func (mr *MockAccountHandlerMockRecorder) Gets(ctx, size, token, filters any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockAccountHandler)(nil).Gets), ctx, size, token, filters)
-}
-
 // IsValidBalance mocks base method.
 func (m *MockAccountHandler) IsValidBalance(ctx context.Context, accountID uuid.UUID, billingType billing.ReferenceType, country string, count int) (bool, error) {
 	m.ctrl.T.Helper()
@@ -175,6 +160,21 @@ func (m *MockAccountHandler) IsValidBalance(ctx context.Context, accountID uuid.
 func (mr *MockAccountHandlerMockRecorder) IsValidBalance(ctx, accountID, billingType, country, count any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsValidBalance", reflect.TypeOf((*MockAccountHandler)(nil).IsValidBalance), ctx, accountID, billingType, country, count)
+}
+
+// List mocks base method.
+func (m *MockAccountHandler) List(ctx context.Context, size uint64, token string, filters map[account.Field]any) ([]*account.Account, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "List", ctx, size, token, filters)
+	ret0, _ := ret[0].([]*account.Account)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// List indicates an expected call of List.
+func (mr *MockAccountHandlerMockRecorder) List(ctx, size, token, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockAccountHandler)(nil).List), ctx, size, token, filters)
 }
 
 // SubtractBalance mocks base method.

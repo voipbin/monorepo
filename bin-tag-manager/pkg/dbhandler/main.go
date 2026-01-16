@@ -21,7 +21,7 @@ type DBHandler interface {
 	TagDelete(ctx context.Context, id uuid.UUID) error
 	TagSetBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) error
 	TagGet(ctx context.Context, id uuid.UUID) (*tag.Tag, error)
-	TagGets(ctx context.Context, size uint64, token string, filters map[tag.Field]any) ([]*tag.Tag, error)
+	TagList(ctx context.Context, size uint64, token string, filters map[tag.Field]any) ([]*tag.Tag, error)
 	TagUpdate(ctx context.Context, id uuid.UUID, fields map[tag.Field]any) error
 }
 

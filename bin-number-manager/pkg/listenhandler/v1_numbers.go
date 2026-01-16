@@ -203,7 +203,7 @@ func (h *listenHandler) processV1NumbersGet(ctx context.Context, m *sock.Request
 		return simpleResponse(400), nil
 	}
 
-	numbers, err := h.numberHandler.Gets(ctx, pageSize, pageToken, filters)
+	numbers, err := h.numberHandler.List(ctx, pageSize, pageToken, filters)
 	if err != nil {
 		log.Debugf("Could not get numbers. err: %v", err)
 		return simpleResponse(500), nil

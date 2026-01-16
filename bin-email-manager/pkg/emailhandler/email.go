@@ -38,9 +38,9 @@ func (h *emailHandler) Create(
 	return res, nil
 }
 
-// Gets returns list of emails
-func (h *emailHandler) Gets(ctx context.Context, token string, size uint64, filters map[email.Field]any) ([]*email.Email, error) {
-	res, err := h.db.EmailGets(ctx, token, size, filters)
+// List returns list of emails
+func (h *emailHandler) List(ctx context.Context, token string, size uint64, filters map[email.Field]any) ([]*email.Email, error) {
+	res, err := h.db.EmailList(ctx, token, size, filters)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get emails")
 	}

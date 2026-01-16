@@ -50,7 +50,7 @@ func (h *listenHandler) processV1AgentsGet(ctx context.Context, req *sock.Reques
 		return simpleResponse(400), nil
 	}
 
-	tmp, err := h.agentHandler.Gets(ctx, pageSize, pageToken, filters)
+	tmp, err := h.agentHandler.List(ctx, pageSize, pageToken, filters)
 	if err != nil {
 		log.Errorf("Could not get agents info. err: %v", err)
 		return simpleResponse(500), nil

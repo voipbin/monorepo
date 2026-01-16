@@ -151,7 +151,7 @@ func (h *handler) MessagechatroomGet(ctx context.Context, id uuid.UUID) (*messag
 }
 
 // MessagechatroomGets returns list of messagechatrooms.
-func (h *handler) MessagechatroomGets(ctx context.Context, token string, size uint64, filters map[messagechatroom.Field]any) ([]*messagechatroom.Messagechatroom, error) {
+func (h *handler) MessagechatroomList(ctx context.Context, token string, size uint64, filters map[messagechatroom.Field]any) ([]*messagechatroom.Messagechatroom, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}

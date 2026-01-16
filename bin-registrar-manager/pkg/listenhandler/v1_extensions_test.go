@@ -185,7 +185,7 @@ func Test_processV1ExtensionsGet(t *testing.T) {
 				extensionHandler: mockExtension,
 			}
 
-			mockExtension.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, gomock.Any()).Return(tt.responseExtensions, nil)
+			mockExtension.EXPECT().List(gomock.Any(), tt.pageToken, tt.pageSize, gomock.Any()).Return(tt.responseExtensions, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

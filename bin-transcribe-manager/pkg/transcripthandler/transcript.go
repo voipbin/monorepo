@@ -48,9 +48,9 @@ func (h *transcriptHandler) Create(
 	return res, nil
 }
 
-// Gets returns list of transcripts.
-func (h *transcriptHandler) Gets(ctx context.Context, size uint64, token string, filters map[transcript.Field]any) ([]*transcript.Transcript, error) {
-	res, err := h.db.TranscriptGets(ctx, size, token, filters)
+// List returns list of transcripts.
+func (h *transcriptHandler) List(ctx context.Context, size uint64, token string, filters map[transcript.Field]any) ([]*transcript.Transcript, error) {
+	res, err := h.db.TranscriptList(ctx, size, token, filters)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get transcripts. filters: %v", filters)
 	}

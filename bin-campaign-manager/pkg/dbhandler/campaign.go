@@ -190,7 +190,7 @@ func (h *handler) CampaignGet(ctx context.Context, id uuid.UUID) (*campaign.Camp
 }
 
 // CampaignGets returns list of campaigns with filters.
-func (h *handler) CampaignGets(ctx context.Context, token string, size uint64, filters map[campaign.Field]any) ([]*campaign.Campaign, error) {
+func (h *handler) CampaignList(ctx context.Context, token string, size uint64, filters map[campaign.Field]any) ([]*campaign.Campaign, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "CampaignGets",
 		"size":    size,
@@ -214,12 +214,12 @@ func (h *handler) CampaignGets(ctx context.Context, token string, size uint64, f
 
 	sb, err := commondatabasehandler.ApplyFields(sb, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not apply filters. CampaignGets. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. CampaignList. err: %v", err)
 	}
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. CampaignGets. err: %v", err)
+		return nil, fmt.Errorf("could not build query. CampaignList. err: %v", err)
 	}
 
 	log.WithFields(logrus.Fields{
@@ -229,7 +229,7 @@ func (h *handler) CampaignGets(ctx context.Context, token string, size uint64, f
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. CampaignGets. err: %v", err)
+		return nil, fmt.Errorf("could not query. CampaignList. err: %v", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -244,14 +244,14 @@ func (h *handler) CampaignGets(ctx context.Context, token string, size uint64, f
 		res = append(res, u)
 	}
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error. CampaignGets. err: %v", err)
+		return nil, fmt.Errorf("rows iteration error. CampaignList. err: %v", err)
 	}
 
 	return res, nil
 }
 
 // CampaignGetsByCustomerID returns list of campaigns.
-func (h *handler) CampaignGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*campaign.Campaign, error) {
+func (h *handler) CampaignListByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*campaign.Campaign, error) {
 	filters := map[campaign.Field]any{
 		campaign.FieldCustomerID: customerID,
 		campaign.FieldDeleted:    false,
@@ -266,7 +266,7 @@ func (h *handler) CampaignGetsByCustomerID(ctx context.Context, customerID uuid.
 	})
 	log.Debug("Created filters with customer_id (check UUID type)")
 
-	return h.CampaignGets(ctx, token, limit, filters)
+	return h.CampaignList(ctx, token, limit, filters)
 }
 
 // CampaignUpdate updates campaign fields.

@@ -238,19 +238,19 @@ func (mr *MockDBHandlerMockRecorder) CallGetByChannelID(ctx, channelID any) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallGetByChannelID", reflect.TypeOf((*MockDBHandler)(nil).CallGetByChannelID), ctx, channelID)
 }
 
-// CallGets mocks base method.
-func (m *MockDBHandler) CallGets(ctx context.Context, size uint64, token string, filters map[call.Field]any) ([]*call.Call, error) {
+// CallList mocks base method.
+func (m *MockDBHandler) CallList(ctx context.Context, size uint64, token string, filters map[call.Field]any) ([]*call.Call, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallGets", ctx, size, token, filters)
+	ret := m.ctrl.Call(m, "CallList", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*call.Call)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// CallGets indicates an expected call of CallGets.
-func (mr *MockDBHandlerMockRecorder) CallGets(ctx, size, token, filters any) *gomock.Call {
+// CallList indicates an expected call of CallList.
+func (mr *MockDBHandlerMockRecorder) CallList(ctx, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallGets", reflect.TypeOf((*MockDBHandler)(nil).CallGets), ctx, size, token, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallList", reflect.TypeOf((*MockDBHandler)(nil).CallList), ctx, size, token, filters)
 }
 
 // CallRemoveChainedCallID mocks base method.
@@ -604,21 +604,6 @@ func (mr *MockDBHandlerMockRecorder) ChannelGet(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelGet", reflect.TypeOf((*MockDBHandler)(nil).ChannelGet), ctx, id)
 }
 
-// ChannelGets mocks base method.
-func (m *MockDBHandler) ChannelGets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*channel.Channel, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChannelGets", ctx, size, token, filters)
-	ret0, _ := ret[0].([]*channel.Channel)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ChannelGets indicates an expected call of ChannelGets.
-func (mr *MockDBHandlerMockRecorder) ChannelGets(ctx, size, token, filters any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelGets", reflect.TypeOf((*MockDBHandler)(nil).ChannelGets), ctx, size, token, filters)
-}
-
 // ChannelGetsForRecovery mocks base method.
 func (m *MockDBHandler) ChannelGetsForRecovery(ctx context.Context, asteriskID string, channelType channel.Type, startTime, endTime string, size uint64) ([]*channel.Channel, error) {
 	m.ctrl.T.Helper()
@@ -632,6 +617,21 @@ func (m *MockDBHandler) ChannelGetsForRecovery(ctx context.Context, asteriskID s
 func (mr *MockDBHandlerMockRecorder) ChannelGetsForRecovery(ctx, asteriskID, channelType, startTime, endTime, size any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelGetsForRecovery", reflect.TypeOf((*MockDBHandler)(nil).ChannelGetsForRecovery), ctx, asteriskID, channelType, startTime, endTime, size)
+}
+
+// ChannelList mocks base method.
+func (m *MockDBHandler) ChannelList(ctx context.Context, size uint64, token string, filters map[string]string) ([]*channel.Channel, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChannelList", ctx, size, token, filters)
+	ret0, _ := ret[0].([]*channel.Channel)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ChannelList indicates an expected call of ChannelList.
+func (mr *MockDBHandlerMockRecorder) ChannelList(ctx, size, token, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelList", reflect.TypeOf((*MockDBHandler)(nil).ChannelList), ctx, size, token, filters)
 }
 
 // ChannelSetBridgeID mocks base method.
@@ -902,19 +902,19 @@ func (mr *MockDBHandlerMockRecorder) ConfbridgeGetByBridgeID(ctx, bridgeID any) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfbridgeGetByBridgeID", reflect.TypeOf((*MockDBHandler)(nil).ConfbridgeGetByBridgeID), ctx, bridgeID)
 }
 
-// ConfbridgeGets mocks base method.
-func (m *MockDBHandler) ConfbridgeGets(ctx context.Context, size uint64, token string, filters map[confbridge.Field]any) ([]*confbridge.Confbridge, error) {
+// ConfbridgeList mocks base method.
+func (m *MockDBHandler) ConfbridgeList(ctx context.Context, size uint64, token string, filters map[confbridge.Field]any) ([]*confbridge.Confbridge, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConfbridgeGets", ctx, size, token, filters)
+	ret := m.ctrl.Call(m, "ConfbridgeList", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*confbridge.Confbridge)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ConfbridgeGets indicates an expected call of ConfbridgeGets.
-func (mr *MockDBHandlerMockRecorder) ConfbridgeGets(ctx, size, token, filters any) *gomock.Call {
+// ConfbridgeList indicates an expected call of ConfbridgeList.
+func (mr *MockDBHandlerMockRecorder) ConfbridgeList(ctx, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfbridgeGets", reflect.TypeOf((*MockDBHandler)(nil).ConfbridgeGets), ctx, size, token, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfbridgeList", reflect.TypeOf((*MockDBHandler)(nil).ConfbridgeList), ctx, size, token, filters)
 }
 
 // ConfbridgeRemoveChannelCallID mocks base method.
@@ -1144,19 +1144,19 @@ func (mr *MockDBHandlerMockRecorder) GroupcallGet(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupcallGet", reflect.TypeOf((*MockDBHandler)(nil).GroupcallGet), ctx, id)
 }
 
-// GroupcallGets mocks base method.
-func (m *MockDBHandler) GroupcallGets(ctx context.Context, size uint64, token string, filters map[groupcall.Field]any) ([]*groupcall.Groupcall, error) {
+// GroupcallList mocks base method.
+func (m *MockDBHandler) GroupcallList(ctx context.Context, size uint64, token string, filters map[groupcall.Field]any) ([]*groupcall.Groupcall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GroupcallGets", ctx, size, token, filters)
+	ret := m.ctrl.Call(m, "GroupcallList", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*groupcall.Groupcall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GroupcallGets indicates an expected call of GroupcallGets.
-func (mr *MockDBHandlerMockRecorder) GroupcallGets(ctx, size, token, filters any) *gomock.Call {
+// GroupcallList indicates an expected call of GroupcallList.
+func (mr *MockDBHandlerMockRecorder) GroupcallList(ctx, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupcallGets", reflect.TypeOf((*MockDBHandler)(nil).GroupcallGets), ctx, size, token, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupcallList", reflect.TypeOf((*MockDBHandler)(nil).GroupcallList), ctx, size, token, filters)
 }
 
 // GroupcallSetAnswerCallID mocks base method.
@@ -1301,19 +1301,19 @@ func (mr *MockDBHandlerMockRecorder) RecordingGetByRecordingName(ctx, recordingN
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingGetByRecordingName", reflect.TypeOf((*MockDBHandler)(nil).RecordingGetByRecordingName), ctx, recordingName)
 }
 
-// RecordingGets mocks base method.
-func (m *MockDBHandler) RecordingGets(ctx context.Context, size uint64, token string, filters map[recording.Field]any) ([]*recording.Recording, error) {
+// RecordingList mocks base method.
+func (m *MockDBHandler) RecordingList(ctx context.Context, size uint64, token string, filters map[recording.Field]any) ([]*recording.Recording, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RecordingGets", ctx, size, token, filters)
+	ret := m.ctrl.Call(m, "RecordingList", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*recording.Recording)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// RecordingGets indicates an expected call of RecordingGets.
-func (mr *MockDBHandlerMockRecorder) RecordingGets(ctx, size, token, filters any) *gomock.Call {
+// RecordingList indicates an expected call of RecordingList.
+func (mr *MockDBHandlerMockRecorder) RecordingList(ctx, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingGets", reflect.TypeOf((*MockDBHandler)(nil).RecordingGets), ctx, size, token, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingList", reflect.TypeOf((*MockDBHandler)(nil).RecordingList), ctx, size, token, filters)
 }
 
 // RecordingSetStatus mocks base method.

@@ -11,7 +11,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func (h *serviceHandler) ServiceAgentExtensionGets(ctx context.Context, a *amagent.Agent) ([]*rmextension.WebhookMessage, error) {
+func (h *serviceHandler) ServiceAgentExtensionList(ctx context.Context, a *amagent.Agent) ([]*rmextension.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "ServiceAgentExtensionGets",
 		"agent": a,

@@ -462,7 +462,7 @@ func Test_ActiveflowDelete(t *testing.T) {
 	}
 }
 
-func Test_ActiveflowGets(t *testing.T) {
+func Test_ActiveflowList(t *testing.T) {
 
 	tests := []struct {
 		name        string
@@ -546,7 +546,7 @@ func Test_ActiveflowGets(t *testing.T) {
 				}
 			}
 
-			res, err := h.ActiveflowGets(ctx, utilhandler.TimeGetCurTime(), tt.size, tt.filters)
+			res, err := h.ActiveflowList(ctx, utilhandler.TimeGetCurTime(), tt.size, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

@@ -100,21 +100,6 @@ func (mr *MockDBHandlerMockRecorder) AccountGet(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountGet", reflect.TypeOf((*MockDBHandler)(nil).AccountGet), ctx, id)
 }
 
-// AccountGets mocks base method.
-func (m *MockDBHandler) AccountGets(ctx context.Context, token string, size uint64, filters map[account.Field]any) ([]*account.Account, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AccountGets", ctx, token, size, filters)
-	ret0, _ := ret[0].([]*account.Account)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// AccountGets indicates an expected call of AccountGets.
-func (mr *MockDBHandlerMockRecorder) AccountGets(ctx, token, size, filters any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountGets", reflect.TypeOf((*MockDBHandler)(nil).AccountGets), ctx, token, size, filters)
-}
-
 // AccountIncreaseFileInfo mocks base method.
 func (m *MockDBHandler) AccountIncreaseFileInfo(ctx context.Context, id uuid.UUID, filecount, filesize int64) error {
 	m.ctrl.T.Helper()
@@ -127,6 +112,21 @@ func (m *MockDBHandler) AccountIncreaseFileInfo(ctx context.Context, id uuid.UUI
 func (mr *MockDBHandlerMockRecorder) AccountIncreaseFileInfo(ctx, id, filecount, filesize any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountIncreaseFileInfo", reflect.TypeOf((*MockDBHandler)(nil).AccountIncreaseFileInfo), ctx, id, filecount, filesize)
+}
+
+// AccountList mocks base method.
+func (m *MockDBHandler) AccountList(ctx context.Context, token string, size uint64, filters map[account.Field]any) ([]*account.Account, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AccountList", ctx, token, size, filters)
+	ret0, _ := ret[0].([]*account.Account)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AccountList indicates an expected call of AccountList.
+func (mr *MockDBHandlerMockRecorder) AccountList(ctx, token, size, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountList", reflect.TypeOf((*MockDBHandler)(nil).AccountList), ctx, token, size, filters)
 }
 
 // AccountUpdate mocks base method.
@@ -186,19 +186,19 @@ func (mr *MockDBHandlerMockRecorder) FileGet(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FileGet", reflect.TypeOf((*MockDBHandler)(nil).FileGet), ctx, id)
 }
 
-// FileGets mocks base method.
-func (m *MockDBHandler) FileGets(ctx context.Context, token string, size uint64, filters map[file.Field]any) ([]*file.File, error) {
+// FileList mocks base method.
+func (m *MockDBHandler) FileList(ctx context.Context, token string, size uint64, filters map[file.Field]any) ([]*file.File, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FileGets", ctx, token, size, filters)
+	ret := m.ctrl.Call(m, "FileList", ctx, token, size, filters)
 	ret0, _ := ret[0].([]*file.File)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// FileGets indicates an expected call of FileGets.
-func (mr *MockDBHandlerMockRecorder) FileGets(ctx, token, size, filters any) *gomock.Call {
+// FileList indicates an expected call of FileList.
+func (mr *MockDBHandlerMockRecorder) FileList(ctx, token, size, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FileGets", reflect.TypeOf((*MockDBHandler)(nil).FileGets), ctx, token, size, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FileList", reflect.TypeOf((*MockDBHandler)(nil).FileList), ctx, token, size, filters)
 }
 
 // FileUpdate mocks base method.

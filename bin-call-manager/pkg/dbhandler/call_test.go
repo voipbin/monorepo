@@ -229,7 +229,7 @@ func Test_CallCreate(t *testing.T) {
 	}
 }
 
-func Test_CallGets(t *testing.T) {
+func Test_CallList(t *testing.T) {
 
 	type test struct {
 		name  string
@@ -344,7 +344,7 @@ func Test_CallGets(t *testing.T) {
 				_ = h.CallCreate(ctx, c)
 			}
 
-			res, err := h.CallGets(ctx, 10, utilhandler.TimeGetCurTime(), tt.filters)
+			res, err := h.CallList(ctx, 10, utilhandler.TimeGetCurTime(), tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -356,7 +356,7 @@ func Test_CallGets(t *testing.T) {
 	}
 }
 
-func Test_CallGets_delete(t *testing.T) {
+func Test_CallList_delete(t *testing.T) {
 
 	type test struct {
 		name  string
@@ -454,7 +454,7 @@ func Test_CallGets_delete(t *testing.T) {
 				call.FieldDeleted:    false,
 			}
 
-			res, err := h.CallGets(ctx, 10, utilhandler.TimeGetCurTime(), filters)
+			res, err := h.CallList(ctx, 10, utilhandler.TimeGetCurTime(), filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

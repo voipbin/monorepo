@@ -58,7 +58,7 @@ func (h *listenHandler) v1MessagechatroomsGet(ctx context.Context, m *sock.Reque
 		"typed_filters": typedFilters,
 	}).Debug("v1MessagechatroomsGet: Converted filters to typed field map (check UUID types)")
 
-	tmp, err := h.messagechatroomHandler.Gets(ctx, pageToken, pageSize, typedFilters)
+	tmp, err := h.messagechatroomHandler.List(ctx, pageToken, pageSize, typedFilters)
 	if err != nil {
 		log.Errorf("Could not get messagechatrooms. err: %v", err)
 		return nil, err

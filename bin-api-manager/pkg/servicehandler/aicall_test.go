@@ -114,7 +114,7 @@ func Test_AIcallCreate(t *testing.T) {
 	}
 }
 
-func Test_AIcallGetsByCustomerID(t *testing.T) {
+func Test_AIcallListByCustomerID(t *testing.T) {
 
 	tests := []struct {
 		name string

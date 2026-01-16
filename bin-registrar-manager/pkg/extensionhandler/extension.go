@@ -132,14 +132,14 @@ func (h *extensionHandler) GetByExtension(ctx context.Context, customerID uuid.U
 	return h.dbBin.ExtensionGetByExtension(ctx, customerID, ext)
 }
 
-// Gets returns list of extensions
-func (h *extensionHandler) Gets(ctx context.Context, token string, limit uint64, filters map[extension.Field]any) ([]*extension.Extension, error) {
+// List returns list of extensions
+func (h *extensionHandler) List(ctx context.Context, token string, limit uint64, filters map[extension.Field]any) ([]*extension.Extension, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "Gets",
+		"func":    "List",
 		"filters": filters,
 	})
 
-	res, err := h.dbBin.ExtensionGets(ctx, limit, token, filters)
+	res, err := h.dbBin.ExtensionList(ctx, limit, token, filters)
 	if err != nil {
 		log.Errorf("Could not get extensions. err: %v", err)
 		return nil, err

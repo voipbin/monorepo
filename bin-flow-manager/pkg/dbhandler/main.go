@@ -25,7 +25,7 @@ type DBHandler interface {
 	ActiveflowGet(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error)
 	ActiveflowUpdate(ctx context.Context, id uuid.UUID, fields map[activeflow.Field]any) error
 	ActiveflowDelete(ctx context.Context, id uuid.UUID) error
-	ActiveflowGets(ctx context.Context, token string, size uint64, filters map[activeflow.Field]any) ([]*activeflow.Activeflow, error)
+	ActiveflowList(ctx context.Context, token string, size uint64, filters map[activeflow.Field]any) ([]*activeflow.Activeflow, error)
 	ActiveflowGetWithLock(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error)
 	ActiveflowReleaseLock(ctx context.Context, id uuid.UUID) error
 
@@ -33,7 +33,7 @@ type DBHandler interface {
 	FlowCreate(ctx context.Context, f *flow.Flow) error
 	FlowDelete(ctx context.Context, id uuid.UUID) error
 	FlowGet(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
-	FlowGets(ctx context.Context, token string, size uint64, filters map[flow.Field]any) ([]*flow.Flow, error)
+	FlowList(ctx context.Context, token string, size uint64, filters map[flow.Field]any) ([]*flow.Flow, error)
 	FlowSetToCache(ctx context.Context, f *flow.Flow) error
 	FlowUpdate(ctx context.Context, id uuid.UUID, fields map[flow.Field]any) error
 

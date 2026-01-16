@@ -12,7 +12,7 @@ import (
 // ServiceAgentAgentGets
 // getting the list of agents.
 // it returns list of agents if it succeed.
-func (h *serviceHandler) ServiceAgentAgentGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*amagent.WebhookMessage, error) {
+func (h *serviceHandler) ServiceAgentAgentList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*amagent.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ServiceAgentAgentGets",
 		"customer_id": a.CustomerID,
@@ -42,7 +42,7 @@ func (h *serviceHandler) ServiceAgentAgentGets(ctx context.Context, a *amagent.A
 		return nil, err
 	}
 
-	tmps, err := h.agentGets(ctx, size, token, typedFilters)
+	tmps, err := h.agentList(ctx, size, token, typedFilters)
 	if err != nil {
 		log.Errorf("Could not chatrooms info. err: %v", err)
 		return nil, err

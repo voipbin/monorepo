@@ -186,7 +186,7 @@ func (h *handler) ConferenceGet(ctx context.Context, id uuid.UUID) (*conference.
 }
 
 // ConferenceGets returns a list of conferences.
-func (h *handler) ConferenceGets(ctx context.Context, size uint64, token string, filters map[conference.Field]any) ([]*conference.Conference, error) {
+func (h *handler) ConferenceList(ctx context.Context, size uint64, token string, filters map[conference.Field]any) ([]*conference.Conference, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}

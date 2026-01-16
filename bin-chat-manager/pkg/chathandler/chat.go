@@ -34,17 +34,17 @@ func (h *chatHandler) Get(ctx context.Context, id uuid.UUID) (*chat.Chat, error)
 	return res, nil
 }
 
-// Gets returns the chats by the given customer id.
-func (h *chatHandler) Gets(ctx context.Context, token string, limit uint64, filters map[chat.Field]any) ([]*chat.Chat, error) {
+// List returns the chats by the given customer id.
+func (h *chatHandler) List(ctx context.Context, token string, limit uint64, filters map[chat.Field]any) ([]*chat.Chat, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "Gets",
+		"func":    "List",
 		"token":   token,
 		"limit":   limit,
 		"filters": filters,
 	})
 
 	// get
-	res, err := h.db.ChatGets(ctx, token, limit, filters)
+	res, err := h.db.ChatList(ctx, token, limit, filters)
 	if err != nil {
 		log.Errorf("Could not get chat info. err: %v", err)
 		return nil, err
@@ -255,7 +255,7 @@ func (h *chatHandler) AddParticipantID(ctx context.Context, id uuid.UUID, partic
 
 	// get chatrooms
 	curTime := h.utilHandler.TimeGetCurTime()
-	chatrooms, err := h.chatroomHandler.Gets(ctx, curTime, 100000, filters)
+	chatrooms, err := h.chatroomHandler.List(ctx, curTime, 100000, filters)
 	if err != nil {
 		log.Errorf("Could not get list of chatrooms. err: %v", err)
 		return nil, err
@@ -356,7 +356,7 @@ func (h *chatHandler) RemoveParticipantID(ctx context.Context, id uuid.UUID, par
 		chatroom.FieldChatID:  id,
 	}
 	curTime := h.utilHandler.TimeGetCurTime()
-	chatrooms, err := h.chatroomHandler.Gets(ctx, curTime, 100000, filters)
+	chatrooms, err := h.chatroomHandler.List(ctx, curTime, 100000, filters)
 	if err != nil {
 		log.Errorf("Could not get list of chatrooms. err: %v", err)
 		return nil, err
@@ -464,7 +464,7 @@ func (h *chatHandler) isExist(ctx context.Context, customerID uuid.UUID, chatTyp
 		chat.FieldDeleted:        false,
 	}
 
-	tmp, err := h.db.ChatGets(ctx, "", 1, filters)
+	tmp, err := h.db.ChatList(ctx, "", 1, filters)
 	if err != nil {
 		return false
 	}

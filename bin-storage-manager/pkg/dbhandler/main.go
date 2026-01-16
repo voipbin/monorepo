@@ -20,7 +20,7 @@ import (
 type DBHandler interface {
 	AccountCreate(ctx context.Context, a *account.Account) error
 	AccountGet(ctx context.Context, id uuid.UUID) (*account.Account, error)
-	AccountGets(ctx context.Context, token string, size uint64, filters map[account.Field]any) ([]*account.Account, error)
+	AccountList(ctx context.Context, token string, size uint64, filters map[account.Field]any) ([]*account.Account, error)
 	AccountUpdate(ctx context.Context, id uuid.UUID, fields map[account.Field]any) error
 	AccountIncreaseFileInfo(ctx context.Context, id uuid.UUID, filecount int64, filesize int64) error
 	AccountDecreaseFileInfo(ctx context.Context, id uuid.UUID, filecount int64, filesize int64) error
@@ -28,7 +28,7 @@ type DBHandler interface {
 
 	FileCreate(ctx context.Context, f *file.File) error
 	FileGet(ctx context.Context, id uuid.UUID) (*file.File, error)
-	FileGets(ctx context.Context, token string, size uint64, filters map[file.Field]any) ([]*file.File, error)
+	FileList(ctx context.Context, token string, size uint64, filters map[file.Field]any) ([]*file.File, error)
 	FileUpdate(ctx context.Context, id uuid.UUID, fields map[file.Field]any) error
 	FileDelete(ctx context.Context, id uuid.UUID) error
 }

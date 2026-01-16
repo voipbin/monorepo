@@ -76,7 +76,7 @@ func TestNumbersGET(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().NumberGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseNumbers, nil)
+			mockSvc.EXPECT().NumberList(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseNumbers, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

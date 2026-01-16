@@ -195,8 +195,8 @@ func (h *handler) TranscribeDelete(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
-// TranscribeGets returns list of transcribes.
-func (h *handler) TranscribeGets(ctx context.Context, size uint64, token string, filters map[transcribe.Field]any) ([]*transcribe.Transcribe, error) {
+// TranscribeList returns list of transcribes.
+func (h *handler) TranscribeList(ctx context.Context, size uint64, token string, filters map[transcribe.Field]any) ([]*transcribe.Transcribe, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}

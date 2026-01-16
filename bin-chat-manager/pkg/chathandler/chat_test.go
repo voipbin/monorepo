@@ -73,7 +73,7 @@ func Test_Get(t *testing.T) {
 	}
 }
 
-func Test_GetsByCustomerID(t *testing.T) {
+func Test_ListByCustomerID(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -120,9 +120,9 @@ func Test_GetsByCustomerID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChatGets(ctx, tt.token, tt.limit, tt.filters).Return(tt.responseChat, nil)
+			mockDB.EXPECT().ChatList(ctx, tt.token, tt.limit, tt.filters).Return(tt.responseChat, nil)
 
-			res, err := h.Gets(ctx, tt.token, tt.limit, tt.filters)
+			res, err := h.List(ctx, tt.token, tt.limit, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -273,7 +273,7 @@ func Test_Create(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ChatGets(ctx, gomock.Any(), gomock.Any(), tt.expectFilters).Return([]*chat.Chat{}, nil)
+			mockDB.EXPECT().ChatList(ctx, gomock.Any(), gomock.Any(), tt.expectFilters).Return([]*chat.Chat{}, nil)
 			for _, participantID := range tt.participantIDs {
 				tmp := &amagent.Agent{
 					Identity: commonidentity.Identity{
@@ -706,7 +706,7 @@ func Test_AddParticipantID(t *testing.T) {
 			mockDB.EXPECT().ChatGet(ctx, tt.responseChat.ID).Return(tt.responseChat, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseChat.CustomerID, chat.EventTypeChatUpdated, tt.responseChat)
 
-			mockChatroom.EXPECT().Gets(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseChatrooms, nil)
+			mockChatroom.EXPECT().List(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseChatrooms, nil)
 			for _, cr := range tt.responseChatrooms {
 				mockChatroom.EXPECT().AddParticipantID(ctx, cr.ID, tt.participantID).Return(&chatroom.Chatroom{}, nil)
 			}
@@ -817,7 +817,7 @@ func Test_RemoveParticipantID(t *testing.T) {
 			mockDB.EXPECT().ChatGet(ctx, tt.responseChat.ID).Return(tt.responseChat, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseChat.CustomerID, chat.EventTypeChatUpdated, tt.responseChat)
 
-			mockChatroom.EXPECT().Gets(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseChatrooms, nil)
+			mockChatroom.EXPECT().List(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseChatrooms, nil)
 			chatroomID := uuid.Nil
 			for _, cr := range tt.responseChatrooms {
 				if cr.RoomOwnerID == tt.participantID {

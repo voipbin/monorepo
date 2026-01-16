@@ -87,7 +87,7 @@ func (h *server) GetTranscribes(c *gin.Context, params openapi_server.GetTranscr
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.TranscribeGets(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.TranscribeList(c.Request.Context(), &a, pageSize, pageToken)
 	if err != nil {
 		logrus.Errorf("Could not get transcribes info. err: %v", err)
 		c.AbortWithStatus(400)

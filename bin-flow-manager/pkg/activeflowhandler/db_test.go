@@ -785,7 +785,7 @@ func Test_delete(t *testing.T) {
 	}
 }
 
-func Test_Gets(t *testing.T) {
+func Test_List(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -832,9 +832,9 @@ func Test_Gets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ActiveflowGets(ctx, tt.token, tt.size, tt.filters).Return(tt.responseGet, nil)
+			mockDB.EXPECT().ActiveflowList(ctx, tt.token, tt.size, tt.filters).Return(tt.responseGet, nil)
 
-			res, err := h.Gets(ctx, tt.token, tt.size, tt.filters)
+			res, err := h.List(ctx, tt.token, tt.size, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

@@ -33,17 +33,17 @@ func (h *messagechatHandler) Get(ctx context.Context, id uuid.UUID) (*messagecha
 	return res, nil
 }
 
-// Gets returns the chats by the given chatroom id.
-func (h *messagechatHandler) Gets(ctx context.Context, token string, limit uint64, filters map[messagechat.Field]any) ([]*messagechat.Messagechat, error) {
+// List returns the chats by the given chatroom id.
+func (h *messagechatHandler) List(ctx context.Context, token string, limit uint64, filters map[messagechat.Field]any) ([]*messagechat.Messagechat, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "Gets",
+		"func":    "List",
 		"token":   token,
 		"limit":   limit,
 		"filters": filters,
 	})
 
 	// get
-	res, err := h.db.MessagechatGets(ctx, token, limit, filters)
+	res, err := h.db.MessagechatList(ctx, token, limit, filters)
 	if err != nil {
 		log.Errorf("Could not get messagechat info. err: %v", err)
 		return nil, err
@@ -92,7 +92,7 @@ func (h *messagechatHandler) Create(
 		chatroom.FieldDeleted: false,
 	}
 	curTime := h.utilHandler.TimeGetCurTime()
-	chatrooms, err := h.chatroomHandler.Gets(ctx, curTime, 100000, chatroomFilters)
+	chatrooms, err := h.chatroomHandler.List(ctx, curTime, 100000, chatroomFilters)
 	if err != nil {
 		log.Errorf("Could not get list of chatrooms. err: %v", err)
 		return nil, err
@@ -189,7 +189,7 @@ func (h *messagechatHandler) Delete(ctx context.Context, id uuid.UUID) (*message
 		messagechatroom.FieldDeleted:       false,
 		messagechatroom.FieldMessagechatID: id,
 	}
-	messagechatrooms, err := h.messagechatroomHandler.Gets(ctx, dbhandler.DefaultTimeStamp, 100000, filters)
+	messagechatrooms, err := h.messagechatroomHandler.List(ctx, dbhandler.DefaultTimeStamp, 100000, filters)
 	if err != nil {
 		log.Errorf("Could not get messagechatrooms. err: %v", err)
 		return nil, err

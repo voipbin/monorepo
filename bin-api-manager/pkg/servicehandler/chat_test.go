@@ -95,7 +95,7 @@ func Test_ChatCreate(t *testing.T) {
 	}
 }
 
-func Test_ChatGetsByCustomerID(t *testing.T) {
+func Test_ChatListByCustomerID(t *testing.T) {
 
 	tests := []struct {
 		name string

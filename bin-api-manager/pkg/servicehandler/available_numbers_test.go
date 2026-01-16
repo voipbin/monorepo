@@ -17,7 +17,7 @@ import (
 	"monorepo/bin-api-manager/pkg/dbhandler"
 )
 
-func Test_AvailableNumberGets(t *testing.T) {
+func Test_AvailableNumberList(t *testing.T) {
 
 	tests := []struct {
 		name        string
@@ -55,7 +55,7 @@ func Test_AvailableNumberGets(t *testing.T) {
 
 			mockReq.EXPECT().NumberV1AvailableNumberList(ctx, tt.limit, gomock.Any()).Return([]nmavailablenumber.AvailableNumber{}, nil)
 
-			_, err := h.AvailableNumberGets(ctx, tt.agent, tt.limit, tt.countryCode)
+			_, err := h.AvailableNumberList(ctx, tt.agent, tt.limit, tt.countryCode)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

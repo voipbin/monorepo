@@ -24,7 +24,7 @@ func (h *fileHandler) EventCustomerDeleted(ctx context.Context, cu *cmcustomer.C
 	}
 
 	// get files
-	files, err := h.Gets(ctx, "", 10000, filters)
+	files, err := h.List(ctx, "", 10000, filters)
 	if err != nil {
 		log.Errorf("Could not get files. err: %v", err)
 		return errors.Wrap(err, "could not get files of the customer")

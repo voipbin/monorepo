@@ -38,7 +38,7 @@ func (h *serviceHandler) groupcallGet(ctx context.Context, groupcallID uuid.UUID
 // CallGets sends a request to call-manager
 // to getting a list of calls.
 // it returns list of calls if it succeed.
-func (h *serviceHandler) GroupcallGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*cmgroupcall.WebhookMessage, error) {
+func (h *serviceHandler) GroupcallList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*cmgroupcall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "GroupcallGets",
 		"customer_id": a.CustomerID,

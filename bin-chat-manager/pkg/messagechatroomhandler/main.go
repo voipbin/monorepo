@@ -29,7 +29,7 @@ type messagechatroomHandler struct {
 // MessagechatroomHandler defines
 type MessagechatroomHandler interface {
 	Get(ctx context.Context, id uuid.UUID) (*messagechatroom.Messagechatroom, error)
-	Gets(ctx context.Context, token string, size uint64, filters map[messagechatroom.Field]any) ([]*messagechatroom.Messagechatroom, error)
+	List(ctx context.Context, token string, size uint64, filters map[messagechatroom.Field]any) ([]*messagechatroom.Messagechatroom, error)
 	Create(
 		ctx context.Context,
 		customerID uuid.UUID,

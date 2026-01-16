@@ -113,7 +113,7 @@ func Test_FileCreate(t *testing.T) {
 	}
 }
 
-func Test_FileGets(t *testing.T) {
+func Test_FileList(t *testing.T) {
 
 	tests := []struct {
 		name  string
@@ -198,7 +198,7 @@ func Test_FileGets(t *testing.T) {
 				}
 			}
 
-			res, err := h.FileGets(ctx, utilhandler.TimeGetCurTime(), tt.size, tt.filters)
+			res, err := h.FileList(ctx, utilhandler.TimeGetCurTime(), tt.size, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

@@ -45,7 +45,7 @@ func (h *listenHandler) processV1BillingsGet(ctx context.Context, m *sock.Reques
 		return simpleResponse(400), nil
 	}
 
-	as, err := h.billingHandler.Gets(ctx, pageSize, pageToken, filters)
+	as, err := h.billingHandler.List(ctx, pageSize, pageToken, filters)
 	if err != nil {
 		log.Errorf("Could not get billings info. err: %v", err)
 		return simpleResponse(404), nil

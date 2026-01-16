@@ -73,8 +73,8 @@ func (h *externalMediaHandler) Get(ctx context.Context, id uuid.UUID) (*external
 	return res, nil
 }
 
-// Gets returns list of external medias of the given filters.
-func (h *externalMediaHandler) Gets(ctx context.Context, size uint64, token string, filters map[externalmedia.Field]any) ([]*externalmedia.ExternalMedia, error) {
+// List returns list of external medias of the given filters.
+func (h *externalMediaHandler) List(ctx context.Context, size uint64, token string, filters map[externalmedia.Field]any) ([]*externalmedia.ExternalMedia, error) {
 
 	res := []*externalmedia.ExternalMedia{}
 	if refID, ok := filters[externalmedia.FieldReferenceID]; ok && refID != nil {
@@ -97,7 +97,7 @@ func (h *externalMediaHandler) Gets(ctx context.Context, size uint64, token stri
 	return res, nil
 }
 
-// Gets returns list of external medias of the given filters.
+// List returns list of external medias of the given filters.
 func (h *externalMediaHandler) UpdateLocalAddress(ctx context.Context, id uuid.UUID, localIP string, localPort int) (*externalmedia.ExternalMedia, error) {
 	tmp, err := h.db.ExternalMediaGet(ctx, id)
 	if err != nil {

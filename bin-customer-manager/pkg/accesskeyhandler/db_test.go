@@ -16,7 +16,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func Test_Gets(t *testing.T) {
+func Test_List(t *testing.T) {
 
 	tests := []struct {
 		name    string
@@ -55,8 +55,8 @@ func Test_Gets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().AccesskeyGets(gomock.Any(), tt.size, tt.token, tt.filters).Return(tt.result, nil)
-			_, err := h.Gets(ctx, tt.size, tt.token, tt.filters)
+			mockDB.EXPECT().AccesskeyList(gomock.Any(), tt.size, tt.token, tt.filters).Return(tt.result, nil)
+			_, err := h.List(ctx, tt.size, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -64,7 +64,7 @@ func Test_Gets(t *testing.T) {
 	}
 }
 
-func Test_GetsByCustomerID(t *testing.T) {
+func Test_ListByCustomerID(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -124,7 +124,7 @@ func Test_GetsByCustomerID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AccesskeyGets(ctx, gomock.Any(), "", tt.expectFilter).Return(tt.responseAccesskeys, nil)
+			mockDB.EXPECT().AccesskeyList(ctx, gomock.Any(), "", tt.expectFilter).Return(tt.responseAccesskeys, nil)
 
 			res, err := h.GetsByCustomerID(ctx, tt.size, tt.token, tt.customerID)
 			if err != nil {
@@ -311,7 +311,7 @@ func Test_GetByToken(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AccesskeyGets(ctx, gomock.Any(), "", tt.expectFilter).Return(tt.responseAccesskeys, nil)
+			mockDB.EXPECT().AccesskeyList(ctx, gomock.Any(), "", tt.expectFilter).Return(tt.responseAccesskeys, nil)
 
 			res, err := h.GetByToken(ctx, tt.token)
 			if err != nil {

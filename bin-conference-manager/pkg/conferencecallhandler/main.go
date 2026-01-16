@@ -29,7 +29,7 @@ type ConferencecallHandler interface {
 		referenceType conferencecall.ReferenceType,
 		referenceID uuid.UUID,
 	) (*conferencecall.Conferencecall, error)
-	Gets(ctx context.Context, size uint64, token string, filters map[conferencecall.Field]any) ([]*conferencecall.Conferencecall, error)
+	List(ctx context.Context, size uint64, token string, filters map[conferencecall.Field]any) ([]*conferencecall.Conferencecall, error)
 	Get(ctx context.Context, id uuid.UUID) (*conferencecall.Conferencecall, error)
 	GetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*conferencecall.Conferencecall, error)
 

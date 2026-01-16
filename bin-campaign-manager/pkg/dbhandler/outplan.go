@@ -189,7 +189,7 @@ func (h *handler) OutplanGet(ctx context.Context, id uuid.UUID) (*outplan.Outpla
 }
 
 // OutplanGets returns list of outplans with filters.
-func (h *handler) OutplanGets(ctx context.Context, token string, size uint64, filters map[outplan.Field]any) ([]*outplan.Outplan, error) {
+func (h *handler) OutplanList(ctx context.Context, token string, size uint64, filters map[outplan.Field]any) ([]*outplan.Outplan, error) {
 	if token == "" {
 		token = h.util.TimeGetCurTime()
 	}
@@ -205,17 +205,17 @@ func (h *handler) OutplanGets(ctx context.Context, token string, size uint64, fi
 
 	sb, err := commondatabasehandler.ApplyFields(sb, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not apply filters. OutplanGets. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. OutplanList. err: %v", err)
 	}
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. OutplanGets. err: %v", err)
+		return nil, fmt.Errorf("could not build query. OutplanList. err: %v", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. OutplanGets. err: %v", err)
+		return nil, fmt.Errorf("could not query. OutplanList. err: %v", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -230,20 +230,20 @@ func (h *handler) OutplanGets(ctx context.Context, token string, size uint64, fi
 		res = append(res, u)
 	}
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error. OutplanGets. err: %v", err)
+		return nil, fmt.Errorf("rows iteration error. OutplanList. err: %v", err)
 	}
 
 	return res, nil
 }
 
 // OutplanGetsByCustomerID returns list of outplans.
-func (h *handler) OutplanGetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*outplan.Outplan, error) {
+func (h *handler) OutplanListByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*outplan.Outplan, error) {
 	filters := map[outplan.Field]any{
 		outplan.FieldCustomerID: customerID,
 		outplan.FieldDeleted:    false,
 	}
 
-	return h.OutplanGets(ctx, token, limit, filters)
+	return h.OutplanList(ctx, token, limit, filters)
 }
 
 // OutplanUpdate updates outplan fields.

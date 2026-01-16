@@ -151,7 +151,7 @@ func (h *handler) MessagechatGet(ctx context.Context, id uuid.UUID) (*messagecha
 }
 
 // MessagechatGets returns list of message chat.
-func (h *handler) MessagechatGets(ctx context.Context, token string, size uint64, filters map[messagechat.Field]any) ([]*messagechat.Messagechat, error) {
+func (h *handler) MessagechatList(ctx context.Context, token string, size uint64, filters map[messagechat.Field]any) ([]*messagechat.Messagechat, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}

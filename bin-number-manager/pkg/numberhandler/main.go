@@ -28,7 +28,7 @@ type NumberHandler interface {
 
 	Create(ctx context.Context, customerID uuid.UUID, num string, callFlowID, messageFlowID uuid.UUID, name, detail string) (*number.Number, error)
 	Get(ctx context.Context, id uuid.UUID) (*number.Number, error)
-	Gets(ctx context.Context, pageSize uint64, pageToken string, filters map[number.Field]any) ([]*number.Number, error)
+	List(ctx context.Context, pageSize uint64, pageToken string, filters map[number.Field]any) ([]*number.Number, error)
 	Delete(ctx context.Context, id uuid.UUID) (*number.Number, error)
 	Register(
 		ctx context.Context,

@@ -84,7 +84,7 @@ func (h *server) GetFlows(c *gin.Context, params openapi_server.GetFlowsParams) 
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.FlowGets(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.FlowList(c.Request.Context(), &a, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get data list. err: %v", err)
 		c.AbortWithStatus(400)

@@ -26,7 +26,7 @@ type DBHandler interface {
 	// Queue operations
 	QueueCreate(ctx context.Context, a *queue.Queue) error
 	QueueGet(ctx context.Context, id uuid.UUID) (*queue.Queue, error)
-	QueueGets(ctx context.Context, size uint64, token string, filters map[queue.Field]any) ([]*queue.Queue, error)
+	QueueList(ctx context.Context, size uint64, token string, filters map[queue.Field]any) ([]*queue.Queue, error)
 	QueueUpdate(ctx context.Context, id uuid.UUID, fields map[queue.Field]any) error
 	QueueDelete(ctx context.Context, id uuid.UUID) error
 
@@ -41,7 +41,7 @@ type DBHandler interface {
 	QueuecallCreate(ctx context.Context, a *queuecall.Queuecall) error
 	QueuecallGet(ctx context.Context, id uuid.UUID) (*queuecall.Queuecall, error)
 	QueuecallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*queuecall.Queuecall, error)
-	QueuecallGets(ctx context.Context, size uint64, token string, filters map[queuecall.Field]any) ([]*queuecall.Queuecall, error)
+	QueuecallList(ctx context.Context, size uint64, token string, filters map[queuecall.Field]any) ([]*queuecall.Queuecall, error)
 	QueuecallUpdate(ctx context.Context, id uuid.UUID, fields map[queuecall.Field]any) error
 	QueuecallDelete(ctx context.Context, id uuid.UUID) error
 

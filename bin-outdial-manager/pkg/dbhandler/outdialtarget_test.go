@@ -96,7 +96,7 @@ func Test_OutdialTargetCreate(t *testing.T) {
 	}
 }
 
-func Test_OutdialTargetGets(t *testing.T) {
+func Test_OutdialTargetList(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -164,7 +164,7 @@ func Test_OutdialTargetGets(t *testing.T) {
 				outdialtarget.FieldOutdialID: tt.outdialID,
 				outdialtarget.FieldDeleted:   false,
 			}
-			targets, err := h.OutdialTargetGets(ctx, GetCurTime(), tt.limit, filters)
+			targets, err := h.OutdialTargetList(ctx, GetCurTime(), tt.limit, filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

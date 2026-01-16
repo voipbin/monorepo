@@ -21,7 +21,7 @@ const (
 type AccountHandler interface {
 	Create(ctx context.Context, customerID uuid.UUID) (*account.Account, error)
 	Get(ctx context.Context, id uuid.UUID) (*account.Account, error)
-	Gets(ctx context.Context, token string, size uint64, filters map[account.Field]any) ([]*account.Account, error)
+	List(ctx context.Context, token string, size uint64, filters map[account.Field]any) ([]*account.Account, error)
 	Delete(ctx context.Context, id uuid.UUID) (*account.Account, error)
 
 	IncreaseFileInfo(ctx context.Context, id uuid.UUID, filecount int64, filesize int64) (*account.Account, error)

@@ -179,7 +179,7 @@ func Test_ConferencecallGetByReferenceID(t *testing.T) {
 	}
 }
 
-func Test_ConferencecallGets(t *testing.T) {
+func Test_ConferencecallList(t *testing.T) {
 
 	tests := []struct {
 		name            string
@@ -274,7 +274,7 @@ func Test_ConferencecallGets(t *testing.T) {
 				}
 			}
 
-			res, err := h.ConferencecallGets(ctx, uint64(tt.count), utilhandler.TimeGetCurTime(), tt.filters)
+			res, err := h.ConferencecallList(ctx, uint64(tt.count), utilhandler.TimeGetCurTime(), tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

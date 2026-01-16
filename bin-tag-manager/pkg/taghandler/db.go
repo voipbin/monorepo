@@ -10,16 +10,16 @@ import (
 	"monorepo/bin-tag-manager/models/tag"
 )
 
-// dbGets returns tags
-func (h *tagHandler) dbGets(ctx context.Context, size uint64, token string, filters map[tag.Field]any) ([]*tag.Tag, error) {
+// dbList returns tags
+func (h *tagHandler) dbList(ctx context.Context, size uint64, token string, filters map[tag.Field]any) ([]*tag.Tag, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "dbGets",
+		"func":    "dbList",
 		"filters": filters,
 		"size":    size,
 		"token":   token,
 	})
 
-	res, err := h.db.TagGets(ctx, size, token, filters)
+	res, err := h.db.TagList(ctx, size, token, filters)
 	if err != nil {
 		log.Errorf("Could not get tags info. err: %v", err)
 		return nil, err

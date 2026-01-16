@@ -50,7 +50,7 @@ func (h *listenHandler) processV1AccountsGet(ctx context.Context, m *sock.Reques
 		return simpleResponse(400), nil
 	}
 
-	as, err := h.accountHandler.Gets(ctx, pageSize, pageToken, filters)
+	as, err := h.accountHandler.List(ctx, pageSize, pageToken, filters)
 	if err != nil {
 		log.Errorf("Could not get accounts info. err: %v", err)
 		return simpleResponse(404), nil

@@ -131,21 +131,6 @@ func (mr *MockAccountHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockAccountHandler)(nil).Get), ctx, id)
 }
 
-// Gets mocks base method.
-func (m *MockAccountHandler) Gets(ctx context.Context, token string, size uint64, filters map[account.Field]any) ([]*account.Account, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Gets", ctx, token, size, filters)
-	ret0, _ := ret[0].([]*account.Account)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Gets indicates an expected call of Gets.
-func (mr *MockAccountHandlerMockRecorder) Gets(ctx, token, size, filters any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockAccountHandler)(nil).Gets), ctx, token, size, filters)
-}
-
 // IncreaseFileInfo mocks base method.
 func (m *MockAccountHandler) IncreaseFileInfo(ctx context.Context, id uuid.UUID, filecount, filesize int64) (*account.Account, error) {
 	m.ctrl.T.Helper()
@@ -159,6 +144,21 @@ func (m *MockAccountHandler) IncreaseFileInfo(ctx context.Context, id uuid.UUID,
 func (mr *MockAccountHandlerMockRecorder) IncreaseFileInfo(ctx, id, filecount, filesize any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IncreaseFileInfo", reflect.TypeOf((*MockAccountHandler)(nil).IncreaseFileInfo), ctx, id, filecount, filesize)
+}
+
+// List mocks base method.
+func (m *MockAccountHandler) List(ctx context.Context, token string, size uint64, filters map[account.Field]any) ([]*account.Account, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "List", ctx, token, size, filters)
+	ret0, _ := ret[0].([]*account.Account)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// List indicates an expected call of List.
+func (mr *MockAccountHandlerMockRecorder) List(ctx, token, size, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockAccountHandler)(nil).List), ctx, token, size, filters)
 }
 
 // ValidateFileInfoByCustomerID mocks base method.

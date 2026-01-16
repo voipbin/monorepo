@@ -32,7 +32,7 @@ func (h *serviceHandler) campaigncallGet(ctx context.Context, campaigncallID uui
 
 // CampaigncallGets gets the list of campaigncalls.
 // It returns list of campaigncalls if it succeed.
-func (h *serviceHandler) CampaigncallGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*cacampaigncall.WebhookMessage, error) {
+func (h *serviceHandler) CampaigncallList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*cacampaigncall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CampaigncallGets",
 		"customer_id": a.CustomerID,

@@ -29,15 +29,15 @@ func (h *chatroomHandler) Get(ctx context.Context, id uuid.UUID) (*chatroom.Chat
 	return res, nil
 }
 
-// Gets returns the chatrooms by the given filters.
-func (h *chatroomHandler) Gets(ctx context.Context, token string, limit uint64, filters map[chatroom.Field]any) ([]*chatroom.Chatroom, error) {
+// List returns the chatrooms by the given filters.
+func (h *chatroomHandler) List(ctx context.Context, token string, limit uint64, filters map[chatroom.Field]any) ([]*chatroom.Chatroom, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "Gets",
+		"func":    "List",
 		"filters": filters,
 	})
 
 	// get
-	res, err := h.db.ChatroomGets(ctx, token, limit, filters)
+	res, err := h.db.ChatroomList(ctx, token, limit, filters)
 	if err != nil {
 		log.Errorf("Could not get chatroom info. err: %v", err)
 		return nil, err

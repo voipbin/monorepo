@@ -14,7 +14,7 @@ import (
 	"monorepo/bin-route-manager/pkg/dbhandler"
 )
 
-func Test_DialrouteGets(t *testing.T) {
+func Test_DialrouteList(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -97,35 +97,35 @@ func Test_DialrouteGets(t *testing.T) {
 
 			ctx := context.Background()
 
-			// GetsByTarget for customer route base
+			// ListByTarget for customer route base
 			// First call: filtersTarget with customerID and target
 			filtersCustomerTarget := map[route.Field]any{
 				route.FieldCustomerID: tt.customerID,
 				route.FieldTarget:     tt.target,
 			}
-			mockDB.EXPECT().RouteGets(ctx, "", uint64(1000), filtersCustomerTarget).Return(tt.responseRoutesCustomerTarget, nil)
+			mockDB.EXPECT().RouteList(ctx, "", uint64(1000), filtersCustomerTarget).Return(tt.responseRoutesCustomerTarget, nil)
 			// Second call: filtersAll with customerID and TargetAll
 			filtersCustomerAll := map[route.Field]any{
 				route.FieldCustomerID: tt.customerID,
 				route.FieldTarget:     route.TargetAll,
 			}
-			mockDB.EXPECT().RouteGets(ctx, "", uint64(1000), filtersCustomerAll).Return(tt.responseRoutesCustomerAll, nil)
+			mockDB.EXPECT().RouteList(ctx, "", uint64(1000), filtersCustomerAll).Return(tt.responseRoutesCustomerAll, nil)
 
-			// GetsByTarget for default route base
+			// ListByTarget for default route base
 			// First call: filtersTarget with CustomerIDBasicRoute and target
 			filtersDefaultTarget := map[route.Field]any{
 				route.FieldCustomerID: route.CustomerIDBasicRoute,
 				route.FieldTarget:     tt.target,
 			}
-			mockDB.EXPECT().RouteGets(ctx, "", uint64(1000), filtersDefaultTarget).Return(tt.responseRoutesDefaultTarget, nil)
+			mockDB.EXPECT().RouteList(ctx, "", uint64(1000), filtersDefaultTarget).Return(tt.responseRoutesDefaultTarget, nil)
 			// Second call: filtersAll with CustomerIDBasicRoute and TargetAll
 			filtersDefaultAll := map[route.Field]any{
 				route.FieldCustomerID: route.CustomerIDBasicRoute,
 				route.FieldTarget:     route.TargetAll,
 			}
-			mockDB.EXPECT().RouteGets(ctx, "", uint64(1000), filtersDefaultAll).Return(tt.responseRoutesDefaultAll, nil)
+			mockDB.EXPECT().RouteList(ctx, "", uint64(1000), filtersDefaultAll).Return(tt.responseRoutesDefaultAll, nil)
 
-			res, err := h.DialrouteGets(ctx, tt.customerID, tt.target)
+			res, err := h.DialrouteList(ctx, tt.customerID, tt.target)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

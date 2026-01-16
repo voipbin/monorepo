@@ -51,7 +51,7 @@ func (h *listenHandler) processV1CustomersGet(ctx context.Context, m *sock.Reque
 		return simpleResponse(400), nil
 	}
 
-	tmp, err := h.customerHandler.Gets(ctx, pageSize, pageToken, filters)
+	tmp, err := h.customerHandler.List(ctx, pageSize, pageToken, filters)
 	if err != nil {
 		log.Errorf("Could not get customers info. err: %v", err)
 		return simpleResponse(500), nil

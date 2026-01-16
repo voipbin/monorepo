@@ -149,21 +149,6 @@ func (mr *MockFileHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockFileHandler)(nil).Get), ctx, id)
 }
 
-// Gets mocks base method.
-func (m *MockFileHandler) Gets(ctx context.Context, token string, size uint64, filters map[file.Field]any) ([]*file.File, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Gets", ctx, token, size, filters)
-	ret0, _ := ret[0].([]*file.File)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Gets indicates an expected call of Gets.
-func (mr *MockFileHandlerMockRecorder) Gets(ctx, token, size, filters any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockFileHandler)(nil).Gets), ctx, token, size, filters)
-}
-
 // IsExist mocks base method.
 func (m *MockFileHandler) IsExist(ctx context.Context, bucketName, filepath string) bool {
 	m.ctrl.T.Helper()
@@ -176,4 +161,19 @@ func (m *MockFileHandler) IsExist(ctx context.Context, bucketName, filepath stri
 func (mr *MockFileHandlerMockRecorder) IsExist(ctx, bucketName, filepath any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsExist", reflect.TypeOf((*MockFileHandler)(nil).IsExist), ctx, bucketName, filepath)
+}
+
+// List mocks base method.
+func (m *MockFileHandler) List(ctx context.Context, token string, size uint64, filters map[file.Field]any) ([]*file.File, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "List", ctx, token, size, filters)
+	ret0, _ := ret[0].([]*file.File)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// List indicates an expected call of List.
+func (mr *MockFileHandlerMockRecorder) List(ctx, token, size, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockFileHandler)(nil).List), ctx, token, size, filters)
 }

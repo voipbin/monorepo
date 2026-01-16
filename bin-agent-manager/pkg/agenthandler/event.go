@@ -112,7 +112,7 @@ func (h *agentHandler) EventCustomerDeleted(ctx context.Context, cu *cmcustomer.
 		agent.FieldCustomerID: cu.ID,
 		agent.FieldDeleted:    false,
 	}
-	ags, err := h.Gets(ctx, 1000, h.utilHandler.TimeGetCurTime(), filters)
+	ags, err := h.List(ctx, 1000, h.utilHandler.TimeGetCurTime(), filters)
 	if err != nil {
 		log.Errorf("Could not gets agents list. err: %v", err)
 		return errors.Wrap(err, "could not get agents list")

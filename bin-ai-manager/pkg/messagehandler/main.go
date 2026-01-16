@@ -29,7 +29,7 @@ type MessageHandler interface {
 		toolCallID string,
 	) (*message.Message, error)
 	Get(ctx context.Context, id uuid.UUID) (*message.Message, error)
-	Gets(ctx context.Context, size uint64, token string, filters map[message.Field]any) ([]*message.Message, error)
+	List(ctx context.Context, size uint64, token string, filters map[message.Field]any) ([]*message.Message, error)
 
 	EventPMMessageUserTranscription(ctx context.Context, evt *pmmessage.Message)
 	EventPMMessageBotLLM(ctx context.Context, evt *pmmessage.Message)

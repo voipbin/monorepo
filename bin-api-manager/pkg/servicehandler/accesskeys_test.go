@@ -210,7 +210,7 @@ func Test_AccesskeyGet(t *testing.T) {
 	}
 }
 
-func Test_AccesskeyGets(t *testing.T) {
+func Test_AccesskeyList(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -302,7 +302,7 @@ func Test_AccesskeyGets(t *testing.T) {
 
 			mockReq.EXPECT().CustomerV1AccesskeyList(ctx, tt.token, tt.size, tt.filters).Return(tt.response, nil)
 
-			res, err := h.AccesskeyGets(ctx, tt.agent, tt.size, tt.token)
+			res, err := h.AccesskeyList(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

@@ -41,7 +41,7 @@ type QueueHandler interface {
 	Delete(ctx context.Context, id uuid.UUID) (*queue.Queue, error)
 	Execute(ctx context.Context, id uuid.UUID)
 	Get(ctx context.Context, id uuid.UUID) (*queue.Queue, error)
-	Gets(ctx context.Context, size uint64, token string, filters map[queue.Field]any) ([]*queue.Queue, error)
+	List(ctx context.Context, size uint64, token string, filters map[queue.Field]any) ([]*queue.Queue, error)
 	UpdateBasicInfo(
 		ctx context.Context,
 		id uuid.UUID,

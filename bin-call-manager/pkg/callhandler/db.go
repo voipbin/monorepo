@@ -124,14 +124,14 @@ func (h *callHandler) Create(
 	return res, nil
 }
 
-// Gets returns list of calls.
-func (h *callHandler) Gets(ctx context.Context, size uint64, token string, filters map[call.Field]any) ([]*call.Call, error) {
+// List returns list of calls.
+func (h *callHandler) List(ctx context.Context, size uint64, token string, filters map[call.Field]any) ([]*call.Call, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "Gets",
+		"func": "List",
 		"filters": filters,
 	})
 
-	res, err := h.db.CallGets(ctx, size, token, filters)
+	res, err := h.db.CallList(ctx, size, token, filters)
 	if err != nil {
 		log.Errorf("Could not get calls. err: %v", err)
 		return nil, err

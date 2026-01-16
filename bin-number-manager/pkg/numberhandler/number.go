@@ -188,15 +188,15 @@ func (h *numberHandler) Get(ctx context.Context, id uuid.UUID) (*number.Number, 
 	return res, nil
 }
 
-// Gets returns list of numbers info of the given filters
-func (h *numberHandler) Gets(ctx context.Context, pageSize uint64, pageToken string, filters map[number.Field]any) ([]*number.Number, error) {
+// List returns list of numbers info of the given filters
+func (h *numberHandler) List(ctx context.Context, pageSize uint64, pageToken string, filters map[number.Field]any) ([]*number.Number, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":       "Gets",
+		"func":       "List",
 		"page_size":  pageSize,
 		"page_token": pageToken,
 		"filters":    filters,
 	})
-	log.Debugf("Gets.")
+	log.Debugf("List.")
 
 	res, err := h.dbList(ctx, pageSize, pageToken, filters)
 	if err != nil {

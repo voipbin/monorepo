@@ -166,7 +166,7 @@ func Test_GetFlows(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().FlowGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseFlows, nil)
+			mockSvc.EXPECT().FlowList(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseFlows, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

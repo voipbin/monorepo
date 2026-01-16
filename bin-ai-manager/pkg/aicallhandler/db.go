@@ -129,16 +129,16 @@ func (h *aicallHandler) GetByReferenceID(ctx context.Context, referenceID uuid.U
 	return res, nil
 }
 
-// Gets returns list of aicalls.
-func (h *aicallHandler) Gets(ctx context.Context, size uint64, token string, filters map[aicall.Field]any) ([]*aicall.AIcall, error) {
+// List returns list of aicalls.
+func (h *aicallHandler) List(ctx context.Context, size uint64, token string, filters map[aicall.Field]any) ([]*aicall.AIcall, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "Gets",
+		"func": "List",
 		"size":    size,
 		"token":   token,
 		"filters": filters,
 	})
 
-	res, err := h.db.AIcallGets(ctx, size, token, filters)
+	res, err := h.db.AIcallList(ctx, size, token, filters)
 	if err != nil {
 		log.Errorf("Could not get aicalls. err: %v", err)
 		return nil, err

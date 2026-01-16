@@ -51,7 +51,7 @@ func (h *listenHandler) processV1TagsGet(ctx context.Context, req *sock.Request)
 		return simpleResponse(400), nil
 	}
 
-	tmp, err := h.tagHandler.Gets(ctx, pageSize, pageToken, filters)
+	tmp, err := h.tagHandler.List(ctx, pageSize, pageToken, filters)
 	if err != nil {
 		log.Errorf("Could not get tags info. err:%v", err)
 		return simpleResponse(500), nil

@@ -93,7 +93,7 @@ func Test_ServiceAgentChatroommessageGet(t *testing.T) {
 	}
 }
 
-func Test_ServiceAgentChatroommessageGets(t *testing.T) {
+func Test_ServiceAgentChatroommessageList(t *testing.T) {
 
 	type test struct {
 		name string
@@ -182,7 +182,7 @@ func Test_ServiceAgentChatroommessageGets(t *testing.T) {
 			mockReq.EXPECT().ChatV1ChatroomGet(ctx, tt.chatroomID).Return(tt.responseChatroom, nil)
 			mockReq.EXPECT().ChatV1MessagechatroomList(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseChatroomMessages, nil)
 
-			res, err := h.ServiceAgentChatroommessageGets(ctx, tt.agent, tt.chatroomID, tt.size, tt.token)
+			res, err := h.ServiceAgentChatroommessageList(ctx, tt.agent, tt.chatroomID, tt.size, tt.token)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

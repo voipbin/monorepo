@@ -64,8 +64,8 @@ func (h *messageHandler) Get(ctx context.Context, id uuid.UUID) (*message.Messag
 	return res, nil
 }
 
-func (h *messageHandler) Gets(ctx context.Context, size uint64, token string, filters map[message.Field]any) ([]*message.Message, error) {
-	res, err := h.db.MessageGets(ctx, size, token, filters)
+func (h *messageHandler) List(ctx context.Context, size uint64, token string, filters map[message.Field]any) ([]*message.Message, error) {
+	res, err := h.db.MessageList(ctx, size, token, filters)
 	if err != nil {
 		return nil, err
 	}

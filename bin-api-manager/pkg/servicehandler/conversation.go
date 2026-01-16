@@ -57,7 +57,7 @@ func (h *serviceHandler) ConversationGetsByCustomerID(ctx context.Context, a *am
 		cvconversation.FieldCustomerID: a.CustomerID,
 	}
 
-	tmps, err := h.conversationGets(ctx, a, size, token, filters)
+	tmps, err := h.conversationList(ctx, a, size, token, filters)
 	if err != nil {
 		log.Errorf("Could not get conversations. err: %v", err)
 		return nil, errors.Wrapf(err, "Could not get conversations.")
@@ -75,7 +75,7 @@ func (h *serviceHandler) ConversationGetsByCustomerID(ctx context.Context, a *am
 
 // conversationGets gets the list of conversations.
 // It returns list of conversations if it succeed.
-func (h *serviceHandler) conversationGets(ctx context.Context, a *amagent.Agent, size uint64, token string, fields map[cvconversation.Field]any) ([]cvconversation.Conversation, error) {
+func (h *serviceHandler) conversationList(ctx context.Context, a *amagent.Agent, size uint64, token string, fields map[cvconversation.Field]any) ([]cvconversation.Conversation, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "ConversationGetsByCustomerID",
 		"agent": a,

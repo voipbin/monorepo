@@ -57,7 +57,7 @@ func (h *streamingHandler) Create(
 	return res, nil
 }
 
-// Gets returns streaming
+// List returns streaming
 func (h *streamingHandler) Get(ctx context.Context, streamingID uuid.UUID) (*streaming.Streaming, error) {
 	h.muStreaming.Lock()
 	defer h.muStreaming.Unlock()

@@ -106,16 +106,16 @@ func (h *flowHandler) Create(
 	return res, nil
 }
 
-// Gets returns list of flows
-func (h *flowHandler) Gets(ctx context.Context, token string, size uint64, filters map[flow.Field]any) ([]*flow.Flow, error) {
+// List returns list of flows
+func (h *flowHandler) List(ctx context.Context, token string, size uint64, filters map[flow.Field]any) ([]*flow.Flow, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":  "Gets",
+		"func": "List",
 		"token": token,
 		"size":  size,
 		"limit": size,
 	})
 
-	res, err := h.db.FlowGets(ctx, token, size, filters)
+	res, err := h.db.FlowList(ctx, token, size, filters)
 	if err != nil {
 		log.Errorf("Could not get flows. err: %v", err)
 		return nil, err

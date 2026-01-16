@@ -108,7 +108,7 @@ func (h *listenHandler) v1MessagechatsGet(ctx context.Context, m *sock.Request) 
 		"typed_filters": typedFilters,
 	}).Debug("v1MessagechatsGet: Converted filters to typed field map (check UUID types)")
 
-	tmp, err := h.messagechatHandler.Gets(ctx, pageToken, pageSize, typedFilters)
+	tmp, err := h.messagechatHandler.List(ctx, pageToken, pageSize, typedFilters)
 	if err != nil {
 		log.Errorf("Could not get messagechats. err: %v", err)
 		return nil, err

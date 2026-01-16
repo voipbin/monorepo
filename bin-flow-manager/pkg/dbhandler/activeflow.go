@@ -179,7 +179,7 @@ func (h *handler) ActiveflowReleaseLock(ctx context.Context, id uuid.UUID) error
 	return h.cache.ActiveflowReleaseLock(ctx, id)
 }
 
-func (h *handler) ActiveflowGets(ctx context.Context, token string, size uint64, filters map[activeflow.Field]any) ([]*activeflow.Activeflow, error) {
+func (h *handler) ActiveflowList(ctx context.Context, token string, size uint64, filters map[activeflow.Field]any) ([]*activeflow.Activeflow, error) {
 	if token == "" {
 		token = h.util.TimeGetCurTime()
 	}

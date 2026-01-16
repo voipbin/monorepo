@@ -187,7 +187,7 @@ func Test_processV1TranscribesGet(t *testing.T) {
 				transcribeHandler: mockTranscribe,
 			}
 
-			mockTranscribe.EXPECT().Gets(gomock.Any(), tt.pageSize, tt.pageToken, gomock.Any()).Return(tt.responseTranscribes, nil)
+			mockTranscribe.EXPECT().List(gomock.Any(), tt.pageSize, tt.pageToken, gomock.Any()).Return(tt.responseTranscribes, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

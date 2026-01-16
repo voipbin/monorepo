@@ -73,7 +73,7 @@ func Test_processV1SummariesGet(t *testing.T) {
 				summaryHandler: mockSummary,
 			}
 
-			mockSummary.EXPECT().Gets(gomock.Any(), tt.expectPageSize, tt.expectPageToken, gomock.Any()).Return(tt.responseSummaries, nil)
+			mockSummary.EXPECT().List(gomock.Any(), tt.expectPageSize, tt.expectPageToken, gomock.Any()).Return(tt.responseSummaries, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -191,7 +191,7 @@ func Test_v1RoutesGet(t *testing.T) {
 				providerHandler: mockProvider,
 			}
 
-			mockRoute.EXPECT().GetsByCustomerID(gomock.Any(), tt.customerID, tt.pageToken, tt.pageSize).Return(tt.responseRoutes, nil)
+			mockRoute.EXPECT().ListByCustomerID(gomock.Any(), tt.customerID, tt.pageToken, tt.pageSize).Return(tt.responseRoutes, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

@@ -91,7 +91,7 @@ func Test_AImessageCreate(t *testing.T) {
 	}
 }
 
-func Test_AImessageGetsByAIcallID(t *testing.T) {
+func Test_AImessageListByAIcallID(t *testing.T) {
 
 	tests := []struct {
 		name string

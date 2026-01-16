@@ -159,7 +159,7 @@ func (h *serviceHandler) storageFileCreate(
 
 // StorageFileGets gets the list of file of the given customer id.
 // It returns list of files if it succeed.
-func (h *serviceHandler) StorageFileGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*smfile.WebhookMessage, error) {
+func (h *serviceHandler) StorageFileList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*smfile.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "StorageFileGets",
 		"customer_id": a.CustomerID,

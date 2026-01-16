@@ -118,14 +118,14 @@ func (h *trunkHandler) GetByDomainName(ctx context.Context, domainName string) (
 	return res, nil
 }
 
-// Gets returns list of trunks
-func (h *trunkHandler) Gets(ctx context.Context, token string, limit uint64, filters map[trunk.Field]any) ([]*trunk.Trunk, error) {
+// List returns list of trunks
+func (h *trunkHandler) List(ctx context.Context, token string, limit uint64, filters map[trunk.Field]any) ([]*trunk.Trunk, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "Gets",
+		"func":    "List",
 		"filters": filters,
 	})
 
-	res, err := h.db.TrunkGets(ctx, limit, token, filters)
+	res, err := h.db.TrunkList(ctx, limit, token, filters)
 	if err != nil {
 		log.Errorf("Could not get trunks. err: %v", err)
 		return nil, err

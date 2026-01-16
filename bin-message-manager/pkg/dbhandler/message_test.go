@@ -358,7 +358,7 @@ func Test_MessageUpdateTargets(t *testing.T) {
 	}
 }
 
-func Test_MessageGets(t *testing.T) {
+func Test_MessageList(t *testing.T) {
 
 	tests := []struct {
 		name     string
@@ -431,7 +431,7 @@ func Test_MessageGets(t *testing.T) {
 				}
 			}
 
-			res, err := h.MessageGets(ctx, utilhandler.TimeGetCurTime(), 10, tt.filters)
+			res, err := h.MessageList(ctx, utilhandler.TimeGetCurTime(), 10, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

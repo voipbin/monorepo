@@ -144,7 +144,7 @@ func Test_v1MessagechatroomsGet(t *testing.T) {
 				messagechatroomHandler: mockMessagechatroom,
 			}
 
-			mockMessagechatroom.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, gomock.Any()).Return(tt.responseMessagechatrooms, nil)
+			mockMessagechatroom.EXPECT().List(gomock.Any(), tt.pageToken, tt.pageSize, gomock.Any()).Return(tt.responseMessagechatrooms, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

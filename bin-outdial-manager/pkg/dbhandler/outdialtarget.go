@@ -303,8 +303,8 @@ func (h *handler) OutdialTargetGet(ctx context.Context, id uuid.UUID) (*outdialt
 	return res, nil
 }
 
-// OutdialTargetGets returns list of outdialtargets.
-func (h *handler) OutdialTargetGets(ctx context.Context, token string, size uint64, filters map[outdialtarget.Field]any) ([]*outdialtarget.OutdialTarget, error) {
+// OutdialTargetList returns list of outdialtargets.
+func (h *handler) OutdialTargetList(ctx context.Context, token string, size uint64, filters map[outdialtarget.Field]any) ([]*outdialtarget.OutdialTarget, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}
@@ -320,17 +320,17 @@ func (h *handler) OutdialTargetGets(ctx context.Context, token string, size uint
 
 	sb, err := commondatabasehandler.ApplyFields(sb, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not apply filters. OutdialTargetGets. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. OutdialTargetList. err: %v", err)
 	}
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. OutdialTargetGets. err: %v", err)
+		return nil, fmt.Errorf("could not build query. OutdialTargetList. err: %v", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. OutdialTargetGets. err: %v", err)
+		return nil, fmt.Errorf("could not query. OutdialTargetList. err: %v", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -340,12 +340,12 @@ func (h *handler) OutdialTargetGets(ctx context.Context, token string, size uint
 	for rows.Next() {
 		u, err := h.outdialTargetGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not get data. OutdialTargetGets, err: %v", err)
+			return nil, fmt.Errorf("could not get data. OutdialTargetList, err: %v", err)
 		}
 		res = append(res, u)
 	}
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error. OutdialTargetGets. err: %v", err)
+		return nil, fmt.Errorf("rows iteration error. OutdialTargetList. err: %v", err)
 	}
 
 	return res, nil

@@ -201,7 +201,7 @@ func Test_processV1QueuesGet(t *testing.T) {
 				queueHandler: mockQueue,
 			}
 
-			mockQueue.EXPECT().Gets(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseQueues, nil)
+			mockQueue.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseQueues, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

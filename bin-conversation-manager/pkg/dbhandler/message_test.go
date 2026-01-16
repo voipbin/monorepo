@@ -112,7 +112,7 @@ func Test_MessageCreate(t *testing.T) {
 	}
 }
 
-func Test_MessageGets(t *testing.T) {
+func Test_MessageList(t *testing.T) {
 
 	tests := []struct {
 		name     string
@@ -219,7 +219,7 @@ func Test_MessageGets(t *testing.T) {
 				}
 			}
 
-			res, err := h.MessageGets(ctx, tt.token, tt.limit, tt.filters)
+			res, err := h.MessageList(ctx, tt.token, tt.limit, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

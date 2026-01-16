@@ -193,7 +193,7 @@ func Test_GetBillingAccounts(t *testing.T) {
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().BillingAccountGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.resBillingAccounts, nil)
+			mockSvc.EXPECT().BillingAccountList(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.resBillingAccounts, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

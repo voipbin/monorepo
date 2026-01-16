@@ -155,8 +155,8 @@ func (h *handler) ProviderGet(ctx context.Context, id uuid.UUID) (*provider.Prov
 	return res, nil
 }
 
-// ProviderGets returns list of providers.
-func (h *handler) ProviderGets(ctx context.Context, token string, limit uint64, filters map[provider.Field]any) ([]*provider.Provider, error) {
+// ProviderList returns list of providers.
+func (h *handler) ProviderList(ctx context.Context, token string, limit uint64, filters map[provider.Field]any) ([]*provider.Provider, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}

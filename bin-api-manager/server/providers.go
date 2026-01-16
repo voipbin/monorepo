@@ -41,7 +41,7 @@ func (h *server) GetProviders(c *gin.Context, params openapi_server.GetProviders
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.ProviderGets(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.ProviderList(c.Request.Context(), &a, pageSize, pageToken)
 	if err != nil {
 		logrus.Errorf("Could not get providers info. err: %v", err)
 		c.AbortWithStatus(400)

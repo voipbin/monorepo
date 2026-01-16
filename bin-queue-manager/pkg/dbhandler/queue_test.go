@@ -123,7 +123,7 @@ func Test_QueueCreate(t *testing.T) {
 	}
 }
 
-func Test_QueueGets(t *testing.T) {
+func Test_QueueList(t *testing.T) {
 	type test struct {
 		name string
 		data []*queue.Queue
@@ -227,7 +227,7 @@ func Test_QueueGets(t *testing.T) {
 				}
 			}
 
-			res, err := h.QueueGets(ctx, tt.size, tt.token, tt.filters)
+			res, err := h.QueueList(ctx, tt.size, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. UserGet expect: ok, got: %v", err)
 			}

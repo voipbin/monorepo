@@ -732,7 +732,7 @@ func Test_GroupcallSetCallIDsAndCallCountAndDialIndex(t *testing.T) {
 	}
 }
 
-func Test_GroupcallGets(t *testing.T) {
+func Test_GroupcallList(t *testing.T) {
 
 	type test struct {
 		name       string
@@ -839,7 +839,7 @@ func Test_GroupcallGets(t *testing.T) {
 				_ = h.GroupcallCreate(ctx, gc)
 			}
 
-			res, err := h.GroupcallGets(ctx, 10, utilhandler.TimeGetCurTime(), tt.filters)
+			res, err := h.GroupcallList(ctx, 10, utilhandler.TimeGetCurTime(), tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

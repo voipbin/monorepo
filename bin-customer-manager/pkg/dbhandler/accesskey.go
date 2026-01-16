@@ -155,7 +155,7 @@ func (h *handler) AccesskeyGet(ctx context.Context, id uuid.UUID) (*accesskey.Ac
 }
 
 // AccesskeyGets returns accesskeys.
-func (h *handler) AccesskeyGets(ctx context.Context, size uint64, token string, filters map[accesskey.Field]any) ([]*accesskey.Accesskey, error) {
+func (h *handler) AccesskeyList(ctx context.Context, size uint64, token string, filters map[accesskey.Field]any) ([]*accesskey.Accesskey, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}

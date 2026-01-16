@@ -22,7 +22,7 @@ func (h *confbridgeHandler) EventCUCustomerDeleted(ctx context.Context, cu *cucu
 		"customer_id": cu.ID.String(),
 		"deleted":     "false",
 	}
-	confbridges, err := h.Gets(ctx, 1000, "", filters)
+	confbridges, err := h.List(ctx, 1000, "", filters)
 	if err != nil {
 		log.Errorf("Could not gets calls list. err: %v", err)
 		return errors.Wrap(err, "could not get calls list")

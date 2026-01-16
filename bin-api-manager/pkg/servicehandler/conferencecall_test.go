@@ -83,7 +83,7 @@ func Test_ConferencecallGet(t *testing.T) {
 	}
 }
 
-func Test_ConferencecallGets(t *testing.T) {
+func Test_ConferencecallList(t *testing.T) {
 
 	tests := []struct {
 		name  string
@@ -145,7 +145,7 @@ func Test_ConferencecallGets(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().ConferenceV1ConferencecallList(ctx, tt.token, tt.limit, tt.expectFilters).Return(tt.response, nil)
-			res, err := h.ConferencecallGets(ctx, tt.agent, tt.limit, tt.token)
+			res, err := h.ConferencecallList(ctx, tt.agent, tt.limit, tt.token)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

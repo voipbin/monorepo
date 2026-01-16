@@ -10,11 +10,11 @@ import (
 	"monorepo/bin-queue-manager/models/queue"
 )
 
-// Gets returns queues
-func (h *queueHandler) Gets(ctx context.Context, size uint64, token string, filters map[queue.Field]any) ([]*queue.Queue, error) {
-	log := logrus.WithField("func", "Gets")
+// List returns queues
+func (h *queueHandler) List(ctx context.Context, size uint64, token string, filters map[queue.Field]any) ([]*queue.Queue, error) {
+	log := logrus.WithField("func", "List")
 
-	res, err := h.db.QueueGets(ctx, size, token, filters)
+	res, err := h.db.QueueList(ctx, size, token, filters)
 	if err != nil {
 		log.Errorf("Could not get queues info. err: %v", err)
 		return nil, err

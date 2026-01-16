@@ -127,17 +127,17 @@ func (h *campaigncallHandler) GetByActiveflowID(ctx context.Context, activeflowI
 	return res, nil
 }
 
-// Gets returns list of campaigncalls with filters
-func (h *campaigncallHandler) Gets(ctx context.Context, token string, limit uint64, filters map[campaigncall.Field]any) ([]*campaigncall.Campaigncall, error) {
+// List returns list of campaigncalls with filters
+func (h *campaigncallHandler) List(ctx context.Context, token string, limit uint64, filters map[campaigncall.Field]any) ([]*campaigncall.Campaigncall, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "Gets",
+		"func":    "List",
 		"token":   token,
 		"limit":   limit,
 		"filters": filters,
 	})
 	log.Debug("Getting campaigncalls with filters.")
 
-	res, err := h.db.CampaigncallGets(ctx, token, limit, filters)
+	res, err := h.db.CampaigncallList(ctx, token, limit, filters)
 	if err != nil {
 		log.Errorf("Could not get campaigncalls. err: %v", err)
 		return nil, err
@@ -146,8 +146,8 @@ func (h *campaigncallHandler) Gets(ctx context.Context, token string, limit uint
 	return res, nil
 }
 
-// GetsByCustomerID returns list of campaigncall
-func (h *campaigncallHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error) {
+// ListByCustomerID returns list of campaigncall
+func (h *campaigncallHandler) ListByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "GetsByCustomerID",
 		"campaign_id": customerID,
@@ -156,7 +156,7 @@ func (h *campaigncallHandler) GetsByCustomerID(ctx context.Context, customerID u
 	})
 	log.Debug("Getting campaigncalls.")
 
-	res, err := h.db.CampaigncallGetsByCustomerID(ctx, customerID, token, limit)
+	res, err := h.db.CampaigncallListByCustomerID(ctx, customerID, token, limit)
 	if err != nil {
 		log.Errorf("Could not get campaigncalls. err: %v", err)
 		return nil, err
@@ -165,8 +165,8 @@ func (h *campaigncallHandler) GetsByCustomerID(ctx context.Context, customerID u
 	return res, nil
 }
 
-// GetsByCampaignID returns list of campaigncall
-func (h *campaigncallHandler) GetsByCampaignID(ctx context.Context, campaignID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error) {
+// ListByCampaignID returns list of campaigncall
+func (h *campaigncallHandler) ListByCampaignID(ctx context.Context, campaignID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "GetsByCampaignID",
 		"campaign_id": campaignID,
@@ -175,7 +175,7 @@ func (h *campaigncallHandler) GetsByCampaignID(ctx context.Context, campaignID u
 	})
 	log.Debug("Getting campaigncalls.")
 
-	res, err := h.db.CampaigncallGetsByCampaignID(ctx, campaignID, token, limit)
+	res, err := h.db.CampaigncallListByCampaignID(ctx, campaignID, token, limit)
 	if err != nil {
 		log.Errorf("Could not get campaigncalls. err: %v", err)
 		return nil, err
@@ -184,8 +184,8 @@ func (h *campaigncallHandler) GetsByCampaignID(ctx context.Context, campaignID u
 	return res, nil
 }
 
-// GetsByCampaignIDAndStatus returns list of campaigncalls
-func (h *campaigncallHandler) GetsByCampaignIDAndStatus(ctx context.Context, campaignID uuid.UUID, status campaigncall.Status, token string, limit uint64) ([]*campaigncall.Campaigncall, error) {
+// ListByCampaignIDAndStatus returns list of campaigncalls
+func (h *campaigncallHandler) ListByCampaignIDAndStatus(ctx context.Context, campaignID uuid.UUID, status campaigncall.Status, token string, limit uint64) ([]*campaigncall.Campaigncall, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func":        "GetsByCampaignIDAndStatus",
@@ -195,7 +195,7 @@ func (h *campaigncallHandler) GetsByCampaignIDAndStatus(ctx context.Context, cam
 		})
 	log.Debug("Getting campaigncalls.")
 
-	res, err := h.db.CampaigncallGetsByCampaignIDAndStatus(ctx, campaignID, status, token, limit)
+	res, err := h.db.CampaigncallListByCampaignIDAndStatus(ctx, campaignID, status, token, limit)
 	if err != nil {
 		log.Errorf("Could not get GetsByCampaignIDAndStatus. err: %v", err)
 		return nil, err
@@ -205,7 +205,7 @@ func (h *campaigncallHandler) GetsByCampaignIDAndStatus(ctx context.Context, cam
 }
 
 // GetsOngoingByCampaignID returns list of ongoing campaigncalls
-func (h *campaigncallHandler) GetsOngoingByCampaignID(ctx context.Context, campaignID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error) {
+func (h *campaigncallHandler) ListOngoingByCampaignID(ctx context.Context, campaignID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "GetsOngoingByCampaignID",
 		"campaign_id": campaignID,
@@ -214,7 +214,7 @@ func (h *campaigncallHandler) GetsOngoingByCampaignID(ctx context.Context, campa
 	})
 	log.Debug("Getting campaigncalls.")
 
-	res, err := h.db.CampaigncallGetsOngoingByCampaignID(ctx, campaignID, token, limit)
+	res, err := h.db.CampaigncallListOngoingByCampaignID(ctx, campaignID, token, limit)
 	if err != nil {
 		log.Errorf("Could not get GetsOngoingByCampaignID. err: %v", err)
 		return nil, err

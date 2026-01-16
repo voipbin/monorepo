@@ -89,17 +89,17 @@ func (mr *MockMessagechatroomHandlerMockRecorder) Get(ctx, id any) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockMessagechatroomHandler)(nil).Get), ctx, id)
 }
 
-// Gets mocks base method.
-func (m *MockMessagechatroomHandler) Gets(ctx context.Context, token string, size uint64, filters map[messagechatroom.Field]any) ([]*messagechatroom.Messagechatroom, error) {
+// List mocks base method.
+func (m *MockMessagechatroomHandler) List(ctx context.Context, token string, size uint64, filters map[messagechatroom.Field]any) ([]*messagechatroom.Messagechatroom, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Gets", ctx, token, size, filters)
+	ret := m.ctrl.Call(m, "List", ctx, token, size, filters)
 	ret0, _ := ret[0].([]*messagechatroom.Messagechatroom)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Gets indicates an expected call of Gets.
-func (mr *MockMessagechatroomHandlerMockRecorder) Gets(ctx, token, size, filters any) *gomock.Call {
+// List indicates an expected call of List.
+func (mr *MockMessagechatroomHandlerMockRecorder) List(ctx, token, size, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockMessagechatroomHandler)(nil).Gets), ctx, token, size, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockMessagechatroomHandler)(nil).List), ctx, token, size, filters)
 }

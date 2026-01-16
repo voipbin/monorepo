@@ -85,7 +85,7 @@ func (h *listenHandler) v1AccountsGet(ctx context.Context, m *sock.Request) (*so
 	}
 
 	// gets the list of accounts
-	tmp, err := h.accountHandler.Gets(ctx, pageToken, pageSize, filters)
+	tmp, err := h.accountHandler.List(ctx, pageToken, pageSize, filters)
 	if err != nil {
 		log.Errorf("Could not get accounts. err: %v", err)
 		return nil, err

@@ -91,7 +91,7 @@ func Test_EventCUCustomerDeleted(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AccountGets(ctx, uint64(1000), "", tt.expectFilters).Return(tt.responseAccounts, nil)
+			mockDB.EXPECT().AccountList(ctx, uint64(1000), "", tt.expectFilters).Return(tt.responseAccounts, nil)
 
 			for _, a := range tt.responseAccounts {
 				mockDB.EXPECT().AccountDelete(ctx, a.ID).Return(nil)

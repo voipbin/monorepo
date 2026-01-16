@@ -260,7 +260,7 @@ func Test_GetAgents(t *testing.T) {
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().AgentGets(req.Context(), &tt.agent, tt.expectedPageSize, tt.expectedPageToken, tt.expectedFilters).Return(tt.responseAgents, nil)
+			mockSvc.EXPECT().AgentList(req.Context(), &tt.agent, tt.expectedPageSize, tt.expectedPageToken, tt.expectedFilters).Return(tt.responseAgents, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

@@ -82,7 +82,7 @@ func Test_TagCreate(t *testing.T) {
 	}
 }
 
-func Test_TagGets(t *testing.T) {
+func Test_TagList(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -175,7 +175,7 @@ func Test_TagGets(t *testing.T) {
 
 			mockReq.EXPECT().TagV1TagList(ctx, tt.token, tt.size, gomock.Any()).Return(tt.response, nil)
 
-			res, err := h.TagGets(ctx, tt.agent, tt.size, tt.token)
+			res, err := h.TagList(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

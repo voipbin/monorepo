@@ -339,7 +339,7 @@ func Test_EventCUCustomerDeleted(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().QueuecallGets(ctx, uint64(1000), "", tt.expectFilters).Return(tt.responseQueuecalls, nil)
+			mockDB.EXPECT().QueuecallList(ctx, uint64(1000), "", tt.expectFilters).Return(tt.responseQueuecalls, nil)
 
 			// kick
 			for _, qc := range tt.responseQueuecalls {

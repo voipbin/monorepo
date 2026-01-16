@@ -14,14 +14,14 @@ import (
 	"monorepo/bin-queue-manager/models/queuecall"
 )
 
-// Gets returns queuecalls of the given customer_id
-func (h *queuecallHandler) Gets(ctx context.Context, size uint64, token string, filters map[queuecall.Field]any) ([]*queuecall.Queuecall, error) {
+// List returns queuecalls of the given customer_id
+func (h *queuecallHandler) List(ctx context.Context, size uint64, token string, filters map[queuecall.Field]any) ([]*queuecall.Queuecall, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "Gets",
+		"func":    "List",
 		"filters": filters,
 	})
 
-	res, err := h.db.QueuecallGets(ctx, size, token, filters)
+	res, err := h.db.QueuecallList(ctx, size, token, filters)
 	if err != nil {
 		log.Errorf("Could not get queuecalls info. err: %v", err)
 		return nil, err

@@ -180,7 +180,7 @@ func Test_FlowCreate(t *testing.T) {
 	}
 }
 
-func Test_FlowGets(t *testing.T) {
+func Test_FlowList(t *testing.T) {
 
 	tests := []struct {
 		name  string
@@ -308,7 +308,7 @@ func Test_FlowGets(t *testing.T) {
 				}
 			}
 
-			res, err := h.FlowGets(ctx, utilhandler.TimeGetCurTime(), tt.size, tt.filters)
+			res, err := h.FlowList(ctx, utilhandler.TimeGetCurTime(), tt.size, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

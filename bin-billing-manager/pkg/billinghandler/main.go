@@ -35,7 +35,7 @@ type BillingHandler interface {
 	) (*billing.Billing, error)
 	Get(ctx context.Context, id uuid.UUID) (*billing.Billing, error)
 	GetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*billing.Billing, error)
-	Gets(ctx context.Context, size uint64, token string, filters map[billing.Field]any) ([]*billing.Billing, error)
+	List(ctx context.Context, size uint64, token string, filters map[billing.Field]any) ([]*billing.Billing, error)
 	UpdateStatusEnd(ctx context.Context, id uuid.UUID, billingDuration float32, tmBillingEnd string) (*billing.Billing, error)
 
 	EventCMCallProgressing(ctx context.Context, c *cmcall.Call) error

@@ -150,8 +150,8 @@ func (h *handler) AccountGet(ctx context.Context, id uuid.UUID) (*account.Accoun
 	return res, nil
 }
 
-// AccountGets returns list of accounts.
-func (h *handler) AccountGets(ctx context.Context, token string, size uint64, filters map[account.Field]any) ([]*account.Account, error) {
+// AccountList returns list of accounts.
+func (h *handler) AccountList(ctx context.Context, token string, size uint64, filters map[account.Field]any) ([]*account.Account, error) {
 	if token == "" {
 		token = h.util.TimeGetCurTime()
 	}

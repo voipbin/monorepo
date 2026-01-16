@@ -85,19 +85,19 @@ func (mr *MockDBHandlerMockRecorder) TagGet(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TagGet", reflect.TypeOf((*MockDBHandler)(nil).TagGet), ctx, id)
 }
 
-// TagGets mocks base method.
-func (m *MockDBHandler) TagGets(ctx context.Context, size uint64, token string, filters map[tag.Field]any) ([]*tag.Tag, error) {
+// TagList mocks base method.
+func (m *MockDBHandler) TagList(ctx context.Context, size uint64, token string, filters map[tag.Field]any) ([]*tag.Tag, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TagGets", ctx, size, token, filters)
+	ret := m.ctrl.Call(m, "TagList", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*tag.Tag)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// TagGets indicates an expected call of TagGets.
-func (mr *MockDBHandlerMockRecorder) TagGets(ctx, size, token, filters any) *gomock.Call {
+// TagList indicates an expected call of TagList.
+func (mr *MockDBHandlerMockRecorder) TagList(ctx, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TagGets", reflect.TypeOf((*MockDBHandler)(nil).TagGets), ctx, size, token, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TagList", reflect.TypeOf((*MockDBHandler)(nil).TagList), ctx, size, token, filters)
 }
 
 // TagSetBasicInfo mocks base method.

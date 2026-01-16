@@ -112,7 +112,7 @@ func (h *serviceHandler) TrunkGet(ctx context.Context, a *amagent.Agent, id uuid
 
 // TrunkGets gets the list of trunks of the given customer id.
 // It returns list of trunks if it succeed.
-func (h *serviceHandler) TrunkGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*rmtrunk.WebhookMessage, error) {
+func (h *serviceHandler) TrunkList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*rmtrunk.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"fucn":        "TrunkGets",
 		"customer_id": a.CustomerID,

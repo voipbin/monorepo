@@ -189,7 +189,7 @@ func Test_v1ProvidersGet(t *testing.T) {
 				providerHandler: mockProvider,
 			}
 
-			mockProvider.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize).Return(tt.responseProviders, nil)
+			mockProvider.EXPECT().List(gomock.Any(), tt.pageToken, tt.pageSize).Return(tt.responseProviders, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

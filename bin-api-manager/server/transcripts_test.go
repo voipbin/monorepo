@@ -80,7 +80,7 @@ func Test_transcriptsGET(t *testing.T) {
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().TranscriptGets(req.Context(), &tt.agent, tt.expectTranscribeID).Return(tt.responseTranscripts, nil)
+			mockSvc.EXPECT().TranscriptList(req.Context(), &tt.agent, tt.expectTranscribeID).Return(tt.responseTranscripts, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

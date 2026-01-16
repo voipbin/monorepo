@@ -17,7 +17,7 @@ import (
 type DBHandler interface {
 	EmailCreate(ctx context.Context, e *email.Email) error
 	EmailGet(ctx context.Context, id uuid.UUID) (*email.Email, error)
-	EmailGets(ctx context.Context, token string, size uint64, filters map[email.Field]any) ([]*email.Email, error)
+	EmailList(ctx context.Context, token string, size uint64, filters map[email.Field]any) ([]*email.Email, error)
 	EmailDelete(ctx context.Context, id uuid.UUID) error
 	EmailUpdate(ctx context.Context, id uuid.UUID, fields map[email.Field]any) error
 	EmailUpdateStatus(ctx context.Context, id uuid.UUID, status email.Status) error

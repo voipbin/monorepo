@@ -49,7 +49,7 @@ type ConfbridgeHandler interface {
 	Delete(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error)
 	UpdateExternalMediaID(ctx context.Context, id uuid.UUID, externalMediaID uuid.UUID) (*confbridge.Confbridge, error)
 	Get(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error)
-	Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*confbridge.Confbridge, error)
+	List(ctx context.Context, size uint64, token string, filters map[string]string) ([]*confbridge.Confbridge, error)
 	Join(ctx context.Context, confbridgeID, callID uuid.UUID) error
 	Joined(ctx context.Context, cn *channel.Channel, br *bridge.Bridge) error
 	Kick(ctx context.Context, id, callID uuid.UUID) error

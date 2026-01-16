@@ -349,8 +349,8 @@ func (h *handler) ExtensionUpdate(ctx context.Context, id uuid.UUID, fields map[
 	return nil
 }
 
-// ExtensionGets returns list extensions.
-func (h *handler) ExtensionGets(ctx context.Context, size uint64, token string, filters map[extension.Field]any) ([]*extension.Extension, error) {
+// ExtensionList returns list extensions.
+func (h *handler) ExtensionList(ctx context.Context, size uint64, token string, filters map[extension.Field]any) ([]*extension.Extension, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}

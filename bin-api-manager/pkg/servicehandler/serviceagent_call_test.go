@@ -14,7 +14,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func Test_ServiceAgentCallGets(t *testing.T) {
+func Test_ServiceAgentCallList(t *testing.T) {
 
 	type test struct {
 		name string
@@ -90,7 +90,7 @@ func Test_ServiceAgentCallGets(t *testing.T) {
 
 			mockReq.EXPECT().CallV1CallList(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseCalls, nil)
 
-			res, err := h.ServiceAgentCallGets(ctx, tt.agent, tt.size, tt.token)
+			res, err := h.ServiceAgentCallList(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

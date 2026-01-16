@@ -23,7 +23,7 @@ import (
 	"monorepo/bin-queue-manager/pkg/queuehandler"
 )
 
-func Test_Gets(t *testing.T) {
+func Test_List(t *testing.T) {
 	tests := []struct {
 		name string
 
@@ -79,9 +79,9 @@ func Test_Gets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().QueuecallGets(gomock.Any(), tt.size, tt.token, tt.filters).Return(tt.response, nil)
+			mockDB.EXPECT().QueuecallList(gomock.Any(), tt.size, tt.token, tt.filters).Return(tt.response, nil)
 
-			res, err := h.Gets(ctx, tt.size, tt.token, tt.filters)
+			res, err := h.List(ctx, tt.size, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

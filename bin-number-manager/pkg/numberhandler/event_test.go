@@ -80,7 +80,7 @@ func Test_EventCustomerDeleted(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().NumberGets(ctx, uint64(10000), gomock.Any(), tt.expectFilter).Return(tt.responseNumbers, nil)
+			mockDB.EXPECT().NumberList(ctx, uint64(10000), gomock.Any(), tt.expectFilter).Return(tt.responseNumbers, nil)
 
 			for _, nb := range tt.responseNumbers {
 
@@ -206,7 +206,7 @@ func Test_EventFlowDeleted(t *testing.T) {
 			ctx := context.Background()
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
-			mockDB.EXPECT().NumberGets(gomock.Any(), gomock.Any(), gomock.Any(), tt.expectFiltersCallFlow).Return(tt.responseNumbersCallFlow, nil)
+			mockDB.EXPECT().NumberList(gomock.Any(), gomock.Any(), gomock.Any(), tt.expectFiltersCallFlow).Return(tt.responseNumbersCallFlow, nil)
 			for _, num := range tt.responseNumbersCallFlow {
 				mockDB.EXPECT().NumberUpdate(gomock.Any(), num.ID, map[number.Field]any{
 					number.FieldCallFlowID: uuid.Nil,
@@ -214,7 +214,7 @@ func Test_EventFlowDeleted(t *testing.T) {
 			}
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
-			mockDB.EXPECT().NumberGets(gomock.Any(), gomock.Any(), gomock.Any(), tt.expectFiltersMessageFlow).Return(tt.responseNumbersMessageFlow, nil)
+			mockDB.EXPECT().NumberList(gomock.Any(), gomock.Any(), gomock.Any(), tt.expectFiltersMessageFlow).Return(tt.responseNumbersMessageFlow, nil)
 			for _, num := range tt.responseNumbersMessageFlow {
 				mockDB.EXPECT().NumberUpdate(gomock.Any(), num.ID, map[number.Field]any{
 					number.FieldMessageFlowID: uuid.Nil,

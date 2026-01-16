@@ -123,7 +123,7 @@ func Test_ConversationCreate(t *testing.T) {
 	}
 }
 
-func Test_ConversationGets(t *testing.T) {
+func Test_ConversationList(t *testing.T) {
 
 	tests := []struct {
 		name          string
@@ -250,7 +250,7 @@ func Test_ConversationGets(t *testing.T) {
 				}
 			}
 
-			res, err := h.ConversationGets(ctx, tt.limit, tt.token, tt.filters)
+			res, err := h.ConversationList(ctx, tt.limit, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

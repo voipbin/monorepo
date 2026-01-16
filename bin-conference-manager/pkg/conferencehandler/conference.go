@@ -113,9 +113,9 @@ func (h *conferenceHandler) Create(
 	return res, nil
 }
 
-// Gets returns list of conferences.
-func (h *conferenceHandler) Gets(ctx context.Context, size uint64, token string, filters map[conference.Field]any) ([]*conference.Conference, error) {
-	res, err := h.db.ConferenceGets(ctx, size, token, filters)
+// List returns list of conferences.
+func (h *conferenceHandler) List(ctx context.Context, size uint64, token string, filters map[conference.Field]any) ([]*conference.Conference, error) {
+	res, err := h.db.ConferenceList(ctx, size, token, filters)
 	if err != nil {
 		return nil, err
 	}

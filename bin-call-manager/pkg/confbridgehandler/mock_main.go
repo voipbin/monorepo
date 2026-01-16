@@ -236,21 +236,6 @@ func (mr *MockConfbridgeHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockConfbridgeHandler)(nil).Get), ctx, id)
 }
 
-// Gets mocks base method.
-func (m *MockConfbridgeHandler) Gets(ctx context.Context, size uint64, token string, filters map[string]string) ([]*confbridge.Confbridge, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Gets", ctx, size, token, filters)
-	ret0, _ := ret[0].([]*confbridge.Confbridge)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Gets indicates an expected call of Gets.
-func (mr *MockConfbridgeHandlerMockRecorder) Gets(ctx, size, token, filters any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockConfbridgeHandler)(nil).Gets), ctx, size, token, filters)
-}
-
 // Join mocks base method.
 func (m *MockConfbridgeHandler) Join(ctx context.Context, confbridgeID, callID uuid.UUID) error {
 	m.ctrl.T.Helper()
@@ -305,6 +290,21 @@ func (m *MockConfbridgeHandler) Leaved(ctx context.Context, cn *channel.Channel,
 func (mr *MockConfbridgeHandlerMockRecorder) Leaved(ctx, cn, br any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Leaved", reflect.TypeOf((*MockConfbridgeHandler)(nil).Leaved), ctx, cn, br)
+}
+
+// List mocks base method.
+func (m *MockConfbridgeHandler) List(ctx context.Context, size uint64, token string, filters map[string]string) ([]*confbridge.Confbridge, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "List", ctx, size, token, filters)
+	ret0, _ := ret[0].([]*confbridge.Confbridge)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// List indicates an expected call of List.
+func (mr *MockConfbridgeHandlerMockRecorder) List(ctx, size, token, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockConfbridgeHandler)(nil).List), ctx, size, token, filters)
 }
 
 // RecordingStart mocks base method.

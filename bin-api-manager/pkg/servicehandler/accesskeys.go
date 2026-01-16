@@ -115,7 +115,7 @@ func (h *serviceHandler) AccesskeyRawGetByToken(ctx context.Context, token strin
 // AccesskeyGets sends a request to customer-manager
 // to getting a list of accesskeys.
 // it returns list of accesskeys if it succeed.
-func (h *serviceHandler) AccesskeyGets(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*csaccesskey.WebhookMessage, error) {
+func (h *serviceHandler) AccesskeyList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*csaccesskey.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "AccesskeyGets",
 		"customer_id": a.CustomerID,

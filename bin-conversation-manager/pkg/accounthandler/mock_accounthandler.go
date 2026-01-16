@@ -87,19 +87,19 @@ func (mr *MockAccountHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockAccountHandler)(nil).Get), ctx, id)
 }
 
-// Gets mocks base method.
-func (m *MockAccountHandler) Gets(ctx context.Context, pageToken string, pageSize uint64, filters map[account.Field]any) ([]*account.Account, error) {
+// List mocks base method.
+func (m *MockAccountHandler) List(ctx context.Context, pageToken string, pageSize uint64, filters map[account.Field]any) ([]*account.Account, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Gets", ctx, pageToken, pageSize, filters)
+	ret := m.ctrl.Call(m, "List", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]*account.Account)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Gets indicates an expected call of Gets.
-func (mr *MockAccountHandlerMockRecorder) Gets(ctx, pageToken, pageSize, filters any) *gomock.Call {
+// List indicates an expected call of List.
+func (mr *MockAccountHandlerMockRecorder) List(ctx, pageToken, pageSize, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockAccountHandler)(nil).Gets), ctx, pageToken, pageSize, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockAccountHandler)(nil).List), ctx, pageToken, pageSize, filters)
 }
 
 // Update mocks base method.

@@ -12,11 +12,11 @@ import (
 	"monorepo/bin-customer-manager/pkg/dbhandler"
 )
 
-// Gets returns list of accesskeys
-func (h *accesskeyHandler) Gets(ctx context.Context, size uint64, token string, filters map[accesskey.Field]any) ([]*accesskey.Accesskey, error) {
-	log := logrus.WithField("func", "Gets")
+// List returns list of accesskeys
+func (h *accesskeyHandler) List(ctx context.Context, size uint64, token string, filters map[accesskey.Field]any) ([]*accesskey.Accesskey, error) {
+	log := logrus.WithField("func", "List")
 
-	res, err := h.db.AccesskeyGets(ctx, size, token, filters)
+	res, err := h.db.AccesskeyList(ctx, size, token, filters)
 	if err != nil {
 		log.Errorf("Could not get accesskey info. err: %v", err)
 		return nil, err
@@ -25,15 +25,15 @@ func (h *accesskeyHandler) Gets(ctx context.Context, size uint64, token string, 
 	return res, nil
 }
 
-// GetsByCustomerID returns list of accesskeys by the customer id
+// ListByCustomerID returns list of accesskeys by the customer id
 func (h *accesskeyHandler) GetsByCustomerID(ctx context.Context, size uint64, token string, customerID uuid.UUID) ([]*accesskey.Accesskey, error) {
-	log := logrus.WithField("func", "Gets")
+	log := logrus.WithField("func", "List")
 
 	filter := map[accesskey.Field]any{
 		accesskey.FieldCustomerID: customerID,
 	}
 
-	res, err := h.db.AccesskeyGets(ctx, size, token, filter)
+	res, err := h.db.AccesskeyList(ctx, size, token, filter)
 	if err != nil {
 		log.Errorf("Could not get accesskey info. err: %v", err)
 		return nil, err
@@ -63,7 +63,7 @@ func (h *accesskeyHandler) GetByToken(ctx context.Context, token string) (*acces
 		accesskey.FieldToken: token,
 	}
 
-	tmp, err := h.db.AccesskeyGets(ctx, 100, "", filter)
+	tmp, err := h.db.AccesskeyList(ctx, 100, "", filter)
 	if err != nil || len(tmp) == 0 || len(tmp) > 1 {
 		log.Errorf("Could not get accesskeys info. err: %v", err)
 		return nil, err

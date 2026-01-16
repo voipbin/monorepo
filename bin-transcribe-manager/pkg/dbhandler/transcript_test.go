@@ -109,7 +109,7 @@ func Test_TranscriptCreate(t *testing.T) {
 	}
 }
 
-func Test_TranscriptGets(t *testing.T) {
+func Test_TranscriptList(t *testing.T) {
 
 	tests := []struct {
 		name        string
@@ -228,7 +228,7 @@ func Test_TranscriptGets(t *testing.T) {
 				}
 			}
 
-			res, err := h.TranscriptGets(ctx, 10, utilhandler.TimeGetCurTime(), tt.filters)
+			res, err := h.TranscriptList(ctx, 10, utilhandler.TimeGetCurTime(), tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

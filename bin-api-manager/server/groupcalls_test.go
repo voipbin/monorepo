@@ -183,7 +183,7 @@ func Test_groupcallsGET(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().GroupcallGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseGroupcalls, nil)
+			mockSvc.EXPECT().GroupcallList(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseGroupcalls, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

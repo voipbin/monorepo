@@ -202,7 +202,7 @@ func (h *handler) RecordingGetByRecordingName(ctx context.Context, recordingName
 }
 
 // RecordingGets returns a list of records.
-func (h *handler) RecordingGets(ctx context.Context, size uint64, token string, filters map[recording.Field]any) ([]*recording.Recording, error) {
+func (h *handler) RecordingList(ctx context.Context, size uint64, token string, filters map[recording.Field]any) ([]*recording.Recording, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}

@@ -103,22 +103,7 @@ func (mr *MockAccesskeyHandlerMockRecorder) GetByToken(ctx, token any) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByToken", reflect.TypeOf((*MockAccesskeyHandler)(nil).GetByToken), ctx, token)
 }
 
-// Gets mocks base method.
-func (m *MockAccesskeyHandler) Gets(ctx context.Context, size uint64, token string, filters map[accesskey.Field]any) ([]*accesskey.Accesskey, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Gets", ctx, size, token, filters)
-	ret0, _ := ret[0].([]*accesskey.Accesskey)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Gets indicates an expected call of Gets.
-func (mr *MockAccesskeyHandlerMockRecorder) Gets(ctx, size, token, filters any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockAccesskeyHandler)(nil).Gets), ctx, size, token, filters)
-}
-
-// GetsByCustomerID mocks base method.
+// ListByCustomerID mocks base method.
 func (m *MockAccesskeyHandler) GetsByCustomerID(ctx context.Context, size uint64, token string, customerID uuid.UUID) ([]*accesskey.Accesskey, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetsByCustomerID", ctx, size, token, customerID)
@@ -127,10 +112,25 @@ func (m *MockAccesskeyHandler) GetsByCustomerID(ctx context.Context, size uint64
 	return ret0, ret1
 }
 
-// GetsByCustomerID indicates an expected call of GetsByCustomerID.
+// ListByCustomerID indicates an expected call of GetsByCustomerID.
 func (mr *MockAccesskeyHandlerMockRecorder) GetsByCustomerID(ctx, size, token, customerID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByCustomerID", reflect.TypeOf((*MockAccesskeyHandler)(nil).GetsByCustomerID), ctx, size, token, customerID)
+}
+
+// List mocks base method.
+func (m *MockAccesskeyHandler) List(ctx context.Context, size uint64, token string, filters map[accesskey.Field]any) ([]*accesskey.Accesskey, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "List", ctx, size, token, filters)
+	ret0, _ := ret[0].([]*accesskey.Accesskey)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// List indicates an expected call of List.
+func (mr *MockAccesskeyHandlerMockRecorder) List(ctx, size, token, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockAccesskeyHandler)(nil).List), ctx, size, token, filters)
 }
 
 // UpdateBasicInfo mocks base method.

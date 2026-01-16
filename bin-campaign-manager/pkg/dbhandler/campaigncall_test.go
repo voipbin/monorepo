@@ -325,7 +325,7 @@ func Test_CampaigncallGetByActiveflowID(t *testing.T) {
 	}
 }
 
-func Test_CampaigncallGetsByCustomerID(t *testing.T) {
+func Test_CampaigncallListByCustomerID(t *testing.T) {
 	tests := []struct {
 		name string
 		data []*campaigncall.Campaigncall
@@ -390,7 +390,7 @@ func Test_CampaigncallGetsByCustomerID(t *testing.T) {
 				}
 			}
 
-			res, err := h.CampaigncallGetsByCustomerID(ctx, tt.customerID, tt.token, tt.limit)
+			res, err := h.CampaigncallListByCustomerID(ctx, tt.customerID, tt.token, tt.limit)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -402,7 +402,7 @@ func Test_CampaigncallGetsByCustomerID(t *testing.T) {
 	}
 }
 
-func Test_CampaigncallGetsByCampaignID(t *testing.T) {
+func Test_CampaigncallListByCampaignID(t *testing.T) {
 	tests := []struct {
 		name          string
 		campaigncalls []*campaigncall.Campaigncall
@@ -624,7 +624,7 @@ func Test_CampaigncallGetsByCampaignID(t *testing.T) {
 				}
 			}
 
-			res, err := h.CampaigncallGetsByCampaignID(ctx, tt.campaignID, tt.token, tt.limit)
+			res, err := h.CampaigncallListByCampaignID(ctx, tt.campaignID, tt.token, tt.limit)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -636,7 +636,7 @@ func Test_CampaigncallGetsByCampaignID(t *testing.T) {
 	}
 }
 
-func Test_CampaigncallGetsByCampaignIDAndStatus(t *testing.T) {
+func Test_CampaigncallListByCampaignIDAndStatus(t *testing.T) {
 	tests := []struct {
 		name          string
 		campaigncalls []*campaigncall.Campaigncall
@@ -861,7 +861,7 @@ func Test_CampaigncallGetsByCampaignIDAndStatus(t *testing.T) {
 				}
 			}
 
-			res, err := h.CampaigncallGetsByCampaignIDAndStatus(ctx, tt.campaignID, tt.status, tt.token, tt.limit)
+			res, err := h.CampaigncallListByCampaignIDAndStatus(ctx, tt.campaignID, tt.status, tt.token, tt.limit)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -873,7 +873,7 @@ func Test_CampaigncallGetsByCampaignIDAndStatus(t *testing.T) {
 	}
 }
 
-func Test_CampaigncallGetsOngoingByCampaignID(t *testing.T) {
+func Test_CampaigncallListOngoingByCampaignID(t *testing.T) {
 	tests := []struct {
 		name          string
 		campaigncalls []*campaigncall.Campaigncall
@@ -1095,7 +1095,7 @@ func Test_CampaigncallGetsOngoingByCampaignID(t *testing.T) {
 				}
 			}
 
-			res, err := h.CampaigncallGetsOngoingByCampaignID(ctx, tt.campaignID, tt.token, tt.limit)
+			res, err := h.CampaigncallListOngoingByCampaignID(ctx, tt.campaignID, tt.token, tt.limit)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

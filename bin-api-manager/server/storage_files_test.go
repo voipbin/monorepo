@@ -231,7 +231,7 @@ func Test_GetStorageFiles(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().StorageFileGets(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseExtension, nil)
+			mockSvc.EXPECT().StorageFileList(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseExtension, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

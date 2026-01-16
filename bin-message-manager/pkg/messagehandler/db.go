@@ -11,13 +11,13 @@ import (
 )
 
 // dbGets returns list of messges info with filters
-func (h *messageHandler) dbGets(ctx context.Context, token string, size uint64, filters map[message.Field]any) ([]*message.Message, error) {
+func (h *messageHandler) dbList(ctx context.Context, token string, size uint64, filters map[message.Field]any) ([]*message.Message, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "dbGets",
 		"filters": filters,
 	})
 
-	res, err := h.db.MessageGets(ctx, token, size, filters)
+	res, err := h.db.MessageList(ctx, token, size, filters)
 	if err != nil {
 		log.Errorf("Could not get messages. err:%v", err)
 		return nil, err

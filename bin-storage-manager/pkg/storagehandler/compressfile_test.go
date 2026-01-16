@@ -119,7 +119,7 @@ func Test_CompressCreate(t *testing.T) {
 				mockFile.EXPECT().Get(ctx, id).Return(tt.responseFilesByFileIDs[i], nil)
 			}
 			for i := range tt.referenceIDs {
-				mockFile.EXPECT().Gets(ctx, "", uint64(1000), gomock.Any()).Return(tt.responseFilesByReferenceIDs[i], nil)
+				mockFile.EXPECT().List(ctx, "", uint64(1000), gomock.Any()).Return(tt.responseFilesByReferenceIDs[i], nil)
 			}
 
 			// mockFile.EXPECT().CompressCreateRaw(ctx, h.bucketNameMedia, tt.expectSourcefilePaths).Return(h.bucketNameMedia, tt.responseFilepath, nil)
@@ -229,7 +229,7 @@ func Test_compressGetFilesByReferenceIDs(t *testing.T) {
 			ctx := context.Background()
 
 			for i := range tt.referenceIDs {
-				mockFile.EXPECT().Gets(ctx, "", uint64(1000), gomock.Any()).Return(tt.responseFiles[i], nil)
+				mockFile.EXPECT().List(ctx, "", uint64(1000), gomock.Any()).Return(tt.responseFiles[i], nil)
 			}
 
 			res, err := h.compressGetFilesByReferenceIDs(ctx, tt.referenceIDs)

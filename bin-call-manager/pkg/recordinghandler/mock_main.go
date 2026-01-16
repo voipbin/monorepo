@@ -87,19 +87,19 @@ func (mr *MockRecordingHandlerMockRecorder) GetByRecordingName(ctx, recordingNam
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByRecordingName", reflect.TypeOf((*MockRecordingHandler)(nil).GetByRecordingName), ctx, recordingName)
 }
 
-// Gets mocks base method.
-func (m *MockRecordingHandler) Gets(ctx context.Context, size uint64, token string, filters map[recording.Field]any) ([]*recording.Recording, error) {
+// List mocks base method.
+func (m *MockRecordingHandler) List(ctx context.Context, size uint64, token string, filters map[recording.Field]any) ([]*recording.Recording, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Gets", ctx, size, token, filters)
+	ret := m.ctrl.Call(m, "List", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*recording.Recording)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Gets indicates an expected call of Gets.
-func (mr *MockRecordingHandlerMockRecorder) Gets(ctx, size, token, filters any) *gomock.Call {
+// List indicates an expected call of List.
+func (mr *MockRecordingHandlerMockRecorder) List(ctx, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockRecordingHandler)(nil).Gets), ctx, size, token, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockRecordingHandler)(nil).List), ctx, size, token, filters)
 }
 
 // Start mocks base method.

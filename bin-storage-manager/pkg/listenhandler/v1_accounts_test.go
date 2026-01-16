@@ -129,7 +129,7 @@ func Test_v1AccountsGet(t *testing.T) {
 				accountHandler: mockAccount,
 			}
 
-			mockAccount.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, gomock.Any()).Return(tt.responseAccounts, nil)
+			mockAccount.EXPECT().List(gomock.Any(), tt.pageToken, tt.pageSize, gomock.Any()).Return(tt.responseAccounts, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

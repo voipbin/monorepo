@@ -154,7 +154,7 @@ func Test_Create(t *testing.T) {
 	}
 }
 
-func Test_Gets(t *testing.T) {
+func Test_List(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -207,9 +207,9 @@ func Test_Gets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().GroupcallGets(ctx, tt.size, tt.token, gomock.Any()).Return(tt.responseGroupcalls, nil)
+			mockDB.EXPECT().GroupcallList(ctx, tt.size, tt.token, gomock.Any()).Return(tt.responseGroupcalls, nil)
 
-			res, err := h.Gets(ctx, tt.size, tt.token, tt.filters)
+			res, err := h.List(ctx, tt.size, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

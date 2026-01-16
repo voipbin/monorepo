@@ -238,7 +238,7 @@ func Test_CampaignDelete(t *testing.T) {
 	}
 }
 
-func Test_CampaignGetsByCustomerID(t *testing.T) {
+func Test_CampaignListByCustomerID(t *testing.T) {
 	tests := []struct {
 		name      string
 		campaigns []*campaign.Campaign
@@ -404,7 +404,7 @@ func Test_CampaignGetsByCustomerID(t *testing.T) {
 				}
 			}
 
-			res, err := h.CampaignGetsByCustomerID(ctx, tt.customerID, tt.token, tt.limit)
+			res, err := h.CampaignListByCustomerID(ctx, tt.customerID, tt.token, tt.limit)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

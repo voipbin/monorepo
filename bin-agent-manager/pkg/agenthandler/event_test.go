@@ -206,7 +206,7 @@ func Test_EventCustomerDeleted(t *testing.T) {
 			ctx := context.Background()
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
-			mockDB.EXPECT().AgentGets(ctx, uint64(1000), gomock.Any(), tt.expectFilter).Return(tt.responseAgents, nil)
+			mockDB.EXPECT().AgentList(ctx, uint64(1000), gomock.Any(), tt.expectFilter).Return(tt.responseAgents, nil)
 
 			for _, ag := range tt.responseAgents {
 				mockDB.EXPECT().AgentDelete(ctx, ag.ID).Return(nil)

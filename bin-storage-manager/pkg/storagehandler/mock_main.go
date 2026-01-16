@@ -104,19 +104,19 @@ func (mr *MockStorageHandlerMockRecorder) FileGet(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FileGet", reflect.TypeOf((*MockStorageHandler)(nil).FileGet), ctx, id)
 }
 
-// FileGets mocks base method.
-func (m *MockStorageHandler) FileGets(ctx context.Context, token string, size uint64, filters map[file.Field]any) ([]*file.File, error) {
+// FileList mocks base method.
+func (m *MockStorageHandler) FileList(ctx context.Context, token string, size uint64, filters map[file.Field]any) ([]*file.File, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FileGets", ctx, token, size, filters)
+	ret := m.ctrl.Call(m, "FileList", ctx, token, size, filters)
 	ret0, _ := ret[0].([]*file.File)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// FileGets indicates an expected call of FileGets.
-func (mr *MockStorageHandlerMockRecorder) FileGets(ctx, token, size, filters any) *gomock.Call {
+// FileList indicates an expected call of FileList.
+func (mr *MockStorageHandlerMockRecorder) FileList(ctx, token, size, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FileGets", reflect.TypeOf((*MockStorageHandler)(nil).FileGets), ctx, token, size, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FileList", reflect.TypeOf((*MockStorageHandler)(nil).FileList), ctx, token, size, filters)
 }
 
 // RecordingDelete mocks base method.
