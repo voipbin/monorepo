@@ -154,7 +154,7 @@ func (h *handler) FlowGet(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
 	return res, nil
 }
 
-func (h *handler) FlowGets(ctx context.Context, token string, size uint64, filters map[flow.Field]any) ([]*flow.Flow, error) {
+func (h *handler) FlowList(ctx context.Context, token string, size uint64, filters map[flow.Field]any) ([]*flow.Flow, error) {
 	if token == "" {
 		token = h.util.TimeGetCurTime()
 	}

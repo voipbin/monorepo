@@ -318,7 +318,7 @@ func Test_v1FlowsGet(t *testing.T) {
 				flowHandler: mockFlowHandler,
 			}
 
-			mockFlowHandler.EXPECT().Gets(gomock.Any(), tt.expectedToken, tt.expectedSize, gomock.Any()).Return(tt.responseFlows, nil)
+			mockFlowHandler.EXPECT().List(gomock.Any(), tt.expectedToken, tt.expectedSize, gomock.Any()).Return(tt.responseFlows, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

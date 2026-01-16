@@ -46,7 +46,7 @@ func (h *listenHandler) v1ActiveflowsGet(ctx context.Context, m *sock.Request) (
 		return simpleResponse(400), nil
 	}
 
-	tmp, err := h.activeflowHandler.Gets(ctx, pageToken, pageSize, filters)
+	tmp, err := h.activeflowHandler.List(ctx, pageToken, pageSize, filters)
 	if err != nil {
 		log.Errorf("Could not get activeflows. err: %v", err)
 		return nil, errors.Wrap(err, "could not get activeflows")

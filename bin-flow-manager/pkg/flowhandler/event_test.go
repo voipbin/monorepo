@@ -72,7 +72,7 @@ func Test_EventCustomerDeleted(t *testing.T) {
 			ctx := context.Background()
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
-			mockDB.EXPECT().FlowGets(ctx, gomock.Any(), uint64(1000), tt.expectFilter).Return(tt.responseFlows, nil)
+			mockDB.EXPECT().FlowList(ctx, gomock.Any(), uint64(1000), tt.expectFilter).Return(tt.responseFlows, nil)
 
 			for _, f := range tt.responseFlows {
 				mockDB.EXPECT().FlowDelete(ctx, f.ID).Return(nil)

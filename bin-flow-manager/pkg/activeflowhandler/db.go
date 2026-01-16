@@ -392,10 +392,10 @@ func (h *activeflowHandler) ReleaseLock(ctx context.Context, id uuid.UUID) error
 	return h.db.ActiveflowReleaseLock(ctx, id)
 }
 
-// Gets returns list of activeflows
-func (h *activeflowHandler) Gets(ctx context.Context, token string, size uint64, filters map[activeflow.Field]any) ([]*activeflow.Activeflow, error) {
+// List returns list of activeflows
+func (h *activeflowHandler) List(ctx context.Context, token string, size uint64, filters map[activeflow.Field]any) ([]*activeflow.Activeflow, error) {
 
-	res, err := h.db.ActiveflowGets(ctx, token, size, filters)
+	res, err := h.db.ActiveflowList(ctx, token, size, filters)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get activeflows. token: %s, size: %d, filters: %v", token, size, filters)
 	}

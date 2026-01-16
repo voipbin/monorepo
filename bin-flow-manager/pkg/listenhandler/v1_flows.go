@@ -207,7 +207,7 @@ func (h *listenHandler) v1FlowsGet(ctx context.Context, m *sock.Request) (*sock.
 	}
 
 	// gets the list of flows
-	tmp, err := h.flowHandler.Gets(ctx, pageToken, pageSize, filters)
+	tmp, err := h.flowHandler.List(ctx, pageToken, pageSize, filters)
 	if err != nil {
 		log.Errorf("Could not get flows. err: %v", err)
 		return nil, err

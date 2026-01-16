@@ -144,7 +144,7 @@ func Test_EventCustomerDeleted(t *testing.T) {
 			ctx := context.Background()
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
-			mockDB.EXPECT().ActiveflowGets(ctx, gomock.Any(), uint64(1000), tt.expectFilters).Return(tt.responseActiveflows, nil)
+			mockDB.EXPECT().ActiveflowList(ctx, gomock.Any(), uint64(1000), tt.expectFilters).Return(tt.responseActiveflows, nil)
 
 			// delete
 			for _, af := range tt.responseActiveflows {
