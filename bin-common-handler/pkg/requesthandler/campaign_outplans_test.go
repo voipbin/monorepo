@@ -118,7 +118,7 @@ func Test_CampaignV1OutplanCreate(t *testing.T) {
 	}
 }
 
-func Test_CampaignV1OutplanGets(t *testing.T) {
+func Test_CampaignV1OutplanList(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -179,7 +179,7 @@ func Test_CampaignV1OutplanGets(t *testing.T) {
 			filters := map[caoutplan.Field]any{
 				caoutplan.FieldCustomerID: tt.customerID,
 			}
-			res, err := reqHandler.CampaignV1OutplanGets(ctx, tt.pageToken, tt.pageSize, filters)
+			res, err := reqHandler.CampaignV1OutplanList(ctx, tt.pageToken, tt.pageSize, filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

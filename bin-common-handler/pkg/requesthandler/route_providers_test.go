@@ -293,7 +293,7 @@ func Test_RouteV1ProviderUpdate(t *testing.T) {
 	}
 }
 
-func Test_RouteV1ProviderGets(t *testing.T) {
+func Test_RouteV1ProviderList(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -346,7 +346,7 @@ func Test_RouteV1ProviderGets(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.RouteV1ProviderGets(ctx, tt.pageToken, tt.pageSize)
+			res, err := reqHandler.RouteV1ProviderList(ctx, tt.pageToken, tt.pageSize)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

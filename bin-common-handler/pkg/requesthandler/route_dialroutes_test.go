@@ -14,7 +14,7 @@ import (
 	"monorepo/bin-common-handler/pkg/sockhandler"
 )
 
-func Test_DialrouteV1RouteGets(t *testing.T) {
+func Test_DialrouteV1RouteList(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -72,7 +72,7 @@ func Test_DialrouteV1RouteGets(t *testing.T) {
 			rmroute.FieldTarget: tt.target,
 		}
 
-		res, err := reqHandler.RouteV1DialrouteGets(ctx, filters)
+		res, err := reqHandler.RouteV1DialrouteList(ctx, filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

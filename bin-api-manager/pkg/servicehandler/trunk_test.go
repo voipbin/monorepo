@@ -304,7 +304,7 @@ func Test_TrunkGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().RegistrarV1TrunkGets(ctx, tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.response, nil)
+			mockReq.EXPECT().RegistrarV1TrunkList(ctx, tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.response, nil)
 
 			res, err := h.TrunkGets(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {

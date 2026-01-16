@@ -135,7 +135,7 @@ func (h *summaryHandler) contentGetTranscripts(ctx context.Context, referenceID 
 		tmtranscribe.FieldReferenceID: referenceID.String(),
 	}
 
-	tr, err := h.reqHandler.TranscribeV1TranscribeGets(ctx, "", 1, transcribeFilters)
+	tr, err := h.reqHandler.TranscribeV1TranscribeList(ctx, "", 1, transcribeFilters)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get the transcribe data")
 	} else if len(tr) == 0 {
@@ -147,7 +147,7 @@ func (h *summaryHandler) contentGetTranscripts(ctx context.Context, referenceID 
 		tmtranscript.FieldDeleted:      false,
 		tmtranscript.FieldTranscribeID: tr[0].ID.String(),
 	}
-	res, err := h.reqHandler.TranscribeV1TranscriptGets(ctx, "", 1000, transcriptFilters)
+	res, err := h.reqHandler.TranscribeV1TranscriptList(ctx, "", 1000, transcriptFilters)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get the transcribe data")
 	}

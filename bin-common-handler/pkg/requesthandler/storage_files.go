@@ -110,10 +110,10 @@ func (r *requestHandler) StorageV1FileCreateWithDelay(
 	return nil
 }
 
-// StorageV1FileGets sends a request to storage-manager
+// StorageV1FileList sends a request to storage-manager
 // to getting a list of files.
 // it returns file list of flows if it succeed.
-func (r *requestHandler) StorageV1FileGets(ctx context.Context, pageToken string, pageSize uint64, filters map[smfile.Field]any) ([]smfile.File, error) {
+func (r *requestHandler) StorageV1FileList(ctx context.Context, pageToken string, pageSize uint64, filters map[smfile.Field]any) ([]smfile.File, error) {
 	uri := fmt.Sprintf("/v1/files?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
 	m, err := json.Marshal(filters)

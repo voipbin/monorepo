@@ -116,7 +116,7 @@ func (h *serviceHandler) QueuecallGets(ctx context.Context, a *amagent.Agent, si
 		return nil, err
 	}
 
-	tmps, err := h.reqHandler.QueueV1QueuecallGets(ctx, token, size, typedFilters)
+	tmps, err := h.reqHandler.QueueV1QueuecallList(ctx, token, size, typedFilters)
 	if err != nil {
 		log.Errorf("Could not get queues from the queue-manager. err: %v", err)
 		return nil, err

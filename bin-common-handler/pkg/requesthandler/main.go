@@ -168,7 +168,7 @@ type RequestHandler interface {
 
 	// ai-manager ai
 	AIV1AIGet(ctx context.Context, aiID uuid.UUID) (*amai.AI, error)
-	AIV1AIGets(ctx context.Context, pageToken string, pageSize uint64, filters map[amai.Field]any) ([]amai.AI, error)
+	AIV1AIList(ctx context.Context, pageToken string, pageSize uint64, filters map[amai.Field]any) ([]amai.AI, error)
 	AIV1AICreate(
 		ctx context.Context,
 		customerID uuid.UUID,
@@ -201,7 +201,7 @@ type RequestHandler interface {
 
 	// ai-manager aicall
 	AIV1AIcallStart(ctx context.Context, activeflowID uuid.UUID, aiID uuid.UUID, referenceType amaicall.ReferenceType, referenceID uuid.UUID, gender amaicall.Gender, language string) (*amaicall.AIcall, error)
-	AIV1AIcallGets(ctx context.Context, pageToken string, pageSize uint64, filters map[amaicall.Field]any) ([]amaicall.AIcall, error)
+	AIV1AIcallList(ctx context.Context, pageToken string, pageSize uint64, filters map[amaicall.Field]any) ([]amaicall.AIcall, error)
 	AIV1AIcallGet(ctx context.Context, aicallID uuid.UUID) (*amaicall.AIcall, error)
 	AIV1AIcallDelete(ctx context.Context, aicallID uuid.UUID) (*amaicall.AIcall, error)
 	AIV1AIcallTerminate(ctx context.Context, aicallID uuid.UUID) (*amaicall.AIcall, error)
@@ -253,7 +253,7 @@ type RequestHandler interface {
 	AIV1ServiceTypeTaskStart(ctx context.Context, aiID uuid.UUID, activeflowID uuid.UUID) (*service.Service, error)
 
 	// ai-manager summary
-	AIV1SummaryGets(ctx context.Context, pageToken string, pageSize uint64, filters map[amsummary.Field]any) ([]amsummary.Summary, error)
+	AIV1SummaryList(ctx context.Context, pageToken string, pageSize uint64, filters map[amsummary.Field]any) ([]amsummary.Summary, error)
 	AIV1SummaryCreate(
 		ctx context.Context,
 		customerID uuid.UUID,
@@ -350,7 +350,7 @@ type RequestHandler interface {
 	) (*amagent.Agent, error)
 	AgentV1AgentGet(ctx context.Context, agentID uuid.UUID) (*amagent.Agent, error)
 	AgentV1AgentGetByCustomerIDAndAddress(ctx context.Context, timeout int, customerID uuid.UUID, addr commonaddress.Address) (*amagent.Agent, error)
-	AgentV1AgentGets(ctx context.Context, pageToken string, pageSize uint64, filters map[amagent.Field]any) ([]amagent.Agent, error)
+	AgentV1AgentList(ctx context.Context, pageToken string, pageSize uint64, filters map[amagent.Field]any) ([]amagent.Agent, error)
 	AgentV1AgentDelete(ctx context.Context, id uuid.UUID) (*amagent.Agent, error)
 	AgentV1AgentUpdate(ctx context.Context, id uuid.UUID, name, detail string, ringMethod amagent.RingMethod) (*amagent.Agent, error)
 	AgentV1AgentUpdateAddresses(ctx context.Context, id uuid.UUID, addresses []commonaddress.Address) (*amagent.Agent, error)
@@ -363,7 +363,7 @@ type RequestHandler interface {
 	AgentV1Login(ctx context.Context, timeout int, username string, password string) (*amagent.Agent, error)
 
 	// billing-manager account
-	BillingV1AccountGets(ctx context.Context, pageToken string, pageSize uint64, filters map[bmaccount.Field]any) ([]bmaccount.Account, error)
+	BillingV1AccountList(ctx context.Context, pageToken string, pageSize uint64, filters map[bmaccount.Field]any) ([]bmaccount.Account, error)
 	BillingV1AccountGet(ctx context.Context, accountID uuid.UUID) (*bmaccount.Account, error)
 	BillingV1AccountCreate(ctx context.Context, custoerID uuid.UUID, name string, detail string, paymentType bmaccount.PaymentType, paymentMethod bmaccount.PaymentMethod) (*bmaccount.Account, error)
 	BillingV1AccountDelete(ctx context.Context, accountID uuid.UUID) (*bmaccount.Account, error)
@@ -374,7 +374,7 @@ type RequestHandler interface {
 	BillingV1AccountUpdatePaymentInfo(ctx context.Context, accountID uuid.UUID, paymentType bmaccount.PaymentType, paymentMethod bmaccount.PaymentMethod) (*bmaccount.Account, error)
 
 	// billing-manager billing
-	BillingV1BillingGets(ctx context.Context, pageToken string, pageSize uint64, filters map[bmbilling.Field]any) ([]bmbilling.Billing, error)
+	BillingV1BillingList(ctx context.Context, pageToken string, pageSize uint64, filters map[bmbilling.Field]any) ([]bmbilling.Billing, error)
 	BillingV1BillingGet(ctx context.Context, billingID uuid.UUID) (*bmbilling.Billing, error)
 
 	// call-manager event
@@ -424,7 +424,7 @@ type RequestHandler interface {
 	) (*cmcall.Call, error)
 	CallV1CallDelete(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error)
 	CallV1CallGet(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error)
-	CallV1CallGets(ctx context.Context, pageToken string, pageSize uint64, filters map[cmcall.Field]any) ([]cmcall.Call, error)
+	CallV1CallList(ctx context.Context, pageToken string, pageSize uint64, filters map[cmcall.Field]any) ([]cmcall.Call, error)
 	CallV1CallGetDigits(ctx context.Context, callID uuid.UUID) (string, error)
 	CallV1CallMediaStop(ctx context.Context, callID uuid.UUID) error
 	CallV1CallPlay(ctx context.Context, callID uuid.UUID, mediaURLs []string) error
@@ -496,7 +496,7 @@ type RequestHandler interface {
 
 	// call-manager external-media
 	CallV1ExternalMediaGet(ctx context.Context, externalMediaID uuid.UUID) (*cmexternalmedia.ExternalMedia, error)
-	CallV1ExternalMediaGets(ctx context.Context, pageToken string, pageSize uint64, filters map[cmexternalmedia.Field]any) ([]cmexternalmedia.ExternalMedia, error)
+	CallV1ExternalMediaList(ctx context.Context, pageToken string, pageSize uint64, filters map[cmexternalmedia.Field]any) ([]cmexternalmedia.ExternalMedia, error)
 	CallV1ExternalMediaStart(
 		ctx context.Context,
 		externalMediaID uuid.UUID,
@@ -525,7 +525,7 @@ type RequestHandler interface {
 		ringMethod cmgroupcall.RingMethod,
 		answerMethod cmgroupcall.AnswerMethod,
 	) (*cmgroupcall.Groupcall, error)
-	CallV1GroupcallGets(ctx context.Context, pageToken string, pageSize uint64, filters map[cmgroupcall.Field]any) ([]cmgroupcall.Groupcall, error)
+	CallV1GroupcallList(ctx context.Context, pageToken string, pageSize uint64, filters map[cmgroupcall.Field]any) ([]cmgroupcall.Groupcall, error)
 	CallV1GroupcallGet(ctx context.Context, groupcallID uuid.UUID) (*cmgroupcall.Groupcall, error)
 	CallV1GroupcallDelete(ctx context.Context, groupcallID uuid.UUID) (*cmgroupcall.Groupcall, error)
 	CallV1GroupcallHangup(ctx context.Context, groupcallID uuid.UUID) (*cmgroupcall.Groupcall, error)
@@ -539,7 +539,7 @@ type RequestHandler interface {
 
 	// call-manager recordings
 	CallV1RecordingGet(ctx context.Context, id uuid.UUID) (*cmrecording.Recording, error)
-	CallV1RecordingGets(ctx context.Context, pageToken string, pageSize uint64, filters map[cmrecording.Field]any) ([]cmrecording.Recording, error)
+	CallV1RecordingList(ctx context.Context, pageToken string, pageSize uint64, filters map[cmrecording.Field]any) ([]cmrecording.Recording, error)
 	CallV1RecordingDelete(ctx context.Context, id uuid.UUID) (*cmrecording.Recording, error)
 	CallV1RecordingStart(
 		ctx context.Context,
@@ -570,7 +570,7 @@ type RequestHandler interface {
 		queueID uuid.UUID,
 		nextCampaignID uuid.UUID,
 	) (*cacampaign.Campaign, error)
-	CampaignV1CampaignGets(ctx context.Context, pageToken string, pageSize uint64, filters map[cacampaign.Field]any) ([]cacampaign.Campaign, error)
+	CampaignV1CampaignList(ctx context.Context, pageToken string, pageSize uint64, filters map[cacampaign.Field]any) ([]cacampaign.Campaign, error)
 	CampaignV1CampaignGet(ctx context.Context, id uuid.UUID) (*cacampaign.Campaign, error)
 	CampaignV1CampaignDelete(ctx context.Context, campaignID uuid.UUID) (*cacampaign.Campaign, error)
 	CampaignV1CampaignExecute(ctx context.Context, id uuid.UUID, delay int) error
@@ -590,7 +590,7 @@ type RequestHandler interface {
 	CampaignV1CampaignUpdateNextCampaignID(ctx context.Context, id uuid.UUID, nextCampaignID uuid.UUID) (*cacampaign.Campaign, error)
 
 	// campaign-manager campaigncalls
-	CampaignV1CampaigncallGets(ctx context.Context, pageToken string, pageSize uint64, filters map[cacampaigncall.Field]any) ([]cacampaigncall.Campaigncall, error)
+	CampaignV1CampaigncallList(ctx context.Context, pageToken string, pageSize uint64, filters map[cacampaigncall.Field]any) ([]cacampaigncall.Campaigncall, error)
 	CampaignV1CampaigncallGet(ctx context.Context, id uuid.UUID) (*cacampaigncall.Campaigncall, error)
 	CampaignV1CampaigncallDelete(ctx context.Context, id uuid.UUID) (*cacampaigncall.Campaigncall, error)
 
@@ -609,7 +609,7 @@ type RequestHandler interface {
 		maxTryCount3 int,
 		maxTryCount4 int,
 	) (*caoutplan.Outplan, error)
-	CampaignV1OutplanGets(ctx context.Context, pageToken string, pageSize uint64, filters map[caoutplan.Field]any) ([]caoutplan.Outplan, error)
+	CampaignV1OutplanList(ctx context.Context, pageToken string, pageSize uint64, filters map[caoutplan.Field]any) ([]caoutplan.Outplan, error)
 	CampaignV1OutplanGet(ctx context.Context, id uuid.UUID) (*caoutplan.Outplan, error)
 	CampaignV1OutplanDelete(ctx context.Context, outplanID uuid.UUID) (*caoutplan.Outplan, error)
 	CampaignV1OutplanUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*caoutplan.Outplan, error)
@@ -628,7 +628,7 @@ type RequestHandler interface {
 
 	// chat-manager chatrooms
 	ChatV1ChatroomGet(ctx context.Context, chatroomID uuid.UUID) (*chatchatroom.Chatroom, error)
-	ChatV1ChatroomGets(ctx context.Context, pageToken string, pageSize uint64, filters map[chatchatroom.Field]any) ([]chatchatroom.Chatroom, error)
+	ChatV1ChatroomList(ctx context.Context, pageToken string, pageSize uint64, filters map[chatchatroom.Field]any) ([]chatchatroom.Chatroom, error)
 	ChatV1ChatroomDelete(ctx context.Context, chatroomID uuid.UUID) (*chatchatroom.Chatroom, error)
 	ChatV1ChatroomUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*chatchatroom.Chatroom, error)
 
@@ -643,7 +643,7 @@ type RequestHandler interface {
 		detail string,
 	) (*chatchat.Chat, error)
 	ChatV1ChatGet(ctx context.Context, chatID uuid.UUID) (*chatchat.Chat, error)
-	ChatV1ChatGets(ctx context.Context, pageToken string, pageSize uint64, filters map[chatchat.Field]any) ([]chatchat.Chat, error)
+	ChatV1ChatList(ctx context.Context, pageToken string, pageSize uint64, filters map[chatchat.Field]any) ([]chatchat.Chat, error)
 	ChatV1ChatDelete(ctx context.Context, chatID uuid.UUID) (*chatchat.Chat, error)
 	ChatV1ChatUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*chatchat.Chat, error)
 	ChatV1ChatUpdateRoomOwnerID(ctx context.Context, id uuid.UUID, roomOwnerID uuid.UUID) (*chatchat.Chat, error)
@@ -651,7 +651,7 @@ type RequestHandler interface {
 	ChatV1ChatRemoveParticipantID(ctx context.Context, id uuid.UUID, participantID uuid.UUID) (*chatchat.Chat, error)
 
 	// chat-manager messagerooms
-	ChatV1MessagechatroomGets(ctx context.Context, pageToken string, pageSize uint64, filters map[chatmessagechatroom.Field]any) ([]chatmessagechatroom.Messagechatroom, error)
+	ChatV1MessagechatroomList(ctx context.Context, pageToken string, pageSize uint64, filters map[chatmessagechatroom.Field]any) ([]chatmessagechatroom.Messagechatroom, error)
 	ChatV1MessagechatroomGet(ctx context.Context, messagechatroomID uuid.UUID) (*chatmessagechatroom.Messagechatroom, error)
 	ChatV1MessagechatroomDelete(ctx context.Context, messagechatroomID uuid.UUID) (*chatmessagechatroom.Messagechatroom, error)
 
@@ -666,14 +666,14 @@ type RequestHandler interface {
 		medias []chatmedia.Media,
 	) (*chatmessagechat.Messagechat, error)
 	ChatV1MessagechatGet(ctx context.Context, messagechatID uuid.UUID) (*chatmessagechat.Messagechat, error)
-	ChatV1MessagechatGets(ctx context.Context, pageToken string, pageSize uint64, filters map[chatmessagechat.Field]any) ([]chatmessagechat.Messagechat, error)
+	ChatV1MessagechatList(ctx context.Context, pageToken string, pageSize uint64, filters map[chatmessagechat.Field]any) ([]chatmessagechat.Messagechat, error)
 	ChatV1MessagechatDelete(ctx context.Context, chatID uuid.UUID) (*chatmessagechat.Messagechat, error)
 
 	// customer-manager accesskeys
 	CustomerV1AccesskeyCreate(ctx context.Context, customerID uuid.UUID, name string, detail string, expire int32) (*csaccesskey.Accesskey, error)
 	CustomerV1AccesskeyDelete(ctx context.Context, accesskeyID uuid.UUID) (*csaccesskey.Accesskey, error)
 	CustomerV1AccesskeyGet(ctx context.Context, accesskeyID uuid.UUID) (*csaccesskey.Accesskey, error)
-	CustomerV1AccesskeyGets(ctx context.Context, pageToken string, pageSize uint64, filters map[csaccesskey.Field]any) ([]csaccesskey.Accesskey, error)
+	CustomerV1AccesskeyList(ctx context.Context, pageToken string, pageSize uint64, filters map[csaccesskey.Field]any) ([]csaccesskey.Accesskey, error)
 	CustomerV1AccesskeyUpdate(ctx context.Context, accesskeyID uuid.UUID, name string, detail string) (*csaccesskey.Accesskey, error)
 
 	// customer-manager customer
@@ -690,7 +690,7 @@ type RequestHandler interface {
 	) (*cscustomer.Customer, error)
 	CustomerV1CustomerDelete(ctx context.Context, id uuid.UUID) (*cscustomer.Customer, error)
 	CustomerV1CustomerGet(ctx context.Context, customerID uuid.UUID) (*cscustomer.Customer, error)
-	CustomerV1CustomerGets(ctx context.Context, pageToken string, pageSize uint64, filters map[cscustomer.Field]any) ([]cscustomer.Customer, error)
+	CustomerV1CustomerList(ctx context.Context, pageToken string, pageSize uint64, filters map[cscustomer.Field]any) ([]cscustomer.Customer, error)
 	CustomerV1CustomerUpdate(
 		ctx context.Context,
 		id uuid.UUID,
@@ -707,7 +707,7 @@ type RequestHandler interface {
 
 	// conference-manager conference
 	ConferenceV1ConferenceGet(ctx context.Context, conferenceID uuid.UUID) (*cfconference.Conference, error)
-	ConferenceV1ConferenceGets(ctx context.Context, pageToken string, pageSize uint64, filters map[cfconference.Field]any) ([]cfconference.Conference, error)
+	ConferenceV1ConferenceList(ctx context.Context, pageToken string, pageSize uint64, filters map[cfconference.Field]any) ([]cfconference.Conference, error)
 	ConferenceV1ConferenceCreate(
 		ctx context.Context,
 		id uuid.UUID,
@@ -748,7 +748,7 @@ type RequestHandler interface {
 
 	// conference-manager conferencecall
 	ConferenceV1ConferencecallGet(ctx context.Context, conferencecallID uuid.UUID) (*cfconferencecall.Conferencecall, error)
-	ConferenceV1ConferencecallGets(ctx context.Context, pageToken string, pageSize uint64, filters map[cfconferencecall.Field]any) ([]cfconferencecall.Conferencecall, error)
+	ConferenceV1ConferencecallList(ctx context.Context, pageToken string, pageSize uint64, filters map[cfconferencecall.Field]any) ([]cfconferencecall.Conferencecall, error)
 	ConferenceV1ConferencecallKick(ctx context.Context, conferencecallID uuid.UUID) (*cfconferencecall.Conferencecall, error)
 	ConferenceV1ConferencecallHealthCheck(ctx context.Context, conferencecallID uuid.UUID, retryCount int, delay int) error
 
@@ -763,7 +763,7 @@ type RequestHandler interface {
 
 	// conversation-manager account
 	ConversationV1AccountGet(ctx context.Context, accountID uuid.UUID) (*cvaccount.Account, error)
-	ConversationV1AccountGets(ctx context.Context, pageToken string, pageSize uint64, filters map[cvaccount.Field]any) ([]cvaccount.Account, error)
+	ConversationV1AccountList(ctx context.Context, pageToken string, pageSize uint64, filters map[cvaccount.Field]any) ([]cvaccount.Account, error)
 	ConversationV1AccountCreate(ctx context.Context, customerID uuid.UUID, accountType cvaccount.Type, name string, detail string, secret string, token string) (*cvaccount.Account, error)
 	ConversationV1AccountUpdate(ctx context.Context, accountID uuid.UUID, fields map[cvaccount.Field]any) (*cvaccount.Account, error)
 	ConversationV1AccountDelete(ctx context.Context, accountID uuid.UUID) (*cvaccount.Account, error)
@@ -780,7 +780,7 @@ type RequestHandler interface {
 		peer commonaddress.Address,
 	) (*cvconversation.Conversation, error)
 	ConversationV1ConversationGet(ctx context.Context, conversationID uuid.UUID) (*cvconversation.Conversation, error)
-	ConversationV1ConversationGets(ctx context.Context, pageToken string, pageSize uint64, fields map[cvconversation.Field]any) ([]cvconversation.Conversation, error)
+	ConversationV1ConversationList(ctx context.Context, pageToken string, pageSize uint64, fields map[cvconversation.Field]any) ([]cvconversation.Conversation, error)
 	ConversationV1ConversationUpdate(ctx context.Context, conversationID uuid.UUID, fields map[cvconversation.Field]any) (*cvconversation.Conversation, error)
 
 	// conversation-manager hook
@@ -788,7 +788,7 @@ type RequestHandler interface {
 
 	// conversation-manager message
 	ConversationV1MessageGet(ctx context.Context, messageID uuid.UUID) (*cvmessage.Message, error)
-	ConversationV1MessageGets(ctx context.Context, pageToken string, pageSize uint64, filters map[cvmessage.Field]any) ([]cvmessage.Message, error)
+	ConversationV1MessageList(ctx context.Context, pageToken string, pageSize uint64, filters map[cvmessage.Field]any) ([]cvmessage.Message, error)
 	ConversationV1MessageCreate(
 		ctx context.Context,
 		id uuid.UUID,
@@ -805,7 +805,7 @@ type RequestHandler interface {
 	ConversationV1MessageSend(ctx context.Context, conversationID uuid.UUID, text string, medias []cvmedia.Media) (*cvmessage.Message, error)
 
 	// email-manager email
-	EmailV1EmailGets(ctx context.Context, pageToken string, pageSize uint64, filters map[ememail.Field]any) ([]ememail.Email, error)
+	EmailV1EmailList(ctx context.Context, pageToken string, pageSize uint64, filters map[ememail.Field]any) ([]ememail.Email, error)
 	EmailV1EmailSend(
 		ctx context.Context,
 		customerID uuid.UUID,
@@ -836,7 +836,7 @@ type RequestHandler interface {
 	) (*fmactiveflow.Activeflow, error)
 	FlowV1ActiveflowDelete(ctx context.Context, activeflowID uuid.UUID) (*fmactiveflow.Activeflow, error)
 	FlowV1ActiveflowGet(ctx context.Context, activeflowID uuid.UUID) (*fmactiveflow.Activeflow, error)
-	FlowV1ActiveflowGets(ctx context.Context, pageToken string, pageSize uint64, filters map[fmactiveflow.Field]any) ([]fmactiveflow.Activeflow, error)
+	FlowV1ActiveflowList(ctx context.Context, pageToken string, pageSize uint64, filters map[fmactiveflow.Field]any) ([]fmactiveflow.Activeflow, error)
 	FlowV1ActiveflowGetNextAction(ctx context.Context, activeflowID, actionID uuid.UUID) (*fmaction.Action, error)
 	FlowV1ActiveflowUpdateForwardActionID(ctx context.Context, activeflowID, forwardActionID uuid.UUID, forwardNow bool) error
 	FlowV1ActiveflowExecute(ctx context.Context, activeflowID uuid.UUID) error
@@ -859,7 +859,7 @@ type RequestHandler interface {
 	) (*fmflow.Flow, error)
 	FlowV1FlowDelete(ctx context.Context, flowID uuid.UUID) (*fmflow.Flow, error)
 	FlowV1FlowGet(ctx context.Context, flowID uuid.UUID) (*fmflow.Flow, error)
-	FlowV1FlowGets(ctx context.Context, pageToken string, pageSize uint64, filters map[fmflow.Field]any) ([]fmflow.Flow, error)
+	FlowV1FlowList(ctx context.Context, pageToken string, pageSize uint64, filters map[fmflow.Field]any) ([]fmflow.Flow, error)
 	FlowV1FlowUpdate(
 		ctx context.Context,
 		flowID uuid.UUID,
@@ -880,19 +880,19 @@ type RequestHandler interface {
 	MessageV1Hook(ctx context.Context, hm *hmhook.Hook) error
 
 	// message-manager message
-	MessageV1MessageGets(ctx context.Context, pageToken string, pageSize uint64, filters map[mmmessage.Field]any) ([]mmmessage.Message, error)
+	MessageV1MessageList(ctx context.Context, pageToken string, pageSize uint64, filters map[mmmessage.Field]any) ([]mmmessage.Message, error)
 	MessageV1MessageGet(ctx context.Context, id uuid.UUID) (*mmmessage.Message, error)
 	MessageV1MessageDelete(ctx context.Context, id uuid.UUID) (*mmmessage.Message, error)
 	MessageV1MessageSend(ctx context.Context, id uuid.UUID, customerID uuid.UUID, source *commonaddress.Address, destinations []commonaddress.Address, text string) (*mmmessage.Message, error)
 
 	// number-manager available-number
-	NumberV1AvailableNumberGets(ctx context.Context, pageSize uint64, filters map[string]any) ([]nmavailablenumber.AvailableNumber, error)
+	NumberV1AvailableNumberList(ctx context.Context, pageSize uint64, filters map[string]any) ([]nmavailablenumber.AvailableNumber, error)
 
 	// number-manager number
 	NumberV1NumberCreate(ctx context.Context, customerID uuid.UUID, num string, callFlowID uuid.UUID, messageFlowID uuid.UUID, name string, detail string) (*nmnumber.Number, error)
 	NumberV1NumberDelete(ctx context.Context, id uuid.UUID) (*nmnumber.Number, error)
 	NumberV1NumberGet(ctx context.Context, numberID uuid.UUID) (*nmnumber.Number, error)
-	NumberV1NumberGets(ctx context.Context, pageToken string, pageSize uint64, filters map[nmnumber.Field]any) ([]nmnumber.Number, error)
+	NumberV1NumberList(ctx context.Context, pageToken string, pageSize uint64, filters map[nmnumber.Field]any) ([]nmnumber.Number, error)
 	NumberV1NumberUpdate(ctx context.Context, id uuid.UUID, callFlowID uuid.UUID, messageFlowID uuid.UUID, name string, detail string) (*nmnumber.Number, error)
 	NumberV1NumberUpdateFlowID(ctx context.Context, id uuid.UUID, callFlowID uuid.UUID, messageFlowID uuid.UUID) (*nmnumber.Number, error)
 	NumberV1NumberRenewByTmRenew(ctx context.Context, tmRenew string) ([]nmnumber.Number, error)
@@ -903,7 +903,7 @@ type RequestHandler interface {
 	OutdialV1OutdialCreate(ctx context.Context, customerID, campaignID uuid.UUID, name, detail, data string) (*omoutdial.Outdial, error)
 	OutdialV1OutdialDelete(ctx context.Context, outdialID uuid.UUID) (*omoutdial.Outdial, error)
 	OutdialV1OutdialGet(ctx context.Context, id uuid.UUID) (*omoutdial.Outdial, error)
-	OutdialV1OutdialGets(ctx context.Context, pageToken string, pageSize uint64, filters map[omoutdial.Field]any) ([]omoutdial.Outdial, error)
+	OutdialV1OutdialList(ctx context.Context, pageToken string, pageSize uint64, filters map[omoutdial.Field]any) ([]omoutdial.Outdial, error)
 	OutdialV1OutdialUpdateBasicInfo(ctx context.Context, outdialID uuid.UUID, name, detail string) (*omoutdial.Outdial, error)
 	OutdialV1OutdialUpdateCampaignID(ctx context.Context, outdialID, campaignID uuid.UUID) (*omoutdial.Outdial, error)
 	OutdialV1OutdialUpdateData(ctx context.Context, outdialID uuid.UUID, data string) (*omoutdial.Outdial, error)
@@ -969,7 +969,7 @@ type RequestHandler interface {
 	PipecatV1PipecatcallTerminateWithDelay(ctx context.Context, hostID string, pipecatcallID uuid.UUID, delay int) error
 
 	// queue-manager queue
-	QueueV1QueueGets(ctx context.Context, pageToken string, pageSize uint64, filters map[qmqueue.Field]any) ([]qmqueue.Queue, error)
+	QueueV1QueueList(ctx context.Context, pageToken string, pageSize uint64, filters map[qmqueue.Field]any) ([]qmqueue.Queue, error)
 	QueueV1QueueGet(ctx context.Context, queueID uuid.UUID) (*qmqueue.Queue, error)
 	QueueV1QueueGetAgents(ctx context.Context, queueID uuid.UUID, filters map[amagent.Field]any) ([]amagent.Agent, error)
 	QueueV1QueueCreate(
@@ -1002,7 +1002,7 @@ type RequestHandler interface {
 	QueueV1QueueCreateQueuecall(ctx context.Context, queueID uuid.UUID, referenceType qmqueuecall.ReferenceType, referenceID, referenceActiveflowID, exitActionID uuid.UUID) (*qmqueuecall.Queuecall, error)
 
 	// queue-manager queuecall
-	QueueV1QueuecallGets(ctx context.Context, pageToken string, pageSize uint64, filters map[qmqueuecall.Field]any) ([]qmqueuecall.Queuecall, error)
+	QueueV1QueuecallList(ctx context.Context, pageToken string, pageSize uint64, filters map[qmqueuecall.Field]any) ([]qmqueuecall.Queuecall, error)
 	QueueV1QueuecallGet(ctx context.Context, queuecallID uuid.UUID) (*qmqueuecall.Queuecall, error)
 	QueueV1QueuecallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*qmqueuecall.Queuecall, error)
 	QueueV1QueuecallDelete(ctx context.Context, queuecallID uuid.UUID) (*qmqueuecall.Queuecall, error)
@@ -1018,26 +1018,26 @@ type RequestHandler interface {
 	QueueV1ServiceTypeQueuecallStart(ctx context.Context, queueID uuid.UUID, activeflowID uuid.UUID, referenceType qmqueuecall.ReferenceType, referenceID uuid.UUID) (*service.Service, error)
 
 	// registrar-manager contact
-	RegistrarV1ContactGets(ctx context.Context, filters map[string]any) ([]rmastcontact.AstContact, error)
+	RegistrarV1ContactList(ctx context.Context, filters map[string]any) ([]rmastcontact.AstContact, error)
 	RegistrarV1ContactRefresh(ctx context.Context, filters map[string]any) error
 
 	// registrar-manager extension
 	RegistrarV1ExtensionCreate(ctx context.Context, customerID uuid.UUID, ext string, password string, name string, detail string) (*rmextension.Extension, error)
 	RegistrarV1ExtensionDelete(ctx context.Context, extensionID uuid.UUID) (*rmextension.Extension, error)
 	RegistrarV1ExtensionGet(ctx context.Context, extensionID uuid.UUID) (*rmextension.Extension, error)
-	RegistrarV1ExtensionGets(ctx context.Context, pageToken string, pageSize uint64, filters map[rmextension.Field]any) ([]rmextension.Extension, error)
+	RegistrarV1ExtensionList(ctx context.Context, pageToken string, pageSize uint64, filters map[rmextension.Field]any) ([]rmextension.Extension, error)
 	RegistrarV1ExtensionUpdate(ctx context.Context, id uuid.UUID, name, detail, password string) (*rmextension.Extension, error)
 
 	// registrar-manager trunk
 	RegistrarV1TrunkCreate(ctx context.Context, customerID uuid.UUID, name string, detail string, domainName string, authTypes []rmsipauth.AuthType, username string, password string, allowedIPs []string) (*rmtrunk.Trunk, error)
-	RegistrarV1TrunkGets(ctx context.Context, pageToken string, pageSize uint64, filters map[rmtrunk.Field]any) ([]rmtrunk.Trunk, error)
+	RegistrarV1TrunkList(ctx context.Context, pageToken string, pageSize uint64, filters map[rmtrunk.Field]any) ([]rmtrunk.Trunk, error)
 	RegistrarV1TrunkGet(ctx context.Context, trunkID uuid.UUID) (*rmtrunk.Trunk, error)
 	RegistrarV1TrunkGetByDomainName(ctx context.Context, domainName string) (*rmtrunk.Trunk, error)
 	RegistrarV1TrunkDelete(ctx context.Context, trunkID uuid.UUID) (*rmtrunk.Trunk, error)
 	RegistrarV1TrunkUpdateBasicInfo(ctx context.Context, trunkID uuid.UUID, name string, detail string, authTypes []rmsipauth.AuthType, username string, password string, allowedIPs []string) (*rmtrunk.Trunk, error)
 
 	// route-manager dialroutes
-	RouteV1DialrouteGets(ctx context.Context, filters map[rmroute.Field]any) ([]rmroute.Route, error)
+	RouteV1DialrouteList(ctx context.Context, filters map[rmroute.Field]any) ([]rmroute.Route, error)
 
 	// route-manager providers
 	RouteV1ProviderCreate(ctx context.Context, provierType rmprovider.Type, hostname string, techPrefix string, techPostfix string, techHeaders map[string]string, name string, detail string) (*rmprovider.Provider, error)
@@ -1054,7 +1054,7 @@ type RequestHandler interface {
 		name string,
 		detail string,
 	) (*rmprovider.Provider, error)
-	RouteV1ProviderGets(ctx context.Context, pageToken string, pageSize uint64) ([]rmprovider.Provider, error)
+	RouteV1ProviderList(ctx context.Context, pageToken string, pageSize uint64) ([]rmprovider.Provider, error)
 
 	// route-manager routes
 	RouteV1RouteCreate(
@@ -1077,11 +1077,11 @@ type RequestHandler interface {
 		priority int,
 		target string,
 	) (*rmroute.Route, error)
-	RouteV1RouteGets(ctx context.Context, pageToken string, pageSize uint64, filters map[rmroute.Field]any) ([]rmroute.Route, error)
+	RouteV1RouteList(ctx context.Context, pageToken string, pageSize uint64, filters map[rmroute.Field]any) ([]rmroute.Route, error)
 
 	// storage-manager account
 	StorageV1AccountCreate(ctx context.Context, customerID uuid.UUID) (*smaccount.Account, error)
-	StorageV1AccountGets(ctx context.Context, pageToken string, pageSize uint64, filters map[smaccount.Field]any) ([]smaccount.Account, error)
+	StorageV1AccountList(ctx context.Context, pageToken string, pageSize uint64, filters map[smaccount.Field]any) ([]smaccount.Account, error)
 	StorageV1AccountGet(ctx context.Context, accountID uuid.UUID) (*smaccount.Account, error)
 	StorageV1AccountDelete(ctx context.Context, fileID uuid.UUID, requestTimeout int) (*smaccount.Account, error)
 
@@ -1120,7 +1120,7 @@ type RequestHandler interface {
 		delay int, // milliseconds
 	) error
 	StorageV1FileGet(ctx context.Context, fileID uuid.UUID) (*smfile.File, error)
-	StorageV1FileGets(ctx context.Context, pageToken string, pageSize uint64, filters map[smfile.Field]any) ([]smfile.File, error)
+	StorageV1FileList(ctx context.Context, pageToken string, pageSize uint64, filters map[smfile.Field]any) ([]smfile.File, error)
 	StorageV1FileDelete(ctx context.Context, fileID uuid.UUID, requestTimeout int) (*smfile.File, error)
 
 	// tag-manager
@@ -1128,7 +1128,7 @@ type RequestHandler interface {
 	TagV1TagUpdate(ctx context.Context, tagID uuid.UUID, name string, detail string) (*tmtag.Tag, error)
 	TagV1TagDelete(ctx context.Context, tagID uuid.UUID) (*tmtag.Tag, error)
 	TagV1TagGet(ctx context.Context, tagID uuid.UUID) (*tmtag.Tag, error)
-	TagV1TagGets(ctx context.Context, pageToken string, pageSize uint64, filters map[tmtag.Field]any) ([]tmtag.Tag, error)
+	TagV1TagList(ctx context.Context, pageToken string, pageSize uint64, filters map[tmtag.Field]any) ([]tmtag.Tag, error)
 
 	// tts-manager speeches
 	TTSV1SpeecheCreate(ctx context.Context, callID uuid.UUID, text string, gender tmtts.Gender, language string, timeout int) (*tmtts.TTS, error)
@@ -1152,7 +1152,7 @@ type RequestHandler interface {
 
 	// transcribe-manager
 	TranscribeV1TranscribeGet(ctx context.Context, transcribeID uuid.UUID) (*tmtranscribe.Transcribe, error)
-	TranscribeV1TranscribeGets(ctx context.Context, pageToken string, pageSize uint64, filters map[tmtranscribe.Field]any) ([]tmtranscribe.Transcribe, error)
+	TranscribeV1TranscribeList(ctx context.Context, pageToken string, pageSize uint64, filters map[tmtranscribe.Field]any) ([]tmtranscribe.Transcribe, error)
 	TranscribeV1TranscribeHealthCheck(ctx context.Context, id uuid.UUID, delay int, retryCount int) error
 	TranscribeV1TranscribeStart(
 		ctx context.Context,
@@ -1167,7 +1167,7 @@ type RequestHandler interface {
 	) (*tmtranscribe.Transcribe, error)
 	TranscribeV1TranscribeStop(ctx context.Context, transcribeID uuid.UUID) (*tmtranscribe.Transcribe, error)
 	TranscribeV1TranscribeDelete(ctx context.Context, transcribeID uuid.UUID) (*tmtranscribe.Transcribe, error)
-	TranscribeV1TranscriptGets(ctx context.Context, pageToken string, pageSize uint64, filters map[tmtranscript.Field]any) ([]tmtranscript.Transcript, error)
+	TranscribeV1TranscriptList(ctx context.Context, pageToken string, pageSize uint64, filters map[tmtranscript.Field]any) ([]tmtranscript.Transcript, error)
 
 	// transfer-manager
 	TransferV1TransferStart(ctx context.Context, transferType tmtransfer.Type, transfererCallID uuid.UUID, transfereeAddresses []commonaddress.Address) (*tmtransfer.Transfer, error)

@@ -80,7 +80,7 @@ func (h *serviceHandler) TranscribeGets(ctx context.Context, a *amagent.Agent, s
 		return nil, err
 	}
 
-	tmps, err := h.reqHandler.TranscribeV1TranscribeGets(ctx, token, size, typedFilters)
+	tmps, err := h.reqHandler.TranscribeV1TranscribeList(ctx, token, size, typedFilters)
 	if err != nil {
 		log.Errorf("Could not get transcribes. err: %v", err)
 		return nil, err

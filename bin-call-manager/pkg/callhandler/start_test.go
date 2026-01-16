@@ -431,7 +431,7 @@ func Test_StartCallHandle_IncomingTypeFlow(t *testing.T) {
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDCall)
 
-			mockReq.EXPECT().NumberV1NumberGets(ctx, "", uint64(1), tt.expectFilters).Return(tt.responseNumbers, nil)
+			mockReq.EXPECT().NumberV1NumberList(ctx, "", uint64(1), tt.expectFilters).Return(tt.responseNumbers, nil)
 			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, uuid.Nil, tt.responseNumbers[0].CustomerID, tt.responseNumbers[0].CallFlowID, fmactiveflow.ReferenceTypeCall, gomock.Any(), uuid.Nil).Return(tt.responseActiveflow, nil)
 
 			mockReq.EXPECT().CustomerV1CustomerIsValidBalance(ctx, tt.responseNumbers[0].CustomerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)

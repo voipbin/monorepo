@@ -94,7 +94,7 @@ func (h *serviceHandler) RecordingGets(ctx context.Context, a *amagent.Agent, si
 		return nil, err
 	}
 
-	tmp, err := h.reqHandler.CallV1RecordingGets(ctx, token, size, typedFilters)
+	tmp, err := h.reqHandler.CallV1RecordingList(ctx, token, size, typedFilters)
 	if err != nil {
 		log.Errorf("Could not get recordings from the call manager. err: %v", err)
 		return nil, err

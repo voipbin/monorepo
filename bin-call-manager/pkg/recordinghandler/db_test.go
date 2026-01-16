@@ -141,7 +141,7 @@ func Test_Delete(t *testing.T) {
 			mockDB.EXPECT().RecordingDelete(ctx, tt.recordingID).Return(nil)
 			mockDB.EXPECT().RecordingGet(ctx, tt.recordingID).Return(tt.responseRecording, nil)
 
-			mockReq.EXPECT().StorageV1FileGets(gomock.Any(), "", uint64(1000), tt.expectFilters).Return(tt.responseFiles, nil)
+			mockReq.EXPECT().StorageV1FileList(gomock.Any(), "", uint64(1000), tt.expectFilters).Return(tt.responseFiles, nil)
 			for _, f := range tt.responseFiles {
 				mockReq.EXPECT().StorageV1FileDelete(ctx, f.ID, 60000).Return(&smfile.File{}, nil)
 			}
@@ -222,7 +222,7 @@ func Test_deleteRecordingFiles(t *testing.T) {
 				db:         mockDB,
 			}
 
-			mockReq.EXPECT().StorageV1FileGets(gomock.Any(), "", uint64(1000), tt.expectFilters).Return(tt.responseFiles, nil)
+			mockReq.EXPECT().StorageV1FileList(gomock.Any(), "", uint64(1000), tt.expectFilters).Return(tt.responseFiles, nil)
 			for _, f := range tt.responseFiles {
 				mockReq.EXPECT().StorageV1FileDelete(gomock.Any(), f.ID, 60000).Return(&smfile.File{}, nil)
 			}

@@ -239,7 +239,7 @@ func Test_CustomerGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CustomerV1CustomerGets(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseCustomers, nil)
+			mockReq.EXPECT().CustomerV1CustomerList(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseCustomers, nil)
 
 			res, err := h.CustomerGets(ctx, tt.agent, tt.size, tt.token, tt.filters)
 			if err != nil {

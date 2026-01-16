@@ -108,7 +108,7 @@ func (h *serviceHandler) chatroomGetsByFilters(ctx context.Context, size uint64,
 	}
 
 	// get chatrooms
-	res, err := h.reqHandler.ChatV1ChatroomGets(ctx, token, size, typedFilters)
+	res, err := h.reqHandler.ChatV1ChatroomList(ctx, token, size, typedFilters)
 	if err != nil {
 		log.Errorf("Could not get chats info from the chat-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find chats info. err: %v", err)
@@ -141,7 +141,7 @@ func (h *serviceHandler) chatroomGetByChatIDAndOwnerID(ctx context.Context, a *a
 		return nil, err
 	}
 
-	tmps, err := h.reqHandler.ChatV1ChatroomGets(ctx, h.utilHandler.TimeGetCurTime(), 1, typedFilters)
+	tmps, err := h.reqHandler.ChatV1ChatroomList(ctx, h.utilHandler.TimeGetCurTime(), 1, typedFilters)
 	if err != nil {
 		log.Errorf("Could not get chatroom info from the chat-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find chatroom info. err: %v", err)

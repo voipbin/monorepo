@@ -90,7 +90,7 @@ func Test_ServiceAgentChatroomGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().ChatV1ChatroomGets(ctx, tt.token, tt.size, gomock.Any()).Return(tt.responseChatrooms, nil)
+			mockReq.EXPECT().ChatV1ChatroomList(ctx, tt.token, tt.size, gomock.Any()).Return(tt.responseChatrooms, nil)
 
 			res, err := h.ServiceAgentChatroomGets(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {
@@ -352,7 +352,7 @@ func Test_ServiceAgentChatroomCreate(t *testing.T) {
 			mockReq.EXPECT().ChatV1ChatCreate(ctx, tt.agent.CustomerID, tt.expectChatType, tt.agent.ID, tt.participantIDs, tt.chatroomName, tt.detail).Return(tt.responseChat, nil)
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
-			mockReq.EXPECT().ChatV1ChatroomGets(ctx, tt.responseCurTime, uint64(1), gomock.Any()).Return(tt.responseChatrooms, nil)
+			mockReq.EXPECT().ChatV1ChatroomList(ctx, tt.responseCurTime, uint64(1), gomock.Any()).Return(tt.responseChatrooms, nil)
 
 			res, err := h.ServiceAgentChatroomCreate(ctx, tt.agent, tt.participantIDs, tt.chatroomName, tt.detail)
 			if err != nil {

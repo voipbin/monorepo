@@ -248,7 +248,7 @@ func Test_AgentV1AgentGetByCustomerIDAndAddress(t *testing.T) {
 	}
 }
 
-func Test_AgentV1AgentGets(t *testing.T) {
+func Test_AgentV1AgentList(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -341,7 +341,7 @@ func Test_AgentV1AgentGets(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.AgentV1AgentGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
+			res, err := reqHandler.AgentV1AgentList(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

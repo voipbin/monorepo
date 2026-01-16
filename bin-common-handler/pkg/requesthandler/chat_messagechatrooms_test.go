@@ -17,7 +17,7 @@ import (
 	"monorepo/bin-common-handler/pkg/sockhandler"
 )
 
-func Test_ChatV1MessagechatroomGets(t *testing.T) {
+func Test_ChatV1MessagechatroomList(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -77,7 +77,7 @@ func Test_ChatV1MessagechatroomGets(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := h.ChatV1MessagechatroomGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
+			res, err := h.ChatV1MessagechatroomList(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

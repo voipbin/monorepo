@@ -87,7 +87,7 @@ func Test_ConversationAccountGetsByCustomerID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().ConversationV1AccountGets(ctx, tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.responseAccounts, nil)
+			mockReq.EXPECT().ConversationV1AccountList(ctx, tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.responseAccounts, nil)
 			res, err := h.ConversationAccountGetsByCustomerID(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

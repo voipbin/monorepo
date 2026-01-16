@@ -189,7 +189,7 @@ func Test_AIGetsByCustomerID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().AIV1AIGets(ctx, tt.token, tt.size, tt.filters).Return(tt.response, nil)
+			mockReq.EXPECT().AIV1AIList(ctx, tt.token, tt.size, tt.filters).Return(tt.response, nil)
 
 			res, err := h.AIGetsByCustomerID(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {

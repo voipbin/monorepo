@@ -201,7 +201,7 @@ func Test_AuthAccesskeyParse(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CustomerV1AccesskeyGets(ctx, "", gomock.Any(), gomock.Any()).Return(tt.responseAccesskeys, nil)
+			mockReq.EXPECT().CustomerV1AccesskeyList(ctx, "", gomock.Any(), gomock.Any()).Return(tt.responseAccesskeys, nil)
 			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 
 			res, err := h.AuthAccesskeyParse(ctx, tt.accesskey)
@@ -278,7 +278,7 @@ func Test_AuthAccesskeyParse_error(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CustomerV1AccesskeyGets(ctx, "", gomock.Any(), gomock.Any()).Return(tt.responseAccesskeys, nil)
+			mockReq.EXPECT().CustomerV1AccesskeyList(ctx, "", gomock.Any(), gomock.Any()).Return(tt.responseAccesskeys, nil)
 			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 
 			_, err := h.AuthAccesskeyParse(ctx, tt.accesskey)

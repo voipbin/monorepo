@@ -163,7 +163,7 @@ func Test_TranscribeGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().TranscribeV1TranscribeGets(ctx, tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.response, nil)
+			mockReq.EXPECT().TranscribeV1TranscribeList(ctx, tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.response, nil)
 			res, err := h.TranscribeGets(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

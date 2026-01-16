@@ -274,7 +274,7 @@ func Test_TagV1TagGet(t *testing.T) {
 	}
 }
 
-func Test_TagV1TagGets(t *testing.T) {
+func Test_TagV1TagList(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -335,7 +335,7 @@ func Test_TagV1TagGets(t *testing.T) {
 			tmtag.FieldCustomerID: tt.customerID,
 		}
 
-		res, err := reqHandler.TagV1TagGets(ctx, tt.token, tt.pageSize, filters)
+		res, err := reqHandler.TagV1TagList(ctx, tt.token, tt.pageSize, filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

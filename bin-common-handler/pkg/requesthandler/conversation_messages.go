@@ -63,10 +63,10 @@ func (r *requestHandler) ConversationV1MessageSend(ctx context.Context, conversa
 	return &res, nil
 }
 
-// ConversationV1MessageGets sends a request to conversation-manager
+// ConversationV1MessageList sends a request to conversation-manager
 // to getting a list of message info.
 // it returns detail list of message info if it succeed.
-func (r *requestHandler) ConversationV1MessageGets(ctx context.Context, pageToken string, pageSize uint64, filters map[cvmessage.Field]any) ([]cvmessage.Message, error) {
+func (r *requestHandler) ConversationV1MessageList(ctx context.Context, pageToken string, pageSize uint64, filters map[cvmessage.Field]any) ([]cvmessage.Message, error) {
 	uri := fmt.Sprintf("/v1/messages?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
 	m, err := json.Marshal(filters)

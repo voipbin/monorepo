@@ -47,8 +47,8 @@ func (r *requestHandler) MessageV1MessageSend(ctx context.Context, id uuid.UUID,
 	return &res, nil
 }
 
-// MessageV1MessageGets gets the messages
-func (r *requestHandler) MessageV1MessageGets(ctx context.Context, pageToken string, pageSize uint64, filters map[mmmessage.Field]any) ([]mmmessage.Message, error) {
+// MessageV1MessageList gets the messages
+func (r *requestHandler) MessageV1MessageList(ctx context.Context, pageToken string, pageSize uint64, filters map[mmmessage.Field]any) ([]mmmessage.Message, error) {
 	uri := fmt.Sprintf("/v1/messages?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
 	m, err := json.Marshal(filters)

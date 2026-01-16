@@ -132,10 +132,10 @@ func (r *requestHandler) RouteV1RouteUpdate(
 	return &res, nil
 }
 
-// RouteV1RouteGets sends a request to route-manager
+// RouteV1RouteList sends a request to route-manager
 // to getting a list of route info.
 // it returns detail list of route info if it succeed.
-func (r *requestHandler) RouteV1RouteGets(ctx context.Context, pageToken string, pageSize uint64, filters map[rmroute.Field]any) ([]rmroute.Route, error) {
+func (r *requestHandler) RouteV1RouteList(ctx context.Context, pageToken string, pageSize uint64, filters map[rmroute.Field]any) ([]rmroute.Route, error) {
 	uri := fmt.Sprintf("/v1/routes?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
 	m, err := json.Marshal(filters)

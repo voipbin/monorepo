@@ -15,7 +15,7 @@ func (h *conversationHandler) NumberGet(ctx context.Context, number string) (*nm
 		nmnumber.FieldDeleted: false,
 	}
 
-	tmps, err := h.reqHandler.NumberV1NumberGets(ctx, "", 1, filters)
+	tmps, err := h.reqHandler.NumberV1NumberList(ctx, "", 1, filters)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not get number info. number: %s", number)
 	}

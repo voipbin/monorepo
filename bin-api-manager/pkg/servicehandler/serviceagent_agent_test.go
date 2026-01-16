@@ -86,7 +86,7 @@ func Test_ServiceAgentAgentGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AgentV1AgentGets(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseAgents, nil)
+			mockReq.EXPECT().AgentV1AgentList(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseAgents, nil)
 
 			res, err := h.ServiceAgentAgentGets(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {

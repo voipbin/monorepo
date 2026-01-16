@@ -154,19 +154,19 @@ func (mr *MockRequestHandlerMockRecorder) AIV1AIGet(ctx, aiID any) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIGet", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIGet), ctx, aiID)
 }
 
-// AIV1AIGets mocks base method.
-func (m *MockRequestHandler) AIV1AIGets(ctx context.Context, pageToken string, pageSize uint64, filters map[ai.Field]any) ([]ai.AI, error) {
+// AIV1AIList mocks base method.
+func (m *MockRequestHandler) AIV1AIList(ctx context.Context, pageToken string, pageSize uint64, filters map[ai.Field]any) ([]ai.AI, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AIV1AIGets", ctx, pageToken, pageSize, filters)
+	ret := m.ctrl.Call(m, "AIV1AIList", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]ai.AI)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// AIV1AIGets indicates an expected call of AIV1AIGets.
-func (mr *MockRequestHandlerMockRecorder) AIV1AIGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
+// AIV1AIList indicates an expected call of AIV1AIList.
+func (mr *MockRequestHandlerMockRecorder) AIV1AIList(ctx, pageToken, pageSize, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIGets", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIGets), ctx, pageToken, pageSize, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIList", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIList), ctx, pageToken, pageSize, filters)
 }
 
 // AIV1AIUpdate mocks base method.
@@ -214,19 +214,19 @@ func (mr *MockRequestHandlerMockRecorder) AIV1AIcallGet(ctx, aicallID any) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIcallGet", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIcallGet), ctx, aicallID)
 }
 
-// AIV1AIcallGets mocks base method.
-func (m *MockRequestHandler) AIV1AIcallGets(ctx context.Context, pageToken string, pageSize uint64, filters map[aicall.Field]any) ([]aicall.AIcall, error) {
+// AIV1AIcallList mocks base method.
+func (m *MockRequestHandler) AIV1AIcallList(ctx context.Context, pageToken string, pageSize uint64, filters map[aicall.Field]any) ([]aicall.AIcall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AIV1AIcallGets", ctx, pageToken, pageSize, filters)
+	ret := m.ctrl.Call(m, "AIV1AIcallList", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]aicall.AIcall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// AIV1AIcallGets indicates an expected call of AIV1AIcallGets.
-func (mr *MockRequestHandlerMockRecorder) AIV1AIcallGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
+// AIV1AIcallList indicates an expected call of AIV1AIcallList.
+func (mr *MockRequestHandlerMockRecorder) AIV1AIcallList(ctx, pageToken, pageSize, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIcallGets", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIcallGets), ctx, pageToken, pageSize, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIcallList", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIcallList), ctx, pageToken, pageSize, filters)
 }
 
 // AIV1AIcallStart mocks base method.
@@ -438,19 +438,19 @@ func (mr *MockRequestHandlerMockRecorder) AIV1SummaryGet(ctx, summaryID any) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1SummaryGet", reflect.TypeOf((*MockRequestHandler)(nil).AIV1SummaryGet), ctx, summaryID)
 }
 
-// AIV1SummaryGets mocks base method.
-func (m *MockRequestHandler) AIV1SummaryGets(ctx context.Context, pageToken string, pageSize uint64, filters map[summary.Field]any) ([]summary.Summary, error) {
+// AIV1SummaryList mocks base method.
+func (m *MockRequestHandler) AIV1SummaryList(ctx context.Context, pageToken string, pageSize uint64, filters map[summary.Field]any) ([]summary.Summary, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AIV1SummaryGets", ctx, pageToken, pageSize, filters)
+	ret := m.ctrl.Call(m, "AIV1SummaryList", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]summary.Summary)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// AIV1SummaryGets indicates an expected call of AIV1SummaryGets.
-func (mr *MockRequestHandlerMockRecorder) AIV1SummaryGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
+// AIV1SummaryList indicates an expected call of AIV1SummaryList.
+func (mr *MockRequestHandlerMockRecorder) AIV1SummaryList(ctx, pageToken, pageSize, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1SummaryGets", reflect.TypeOf((*MockRequestHandler)(nil).AIV1SummaryGets), ctx, pageToken, pageSize, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1SummaryList", reflect.TypeOf((*MockRequestHandler)(nil).AIV1SummaryList), ctx, pageToken, pageSize, filters)
 }
 
 // AgentV1AgentCreate mocks base method.
@@ -513,19 +513,19 @@ func (mr *MockRequestHandlerMockRecorder) AgentV1AgentGetByCustomerIDAndAddress(
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentV1AgentGetByCustomerIDAndAddress", reflect.TypeOf((*MockRequestHandler)(nil).AgentV1AgentGetByCustomerIDAndAddress), ctx, timeout, customerID, addr)
 }
 
-// AgentV1AgentGets mocks base method.
-func (m *MockRequestHandler) AgentV1AgentGets(ctx context.Context, pageToken string, pageSize uint64, filters map[agent.Field]any) ([]agent.Agent, error) {
+// AgentV1AgentList mocks base method.
+func (m *MockRequestHandler) AgentV1AgentList(ctx context.Context, pageToken string, pageSize uint64, filters map[agent.Field]any) ([]agent.Agent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AgentV1AgentGets", ctx, pageToken, pageSize, filters)
+	ret := m.ctrl.Call(m, "AgentV1AgentList", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]agent.Agent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// AgentV1AgentGets indicates an expected call of AgentV1AgentGets.
-func (mr *MockRequestHandlerMockRecorder) AgentV1AgentGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
+// AgentV1AgentList indicates an expected call of AgentV1AgentList.
+func (mr *MockRequestHandlerMockRecorder) AgentV1AgentList(ctx, pageToken, pageSize, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentV1AgentGets", reflect.TypeOf((*MockRequestHandler)(nil).AgentV1AgentGets), ctx, pageToken, pageSize, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentV1AgentList", reflect.TypeOf((*MockRequestHandler)(nil).AgentV1AgentList), ctx, pageToken, pageSize, filters)
 }
 
 // AgentV1AgentUpdate mocks base method.
@@ -1219,21 +1219,6 @@ func (mr *MockRequestHandlerMockRecorder) BillingV1AccountGet(ctx, accountID any
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1AccountGet", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1AccountGet), ctx, accountID)
 }
 
-// BillingV1AccountGets mocks base method.
-func (m *MockRequestHandler) BillingV1AccountGets(ctx context.Context, pageToken string, pageSize uint64, filters map[account.Field]any) ([]account.Account, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "BillingV1AccountGets", ctx, pageToken, pageSize, filters)
-	ret0, _ := ret[0].([]account.Account)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// BillingV1AccountGets indicates an expected call of BillingV1AccountGets.
-func (mr *MockRequestHandlerMockRecorder) BillingV1AccountGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1AccountGets", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1AccountGets), ctx, pageToken, pageSize, filters)
-}
-
 // BillingV1AccountIsValidBalance mocks base method.
 func (m *MockRequestHandler) BillingV1AccountIsValidBalance(ctx context.Context, accountID uuid.UUID, billingType billing.ReferenceType, country string, count int) (bool, error) {
 	m.ctrl.T.Helper()
@@ -1247,6 +1232,21 @@ func (m *MockRequestHandler) BillingV1AccountIsValidBalance(ctx context.Context,
 func (mr *MockRequestHandlerMockRecorder) BillingV1AccountIsValidBalance(ctx, accountID, billingType, country, count any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1AccountIsValidBalance", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1AccountIsValidBalance), ctx, accountID, billingType, country, count)
+}
+
+// BillingV1AccountList mocks base method.
+func (m *MockRequestHandler) BillingV1AccountList(ctx context.Context, pageToken string, pageSize uint64, filters map[account.Field]any) ([]account.Account, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BillingV1AccountList", ctx, pageToken, pageSize, filters)
+	ret0, _ := ret[0].([]account.Account)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BillingV1AccountList indicates an expected call of BillingV1AccountList.
+func (mr *MockRequestHandlerMockRecorder) BillingV1AccountList(ctx, pageToken, pageSize, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1AccountList", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1AccountList), ctx, pageToken, pageSize, filters)
 }
 
 // BillingV1AccountSubtractBalanceForce mocks base method.
@@ -1309,19 +1309,19 @@ func (mr *MockRequestHandlerMockRecorder) BillingV1BillingGet(ctx, billingID any
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1BillingGet", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1BillingGet), ctx, billingID)
 }
 
-// BillingV1BillingGets mocks base method.
-func (m *MockRequestHandler) BillingV1BillingGets(ctx context.Context, pageToken string, pageSize uint64, filters map[billing.Field]any) ([]billing.Billing, error) {
+// BillingV1BillingList mocks base method.
+func (m *MockRequestHandler) BillingV1BillingList(ctx context.Context, pageToken string, pageSize uint64, filters map[billing.Field]any) ([]billing.Billing, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "BillingV1BillingGets", ctx, pageToken, pageSize, filters)
+	ret := m.ctrl.Call(m, "BillingV1BillingList", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]billing.Billing)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// BillingV1BillingGets indicates an expected call of BillingV1BillingGets.
-func (mr *MockRequestHandlerMockRecorder) BillingV1BillingGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
+// BillingV1BillingList indicates an expected call of BillingV1BillingList.
+func (mr *MockRequestHandlerMockRecorder) BillingV1BillingList(ctx, pageToken, pageSize, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1BillingGets", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1BillingGets), ctx, pageToken, pageSize, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingV1BillingList", reflect.TypeOf((*MockRequestHandler)(nil).BillingV1BillingList), ctx, pageToken, pageSize, filters)
 }
 
 // CallPublishEvent mocks base method.
@@ -1471,21 +1471,6 @@ func (mr *MockRequestHandlerMockRecorder) CallV1CallGetDigits(ctx, callID any) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallGetDigits", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallGetDigits), ctx, callID)
 }
 
-// CallV1CallGets mocks base method.
-func (m *MockRequestHandler) CallV1CallGets(ctx context.Context, pageToken string, pageSize uint64, filters map[call.Field]any) ([]call.Call, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallV1CallGets", ctx, pageToken, pageSize, filters)
-	ret0, _ := ret[0].([]call.Call)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CallV1CallGets indicates an expected call of CallV1CallGets.
-func (mr *MockRequestHandlerMockRecorder) CallV1CallGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallGets", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallGets), ctx, pageToken, pageSize, filters)
-}
-
 // CallV1CallHangup mocks base method.
 func (m *MockRequestHandler) CallV1CallHangup(ctx context.Context, callID uuid.UUID) (*call.Call, error) {
 	m.ctrl.T.Helper()
@@ -1541,6 +1526,21 @@ func (m *MockRequestHandler) CallV1CallHoldOn(ctx context.Context, callID uuid.U
 func (mr *MockRequestHandlerMockRecorder) CallV1CallHoldOn(ctx, callID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallHoldOn", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallHoldOn), ctx, callID)
+}
+
+// CallV1CallList mocks base method.
+func (m *MockRequestHandler) CallV1CallList(ctx context.Context, pageToken string, pageSize uint64, filters map[call.Field]any) ([]call.Call, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallV1CallList", ctx, pageToken, pageSize, filters)
+	ret0, _ := ret[0].([]call.Call)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CallV1CallList indicates an expected call of CallV1CallList.
+func (mr *MockRequestHandlerMockRecorder) CallV1CallList(ctx, pageToken, pageSize, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallList", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallList), ctx, pageToken, pageSize, filters)
 }
 
 // CallV1CallMediaStop mocks base method.
@@ -1994,19 +1994,19 @@ func (mr *MockRequestHandlerMockRecorder) CallV1ExternalMediaGet(ctx, externalMe
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1ExternalMediaGet", reflect.TypeOf((*MockRequestHandler)(nil).CallV1ExternalMediaGet), ctx, externalMediaID)
 }
 
-// CallV1ExternalMediaGets mocks base method.
-func (m *MockRequestHandler) CallV1ExternalMediaGets(ctx context.Context, pageToken string, pageSize uint64, filters map[externalmedia.Field]any) ([]externalmedia.ExternalMedia, error) {
+// CallV1ExternalMediaList mocks base method.
+func (m *MockRequestHandler) CallV1ExternalMediaList(ctx context.Context, pageToken string, pageSize uint64, filters map[externalmedia.Field]any) ([]externalmedia.ExternalMedia, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallV1ExternalMediaGets", ctx, pageToken, pageSize, filters)
+	ret := m.ctrl.Call(m, "CallV1ExternalMediaList", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]externalmedia.ExternalMedia)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// CallV1ExternalMediaGets indicates an expected call of CallV1ExternalMediaGets.
-func (mr *MockRequestHandlerMockRecorder) CallV1ExternalMediaGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
+// CallV1ExternalMediaList indicates an expected call of CallV1ExternalMediaList.
+func (mr *MockRequestHandlerMockRecorder) CallV1ExternalMediaList(ctx, pageToken, pageSize, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1ExternalMediaGets", reflect.TypeOf((*MockRequestHandler)(nil).CallV1ExternalMediaGets), ctx, pageToken, pageSize, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1ExternalMediaList", reflect.TypeOf((*MockRequestHandler)(nil).CallV1ExternalMediaList), ctx, pageToken, pageSize, filters)
 }
 
 // CallV1ExternalMediaStart mocks base method.
@@ -2084,21 +2084,6 @@ func (mr *MockRequestHandlerMockRecorder) CallV1GroupcallGet(ctx, groupcallID an
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1GroupcallGet", reflect.TypeOf((*MockRequestHandler)(nil).CallV1GroupcallGet), ctx, groupcallID)
 }
 
-// CallV1GroupcallGets mocks base method.
-func (m *MockRequestHandler) CallV1GroupcallGets(ctx context.Context, pageToken string, pageSize uint64, filters map[groupcall.Field]any) ([]groupcall.Groupcall, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallV1GroupcallGets", ctx, pageToken, pageSize, filters)
-	ret0, _ := ret[0].([]groupcall.Groupcall)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CallV1GroupcallGets indicates an expected call of CallV1GroupcallGets.
-func (mr *MockRequestHandlerMockRecorder) CallV1GroupcallGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1GroupcallGets", reflect.TypeOf((*MockRequestHandler)(nil).CallV1GroupcallGets), ctx, pageToken, pageSize, filters)
-}
-
 // CallV1GroupcallHangup mocks base method.
 func (m *MockRequestHandler) CallV1GroupcallHangup(ctx context.Context, groupcallID uuid.UUID) (*groupcall.Groupcall, error) {
 	m.ctrl.T.Helper()
@@ -2156,6 +2141,21 @@ func (mr *MockRequestHandlerMockRecorder) CallV1GroupcallHangupOthers(ctx, group
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1GroupcallHangupOthers", reflect.TypeOf((*MockRequestHandler)(nil).CallV1GroupcallHangupOthers), ctx, groupcallID)
 }
 
+// CallV1GroupcallList mocks base method.
+func (m *MockRequestHandler) CallV1GroupcallList(ctx context.Context, pageToken string, pageSize uint64, filters map[groupcall.Field]any) ([]groupcall.Groupcall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallV1GroupcallList", ctx, pageToken, pageSize, filters)
+	ret0, _ := ret[0].([]groupcall.Groupcall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CallV1GroupcallList indicates an expected call of CallV1GroupcallList.
+func (mr *MockRequestHandlerMockRecorder) CallV1GroupcallList(ctx, pageToken, pageSize, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1GroupcallList", reflect.TypeOf((*MockRequestHandler)(nil).CallV1GroupcallList), ctx, pageToken, pageSize, filters)
+}
+
 // CallV1GroupcallUpdateAnswerGroupcallID mocks base method.
 func (m *MockRequestHandler) CallV1GroupcallUpdateAnswerGroupcallID(ctx context.Context, groupcallID, answerGroupcallID uuid.UUID) (*groupcall.Groupcall, error) {
 	m.ctrl.T.Helper()
@@ -2201,19 +2201,19 @@ func (mr *MockRequestHandlerMockRecorder) CallV1RecordingGet(ctx, id any) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1RecordingGet", reflect.TypeOf((*MockRequestHandler)(nil).CallV1RecordingGet), ctx, id)
 }
 
-// CallV1RecordingGets mocks base method.
-func (m *MockRequestHandler) CallV1RecordingGets(ctx context.Context, pageToken string, pageSize uint64, filters map[recording.Field]any) ([]recording.Recording, error) {
+// CallV1RecordingList mocks base method.
+func (m *MockRequestHandler) CallV1RecordingList(ctx context.Context, pageToken string, pageSize uint64, filters map[recording.Field]any) ([]recording.Recording, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallV1RecordingGets", ctx, pageToken, pageSize, filters)
+	ret := m.ctrl.Call(m, "CallV1RecordingList", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]recording.Recording)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// CallV1RecordingGets indicates an expected call of CallV1RecordingGets.
-func (mr *MockRequestHandlerMockRecorder) CallV1RecordingGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
+// CallV1RecordingList indicates an expected call of CallV1RecordingList.
+func (mr *MockRequestHandlerMockRecorder) CallV1RecordingList(ctx, pageToken, pageSize, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1RecordingGets", reflect.TypeOf((*MockRequestHandler)(nil).CallV1RecordingGets), ctx, pageToken, pageSize, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1RecordingList", reflect.TypeOf((*MockRequestHandler)(nil).CallV1RecordingList), ctx, pageToken, pageSize, filters)
 }
 
 // CallV1RecordingStart mocks base method.
@@ -2319,19 +2319,19 @@ func (mr *MockRequestHandlerMockRecorder) CampaignV1CampaignGet(ctx, id any) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignV1CampaignGet", reflect.TypeOf((*MockRequestHandler)(nil).CampaignV1CampaignGet), ctx, id)
 }
 
-// CampaignV1CampaignGets mocks base method.
-func (m *MockRequestHandler) CampaignV1CampaignGets(ctx context.Context, pageToken string, pageSize uint64, filters map[campaign.Field]any) ([]campaign.Campaign, error) {
+// CampaignV1CampaignList mocks base method.
+func (m *MockRequestHandler) CampaignV1CampaignList(ctx context.Context, pageToken string, pageSize uint64, filters map[campaign.Field]any) ([]campaign.Campaign, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CampaignV1CampaignGets", ctx, pageToken, pageSize, filters)
+	ret := m.ctrl.Call(m, "CampaignV1CampaignList", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]campaign.Campaign)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// CampaignV1CampaignGets indicates an expected call of CampaignV1CampaignGets.
-func (mr *MockRequestHandlerMockRecorder) CampaignV1CampaignGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
+// CampaignV1CampaignList indicates an expected call of CampaignV1CampaignList.
+func (mr *MockRequestHandlerMockRecorder) CampaignV1CampaignList(ctx, pageToken, pageSize, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignV1CampaignGets", reflect.TypeOf((*MockRequestHandler)(nil).CampaignV1CampaignGets), ctx, pageToken, pageSize, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignV1CampaignList", reflect.TypeOf((*MockRequestHandler)(nil).CampaignV1CampaignList), ctx, pageToken, pageSize, filters)
 }
 
 // CampaignV1CampaignUpdateActions mocks base method.
@@ -2454,19 +2454,19 @@ func (mr *MockRequestHandlerMockRecorder) CampaignV1CampaigncallGet(ctx, id any)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignV1CampaigncallGet", reflect.TypeOf((*MockRequestHandler)(nil).CampaignV1CampaigncallGet), ctx, id)
 }
 
-// CampaignV1CampaigncallGets mocks base method.
-func (m *MockRequestHandler) CampaignV1CampaigncallGets(ctx context.Context, pageToken string, pageSize uint64, filters map[campaigncall.Field]any) ([]campaigncall.Campaigncall, error) {
+// CampaignV1CampaigncallList mocks base method.
+func (m *MockRequestHandler) CampaignV1CampaigncallList(ctx context.Context, pageToken string, pageSize uint64, filters map[campaigncall.Field]any) ([]campaigncall.Campaigncall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CampaignV1CampaigncallGets", ctx, pageToken, pageSize, filters)
+	ret := m.ctrl.Call(m, "CampaignV1CampaigncallList", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]campaigncall.Campaigncall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// CampaignV1CampaigncallGets indicates an expected call of CampaignV1CampaigncallGets.
-func (mr *MockRequestHandlerMockRecorder) CampaignV1CampaigncallGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
+// CampaignV1CampaigncallList indicates an expected call of CampaignV1CampaigncallList.
+func (mr *MockRequestHandlerMockRecorder) CampaignV1CampaigncallList(ctx, pageToken, pageSize, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignV1CampaigncallGets", reflect.TypeOf((*MockRequestHandler)(nil).CampaignV1CampaigncallGets), ctx, pageToken, pageSize, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignV1CampaigncallList", reflect.TypeOf((*MockRequestHandler)(nil).CampaignV1CampaigncallList), ctx, pageToken, pageSize, filters)
 }
 
 // CampaignV1OutplanCreate mocks base method.
@@ -2514,19 +2514,19 @@ func (mr *MockRequestHandlerMockRecorder) CampaignV1OutplanGet(ctx, id any) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignV1OutplanGet", reflect.TypeOf((*MockRequestHandler)(nil).CampaignV1OutplanGet), ctx, id)
 }
 
-// CampaignV1OutplanGets mocks base method.
-func (m *MockRequestHandler) CampaignV1OutplanGets(ctx context.Context, pageToken string, pageSize uint64, filters map[outplan.Field]any) ([]outplan.Outplan, error) {
+// CampaignV1OutplanList mocks base method.
+func (m *MockRequestHandler) CampaignV1OutplanList(ctx context.Context, pageToken string, pageSize uint64, filters map[outplan.Field]any) ([]outplan.Outplan, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CampaignV1OutplanGets", ctx, pageToken, pageSize, filters)
+	ret := m.ctrl.Call(m, "CampaignV1OutplanList", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]outplan.Outplan)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// CampaignV1OutplanGets indicates an expected call of CampaignV1OutplanGets.
-func (mr *MockRequestHandlerMockRecorder) CampaignV1OutplanGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
+// CampaignV1OutplanList indicates an expected call of CampaignV1OutplanList.
+func (mr *MockRequestHandlerMockRecorder) CampaignV1OutplanList(ctx, pageToken, pageSize, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignV1OutplanGets", reflect.TypeOf((*MockRequestHandler)(nil).CampaignV1OutplanGets), ctx, pageToken, pageSize, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignV1OutplanList", reflect.TypeOf((*MockRequestHandler)(nil).CampaignV1OutplanList), ctx, pageToken, pageSize, filters)
 }
 
 // CampaignV1OutplanUpdateBasicInfo mocks base method.
@@ -2619,19 +2619,19 @@ func (mr *MockRequestHandlerMockRecorder) ChatV1ChatGet(ctx, chatID any) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatV1ChatGet", reflect.TypeOf((*MockRequestHandler)(nil).ChatV1ChatGet), ctx, chatID)
 }
 
-// ChatV1ChatGets mocks base method.
-func (m *MockRequestHandler) ChatV1ChatGets(ctx context.Context, pageToken string, pageSize uint64, filters map[chat.Field]any) ([]chat.Chat, error) {
+// ChatV1ChatList mocks base method.
+func (m *MockRequestHandler) ChatV1ChatList(ctx context.Context, pageToken string, pageSize uint64, filters map[chat.Field]any) ([]chat.Chat, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChatV1ChatGets", ctx, pageToken, pageSize, filters)
+	ret := m.ctrl.Call(m, "ChatV1ChatList", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]chat.Chat)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ChatV1ChatGets indicates an expected call of ChatV1ChatGets.
-func (mr *MockRequestHandlerMockRecorder) ChatV1ChatGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
+// ChatV1ChatList indicates an expected call of ChatV1ChatList.
+func (mr *MockRequestHandlerMockRecorder) ChatV1ChatList(ctx, pageToken, pageSize, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatV1ChatGets", reflect.TypeOf((*MockRequestHandler)(nil).ChatV1ChatGets), ctx, pageToken, pageSize, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatV1ChatList", reflect.TypeOf((*MockRequestHandler)(nil).ChatV1ChatList), ctx, pageToken, pageSize, filters)
 }
 
 // ChatV1ChatRemoveParticipantID mocks base method.
@@ -2709,19 +2709,19 @@ func (mr *MockRequestHandlerMockRecorder) ChatV1ChatroomGet(ctx, chatroomID any)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatV1ChatroomGet", reflect.TypeOf((*MockRequestHandler)(nil).ChatV1ChatroomGet), ctx, chatroomID)
 }
 
-// ChatV1ChatroomGets mocks base method.
-func (m *MockRequestHandler) ChatV1ChatroomGets(ctx context.Context, pageToken string, pageSize uint64, filters map[chatroom.Field]any) ([]chatroom.Chatroom, error) {
+// ChatV1ChatroomList mocks base method.
+func (m *MockRequestHandler) ChatV1ChatroomList(ctx context.Context, pageToken string, pageSize uint64, filters map[chatroom.Field]any) ([]chatroom.Chatroom, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChatV1ChatroomGets", ctx, pageToken, pageSize, filters)
+	ret := m.ctrl.Call(m, "ChatV1ChatroomList", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]chatroom.Chatroom)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ChatV1ChatroomGets indicates an expected call of ChatV1ChatroomGets.
-func (mr *MockRequestHandlerMockRecorder) ChatV1ChatroomGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
+// ChatV1ChatroomList indicates an expected call of ChatV1ChatroomList.
+func (mr *MockRequestHandlerMockRecorder) ChatV1ChatroomList(ctx, pageToken, pageSize, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatV1ChatroomGets", reflect.TypeOf((*MockRequestHandler)(nil).ChatV1ChatroomGets), ctx, pageToken, pageSize, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatV1ChatroomList", reflect.TypeOf((*MockRequestHandler)(nil).ChatV1ChatroomList), ctx, pageToken, pageSize, filters)
 }
 
 // ChatV1ChatroomUpdateBasicInfo mocks base method.
@@ -2784,19 +2784,19 @@ func (mr *MockRequestHandlerMockRecorder) ChatV1MessagechatGet(ctx, messagechatI
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatV1MessagechatGet", reflect.TypeOf((*MockRequestHandler)(nil).ChatV1MessagechatGet), ctx, messagechatID)
 }
 
-// ChatV1MessagechatGets mocks base method.
-func (m *MockRequestHandler) ChatV1MessagechatGets(ctx context.Context, pageToken string, pageSize uint64, filters map[messagechat.Field]any) ([]messagechat.Messagechat, error) {
+// ChatV1MessagechatList mocks base method.
+func (m *MockRequestHandler) ChatV1MessagechatList(ctx context.Context, pageToken string, pageSize uint64, filters map[messagechat.Field]any) ([]messagechat.Messagechat, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChatV1MessagechatGets", ctx, pageToken, pageSize, filters)
+	ret := m.ctrl.Call(m, "ChatV1MessagechatList", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]messagechat.Messagechat)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ChatV1MessagechatGets indicates an expected call of ChatV1MessagechatGets.
-func (mr *MockRequestHandlerMockRecorder) ChatV1MessagechatGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
+// ChatV1MessagechatList indicates an expected call of ChatV1MessagechatList.
+func (mr *MockRequestHandlerMockRecorder) ChatV1MessagechatList(ctx, pageToken, pageSize, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatV1MessagechatGets", reflect.TypeOf((*MockRequestHandler)(nil).ChatV1MessagechatGets), ctx, pageToken, pageSize, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatV1MessagechatList", reflect.TypeOf((*MockRequestHandler)(nil).ChatV1MessagechatList), ctx, pageToken, pageSize, filters)
 }
 
 // ChatV1MessagechatroomDelete mocks base method.
@@ -2829,19 +2829,19 @@ func (mr *MockRequestHandlerMockRecorder) ChatV1MessagechatroomGet(ctx, messagec
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatV1MessagechatroomGet", reflect.TypeOf((*MockRequestHandler)(nil).ChatV1MessagechatroomGet), ctx, messagechatroomID)
 }
 
-// ChatV1MessagechatroomGets mocks base method.
-func (m *MockRequestHandler) ChatV1MessagechatroomGets(ctx context.Context, pageToken string, pageSize uint64, filters map[messagechatroom.Field]any) ([]messagechatroom.Messagechatroom, error) {
+// ChatV1MessagechatroomList mocks base method.
+func (m *MockRequestHandler) ChatV1MessagechatroomList(ctx context.Context, pageToken string, pageSize uint64, filters map[messagechatroom.Field]any) ([]messagechatroom.Messagechatroom, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChatV1MessagechatroomGets", ctx, pageToken, pageSize, filters)
+	ret := m.ctrl.Call(m, "ChatV1MessagechatroomList", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]messagechatroom.Messagechatroom)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ChatV1MessagechatroomGets indicates an expected call of ChatV1MessagechatroomGets.
-func (mr *MockRequestHandlerMockRecorder) ChatV1MessagechatroomGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
+// ChatV1MessagechatroomList indicates an expected call of ChatV1MessagechatroomList.
+func (mr *MockRequestHandlerMockRecorder) ChatV1MessagechatroomList(ctx, pageToken, pageSize, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatV1MessagechatroomGets", reflect.TypeOf((*MockRequestHandler)(nil).ChatV1MessagechatroomGets), ctx, pageToken, pageSize, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatV1MessagechatroomList", reflect.TypeOf((*MockRequestHandler)(nil).ChatV1MessagechatroomList), ctx, pageToken, pageSize, filters)
 }
 
 // ConferenceV1ConferenceCreate mocks base method.
@@ -2903,19 +2903,19 @@ func (mr *MockRequestHandlerMockRecorder) ConferenceV1ConferenceGet(ctx, confere
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceV1ConferenceGet", reflect.TypeOf((*MockRequestHandler)(nil).ConferenceV1ConferenceGet), ctx, conferenceID)
 }
 
-// ConferenceV1ConferenceGets mocks base method.
-func (m *MockRequestHandler) ConferenceV1ConferenceGets(ctx context.Context, pageToken string, pageSize uint64, filters map[conference.Field]any) ([]conference.Conference, error) {
+// ConferenceV1ConferenceList mocks base method.
+func (m *MockRequestHandler) ConferenceV1ConferenceList(ctx context.Context, pageToken string, pageSize uint64, filters map[conference.Field]any) ([]conference.Conference, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConferenceV1ConferenceGets", ctx, pageToken, pageSize, filters)
+	ret := m.ctrl.Call(m, "ConferenceV1ConferenceList", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]conference.Conference)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ConferenceV1ConferenceGets indicates an expected call of ConferenceV1ConferenceGets.
-func (mr *MockRequestHandlerMockRecorder) ConferenceV1ConferenceGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
+// ConferenceV1ConferenceList indicates an expected call of ConferenceV1ConferenceList.
+func (mr *MockRequestHandlerMockRecorder) ConferenceV1ConferenceList(ctx, pageToken, pageSize, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceV1ConferenceGets", reflect.TypeOf((*MockRequestHandler)(nil).ConferenceV1ConferenceGets), ctx, pageToken, pageSize, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceV1ConferenceList", reflect.TypeOf((*MockRequestHandler)(nil).ConferenceV1ConferenceList), ctx, pageToken, pageSize, filters)
 }
 
 // ConferenceV1ConferenceRecordingStart mocks base method.
@@ -3038,21 +3038,6 @@ func (mr *MockRequestHandlerMockRecorder) ConferenceV1ConferencecallGet(ctx, con
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceV1ConferencecallGet", reflect.TypeOf((*MockRequestHandler)(nil).ConferenceV1ConferencecallGet), ctx, conferencecallID)
 }
 
-// ConferenceV1ConferencecallGets mocks base method.
-func (m *MockRequestHandler) ConferenceV1ConferencecallGets(ctx context.Context, pageToken string, pageSize uint64, filters map[conferencecall.Field]any) ([]conferencecall.Conferencecall, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConferenceV1ConferencecallGets", ctx, pageToken, pageSize, filters)
-	ret0, _ := ret[0].([]conferencecall.Conferencecall)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ConferenceV1ConferencecallGets indicates an expected call of ConferenceV1ConferencecallGets.
-func (mr *MockRequestHandlerMockRecorder) ConferenceV1ConferencecallGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceV1ConferencecallGets", reflect.TypeOf((*MockRequestHandler)(nil).ConferenceV1ConferencecallGets), ctx, pageToken, pageSize, filters)
-}
-
 // ConferenceV1ConferencecallHealthCheck mocks base method.
 func (m *MockRequestHandler) ConferenceV1ConferencecallHealthCheck(ctx context.Context, conferencecallID uuid.UUID, retryCount, delay int) error {
 	m.ctrl.T.Helper()
@@ -3080,6 +3065,21 @@ func (m *MockRequestHandler) ConferenceV1ConferencecallKick(ctx context.Context,
 func (mr *MockRequestHandlerMockRecorder) ConferenceV1ConferencecallKick(ctx, conferencecallID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceV1ConferencecallKick", reflect.TypeOf((*MockRequestHandler)(nil).ConferenceV1ConferencecallKick), ctx, conferencecallID)
+}
+
+// ConferenceV1ConferencecallList mocks base method.
+func (m *MockRequestHandler) ConferenceV1ConferencecallList(ctx context.Context, pageToken string, pageSize uint64, filters map[conferencecall.Field]any) ([]conferencecall.Conferencecall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConferenceV1ConferencecallList", ctx, pageToken, pageSize, filters)
+	ret0, _ := ret[0].([]conferencecall.Conferencecall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConferenceV1ConferencecallList indicates an expected call of ConferenceV1ConferencecallList.
+func (mr *MockRequestHandlerMockRecorder) ConferenceV1ConferencecallList(ctx, pageToken, pageSize, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceV1ConferencecallList", reflect.TypeOf((*MockRequestHandler)(nil).ConferenceV1ConferencecallList), ctx, pageToken, pageSize, filters)
 }
 
 // ConferenceV1ServiceTypeConferencecallStart mocks base method.
@@ -3142,19 +3142,19 @@ func (mr *MockRequestHandlerMockRecorder) ConversationV1AccountGet(ctx, accountI
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1AccountGet", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1AccountGet), ctx, accountID)
 }
 
-// ConversationV1AccountGets mocks base method.
-func (m *MockRequestHandler) ConversationV1AccountGets(ctx context.Context, pageToken string, pageSize uint64, filters map[account0.Field]any) ([]account0.Account, error) {
+// ConversationV1AccountList mocks base method.
+func (m *MockRequestHandler) ConversationV1AccountList(ctx context.Context, pageToken string, pageSize uint64, filters map[account0.Field]any) ([]account0.Account, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConversationV1AccountGets", ctx, pageToken, pageSize, filters)
+	ret := m.ctrl.Call(m, "ConversationV1AccountList", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]account0.Account)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ConversationV1AccountGets indicates an expected call of ConversationV1AccountGets.
-func (mr *MockRequestHandlerMockRecorder) ConversationV1AccountGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
+// ConversationV1AccountList indicates an expected call of ConversationV1AccountList.
+func (mr *MockRequestHandlerMockRecorder) ConversationV1AccountList(ctx, pageToken, pageSize, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1AccountGets", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1AccountGets), ctx, pageToken, pageSize, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1AccountList", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1AccountList), ctx, pageToken, pageSize, filters)
 }
 
 // ConversationV1AccountUpdate mocks base method.
@@ -3202,19 +3202,19 @@ func (mr *MockRequestHandlerMockRecorder) ConversationV1ConversationGet(ctx, con
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1ConversationGet", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1ConversationGet), ctx, conversationID)
 }
 
-// ConversationV1ConversationGets mocks base method.
-func (m *MockRequestHandler) ConversationV1ConversationGets(ctx context.Context, pageToken string, pageSize uint64, fields map[conversation.Field]any) ([]conversation.Conversation, error) {
+// ConversationV1ConversationList mocks base method.
+func (m *MockRequestHandler) ConversationV1ConversationList(ctx context.Context, pageToken string, pageSize uint64, fields map[conversation.Field]any) ([]conversation.Conversation, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConversationV1ConversationGets", ctx, pageToken, pageSize, fields)
+	ret := m.ctrl.Call(m, "ConversationV1ConversationList", ctx, pageToken, pageSize, fields)
 	ret0, _ := ret[0].([]conversation.Conversation)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ConversationV1ConversationGets indicates an expected call of ConversationV1ConversationGets.
-func (mr *MockRequestHandlerMockRecorder) ConversationV1ConversationGets(ctx, pageToken, pageSize, fields any) *gomock.Call {
+// ConversationV1ConversationList indicates an expected call of ConversationV1ConversationList.
+func (mr *MockRequestHandlerMockRecorder) ConversationV1ConversationList(ctx, pageToken, pageSize, fields any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1ConversationGets", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1ConversationGets), ctx, pageToken, pageSize, fields)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1ConversationList", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1ConversationList), ctx, pageToken, pageSize, fields)
 }
 
 // ConversationV1ConversationUpdate mocks base method.
@@ -3276,19 +3276,19 @@ func (mr *MockRequestHandlerMockRecorder) ConversationV1MessageGet(ctx, messageI
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1MessageGet", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1MessageGet), ctx, messageID)
 }
 
-// ConversationV1MessageGets mocks base method.
-func (m *MockRequestHandler) ConversationV1MessageGets(ctx context.Context, pageToken string, pageSize uint64, filters map[message0.Field]any) ([]message0.Message, error) {
+// ConversationV1MessageList mocks base method.
+func (m *MockRequestHandler) ConversationV1MessageList(ctx context.Context, pageToken string, pageSize uint64, filters map[message0.Field]any) ([]message0.Message, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConversationV1MessageGets", ctx, pageToken, pageSize, filters)
+	ret := m.ctrl.Call(m, "ConversationV1MessageList", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]message0.Message)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ConversationV1MessageGets indicates an expected call of ConversationV1MessageGets.
-func (mr *MockRequestHandlerMockRecorder) ConversationV1MessageGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
+// ConversationV1MessageList indicates an expected call of ConversationV1MessageList.
+func (mr *MockRequestHandlerMockRecorder) ConversationV1MessageList(ctx, pageToken, pageSize, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1MessageGets", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1MessageGets), ctx, pageToken, pageSize, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1MessageList", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1MessageList), ctx, pageToken, pageSize, filters)
 }
 
 // ConversationV1MessageSend mocks base method.
@@ -3351,19 +3351,19 @@ func (mr *MockRequestHandlerMockRecorder) CustomerV1AccesskeyGet(ctx, accesskeyI
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerV1AccesskeyGet", reflect.TypeOf((*MockRequestHandler)(nil).CustomerV1AccesskeyGet), ctx, accesskeyID)
 }
 
-// CustomerV1AccesskeyGets mocks base method.
-func (m *MockRequestHandler) CustomerV1AccesskeyGets(ctx context.Context, pageToken string, pageSize uint64, filters map[accesskey.Field]any) ([]accesskey.Accesskey, error) {
+// CustomerV1AccesskeyList mocks base method.
+func (m *MockRequestHandler) CustomerV1AccesskeyList(ctx context.Context, pageToken string, pageSize uint64, filters map[accesskey.Field]any) ([]accesskey.Accesskey, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CustomerV1AccesskeyGets", ctx, pageToken, pageSize, filters)
+	ret := m.ctrl.Call(m, "CustomerV1AccesskeyList", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]accesskey.Accesskey)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// CustomerV1AccesskeyGets indicates an expected call of CustomerV1AccesskeyGets.
-func (mr *MockRequestHandlerMockRecorder) CustomerV1AccesskeyGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
+// CustomerV1AccesskeyList indicates an expected call of CustomerV1AccesskeyList.
+func (mr *MockRequestHandlerMockRecorder) CustomerV1AccesskeyList(ctx, pageToken, pageSize, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerV1AccesskeyGets", reflect.TypeOf((*MockRequestHandler)(nil).CustomerV1AccesskeyGets), ctx, pageToken, pageSize, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerV1AccesskeyList", reflect.TypeOf((*MockRequestHandler)(nil).CustomerV1AccesskeyList), ctx, pageToken, pageSize, filters)
 }
 
 // CustomerV1AccesskeyUpdate mocks base method.
@@ -3426,21 +3426,6 @@ func (mr *MockRequestHandlerMockRecorder) CustomerV1CustomerGet(ctx, customerID 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerV1CustomerGet", reflect.TypeOf((*MockRequestHandler)(nil).CustomerV1CustomerGet), ctx, customerID)
 }
 
-// CustomerV1CustomerGets mocks base method.
-func (m *MockRequestHandler) CustomerV1CustomerGets(ctx context.Context, pageToken string, pageSize uint64, filters map[customer.Field]any) ([]customer.Customer, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CustomerV1CustomerGets", ctx, pageToken, pageSize, filters)
-	ret0, _ := ret[0].([]customer.Customer)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CustomerV1CustomerGets indicates an expected call of CustomerV1CustomerGets.
-func (mr *MockRequestHandlerMockRecorder) CustomerV1CustomerGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerV1CustomerGets", reflect.TypeOf((*MockRequestHandler)(nil).CustomerV1CustomerGets), ctx, pageToken, pageSize, filters)
-}
-
 // CustomerV1CustomerIsValidBalance mocks base method.
 func (m *MockRequestHandler) CustomerV1CustomerIsValidBalance(ctx context.Context, customerID uuid.UUID, referenceType billing.ReferenceType, country string, count int) (bool, error) {
 	m.ctrl.T.Helper()
@@ -3454,6 +3439,21 @@ func (m *MockRequestHandler) CustomerV1CustomerIsValidBalance(ctx context.Contex
 func (mr *MockRequestHandlerMockRecorder) CustomerV1CustomerIsValidBalance(ctx, customerID, referenceType, country, count any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerV1CustomerIsValidBalance", reflect.TypeOf((*MockRequestHandler)(nil).CustomerV1CustomerIsValidBalance), ctx, customerID, referenceType, country, count)
+}
+
+// CustomerV1CustomerList mocks base method.
+func (m *MockRequestHandler) CustomerV1CustomerList(ctx context.Context, pageToken string, pageSize uint64, filters map[customer.Field]any) ([]customer.Customer, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CustomerV1CustomerList", ctx, pageToken, pageSize, filters)
+	ret0, _ := ret[0].([]customer.Customer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CustomerV1CustomerList indicates an expected call of CustomerV1CustomerList.
+func (mr *MockRequestHandlerMockRecorder) CustomerV1CustomerList(ctx, pageToken, pageSize, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerV1CustomerList", reflect.TypeOf((*MockRequestHandler)(nil).CustomerV1CustomerList), ctx, pageToken, pageSize, filters)
 }
 
 // CustomerV1CustomerUpdate mocks base method.
@@ -3516,19 +3516,19 @@ func (mr *MockRequestHandlerMockRecorder) EmailV1EmailGet(ctx, emailID any) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EmailV1EmailGet", reflect.TypeOf((*MockRequestHandler)(nil).EmailV1EmailGet), ctx, emailID)
 }
 
-// EmailV1EmailGets mocks base method.
-func (m *MockRequestHandler) EmailV1EmailGets(ctx context.Context, pageToken string, pageSize uint64, filters map[email.Field]any) ([]email.Email, error) {
+// EmailV1EmailList mocks base method.
+func (m *MockRequestHandler) EmailV1EmailList(ctx context.Context, pageToken string, pageSize uint64, filters map[email.Field]any) ([]email.Email, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "EmailV1EmailGets", ctx, pageToken, pageSize, filters)
+	ret := m.ctrl.Call(m, "EmailV1EmailList", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]email.Email)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// EmailV1EmailGets indicates an expected call of EmailV1EmailGets.
-func (mr *MockRequestHandlerMockRecorder) EmailV1EmailGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
+// EmailV1EmailList indicates an expected call of EmailV1EmailList.
+func (mr *MockRequestHandlerMockRecorder) EmailV1EmailList(ctx, pageToken, pageSize, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EmailV1EmailGets", reflect.TypeOf((*MockRequestHandler)(nil).EmailV1EmailGets), ctx, pageToken, pageSize, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EmailV1EmailList", reflect.TypeOf((*MockRequestHandler)(nil).EmailV1EmailList), ctx, pageToken, pageSize, filters)
 }
 
 // EmailV1EmailSend mocks base method.
@@ -3678,19 +3678,19 @@ func (mr *MockRequestHandlerMockRecorder) FlowV1ActiveflowGetNextAction(ctx, act
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowV1ActiveflowGetNextAction", reflect.TypeOf((*MockRequestHandler)(nil).FlowV1ActiveflowGetNextAction), ctx, activeflowID, actionID)
 }
 
-// FlowV1ActiveflowGets mocks base method.
-func (m *MockRequestHandler) FlowV1ActiveflowGets(ctx context.Context, pageToken string, pageSize uint64, filters map[activeflow.Field]any) ([]activeflow.Activeflow, error) {
+// FlowV1ActiveflowList mocks base method.
+func (m *MockRequestHandler) FlowV1ActiveflowList(ctx context.Context, pageToken string, pageSize uint64, filters map[activeflow.Field]any) ([]activeflow.Activeflow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlowV1ActiveflowGets", ctx, pageToken, pageSize, filters)
+	ret := m.ctrl.Call(m, "FlowV1ActiveflowList", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]activeflow.Activeflow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// FlowV1ActiveflowGets indicates an expected call of FlowV1ActiveflowGets.
-func (mr *MockRequestHandlerMockRecorder) FlowV1ActiveflowGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
+// FlowV1ActiveflowList indicates an expected call of FlowV1ActiveflowList.
+func (mr *MockRequestHandlerMockRecorder) FlowV1ActiveflowList(ctx, pageToken, pageSize, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowV1ActiveflowGets", reflect.TypeOf((*MockRequestHandler)(nil).FlowV1ActiveflowGets), ctx, pageToken, pageSize, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowV1ActiveflowList", reflect.TypeOf((*MockRequestHandler)(nil).FlowV1ActiveflowList), ctx, pageToken, pageSize, filters)
 }
 
 // FlowV1ActiveflowPushActions mocks base method.
@@ -3796,19 +3796,19 @@ func (mr *MockRequestHandlerMockRecorder) FlowV1FlowGet(ctx, flowID any) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowV1FlowGet", reflect.TypeOf((*MockRequestHandler)(nil).FlowV1FlowGet), ctx, flowID)
 }
 
-// FlowV1FlowGets mocks base method.
-func (m *MockRequestHandler) FlowV1FlowGets(ctx context.Context, pageToken string, pageSize uint64, filters map[flow.Field]any) ([]flow.Flow, error) {
+// FlowV1FlowList mocks base method.
+func (m *MockRequestHandler) FlowV1FlowList(ctx context.Context, pageToken string, pageSize uint64, filters map[flow.Field]any) ([]flow.Flow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlowV1FlowGets", ctx, pageToken, pageSize, filters)
+	ret := m.ctrl.Call(m, "FlowV1FlowList", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]flow.Flow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// FlowV1FlowGets indicates an expected call of FlowV1FlowGets.
-func (mr *MockRequestHandlerMockRecorder) FlowV1FlowGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
+// FlowV1FlowList indicates an expected call of FlowV1FlowList.
+func (mr *MockRequestHandlerMockRecorder) FlowV1FlowList(ctx, pageToken, pageSize, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowV1FlowGets", reflect.TypeOf((*MockRequestHandler)(nil).FlowV1FlowGets), ctx, pageToken, pageSize, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowV1FlowList", reflect.TypeOf((*MockRequestHandler)(nil).FlowV1FlowList), ctx, pageToken, pageSize, filters)
 }
 
 // FlowV1FlowUpdate mocks base method.
@@ -3943,19 +3943,19 @@ func (mr *MockRequestHandlerMockRecorder) MessageV1MessageGet(ctx, id any) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageV1MessageGet", reflect.TypeOf((*MockRequestHandler)(nil).MessageV1MessageGet), ctx, id)
 }
 
-// MessageV1MessageGets mocks base method.
-func (m *MockRequestHandler) MessageV1MessageGets(ctx context.Context, pageToken string, pageSize uint64, filters map[message1.Field]any) ([]message1.Message, error) {
+// MessageV1MessageList mocks base method.
+func (m *MockRequestHandler) MessageV1MessageList(ctx context.Context, pageToken string, pageSize uint64, filters map[message1.Field]any) ([]message1.Message, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MessageV1MessageGets", ctx, pageToken, pageSize, filters)
+	ret := m.ctrl.Call(m, "MessageV1MessageList", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]message1.Message)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// MessageV1MessageGets indicates an expected call of MessageV1MessageGets.
-func (mr *MockRequestHandlerMockRecorder) MessageV1MessageGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
+// MessageV1MessageList indicates an expected call of MessageV1MessageList.
+func (mr *MockRequestHandlerMockRecorder) MessageV1MessageList(ctx, pageToken, pageSize, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageV1MessageGets", reflect.TypeOf((*MockRequestHandler)(nil).MessageV1MessageGets), ctx, pageToken, pageSize, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageV1MessageList", reflect.TypeOf((*MockRequestHandler)(nil).MessageV1MessageList), ctx, pageToken, pageSize, filters)
 }
 
 // MessageV1MessageSend mocks base method.
@@ -3973,19 +3973,19 @@ func (mr *MockRequestHandlerMockRecorder) MessageV1MessageSend(ctx, id, customer
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageV1MessageSend", reflect.TypeOf((*MockRequestHandler)(nil).MessageV1MessageSend), ctx, id, customerID, source, destinations, text)
 }
 
-// NumberV1AvailableNumberGets mocks base method.
-func (m *MockRequestHandler) NumberV1AvailableNumberGets(ctx context.Context, pageSize uint64, filters map[string]any) ([]availablenumber.AvailableNumber, error) {
+// NumberV1AvailableNumberList mocks base method.
+func (m *MockRequestHandler) NumberV1AvailableNumberList(ctx context.Context, pageSize uint64, filters map[string]any) ([]availablenumber.AvailableNumber, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NumberV1AvailableNumberGets", ctx, pageSize, filters)
+	ret := m.ctrl.Call(m, "NumberV1AvailableNumberList", ctx, pageSize, filters)
 	ret0, _ := ret[0].([]availablenumber.AvailableNumber)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// NumberV1AvailableNumberGets indicates an expected call of NumberV1AvailableNumberGets.
-func (mr *MockRequestHandlerMockRecorder) NumberV1AvailableNumberGets(ctx, pageSize, filters any) *gomock.Call {
+// NumberV1AvailableNumberList indicates an expected call of NumberV1AvailableNumberList.
+func (mr *MockRequestHandlerMockRecorder) NumberV1AvailableNumberList(ctx, pageSize, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberV1AvailableNumberGets", reflect.TypeOf((*MockRequestHandler)(nil).NumberV1AvailableNumberGets), ctx, pageSize, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberV1AvailableNumberList", reflect.TypeOf((*MockRequestHandler)(nil).NumberV1AvailableNumberList), ctx, pageSize, filters)
 }
 
 // NumberV1NumberCreate mocks base method.
@@ -4033,19 +4033,19 @@ func (mr *MockRequestHandlerMockRecorder) NumberV1NumberGet(ctx, numberID any) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberV1NumberGet", reflect.TypeOf((*MockRequestHandler)(nil).NumberV1NumberGet), ctx, numberID)
 }
 
-// NumberV1NumberGets mocks base method.
-func (m *MockRequestHandler) NumberV1NumberGets(ctx context.Context, pageToken string, pageSize uint64, filters map[number.Field]any) ([]number.Number, error) {
+// NumberV1NumberList mocks base method.
+func (m *MockRequestHandler) NumberV1NumberList(ctx context.Context, pageToken string, pageSize uint64, filters map[number.Field]any) ([]number.Number, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NumberV1NumberGets", ctx, pageToken, pageSize, filters)
+	ret := m.ctrl.Call(m, "NumberV1NumberList", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]number.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// NumberV1NumberGets indicates an expected call of NumberV1NumberGets.
-func (mr *MockRequestHandlerMockRecorder) NumberV1NumberGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
+// NumberV1NumberList indicates an expected call of NumberV1NumberList.
+func (mr *MockRequestHandlerMockRecorder) NumberV1NumberList(ctx, pageToken, pageSize, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberV1NumberGets", reflect.TypeOf((*MockRequestHandler)(nil).NumberV1NumberGets), ctx, pageToken, pageSize, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberV1NumberList", reflect.TypeOf((*MockRequestHandler)(nil).NumberV1NumberList), ctx, pageToken, pageSize, filters)
 }
 
 // NumberV1NumberRenewByDays mocks base method.
@@ -4168,19 +4168,19 @@ func (mr *MockRequestHandlerMockRecorder) OutdialV1OutdialGet(ctx, id any) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutdialV1OutdialGet", reflect.TypeOf((*MockRequestHandler)(nil).OutdialV1OutdialGet), ctx, id)
 }
 
-// OutdialV1OutdialGets mocks base method.
-func (m *MockRequestHandler) OutdialV1OutdialGets(ctx context.Context, pageToken string, pageSize uint64, filters map[outdial.Field]any) ([]outdial.Outdial, error) {
+// OutdialV1OutdialList mocks base method.
+func (m *MockRequestHandler) OutdialV1OutdialList(ctx context.Context, pageToken string, pageSize uint64, filters map[outdial.Field]any) ([]outdial.Outdial, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "OutdialV1OutdialGets", ctx, pageToken, pageSize, filters)
+	ret := m.ctrl.Call(m, "OutdialV1OutdialList", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]outdial.Outdial)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// OutdialV1OutdialGets indicates an expected call of OutdialV1OutdialGets.
-func (mr *MockRequestHandlerMockRecorder) OutdialV1OutdialGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
+// OutdialV1OutdialList indicates an expected call of OutdialV1OutdialList.
+func (mr *MockRequestHandlerMockRecorder) OutdialV1OutdialList(ctx, pageToken, pageSize, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutdialV1OutdialGets", reflect.TypeOf((*MockRequestHandler)(nil).OutdialV1OutdialGets), ctx, pageToken, pageSize, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutdialV1OutdialList", reflect.TypeOf((*MockRequestHandler)(nil).OutdialV1OutdialList), ctx, pageToken, pageSize, filters)
 }
 
 // OutdialV1OutdialUpdateBasicInfo mocks base method.
@@ -4496,19 +4496,19 @@ func (mr *MockRequestHandlerMockRecorder) QueueV1QueueGetAgents(ctx, queueID, fi
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueV1QueueGetAgents", reflect.TypeOf((*MockRequestHandler)(nil).QueueV1QueueGetAgents), ctx, queueID, filters)
 }
 
-// QueueV1QueueGets mocks base method.
-func (m *MockRequestHandler) QueueV1QueueGets(ctx context.Context, pageToken string, pageSize uint64, filters map[queue.Field]any) ([]queue.Queue, error) {
+// QueueV1QueueList mocks base method.
+func (m *MockRequestHandler) QueueV1QueueList(ctx context.Context, pageToken string, pageSize uint64, filters map[queue.Field]any) ([]queue.Queue, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QueueV1QueueGets", ctx, pageToken, pageSize, filters)
+	ret := m.ctrl.Call(m, "QueueV1QueueList", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]queue.Queue)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// QueueV1QueueGets indicates an expected call of QueueV1QueueGets.
-func (mr *MockRequestHandlerMockRecorder) QueueV1QueueGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
+// QueueV1QueueList indicates an expected call of QueueV1QueueList.
+func (mr *MockRequestHandlerMockRecorder) QueueV1QueueList(ctx, pageToken, pageSize, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueV1QueueGets", reflect.TypeOf((*MockRequestHandler)(nil).QueueV1QueueGets), ctx, pageToken, pageSize, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueV1QueueList", reflect.TypeOf((*MockRequestHandler)(nil).QueueV1QueueList), ctx, pageToken, pageSize, filters)
 }
 
 // QueueV1QueueUpdate mocks base method.
@@ -4631,21 +4631,6 @@ func (mr *MockRequestHandlerMockRecorder) QueueV1QueuecallGetByReferenceID(ctx, 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueV1QueuecallGetByReferenceID", reflect.TypeOf((*MockRequestHandler)(nil).QueueV1QueuecallGetByReferenceID), ctx, referenceID)
 }
 
-// QueueV1QueuecallGets mocks base method.
-func (m *MockRequestHandler) QueueV1QueuecallGets(ctx context.Context, pageToken string, pageSize uint64, filters map[queuecall.Field]any) ([]queuecall.Queuecall, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QueueV1QueuecallGets", ctx, pageToken, pageSize, filters)
-	ret0, _ := ret[0].([]queuecall.Queuecall)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// QueueV1QueuecallGets indicates an expected call of QueueV1QueuecallGets.
-func (mr *MockRequestHandlerMockRecorder) QueueV1QueuecallGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueV1QueuecallGets", reflect.TypeOf((*MockRequestHandler)(nil).QueueV1QueuecallGets), ctx, pageToken, pageSize, filters)
-}
-
 // QueueV1QueuecallHealthCheck mocks base method.
 func (m *MockRequestHandler) QueueV1QueuecallHealthCheck(ctx context.Context, id uuid.UUID, delay, retryCount int) error {
 	m.ctrl.T.Helper()
@@ -4688,6 +4673,21 @@ func (m *MockRequestHandler) QueueV1QueuecallKickByReferenceID(ctx context.Conte
 func (mr *MockRequestHandlerMockRecorder) QueueV1QueuecallKickByReferenceID(ctx, referenceID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueV1QueuecallKickByReferenceID", reflect.TypeOf((*MockRequestHandler)(nil).QueueV1QueuecallKickByReferenceID), ctx, referenceID)
+}
+
+// QueueV1QueuecallList mocks base method.
+func (m *MockRequestHandler) QueueV1QueuecallList(ctx context.Context, pageToken string, pageSize uint64, filters map[queuecall.Field]any) ([]queuecall.Queuecall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QueueV1QueuecallList", ctx, pageToken, pageSize, filters)
+	ret0, _ := ret[0].([]queuecall.Queuecall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// QueueV1QueuecallList indicates an expected call of QueueV1QueuecallList.
+func (mr *MockRequestHandlerMockRecorder) QueueV1QueuecallList(ctx, pageToken, pageSize, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueV1QueuecallList", reflect.TypeOf((*MockRequestHandler)(nil).QueueV1QueuecallList), ctx, pageToken, pageSize, filters)
 }
 
 // QueueV1QueuecallTimeoutService mocks base method.
@@ -4748,19 +4748,19 @@ func (mr *MockRequestHandlerMockRecorder) QueueV1ServiceTypeQueuecallStart(ctx, 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueV1ServiceTypeQueuecallStart", reflect.TypeOf((*MockRequestHandler)(nil).QueueV1ServiceTypeQueuecallStart), ctx, queueID, activeflowID, referenceType, referenceID)
 }
 
-// RegistrarV1ContactGets mocks base method.
-func (m *MockRequestHandler) RegistrarV1ContactGets(ctx context.Context, filters map[string]any) ([]astcontact.AstContact, error) {
+// RegistrarV1ContactList mocks base method.
+func (m *MockRequestHandler) RegistrarV1ContactList(ctx context.Context, filters map[string]any) ([]astcontact.AstContact, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RegistrarV1ContactGets", ctx, filters)
+	ret := m.ctrl.Call(m, "RegistrarV1ContactList", ctx, filters)
 	ret0, _ := ret[0].([]astcontact.AstContact)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// RegistrarV1ContactGets indicates an expected call of RegistrarV1ContactGets.
-func (mr *MockRequestHandlerMockRecorder) RegistrarV1ContactGets(ctx, filters any) *gomock.Call {
+// RegistrarV1ContactList indicates an expected call of RegistrarV1ContactList.
+func (mr *MockRequestHandlerMockRecorder) RegistrarV1ContactList(ctx, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1ContactGets", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1ContactGets), ctx, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1ContactList", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1ContactList), ctx, filters)
 }
 
 // RegistrarV1ContactRefresh mocks base method.
@@ -4822,19 +4822,19 @@ func (mr *MockRequestHandlerMockRecorder) RegistrarV1ExtensionGet(ctx, extension
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1ExtensionGet", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1ExtensionGet), ctx, extensionID)
 }
 
-// RegistrarV1ExtensionGets mocks base method.
-func (m *MockRequestHandler) RegistrarV1ExtensionGets(ctx context.Context, pageToken string, pageSize uint64, filters map[extension.Field]any) ([]extension.Extension, error) {
+// RegistrarV1ExtensionList mocks base method.
+func (m *MockRequestHandler) RegistrarV1ExtensionList(ctx context.Context, pageToken string, pageSize uint64, filters map[extension.Field]any) ([]extension.Extension, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RegistrarV1ExtensionGets", ctx, pageToken, pageSize, filters)
+	ret := m.ctrl.Call(m, "RegistrarV1ExtensionList", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]extension.Extension)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// RegistrarV1ExtensionGets indicates an expected call of RegistrarV1ExtensionGets.
-func (mr *MockRequestHandlerMockRecorder) RegistrarV1ExtensionGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
+// RegistrarV1ExtensionList indicates an expected call of RegistrarV1ExtensionList.
+func (mr *MockRequestHandlerMockRecorder) RegistrarV1ExtensionList(ctx, pageToken, pageSize, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1ExtensionGets", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1ExtensionGets), ctx, pageToken, pageSize, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1ExtensionList", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1ExtensionList), ctx, pageToken, pageSize, filters)
 }
 
 // RegistrarV1ExtensionUpdate mocks base method.
@@ -4912,19 +4912,19 @@ func (mr *MockRequestHandlerMockRecorder) RegistrarV1TrunkGetByDomainName(ctx, d
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1TrunkGetByDomainName", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1TrunkGetByDomainName), ctx, domainName)
 }
 
-// RegistrarV1TrunkGets mocks base method.
-func (m *MockRequestHandler) RegistrarV1TrunkGets(ctx context.Context, pageToken string, pageSize uint64, filters map[trunk.Field]any) ([]trunk.Trunk, error) {
+// RegistrarV1TrunkList mocks base method.
+func (m *MockRequestHandler) RegistrarV1TrunkList(ctx context.Context, pageToken string, pageSize uint64, filters map[trunk.Field]any) ([]trunk.Trunk, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RegistrarV1TrunkGets", ctx, pageToken, pageSize, filters)
+	ret := m.ctrl.Call(m, "RegistrarV1TrunkList", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]trunk.Trunk)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// RegistrarV1TrunkGets indicates an expected call of RegistrarV1TrunkGets.
-func (mr *MockRequestHandlerMockRecorder) RegistrarV1TrunkGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
+// RegistrarV1TrunkList indicates an expected call of RegistrarV1TrunkList.
+func (mr *MockRequestHandlerMockRecorder) RegistrarV1TrunkList(ctx, pageToken, pageSize, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1TrunkGets", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1TrunkGets), ctx, pageToken, pageSize, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1TrunkList", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1TrunkList), ctx, pageToken, pageSize, filters)
 }
 
 // RegistrarV1TrunkUpdateBasicInfo mocks base method.
@@ -4942,19 +4942,19 @@ func (mr *MockRequestHandlerMockRecorder) RegistrarV1TrunkUpdateBasicInfo(ctx, t
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1TrunkUpdateBasicInfo", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1TrunkUpdateBasicInfo), ctx, trunkID, name, detail, authTypes, username, password, allowedIPs)
 }
 
-// RouteV1DialrouteGets mocks base method.
-func (m *MockRequestHandler) RouteV1DialrouteGets(ctx context.Context, filters map[route.Field]any) ([]route.Route, error) {
+// RouteV1DialrouteList mocks base method.
+func (m *MockRequestHandler) RouteV1DialrouteList(ctx context.Context, filters map[route.Field]any) ([]route.Route, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RouteV1DialrouteGets", ctx, filters)
+	ret := m.ctrl.Call(m, "RouteV1DialrouteList", ctx, filters)
 	ret0, _ := ret[0].([]route.Route)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// RouteV1DialrouteGets indicates an expected call of RouteV1DialrouteGets.
-func (mr *MockRequestHandlerMockRecorder) RouteV1DialrouteGets(ctx, filters any) *gomock.Call {
+// RouteV1DialrouteList indicates an expected call of RouteV1DialrouteList.
+func (mr *MockRequestHandlerMockRecorder) RouteV1DialrouteList(ctx, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteV1DialrouteGets", reflect.TypeOf((*MockRequestHandler)(nil).RouteV1DialrouteGets), ctx, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteV1DialrouteList", reflect.TypeOf((*MockRequestHandler)(nil).RouteV1DialrouteList), ctx, filters)
 }
 
 // RouteV1ProviderCreate mocks base method.
@@ -5002,19 +5002,19 @@ func (mr *MockRequestHandlerMockRecorder) RouteV1ProviderGet(ctx, providerID any
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteV1ProviderGet", reflect.TypeOf((*MockRequestHandler)(nil).RouteV1ProviderGet), ctx, providerID)
 }
 
-// RouteV1ProviderGets mocks base method.
-func (m *MockRequestHandler) RouteV1ProviderGets(ctx context.Context, pageToken string, pageSize uint64) ([]provider.Provider, error) {
+// RouteV1ProviderList mocks base method.
+func (m *MockRequestHandler) RouteV1ProviderList(ctx context.Context, pageToken string, pageSize uint64) ([]provider.Provider, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RouteV1ProviderGets", ctx, pageToken, pageSize)
+	ret := m.ctrl.Call(m, "RouteV1ProviderList", ctx, pageToken, pageSize)
 	ret0, _ := ret[0].([]provider.Provider)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// RouteV1ProviderGets indicates an expected call of RouteV1ProviderGets.
-func (mr *MockRequestHandlerMockRecorder) RouteV1ProviderGets(ctx, pageToken, pageSize any) *gomock.Call {
+// RouteV1ProviderList indicates an expected call of RouteV1ProviderList.
+func (mr *MockRequestHandlerMockRecorder) RouteV1ProviderList(ctx, pageToken, pageSize any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteV1ProviderGets", reflect.TypeOf((*MockRequestHandler)(nil).RouteV1ProviderGets), ctx, pageToken, pageSize)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteV1ProviderList", reflect.TypeOf((*MockRequestHandler)(nil).RouteV1ProviderList), ctx, pageToken, pageSize)
 }
 
 // RouteV1ProviderUpdate mocks base method.
@@ -5077,19 +5077,19 @@ func (mr *MockRequestHandlerMockRecorder) RouteV1RouteGet(ctx, routeID any) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteV1RouteGet", reflect.TypeOf((*MockRequestHandler)(nil).RouteV1RouteGet), ctx, routeID)
 }
 
-// RouteV1RouteGets mocks base method.
-func (m *MockRequestHandler) RouteV1RouteGets(ctx context.Context, pageToken string, pageSize uint64, filters map[route.Field]any) ([]route.Route, error) {
+// RouteV1RouteList mocks base method.
+func (m *MockRequestHandler) RouteV1RouteList(ctx context.Context, pageToken string, pageSize uint64, filters map[route.Field]any) ([]route.Route, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RouteV1RouteGets", ctx, pageToken, pageSize, filters)
+	ret := m.ctrl.Call(m, "RouteV1RouteList", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]route.Route)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// RouteV1RouteGets indicates an expected call of RouteV1RouteGets.
-func (mr *MockRequestHandlerMockRecorder) RouteV1RouteGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
+// RouteV1RouteList indicates an expected call of RouteV1RouteList.
+func (mr *MockRequestHandlerMockRecorder) RouteV1RouteList(ctx, pageToken, pageSize, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteV1RouteGets", reflect.TypeOf((*MockRequestHandler)(nil).RouteV1RouteGets), ctx, pageToken, pageSize, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteV1RouteList", reflect.TypeOf((*MockRequestHandler)(nil).RouteV1RouteList), ctx, pageToken, pageSize, filters)
 }
 
 // RouteV1RouteUpdate mocks base method.
@@ -5167,19 +5167,19 @@ func (mr *MockRequestHandlerMockRecorder) StorageV1AccountGet(ctx, accountID any
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageV1AccountGet", reflect.TypeOf((*MockRequestHandler)(nil).StorageV1AccountGet), ctx, accountID)
 }
 
-// StorageV1AccountGets mocks base method.
-func (m *MockRequestHandler) StorageV1AccountGets(ctx context.Context, pageToken string, pageSize uint64, filters map[account1.Field]any) ([]account1.Account, error) {
+// StorageV1AccountList mocks base method.
+func (m *MockRequestHandler) StorageV1AccountList(ctx context.Context, pageToken string, pageSize uint64, filters map[account1.Field]any) ([]account1.Account, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StorageV1AccountGets", ctx, pageToken, pageSize, filters)
+	ret := m.ctrl.Call(m, "StorageV1AccountList", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]account1.Account)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// StorageV1AccountGets indicates an expected call of StorageV1AccountGets.
-func (mr *MockRequestHandlerMockRecorder) StorageV1AccountGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
+// StorageV1AccountList indicates an expected call of StorageV1AccountList.
+func (mr *MockRequestHandlerMockRecorder) StorageV1AccountList(ctx, pageToken, pageSize, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageV1AccountGets", reflect.TypeOf((*MockRequestHandler)(nil).StorageV1AccountGets), ctx, pageToken, pageSize, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageV1AccountList", reflect.TypeOf((*MockRequestHandler)(nil).StorageV1AccountList), ctx, pageToken, pageSize, filters)
 }
 
 // StorageV1CompressfileCreate mocks base method.
@@ -5256,19 +5256,19 @@ func (mr *MockRequestHandlerMockRecorder) StorageV1FileGet(ctx, fileID any) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageV1FileGet", reflect.TypeOf((*MockRequestHandler)(nil).StorageV1FileGet), ctx, fileID)
 }
 
-// StorageV1FileGets mocks base method.
-func (m *MockRequestHandler) StorageV1FileGets(ctx context.Context, pageToken string, pageSize uint64, filters map[file.Field]any) ([]file.File, error) {
+// StorageV1FileList mocks base method.
+func (m *MockRequestHandler) StorageV1FileList(ctx context.Context, pageToken string, pageSize uint64, filters map[file.Field]any) ([]file.File, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StorageV1FileGets", ctx, pageToken, pageSize, filters)
+	ret := m.ctrl.Call(m, "StorageV1FileList", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]file.File)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// StorageV1FileGets indicates an expected call of StorageV1FileGets.
-func (mr *MockRequestHandlerMockRecorder) StorageV1FileGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
+// StorageV1FileList indicates an expected call of StorageV1FileList.
+func (mr *MockRequestHandlerMockRecorder) StorageV1FileList(ctx, pageToken, pageSize, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageV1FileGets", reflect.TypeOf((*MockRequestHandler)(nil).StorageV1FileGets), ctx, pageToken, pageSize, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageV1FileList", reflect.TypeOf((*MockRequestHandler)(nil).StorageV1FileList), ctx, pageToken, pageSize, filters)
 }
 
 // StorageV1RecordingDelete mocks base method.
@@ -5448,19 +5448,19 @@ func (mr *MockRequestHandlerMockRecorder) TagV1TagGet(ctx, tagID any) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TagV1TagGet", reflect.TypeOf((*MockRequestHandler)(nil).TagV1TagGet), ctx, tagID)
 }
 
-// TagV1TagGets mocks base method.
-func (m *MockRequestHandler) TagV1TagGets(ctx context.Context, pageToken string, pageSize uint64, filters map[tag.Field]any) ([]tag.Tag, error) {
+// TagV1TagList mocks base method.
+func (m *MockRequestHandler) TagV1TagList(ctx context.Context, pageToken string, pageSize uint64, filters map[tag.Field]any) ([]tag.Tag, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TagV1TagGets", ctx, pageToken, pageSize, filters)
+	ret := m.ctrl.Call(m, "TagV1TagList", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]tag.Tag)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// TagV1TagGets indicates an expected call of TagV1TagGets.
-func (mr *MockRequestHandlerMockRecorder) TagV1TagGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
+// TagV1TagList indicates an expected call of TagV1TagList.
+func (mr *MockRequestHandlerMockRecorder) TagV1TagList(ctx, pageToken, pageSize, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TagV1TagGets", reflect.TypeOf((*MockRequestHandler)(nil).TagV1TagGets), ctx, pageToken, pageSize, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TagV1TagList", reflect.TypeOf((*MockRequestHandler)(nil).TagV1TagList), ctx, pageToken, pageSize, filters)
 }
 
 // TagV1TagUpdate mocks base method.
@@ -5508,21 +5508,6 @@ func (mr *MockRequestHandlerMockRecorder) TranscribeV1TranscribeGet(ctx, transcr
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscribeV1TranscribeGet", reflect.TypeOf((*MockRequestHandler)(nil).TranscribeV1TranscribeGet), ctx, transcribeID)
 }
 
-// TranscribeV1TranscribeGets mocks base method.
-func (m *MockRequestHandler) TranscribeV1TranscribeGets(ctx context.Context, pageToken string, pageSize uint64, filters map[transcribe.Field]any) ([]transcribe.Transcribe, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TranscribeV1TranscribeGets", ctx, pageToken, pageSize, filters)
-	ret0, _ := ret[0].([]transcribe.Transcribe)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// TranscribeV1TranscribeGets indicates an expected call of TranscribeV1TranscribeGets.
-func (mr *MockRequestHandlerMockRecorder) TranscribeV1TranscribeGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscribeV1TranscribeGets", reflect.TypeOf((*MockRequestHandler)(nil).TranscribeV1TranscribeGets), ctx, pageToken, pageSize, filters)
-}
-
 // TranscribeV1TranscribeHealthCheck mocks base method.
 func (m *MockRequestHandler) TranscribeV1TranscribeHealthCheck(ctx context.Context, id uuid.UUID, delay, retryCount int) error {
 	m.ctrl.T.Helper()
@@ -5535,6 +5520,21 @@ func (m *MockRequestHandler) TranscribeV1TranscribeHealthCheck(ctx context.Conte
 func (mr *MockRequestHandlerMockRecorder) TranscribeV1TranscribeHealthCheck(ctx, id, delay, retryCount any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscribeV1TranscribeHealthCheck", reflect.TypeOf((*MockRequestHandler)(nil).TranscribeV1TranscribeHealthCheck), ctx, id, delay, retryCount)
+}
+
+// TranscribeV1TranscribeList mocks base method.
+func (m *MockRequestHandler) TranscribeV1TranscribeList(ctx context.Context, pageToken string, pageSize uint64, filters map[transcribe.Field]any) ([]transcribe.Transcribe, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TranscribeV1TranscribeList", ctx, pageToken, pageSize, filters)
+	ret0, _ := ret[0].([]transcribe.Transcribe)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TranscribeV1TranscribeList indicates an expected call of TranscribeV1TranscribeList.
+func (mr *MockRequestHandlerMockRecorder) TranscribeV1TranscribeList(ctx, pageToken, pageSize, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscribeV1TranscribeList", reflect.TypeOf((*MockRequestHandler)(nil).TranscribeV1TranscribeList), ctx, pageToken, pageSize, filters)
 }
 
 // TranscribeV1TranscribeStart mocks base method.
@@ -5567,19 +5567,19 @@ func (mr *MockRequestHandlerMockRecorder) TranscribeV1TranscribeStop(ctx, transc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscribeV1TranscribeStop", reflect.TypeOf((*MockRequestHandler)(nil).TranscribeV1TranscribeStop), ctx, transcribeID)
 }
 
-// TranscribeV1TranscriptGets mocks base method.
-func (m *MockRequestHandler) TranscribeV1TranscriptGets(ctx context.Context, pageToken string, pageSize uint64, filters map[transcript.Field]any) ([]transcript.Transcript, error) {
+// TranscribeV1TranscriptList mocks base method.
+func (m *MockRequestHandler) TranscribeV1TranscriptList(ctx context.Context, pageToken string, pageSize uint64, filters map[transcript.Field]any) ([]transcript.Transcript, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TranscribeV1TranscriptGets", ctx, pageToken, pageSize, filters)
+	ret := m.ctrl.Call(m, "TranscribeV1TranscriptList", ctx, pageToken, pageSize, filters)
 	ret0, _ := ret[0].([]transcript.Transcript)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// TranscribeV1TranscriptGets indicates an expected call of TranscribeV1TranscriptGets.
-func (mr *MockRequestHandlerMockRecorder) TranscribeV1TranscriptGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
+// TranscribeV1TranscriptList indicates an expected call of TranscribeV1TranscriptList.
+func (mr *MockRequestHandlerMockRecorder) TranscribeV1TranscriptList(ctx, pageToken, pageSize, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscribeV1TranscriptGets", reflect.TypeOf((*MockRequestHandler)(nil).TranscribeV1TranscriptGets), ctx, pageToken, pageSize, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscribeV1TranscriptList", reflect.TypeOf((*MockRequestHandler)(nil).TranscribeV1TranscriptList), ctx, pageToken, pageSize, filters)
 }
 
 // TransferV1TransferStart mocks base method.

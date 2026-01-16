@@ -14,7 +14,7 @@ import (
 	"monorepo/bin-common-handler/pkg/sockhandler"
 )
 
-func Test_NumberV1AvailableNumberGets(t *testing.T) {
+func Test_NumberV1AvailableNumberList(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -77,7 +77,7 @@ func Test_NumberV1AvailableNumberGets(t *testing.T) {
 				"customer_id": tt.customerID,
 				"country_code": tt.countryCode,
 			}
-			res, err := reqHandler.NumberV1AvailableNumberGets(ctx, tt.pageSize, filters)
+			res, err := reqHandler.NumberV1AvailableNumberList(ctx, tt.pageSize, filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

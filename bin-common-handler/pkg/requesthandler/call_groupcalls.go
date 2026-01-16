@@ -63,10 +63,10 @@ func (r *requestHandler) CallV1GroupcallCreate(
 	return &res, nil
 }
 
-// CallV1GroupcallGets sends a request to call-manager
+// CallV1GroupcallList sends a request to call-manager
 // to getting a list of groupcall info.
 // it returns detail list of groupcall info if it succeed.
-func (r *requestHandler) CallV1GroupcallGets(ctx context.Context, pageToken string, pageSize uint64, filters map[cmgroupcall.Field]any) ([]cmgroupcall.Groupcall, error) {
+func (r *requestHandler) CallV1GroupcallList(ctx context.Context, pageToken string, pageSize uint64, filters map[cmgroupcall.Field]any) ([]cmgroupcall.Groupcall, error) {
 	uri := fmt.Sprintf("/v1/groupcalls?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
 	m, err := json.Marshal(filters)

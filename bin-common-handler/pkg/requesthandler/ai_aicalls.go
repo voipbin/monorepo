@@ -48,10 +48,10 @@ func (r *requestHandler) AIV1AIcallStart(ctx context.Context, activeflowID uuid.
 	return &res, nil
 }
 
-// AIV1AIcallGets sends a request to ai-manager
+// AIV1AIcallList sends a request to ai-manager
 // to getting a list of aicall info of the given customer id.
 // it returns detail list of aicall info if it succeed.
-func (r *requestHandler) AIV1AIcallGets(ctx context.Context, pageToken string, pageSize uint64, filters map[amaicall.Field]any) ([]amaicall.AIcall, error) {
+func (r *requestHandler) AIV1AIcallList(ctx context.Context, pageToken string, pageSize uint64, filters map[amaicall.Field]any) ([]amaicall.AIcall, error) {
 	uri := fmt.Sprintf("/v1/aicalls?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
 	m, err := json.Marshal(filters)

@@ -82,7 +82,7 @@ func (h *serviceHandler) RouteGets(ctx context.Context, a *amagent.Agent, size u
 
 	// get all routes (no filtering for super admin)
 	filters := map[rmroute.Field]any{}
-	tmps, err := h.reqHandler.RouteV1RouteGets(ctx, token, size, filters)
+	tmps, err := h.reqHandler.RouteV1RouteList(ctx, token, size, filters)
 	if err != nil {
 		log.Errorf("Could not get routes from the route-manager. err: %v", err)
 		return nil, err
@@ -123,7 +123,7 @@ func (h *serviceHandler) RouteGetsByCustomerID(ctx context.Context, a *amagent.A
 	filters := map[rmroute.Field]any{
 		rmroute.FieldCustomerID: customerID,
 	}
-	tmps, err := h.reqHandler.RouteV1RouteGets(ctx, token, size, filters)
+	tmps, err := h.reqHandler.RouteV1RouteList(ctx, token, size, filters)
 	if err != nil {
 		log.Errorf("Could not get routes from the route-manager. err: %v", err)
 		return nil, err

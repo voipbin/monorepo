@@ -301,7 +301,7 @@ func Test_AgentGets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().AgentV1AgentGets(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.response, nil)
+			mockReq.EXPECT().AgentV1AgentList(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.response, nil)
 
 			res, err := h.AgentGets(ctx, tt.agent, tt.size, tt.token, tt.filters)
 			if err != nil {

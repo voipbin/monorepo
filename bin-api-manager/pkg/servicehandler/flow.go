@@ -134,7 +134,7 @@ func (h *serviceHandler) FlowGets(ctx context.Context, a *amagent.Agent, size ui
 	}
 
 	// get flows
-	flows, err := h.reqHandler.FlowV1FlowGets(ctx, token, size, filters)
+	flows, err := h.reqHandler.FlowV1FlowList(ctx, token, size, filters)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get flows")
 	}

@@ -232,7 +232,7 @@ func Test_Start_ringall(t *testing.T) {
 			case commonaddress.TypeAgent:
 				mockReq.EXPECT().AgentV1AgentGet(ctx, tt.responseAgent.ID).Return(tt.responseAgent, nil)
 			case commonaddress.TypeExtension:
-				mockReq.EXPECT().RegistrarV1ContactGets(ctx, gomock.Any()).Return(tt.responseAgent, nil)
+				mockReq.EXPECT().RegistrarV1ContactList(ctx, gomock.Any()).Return(tt.responseAgent, nil)
 			}
 
 			// getAddressOwner

@@ -106,7 +106,7 @@ func (h *serviceHandler) CampaignGetsByCustomerID(ctx context.Context, a *amagen
 	filters := map[cacampaign.Field]any{
 		cacampaign.FieldCustomerID: a.CustomerID,
 	}
-	campaigns, err := h.reqHandler.CampaignV1CampaignGets(ctx, token, size, filters)
+	campaigns, err := h.reqHandler.CampaignV1CampaignList(ctx, token, size, filters)
 	if err != nil {
 		log.Errorf("Could not get campaigns info from the campaign-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find campaigns info. err: %v", err)

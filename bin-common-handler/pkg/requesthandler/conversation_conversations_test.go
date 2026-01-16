@@ -84,7 +84,7 @@ func Test_ConversationV1ConversationsGet(t *testing.T) {
 	}
 }
 
-func Test_ConversationV1ConversationGets(t *testing.T) {
+func Test_ConversationV1ConversationList(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -154,7 +154,7 @@ func Test_ConversationV1ConversationGets(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.ConversationV1ConversationGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
+			res, err := reqHandler.ConversationV1ConversationList(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

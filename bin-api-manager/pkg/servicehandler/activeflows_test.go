@@ -382,7 +382,7 @@ func Test_ActiveflowGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1ActiveflowGets(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseActiveflows, nil)
+			mockReq.EXPECT().FlowV1ActiveflowList(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseActiveflows, nil)
 
 			res, err := h.ActiveflowGets(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {

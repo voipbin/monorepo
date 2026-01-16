@@ -72,7 +72,7 @@ func (h *customerHandler) validateCreate(ctx context.Context, email string) bool
 		amagent.FieldDeleted:  false,
 		amagent.FieldUsername: email,
 	}
-	tmpAgents, err := h.reqHandler.AgentV1AgentGets(ctx, "", 100, filterAgent)
+	tmpAgents, err := h.reqHandler.AgentV1AgentList(ctx, "", 100, filterAgent)
 	if err != nil {
 		log.Errorf("Could not get the agent info. err: %v", err)
 		return false

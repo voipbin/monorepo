@@ -17,7 +17,7 @@ import (
 	"monorepo/bin-common-handler/pkg/sockhandler"
 )
 
-func Test_CampaignV1CampaigncallGets(t *testing.T) {
+func Test_CampaignV1CampaigncallList(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -78,7 +78,7 @@ func Test_CampaignV1CampaigncallGets(t *testing.T) {
 			filters := map[cacampaigncall.Field]any{
 			cacampaigncall.FieldCustomerID: tt.customerID,
 		}
-		res, err := reqHandler.CampaignV1CampaigncallGets(ctx, tt.pageToken, tt.pageSize, filters)
+		res, err := reqHandler.CampaignV1CampaigncallList(ctx, tt.pageToken, tt.pageSize, filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -151,7 +151,7 @@ func Test_CampaignV1CampaigncallGetsByCampaignID(t *testing.T) {
 			filters := map[cacampaigncall.Field]any{
 				cacampaigncall.FieldCampaignID: tt.campaignID,
 			}
-			res, err := reqHandler.CampaignV1CampaigncallGets(ctx, tt.pageToken, tt.pageSize, filters)
+			res, err := reqHandler.CampaignV1CampaigncallList(ctx, tt.pageToken, tt.pageSize, filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

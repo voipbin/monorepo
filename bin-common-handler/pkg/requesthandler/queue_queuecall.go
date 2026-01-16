@@ -14,10 +14,10 @@ import (
 	"github.com/pkg/errors"
 )
 
-// QueueV1QueuecallGets sends a request to queue-manager
+// QueueV1QueuecallList sends a request to queue-manager
 // to get a list of queuecalls.
 // Returns list of queuecalls
-func (r *requestHandler) QueueV1QueuecallGets(ctx context.Context, pageToken string, pageSize uint64, filters map[qmqueuecall.Field]any) ([]qmqueuecall.Queuecall, error) {
+func (r *requestHandler) QueueV1QueuecallList(ctx context.Context, pageToken string, pageSize uint64, filters map[qmqueuecall.Field]any) ([]qmqueuecall.Queuecall, error) {
 	uri := fmt.Sprintf("/v1/queuecalls?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
 	m, err := json.Marshal(filters)

@@ -437,7 +437,7 @@ func Test_FlowGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1FlowGets(ctx, tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.responseFlows, nil)
+			mockReq.EXPECT().FlowV1FlowList(ctx, tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.responseFlows, nil)
 
 			res, err := h.FlowGets(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {

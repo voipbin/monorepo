@@ -11,9 +11,9 @@ import (
 	"github.com/pkg/errors"
 )
 
-// NumberV1AvailableNumberGets sends a request to number-manager
+// NumberV1AvailableNumberList sends a request to number-manager
 // to getting a list of available numbers.
-func (r *requestHandler) NumberV1AvailableNumberGets(ctx context.Context, pageSize uint64, filters map[string]any) ([]nmavailablenumber.AvailableNumber, error) {
+func (r *requestHandler) NumberV1AvailableNumberList(ctx context.Context, pageSize uint64, filters map[string]any) ([]nmavailablenumber.AvailableNumber, error) {
 	uri := fmt.Sprintf("/v1/available_numbers?page_size=%d", pageSize)
 
 	m, err := json.Marshal(filters)

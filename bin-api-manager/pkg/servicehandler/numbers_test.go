@@ -82,7 +82,7 @@ func Test_OrderNumberGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().NumberV1NumberGets(ctx, tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.response, nil)
+			mockReq.EXPECT().NumberV1NumberList(ctx, tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.response, nil)
 
 			res, err := h.NumberGets(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {

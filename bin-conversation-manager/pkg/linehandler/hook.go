@@ -141,7 +141,7 @@ func (h *lineHandler) hookEventTypeMessage(ctx context.Context, ac *account.Acco
 		conversation.FieldDialogID: dialogID,
 	}
 
-	cvs, err := h.reqHandler.ConversationV1ConversationGets(ctx, "", 1, fields)
+	cvs, err := h.reqHandler.ConversationV1ConversationList(ctx, "", 1, fields)
 	if err != nil {
 		return errors.Wrapf(err, "Could not get conversations")
 	} else if len(cvs) == 0 {

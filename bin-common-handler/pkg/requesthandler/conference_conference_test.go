@@ -77,7 +77,7 @@ func Test_ConferenceV1ConferenceGet(t *testing.T) {
 	}
 }
 
-func Test_ConferenceV1ConferenceGets(t *testing.T) {
+func Test_ConferenceV1ConferenceList(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -142,7 +142,7 @@ func Test_ConferenceV1ConferenceGets(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := h.ConferenceV1ConferenceGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
+			res, err := h.ConferenceV1ConferenceList(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

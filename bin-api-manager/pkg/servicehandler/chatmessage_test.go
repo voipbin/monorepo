@@ -169,7 +169,7 @@ func Test_ChatmessageGetsByChatID(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().ChatV1ChatGet(ctx, tt.chatID).Return(tt.responseChat, nil)
-			mockReq.EXPECT().ChatV1MessagechatGets(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.response, nil)
+			mockReq.EXPECT().ChatV1MessagechatList(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.response, nil)
 
 			res, err := h.ChatmessageGetsByChatID(ctx, tt.agent, tt.chatID, tt.size, tt.token)
 			if err != nil {

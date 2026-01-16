@@ -187,7 +187,7 @@ func (h *serviceHandler) callGetsByFilters(ctx context.Context, size uint64, tok
 	}
 
 	// get calls
-	tmps, err := h.reqHandler.CallV1CallGets(ctx, token, size, typedFilters)
+	tmps, err := h.reqHandler.CallV1CallList(ctx, token, size, typedFilters)
 	if err != nil {
 		log.Infof("Could not get calls info. err: %v", err)
 		return nil, err

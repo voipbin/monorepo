@@ -14,7 +14,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func Test_AIV1SummaryGets(t *testing.T) {
+func Test_AIV1SummaryList(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -80,7 +80,7 @@ func Test_AIV1SummaryGets(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := h.AIV1SummaryGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
+			res, err := h.AIV1SummaryList(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

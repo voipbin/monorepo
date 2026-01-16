@@ -27,7 +27,7 @@ func (h *transcriptHandler) Recording(ctx context.Context, customerID uuid.UUID,
 		smfile.FieldDeleted:     false,
 		smfile.FieldReferenceID: recordingID.String(),
 	}
-	files, err := h.reqHandler.StorageV1FileGets(ctx, "", 100, filters)
+	files, err := h.reqHandler.StorageV1FileList(ctx, "", 100, filters)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get the files. recording_id: %s", recordingID)
 	}

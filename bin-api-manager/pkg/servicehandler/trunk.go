@@ -144,7 +144,7 @@ func (h *serviceHandler) TrunkGets(ctx context.Context, a *amagent.Agent, size u
 		return nil, err
 	}
 
-	tmps, err := h.reqHandler.RegistrarV1TrunkGets(ctx, token, size, typedFilters)
+	tmps, err := h.reqHandler.RegistrarV1TrunkList(ctx, token, size, typedFilters)
 	if err != nil {
 		log.Errorf("Could not get trunks info from the registrar-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find trunks info. err: %v", err)

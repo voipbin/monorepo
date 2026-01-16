@@ -14,10 +14,10 @@ import (
 	"github.com/pkg/errors"
 )
 
-// EmailV1EmailGets sends a request to email-manager
+// EmailV1EmailList sends a request to email-manager
 // to getting a list of emails info.
 // it returns detail email info if it succeed.
-func (r *requestHandler) EmailV1EmailGets(ctx context.Context, pageToken string, pageSize uint64, filters map[ememail.Field]any) ([]ememail.Email, error) {
+func (r *requestHandler) EmailV1EmailList(ctx context.Context, pageToken string, pageSize uint64, filters map[ememail.Field]any) ([]ememail.Email, error) {
 	uri := fmt.Sprintf("/v1/emails?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
 	m, err := json.Marshal(filters)

@@ -14,7 +14,7 @@ import (
 	"monorepo/bin-common-handler/pkg/sockhandler"
 )
 
-func Test_RegistrarV1ContactGets(t *testing.T) {
+func Test_RegistrarV1ContactList(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -77,7 +77,7 @@ func Test_RegistrarV1ContactGets(t *testing.T) {
 			"extension": tt.extension,
 		}
 
-		res, err := reqHandler.RegistrarV1ContactGets(ctx, filters)
+		res, err := reqHandler.RegistrarV1ContactList(ctx, filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

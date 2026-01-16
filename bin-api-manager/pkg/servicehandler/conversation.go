@@ -89,7 +89,7 @@ func (h *serviceHandler) conversationGets(ctx context.Context, a *amagent.Agent,
 	}
 
 	// gets
-	res, err := h.reqHandler.ConversationV1ConversationGets(ctx, token, size, fields)
+	res, err := h.reqHandler.ConversationV1ConversationList(ctx, token, size, fields)
 	if err != nil {
 		log.Errorf("Could not get campaigns info from the campaign-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find campaigns info. err: %v", err)

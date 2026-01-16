@@ -173,7 +173,7 @@ func Test_CampaignGetsByCustomerID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().CampaignV1CampaignGets(ctx, tt.pageToken, tt.pageSize, gomock.Any()).Return(tt.response, nil)
+			mockReq.EXPECT().CampaignV1CampaignList(ctx, tt.pageToken, tt.pageSize, gomock.Any()).Return(tt.response, nil)
 			res, err := h.CampaignGetsByCustomerID(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

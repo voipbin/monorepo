@@ -171,7 +171,7 @@ func Test_AISummaryGetsByCustomerID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AIV1SummaryGets(ctx, tt.token, tt.size, tt.filters).Return(tt.response, nil)
+			mockReq.EXPECT().AIV1SummaryList(ctx, tt.token, tt.size, tt.filters).Return(tt.response, nil)
 
 			res, err := h.AISummaryGetsByCustomerID(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {

@@ -200,7 +200,7 @@ func (h *summaryHandler) startReferenceTypeTranscribe(
 		tmtranscript.FieldDeleted:      false,
 		tmtranscript.FieldTranscribeID: referenceID.String(),
 	}
-	ts, err := h.reqHandler.TranscribeV1TranscriptGets(ctx, "", 1000, filters)
+	ts, err := h.reqHandler.TranscribeV1TranscriptList(ctx, "", 1000, filters)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get the transcribe data")
 	}
@@ -266,7 +266,7 @@ func (h *summaryHandler) startReferenceTypeRecording(
 		tmtranscript.FieldDeleted:      false,
 		tmtranscript.FieldTranscribeID: tr.ID.String(),
 	}
-	transcripts, err := h.reqHandler.TranscribeV1TranscriptGets(ctx, "", 1000, filters)
+	transcripts, err := h.reqHandler.TranscribeV1TranscriptList(ctx, "", 1000, filters)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get the transcribe data")
 	}

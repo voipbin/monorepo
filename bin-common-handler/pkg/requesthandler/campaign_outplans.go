@@ -66,10 +66,10 @@ func (r *requestHandler) CampaignV1OutplanCreate(
 	return &res, nil
 }
 
-// CampaignV1OutplanGets sends a request to campaign-manager
+// CampaignV1OutplanList sends a request to campaign-manager
 // to getting a list of outplans.
 // it returns detail list of outplans if it succeed.
-func (r *requestHandler) CampaignV1OutplanGets(ctx context.Context, pageToken string, pageSize uint64, filters map[caoutplan.Field]any) ([]caoutplan.Outplan, error) {
+func (r *requestHandler) CampaignV1OutplanList(ctx context.Context, pageToken string, pageSize uint64, filters map[caoutplan.Field]any) ([]caoutplan.Outplan, error) {
 	uri := fmt.Sprintf("/v1/outplans?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
 	m, err := json.Marshal(filters)

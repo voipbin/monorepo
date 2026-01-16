@@ -18,10 +18,10 @@ import (
 	"github.com/pkg/errors"
 )
 
-// QueueV1QueueGets sends a request to queue-manager
+// QueueV1QueueList sends a request to queue-manager
 // to get a list of queues.
 // Returns list of queues
-func (r *requestHandler) QueueV1QueueGets(ctx context.Context, pageToken string, pageSize uint64, filters map[qmqueue.Field]any) ([]qmqueue.Queue, error) {
+func (r *requestHandler) QueueV1QueueList(ctx context.Context, pageToken string, pageSize uint64, filters map[qmqueue.Field]any) ([]qmqueue.Queue, error) {
 	uri := fmt.Sprintf("/v1/queues?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
 	m, err := json.Marshal(filters)

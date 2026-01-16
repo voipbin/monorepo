@@ -183,7 +183,7 @@ func (h *serviceHandler) chatroommessageGetsWithFilters(ctx context.Context, siz
 		return nil, err
 	}
 
-	res, err := h.reqHandler.ChatV1MessagechatroomGets(ctx, token, size, typedFilters)
+	res, err := h.reqHandler.ChatV1MessagechatroomList(ctx, token, size, typedFilters)
 	if err != nil {
 		return nil, fmt.Errorf("could not find chatroommessages info. err: %v", err)
 	}

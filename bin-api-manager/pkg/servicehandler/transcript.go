@@ -46,7 +46,7 @@ func (h *serviceHandler) TranscriptGets(ctx context.Context, a *amagent.Agent, t
 		return nil, err
 	}
 
-	tmps, err := h.reqHandler.TranscribeV1TranscriptGets(ctx, "", 100, typedFilters)
+	tmps, err := h.reqHandler.TranscribeV1TranscriptList(ctx, "", 100, typedFilters)
 	if err != nil {
 		log.Errorf("Could not get transcripts from the transcribe-manager. err: %v", err)
 		return nil, err

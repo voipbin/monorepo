@@ -340,7 +340,7 @@ func Test_RouteV1RouteGets_WithCustomerIDFilter(t *testing.T) {
 			rmroute.FieldCustomerID: tt.customerID,
 		}
 
-		res, err := reqHandler.RouteV1RouteGets(ctx, tt.pageToken, tt.pageSize, filters)
+		res, err := reqHandler.RouteV1RouteList(ctx, tt.pageToken, tt.pageSize, filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -352,7 +352,7 @@ func Test_RouteV1RouteGets_WithCustomerIDFilter(t *testing.T) {
 	}
 }
 
-func Test_RouteV1RouteGets(t *testing.T) {
+func Test_RouteV1RouteList(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -407,7 +407,7 @@ func Test_RouteV1RouteGets(t *testing.T) {
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 		filters := map[rmroute.Field]any{}
 
-		res, err := reqHandler.RouteV1RouteGets(ctx, tt.pageToken, tt.pageSize, filters)
+		res, err := reqHandler.RouteV1RouteList(ctx, tt.pageToken, tt.pageSize, filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

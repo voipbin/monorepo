@@ -164,7 +164,7 @@ func Test_ChatV1MessagechatGet(t *testing.T) {
 	}
 }
 
-func Test_ChatV1MessagechatGets(t *testing.T) {
+func Test_ChatV1MessagechatList(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -224,7 +224,7 @@ func Test_ChatV1MessagechatGets(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := h.ChatV1MessagechatGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
+			res, err := h.ChatV1MessagechatList(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

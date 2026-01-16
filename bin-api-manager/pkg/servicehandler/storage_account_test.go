@@ -200,7 +200,7 @@ func Test_StorageAccountGets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().StorageV1AccountGets(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseStorageAcounts, nil)
+			mockReq.EXPECT().StorageV1AccountList(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseStorageAcounts, nil)
 
 			res, err := h.StorageAccountGets(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {

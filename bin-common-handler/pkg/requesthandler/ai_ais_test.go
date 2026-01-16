@@ -16,7 +16,7 @@ import (
 	"monorepo/bin-common-handler/pkg/sockhandler"
 )
 
-func Test_AIV1AIGets(t *testing.T) {
+func Test_AIV1AIList(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -82,7 +82,7 @@ func Test_AIV1AIGets(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := h.AIV1AIGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
+			res, err := h.AIV1AIList(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

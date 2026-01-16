@@ -13,10 +13,10 @@ import (
 	"github.com/pkg/errors"
 )
 
-// CampaignV1CampaigncallGets sends a request to campaign-manager
+// CampaignV1CampaigncallList sends a request to campaign-manager
 // to getting a list of campaigncalls.
 // it returns detail list of campaigncalls if it succeed.
-func (r *requestHandler) CampaignV1CampaigncallGets(ctx context.Context, pageToken string, pageSize uint64, filters map[cacampaigncall.Field]any) ([]cacampaigncall.Campaigncall, error) {
+func (r *requestHandler) CampaignV1CampaigncallList(ctx context.Context, pageToken string, pageSize uint64, filters map[cacampaigncall.Field]any) ([]cacampaigncall.Campaigncall, error) {
 	uri := fmt.Sprintf("/v1/campaigncalls?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
 	m, err := json.Marshal(filters)

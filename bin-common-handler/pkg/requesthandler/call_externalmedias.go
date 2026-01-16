@@ -14,10 +14,10 @@ import (
 	"github.com/pkg/errors"
 )
 
-// CallV1ExternalMediaGets sends a request to call-manager
+// CallV1ExternalMediaList sends a request to call-manager
 // to getting a list of external media info.
 // it returns detail list of external medias info if it succeed.
-func (r *requestHandler) CallV1ExternalMediaGets(ctx context.Context, pageToken string, pageSize uint64, filters map[cmexternalmedia.Field]any) ([]cmexternalmedia.ExternalMedia, error) {
+func (r *requestHandler) CallV1ExternalMediaList(ctx context.Context, pageToken string, pageSize uint64, filters map[cmexternalmedia.Field]any) ([]cmexternalmedia.ExternalMedia, error) {
 	uri := fmt.Sprintf("/v1/external-medias?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
 	m, err := json.Marshal(filters)

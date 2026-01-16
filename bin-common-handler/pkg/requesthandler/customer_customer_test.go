@@ -15,7 +15,7 @@ import (
 	"monorepo/bin-common-handler/pkg/sockhandler"
 )
 
-func Test_CustomerV1CustomerGets(t *testing.T) {
+func Test_CustomerV1CustomerList(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -80,7 +80,7 @@ func Test_CustomerV1CustomerGets(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := h.CustomerV1CustomerGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
+			res, err := h.CustomerV1CustomerList(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

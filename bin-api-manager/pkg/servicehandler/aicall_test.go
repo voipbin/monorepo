@@ -175,7 +175,7 @@ func Test_AIcallGetsByCustomerID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AIV1AIcallGets(ctx, tt.token, tt.size, tt.filters).Return(tt.response, nil)
+			mockReq.EXPECT().AIV1AIcallList(ctx, tt.token, tt.size, tt.filters).Return(tt.response, nil)
 
 			res, err := h.AIcallGetsByCustomerID(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {

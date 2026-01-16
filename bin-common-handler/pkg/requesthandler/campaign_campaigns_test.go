@@ -119,7 +119,7 @@ func Test_CampaignV1CampaignCreate(t *testing.T) {
 	}
 }
 
-func Test_CampaignV1CampaignGets(t *testing.T) {
+func Test_CampaignV1CampaignList(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -180,7 +180,7 @@ func Test_CampaignV1CampaignGets(t *testing.T) {
 			filters := map[cacampaign.Field]any{
 				cacampaign.FieldCustomerID: tt.customerID,
 			}
-			res, err := reqHandler.CampaignV1CampaignGets(ctx, tt.pageToken, tt.pageSize, filters)
+			res, err := reqHandler.CampaignV1CampaignList(ctx, tt.pageToken, tt.pageSize, filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
