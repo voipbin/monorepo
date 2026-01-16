@@ -56,8 +56,8 @@ func (h *messageHandler) MessageCreate(ctx context.Context, req MessageCreateReq
 
 	// Validate parent message if provided (threading validation)
 	var parentID *uuid.UUID
-	if req.ParentID != uuid.Nil {
-		parent, err := h.dbHandler.MessageGet(ctx, req.ParentID)
+	if req.ParentID != nil {
+		parent, err := h.dbHandler.MessageGet(ctx, *req.ParentID)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to get parent message")
 		}
@@ -80,7 +80,7 @@ func (h *messageHandler) MessageCreate(ctx context.Context, req MessageCreateReq
 			}).Debug("Creating reply to soft-deleted parent message (allowed)")
 		}
 
-		parentID = &req.ParentID
+		parentID = req.ParentID
 	}
 
 	// Initialize metadata with empty reactions array
@@ -131,36 +131,36 @@ func (h *messageHandler) MessageList(ctx context.Context, filters map[message.Fi
 }
 
 // MessageDelete soft-deletes a message
-func (h *messageHandler) MessageDelete(ctx context.Context, id uuid.UUID) error {
+func (h *messageHandler) MessageDelete(ctx context.Context, id uuid.UUID) (*message.Message, error) {
 	// Get message first
 	msg, err := h.dbHandler.MessageGet(ctx, id)
 	if err != nil {
-		return errors.Wrap(err, "failed to get message")
+		return nil, errors.Wrap(err, "failed to get message")
 	}
 	if msg == nil {
-		return errors.New("message not found")
+		return nil, errors.New("message not found")
 	}
 
 	// Check if already deleted
 	if msg.TMDelete != "" {
-		return errors.New("message already deleted")
+		return nil, errors.New("message already deleted")
 	}
 
 	// Soft delete (dbHandler sets tm_delete internally)
 	if err := h.dbHandler.MessageDelete(ctx, id); err != nil {
-		return errors.Wrap(err, "failed to delete message")
+		return nil, errors.Wrap(err, "failed to delete message")
 	}
 
 	// Get updated message with tm_delete set
 	updatedMsg, err := h.dbHandler.MessageGet(ctx, id)
 	if err != nil {
-		return errors.Wrap(err, "failed to get updated message")
+		return nil, errors.Wrap(err, "failed to get updated message")
 	}
 
 	// Publish webhook event
 	h.publishMessageDeletedEvent(updatedMsg)
 
-	return nil
+	return updatedMsg, nil
 }
 
 // publishMessageCreatedEvent publishes a webhook event for message creation

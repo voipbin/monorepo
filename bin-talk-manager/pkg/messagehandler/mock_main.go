@@ -58,11 +58,12 @@ func (mr *MockMessageHandlerMockRecorder) MessageCreate(ctx, req any) *gomock.Ca
 }
 
 // MessageDelete mocks base method.
-func (m *MockMessageHandler) MessageDelete(ctx context.Context, id uuid.UUID) error {
+func (m *MockMessageHandler) MessageDelete(ctx context.Context, id uuid.UUID) (*message.Message, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MessageDelete", ctx, id)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*message.Message)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // MessageDelete indicates an expected call of MessageDelete.

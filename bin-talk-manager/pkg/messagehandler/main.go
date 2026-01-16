@@ -18,19 +18,19 @@ type MessageHandler interface {
 	MessageCreate(ctx context.Context, req MessageCreateRequest) (*message.Message, error)
 	MessageGet(ctx context.Context, id uuid.UUID) (*message.Message, error)
 	MessageList(ctx context.Context, filters map[message.Field]any, token string, size uint64) ([]*message.Message, error)
-	MessageDelete(ctx context.Context, id uuid.UUID) error
+	MessageDelete(ctx context.Context, id uuid.UUID) (*message.Message, error)
 }
 
 // MessageCreateRequest defines the input for creating a message
 type MessageCreateRequest struct {
-	CustomerID uuid.UUID `json:"customer_id"`
-	ChatID     uuid.UUID `json:"chat_id"`
-	ParentID   uuid.UUID `json:"parent_id"` // Optional - for threaded messages
-	OwnerType  string    `json:"owner_type"`
-	OwnerID    uuid.UUID `json:"owner_id"`
-	Type       string    `json:"type"`
-	Text       string    `json:"text"`
-	Medias     string    `json:"medias"` // JSON string
+	CustomerID uuid.UUID  `json:"customer_id"`
+	ChatID     uuid.UUID  `json:"chat_id"`
+	ParentID   *uuid.UUID `json:"parent_id"` // Optional - for threaded messages
+	OwnerType  string     `json:"owner_type"`
+	OwnerID    uuid.UUID  `json:"owner_id"`
+	Type       string     `json:"type"`
+	Text       string     `json:"text"`
+	Medias     string     `json:"medias"` // JSON string
 }
 
 type messageHandler struct {
