@@ -2,13 +2,14 @@ package dbhandler
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
 	log "github.com/sirupsen/logrus"
 
-	commondb "monorepo/bin-common-handler/pkg/commondatabasehandler"
+	commondb "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-talk-manager/models/talk"
 )
 
@@ -19,7 +20,11 @@ func (h *dbHandler) TalkCreate(ctx context.Context, t *talk.Talk) error {
 	t.TMCreate = now
 	t.TMUpdate = now
 
-	fields := commondb.PrepareFields(t, []string{"tm_create", "tm_update"})
+	fields, err := commondb.PrepareFields(t)
+	if err != nil {
+		log.Errorf("Failed to prepare fields: %v", err)
+		return err
+	}
 
 	query := sq.Insert(tableTalks).
 		SetMap(fields).
@@ -41,7 +46,9 @@ func (h *dbHandler) TalkCreate(ctx context.Context, t *talk.Talk) error {
 }
 
 func (h *dbHandler) TalkGet(ctx context.Context, id uuid.UUID) (*talk.Talk, error) {
-	query := sq.Select(talk.GetDBFields()...).
+	fields := commondb.GetDBFields(&talk.Talk{})
+
+	query := sq.Select(fields...).
 		From(tableTalks).
 		Where(sq.Eq{"id": id.Bytes()}).
 		PlaceholderFormat(sq.Question)
@@ -51,9 +58,22 @@ func (h *dbHandler) TalkGet(ctx context.Context, id uuid.UUID) (*talk.Talk, erro
 		return nil, err
 	}
 
+	rows, err := h.db.QueryContext(ctx, sqlQuery, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if closeErr := rows.Close(); closeErr != nil {
+			log.Errorf("Failed to close rows: %v", closeErr)
+		}
+	}()
+
+	if !rows.Next() {
+		return nil, sql.ErrNoRows
+	}
+
 	var t talk.Talk
-	row := h.db.QueryRowContext(ctx, sqlQuery, args...)
-	err = commondb.ScanRow(row, &t)
+	err = commondb.ScanRow(rows, &t)
 	if err != nil {
 		return nil, err
 	}
@@ -62,16 +82,20 @@ func (h *dbHandler) TalkGet(ctx context.Context, id uuid.UUID) (*talk.Talk, erro
 }
 
 func (h *dbHandler) TalkList(ctx context.Context, filters map[talk.Field]any, token string, size uint64) ([]*talk.Talk, error) {
-	query := sq.Select(talk.GetDBFields()...).
+	fields := commondb.GetDBFields(&talk.Talk{})
+
+	query := sq.Select(fields...).
 		From(tableTalks).
 		OrderBy("tm_create DESC").
 		Limit(size).
 		PlaceholderFormat(sq.Question)
 
 	// Apply filters
-	query = commondb.ApplyFields(query, filters, map[string]bool{
-		"deleted": true, // Filter-only field
-	})
+	query, err := commondb.ApplyFields(query, filters)
+	if err != nil {
+		log.Errorf("Failed to apply filters: %v", err)
+		return nil, err
+	}
 
 	// Apply pagination token
 	if token != "" {
@@ -87,7 +111,11 @@ func (h *dbHandler) TalkList(ctx context.Context, filters map[talk.Field]any, to
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() {
+		if closeErr := rows.Close(); closeErr != nil {
+			log.Errorf("Failed to close rows: %v", closeErr)
+		}
+	}()
 
 	var talks []*talk.Talk
 	for rows.Next() {
@@ -106,8 +134,14 @@ func (h *dbHandler) TalkUpdate(ctx context.Context, id uuid.UUID, fields map[tal
 	now := time.Now().UTC().Format("2006-01-02T15:04:05.000000Z")
 	fields[talk.FieldTMUpdate] = now
 
+	preparedFields, err := commondb.PrepareFields(fields)
+	if err != nil {
+		log.Errorf("Failed to prepare fields: %v", err)
+		return err
+	}
+
 	query := sq.Update(tableTalks).
-		SetMap(fields).
+		SetMap(preparedFields).
 		Where(sq.Eq{"id": id.Bytes()}).
 		PlaceholderFormat(sq.Question)
 

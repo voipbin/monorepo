@@ -2,13 +2,14 @@ package dbhandler
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
 	log "github.com/sirupsen/logrus"
 
-	commondb "monorepo/bin-common-handler/pkg/commondatabasehandler"
+	commondb "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-talk-manager/models/participant"
 )
 
@@ -46,34 +47,12 @@ func (h *dbHandler) ParticipantCreate(ctx context.Context, p *participant.Partic
 }
 
 func (h *dbHandler) ParticipantGet(ctx context.Context, id uuid.UUID) (*participant.Participant, error) {
-	query := sq.Select(participant.GetDBFields()...).
+	fields := commondb.GetDBFields(&participant.Participant{})
+
+	query := sq.Select(fields...).
 		From(tableParticipants).
 		Where(sq.Eq{"id": id.Bytes()}).
 		PlaceholderFormat(sq.Question)
-
-	sqlQuery, args, err := query.ToSql()
-	if err != nil {
-		return nil, err
-	}
-
-	var p participant.Participant
-	row := h.db.QueryRowContext(ctx, sqlQuery, args...)
-	err = commondb.ScanRow(row, &p)
-	if err != nil {
-		return nil, err
-	}
-
-	return &p, nil
-}
-
-func (h *dbHandler) ParticipantList(ctx context.Context, filters map[participant.Field]any) ([]*participant.Participant, error) {
-	query := sq.Select(participant.GetDBFields()...).
-		From(tableParticipants).
-		OrderBy("tm_joined DESC").
-		PlaceholderFormat(sq.Question)
-
-	// Apply filters
-	query = commondb.ApplyFields(query, filters, nil)
 
 	sqlQuery, args, err := query.ToSql()
 	if err != nil {
@@ -84,7 +63,54 @@ func (h *dbHandler) ParticipantList(ctx context.Context, filters map[participant
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() {
+		if closeErr := rows.Close(); closeErr != nil {
+			log.Errorf("Failed to close rows: %v", closeErr)
+		}
+	}()
+
+	if !rows.Next() {
+		return nil, sql.ErrNoRows
+	}
+
+	var p participant.Participant
+	err = commondb.ScanRow(rows, &p)
+	if err != nil {
+		return nil, err
+	}
+
+	return &p, nil
+}
+
+func (h *dbHandler) ParticipantList(ctx context.Context, filters map[participant.Field]any) ([]*participant.Participant, error) {
+	fields := commondb.GetDBFields(&participant.Participant{})
+
+	query := sq.Select(fields...).
+		From(tableParticipants).
+		OrderBy("tm_joined DESC").
+		PlaceholderFormat(sq.Question)
+
+	// Apply filters
+	query, err := commondb.ApplyFields(query, filters)
+	if err != nil {
+		log.Errorf("Failed to apply filters: %v", err)
+		return nil, err
+	}
+
+	sqlQuery, args, err := query.ToSql()
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := h.db.QueryContext(ctx, sqlQuery, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if closeErr := rows.Close(); closeErr != nil {
+			log.Errorf("Failed to close rows: %v", closeErr)
+		}
+	}()
 
 	var participants []*participant.Participant
 	for rows.Next() {
