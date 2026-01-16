@@ -74,7 +74,7 @@ func (h *serviceHandler) EmailGets(ctx context.Context, a *amagent.Agent, size u
 		return nil, err
 	}
 
-	tmps, err := h.reqHandler.EmailV1EmailGets(ctx, token, size, typedFilters)
+	tmps, err := h.reqHandler.EmailV1EmailList(ctx, token, size, typedFilters)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get emails")
 	}

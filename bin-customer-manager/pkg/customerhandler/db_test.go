@@ -140,7 +140,7 @@ func Test_Create(t *testing.T) {
 
 			mockUtil.EXPECT().EmailIsValid(tt.email).Return(true)
 			mockDB.EXPECT().CustomerGets(ctx, gomock.Any(), gomock.Any(), tt.expectedFilterCustomer).Return([]*customer.Customer{}, nil)
-			mockReq.EXPECT().AgentV1AgentGets(ctx, gomock.Any(), gomock.Any(), tt.expectedFilterAgent).Return([]amagent.Agent{}, nil)
+			mockReq.EXPECT().AgentV1AgentList(ctx, gomock.Any(), gomock.Any(), tt.expectedFilterAgent).Return([]amagent.Agent{}, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDB.EXPECT().CustomerCreate(ctx, tt.expectedCustomer).Return(nil)

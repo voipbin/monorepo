@@ -222,7 +222,7 @@ func Test_StorageFileGets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().StorageV1FileGets(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseStorageFiles, nil)
+			mockReq.EXPECT().StorageV1FileList(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseStorageFiles, nil)
 
 			res, err := h.ServiceAgentFileGets(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {

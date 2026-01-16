@@ -298,7 +298,7 @@ func Test_ConferenceGets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ConferenceV1ConferenceGets(ctx, tt.token, tt.limit, tt.expectFilters).Return(tt.response, nil)
+			mockReq.EXPECT().ConferenceV1ConferenceList(ctx, tt.token, tt.limit, tt.expectFilters).Return(tt.response, nil)
 			res, err := h.ConferenceGets(ctx, tt.agent, tt.limit, tt.token)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -208,7 +208,7 @@ func (r *requestHandler) CallV1CallGet(ctx context.Context, callID uuid.UUID) (*
 // CallV1CallGets sends a request to call-manager
 // to getting a list of call info.
 // it returns detail list of call info if it succeed.
-func (r *requestHandler) CallV1CallGets(ctx context.Context, pageToken string, pageSize uint64, filters map[cmcall.Field]any) ([]cmcall.Call, error) {
+func (r *requestHandler) CallV1CallList(ctx context.Context, pageToken string, pageSize uint64, filters map[cmcall.Field]any) ([]cmcall.Call, error) {
 	uri := fmt.Sprintf("/v1/calls?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
 	m, err := json.Marshal(filters)

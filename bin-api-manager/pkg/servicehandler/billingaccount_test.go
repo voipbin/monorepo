@@ -215,7 +215,7 @@ func Test_BillingAccountGets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().BillingV1AccountGets(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseBillingAcounts, nil)
+			mockReq.EXPECT().BillingV1AccountList(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseBillingAcounts, nil)
 
 			res, err := h.BillingAccountGets(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {

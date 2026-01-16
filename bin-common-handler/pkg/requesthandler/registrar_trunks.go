@@ -53,7 +53,7 @@ func (r *requestHandler) RegistrarV1TrunkCreate(ctx context.Context, customerID 
 // RegistrarV1TrunkGets sends a request to registrar-manager
 // to getting a list of trunk info.
 // it returns detail list of trunk info if it succeed.
-func (r *requestHandler) RegistrarV1TrunkGets(ctx context.Context, pageToken string, pageSize uint64, filters map[rmtrunk.Field]any) ([]rmtrunk.Trunk, error) {
+func (r *requestHandler) RegistrarV1TrunkList(ctx context.Context, pageToken string, pageSize uint64, filters map[rmtrunk.Field]any) ([]rmtrunk.Trunk, error) {
 	uri := fmt.Sprintf("/v1/trunks?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
 	m, err := json.Marshal(filters)

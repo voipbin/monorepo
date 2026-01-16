@@ -16,7 +16,7 @@ import (
 	"monorepo/bin-common-handler/pkg/sockhandler"
 )
 
-func Test_CallV1GroupcallGets(t *testing.T) {
+func Test_CallV1GroupcallList(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -108,7 +108,7 @@ func Test_CallV1GroupcallGets(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := h.CallV1GroupcallGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
+			res, err := h.CallV1GroupcallList(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

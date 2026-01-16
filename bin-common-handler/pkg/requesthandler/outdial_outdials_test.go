@@ -79,7 +79,7 @@ func Test_OutdialV1OutdialCreate(t *testing.T) {
 	}
 }
 
-func Test_OutdialV1OutdialGets(t *testing.T) {
+func Test_OutdialV1OutdialList(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -140,7 +140,7 @@ func Test_OutdialV1OutdialGets(t *testing.T) {
 			filters := map[omoutdial.Field]any{
 				omoutdial.FieldCustomerID: tt.customerID,
 			}
-			res, err := reqHandler.OutdialV1OutdialGets(ctx, tt.pageToken, tt.pageSize, filters)
+			res, err := reqHandler.OutdialV1OutdialList(ctx, tt.pageToken, tt.pageSize, filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

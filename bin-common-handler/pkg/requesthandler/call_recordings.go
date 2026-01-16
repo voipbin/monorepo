@@ -17,7 +17,7 @@ import (
 // CallV1RecordingGets sends a request to call-manager
 // to getting recordings.
 // it returns list of recordings if it succeed.
-func (r *requestHandler) CallV1RecordingGets(ctx context.Context, pageToken string, pageSize uint64, filters map[cmrecording.Field]any) ([]cmrecording.Recording, error) {
+func (r *requestHandler) CallV1RecordingList(ctx context.Context, pageToken string, pageSize uint64, filters map[cmrecording.Field]any) ([]cmrecording.Recording, error) {
 	uri := fmt.Sprintf("/v1/recordings?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
 	m, err := json.Marshal(filters)

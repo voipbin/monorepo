@@ -158,7 +158,7 @@ func Test_ChatGetsByCustomerID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ChatV1ChatGets(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.response, nil)
+			mockReq.EXPECT().ChatV1ChatList(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.response, nil)
 
 			res, err := h.ChatGetsByCustomerID(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {

@@ -553,7 +553,7 @@ func Test_FlowV1ActiveflowGet(t *testing.T) {
 	}
 }
 
-func Test_FlowV1ActiveflowGets(t *testing.T) {
+func Test_FlowV1ActiveflowList(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -650,7 +650,7 @@ func Test_FlowV1ActiveflowGets(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.FlowV1ActiveflowGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
+			res, err := reqHandler.FlowV1ActiveflowList(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

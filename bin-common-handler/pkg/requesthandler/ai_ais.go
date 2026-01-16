@@ -17,7 +17,7 @@ import (
 // AIV1AIGets sends a request to ai-manager
 // to getting a list of ais info.
 // it returns detail list of ais info if it succeed.
-func (r *requestHandler) AIV1AIGets(ctx context.Context, pageToken string, pageSize uint64, filters map[amai.Field]any) ([]amai.AI, error) {
+func (r *requestHandler) AIV1AIList(ctx context.Context, pageToken string, pageSize uint64, filters map[amai.Field]any) ([]amai.AI, error) {
 	uri := fmt.Sprintf("/v1/ais?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
 	m, err := json.Marshal(filters)

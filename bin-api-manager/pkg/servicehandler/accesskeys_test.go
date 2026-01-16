@@ -300,7 +300,7 @@ func Test_AccesskeyGets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().CustomerV1AccesskeyGets(ctx, tt.token, tt.size, tt.filters).Return(tt.response, nil)
+			mockReq.EXPECT().CustomerV1AccesskeyList(ctx, tt.token, tt.size, tt.filters).Return(tt.response, nil)
 
 			res, err := h.AccesskeyGets(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {

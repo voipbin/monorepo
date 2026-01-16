@@ -186,7 +186,7 @@ func (h *serviceHandler) StorageFileGets(ctx context.Context, a *amagent.Agent, 
 		return nil, err
 	}
 
-	files, err := h.reqHandler.StorageV1FileGets(ctx, token, size, typedFilters)
+	files, err := h.reqHandler.StorageV1FileList(ctx, token, size, typedFilters)
 	if err != nil {
 		log.Errorf("Could not get files info from the storage-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find files info. err: %v", err)

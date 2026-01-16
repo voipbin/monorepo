@@ -88,7 +88,7 @@ func Test_ServiceAgentCallGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1CallGets(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseCalls, nil)
+			mockReq.EXPECT().CallV1CallList(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseCalls, nil)
 
 			res, err := h.ServiceAgentCallGets(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {

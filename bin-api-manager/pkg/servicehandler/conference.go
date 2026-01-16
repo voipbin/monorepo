@@ -96,7 +96,7 @@ func (h *serviceHandler) ConferenceGets(ctx context.Context, a *amagent.Agent, s
 		return nil, err
 	}
 
-	tmps, err := h.reqHandler.ConferenceV1ConferenceGets(ctx, token, size, typedFilters)
+	tmps, err := h.reqHandler.ConferenceV1ConferenceList(ctx, token, size, typedFilters)
 	if err != nil {
 		log.Infof("Could not get conferences info. err: %v", err)
 		return nil, err

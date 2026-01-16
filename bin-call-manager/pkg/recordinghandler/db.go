@@ -168,7 +168,7 @@ func (h *recordingHandler) deleteRecordingFiles(r *recording.Recording) {
 		smfile.FieldDeleted:       false,
 	}
 
-	files, err := h.reqHandler.StorageV1FileGets(ctx, "", 1000, filters)
+	files, err := h.reqHandler.StorageV1FileList(ctx, "", 1000, filters)
 	if err != nil {
 		log.Errorf("Could not get recording files. err: %v", err)
 		return

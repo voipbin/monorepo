@@ -122,7 +122,7 @@ func (h *serviceHandler) AIGetsByCustomerID(ctx context.Context, a *amagent.Agen
 		return nil, err
 	}
 
-	tmps, err := h.reqHandler.AIV1AIGets(ctx, token, size, typedFilters)
+	tmps, err := h.reqHandler.AIV1AIList(ctx, token, size, typedFilters)
 	if err != nil {
 		log.Errorf("Could not get AIs info from the chatobt manager. err: %v", err)
 		return nil, fmt.Errorf("could not find chats info. err: %v", err)

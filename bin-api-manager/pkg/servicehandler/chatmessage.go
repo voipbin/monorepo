@@ -138,7 +138,7 @@ func (h *serviceHandler) ChatmessageGetsByChatID(ctx context.Context, a *amagent
 		return nil, err
 	}
 
-	tmps, err := h.reqHandler.ChatV1MessagechatGets(ctx, token, size, typedFilters)
+	tmps, err := h.reqHandler.ChatV1MessagechatList(ctx, token, size, typedFilters)
 	if err != nil {
 		log.Errorf("Could not get chats info from the chat-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find chats info. err: %v", err)

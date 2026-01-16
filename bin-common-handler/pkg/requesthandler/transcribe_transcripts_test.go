@@ -15,7 +15,7 @@ import (
 	"monorepo/bin-common-handler/pkg/sockhandler"
 )
 
-func Test_TranscribeV1TranscriptGets(t *testing.T) {
+func Test_TranscribeV1TranscriptList(t *testing.T) {
 
 	type test struct {
 		name string
@@ -77,7 +77,7 @@ func Test_TranscribeV1TranscriptGets(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectedTarget, tt.expectedRequest).Return(tt.response, nil)
 
-			res, err := h.TranscribeV1TranscriptGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
+			res, err := h.TranscribeV1TranscriptList(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

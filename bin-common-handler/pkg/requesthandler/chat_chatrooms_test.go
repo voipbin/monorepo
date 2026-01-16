@@ -79,7 +79,7 @@ func Test_ChatV1ChatroomGet(t *testing.T) {
 	}
 }
 
-func Test_ChatV1ChatroomGets(t *testing.T) {
+func Test_ChatV1ChatroomList(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -139,7 +139,7 @@ func Test_ChatV1ChatroomGets(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.ChatV1ChatroomGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
+			res, err := reqHandler.ChatV1ChatroomList(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

@@ -80,7 +80,7 @@ func (r *requestHandler) ChatV1MessagechatGet(ctx context.Context, messagechatID
 // ChatV1MessagechatGets sends a request to chat-manager
 // to getting a list of messagechat info.
 // it returns detail list of chat info if it succeed.
-func (r *requestHandler) ChatV1MessagechatGets(ctx context.Context, pageToken string, pageSize uint64, filters map[chatmessagechat.Field]any) ([]chatmessagechat.Messagechat, error) {
+func (r *requestHandler) ChatV1MessagechatList(ctx context.Context, pageToken string, pageSize uint64, filters map[chatmessagechat.Field]any) ([]chatmessagechat.Messagechat, error) {
 	uri := fmt.Sprintf("/v1/messagechats?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
 	m, err := json.Marshal(filters)

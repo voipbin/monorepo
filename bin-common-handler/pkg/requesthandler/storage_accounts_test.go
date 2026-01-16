@@ -74,7 +74,7 @@ func Test_StorageV1AccountCreate(t *testing.T) {
 	}
 }
 
-func Test_StorageV1AccountGets(t *testing.T) {
+func Test_StorageV1AccountList(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -135,7 +135,7 @@ func Test_StorageV1AccountGets(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.StorageV1AccountGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
+			res, err := reqHandler.StorageV1AccountList(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

@@ -85,7 +85,7 @@ func (h *serviceHandler) AIcallGetsByCustomerID(ctx context.Context, a *amagent.
 		return nil, errors.Wrapf(err, "could not convert filters")
 	}
 
-	tmps, err := h.reqHandler.AIV1AIcallGets(ctx, token, size, typedFilters)
+	tmps, err := h.reqHandler.AIV1AIcallList(ctx, token, size, typedFilters)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get aicalls info")
 	}

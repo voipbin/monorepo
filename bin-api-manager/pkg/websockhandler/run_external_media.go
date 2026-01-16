@@ -40,7 +40,7 @@ func (h *websockHandler) RunExternalMedia(ctx context.Context, w http.ResponseWr
 	filters := map[cmexternalmedia.Field]any{
 		cmexternalmedia.FieldReferenceID: callID,
 	}
-	externalMedias, err := h.reqHandler.CallV1ExternalMediaGets(ctx, "", uint64(1), filters)
+	externalMedias, err := h.reqHandler.CallV1ExternalMediaList(ctx, "", uint64(1), filters)
 	if err != nil || len(externalMedias) == 0 {
 		log.Errorf("Could not get external medias. err: %v", err)
 		return errors.Wrapf(err, "could not get external medias.")

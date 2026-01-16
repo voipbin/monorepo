@@ -81,7 +81,7 @@ func Test_QueueGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().QueueV1QueueGets(ctx, tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.responseQueues, nil)
+			mockReq.EXPECT().QueueV1QueueList(ctx, tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.responseQueues, nil)
 
 			res, err := h.QueueGets(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {

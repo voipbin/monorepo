@@ -69,7 +69,7 @@ func (h *serviceHandler) NumberGets(ctx context.Context, a *amagent.Agent, size 
 		return nil, err
 	}
 
-	tmps, err := h.reqHandler.NumberV1NumberGets(ctx, token, size, typedFilters)
+	tmps, err := h.reqHandler.NumberV1NumberList(ctx, token, size, typedFilters)
 	if err != nil {
 		log.Infof("Could not get numbers info. err: %v", err)
 		return nil, err

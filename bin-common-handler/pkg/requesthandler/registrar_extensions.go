@@ -116,7 +116,7 @@ func (r *requestHandler) RegistrarV1ExtensionUpdate(ctx context.Context, id uuid
 // RegistrarV1ExtensionGets sends a request to registrar-manager
 // to getting a list of extension info.
 // it returns detail list of extension info if it succeed.
-func (r *requestHandler) RegistrarV1ExtensionGets(ctx context.Context, pageToken string, pageSize uint64, filters map[rmextension.Field]any) ([]rmextension.Extension, error) {
+func (r *requestHandler) RegistrarV1ExtensionList(ctx context.Context, pageToken string, pageSize uint64, filters map[rmextension.Field]any) ([]rmextension.Extension, error) {
 	uri := fmt.Sprintf("/v1/extensions?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
 	m, err := json.Marshal(filters)

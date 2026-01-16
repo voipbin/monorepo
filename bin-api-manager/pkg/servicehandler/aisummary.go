@@ -113,7 +113,7 @@ func (h *serviceHandler) AISummaryGetsByCustomerID(ctx context.Context, a *amage
 		return nil, errors.Wrapf(err, "could not convert filters")
 	}
 
-	tmps, err := h.reqHandler.AIV1SummaryGets(ctx, token, size, typedFilters)
+	tmps, err := h.reqHandler.AIV1SummaryList(ctx, token, size, typedFilters)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get ai summaries info")
 	}

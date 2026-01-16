@@ -398,7 +398,7 @@ func Test_ExtensionGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().RegistrarV1ExtensionGets(ctx, tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.response, nil)
+			mockReq.EXPECT().RegistrarV1ExtensionList(ctx, tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.response, nil)
 
 			res, err := h.ExtensionGets(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {

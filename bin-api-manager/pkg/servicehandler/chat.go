@@ -121,7 +121,7 @@ func (h *serviceHandler) ChatGetsByCustomerID(ctx context.Context, a *amagent.Ag
 		return nil, err
 	}
 
-	tmps, err := h.reqHandler.ChatV1ChatGets(ctx, token, size, typedFilters)
+	tmps, err := h.reqHandler.ChatV1ChatList(ctx, token, size, typedFilters)
 	if err != nil {
 		log.Errorf("Could not get chats info from the chat-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find chats info. err: %v", err)

@@ -12,7 +12,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func Test_CustomerV1AccesskeyGets(t *testing.T) {
+func Test_CustomerV1AccesskeyList(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -76,7 +76,7 @@ func Test_CustomerV1AccesskeyGets(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectedTarget, tt.expectedRequest).Return(tt.response, nil)
 
-			res, err := h.CustomerV1AccesskeyGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
+			res, err := h.CustomerV1AccesskeyList(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

@@ -145,7 +145,7 @@ func (h *serviceHandler) ExtensionGets(ctx context.Context, a *amagent.Agent, si
 		return nil, err
 	}
 
-	exts, err := h.reqHandler.RegistrarV1ExtensionGets(ctx, token, size, typedFilters)
+	exts, err := h.reqHandler.RegistrarV1ExtensionList(ctx, token, size, typedFilters)
 	if err != nil {
 		log.Errorf("Could not get extensions info from the registrar-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find extensions info. err: %v", err)

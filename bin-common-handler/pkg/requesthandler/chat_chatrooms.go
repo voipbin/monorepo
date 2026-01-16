@@ -36,7 +36,7 @@ func (r *requestHandler) ChatV1ChatroomGet(ctx context.Context, chatroomID uuid.
 // ChatV1ChatroomGets sends a request to chat-manager
 // to getting a list of chatroom info.
 // it returns detail list of chatroom info if it succeed.
-func (r *requestHandler) ChatV1ChatroomGets(ctx context.Context, pageToken string, pageSize uint64, filters map[chatchatroom.Field]any) ([]chatchatroom.Chatroom, error) {
+func (r *requestHandler) ChatV1ChatroomList(ctx context.Context, pageToken string, pageSize uint64, filters map[chatchatroom.Field]any) ([]chatchatroom.Chatroom, error) {
 	uri := fmt.Sprintf("/v1/chatrooms?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
 	m, err := json.Marshal(filters)

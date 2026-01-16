@@ -118,7 +118,7 @@ func (h *serviceHandler) CustomerGets(ctx context.Context, a *amagent.Agent, siz
 		return nil, err
 	}
 
-	tmp, err := h.reqHandler.CustomerV1CustomerGets(ctx, token, size, typedFilters)
+	tmp, err := h.reqHandler.CustomerV1CustomerList(ctx, token, size, typedFilters)
 	if err != nil {
 		log.Errorf("Could not get customers info. err: %v", err)
 		return nil, err

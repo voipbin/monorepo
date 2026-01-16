@@ -14,7 +14,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func Test_BillingV1BillingGets(t *testing.T) {
+func Test_BillingV1BillingList(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -79,7 +79,7 @@ func Test_BillingV1BillingGets(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.responseBillings, nil)
 
-			res, err := h.BillingV1BillingGets(ctx, tt.token, tt.size, tt.filters)
+			res, err := h.BillingV1BillingList(ctx, tt.token, tt.size, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

@@ -98,7 +98,7 @@ func (h *serviceHandler) AccesskeyRawGetByToken(ctx context.Context, token strin
 		csaccesskey.FieldDeleted: false,
 	}
 
-	tmps, err := h.reqHandler.CustomerV1AccesskeyGets(ctx, "", 10, filters)
+	tmps, err := h.reqHandler.CustomerV1AccesskeyList(ctx, "", 10, filters)
 	if err != nil {
 		log.Infof("Could not get accesskeys info. err: %v", err)
 		return nil, err
@@ -138,7 +138,7 @@ func (h *serviceHandler) AccesskeyGets(ctx context.Context, a *amagent.Agent, si
 		csaccesskey.FieldDeleted:    false, // we don't need deleted items
 	}
 
-	tmps, err := h.reqHandler.CustomerV1AccesskeyGets(ctx, token, size, filters)
+	tmps, err := h.reqHandler.CustomerV1AccesskeyList(ctx, token, size, filters)
 	if err != nil {
 		log.Infof("Could not get accesskeys info. err: %v", err)
 		return nil, err

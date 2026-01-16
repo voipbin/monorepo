@@ -70,7 +70,7 @@ func (h *messageHandler) hookTelnyx(ctx context.Context, data []byte) (*message.
 		nmnumber.FieldNumber:  destinationNumber,
 		nmnumber.FieldDeleted: false,
 	}
-	numbs, err := h.reqHandler.NumberV1NumberGets(ctx, "", 1, filters)
+	numbs, err := h.reqHandler.NumberV1NumberList(ctx, "", 1, filters)
 	if err != nil {
 		return nil, nil, errors.Wrapf(err, "Could not get number info. number: %s", destinationNumber)
 	}

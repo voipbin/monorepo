@@ -85,7 +85,7 @@ func Test_CampaigncallGets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().CampaignV1CampaigncallGets(ctx, tt.token, tt.size, gomock.Any()).Return(tt.responseCampaigncalls, nil)
+			mockReq.EXPECT().CampaignV1CampaigncallList(ctx, tt.token, tt.size, gomock.Any()).Return(tt.responseCampaigncalls, nil)
 
 			res, err := h.CampaigncallGets(ctx, tt.agent, tt.size, tt.token)
 			if err != nil {
@@ -174,7 +174,7 @@ func Test_campaigncallGetsByCampaignID(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().CampaignV1CampaignGet(ctx, tt.campaignID).Return(tt.responseCampaign, nil)
-			mockReq.EXPECT().CampaignV1CampaigncallGets(ctx, tt.pageToken, tt.pageSize, gomock.Any()).Return(tt.responseCampaigncalls, nil)
+			mockReq.EXPECT().CampaignV1CampaigncallList(ctx, tt.pageToken, tt.pageSize, gomock.Any()).Return(tt.responseCampaigncalls, nil)
 			res, err := h.CampaigncallGetsByCampaignID(ctx, tt.agent, tt.campaignID, tt.pageSize, tt.pageToken)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

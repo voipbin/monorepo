@@ -58,7 +58,7 @@ func (h *serviceHandler) ConversationAccountGetsByCustomerID(ctx context.Context
 	}
 
 	// get
-	tmp, err := h.reqHandler.ConversationV1AccountGets(ctx, token, size, filters)
+	tmp, err := h.reqHandler.ConversationV1AccountList(ctx, token, size, filters)
 	if err != nil {
 		log.Errorf("Could not get conversation account infos from the conversation-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find conversation accounts info. err: %v", err)

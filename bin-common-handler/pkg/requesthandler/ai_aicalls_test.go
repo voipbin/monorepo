@@ -93,7 +93,7 @@ func Test_AIV1AIcallStart(t *testing.T) {
 	}
 }
 
-func Test_AIV1AIcallGets(t *testing.T) {
+func Test_AIV1AIcallList(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -159,7 +159,7 @@ func Test_AIV1AIcallGets(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.AIV1AIcallGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
+			res, err := reqHandler.AIV1AIcallList(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

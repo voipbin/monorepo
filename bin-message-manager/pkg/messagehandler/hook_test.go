@@ -130,7 +130,7 @@ func Test_Hook(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().NumberV1NumberGets(ctx, "", uint64(1), tt.expectFilters).Return(tt.responseNumbers, nil)
+			mockReq.EXPECT().NumberV1NumberList(ctx, "", uint64(1), tt.expectFilters).Return(tt.responseNumbers, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDB.EXPECT().MessageCreate(ctx, gomock.Any()).Return(nil)

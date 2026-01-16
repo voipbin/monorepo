@@ -101,7 +101,7 @@ func Test_TranscriptGets(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().TranscribeV1TranscribeGet(ctx, tt.transcribeID).Return(tt.responseTranscribe, nil)
-			mockReq.EXPECT().TranscribeV1TranscriptGets(ctx, "", uint64(100), tt.expectFilters).Return(tt.responseTranscripts, nil)
+			mockReq.EXPECT().TranscribeV1TranscriptList(ctx, "", uint64(100), tt.expectFilters).Return(tt.responseTranscripts, nil)
 
 			res, err := h.TranscriptGets(ctx, tt.agent, tt.transcribeID)
 			if err != nil {

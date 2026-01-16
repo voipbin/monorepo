@@ -69,7 +69,7 @@ func (h *serviceHandler) GroupcallGets(ctx context.Context, a *amagent.Agent, si
 		return nil, err
 	}
 
-	tmps, err := h.reqHandler.CallV1GroupcallGets(ctx, token, size, typedFilters)
+	tmps, err := h.reqHandler.CallV1GroupcallList(ctx, token, size, typedFilters)
 	if err != nil {
 		log.Infof("Could not get calls info. err: %v", err)
 		return nil, err

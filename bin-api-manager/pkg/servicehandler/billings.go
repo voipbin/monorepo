@@ -47,7 +47,7 @@ func (h *serviceHandler) BillingGets(ctx context.Context, a *amagent.Agent, size
 	}
 
 	// get billings
-	tmps, err := h.reqHandler.BillingV1BillingGets(ctx, token, size, typedFilters)
+	tmps, err := h.reqHandler.BillingV1BillingList(ctx, token, size, typedFilters)
 	if err != nil {
 		log.Infof("Could not get billing account info. err: %v", err)
 		return nil, err

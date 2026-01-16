@@ -260,8 +260,8 @@ func Test_contentProcessReferenceTypeConference(t *testing.T) {
 			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.expectedReferenceID).Return(tt.responseConference, nil)
 
 			// contentGetTranscripts
-			mockReq.EXPECT().TranscribeV1TranscribeGets(ctx, "", uint64(1), tt.expectedFilterTranscribe).Return(tt.responseTranscribes, nil)
-			mockReq.EXPECT().TranscribeV1TranscriptGets(ctx, "", uint64(1000), tt.expectedFilterTranscripts).Return(tt.responseTranscripts, nil)
+			mockReq.EXPECT().TranscribeV1TranscribeList(ctx, "", uint64(1), tt.expectedFilterTranscribe).Return(tt.responseTranscribes, nil)
+			mockReq.EXPECT().TranscribeV1TranscriptList(ctx, "", uint64(1000), tt.expectedFilterTranscripts).Return(tt.responseTranscripts, nil)
 
 			// contentGet
 			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.expectedActiveflowID).Return(tt.responseVariable, nil)

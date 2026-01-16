@@ -42,7 +42,7 @@ func (h *queueHandler) GetAgents(ctx context.Context, id uuid.UUID, status amage
 	}
 
 	// get agents
-	res, err := h.reqHandler.AgentV1AgentGets(ctx, h.utilHandler.TimeGetCurTime(), 100, filters)
+	res, err := h.reqHandler.AgentV1AgentList(ctx, h.utilHandler.TimeGetCurTime(), 100, filters)
 	if err != nil {
 		log.Errorf("Could not get agents. err: %v", err)
 		return nil, err

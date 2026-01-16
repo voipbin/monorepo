@@ -74,7 +74,7 @@ func (h *serviceHandler) StorageAccountGetByCustomerID(ctx context.Context, a *a
 		return nil, err
 	}
 
-	tmps, err := h.reqHandler.StorageV1AccountGets(ctx, "", 1, typedFilters)
+	tmps, err := h.reqHandler.StorageV1AccountList(ctx, "", 1, typedFilters)
 	if err != nil || len(tmps) == 0 {
 		log.Infof("Could not get storage account info. err: %v", err)
 		return nil, err
@@ -153,7 +153,7 @@ func (h *serviceHandler) StorageAccountGets(ctx context.Context, a *amagent.Agen
 	}
 
 	// get storage accounts
-	tmps, err := h.reqHandler.StorageV1AccountGets(ctx, token, size, typedFilters)
+	tmps, err := h.reqHandler.StorageV1AccountList(ctx, token, size, typedFilters)
 	if err != nil {
 		log.Infof("Could not get storage account info. err: %v", err)
 		return nil, err

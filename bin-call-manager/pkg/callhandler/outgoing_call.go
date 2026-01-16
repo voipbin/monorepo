@@ -419,7 +419,7 @@ func (h *callHandler) getDialroutes(ctx context.Context, customerID uuid.UUID, d
 		rmroute.FieldCustomerID: customerID,
 		rmroute.FieldTarget:     target,
 	}
-	res, err := h.reqHandler.RouteV1DialrouteGets(ctx, filters)
+	res, err := h.reqHandler.RouteV1DialrouteList(ctx, filters)
 	if err != nil {
 		log.Errorf("Could not get dialroutes. err: %v", err)
 		return nil, err

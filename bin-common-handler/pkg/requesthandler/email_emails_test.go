@@ -14,7 +14,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func Test_EmailV1EmailGets(t *testing.T) {
+func Test_EmailV1EmailList(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -79,7 +79,7 @@ func Test_EmailV1EmailGets(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := h.EmailV1EmailGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
+			res, err := h.EmailV1EmailList(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

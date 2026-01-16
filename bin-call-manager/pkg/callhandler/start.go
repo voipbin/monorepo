@@ -504,7 +504,7 @@ func (h *callHandler) startIncomingDomainTypePSTN(ctx context.Context, cn *chann
 		nmnumber.FieldNumber:  destination.Target,
 		nmnumber.FieldDeleted: false,
 	}
-	numbs, err := h.reqHandler.NumberV1NumberGets(ctx, "", 1, filters)
+	numbs, err := h.reqHandler.NumberV1NumberList(ctx, "", 1, filters)
 	if err != nil {
 		log.Errorf("Could not get numbers info. err: %v", err)
 		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNoRouteDestination) // return 404. destination not found

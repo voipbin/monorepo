@@ -195,7 +195,7 @@ func Test_EmailGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().EmailV1EmailGets(ctx, tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.responseEmails, nil)
+			mockReq.EXPECT().EmailV1EmailList(ctx, tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.responseEmails, nil)
 
 			res, err := h.EmailGets(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {

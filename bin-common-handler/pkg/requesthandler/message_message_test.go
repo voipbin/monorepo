@@ -16,7 +16,7 @@ import (
 	"monorepo/bin-common-handler/pkg/sockhandler"
 )
 
-func Test_MessageV1MessageGets(t *testing.T) {
+func Test_MessageV1MessageList(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -107,7 +107,7 @@ func Test_MessageV1MessageGets(t *testing.T) {
 			filters := map[mmmessage.Field]any{
 				mmmessage.FieldCustomerID: tt.customerID,
 			}
-			res, err := reqHandler.MessageV1MessageGets(ctx, tt.pageToken, tt.pageSize, filters)
+			res, err := reqHandler.MessageV1MessageList(ctx, tt.pageToken, tt.pageSize, filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

@@ -359,7 +359,7 @@ func (h *callHandler) parseAddressTypeExtension(ctx context.Context, customerID 
 			rmextension.FieldDeleted:    false,
 			rmextension.FieldExtension:  address.Target,
 		}
-		tmps, err := h.reqHandler.RegistrarV1ExtensionGets(ctx, "", 1, filters)
+		tmps, err := h.reqHandler.RegistrarV1ExtensionList(ctx, "", 1, filters)
 		if err != nil {
 			log.Errorf("Could not get extension info. err: %v", err)
 			return nil, err

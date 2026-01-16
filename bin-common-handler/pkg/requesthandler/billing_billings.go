@@ -14,7 +14,7 @@ import (
 )
 
 // BillingV1BillingGets returns list of billings.
-func (r *requestHandler) BillingV1BillingGets(ctx context.Context, pageToken string, pageSize uint64, filters map[bmbilling.Field]any) ([]bmbilling.Billing, error) {
+func (r *requestHandler) BillingV1BillingList(ctx context.Context, pageToken string, pageSize uint64, filters map[bmbilling.Field]any) ([]bmbilling.Billing, error) {
 	uri := fmt.Sprintf("/v1/billings?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
 	m, err := json.Marshal(filters)

@@ -15,7 +15,7 @@ import (
 // TranscribeV1TranscriptGets sends a request to transcribe-manager
 // to getting a list of transcript info.
 // it returns detail list of transcript info if it succeed.
-func (r *requestHandler) TranscribeV1TranscriptGets(ctx context.Context, pageToken string, pageSize uint64, filters map[tmtranscript.Field]any) ([]tmtranscript.Transcript, error) {
+func (r *requestHandler) TranscribeV1TranscriptList(ctx context.Context, pageToken string, pageSize uint64, filters map[tmtranscript.Field]any) ([]tmtranscript.Transcript, error) {
 	uri := fmt.Sprintf("/v1/transcripts?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
 	m, err := json.Marshal(filters)

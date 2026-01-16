@@ -58,7 +58,7 @@ func (h *serviceHandler) MessageGets(ctx context.Context, a *amagent.Agent, size
 	filters := map[mmmessage.Field]any{
 		mmmessage.FieldCustomerID: a.CustomerID,
 	}
-	tmps, err := h.reqHandler.MessageV1MessageGets(ctx, token, size, filters)
+	tmps, err := h.reqHandler.MessageV1MessageList(ctx, token, size, filters)
 	if err != nil {
 		log.Infof("Could not get messages info. err: %v", err)
 		return nil, err

@@ -54,7 +54,7 @@ func (h *serviceHandler) CampaigncallGets(ctx context.Context, a *amagent.Agent,
 	filters := map[cacampaigncall.Field]any{
 		cacampaigncall.FieldCustomerID: a.CustomerID,
 	}
-	tmps, err := h.reqHandler.CampaignV1CampaigncallGets(ctx, token, size, filters)
+	tmps, err := h.reqHandler.CampaignV1CampaigncallList(ctx, token, size, filters)
 	if err != nil {
 		log.Errorf("Could not get campaigns info from the campaign-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find campaigns info. err: %v", err)
@@ -101,7 +101,7 @@ func (h *serviceHandler) CampaigncallGetsByCampaignID(ctx context.Context, a *am
 	filters := map[cacampaigncall.Field]any{
 		cacampaigncall.FieldCampaignID: campaignID,
 	}
-	ccs, err := h.reqHandler.CampaignV1CampaigncallGets(ctx, token, size, filters)
+	ccs, err := h.reqHandler.CampaignV1CampaigncallList(ctx, token, size, filters)
 	if err != nil {
 		log.Errorf("Could not get campaigns info from the campaign-manager. err: %v", err)
 		return nil, fmt.Errorf("could not find campaigns info. err: %v", err)

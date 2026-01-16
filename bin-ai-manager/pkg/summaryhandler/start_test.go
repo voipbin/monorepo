@@ -360,7 +360,7 @@ func Test_startReferenceTypeTranscribe(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().TranscribeV1TranscriptGets(ctx, "", uint64(1000), tt.expectedFiltersTranscripts).Return(tt.responseTranscripts, nil)
+			mockReq.EXPECT().TranscribeV1TranscriptList(ctx, "", uint64(1000), tt.expectedFiltersTranscripts).Return(tt.responseTranscripts, nil)
 
 			// getContent
 			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.activeflowID).Return(tt.responseVariable, nil)
@@ -528,7 +528,7 @@ func Test_startReferenceTypeRecording(t *testing.T) {
 				tmtranscribe.DirectionBoth,
 				300000,
 			).Return(tt.responseTranscribe, nil)
-			mockReq.EXPECT().TranscribeV1TranscriptGets(ctx, "", uint64(1000), tt.expectedFiltersTranscripts).Return(tt.responseTranscripts, nil)
+			mockReq.EXPECT().TranscribeV1TranscriptList(ctx, "", uint64(1000), tt.expectedFiltersTranscripts).Return(tt.responseTranscripts, nil)
 
 			// getContent
 			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.activeflowID).Return(tt.responseVariable, nil)

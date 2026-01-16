@@ -15,7 +15,7 @@ import (
 	"monorepo/bin-common-handler/pkg/sockhandler"
 )
 
-func Test_QueueV1QueuecallGets(t *testing.T) {
+func Test_QueueV1QueuecallList(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -107,7 +107,7 @@ func Test_QueueV1QueuecallGets(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := h.QueueV1QueuecallGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
+			res, err := h.QueueV1QueuecallList(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

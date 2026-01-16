@@ -80,7 +80,7 @@ func Test_TranscribeV1TranscribeGet(t *testing.T) {
 	}
 }
 
-func Test_TranscribeV1TranscribeGets(t *testing.T) {
+func Test_TranscribeV1TranscribeList(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -175,7 +175,7 @@ func Test_TranscribeV1TranscribeGets(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectedTarget, tt.expectedRequest).Return(tt.response, nil)
 
-			res, err := h.TranscribeV1TranscribeGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
+			res, err := h.TranscribeV1TranscribeList(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

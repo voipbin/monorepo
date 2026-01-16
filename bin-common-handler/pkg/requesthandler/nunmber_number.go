@@ -36,7 +36,7 @@ func (r *requestHandler) NumberV1NumberGet(ctx context.Context, numberID uuid.UU
 // NumberV1NumberGets sends a request to number-manager
 // to get a list of numbers.
 // Returns list of numbers
-func (r *requestHandler) NumberV1NumberGets(ctx context.Context, pageToken string, pageSize uint64, filters map[nmnumber.Field]any) ([]nmnumber.Number, error) {
+func (r *requestHandler) NumberV1NumberList(ctx context.Context, pageToken string, pageSize uint64, filters map[nmnumber.Field]any) ([]nmnumber.Number, error) {
 
 	uri := fmt.Sprintf("/v1/numbers?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 

@@ -44,7 +44,7 @@ func (r *requestHandler) StorageV1AccountCreate(ctx context.Context, customerID 
 // StorageV1AccountGets sends a request to storage-manager
 // to getting a list of accounts.
 // it returns file list of accounts if it succeed.
-func (r *requestHandler) StorageV1AccountGets(ctx context.Context, pageToken string, pageSize uint64, filters map[smaccount.Field]any) ([]smaccount.Account, error) {
+func (r *requestHandler) StorageV1AccountList(ctx context.Context, pageToken string, pageSize uint64, filters map[smaccount.Field]any) ([]smaccount.Account, error) {
 	uri := fmt.Sprintf("/v1/accounts?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
 	m, err := json.Marshal(filters)

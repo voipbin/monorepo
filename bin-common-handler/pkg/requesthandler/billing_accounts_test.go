@@ -16,7 +16,7 @@ import (
 	"monorepo/bin-common-handler/pkg/sockhandler"
 )
 
-func Test_BillingV1AccountGets(t *testing.T) {
+func Test_BillingV1AccountList(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -79,7 +79,7 @@ func Test_BillingV1AccountGets(t *testing.T) {
 			ctx := context.Background()
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
-			res, err := reqHandler.BillingV1AccountGets(ctx, tt.token, tt.size, tt.filters)
+			res, err := reqHandler.BillingV1AccountList(ctx, tt.token, tt.size, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

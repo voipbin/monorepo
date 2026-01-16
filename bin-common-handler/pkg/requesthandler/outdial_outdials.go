@@ -54,7 +54,7 @@ func (r *requestHandler) OutdialV1OutdialCreate(ctx context.Context, customerID,
 // OutdialV1OutdialGets sends a request to outdial-manager
 // to get a list of outdials.
 // Returns list of outdials
-func (r *requestHandler) OutdialV1OutdialGets(ctx context.Context, pageToken string, pageSize uint64, filters map[omoutdial.Field]any) ([]omoutdial.Outdial, error) {
+func (r *requestHandler) OutdialV1OutdialList(ctx context.Context, pageToken string, pageSize uint64, filters map[omoutdial.Field]any) ([]omoutdial.Outdial, error) {
 	uri := fmt.Sprintf("/v1/outdials?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
 	m, err := json.Marshal(filters)

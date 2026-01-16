@@ -40,7 +40,7 @@ func (h *queueHandler) Execute(ctx context.Context, id uuid.UUID) {
 	}
 
 	// get queuecalls
-	qcs, err := h.reqHandler.QueueV1QueuecallGets(ctx, h.utilHandler.TimeGetCurTime(), 1, filters)
+	qcs, err := h.reqHandler.QueueV1QueuecallList(ctx, h.utilHandler.TimeGetCurTime(), 1, filters)
 	if err != nil {
 		log.Errorf("Could not get queuecalls. err: %v", err)
 		_ = h.reqHandler.QueueV1QueueExecuteRun(ctx, id, defaultExecuteDelay) // retry after 1 sec.

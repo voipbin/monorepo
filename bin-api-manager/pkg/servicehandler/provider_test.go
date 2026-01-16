@@ -135,7 +135,7 @@ func Test_ProviderGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().RouteV1ProviderGets(ctx, tt.pageToken, tt.pageSize).Return(tt.responseProviders, nil)
+			mockReq.EXPECT().RouteV1ProviderList(ctx, tt.pageToken, tt.pageSize).Return(tt.responseProviders, nil)
 
 			res, err := h.ProviderGets(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {

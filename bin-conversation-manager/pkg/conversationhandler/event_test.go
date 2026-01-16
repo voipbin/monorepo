@@ -128,7 +128,7 @@ func Test_Event_eventSMS_single_target(t *testing.T) {
 				tt.expectedMessageText,
 				[]media.Media{},
 			).Return(&message.Message{}, nil)
-			mockReq.EXPECT().NumberV1NumberGets(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseNumbers, nil)
+			mockReq.EXPECT().NumberV1NumberList(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseNumbers, nil)
 
 			if err := h.Event(ctx, conversation.TypeMessage, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -17,7 +17,7 @@ import (
 // AIV1SummaryGets sends a request to ai-manager
 // to getting a list of summaries info.
 // it returns detail list of ais info if it succeed.
-func (r *requestHandler) AIV1SummaryGets(ctx context.Context, pageToken string, pageSize uint64, filters map[amsummary.Field]any) ([]amsummary.Summary, error) {
+func (r *requestHandler) AIV1SummaryList(ctx context.Context, pageToken string, pageSize uint64, filters map[amsummary.Field]any) ([]amsummary.Summary, error) {
 	uri := fmt.Sprintf("/v1/summaries?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
 	m, err := json.Marshal(filters)

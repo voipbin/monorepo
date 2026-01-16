@@ -93,7 +93,7 @@ func Test_RegistrarV1TrunkCreate(t *testing.T) {
 	}
 }
 
-func Test_RegistrarV1TrunkGets(t *testing.T) {
+func Test_RegistrarV1TrunkList(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -152,7 +152,7 @@ func Test_RegistrarV1TrunkGets(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.RegistrarV1TrunkGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
+			res, err := reqHandler.RegistrarV1TrunkList(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

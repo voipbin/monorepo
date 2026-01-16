@@ -14,7 +14,7 @@ import (
 	"monorepo/bin-common-handler/pkg/sockhandler"
 )
 
-func Test_CallV1ExternalMediaGets(t *testing.T) {
+func Test_CallV1ExternalMediaList(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -100,7 +100,7 @@ func Test_CallV1ExternalMediaGets(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CallV1ExternalMediaGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
+			res, err := reqHandler.CallV1ExternalMediaList(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

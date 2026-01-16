@@ -103,7 +103,7 @@ func Test_ServiceAgentConversationMessageGets(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().ConversationV1ConversationGet(ctx, tt.conversationID).Return(tt.responseConversation, nil)
-			mockReq.EXPECT().ConversationV1MessageGets(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseMessages, nil)
+			mockReq.EXPECT().ConversationV1MessageList(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseMessages, nil)
 
 			res, err := h.ServiceAgentConversationMessageGets(ctx, tt.agent, tt.conversationID, tt.size, tt.token)
 			if err != nil {

@@ -155,7 +155,7 @@ func (h *serviceHandler) ActiveflowGets(ctx context.Context, a *amagent.Agent, s
 		fmactiveflow.FieldDeleted:    false, // we don't need deleted items
 	}
 
-	tmps, err := h.reqHandler.FlowV1ActiveflowGets(ctx, token, size, filters)
+	tmps, err := h.reqHandler.FlowV1ActiveflowList(ctx, token, size, filters)
 	if err != nil {
 		log.Infof("Could not get activeflows info. err: %v", err)
 		return nil, err

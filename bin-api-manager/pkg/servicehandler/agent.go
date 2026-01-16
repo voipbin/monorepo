@@ -151,7 +151,7 @@ func (h *serviceHandler) agentGets(ctx context.Context, size uint64, token strin
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	res, err := h.reqHandler.AgentV1AgentGets(ctx, token, size, filters)
+	res, err := h.reqHandler.AgentV1AgentList(ctx, token, size, filters)
 	if err != nil {
 		log.Infof("Could not get agents info. err: %v", err)
 		return nil, err

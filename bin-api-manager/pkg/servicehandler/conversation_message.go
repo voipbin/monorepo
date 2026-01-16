@@ -88,7 +88,7 @@ func (h *serviceHandler) conversationMessageGetsByConversationID(
 		cvmessage.FieldConversationID: conversationID,
 	}
 
-	tmps, err := h.reqHandler.ConversationV1MessageGets(ctx, token, size, filters)
+	tmps, err := h.reqHandler.ConversationV1MessageList(ctx, token, size, filters)
 	if err != nil {
 		log.Errorf("Could not get conversation messages info from the conversation-manager. err: %v", err)
 		return nil, fmt.Errorf("could not get conversation messages info. err: %v", err)

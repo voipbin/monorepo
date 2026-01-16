@@ -296,7 +296,7 @@ func Test_RegistrarExtensionDelete(t *testing.T) {
 	}
 }
 
-func Test_RegistrarV1ExtensionGets(t *testing.T) {
+func Test_RegistrarV1ExtensionList(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -356,7 +356,7 @@ func Test_RegistrarV1ExtensionGets(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.RegistrarV1ExtensionGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
+			res, err := reqHandler.RegistrarV1ExtensionList(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

@@ -17,7 +17,7 @@ import (
 // ConferenceV1ConferencecallGets sends a request to conference-manager
 // to getting a list of conferencecalls info.
 // it returns detail list of conferencecalls info if it succeed.
-func (r *requestHandler) ConferenceV1ConferencecallGets(ctx context.Context, pageToken string, pageSize uint64, filters map[cfconferencecall.Field]any) ([]cfconferencecall.Conferencecall, error) {
+func (r *requestHandler) ConferenceV1ConferencecallList(ctx context.Context, pageToken string, pageSize uint64, filters map[cfconferencecall.Field]any) ([]cfconferencecall.Conferencecall, error) {
 	uri := fmt.Sprintf("/v1/conferencecalls?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
 	m, err := json.Marshal(filters)

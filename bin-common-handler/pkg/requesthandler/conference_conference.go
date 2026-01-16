@@ -36,7 +36,7 @@ func (r *requestHandler) ConferenceV1ConferenceGet(ctx context.Context, conferen
 // ConferenceV1ConferenceGets sends a request to conference-manager
 // to getting a list of conference info.
 // it returns detail list of conference info if it succeed.
-func (r *requestHandler) ConferenceV1ConferenceGets(ctx context.Context, pageToken string, pageSize uint64, filters map[cfconference.Field]any) ([]cfconference.Conference, error) {
+func (r *requestHandler) ConferenceV1ConferenceList(ctx context.Context, pageToken string, pageSize uint64, filters map[cfconference.Field]any) ([]cfconference.Conference, error) {
 	uri := fmt.Sprintf("/v1/conferences?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
 	m, err := json.Marshal(filters)

@@ -882,7 +882,7 @@ func Test_CallGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().CallV1CallGets(ctx, tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.responseCalls, nil)
+			mockReq.EXPECT().CallV1CallList(ctx, tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.responseCalls, nil)
 
 			res, err := h.CallGets(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {

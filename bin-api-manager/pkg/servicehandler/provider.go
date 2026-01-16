@@ -79,7 +79,7 @@ func (h *serviceHandler) ProviderGets(ctx context.Context, a *amagent.Agent, siz
 		return nil, fmt.Errorf("agent has no permission")
 	}
 
-	tmps, err := h.reqHandler.RouteV1ProviderGets(ctx, token, size)
+	tmps, err := h.reqHandler.RouteV1ProviderList(ctx, token, size)
 	if err != nil {
 		log.Errorf("Could not get queues from the route-manager. err: %v", err)
 		return nil, err

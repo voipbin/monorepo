@@ -75,7 +75,7 @@ func (r *requestHandler) FlowV1ActiveflowGet(ctx context.Context, activeflowID u
 // FlowV1ActiveflowGets sends a request to flow-manager
 // to getting a list of activeflow info.
 // it returns detail list of activeflow info if it succeed.
-func (r *requestHandler) FlowV1ActiveflowGets(ctx context.Context, pageToken string, pageSize uint64, filters map[fmactiveflow.Field]any) ([]fmactiveflow.Activeflow, error) {
+func (r *requestHandler) FlowV1ActiveflowList(ctx context.Context, pageToken string, pageSize uint64, filters map[fmactiveflow.Field]any) ([]fmactiveflow.Activeflow, error) {
 	uri := fmt.Sprintf("/v1/activeflows?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)
 
 	m, err := json.Marshal(filters)

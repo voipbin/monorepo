@@ -173,7 +173,7 @@ func Test_StorageV1FileCreateWithDelay(t *testing.T) {
 	}
 }
 
-func Test_StorageV1FileGets(t *testing.T) {
+func Test_StorageV1FileList(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -238,7 +238,7 @@ func Test_StorageV1FileGets(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.StorageV1FileGets(ctx, tt.pageToken, tt.pageSize, tt.filters)
+			res, err := reqHandler.StorageV1FileList(ctx, tt.pageToken, tt.pageSize, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

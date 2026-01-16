@@ -129,7 +129,7 @@ func Test_startIncomingDomainTypeRegistrar_DestinationTypeAgent(t *testing.T) {
 			ctx := context.Background()
 
 			mockChannel.EXPECT().AddressGetSource(tt.channel, commonaddress.TypeExtension).Return(tt.responseSource)
-			mockReq.EXPECT().RegistrarV1ExtensionGets(ctx, "", uint64(1), gomock.Any()).Return([]rmextension.Extension{}, nil)
+			mockReq.EXPECT().RegistrarV1ExtensionList(ctx, "", uint64(1), gomock.Any()).Return([]rmextension.Extension{}, nil)
 			mockChannel.EXPECT().AddressGetDestinationWithoutSpecificType(tt.channel).Return(tt.responseDestination)
 
 			mockReq.EXPECT().AgentV1AgentGet(ctx, tt.expectAgentID).Return(tt.responseAgent, nil)
@@ -283,7 +283,7 @@ func Test_startIncomingDomainTypeRegistrar_DestinationTypeConference(t *testing.
 			ctx := context.Background()
 
 			mockChannel.EXPECT().AddressGetSource(tt.channel, commonaddress.TypeExtension).Return(tt.responseSource)
-			mockReq.EXPECT().RegistrarV1ExtensionGets(ctx, "", uint64(1), gomock.Any()).Return(tt.responseExtensions, nil)
+			mockReq.EXPECT().RegistrarV1ExtensionList(ctx, "", uint64(1), gomock.Any()).Return(tt.responseExtensions, nil)
 			mockChannel.EXPECT().AddressGetDestinationWithoutSpecificType(tt.channel).Return(tt.responseDestination)
 
 			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.expectConferenceID).Return(tt.responseConference, nil)
@@ -406,7 +406,7 @@ func Test_startIncomingDomainTypeRegistrar_DestinationTypeTel(t *testing.T) {
 			mockChannel.EXPECT().AddressGetSource(tt.channel, commonaddress.TypeExtension).Return(tt.responseSource)
 
 			// parseAddressTypeExtension
-			mockReq.EXPECT().RegistrarV1ExtensionGets(ctx, "", uint64(1), gomock.Any()).Return([]rmextension.Extension{}, nil)
+			mockReq.EXPECT().RegistrarV1ExtensionList(ctx, "", uint64(1), gomock.Any()).Return([]rmextension.Extension{}, nil)
 
 			mockChannel.EXPECT().AddressGetDestinationWithoutSpecificType(tt.channel).Return(tt.responseDestination)
 
@@ -568,10 +568,10 @@ func Test_startIncomingDomainTypeRegistrarDestinationTypeExtension(t *testing.T)
 
 			mockChannel.EXPECT().AddressGetSource(tt.channel, commonaddress.TypeExtension).Return(tt.responseSource)
 
-			mockReq.EXPECT().RegistrarV1ExtensionGets(ctx, "", uint64(1), gomock.Any()).Return([]rmextension.Extension{}, nil)
+			mockReq.EXPECT().RegistrarV1ExtensionList(ctx, "", uint64(1), gomock.Any()).Return([]rmextension.Extension{}, nil)
 			mockChannel.EXPECT().AddressGetDestinationWithoutSpecificType(tt.channel).Return(tt.responseDestination)
 
-			mockReq.EXPECT().RegistrarV1ExtensionGets(ctx, "", uint64(1), tt.expectFilters).Return(tt.responseExtensions, nil)
+			mockReq.EXPECT().RegistrarV1ExtensionList(ctx, "", uint64(1), tt.expectFilters).Return(tt.responseExtensions, nil)
 
 			mockReq.EXPECT().FlowV1FlowCreate(
 				ctx,
@@ -720,7 +720,7 @@ func Test_parseAddressTypeExtension(t *testing.T) {
 			if tt.responseExtension != nil {
 				mockReq.EXPECT().RegistrarV1ExtensionGet(ctx, tt.expectExtensionID).Return(tt.responseExtension, nil)
 			} else {
-				mockReq.EXPECT().RegistrarV1ExtensionGets(ctx, "", uint64(1), tt.expectFilters).Return(tt.responseExtensions, nil)
+				mockReq.EXPECT().RegistrarV1ExtensionList(ctx, "", uint64(1), tt.expectFilters).Return(tt.responseExtensions, nil)
 			}
 
 			res, err := h.parseAddressTypeExtension(ctx, tt.customerID, tt.address)
