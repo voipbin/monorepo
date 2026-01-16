@@ -88,21 +88,6 @@ func (mr *MockConferencecallHandlerMockRecorder) GetByReferenceID(ctx, reference
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByReferenceID", reflect.TypeOf((*MockConferencecallHandler)(nil).GetByReferenceID), ctx, referenceID)
 }
 
-// Gets mocks base method.
-func (m *MockConferencecallHandler) Gets(ctx context.Context, size uint64, token string, filters map[conferencecall.Field]any) ([]*conferencecall.Conferencecall, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Gets", ctx, size, token, filters)
-	ret0, _ := ret[0].([]*conferencecall.Conferencecall)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Gets indicates an expected call of Gets.
-func (mr *MockConferencecallHandlerMockRecorder) Gets(ctx, size, token, filters any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockConferencecallHandler)(nil).Gets), ctx, size, token, filters)
-}
-
 // HealthCheck mocks base method.
 func (m *MockConferencecallHandler) HealthCheck(ctx context.Context, id uuid.UUID, retryCount int) {
 	m.ctrl.T.Helper()
@@ -128,6 +113,21 @@ func (m *MockConferencecallHandler) Joined(ctx context.Context, cc *conferenceca
 func (mr *MockConferencecallHandlerMockRecorder) Joined(ctx, cc any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Joined", reflect.TypeOf((*MockConferencecallHandler)(nil).Joined), ctx, cc)
+}
+
+// List mocks base method.
+func (m *MockConferencecallHandler) List(ctx context.Context, size uint64, token string, filters map[conferencecall.Field]any) ([]*conferencecall.Conferencecall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "List", ctx, size, token, filters)
+	ret0, _ := ret[0].([]*conferencecall.Conferencecall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// List indicates an expected call of List.
+func (mr *MockConferencecallHandlerMockRecorder) List(ctx, size, token, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockConferencecallHandler)(nil).List), ctx, size, token, filters)
 }
 
 // ServiceStart mocks base method.

@@ -199,7 +199,7 @@ func (h *handler) ConferencecallGetByReferenceID(ctx context.Context, referenceI
 }
 
 // ConferencecallGets returns a list of conferencecalls of the given filters.
-func (h *handler) ConferencecallGets(ctx context.Context, size uint64, token string, filters map[conferencecall.Field]any) ([]*conferencecall.Conferencecall, error) {
+func (h *handler) ConferencecallList(ctx context.Context, size uint64, token string, filters map[conferencecall.Field]any) ([]*conferencecall.Conferencecall, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}

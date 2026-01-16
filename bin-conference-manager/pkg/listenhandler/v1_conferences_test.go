@@ -81,7 +81,7 @@ func Test_processV1ConferencesGet(t *testing.T) {
 				conferenceHandler: mockConf,
 			}
 
-			mockConf.EXPECT().Gets(gomock.Any(), tt.pageSize, tt.pageToken, gomock.Any()).Return(tt.responseConferences, nil)
+			mockConf.EXPECT().List(gomock.Any(), tt.pageSize, tt.pageToken, gomock.Any()).Return(tt.responseConferences, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

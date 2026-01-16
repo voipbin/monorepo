@@ -566,7 +566,7 @@ func Test_ConferenceUpdateData(t *testing.T) {
 	}
 }
 
-func Test_ConferenceGets(t *testing.T) {
+func Test_ConferenceList(t *testing.T) {
 
 	tests := []struct {
 		name        string
@@ -739,7 +739,7 @@ func Test_ConferenceGets(t *testing.T) {
 				}
 			}
 
-			res, err := h.ConferenceGets(ctx, 10, utilhandler.TimeGetCurTime(), tt.filters)
+			res, err := h.ConferenceList(ctx, 10, utilhandler.TimeGetCurTime(), tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
