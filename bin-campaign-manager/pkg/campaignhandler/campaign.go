@@ -187,7 +187,7 @@ func (h *campaignHandler) List(ctx context.Context, token string, limit uint64, 
 	return res, nil
 }
 
-// GetsByCustomerID returns list of campaigns
+// ListByCustomerID returns list of campaigns
 func (h *campaignHandler) ListByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*campaign.Campaign, error) {
 	log := logrus.WithFields(
 		logrus.Fields{

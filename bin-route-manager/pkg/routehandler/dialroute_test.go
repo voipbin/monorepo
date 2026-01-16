@@ -97,7 +97,7 @@ func Test_DialrouteList(t *testing.T) {
 
 			ctx := context.Background()
 
-			// GetsByTarget for customer route base
+			// ListByTarget for customer route base
 			// First call: filtersTarget with customerID and target
 			filtersCustomerTarget := map[route.Field]any{
 				route.FieldCustomerID: tt.customerID,
@@ -111,7 +111,7 @@ func Test_DialrouteList(t *testing.T) {
 			}
 			mockDB.EXPECT().RouteList(ctx, "", uint64(1000), filtersCustomerAll).Return(tt.responseRoutesCustomerAll, nil)
 
-			// GetsByTarget for default route base
+			// ListByTarget for default route base
 			// First call: filtersTarget with CustomerIDBasicRoute and target
 			filtersDefaultTarget := map[route.Field]any{
 				route.FieldCustomerID: route.CustomerIDBasicRoute,

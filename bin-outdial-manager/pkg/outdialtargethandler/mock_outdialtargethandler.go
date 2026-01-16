@@ -103,7 +103,7 @@ func (mr *MockOutdialTargetHandlerMockRecorder) GetAvailable(ctx, outdialID, try
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAvailable", reflect.TypeOf((*MockOutdialTargetHandler)(nil).GetAvailable), ctx, outdialID, tryCount0, tryCount1, tryCount2, tryCount3, tryCount4, limit)
 }
 
-// GetsByOutdialID mocks base method.
+// ListByOutdialID mocks base method.
 func (m *MockOutdialTargetHandler) GetsByOutdialID(ctx context.Context, outdialID uuid.UUID, token string, limit uint64) ([]*outdialtarget.OutdialTarget, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetsByOutdialID", ctx, outdialID, token, limit)
@@ -112,7 +112,7 @@ func (m *MockOutdialTargetHandler) GetsByOutdialID(ctx context.Context, outdialI
 	return ret0, ret1
 }
 
-// GetsByOutdialID indicates an expected call of GetsByOutdialID.
+// ListByOutdialID indicates an expected call of GetsByOutdialID.
 func (mr *MockOutdialTargetHandlerMockRecorder) GetsByOutdialID(ctx, outdialID, token, limit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByOutdialID", reflect.TypeOf((*MockOutdialTargetHandler)(nil).GetsByOutdialID), ctx, outdialID, token, limit)

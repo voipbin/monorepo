@@ -118,7 +118,7 @@ func (h *outdialHandler) List(ctx context.Context, token string, limit uint64, f
 	return res, nil
 }
 
-// GetsByCustomerID returns list of outdials
+// ListByCustomerID returns list of outdials
 func (h *outdialHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*outdial.Outdial, error) {
 	log := logrus.WithFields(
 		logrus.Fields{

@@ -127,7 +127,7 @@ func (h *outplanHandler) List(ctx context.Context, token string, limit uint64, f
 	return res, nil
 }
 
-// GetsByCustomerID returns list of outplans
+// ListByCustomerID returns list of outplans
 func (h *outplanHandler) ListByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*outplan.Outplan, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "GetsByCustomerID",

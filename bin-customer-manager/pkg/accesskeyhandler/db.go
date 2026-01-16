@@ -25,7 +25,7 @@ func (h *accesskeyHandler) List(ctx context.Context, size uint64, token string, 
 	return res, nil
 }
 
-// GetsByCustomerID returns list of accesskeys by the customer id
+// ListByCustomerID returns list of accesskeys by the customer id
 func (h *accesskeyHandler) GetsByCustomerID(ctx context.Context, size uint64, token string, customerID uuid.UUID) ([]*accesskey.Accesskey, error) {
 	log := logrus.WithField("func", "List")
 

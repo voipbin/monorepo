@@ -146,7 +146,7 @@ func (h *campaigncallHandler) List(ctx context.Context, token string, limit uint
 	return res, nil
 }
 
-// GetsByCustomerID returns list of campaigncall
+// ListByCustomerID returns list of campaigncall
 func (h *campaigncallHandler) ListByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "GetsByCustomerID",
@@ -165,7 +165,7 @@ func (h *campaigncallHandler) ListByCustomerID(ctx context.Context, customerID u
 	return res, nil
 }
 
-// GetsByCampaignID returns list of campaigncall
+// ListByCampaignID returns list of campaigncall
 func (h *campaigncallHandler) ListByCampaignID(ctx context.Context, campaignID uuid.UUID, token string, limit uint64) ([]*campaigncall.Campaigncall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "GetsByCampaignID",
@@ -184,7 +184,7 @@ func (h *campaigncallHandler) ListByCampaignID(ctx context.Context, campaignID u
 	return res, nil
 }
 
-// GetsByCampaignIDAndStatus returns list of campaigncalls
+// ListByCampaignIDAndStatus returns list of campaigncalls
 func (h *campaigncallHandler) ListByCampaignIDAndStatus(ctx context.Context, campaignID uuid.UUID, status campaigncall.Status, token string, limit uint64) ([]*campaigncall.Campaigncall, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
