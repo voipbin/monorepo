@@ -163,8 +163,8 @@ func (h *handler) AgentGet(ctx context.Context, id uuid.UUID) (*agent.Agent, err
 	return res, nil
 }
 
-// AgentGets returns agents.
-func (h *handler) AgentGets(ctx context.Context, size uint64, token string, filters map[agent.Field]any) ([]*agent.Agent, error) {
+// AgentList returns agents.
+func (h *handler) AgentList(ctx context.Context, size uint64, token string, filters map[agent.Field]any) ([]*agent.Agent, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}
@@ -181,17 +181,17 @@ func (h *handler) AgentGets(ctx context.Context, size uint64, token string, filt
 
 	sb, err := commondatabasehandler.ApplyFields(sb, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not apply filters. AgentGets. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. AgentList. err: %v", err)
 	}
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. AgentGets. err: %v", err)
+		return nil, fmt.Errorf("could not build query. AgentList. err: %v", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. AgentGets. err: %v", err)
+		return nil, fmt.Errorf("could not query. AgentList. err: %v", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -201,12 +201,12 @@ func (h *handler) AgentGets(ctx context.Context, size uint64, token string, filt
 	for rows.Next() {
 		u, err := h.agentGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not get data. AgentGets. err: %v", err)
+			return nil, fmt.Errorf("could not get data. AgentList. err: %v", err)
 		}
 		res = append(res, u)
 	}
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error. AgentGets. err: %v", err)
+		return nil, fmt.Errorf("rows iteration error. AgentList. err: %v", err)
 	}
 
 	return res, nil
@@ -255,7 +255,7 @@ func (h *handler) AgentGetByUsername(ctx context.Context, username string) (*age
 		agent.FieldUsername: username,
 	}
 
-	tmp, err := h.AgentGets(ctx, 1, h.utilHandler.TimeGetCurTime(), filters)
+	tmp, err := h.AgentList(ctx, 1, h.utilHandler.TimeGetCurTime(), filters)
 	if err != nil {
 		return nil, err
 	}

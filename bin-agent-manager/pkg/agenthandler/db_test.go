@@ -18,7 +18,7 @@ import (
 	"monorepo/bin-agent-manager/pkg/dbhandler"
 )
 
-func Test_dbGets(t *testing.T) {
+func Test_dbList(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -60,8 +60,8 @@ func Test_dbGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AgentGets(gomock.Any(), tt.size, tt.token, tt.filters).Return(tt.responseAgents, nil)
-			_, err := h.dbGets(ctx, tt.size, tt.token, tt.filters)
+			mockDB.EXPECT().AgentList(gomock.Any(), tt.size, tt.token, tt.filters).Return(tt.responseAgents, nil)
+			_, err := h.dbList(ctx, tt.size, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

@@ -13,16 +13,16 @@ import (
 	"monorepo/bin-agent-manager/models/agent"
 )
 
-// Gets returns agents
-func (h *agentHandler) Gets(ctx context.Context, size uint64, token string, filters map[agent.Field]any) ([]*agent.Agent, error) {
+// List returns agents
+func (h *agentHandler) List(ctx context.Context, size uint64, token string, filters map[agent.Field]any) ([]*agent.Agent, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "Gets",
+		"func":    "List",
 		"size":    size,
 		"token":   token,
 		"filters": filters,
 	})
 
-	res, err := h.dbGets(ctx, size, token, filters)
+	res, err := h.dbList(ctx, size, token, filters)
 	if err != nil {
 		log.Errorf("Could not get agents info. err: %v", err)
 		return nil, err
@@ -171,7 +171,7 @@ func (h *agentHandler) isOnlyAdmin(ctx context.Context, id uuid.UUID) bool {
 		agent.FieldDeleted:    false,
 	}
 
-	agents, err := h.dbGets(ctx, 1000, "", filters)
+	agents, err := h.dbList(ctx, 1000, "", filters)
 	if err != nil {
 		log.Warnf("Could not get agents info while verifying other admin agents. Treating the given agent as sole admin and denying operation as a fail-safe. agent_id: %s, err: %v", id.String(), err)
 		return true

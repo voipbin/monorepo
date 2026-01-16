@@ -116,19 +116,19 @@ func (mr *MockDBHandlerMockRecorder) AgentGetByUsername(ctx, username any) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentGetByUsername", reflect.TypeOf((*MockDBHandler)(nil).AgentGetByUsername), ctx, username)
 }
 
-// AgentGets mocks base method.
-func (m *MockDBHandler) AgentGets(ctx context.Context, size uint64, token string, filters map[agent.Field]any) ([]*agent.Agent, error) {
+// AgentList mocks base method.
+func (m *MockDBHandler) AgentList(ctx context.Context, size uint64, token string, filters map[agent.Field]any) ([]*agent.Agent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AgentGets", ctx, size, token, filters)
+	ret := m.ctrl.Call(m, "AgentList", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*agent.Agent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// AgentGets indicates an expected call of AgentGets.
-func (mr *MockDBHandlerMockRecorder) AgentGets(ctx, size, token, filters any) *gomock.Call {
+// AgentList indicates an expected call of AgentList.
+func (mr *MockDBHandlerMockRecorder) AgentList(ctx, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentGets", reflect.TypeOf((*MockDBHandler)(nil).AgentGets), ctx, size, token, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentList", reflect.TypeOf((*MockDBHandler)(nil).AgentList), ctx, size, token, filters)
 }
 
 // AgentSetAddresses mocks base method.

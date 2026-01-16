@@ -22,7 +22,7 @@ type DBHandler interface {
 	AgentDelete(ctx context.Context, id uuid.UUID) error
 	AgentGet(ctx context.Context, id uuid.UUID) (*agent.Agent, error)
 	AgentGetByUsername(ctx context.Context, username string) (*agent.Agent, error)
-	AgentGets(ctx context.Context, size uint64, token string, filters map[agent.Field]any) ([]*agent.Agent, error)
+	AgentList(ctx context.Context, size uint64, token string, filters map[agent.Field]any) ([]*agent.Agent, error)
 	AgentGetByCustomerIDAndAddress(ctx context.Context, customerID uuid.UUID, address *commonaddress.Address) (*agent.Agent, error)
 	AgentSetAddresses(ctx context.Context, id uuid.UUID, addresses []commonaddress.Address) error
 	AgentSetBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, ringMethod agent.RingMethod) error

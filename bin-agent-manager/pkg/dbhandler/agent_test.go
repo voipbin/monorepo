@@ -272,7 +272,7 @@ func Test_AgentDelete(t *testing.T) {
 	}
 }
 
-func Test_AgentGets(t *testing.T) {
+func Test_AgentList(t *testing.T) {
 
 	tests := []struct {
 		name   string
@@ -414,7 +414,7 @@ func Test_AgentGets(t *testing.T) {
 				}
 			}
 
-			res, err := h.AgentGets(ctx, tt.size, utilhandler.TimeGetCurTime(), tt.filters)
+			res, err := h.AgentList(ctx, tt.size, utilhandler.TimeGetCurTime(), tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. UserGet expect: ok, got: %v", err)
 			}

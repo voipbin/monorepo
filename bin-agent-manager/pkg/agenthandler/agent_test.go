@@ -20,7 +20,7 @@ import (
 	"monorepo/bin-agent-manager/pkg/dbhandler"
 )
 
-func Test_Gets(t *testing.T) {
+func Test_List(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -61,8 +61,8 @@ func Test_Gets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().AgentGets(gomock.Any(), tt.size, tt.token, tt.filters).Return(tt.result, nil)
-			_, err := h.Gets(ctx, tt.size, tt.token, tt.filters)
+			mockDB.EXPECT().AgentList(gomock.Any(), tt.size, tt.token, tt.filters).Return(tt.result, nil)
+			_, err := h.List(ctx, tt.size, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -526,7 +526,7 @@ func Test_UpdatePermission_error(t *testing.T) {
 			mockFunc: func(mockDB *dbhandler.MockDBHandler, id uuid.UUID, perm agent.Permission, before *agent.Agent, list []*agent.Agent) {
 				// isOnlyAdmin
 				mockDB.EXPECT().AgentGet(gomock.Any(), id).Return(before, nil)
-				mockDB.EXPECT().AgentGets(gomock.Any(), uint64(1000), "", map[agent.Field]any{agent.FieldCustomerID: before.CustomerID, agent.FieldDeleted: false}).Return(list, nil)
+				mockDB.EXPECT().AgentList(gomock.Any(), uint64(1000), "", map[agent.Field]any{agent.FieldCustomerID: before.CustomerID, agent.FieldDeleted: false}).Return(list, nil)
 			},
 		},
 	}
@@ -745,7 +745,7 @@ func Test_isOnlyAdmin(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().AgentGet(ctx, tt.id).Return(tt.responseAgent, nil)
-			mockDB.EXPECT().AgentGets(ctx, uint64(1000), "", tt.expectFilters).Return(tt.responseAgents, nil)
+			mockDB.EXPECT().AgentList(ctx, uint64(1000), "", tt.expectFilters).Return(tt.responseAgents, nil)
 
 			res := h.isOnlyAdmin(ctx, tt.id)
 			if res != tt.expectRes {
