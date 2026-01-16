@@ -26,14 +26,14 @@ type DBHandler interface {
 	OutdialCreate(ctx context.Context, f *outdial.Outdial) error
 	OutdialDelete(ctx context.Context, id uuid.UUID) error
 	OutdialGet(ctx context.Context, id uuid.UUID) (*outdial.Outdial, error)
-	OutdialGets(ctx context.Context, token string, size uint64, filters map[outdial.Field]any) ([]*outdial.Outdial, error)
+	OutdialList(ctx context.Context, token string, size uint64, filters map[outdial.Field]any) ([]*outdial.Outdial, error)
 	OutdialUpdate(ctx context.Context, id uuid.UUID, fields map[outdial.Field]any) error
 
 	// outdialtarget
 	OutdialTargetCreate(ctx context.Context, t *outdialtarget.OutdialTarget) error
 	OutdialTargetDelete(ctx context.Context, id uuid.UUID) error
 	OutdialTargetGet(ctx context.Context, id uuid.UUID) (*outdialtarget.OutdialTarget, error)
-	OutdialTargetGets(ctx context.Context, token string, size uint64, filters map[outdialtarget.Field]any) ([]*outdialtarget.OutdialTarget, error)
+	OutdialTargetList(ctx context.Context, token string, size uint64, filters map[outdialtarget.Field]any) ([]*outdialtarget.OutdialTarget, error)
 	OutdialTargetUpdate(ctx context.Context, id uuid.UUID, fields map[outdialtarget.Field]any) error
 	OutdialTargetGetAvailable(
 		ctx context.Context,
@@ -52,7 +52,7 @@ type DBHandler interface {
 	OutdialTargetCallGet(ctx context.Context, id uuid.UUID) (*outdialtargetcall.OutdialTargetCall, error)
 	OutdialTargetCallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*outdialtargetcall.OutdialTargetCall, error)
 	OutdialTargetCallGetByActiveflowID(ctx context.Context, activeflowID uuid.UUID) (*outdialtargetcall.OutdialTargetCall, error)
-	OutdialTargetCallGets(ctx context.Context, token string, size uint64, filters map[outdialtargetcall.Field]any) ([]*outdialtargetcall.OutdialTargetCall, error)
+	OutdialTargetCallList(ctx context.Context, token string, size uint64, filters map[outdialtargetcall.Field]any) ([]*outdialtargetcall.OutdialTargetCall, error)
 	OutdialTargetCallUpdate(ctx context.Context, id uuid.UUID, fields map[outdialtargetcall.Field]any) error
 }
 

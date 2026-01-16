@@ -87,21 +87,6 @@ func (mr *MockOutdialHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockOutdialHandler)(nil).Get), ctx, id)
 }
 
-// Gets mocks base method.
-func (m *MockOutdialHandler) Gets(ctx context.Context, token string, limit uint64, filters map[outdial.Field]any) ([]*outdial.Outdial, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Gets", ctx, token, limit, filters)
-	ret0, _ := ret[0].([]*outdial.Outdial)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Gets indicates an expected call of Gets.
-func (mr *MockOutdialHandlerMockRecorder) Gets(ctx, token, limit, filters any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockOutdialHandler)(nil).Gets), ctx, token, limit, filters)
-}
-
 // GetsByCustomerID mocks base method.
 func (m *MockOutdialHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*outdial.Outdial, error) {
 	m.ctrl.T.Helper()
@@ -115,6 +100,21 @@ func (m *MockOutdialHandler) GetsByCustomerID(ctx context.Context, customerID uu
 func (mr *MockOutdialHandlerMockRecorder) GetsByCustomerID(ctx, customerID, token, limit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByCustomerID", reflect.TypeOf((*MockOutdialHandler)(nil).GetsByCustomerID), ctx, customerID, token, limit)
+}
+
+// List mocks base method.
+func (m *MockOutdialHandler) List(ctx context.Context, token string, limit uint64, filters map[outdial.Field]any) ([]*outdial.Outdial, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "List", ctx, token, limit, filters)
+	ret0, _ := ret[0].([]*outdial.Outdial)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// List indicates an expected call of List.
+func (mr *MockOutdialHandlerMockRecorder) List(ctx, token, limit, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockOutdialHandler)(nil).List), ctx, token, limit, filters)
 }
 
 // UpdateBasicInfo mocks base method.

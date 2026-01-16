@@ -271,8 +271,8 @@ func (h *handler) OutdialTargetCallGetByActiveflowID(ctx context.Context, active
 	return res, nil
 }
 
-// OutdialTargetCallGets returns list of outdialtargetcalls.
-func (h *handler) OutdialTargetCallGets(ctx context.Context, token string, size uint64, filters map[outdialtargetcall.Field]any) ([]*outdialtargetcall.OutdialTargetCall, error) {
+// OutdialTargetCallList returns list of outdialtargetcalls.
+func (h *handler) OutdialTargetCallList(ctx context.Context, token string, size uint64, filters map[outdialtargetcall.Field]any) ([]*outdialtargetcall.OutdialTargetCall, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}
@@ -288,17 +288,17 @@ func (h *handler) OutdialTargetCallGets(ctx context.Context, token string, size 
 
 	sb, err := commondatabasehandler.ApplyFields(sb, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not apply filters. OutdialTargetCallGets. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. OutdialTargetCallList. err: %v", err)
 	}
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. OutdialTargetCallGets. err: %v", err)
+		return nil, fmt.Errorf("could not build query. OutdialTargetCallList. err: %v", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. OutdialTargetCallGets. err: %v", err)
+		return nil, fmt.Errorf("could not query. OutdialTargetCallList. err: %v", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -308,12 +308,12 @@ func (h *handler) OutdialTargetCallGets(ctx context.Context, token string, size 
 	for rows.Next() {
 		u, err := h.outdialTargetCallGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not get data. OutdialTargetCallGets, err: %v", err)
+			return nil, fmt.Errorf("could not get data. OutdialTargetCallList, err: %v", err)
 		}
 		res = append(res, u)
 	}
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error. OutdialTargetCallGets. err: %v", err)
+		return nil, fmt.Errorf("rows iteration error. OutdialTargetCallList. err: %v", err)
 	}
 
 	return res, nil

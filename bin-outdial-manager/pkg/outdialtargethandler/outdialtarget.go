@@ -127,7 +127,7 @@ func (h *outdialTargetHandler) GetsByOutdialID(ctx context.Context, outdialID uu
 		outdialtarget.FieldDeleted:   false,
 	}
 
-	res, err := h.db.OutdialTargetGets(ctx, token, limit, filters)
+	res, err := h.db.OutdialTargetList(ctx, token, limit, filters)
 	if err != nil {
 		log.Errorf("Could not create the outdial. err: %v", err)
 		return nil, err

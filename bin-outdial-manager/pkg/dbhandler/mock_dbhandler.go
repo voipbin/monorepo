@@ -87,19 +87,19 @@ func (mr *MockDBHandlerMockRecorder) OutdialGet(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutdialGet", reflect.TypeOf((*MockDBHandler)(nil).OutdialGet), ctx, id)
 }
 
-// OutdialGets mocks base method.
-func (m *MockDBHandler) OutdialGets(ctx context.Context, token string, size uint64, filters map[outdial.Field]any) ([]*outdial.Outdial, error) {
+// OutdialList mocks base method.
+func (m *MockDBHandler) OutdialList(ctx context.Context, token string, size uint64, filters map[outdial.Field]any) ([]*outdial.Outdial, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "OutdialGets", ctx, token, size, filters)
+	ret := m.ctrl.Call(m, "OutdialList", ctx, token, size, filters)
 	ret0, _ := ret[0].([]*outdial.Outdial)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// OutdialGets indicates an expected call of OutdialGets.
-func (mr *MockDBHandlerMockRecorder) OutdialGets(ctx, token, size, filters any) *gomock.Call {
+// OutdialList indicates an expected call of OutdialList.
+func (mr *MockDBHandlerMockRecorder) OutdialList(ctx, token, size, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutdialGets", reflect.TypeOf((*MockDBHandler)(nil).OutdialGets), ctx, token, size, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutdialList", reflect.TypeOf((*MockDBHandler)(nil).OutdialList), ctx, token, size, filters)
 }
 
 // OutdialTargetCallCreate mocks base method.
@@ -161,19 +161,19 @@ func (mr *MockDBHandlerMockRecorder) OutdialTargetCallGetByReferenceID(ctx, refe
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutdialTargetCallGetByReferenceID", reflect.TypeOf((*MockDBHandler)(nil).OutdialTargetCallGetByReferenceID), ctx, referenceID)
 }
 
-// OutdialTargetCallGets mocks base method.
-func (m *MockDBHandler) OutdialTargetCallGets(ctx context.Context, token string, size uint64, filters map[outdialtargetcall.Field]any) ([]*outdialtargetcall.OutdialTargetCall, error) {
+// OutdialTargetCallList mocks base method.
+func (m *MockDBHandler) OutdialTargetCallList(ctx context.Context, token string, size uint64, filters map[outdialtargetcall.Field]any) ([]*outdialtargetcall.OutdialTargetCall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "OutdialTargetCallGets", ctx, token, size, filters)
+	ret := m.ctrl.Call(m, "OutdialTargetCallList", ctx, token, size, filters)
 	ret0, _ := ret[0].([]*outdialtargetcall.OutdialTargetCall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// OutdialTargetCallGets indicates an expected call of OutdialTargetCallGets.
-func (mr *MockDBHandlerMockRecorder) OutdialTargetCallGets(ctx, token, size, filters any) *gomock.Call {
+// OutdialTargetCallList indicates an expected call of OutdialTargetCallList.
+func (mr *MockDBHandlerMockRecorder) OutdialTargetCallList(ctx, token, size, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutdialTargetCallGets", reflect.TypeOf((*MockDBHandler)(nil).OutdialTargetCallGets), ctx, token, size, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutdialTargetCallList", reflect.TypeOf((*MockDBHandler)(nil).OutdialTargetCallList), ctx, token, size, filters)
 }
 
 // OutdialTargetCallUpdate mocks base method.
@@ -248,19 +248,19 @@ func (mr *MockDBHandlerMockRecorder) OutdialTargetGetAvailable(ctx, outdialID, t
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutdialTargetGetAvailable", reflect.TypeOf((*MockDBHandler)(nil).OutdialTargetGetAvailable), ctx, outdialID, tryCount0, tryCount1, tryCount2, tryCount3, tryCount4, limit)
 }
 
-// OutdialTargetGets mocks base method.
-func (m *MockDBHandler) OutdialTargetGets(ctx context.Context, token string, size uint64, filters map[outdialtarget.Field]any) ([]*outdialtarget.OutdialTarget, error) {
+// OutdialTargetList mocks base method.
+func (m *MockDBHandler) OutdialTargetList(ctx context.Context, token string, size uint64, filters map[outdialtarget.Field]any) ([]*outdialtarget.OutdialTarget, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "OutdialTargetGets", ctx, token, size, filters)
+	ret := m.ctrl.Call(m, "OutdialTargetList", ctx, token, size, filters)
 	ret0, _ := ret[0].([]*outdialtarget.OutdialTarget)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// OutdialTargetGets indicates an expected call of OutdialTargetGets.
-func (mr *MockDBHandlerMockRecorder) OutdialTargetGets(ctx, token, size, filters any) *gomock.Call {
+// OutdialTargetList indicates an expected call of OutdialTargetList.
+func (mr *MockDBHandlerMockRecorder) OutdialTargetList(ctx, token, size, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutdialTargetGets", reflect.TypeOf((*MockDBHandler)(nil).OutdialTargetGets), ctx, token, size, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutdialTargetList", reflect.TypeOf((*MockDBHandler)(nil).OutdialTargetList), ctx, token, size, filters)
 }
 
 // OutdialTargetUpdate mocks base method.

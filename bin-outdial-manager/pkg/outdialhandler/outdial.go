@@ -99,17 +99,17 @@ func (h *outdialHandler) Get(ctx context.Context, id uuid.UUID) (*outdial.Outdia
 	return res, nil
 }
 
-// Gets returns list of outdials with filters
-func (h *outdialHandler) Gets(ctx context.Context, token string, limit uint64, filters map[outdial.Field]any) ([]*outdial.Outdial, error) {
+// List returns list of outdials with filters
+func (h *outdialHandler) List(ctx context.Context, token string, limit uint64, filters map[outdial.Field]any) ([]*outdial.Outdial, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "Gets",
+		"func":    "List",
 		"token":   token,
 		"limit":   limit,
 		"filters": filters,
 	})
 	log.Debug("Getting outdials with filters.")
 
-	res, err := h.db.OutdialGets(ctx, token, limit, filters)
+	res, err := h.db.OutdialList(ctx, token, limit, filters)
 	if err != nil {
 		log.Errorf("Could not get outdials. err: %v", err)
 		return nil, err
@@ -134,7 +134,7 @@ func (h *outdialHandler) GetsByCustomerID(ctx context.Context, customerID uuid.U
 		outdial.FieldDeleted:    false,
 	}
 
-	res, err := h.db.OutdialGets(ctx, token, limit, filters)
+	res, err := h.db.OutdialList(ctx, token, limit, filters)
 	if err != nil {
 		log.Errorf("Could not get outdials. err: %v", err)
 		return nil, err

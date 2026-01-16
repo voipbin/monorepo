@@ -103,7 +103,7 @@ func (h *listenHandler) v1OutdialsGet(ctx context.Context, req *sock.Request) (*
 		"typed_filters": typedFilters,
 	}).Debug("v1OutdialsGet: Converted filters to typed field map (check UUID types)")
 
-	tmp, err := h.outdialHandler.Gets(ctx, pageToken, pageSize, typedFilters)
+	tmp, err := h.outdialHandler.List(ctx, pageToken, pageSize, typedFilters)
 	if err != nil {
 		logrus.Errorf("Could not get outdials. err: %v", err)
 		return nil, err

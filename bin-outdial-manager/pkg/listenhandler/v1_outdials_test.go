@@ -159,7 +159,7 @@ func Test_v1OutdialsGet(t *testing.T) {
 				outdialTargetHandler: mockOutdialTarget,
 			}
 
-			mockOutdial.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, tt.filters).Return(tt.outdials, nil)
+			mockOutdial.EXPECT().List(gomock.Any(), tt.pageToken, tt.pageSize, tt.filters).Return(tt.outdials, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

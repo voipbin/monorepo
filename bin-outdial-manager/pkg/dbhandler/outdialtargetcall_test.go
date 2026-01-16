@@ -195,7 +195,7 @@ func Test_OutdialTargetCallCreate(t *testing.T) {
 	}
 }
 
-func Test_OutdialTargetCallGets(t *testing.T) {
+func Test_OutdialTargetCallList(t *testing.T) {
 
 	tests := []struct {
 		name               string
@@ -503,7 +503,7 @@ func Test_OutdialTargetCallGets(t *testing.T) {
 				}
 			}
 
-			res, err := h.OutdialTargetCallGets(ctx, GetCurTime(), 100, tt.filters)
+			res, err := h.OutdialTargetCallList(ctx, GetCurTime(), 100, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
