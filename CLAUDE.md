@@ -646,6 +646,83 @@ go tool cover -func=cp.out
 go test -v ./pkg/servicehandler/...
 ```
 
+### Testing with SQLite Test Databases
+
+**Pattern used across ALL services in the monorepo:**
+
+Each service has `scripts/database_scripts/` directory containing simplified SQL files for unit testing with SQLite.
+
+**Purpose:**
+- **Isolated unit tests** - Test database operations without requiring MySQL connection
+- **Fast test execution** - SQLite is lightweight and runs in-memory
+- **CI/CD friendly** - No external database dependencies needed
+- **Good enough for CRUD** - SQLite doesn't support all MySQL features, but sufficient for basic CRUD operation tests
+
+**Pattern:**
+```
+bin-<service-name>/
+└── scripts/
+    └── database_scripts/
+        ├── table_resource1.sql
+        ├── table_resource2.sql
+        └── table_resource3.sql
+```
+
+**SQL file format:**
+- Simplified CREATE TABLE statements compatible with SQLite
+- Copied and adapted from real schema in `bin-dbscheme-manager` Alembic migrations
+- MySQL-specific features removed or simplified (e.g., `BINARY(16)` → `BLOB`, `DATETIME(6)` → `TEXT`)
+- Primary keys and basic indexes included
+- Foreign keys simplified (SQLite has limited FK support in older versions)
+
+**Example (`table_chats.sql`):**
+```sql
+CREATE TABLE chat_chats (
+    id          BLOB PRIMARY KEY,
+    customer_id BLOB,
+    type        TEXT,
+    tm_create   TEXT,
+    tm_update   TEXT,
+    tm_delete   TEXT
+);
+
+CREATE INDEX idx_chat_chats_customer_id ON chat_chats(customer_id);
+```
+
+**Usage in tests:**
+```go
+func setupTestDB(t *testing.T) *sql.DB {
+    db, err := sql.Open("sqlite3", ":memory:")
+    require.NoError(t, err)
+
+    // Load schema from scripts/database_scripts/
+    schema, _ := os.ReadFile("../../scripts/database_scripts/table_chats.sql")
+    _, err = db.Exec(string(schema))
+    require.NoError(t, err)
+
+    return db
+}
+
+func TestChatCreate(t *testing.T) {
+    db := setupTestDB(t)
+    defer db.Close()
+
+    handler := dbhandler.New(db, nil)
+    // ... test CRUD operations
+}
+```
+
+**Important notes:**
+- These SQL files are NOT the source of truth (that's `bin-dbscheme-manager` Alembic migrations)
+- These are test fixtures, manually created/updated as needed
+- Not all MySQL features work in SQLite (stored procedures, full-text search, etc.)
+- For integration tests requiring MySQL-specific features, use actual MySQL test database
+
+**When to update:**
+- After creating new Alembic migration in `bin-dbscheme-manager`
+- When adding new tables or significant schema changes
+- When database handler tests fail due to schema mismatch
+
 ### Code Generation
 
 Many services use code generation for mocks and API specs:
