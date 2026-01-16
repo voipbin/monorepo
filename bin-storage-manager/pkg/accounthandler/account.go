@@ -71,7 +71,7 @@ func (h *accountHandler) getByCustomerID(ctx context.Context, customerID uuid.UU
 		account.FieldDeleted:    false,
 		account.FieldCustomerID: customerID,
 	}
-	tmps, err := h.Gets(ctx, "", 1, filters)
+	tmps, err := h.List(ctx, "", 1, filters)
 	if err != nil {
 		log.Errorf("Could not check the accounts. err: %v", err)
 		return nil, err
@@ -84,16 +84,16 @@ func (h *accountHandler) getByCustomerID(ctx context.Context, customerID uuid.UU
 	return res, nil
 }
 
-// Gets returns list of account
-func (h *accountHandler) Gets(ctx context.Context, token string, size uint64, filters map[account.Field]any) ([]*account.Account, error) {
+// List returns list of account
+func (h *accountHandler) List(ctx context.Context, token string, size uint64, filters map[account.Field]any) ([]*account.Account, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":  "Gets",
+		"func":  "List",
 		"token": token,
 		"size":  size,
 		"limit": size,
 	})
 
-	res, err := h.db.AccountGets(ctx, token, size, filters)
+	res, err := h.db.AccountList(ctx, token, size, filters)
 	if err != nil {
 		log.Errorf("Could not get accounts. err: %v", err)
 		return nil, err

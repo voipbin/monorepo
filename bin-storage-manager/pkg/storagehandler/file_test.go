@@ -142,7 +142,7 @@ func Test_FileGet(t *testing.T) {
 	}
 }
 
-func Test_FileGets(t *testing.T) {
+func Test_FileList(t *testing.T) {
 
 	type test struct {
 		name string
@@ -192,9 +192,9 @@ func Test_FileGets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockFile.EXPECT().Gets(ctx, tt.token, tt.size, gomock.Any()).Return(tt.responseFiles, nil)
+			mockFile.EXPECT().List(ctx, tt.token, tt.size, gomock.Any()).Return(tt.responseFiles, nil)
 
-			res, err := h.FileGets(ctx, tt.token, tt.size, tt.filters)
+			res, err := h.FileList(ctx, tt.token, tt.size, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

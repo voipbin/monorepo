@@ -136,16 +136,16 @@ func (h *fileHandler) Get(ctx context.Context, id uuid.UUID) (*file.File, error)
 	return res, nil
 }
 
-// Gets returns list of files
-func (h *fileHandler) Gets(ctx context.Context, token string, size uint64, filters map[file.Field]any) ([]*file.File, error) {
+// List returns list of files
+func (h *fileHandler) List(ctx context.Context, token string, size uint64, filters map[file.Field]any) ([]*file.File, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":  "Gets",
+		"func":  "List",
 		"token": token,
 		"size":  size,
 		"limit": size,
 	})
 
-	res, err := h.db.FileGets(ctx, token, size, filters)
+	res, err := h.db.FileList(ctx, token, size, filters)
 	if err != nil {
 		log.Errorf("Could not get files. err: %v", err)
 		return nil, err

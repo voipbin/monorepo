@@ -148,7 +148,7 @@ func Test_v1FilesGet(t *testing.T) {
 				storageHandler: mockStorage,
 			}
 
-			mockStorage.EXPECT().FileGets(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseFiles, nil)
+			mockStorage.EXPECT().FileList(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseFiles, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

@@ -67,7 +67,7 @@ func Test_EventCustomerCreated(t *testing.T) {
 			ctx := context.Background()
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime()).AnyTimes()
-			mockDB.EXPECT().AccountGets(ctx, gomock.Any(), uint64(1), tt.expectFilters).Return([]*account.Account{}, nil)
+			mockDB.EXPECT().AccountList(ctx, gomock.Any(), uint64(1), tt.expectFilters).Return([]*account.Account{}, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDB.EXPECT().AccountCreate(ctx, tt.expectAccount).Return(nil)
@@ -128,7 +128,7 @@ func Test_EventCustomerDeleted(t *testing.T) {
 			ctx := context.Background()
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime()).AnyTimes()
-			mockDB.EXPECT().AccountGets(ctx, gomock.Any(), uint64(1), tt.expectFilters).Return(tt.responseAccounts, nil)
+			mockDB.EXPECT().AccountList(ctx, gomock.Any(), uint64(1), tt.expectFilters).Return(tt.responseAccounts, nil)
 
 			// delete
 			for _, f := range tt.responseAccounts {

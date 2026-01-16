@@ -64,7 +64,7 @@ func Test_Create(t *testing.T) {
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 
-			mockDB.EXPECT().AccountGets(ctx, "", uint64(1), tt.expectFilters).Return([]*account.Account{}, nil)
+			mockDB.EXPECT().AccountList(ctx, "", uint64(1), tt.expectFilters).Return([]*account.Account{}, nil)
 			mockDB.EXPECT().AccountCreate(ctx, tt.expectAccount).Return(nil)
 			mockDB.EXPECT().AccountGet(ctx, tt.responseUUID).Return(tt.responseAccount, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, account.EventTypeAccountCreated, tt.responseAccount)
@@ -173,9 +173,9 @@ func Test_Gets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AccountGets(ctx, tt.token, tt.size, tt.filters).Return(tt.responseAccounts, nil)
+			mockDB.EXPECT().AccountList(ctx, tt.token, tt.size, tt.filters).Return(tt.responseAccounts, nil)
 
-			res, err := h.Gets(ctx, tt.token, tt.size, tt.filters)
+			res, err := h.List(ctx, tt.token, tt.size, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -394,7 +394,7 @@ func Test_ValidateFileInfoByCustomerID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AccountGets(ctx, "", uint64(1), tt.expectFilters).Return(tt.responseAccounts, nil)
+			mockDB.EXPECT().AccountList(ctx, "", uint64(1), tt.expectFilters).Return(tt.responseAccounts, nil)
 
 			res, err := h.ValidateFileInfoByCustomerID(ctx, tt.customerID, tt.filecount, tt.filesize)
 			if err != nil {

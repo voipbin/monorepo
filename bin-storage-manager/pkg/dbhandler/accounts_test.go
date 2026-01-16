@@ -81,7 +81,7 @@ func Test_AccountCreate(t *testing.T) {
 	}
 }
 
-func Test_AccountGets(t *testing.T) {
+func Test_AccountList(t *testing.T) {
 
 	tests := []struct {
 		name     string
@@ -155,7 +155,7 @@ func Test_AccountGets(t *testing.T) {
 				}
 			}
 
-			res, err := h.AccountGets(ctx, utilhandler.TimeGetCurTime(), tt.size, tt.filters)
+			res, err := h.AccountList(ctx, utilhandler.TimeGetCurTime(), tt.size, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

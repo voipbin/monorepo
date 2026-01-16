@@ -51,7 +51,7 @@ package filehandler
 // 			ctx := context.Background()
 
 // 			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
-// 			mockDB.EXPECT().FileGets(ctx, gomock.Any(), uint64(10000), tt.expectFilters).Return(tt.responseFiles, nil)
+// 			mockDB.EXPECT().FileList(ctx, gomock.Any(), uint64(10000), tt.expectFilters).Return(tt.responseFiles, nil)
 
 // 			// delete
 // 			for _, f := range tt.responseFiles {

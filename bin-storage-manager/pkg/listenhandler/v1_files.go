@@ -93,7 +93,7 @@ func (h *listenHandler) v1FilesGet(ctx context.Context, m *sock.Request) (*sock.
 	}
 
 	// gets the list of files
-	tmp, err := h.storageHandler.FileGets(ctx, pageToken, pageSize, filters)
+	tmp, err := h.storageHandler.FileList(ctx, pageToken, pageSize, filters)
 	if err != nil {
 		log.Errorf("Could not get files. err: %v", err)
 		return nil, err

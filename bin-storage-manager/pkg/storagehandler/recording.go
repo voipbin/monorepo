@@ -24,7 +24,7 @@ func (h *storageHandler) RecordingGet(ctx context.Context, id uuid.UUID) (*bucke
 		file.FieldReferenceID: id,
 	}
 
-	files, err := h.FileGets(ctx, "", 100, filters)
+	files, err := h.FileList(ctx, "", 100, filters)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get files. reference_id: %s", id)
 	}
@@ -68,7 +68,7 @@ func (h *storageHandler) RecordingDelete(ctx context.Context, id uuid.UUID) erro
 		file.FieldReferenceID: id,
 	}
 
-	files, err := h.FileGets(ctx, "", 100, filters)
+	files, err := h.FileList(ctx, "", 100, filters)
 	if err != nil {
 		return errors.Wrapf(err, "could not get files. reference_id: %s", id)
 	}
