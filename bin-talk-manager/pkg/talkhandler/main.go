@@ -18,7 +18,7 @@ type TalkHandler interface {
 	TalkCreate(ctx context.Context, customerID uuid.UUID, talkType talk.Type) (*talk.Talk, error)
 	TalkGet(ctx context.Context, id uuid.UUID) (*talk.Talk, error)
 	TalkList(ctx context.Context, filters map[talk.Field]any, token string, size uint64) ([]*talk.Talk, error)
-	TalkDelete(ctx context.Context, id uuid.UUID) error
+	TalkDelete(ctx context.Context, id uuid.UUID) (*talk.Talk, error)
 }
 
 type talkHandler struct {

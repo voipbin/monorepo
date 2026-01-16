@@ -21,24 +21,29 @@ func (h *talkHandler) TalkCreate(ctx context.Context, customerID uuid.UUID, talk
 	})
 	log.Debug("Creating a new talk")
 
-	// Generate UUID for talk
-	id, err := uuid.NewV4()
-	if err != nil {
-		log.Errorf("Failed to generate UUID. err: %v", err)
-		return nil, errors.Wrap(err, "failed to generate UUID")
+	// Validate input
+	if customerID == uuid.Nil {
+		log.Error("Invalid customer ID: nil UUID")
+		return nil, errors.New("customer ID cannot be nil")
+	}
+
+	// Validate talk type
+	if talkType != talk.TypeNormal && talkType != talk.TypeGroup {
+		log.Errorf("Invalid talk type: %s", talkType)
+		return nil, errors.Errorf("invalid talk type: %s", talkType)
 	}
 
 	// Create talk object
 	t := &talk.Talk{
 		Identity: commonidentity.Identity{
-			ID:         id,
+			ID:         uuid.Must(uuid.NewV4()),
 			CustomerID: customerID,
 		},
 		Type: talkType,
 	}
 
 	// Save to database
-	err = h.dbHandler.TalkCreate(ctx, t)
+	err := h.dbHandler.TalkCreate(ctx, t)
 	if err != nil {
 		log.Errorf("Failed to create talk in database. err: %v", err)
 		return nil, errors.Wrap(err, "failed to create talk in database")
@@ -86,7 +91,7 @@ func (h *talkHandler) TalkList(ctx context.Context, filters map[talk.Field]any, 
 }
 
 // TalkDelete soft deletes a talk
-func (h *talkHandler) TalkDelete(ctx context.Context, id uuid.UUID) error {
+func (h *talkHandler) TalkDelete(ctx context.Context, id uuid.UUID) (*talk.Talk, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "TalkDelete",
 		"talk_id": id,
@@ -97,19 +102,19 @@ func (h *talkHandler) TalkDelete(ctx context.Context, id uuid.UUID) error {
 	t, err := h.dbHandler.TalkGet(ctx, id)
 	if err != nil {
 		log.Errorf("Failed to get talk before deletion. err: %v", err)
-		return errors.Wrap(err, "failed to get talk before deletion")
+		return nil, errors.Wrap(err, "failed to get talk before deletion")
 	}
 
 	// Soft delete in database
 	err = h.dbHandler.TalkDelete(ctx, id)
 	if err != nil {
 		log.Errorf("Failed to delete talk. err: %v", err)
-		return errors.Wrap(err, "failed to delete talk")
+		return nil, errors.Wrap(err, "failed to delete talk")
 	}
 
 	// Publish webhook event
 	h.notifyHandler.PublishWebhookEvent(ctx, t.CustomerID, talk.EventTypeTalkDeleted, t)
 
 	log.Debug("Talk deleted successfully")
-	return nil
+	return t, nil
 }

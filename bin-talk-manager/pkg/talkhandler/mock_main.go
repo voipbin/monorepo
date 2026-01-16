@@ -58,11 +58,12 @@ func (mr *MockTalkHandlerMockRecorder) TalkCreate(ctx, customerID, talkType any)
 }
 
 // TalkDelete mocks base method.
-func (m *MockTalkHandler) TalkDelete(ctx context.Context, id uuid.UUID) error {
+func (m *MockTalkHandler) TalkDelete(ctx context.Context, id uuid.UUID) (*talk.Talk, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TalkDelete", ctx, id)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*talk.Talk)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // TalkDelete indicates an expected call of TalkDelete.
