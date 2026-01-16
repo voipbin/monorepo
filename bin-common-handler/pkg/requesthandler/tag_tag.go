@@ -109,7 +109,7 @@ func (r *requestHandler) TagV1TagGet(ctx context.Context, tagID uuid.UUID) (*tmt
 	return &res, nil
 }
 
-// TagV1TagGets sends a request to tag-manager
+// TagV1TagList sends a request to tag-manager
 // to getting the list of tags.
 func (r *requestHandler) TagV1TagList(ctx context.Context, pageToken string, pageSize uint64, filters map[tmtag.Field]any) ([]tmtag.Tag, error) {
 	uri := fmt.Sprintf("/v1/tags?page_token=%s&page_size=%d", url.QueryEscape(pageToken), pageSize)

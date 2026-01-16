@@ -110,7 +110,7 @@ func (r *requestHandler) StorageV1FileCreateWithDelay(
 	return nil
 }
 
-// StorageV1FileGets sends a request to storage-manager
+// StorageV1FileList sends a request to storage-manager
 // to getting a list of files.
 // it returns file list of flows if it succeed.
 func (r *requestHandler) StorageV1FileList(ctx context.Context, pageToken string, pageSize uint64, filters map[smfile.Field]any) ([]smfile.File, error) {

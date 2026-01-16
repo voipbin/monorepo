@@ -205,7 +205,7 @@ func (r *requestHandler) CallV1CallGet(ctx context.Context, callID uuid.UUID) (*
 	return &res, nil
 }
 
-// CallV1CallGets sends a request to call-manager
+// CallV1CallList sends a request to call-manager
 // to getting a list of call info.
 // it returns detail list of call info if it succeed.
 func (r *requestHandler) CallV1CallList(ctx context.Context, pageToken string, pageSize uint64, filters map[cmcall.Field]any) ([]cmcall.Call, error) {

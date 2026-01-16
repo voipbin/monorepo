@@ -12,7 +12,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-// TranscribeV1TranscriptGets sends a request to transcribe-manager
+// TranscribeV1TranscriptList sends a request to transcribe-manager
 // to getting a list of transcript info.
 // it returns detail list of transcript info if it succeed.
 func (r *requestHandler) TranscribeV1TranscriptList(ctx context.Context, pageToken string, pageSize uint64, filters map[tmtranscript.Field]any) ([]tmtranscript.Transcript, error) {

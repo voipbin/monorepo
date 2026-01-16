@@ -33,7 +33,7 @@ func (r *requestHandler) CustomerV1AccesskeyGet(ctx context.Context, accesskeyID
 	return &res, nil
 }
 
-// CustomerV1AccesskeyGets sends a request to customer-manager
+// CustomerV1AccesskeyList sends a request to customer-manager
 // to getting a list of accesskeys info.
 // it returns list of accesskeys info if it succeed.
 func (r *requestHandler) CustomerV1AccesskeyList(ctx context.Context, pageToken string, pageSize uint64, filters map[csaccesskey.Field]any) ([]csaccesskey.Accesskey, error) {

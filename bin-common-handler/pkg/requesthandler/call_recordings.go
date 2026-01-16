@@ -14,7 +14,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-// CallV1RecordingGets sends a request to call-manager
+// CallV1RecordingList sends a request to call-manager
 // to getting recordings.
 // it returns list of recordings if it succeed.
 func (r *requestHandler) CallV1RecordingList(ctx context.Context, pageToken string, pageSize uint64, filters map[cmrecording.Field]any) ([]cmrecording.Recording, error) {

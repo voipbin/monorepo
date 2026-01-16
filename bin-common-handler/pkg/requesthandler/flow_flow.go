@@ -160,7 +160,7 @@ func (r *requestHandler) FlowV1FlowUpdateActions(ctx context.Context, flowID uui
 	return &res, nil
 }
 
-// FlowV1FlowGets sends a request to flow-manager
+// FlowV1FlowList sends a request to flow-manager
 // to getting a list of flows.
 // it returns detail list of flows if it succeed.
 func (r *requestHandler) FlowV1FlowList(ctx context.Context, pageToken string, pageSize uint64, filters map[fmflow.Field]any) ([]fmflow.Flow, error) {

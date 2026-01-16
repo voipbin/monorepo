@@ -51,7 +51,7 @@ func (r *requestHandler) OutdialV1OutdialCreate(ctx context.Context, customerID,
 	return &res, nil
 }
 
-// OutdialV1OutdialGets sends a request to outdial-manager
+// OutdialV1OutdialList sends a request to outdial-manager
 // to get a list of outdials.
 // Returns list of outdials
 func (r *requestHandler) OutdialV1OutdialList(ctx context.Context, pageToken string, pageSize uint64, filters map[omoutdial.Field]any) ([]omoutdial.Outdial, error) {

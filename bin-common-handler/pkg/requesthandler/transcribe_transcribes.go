@@ -33,7 +33,7 @@ func (r *requestHandler) TranscribeV1TranscribeGet(ctx context.Context, transcri
 	return &res, nil
 }
 
-// TranscribeV1TranscribeGets sends a request to transcribe-manager
+// TranscribeV1TranscribeList sends a request to transcribe-manager
 // to getting a list of transcribe info.
 // it returns detail list of transcribe info if it succeed.
 func (r *requestHandler) TranscribeV1TranscribeList(ctx context.Context, pageToken string, pageSize uint64, filters map[tmtranscribe.Field]any) ([]tmtranscribe.Transcribe, error) {

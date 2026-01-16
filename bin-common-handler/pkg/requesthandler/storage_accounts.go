@@ -41,7 +41,7 @@ func (r *requestHandler) StorageV1AccountCreate(ctx context.Context, customerID 
 	return &res, nil
 }
 
-// StorageV1AccountGets sends a request to storage-manager
+// StorageV1AccountList sends a request to storage-manager
 // to getting a list of accounts.
 // it returns file list of accounts if it succeed.
 func (r *requestHandler) StorageV1AccountList(ctx context.Context, pageToken string, pageSize uint64, filters map[smaccount.Field]any) ([]smaccount.Account, error) {

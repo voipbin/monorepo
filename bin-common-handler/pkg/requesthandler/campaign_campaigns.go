@@ -68,7 +68,7 @@ func (r *requestHandler) CampaignV1CampaignCreate(
 	return &res, nil
 }
 
-// CampaignV1CampaignGets sends a request to campaign-manager
+// CampaignV1CampaignList sends a request to campaign-manager
 // to getting a list of campaigns.
 // it returns detail list of campaigns if it succeed.
 func (r *requestHandler) CampaignV1CampaignList(ctx context.Context, pageToken string, pageSize uint64, filters map[cacampaign.Field]any) ([]cacampaign.Campaign, error) {

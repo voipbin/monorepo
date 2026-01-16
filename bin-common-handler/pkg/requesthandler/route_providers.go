@@ -137,7 +137,7 @@ func (r *requestHandler) RouteV1ProviderUpdate(
 	return &res, nil
 }
 
-// RouteV1ProviderGets sends a request to route-manager
+// RouteV1ProviderList sends a request to route-manager
 // to getting a list of provider info.
 // it returns detail list of provider info if it succeed.
 func (r *requestHandler) RouteV1ProviderList(ctx context.Context, pageToken string, pageSize uint64) ([]rmprovider.Provider, error) {

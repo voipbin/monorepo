@@ -66,7 +66,7 @@ func (r *requestHandler) CampaignV1OutplanCreate(
 	return &res, nil
 }
 
-// CampaignV1OutplanGets sends a request to campaign-manager
+// CampaignV1OutplanList sends a request to campaign-manager
 // to getting a list of outplans.
 // it returns detail list of outplans if it succeed.
 func (r *requestHandler) CampaignV1OutplanList(ctx context.Context, pageToken string, pageSize uint64, filters map[caoutplan.Field]any) ([]caoutplan.Outplan, error) {

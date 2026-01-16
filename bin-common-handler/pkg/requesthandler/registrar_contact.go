@@ -10,7 +10,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-// RegistrarV1ContactGets sends the /v1/contacts GET request to registrar-manager
+// RegistrarV1ContactList sends the /v1/contacts GET request to registrar-manager
 func (r *requestHandler) RegistrarV1ContactList(ctx context.Context, filters map[string]any) ([]astcontact.AstContact, error) {
 
 	uri := "/v1/contacts"

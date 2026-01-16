@@ -35,7 +35,7 @@ func (r *requestHandler) CustomerV1CustomerGet(ctx context.Context, customerID u
 	return &res, nil
 }
 
-// CustomerV1CustomerGets sends a request to customer-manager
+// CustomerV1CustomerList sends a request to customer-manager
 // to getting a list of customers info.
 // it returns detail customer info if it succeed.
 func (r *requestHandler) CustomerV1CustomerList(ctx context.Context, pageToken string, pageSize uint64, filters map[cscustomer.Field]any) ([]cscustomer.Customer, error) {

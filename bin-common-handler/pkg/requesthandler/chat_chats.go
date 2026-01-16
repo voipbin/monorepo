@@ -74,7 +74,7 @@ func (r *requestHandler) ChatV1ChatGet(ctx context.Context, chatID uuid.UUID) (*
 	return &res, nil
 }
 
-// ChatV1ChatGets sends a request to chat-manager
+// ChatV1ChatList sends a request to chat-manager
 // to getting a list of chat info.
 // it returns detail list of chat info if it succeed.
 func (r *requestHandler) ChatV1ChatList(ctx context.Context, pageToken string, pageSize uint64, filters map[chatchat.Field]any) ([]chatchat.Chat, error) {

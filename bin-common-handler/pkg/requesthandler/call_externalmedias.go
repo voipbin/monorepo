@@ -14,7 +14,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-// CallV1ExternalMediaGets sends a request to call-manager
+// CallV1ExternalMediaList sends a request to call-manager
 // to getting a list of external media info.
 // it returns detail list of external medias info if it succeed.
 func (r *requestHandler) CallV1ExternalMediaList(ctx context.Context, pageToken string, pageSize uint64, filters map[cmexternalmedia.Field]any) ([]cmexternalmedia.ExternalMedia, error) {

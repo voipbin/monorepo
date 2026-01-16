@@ -14,7 +14,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-// ConferenceV1ConferencecallGets sends a request to conference-manager
+// ConferenceV1ConferencecallList sends a request to conference-manager
 // to getting a list of conferencecalls info.
 // it returns detail list of conferencecalls info if it succeed.
 func (r *requestHandler) ConferenceV1ConferencecallList(ctx context.Context, pageToken string, pageSize uint64, filters map[cfconferencecall.Field]any) ([]cfconferencecall.Conferencecall, error) {

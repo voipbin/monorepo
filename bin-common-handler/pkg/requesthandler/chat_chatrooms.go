@@ -33,7 +33,7 @@ func (r *requestHandler) ChatV1ChatroomGet(ctx context.Context, chatroomID uuid.
 	return &res, nil
 }
 
-// ChatV1ChatroomGets sends a request to chat-manager
+// ChatV1ChatroomList sends a request to chat-manager
 // to getting a list of chatroom info.
 // it returns detail list of chatroom info if it succeed.
 func (r *requestHandler) ChatV1ChatroomList(ctx context.Context, pageToken string, pageSize uint64, filters map[chatchatroom.Field]any) ([]chatchatroom.Chatroom, error) {

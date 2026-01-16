@@ -13,7 +13,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-// ChatV1MessagechatroomGets sends a request to chat-manager
+// ChatV1MessagechatroomList sends a request to chat-manager
 // to getting a list of messagechatroom info of the given chatroom id.
 // it returns detail list of messagechatroom info if it succeed.
 func (r *requestHandler) ChatV1MessagechatroomList(ctx context.Context, pageToken string, pageSize uint64, filters map[chatmessagechatroom.Field]any) ([]chatmessagechatroom.Messagechatroom, error) {

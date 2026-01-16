@@ -33,7 +33,7 @@ func (r *requestHandler) ConversationV1ConversationGet(ctx context.Context, conv
 	return &res, nil
 }
 
-// ConversationV1ConversationGets sends a request to conversation-manager
+// ConversationV1ConversationList sends a request to conversation-manager
 // to getting a list of conversation info.
 // it returns detail list of conversation info if it succeed.
 func (r *requestHandler) ConversationV1ConversationList(ctx context.Context, pageToken string, pageSize uint64, filters map[cvconversation.Field]any) ([]cvconversation.Conversation, error) {

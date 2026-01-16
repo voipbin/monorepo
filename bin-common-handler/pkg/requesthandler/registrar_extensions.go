@@ -113,7 +113,7 @@ func (r *requestHandler) RegistrarV1ExtensionUpdate(ctx context.Context, id uuid
 	return &res, nil
 }
 
-// RegistrarV1ExtensionGets sends a request to registrar-manager
+// RegistrarV1ExtensionList sends a request to registrar-manager
 // to getting a list of extension info.
 // it returns detail list of extension info if it succeed.
 func (r *requestHandler) RegistrarV1ExtensionList(ctx context.Context, pageToken string, pageSize uint64, filters map[rmextension.Field]any) ([]rmextension.Extension, error) {

@@ -33,7 +33,7 @@ func (r *requestHandler) ConferenceV1ConferenceGet(ctx context.Context, conferen
 	return &res, nil
 }
 
-// ConferenceV1ConferenceGets sends a request to conference-manager
+// ConferenceV1ConferenceList sends a request to conference-manager
 // to getting a list of conference info.
 // it returns detail list of conference info if it succeed.
 func (r *requestHandler) ConferenceV1ConferenceList(ctx context.Context, pageToken string, pageSize uint64, filters map[cfconference.Field]any) ([]cfconference.Conference, error) {

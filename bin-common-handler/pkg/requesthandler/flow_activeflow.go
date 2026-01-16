@@ -72,7 +72,7 @@ func (r *requestHandler) FlowV1ActiveflowGet(ctx context.Context, activeflowID u
 	return &res, nil
 }
 
-// FlowV1ActiveflowGets sends a request to flow-manager
+// FlowV1ActiveflowList sends a request to flow-manager
 // to getting a list of activeflow info.
 // it returns detail list of activeflow info if it succeed.
 func (r *requestHandler) FlowV1ActiveflowList(ctx context.Context, pageToken string, pageSize uint64, filters map[fmactiveflow.Field]any) ([]fmactiveflow.Activeflow, error) {
