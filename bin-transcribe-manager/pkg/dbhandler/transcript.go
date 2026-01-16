@@ -150,8 +150,8 @@ func (h *handler) transcriptGetFromDB(ctx context.Context, id uuid.UUID) (*trans
 	return res, nil
 }
 
-// TranscriptGets returns list of transcripts.
-func (h *handler) TranscriptGets(ctx context.Context, size uint64, token string, filters map[transcript.Field]any) ([]*transcript.Transcript, error) {
+// TranscriptList returns list of transcripts.
+func (h *handler) TranscriptList(ctx context.Context, size uint64, token string, filters map[transcript.Field]any) ([]*transcript.Transcript, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}

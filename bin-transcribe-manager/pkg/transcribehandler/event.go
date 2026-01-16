@@ -27,7 +27,7 @@ func (h *transcribeHandler) EventCUCustomerDeleted(ctx context.Context, cu *cucu
 		transcribe.FieldCustomerID: cu.ID,
 		transcribe.FieldDeleted:    false,
 	}
-	transcribes, err := h.Gets(ctx, 1000, "", filters)
+	transcribes, err := h.List(ctx, 1000, "", filters)
 	if err != nil {
 		log.Errorf("Could not gets transcribes list. err: %v", err)
 		return errors.Wrap(err, "could not get transcribes list")
@@ -60,7 +60,7 @@ func (h *transcribeHandler) EventCMCallHangup(ctx context.Context, c *cmcall.Cal
 		transcribe.FieldReferenceID: c.ID,
 		transcribe.FieldDeleted:     false,
 	}
-	transcribes, err := h.Gets(ctx, 1000, "", filters)
+	transcribes, err := h.List(ctx, 1000, "", filters)
 	if err != nil {
 		log.Errorf("Could not gets transcribes list. err: %v", err)
 		return errors.Wrap(err, "could not get transcribes list")
@@ -93,7 +93,7 @@ func (h *transcribeHandler) EventCMConfbridgeTerminated(ctx context.Context, c *
 		transcribe.FieldReferenceID: c.ID,
 		transcribe.FieldDeleted:     false,
 	}
-	transcribes, err := h.Gets(ctx, 1000, "", filters)
+	transcribes, err := h.List(ctx, 1000, "", filters)
 	if err != nil {
 		log.Errorf("Could not gets transcribes list. err: %v", err)
 		return errors.Wrap(err, "could not get transcribes list")

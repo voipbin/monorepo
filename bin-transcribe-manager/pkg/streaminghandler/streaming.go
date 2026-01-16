@@ -37,7 +37,7 @@ func (h *streamingHandler) Create(ctx context.Context, customerID uuid.UUID, tre
 	return res, nil
 }
 
-// Gets returns streaming
+// Get returns streaming
 func (h *streamingHandler) Get(ctx context.Context, streamingID uuid.UUID) (*streaming.Streaming, error) {
 	h.muSteaming.Lock()
 	defer h.muSteaming.Unlock()

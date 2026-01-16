@@ -33,9 +33,9 @@ func (h *transcribeHandler) GetByReferenceIDAndLanguage(ctx context.Context, ref
 	return res, nil
 }
 
-// Gets returns list of transcribes.
-func (h *transcribeHandler) Gets(ctx context.Context, size uint64, token string, filters map[transcribe.Field]any) ([]*transcribe.Transcribe, error) {
-	res, err := h.db.TranscribeGets(ctx, size, token, filters)
+// List returns list of transcribes.
+func (h *transcribeHandler) List(ctx context.Context, size uint64, token string, filters map[transcribe.Field]any) ([]*transcribe.Transcribe, error) {
+	res, err := h.db.TranscribeList(ctx, size, token, filters)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get transcribes. filters: %v", filters)
 	}
@@ -161,7 +161,7 @@ func (h *transcribeHandler) deleteTranscripts(ctx context.Context, transcribeID 
 		transcript.FieldDeleted:      false,
 	}
 
-	ts, err := h.transcriptHandler.Gets(ctx, 1000, "", filters)
+	ts, err := h.transcriptHandler.List(ctx, 1000, "", filters)
 	if err != nil {
 		return errors.Wrapf(err, "could not get transcripts. transcribe_id: %s", transcribeID)
 	}

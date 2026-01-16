@@ -88,7 +88,7 @@ func (h *listenHandler) processV1TranscribesGet(ctx context.Context, m *sock.Req
 		return simpleResponse(400), nil
 	}
 
-	tmp, err := h.transcribeHandler.Gets(ctx, pageSize, pageToken, filters)
+	tmp, err := h.transcribeHandler.List(ctx, pageSize, pageToken, filters)
 	if err != nil {
 		log.Errorf("Could not get transcribes. err: %v", err)
 		return simpleResponse(500), nil

@@ -162,8 +162,8 @@ func Test_Gets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().TranscribeGets(ctx, tt.size, tt.token, tt.filters).Return(tt.responseTranscribes, nil)
-			_, err := h.Gets(ctx, tt.size, tt.token, tt.filters)
+			mockDB.EXPECT().TranscribeList(ctx, tt.size, tt.token, tt.filters).Return(tt.responseTranscribes, nil)
+			_, err := h.List(ctx, tt.size, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -348,7 +348,7 @@ func Test_Delete(t *testing.T) {
 			mockDB.EXPECT().TranscribeGet(ctx, tt.id).Return(tt.responseTranscribe, nil)
 
 			// deleteTranscripts
-			mockTranscript.EXPECT().Gets(ctx, uint64(1000), "", gomock.Any()).Return([]*transcript.Transcript{}, nil)
+			mockTranscript.EXPECT().List(ctx, uint64(1000), "", gomock.Any()).Return([]*transcript.Transcript{}, nil)
 
 			// dbDelete
 			mockDB.EXPECT().TranscribeDelete(ctx, tt.id).Return(nil)
@@ -422,7 +422,7 @@ func Test_deleteTranscripts(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockTranscript.EXPECT().Gets(ctx, uint64(1000), "", gomock.Any()).Return(tt.responseTranscripts, nil)
+			mockTranscript.EXPECT().List(ctx, uint64(1000), "", gomock.Any()).Return(tt.responseTranscripts, nil)
 			for _, tr := range tt.responseTranscripts {
 				mockTranscript.EXPECT().Delete(ctx, tr.ID).Return(&transcript.Transcript{}, nil)
 			}

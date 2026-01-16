@@ -132,21 +132,6 @@ func (mr *MockTranscribeHandlerMockRecorder) GetByReferenceIDAndLanguage(ctx, re
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByReferenceIDAndLanguage", reflect.TypeOf((*MockTranscribeHandler)(nil).GetByReferenceIDAndLanguage), ctx, referenceID, language)
 }
 
-// Gets mocks base method.
-func (m *MockTranscribeHandler) Gets(ctx context.Context, size uint64, token string, filters map[transcribe.Field]any) ([]*transcribe.Transcribe, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Gets", ctx, size, token, filters)
-	ret0, _ := ret[0].([]*transcribe.Transcribe)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Gets indicates an expected call of Gets.
-func (mr *MockTranscribeHandlerMockRecorder) Gets(ctx, size, token, filters any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockTranscribeHandler)(nil).Gets), ctx, size, token, filters)
-}
-
 // HealthCheck mocks base method.
 func (m *MockTranscribeHandler) HealthCheck(ctx context.Context, id uuid.UUID, retryCount int) {
 	m.ctrl.T.Helper()
@@ -157,6 +142,21 @@ func (m *MockTranscribeHandler) HealthCheck(ctx context.Context, id uuid.UUID, r
 func (mr *MockTranscribeHandlerMockRecorder) HealthCheck(ctx, id, retryCount any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HealthCheck", reflect.TypeOf((*MockTranscribeHandler)(nil).HealthCheck), ctx, id, retryCount)
+}
+
+// List mocks base method.
+func (m *MockTranscribeHandler) List(ctx context.Context, size uint64, token string, filters map[transcribe.Field]any) ([]*transcribe.Transcribe, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "List", ctx, size, token, filters)
+	ret0, _ := ret[0].([]*transcribe.Transcribe)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// List indicates an expected call of List.
+func (mr *MockTranscribeHandlerMockRecorder) List(ctx, size, token, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockTranscribeHandler)(nil).List), ctx, size, token, filters)
 }
 
 // Start mocks base method.
