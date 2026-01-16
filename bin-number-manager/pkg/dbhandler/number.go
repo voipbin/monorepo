@@ -166,8 +166,8 @@ func (h *handler) NumberGet(ctx context.Context, id uuid.UUID) (*number.Number, 
 	return res, nil
 }
 
-// NumberGets returns a list of numbers.
-func (h *handler) NumberGets(ctx context.Context, size uint64, token string, filters map[number.Field]any) ([]*number.Number, error) {
+// NumberList returns a list of numbers.
+func (h *handler) NumberList(ctx context.Context, size uint64, token string, filters map[number.Field]any) ([]*number.Number, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}
@@ -183,17 +183,17 @@ func (h *handler) NumberGets(ctx context.Context, size uint64, token string, fil
 
 	sb, err := commondatabasehandler.ApplyFields(sb, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not apply filters. NumberGets. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. NumberList. err: %v", err)
 	}
 
 	query, args, err := sb.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. NumberGets. err: %v", err)
+		return nil, fmt.Errorf("could not build query. NumberList. err: %v", err)
 	}
 
 	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. NumberGets. err: %v", err)
+		return nil, fmt.Errorf("could not query. NumberList. err: %v", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -203,12 +203,12 @@ func (h *handler) NumberGets(ctx context.Context, size uint64, token string, fil
 	for rows.Next() {
 		u, err := h.numberGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not get data. NumberGets, err: %v", err)
+			return nil, fmt.Errorf("could not get data. NumberList, err: %v", err)
 		}
 		res = append(res, u)
 	}
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error. NumberGets. err: %v", err)
+		return nil, fmt.Errorf("rows iteration error. NumberList. err: %v", err)
 	}
 
 	return res, nil

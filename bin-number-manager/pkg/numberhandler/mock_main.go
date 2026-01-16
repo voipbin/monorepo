@@ -133,19 +133,19 @@ func (mr *MockNumberHandlerMockRecorder) GetAvailableNumbers(countyCode, limit a
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAvailableNumbers", reflect.TypeOf((*MockNumberHandler)(nil).GetAvailableNumbers), countyCode, limit)
 }
 
-// Gets mocks base method.
-func (m *MockNumberHandler) Gets(ctx context.Context, pageSize uint64, pageToken string, filters map[number.Field]any) ([]*number.Number, error) {
+// List mocks base method.
+func (m *MockNumberHandler) List(ctx context.Context, pageSize uint64, pageToken string, filters map[number.Field]any) ([]*number.Number, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Gets", ctx, pageSize, pageToken, filters)
+	ret := m.ctrl.Call(m, "List", ctx, pageSize, pageToken, filters)
 	ret0, _ := ret[0].([]*number.Number)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Gets indicates an expected call of Gets.
-func (mr *MockNumberHandlerMockRecorder) Gets(ctx, pageSize, pageToken, filters any) *gomock.Call {
+// List indicates an expected call of List.
+func (mr *MockNumberHandlerMockRecorder) List(ctx, pageSize, pageToken, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockNumberHandler)(nil).Gets), ctx, pageSize, pageToken, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockNumberHandler)(nil).List), ctx, pageSize, pageToken, filters)
 }
 
 // Register mocks base method.

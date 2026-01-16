@@ -101,7 +101,7 @@ func Test_NumberCreate(t *testing.T) {
 	}
 }
 
-func Test_NumberGets(t *testing.T) {
+func Test_NumberList(t *testing.T) {
 
 	type test struct {
 		name    string
@@ -184,7 +184,7 @@ func Test_NumberGets(t *testing.T) {
 				_ = h.NumberCreate(context.Background(), tt.numbers[i])
 			}
 
-			res, err := h.NumberGets(context.Background(), 10, utilhandler.TimeGetCurTime(), tt.filters)
+			res, err := h.NumberList(context.Background(), 10, utilhandler.TimeGetCurTime(), tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -757,7 +757,7 @@ func Test_NumberSetTMRenew(t *testing.T) {
 	}
 }
 
-func Test_NumberGetsByTMRenew(t *testing.T) {
+func Test_NumberListByTMRenew(t *testing.T) {
 
 	type test struct {
 		name    string

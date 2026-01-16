@@ -128,7 +128,7 @@ func (h *numberHandler) dbList(ctx context.Context, pageSize uint64, pageToken s
 	})
 	log.Debugf("GetNumbers.")
 
-	numbers, err := h.db.NumberGets(ctx, pageSize, pageToken, filters)
+	numbers, err := h.db.NumberList(ctx, pageSize, pageToken, filters)
 	if err != nil {
 		log.Errorf("Could not get numbers. err:%v", err)
 		return nil, err

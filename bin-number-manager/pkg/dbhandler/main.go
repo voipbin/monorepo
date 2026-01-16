@@ -24,7 +24,7 @@ type DBHandler interface {
 	NumberDelete(ctx context.Context, id uuid.UUID) error
 	NumberGet(ctx context.Context, id uuid.UUID) (*number.Number, error)
 
-	NumberGets(ctx context.Context, size uint64, token string, filters map[number.Field]any) ([]*number.Number, error)
+	NumberList(ctx context.Context, size uint64, token string, filters map[number.Field]any) ([]*number.Number, error)
 	NumberGetsByTMRenew(ctx context.Context, tmRenew string, size uint64, filters map[number.Field]any) ([]*number.Number, error)
 
 	NumberUpdate(ctx context.Context, id uuid.UUID, fields map[number.Field]any) error
