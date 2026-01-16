@@ -101,7 +101,7 @@ func Test_MessagechatroomCreate(t *testing.T) {
 	}
 }
 
-func Test_MessagechatroomGets(t *testing.T) {
+func Test_MessagechatroomList(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -187,7 +187,7 @@ func Test_MessagechatroomGets(t *testing.T) {
 				}
 			}
 
-			cs, err := h.MessagechatroomGets(ctx, utilhandler.TimeGetCurTime(), tt.size, tt.filters)
+			cs, err := h.MessagechatroomList(ctx, utilhandler.TimeGetCurTime(), tt.size, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

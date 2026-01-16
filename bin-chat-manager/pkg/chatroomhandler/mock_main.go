@@ -102,19 +102,19 @@ func (mr *MockChatroomHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockChatroomHandler)(nil).Get), ctx, id)
 }
 
-// Gets mocks base method.
-func (m *MockChatroomHandler) Gets(ctx context.Context, token string, limit uint64, filters map[chatroom.Field]any) ([]*chatroom.Chatroom, error) {
+// List mocks base method.
+func (m *MockChatroomHandler) List(ctx context.Context, token string, limit uint64, filters map[chatroom.Field]any) ([]*chatroom.Chatroom, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Gets", ctx, token, limit, filters)
+	ret := m.ctrl.Call(m, "List", ctx, token, limit, filters)
 	ret0, _ := ret[0].([]*chatroom.Chatroom)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Gets indicates an expected call of Gets.
-func (mr *MockChatroomHandlerMockRecorder) Gets(ctx, token, limit, filters any) *gomock.Call {
+// List indicates an expected call of List.
+func (mr *MockChatroomHandlerMockRecorder) List(ctx, token, limit, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockChatroomHandler)(nil).Gets), ctx, token, limit, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockChatroomHandler)(nil).List), ctx, token, limit, filters)
 }
 
 // RemoveParticipantID mocks base method.

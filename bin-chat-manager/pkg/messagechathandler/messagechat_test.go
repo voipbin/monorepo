@@ -125,9 +125,9 @@ func Test_Gets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().MessagechatGets(ctx, tt.token, tt.limit, tt.filters).Return(tt.responseMessagechat, nil)
+			mockDB.EXPECT().MessagechatList(ctx, tt.token, tt.limit, tt.filters).Return(tt.responseMessagechat, nil)
 
-			res, err := h.Gets(ctx, tt.token, tt.limit, tt.filters)
+			res, err := h.List(ctx, tt.token, tt.limit, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -234,7 +234,7 @@ func Test_Create(t *testing.T) {
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseMessagechat.CustomerID, messagechat.EventTypeMessagechatCreated, tt.responseMessagechat)
 
 			convertType := messagechatroom.ConvertType(tt.responseMessagechat.Type)
-			mockChatroom.EXPECT().Gets(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseChatroom, nil)
+			mockChatroom.EXPECT().List(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseChatroom, nil)
 			for _, cr := range tt.responseChatroom {
 				mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
 				mockMessagechatroom.EXPECT().Create(
@@ -457,7 +457,7 @@ func Test_Delete(t *testing.T) {
 			mockDB.EXPECT().MessagechatGet(ctx, tt.responseMessagechat.ID).Return(tt.responseMessagechat, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseMessagechat.CustomerID, messagechat.EventTypeMessagechatDeleted, tt.responseMessagechat)
 
-			mockMessagechatroom.EXPECT().Gets(ctx, dbhandler.DefaultTimeStamp, gomock.Any(), gomock.Any()).Return(tt.responseMessagechatroom, nil)
+			mockMessagechatroom.EXPECT().List(ctx, dbhandler.DefaultTimeStamp, gomock.Any(), gomock.Any()).Return(tt.responseMessagechatroom, nil)
 			for _, mc := range tt.responseMessagechatroom {
 				mockMessagechatroom.EXPECT().Delete(ctx, mc.ID).Return(&messagechatroom.Messagechatroom{}, nil)
 			}

@@ -269,7 +269,7 @@ func Test_v1MessagechatsGet(t *testing.T) {
 				messagechatHandler: mockMessagechat,
 			}
 
-			mockMessagechat.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, gomock.Any()).Return(tt.responseMessagechats, nil)
+			mockMessagechat.EXPECT().List(gomock.Any(), tt.pageToken, tt.pageSize, gomock.Any()).Return(tt.responseMessagechats, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

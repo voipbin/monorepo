@@ -26,7 +26,7 @@ type chatroomHandler struct {
 // ChatroomHandler defines
 type ChatroomHandler interface {
 	Get(ctx context.Context, id uuid.UUID) (*chatroom.Chatroom, error)
-	Gets(ctx context.Context, token string, limit uint64, filters map[chatroom.Field]any) ([]*chatroom.Chatroom, error)
+	List(ctx context.Context, token string, limit uint64, filters map[chatroom.Field]any) ([]*chatroom.Chatroom, error)
 	Create(
 		ctx context.Context,
 		customerID uuid.UUID,

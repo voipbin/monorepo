@@ -33,7 +33,7 @@ type messagechatHandler struct {
 // MessagechatHandler defines
 type MessagechatHandler interface {
 	Get(ctx context.Context, id uuid.UUID) (*messagechat.Messagechat, error)
-	Gets(ctx context.Context, token string, limit uint64, filters map[messagechat.Field]any) ([]*messagechat.Messagechat, error)
+	List(ctx context.Context, token string, limit uint64, filters map[messagechat.Field]any) ([]*messagechat.Messagechat, error)
 	Create(
 		ctx context.Context,
 		customerID uuid.UUID,
