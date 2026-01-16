@@ -83,7 +83,7 @@ func Test_TagCreate(t *testing.T) {
 	}
 }
 
-func Test_TagGets(t *testing.T) {
+func Test_TagList(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -172,7 +172,7 @@ func Test_TagGets(t *testing.T) {
 				}
 			}
 
-			res, err := h.TagGets(ctx, tt.size, utilhandler.TimeGetCurTime(), tt.filters)
+			res, err := h.TagList(ctx, tt.size, utilhandler.TimeGetCurTime(), tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. UserGet expect: ok, got: %v", err)
 			}

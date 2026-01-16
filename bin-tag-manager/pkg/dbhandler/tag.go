@@ -139,8 +139,8 @@ func (h *handler) TagGet(ctx context.Context, id uuid.UUID) (*tag.Tag, error) {
 	return res, nil
 }
 
-// TagGets returns tags based on filters.
-func (h *handler) TagGets(ctx context.Context, size uint64, token string, filters map[tag.Field]any) ([]*tag.Tag, error) {
+// TagList returns tags based on filters.
+func (h *handler) TagList(ctx context.Context, size uint64, token string, filters map[tag.Field]any) ([]*tag.Tag, error) {
 	// get column names from db tags
 	columns := commondatabasehandler.GetDBFields(&tag.Tag{})
 
@@ -153,17 +153,17 @@ func (h *handler) TagGets(ctx context.Context, size uint64, token string, filter
 	// apply filters
 	builder, err := commondatabasehandler.ApplyFields(builder, filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not apply filters. TagGets. err: %v", err)
+		return nil, fmt.Errorf("could not apply filters. TagList. err: %v", err)
 	}
 
 	query, args, err := builder.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("could not build query. TagGets. err: %v", err)
+		return nil, fmt.Errorf("could not build query. TagList. err: %v", err)
 	}
 
 	rows, err := h.db.Query(query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not query. TagGets. err: %v", err)
+		return nil, fmt.Errorf("could not query. TagList. err: %v", err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -173,7 +173,7 @@ func (h *handler) TagGets(ctx context.Context, size uint64, token string, filter
 	for rows.Next() {
 		t, err := h.tagGetFromRow(rows)
 		if err != nil {
-			return nil, fmt.Errorf("could not scan the row. TagGets. err: %v", err)
+			return nil, fmt.Errorf("could not scan the row. TagList. err: %v", err)
 		}
 
 		res = append(res, t)

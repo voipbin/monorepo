@@ -123,7 +123,7 @@ func TestProcessV1TagsGet(t *testing.T) {
 				tagHandler: mockTag,
 			}
 
-			mockTag.EXPECT().Gets(gomock.Any(), tt.pageSize, tt.pageToken, gomock.Any()).Return(tt.tags, nil)
+			mockTag.EXPECT().List(gomock.Any(), tt.pageSize, tt.pageToken, gomock.Any()).Return(tt.tags, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

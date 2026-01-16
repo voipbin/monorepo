@@ -24,7 +24,7 @@ func (h *tagHandler) EventCustomerDeleted(ctx context.Context, c *cmcustomer.Cus
 	}
 
 	// get all tags of the customer
-	tags, err := h.dbGets(ctx, 999, h.utilHandler.TimeGetCurTime(), filters)
+	tags, err := h.dbList(ctx, 999, h.utilHandler.TimeGetCurTime(), filters)
 	if err != nil {
 		log.Errorf("")
 	}
