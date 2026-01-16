@@ -151,7 +151,7 @@ func (h *handler) SummaryDelete(ctx context.Context, id uuid.UUID) error {
 }
 
 // SummaryGets returns a list of summaries.
-func (h *handler) SummaryGets(ctx context.Context, size uint64, token string, filters map[summary.Field]any) ([]*summary.Summary, error) {
+func (h *handler) SummaryList(ctx context.Context, size uint64, token string, filters map[summary.Field]any) ([]*summary.Summary, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}
@@ -166,17 +166,17 @@ func (h *handler) SummaryGets(ctx context.Context, size uint64, token string, fi
 
 	builder, err := commondatabasehandler.ApplyFields(builder, filters)
 	if err != nil {
-		return nil, fmt.Errorf("SummaryGets: could not apply filters. err: %v", err)
+		return nil, fmt.Errorf("SummaryList: could not apply filters. err: %v", err)
 	}
 
 	query, args, err := builder.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("SummaryGets: could not build query. err: %v", err)
+		return nil, fmt.Errorf("SummaryList: could not build query. err: %v", err)
 	}
 
 	rows, err := h.db.Query(query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("SummaryGets: could not query. err: %v", err)
+		return nil, fmt.Errorf("SummaryList: could not query. err: %v", err)
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -184,7 +184,7 @@ func (h *handler) SummaryGets(ctx context.Context, size uint64, token string, fi
 	for rows.Next() {
 		u := &summary.Summary{}
 		if err := commondatabasehandler.ScanRow(rows, u); err != nil {
-			return nil, fmt.Errorf("SummaryGets: could not scan row. err: %v", err)
+			return nil, fmt.Errorf("SummaryList: could not scan row. err: %v", err)
 		}
 		res = append(res, u)
 	}

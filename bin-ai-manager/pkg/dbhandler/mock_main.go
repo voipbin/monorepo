@@ -88,19 +88,19 @@ func (mr *MockDBHandlerMockRecorder) AIGet(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIGet", reflect.TypeOf((*MockDBHandler)(nil).AIGet), ctx, id)
 }
 
-// AIGets mocks base method.
-func (m *MockDBHandler) AIGets(ctx context.Context, size uint64, token string, filters map[ai.Field]any) ([]*ai.AI, error) {
+// AIList mocks base method.
+func (m *MockDBHandler) AIList(ctx context.Context, size uint64, token string, filters map[ai.Field]any) ([]*ai.AI, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AIGets", ctx, size, token, filters)
+	ret := m.ctrl.Call(m, "AIList", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*ai.AI)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// AIGets indicates an expected call of AIGets.
-func (mr *MockDBHandlerMockRecorder) AIGets(ctx, size, token, filters any) *gomock.Call {
+// AIList indicates an expected call of AIList.
+func (mr *MockDBHandlerMockRecorder) AIList(ctx, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIGets", reflect.TypeOf((*MockDBHandler)(nil).AIGets), ctx, size, token, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIList", reflect.TypeOf((*MockDBHandler)(nil).AIList), ctx, size, token, filters)
 }
 
 // AIUpdate mocks base method.
@@ -175,19 +175,19 @@ func (mr *MockDBHandlerMockRecorder) AIcallGetByReferenceID(ctx, referenceID any
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallGetByReferenceID", reflect.TypeOf((*MockDBHandler)(nil).AIcallGetByReferenceID), ctx, referenceID)
 }
 
-// AIcallGets mocks base method.
-func (m *MockDBHandler) AIcallGets(ctx context.Context, size uint64, token string, filters map[aicall.Field]any) ([]*aicall.AIcall, error) {
+// AIcallList mocks base method.
+func (m *MockDBHandler) AIcallList(ctx context.Context, size uint64, token string, filters map[aicall.Field]any) ([]*aicall.AIcall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AIcallGets", ctx, size, token, filters)
+	ret := m.ctrl.Call(m, "AIcallList", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*aicall.AIcall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// AIcallGets indicates an expected call of AIcallGets.
-func (mr *MockDBHandlerMockRecorder) AIcallGets(ctx, size, token, filters any) *gomock.Call {
+// AIcallList indicates an expected call of AIcallList.
+func (mr *MockDBHandlerMockRecorder) AIcallList(ctx, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallGets", reflect.TypeOf((*MockDBHandler)(nil).AIcallGets), ctx, size, token, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallList", reflect.TypeOf((*MockDBHandler)(nil).AIcallList), ctx, size, token, filters)
 }
 
 // AIcallUpdate mocks base method.
@@ -247,19 +247,19 @@ func (mr *MockDBHandlerMockRecorder) MessageGet(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageGet", reflect.TypeOf((*MockDBHandler)(nil).MessageGet), ctx, id)
 }
 
-// MessageGets mocks base method.
-func (m *MockDBHandler) MessageGets(ctx context.Context, size uint64, token string, filters map[message.Field]any) ([]*message.Message, error) {
+// MessageList mocks base method.
+func (m *MockDBHandler) MessageList(ctx context.Context, size uint64, token string, filters map[message.Field]any) ([]*message.Message, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MessageGets", ctx, size, token, filters)
+	ret := m.ctrl.Call(m, "MessageList", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*message.Message)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// MessageGets indicates an expected call of MessageGets.
-func (mr *MockDBHandlerMockRecorder) MessageGets(ctx, size, token, filters any) *gomock.Call {
+// MessageList indicates an expected call of MessageList.
+func (mr *MockDBHandlerMockRecorder) MessageList(ctx, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageGets", reflect.TypeOf((*MockDBHandler)(nil).MessageGets), ctx, size, token, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageList", reflect.TypeOf((*MockDBHandler)(nil).MessageList), ctx, size, token, filters)
 }
 
 // SummaryCreate mocks base method.
@@ -305,19 +305,19 @@ func (mr *MockDBHandlerMockRecorder) SummaryGet(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SummaryGet", reflect.TypeOf((*MockDBHandler)(nil).SummaryGet), ctx, id)
 }
 
-// SummaryGets mocks base method.
-func (m *MockDBHandler) SummaryGets(ctx context.Context, size uint64, token string, filters map[summary.Field]any) ([]*summary.Summary, error) {
+// SummaryList mocks base method.
+func (m *MockDBHandler) SummaryList(ctx context.Context, size uint64, token string, filters map[summary.Field]any) ([]*summary.Summary, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SummaryGets", ctx, size, token, filters)
+	ret := m.ctrl.Call(m, "SummaryList", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*summary.Summary)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// SummaryGets indicates an expected call of SummaryGets.
-func (mr *MockDBHandlerMockRecorder) SummaryGets(ctx, size, token, filters any) *gomock.Call {
+// SummaryList indicates an expected call of SummaryList.
+func (mr *MockDBHandlerMockRecorder) SummaryList(ctx, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SummaryGets", reflect.TypeOf((*MockDBHandler)(nil).SummaryGets), ctx, size, token, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SummaryList", reflect.TypeOf((*MockDBHandler)(nil).SummaryList), ctx, size, token, filters)
 }
 
 // SummaryUpdate mocks base method.

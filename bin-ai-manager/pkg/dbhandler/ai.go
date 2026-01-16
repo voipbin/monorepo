@@ -151,7 +151,7 @@ func (h *handler) AIDelete(ctx context.Context, id uuid.UUID) error {
 }
 
 // AIGets returns a list of ais.
-func (h *handler) AIGets(ctx context.Context, size uint64, token string, filters map[ai.Field]any) ([]*ai.AI, error) {
+func (h *handler) AIList(ctx context.Context, size uint64, token string, filters map[ai.Field]any) ([]*ai.AI, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}
@@ -166,17 +166,17 @@ func (h *handler) AIGets(ctx context.Context, size uint64, token string, filters
 
 	builder, err := commondatabasehandler.ApplyFields(builder, filters)
 	if err != nil {
-		return nil, fmt.Errorf("AIGets: could not apply filters. err: %v", err)
+		return nil, fmt.Errorf("AIList: could not apply filters. err: %v", err)
 	}
 
 	query, args, err := builder.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("AIGets: could not build query. err: %v", err)
+		return nil, fmt.Errorf("AIList: could not build query. err: %v", err)
 	}
 
 	rows, err := h.db.Query(query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("AIGets: could not query. err: %v", err)
+		return nil, fmt.Errorf("AIList: could not query. err: %v", err)
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -184,7 +184,7 @@ func (h *handler) AIGets(ctx context.Context, size uint64, token string, filters
 	for rows.Next() {
 		u := &ai.AI{}
 		if err := commondatabasehandler.ScanRow(rows, u); err != nil {
-			return nil, fmt.Errorf("AIGets: could not scan row. err: %v", err)
+			return nil, fmt.Errorf("AIList: could not scan row. err: %v", err)
 		}
 		res = append(res, u)
 	}

@@ -74,7 +74,7 @@ func (h *summaryHandler) GetByReferenceID(ctx context.Context, referenceID uuid.
 		summary.FieldReferenceID: referenceID,
 	}
 
-	tmps, err := h.db.SummaryGets(ctx, 1, "", filters)
+	tmps, err := h.db.SummaryList(ctx, 1, "", filters)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get data")
 	}
@@ -86,8 +86,8 @@ func (h *summaryHandler) GetByReferenceID(ctx context.Context, referenceID uuid.
 	return res, nil
 }
 
-func (h *summaryHandler) Gets(ctx context.Context, size uint64, token string, filters map[summary.Field]any) ([]*summary.Summary, error) {
-	res, err := h.db.SummaryGets(ctx, size, token, filters)
+func (h *summaryHandler) List(ctx context.Context, size uint64, token string, filters map[summary.Field]any) ([]*summary.Summary, error) {
+	res, err := h.db.SummaryList(ctx, size, token, filters)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get data")
 	}
@@ -107,7 +107,7 @@ func (h *summaryHandler) GetByCustomerIDAndReferenceIDAndLanguage(
 		summary.FieldReferenceID: referenceID,
 		summary.FieldLanguage:    language,
 	}
-	res, err := h.Gets(ctx, 1000, "", filters)
+	res, err := h.List(ctx, 1000, "", filters)
 	if err != nil {
 		return nil, err
 	}

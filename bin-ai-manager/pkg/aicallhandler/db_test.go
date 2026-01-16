@@ -353,9 +353,9 @@ func Test_Gets(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().AIcallGets(ctx, tt.size, tt.token, tt.filters).Return(tt.responseAIcalls, nil)
+			mockDB.EXPECT().AIcallList(ctx, tt.size, tt.token, tt.filters).Return(tt.responseAIcalls, nil)
 
-			res, err := h.Gets(ctx, tt.size, tt.token, tt.filters)
+			res, err := h.List(ctx, tt.size, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

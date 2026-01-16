@@ -76,7 +76,7 @@ func Test_processV1AIcallsGet(t *testing.T) {
 				aicallHandler: mockAIcall,
 			}
 
-			mockAIcall.EXPECT().Gets(gomock.Any(), tt.expectPageSize, tt.expectPageToken, gomock.Any()).Return(tt.responseAIcalls, nil)
+			mockAIcall.EXPECT().List(gomock.Any(), tt.expectPageSize, tt.expectPageToken, gomock.Any()).Return(tt.responseAIcalls, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

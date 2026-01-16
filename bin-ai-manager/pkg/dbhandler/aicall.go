@@ -190,7 +190,7 @@ func (h *handler) AIcallDelete(ctx context.Context, id uuid.UUID) error {
 }
 
 // AIcallGets returns a list of aicalls.
-func (h *handler) AIcallGets(ctx context.Context, size uint64, token string, filters map[aicall.Field]any) ([]*aicall.AIcall, error) {
+func (h *handler) AIcallList(ctx context.Context, size uint64, token string, filters map[aicall.Field]any) ([]*aicall.AIcall, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}
@@ -205,17 +205,17 @@ func (h *handler) AIcallGets(ctx context.Context, size uint64, token string, fil
 
 	builder, err := commondatabasehandler.ApplyFields(builder, filters)
 	if err != nil {
-		return nil, fmt.Errorf("AIcallGets: could not apply filters. err: %v", err)
+		return nil, fmt.Errorf("AIcallList: could not apply filters. err: %v", err)
 	}
 
 	query, args, err := builder.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("AIcallGets: could not build query. err: %v", err)
+		return nil, fmt.Errorf("AIcallList: could not build query. err: %v", err)
 	}
 
 	rows, err := h.db.Query(query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("AIcallGets: could not query. err: %v", err)
+		return nil, fmt.Errorf("AIcallList: could not query. err: %v", err)
 	}
 	defer func() { _ = rows.Close() }()
 
@@ -223,7 +223,7 @@ func (h *handler) AIcallGets(ctx context.Context, size uint64, token string, fil
 	for rows.Next() {
 		u := &aicall.AIcall{}
 		if err := commondatabasehandler.ScanRow(rows, u); err != nil {
-			return nil, fmt.Errorf("AIcallGets: could not scan row. err: %v", err)
+			return nil, fmt.Errorf("AIcallList: could not scan row. err: %v", err)
 		}
 		res = append(res, u)
 	}

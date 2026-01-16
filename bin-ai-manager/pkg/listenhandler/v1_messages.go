@@ -54,7 +54,7 @@ func (h *listenHandler) processV1MessagesGet(ctx context.Context, m *sock.Reques
 		"filters": typedFilters,
 	})
 
-	tmp, err := h.messageHandler.Gets(ctx, pageSize, pageToken, typedFilters)
+	tmp, err := h.messageHandler.List(ctx, pageSize, pageToken, typedFilters)
 	if err != nil {
 		log.Debugf("Could not get messages. err: %v", err)
 		return simpleResponse(500), nil

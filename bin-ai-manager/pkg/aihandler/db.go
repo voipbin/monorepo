@@ -71,9 +71,9 @@ func (h *aiHandler) Get(ctx context.Context, id uuid.UUID) (*ai.AI, error) {
 	return res, nil
 }
 
-// Gets returns list of ais.
-func (h *aiHandler) Gets(ctx context.Context, size uint64, token string, filters map[ai.Field]any) ([]*ai.AI, error) {
-	res, err := h.db.AIGets(ctx, size, token, filters)
+// List returns list of ais.
+func (h *aiHandler) List(ctx context.Context, size uint64, token string, filters map[ai.Field]any) ([]*ai.AI, error) {
+	res, err := h.db.AIList(ctx, size, token, filters)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get ais")
 	}

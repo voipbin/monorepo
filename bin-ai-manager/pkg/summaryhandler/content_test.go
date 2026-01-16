@@ -256,7 +256,7 @@ func Test_contentProcessReferenceTypeConference(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().SummaryGets(ctx, uint64(1), "", gomock.Any()).Return(tt.responseSummaries, nil)
+			mockDB.EXPECT().SummaryList(ctx, uint64(1), "", gomock.Any()).Return(tt.responseSummaries, nil)
 			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.expectedReferenceID).Return(tt.responseConference, nil)
 
 			// contentGetTranscripts

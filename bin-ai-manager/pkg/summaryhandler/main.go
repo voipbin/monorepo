@@ -29,7 +29,7 @@ type SummaryHandler interface {
 		language string,
 	) (*summary.Summary, error)
 	Get(ctx context.Context, id uuid.UUID) (*summary.Summary, error)
-	Gets(ctx context.Context, size uint64, token string, filters map[summary.Field]any) ([]*summary.Summary, error)
+	List(ctx context.Context, size uint64, token string, filters map[summary.Field]any) ([]*summary.Summary, error)
 	Delete(ctx context.Context, id uuid.UUID) (*summary.Summary, error)
 
 	ServiceStart(

@@ -119,7 +119,7 @@ func Test_SummaryCreate(t *testing.T) {
 			}
 
 			expectRes := []*summary.Summary{tt.expectRes}
-			resGets, err := h.SummaryGets(ctx, 100, DefaultTimeStamp, map[summary.Field]any{summary.FieldReferenceID: tt.summary.ReferenceID})
+			resGets, err := h.SummaryList(ctx, 100, DefaultTimeStamp, map[summary.Field]any{summary.FieldReferenceID: tt.summary.ReferenceID})
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

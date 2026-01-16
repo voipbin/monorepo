@@ -153,19 +153,19 @@ func (mr *MockAIcallHandlerMockRecorder) GetByReferenceID(ctx, referenceID any) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByReferenceID", reflect.TypeOf((*MockAIcallHandler)(nil).GetByReferenceID), ctx, referenceID)
 }
 
-// Gets mocks base method.
-func (m *MockAIcallHandler) Gets(ctx context.Context, size uint64, token string, filters map[aicall.Field]any) ([]*aicall.AIcall, error) {
+// List mocks base method.
+func (m *MockAIcallHandler) List(ctx context.Context, size uint64, token string, filters map[aicall.Field]any) ([]*aicall.AIcall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Gets", ctx, size, token, filters)
+	ret := m.ctrl.Call(m, "List", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*aicall.AIcall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Gets indicates an expected call of Gets.
-func (mr *MockAIcallHandlerMockRecorder) Gets(ctx, size, token, filters any) *gomock.Call {
+// List indicates an expected call of List.
+func (mr *MockAIcallHandlerMockRecorder) List(ctx, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockAIcallHandler)(nil).Gets), ctx, size, token, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockAIcallHandler)(nil).List), ctx, size, token, filters)
 }
 
 // ProcessStart mocks base method.

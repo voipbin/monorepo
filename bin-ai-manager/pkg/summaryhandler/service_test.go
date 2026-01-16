@@ -106,7 +106,7 @@ func Test_ServiceStart_referencetype_call(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().CallV1CallGet(ctx, tt.referenceID).Return(tt.responseCall, nil)
-			mockDB.EXPECT().SummaryGets(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf(""))
+			mockDB.EXPECT().SummaryList(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf(""))
 			mockReq.EXPECT().TranscribeV1TranscribeStart(
 				ctx,
 				cmcustomer.IDAIManager,

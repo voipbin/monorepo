@@ -54,7 +54,7 @@ func (h *listenHandler) processV1AIcallsGet(ctx context.Context, m *sock.Request
 		"filters": typedFilters,
 	})
 
-	tmp, err := h.aicallHandler.Gets(ctx, pageSize, pageToken, typedFilters)
+	tmp, err := h.aicallHandler.List(ctx, pageSize, pageToken, typedFilters)
 	if err != nil {
 		log.Debugf("Could not get conferences. err: %v", err)
 		return simpleResponse(500), nil

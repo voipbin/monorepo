@@ -170,9 +170,9 @@ func Test_Gets(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().MessageGets(ctx, tt.size, tt.token, gomock.Any()).Return(tt.responseMessages, nil)
+			mockDB.EXPECT().MessageList(ctx, tt.size, tt.token, gomock.Any()).Return(tt.responseMessages, nil)
 
-			res, err := h.Gets(ctx, tt.size, tt.token, tt.filters)
+			res, err := h.List(ctx, tt.size, tt.token, tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

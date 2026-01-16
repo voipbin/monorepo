@@ -80,7 +80,7 @@ func Test_processV1MessagesGet(t *testing.T) {
 				messageHandler: mockMessage,
 			}
 
-			mockMessage.EXPECT().Gets(gomock.Any(), tt.expectPageSize, gomock.Any(), gomock.AssignableToTypeOf(tt.expectFilters)).Return(tt.responseMessages, nil)
+			mockMessage.EXPECT().List(gomock.Any(), tt.expectPageSize, gomock.Any(), gomock.AssignableToTypeOf(tt.expectFilters)).Return(tt.responseMessages, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

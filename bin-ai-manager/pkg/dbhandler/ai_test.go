@@ -205,7 +205,7 @@ func Test_AIDelete(t *testing.T) {
 	}
 }
 
-func Test_AIGets(t *testing.T) {
+func Test_AIList(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -302,7 +302,7 @@ func Test_AIGets(t *testing.T) {
 				}
 			}
 
-			res, err := h.AIGets(ctx, 10, utilhandler.TimeGetCurTime(), tt.filters)
+			res, err := h.AIList(ctx, 10, utilhandler.TimeGetCurTime(), tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
