@@ -142,7 +142,7 @@ func Test_TrunkCreate(t *testing.T) {
 	}
 }
 
-func Test_TrunkGets(t *testing.T) {
+func Test_TrunkList(t *testing.T) {
 	type test struct {
 		name string
 		data []trunk.Trunk
@@ -226,7 +226,7 @@ func Test_TrunkGets(t *testing.T) {
 				}
 			}
 
-			res, err := h.TrunkGets(ctx, tt.limit, utilhandler.TimeGetCurTime(), tt.filters)
+			res, err := h.TrunkList(ctx, tt.limit, utilhandler.TimeGetCurTime(), tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

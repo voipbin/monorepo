@@ -71,7 +71,7 @@ func Test_EventCUCustomerDeleted(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().TrunkGets(ctx, uint64(1000), gomock.Any(), tt.expectFilter).Return(tt.responseTrunks, nil)
+			mockDB.EXPECT().TrunkList(ctx, uint64(1000), gomock.Any(), tt.expectFilter).Return(tt.responseTrunks, nil)
 
 			for _, t := range tt.responseTrunks {
 

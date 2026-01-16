@@ -85,7 +85,7 @@ func (h *listenHandler) processV1TrunksGet(ctx context.Context, req *sock.Reques
 		return simpleResponse(400), nil
 	}
 
-	trunks, err := h.trunkHandler.Gets(ctx, pageToken, pageSize, filters)
+	trunks, err := h.trunkHandler.List(ctx, pageToken, pageSize, filters)
 	if err != nil {
 		log.Errorf("Could not get trunks. err: %v", err)
 		return nil, err

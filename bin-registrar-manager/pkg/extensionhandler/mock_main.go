@@ -117,19 +117,19 @@ func (mr *MockExtensionHandlerMockRecorder) GetByExtension(ctx, customerID, ext 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByExtension", reflect.TypeOf((*MockExtensionHandler)(nil).GetByExtension), ctx, customerID, ext)
 }
 
-// Gets mocks base method.
-func (m *MockExtensionHandler) Gets(ctx context.Context, token string, limit uint64, filters map[extension.Field]any) ([]*extension.Extension, error) {
+// List mocks base method.
+func (m *MockExtensionHandler) List(ctx context.Context, token string, limit uint64, filters map[extension.Field]any) ([]*extension.Extension, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Gets", ctx, token, limit, filters)
+	ret := m.ctrl.Call(m, "List", ctx, token, limit, filters)
 	ret0, _ := ret[0].([]*extension.Extension)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Gets indicates an expected call of Gets.
-func (mr *MockExtensionHandlerMockRecorder) Gets(ctx, token, limit, filters any) *gomock.Call {
+// List indicates an expected call of List.
+func (mr *MockExtensionHandlerMockRecorder) List(ctx, token, limit, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockExtensionHandler)(nil).Gets), ctx, token, limit, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockExtensionHandler)(nil).List), ctx, token, limit, filters)
 }
 
 // Update mocks base method.

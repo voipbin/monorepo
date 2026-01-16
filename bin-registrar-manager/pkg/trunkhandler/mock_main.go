@@ -118,19 +118,19 @@ func (mr *MockTrunkHandlerMockRecorder) GetByDomainName(ctx, domainName any) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByDomainName", reflect.TypeOf((*MockTrunkHandler)(nil).GetByDomainName), ctx, domainName)
 }
 
-// Gets mocks base method.
-func (m *MockTrunkHandler) Gets(ctx context.Context, token string, limit uint64, filters map[trunk.Field]any) ([]*trunk.Trunk, error) {
+// List mocks base method.
+func (m *MockTrunkHandler) List(ctx context.Context, token string, limit uint64, filters map[trunk.Field]any) ([]*trunk.Trunk, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Gets", ctx, token, limit, filters)
+	ret := m.ctrl.Call(m, "List", ctx, token, limit, filters)
 	ret0, _ := ret[0].([]*trunk.Trunk)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Gets indicates an expected call of Gets.
-func (mr *MockTrunkHandlerMockRecorder) Gets(ctx, token, limit, filters any) *gomock.Call {
+// List indicates an expected call of List.
+func (mr *MockTrunkHandlerMockRecorder) List(ctx, token, limit, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Gets", reflect.TypeOf((*MockTrunkHandler)(nil).Gets), ctx, token, limit, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockTrunkHandler)(nil).List), ctx, token, limit, filters)
 }
 
 // Update mocks base method.

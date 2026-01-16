@@ -433,7 +433,7 @@ func Test_ExtensionUpdate(t *testing.T) {
 	}
 }
 
-func Test_ExtensionGets(t *testing.T) {
+func Test_ExtensionList(t *testing.T) {
 
 	type test struct {
 		name       string
@@ -522,7 +522,7 @@ func Test_ExtensionGets(t *testing.T) {
 				}
 			}
 
-			exts, err := h.ExtensionGets(ctx, tt.limit, utilhandler.TimeGetCurTime(), tt.filters)
+			exts, err := h.ExtensionList(ctx, tt.limit, utilhandler.TimeGetCurTime(), tt.filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

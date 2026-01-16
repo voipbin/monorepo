@@ -24,7 +24,7 @@ func (h *trunkHandler) EventCUCustomerDeleted(ctx context.Context, cu *cucustome
 		trunk.FieldCustomerID: cu.ID,
 		trunk.FieldDeleted:    false,
 	}
-	trunks, err := h.Gets(ctx, "", 1000, filters)
+	trunks, err := h.List(ctx, "", 1000, filters)
 	if err != nil {
 		log.Errorf("Could not gets trunks list. err: %v", err)
 		return errors.Wrap(err, "could not get trunks list")

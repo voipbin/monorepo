@@ -178,7 +178,7 @@ func Test_processV1TrunksGet(t *testing.T) {
 				trunkHandler: mockTrunk,
 			}
 
-			mockTrunk.EXPECT().Gets(gomock.Any(), tt.pageToken, tt.pageSize, gomock.Any()).Return(tt.responseTrunks, nil)
+			mockTrunk.EXPECT().List(gomock.Any(), tt.pageToken, tt.pageSize, gomock.Any()).Return(tt.responseTrunks, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

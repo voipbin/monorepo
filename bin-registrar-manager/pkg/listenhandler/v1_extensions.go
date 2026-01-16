@@ -217,7 +217,7 @@ func (h *listenHandler) processV1ExtensionsGet(ctx context.Context, m *sock.Requ
 		return simpleResponse(400), nil
 	}
 
-	extensions, err := h.extensionHandler.Gets(ctx, pageToken, pageSize, filters)
+	extensions, err := h.extensionHandler.List(ctx, pageToken, pageSize, filters)
 	if err != nil {
 		log.Errorf("Could not get extensions. err: %v", err)
 		return nil, err
