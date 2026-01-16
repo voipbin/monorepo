@@ -217,6 +217,18 @@ for _, tt := range tests {
 
 ## Key Implementation Details
 
+### Access Control
+
+**IMPORTANT: Billing and Billing Account resources require CustomerAdmin permission ONLY.**
+
+Access control is handled by `bin-api-manager`, NOT by this service. This service processes RPC requests from bin-api-manager and trusts that authorization has already been performed.
+
+- bin-api-manager validates JWT tokens and checks permissions
+- Only users with CustomerAdmin permission can access billing/account endpoints
+- Manager-level users do NOT have access to billing resources
+
+See `bin-api-manager/CLAUDE.md` for complete authentication and authorization patterns.
+
 ### Balance Validation
 Admin accounts always have valid balance regardless of actual balance:
 ```go
