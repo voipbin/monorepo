@@ -86,19 +86,19 @@ func (mr *MockDBHandlerMockRecorder) ProviderGet(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProviderGet", reflect.TypeOf((*MockDBHandler)(nil).ProviderGet), ctx, id)
 }
 
-// ProviderGets mocks base method.
-func (m *MockDBHandler) ProviderGets(ctx context.Context, token string, limit uint64, filters map[provider.Field]any) ([]*provider.Provider, error) {
+// ProviderList mocks base method.
+func (m *MockDBHandler) ProviderList(ctx context.Context, token string, limit uint64, filters map[provider.Field]any) ([]*provider.Provider, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ProviderGets", ctx, token, limit, filters)
+	ret := m.ctrl.Call(m, "ProviderList", ctx, token, limit, filters)
 	ret0, _ := ret[0].([]*provider.Provider)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ProviderGets indicates an expected call of ProviderGets.
-func (mr *MockDBHandlerMockRecorder) ProviderGets(ctx, token, limit, filters any) *gomock.Call {
+// ProviderList indicates an expected call of ProviderList.
+func (mr *MockDBHandlerMockRecorder) ProviderList(ctx, token, limit, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProviderGets", reflect.TypeOf((*MockDBHandler)(nil).ProviderGets), ctx, token, limit, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProviderList", reflect.TypeOf((*MockDBHandler)(nil).ProviderList), ctx, token, limit, filters)
 }
 
 // ProviderUpdate mocks base method.
@@ -158,19 +158,19 @@ func (mr *MockDBHandlerMockRecorder) RouteGet(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteGet", reflect.TypeOf((*MockDBHandler)(nil).RouteGet), ctx, id)
 }
 
-// RouteGets mocks base method.
-func (m *MockDBHandler) RouteGets(ctx context.Context, token string, limit uint64, filters map[route.Field]any) ([]*route.Route, error) {
+// RouteList mocks base method.
+func (m *MockDBHandler) RouteList(ctx context.Context, token string, limit uint64, filters map[route.Field]any) ([]*route.Route, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RouteGets", ctx, token, limit, filters)
+	ret := m.ctrl.Call(m, "RouteList", ctx, token, limit, filters)
 	ret0, _ := ret[0].([]*route.Route)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// RouteGets indicates an expected call of RouteGets.
-func (mr *MockDBHandlerMockRecorder) RouteGets(ctx, token, limit, filters any) *gomock.Call {
+// RouteList indicates an expected call of RouteList.
+func (mr *MockDBHandlerMockRecorder) RouteList(ctx, token, limit, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteGets", reflect.TypeOf((*MockDBHandler)(nil).RouteGets), ctx, token, limit, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteList", reflect.TypeOf((*MockDBHandler)(nil).RouteList), ctx, token, limit, filters)
 }
 
 // RouteUpdate mocks base method.

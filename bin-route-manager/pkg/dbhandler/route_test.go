@@ -101,7 +101,7 @@ func Test_RouteCreate(t *testing.T) {
 	}
 }
 
-func Test_RouteGets(t *testing.T) {
+func Test_RouteList(t *testing.T) {
 
 	tests := []struct {
 		name   string
@@ -152,7 +152,7 @@ func Test_RouteGets(t *testing.T) {
 			}
 
 			filters := map[route.Field]any{}
-			res, err := h.RouteGets(ctx, utilhandler.TimeGetCurTime(), tt.limit, filters)
+			res, err := h.RouteList(ctx, utilhandler.TimeGetCurTime(), tt.limit, filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -164,7 +164,7 @@ func Test_RouteGets(t *testing.T) {
 	}
 }
 
-func Test_RouteGetsByCustomerID(t *testing.T) {
+func Test_RouteListByCustomerID(t *testing.T) {
 
 	tests := []struct {
 		name   string
@@ -246,7 +246,7 @@ func Test_RouteGetsByCustomerID(t *testing.T) {
 			filters := map[route.Field]any{
 				route.FieldCustomerID: tt.customerID,
 			}
-			res, err := h.RouteGets(ctx, utilhandler.TimeGetCurTime(), tt.limit, filters)
+			res, err := h.RouteList(ctx, utilhandler.TimeGetCurTime(), tt.limit, filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -347,7 +347,7 @@ func Test_RouteGetsByCustomerIDWithTarget(t *testing.T) {
 				route.FieldCustomerID: tt.customerID,
 				route.FieldTarget:     tt.target,
 			}
-			res, err := h.RouteGets(ctx, tt.token, 1000, filters)
+			res, err := h.RouteList(ctx, tt.token, 1000, filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

@@ -33,7 +33,7 @@ type ProviderHandler interface {
 		name string,
 		detail string,
 	) (*provider.Provider, error)
-	Gets(ctx context.Context, token string, limit uint64) ([]*provider.Provider, error)
+	List(ctx context.Context, token string, limit uint64) ([]*provider.Provider, error)
 	Delete(ctx context.Context, id uuid.UUID) (*provider.Provider, error)
 	Update(
 		ctx context.Context,

@@ -33,13 +33,13 @@ type RouteHandler interface {
 		priority int,
 		target string,
 	) (*route.Route, error)
-	GetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*route.Route, error)
-	GetsByTarget(ctx context.Context, customerID uuid.UUID, target string) ([]*route.Route, error)
+	ListByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*route.Route, error)
+	ListByTarget(ctx context.Context, customerID uuid.UUID, target string) ([]*route.Route, error)
 	Delete(ctx context.Context, id uuid.UUID) (*route.Route, error)
 	Update(ctx context.Context, id uuid.UUID, name string, detail string, providerID uuid.UUID, priority int, target string) (*route.Route, error)
 
 	// dialroute
-	DialrouteGets(ctx context.Context, customerID uuid.UUID, target string) ([]*route.Route, error)
+	DialrouteList(ctx context.Context, customerID uuid.UUID, target string) ([]*route.Route, error)
 }
 
 // NewRouteHandler return RouteHandler

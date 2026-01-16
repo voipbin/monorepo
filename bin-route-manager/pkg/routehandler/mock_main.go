@@ -72,19 +72,19 @@ func (mr *MockRouteHandlerMockRecorder) Delete(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockRouteHandler)(nil).Delete), ctx, id)
 }
 
-// DialrouteGets mocks base method.
-func (m *MockRouteHandler) DialrouteGets(ctx context.Context, customerID uuid.UUID, target string) ([]*route.Route, error) {
+// DialrouteList mocks base method.
+func (m *MockRouteHandler) DialrouteList(ctx context.Context, customerID uuid.UUID, target string) ([]*route.Route, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DialrouteGets", ctx, customerID, target)
+	ret := m.ctrl.Call(m, "DialrouteList", ctx, customerID, target)
 	ret0, _ := ret[0].([]*route.Route)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// DialrouteGets indicates an expected call of DialrouteGets.
-func (mr *MockRouteHandlerMockRecorder) DialrouteGets(ctx, customerID, target any) *gomock.Call {
+// DialrouteList indicates an expected call of DialrouteList.
+func (mr *MockRouteHandlerMockRecorder) DialrouteList(ctx, customerID, target any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DialrouteGets", reflect.TypeOf((*MockRouteHandler)(nil).DialrouteGets), ctx, customerID, target)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DialrouteList", reflect.TypeOf((*MockRouteHandler)(nil).DialrouteList), ctx, customerID, target)
 }
 
 // Get mocks base method.
@@ -102,34 +102,34 @@ func (mr *MockRouteHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockRouteHandler)(nil).Get), ctx, id)
 }
 
-// GetsByCustomerID mocks base method.
-func (m *MockRouteHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*route.Route, error) {
+// ListByCustomerID mocks base method.
+func (m *MockRouteHandler) ListByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*route.Route, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetsByCustomerID", ctx, customerID, token, limit)
+	ret := m.ctrl.Call(m, "ListByCustomerID", ctx, customerID, token, limit)
 	ret0, _ := ret[0].([]*route.Route)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetsByCustomerID indicates an expected call of GetsByCustomerID.
-func (mr *MockRouteHandlerMockRecorder) GetsByCustomerID(ctx, customerID, token, limit any) *gomock.Call {
+// ListByCustomerID indicates an expected call of ListByCustomerID.
+func (mr *MockRouteHandlerMockRecorder) ListByCustomerID(ctx, customerID, token, limit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByCustomerID", reflect.TypeOf((*MockRouteHandler)(nil).GetsByCustomerID), ctx, customerID, token, limit)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListByCustomerID", reflect.TypeOf((*MockRouteHandler)(nil).ListByCustomerID), ctx, customerID, token, limit)
 }
 
-// GetsByTarget mocks base method.
-func (m *MockRouteHandler) GetsByTarget(ctx context.Context, customerID uuid.UUID, target string) ([]*route.Route, error) {
+// ListByTarget mocks base method.
+func (m *MockRouteHandler) ListByTarget(ctx context.Context, customerID uuid.UUID, target string) ([]*route.Route, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetsByTarget", ctx, customerID, target)
+	ret := m.ctrl.Call(m, "ListByTarget", ctx, customerID, target)
 	ret0, _ := ret[0].([]*route.Route)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetsByTarget indicates an expected call of GetsByTarget.
-func (mr *MockRouteHandlerMockRecorder) GetsByTarget(ctx, customerID, target any) *gomock.Call {
+// ListByTarget indicates an expected call of ListByTarget.
+func (mr *MockRouteHandlerMockRecorder) ListByTarget(ctx, customerID, target any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByTarget", reflect.TypeOf((*MockRouteHandler)(nil).GetsByTarget), ctx, customerID, target)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListByTarget", reflect.TypeOf((*MockRouteHandler)(nil).ListByTarget), ctx, customerID, target)
 }
 
 // Update mocks base method.

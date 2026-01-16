@@ -67,11 +67,11 @@ func (h *providerHandler) Create(
 	return res, nil
 }
 
-// Gets returns list of providers
-func (h *providerHandler) Gets(ctx context.Context, token string, limit uint64) ([]*provider.Provider, error) {
+// List returns list of providers
+func (h *providerHandler) List(ctx context.Context, token string, limit uint64) ([]*provider.Provider, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
-			"func":  "Gets",
+			"func":  "List",
 			"token": token,
 			"limit": limit,
 		})
@@ -79,7 +79,7 @@ func (h *providerHandler) Gets(ctx context.Context, token string, limit uint64) 
 
 	filters := map[provider.Field]any{}
 
-	res, err := h.db.ProviderGets(ctx, token, limit, filters)
+	res, err := h.db.ProviderList(ctx, token, limit, filters)
 	if err != nil {
 		log.Errorf("Could not get providers. err: %v", err)
 		return nil, err

@@ -122,7 +122,7 @@ func Test_Create(t *testing.T) {
 	}
 }
 
-func Test_GetsByCustomerID(t *testing.T) {
+func Test_ListByCustomerID(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -165,9 +165,9 @@ func Test_GetsByCustomerID(t *testing.T) {
 			filters := map[route.Field]any{
 				route.FieldCustomerID: tt.customerID,
 			}
-			mockDB.EXPECT().RouteGets(ctx, tt.token, tt.limit, filters).Return(tt.responseRoutes, nil)
+			mockDB.EXPECT().RouteList(ctx, tt.token, tt.limit, filters).Return(tt.responseRoutes, nil)
 
-			res, err := h.GetsByCustomerID(ctx, tt.customerID, tt.token, tt.limit)
+			res, err := h.ListByCustomerID(ctx, tt.customerID, tt.token, tt.limit)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -217,9 +217,9 @@ func Test_GetsByCustomerID_customer_id_is_nil(t *testing.T) {
 			ctx := context.Background()
 
 			filters := map[route.Field]any{}
-			mockDB.EXPECT().RouteGets(ctx, tt.token, tt.limit, filters).Return(tt.responseRoutes, nil)
+			mockDB.EXPECT().RouteList(ctx, tt.token, tt.limit, filters).Return(tt.responseRoutes, nil)
 
-			res, err := h.GetsByCustomerID(ctx, uuid.Nil, tt.token, tt.limit)
+			res, err := h.ListByCustomerID(ctx, uuid.Nil, tt.token, tt.limit)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -231,7 +231,7 @@ func Test_GetsByCustomerID_customer_id_is_nil(t *testing.T) {
 	}
 }
 
-func Test_GetsByTarget(t *testing.T) {
+func Test_ListByTarget(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -298,10 +298,10 @@ func Test_GetsByTarget(t *testing.T) {
 				route.FieldCustomerID: tt.customerID,
 				route.FieldTarget:     route.TargetAll,
 			}
-			mockDB.EXPECT().RouteGets(ctx, "", uint64(1000), filtersTarget).Return(tt.responseRoutesCustomer, nil)
-			mockDB.EXPECT().RouteGets(ctx, "", uint64(1000), filtersAll).Return(tt.responseRoutesAll, nil)
+			mockDB.EXPECT().RouteList(ctx, "", uint64(1000), filtersTarget).Return(tt.responseRoutesCustomer, nil)
+			mockDB.EXPECT().RouteList(ctx, "", uint64(1000), filtersAll).Return(tt.responseRoutesAll, nil)
 
-			res, err := h.GetsByTarget(ctx, tt.customerID, tt.target)
+			res, err := h.ListByTarget(ctx, tt.customerID, tt.target)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

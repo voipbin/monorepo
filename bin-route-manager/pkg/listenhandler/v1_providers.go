@@ -81,7 +81,7 @@ func (h *listenHandler) v1ProvidersGet(ctx context.Context, m *sock.Request) (*s
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	tmp, err := h.providerHandler.Gets(ctx, pageToken, pageSize)
+	tmp, err := h.providerHandler.List(ctx, pageToken, pageSize)
 	if err != nil {
 		log.Errorf("Could not get providers. err: %v", err)
 		return nil, err
