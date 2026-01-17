@@ -225,7 +225,64 @@ Tests use the standard Go pattern:
 - Test files live alongside source code: `handler.go` → `handler_test.go`
 - Each handler package has tests: `talkhandler/talk_test.go`, `messagehandler/message_test.go`, etc.
 - Database tests use SQLite in-memory: `dbhandler/*_test.go` with `main_test.go` for setup
-- Total test coverage: ~4,700 lines across 8 test files
+- Listenhandler tests: `listenhandler/*_test.go` testing all endpoint handlers
+- Total test coverage: ~6,500 lines across 12 test files
+
+### Test Coverage Requirements (REQUIRED)
+
+**CRITICAL: All functions MUST have their own tests unless they are clearly duplicated.**
+
+**The Rule:**
+- Every exported function in every package MUST have at least one test function
+- Every endpoint handler function MUST have comprehensive test coverage
+- Every business logic function MUST have tests for normal cases and error cases
+- Helper functions that are clearly duplicates MAY share test coverage with their primary implementation
+
+**Examples:**
+
+✅ **CORRECT - All functions tested:**
+```
+talkhandler/talk.go:
+  - TalkCreate()    → talk_test.go: Test_TalkCreate()
+  - TalkGet()       → talk_test.go: Test_TalkGet()
+  - TalkList()      → talk_test.go: Test_TalkList()
+  - TalkDelete()    → talk_test.go: Test_TalkDelete()
+
+listenhandler/v1_talks.go:
+  - processV1Talks()       → v1_talks_test.go: Test_processV1Talks()
+  - v1TalksPost()          → v1_talks_test.go: Test_processV1TalksPost()
+  - v1TalksGet()           → v1_talks_test.go: Test_processV1TalksGet()
+  - processV1TalksID()     → v1_talks_test.go: Test_processV1TalksIDGet()
+```
+
+❌ **WRONG - Functions without tests:**
+```
+listenhandler/v1_talks.go has 5 functions but no test file
+messagehandler/message.go has 4 functions but only Test_MessageCreate() exists
+```
+
+**Exceptions (functions that don't need separate tests):**
+- Private helper functions used only within tested functions
+- Trivial getters/setters (e.g., `func (t *Talk) GetID() uuid.UUID { return t.ID }`)
+- Functions that are exact duplicates (same logic, different types)
+
+**Verification:**
+When adding new code, verify every exported function has corresponding tests:
+```bash
+# List all exported functions
+grep -n "^func.*{$" handler.go
+
+# Verify each has a test function
+grep -n "^func Test_" handler_test.go
+```
+
+**This rule applies to ALL packages:**
+- ✅ pkg/talkhandler - All CRUD functions tested
+- ✅ pkg/messagehandler - All CRUD functions tested
+- ✅ pkg/participanthandler - All CRUD functions tested
+- ✅ pkg/reactionhandler - All CRUD functions tested
+- ✅ pkg/dbhandler - All database operations tested
+- ✅ pkg/listenhandler - All endpoint handlers tested
 
 ### Table-Driven Test Pattern (REQUIRED)
 

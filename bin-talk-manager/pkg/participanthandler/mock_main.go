@@ -125,32 +125,32 @@ func (mr *MockDBHandlerMockRecorder) ParticipantCreate(ctx, p any) *gomock.Call 
 }
 
 // ParticipantDelete mocks base method.
-func (m *MockDBHandler) ParticipantDelete(ctx context.Context, customerID, participantID uuid.UUID) error {
+func (m *MockDBHandler) ParticipantDelete(ctx context.Context, id uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ParticipantDelete", ctx, customerID, participantID)
+	ret := m.ctrl.Call(m, "ParticipantDelete", ctx, id)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ParticipantDelete indicates an expected call of ParticipantDelete.
-func (mr *MockDBHandlerMockRecorder) ParticipantDelete(ctx, customerID, participantID any) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) ParticipantDelete(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ParticipantDelete", reflect.TypeOf((*MockDBHandler)(nil).ParticipantDelete), ctx, customerID, participantID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ParticipantDelete", reflect.TypeOf((*MockDBHandler)(nil).ParticipantDelete), ctx, id)
 }
 
 // ParticipantGet mocks base method.
-func (m *MockDBHandler) ParticipantGet(ctx context.Context, customerID, participantID uuid.UUID) (*participant.Participant, error) {
+func (m *MockDBHandler) ParticipantGet(ctx context.Context, id uuid.UUID) (*participant.Participant, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ParticipantGet", ctx, customerID, participantID)
+	ret := m.ctrl.Call(m, "ParticipantGet", ctx, id)
 	ret0, _ := ret[0].(*participant.Participant)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ParticipantGet indicates an expected call of ParticipantGet.
-func (mr *MockDBHandlerMockRecorder) ParticipantGet(ctx, customerID, participantID any) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) ParticipantGet(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ParticipantGet", reflect.TypeOf((*MockDBHandler)(nil).ParticipantGet), ctx, customerID, participantID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ParticipantGet", reflect.TypeOf((*MockDBHandler)(nil).ParticipantGet), ctx, id)
 }
 
 // ParticipantList mocks base method.
