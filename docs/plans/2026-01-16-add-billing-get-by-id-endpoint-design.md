@@ -134,7 +134,7 @@ import (
 	"monorepo/bin-common-handler/models/sock"
 
 	"github.com/gofrs/uuid"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 // processV1BillingGet handles GET /v1/billings/{billing-id} request

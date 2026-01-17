@@ -1582,28 +1582,33 @@ func (h *participantHandler) ParticipantAdd(ctx context.Context, customerID, cha
    - `log.Info()` - Significant events (creation, updates, deletions)
    - `log.Errorf()` - Error conditions with context
 
-**Common Pitfall: Variable Shadowing**
+**Import Pattern**
 
-When using an aliased import like `log "github.com/sirupsen/logrus"`, creating a function-scoped variable `log := log.WithFields(...)` shadows the package import. This means you cannot use `log.Fields` later in the function.
+**CRITICAL: Always use direct import without alias for clarity:**
 
-**Solution**: Import logrus both directly and with alias:
 ```go
 import (
     "github.com/sirupsen/logrus"
-    log "github.com/sirupsen/logrus"
 )
 
 func SomeFunction() {
-    log := log.WithFields(log.Fields{...})  // Creates variable, shadows package
+    log := logrus.WithFields(logrus.Fields{...})  // ✅ Clear that we're using logrus
 
-    // Later in the function, if you need to add more fields:
-    log.WithFields(logrus.Fields{  // ✅ Use logrus.Fields (direct import)
+    // Later in the function, use the function-scoped log variable:
+    log.WithFields(logrus.Fields{
         "key": "value",
     }).Debug("message")
 
-    // NOT log.Fields (would fail - log is now a variable)
+    // For direct calls without function-scoped variable:
+    logrus.Debugf("Direct message: %v", value)  // ✅ Explicit logrus usage
 }
 ```
+
+**Why no alias:**
+- Makes code immediately clear that `logrus` is being used (not stdlib `log`)
+- Avoids confusion when reading code
+- Prevents variable shadowing issues
+- Consistent with rest of monorepo
 
 **Benefits of This Pattern:**
 

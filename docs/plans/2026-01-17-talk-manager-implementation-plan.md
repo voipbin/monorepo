@@ -450,7 +450,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
@@ -1034,7 +1034,7 @@ import (
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	commondb "monorepo/bin-common-handler/pkg/commondatabasehandler"
 	"monorepo/bin-talk-manager/models/talk"
@@ -1198,7 +1198,7 @@ import (
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	commondb "monorepo/bin-common-handler/pkg/commondatabasehandler"
 	"monorepo/bin-talk-manager/models/participant"
@@ -1332,7 +1332,7 @@ import (
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	commondb "monorepo/bin-common-handler/pkg/commondatabasehandler"
 	"monorepo/bin-talk-manager/models/message"
@@ -1552,7 +1552,7 @@ import (
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	commondb "monorepo/bin-common-handler/pkg/commondatabasehandler"
 	"monorepo/bin-talk-manager/models/message"
@@ -1629,7 +1629,7 @@ import (
 	"context"
 
 	"github.com/gofrs/uuid"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-talk-manager/models/talk"
@@ -1791,7 +1791,7 @@ import (
 	"errors"
 
 	"github.com/gofrs/uuid"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-talk-manager/models/message"
@@ -2018,7 +2018,7 @@ import (
 	"context"
 
 	"github.com/gofrs/uuid"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-talk-manager/models/participant"
@@ -2164,7 +2164,7 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-talk-manager/models/message"
 )
@@ -2333,7 +2333,7 @@ import (
 	"context"
 	"regexp"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-talk-manager/pkg/messagehandler"
 	"monorepo/bin-talk-manager/pkg/participanthandler"
@@ -2433,7 +2433,7 @@ import (
 	"strconv"
 
 	"github.com/gofrs/uuid"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	commonsock "monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-talk-manager/models/talk"
@@ -2692,7 +2692,7 @@ import (
 	"syscall"
 
 	"github.com/go-redis/redis/v8"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 

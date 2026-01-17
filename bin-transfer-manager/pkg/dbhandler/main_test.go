@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	_ "github.com/mattn/go-sqlite3"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/smotes/purse"
 )
 
@@ -16,30 +16,30 @@ var dbTest *sql.DB = nil // database for test
 func TestMain(m *testing.M) {
 	db, err := sql.Open("sqlite3", `file::memory:?cache=shared`)
 	if err != nil {
-		log.Errorf("err: %v", err)
+		logrus.Errorf("err: %v", err)
 	}
 	db.SetMaxOpenConns(1)
 
 	// Load all SQL files from specified directory into a map
 	ps, err := purse.New(filepath.Join("../../scripts/database_scripts_test"))
 	if err != nil {
-		log.Infof("Err. err: %v", err)
+		logrus.Infof("Err. err: %v", err)
 	}
-	log.Infof("Script loaded. scripts: %v", ps)
+	logrus.Infof("Script loaded. scripts: %v", ps)
 
 	if ps != nil {
 		for _, file := range ps.Files() {
 			// Get a file's contents
 			contents, ok := ps.Get(file)
 			if !ok {
-				log.Info("SQL file not loaded")
+				logrus.Info("SQL file not loaded")
 			}
 
 			ret, err := db.Exec(contents)
 			if err != nil {
-				log.Errorf("Could not execute the sql. err: %v", err)
+				logrus.Errorf("Could not execute the sql. err: %v", err)
 			}
-			log.Infof("executed sql file. ret: %v", ret)
+			logrus.Infof("executed sql file. ret: %v", ret)
 		}
 	}
 
