@@ -63,7 +63,7 @@ func Test_talksGET(t *testing.T) {
 
 			expectPageToken: "2020-09-20 03:23:20.995000",
 			expectPageSize:  10,
-			expectRes:       `{"result":[{"id":"83d48228-3ed7-11ef-a9ca-070e7ba46a55","customer_id":"550e8400-e29b-41d4-a716-446655440000","type":"normal"},{"id":"84caa752-3ed7-11ef-a428-7bbe6c050b77","customer_id":"550e8400-e29b-41d4-a716-446655440000","type":"group"}],"next_page_token":""}`,
+			expectRes:       `{"result":[{"id":"83d48228-3ed7-11ef-a9ca-070e7ba46a55","customer_id":"550e8400-e29b-41d4-a716-446655440000","type":"direct"},{"id":"84caa752-3ed7-11ef-a428-7bbe6c050b77","customer_id":"550e8400-e29b-41d4-a716-446655440000","type":"group"}],"next_page_token":""}`,
 		},
 	}
 
@@ -135,7 +135,7 @@ func Test_talksIDGET(t *testing.T) {
 			},
 
 			expectTalkID: uuid.FromStringOrNil("e66d1da0-3ed7-11ef-9208-4bcc069917a1"),
-			expectRes:    `{"id":"e66d1da0-3ed7-11ef-9208-4bcc069917a1","customer_id":"550e8400-e29b-41d4-a716-446655440000","type":"normal"}`,
+			expectRes:    `{"id":"e66d1da0-3ed7-11ef-9208-4bcc069917a1","customer_id":"550e8400-e29b-41d4-a716-446655440000","type":"direct"}`,
 		},
 	}
 
@@ -201,7 +201,7 @@ func Test_talksPOST(t *testing.T) {
 			},
 
 			reqQuery: "/service_agents/talk_chats",
-			reqBody:  `{"type":"normal"}`,
+			reqBody:  `{"type":"direct"}`,
 
 			responseTalk: &tkchat.WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -212,7 +212,7 @@ func Test_talksPOST(t *testing.T) {
 			},
 
 			expectType: tkchat.TypeDirect,
-			expectRes:  `{"id":"83d48228-3ed7-11ef-a9ca-070e7ba46a55","customer_id":"550e8400-e29b-41d4-a716-446655440000","type":"normal"}`,
+			expectRes:  `{"id":"83d48228-3ed7-11ef-a9ca-070e7ba46a55","customer_id":"550e8400-e29b-41d4-a716-446655440000","type":"direct"}`,
 		},
 	}
 
