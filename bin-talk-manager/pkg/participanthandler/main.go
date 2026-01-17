@@ -5,6 +5,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
+	commonnotify "monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-talk-manager/models/participant"
 )
 
@@ -26,11 +27,11 @@ type ParticipantHandler interface {
 type participantHandler struct {
 	dbHandler     DBHandler
 	sockHandler   SockHandler
-	notifyHandler NotifyHandler
+	notifyHandler commonnotify.NotifyHandler
 }
 
 // New creates a new ParticipantHandler instance
-func New(dbHandler DBHandler, sockHandler SockHandler, notifyHandler NotifyHandler) ParticipantHandler {
+func New(dbHandler DBHandler, sockHandler SockHandler, notifyHandler commonnotify.NotifyHandler) ParticipantHandler {
 	return &participantHandler{
 		dbHandler:     dbHandler,
 		sockHandler:   sockHandler,
@@ -49,9 +50,4 @@ type DBHandler interface {
 // SockHandler defines the interface for RabbitMQ socket operations
 type SockHandler interface {
 	// Add methods as needed for inter-service communication
-}
-
-// NotifyHandler defines the interface for publishing events
-type NotifyHandler interface {
-	PublishEvent(event any) error
 }

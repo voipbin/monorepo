@@ -1,6 +1,8 @@
 package participant
 
 import (
+	"encoding/json"
+
 	"github.com/gofrs/uuid"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 )
@@ -23,4 +25,26 @@ type WebhookMessage struct {
 
 	ChatID   uuid.UUID `json:"chat_id"`
 	TMJoined string    `json:"tm_joined"`
+}
+
+// ConvertWebhookMessage converts Participant to WebhookMessage
+func (p *Participant) ConvertWebhookMessage() *WebhookMessage {
+	return &WebhookMessage{
+		Identity: p.Identity,
+		Owner:    p.Owner,
+		ChatID:   p.ChatID,
+		TMJoined: p.TMJoined,
+	}
+}
+
+// CreateWebhookEvent generates WebhookEvent JSON
+func (p *Participant) CreateWebhookEvent() ([]byte, error) {
+	e := p.ConvertWebhookMessage()
+
+	m, err := json.Marshal(e)
+	if err != nil {
+		return nil, err
+	}
+
+	return m, nil
 }

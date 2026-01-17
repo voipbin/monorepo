@@ -79,24 +79,7 @@ func (h *participantHandler) ParticipantAdd(ctx context.Context, customerID, cha
 	}).Info("Participant added successfully")
 
 	// Publish webhook event
-	webhookMsg := participant.WebhookMessage{
-		Identity: p.Identity,
-		Owner:    p.Owner,
-		ChatID:   p.ChatID,
-		TMJoined: p.TMJoined,
-	}
-	err = h.notifyHandler.PublishEvent(map[string]interface{}{
-		"event":       participant.EventParticipantAdded,
-		"customer_id": customerID.String(),
-		"data":        webhookMsg,
-	})
-	if err != nil {
-		log.WithFields(log.Fields{
-			"participant_id": participantID,
-			"customer_id":    customerID,
-		}).Errorf("Failed to publish participant_added event. err: %v", err)
-		// Don't fail the operation if webhook fails
-	}
+	h.notifyHandler.PublishWebhookEvent(ctx, customerID, participant.EventParticipantAdded, p)
 
 	return p, nil
 }
@@ -176,24 +159,7 @@ func (h *participantHandler) ParticipantRemove(ctx context.Context, customerID, 
 	}).Info("Participant removed successfully")
 
 	// Publish webhook event
-	webhookMsg := participant.WebhookMessage{
-		Identity: p.Identity,
-		Owner:    p.Owner,
-		ChatID:   p.ChatID,
-		TMJoined: p.TMJoined,
-	}
-	err = h.notifyHandler.PublishEvent(map[string]interface{}{
-		"event":       participant.EventParticipantRemoved,
-		"customer_id": customerID.String(),
-		"data":        webhookMsg,
-	})
-	if err != nil {
-		log.WithFields(log.Fields{
-			"participant_id": participantID,
-			"customer_id":    customerID,
-		}).Errorf("Failed to publish participant_removed event. err: %v", err)
-		// Don't fail the operation if webhook fails
-	}
+	h.notifyHandler.PublishWebhookEvent(ctx, customerID, participant.EventParticipantRemoved, p)
 
 	return nil
 }
