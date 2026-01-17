@@ -15,6 +15,13 @@ import (
 
 // MessageCreate creates a new message with threading validation
 func (h *messageHandler) MessageCreate(ctx context.Context, req MessageCreateRequest) (*message.Message, error) {
+	log.WithFields(log.Fields{
+		"func":        "MessageCreate",
+		"customer_id": req.CustomerID,
+		"chat_id":     req.ChatID,
+		"owner_id":    req.OwnerID,
+	}).Debug("Creating message")
+
 	// Validate required fields
 	if req.CustomerID == uuid.Nil {
 		return nil, errors.New("customer_id is required")
@@ -30,6 +37,17 @@ func (h *messageHandler) MessageCreate(ctx context.Context, req MessageCreateReq
 	}
 	if req.Type == "" {
 		return nil, errors.New("type is required")
+	}
+	if req.Type != message.TypeNormal && req.Type != message.TypeSystem {
+		return nil, errors.New("type must be either 'normal' or 'system'")
+	}
+
+	// Validate Medias JSON format if provided
+	if req.Medias != "" {
+		var medias []message.Media
+		if err := json.Unmarshal([]byte(req.Medias), &medias); err != nil {
+			return nil, errors.Wrap(err, "invalid medias JSON format")
+		}
 	}
 
 	// Validate talk exists
@@ -114,8 +132,14 @@ func (h *messageHandler) MessageCreate(ctx context.Context, req MessageCreateReq
 		return nil, errors.Wrap(err, "failed to create message")
 	}
 
+	log.WithFields(log.Fields{
+		"func":       "MessageCreate",
+		"message_id": msg.ID,
+		"chat_id":    msg.ChatID,
+	}).Debug("Message created successfully")
+
 	// Publish webhook event
-	h.publishMessageCreatedEvent(msg)
+	h.publishMessageCreatedEvent(ctx, msg)
 
 	return msg, nil
 }
@@ -158,17 +182,17 @@ func (h *messageHandler) MessageDelete(ctx context.Context, id uuid.UUID) (*mess
 	}
 
 	// Publish webhook event
-	h.publishMessageDeletedEvent(updatedMsg)
+	h.publishMessageDeletedEvent(ctx, updatedMsg)
 
 	return updatedMsg, nil
 }
 
 // publishMessageCreatedEvent publishes a webhook event for message creation
-func (h *messageHandler) publishMessageCreatedEvent(msg *message.Message) {
-	h.notifyHandler.PublishWebhookEvent(context.Background(), msg.CustomerID, "message_created", msg)
+func (h *messageHandler) publishMessageCreatedEvent(ctx context.Context, msg *message.Message) {
+	h.notifyHandler.PublishWebhookEvent(ctx, msg.CustomerID, message.EventTypeMessageCreated, msg)
 }
 
 // publishMessageDeletedEvent publishes a webhook event for message deletion
-func (h *messageHandler) publishMessageDeletedEvent(msg *message.Message) {
-	h.notifyHandler.PublishWebhookEvent(context.Background(), msg.CustomerID, "message_deleted", msg)
+func (h *messageHandler) publishMessageDeletedEvent(ctx context.Context, msg *message.Message) {
+	h.notifyHandler.PublishWebhookEvent(ctx, msg.CustomerID, message.EventTypeMessageDeleted, msg)
 }
