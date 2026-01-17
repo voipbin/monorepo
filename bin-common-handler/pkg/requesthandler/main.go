@@ -76,7 +76,9 @@ import (
 
 	tmtag "monorepo/bin-tag-manager/models/tag"
 
+	talkmessage "monorepo/bin-talk-manager/models/message"
 	talkparticipant "monorepo/bin-talk-manager/models/participant"
+	talktalk "monorepo/bin-talk-manager/models/talk"
 
 	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
 	tmtranscript "monorepo/bin-transcribe-manager/models/transcript"
@@ -1132,8 +1134,23 @@ type RequestHandler interface {
 	TagV1TagGet(ctx context.Context, tagID uuid.UUID) (*tmtag.Tag, error)
 	TagV1TagList(ctx context.Context, pageToken string, pageSize uint64, filters map[tmtag.Field]any) ([]tmtag.Tag, error)
 
-	// talk-manager
+	// talk-manager talk
+	TalkV1TalkGet(ctx context.Context, talkID uuid.UUID) (*talktalk.Talk, error)
+	TalkV1TalkCreate(ctx context.Context, customerID uuid.UUID, talkType talktalk.Type) (*talktalk.Talk, error)
+	TalkV1TalkDelete(ctx context.Context, talkID uuid.UUID) (*talktalk.Talk, error)
+	TalkV1TalkList(ctx context.Context, pageToken string, pageSize uint64) ([]*talktalk.Talk, error)
+
+	// talk-manager participant
 	TalkV1TalkParticipantList(ctx context.Context, talkID uuid.UUID) ([]*talkparticipant.Participant, error)
+	TalkV1TalkParticipantCreate(ctx context.Context, talkID uuid.UUID, ownerType string, ownerID uuid.UUID) (*talkparticipant.Participant, error)
+	TalkV1TalkParticipantDelete(ctx context.Context, participantID uuid.UUID) (*talkparticipant.Participant, error)
+
+	// talk-manager message
+	TalkV1TalkMessageGet(ctx context.Context, messageID uuid.UUID) (*talkmessage.Message, error)
+	TalkV1TalkMessageCreate(ctx context.Context, chatID uuid.UUID, parentID *uuid.UUID, ownerType string, ownerID uuid.UUID, msgType talkmessage.Type, text string) (*talkmessage.Message, error)
+	TalkV1TalkMessageDelete(ctx context.Context, messageID uuid.UUID) (*talkmessage.Message, error)
+	TalkV1TalkMessageList(ctx context.Context, pageToken string, pageSize uint64) ([]*talkmessage.Message, error)
+	TalkV1TalkMessageReactionCreate(ctx context.Context, messageID uuid.UUID, ownerType string, ownerID uuid.UUID, emoji string) (*talkmessage.Message, error)
 
 	// tts-manager speeches
 	TTSV1SpeecheCreate(ctx context.Context, callID uuid.UUID, text string, gender tmtts.Gender, language string, timeout int) (*tmtts.TTS, error)
