@@ -11,6 +11,7 @@ import (
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
+	commonutil "monorepo/bin-common-handler/pkg/utilhandler"
 
 	"monorepo/bin-talk-manager/models/message"
 	"monorepo/bin-talk-manager/models/participant"
@@ -250,13 +251,18 @@ func Test_MessageCreate(t *testing.T) {
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockUtil := commonutil.NewMockUtilHandler(mc)
 
 			h := &messageHandler{
 				dbHandler:     mockDB,
 				notifyHandler: mockNotify,
+				utilHandler:   mockUtil,
 			}
 
 			ctx := context.Background()
+
+			// Mock UUID generation
+			mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("93d48228-3ed7-11ef-a9ca-070e7ba46a55")).AnyTimes()
 
 			// Mock ChatGet
 			mockDB.EXPECT().ChatGet(ctx, tt.req.ChatID).Return(tt.responseChat, nil)
@@ -706,10 +712,12 @@ func Test_MessageCreate_error(t *testing.T) {
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockUtil := commonutil.NewMockUtilHandler(mc)
 
 			h := &messageHandler{
 				dbHandler:     mockDB,
 				notifyHandler: mockNotify,
+				utilHandler:   mockUtil,
 			}
 
 			ctx := context.Background()
@@ -757,6 +765,8 @@ func Test_MessageCreate_error(t *testing.T) {
 							(tt.getParentError == nil &&
 								tt.responseParent != nil &&
 								tt.responseParent.ChatID == tt.req.ChatID)) {
+						// Mock UUID generation for message creation
+						mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("93d48228-3ed7-11ef-a9ca-070e7ba46a55"))
 						mockDB.EXPECT().MessageCreate(ctx, gomock.Any()).Return(tt.createError)
 					}
 				}
@@ -834,10 +844,12 @@ func Test_MessageGet(t *testing.T) {
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockUtil := commonutil.NewMockUtilHandler(mc)
 
 			h := &messageHandler{
 				dbHandler:     mockDB,
 				notifyHandler: mockNotify,
+				utilHandler:   mockUtil,
 			}
 
 			ctx := context.Background()
@@ -887,10 +899,12 @@ func Test_MessageGet_error(t *testing.T) {
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockUtil := commonutil.NewMockUtilHandler(mc)
 
 			h := &messageHandler{
 				dbHandler:     mockDB,
 				notifyHandler: mockNotify,
+				utilHandler:   mockUtil,
 			}
 
 			ctx := context.Background()
@@ -1015,10 +1029,12 @@ func Test_MessageList(t *testing.T) {
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockUtil := commonutil.NewMockUtilHandler(mc)
 
 			h := &messageHandler{
 				dbHandler:     mockDB,
 				notifyHandler: mockNotify,
+				utilHandler:   mockUtil,
 			}
 
 			ctx := context.Background()
@@ -1068,10 +1084,12 @@ func Test_MessageList_error(t *testing.T) {
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockUtil := commonutil.NewMockUtilHandler(mc)
 
 			h := &messageHandler{
 				dbHandler:     mockDB,
 				notifyHandler: mockNotify,
+				utilHandler:   mockUtil,
 			}
 
 			ctx := context.Background()
@@ -1146,10 +1164,12 @@ func Test_MessageDelete(t *testing.T) {
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockUtil := commonutil.NewMockUtilHandler(mc)
 
 			h := &messageHandler{
 				dbHandler:     mockDB,
 				notifyHandler: mockNotify,
+				utilHandler:   mockUtil,
 			}
 
 			ctx := context.Background()
@@ -1267,10 +1287,12 @@ func Test_MessageDelete_error(t *testing.T) {
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockUtil := commonutil.NewMockUtilHandler(mc)
 
 			h := &messageHandler{
 				dbHandler:     mockDB,
 				notifyHandler: mockNotify,
+				utilHandler:   mockUtil,
 			}
 
 			ctx := context.Background()

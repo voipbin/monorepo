@@ -710,10 +710,10 @@ type ServiceHandler interface {
 	) (*cvmessage.WebhookMessage, error)
 
 	// service_agent talk
-	ServiceAgentTalkGet(ctx context.Context, a *amagent.Agent, talkID uuid.UUID) (*tkchat.WebhookMessage, error)
-	ServiceAgentTalkList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*tkchat.WebhookMessage, error)
-	ServiceAgentTalkCreate(ctx context.Context, a *amagent.Agent, talkType tkchat.Type) (*tkchat.WebhookMessage, error)
-	ServiceAgentTalkDelete(ctx context.Context, a *amagent.Agent, talkID uuid.UUID) (*tkchat.WebhookMessage, error)
+	ServiceAgentTalkChatGet(ctx context.Context, a *amagent.Agent, talkID uuid.UUID) (*tkchat.WebhookMessage, error)
+	ServiceAgentTalkChatList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*tkchat.WebhookMessage, error)
+	ServiceAgentTalkChatCreate(ctx context.Context, a *amagent.Agent, talkType tkchat.Type) (*tkchat.WebhookMessage, error)
+	ServiceAgentTalkChatDelete(ctx context.Context, a *amagent.Agent, talkID uuid.UUID) (*tkchat.WebhookMessage, error)
 
 	// service_agent talk participant
 	ServiceAgentTalkParticipantList(ctx context.Context, a *amagent.Agent, talkID uuid.UUID) ([]*tkparticipant.WebhookMessage, error)

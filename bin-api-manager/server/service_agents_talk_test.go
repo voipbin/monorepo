@@ -87,7 +87,7 @@ func Test_talksGET(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().ServiceAgentTalkList(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseTalks, nil)
+			mockSvc.EXPECT().ServiceAgentTalkChatList(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseTalks, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -160,7 +160,7 @@ func Test_talksIDGET(t *testing.T) {
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().ServiceAgentTalkGet(req.Context(), &tt.agent, tt.expectTalkID).Return(tt.responseTalk, nil)
+			mockSvc.EXPECT().ServiceAgentTalkChatGet(req.Context(), &tt.agent, tt.expectTalkID).Return(tt.responseTalk, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
@@ -237,7 +237,7 @@ func Test_talksPOST(t *testing.T) {
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBufferString(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ServiceAgentTalkCreate(req.Context(), &tt.agent, tt.expectType).Return(tt.responseTalk, nil)
+			mockSvc.EXPECT().ServiceAgentTalkChatCreate(req.Context(), &tt.agent, tt.expectType).Return(tt.responseTalk, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -308,7 +308,7 @@ func Test_talksIDDELETE(t *testing.T) {
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().ServiceAgentTalkDelete(req.Context(), &tt.agent, tt.expectTalkID).Return(tt.responseTalk, nil)
+			mockSvc.EXPECT().ServiceAgentTalkChatDelete(req.Context(), &tt.agent, tt.expectTalkID).Return(tt.responseTalk, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)

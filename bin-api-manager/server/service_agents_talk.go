@@ -43,7 +43,7 @@ func (h *server) GetServiceAgentsTalkChats(c *gin.Context, params openapi_server
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.ServiceAgentTalkList(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.ServiceAgentTalkChatList(c.Request.Context(), &a, pageSize, pageToken)
 	if err != nil {
 		logrus.Errorf("Could not get talks info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -87,7 +87,7 @@ func (h *server) PostServiceAgentsTalkChats(c *gin.Context) {
 	// Convert type (req.Type is non-pointer, required field)
 	talkType := tkchat.Type(req.Type)
 
-	res, err := h.serviceHandler.ServiceAgentTalkCreate(c.Request.Context(), &a, talkType)
+	res, err := h.serviceHandler.ServiceAgentTalkChatCreate(c.Request.Context(), &a, talkType)
 	if err != nil {
 		log.Errorf("Could not create talk. err: %v", err)
 		c.AbortWithStatus(400)
@@ -122,7 +122,7 @@ func (h *server) GetServiceAgentsTalkChatsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.ServiceAgentTalkGet(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.ServiceAgentTalkChatGet(c.Request.Context(), &a, target)
 	if err != nil {
 		log.Errorf("Could not get talk. err: %v", err)
 		c.AbortWithStatus(400)
@@ -157,7 +157,7 @@ func (h *server) DeleteServiceAgentsTalkChatsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.ServiceAgentTalkDelete(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.ServiceAgentTalkChatDelete(c.Request.Context(), &a, target)
 	if err != nil {
 		log.Errorf("Could not delete talk. err: %v", err)
 		c.AbortWithStatus(400)

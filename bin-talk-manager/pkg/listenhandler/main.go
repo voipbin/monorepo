@@ -19,16 +19,16 @@ import (
 	commonutil "monorepo/bin-common-handler/pkg/utilhandler"
 )
 
-// Regex patterns for URI matching
+// Regex patterns for URI matching (allow optional query parameters)
 var (
-	regV1Chats                 = regexp.MustCompile(`^/v1/chats$`)
-	regV1ChatsID               = regexp.MustCompile(`^/v1/chats/([^/]+)$`)
-	regV1ChatsIDParticipants   = regexp.MustCompile(`^/v1/chats/([^/]+)/participants$`)
-	regV1ChatsIDParticipantsID = regexp.MustCompile(`^/v1/chats/([^/]+)/participants/([^/]+)$`)
-	regV1Participants          = regexp.MustCompile(`^/v1/participants$`)
-	regV1Messages              = regexp.MustCompile(`^/v1/messages$`)
-	regV1MessagesID            = regexp.MustCompile(`^/v1/messages/([^/]+)$`)
-	regV1MessagesIDReactions   = regexp.MustCompile(`^/v1/messages/([^/]+)/reactions$`)
+	regV1Chats                 = regexp.MustCompile(`^/v1/chats(\?.*)?$`)
+	regV1ChatsID               = regexp.MustCompile(`^/v1/chats/([^/?]+)(\?.*)?$`)
+	regV1ChatsIDParticipants   = regexp.MustCompile(`^/v1/chats/([^/?]+)/participants(\?.*)?$`)
+	regV1ChatsIDParticipantsID = regexp.MustCompile(`^/v1/chats/([^/?]+)/participants/([^/?]+)(\?.*)?$`)
+	regV1Participants          = regexp.MustCompile(`^/v1/participants(\?.*)?$`)
+	regV1Messages              = regexp.MustCompile(`^/v1/messages(\?.*)?$`)
+	regV1MessagesID            = regexp.MustCompile(`^/v1/messages/([^/?]+)(\?.*)?$`)
+	regV1MessagesIDReactions   = regexp.MustCompile(`^/v1/messages/([^/?]+)/reactions(\?.*)?$`)
 )
 
 type listenHandler struct {

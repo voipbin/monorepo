@@ -14,7 +14,7 @@ import (
 )
 
 // ServiceAgentTalkGet gets a talk by ID
-func (h *serviceHandler) ServiceAgentTalkGet(ctx context.Context, a *amagent.Agent, talkID uuid.UUID) (*tkchat.WebhookMessage, error) {
+func (h *serviceHandler) ServiceAgentTalkChatGet(ctx context.Context, a *amagent.Agent, talkID uuid.UUID) (*tkchat.WebhookMessage, error) {
 	// Get talk
 	tmp, err := h.talkGet(ctx, talkID)
 	if err != nil {
@@ -31,7 +31,7 @@ func (h *serviceHandler) ServiceAgentTalkGet(ctx context.Context, a *amagent.Age
 }
 
 // ServiceAgentTalkList gets list of talks for the agent
-func (h *serviceHandler) ServiceAgentTalkList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*tkchat.WebhookMessage, error) {
+func (h *serviceHandler) ServiceAgentTalkChatList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*tkchat.WebhookMessage, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}
@@ -58,7 +58,7 @@ func (h *serviceHandler) ServiceAgentTalkList(ctx context.Context, a *amagent.Ag
 }
 
 // ServiceAgentTalkCreate creates a new talk
-func (h *serviceHandler) ServiceAgentTalkCreate(ctx context.Context, a *amagent.Agent, talkType tkchat.Type) (*tkchat.WebhookMessage, error) {
+func (h *serviceHandler) ServiceAgentTalkChatCreate(ctx context.Context, a *amagent.Agent, talkType tkchat.Type) (*tkchat.WebhookMessage, error) {
 	// Create talk via RPC (name and detail default to empty for now)
 	// Agent is automatically added as first participant by talk-manager
 	tmp, err := h.reqHandler.TalkV1ChatCreate(ctx, a.CustomerID, talkType, "", "", "agent", a.ID)
@@ -71,7 +71,7 @@ func (h *serviceHandler) ServiceAgentTalkCreate(ctx context.Context, a *amagent.
 }
 
 // ServiceAgentTalkDelete deletes a talk
-func (h *serviceHandler) ServiceAgentTalkDelete(ctx context.Context, a *amagent.Agent, talkID uuid.UUID) (*tkchat.WebhookMessage, error) {
+func (h *serviceHandler) ServiceAgentTalkChatDelete(ctx context.Context, a *amagent.Agent, talkID uuid.UUID) (*tkchat.WebhookMessage, error) {
 	// Check permission
 	if !h.isParticipantOfTalk(ctx, a.ID, talkID) {
 		return nil, fmt.Errorf("agent is not a participant of this talk")

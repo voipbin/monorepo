@@ -11,6 +11,7 @@ import (
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
+	commonutil "monorepo/bin-common-handler/pkg/utilhandler"
 
 	"monorepo/bin-talk-manager/models/participant"
 	"monorepo/bin-talk-manager/pkg/dbhandler"
@@ -76,13 +77,18 @@ func Test_ParticipantAdd(t *testing.T) {
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockUtil := commonutil.NewMockUtilHandler(mc)
 
 			h := &participantHandler{
 				dbHandler:     mockDB,
 				notifyHandler: mockNotify,
+				utilHandler:   mockUtil,
 			}
 
 			ctx := context.Background()
+
+			// Mock UUID generation
+			mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("93d48228-3ed7-11ef-a9ca-070e7ba46a55")).AnyTimes()
 
 			// Mock database create (UPSERT behavior)
 			mockDB.EXPECT().ParticipantCreate(ctx, gomock.Any()).Return(nil)
@@ -195,10 +201,12 @@ func Test_ParticipantAdd_error(t *testing.T) {
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockUtil := commonutil.NewMockUtilHandler(mc)
 
 			h := &participantHandler{
 				dbHandler:     mockDB,
 				notifyHandler: mockNotify,
+				utilHandler:   mockUtil,
 			}
 
 			ctx := context.Background()
@@ -208,6 +216,8 @@ func Test_ParticipantAdd_error(t *testing.T) {
 				tt.chatID != uuid.Nil &&
 				tt.ownerID != uuid.Nil &&
 				tt.ownerType != "" {
+				// Mock UUID generation for this case
+				mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("93d48228-3ed7-11ef-a9ca-070e7ba46a55"))
 				mockDB.EXPECT().ParticipantCreate(ctx, gomock.Any()).Return(tt.createError)
 			}
 
@@ -315,13 +325,18 @@ func Test_ParticipantList(t *testing.T) {
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockUtil := commonutil.NewMockUtilHandler(mc)
 
 			h := &participantHandler{
 				dbHandler:     mockDB,
 				notifyHandler: mockNotify,
+				utilHandler:   mockUtil,
 			}
 
 			ctx := context.Background()
+
+			// Mock UUID generation
+			mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("93d48228-3ed7-11ef-a9ca-070e7ba46a55")).AnyTimes()
 
 			// Mock database list call
 			mockDB.EXPECT().ParticipantList(ctx, gomock.Any()).Return(tt.responseParticipants, nil)
@@ -380,10 +395,12 @@ func Test_ParticipantList_error(t *testing.T) {
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockUtil := commonutil.NewMockUtilHandler(mc)
 
 			h := &participantHandler{
 				dbHandler:     mockDB,
 				notifyHandler: mockNotify,
+				utilHandler:   mockUtil,
 			}
 
 			ctx := context.Background()
@@ -461,10 +478,12 @@ func Test_ParticipantRemove(t *testing.T) {
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockUtil := commonutil.NewMockUtilHandler(mc)
 
 			h := &participantHandler{
 				dbHandler:     mockDB,
 				notifyHandler: mockNotify,
+				utilHandler:   mockUtil,
 			}
 
 			ctx := context.Background()
@@ -566,10 +585,12 @@ func Test_ParticipantRemove_error(t *testing.T) {
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockUtil := commonutil.NewMockUtilHandler(mc)
 
 			h := &participantHandler{
 				dbHandler:     mockDB,
 				notifyHandler: mockNotify,
+				utilHandler:   mockUtil,
 			}
 
 			ctx := context.Background()
