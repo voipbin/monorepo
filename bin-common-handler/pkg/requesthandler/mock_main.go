@@ -5632,18 +5632,18 @@ func (mr *MockRequestHandlerMockRecorder) TalkV1TalkParticipantCreate(ctx, talkI
 }
 
 // TalkV1TalkParticipantDelete mocks base method.
-func (m *MockRequestHandler) TalkV1TalkParticipantDelete(ctx context.Context, participantID uuid.UUID) (*participant.Participant, error) {
+func (m *MockRequestHandler) TalkV1TalkParticipantDelete(ctx context.Context, talkID, participantID uuid.UUID) (*participant.Participant, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TalkV1TalkParticipantDelete", ctx, participantID)
+	ret := m.ctrl.Call(m, "TalkV1TalkParticipantDelete", ctx, talkID, participantID)
 	ret0, _ := ret[0].(*participant.Participant)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // TalkV1TalkParticipantDelete indicates an expected call of TalkV1TalkParticipantDelete.
-func (mr *MockRequestHandlerMockRecorder) TalkV1TalkParticipantDelete(ctx, participantID any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) TalkV1TalkParticipantDelete(ctx, talkID, participantID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TalkV1TalkParticipantDelete", reflect.TypeOf((*MockRequestHandler)(nil).TalkV1TalkParticipantDelete), ctx, participantID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TalkV1TalkParticipantDelete", reflect.TypeOf((*MockRequestHandler)(nil).TalkV1TalkParticipantDelete), ctx, talkID, participantID)
 }
 
 // TalkV1TalkParticipantList mocks base method.

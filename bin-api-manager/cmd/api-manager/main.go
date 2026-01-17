@@ -178,22 +178,6 @@ func runListenHTTP(serviceHandler servicehandler.ServiceHandler) {
 
 	app := gin.Default()
 
-	// Debug middleware to log all incoming requests
-	app.Use(func(c *gin.Context) {
-		logrus.WithFields(logrus.Fields{
-			"method":     c.Request.Method,
-			"path":       c.Request.URL.Path,
-			"query":      c.Request.URL.RawQuery,
-			"user_agent": c.Request.UserAgent(),
-		}).Info("===== INCOMING REQUEST =====")
-		c.Next()
-		logrus.WithFields(logrus.Fields{
-			"method": c.Request.Method,
-			"path":   c.Request.URL.Path,
-			"status": c.Writer.Status(),
-		}).Info("===== REQUEST COMPLETED =====")
-	})
-
 	// documents
 	app.Static("/docs", "docsdev/build/html")
 	app.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
@@ -232,22 +216,6 @@ func runListenHTTP(serviceHandler servicehandler.ServiceHandler) {
 	v1 := app.Group("v1.0")
 	v1.Use(middleware.Authenticate())
 	openapi_server.RegisterHandlers(v1, appServer)
-
-	logrus.WithFields(logrus.Fields{
-		"base_path": "v1.0",
-	}).Info("===== OpenAPI routes registered, Talk endpoints should be available at: v1.0/service_agents/talk_chats =====")
-
-	// Log all registered routes for debugging
-	routes := app.Routes()
-	logrus.Info("===== Registered Gin Routes =====")
-	for _, route := range routes {
-		if route.Path != "" && (route.Method == "GET" || route.Method == "POST" || route.Method == "DELETE") {
-			logrus.WithFields(logrus.Fields{
-				"method": route.Method,
-				"path":   route.Path,
-			}).Info("Registered route")
-		}
-	}
 
 	// // inject servicehandler
 	// app.Use(func(c *gin.Context) {

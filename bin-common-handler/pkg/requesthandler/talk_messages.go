@@ -14,7 +14,7 @@ import (
 
 // TalkV1TalkMessageGet gets a message by ID
 func (r *requestHandler) TalkV1TalkMessageGet(ctx context.Context, messageID uuid.UUID) (*talkmessage.Message, error) {
-	uri := fmt.Sprintf("/v1/messages/%s", messageID.String())
+	uri := fmt.Sprintf("/v1/talk_messages/%s", messageID.String())
 
 	res, err := r.sendRequestTalk(ctx, uri, sock.RequestMethodGet, "talk/messages", requestTimeoutDefault, 0, "", nil)
 	if err != nil {
@@ -43,7 +43,7 @@ func (r *requestHandler) TalkV1TalkMessageCreate(
 	msgType talkmessage.Type,
 	text string,
 ) (*talkmessage.Message, error) {
-	uri := "/v1/messages"
+	uri := "/v1/talk_messages"
 
 	data := map[string]any{
 		"chat_id":    chatID.String(),
@@ -81,7 +81,7 @@ func (r *requestHandler) TalkV1TalkMessageCreate(
 
 // TalkV1TalkMessageDelete deletes a message (soft delete)
 func (r *requestHandler) TalkV1TalkMessageDelete(ctx context.Context, messageID uuid.UUID) (*talkmessage.Message, error) {
-	uri := fmt.Sprintf("/v1/messages/%s", messageID.String())
+	uri := fmt.Sprintf("/v1/talk_messages/%s", messageID.String())
 
 	res, err := r.sendRequestTalk(ctx, uri, sock.RequestMethodDelete, "talk/messages", requestTimeoutDefault, 0, "", nil)
 	if err != nil {
@@ -102,7 +102,7 @@ func (r *requestHandler) TalkV1TalkMessageDelete(ctx context.Context, messageID 
 
 // TalkV1TalkMessageList gets a list of messages (simplified - for future expansion)
 func (r *requestHandler) TalkV1TalkMessageList(ctx context.Context, pageToken string, pageSize uint64) ([]*talkmessage.Message, error) {
-	uri := fmt.Sprintf("/v1/messages?page_token=%s&page_size=%d", pageToken, pageSize)
+	uri := fmt.Sprintf("/v1/talk_messages?page_token=%s&page_size=%d", pageToken, pageSize)
 
 	res, err := r.sendRequestTalk(ctx, uri, sock.RequestMethodGet, "talk/messages", requestTimeoutDefault, 0, "", nil)
 	if err != nil {
@@ -129,7 +129,7 @@ func (r *requestHandler) TalkV1TalkMessageReactionCreate(
 	ownerID uuid.UUID,
 	emoji string,
 ) (*talkmessage.Message, error) {
-	uri := fmt.Sprintf("/v1/messages/%s/reactions", messageID.String())
+	uri := fmt.Sprintf("/v1/talk_messages/%s/reactions", messageID.String())
 
 	data := map[string]any{
 		"owner_type": ownerType,

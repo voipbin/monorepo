@@ -149,7 +149,7 @@ func (h *serviceHandler) ServiceAgentTalkParticipantDelete(ctx context.Context, 
 	}
 
 	// Delete participant via RPC
-	tmp, err := h.reqHandler.TalkV1TalkParticipantDelete(ctx, participantID)
+	tmp, err := h.reqHandler.TalkV1TalkParticipantDelete(ctx, talkID, participantID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not delete participant.")
 	}

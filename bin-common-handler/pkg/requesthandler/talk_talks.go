@@ -14,7 +14,7 @@ import (
 
 // TalkV1TalkGet gets a talk by ID
 func (r *requestHandler) TalkV1TalkGet(ctx context.Context, talkID uuid.UUID) (*talktalk.Talk, error) {
-	uri := fmt.Sprintf("/v1/talks/%s", talkID.String())
+	uri := fmt.Sprintf("/v1/talk_chats/%s", talkID.String())
 
 	res, err := r.sendRequestTalk(ctx, uri, sock.RequestMethodGet, "talk/talks", requestTimeoutDefault, 0, "", nil)
 	if err != nil {
@@ -35,7 +35,7 @@ func (r *requestHandler) TalkV1TalkGet(ctx context.Context, talkID uuid.UUID) (*
 
 // TalkV1TalkCreate creates a new talk
 func (r *requestHandler) TalkV1TalkCreate(ctx context.Context, customerID uuid.UUID, talkType talktalk.Type) (*talktalk.Talk, error) {
-	uri := "/v1/talks"
+	uri := "/v1/talk_chats"
 
 	data := map[string]any{
 		"customer_id": customerID.String(),
@@ -66,7 +66,7 @@ func (r *requestHandler) TalkV1TalkCreate(ctx context.Context, customerID uuid.U
 
 // TalkV1TalkDelete deletes a talk (soft delete)
 func (r *requestHandler) TalkV1TalkDelete(ctx context.Context, talkID uuid.UUID) (*talktalk.Talk, error) {
-	uri := fmt.Sprintf("/v1/talks/%s", talkID.String())
+	uri := fmt.Sprintf("/v1/talk_chats/%s", talkID.String())
 
 	res, err := r.sendRequestTalk(ctx, uri, sock.RequestMethodDelete, "talk/talks", requestTimeoutDefault, 0, "", nil)
 	if err != nil {
@@ -87,7 +87,7 @@ func (r *requestHandler) TalkV1TalkDelete(ctx context.Context, talkID uuid.UUID)
 
 // TalkV1TalkList gets a list of talks (simplified - for future expansion)
 func (r *requestHandler) TalkV1TalkList(ctx context.Context, pageToken string, pageSize uint64) ([]*talktalk.Talk, error) {
-	uri := fmt.Sprintf("/v1/talks?page_token=%s&page_size=%d", pageToken, pageSize)
+	uri := fmt.Sprintf("/v1/talk_chats?page_token=%s&page_size=%d", pageToken, pageSize)
 
 	res, err := r.sendRequestTalk(ctx, uri, sock.RequestMethodGet, "talk/talks", requestTimeoutDefault, 0, "", nil)
 	if err != nil {

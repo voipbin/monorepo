@@ -1143,7 +1143,7 @@ type RequestHandler interface {
 	// talk-manager participant
 	TalkV1TalkParticipantList(ctx context.Context, talkID uuid.UUID) ([]*talkparticipant.Participant, error)
 	TalkV1TalkParticipantCreate(ctx context.Context, talkID uuid.UUID, ownerType string, ownerID uuid.UUID) (*talkparticipant.Participant, error)
-	TalkV1TalkParticipantDelete(ctx context.Context, participantID uuid.UUID) (*talkparticipant.Participant, error)
+	TalkV1TalkParticipantDelete(ctx context.Context, talkID uuid.UUID, participantID uuid.UUID) (*talkparticipant.Participant, error)
 
 	// talk-manager message
 	TalkV1TalkMessageGet(ctx context.Context, messageID uuid.UUID) (*talkmessage.Message, error)
