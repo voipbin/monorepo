@@ -7,14 +7,14 @@ import (
 	amagent "monorepo/bin-agent-manager/models/agent"
 	tkmessage "monorepo/bin-talk-manager/models/message"
 	tkparticipant "monorepo/bin-talk-manager/models/participant"
-	tktalk "monorepo/bin-talk-manager/models/talk"
+	tkchat "monorepo/bin-talk-manager/models/chat"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 )
 
 // ServiceAgentTalkGet gets a talk by ID
-func (h *serviceHandler) ServiceAgentTalkGet(ctx context.Context, a *amagent.Agent, talkID uuid.UUID) (*tktalk.WebhookMessage, error) {
+func (h *serviceHandler) ServiceAgentTalkGet(ctx context.Context, a *amagent.Agent, talkID uuid.UUID) (*tkchat.WebhookMessage, error) {
 	// Get talk
 	tmp, err := h.talkGet(ctx, talkID)
 	if err != nil {
@@ -31,7 +31,7 @@ func (h *serviceHandler) ServiceAgentTalkGet(ctx context.Context, a *amagent.Age
 }
 
 // ServiceAgentTalkList gets list of talks for the agent
-func (h *serviceHandler) ServiceAgentTalkList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*tktalk.WebhookMessage, error) {
+func (h *serviceHandler) ServiceAgentTalkList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*tkchat.WebhookMessage, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}
@@ -49,7 +49,7 @@ func (h *serviceHandler) ServiceAgentTalkList(ctx context.Context, a *amagent.Ag
 	}
 
 	if len(talkIDs) == 0 {
-		return []*tktalk.WebhookMessage{}, nil
+		return []*tkchat.WebhookMessage{}, nil
 	}
 
 	// Get talks
@@ -59,7 +59,7 @@ func (h *serviceHandler) ServiceAgentTalkList(ctx context.Context, a *amagent.Ag
 	}
 
 	// Convert to webhook messages
-	res := []*tktalk.WebhookMessage{}
+	res := []*tkchat.WebhookMessage{}
 	for _, t := range talks {
 		res = append(res, t.ConvertWebhookMessage())
 	}
@@ -68,7 +68,7 @@ func (h *serviceHandler) ServiceAgentTalkList(ctx context.Context, a *amagent.Ag
 }
 
 // ServiceAgentTalkCreate creates a new talk
-func (h *serviceHandler) ServiceAgentTalkCreate(ctx context.Context, a *amagent.Agent, talkType tktalk.Type) (*tktalk.WebhookMessage, error) {
+func (h *serviceHandler) ServiceAgentTalkCreate(ctx context.Context, a *amagent.Agent, talkType tkchat.Type) (*tkchat.WebhookMessage, error) {
 	// Create talk via RPC
 	tmp, err := h.reqHandler.TalkV1ChatCreate(ctx, a.CustomerID, talkType)
 	if err != nil {
@@ -86,7 +86,7 @@ func (h *serviceHandler) ServiceAgentTalkCreate(ctx context.Context, a *amagent.
 }
 
 // ServiceAgentTalkDelete deletes a talk
-func (h *serviceHandler) ServiceAgentTalkDelete(ctx context.Context, a *amagent.Agent, talkID uuid.UUID) (*tktalk.WebhookMessage, error) {
+func (h *serviceHandler) ServiceAgentTalkDelete(ctx context.Context, a *amagent.Agent, talkID uuid.UUID) (*tkchat.WebhookMessage, error) {
 	// Check permission
 	if !h.isParticipantOfTalk(ctx, a.ID, talkID) {
 		return nil, fmt.Errorf("agent is not a participant of this talk")
@@ -314,15 +314,15 @@ func (h *serviceHandler) isParticipantOfTalk(ctx context.Context, agentID uuid.U
 }
 
 // talkGet gets a talk by ID via RPC
-func (h *serviceHandler) talkGet(ctx context.Context, talkID uuid.UUID) (*tktalk.Talk, error) {
+func (h *serviceHandler) talkGet(ctx context.Context, talkID uuid.UUID) (*tkchat.Chat, error) {
 	return h.reqHandler.TalkV1ChatGet(ctx, talkID)
 }
 
 // talkListByIDs gets talks by list of IDs
-func (h *serviceHandler) talkListByIDs(ctx context.Context, talkIDs []uuid.UUID, size uint64, token string) ([]*tktalk.Talk, error) {
+func (h *serviceHandler) talkListByIDs(ctx context.Context, talkIDs []uuid.UUID, size uint64, token string) ([]*tkchat.Chat, error) {
 	// This is a simplified implementation - in production, you'd filter by IDs
 	// For now, get all and filter client-side
-	talks := []*tktalk.Talk{}
+	talks := []*tkchat.Chat{}
 	idMap := make(map[uuid.UUID]bool)
 	for _, id := range talkIDs {
 		idMap[id] = true
@@ -345,9 +345,15 @@ func (h *serviceHandler) talkListByIDs(ctx context.Context, talkIDs []uuid.UUID,
 
 // talkParticipantListByOwner gets participants by owner
 func (h *serviceHandler) talkParticipantListByOwner(ctx context.Context, customerID uuid.UUID, ownerType string, ownerID uuid.UUID) ([]*tkparticipant.Participant, error) {
-	// This would need a proper RPC method in talk-manager that filters by owner
-	// For now, this is a placeholder - needs implementation in talk-manager
-	return []*tkparticipant.Participant{}, fmt.Errorf("not implemented - needs talk-manager support")
+	// Build filters for owner-based participant query
+	filters := map[string]any{
+		"customer_id": customerID.String(),
+		"owner_type":  ownerType,
+		"owner_id":    ownerID.String(),
+	}
+
+	// Use the new filter-based method
+	return h.reqHandler.TalkV1ParticipantListWithFilters(ctx, filters, "", 100)
 }
 
 // talkMessageGet gets a message by ID via RPC
@@ -357,7 +363,17 @@ func (h *serviceHandler) talkMessageGet(ctx context.Context, messageID uuid.UUID
 
 // talkMessageListByTalkIDs gets messages by talk IDs
 func (h *serviceHandler) talkMessageListByTalkIDs(ctx context.Context, talkIDs []uuid.UUID, size uint64, token string) ([]*tkmessage.Message, error) {
-	// This is a simplified implementation
-	// For production, you'd need a proper RPC method that filters by multiple talk IDs
-	return []*tkmessage.Message{}, fmt.Errorf("not implemented - needs talk-manager support")
+	// Build filters with chat_ids (note: currently only supports single chat_id due to filter limitations)
+	// For multiple chat IDs, this would need to make multiple requests or enhanced backend support
+	if len(talkIDs) == 0 {
+		return []*tkmessage.Message{}, nil
+	}
+
+	// For now, filter by first talk ID (simplified implementation)
+	// TODO: Enhance to support multiple talk IDs when backend supports it
+	filters := map[string]any{
+		"chat_id": talkIDs[0].String(),
+	}
+
+	return h.reqHandler.TalkV1MessageListWithFilters(ctx, filters, token, size)
 }

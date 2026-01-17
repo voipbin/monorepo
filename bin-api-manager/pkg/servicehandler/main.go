@@ -70,7 +70,7 @@ import (
 
 	tkmessage "monorepo/bin-talk-manager/models/message"
 	tkparticipant "monorepo/bin-talk-manager/models/participant"
-	tktalk "monorepo/bin-talk-manager/models/talk"
+	tkchat "monorepo/bin-talk-manager/models/chat"
 
 	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
 	tmtranscript "monorepo/bin-transcribe-manager/models/transcript"
@@ -710,10 +710,10 @@ type ServiceHandler interface {
 	) (*cvmessage.WebhookMessage, error)
 
 	// service_agent talk
-	ServiceAgentTalkGet(ctx context.Context, a *amagent.Agent, talkID uuid.UUID) (*tktalk.WebhookMessage, error)
-	ServiceAgentTalkList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*tktalk.WebhookMessage, error)
-	ServiceAgentTalkCreate(ctx context.Context, a *amagent.Agent, talkType tktalk.Type) (*tktalk.WebhookMessage, error)
-	ServiceAgentTalkDelete(ctx context.Context, a *amagent.Agent, talkID uuid.UUID) (*tktalk.WebhookMessage, error)
+	ServiceAgentTalkGet(ctx context.Context, a *amagent.Agent, talkID uuid.UUID) (*tkchat.WebhookMessage, error)
+	ServiceAgentTalkList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*tkchat.WebhookMessage, error)
+	ServiceAgentTalkCreate(ctx context.Context, a *amagent.Agent, talkType tkchat.Type) (*tkchat.WebhookMessage, error)
+	ServiceAgentTalkDelete(ctx context.Context, a *amagent.Agent, talkID uuid.UUID) (*tkchat.WebhookMessage, error)
 
 	// service_agent talk participant
 	ServiceAgentTalkParticipantList(ctx context.Context, a *amagent.Agent, talkID uuid.UUID) ([]*tkparticipant.WebhookMessage, error)

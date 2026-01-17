@@ -11,7 +11,7 @@ import (
 	"monorepo/bin-common-handler/models/sock"
 	talkmessage "monorepo/bin-talk-manager/models/message"
 	talkparticipant "monorepo/bin-talk-manager/models/participant"
-	talktalk "monorepo/bin-talk-manager/models/talk"
+	tkchat "monorepo/bin-talk-manager/models/chat"
 )
 
 // processEventTalkManager handles all events from talk-manager
@@ -26,7 +26,7 @@ func (h *subscribeHandler) processEventTalkManager(ctx context.Context, m *sock.
 	switch m.Type {
 	case talkmessage.EventTypeMessageCreated, talkmessage.EventTypeMessageDeleted, talkmessage.EventTypeMessageReactionUpdated:
 		return h.processEventTalkMessage(ctx, m)
-	case talktalk.EventTypeTalkCreated, talktalk.EventTypeTalkDeleted:
+	case tkchat.EventTypeChatCreated, tkchat.EventTypeChatDeleted:
 		return h.processEventTalk(ctx, m)
 	case talkparticipant.EventParticipantAdded, talkparticipant.EventParticipantRemoved:
 		return h.processEventTalkParticipant(ctx, m)
@@ -106,7 +106,7 @@ func (h *subscribeHandler) processEventTalk(ctx context.Context, m *sock.Event) 
 	})
 
 	// Parse talk webhook data
-	talk := &talktalk.WebhookMessage{}
+	talk := &tkchat.WebhookMessage{}
 	if err := json.Unmarshal(m.Data, talk); err != nil {
 		log.Errorf("Could not unmarshal talk: %v", err)
 		return err

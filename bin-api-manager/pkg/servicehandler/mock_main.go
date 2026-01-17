@@ -60,7 +60,7 @@ import (
 	tag "monorepo/bin-tag-manager/models/tag"
 	message2 "monorepo/bin-talk-manager/models/message"
 	participant "monorepo/bin-talk-manager/models/participant"
-	talk "monorepo/bin-talk-manager/models/talk"
+	talk "monorepo/bin-talk-manager/models/chat"
 	transcribe "monorepo/bin-transcribe-manager/models/transcribe"
 	transcript "monorepo/bin-transcribe-manager/models/transcript"
 	transfer "monorepo/bin-transfer-manager/models/transfer"

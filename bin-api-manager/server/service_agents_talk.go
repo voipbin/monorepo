@@ -3,7 +3,7 @@ package server
 import (
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
-	tktalk "monorepo/bin-talk-manager/models/talk"
+	tkchat "monorepo/bin-talk-manager/models/chat"
 	tkmessage "monorepo/bin-talk-manager/models/message"
 
 	"github.com/gin-gonic/gin"
@@ -85,7 +85,7 @@ func (h *server) PostServiceAgentsTalkChats(c *gin.Context) {
 	}
 
 	// Convert type (req.Type is non-pointer, required field)
-	talkType := tktalk.Type(req.Type)
+	talkType := tkchat.Type(req.Type)
 
 	res, err := h.serviceHandler.ServiceAgentTalkCreate(c.Request.Context(), &a, talkType)
 	if err != nil {

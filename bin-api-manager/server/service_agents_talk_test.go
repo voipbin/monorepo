@@ -7,7 +7,7 @@ import (
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
-	tktalk "monorepo/bin-talk-manager/models/talk"
+	tkchat "monorepo/bin-talk-manager/models/chat"
 	tkmessage "monorepo/bin-talk-manager/models/message"
 	tkparticipant "monorepo/bin-talk-manager/models/participant"
 	"net/http"
@@ -28,7 +28,7 @@ func Test_talksGET(t *testing.T) {
 
 		reqQuery string
 
-		responseTalks []*tktalk.WebhookMessage
+		responseTalks []*tkchat.WebhookMessage
 
 		expectPageToken string
 		expectPageSize  uint64
@@ -44,20 +44,20 @@ func Test_talksGET(t *testing.T) {
 
 			reqQuery: "/service_agents/talk_chats?page_token=2020-09-20%2003:23:20.995000&page_size=10",
 
-			responseTalks: []*tktalk.WebhookMessage{
+			responseTalks: []*tkchat.WebhookMessage{
 				{
 					Identity: commonidentity.Identity{
 						ID:         uuid.FromStringOrNil("83d48228-3ed7-11ef-a9ca-070e7ba46a55"),
 						CustomerID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000"),
 					},
-					Type: tktalk.TypeNormal,
+					Type: tkchat.TypeNormal,
 				},
 				{
 					Identity: commonidentity.Identity{
 						ID:         uuid.FromStringOrNil("84caa752-3ed7-11ef-a428-7bbe6c050b77"),
 						CustomerID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000"),
 					},
-					Type: tktalk.TypeGroup,
+					Type: tkchat.TypeGroup,
 				},
 			},
 
@@ -109,7 +109,7 @@ func Test_talksIDGET(t *testing.T) {
 
 		reqQuery string
 
-		responseTalk *tktalk.WebhookMessage
+		responseTalk *tkchat.WebhookMessage
 		expectTalkID uuid.UUID
 		expectRes    string
 	}
@@ -125,12 +125,12 @@ func Test_talksIDGET(t *testing.T) {
 
 			reqQuery: "/service_agents/talk_chats/e66d1da0-3ed7-11ef-9208-4bcc069917a1",
 
-			responseTalk: &tktalk.WebhookMessage{
+			responseTalk: &tkchat.WebhookMessage{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("e66d1da0-3ed7-11ef-9208-4bcc069917a1"),
 					CustomerID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000"),
 				},
-				Type:     tktalk.TypeNormal,
+				Type:     tkchat.TypeNormal,
 				TMCreate: "2020-09-20T03:23:21.995000",
 			},
 
@@ -186,9 +186,9 @@ func Test_talksPOST(t *testing.T) {
 		reqQuery string
 		reqBody  string
 
-		responseTalk *tktalk.WebhookMessage
+		responseTalk *tkchat.WebhookMessage
 
-		expectType tktalk.Type
+		expectType tkchat.Type
 		expectRes  string
 	}{
 		{
@@ -203,15 +203,15 @@ func Test_talksPOST(t *testing.T) {
 			reqQuery: "/service_agents/talk_chats",
 			reqBody:  `{"type":"normal"}`,
 
-			responseTalk: &tktalk.WebhookMessage{
+			responseTalk: &tkchat.WebhookMessage{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("83d48228-3ed7-11ef-a9ca-070e7ba46a55"),
 					CustomerID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000"),
 				},
-				Type: tktalk.TypeNormal,
+				Type: tkchat.TypeNormal,
 			},
 
-			expectType: tktalk.TypeNormal,
+			expectType: tkchat.TypeNormal,
 			expectRes:  `{"id":"83d48228-3ed7-11ef-a9ca-070e7ba46a55","customer_id":"550e8400-e29b-41d4-a716-446655440000","type":"normal"}`,
 		},
 	}
@@ -263,7 +263,7 @@ func Test_talksIDDELETE(t *testing.T) {
 
 		reqQuery string
 
-		responseTalk *tktalk.WebhookMessage
+		responseTalk *tkchat.WebhookMessage
 		expectTalkID uuid.UUID
 	}{
 		{
@@ -276,12 +276,12 @@ func Test_talksIDDELETE(t *testing.T) {
 
 			reqQuery: "/service_agents/talk_chats/e66d1da0-3ed7-11ef-9208-4bcc069917a1",
 
-			responseTalk: &tktalk.WebhookMessage{
+			responseTalk: &tkchat.WebhookMessage{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("e66d1da0-3ed7-11ef-9208-4bcc069917a1"),
 					CustomerID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000"),
 				},
-				Type: tktalk.TypeNormal,
+				Type: tkchat.TypeNormal,
 			},
 
 			expectTalkID: uuid.FromStringOrNil("e66d1da0-3ed7-11ef-9208-4bcc069917a1"),
