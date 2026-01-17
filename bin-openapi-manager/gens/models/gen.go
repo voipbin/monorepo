@@ -4656,6 +4656,9 @@ type PostServiceAgentsTalkChatsIdParticipantsJSONBody struct {
 
 // GetServiceAgentsTalkMessagesParams defines parameters for GetServiceAgentsTalkMessages.
 type GetServiceAgentsTalkMessagesParams struct {
+	// ChatId Chat ID to filter messages
+	ChatId string `form:"chat_id" json:"chat_id"`
+
 	// PageSize The size of results.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
