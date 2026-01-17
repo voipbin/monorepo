@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 	"regexp"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-talk-manager/pkg/messagehandler"
 	"monorepo/bin-talk-manager/pkg/participanthandler"
@@ -77,7 +77,7 @@ func (h *listenHandler) Listen(ctx context.Context) error {
 // processRequest routes incoming requests to appropriate handlers
 func (h *listenHandler) processRequest(m *commonsock.Request) (*commonsock.Response, error) {
 	ctx := context.Background()
-	log.Debugf("Received request: %s %s", m.Method, m.URI)
+	logrus.Debugf("Received request: %s %s", m.Method, m.URI)
 
 	var response *commonsock.Response
 	var err error
@@ -139,12 +139,12 @@ func (h *listenHandler) processRequest(m *commonsock.Request) (*commonsock.Respo
 		response, err = h.v1MessagesIDReactionsDelete(ctx, *m)
 
 	default:
-		log.Warnf("Unknown URI or method: %s %s", m.Method, m.URI)
+		logrus.Warnf("Unknown URI or method: %s %s", m.Method, m.URI)
 		return simpleResponse(404), nil
 	}
 
 	if err != nil {
-		log.Errorf("Request failed: %v", err)
+		logrus.Errorf("Request failed: %v", err)
 		return simpleResponse(500), err
 	}
 

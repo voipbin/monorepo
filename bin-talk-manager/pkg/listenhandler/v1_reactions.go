@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 
 	"github.com/gofrs/uuid"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	commonsock "monorepo/bin-common-handler/models/sock"
 )
@@ -22,7 +22,7 @@ func (h *listenHandler) v1MessagesIDReactionsPost(ctx context.Context, m commons
 
 	err := json.Unmarshal(m.Data, &req)
 	if err != nil {
-		log.Errorf("Failed to parse request: %v", err)
+		logrus.Errorf("Failed to parse request: %v", err)
 		return simpleResponse(400), nil
 	}
 
@@ -33,7 +33,7 @@ func (h *listenHandler) v1MessagesIDReactionsPost(ctx context.Context, m commons
 
 	msg, err := h.reactionHandler.ReactionAdd(ctx, messageID, req.Reaction, req.OwnerType, ownerID)
 	if err != nil {
-		log.Errorf("Failed to add reaction: %v", err)
+		logrus.Errorf("Failed to add reaction: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -57,7 +57,7 @@ func (h *listenHandler) v1MessagesIDReactionsDelete(ctx context.Context, m commo
 
 	err := json.Unmarshal(m.Data, &req)
 	if err != nil {
-		log.Errorf("Failed to parse request: %v", err)
+		logrus.Errorf("Failed to parse request: %v", err)
 		return simpleResponse(400), nil
 	}
 
@@ -68,7 +68,7 @@ func (h *listenHandler) v1MessagesIDReactionsDelete(ctx context.Context, m commo
 
 	msg, err := h.reactionHandler.ReactionRemove(ctx, messageID, req.Reaction, req.OwnerType, ownerID)
 	if err != nil {
-		log.Errorf("Failed to remove reaction: %v", err)
+		logrus.Errorf("Failed to remove reaction: %v", err)
 		return simpleResponse(500), nil
 	}
 

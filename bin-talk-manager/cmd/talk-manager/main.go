@@ -9,7 +9,7 @@ import (
 
 	"github.com/go-redis/redis/v8"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	commondb "monorepo/bin-common-handler/pkg/databasehandler"
@@ -46,11 +46,11 @@ func main() {
 	}
 
 	if errBind := config.Bootstrap(rootCmd); errBind != nil {
-		log.Fatalf("Failed to bootstrap config: %v", errBind)
+		logrus.Fatalf("Failed to bootstrap config: %v", errBind)
 	}
 
 	if errExecute := rootCmd.Execute(); errExecute != nil {
-		log.Errorf("Command execution failed: %v", errExecute)
+		logrus.Errorf("Command execution failed: %v", errExecute)
 		os.Exit(1)
 	}
 }
@@ -59,14 +59,14 @@ func runDaemon() error {
 	initSignal()
 	initProm(config.Get().PrometheusEndpoint, config.Get().PrometheusListenAddress)
 
-	logger := log.WithField("func", "runDaemon")
+	logger := logrus.WithField("func", "runDaemon")
 	cfg := config.Get()
 	logger.WithField("config", cfg).Info("Starting talk-manager...")
 
 	// Initialize database
 	db, err := commondb.Connect(cfg.DatabaseDSN)
 	if err != nil {
-		log.Fatalf("Could not connect to the database: %v", err)
+		logrus.Fatalf("Could not connect to the database: %v", err)
 	}
 	defer commondb.Close(db)
 
@@ -134,7 +134,7 @@ func initSignal() {
 	signal.Notify(chSigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	go func() {
 		sig := <-chSigs
-		log.Infof("Received signal: %v", sig)
+		logrus.Infof("Received signal: %v", sig)
 		chDone <- true
 	}()
 }
@@ -142,10 +142,10 @@ func initSignal() {
 func initProm(endpoint, listen string) {
 	http.Handle(endpoint, promhttp.Handler())
 	go func() {
-		log.Infof("Prometheus metrics server starting on %s%s", listen, endpoint)
+		logrus.Infof("Prometheus metrics server starting on %s%s", listen, endpoint)
 		if err := http.ListenAndServe(listen, nil); err != nil {
 			// Prometheus server error is logged but not treated as fatal to avoid unsafe exit from a goroutine.
-			log.Errorf("Prometheus server error: %v", err)
+			logrus.Errorf("Prometheus server error: %v", err)
 		}
 	}()
 }

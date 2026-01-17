@@ -7,7 +7,7 @@ import (
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	commondb "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-talk-manager/models/talk"
@@ -22,7 +22,7 @@ func (h *dbHandler) TalkCreate(ctx context.Context, t *talk.Talk) error {
 
 	fields, err := commondb.PrepareFields(t)
 	if err != nil {
-		log.Errorf("Failed to prepare fields: %v", err)
+		logrus.Errorf("Failed to prepare fields: %v", err)
 		return err
 	}
 
@@ -32,13 +32,13 @@ func (h *dbHandler) TalkCreate(ctx context.Context, t *talk.Talk) error {
 
 	sqlQuery, args, err := query.ToSql()
 	if err != nil {
-		log.Errorf("Failed to build query: %v", err)
+		logrus.Errorf("Failed to build query: %v", err)
 		return err
 	}
 
 	_, err = h.db.ExecContext(ctx, sqlQuery, args...)
 	if err != nil {
-		log.Errorf("Failed to create talk: %v", err)
+		logrus.Errorf("Failed to create talk: %v", err)
 		return err
 	}
 
@@ -64,7 +64,7 @@ func (h *dbHandler) TalkGet(ctx context.Context, id uuid.UUID) (*talk.Talk, erro
 	}
 	defer func() {
 		if closeErr := rows.Close(); closeErr != nil {
-			log.Errorf("Failed to close rows: %v", closeErr)
+			logrus.Errorf("Failed to close rows: %v", closeErr)
 		}
 	}()
 
@@ -93,7 +93,7 @@ func (h *dbHandler) TalkList(ctx context.Context, filters map[talk.Field]any, to
 	// Apply filters
 	query, err := commondb.ApplyFields(query, filters)
 	if err != nil {
-		log.Errorf("Failed to apply filters: %v", err)
+		logrus.Errorf("Failed to apply filters: %v", err)
 		return nil, err
 	}
 
@@ -113,7 +113,7 @@ func (h *dbHandler) TalkList(ctx context.Context, filters map[talk.Field]any, to
 	}
 	defer func() {
 		if closeErr := rows.Close(); closeErr != nil {
-			log.Errorf("Failed to close rows: %v", closeErr)
+			logrus.Errorf("Failed to close rows: %v", closeErr)
 		}
 	}()
 
@@ -136,7 +136,7 @@ func (h *dbHandler) TalkUpdate(ctx context.Context, id uuid.UUID, fields map[tal
 
 	preparedFields, err := commondb.PrepareFields(fields)
 	if err != nil {
-		log.Errorf("Failed to prepare fields: %v", err)
+		logrus.Errorf("Failed to prepare fields: %v", err)
 		return err
 	}
 

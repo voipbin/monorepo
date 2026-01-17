@@ -8,7 +8,7 @@ import (
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	commondb "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-talk-manager/models/message"
@@ -28,7 +28,7 @@ func (h *dbHandler) MessageCreate(ctx context.Context, m *message.Message) error
 
 	fields, err := commondb.PrepareFields(m)
 	if err != nil {
-		log.Errorf("Failed to prepare fields: %v", err)
+		logrus.Errorf("Failed to prepare fields: %v", err)
 		return err
 	}
 
@@ -45,13 +45,13 @@ func (h *dbHandler) MessageCreate(ctx context.Context, m *message.Message) error
 
 	sqlQuery, args, err := query.ToSql()
 	if err != nil {
-		log.Errorf("Failed to build query: %v", err)
+		logrus.Errorf("Failed to build query: %v", err)
 		return err
 	}
 
 	_, err = h.db.ExecContext(ctx, sqlQuery, args...)
 	if err != nil {
-		log.Errorf("Failed to create message: %v", err)
+		logrus.Errorf("Failed to create message: %v", err)
 		return err
 	}
 
@@ -77,7 +77,7 @@ func (h *dbHandler) MessageGet(ctx context.Context, id uuid.UUID) (*message.Mess
 	}
 	defer func() {
 		if closeErr := rows.Close(); closeErr != nil {
-			log.Errorf("Failed to close rows: %v", closeErr)
+			logrus.Errorf("Failed to close rows: %v", closeErr)
 		}
 	}()
 
@@ -106,7 +106,7 @@ func (h *dbHandler) MessageList(ctx context.Context, filters map[message.Field]a
 	// Apply filters
 	query, err := commondb.ApplyFields(query, filters)
 	if err != nil {
-		log.Errorf("Failed to apply filters: %v", err)
+		logrus.Errorf("Failed to apply filters: %v", err)
 		return nil, err
 	}
 
@@ -126,7 +126,7 @@ func (h *dbHandler) MessageList(ctx context.Context, filters map[message.Field]a
 	}
 	defer func() {
 		if closeErr := rows.Close(); closeErr != nil {
-			log.Errorf("Failed to close rows: %v", closeErr)
+			logrus.Errorf("Failed to close rows: %v", closeErr)
 		}
 	}()
 
@@ -149,7 +149,7 @@ func (h *dbHandler) MessageUpdate(ctx context.Context, id uuid.UUID, fields map[
 
 	preparedFields, err := commondb.PrepareFields(fields)
 	if err != nil {
-		log.Errorf("Failed to prepare fields: %v", err)
+		logrus.Errorf("Failed to prepare fields: %v", err)
 		return err
 	}
 
@@ -202,14 +202,14 @@ func (h *dbHandler) MessageAddReactionAtomic(ctx context.Context, messageID uuid
 	// Parse current metadata
 	var metadata message.Metadata
 	if err := json.Unmarshal([]byte(metadataJSON), &metadata); err != nil {
-		log.Errorf("Failed to unmarshal metadata: %v", err)
+		logrus.Errorf("Failed to unmarshal metadata: %v", err)
 		return err
 	}
 
 	// Parse and append new reaction
 	var newReaction message.Reaction
 	if err := json.Unmarshal([]byte(reactionJSON), &newReaction); err != nil {
-		log.Errorf("Failed to unmarshal reaction: %v", err)
+		logrus.Errorf("Failed to unmarshal reaction: %v", err)
 		return err
 	}
 
@@ -218,7 +218,7 @@ func (h *dbHandler) MessageAddReactionAtomic(ctx context.Context, messageID uuid
 	// Serialize back to JSON
 	updatedJSON, err := json.Marshal(metadata)
 	if err != nil {
-		log.Errorf("Failed to marshal metadata: %v", err)
+		logrus.Errorf("Failed to marshal metadata: %v", err)
 		return err
 	}
 
@@ -228,7 +228,7 @@ func (h *dbHandler) MessageAddReactionAtomic(ctx context.Context, messageID uuid
 
 	_, err = h.db.ExecContext(ctx, query, string(updatedJSON), now, messageID.Bytes())
 	if err != nil {
-		log.Errorf("Failed to add reaction atomically: %v", err)
+		logrus.Errorf("Failed to add reaction atomically: %v", err)
 		return err
 	}
 
@@ -250,7 +250,7 @@ func (h *dbHandler) MessageRemoveReactionAtomic(ctx context.Context, messageID u
 	// Parse and filter reactions
 	var metadata message.Metadata
 	if err := json.Unmarshal([]byte(metadataJSON), &metadata); err != nil {
-		log.Errorf("Failed to unmarshal metadata: %v", err)
+		logrus.Errorf("Failed to unmarshal metadata: %v", err)
 		return err
 	}
 
@@ -265,7 +265,7 @@ func (h *dbHandler) MessageRemoveReactionAtomic(ctx context.Context, messageID u
 	metadata.Reactions = filtered
 	updatedJSON, err := json.Marshal(metadata)
 	if err != nil {
-		log.Errorf("Failed to marshal metadata: %v", err)
+		logrus.Errorf("Failed to marshal metadata: %v", err)
 		return err
 	}
 
@@ -274,7 +274,7 @@ func (h *dbHandler) MessageRemoveReactionAtomic(ctx context.Context, messageID u
 
 	_, err = h.db.ExecContext(ctx, query, string(updatedJSON), now, messageID.Bytes())
 	if err != nil {
-		log.Errorf("Failed to remove reaction atomically: %v", err)
+		logrus.Errorf("Failed to remove reaction atomically: %v", err)
 		return err
 	}
 

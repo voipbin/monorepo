@@ -7,7 +7,6 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	log "github.com/sirupsen/logrus"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-talk-manager/models/message"
@@ -16,7 +15,7 @@ import (
 
 // MessageCreate creates a new message with threading validation
 func (h *messageHandler) MessageCreate(ctx context.Context, req MessageCreateRequest) (*message.Message, error) {
-	log := log.WithFields(log.Fields{
+	log := logrus.WithFields(logrus.Fields{
 		"func":        "MessageCreate",
 		"customer_id": req.CustomerID,
 		"chat_id":     req.ChatID,

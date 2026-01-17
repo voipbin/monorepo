@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-talk-manager/models/participant"
@@ -14,7 +14,7 @@ import (
 // ParticipantAdd adds a participant to a talk
 // Uses UPSERT behavior - if participant already exists, updates it
 func (h *participantHandler) ParticipantAdd(ctx context.Context, customerID, chatID, ownerID uuid.UUID, ownerType string) (*participant.Participant, error) {
-	log := log.WithFields(log.Fields{
+	log := logrus.WithFields(logrus.Fields{
 		"func":        "ParticipantAdd",
 		"customer_id": customerID,
 		"chat_id":     chatID,
@@ -80,7 +80,7 @@ func (h *participantHandler) ParticipantAdd(ctx context.Context, customerID, cha
 
 // ParticipantList returns all participants for a talk
 func (h *participantHandler) ParticipantList(ctx context.Context, customerID, chatID uuid.UUID) ([]*participant.Participant, error) {
-	log := log.WithFields(log.Fields{
+	log := logrus.WithFields(logrus.Fields{
 		"func":        "ParticipantList",
 		"customer_id": customerID,
 		"chat_id":     chatID,
@@ -119,7 +119,7 @@ func (h *participantHandler) ParticipantList(ctx context.Context, customerID, ch
 
 // ParticipantRemove removes a participant from a talk (hard delete)
 func (h *participantHandler) ParticipantRemove(ctx context.Context, customerID, participantID uuid.UUID) error {
-	log := log.WithFields(log.Fields{
+	log := logrus.WithFields(logrus.Fields{
 		"func":           "ParticipantRemove",
 		"customer_id":    customerID,
 		"participant_id": participantID,

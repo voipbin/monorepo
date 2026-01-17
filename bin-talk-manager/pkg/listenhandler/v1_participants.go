@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 
 	"github.com/gofrs/uuid"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	commonsock "monorepo/bin-common-handler/models/sock"
 )
@@ -22,7 +22,7 @@ func (h *listenHandler) v1ChatsIDParticipantsPost(ctx context.Context, m commons
 
 	err := json.Unmarshal(m.Data, &req)
 	if err != nil {
-		log.Errorf("Failed to parse request: %v", err)
+		logrus.Errorf("Failed to parse request: %v", err)
 		return simpleResponse(400), nil
 	}
 
@@ -35,7 +35,7 @@ func (h *listenHandler) v1ChatsIDParticipantsPost(ctx context.Context, m commons
 
 	participant, err := h.participantHandler.ParticipantAdd(ctx, customerID, chatID, ownerID, req.OwnerType)
 	if err != nil {
-		log.Errorf("Failed to create participant: %v", err)
+		logrus.Errorf("Failed to create participant: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -56,7 +56,7 @@ func (h *listenHandler) v1ChatsIDParticipantsGet(ctx context.Context, m commonso
 		CustomerID string `json:"customer_id"`
 	}
 	if err := json.Unmarshal(m.Data, &req); err != nil {
-		log.Errorf("Failed to parse request: %v", err)
+		logrus.Errorf("Failed to parse request: %v", err)
 		return simpleResponse(400), nil
 	}
 	customerID := uuid.FromStringOrNil(req.CustomerID)
@@ -83,7 +83,7 @@ func (h *listenHandler) v1ChatsIDParticipantsIDDelete(ctx context.Context, m com
 		CustomerID string `json:"customer_id"`
 	}
 	if err := json.Unmarshal(m.Data, &req); err != nil {
-		log.Errorf("Failed to parse request: %v", err)
+		logrus.Errorf("Failed to parse request: %v", err)
 		return simpleResponse(400), nil
 	}
 	customerID := uuid.FromStringOrNil(req.CustomerID)

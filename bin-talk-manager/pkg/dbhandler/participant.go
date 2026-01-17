@@ -7,7 +7,7 @@ import (
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	commondb "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-talk-manager/models/participant"
@@ -40,7 +40,7 @@ func (h *dbHandler) ParticipantCreate(ctx context.Context, p *participant.Partic
 	)
 
 	if err != nil {
-		log.Errorf("Failed to create/update participant: %v", err)
+		logrus.Errorf("Failed to create/update participant: %v", err)
 		return err
 	}
 
@@ -66,7 +66,7 @@ func (h *dbHandler) ParticipantGet(ctx context.Context, id uuid.UUID) (*particip
 	}
 	defer func() {
 		if closeErr := rows.Close(); closeErr != nil {
-			log.Errorf("Failed to close rows: %v", closeErr)
+			logrus.Errorf("Failed to close rows: %v", closeErr)
 		}
 	}()
 
@@ -94,7 +94,7 @@ func (h *dbHandler) ParticipantList(ctx context.Context, filters map[participant
 	// Apply filters
 	query, err := commondb.ApplyFields(query, filters)
 	if err != nil {
-		log.Errorf("Failed to apply filters: %v", err)
+		logrus.Errorf("Failed to apply filters: %v", err)
 		return nil, err
 	}
 
@@ -109,7 +109,7 @@ func (h *dbHandler) ParticipantList(ctx context.Context, filters map[participant
 	}
 	defer func() {
 		if closeErr := rows.Close(); closeErr != nil {
-			log.Errorf("Failed to close rows: %v", closeErr)
+			logrus.Errorf("Failed to close rows: %v", closeErr)
 		}
 	}()
 

@@ -7,7 +7,7 @@ import (
 	"strconv"
 
 	"github.com/gofrs/uuid"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	commonsock "monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-talk-manager/models/talk"
@@ -21,7 +21,7 @@ func (h *listenHandler) v1ChatsPost(ctx context.Context, m commonsock.Request) (
 
 	err := json.Unmarshal(m.Data, &req)
 	if err != nil {
-		log.Errorf("Failed to parse request: %v", err)
+		logrus.Errorf("Failed to parse request: %v", err)
 		return simpleResponse(400), nil
 	}
 
@@ -58,7 +58,7 @@ func (h *listenHandler) v1ChatsGet(ctx context.Context, m commonsock.Request) (*
 	var filters map[string]any
 	if len(m.Data) > 0 {
 		if err := json.Unmarshal(m.Data, &filters); err != nil {
-			log.Errorf("Failed to parse filters: %v", err)
+			logrus.Errorf("Failed to parse filters: %v", err)
 			return simpleResponse(400), nil
 		}
 	}

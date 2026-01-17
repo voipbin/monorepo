@@ -7,14 +7,14 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-talk-manager/models/message"
 )
 
 // ReactionAdd adds a reaction to a message with idempotent behavior
 func (h *reactionHandler) ReactionAdd(ctx context.Context, messageID uuid.UUID, emoji, ownerType string, ownerID uuid.UUID) (*message.Message, error) {
-	log := log.WithFields(log.Fields{
+	log := logrus.WithFields(logrus.Fields{
 		"func":       "ReactionAdd",
 		"message_id": messageID,
 		"emoji":      emoji,
@@ -98,7 +98,7 @@ func (h *reactionHandler) ReactionAdd(ctx context.Context, messageID uuid.UUID, 
 
 // ReactionRemove removes a reaction from a message
 func (h *reactionHandler) ReactionRemove(ctx context.Context, messageID uuid.UUID, emoji, ownerType string, ownerID uuid.UUID) (*message.Message, error) {
-	log := log.WithFields(log.Fields{
+	log := logrus.WithFields(logrus.Fields{
 		"func":       "ReactionRemove",
 		"message_id": messageID,
 		"emoji":      emoji,
