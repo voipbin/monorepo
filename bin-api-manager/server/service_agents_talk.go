@@ -16,7 +16,10 @@ func (h *server) GetServiceAgentsTalkChats(c *gin.Context, params openapi_server
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "GetServiceAgentsTalkChats",
 		"request_address": c.ClientIP(),
+		"request_uri":     c.Request.RequestURI,
+		"request_method":  c.Request.Method,
 	})
+	log.Info("===== TALK ENDPOINT CALLED: GetServiceAgentsTalkChats =====")
 
 	tmp, exists := c.Get("agent")
 	if !exists {
