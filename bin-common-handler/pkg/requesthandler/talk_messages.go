@@ -121,6 +121,33 @@ func (r *requestHandler) TalkV1MessageList(ctx context.Context, pageToken string
 	return messages, nil
 }
 
+// TalkV1MessageListWithFilters gets messages with filters
+func (r *requestHandler) TalkV1MessageListWithFilters(ctx context.Context, filters map[string]any, pageToken string, pageSize uint64) ([]*talkmessage.Message, error) {
+	uri := fmt.Sprintf("/v1/messages?page_token=%s&page_size=%d", pageToken, pageSize)
+
+	// Marshal filters to JSON
+	data, err := json.Marshal(filters)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not marshal filters")
+	}
+
+	res, err := r.sendRequestTalk(ctx, uri, sock.RequestMethodGet, "talk/messages", requestTimeoutDefault, 0, ContentTypeJSON, data)
+	if err != nil {
+		return nil, err
+	}
+
+	if res.StatusCode != 200 {
+		return nil, fmt.Errorf("failed to list messages: status %d", res.StatusCode)
+	}
+
+	var messages []*talkmessage.Message
+	if err := json.Unmarshal(res.Data, &messages); err != nil {
+		return nil, errors.Wrap(err, "could not unmarshal messages")
+	}
+
+	return messages, nil
+}
+
 // TalkV1MessageReactionCreate adds a reaction to a message
 func (r *requestHandler) TalkV1MessageReactionCreate(
 	ctx context.Context,

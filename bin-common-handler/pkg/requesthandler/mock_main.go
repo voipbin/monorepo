@@ -70,7 +70,7 @@ import (
 	route "monorepo/bin-route-manager/models/route"
 	account1 "monorepo/bin-storage-manager/models/account"
 	bucketfile "monorepo/bin-storage-manager/models/bucketfile"
-	compressfile "monorepo/bin-storage-manager/models/compressfile"
+	compress_file "monorepo/bin-storage-manager/models/compressfile"
 	file "monorepo/bin-storage-manager/models/file"
 	tag "monorepo/bin-tag-manager/models/tag"
 	chat0 "monorepo/bin-talk-manager/models/chat"
@@ -5186,10 +5186,10 @@ func (mr *MockRequestHandlerMockRecorder) StorageV1AccountList(ctx, pageToken, p
 }
 
 // StorageV1CompressfileCreate mocks base method.
-func (m *MockRequestHandler) StorageV1CompressfileCreate(ctx context.Context, referenceIDs, fileIDs []uuid.UUID, requestTimeout int) (*compressfile.CompressFile, error) {
+func (m *MockRequestHandler) StorageV1CompressfileCreate(ctx context.Context, referenceIDs, fileIDs []uuid.UUID, requestTimeout int) (*compress_file.CompressFile, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "StorageV1CompressfileCreate", ctx, referenceIDs, fileIDs, requestTimeout)
-	ret0, _ := ret[0].(*compressfile.CompressFile)
+	ret0, _ := ret[0].(*compress_file.CompressFile)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
