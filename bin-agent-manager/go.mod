@@ -5,6 +5,7 @@ go 1.25.3
 replace monorepo/bin-call-manager => ../bin-call-manager
 
 replace monorepo/bin-common-handler => ../bin-common-handler
+replace monorepo/bin-talk-manager => ../bin-talk-manager
 
 replace monorepo/bin-billing-manager => ../bin-billing-manager
 
