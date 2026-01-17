@@ -114,7 +114,7 @@ func (h *messageHandler) MessageCreate(ctx context.Context, req MessageCreateReq
 	// Create message
 	msg := &message.Message{
 		Identity: commonidentity.Identity{
-			ID:         uuid.Must(uuid.NewV4()),
+			ID:         h.utilHandler.UUIDCreate(),
 			CustomerID: req.CustomerID,
 		},
 		Owner: commonidentity.Owner{

@@ -6,6 +6,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	commonnotify "monorepo/bin-common-handler/pkg/notifyhandler"
+	commonutil "monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-talk-manager/models/participant"
 )
 
@@ -31,14 +32,16 @@ type participantHandler struct {
 	dbHandler     DBHandler
 	sockHandler   SockHandler
 	notifyHandler commonnotify.NotifyHandler
+	utilHandler   commonutil.UtilHandler
 }
 
 // New creates a new ParticipantHandler instance
-func New(dbHandler DBHandler, sockHandler SockHandler, notifyHandler commonnotify.NotifyHandler) ParticipantHandler {
+func New(dbHandler DBHandler, sockHandler SockHandler, notifyHandler commonnotify.NotifyHandler, utilHandler commonutil.UtilHandler) ParticipantHandler {
 	return &participantHandler{
 		dbHandler:     dbHandler,
 		sockHandler:   sockHandler,
 		notifyHandler: notifyHandler,
+		utilHandler:   utilHandler,
 	}
 }
 

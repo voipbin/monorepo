@@ -106,9 +106,9 @@ func runDaemon() error {
 	utilHandler := commonutil.NewUtilHandler()
 
 	// Initialize business logic handlers
-	participantHandler := participanthandler.New(dbHandler, sockHandler, notifyHandler)
+	participantHandler := participanthandler.New(dbHandler, sockHandler, notifyHandler, utilHandler)
 	chatHandler := chathandler.New(dbHandler, participantHandler, notifyHandler, utilHandler)
-	messageHandler := messagehandler.New(dbHandler, sockHandler, notifyHandler)
+	messageHandler := messagehandler.New(dbHandler, sockHandler, notifyHandler, utilHandler)
 	reactionHandler := reactionhandler.New(dbHandler, sockHandler, notifyHandler)
 
 	// Initialize listen handler

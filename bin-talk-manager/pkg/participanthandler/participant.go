@@ -42,11 +42,7 @@ func (h *participantHandler) ParticipantAdd(ctx context.Context, customerID, cha
 	}
 
 	// Generate new participant ID
-	participantID, err := uuid.NewV7()
-	if err != nil {
-		log.Errorf("Failed to generate participant ID. err: %v", err)
-		return nil, fmt.Errorf("failed to generate participant ID: %w", err)
-	}
+	participantID := h.utilHandler.UUIDCreate()
 
 	// Create participant object
 	p := &participant.Participant{
@@ -62,7 +58,7 @@ func (h *participantHandler) ParticipantAdd(ctx context.Context, customerID, cha
 	}
 
 	// Create in database (UPSERT behavior)
-	err = h.dbHandler.ParticipantCreate(ctx, p)
+	err := h.dbHandler.ParticipantCreate(ctx, p)
 	if err != nil {
 		log.Errorf("Failed to create participant. err: %v", err)
 		return nil, fmt.Errorf("failed to create participant: %w", err)

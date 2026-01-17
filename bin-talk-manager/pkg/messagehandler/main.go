@@ -9,6 +9,7 @@ import (
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
+	commonutil "monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-talk-manager/models/message"
 	"monorepo/bin-talk-manager/pkg/dbhandler"
 )
@@ -37,6 +38,7 @@ type messageHandler struct {
 	dbHandler     dbhandler.DBHandler
 	sockHandler   sockhandler.SockHandler
 	notifyHandler notifyhandler.NotifyHandler
+	utilHandler   commonutil.UtilHandler
 }
 
 // New creates a new MessageHandler instance
@@ -44,10 +46,12 @@ func New(
 	dbHandler dbhandler.DBHandler,
 	sockHandler sockhandler.SockHandler,
 	notifyHandler notifyhandler.NotifyHandler,
+	utilHandler commonutil.UtilHandler,
 ) MessageHandler {
 	return &messageHandler{
 		dbHandler:     dbHandler,
 		sockHandler:   sockHandler,
 		notifyHandler: notifyHandler,
+		utilHandler:   utilHandler,
 	}
 }
