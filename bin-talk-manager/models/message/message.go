@@ -21,7 +21,7 @@ type Message struct {
 	commonidentity.Owner
 
 	ChatID   uuid.UUID  `json:"chat_id" db:"chat_id,uuid"`
-	ParentID *uuid.UUID `json:"parent_id,omitempty" db:"parent_id,uuid"`
+	ParentID *uuid.UUID `json:"parent_id,omitempty" db:"parent_id"`
 
 	Type     Type   `json:"type" db:"type"`
 	Text     string `json:"text" db:"text"`

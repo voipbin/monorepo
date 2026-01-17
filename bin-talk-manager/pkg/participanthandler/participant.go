@@ -134,7 +134,7 @@ func (h *participantHandler) ParticipantRemove(ctx context.Context, customerID, 
 	}
 
 	// Retrieve participant before deletion (for webhook payload)
-	p, err := h.dbHandler.ParticipantGet(ctx, customerID, participantID)
+	p, err := h.dbHandler.ParticipantGet(ctx, participantID)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"customer_id":    customerID,
@@ -144,7 +144,7 @@ func (h *participantHandler) ParticipantRemove(ctx context.Context, customerID, 
 	}
 
 	// Delete from database (hard delete)
-	err = h.dbHandler.ParticipantDelete(ctx, customerID, participantID)
+	err = h.dbHandler.ParticipantDelete(ctx, participantID)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"customer_id":    customerID,

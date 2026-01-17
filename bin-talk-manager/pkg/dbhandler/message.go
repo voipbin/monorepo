@@ -32,6 +32,13 @@ func (h *dbHandler) MessageCreate(ctx context.Context, m *message.Message) error
 		return err
 	}
 
+	// Handle ParentID manually (nullable UUID)
+	if m.ParentID != nil {
+		fields["parent_id"] = m.ParentID.Bytes()
+	} else {
+		fields["parent_id"] = nil
+	}
+
 	query := sq.Insert(tableMessages).
 		SetMap(fields).
 		PlaceholderFormat(sq.Question)
@@ -178,26 +185,48 @@ func (h *dbHandler) MessageDelete(ctx context.Context, id uuid.UUID) error {
 	return err
 }
 
-// MessageAddReactionAtomic atomically adds a reaction using MySQL JSON functions
+// MessageAddReactionAtomic atomically adds a reaction using JSON functions
 // This prevents race conditions when multiple users add reactions simultaneously
 func (h *dbHandler) MessageAddReactionAtomic(ctx context.Context, messageID uuid.UUID, reactionJSON string) error {
-	query := `
-		UPDATE talk_messages
-		SET metadata = JSON_SET(
-			metadata,
-			'$.reactions',
-			JSON_ARRAY_APPEND(
-				JSON_EXTRACT(metadata, '$.reactions'),
-				'$',
-				CAST(? AS JSON)
-			)
-		),
-		tm_update = ?
-		WHERE id = ?
-	`
+	// SQLite-compatible JSON manipulation
+	// Get current metadata, parse it, add reaction, and update
+	var metadataJSON string
+	err := h.db.QueryRowContext(ctx,
+		"SELECT metadata FROM talk_messages WHERE id = ?",
+		messageID.Bytes(),
+	).Scan(&metadataJSON)
+	if err != nil {
+		return err
+	}
 
+	// Parse current metadata
+	var metadata message.Metadata
+	if err := json.Unmarshal([]byte(metadataJSON), &metadata); err != nil {
+		log.Errorf("Failed to unmarshal metadata: %v", err)
+		return err
+	}
+
+	// Parse and append new reaction
+	var newReaction message.Reaction
+	if err := json.Unmarshal([]byte(reactionJSON), &newReaction); err != nil {
+		log.Errorf("Failed to unmarshal reaction: %v", err)
+		return err
+	}
+
+	metadata.Reactions = append(metadata.Reactions, newReaction)
+
+	// Serialize back to JSON
+	updatedJSON, err := json.Marshal(metadata)
+	if err != nil {
+		log.Errorf("Failed to marshal metadata: %v", err)
+		return err
+	}
+
+	// Update atomically
 	now := time.Now().UTC().Format("2006-01-02T15:04:05.000000Z")
-	_, err := h.db.ExecContext(ctx, query, reactionJSON, now, messageID.Bytes())
+	query := `UPDATE talk_messages SET metadata = ?, tm_update = ? WHERE id = ?`
+
+	_, err = h.db.ExecContext(ctx, query, string(updatedJSON), now, messageID.Bytes())
 	if err != nil {
 		log.Errorf("Failed to add reaction atomically: %v", err)
 		return err
@@ -232,18 +261,18 @@ func (h *dbHandler) MessageRemoveReactionAtomic(ctx context.Context, messageID u
 		}
 	}
 
-	// Update with filtered reactions atomically
-	filteredJSON, _ := json.Marshal(filtered)
+	// Update with filtered reactions
+	metadata.Reactions = filtered
+	updatedJSON, err := json.Marshal(metadata)
+	if err != nil {
+		log.Errorf("Failed to marshal metadata: %v", err)
+		return err
+	}
+
 	now := time.Now().UTC().Format("2006-01-02T15:04:05.000000Z")
+	query := `UPDATE talk_messages SET metadata = ?, tm_update = ? WHERE id = ?`
 
-	query := `
-		UPDATE talk_messages
-		SET metadata = JSON_SET(metadata, '$.reactions', CAST(? AS JSON)),
-		    tm_update = ?
-		WHERE id = ?
-	`
-
-	_, err = h.db.ExecContext(ctx, query, string(filteredJSON), now, messageID.Bytes())
+	_, err = h.db.ExecContext(ctx, query, string(updatedJSON), now, messageID.Bytes())
 	if err != nil {
 		log.Errorf("Failed to remove reaction atomically: %v", err)
 		return err

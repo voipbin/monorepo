@@ -20,13 +20,14 @@ func (h *dbHandler) ParticipantCreate(ctx context.Context, p *participant.Partic
 	p.TMJoined = now
 
 	// Use UPSERT to handle re-joins (participant leaves and joins again)
-	// ON DUPLICATE KEY UPDATE prevents unique constraint violations
+	// SQLite: ON CONFLICT DO UPDATE prevents unique constraint violations
 	query := `
 		INSERT INTO talk_participants
 		(id, customer_id, chat_id, owner_type, owner_id, tm_joined)
 		VALUES (?, ?, ?, ?, ?, ?)
-		ON DUPLICATE KEY UPDATE
-		tm_joined = VALUES(tm_joined)
+		ON CONFLICT(chat_id, owner_type, owner_id) DO UPDATE SET
+		id = excluded.id,
+		tm_joined = excluded.tm_joined
 	`
 
 	_, err := h.db.ExecContext(ctx, query,

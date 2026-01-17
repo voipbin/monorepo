@@ -42,9 +42,9 @@ func New(dbHandler DBHandler, sockHandler SockHandler, notifyHandler commonnotif
 // DBHandler defines the interface for database operations
 type DBHandler interface {
 	ParticipantCreate(ctx context.Context, p *participant.Participant) error
-	ParticipantGet(ctx context.Context, customerID, participantID uuid.UUID) (*participant.Participant, error)
+	ParticipantGet(ctx context.Context, id uuid.UUID) (*participant.Participant, error)
 	ParticipantList(ctx context.Context, filters map[participant.Field]any) ([]*participant.Participant, error)
-	ParticipantDelete(ctx context.Context, customerID, participantID uuid.UUID) error
+	ParticipantDelete(ctx context.Context, id uuid.UUID) error
 }
 
 // SockHandler defines the interface for RabbitMQ socket operations
