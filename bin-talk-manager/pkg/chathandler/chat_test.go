@@ -1,4 +1,4 @@
-package talkhandler
+package chathandler
 
 import (
 	"context"
@@ -12,58 +12,58 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 
-	"monorepo/bin-talk-manager/models/talk"
+	"monorepo/bin-talk-manager/models/chat"
 	"monorepo/bin-talk-manager/pkg/dbhandler"
 )
 
-func Test_TalkCreate(t *testing.T) {
+func Test_ChatCreate(t *testing.T) {
 	tests := []struct {
 		name string
 
 		customerID uuid.UUID
-		talkType   talk.Type
+		chatType   chat.Type
 
-		expectTalk *talk.Talk
-		expectRes  *talk.Talk
+		expectChat *chat.Chat
+		expectRes  *chat.Chat
 	}{
 		{
 			name: "normal_type_normal",
 
 			customerID: uuid.FromStringOrNil("ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4"),
-			talkType:   talk.TypeNormal,
+			chatType:   chat.TypeNormal,
 
-			expectTalk: &talk.Talk{
+			expectChat: &chat.Chat{
 				Identity: commonidentity.Identity{
 					CustomerID: uuid.FromStringOrNil("ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4"),
 				},
-				Type: talk.TypeNormal,
+				Type: chat.TypeNormal,
 			},
-			expectRes: &talk.Talk{
+			expectRes: &chat.Chat{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("31536998-da36-11ee-976a-b31b049d62c2"),
 					CustomerID: uuid.FromStringOrNil("ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4"),
 				},
-				Type: talk.TypeNormal,
+				Type: chat.TypeNormal,
 			},
 		},
 		{
 			name: "normal_type_group",
 
 			customerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
-			talkType:   talk.TypeGroup,
+			chatType:   chat.TypeGroup,
 
-			expectTalk: &talk.Talk{
+			expectChat: &chat.Chat{
 				Identity: commonidentity.Identity{
 					CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
 				},
-				Type: talk.TypeGroup,
+				Type: chat.TypeGroup,
 			},
-			expectRes: &talk.Talk{
+			expectRes: &chat.Chat{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("ac810dc4-298c-11ee-984c-ebb7811c4114"),
 					CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
 				},
-				Type: talk.TypeGroup,
+				Type: chat.TypeGroup,
 			},
 		},
 	}
@@ -76,17 +76,17 @@ func Test_TalkCreate(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
-			h := &talkHandler{
+			h := &chatHandler{
 				dbHandler:     mockDB,
 				notifyHandler: mockNotify,
 			}
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().TalkCreate(ctx, gomock.Any()).Return(nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.customerID, talk.EventTypeTalkCreated, gomock.Any())
+			mockDB.EXPECT().ChatCreate(ctx, gomock.Any()).Return(nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.customerID, chat.EventTypeChatCreated, gomock.Any())
 
-			res, err := h.TalkCreate(ctx, tt.customerID, tt.talkType)
+			res, err := h.ChatCreate(ctx, tt.customerID, tt.chatType)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -106,12 +106,12 @@ func Test_TalkCreate(t *testing.T) {
 	}
 }
 
-func Test_TalkCreate_error(t *testing.T) {
+func Test_ChatCreate_error(t *testing.T) {
 	tests := []struct {
 		name string
 
 		customerID uuid.UUID
-		talkType   talk.Type
+		chatType   chat.Type
 
 		expectError string
 	}{
@@ -119,7 +119,7 @@ func Test_TalkCreate_error(t *testing.T) {
 			name: "error_nil_customer_id",
 
 			customerID: uuid.Nil,
-			talkType:   talk.TypeNormal,
+			chatType:   chat.TypeNormal,
 
 			expectError: "customer ID cannot be nil",
 		},
@@ -127,17 +127,17 @@ func Test_TalkCreate_error(t *testing.T) {
 			name: "error_invalid_type",
 
 			customerID: uuid.FromStringOrNil("ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4"),
-			talkType:   "invalid_type",
+			chatType:   "invalid_type",
 
-			expectError: "invalid talk type",
+			expectError: "invalid chat type",
 		},
 		{
 			name: "error_database_failure",
 
 			customerID: uuid.FromStringOrNil("ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4"),
-			talkType:   talk.TypeNormal,
+			chatType:   chat.TypeNormal,
 
-			expectError: "failed to create talk in database",
+			expectError: "failed to create chat in database",
 		},
 	}
 
@@ -149,7 +149,7 @@ func Test_TalkCreate_error(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
-			h := &talkHandler{
+			h := &chatHandler{
 				dbHandler:     mockDB,
 				notifyHandler: mockNotify,
 			}
@@ -158,10 +158,10 @@ func Test_TalkCreate_error(t *testing.T) {
 
 			// Only mock database call for database failure test
 			if tt.name == "error_database_failure" {
-				mockDB.EXPECT().TalkCreate(ctx, gomock.Any()).Return(fmt.Errorf("database error"))
+				mockDB.EXPECT().ChatCreate(ctx, gomock.Any()).Return(fmt.Errorf("database error"))
 			}
 
-			res, err := h.TalkCreate(ctx, tt.customerID, tt.talkType)
+			res, err := h.ChatCreate(ctx, tt.customerID, tt.chatType)
 			if err == nil {
 				t.Errorf("Wrong match. expect: error, got: ok")
 			}
@@ -173,25 +173,25 @@ func Test_TalkCreate_error(t *testing.T) {
 	}
 }
 
-func Test_TalkGet(t *testing.T) {
+func Test_ChatGet(t *testing.T) {
 	tests := []struct {
 		name string
 
 		id uuid.UUID
 
-		responseTalk *talk.Talk
+		responseChat *chat.Chat
 	}{
 		{
 			name: "normal",
 
 			id: uuid.FromStringOrNil("e8427fa8-17b2-4e9e-8855-90e516bcf1d3"),
 
-			responseTalk: &talk.Talk{
+			responseChat: &chat.Chat{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("e8427fa8-17b2-4e9e-8855-90e516bcf1d3"),
 					CustomerID: uuid.FromStringOrNil("809656e2-305e-43cd-8d7b-ccb44373dddb"),
 				},
-				Type:     talk.TypeNormal,
+				Type:     chat.TypeNormal,
 				TMCreate: "2024-01-15 10:30:00.000000",
 			},
 		},
@@ -205,28 +205,28 @@ func Test_TalkGet(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
-			h := &talkHandler{
+			h := &chatHandler{
 				dbHandler:     mockDB,
 				notifyHandler: mockNotify,
 			}
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().TalkGet(ctx, tt.id).Return(tt.responseTalk, nil)
+			mockDB.EXPECT().ChatGet(ctx, tt.id).Return(tt.responseChat, nil)
 
-			res, err := h.TalkGet(ctx, tt.id)
+			res, err := h.ChatGet(ctx, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if !reflect.DeepEqual(res, tt.responseTalk) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseTalk, res)
+			if !reflect.DeepEqual(res, tt.responseChat) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseChat, res)
 			}
 		})
 	}
 }
 
-func Test_TalkGet_error(t *testing.T) {
+func Test_ChatGet_error(t *testing.T) {
 	tests := []struct {
 		name string
 
@@ -258,16 +258,16 @@ func Test_TalkGet_error(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
-			h := &talkHandler{
+			h := &chatHandler{
 				dbHandler:     mockDB,
 				notifyHandler: mockNotify,
 			}
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().TalkGet(ctx, tt.id).Return(nil, tt.dbError)
+			mockDB.EXPECT().ChatGet(ctx, tt.id).Return(nil, tt.dbError)
 
-			res, err := h.TalkGet(ctx, tt.id)
+			res, err := h.ChatGet(ctx, tt.id)
 			if err == nil {
 				t.Errorf("Wrong match. expect: error, got: ok")
 			}
@@ -279,33 +279,33 @@ func Test_TalkGet_error(t *testing.T) {
 	}
 }
 
-func Test_TalkList(t *testing.T) {
+func Test_ChatList(t *testing.T) {
 	tests := []struct {
 		name string
 
-		filters map[talk.Field]any
+		filters map[chat.Field]any
 		token   string
 		size    uint64
 
-		responseTalks []*talk.Talk
+		responseTalks []*chat.Chat
 	}{
 		{
 			name: "normal",
 
-			filters: map[talk.Field]any{
-				talk.FieldCustomerID: uuid.FromStringOrNil("809656e2-305e-43cd-8d7b-ccb44373dddb"),
-				talk.FieldDeleted:    false,
+			filters: map[chat.Field]any{
+				chat.FieldCustomerID: uuid.FromStringOrNil("809656e2-305e-43cd-8d7b-ccb44373dddb"),
+				chat.FieldDeleted:    false,
 			},
 			token: "2024-01-15 10:30:00.000000",
 			size:  10,
 
-			responseTalks: []*talk.Talk{
+			responseTalks: []*chat.Chat{
 				{
 					Identity: commonidentity.Identity{
 						ID:         uuid.FromStringOrNil("e8427fa8-17b2-4e9e-8855-90e516bcf1d3"),
 						CustomerID: uuid.FromStringOrNil("809656e2-305e-43cd-8d7b-ccb44373dddb"),
 					},
-					Type:     talk.TypeNormal,
+					Type:     chat.TypeNormal,
 					TMCreate: "2024-01-15 10:30:00.000000",
 				},
 				{
@@ -313,7 +313,7 @@ func Test_TalkList(t *testing.T) {
 						ID:         uuid.FromStringOrNil("04bc94c1-9cc1-4ce8-8559-39d6f1892109"),
 						CustomerID: uuid.FromStringOrNil("809656e2-305e-43cd-8d7b-ccb44373dddb"),
 					},
-					Type:     talk.TypeGroup,
+					Type:     chat.TypeGroup,
 					TMCreate: "2024-01-15 11:00:00.000000",
 				},
 			},
@@ -321,21 +321,21 @@ func Test_TalkList(t *testing.T) {
 		{
 			name: "normal_with_type_filter",
 
-			filters: map[talk.Field]any{
-				talk.FieldCustomerID: uuid.FromStringOrNil("ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4"),
-				talk.FieldType:       talk.TypeGroup,
-				talk.FieldDeleted:    false,
+			filters: map[chat.Field]any{
+				chat.FieldCustomerID: uuid.FromStringOrNil("ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4"),
+				chat.FieldType:       chat.TypeGroup,
+				chat.FieldDeleted:    false,
 			},
 			token: "",
 			size:  50,
 
-			responseTalks: []*talk.Talk{
+			responseTalks: []*chat.Chat{
 				{
 					Identity: commonidentity.Identity{
 						ID:         uuid.FromStringOrNil("6a9a0ed0-1bcb-46de-a225-e638bbaf2fc1"),
 						CustomerID: uuid.FromStringOrNil("ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4"),
 					},
-					Type:     talk.TypeGroup,
+					Type:     chat.TypeGroup,
 					TMCreate: "2024-01-15 12:00:00.000000",
 				},
 			},
@@ -343,14 +343,14 @@ func Test_TalkList(t *testing.T) {
 		{
 			name: "normal_empty_result",
 
-			filters: map[talk.Field]any{
-				talk.FieldCustomerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
-				talk.FieldDeleted:    false,
+			filters: map[chat.Field]any{
+				chat.FieldCustomerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
+				chat.FieldDeleted:    false,
 			},
 			token: "",
 			size:  10,
 
-			responseTalks: []*talk.Talk{},
+			responseTalks: []*chat.Chat{},
 		},
 	}
 
@@ -362,16 +362,16 @@ func Test_TalkList(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
-			h := &talkHandler{
+			h := &chatHandler{
 				dbHandler:     mockDB,
 				notifyHandler: mockNotify,
 			}
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().TalkList(ctx, tt.filters, tt.token, tt.size).Return(tt.responseTalks, nil)
+			mockDB.EXPECT().ChatList(ctx, tt.filters, tt.token, tt.size).Return(tt.responseTalks, nil)
 
-			res, err := h.TalkList(ctx, tt.filters, tt.token, tt.size)
+			res, err := h.ChatList(ctx, tt.filters, tt.token, tt.size)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -383,11 +383,11 @@ func Test_TalkList(t *testing.T) {
 	}
 }
 
-func Test_TalkList_error(t *testing.T) {
+func Test_ChatList_error(t *testing.T) {
 	tests := []struct {
 		name string
 
-		filters map[talk.Field]any
+		filters map[chat.Field]any
 		token   string
 		size    uint64
 
@@ -396,8 +396,8 @@ func Test_TalkList_error(t *testing.T) {
 		{
 			name: "error_database_failure",
 
-			filters: map[talk.Field]any{
-				talk.FieldCustomerID: uuid.FromStringOrNil("809656e2-305e-43cd-8d7b-ccb44373dddb"),
+			filters: map[chat.Field]any{
+				chat.FieldCustomerID: uuid.FromStringOrNil("809656e2-305e-43cd-8d7b-ccb44373dddb"),
 			},
 			token: "",
 			size:  10,
@@ -414,16 +414,16 @@ func Test_TalkList_error(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
-			h := &talkHandler{
+			h := &chatHandler{
 				dbHandler:     mockDB,
 				notifyHandler: mockNotify,
 			}
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().TalkList(ctx, tt.filters, tt.token, tt.size).Return(nil, tt.dbError)
+			mockDB.EXPECT().ChatList(ctx, tt.filters, tt.token, tt.size).Return(nil, tt.dbError)
 
-			res, err := h.TalkList(ctx, tt.filters, tt.token, tt.size)
+			res, err := h.ChatList(ctx, tt.filters, tt.token, tt.size)
 			if err == nil {
 				t.Errorf("Wrong match. expect: error, got: ok")
 			}
@@ -435,25 +435,25 @@ func Test_TalkList_error(t *testing.T) {
 	}
 }
 
-func Test_TalkDelete(t *testing.T) {
+func Test_ChatDelete(t *testing.T) {
 	tests := []struct {
 		name string
 
 		id uuid.UUID
 
-		responseTalk *talk.Talk
+		responseChat *chat.Chat
 	}{
 		{
 			name: "normal",
 
 			id: uuid.FromStringOrNil("af243cbc-de04-4705-ad2b-78350d0a4fba"),
 
-			responseTalk: &talk.Talk{
+			responseChat: &chat.Chat{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("af243cbc-de04-4705-ad2b-78350d0a4fba"),
 					CustomerID: uuid.FromStringOrNil("809656e2-305e-43cd-8d7b-ccb44373dddb"),
 				},
-				Type:     talk.TypeNormal,
+				Type:     chat.TypeNormal,
 				TMCreate: "2024-01-15 10:30:00.000000",
 			},
 		},
@@ -467,30 +467,30 @@ func Test_TalkDelete(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
-			h := &talkHandler{
+			h := &chatHandler{
 				dbHandler:     mockDB,
 				notifyHandler: mockNotify,
 			}
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().TalkGet(ctx, tt.id).Return(tt.responseTalk, nil)
-			mockDB.EXPECT().TalkDelete(ctx, tt.id).Return(nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseTalk.CustomerID, talk.EventTypeTalkDeleted, tt.responseTalk)
+			mockDB.EXPECT().ChatGet(ctx, tt.id).Return(tt.responseChat, nil)
+			mockDB.EXPECT().ChatDelete(ctx, tt.id).Return(nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseChat.CustomerID, chat.EventTypeChatDeleted, tt.responseChat)
 
-			res, err := h.TalkDelete(ctx, tt.id)
+			res, err := h.ChatDelete(ctx, tt.id)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if !reflect.DeepEqual(res, tt.responseTalk) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseTalk, res)
+			if !reflect.DeepEqual(res, tt.responseChat) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseChat, res)
 			}
 		})
 	}
 }
 
-func Test_TalkDelete_error(t *testing.T) {
+func Test_ChatDelete_error(t *testing.T) {
 	tests := []struct {
 		name string
 
@@ -525,7 +525,7 @@ func Test_TalkDelete_error(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
-			h := &talkHandler{
+			h := &chatHandler{
 				dbHandler:     mockDB,
 				notifyHandler: mockNotify,
 			}
@@ -534,21 +534,21 @@ func Test_TalkDelete_error(t *testing.T) {
 
 			if tt.getTalkError != nil {
 				// Get before delete fails
-				mockDB.EXPECT().TalkGet(ctx, tt.id).Return(nil, tt.getTalkError)
+				mockDB.EXPECT().ChatGet(ctx, tt.id).Return(nil, tt.getTalkError)
 			} else {
 				// Get succeeds but delete fails
-				responseTalk := &talk.Talk{
+				responseChat := &chat.Chat{
 					Identity: commonidentity.Identity{
 						ID:         tt.id,
 						CustomerID: uuid.FromStringOrNil("809656e2-305e-43cd-8d7b-ccb44373dddb"),
 					},
-					Type: talk.TypeNormal,
+					Type: chat.TypeNormal,
 				}
-				mockDB.EXPECT().TalkGet(ctx, tt.id).Return(responseTalk, nil)
-				mockDB.EXPECT().TalkDelete(ctx, tt.id).Return(tt.deleteTalkError)
+				mockDB.EXPECT().ChatGet(ctx, tt.id).Return(responseChat, nil)
+				mockDB.EXPECT().ChatDelete(ctx, tt.id).Return(tt.deleteTalkError)
 			}
 
-			res, err := h.TalkDelete(ctx, tt.id)
+			res, err := h.ChatDelete(ctx, tt.id)
 			if err == nil {
 				t.Errorf("Wrong match. expect: error, got: ok")
 			}

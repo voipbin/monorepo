@@ -16,15 +16,16 @@ import (
 	commonnotify "monorepo/bin-common-handler/pkg/notifyhandler"
 	commonreq "monorepo/bin-common-handler/pkg/requesthandler"
 	commonsock "monorepo/bin-common-handler/pkg/sockhandler"
+	commonutil "monorepo/bin-common-handler/pkg/utilhandler"
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-talk-manager/internal/config"
+	"monorepo/bin-talk-manager/pkg/chathandler"
 	"monorepo/bin-talk-manager/pkg/dbhandler"
 	"monorepo/bin-talk-manager/pkg/listenhandler"
 	"monorepo/bin-talk-manager/pkg/messagehandler"
 	"monorepo/bin-talk-manager/pkg/participanthandler"
 	"monorepo/bin-talk-manager/pkg/reactionhandler"
-	"monorepo/bin-talk-manager/pkg/talkhandler"
 )
 
 var (
@@ -35,7 +36,7 @@ var (
 func main() {
 	rootCmd := &cobra.Command{
 		Use:   "talk-manager",
-		Short: "Voipbin Talk Manager Daemon",
+		Short: "Voipbin *Chat Manager Daemon",
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			config.LoadGlobalConfig()
 			return nil
@@ -101,8 +102,11 @@ func runDaemon() error {
 	// Initialize database handler
 	dbHandler := dbhandler.New(db, redisClient)
 
+	// Initialize utility handler
+	utilHandler := commonutil.NewUtilHandler()
+
 	// Initialize business logic handlers
-	talkHandler := talkhandler.New(dbHandler, notifyHandler)
+	chatHandler := chathandler.New(dbHandler, notifyHandler)
 	messageHandler := messagehandler.New(dbHandler, sockHandler, notifyHandler)
 	participantHandler := participanthandler.New(dbHandler, sockHandler, notifyHandler)
 	reactionHandler := reactionhandler.New(dbHandler, sockHandler, notifyHandler)
@@ -110,10 +114,11 @@ func runDaemon() error {
 	// Initialize listen handler
 	listenHandler := listenhandler.New(
 		sockHandler,
-		talkHandler,
+		chatHandler,
 		messageHandler,
 		participantHandler,
 		reactionHandler,
+		utilHandler,
 	)
 
 	// Start listening for RabbitMQ messages
@@ -126,7 +131,7 @@ func runDaemon() error {
 	logger.Infof("Listening for RabbitMQ messages on queue: %s", commonoutline.QueueNameTalkRequest)
 
 	<-chDone
-	logger.Info("Talk-manager stopped safely.")
+	logger.Info("*Chat-manager stopped safely.")
 	return nil
 }
 

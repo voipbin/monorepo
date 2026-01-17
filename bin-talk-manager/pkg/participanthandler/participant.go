@@ -117,7 +117,7 @@ func (h *participantHandler) ParticipantList(ctx context.Context, customerID, ch
 	return participants, nil
 }
 
-// ParticipantRemove removes a participant from a talk (hard delete)
+// ParticipantRemove removes a participant from a chat (hard delete)
 func (h *participantHandler) ParticipantRemove(ctx context.Context, customerID, participantID uuid.UUID) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "ParticipantRemove",

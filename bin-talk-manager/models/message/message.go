@@ -15,7 +15,7 @@ const (
 
 type Type string
 
-// Message represents a talk message
+// Message represents a chat message
 type Message struct {
 	commonidentity.Identity
 	commonidentity.Owner

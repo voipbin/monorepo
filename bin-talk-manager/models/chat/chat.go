@@ -1,4 +1,4 @@
-package talk
+package chat
 
 import (
 	"encoding/json"
@@ -14,8 +14,8 @@ const (
 
 type Type string
 
-// Talk represents a talk session
-type Talk struct {
+// Chat represents a chat session
+type Chat struct {
 	commonidentity.Identity
 
 	Type Type `json:"type" db:"type"`
@@ -26,7 +26,7 @@ type Talk struct {
 	TMDelete string `json:"tm_delete" db:"tm_delete"`
 }
 
-// WebhookMessage is the webhook payload for talk events
+// WebhookMessage is the webhook payload for chat events
 type WebhookMessage struct {
 	commonidentity.Identity
 
@@ -36,8 +36,8 @@ type WebhookMessage struct {
 	TMDelete string `json:"tm_delete,omitempty"`
 }
 
-// ConvertWebhookMessage converts Talk to WebhookMessage
-func (t *Talk) ConvertWebhookMessage() *WebhookMessage {
+// ConvertWebhookMessage converts Chat to WebhookMessage
+func (t *Chat) ConvertWebhookMessage() *WebhookMessage {
 	return &WebhookMessage{
 		Identity: t.Identity,
 		Type:     t.Type,
@@ -48,7 +48,7 @@ func (t *Talk) ConvertWebhookMessage() *WebhookMessage {
 }
 
 // CreateWebhookEvent generates WebhookEvent JSON
-func (t *Talk) CreateWebhookEvent() ([]byte, error) {
+func (t *Chat) CreateWebhookEvent() ([]byte, error) {
 	e := t.ConvertWebhookMessage()
 
 	m, err := json.Marshal(e)

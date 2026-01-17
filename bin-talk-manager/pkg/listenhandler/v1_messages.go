@@ -10,6 +10,8 @@ import (
 	"github.com/sirupsen/logrus"
 
 	commonsock "monorepo/bin-common-handler/models/sock"
+	commonutil "monorepo/bin-common-handler/pkg/utilhandler"
+	"monorepo/bin-talk-manager/models/message"
 	"monorepo/bin-talk-manager/pkg/messagehandler"
 )
 
@@ -81,18 +83,24 @@ func (h *listenHandler) v1MessagesGet(ctx context.Context, m commonsock.Request)
 	}
 	pageToken := u.Query().Get("page_token")
 
-	// Parse filters from request body
-	var filters map[string]any
-	if m.Data != nil {
-		if err := json.Unmarshal(m.Data, &filters); err != nil {
-			logrus.Errorf("Failed to parse filters: %v", err)
-			return simpleResponse(400), nil
-		}
+	// Parse filters from request body using utilhandler pattern
+	tmpFilters, err := h.utilHandler.ParseFiltersFromRequestBody(m.Data)
+	if err != nil {
+		logrus.Errorf("Could not parse filters. err: %v", err)
+		return simpleResponse(400), nil
 	}
 
-	// TODO: Convert filters to typed filters using utilhandler
+	// Convert to typed filters
+	typedFilters, err := commonutil.ConvertFilters[message.FieldStruct, message.Field](
+		message.FieldStruct{},
+		tmpFilters,
+	)
+	if err != nil {
+		logrus.Errorf("Could not convert filters. err: %v", err)
+		return simpleResponse(400), nil
+	}
 
-	messages, err := h.messageHandler.MessageList(ctx, nil, pageToken, pageSize)
+	messages, err := h.messageHandler.MessageList(ctx, typedFilters, pageToken, pageSize)
 	if err != nil {
 		return simpleResponse(500), nil
 	}

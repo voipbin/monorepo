@@ -70,12 +70,12 @@ import (
 	route "monorepo/bin-route-manager/models/route"
 	account1 "monorepo/bin-storage-manager/models/account"
 	bucketfile "monorepo/bin-storage-manager/models/bucketfile"
-	compress_file "monorepo/bin-storage-manager/models/compressfile"
+	compressfile "monorepo/bin-storage-manager/models/compressfile"
 	file "monorepo/bin-storage-manager/models/file"
 	tag "monorepo/bin-tag-manager/models/tag"
+	chat0 "monorepo/bin-talk-manager/models/chat"
 	message3 "monorepo/bin-talk-manager/models/message"
 	participant "monorepo/bin-talk-manager/models/participant"
-	talk "monorepo/bin-talk-manager/models/talk"
 	transcribe "monorepo/bin-transcribe-manager/models/transcribe"
 	transcript "monorepo/bin-transcribe-manager/models/transcript"
 	transfer "monorepo/bin-transfer-manager/models/transfer"
@@ -5186,10 +5186,10 @@ func (mr *MockRequestHandlerMockRecorder) StorageV1AccountList(ctx, pageToken, p
 }
 
 // StorageV1CompressfileCreate mocks base method.
-func (m *MockRequestHandler) StorageV1CompressfileCreate(ctx context.Context, referenceIDs, fileIDs []uuid.UUID, requestTimeout int) (*compress_file.CompressFile, error) {
+func (m *MockRequestHandler) StorageV1CompressfileCreate(ctx context.Context, referenceIDs, fileIDs []uuid.UUID, requestTimeout int) (*compressfile.CompressFile, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "StorageV1CompressfileCreate", ctx, referenceIDs, fileIDs, requestTimeout)
-	ret0, _ := ret[0].(*compress_file.CompressFile)
+	ret0, _ := ret[0].(*compressfile.CompressFile)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -5482,10 +5482,10 @@ func (mr *MockRequestHandlerMockRecorder) TagV1TagUpdate(ctx, tagID, name, detai
 }
 
 // TalkV1ChatCreate mocks base method.
-func (m *MockRequestHandler) TalkV1ChatCreate(ctx context.Context, customerID uuid.UUID, talkType talk.Type) (*talk.Talk, error) {
+func (m *MockRequestHandler) TalkV1ChatCreate(ctx context.Context, customerID uuid.UUID, talkType chat0.Type) (*chat0.Chat, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TalkV1ChatCreate", ctx, customerID, talkType)
-	ret0, _ := ret[0].(*talk.Talk)
+	ret0, _ := ret[0].(*chat0.Chat)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -5497,10 +5497,10 @@ func (mr *MockRequestHandlerMockRecorder) TalkV1ChatCreate(ctx, customerID, talk
 }
 
 // TalkV1ChatDelete mocks base method.
-func (m *MockRequestHandler) TalkV1ChatDelete(ctx context.Context, talkID uuid.UUID) (*talk.Talk, error) {
+func (m *MockRequestHandler) TalkV1ChatDelete(ctx context.Context, talkID uuid.UUID) (*chat0.Chat, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TalkV1ChatDelete", ctx, talkID)
-	ret0, _ := ret[0].(*talk.Talk)
+	ret0, _ := ret[0].(*chat0.Chat)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -5512,10 +5512,10 @@ func (mr *MockRequestHandlerMockRecorder) TalkV1ChatDelete(ctx, talkID any) *gom
 }
 
 // TalkV1ChatGet mocks base method.
-func (m *MockRequestHandler) TalkV1ChatGet(ctx context.Context, talkID uuid.UUID) (*talk.Talk, error) {
+func (m *MockRequestHandler) TalkV1ChatGet(ctx context.Context, talkID uuid.UUID) (*chat0.Chat, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TalkV1ChatGet", ctx, talkID)
-	ret0, _ := ret[0].(*talk.Talk)
+	ret0, _ := ret[0].(*chat0.Chat)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -5527,10 +5527,10 @@ func (mr *MockRequestHandlerMockRecorder) TalkV1ChatGet(ctx, talkID any) *gomock
 }
 
 // TalkV1ChatList mocks base method.
-func (m *MockRequestHandler) TalkV1ChatList(ctx context.Context, pageToken string, pageSize uint64) ([]*talk.Talk, error) {
+func (m *MockRequestHandler) TalkV1ChatList(ctx context.Context, pageToken string, pageSize uint64) ([]*chat0.Chat, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TalkV1ChatList", ctx, pageToken, pageSize)
-	ret0, _ := ret[0].([]*talk.Talk)
+	ret0, _ := ret[0].([]*chat0.Chat)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

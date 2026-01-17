@@ -11,9 +11,9 @@ package dbhandler
 
 import (
 	context "context"
+	chat "monorepo/bin-talk-manager/models/chat"
 	message "monorepo/bin-talk-manager/models/message"
 	participant "monorepo/bin-talk-manager/models/participant"
-	talk "monorepo/bin-talk-manager/models/talk"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -42,6 +42,64 @@ func NewMockDBHandler(ctrl *gomock.Controller) *MockDBHandler {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockDBHandler) EXPECT() *MockDBHandlerMockRecorder {
 	return m.recorder
+}
+
+// ChatCreate mocks base method.
+func (m *MockDBHandler) ChatCreate(ctx context.Context, t *chat.Chat) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChatCreate", ctx, t)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ChatCreate indicates an expected call of ChatCreate.
+func (mr *MockDBHandlerMockRecorder) ChatCreate(ctx, t any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatCreate", reflect.TypeOf((*MockDBHandler)(nil).ChatCreate), ctx, t)
+}
+
+// ChatDelete mocks base method.
+func (m *MockDBHandler) ChatDelete(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChatDelete", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ChatDelete indicates an expected call of ChatDelete.
+func (mr *MockDBHandlerMockRecorder) ChatDelete(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatDelete", reflect.TypeOf((*MockDBHandler)(nil).ChatDelete), ctx, id)
+}
+
+// ChatGet mocks base method.
+func (m *MockDBHandler) ChatGet(ctx context.Context, id uuid.UUID) (*chat.Chat, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChatGet", ctx, id)
+	ret0, _ := ret[0].(*chat.Chat)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ChatGet indicates an expected call of ChatGet.
+func (mr *MockDBHandlerMockRecorder) ChatGet(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatGet", reflect.TypeOf((*MockDBHandler)(nil).ChatGet), ctx, id)
+}
+
+// ChatList mocks base method.
+func (m *MockDBHandler) ChatList(ctx context.Context, filters map[chat.Field]any, token string, size uint64) ([]*chat.Chat, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChatList", ctx, filters, token, size)
+	ret0, _ := ret[0].([]*chat.Chat)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ChatList indicates an expected call of ChatList.
+func (mr *MockDBHandlerMockRecorder) ChatList(ctx, filters, token, size any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatList", reflect.TypeOf((*MockDBHandler)(nil).ChatList), ctx, filters, token, size)
 }
 
 // MessageAddReactionAtomic mocks base method.
@@ -202,66 +260,8 @@ func (mr *MockDBHandlerMockRecorder) ParticipantList(ctx, filters any) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ParticipantList", reflect.TypeOf((*MockDBHandler)(nil).ParticipantList), ctx, filters)
 }
 
-// TalkCreate mocks base method.
-func (m *MockDBHandler) TalkCreate(ctx context.Context, t *talk.Talk) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TalkCreate", ctx, t)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// TalkCreate indicates an expected call of TalkCreate.
-func (mr *MockDBHandlerMockRecorder) TalkCreate(ctx, t any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TalkCreate", reflect.TypeOf((*MockDBHandler)(nil).TalkCreate), ctx, t)
-}
-
-// TalkDelete mocks base method.
-func (m *MockDBHandler) TalkDelete(ctx context.Context, id uuid.UUID) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TalkDelete", ctx, id)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// TalkDelete indicates an expected call of TalkDelete.
-func (mr *MockDBHandlerMockRecorder) TalkDelete(ctx, id any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TalkDelete", reflect.TypeOf((*MockDBHandler)(nil).TalkDelete), ctx, id)
-}
-
-// TalkGet mocks base method.
-func (m *MockDBHandler) TalkGet(ctx context.Context, id uuid.UUID) (*talk.Talk, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TalkGet", ctx, id)
-	ret0, _ := ret[0].(*talk.Talk)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// TalkGet indicates an expected call of TalkGet.
-func (mr *MockDBHandlerMockRecorder) TalkGet(ctx, id any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TalkGet", reflect.TypeOf((*MockDBHandler)(nil).TalkGet), ctx, id)
-}
-
-// TalkList mocks base method.
-func (m *MockDBHandler) TalkList(ctx context.Context, filters map[talk.Field]any, token string, size uint64) ([]*talk.Talk, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TalkList", ctx, filters, token, size)
-	ret0, _ := ret[0].([]*talk.Talk)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// TalkList indicates an expected call of TalkList.
-func (mr *MockDBHandlerMockRecorder) TalkList(ctx, filters, token, size any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TalkList", reflect.TypeOf((*MockDBHandler)(nil).TalkList), ctx, filters, token, size)
-}
-
 // TalkUpdate mocks base method.
-func (m *MockDBHandler) TalkUpdate(ctx context.Context, id uuid.UUID, fields map[talk.Field]any) error {
+func (m *MockDBHandler) TalkUpdate(ctx context.Context, id uuid.UUID, fields map[chat.Field]any) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TalkUpdate", ctx, id, fields)
 	ret0, _ := ret[0].(error)

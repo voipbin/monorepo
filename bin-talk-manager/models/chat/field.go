@@ -1,4 +1,4 @@
-package talk
+package chat
 
 import "github.com/gofrs/uuid"
 

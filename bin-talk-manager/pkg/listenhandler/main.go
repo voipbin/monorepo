@@ -9,13 +9,14 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-talk-manager/pkg/chathandler"
 	"monorepo/bin-talk-manager/pkg/messagehandler"
 	"monorepo/bin-talk-manager/pkg/participanthandler"
 	"monorepo/bin-talk-manager/pkg/reactionhandler"
-	"monorepo/bin-talk-manager/pkg/talkhandler"
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	commonsock "monorepo/bin-common-handler/models/sock"
 	commonsockhandler "monorepo/bin-common-handler/pkg/sockhandler"
+	commonutil "monorepo/bin-common-handler/pkg/utilhandler"
 )
 
 // Regex patterns for URI matching
@@ -31,26 +32,29 @@ var (
 
 type listenHandler struct {
 	sockHandler         commonsockhandler.SockHandler
-	talkHandler         talkhandler.TalkHandler
+	chatHandler         chathandler.ChatHandler
 	messageHandler      messagehandler.MessageHandler
 	participantHandler  participanthandler.ParticipantHandler
 	reactionHandler     reactionhandler.ReactionHandler
+	utilHandler         commonutil.UtilHandler
 }
 
 // New creates a new listen handler
 func New(
 	sock commonsockhandler.SockHandler,
-	talk talkhandler.TalkHandler,
+	talk chathandler.ChatHandler,
 	msg messagehandler.MessageHandler,
 	part participanthandler.ParticipantHandler,
 	react reactionhandler.ReactionHandler,
+	util commonutil.UtilHandler,
 ) *listenHandler {
 	return &listenHandler{
 		sockHandler:         sock,
-		talkHandler:         talk,
+		chatHandler:         talk,
 		messageHandler:      msg,
 		participantHandler:  part,
 		reactionHandler:     react,
+		utilHandler:         util,
 	}
 }
 

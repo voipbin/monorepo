@@ -13,7 +13,7 @@ import (
 	"monorepo/bin-talk-manager/models/participant"
 )
 
-const tableParticipants = "talk_participants"
+const tableParticipants = "chat_participants"
 
 func (h *dbHandler) ParticipantCreate(ctx context.Context, p *participant.Participant) error {
 	now := time.Now().UTC().Format("2006-01-02T15:04:05.000000Z")
@@ -22,7 +22,7 @@ func (h *dbHandler) ParticipantCreate(ctx context.Context, p *participant.Partic
 	// Use UPSERT to handle re-joins (participant leaves and joins again)
 	// SQLite: ON CONFLICT DO UPDATE prevents unique constraint violations
 	query := `
-		INSERT INTO talk_participants
+		INSERT INTO chat_participants
 		(id, customer_id, chat_id, owner_type, owner_id, tm_joined)
 		VALUES (?, ?, ?, ?, ?, ?)
 		ON CONFLICT(chat_id, owner_type, owner_id) DO UPDATE SET

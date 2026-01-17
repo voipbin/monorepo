@@ -7,7 +7,7 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 )
 
-// Participant represents a talk participant
+// Participant represents a chat participant
 type Participant struct {
 	commonidentity.Identity
 	commonidentity.Owner

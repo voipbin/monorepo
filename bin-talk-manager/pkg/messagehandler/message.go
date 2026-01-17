@@ -51,13 +51,13 @@ func (h *messageHandler) MessageCreate(ctx context.Context, req MessageCreateReq
 		}
 	}
 
-	// Validate talk exists
-	talk, err := h.dbHandler.TalkGet(ctx, req.ChatID)
+	// Validate chat exists
+	chat, err := h.dbHandler.ChatGet(ctx, req.ChatID)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to get talk")
+		return nil, errors.Wrap(err, "failed to get chat")
 	}
-	if talk == nil {
-		return nil, errors.New("talk not found")
+	if chat == nil {
+		return nil, errors.New("chat not found")
 	}
 
 	// Validate sender is a participant
@@ -84,7 +84,7 @@ func (h *messageHandler) MessageCreate(ctx context.Context, req MessageCreateReq
 			return nil, errors.New("parent message not found")
 		}
 
-		// CRITICAL: Validate parent is in same talk (prevents cross-talk threading)
+		// CRITICAL: Validate parent is in same chat (prevents cross-talk threading)
 		if parent.ChatID != req.ChatID {
 			return nil, errors.New("parent message must be in the same talk")
 		}

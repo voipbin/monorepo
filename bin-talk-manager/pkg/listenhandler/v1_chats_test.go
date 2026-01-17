@@ -12,8 +12,8 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
-	"monorepo/bin-talk-manager/models/talk"
-	"monorepo/bin-talk-manager/pkg/talkhandler"
+	"monorepo/bin-talk-manager/models/chat"
+	"monorepo/bin-talk-manager/pkg/chathandler"
 )
 
 func Test_processV1TalkChatsPost(t *testing.T) {
@@ -22,9 +22,9 @@ func Test_processV1TalkChatsPost(t *testing.T) {
 		request *sock.Request
 
 		customerID uuid.UUID
-		talkType   talk.Type
+		chatType   chat.Type
 
-		responseTalk *talk.Talk
+		responseChat *chat.Chat
 		expectRes    *sock.Response
 	}{
 		{
@@ -37,14 +37,14 @@ func Test_processV1TalkChatsPost(t *testing.T) {
 			},
 
 			customerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
-			talkType:   talk.TypeNormal,
+			chatType:   chat.TypeNormal,
 
-			responseTalk: &talk.Talk{
+			responseChat: &chat.Chat{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("6ebc6880-31da-11ed-8e95-a3bc92af9795"),
 					CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
 				},
-				Type:     talk.TypeNormal,
+				Type:     chat.TypeNormal,
 				TMCreate: "2021-11-23 17:55:39.712000",
 				TMUpdate: "9999-01-01 00:00:00.000000",
 				TMDelete: "9999-01-01 00:00:00.000000",
@@ -65,14 +65,14 @@ func Test_processV1TalkChatsPost(t *testing.T) {
 			},
 
 			customerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
-			talkType:   talk.TypeGroup,
+			chatType:   chat.TypeGroup,
 
-			responseTalk: &talk.Talk{
+			responseChat: &chat.Chat{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("7fcd7990-42eb-11ed-9fa6-b4cd93af9796"),
 					CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
 				},
-				Type:     talk.TypeGroup,
+				Type:     chat.TypeGroup,
 				TMCreate: "2021-11-23 18:00:00.000000",
 				TMUpdate: "9999-01-01 00:00:00.000000",
 				TMDelete: "9999-01-01 00:00:00.000000",
@@ -91,15 +91,15 @@ func Test_processV1TalkChatsPost(t *testing.T) {
 			defer mc.Finish()
 
 			mockSock := sockhandler.NewMockSockHandler(mc)
-			mockTalk := talkhandler.NewMockTalkHandler(mc)
+			mockChat := chathandler.NewMockChatHandler(mc)
 
 			h := &listenHandler{
 				sockHandler: mockSock,
-				talkHandler: mockTalk,
+				chatHandler: mockChat,
 			}
 
 			ctx := context.Background()
-			mockTalk.EXPECT().TalkCreate(ctx, tt.customerID, tt.talkType).Return(tt.responseTalk, nil)
+			mockChat.EXPECT().ChatCreate(ctx, tt.customerID, tt.chatType).Return(tt.responseChat, nil)
 
 			res, err := h.v1ChatsPost(ctx, *tt.request)
 			if err != nil {
@@ -155,11 +155,11 @@ func Test_processV1TalkChatsPost_error(t *testing.T) {
 			defer mc.Finish()
 
 			mockSock := sockhandler.NewMockSockHandler(mc)
-			mockTalk := talkhandler.NewMockTalkHandler(mc)
+			mockChat := chathandler.NewMockChatHandler(mc)
 
 			h := &listenHandler{
 				sockHandler: mockSock,
-				talkHandler: mockTalk,
+				chatHandler: mockChat,
 			}
 
 			ctx := context.Background()
@@ -183,7 +183,7 @@ func Test_processV1TalkChatsGet(t *testing.T) {
 		pageSize  uint64
 		pageToken string
 
-		responseTalks []*talk.Talk
+		responseTalks []*chat.Chat
 		expectRes     *sock.Response
 	}{
 		{
@@ -198,13 +198,13 @@ func Test_processV1TalkChatsGet(t *testing.T) {
 			pageSize:  10,
 			pageToken: "2021-11-23 17:55:39.712000",
 
-			responseTalks: []*talk.Talk{
+			responseTalks: []*chat.Chat{
 				{
 					Identity: commonidentity.Identity{
 						ID:         uuid.FromStringOrNil("6ebc6880-31da-11ed-8e95-a3bc92af9795"),
 						CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
 					},
-					Type:     talk.TypeNormal,
+					Type:     chat.TypeNormal,
 					TMCreate: "2021-11-23 17:55:39.712000",
 					TMUpdate: "9999-01-01 00:00:00.000000",
 					TMDelete: "9999-01-01 00:00:00.000000",
@@ -228,7 +228,7 @@ func Test_processV1TalkChatsGet(t *testing.T) {
 			pageSize:  50,
 			pageToken: "",
 
-			responseTalks: []*talk.Talk{},
+			responseTalks: []*chat.Chat{},
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
@@ -243,15 +243,15 @@ func Test_processV1TalkChatsGet(t *testing.T) {
 			defer mc.Finish()
 
 			mockSock := sockhandler.NewMockSockHandler(mc)
-			mockTalk := talkhandler.NewMockTalkHandler(mc)
+			mockChat := chathandler.NewMockChatHandler(mc)
 
 			h := &listenHandler{
 				sockHandler: mockSock,
-				talkHandler: mockTalk,
+				chatHandler: mockChat,
 			}
 
 			ctx := context.Background()
-			mockTalk.EXPECT().TalkList(ctx, nil, tt.pageToken, tt.pageSize).Return(tt.responseTalks, nil)
+			mockChat.EXPECT().ChatList(ctx, nil, tt.pageToken, tt.pageSize).Return(tt.responseTalks, nil)
 
 			res, err := h.v1ChatsGet(ctx, *tt.request)
 			if err != nil {
@@ -270,8 +270,8 @@ func Test_processV1TalkChatsIDGet(t *testing.T) {
 		name    string
 		request *sock.Request
 
-		talkID       uuid.UUID
-		responseTalk *talk.Talk
+		chatID       uuid.UUID
+		responseChat *chat.Chat
 		expectRes    *sock.Response
 	}{
 		{
@@ -282,13 +282,13 @@ func Test_processV1TalkChatsIDGet(t *testing.T) {
 				DataType: "application/json",
 			},
 
-			talkID: uuid.FromStringOrNil("6ebc6880-31da-11ed-8e95-a3bc92af9795"),
-			responseTalk: &talk.Talk{
+			chatID: uuid.FromStringOrNil("6ebc6880-31da-11ed-8e95-a3bc92af9795"),
+			responseChat: &chat.Chat{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("6ebc6880-31da-11ed-8e95-a3bc92af9795"),
 					CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
 				},
-				Type:     talk.TypeNormal,
+				Type:     chat.TypeNormal,
 				TMCreate: "2021-11-23 17:55:39.712000",
 				TMUpdate: "9999-01-01 00:00:00.000000",
 				TMDelete: "9999-01-01 00:00:00.000000",
@@ -307,15 +307,15 @@ func Test_processV1TalkChatsIDGet(t *testing.T) {
 			defer mc.Finish()
 
 			mockSock := sockhandler.NewMockSockHandler(mc)
-			mockTalk := talkhandler.NewMockTalkHandler(mc)
+			mockChat := chathandler.NewMockChatHandler(mc)
 
 			h := &listenHandler{
 				sockHandler: mockSock,
-				talkHandler: mockTalk,
+				chatHandler: mockChat,
 			}
 
 			ctx := context.Background()
-			mockTalk.EXPECT().TalkGet(ctx, tt.talkID).Return(tt.responseTalk, nil)
+			mockChat.EXPECT().ChatGet(ctx, tt.chatID).Return(tt.responseChat, nil)
 
 			res, err := h.v1ChatsIDGet(ctx, *tt.request)
 			if err != nil {
@@ -334,8 +334,8 @@ func Test_processV1TalkChatsIDDelete(t *testing.T) {
 		name    string
 		request *sock.Request
 
-		talkID       uuid.UUID
-		responseTalk *talk.Talk
+		chatID       uuid.UUID
+		responseChat *chat.Chat
 		expectRes    *sock.Response
 	}{
 		{
@@ -346,13 +346,13 @@ func Test_processV1TalkChatsIDDelete(t *testing.T) {
 				DataType: "application/json",
 			},
 
-			talkID: uuid.FromStringOrNil("6ebc6880-31da-11ed-8e95-a3bc92af9795"),
-			responseTalk: &talk.Talk{
+			chatID: uuid.FromStringOrNil("6ebc6880-31da-11ed-8e95-a3bc92af9795"),
+			responseChat: &chat.Chat{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("6ebc6880-31da-11ed-8e95-a3bc92af9795"),
 					CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
 				},
-				Type:     talk.TypeNormal,
+				Type:     chat.TypeNormal,
 				TMCreate: "2021-11-23 17:55:39.712000",
 				TMUpdate: "2021-11-23 18:00:00.000000",
 				TMDelete: "2021-11-23 18:00:00.000000",
@@ -371,15 +371,15 @@ func Test_processV1TalkChatsIDDelete(t *testing.T) {
 			defer mc.Finish()
 
 			mockSock := sockhandler.NewMockSockHandler(mc)
-			mockTalk := talkhandler.NewMockTalkHandler(mc)
+			mockChat := chathandler.NewMockChatHandler(mc)
 
 			h := &listenHandler{
 				sockHandler: mockSock,
-				talkHandler: mockTalk,
+				chatHandler: mockChat,
 			}
 
 			ctx := context.Background()
-			mockTalk.EXPECT().TalkDelete(ctx, tt.talkID).Return(tt.responseTalk, nil)
+			mockChat.EXPECT().ChatDelete(ctx, tt.chatID).Return(tt.responseChat, nil)
 
 			res, err := h.v1ChatsIDDelete(ctx, *tt.request)
 			if err != nil {
@@ -420,11 +420,11 @@ func Test_processV1TalkChatsIDDelete(t *testing.T) {
 // 			defer mc.Finish()
 // 
 // 			mockSock := sockhandler.NewMockSockHandler(mc)
-// 			mockTalk := talkhandler.NewMockTalkHandler(mc)
+// 			mockChat := chathandler.NewMockChatHandler(mc)
 // 
 // 			h := &listenHandler{
 // 				sockHandler: mockSock,
-// 				talkHandler: mockTalk,
+// 				chatHandler: mockChat,
 // 			}
 // 
 // 			ctx := context.Background()

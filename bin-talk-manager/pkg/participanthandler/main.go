@@ -13,13 +13,13 @@ import (
 
 // ParticipantHandler defines the interface for participant business logic operations
 type ParticipantHandler interface {
-	// ParticipantAdd adds a participant to a talk (upsert behavior)
+	// ParticipantAdd adds a participant to a chat (upsert behavior)
 	ParticipantAdd(ctx context.Context, customerID, chatID, ownerID uuid.UUID, ownerType string) (*participant.Participant, error)
 
 	// ParticipantList returns all participants for a talk
 	ParticipantList(ctx context.Context, customerID, chatID uuid.UUID) ([]*participant.Participant, error)
 
-	// ParticipantRemove removes a participant from a talk (hard delete)
+	// ParticipantRemove removes a participant from a chat (hard delete)
 	ParticipantRemove(ctx context.Context, customerID, participantID uuid.UUID) error
 }
 

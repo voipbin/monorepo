@@ -14,7 +14,7 @@ import (
 
 	"monorepo/bin-talk-manager/models/message"
 	"monorepo/bin-talk-manager/models/participant"
-	"monorepo/bin-talk-manager/models/talk"
+	"monorepo/bin-talk-manager/models/chat"
 	"monorepo/bin-talk-manager/pkg/dbhandler"
 )
 
@@ -30,7 +30,7 @@ func Test_MessageCreate(t *testing.T) {
 
 		req MessageCreateRequest
 
-		responseTalk         *talk.Talk
+		responseChat         *chat.Chat
 		responseParticipants []*participant.Participant
 		responseParent       *message.Message
 
@@ -49,12 +49,12 @@ func Test_MessageCreate(t *testing.T) {
 				Medias:     "",
 			},
 
-			responseTalk: &talk.Talk{
+			responseChat: &chat.Chat{
 				Identity: commonidentity.Identity{
 					ID:         chatID,
 					CustomerID: customerID,
 				},
-				Type: talk.TypeNormal,
+				Type: chat.TypeNormal,
 			},
 			responseParticipants: []*participant.Participant{
 				{
@@ -87,12 +87,12 @@ func Test_MessageCreate(t *testing.T) {
 				Medias:     "",
 			},
 
-			responseTalk: &talk.Talk{
+			responseChat: &chat.Chat{
 				Identity: commonidentity.Identity{
 					ID:         chatID,
 					CustomerID: customerID,
 				},
-				Type: talk.TypeNormal,
+				Type: chat.TypeNormal,
 			},
 			responseParticipants: []*participant.Participant{
 				{
@@ -134,12 +134,12 @@ func Test_MessageCreate(t *testing.T) {
 				Medias:     "",
 			},
 
-			responseTalk: &talk.Talk{
+			responseChat: &chat.Chat{
 				Identity: commonidentity.Identity{
 					ID:         chatID,
 					CustomerID: customerID,
 				},
-				Type: talk.TypeNormal,
+				Type: chat.TypeNormal,
 			},
 			responseParticipants: []*participant.Participant{
 				{
@@ -180,12 +180,12 @@ func Test_MessageCreate(t *testing.T) {
 				Medias:     "",
 			},
 
-			responseTalk: &talk.Talk{
+			responseChat: &chat.Chat{
 				Identity: commonidentity.Identity{
 					ID:         chatID,
 					CustomerID: customerID,
 				},
-				Type: talk.TypeNormal,
+				Type: chat.TypeNormal,
 			},
 			responseParticipants: []*participant.Participant{
 				{
@@ -217,12 +217,12 @@ func Test_MessageCreate(t *testing.T) {
 				Medias:     `[{"type":"file"}]`,
 			},
 
-			responseTalk: &talk.Talk{
+			responseChat: &chat.Chat{
 				Identity: commonidentity.Identity{
 					ID:         chatID,
 					CustomerID: customerID,
 				},
-				Type: talk.TypeNormal,
+				Type: chat.TypeNormal,
 			},
 			responseParticipants: []*participant.Participant{
 				{
@@ -258,8 +258,8 @@ func Test_MessageCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			// Mock TalkGet
-			mockDB.EXPECT().TalkGet(ctx, tt.req.ChatID).Return(tt.responseTalk, nil)
+			// Mock ChatGet
+			mockDB.EXPECT().ChatGet(ctx, tt.req.ChatID).Return(tt.responseChat, nil)
 
 			// Mock ParticipantList
 			mockDB.EXPECT().ParticipantList(ctx, gomock.Any()).Return(tt.responseParticipants, nil)
@@ -337,7 +337,7 @@ func Test_MessageCreate_error(t *testing.T) {
 
 		req MessageCreateRequest
 
-		responseTalk         *talk.Talk
+		responseChat         *chat.Chat
 		getTalkError         error
 		responseParticipants []*participant.Participant
 		getParticipantsError error
@@ -458,7 +458,7 @@ func Test_MessageCreate_error(t *testing.T) {
 				Text:       "Test message",
 			},
 
-			responseTalk: nil,
+			responseChat: nil,
 			getTalkError: fmt.Errorf("not found"),
 
 			expectError: true,
@@ -475,7 +475,7 @@ func Test_MessageCreate_error(t *testing.T) {
 				Text:       "Test message",
 			},
 
-			responseTalk: nil,
+			responseChat: nil,
 			getTalkError: nil,
 
 			expectError: true,
@@ -492,12 +492,12 @@ func Test_MessageCreate_error(t *testing.T) {
 				Text:       "Test message",
 			},
 
-			responseTalk: &talk.Talk{
+			responseChat: &chat.Chat{
 				Identity: commonidentity.Identity{
 					ID:         chatID,
 					CustomerID: customerID,
 				},
-				Type: talk.TypeNormal,
+				Type: chat.TypeNormal,
 			},
 			getTalkError:         nil,
 			responseParticipants: []*participant.Participant{}, // Empty - sender not participant
@@ -517,12 +517,12 @@ func Test_MessageCreate_error(t *testing.T) {
 				Text:       "Test message",
 			},
 
-			responseTalk: &talk.Talk{
+			responseChat: &chat.Chat{
 				Identity: commonidentity.Identity{
 					ID:         chatID,
 					CustomerID: customerID,
 				},
-				Type: talk.TypeNormal,
+				Type: chat.TypeNormal,
 			},
 			getTalkError:         nil,
 			responseParticipants: nil,
@@ -543,12 +543,12 @@ func Test_MessageCreate_error(t *testing.T) {
 				Text:       "Reply message",
 			},
 
-			responseTalk: &talk.Talk{
+			responseChat: &chat.Chat{
 				Identity: commonidentity.Identity{
 					ID:         chatID,
 					CustomerID: customerID,
 				},
-				Type: talk.TypeNormal,
+				Type: chat.TypeNormal,
 			},
 			getTalkError: nil,
 			responseParticipants: []*participant.Participant{
@@ -583,12 +583,12 @@ func Test_MessageCreate_error(t *testing.T) {
 				Text:       "Reply message",
 			},
 
-			responseTalk: &talk.Talk{
+			responseChat: &chat.Chat{
 				Identity: commonidentity.Identity{
 					ID:         chatID,
 					CustomerID: customerID,
 				},
-				Type: talk.TypeNormal,
+				Type: chat.TypeNormal,
 			},
 			getTalkError: nil,
 			responseParticipants: []*participant.Participant{
@@ -623,12 +623,12 @@ func Test_MessageCreate_error(t *testing.T) {
 				Text:       "Cross-talk threading attack",
 			},
 
-			responseTalk: &talk.Talk{
+			responseChat: &chat.Chat{
 				Identity: commonidentity.Identity{
 					ID:         chatID,
 					CustomerID: customerID,
 				},
-				Type: talk.TypeNormal,
+				Type: chat.TypeNormal,
 			},
 			getTalkError: nil,
 			responseParticipants: []*participant.Participant{
@@ -671,12 +671,12 @@ func Test_MessageCreate_error(t *testing.T) {
 				Text:       "Test message",
 			},
 
-			responseTalk: &talk.Talk{
+			responseChat: &chat.Chat{
 				Identity: commonidentity.Identity{
 					ID:         chatID,
 					CustomerID: customerID,
 				},
-				Type: talk.TypeNormal,
+				Type: chat.TypeNormal,
 			},
 			getTalkError: nil,
 			responseParticipants: []*participant.Participant{
@@ -731,18 +731,18 @@ func Test_MessageCreate_error(t *testing.T) {
 				}
 
 				if mediasValid {
-					// Mock TalkGet (always needed if basic validation passes)
-					mockDB.EXPECT().TalkGet(ctx, tt.req.ChatID).Return(tt.responseTalk, tt.getTalkError)
+					// Mock ChatGet (always needed if basic validation passes)
+					mockDB.EXPECT().ChatGet(ctx, tt.req.ChatID).Return(tt.responseChat, tt.getTalkError)
 
-					// Mock ParticipantList if talk exists
-					if tt.getTalkError == nil && tt.responseTalk != nil {
+					// Mock ParticipantList if chat exists
+					if tt.getTalkError == nil && tt.responseChat != nil {
 						mockDB.EXPECT().ParticipantList(ctx, gomock.Any()).Return(tt.responseParticipants, tt.getParticipantsError)
 					}
 
 					// Mock MessageGet if parent_id provided and participant check passed
 					if tt.req.ParentID != nil &&
 						tt.getTalkError == nil &&
-						tt.responseTalk != nil &&
+						tt.responseChat != nil &&
 						tt.getParticipantsError == nil &&
 						len(tt.responseParticipants) > 0 {
 						mockDB.EXPECT().MessageGet(ctx, *tt.req.ParentID).Return(tt.responseParent, tt.getParentError)
@@ -750,7 +750,7 @@ func Test_MessageCreate_error(t *testing.T) {
 
 					// Mock MessageCreate only if all validations pass
 					if tt.getTalkError == nil &&
-						tt.responseTalk != nil &&
+						tt.responseChat != nil &&
 						tt.getParticipantsError == nil &&
 						len(tt.responseParticipants) > 0 &&
 						(tt.req.ParentID == nil ||

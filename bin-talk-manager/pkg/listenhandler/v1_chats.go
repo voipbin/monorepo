@@ -10,7 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	commonsock "monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-talk-manager/models/talk"
+	"monorepo/bin-talk-manager/models/chat"
 )
 
 func (h *listenHandler) v1ChatsPost(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
@@ -30,7 +30,7 @@ func (h *listenHandler) v1ChatsPost(ctx context.Context, m commonsock.Request) (
 		return simpleResponse(400), nil
 	}
 
-	t, err := h.talkHandler.TalkCreate(ctx, customerID, talk.Type(req.Type))
+	t, err := h.chatHandler.ChatCreate(ctx, customerID, chat.Type(req.Type))
 	if err != nil {
 		return simpleResponse(500), nil
 	}
@@ -65,7 +65,7 @@ func (h *listenHandler) v1ChatsGet(ctx context.Context, m commonsock.Request) (*
 
 	// TODO: Convert filters to typed filters using utilhandler
 
-	talks, err := h.talkHandler.TalkList(ctx, nil, pageToken, pageSize)
+	talks, err := h.chatHandler.ChatList(ctx, nil, pageToken, pageSize)
 	if err != nil {
 		return simpleResponse(500), nil
 	}
@@ -80,9 +80,9 @@ func (h *listenHandler) v1ChatsGet(ctx context.Context, m commonsock.Request) (*
 
 func (h *listenHandler) v1ChatsIDGet(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
 	matches := regV1ChatsID.FindStringSubmatch(m.URI)
-	talkID := uuid.FromStringOrNil(matches[1])
+	chatID := uuid.FromStringOrNil(matches[1])
 
-	t, err := h.talkHandler.TalkGet(ctx, talkID)
+	t, err := h.chatHandler.ChatGet(ctx, chatID)
 	if err != nil {
 		return simpleResponse(404), nil
 	}
@@ -97,9 +97,9 @@ func (h *listenHandler) v1ChatsIDGet(ctx context.Context, m commonsock.Request) 
 
 func (h *listenHandler) v1ChatsIDDelete(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
 	matches := regV1ChatsID.FindStringSubmatch(m.URI)
-	talkID := uuid.FromStringOrNil(matches[1])
+	chatID := uuid.FromStringOrNil(matches[1])
 
-	t, err := h.talkHandler.TalkDelete(ctx, talkID)
+	t, err := h.chatHandler.ChatDelete(ctx, chatID)
 	if err != nil {
 		return simpleResponse(500), nil
 	}

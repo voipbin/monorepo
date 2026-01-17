@@ -10,12 +10,12 @@ import (
 	"github.com/sirupsen/logrus"
 
 	commondb "monorepo/bin-common-handler/pkg/databasehandler"
-	"monorepo/bin-talk-manager/models/talk"
+	"monorepo/bin-talk-manager/models/chat"
 )
 
-const tableTalks = "talk_chats"
+const tableChats = "chat_chats"
 
-func (h *dbHandler) TalkCreate(ctx context.Context, t *talk.Talk) error {
+func (h *dbHandler) ChatCreate(ctx context.Context, t *chat.Chat) error {
 	now := time.Now().UTC().Format("2006-01-02T15:04:05.000000Z")
 	t.TMCreate = now
 	t.TMUpdate = now
@@ -26,7 +26,7 @@ func (h *dbHandler) TalkCreate(ctx context.Context, t *talk.Talk) error {
 		return err
 	}
 
-	query := sq.Insert(tableTalks).
+	query := sq.Insert(tableChats).
 		SetMap(fields).
 		PlaceholderFormat(sq.Question)
 
@@ -38,18 +38,18 @@ func (h *dbHandler) TalkCreate(ctx context.Context, t *talk.Talk) error {
 
 	_, err = h.db.ExecContext(ctx, sqlQuery, args...)
 	if err != nil {
-		logrus.Errorf("Failed to create talk: %v", err)
+		logrus.Errorf("Failed to create chat: %v", err)
 		return err
 	}
 
 	return nil
 }
 
-func (h *dbHandler) TalkGet(ctx context.Context, id uuid.UUID) (*talk.Talk, error) {
-	fields := commondb.GetDBFields(&talk.Talk{})
+func (h *dbHandler) ChatGet(ctx context.Context, id uuid.UUID) (*chat.Chat, error) {
+	fields := commondb.GetDBFields(&chat.Chat{})
 
 	query := sq.Select(fields...).
-		From(tableTalks).
+		From(tableChats).
 		Where(sq.Eq{"id": id.Bytes()}).
 		PlaceholderFormat(sq.Question)
 
@@ -72,7 +72,7 @@ func (h *dbHandler) TalkGet(ctx context.Context, id uuid.UUID) (*talk.Talk, erro
 		return nil, sql.ErrNoRows
 	}
 
-	var t talk.Talk
+	var t chat.Chat
 	err = commondb.ScanRow(rows, &t)
 	if err != nil {
 		return nil, err
@@ -81,11 +81,11 @@ func (h *dbHandler) TalkGet(ctx context.Context, id uuid.UUID) (*talk.Talk, erro
 	return &t, nil
 }
 
-func (h *dbHandler) TalkList(ctx context.Context, filters map[talk.Field]any, token string, size uint64) ([]*talk.Talk, error) {
-	fields := commondb.GetDBFields(&talk.Talk{})
+func (h *dbHandler) ChatList(ctx context.Context, filters map[chat.Field]any, token string, size uint64) ([]*chat.Chat, error) {
+	fields := commondb.GetDBFields(&chat.Chat{})
 
 	query := sq.Select(fields...).
-		From(tableTalks).
+		From(tableChats).
 		OrderBy("tm_create DESC").
 		Limit(size).
 		PlaceholderFormat(sq.Question)
@@ -117,9 +117,9 @@ func (h *dbHandler) TalkList(ctx context.Context, filters map[talk.Field]any, to
 		}
 	}()
 
-	var talks []*talk.Talk
+	var talks []*chat.Chat
 	for rows.Next() {
-		var t talk.Talk
+		var t chat.Chat
 		err = commondb.ScanRow(rows, &t)
 		if err != nil {
 			return nil, err
@@ -130,9 +130,9 @@ func (h *dbHandler) TalkList(ctx context.Context, filters map[talk.Field]any, to
 	return talks, nil
 }
 
-func (h *dbHandler) TalkUpdate(ctx context.Context, id uuid.UUID, fields map[talk.Field]any) error {
+func (h *dbHandler) TalkUpdate(ctx context.Context, id uuid.UUID, fields map[chat.Field]any) error {
 	now := time.Now().UTC().Format("2006-01-02T15:04:05.000000Z")
-	fields[talk.FieldTMUpdate] = now
+	fields[chat.FieldTMUpdate] = now
 
 	preparedFields, err := commondb.PrepareFields(fields)
 	if err != nil {
@@ -140,7 +140,7 @@ func (h *dbHandler) TalkUpdate(ctx context.Context, id uuid.UUID, fields map[tal
 		return err
 	}
 
-	query := sq.Update(tableTalks).
+	query := sq.Update(tableChats).
 		SetMap(preparedFields).
 		Where(sq.Eq{"id": id.Bytes()}).
 		PlaceholderFormat(sq.Question)
@@ -154,10 +154,10 @@ func (h *dbHandler) TalkUpdate(ctx context.Context, id uuid.UUID, fields map[tal
 	return err
 }
 
-func (h *dbHandler) TalkDelete(ctx context.Context, id uuid.UUID) error {
+func (h *dbHandler) ChatDelete(ctx context.Context, id uuid.UUID) error {
 	now := time.Now().UTC().Format("2006-01-02T15:04:05.000000Z")
 
-	query := sq.Update(tableTalks).
+	query := sq.Update(tableChats).
 		Set("tm_delete", now).
 		Set("tm_update", now).
 		Where(sq.Eq{"id": id.Bytes()}).

@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	talktalk "monorepo/bin-talk-manager/models/talk"
+	tkchat "monorepo/bin-talk-manager/models/chat"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -26,7 +26,7 @@ func Test_TalkV1ChatGet(t *testing.T) {
 		expectRequest *sock.Request
 
 		response  *sock.Response
-		expectRes *talktalk.Talk
+		expectRes *tkchat.Chat
 	}
 
 	tests := []test{
@@ -47,12 +47,12 @@ func Test_TalkV1ChatGet(t *testing.T) {
 				DataType:   ContentTypeJSON,
 				Data:       []byte(`{"id":"72179880-ec5f-11ec-920e-c77279756b6d","customer_id":"550e8400-e29b-41d4-a716-446655440000","type":"normal"}`),
 			},
-			expectRes: &talktalk.Talk{
+			expectRes: &tkchat.Chat{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("72179880-ec5f-11ec-920e-c77279756b6d"),
 					CustomerID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000"),
 				},
-				Type: talktalk.TypeNormal,
+				Type: tkchat.TypeNormal,
 			},
 		},
 	}
@@ -90,19 +90,19 @@ func Test_TalkV1ChatCreate(t *testing.T) {
 		name string
 
 		customerID uuid.UUID
-		talkType   talktalk.Type
+		talkType   tkchat.Type
 
 		expectQueue   string
 		expectRequest *sock.Request
 
 		response  *sock.Response
-		expectRes *talktalk.Talk
+		expectRes *tkchat.Chat
 	}{
 		{
 			name: "normal",
 
 			customerID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000"),
-			talkType:   talktalk.TypeNormal,
+			talkType:   tkchat.TypeNormal,
 
 			expectQueue: "bin-manager.talk-manager.request",
 			expectRequest: &sock.Request{
@@ -117,12 +117,12 @@ func Test_TalkV1ChatCreate(t *testing.T) {
 				DataType:   ContentTypeJSON,
 				Data:       []byte(`{"id":"72179880-ec5f-11ec-920e-c77279756b6d","customer_id":"550e8400-e29b-41d4-a716-446655440000","type":"normal"}`),
 			},
-			expectRes: &talktalk.Talk{
+			expectRes: &tkchat.Chat{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("72179880-ec5f-11ec-920e-c77279756b6d"),
 					CustomerID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000"),
 				},
-				Type: talktalk.TypeNormal,
+				Type: tkchat.TypeNormal,
 			},
 		},
 	}
@@ -164,7 +164,7 @@ func Test_TalkV1ChatDelete(t *testing.T) {
 		expectRequest *sock.Request
 
 		response  *sock.Response
-		expectRes *talktalk.Talk
+		expectRes *tkchat.Chat
 	}{
 		{
 			name: "normal",
@@ -183,12 +183,12 @@ func Test_TalkV1ChatDelete(t *testing.T) {
 				DataType:   ContentTypeJSON,
 				Data:       []byte(`{"id":"72179880-ec5f-11ec-920e-c77279756b6d","customer_id":"550e8400-e29b-41d4-a716-446655440000","type":"normal"}`),
 			},
-			expectRes: &talktalk.Talk{
+			expectRes: &tkchat.Chat{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("72179880-ec5f-11ec-920e-c77279756b6d"),
 					CustomerID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000"),
 				},
-				Type: talktalk.TypeNormal,
+				Type: tkchat.TypeNormal,
 			},
 		},
 	}
@@ -231,7 +231,7 @@ func Test_TalkV1ChatList(t *testing.T) {
 		expectRequest *sock.Request
 
 		response  *sock.Response
-		expectRes []*talktalk.Talk
+		expectRes []*tkchat.Chat
 	}{
 		{
 			name: "normal",
@@ -251,13 +251,13 @@ func Test_TalkV1ChatList(t *testing.T) {
 				DataType:   ContentTypeJSON,
 				Data:       []byte(`[{"id":"72179880-ec5f-11ec-920e-c77279756b6d","customer_id":"550e8400-e29b-41d4-a716-446655440000","type":"normal"}]`),
 			},
-			expectRes: []*talktalk.Talk{
+			expectRes: []*tkchat.Chat{
 				{
 					Identity: commonidentity.Identity{
 						ID:         uuid.FromStringOrNil("72179880-ec5f-11ec-920e-c77279756b6d"),
 						CustomerID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000"),
 					},
-					Type: talktalk.TypeNormal,
+					Type: tkchat.TypeNormal,
 				},
 			},
 		},

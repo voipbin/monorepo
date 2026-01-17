@@ -78,7 +78,7 @@ import (
 
 	talkmessage "monorepo/bin-talk-manager/models/message"
 	talkparticipant "monorepo/bin-talk-manager/models/participant"
-	talktalk "monorepo/bin-talk-manager/models/talk"
+	tkchat "monorepo/bin-talk-manager/models/chat"
 
 	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
 	tmtranscript "monorepo/bin-transcribe-manager/models/transcript"
@@ -1135,10 +1135,10 @@ type RequestHandler interface {
 	TagV1TagList(ctx context.Context, pageToken string, pageSize uint64, filters map[tmtag.Field]any) ([]tmtag.Tag, error)
 
 	// talk-manager talk
-	TalkV1ChatGet(ctx context.Context, talkID uuid.UUID) (*talktalk.Talk, error)
-	TalkV1ChatCreate(ctx context.Context, customerID uuid.UUID, talkType talktalk.Type) (*talktalk.Talk, error)
-	TalkV1ChatDelete(ctx context.Context, talkID uuid.UUID) (*talktalk.Talk, error)
-	TalkV1ChatList(ctx context.Context, pageToken string, pageSize uint64) ([]*talktalk.Talk, error)
+	TalkV1ChatGet(ctx context.Context, talkID uuid.UUID) (*tkchat.Chat, error)
+	TalkV1ChatCreate(ctx context.Context, customerID uuid.UUID, talkType tkchat.Type) (*tkchat.Chat, error)
+	TalkV1ChatDelete(ctx context.Context, talkID uuid.UUID) (*tkchat.Chat, error)
+	TalkV1ChatList(ctx context.Context, pageToken string, pageSize uint64) ([]*tkchat.Chat, error)
 
 	// talk-manager participant
 	TalkV1ParticipantList(ctx context.Context, talkID uuid.UUID) ([]*talkparticipant.Participant, error)

@@ -11,17 +11,17 @@ import (
 
 	"monorepo/bin-talk-manager/models/message"
 	"monorepo/bin-talk-manager/models/participant"
-	"monorepo/bin-talk-manager/models/talk"
+	"monorepo/bin-talk-manager/models/chat"
 )
 
 // DBHandler defines database operations interface
 type DBHandler interface {
-	// Talk operations
-	TalkCreate(ctx context.Context, t *talk.Talk) error
-	TalkGet(ctx context.Context, id uuid.UUID) (*talk.Talk, error)
-	TalkList(ctx context.Context, filters map[talk.Field]any, token string, size uint64) ([]*talk.Talk, error)
-	TalkUpdate(ctx context.Context, id uuid.UUID, fields map[talk.Field]any) error
-	TalkDelete(ctx context.Context, id uuid.UUID) error
+	// *Chat operations
+	ChatCreate(ctx context.Context, t *chat.Chat) error
+	ChatGet(ctx context.Context, id uuid.UUID) (*chat.Chat, error)
+	ChatList(ctx context.Context, filters map[chat.Field]any, token string, size uint64) ([]*chat.Chat, error)
+	TalkUpdate(ctx context.Context, id uuid.UUID, fields map[chat.Field]any) error
+	ChatDelete(ctx context.Context, id uuid.UUID) error
 
 	// Participant operations
 	ParticipantCreate(ctx context.Context, p *participant.Participant) error
