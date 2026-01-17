@@ -36,6 +36,7 @@ Welcome to voipbin's documentation!
    webhook
    customer
    chat
+   talk
    ai
    provider
    route
