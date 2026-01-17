@@ -95,7 +95,7 @@ func (h *listenHandler) v1TalkMessagesGet(ctx context.Context, m commonsock.Requ
 	// Parse filters from request body
 	var filters map[string]any
 	if m.Data != nil {
-		json.Unmarshal(m.Data, &filters)
+		_ = json.Unmarshal(m.Data, &filters)
 	}
 
 	// TODO: Convert filters to typed filters using utilhandler

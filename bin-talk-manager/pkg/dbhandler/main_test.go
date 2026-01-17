@@ -39,7 +39,7 @@ func TestMain(m *testing.M) {
 	}
 
 	dbTest = db
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	os.Exit(m.Run())
 }

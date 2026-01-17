@@ -63,7 +63,7 @@ func (h *listenHandler) v1TalkChatsIDParticipantsGet(ctx context.Context, m comm
 	var req struct {
 		CustomerID string `json:"customer_id"`
 	}
-	json.Unmarshal(m.Data, &req)
+	_ = json.Unmarshal(m.Data, &req)
 	customerID := uuid.FromStringOrNil(req.CustomerID)
 
 	participants, err := h.participantHandler.ParticipantList(ctx, customerID, chatID)
@@ -89,7 +89,7 @@ func (h *listenHandler) processV1TalkChatsIDParticipantsID(ctx context.Context, 
 		var req struct {
 			CustomerID string `json:"customer_id"`
 		}
-		json.Unmarshal(m.Data, &req)
+		_ = json.Unmarshal(m.Data, &req)
 		customerID := uuid.FromStringOrNil(req.CustomerID)
 
 		err := h.participantHandler.ParticipantRemove(ctx, customerID, participantID)

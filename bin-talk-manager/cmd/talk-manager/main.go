@@ -91,7 +91,7 @@ func runDaemon() error {
 		Password: cfg.RedisPassword,
 		DB:       cfg.RedisDatabase,
 	})
-	defer redisClient.Close()
+	defer func() { _ = redisClient.Close() }()
 	logger.Info("Redis initialized")
 
 	// Initialize database handler
@@ -114,7 +114,11 @@ func runDaemon() error {
 
 	// Start listening for RabbitMQ messages
 	ctx := context.Background()
-	go listenHandler.Listen(ctx)
+	go func() {
+		if err := listenHandler.Listen(ctx); err != nil {
+			logger.Fatalf("Listen failed: %v", err)
+		}
+	}()
 	logger.Infof("Listening for RabbitMQ messages on queue: %s", commonoutline.QueueNameTalkRequest)
 
 	<-chDone

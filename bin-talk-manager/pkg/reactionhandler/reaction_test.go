@@ -196,6 +196,7 @@ func Test_ReactionAdd(t *testing.T) {
 			if !tt.expectError {
 				if res == nil {
 					t.Errorf("Wrong match. expect: message, got: nil")
+					return
 				}
 
 				if res.ID != tt.messageID {
@@ -514,6 +515,7 @@ func Test_ReactionRemove(t *testing.T) {
 			if !tt.expectError {
 				if res == nil {
 					t.Errorf("Wrong match. expect: message, got: nil")
+					return
 				}
 
 				if res.ID != tt.messageID {
