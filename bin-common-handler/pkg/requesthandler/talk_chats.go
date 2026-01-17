@@ -12,8 +12,8 @@ import (
 	"github.com/pkg/errors"
 )
 
-// TalkV1TalkGet gets a talk by ID
-func (r *requestHandler) TalkV1TalkGet(ctx context.Context, talkID uuid.UUID) (*talktalk.Talk, error) {
+// TalkV1ChatGet gets a talk by ID
+func (r *requestHandler) TalkV1ChatGet(ctx context.Context, talkID uuid.UUID) (*talktalk.Talk, error) {
 	uri := fmt.Sprintf("/v1/talk_chats/%s", talkID.String())
 
 	res, err := r.sendRequestTalk(ctx, uri, sock.RequestMethodGet, "talk/talks", requestTimeoutDefault, 0, "", nil)
@@ -33,8 +33,8 @@ func (r *requestHandler) TalkV1TalkGet(ctx context.Context, talkID uuid.UUID) (*
 	return &talk, nil
 }
 
-// TalkV1TalkCreate creates a new talk
-func (r *requestHandler) TalkV1TalkCreate(ctx context.Context, customerID uuid.UUID, talkType talktalk.Type) (*talktalk.Talk, error) {
+// TalkV1ChatCreate creates a new talk
+func (r *requestHandler) TalkV1ChatCreate(ctx context.Context, customerID uuid.UUID, talkType talktalk.Type) (*talktalk.Talk, error) {
 	uri := "/v1/talk_chats"
 
 	data := map[string]any{
@@ -64,8 +64,8 @@ func (r *requestHandler) TalkV1TalkCreate(ctx context.Context, customerID uuid.U
 	return &talk, nil
 }
 
-// TalkV1TalkDelete deletes a talk (soft delete)
-func (r *requestHandler) TalkV1TalkDelete(ctx context.Context, talkID uuid.UUID) (*talktalk.Talk, error) {
+// TalkV1ChatDelete deletes a talk (soft delete)
+func (r *requestHandler) TalkV1ChatDelete(ctx context.Context, talkID uuid.UUID) (*talktalk.Talk, error) {
 	uri := fmt.Sprintf("/v1/talk_chats/%s", talkID.String())
 
 	res, err := r.sendRequestTalk(ctx, uri, sock.RequestMethodDelete, "talk/talks", requestTimeoutDefault, 0, "", nil)
@@ -85,8 +85,8 @@ func (r *requestHandler) TalkV1TalkDelete(ctx context.Context, talkID uuid.UUID)
 	return &talk, nil
 }
 
-// TalkV1TalkList gets a list of talks (simplified - for future expansion)
-func (r *requestHandler) TalkV1TalkList(ctx context.Context, pageToken string, pageSize uint64) ([]*talktalk.Talk, error) {
+// TalkV1ChatList gets a list of talks (simplified - for future expansion)
+func (r *requestHandler) TalkV1ChatList(ctx context.Context, pageToken string, pageSize uint64) ([]*talktalk.Talk, error) {
 	uri := fmt.Sprintf("/v1/talk_chats?page_token=%s&page_size=%d", pageToken, pageSize)
 
 	res, err := r.sendRequestTalk(ctx, uri, sock.RequestMethodGet, "talk/talks", requestTimeoutDefault, 0, "", nil)

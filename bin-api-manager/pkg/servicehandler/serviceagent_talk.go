@@ -70,13 +70,13 @@ func (h *serviceHandler) ServiceAgentTalkList(ctx context.Context, a *amagent.Ag
 // ServiceAgentTalkCreate creates a new talk
 func (h *serviceHandler) ServiceAgentTalkCreate(ctx context.Context, a *amagent.Agent, talkType tktalk.Type) (*tktalk.WebhookMessage, error) {
 	// Create talk via RPC
-	tmp, err := h.reqHandler.TalkV1TalkCreate(ctx, a.CustomerID, talkType)
+	tmp, err := h.reqHandler.TalkV1ChatCreate(ctx, a.CustomerID, talkType)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not create talk.")
 	}
 
 	// Add agent as first participant
-	_, err = h.reqHandler.TalkV1TalkParticipantCreate(ctx, tmp.ID, "agent", a.ID)
+	_, err = h.reqHandler.TalkV1ParticipantCreate(ctx, tmp.ID, "agent", a.ID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not add agent as participant.")
 	}
@@ -93,7 +93,7 @@ func (h *serviceHandler) ServiceAgentTalkDelete(ctx context.Context, a *amagent.
 	}
 
 	// Delete talk via RPC
-	tmp, err := h.reqHandler.TalkV1TalkDelete(ctx, talkID)
+	tmp, err := h.reqHandler.TalkV1ChatDelete(ctx, talkID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not delete talk.")
 	}
@@ -110,7 +110,7 @@ func (h *serviceHandler) ServiceAgentTalkParticipantList(ctx context.Context, a 
 	}
 
 	// Get participants via RPC
-	participants, err := h.reqHandler.TalkV1TalkParticipantList(ctx, talkID)
+	participants, err := h.reqHandler.TalkV1ParticipantList(ctx, talkID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not get participants.")
 	}
@@ -132,7 +132,7 @@ func (h *serviceHandler) ServiceAgentTalkParticipantCreate(ctx context.Context, 
 	}
 
 	// Add participant via RPC
-	tmp, err := h.reqHandler.TalkV1TalkParticipantCreate(ctx, talkID, ownerType, ownerID)
+	tmp, err := h.reqHandler.TalkV1ParticipantCreate(ctx, talkID, ownerType, ownerID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not add participant.")
 	}
@@ -149,7 +149,7 @@ func (h *serviceHandler) ServiceAgentTalkParticipantDelete(ctx context.Context, 
 	}
 
 	// Delete participant via RPC
-	tmp, err := h.reqHandler.TalkV1TalkParticipantDelete(ctx, talkID, participantID)
+	tmp, err := h.reqHandler.TalkV1ParticipantDelete(ctx, talkID, participantID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not delete participant.")
 	}
@@ -228,7 +228,7 @@ func (h *serviceHandler) ServiceAgentTalkMessageCreate(ctx context.Context, a *a
 	}
 
 	// Create message via RPC
-	tmp, err := h.reqHandler.TalkV1TalkMessageCreate(ctx, chatID, parentID, "agent", a.ID, msgType, text)
+	tmp, err := h.reqHandler.TalkV1MessageCreate(ctx, chatID, parentID, "agent", a.ID, msgType, text)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not create message.")
 	}
@@ -255,7 +255,7 @@ func (h *serviceHandler) ServiceAgentTalkMessageDelete(ctx context.Context, a *a
 	}
 
 	// Delete message via RPC
-	deleted, err := h.reqHandler.TalkV1TalkMessageDelete(ctx, messageID)
+	deleted, err := h.reqHandler.TalkV1MessageDelete(ctx, messageID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not delete message.")
 	}
@@ -282,7 +282,7 @@ func (h *serviceHandler) ServiceAgentTalkMessageReactionCreate(ctx context.Conte
 	}
 
 	// Add reaction via RPC
-	result, err := h.reqHandler.TalkV1TalkMessageReactionCreate(ctx, messageID, "agent", a.ID, emoji)
+	result, err := h.reqHandler.TalkV1MessageReactionCreate(ctx, messageID, "agent", a.ID, emoji)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not add reaction.")
 	}
@@ -299,7 +299,7 @@ func (h *serviceHandler) ServiceAgentTalkMessageReactionCreate(ctx context.Conte
 
 // isParticipantOfTalk checks if an agent is a participant of a talk
 func (h *serviceHandler) isParticipantOfTalk(ctx context.Context, agentID uuid.UUID, talkID uuid.UUID) bool {
-	participants, err := h.reqHandler.TalkV1TalkParticipantList(ctx, talkID)
+	participants, err := h.reqHandler.TalkV1ParticipantList(ctx, talkID)
 	if err != nil {
 		return false
 	}
@@ -315,7 +315,7 @@ func (h *serviceHandler) isParticipantOfTalk(ctx context.Context, agentID uuid.U
 
 // talkGet gets a talk by ID via RPC
 func (h *serviceHandler) talkGet(ctx context.Context, talkID uuid.UUID) (*tktalk.Talk, error) {
-	return h.reqHandler.TalkV1TalkGet(ctx, talkID)
+	return h.reqHandler.TalkV1ChatGet(ctx, talkID)
 }
 
 // talkListByIDs gets talks by list of IDs
@@ -352,7 +352,7 @@ func (h *serviceHandler) talkParticipantListByOwner(ctx context.Context, custome
 
 // talkMessageGet gets a message by ID via RPC
 func (h *serviceHandler) talkMessageGet(ctx context.Context, messageID uuid.UUID) (*tkmessage.Message, error) {
-	return h.reqHandler.TalkV1TalkMessageGet(ctx, messageID)
+	return h.reqHandler.TalkV1MessageGet(ctx, messageID)
 }
 
 // talkMessageListByTalkIDs gets messages by talk IDs

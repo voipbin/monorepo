@@ -15,7 +15,7 @@ import (
 	"monorepo/bin-common-handler/pkg/sockhandler"
 )
 
-func Test_TalkV1TalkParticipantList(t *testing.T) {
+func Test_TalkV1ParticipantList(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -35,7 +35,7 @@ func Test_TalkV1TalkParticipantList(t *testing.T) {
 
 			expectQueue: "bin-manager.talk-manager.request",
 			expectRequest: &sock.Request{
-				URI:      "/v1/talks/770e8400-e29b-41d4-a716-446655440000/participants",
+				URI:      "/v1/talk_chats/770e8400-e29b-41d4-a716-446655440000/participants",
 				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeNone,
 			},
@@ -75,7 +75,7 @@ func Test_TalkV1TalkParticipantList(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.TalkV1TalkParticipantList(ctx, tt.talkID)
+			res, err := reqHandler.TalkV1ParticipantList(ctx, tt.talkID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -87,7 +87,7 @@ func Test_TalkV1TalkParticipantList(t *testing.T) {
 	}
 }
 
-func Test_TalkV1TalkParticipantCreate(t *testing.T) {
+func Test_TalkV1ParticipantCreate(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -143,7 +143,7 @@ func Test_TalkV1TalkParticipantCreate(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectQueue, gomock.Any()).Return(tt.response, nil)
 
-			res, err := reqHandler.TalkV1TalkParticipantCreate(ctx, tt.talkID, tt.ownerType, tt.ownerID)
+			res, err := reqHandler.TalkV1ParticipantCreate(ctx, tt.talkID, tt.ownerType, tt.ownerID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -155,11 +155,12 @@ func Test_TalkV1TalkParticipantCreate(t *testing.T) {
 	}
 }
 
-func Test_TalkV1TalkParticipantDelete(t *testing.T) {
+func Test_TalkV1ParticipantDelete(t *testing.T) {
 
 	tests := []struct {
 		name string
 
+		talkID        uuid.UUID
 		participantID uuid.UUID
 
 		expectQueue   string
@@ -171,11 +172,12 @@ func Test_TalkV1TalkParticipantDelete(t *testing.T) {
 		{
 			name: "normal",
 
+			talkID:        uuid.FromStringOrNil("770e8400-e29b-41d4-a716-446655440000"),
 			participantID: uuid.FromStringOrNil("72179880-ec5f-11ec-920e-c77279756b6d"),
 
 			expectQueue: "bin-manager.talk-manager.request",
 			expectRequest: &sock.Request{
-				URI:      "/v1/participants/72179880-ec5f-11ec-920e-c77279756b6d",
+				URI:      "/v1/talk_chats/770e8400-e29b-41d4-a716-446655440000/participants/72179880-ec5f-11ec-920e-c77279756b6d",
 				Method:   sock.RequestMethodDelete,
 				DataType: ContentTypeNone,
 			},
@@ -213,7 +215,7 @@ func Test_TalkV1TalkParticipantDelete(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.TalkV1TalkParticipantDelete(ctx, tt.participantID)
+			res, err := reqHandler.TalkV1ParticipantDelete(ctx, tt.talkID, tt.participantID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

@@ -180,7 +180,7 @@ func (h *subscribeHandler) processEventTalkParticipant(ctx context.Context, m *s
 func (h *subscribeHandler) getTalkParticipants(ctx context.Context, talkID uuid.UUID) ([]*talkparticipant.Participant, error) {
 	// Call talk-manager via RPC to get participants
 	// Use the requestHandler to make RPC call
-	participants, err := h.reqHandler.TalkV1TalkParticipantList(ctx, talkID)
+	participants, err := h.reqHandler.TalkV1ParticipantList(ctx, talkID)
 	if err != nil {
 		return nil, err
 	}

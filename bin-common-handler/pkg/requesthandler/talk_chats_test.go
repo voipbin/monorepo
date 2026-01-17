@@ -15,7 +15,7 @@ import (
 	"monorepo/bin-common-handler/pkg/sockhandler"
 )
 
-func Test_TalkV1TalkGet(t *testing.T) {
+func Test_TalkV1ChatGet(t *testing.T) {
 
 	type test struct {
 		name string
@@ -37,7 +37,7 @@ func Test_TalkV1TalkGet(t *testing.T) {
 
 			expectQueue: "bin-manager.talk-manager.request",
 			expectRequest: &sock.Request{
-				URI:      "/v1/talks/72179880-ec5f-11ec-920e-c77279756b6d",
+				URI:      "/v1/talk_chats/72179880-ec5f-11ec-920e-c77279756b6d",
 				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeNone,
 			},
@@ -71,7 +71,7 @@ func Test_TalkV1TalkGet(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.TalkV1TalkGet(ctx, tt.talkID)
+			res, err := reqHandler.TalkV1ChatGet(ctx, tt.talkID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -84,7 +84,7 @@ func Test_TalkV1TalkGet(t *testing.T) {
 	}
 }
 
-func Test_TalkV1TalkCreate(t *testing.T) {
+func Test_TalkV1ChatCreate(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -106,7 +106,7 @@ func Test_TalkV1TalkCreate(t *testing.T) {
 
 			expectQueue: "bin-manager.talk-manager.request",
 			expectRequest: &sock.Request{
-				URI:      "/v1/talks",
+				URI:      "/v1/talk_chats",
 				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"customer_id":"550e8400-e29b-41d4-a716-446655440000","type":"normal"}`),
@@ -141,7 +141,7 @@ func Test_TalkV1TalkCreate(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectQueue, gomock.Any()).Return(tt.response, nil)
 
-			res, err := reqHandler.TalkV1TalkCreate(ctx, tt.customerID, tt.talkType)
+			res, err := reqHandler.TalkV1ChatCreate(ctx, tt.customerID, tt.talkType)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -153,7 +153,7 @@ func Test_TalkV1TalkCreate(t *testing.T) {
 	}
 }
 
-func Test_TalkV1TalkDelete(t *testing.T) {
+func Test_TalkV1ChatDelete(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -173,7 +173,7 @@ func Test_TalkV1TalkDelete(t *testing.T) {
 
 			expectQueue: "bin-manager.talk-manager.request",
 			expectRequest: &sock.Request{
-				URI:      "/v1/talks/72179880-ec5f-11ec-920e-c77279756b6d",
+				URI:      "/v1/talk_chats/72179880-ec5f-11ec-920e-c77279756b6d",
 				Method:   sock.RequestMethodDelete,
 				DataType: ContentTypeNone,
 			},
@@ -207,7 +207,7 @@ func Test_TalkV1TalkDelete(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.TalkV1TalkDelete(ctx, tt.talkID)
+			res, err := reqHandler.TalkV1ChatDelete(ctx, tt.talkID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -219,7 +219,7 @@ func Test_TalkV1TalkDelete(t *testing.T) {
 	}
 }
 
-func Test_TalkV1TalkList(t *testing.T) {
+func Test_TalkV1ChatList(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -241,7 +241,7 @@ func Test_TalkV1TalkList(t *testing.T) {
 
 			expectQueue: "bin-manager.talk-manager.request",
 			expectRequest: &sock.Request{
-				URI:      "/v1/talks?page_token=2020-09-20%2003%3A23%3A20.995000&page_size=10",
+				URI:      "/v1/talk_chats?page_token=2020-09-20%2003%3A23%3A20.995000&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeNone,
 			},
@@ -277,7 +277,7 @@ func Test_TalkV1TalkList(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectQueue, gomock.Any()).Return(tt.response, nil)
 
-			res, err := reqHandler.TalkV1TalkList(ctx, tt.pageToken, tt.pageSize)
+			res, err := reqHandler.TalkV1ChatList(ctx, tt.pageToken, tt.pageSize)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

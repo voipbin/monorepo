@@ -15,7 +15,7 @@ import (
 	"monorepo/bin-common-handler/pkg/sockhandler"
 )
 
-func Test_TalkV1TalkMessageGet(t *testing.T) {
+func Test_TalkV1MessageGet(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -35,7 +35,7 @@ func Test_TalkV1TalkMessageGet(t *testing.T) {
 
 			expectQueue: "bin-manager.talk-manager.request",
 			expectRequest: &sock.Request{
-				URI:      "/v1/messages/72179880-ec5f-11ec-920e-c77279756b6d",
+				URI:      "/v1/talk_messages/72179880-ec5f-11ec-920e-c77279756b6d",
 				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeNone,
 			},
@@ -75,7 +75,7 @@ func Test_TalkV1TalkMessageGet(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.TalkV1TalkMessageGet(ctx, tt.messageID)
+			res, err := reqHandler.TalkV1MessageGet(ctx, tt.messageID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -87,7 +87,7 @@ func Test_TalkV1TalkMessageGet(t *testing.T) {
 	}
 }
 
-func Test_TalkV1TalkMessageCreate(t *testing.T) {
+func Test_TalkV1MessageCreate(t *testing.T) {
 
 	parentID := uuid.FromStringOrNil("880e8400-e29b-41d4-a716-446655440000")
 
@@ -185,7 +185,7 @@ func Test_TalkV1TalkMessageCreate(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectQueue, gomock.Any()).Return(tt.response, nil)
 
-			res, err := reqHandler.TalkV1TalkMessageCreate(ctx, tt.chatID, tt.parentID, tt.ownerType, tt.ownerID, tt.msgType, tt.text)
+			res, err := reqHandler.TalkV1MessageCreate(ctx, tt.chatID, tt.parentID, tt.ownerType, tt.ownerID, tt.msgType, tt.text)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -197,7 +197,7 @@ func Test_TalkV1TalkMessageCreate(t *testing.T) {
 	}
 }
 
-func Test_TalkV1TalkMessageDelete(t *testing.T) {
+func Test_TalkV1MessageDelete(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -217,7 +217,7 @@ func Test_TalkV1TalkMessageDelete(t *testing.T) {
 
 			expectQueue: "bin-manager.talk-manager.request",
 			expectRequest: &sock.Request{
-				URI:      "/v1/messages/72179880-ec5f-11ec-920e-c77279756b6d",
+				URI:      "/v1/talk_messages/72179880-ec5f-11ec-920e-c77279756b6d",
 				Method:   sock.RequestMethodDelete,
 				DataType: ContentTypeNone,
 			},
@@ -257,7 +257,7 @@ func Test_TalkV1TalkMessageDelete(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.TalkV1TalkMessageDelete(ctx, tt.messageID)
+			res, err := reqHandler.TalkV1MessageDelete(ctx, tt.messageID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -269,7 +269,7 @@ func Test_TalkV1TalkMessageDelete(t *testing.T) {
 	}
 }
 
-func Test_TalkV1TalkMessageList(t *testing.T) {
+func Test_TalkV1MessageList(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -291,7 +291,7 @@ func Test_TalkV1TalkMessageList(t *testing.T) {
 
 			expectQueue: "bin-manager.talk-manager.request",
 			expectRequest: &sock.Request{
-				URI:      "/v1/messages?page_token=2020-09-20%2003%3A23%3A20.995000&page_size=10",
+				URI:      "/v1/talk_messages?page_token=2020-09-20%2003%3A23%3A20.995000&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeNone,
 			},
@@ -333,7 +333,7 @@ func Test_TalkV1TalkMessageList(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectQueue, gomock.Any()).Return(tt.response, nil)
 
-			res, err := reqHandler.TalkV1TalkMessageList(ctx, tt.pageToken, tt.pageSize)
+			res, err := reqHandler.TalkV1MessageList(ctx, tt.pageToken, tt.pageSize)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -345,7 +345,7 @@ func Test_TalkV1TalkMessageList(t *testing.T) {
 	}
 }
 
-func Test_TalkV1TalkMessageReactionCreate(t *testing.T) {
+func Test_TalkV1MessageReactionCreate(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -405,7 +405,7 @@ func Test_TalkV1TalkMessageReactionCreate(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectQueue, gomock.Any()).Return(tt.response, nil)
 
-			res, err := reqHandler.TalkV1TalkMessageReactionCreate(ctx, tt.messageID, tt.ownerType, tt.ownerID, tt.emoji)
+			res, err := reqHandler.TalkV1MessageReactionCreate(ctx, tt.messageID, tt.ownerType, tt.ownerID, tt.emoji)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
