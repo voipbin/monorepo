@@ -120,7 +120,7 @@ func Test_processV1MessagesIDReactionsPost(t *testing.T) {
 			ctx := context.Background()
 			mockReaction.EXPECT().ReactionAdd(ctx, tt.messageID, tt.reaction, tt.ownerType, tt.ownerID).Return(tt.responseMessage, nil)
 
-			res, err := h.v1MessagesIDReactionsPost(ctx, *tt.request, tt.messageID)
+			res, err := h.v1TalkMessagesIDReactionsPost(ctx, *tt.request, tt.messageID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -185,7 +185,7 @@ func Test_processV1MessagesIDReactionsPost_error(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			res, err := h.v1MessagesIDReactionsPost(ctx, *tt.request, tt.messageID)
+			res, err := h.v1TalkMessagesIDReactionsPost(ctx, *tt.request, tt.messageID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -301,7 +301,7 @@ func Test_processV1MessagesIDReactionsDelete(t *testing.T) {
 			ctx := context.Background()
 			mockReaction.EXPECT().ReactionRemove(ctx, tt.messageID, tt.reaction, tt.ownerType, tt.ownerID).Return(tt.responseMessage, nil)
 
-			res, err := h.v1MessagesIDReactionsDelete(ctx, *tt.request, tt.messageID)
+			res, err := h.v1TalkMessagesIDReactionsDelete(ctx, *tt.request, tt.messageID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -366,7 +366,7 @@ func Test_processV1MessagesIDReactionsDelete_error(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			res, err := h.v1MessagesIDReactionsDelete(ctx, *tt.request, tt.messageID)
+			res, err := h.v1TalkMessagesIDReactionsDelete(ctx, *tt.request, tt.messageID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -415,7 +415,7 @@ func Test_processV1MessagesIDReactions_unsupported_method(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			res, err := h.processV1MessagesIDReactions(ctx, *tt.request)
+			res, err := h.processV1TalkMessagesIDReactions(ctx, *tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

@@ -108,7 +108,7 @@ func Test_processV1TalksIDParticipantsPost(t *testing.T) {
 			ctx := context.Background()
 			mockParticipant.EXPECT().ParticipantAdd(ctx, tt.customerID, tt.chatID, tt.ownerID, tt.ownerType).Return(tt.responseParticipant, nil)
 
-			res, err := h.v1TalksIDParticipantsPost(ctx, *tt.request, tt.chatID)
+			res, err := h.v1TalkChatsIDParticipantsPost(ctx, *tt.request, tt.chatID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -188,7 +188,7 @@ func Test_processV1TalksIDParticipantsPost_error(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			res, err := h.v1TalksIDParticipantsPost(ctx, *tt.request, tt.chatID)
+			res, err := h.v1TalkChatsIDParticipantsPost(ctx, *tt.request, tt.chatID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -277,7 +277,7 @@ func Test_processV1TalksIDParticipantsGet(t *testing.T) {
 			ctx := context.Background()
 			mockParticipant.EXPECT().ParticipantList(ctx, tt.customerID, tt.chatID).Return(tt.responseParticipants, nil)
 
-			res, err := h.v1TalksIDParticipantsGet(ctx, *tt.request, tt.chatID)
+			res, err := h.v1TalkChatsIDParticipantsGet(ctx, *tt.request, tt.chatID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -333,7 +333,7 @@ func Test_processV1TalksIDParticipantsIDDelete(t *testing.T) {
 			ctx := context.Background()
 			mockParticipant.EXPECT().ParticipantRemove(ctx, tt.customerID, tt.participantID).Return(nil)
 
-			res, err := h.processV1TalksIDParticipantsID(ctx, *tt.request)
+			res, err := h.processV1TalkChatsIDParticipantsID(ctx, *tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -380,7 +380,7 @@ func Test_processV1TalksIDParticipantsID_unsupported_method(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			res, err := h.processV1TalksIDParticipantsID(ctx, *tt.request)
+			res, err := h.processV1TalkChatsIDParticipantsID(ctx, *tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

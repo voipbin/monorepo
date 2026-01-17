@@ -134,7 +134,7 @@ func Test_processV1MessagesPost(t *testing.T) {
 			ctx := context.Background()
 			mockMessage.EXPECT().MessageCreate(ctx, tt.createReq).Return(tt.responseMessage, nil)
 
-			res, err := h.v1MessagesPost(ctx, *tt.request)
+			res, err := h.v1TalkMessagesPost(ctx, *tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -224,7 +224,7 @@ func Test_processV1MessagesPost_error(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			res, err := h.v1MessagesPost(ctx, *tt.request)
+			res, err := h.v1TalkMessagesPost(ctx, *tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -322,7 +322,7 @@ func Test_processV1MessagesGet(t *testing.T) {
 			ctx := context.Background()
 			mockMessage.EXPECT().MessageList(ctx, nil, tt.pageToken, tt.pageSize).Return(tt.responseMessages, nil)
 
-			res, err := h.v1MessagesGet(ctx, *tt.request)
+			res, err := h.v1TalkMessagesGet(ctx, *tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -394,7 +394,7 @@ func Test_processV1MessagesIDGet(t *testing.T) {
 			ctx := context.Background()
 			mockMessage.EXPECT().MessageGet(ctx, tt.messageID).Return(tt.responseMessage, nil)
 
-			res, err := h.processV1MessagesID(ctx, *tt.request)
+			res, err := h.processV1TalkMessagesID(ctx, *tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -466,7 +466,7 @@ func Test_processV1MessagesIDDelete(t *testing.T) {
 			ctx := context.Background()
 			mockMessage.EXPECT().MessageDelete(ctx, tt.messageID).Return(tt.responseMessage, nil)
 
-			res, err := h.processV1MessagesID(ctx, *tt.request)
+			res, err := h.processV1TalkMessagesID(ctx, *tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -513,7 +513,7 @@ func Test_processV1MessagesID_unsupported_method(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			res, err := h.processV1MessagesID(ctx, *tt.request)
+			res, err := h.processV1TalkMessagesID(ctx, *tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

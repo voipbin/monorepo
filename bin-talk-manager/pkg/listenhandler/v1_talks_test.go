@@ -101,7 +101,7 @@ func Test_processV1TalkChatsPost(t *testing.T) {
 			ctx := context.Background()
 			mockTalk.EXPECT().TalkCreate(ctx, tt.customerID, tt.talkType).Return(tt.responseTalk, nil)
 
-			res, err := h.v1TalksPost(ctx, *tt.request)
+			res, err := h.v1TalkChatsPost(ctx, *tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -163,7 +163,7 @@ func Test_processV1TalkChatsPost_error(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			res, err := h.v1TalksPost(ctx, *tt.request)
+			res, err := h.v1TalkChatsPost(ctx, *tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -253,7 +253,7 @@ func Test_processV1TalkChatsGet(t *testing.T) {
 			ctx := context.Background()
 			mockTalk.EXPECT().TalkList(ctx, nil, tt.pageToken, tt.pageSize).Return(tt.responseTalks, nil)
 
-			res, err := h.v1TalksGet(ctx, *tt.request)
+			res, err := h.v1TalkChatsGet(ctx, *tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -317,7 +317,7 @@ func Test_processV1TalkChatsIDGet(t *testing.T) {
 			ctx := context.Background()
 			mockTalk.EXPECT().TalkGet(ctx, tt.talkID).Return(tt.responseTalk, nil)
 
-			res, err := h.processV1TalksID(ctx, *tt.request)
+			res, err := h.processV1TalkChatsID(ctx, *tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -381,7 +381,7 @@ func Test_processV1TalkChatsIDDelete(t *testing.T) {
 			ctx := context.Background()
 			mockTalk.EXPECT().TalkDelete(ctx, tt.talkID).Return(tt.responseTalk, nil)
 
-			res, err := h.processV1TalksID(ctx, *tt.request)
+			res, err := h.processV1TalkChatsID(ctx, *tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -428,7 +428,7 @@ func Test_processV1TalkChatsID_unsupported_method(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			res, err := h.processV1TalksID(ctx, *tt.request)
+			res, err := h.processV1TalkChatsID(ctx, *tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
