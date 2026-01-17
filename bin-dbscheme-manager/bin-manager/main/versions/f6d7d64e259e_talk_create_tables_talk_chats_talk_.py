@@ -24,7 +24,7 @@ def upgrade():
             customer_id     BINARY(16) NOT NULL,
             type            VARCHAR(255) NOT NULL,
             name            VARCHAR(255) DEFAULT '',
-            detail          TEXT DEFAULT '',
+            detail          TEXT NULL,
             tm_create       DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
             tm_update       DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
             tm_delete       DATETIME(6) NULL,
