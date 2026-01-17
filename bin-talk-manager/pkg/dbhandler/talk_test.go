@@ -173,7 +173,6 @@ func Test_TalkList(t *testing.T) {
 			},
 			filters: map[talk.Field]any{
 				talk.FieldCustomerID: uuid.FromStringOrNil("a922f8c2-e428-11ec-b1a3-4bc67cb9daf8"),
-				talk.FieldDeleted:    false,
 			},
 			token:     "",
 			size:      100,
@@ -200,7 +199,6 @@ func Test_TalkList(t *testing.T) {
 			filters: map[talk.Field]any{
 				talk.FieldCustomerID: uuid.FromStringOrNil("d922f8c2-e428-11ec-b1a3-4bc67cb9daf0"),
 				talk.FieldType:       talk.TypeGroup,
-				talk.FieldDeleted:    false,
 			},
 			token:     "",
 			size:      100,
@@ -233,7 +231,6 @@ func Test_TalkList(t *testing.T) {
 			},
 			filters: map[talk.Field]any{
 				talk.FieldCustomerID: uuid.FromStringOrNil("f922f8c2-e428-11ec-b1a3-4bc67cb9daf1"),
-				talk.FieldDeleted:    false,
 			},
 			token:     "",
 			size:      2,
