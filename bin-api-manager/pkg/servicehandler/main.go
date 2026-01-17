@@ -68,6 +68,10 @@ import (
 
 	tmtag "monorepo/bin-tag-manager/models/tag"
 
+	tkmessage "monorepo/bin-talk-manager/models/message"
+	tkparticipant "monorepo/bin-talk-manager/models/participant"
+	tktalk "monorepo/bin-talk-manager/models/talk"
+
 	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
 	tmtranscript "monorepo/bin-transcribe-manager/models/transcript"
 
@@ -704,6 +708,24 @@ type ServiceHandler interface {
 		text string,
 		medias []cvmedia.Media,
 	) (*cvmessage.WebhookMessage, error)
+
+	// service_agent talk
+	ServiceAgentTalkGet(ctx context.Context, a *amagent.Agent, talkID uuid.UUID) (*tktalk.WebhookMessage, error)
+	ServiceAgentTalkList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*tktalk.WebhookMessage, error)
+	ServiceAgentTalkCreate(ctx context.Context, a *amagent.Agent, talkType tktalk.Type) (*tktalk.WebhookMessage, error)
+	ServiceAgentTalkDelete(ctx context.Context, a *amagent.Agent, talkID uuid.UUID) (*tktalk.WebhookMessage, error)
+
+	// service_agent talk participant
+	ServiceAgentTalkParticipantList(ctx context.Context, a *amagent.Agent, talkID uuid.UUID) ([]*tkparticipant.WebhookMessage, error)
+	ServiceAgentTalkParticipantCreate(ctx context.Context, a *amagent.Agent, talkID uuid.UUID, ownerType string, ownerID uuid.UUID) (*tkparticipant.WebhookMessage, error)
+	ServiceAgentTalkParticipantDelete(ctx context.Context, a *amagent.Agent, talkID uuid.UUID, participantID uuid.UUID) (*tkparticipant.WebhookMessage, error)
+
+	// service_agent talk message
+	ServiceAgentTalkMessageGet(ctx context.Context, a *amagent.Agent, messageID uuid.UUID) (*tkmessage.WebhookMessage, error)
+	ServiceAgentTalkMessageList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*tkmessage.WebhookMessage, error)
+	ServiceAgentTalkMessageCreate(ctx context.Context, a *amagent.Agent, chatID uuid.UUID, parentID *uuid.UUID, msgType tkmessage.Type, text string) (*tkmessage.WebhookMessage, error)
+	ServiceAgentTalkMessageDelete(ctx context.Context, a *amagent.Agent, messageID uuid.UUID) (*tkmessage.WebhookMessage, error)
+	ServiceAgentTalkMessageReactionCreate(ctx context.Context, a *amagent.Agent, messageID uuid.UUID, emoji string) (*tkmessage.WebhookMessage, error)
 
 	// service_agent customer
 	ServiceAgentCustomerGet(ctx context.Context, a *amagent.Agent) (*cscustomer.WebhookMessage, error)
