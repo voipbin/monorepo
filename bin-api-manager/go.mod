@@ -44,6 +44,8 @@ replace monorepo/bin-storage-manager => ../bin-storage-manager
 
 replace monorepo/bin-tag-manager => ../bin-tag-manager
 
+replace monorepo/bin-talk-manager => ../bin-talk-manager
+
 replace monorepo/bin-transcribe-manager => ../bin-transcribe-manager
 
 replace monorepo/bin-transfer-manager => ../bin-transfer-manager
@@ -66,7 +68,7 @@ require (
 	github.com/joonix/log v0.0.0-20251205082533-cd78070927ea
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/prometheus/client_golang v1.23.2
-	github.com/sirupsen/logrus v1.9.3
+	github.com/sirupsen/logrus v1.9.4
 	github.com/swaggo/files v1.0.1
 	github.com/swaggo/gin-swagger v1.6.1
 	github.com/swaggo/swag v1.16.6 // indirect
@@ -111,6 +113,7 @@ require (
 	monorepo/bin-route-manager v0.0.0-20240313065038-1498b922bb24
 	monorepo/bin-storage-manager v0.0.0-20240330083852-ab008a2e3880
 	monorepo/bin-tag-manager v0.0.0-20240313070856-7d3433af905d
+	monorepo/bin-talk-manager v0.0.0-00010101000000-000000000000
 	monorepo/bin-transcribe-manager v0.0.0-20240405044227-febd49f8b700
 	monorepo/bin-transfer-manager v0.0.0-20230419025515-44dea928ef34
 	monorepo/bin-webhook-manager v0.0.0-20240313071253-ebca1db1437c
@@ -176,6 +179,7 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.3-0.20250322232337-35a7c28c31ee // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
+	github.com/oapi-codegen/oapi-codegen/v2 v2.5.1 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
 	github.com/pion/randutil v0.1.0 // indirect
 	github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10 // indirect

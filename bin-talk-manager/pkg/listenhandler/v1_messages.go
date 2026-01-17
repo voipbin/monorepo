@@ -13,18 +13,18 @@ import (
 	"monorepo/bin-talk-manager/pkg/messagehandler"
 )
 
-func (h *listenHandler) processV1Messages(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
+func (h *listenHandler) processV1TalkMessages(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
 	switch m.Method {
 	case "POST":
-		return h.v1MessagesPost(ctx, m)
+		return h.v1TalkMessagesPost(ctx, m)
 	case "GET":
-		return h.v1MessagesGet(ctx, m)
+		return h.v1TalkMessagesGet(ctx, m)
 	default:
 		return simpleResponse(405), nil
 	}
 }
 
-func (h *listenHandler) v1MessagesPost(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
+func (h *listenHandler) v1TalkMessagesPost(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
 	var req struct {
 		CustomerID string  `json:"customer_id"`
 		ChatID     string  `json:"chat_id"`
@@ -81,7 +81,7 @@ func (h *listenHandler) v1MessagesPost(ctx context.Context, m commonsock.Request
 	}, nil
 }
 
-func (h *listenHandler) v1MessagesGet(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
+func (h *listenHandler) v1TalkMessagesGet(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
 	u, _ := url.Parse(m.URI)
 
 	// Parse pagination
@@ -113,8 +113,8 @@ func (h *listenHandler) v1MessagesGet(ctx context.Context, m commonsock.Request)
 	}, nil
 }
 
-func (h *listenHandler) processV1MessagesID(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
-	matches := regV1MessagesID.FindStringSubmatch(m.URI)
+func (h *listenHandler) processV1TalkMessagesID(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
+	matches := regV1TalkMessagesID.FindStringSubmatch(m.URI)
 	messageID := uuid.FromStringOrNil(matches[1])
 
 	switch m.Method {

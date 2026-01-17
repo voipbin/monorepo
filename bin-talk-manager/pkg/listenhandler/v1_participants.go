@@ -10,21 +10,21 @@ import (
 	commonsock "monorepo/bin-common-handler/models/sock"
 )
 
-func (h *listenHandler) processV1TalksIDParticipants(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
-	matches := regV1TalksIDParticipants.FindStringSubmatch(m.URI)
+func (h *listenHandler) processV1TalkChatsIDParticipants(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
+	matches := regV1TalkChatsIDParticipants.FindStringSubmatch(m.URI)
 	chatID := uuid.FromStringOrNil(matches[1])
 
 	switch m.Method {
 	case "POST":
-		return h.v1TalksIDParticipantsPost(ctx, m, chatID)
+		return h.v1TalkChatsIDParticipantsPost(ctx, m, chatID)
 	case "GET":
-		return h.v1TalksIDParticipantsGet(ctx, m, chatID)
+		return h.v1TalkChatsIDParticipantsGet(ctx, m, chatID)
 	default:
 		return simpleResponse(405), nil
 	}
 }
 
-func (h *listenHandler) v1TalksIDParticipantsPost(ctx context.Context, m commonsock.Request, chatID uuid.UUID) (*commonsock.Response, error) {
+func (h *listenHandler) v1TalkChatsIDParticipantsPost(ctx context.Context, m commonsock.Request, chatID uuid.UUID) (*commonsock.Response, error) {
 	var req struct {
 		CustomerID string `json:"customer_id"`
 		OwnerType  string `json:"owner_type"`
@@ -58,7 +58,7 @@ func (h *listenHandler) v1TalksIDParticipantsPost(ctx context.Context, m commons
 	}, nil
 }
 
-func (h *listenHandler) v1TalksIDParticipantsGet(ctx context.Context, m commonsock.Request, chatID uuid.UUID) (*commonsock.Response, error) {
+func (h *listenHandler) v1TalkChatsIDParticipantsGet(ctx context.Context, m commonsock.Request, chatID uuid.UUID) (*commonsock.Response, error) {
 	// Parse customer_id from request body
 	var req struct {
 		CustomerID string `json:"customer_id"`
@@ -79,8 +79,8 @@ func (h *listenHandler) v1TalksIDParticipantsGet(ctx context.Context, m commonso
 	}, nil
 }
 
-func (h *listenHandler) processV1TalksIDParticipantsID(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
-	matches := regV1TalksIDParticipantsID.FindStringSubmatch(m.URI)
+func (h *listenHandler) processV1TalkChatsIDParticipantsID(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
+	matches := regV1TalkChatsIDParticipantsID.FindStringSubmatch(m.URI)
 	participantID := uuid.FromStringOrNil(matches[2])
 
 	switch m.Method {

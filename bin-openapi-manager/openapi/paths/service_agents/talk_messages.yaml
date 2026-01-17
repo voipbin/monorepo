@@ -1,0 +1,61 @@
+get:
+  summary: Get list of talk messages
+  description: Returns a list of talk messages for the authenticated agent.
+  tags:
+    - Service Agent
+  parameters:
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
+  responses:
+    '200':
+      description: A list of talk messages.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/CommonPagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TalkManagerMessage'
+
+post:
+  summary: Create a new talk message
+  description: Creates a new talk message and returns the created message's details.
+  tags:
+    - Service Agent
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            chat_id:
+              type: string
+              description: Talk chat ID.
+            parent_id:
+              type: string
+              description: Parent message ID for threading (optional).
+            type:
+              $ref: '#/components/schemas/TalkManagerMessageType'
+            text:
+              type: string
+              description: Message text content.
+            medias:
+              type: array
+              description: Media attachments (optional).
+              items:
+                $ref: '#/components/schemas/TalkManagerMedia'
+          required:
+            - chat_id
+            - type
+            - text
+  responses:
+    '200':
+      description: The created talk message's details.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TalkManagerMessage'

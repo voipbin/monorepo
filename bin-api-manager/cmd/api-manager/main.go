@@ -134,7 +134,7 @@ func run(
 	websockHandler := websockhandler.NewWebsockHandler(requestHandler, streamHandler)
 	serviceHandler := servicehandler.NewServiceHandler(requestHandler, db, websockHandler, cfg.GCPProjectID, cfg.GCPBucketName, cfg.JWTKey)
 
-	go runSubscribe(sockHandler, zmqPubHandler)
+	go runSubscribe(sockHandler, requestHandler, zmqPubHandler)
 	go runListenHTTP(serviceHandler)
 	go runListenStreamsock(ctx, streamHandler)
 
@@ -142,6 +142,7 @@ func run(
 
 func runSubscribe(
 	sockHandler sockhandler.SockHandler,
+	reqHandler requesthandler.RequestHandler,
 	zmqHandler zmqpubhandler.ZMQPubHandler,
 ) {
 	log := logrus.WithFields(logrus.Fields{
@@ -153,9 +154,11 @@ func runSubscribe(
 	subscribeTargets := []string{
 		string(commonoutline.QueueNameWebhookEvent),
 		string(commonoutline.QueueNameAgentEvent),
+		string(commonoutline.QueueNameTalkEvent),
 	}
 	subHandler := subscribehandler.NewSubscribeHandler(
 		sockHandler,
+		reqHandler,
 		queueNamePod,
 		subscribeTargets,
 

@@ -73,6 +73,7 @@ import (
 	compress_file "monorepo/bin-storage-manager/models/compressfile"
 	file "monorepo/bin-storage-manager/models/file"
 	tag "monorepo/bin-tag-manager/models/tag"
+	participant "monorepo/bin-talk-manager/models/participant"
 	transcribe "monorepo/bin-transcribe-manager/models/transcribe"
 	transcript "monorepo/bin-transcribe-manager/models/transcript"
 	transfer "monorepo/bin-transfer-manager/models/transfer"
@@ -5476,6 +5477,21 @@ func (m *MockRequestHandler) TagV1TagUpdate(ctx context.Context, tagID uuid.UUID
 func (mr *MockRequestHandlerMockRecorder) TagV1TagUpdate(ctx, tagID, name, detail any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TagV1TagUpdate", reflect.TypeOf((*MockRequestHandler)(nil).TagV1TagUpdate), ctx, tagID, name, detail)
+}
+
+// TalkV1TalkParticipantList mocks base method.
+func (m *MockRequestHandler) TalkV1TalkParticipantList(ctx context.Context, talkID uuid.UUID) ([]*participant.Participant, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TalkV1TalkParticipantList", ctx, talkID)
+	ret0, _ := ret[0].([]*participant.Participant)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TalkV1TalkParticipantList indicates an expected call of TalkV1TalkParticipantList.
+func (mr *MockRequestHandlerMockRecorder) TalkV1TalkParticipantList(ctx, talkID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TalkV1TalkParticipantList", reflect.TypeOf((*MockRequestHandler)(nil).TalkV1TalkParticipantList), ctx, talkID)
 }
 
 // TranscribeV1TranscribeDelete mocks base method.

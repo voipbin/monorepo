@@ -76,6 +76,8 @@ import (
 
 	tmtag "monorepo/bin-tag-manager/models/tag"
 
+	talkparticipant "monorepo/bin-talk-manager/models/participant"
+
 	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
 	tmtranscript "monorepo/bin-transcribe-manager/models/transcript"
 
@@ -1129,6 +1131,9 @@ type RequestHandler interface {
 	TagV1TagDelete(ctx context.Context, tagID uuid.UUID) (*tmtag.Tag, error)
 	TagV1TagGet(ctx context.Context, tagID uuid.UUID) (*tmtag.Tag, error)
 	TagV1TagList(ctx context.Context, pageToken string, pageSize uint64, filters map[tmtag.Field]any) ([]tmtag.Tag, error)
+
+	// talk-manager
+	TalkV1TalkParticipantList(ctx context.Context, talkID uuid.UUID) ([]*talkparticipant.Participant, error)
 
 	// tts-manager speeches
 	TTSV1SpeecheCreate(ctx context.Context, callID uuid.UUID, text string, gender tmtts.Gender, language string, timeout int) (*tmtts.TTS, error)

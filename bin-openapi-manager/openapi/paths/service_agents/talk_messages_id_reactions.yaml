@@ -1,0 +1,32 @@
+post:
+  summary: Add a reaction to a talk message
+  description: Adds an emoji reaction to a specific talk message.
+  tags:
+    - Service Agent
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The talk message ID.
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            emoji:
+              type: string
+              description: Emoji character for the reaction.
+          required:
+            - emoji
+  responses:
+    '200':
+      description: Reaction added successfully.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TalkManagerMessage'
+    '404':
+      description: Talk message not found.

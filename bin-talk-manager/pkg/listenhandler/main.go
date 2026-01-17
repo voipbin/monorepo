@@ -20,13 +20,13 @@ import (
 
 // Regex patterns for URI matching
 var (
-	regV1Talks            = regexp.MustCompile(`^/v1/talks$`)
-	regV1TalksID          = regexp.MustCompile(`^/v1/talks/([^/]+)$`)
-	regV1TalksIDParticipants = regexp.MustCompile(`^/v1/talks/([^/]+)/participants$`)
-	regV1TalksIDParticipantsID = regexp.MustCompile(`^/v1/talks/([^/]+)/participants/([^/]+)$`)
-	regV1Messages         = regexp.MustCompile(`^/v1/messages$`)
-	regV1MessagesID       = regexp.MustCompile(`^/v1/messages/([^/]+)$`)
-	regV1MessagesIDReactions = regexp.MustCompile(`^/v1/messages/([^/]+)/reactions$`)
+	regV1TalkChats                 = regexp.MustCompile(`^/v1/talk_chats$`)
+	regV1TalkChatsID               = regexp.MustCompile(`^/v1/talk_chats/([^/]+)$`)
+	regV1TalkChatsIDParticipants   = regexp.MustCompile(`^/v1/talk_chats/([^/]+)/participants$`)
+	regV1TalkChatsIDParticipantsID = regexp.MustCompile(`^/v1/talk_chats/([^/]+)/participants/([^/]+)$`)
+	regV1TalkMessages              = regexp.MustCompile(`^/v1/talk_messages$`)
+	regV1TalkMessagesID            = regexp.MustCompile(`^/v1/talk_messages/([^/]+)$`)
+	regV1TalkMessagesIDReactions   = regexp.MustCompile(`^/v1/talk_messages/([^/]+)/reactions$`)
 )
 
 type listenHandler struct {
@@ -81,20 +81,20 @@ func (h *listenHandler) processRequest(m *commonsock.Request) (*commonsock.Respo
 
 	// Route based on URI pattern
 	switch {
-	case regV1Talks.MatchString(m.URI):
-		return h.processV1Talks(ctx, *m)
-	case regV1TalksID.MatchString(m.URI):
-		return h.processV1TalksID(ctx, *m)
-	case regV1TalksIDParticipants.MatchString(m.URI):
-		return h.processV1TalksIDParticipants(ctx, *m)
-	case regV1TalksIDParticipantsID.MatchString(m.URI):
-		return h.processV1TalksIDParticipantsID(ctx, *m)
-	case regV1Messages.MatchString(m.URI):
-		return h.processV1Messages(ctx, *m)
-	case regV1MessagesID.MatchString(m.URI):
-		return h.processV1MessagesID(ctx, *m)
-	case regV1MessagesIDReactions.MatchString(m.URI):
-		return h.processV1MessagesIDReactions(ctx, *m)
+	case regV1TalkChats.MatchString(m.URI):
+		return h.processV1TalkChats(ctx, *m)
+	case regV1TalkChatsID.MatchString(m.URI):
+		return h.processV1TalkChatsID(ctx, *m)
+	case regV1TalkChatsIDParticipants.MatchString(m.URI):
+		return h.processV1TalkChatsIDParticipants(ctx, *m)
+	case regV1TalkChatsIDParticipantsID.MatchString(m.URI):
+		return h.processV1TalkChatsIDParticipantsID(ctx, *m)
+	case regV1TalkMessages.MatchString(m.URI):
+		return h.processV1TalkMessages(ctx, *m)
+	case regV1TalkMessagesID.MatchString(m.URI):
+		return h.processV1TalkMessagesID(ctx, *m)
+	case regV1TalkMessagesIDReactions.MatchString(m.URI):
+		return h.processV1TalkMessagesIDReactions(ctx, *m)
 	default:
 		log.Warnf("Unknown URI: %s", m.URI)
 		return simpleResponse(404), nil

@@ -1,0 +1,27 @@
+delete:
+  summary: Remove a participant from a talk chat
+  description: Removes a specific participant from a talk chat.
+  tags:
+    - Service Agent
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The talk chat ID.
+    - name: participant_id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The participant ID.
+  responses:
+    '200':
+      description: Participant removed successfully.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TalkManagerParticipant'
+    '404':
+      description: Talk chat or participant not found.

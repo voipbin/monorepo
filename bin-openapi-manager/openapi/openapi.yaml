@@ -3534,6 +3534,146 @@ components:
 
 
 #########################################
+# Talk Manager
+#########################################
+    TalkManagerTalkType:
+      type: string
+      description: Type of the talk.
+      enum:
+        - normal
+        - group
+      x-enum-varnames:
+        - TalkManagerTalkTypeNormal
+        - TalkManagerTalkTypeGroup
+    TalkManagerTalk:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Resource identifier.
+        customer_id:
+          type: string
+          description: Resource's customer ID.
+        type:
+          $ref: '#/components/schemas/TalkManagerTalkType'
+        tm_create:
+          type: string
+          description: Timestamp when the talk was created.
+        tm_update:
+          type: string
+          description: Timestamp when the talk was last updated.
+        tm_delete:
+          type: string
+          description: Timestamp when the talk was deleted.
+
+    TalkManagerMessageType:
+      type: string
+      description: Type of the message.
+      enum:
+        - normal
+        - system
+      x-enum-varnames:
+        - TalkManagerMessageTypeNormal
+        - TalkManagerMessageTypeSystem
+    TalkManagerMessage:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Resource identifier.
+        customer_id:
+          type: string
+          description: Resource's customer ID.
+        owner_type:
+          type: string
+          description: Resource's owner type.
+        owner_id:
+          type: string
+          description: Resource's owner ID.
+        chat_id:
+          type: string
+          description: Talk chat ID.
+        parent_id:
+          type: string
+          description: Parent message ID (for threading/replies).
+        type:
+          $ref: '#/components/schemas/TalkManagerMessageType'
+        text:
+          type: string
+          description: Message text content.
+        medias:
+          type: array
+          description: Media attachments.
+          items:
+            $ref: '#/components/schemas/TalkManagerMedia'
+        metadata:
+          $ref: '#/components/schemas/TalkManagerMetadata'
+        tm_create:
+          type: string
+          description: Timestamp when the message was created.
+        tm_update:
+          type: string
+          description: Timestamp when the message was last updated.
+        tm_delete:
+          type: string
+          description: Timestamp when the message was deleted.
+
+    TalkManagerMedia:
+      type: object
+      properties:
+        type:
+          type: string
+          description: Type of media (file, link, address, agent).
+
+    TalkManagerMetadata:
+      type: object
+      properties:
+        reactions:
+          type: array
+          description: List of reactions on the message.
+          items:
+            $ref: '#/components/schemas/TalkManagerReaction'
+
+    TalkManagerReaction:
+      type: object
+      properties:
+        emoji:
+          type: string
+          description: Emoji character for the reaction.
+        owner_type:
+          type: string
+          description: Type of the owner who reacted.
+        owner_id:
+          type: string
+          description: ID of the owner who reacted.
+        tm_create:
+          type: string
+          description: Timestamp when the reaction was created.
+
+    TalkManagerParticipant:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Resource identifier.
+        customer_id:
+          type: string
+          description: Resource's customer ID.
+        owner_type:
+          type: string
+          description: Resource's owner type.
+        owner_id:
+          type: string
+          description: Resource's owner ID.
+        chat_id:
+          type: string
+          description: Talk chat ID.
+        tm_joined:
+          type: string
+          description: Timestamp when the participant joined.
+
+
+#########################################
 # Tag Manager
 #########################################
     TagManagerTag:
@@ -4040,6 +4180,22 @@ paths:
 
   /service_agents/ws:
     $ref: './paths/service_agents/ws.yaml'
+
+  /service_agents/talk_chats/{id}/participants/{participant_id}:
+    $ref: './paths/service_agents/talk_chats_id_participants_id.yaml'
+  /service_agents/talk_chats/{id}/participants:
+    $ref: './paths/service_agents/talk_chats_id_participants.yaml'
+  /service_agents/talk_chats/{id}:
+    $ref: './paths/service_agents/talk_chats_id.yaml'
+  /service_agents/talk_chats:
+    $ref: './paths/service_agents/talk_chats.yaml'
+
+  /service_agents/talk_messages/{id}/reactions:
+    $ref: './paths/service_agents/talk_messages_id_reactions.yaml'
+  /service_agents/talk_messages/{id}:
+    $ref: './paths/service_agents/talk_messages_id.yaml'
+  /service_agents/talk_messages:
+    $ref: './paths/service_agents/talk_messages.yaml'
 
   /storage_account:
     $ref: './paths/storage_account/main.yaml'

@@ -9,6 +9,7 @@ import (
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	wmwebhook "monorepo/bin-webhook-manager/models/webhook"
@@ -26,6 +27,7 @@ type SubscribeHandler interface {
 
 type subscribeHandler struct {
 	sockHandler sockhandler.SockHandler
+	reqHandler  requesthandler.RequestHandler
 
 	subscribeQueueNamePod string // subscribe queue name for this pod
 	subscribeTargets      []string
@@ -58,12 +60,14 @@ func init() {
 // NewSubscribeHandler return SubscribeHandler interface
 func NewSubscribeHandler(
 	sockHandler sockhandler.SockHandler,
+	reqHandler requesthandler.RequestHandler,
 	subscribeQueueName string,
 	subscribeTargets []string,
 	zmqpubHandler zmqpubhandler.ZMQPubHandler,
 ) SubscribeHandler {
 	h := &subscribeHandler{
 		sockHandler: sockHandler,
+		reqHandler:  reqHandler,
 
 		subscribeQueueNamePod: subscribeQueueName,
 		subscribeTargets:      subscribeTargets,
@@ -127,7 +131,11 @@ func (h *subscribeHandler) processEvent(m *sock.Event) {
 
 	switch {
 
-	//// webhook-managet
+	//// talk-manager
+	case m.Publisher == string(commonoutline.ServiceNameTalkManager):
+		err = h.processEventTalkManager(ctx, m)
+
+	//// webhook-manager
 	case m.Publisher == string(commonoutline.ServiceNameWebhookManager) && (m.Type == string(wmwebhook.EventTypeWebhookPublished)):
 		err = h.processEventWebhookManagerWebhookPublished(ctx, m)
 

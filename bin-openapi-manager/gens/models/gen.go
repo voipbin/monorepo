@@ -610,6 +610,18 @@ const (
 	StorageManagerFileReferenceTypeRecording StorageManagerFileReferenceType = "recording"
 )
 
+// Defines values for TalkManagerMessageType.
+const (
+	TalkManagerMessageTypeNormal TalkManagerMessageType = "normal"
+	TalkManagerMessageTypeSystem TalkManagerMessageType = "system"
+)
+
+// Defines values for TalkManagerTalkType.
+const (
+	TalkManagerTalkTypeGroup  TalkManagerTalkType = "group"
+	TalkManagerTalkTypeNormal TalkManagerTalkType = "normal"
+)
+
 // Defines values for TranscribeManagerTranscribeDirection.
 const (
 	TranscribeManagerTranscribeDirectionBoth TranscribeManagerTranscribeDirection = "both"
@@ -2941,6 +2953,121 @@ type TagManagerTag struct {
 	TmUpdate *string `json:"tm_update,omitempty"`
 }
 
+// TalkManagerMedia defines model for TalkManagerMedia.
+type TalkManagerMedia struct {
+	// Type Type of media (file, link, address, agent).
+	Type *string `json:"type,omitempty"`
+}
+
+// TalkManagerMessage defines model for TalkManagerMessage.
+type TalkManagerMessage struct {
+	// ChatId Talk chat ID.
+	ChatId *string `json:"chat_id,omitempty"`
+
+	// CustomerId Resource's customer ID.
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Id Resource identifier.
+	Id *string `json:"id,omitempty"`
+
+	// Medias Media attachments.
+	Medias   *[]TalkManagerMedia  `json:"medias,omitempty"`
+	Metadata *TalkManagerMetadata `json:"metadata,omitempty"`
+
+	// OwnerId Resource's owner ID.
+	OwnerId *string `json:"owner_id,omitempty"`
+
+	// OwnerType Resource's owner type.
+	OwnerType *string `json:"owner_type,omitempty"`
+
+	// ParentId Parent message ID (for threading/replies).
+	ParentId *string `json:"parent_id,omitempty"`
+
+	// Text Message text content.
+	Text *string `json:"text,omitempty"`
+
+	// TmCreate Timestamp when the message was created.
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the message was deleted.
+	TmDelete *string `json:"tm_delete,omitempty"`
+
+	// TmUpdate Timestamp when the message was last updated.
+	TmUpdate *string `json:"tm_update,omitempty"`
+
+	// Type Type of the message.
+	Type *TalkManagerMessageType `json:"type,omitempty"`
+}
+
+// TalkManagerMessageType Type of the message.
+type TalkManagerMessageType string
+
+// TalkManagerMetadata defines model for TalkManagerMetadata.
+type TalkManagerMetadata struct {
+	// Reactions List of reactions on the message.
+	Reactions *[]TalkManagerReaction `json:"reactions,omitempty"`
+}
+
+// TalkManagerParticipant defines model for TalkManagerParticipant.
+type TalkManagerParticipant struct {
+	// ChatId Talk chat ID.
+	ChatId *string `json:"chat_id,omitempty"`
+
+	// CustomerId Resource's customer ID.
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Id Resource identifier.
+	Id *string `json:"id,omitempty"`
+
+	// OwnerId Resource's owner ID.
+	OwnerId *string `json:"owner_id,omitempty"`
+
+	// OwnerType Resource's owner type.
+	OwnerType *string `json:"owner_type,omitempty"`
+
+	// TmJoined Timestamp when the participant joined.
+	TmJoined *string `json:"tm_joined,omitempty"`
+}
+
+// TalkManagerReaction defines model for TalkManagerReaction.
+type TalkManagerReaction struct {
+	// Emoji Emoji character for the reaction.
+	Emoji *string `json:"emoji,omitempty"`
+
+	// OwnerId ID of the owner who reacted.
+	OwnerId *string `json:"owner_id,omitempty"`
+
+	// OwnerType Type of the owner who reacted.
+	OwnerType *string `json:"owner_type,omitempty"`
+
+	// TmCreate Timestamp when the reaction was created.
+	TmCreate *string `json:"tm_create,omitempty"`
+}
+
+// TalkManagerTalk defines model for TalkManagerTalk.
+type TalkManagerTalk struct {
+	// CustomerId Resource's customer ID.
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Id Resource identifier.
+	Id *string `json:"id,omitempty"`
+
+	// TmCreate Timestamp when the talk was created.
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the talk was deleted.
+	TmDelete *string `json:"tm_delete,omitempty"`
+
+	// TmUpdate Timestamp when the talk was last updated.
+	TmUpdate *string `json:"tm_update,omitempty"`
+
+	// Type Type of the talk.
+	Type *TalkManagerTalkType `json:"type,omitempty"`
+}
+
+// TalkManagerTalkType Type of the talk.
+type TalkManagerTalkType string
+
 // TranscribeManagerTranscribe defines model for TranscribeManagerTranscribe.
 type TranscribeManagerTranscribe struct {
 	// CustomerId Customer ID
@@ -4503,6 +4630,63 @@ type PutServiceAgentsMeStatusJSONBody struct {
 	Status AgentManagerAgentStatus `json:"status"`
 }
 
+// GetServiceAgentsTalkChatsParams defines parameters for GetServiceAgentsTalkChats.
+type GetServiceAgentsTalkChatsParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostServiceAgentsTalkChatsJSONBody defines parameters for PostServiceAgentsTalkChats.
+type PostServiceAgentsTalkChatsJSONBody struct {
+	// Type Type of the talk.
+	Type TalkManagerTalkType `json:"type"`
+}
+
+// PostServiceAgentsTalkChatsIdParticipantsJSONBody defines parameters for PostServiceAgentsTalkChatsIdParticipants.
+type PostServiceAgentsTalkChatsIdParticipantsJSONBody struct {
+	// OwnerId ID of the owner to add as participant.
+	OwnerId string `json:"owner_id"`
+
+	// OwnerType Type of the owner (agent, customer, etc.).
+	OwnerType string `json:"owner_type"`
+}
+
+// GetServiceAgentsTalkMessagesParams defines parameters for GetServiceAgentsTalkMessages.
+type GetServiceAgentsTalkMessagesParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostServiceAgentsTalkMessagesJSONBody defines parameters for PostServiceAgentsTalkMessages.
+type PostServiceAgentsTalkMessagesJSONBody struct {
+	// ChatId Talk chat ID.
+	ChatId string `json:"chat_id"`
+
+	// Medias Media attachments (optional).
+	Medias *[]TalkManagerMedia `json:"medias,omitempty"`
+
+	// ParentId Parent message ID for threading (optional).
+	ParentId *string `json:"parent_id,omitempty"`
+
+	// Text Message text content.
+	Text string `json:"text"`
+
+	// Type Type of the message.
+	Type TalkManagerMessageType `json:"type"`
+}
+
+// PostServiceAgentsTalkMessagesIdReactionsJSONBody defines parameters for PostServiceAgentsTalkMessagesIdReactions.
+type PostServiceAgentsTalkMessagesIdReactionsJSONBody struct {
+	// Emoji Emoji character for the reaction.
+	Emoji string `json:"emoji"`
+}
+
 // GetStorageAccountsParams defines parameters for GetStorageAccounts.
 type GetStorageAccountsParams struct {
 	// PageSize The size of results.
@@ -4899,6 +5083,18 @@ type PutServiceAgentsMePasswordJSONRequestBody PutServiceAgentsMePasswordJSONBod
 
 // PutServiceAgentsMeStatusJSONRequestBody defines body for PutServiceAgentsMeStatus for application/json ContentType.
 type PutServiceAgentsMeStatusJSONRequestBody PutServiceAgentsMeStatusJSONBody
+
+// PostServiceAgentsTalkChatsJSONRequestBody defines body for PostServiceAgentsTalkChats for application/json ContentType.
+type PostServiceAgentsTalkChatsJSONRequestBody PostServiceAgentsTalkChatsJSONBody
+
+// PostServiceAgentsTalkChatsIdParticipantsJSONRequestBody defines body for PostServiceAgentsTalkChatsIdParticipants for application/json ContentType.
+type PostServiceAgentsTalkChatsIdParticipantsJSONRequestBody PostServiceAgentsTalkChatsIdParticipantsJSONBody
+
+// PostServiceAgentsTalkMessagesJSONRequestBody defines body for PostServiceAgentsTalkMessages for application/json ContentType.
+type PostServiceAgentsTalkMessagesJSONRequestBody PostServiceAgentsTalkMessagesJSONBody
+
+// PostServiceAgentsTalkMessagesIdReactionsJSONRequestBody defines body for PostServiceAgentsTalkMessagesIdReactions for application/json ContentType.
+type PostServiceAgentsTalkMessagesIdReactionsJSONRequestBody PostServiceAgentsTalkMessagesIdReactionsJSONBody
 
 // PostStorageAccountsJSONRequestBody defines body for PostStorageAccounts for application/json ContentType.
 type PostStorageAccountsJSONRequestBody PostStorageAccountsJSONBody

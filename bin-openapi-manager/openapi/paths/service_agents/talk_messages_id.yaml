@@ -1,0 +1,43 @@
+get:
+  summary: Get talk message by ID
+  description: Returns details of a specific talk message.
+  tags:
+    - Service Agent
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The talk message ID.
+  responses:
+    '200':
+      description: Talk message details.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TalkManagerMessage'
+    '404':
+      description: Talk message not found.
+
+delete:
+  summary: Delete talk message
+  description: Deletes a specific talk message (soft delete).
+  tags:
+    - Service Agent
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The talk message ID.
+  responses:
+    '200':
+      description: Talk message deleted successfully.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TalkManagerMessage'
+    '404':
+      description: Talk message not found.
