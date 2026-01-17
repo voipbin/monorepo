@@ -31,7 +31,7 @@ func Test_processV1TalksIDParticipantsPost(t *testing.T) {
 		{
 			name: "normal",
 			request: &sock.Request{
-				URI:      "/v1/talks/6ebc6880-31da-11ed-8e95-a3bc92af9795/participants",
+				URI:      "/v1/talk_chats/6ebc6880-31da-11ed-8e95-a3bc92af9795/participants",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","owner_type":"agent","owner_id":"7fcd7990-42eb-11ed-9fa6-b4cd93af9796"}`),
@@ -62,7 +62,7 @@ func Test_processV1TalksIDParticipantsPost(t *testing.T) {
 		{
 			name: "customer owner type",
 			request: &sock.Request{
-				URI:      "/v1/talks/6ebc6880-31da-11ed-8e95-a3bc92af9795/participants",
+				URI:      "/v1/talk_chats/6ebc6880-31da-11ed-8e95-a3bc92af9795/participants",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","owner_type":"customer","owner_id":"8ede8b40-86ef-11ed-d4fb-e9e028af9801"}`),
@@ -130,7 +130,7 @@ func Test_processV1TalksIDParticipantsPost_error(t *testing.T) {
 		{
 			name: "invalid json",
 			request: &sock.Request{
-				URI:      "/v1/talks/6ebc6880-31da-11ed-8e95-a3bc92af9795/participants",
+				URI:      "/v1/talk_chats/6ebc6880-31da-11ed-8e95-a3bc92af9795/participants",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{invalid json`),
@@ -145,7 +145,7 @@ func Test_processV1TalksIDParticipantsPost_error(t *testing.T) {
 		{
 			name: "nil customer id",
 			request: &sock.Request{
-				URI:      "/v1/talks/6ebc6880-31da-11ed-8e95-a3bc92af9795/participants",
+				URI:      "/v1/talk_chats/6ebc6880-31da-11ed-8e95-a3bc92af9795/participants",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"","owner_type":"agent","owner_id":"7fcd7990-42eb-11ed-9fa6-b4cd93af9796"}`),
@@ -160,7 +160,7 @@ func Test_processV1TalksIDParticipantsPost_error(t *testing.T) {
 		{
 			name: "nil owner id",
 			request: &sock.Request{
-				URI:      "/v1/talks/6ebc6880-31da-11ed-8e95-a3bc92af9795/participants",
+				URI:      "/v1/talk_chats/6ebc6880-31da-11ed-8e95-a3bc92af9795/participants",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","owner_type":"agent","owner_id":""}`),
@@ -213,7 +213,7 @@ func Test_processV1TalksIDParticipantsGet(t *testing.T) {
 		{
 			name: "normal",
 			request: &sock.Request{
-				URI:      "/v1/talks/6ebc6880-31da-11ed-8e95-a3bc92af9795/participants",
+				URI:      "/v1/talk_chats/6ebc6880-31da-11ed-8e95-a3bc92af9795/participants",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b"}`),
@@ -244,7 +244,7 @@ func Test_processV1TalksIDParticipantsGet(t *testing.T) {
 		{
 			name: "empty list",
 			request: &sock.Request{
-				URI:      "/v1/talks/6ebc6880-31da-11ed-8e95-a3bc92af9795/participants",
+				URI:      "/v1/talk_chats/6ebc6880-31da-11ed-8e95-a3bc92af9795/participants",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b"}`),
@@ -301,7 +301,7 @@ func Test_processV1TalksIDParticipantsIDDelete(t *testing.T) {
 		{
 			name: "normal",
 			request: &sock.Request{
-				URI:      "/v1/talks/6ebc6880-31da-11ed-8e95-a3bc92af9795/participants/bbef9d30-75fe-11ed-c3ea-f8e017af9700",
+				URI:      "/v1/talk_chats/6ebc6880-31da-11ed-8e95-a3bc92af9795/participants/bbef9d30-75fe-11ed-c3ea-f8e017af9700",
 				Method:   sock.RequestMethodDelete,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b"}`),
@@ -354,7 +354,7 @@ func Test_processV1TalksIDParticipantsID_unsupported_method(t *testing.T) {
 		{
 			name: "GET method",
 			request: &sock.Request{
-				URI:      "/v1/talks/6ebc6880-31da-11ed-8e95-a3bc92af9795/participants/bbef9d30-75fe-11ed-c3ea-f8e017af9700",
+				URI:      "/v1/talk_chats/6ebc6880-31da-11ed-8e95-a3bc92af9795/participants/bbef9d30-75fe-11ed-c3ea-f8e017af9700",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},

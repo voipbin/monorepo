@@ -31,7 +31,7 @@ func Test_processV1MessagesPost(t *testing.T) {
 		{
 			name: "normal",
 			request: &sock.Request{
-				URI:      "/v1/messages",
+				URI:      "/v1/talk_messages",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","chat_id":"6ebc6880-31da-11ed-8e95-a3bc92af9795","owner_type":"agent","owner_id":"7fcd7990-42eb-11ed-9fa6-b4cd93af9796","type":"normal","text":"Hello world","medias":"[]"}`),
@@ -75,7 +75,7 @@ func Test_processV1MessagesPost(t *testing.T) {
 		{
 			name: "with parent id",
 			request: &sock.Request{
-				URI:      "/v1/messages",
+				URI:      "/v1/talk_messages",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","chat_id":"6ebc6880-31da-11ed-8e95-a3bc92af9795","parent_id":"8fde8a00-53fc-11ed-a0b7-c5de94af9797","owner_type":"agent","owner_id":"7fcd7990-42eb-11ed-9fa6-b4cd93af9796","type":"normal","text":"Reply to message","medias":"[]"}`),
@@ -155,7 +155,7 @@ func Test_processV1MessagesPost_error(t *testing.T) {
 		{
 			name: "invalid json",
 			request: &sock.Request{
-				URI:      "/v1/messages",
+				URI:      "/v1/talk_messages",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{invalid json`),
@@ -169,7 +169,7 @@ func Test_processV1MessagesPost_error(t *testing.T) {
 		{
 			name: "nil customer id",
 			request: &sock.Request{
-				URI:      "/v1/messages",
+				URI:      "/v1/talk_messages",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"","chat_id":"6ebc6880-31da-11ed-8e95-a3bc92af9795","owner_type":"agent","owner_id":"7fcd7990-42eb-11ed-9fa6-b4cd93af9796","type":"normal","text":"test"}`),
@@ -183,7 +183,7 @@ func Test_processV1MessagesPost_error(t *testing.T) {
 		{
 			name: "nil chat id",
 			request: &sock.Request{
-				URI:      "/v1/messages",
+				URI:      "/v1/talk_messages",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","chat_id":"","owner_type":"agent","owner_id":"7fcd7990-42eb-11ed-9fa6-b4cd93af9796","type":"normal","text":"test"}`),
@@ -197,7 +197,7 @@ func Test_processV1MessagesPost_error(t *testing.T) {
 		{
 			name: "nil owner id",
 			request: &sock.Request{
-				URI:      "/v1/messages",
+				URI:      "/v1/talk_messages",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","chat_id":"6ebc6880-31da-11ed-8e95-a3bc92af9795","owner_type":"agent","owner_id":"","type":"normal","text":"test"}`),
@@ -250,7 +250,7 @@ func Test_processV1MessagesGet(t *testing.T) {
 		{
 			name: "normal",
 			request: &sock.Request{
-				URI:      "/v1/messages?page_size=10&page_token=2021-11-23%2017:55:39.712000",
+				URI:      "/v1/talk_messages?page_size=10&page_token=2021-11-23%2017:55:39.712000",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{}`),
@@ -288,7 +288,7 @@ func Test_processV1MessagesGet(t *testing.T) {
 		{
 			name: "default page size",
 			request: &sock.Request{
-				URI:      "/v1/messages",
+				URI:      "/v1/talk_messages",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{}`),
@@ -346,7 +346,7 @@ func Test_processV1MessagesIDGet(t *testing.T) {
 		{
 			name: "normal",
 			request: &sock.Request{
-				URI:      "/v1/messages/9ade9b10-64ed-11ed-b1c8-d6ef95af9798",
+				URI:      "/v1/talk_messages/9ade9b10-64ed-11ed-b1c8-d6ef95af9798",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
@@ -418,7 +418,7 @@ func Test_processV1MessagesIDDelete(t *testing.T) {
 		{
 			name: "normal",
 			request: &sock.Request{
-				URI:      "/v1/messages/9ade9b10-64ed-11ed-b1c8-d6ef95af9798",
+				URI:      "/v1/talk_messages/9ade9b10-64ed-11ed-b1c8-d6ef95af9798",
 				Method:   sock.RequestMethodDelete,
 				DataType: "application/json",
 			},
@@ -487,7 +487,7 @@ func Test_processV1MessagesID_unsupported_method(t *testing.T) {
 		{
 			name: "PUT method",
 			request: &sock.Request{
-				URI:      "/v1/messages/9ade9b10-64ed-11ed-b1c8-d6ef95af9798",
+				URI:      "/v1/talk_messages/9ade9b10-64ed-11ed-b1c8-d6ef95af9798",
 				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
 			},

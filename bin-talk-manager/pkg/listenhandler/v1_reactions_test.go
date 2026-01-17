@@ -31,7 +31,7 @@ func Test_processV1MessagesIDReactionsPost(t *testing.T) {
 		{
 			name: "normal",
 			request: &sock.Request{
-				URI:      "/v1/messages/9ade9b10-64ed-11ed-b1c8-d6ef95af9798/reactions",
+				URI:      "/v1/talk_messages/9ade9b10-64ed-11ed-b1c8-d6ef95af9798/reactions",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"owner_type":"agent","owner_id":"7fcd7990-42eb-11ed-9fa6-b4cd93af9796","reaction":"👍"}`),
@@ -68,7 +68,7 @@ func Test_processV1MessagesIDReactionsPost(t *testing.T) {
 		{
 			name: "heart reaction",
 			request: &sock.Request{
-				URI:      "/v1/messages/9ade9b10-64ed-11ed-b1c8-d6ef95af9798/reactions",
+				URI:      "/v1/talk_messages/9ade9b10-64ed-11ed-b1c8-d6ef95af9798/reactions",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"owner_type":"customer","owner_id":"8ede8b40-86ef-11ed-d4fb-e9e028af9801","reaction":"❤️"}`),
@@ -142,7 +142,7 @@ func Test_processV1MessagesIDReactionsPost_error(t *testing.T) {
 		{
 			name: "invalid json",
 			request: &sock.Request{
-				URI:      "/v1/messages/9ade9b10-64ed-11ed-b1c8-d6ef95af9798/reactions",
+				URI:      "/v1/talk_messages/9ade9b10-64ed-11ed-b1c8-d6ef95af9798/reactions",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{invalid json`),
@@ -157,7 +157,7 @@ func Test_processV1MessagesIDReactionsPost_error(t *testing.T) {
 		{
 			name: "nil owner id",
 			request: &sock.Request{
-				URI:      "/v1/messages/9ade9b10-64ed-11ed-b1c8-d6ef95af9798/reactions",
+				URI:      "/v1/talk_messages/9ade9b10-64ed-11ed-b1c8-d6ef95af9798/reactions",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"owner_type":"agent","owner_id":"","reaction":"👍"}`),
@@ -212,7 +212,7 @@ func Test_processV1MessagesIDReactionsDelete(t *testing.T) {
 		{
 			name: "normal",
 			request: &sock.Request{
-				URI:      "/v1/messages/9ade9b10-64ed-11ed-b1c8-d6ef95af9798/reactions",
+				URI:      "/v1/talk_messages/9ade9b10-64ed-11ed-b1c8-d6ef95af9798/reactions",
 				Method:   sock.RequestMethodDelete,
 				DataType: "application/json",
 				Data:     []byte(`{"owner_type":"agent","owner_id":"7fcd7990-42eb-11ed-9fa6-b4cd93af9796","reaction":"👍"}`),
@@ -249,7 +249,7 @@ func Test_processV1MessagesIDReactionsDelete(t *testing.T) {
 		{
 			name: "remove heart reaction",
 			request: &sock.Request{
-				URI:      "/v1/messages/9ade9b10-64ed-11ed-b1c8-d6ef95af9798/reactions",
+				URI:      "/v1/talk_messages/9ade9b10-64ed-11ed-b1c8-d6ef95af9798/reactions",
 				Method:   sock.RequestMethodDelete,
 				DataType: "application/json",
 				Data:     []byte(`{"owner_type":"customer","owner_id":"8ede8b40-86ef-11ed-d4fb-e9e028af9801","reaction":"❤️"}`),
@@ -323,7 +323,7 @@ func Test_processV1MessagesIDReactionsDelete_error(t *testing.T) {
 		{
 			name: "invalid json",
 			request: &sock.Request{
-				URI:      "/v1/messages/9ade9b10-64ed-11ed-b1c8-d6ef95af9798/reactions",
+				URI:      "/v1/talk_messages/9ade9b10-64ed-11ed-b1c8-d6ef95af9798/reactions",
 				Method:   sock.RequestMethodDelete,
 				DataType: "application/json",
 				Data:     []byte(`{invalid json`),
@@ -338,7 +338,7 @@ func Test_processV1MessagesIDReactionsDelete_error(t *testing.T) {
 		{
 			name: "nil owner id",
 			request: &sock.Request{
-				URI:      "/v1/messages/9ade9b10-64ed-11ed-b1c8-d6ef95af9798/reactions",
+				URI:      "/v1/talk_messages/9ade9b10-64ed-11ed-b1c8-d6ef95af9798/reactions",
 				Method:   sock.RequestMethodDelete,
 				DataType: "application/json",
 				Data:     []byte(`{"owner_type":"agent","owner_id":"","reaction":"👍"}`),
@@ -388,7 +388,7 @@ func Test_processV1MessagesIDReactions_unsupported_method(t *testing.T) {
 		{
 			name: "GET method",
 			request: &sock.Request{
-				URI:      "/v1/messages/9ade9b10-64ed-11ed-b1c8-d6ef95af9798/reactions",
+				URI:      "/v1/talk_messages/9ade9b10-64ed-11ed-b1c8-d6ef95af9798/reactions",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
