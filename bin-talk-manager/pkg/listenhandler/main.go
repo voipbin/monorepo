@@ -20,13 +20,13 @@ import (
 
 // Regex patterns for URI matching
 var (
-	regV1TalkChats                 = regexp.MustCompile(`^/v1/chats$`)
-	regV1TalkChatsID               = regexp.MustCompile(`^/v1/chats/([^/]+)$`)
-	regV1TalkChatsIDParticipants   = regexp.MustCompile(`^/v1/chats/([^/]+)/participants$`)
-	regV1TalkChatsIDParticipantsID = regexp.MustCompile(`^/v1/chats/([^/]+)/participants/([^/]+)$`)
-	regV1TalkMessages              = regexp.MustCompile(`^/v1/messages$`)
-	regV1TalkMessagesID            = regexp.MustCompile(`^/v1/messages/([^/]+)$`)
-	regV1TalkMessagesIDReactions   = regexp.MustCompile(`^/v1/messages/([^/]+)/reactions$`)
+	regV1Chats                 = regexp.MustCompile(`^/v1/chats$`)
+	regV1ChatsID               = regexp.MustCompile(`^/v1/chats/([^/]+)$`)
+	regV1ChatsIDParticipants   = regexp.MustCompile(`^/v1/chats/([^/]+)/participants$`)
+	regV1ChatsIDParticipantsID = regexp.MustCompile(`^/v1/chats/([^/]+)/participants/([^/]+)$`)
+	regV1Messages              = regexp.MustCompile(`^/v1/messages$`)
+	regV1MessagesID            = regexp.MustCompile(`^/v1/messages/([^/]+)$`)
+	regV1MessagesIDReactions   = regexp.MustCompile(`^/v1/messages/([^/]+)/reactions$`)
 )
 
 type listenHandler struct {
@@ -79,26 +79,76 @@ func (h *listenHandler) processRequest(m *commonsock.Request) (*commonsock.Respo
 	ctx := context.Background()
 	log.Debugf("Received request: %s %s", m.Method, m.URI)
 
-	// Route based on URI pattern
+	var response *commonsock.Response
+	var err error
+
+	// Route based on URI pattern and HTTP method
 	switch {
-	case regV1TalkChats.MatchString(m.URI):
-		return h.processV1TalkChats(ctx, *m)
-	case regV1TalkChatsID.MatchString(m.URI):
-		return h.processV1TalkChatsID(ctx, *m)
-	case regV1TalkChatsIDParticipants.MatchString(m.URI):
-		return h.processV1TalkChatsIDParticipants(ctx, *m)
-	case regV1TalkChatsIDParticipantsID.MatchString(m.URI):
-		return h.processV1TalkChatsIDParticipantsID(ctx, *m)
-	case regV1TalkMessages.MatchString(m.URI):
-		return h.processV1TalkMessages(ctx, *m)
-	case regV1TalkMessagesID.MatchString(m.URI):
-		return h.processV1TalkMessagesID(ctx, *m)
-	case regV1TalkMessagesIDReactions.MatchString(m.URI):
-		return h.processV1TalkMessagesIDReactions(ctx, *m)
+	// v1
+
+	// chats
+	case regV1Chats.MatchString(m.URI) && m.Method == commonsock.RequestMethodPost:
+		response, err = h.v1ChatsPost(ctx, *m)
+
+	// chats
+	case regV1Chats.MatchString(m.URI) && m.Method == commonsock.RequestMethodGet:
+		response, err = h.v1ChatsGet(ctx, *m)
+
+	// chats/<chat-id>
+	case regV1ChatsID.MatchString(m.URI) && m.Method == commonsock.RequestMethodGet:
+		response, err = h.v1ChatsIDGet(ctx, *m)
+
+	// chats/<chat-id>
+	case regV1ChatsID.MatchString(m.URI) && m.Method == commonsock.RequestMethodDelete:
+		response, err = h.v1ChatsIDDelete(ctx, *m)
+
+	// chats/<chat-id>/participants
+	case regV1ChatsIDParticipants.MatchString(m.URI) && m.Method == commonsock.RequestMethodPost:
+		response, err = h.v1ChatsIDParticipantsPost(ctx, *m)
+
+	// chats/<chat-id>/participants
+	case regV1ChatsIDParticipants.MatchString(m.URI) && m.Method == commonsock.RequestMethodGet:
+		response, err = h.v1ChatsIDParticipantsGet(ctx, *m)
+
+	// chats/<chat-id>/participants/<participant-id>
+	case regV1ChatsIDParticipantsID.MatchString(m.URI) && m.Method == commonsock.RequestMethodDelete:
+		response, err = h.v1ChatsIDParticipantsIDDelete(ctx, *m)
+
+	// messages
+	case regV1Messages.MatchString(m.URI) && m.Method == commonsock.RequestMethodPost:
+		response, err = h.v1MessagesPost(ctx, *m)
+
+	// messages
+	case regV1Messages.MatchString(m.URI) && m.Method == commonsock.RequestMethodGet:
+		response, err = h.v1MessagesGet(ctx, *m)
+
+	// messages/<message-id>
+	case regV1MessagesID.MatchString(m.URI) && m.Method == commonsock.RequestMethodGet:
+		response, err = h.v1MessagesIDGet(ctx, *m)
+
+	// messages/<message-id>
+	case regV1MessagesID.MatchString(m.URI) && m.Method == commonsock.RequestMethodDelete:
+		response, err = h.v1MessagesIDDelete(ctx, *m)
+
+	// messages/<message-id>/reactions
+	case regV1MessagesIDReactions.MatchString(m.URI) && m.Method == commonsock.RequestMethodPost:
+		response, err = h.v1MessagesIDReactionsPost(ctx, *m)
+
+	// messages/<message-id>/reactions
+	case regV1MessagesIDReactions.MatchString(m.URI) && m.Method == commonsock.RequestMethodDelete:
+		response, err = h.v1MessagesIDReactionsDelete(ctx, *m)
+
 	default:
-		log.Warnf("Unknown URI: %s", m.URI)
+		log.Warnf("Unknown URI or method: %s %s", m.Method, m.URI)
 		return simpleResponse(404), nil
 	}
+
+	if err != nil {
+		log.Errorf("Request failed: %v", err)
+		return simpleResponse(500), err
+	}
+
+	return response, nil
 }
 
 // simpleResponse creates a simple response with status code

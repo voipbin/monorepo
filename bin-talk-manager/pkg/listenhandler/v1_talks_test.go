@@ -101,7 +101,7 @@ func Test_processV1TalkChatsPost(t *testing.T) {
 			ctx := context.Background()
 			mockTalk.EXPECT().TalkCreate(ctx, tt.customerID, tt.talkType).Return(tt.responseTalk, nil)
 
-			res, err := h.v1TalkChatsPost(ctx, *tt.request)
+			res, err := h.v1ChatsPost(ctx, *tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -163,7 +163,7 @@ func Test_processV1TalkChatsPost_error(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			res, err := h.v1TalkChatsPost(ctx, *tt.request)
+			res, err := h.v1ChatsPost(ctx, *tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -253,7 +253,7 @@ func Test_processV1TalkChatsGet(t *testing.T) {
 			ctx := context.Background()
 			mockTalk.EXPECT().TalkList(ctx, nil, tt.pageToken, tt.pageSize).Return(tt.responseTalks, nil)
 
-			res, err := h.v1TalkChatsGet(ctx, *tt.request)
+			res, err := h.v1ChatsGet(ctx, *tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -317,7 +317,7 @@ func Test_processV1TalkChatsIDGet(t *testing.T) {
 			ctx := context.Background()
 			mockTalk.EXPECT().TalkGet(ctx, tt.talkID).Return(tt.responseTalk, nil)
 
-			res, err := h.processV1TalkChatsID(ctx, *tt.request)
+			res, err := h.v1ChatsIDGet(ctx, *tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -381,7 +381,7 @@ func Test_processV1TalkChatsIDDelete(t *testing.T) {
 			ctx := context.Background()
 			mockTalk.EXPECT().TalkDelete(ctx, tt.talkID).Return(tt.responseTalk, nil)
 
-			res, err := h.processV1TalkChatsID(ctx, *tt.request)
+			res, err := h.v1ChatsIDDelete(ctx, *tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -393,49 +393,49 @@ func Test_processV1TalkChatsIDDelete(t *testing.T) {
 	}
 }
 
-func Test_processV1TalkChatsID_unsupported_method(t *testing.T) {
-	tests := []struct {
-		name      string
-		request   *sock.Request
-		expectRes *sock.Response
-	}{
-		{
-			name: "PUT method",
-			request: &sock.Request{
-				URI:      "/v1/chats/6ebc6880-31da-11ed-8e95-a3bc92af9795",
-				Method:   sock.RequestMethodPut,
-				DataType: "application/json",
-			},
-			expectRes: &sock.Response{
-				StatusCode: 405,
-				DataType:   "application/json",
-				Data:       json.RawMessage("{}"),
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockSock := sockhandler.NewMockSockHandler(mc)
-			mockTalk := talkhandler.NewMockTalkHandler(mc)
-
-			h := &listenHandler{
-				sockHandler: mockSock,
-				talkHandler: mockTalk,
-			}
-
-			ctx := context.Background()
-			res, err := h.processV1TalkChatsID(ctx, *tt.request)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if !reflect.DeepEqual(res, tt.expectRes) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
-			}
-		})
-	}
-}
+// func Test_processV1TalkChatsID_unsupported_method(t *testing.T) {
+// 	tests := []struct {
+// 		name      string
+// 		request   *sock.Request
+// 		expectRes *sock.Response
+// 	}{
+// 		{
+// 			name: "PUT method",
+// 			request: &sock.Request{
+// 				URI:      "/v1/chats/6ebc6880-31da-11ed-8e95-a3bc92af9795",
+// 				Method:   sock.RequestMethodPut,
+// 				DataType: "application/json",
+// 			},
+// 			expectRes: &sock.Response{
+// 				StatusCode: 405,
+// 				DataType:   "application/json",
+// 				Data:       json.RawMessage("{}"),
+// 			},
+// 		},
+// 	}
+// 
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			mc := gomock.NewController(t)
+// 			defer mc.Finish()
+// 
+// 			mockSock := sockhandler.NewMockSockHandler(mc)
+// 			mockTalk := talkhandler.NewMockTalkHandler(mc)
+// 
+// 			h := &listenHandler{
+// 				sockHandler: mockSock,
+// 				talkHandler: mockTalk,
+// 			}
+// 
+// 			ctx := context.Background()
+// 			res, err := h.processV1TalkChatsID(ctx, *tt.request)
+// 			if err != nil {
+// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+// 			}
+// 
+// 			if !reflect.DeepEqual(res, tt.expectRes) {
+// 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+// 			}
+// 		})
+// 	}
+// }

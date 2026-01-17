@@ -13,18 +13,7 @@ import (
 	"monorepo/bin-talk-manager/models/talk"
 )
 
-func (h *listenHandler) processV1TalkChats(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
-	switch m.Method {
-	case "POST":
-		return h.v1TalkChatsPost(ctx, m)
-	case "GET":
-		return h.v1TalkChatsGet(ctx, m)
-	default:
-		return simpleResponse(405), nil
-	}
-}
-
-func (h *listenHandler) v1TalkChatsPost(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
+func (h *listenHandler) v1ChatsPost(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
 	var req struct {
 		CustomerID string `json:"customer_id"`
 		Type       string `json:"type"`
@@ -54,7 +43,7 @@ func (h *listenHandler) v1TalkChatsPost(ctx context.Context, m commonsock.Reques
 	}, nil
 }
 
-func (h *listenHandler) v1TalkChatsGet(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
+func (h *listenHandler) v1ChatsGet(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
 	u, _ := url.Parse(m.URI)
 
 	// Parse pagination
@@ -89,36 +78,36 @@ func (h *listenHandler) v1TalkChatsGet(ctx context.Context, m commonsock.Request
 	}, nil
 }
 
-func (h *listenHandler) processV1TalkChatsID(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
-	matches := regV1TalkChatsID.FindStringSubmatch(m.URI)
+func (h *listenHandler) v1ChatsIDGet(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
+	matches := regV1ChatsID.FindStringSubmatch(m.URI)
 	talkID := uuid.FromStringOrNil(matches[1])
 
-	switch m.Method {
-	case "GET":
-		t, err := h.talkHandler.TalkGet(ctx, talkID)
-		if err != nil {
-			return simpleResponse(404), nil
-		}
-		data, _ := json.Marshal(t)
-		return &commonsock.Response{
-			StatusCode: 200,
-			DataType:   "application/json",
-			Data:       data,
-		}, nil
-
-	case "DELETE":
-		t, err := h.talkHandler.TalkDelete(ctx, talkID)
-		if err != nil {
-			return simpleResponse(500), nil
-		}
-		data, _ := json.Marshal(t)
-		return &commonsock.Response{
-			StatusCode: 200,
-			DataType:   "application/json",
-			Data:       data,
-		}, nil
-
-	default:
-		return simpleResponse(405), nil
+	t, err := h.talkHandler.TalkGet(ctx, talkID)
+	if err != nil {
+		return simpleResponse(404), nil
 	}
+
+	data, _ := json.Marshal(t)
+	return &commonsock.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}, nil
+}
+
+func (h *listenHandler) v1ChatsIDDelete(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
+	matches := regV1ChatsID.FindStringSubmatch(m.URI)
+	talkID := uuid.FromStringOrNil(matches[1])
+
+	t, err := h.talkHandler.TalkDelete(ctx, talkID)
+	if err != nil {
+		return simpleResponse(500), nil
+	}
+
+	data, _ := json.Marshal(t)
+	return &commonsock.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}, nil
 }

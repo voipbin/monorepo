@@ -6,6 +6,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -15,12 +16,13 @@ import (
 
 // MessageCreate creates a new message with threading validation
 func (h *messageHandler) MessageCreate(ctx context.Context, req MessageCreateRequest) (*message.Message, error) {
-	log.WithFields(log.Fields{
+	log := log.WithFields(log.Fields{
 		"func":        "MessageCreate",
 		"customer_id": req.CustomerID,
 		"chat_id":     req.ChatID,
 		"owner_id":    req.OwnerID,
-	}).Debug("Creating message")
+	})
+	log.Debug("Creating message")
 
 	// Validate required fields
 	if req.CustomerID == uuid.Nil {
@@ -92,7 +94,7 @@ func (h *messageHandler) MessageCreate(ctx context.Context, req MessageCreateReq
 		// Reason: Preserve thread structure even when parent messages are deleted
 		// UI should display deleted parent as placeholder (e.g., "Message deleted")
 		if parent.TMDelete != "" {
-			log.WithFields(log.Fields{
+			log.WithFields(logrus.Fields{
 				"parent_id": parent.ID,
 				"chat_id":   req.ChatID,
 			}).Debug("Creating reply to soft-deleted parent message (allowed)")
@@ -132,11 +134,9 @@ func (h *messageHandler) MessageCreate(ctx context.Context, req MessageCreateReq
 		return nil, errors.Wrap(err, "failed to create message")
 	}
 
-	log.WithFields(log.Fields{
-		"func":       "MessageCreate",
-		"message_id": msg.ID,
-		"chat_id":    msg.ChatID,
-	}).Debug("Message created successfully")
+	// Augment log with result before final log
+	log = log.WithField("message_id", msg.ID)
+	log.Debug("Message created successfully")
 
 	// Publish webhook event
 	h.publishMessageCreatedEvent(ctx, msg)

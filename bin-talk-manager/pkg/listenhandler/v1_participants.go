@@ -10,21 +10,10 @@ import (
 	commonsock "monorepo/bin-common-handler/models/sock"
 )
 
-func (h *listenHandler) processV1TalkChatsIDParticipants(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
-	matches := regV1TalkChatsIDParticipants.FindStringSubmatch(m.URI)
+func (h *listenHandler) v1ChatsIDParticipantsPost(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
+	matches := regV1ChatsIDParticipants.FindStringSubmatch(m.URI)
 	chatID := uuid.FromStringOrNil(matches[1])
 
-	switch m.Method {
-	case "POST":
-		return h.v1TalkChatsIDParticipantsPost(ctx, m, chatID)
-	case "GET":
-		return h.v1TalkChatsIDParticipantsGet(ctx, m, chatID)
-	default:
-		return simpleResponse(405), nil
-	}
-}
-
-func (h *listenHandler) v1TalkChatsIDParticipantsPost(ctx context.Context, m commonsock.Request, chatID uuid.UUID) (*commonsock.Response, error) {
 	var req struct {
 		CustomerID string `json:"customer_id"`
 		OwnerType  string `json:"owner_type"`
@@ -58,7 +47,10 @@ func (h *listenHandler) v1TalkChatsIDParticipantsPost(ctx context.Context, m com
 	}, nil
 }
 
-func (h *listenHandler) v1TalkChatsIDParticipantsGet(ctx context.Context, m commonsock.Request, chatID uuid.UUID) (*commonsock.Response, error) {
+func (h *listenHandler) v1ChatsIDParticipantsGet(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
+	matches := regV1ChatsIDParticipants.FindStringSubmatch(m.URI)
+	chatID := uuid.FromStringOrNil(matches[1])
+
 	// Parse customer_id from request body
 	var req struct {
 		CustomerID string `json:"customer_id"`
@@ -82,33 +74,28 @@ func (h *listenHandler) v1TalkChatsIDParticipantsGet(ctx context.Context, m comm
 	}, nil
 }
 
-func (h *listenHandler) processV1TalkChatsIDParticipantsID(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
-	matches := regV1TalkChatsIDParticipantsID.FindStringSubmatch(m.URI)
+func (h *listenHandler) v1ChatsIDParticipantsIDDelete(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
+	matches := regV1ChatsIDParticipantsID.FindStringSubmatch(m.URI)
 	participantID := uuid.FromStringOrNil(matches[2])
 
-	switch m.Method {
-	case "DELETE":
-		// Parse customer_id from request body
-		var req struct {
-			CustomerID string `json:"customer_id"`
-		}
-		if err := json.Unmarshal(m.Data, &req); err != nil {
-			log.Errorf("Failed to parse request: %v", err)
-			return simpleResponse(400), nil
-		}
-		customerID := uuid.FromStringOrNil(req.CustomerID)
-
-		err := h.participantHandler.ParticipantRemove(ctx, customerID, participantID)
-		if err != nil {
-			return simpleResponse(500), nil
-		}
-		return &commonsock.Response{
-			StatusCode: 204,
-			DataType:   "application/json",
-			Data:       json.RawMessage("{}"),
-		}, nil
-
-	default:
-		return simpleResponse(405), nil
+	// Parse customer_id from request body
+	var req struct {
+		CustomerID string `json:"customer_id"`
 	}
+	if err := json.Unmarshal(m.Data, &req); err != nil {
+		log.Errorf("Failed to parse request: %v", err)
+		return simpleResponse(400), nil
+	}
+	customerID := uuid.FromStringOrNil(req.CustomerID)
+
+	err := h.participantHandler.ParticipantRemove(ctx, customerID, participantID)
+	if err != nil {
+		return simpleResponse(500), nil
+	}
+
+	return &commonsock.Response{
+		StatusCode: 204,
+		DataType:   "application/json",
+		Data:       json.RawMessage("{}"),
+	}, nil
 }

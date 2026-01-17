@@ -10,21 +10,10 @@ import (
 	commonsock "monorepo/bin-common-handler/models/sock"
 )
 
-func (h *listenHandler) processV1TalkMessagesIDReactions(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
-	matches := regV1TalkMessagesIDReactions.FindStringSubmatch(m.URI)
+func (h *listenHandler) v1MessagesIDReactionsPost(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
+	matches := regV1MessagesIDReactions.FindStringSubmatch(m.URI)
 	messageID := uuid.FromStringOrNil(matches[1])
 
-	switch m.Method {
-	case "POST":
-		return h.v1TalkMessagesIDReactionsPost(ctx, m, messageID)
-	case "DELETE":
-		return h.v1TalkMessagesIDReactionsDelete(ctx, m, messageID)
-	default:
-		return simpleResponse(405), nil
-	}
-}
-
-func (h *listenHandler) v1TalkMessagesIDReactionsPost(ctx context.Context, m commonsock.Request, messageID uuid.UUID) (*commonsock.Response, error) {
 	var req struct {
 		OwnerType string `json:"owner_type"`
 		OwnerID   string `json:"owner_id"`
@@ -56,7 +45,10 @@ func (h *listenHandler) v1TalkMessagesIDReactionsPost(ctx context.Context, m com
 	}, nil
 }
 
-func (h *listenHandler) v1TalkMessagesIDReactionsDelete(ctx context.Context, m commonsock.Request, messageID uuid.UUID) (*commonsock.Response, error) {
+func (h *listenHandler) v1MessagesIDReactionsDelete(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
+	matches := regV1MessagesIDReactions.FindStringSubmatch(m.URI)
+	messageID := uuid.FromStringOrNil(matches[1])
+
 	var req struct {
 		OwnerType string `json:"owner_type"`
 		OwnerID   string `json:"owner_id"`

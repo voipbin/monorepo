@@ -13,18 +13,7 @@ import (
 	"monorepo/bin-talk-manager/pkg/messagehandler"
 )
 
-func (h *listenHandler) processV1TalkMessages(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
-	switch m.Method {
-	case "POST":
-		return h.v1TalkMessagesPost(ctx, m)
-	case "GET":
-		return h.v1TalkMessagesGet(ctx, m)
-	default:
-		return simpleResponse(405), nil
-	}
-}
-
-func (h *listenHandler) v1TalkMessagesPost(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
+func (h *listenHandler) v1MessagesPost(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
 	var req struct {
 		CustomerID string  `json:"customer_id"`
 		ChatID     string  `json:"chat_id"`
@@ -81,7 +70,7 @@ func (h *listenHandler) v1TalkMessagesPost(ctx context.Context, m commonsock.Req
 	}, nil
 }
 
-func (h *listenHandler) v1TalkMessagesGet(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
+func (h *listenHandler) v1MessagesGet(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
 	u, _ := url.Parse(m.URI)
 
 	// Parse pagination
@@ -116,36 +105,36 @@ func (h *listenHandler) v1TalkMessagesGet(ctx context.Context, m commonsock.Requ
 	}, nil
 }
 
-func (h *listenHandler) processV1TalkMessagesID(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
-	matches := regV1TalkMessagesID.FindStringSubmatch(m.URI)
+func (h *listenHandler) v1MessagesIDGet(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
+	matches := regV1MessagesID.FindStringSubmatch(m.URI)
 	messageID := uuid.FromStringOrNil(matches[1])
 
-	switch m.Method {
-	case "GET":
-		msg, err := h.messageHandler.MessageGet(ctx, messageID)
-		if err != nil {
-			return simpleResponse(404), nil
-		}
-		data, _ := json.Marshal(msg)
-		return &commonsock.Response{
-			StatusCode: 200,
-			DataType:   "application/json",
-			Data:       data,
-		}, nil
-
-	case "DELETE":
-		msg, err := h.messageHandler.MessageDelete(ctx, messageID)
-		if err != nil {
-			return simpleResponse(500), nil
-		}
-		data, _ := json.Marshal(msg)
-		return &commonsock.Response{
-			StatusCode: 200,
-			DataType:   "application/json",
-			Data:       data,
-		}, nil
-
-	default:
-		return simpleResponse(405), nil
+	msg, err := h.messageHandler.MessageGet(ctx, messageID)
+	if err != nil {
+		return simpleResponse(404), nil
 	}
+
+	data, _ := json.Marshal(msg)
+	return &commonsock.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}, nil
+}
+
+func (h *listenHandler) v1MessagesIDDelete(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
+	matches := regV1MessagesID.FindStringSubmatch(m.URI)
+	messageID := uuid.FromStringOrNil(matches[1])
+
+	msg, err := h.messageHandler.MessageDelete(ctx, messageID)
+	if err != nil {
+		return simpleResponse(500), nil
+	}
+
+	data, _ := json.Marshal(msg)
+	return &commonsock.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}, nil
 }

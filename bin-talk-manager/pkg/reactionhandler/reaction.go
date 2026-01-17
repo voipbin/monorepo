@@ -14,12 +14,13 @@ import (
 
 // ReactionAdd adds a reaction to a message with idempotent behavior
 func (h *reactionHandler) ReactionAdd(ctx context.Context, messageID uuid.UUID, emoji, ownerType string, ownerID uuid.UUID) (*message.Message, error) {
-	log.WithFields(log.Fields{
+	log := log.WithFields(log.Fields{
 		"func":       "ReactionAdd",
 		"message_id": messageID,
 		"emoji":      emoji,
 		"owner_id":   ownerID,
-	}).Debug("Adding reaction")
+	})
+	log.Debug("Adding reaction")
 
 	// Validate required fields
 	if messageID == uuid.Nil {
@@ -54,11 +55,7 @@ func (h *reactionHandler) ReactionAdd(ctx context.Context, messageID uuid.UUID, 
 	for _, r := range metadata.Reactions {
 		if r.Emoji == emoji && r.OwnerType == ownerType && r.OwnerID == ownerID {
 			// Already exists, return current message (idempotent)
-			log.WithFields(log.Fields{
-				"message_id": messageID,
-				"emoji":      emoji,
-				"owner_id":   ownerID,
-			}).Debug("Reaction already exists, returning current message")
+			log.Debug("Reaction already exists, returning current message")
 			h.publishReactionUpdated(ctx, m)
 			return m, nil
 		}
@@ -92,10 +89,7 @@ func (h *reactionHandler) ReactionAdd(ctx context.Context, messageID uuid.UUID, 
 		return nil, errors.Wrap(err, "failed to get updated message")
 	}
 
-	log.WithFields(log.Fields{
-		"message_id": messageID,
-		"emoji":      emoji,
-	}).Debug("Reaction added successfully")
+	log.Debug("Reaction added successfully")
 
 	h.publishReactionUpdated(ctx, m)
 
@@ -104,12 +98,13 @@ func (h *reactionHandler) ReactionAdd(ctx context.Context, messageID uuid.UUID, 
 
 // ReactionRemove removes a reaction from a message
 func (h *reactionHandler) ReactionRemove(ctx context.Context, messageID uuid.UUID, emoji, ownerType string, ownerID uuid.UUID) (*message.Message, error) {
-	log.WithFields(log.Fields{
+	log := log.WithFields(log.Fields{
 		"func":       "ReactionRemove",
 		"message_id": messageID,
 		"emoji":      emoji,
 		"owner_id":   ownerID,
-	}).Debug("Removing reaction")
+	})
+	log.Debug("Removing reaction")
 
 	// Validate required fields
 	if messageID == uuid.Nil {
@@ -139,10 +134,7 @@ func (h *reactionHandler) ReactionRemove(ctx context.Context, messageID uuid.UUI
 		return nil, errors.Wrap(err, "failed to get updated message")
 	}
 
-	log.WithFields(log.Fields{
-		"message_id": messageID,
-		"emoji":      emoji,
-	}).Debug("Reaction removed successfully")
+	log.Debug("Reaction removed successfully")
 
 	h.publishReactionUpdated(ctx, m)
 
