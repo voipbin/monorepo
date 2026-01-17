@@ -1,0 +1,155 @@
+package reactionhandler
+
+import (
+	"context"
+	"encoding/json"
+	"time"
+
+	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
+
+	"monorepo/bin-talk-manager/models/message"
+)
+
+// ReactionAdd adds a reaction to a message with idempotent behavior
+func (h *reactionHandler) ReactionAdd(ctx context.Context, messageID uuid.UUID, emoji, ownerType string, ownerID uuid.UUID) (*message.Message, error) {
+	log.WithFields(log.Fields{
+		"func":       "ReactionAdd",
+		"message_id": messageID,
+		"emoji":      emoji,
+		"owner_id":   ownerID,
+	}).Debug("Adding reaction")
+
+	// Validate required fields
+	if messageID == uuid.Nil {
+		return nil, errors.New("message_id is required")
+	}
+	if emoji == "" {
+		return nil, errors.New("emoji is required")
+	}
+	if ownerType == "" {
+		return nil, errors.New("owner_type is required")
+	}
+	if ownerID == uuid.Nil {
+		return nil, errors.New("owner_id is required")
+	}
+
+	// Check if reaction already exists (idempotent check)
+	m, err := h.dbHandler.MessageGet(ctx, messageID)
+	if err != nil {
+		log.Errorf("Failed to get message: %v", err)
+		return nil, errors.Wrap(err, "failed to get message")
+	}
+	if m == nil {
+		return nil, errors.New("message not found")
+	}
+
+	var metadata message.Metadata
+	if err := json.Unmarshal([]byte(m.Metadata), &metadata); err != nil {
+		log.Errorf("Failed to unmarshal metadata: %v", err)
+		return nil, errors.Wrap(err, "failed to parse message metadata")
+	}
+
+	for _, r := range metadata.Reactions {
+		if r.Emoji == emoji && r.OwnerType == ownerType && r.OwnerID == ownerID {
+			// Already exists, return current message (idempotent)
+			log.WithFields(log.Fields{
+				"message_id": messageID,
+				"emoji":      emoji,
+				"owner_id":   ownerID,
+			}).Debug("Reaction already exists, returning current message")
+			h.publishReactionUpdated(ctx, m)
+			return m, nil
+		}
+	}
+
+	// Add reaction atomically using MySQL JSON functions
+	// This prevents race conditions when multiple users add reactions simultaneously
+	now := time.Now().UTC().Format("2006-01-02T15:04:05.000000Z")
+	reaction := message.Reaction{
+		Emoji:     emoji,
+		OwnerType: ownerType,
+		OwnerID:   ownerID,
+		TMCreate:  now,
+	}
+	reactionJSON, err := json.Marshal(reaction)
+	if err != nil {
+		log.Errorf("Failed to marshal reaction: %v", err)
+		return nil, errors.Wrap(err, "failed to marshal reaction")
+	}
+
+	err = h.dbHandler.MessageAddReactionAtomic(ctx, messageID, string(reactionJSON))
+	if err != nil {
+		log.Errorf("Failed to add reaction atomically: %v", err)
+		return nil, errors.Wrap(err, "failed to add reaction")
+	}
+
+	// Refresh and publish
+	m, err = h.dbHandler.MessageGet(ctx, messageID)
+	if err != nil {
+		log.Errorf("Failed to get updated message: %v", err)
+		return nil, errors.Wrap(err, "failed to get updated message")
+	}
+
+	log.WithFields(log.Fields{
+		"message_id": messageID,
+		"emoji":      emoji,
+	}).Debug("Reaction added successfully")
+
+	h.publishReactionUpdated(ctx, m)
+
+	return m, nil
+}
+
+// ReactionRemove removes a reaction from a message
+func (h *reactionHandler) ReactionRemove(ctx context.Context, messageID uuid.UUID, emoji, ownerType string, ownerID uuid.UUID) (*message.Message, error) {
+	log.WithFields(log.Fields{
+		"func":       "ReactionRemove",
+		"message_id": messageID,
+		"emoji":      emoji,
+		"owner_id":   ownerID,
+	}).Debug("Removing reaction")
+
+	// Validate required fields
+	if messageID == uuid.Nil {
+		return nil, errors.New("message_id is required")
+	}
+	if emoji == "" {
+		return nil, errors.New("emoji is required")
+	}
+	if ownerType == "" {
+		return nil, errors.New("owner_type is required")
+	}
+	if ownerID == uuid.Nil {
+		return nil, errors.New("owner_id is required")
+	}
+
+	// Remove reaction atomically
+	err := h.dbHandler.MessageRemoveReactionAtomic(ctx, messageID, emoji, ownerType, ownerID)
+	if err != nil {
+		log.Errorf("Failed to remove reaction atomically: %v", err)
+		return nil, errors.Wrap(err, "failed to remove reaction")
+	}
+
+	// Refresh and publish
+	m, err := h.dbHandler.MessageGet(ctx, messageID)
+	if err != nil {
+		log.Errorf("Failed to get updated message: %v", err)
+		return nil, errors.Wrap(err, "failed to get updated message")
+	}
+
+	log.WithFields(log.Fields{
+		"message_id": messageID,
+		"emoji":      emoji,
+	}).Debug("Reaction removed successfully")
+
+	h.publishReactionUpdated(ctx, m)
+
+	return m, nil
+}
+
+// publishReactionUpdated publishes a single webhook event for both add and remove
+func (h *reactionHandler) publishReactionUpdated(ctx context.Context, m *message.Message) {
+	h.notifyHandler.PublishWebhookEvent(ctx, m.CustomerID, "message_reaction_updated", m)
+}
