@@ -151,5 +151,5 @@ func (h *reactionHandler) ReactionRemove(ctx context.Context, messageID uuid.UUI
 
 // publishReactionUpdated publishes a single webhook event for both add and remove
 func (h *reactionHandler) publishReactionUpdated(ctx context.Context, m *message.Message) {
-	h.notifyHandler.PublishWebhookEvent(ctx, m.CustomerID, "message_reaction_updated", m)
+	h.notifyHandler.PublishWebhookEvent(ctx, m.CustomerID, message.EventTypeMessageReactionUpdated, m)
 }
