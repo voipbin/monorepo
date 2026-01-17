@@ -35,7 +35,7 @@ func Test_TalkV1MessageGet(t *testing.T) {
 
 			expectQueue: "bin-manager.talk-manager.request",
 			expectRequest: &sock.Request{
-				URI:      "/v1/talk_messages/72179880-ec5f-11ec-920e-c77279756b6d",
+				URI:      "/v1/messages/72179880-ec5f-11ec-920e-c77279756b6d",
 				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeNone,
 			},
@@ -217,7 +217,7 @@ func Test_TalkV1MessageDelete(t *testing.T) {
 
 			expectQueue: "bin-manager.talk-manager.request",
 			expectRequest: &sock.Request{
-				URI:      "/v1/talk_messages/72179880-ec5f-11ec-920e-c77279756b6d",
+				URI:      "/v1/messages/72179880-ec5f-11ec-920e-c77279756b6d",
 				Method:   sock.RequestMethodDelete,
 				DataType: ContentTypeNone,
 			},
@@ -291,7 +291,7 @@ func Test_TalkV1MessageList(t *testing.T) {
 
 			expectQueue: "bin-manager.talk-manager.request",
 			expectRequest: &sock.Request{
-				URI:      "/v1/talk_messages?page_token=2020-09-20%2003%3A23%3A20.995000&page_size=10",
+				URI:      "/v1/messages?page_token=2020-09-20%2003%3A23%3A20.995000&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeNone,
 			},

@@ -35,7 +35,7 @@ func Test_TalkV1ParticipantList(t *testing.T) {
 
 			expectQueue: "bin-manager.talk-manager.request",
 			expectRequest: &sock.Request{
-				URI:      "/v1/talk_chats/770e8400-e29b-41d4-a716-446655440000/participants",
+				URI:      "/v1/chats/770e8400-e29b-41d4-a716-446655440000/participants",
 				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeNone,
 			},
@@ -177,7 +177,7 @@ func Test_TalkV1ParticipantDelete(t *testing.T) {
 
 			expectQueue: "bin-manager.talk-manager.request",
 			expectRequest: &sock.Request{
-				URI:      "/v1/talk_chats/770e8400-e29b-41d4-a716-446655440000/participants/72179880-ec5f-11ec-920e-c77279756b6d",
+				URI:      "/v1/chats/770e8400-e29b-41d4-a716-446655440000/participants/72179880-ec5f-11ec-920e-c77279756b6d",
 				Method:   sock.RequestMethodDelete,
 				DataType: ContentTypeNone,
 			},

@@ -20,13 +20,13 @@ import (
 
 // Regex patterns for URI matching
 var (
-	regV1TalkChats                 = regexp.MustCompile(`^/v1/talk_chats$`)
-	regV1TalkChatsID               = regexp.MustCompile(`^/v1/talk_chats/([^/]+)$`)
-	regV1TalkChatsIDParticipants   = regexp.MustCompile(`^/v1/talk_chats/([^/]+)/participants$`)
-	regV1TalkChatsIDParticipantsID = regexp.MustCompile(`^/v1/talk_chats/([^/]+)/participants/([^/]+)$`)
-	regV1TalkMessages              = regexp.MustCompile(`^/v1/talk_messages$`)
-	regV1TalkMessagesID            = regexp.MustCompile(`^/v1/talk_messages/([^/]+)$`)
-	regV1TalkMessagesIDReactions   = regexp.MustCompile(`^/v1/talk_messages/([^/]+)/reactions$`)
+	regV1TalkChats                 = regexp.MustCompile(`^/v1/chats$`)
+	regV1TalkChatsID               = regexp.MustCompile(`^/v1/chats/([^/]+)$`)
+	regV1TalkChatsIDParticipants   = regexp.MustCompile(`^/v1/chats/([^/]+)/participants$`)
+	regV1TalkChatsIDParticipantsID = regexp.MustCompile(`^/v1/chats/([^/]+)/participants/([^/]+)$`)
+	regV1TalkMessages              = regexp.MustCompile(`^/v1/messages$`)
+	regV1TalkMessagesID            = regexp.MustCompile(`^/v1/messages/([^/]+)$`)
+	regV1TalkMessagesIDReactions   = regexp.MustCompile(`^/v1/messages/([^/]+)/reactions$`)
 )
 
 type listenHandler struct {

@@ -14,7 +14,7 @@ import (
 
 // TalkV1ParticipantList gets participants for a talk
 func (r *requestHandler) TalkV1ParticipantList(ctx context.Context, talkID uuid.UUID) ([]*talkparticipant.Participant, error) {
-	uri := fmt.Sprintf("/v1/talk_chats/%s/participants", talkID.String())
+	uri := fmt.Sprintf("/v1/chats/%s/participants", talkID.String())
 
 	res, err := r.sendRequestTalk(ctx, uri, sock.RequestMethodGet, "talk/participants", requestTimeoutDefault, 0, "", nil)
 	if err != nil {
@@ -35,7 +35,7 @@ func (r *requestHandler) TalkV1ParticipantList(ctx context.Context, talkID uuid.
 
 // TalkV1ParticipantCreate adds a participant to a talk
 func (r *requestHandler) TalkV1ParticipantCreate(ctx context.Context, talkID uuid.UUID, ownerType string, ownerID uuid.UUID) (*talkparticipant.Participant, error) {
-	uri := fmt.Sprintf("/v1/talk_chats/%s/participants", talkID.String())
+	uri := fmt.Sprintf("/v1/chats/%s/participants", talkID.String())
 
 	data := map[string]any{
 		"owner_type": ownerType,
@@ -66,7 +66,7 @@ func (r *requestHandler) TalkV1ParticipantCreate(ctx context.Context, talkID uui
 
 // TalkV1ParticipantDelete removes a participant from a talk
 func (r *requestHandler) TalkV1ParticipantDelete(ctx context.Context, talkID uuid.UUID, participantID uuid.UUID) (*talkparticipant.Participant, error) {
-	uri := fmt.Sprintf("/v1/talk_chats/%s/participants/%s", talkID.String(), participantID.String())
+	uri := fmt.Sprintf("/v1/chats/%s/participants/%s", talkID.String(), participantID.String())
 
 	res, err := r.sendRequestTalk(ctx, uri, sock.RequestMethodDelete, "talk/participants", requestTimeoutDefault, 0, "", nil)
 	if err != nil {

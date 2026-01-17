@@ -37,7 +37,7 @@ func Test_TalkV1ChatGet(t *testing.T) {
 
 			expectQueue: "bin-manager.talk-manager.request",
 			expectRequest: &sock.Request{
-				URI:      "/v1/talk_chats/72179880-ec5f-11ec-920e-c77279756b6d",
+				URI:      "/v1/chats/72179880-ec5f-11ec-920e-c77279756b6d",
 				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeNone,
 			},
@@ -106,7 +106,7 @@ func Test_TalkV1ChatCreate(t *testing.T) {
 
 			expectQueue: "bin-manager.talk-manager.request",
 			expectRequest: &sock.Request{
-				URI:      "/v1/talk_chats",
+				URI:      "/v1/chats",
 				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"customer_id":"550e8400-e29b-41d4-a716-446655440000","type":"normal"}`),
@@ -173,7 +173,7 @@ func Test_TalkV1ChatDelete(t *testing.T) {
 
 			expectQueue: "bin-manager.talk-manager.request",
 			expectRequest: &sock.Request{
-				URI:      "/v1/talk_chats/72179880-ec5f-11ec-920e-c77279756b6d",
+				URI:      "/v1/chats/72179880-ec5f-11ec-920e-c77279756b6d",
 				Method:   sock.RequestMethodDelete,
 				DataType: ContentTypeNone,
 			},
@@ -241,7 +241,7 @@ func Test_TalkV1ChatList(t *testing.T) {
 
 			expectQueue: "bin-manager.talk-manager.request",
 			expectRequest: &sock.Request{
-				URI:      "/v1/talk_chats?page_token=2020-09-20%2003%3A23%3A20.995000&page_size=10",
+				URI:      "/v1/chats?page_token=2020-09-20%2003%3A23%3A20.995000&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeNone,
 			},

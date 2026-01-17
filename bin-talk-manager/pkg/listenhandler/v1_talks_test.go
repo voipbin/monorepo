@@ -30,7 +30,7 @@ func Test_processV1TalkChatsPost(t *testing.T) {
 		{
 			name: "normal",
 			request: &sock.Request{
-				URI:      "/v1/talk_chats",
+				URI:      "/v1/chats",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","type":"normal"}`),
@@ -58,7 +58,7 @@ func Test_processV1TalkChatsPost(t *testing.T) {
 		{
 			name: "group talk",
 			request: &sock.Request{
-				URI:      "/v1/talk_chats",
+				URI:      "/v1/chats",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","type":"group"}`),
@@ -122,7 +122,7 @@ func Test_processV1TalkChatsPost_error(t *testing.T) {
 		{
 			name: "invalid json",
 			request: &sock.Request{
-				URI:      "/v1/talk_chats",
+				URI:      "/v1/chats",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{invalid json`),
@@ -136,7 +136,7 @@ func Test_processV1TalkChatsPost_error(t *testing.T) {
 		{
 			name: "nil customer id",
 			request: &sock.Request{
-				URI:      "/v1/talk_chats",
+				URI:      "/v1/chats",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"","type":"normal"}`),
@@ -189,7 +189,7 @@ func Test_processV1TalkChatsGet(t *testing.T) {
 		{
 			name: "normal",
 			request: &sock.Request{
-				URI:      "/v1/talk_chats?page_size=10&page_token=2021-11-23%2017:55:39.712000",
+				URI:      "/v1/chats?page_size=10&page_token=2021-11-23%2017:55:39.712000",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{}`),
@@ -219,7 +219,7 @@ func Test_processV1TalkChatsGet(t *testing.T) {
 		{
 			name: "default page size",
 			request: &sock.Request{
-				URI:      "/v1/talk_chats",
+				URI:      "/v1/chats",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{}`),
@@ -277,7 +277,7 @@ func Test_processV1TalkChatsIDGet(t *testing.T) {
 		{
 			name: "normal",
 			request: &sock.Request{
-				URI:      "/v1/talk_chats/6ebc6880-31da-11ed-8e95-a3bc92af9795",
+				URI:      "/v1/chats/6ebc6880-31da-11ed-8e95-a3bc92af9795",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
@@ -341,7 +341,7 @@ func Test_processV1TalkChatsIDDelete(t *testing.T) {
 		{
 			name: "normal",
 			request: &sock.Request{
-				URI:      "/v1/talk_chats/6ebc6880-31da-11ed-8e95-a3bc92af9795",
+				URI:      "/v1/chats/6ebc6880-31da-11ed-8e95-a3bc92af9795",
 				Method:   sock.RequestMethodDelete,
 				DataType: "application/json",
 			},
@@ -402,7 +402,7 @@ func Test_processV1TalkChatsID_unsupported_method(t *testing.T) {
 		{
 			name: "PUT method",
 			request: &sock.Request{
-				URI:      "/v1/talk_chats/6ebc6880-31da-11ed-8e95-a3bc92af9795",
+				URI:      "/v1/chats/6ebc6880-31da-11ed-8e95-a3bc92af9795",
 				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
 			},
