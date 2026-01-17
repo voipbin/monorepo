@@ -570,6 +570,7 @@ func Test_talkMessagesGET(t *testing.T) {
 
 		responseMessages []*tkmessage.WebhookMessage
 
+		expectChatID    uuid.UUID
 		expectPageToken string
 		expectPageSize  uint64
 		expectRes       string
@@ -582,7 +583,7 @@ func Test_talkMessagesGET(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/service_agents/talk_messages?page_token=2020-09-20%2003:23:20.995000&page_size=10",
+			reqQuery: "/service_agents/talk_messages?chat_id=e66d1da0-3ed7-11ef-9208-4bcc069917a1&page_token=2020-09-20%2003:23:20.995000&page_size=10",
 
 			responseMessages: []*tkmessage.WebhookMessage{
 				{
@@ -599,6 +600,7 @@ func Test_talkMessagesGET(t *testing.T) {
 					Text:   "Hello",
 				},
 			},
+		expectChatID:    uuid.FromStringOrNil("e66d1da0-3ed7-11ef-9208-4bcc069917a1"),
 
 			expectPageToken: "2020-09-20 03:23:20.995000",
 			expectPageSize:  10,
@@ -625,7 +627,7 @@ func Test_talkMessagesGET(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().ServiceAgentTalkMessageList(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseMessages, nil)
+			mockSvc.EXPECT().ServiceAgentTalkMessageList(req.Context(), &tt.agent, tt.expectChatID, tt.expectPageSize, tt.expectPageToken).Return(tt.responseMessages, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

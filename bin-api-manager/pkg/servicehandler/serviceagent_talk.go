@@ -179,30 +179,19 @@ func (h *serviceHandler) ServiceAgentTalkMessageGet(ctx context.Context, a *amag
 	return res, nil
 }
 
-// ServiceAgentTalkMessageList gets list of messages for the agent
-func (h *serviceHandler) ServiceAgentTalkMessageList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*tkmessage.WebhookMessage, error) {
+// ServiceAgentTalkMessageList gets list of messages for a specific chat
+func (h *serviceHandler) ServiceAgentTalkMessageList(ctx context.Context, a *amagent.Agent, chatID uuid.UUID, size uint64, token string) ([]*tkmessage.WebhookMessage, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	// Get all talks the agent participates in
-	participants, err := h.talkParticipantListByOwner(ctx, a.CustomerID, "agent", a.ID)
-	if err != nil {
-		return nil, errors.Wrapf(err, "Could not get participant list.")
+	// Check permission - agent must be participant of the chat
+	if !h.isParticipantOfTalk(ctx, a.ID, chatID) {
+		return nil, fmt.Errorf("agent is not a participant of this chat")
 	}
 
-	// Collect unique talk IDs
-	talkIDs := make([]uuid.UUID, 0, len(participants))
-	for _, p := range participants {
-		talkIDs = append(talkIDs, p.ChatID)
-	}
-
-	if len(talkIDs) == 0 {
-		return []*tkmessage.WebhookMessage{}, nil
-	}
-
-	// Get messages from those talks
-	messages, err := h.talkMessageListByTalkIDs(ctx, talkIDs, size, token)
+	// Get messages for this specific chat
+	messages, err := h.talkMessageListByTalkIDs(ctx, []uuid.UUID{chatID}, size, token)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not get messages.")
 	}

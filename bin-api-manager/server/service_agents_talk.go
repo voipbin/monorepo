@@ -311,6 +311,14 @@ func (h *server) GetServiceAgentsTalkMessages(c *gin.Context, params openapi_ser
 		"agent": a,
 	})
 
+	// Extract chat_id from params (required parameter)
+	chatID := uuid.FromStringOrNil(params.ChatId)
+	if chatID == uuid.Nil {
+		log.Errorf("Invalid chat_id")
+		c.AbortWithStatus(400)
+		return
+	}
+
 	pageSize := uint64(100)
 	if params.PageSize != nil {
 		pageSize = uint64(*params.PageSize)
@@ -325,7 +333,7 @@ func (h *server) GetServiceAgentsTalkMessages(c *gin.Context, params openapi_ser
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.ServiceAgentTalkMessageList(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.ServiceAgentTalkMessageList(c.Request.Context(), &a, chatID, pageSize, pageToken)
 	if err != nil {
 		logrus.Errorf("Could not get messages info. err: %v", err)
 		c.AbortWithStatus(400)

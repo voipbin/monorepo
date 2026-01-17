@@ -4665,6 +4665,9 @@ type PostServiceAgentsTalkChatsIdParticipantsJSONBody struct {
 
 // GetServiceAgentsTalkMessagesParams defines parameters for GetServiceAgentsTalkMessages.
 type GetServiceAgentsTalkMessagesParams struct {
+	// ChatId Chat ID to filter messages
+	ChatId string `form:"chat_id" json:"chat_id"`
+
 	// PageSize The size of results.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
@@ -5869,7 +5872,7 @@ type ServerInterface interface {
 	// Remove a participant from a talk chat
 	// (DELETE /service_agents/talk_chats/{id}/participants/{participant_id})
 	DeleteServiceAgentsTalkChatsIdParticipantsParticipantId(c *gin.Context, id string, participantId string)
-	// Get list of talk messages
+	// Get list of talk messages for a specific chat
 	// (GET /service_agents/talk_messages)
 	GetServiceAgentsTalkMessages(c *gin.Context, params GetServiceAgentsTalkMessagesParams)
 	// Create a new talk message
@@ -12086,6 +12089,21 @@ func (siw *ServerInterfaceWrapper) GetServiceAgentsTalkMessages(c *gin.Context) 
 
 	// Parameter object where we will unmarshal all parameters from the context
 	var params GetServiceAgentsTalkMessagesParams
+
+	// ------------- Required query parameter "chat_id" -------------
+
+	if paramValue := c.Query("chat_id"); paramValue != "" {
+
+	} else {
+		siw.ErrorHandler(c, fmt.Errorf("Query argument chat_id is required, but not found"), http.StatusBadRequest)
+		return
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "chat_id", c.Request.URL.Query(), &params.ChatId)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter chat_id: %w", err), http.StatusBadRequest)
+		return
+	}
 
 	// ------------- Optional query parameter "page_size" -------------
 
@@ -19094,7 +19112,7 @@ type StrictServerInterface interface {
 	// Remove a participant from a talk chat
 	// (DELETE /service_agents/talk_chats/{id}/participants/{participant_id})
 	DeleteServiceAgentsTalkChatsIdParticipantsParticipantId(ctx context.Context, request DeleteServiceAgentsTalkChatsIdParticipantsParticipantIdRequestObject) (DeleteServiceAgentsTalkChatsIdParticipantsParticipantIdResponseObject, error)
-	// Get list of talk messages
+	// Get list of talk messages for a specific chat
 	// (GET /service_agents/talk_messages)
 	GetServiceAgentsTalkMessages(ctx context.Context, request GetServiceAgentsTalkMessagesRequestObject) (GetServiceAgentsTalkMessagesResponseObject, error)
 	// Create a new talk message
