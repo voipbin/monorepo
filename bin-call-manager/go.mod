@@ -7,6 +7,7 @@ replace monorepo/bin-agent-manager => ../bin-agent-manager
 replace monorepo/bin-billing-manager => ../bin-billing-manager
 
 replace monorepo/bin-common-handler => ../bin-common-handler
+
 replace monorepo/bin-talk-manager => ../bin-talk-manager
 
 replace monorepo/bin-campaign-manager => ../bin-campaign-manager
@@ -66,7 +67,7 @@ require (
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.23.2
-	github.com/sirupsen/logrus v1.9.3
+	github.com/sirupsen/logrus v1.9.4
 	github.com/smotes/purse v1.0.1
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/viper v1.21.0
@@ -141,6 +142,7 @@ require (
 	monorepo/bin-pipecat-manager v0.0.0-00010101000000-000000000000 // indirect
 	monorepo/bin-queue-manager v0.0.0-20240402021210-adac880b81da // indirect
 	monorepo/bin-tag-manager v0.0.0-20240313070856-7d3433af905d // indirect
+	monorepo/bin-talk-manager v0.0.0-00010101000000-000000000000 // indirect
 	monorepo/bin-transcribe-manager v0.0.0-20240405044227-febd49f8b700 // indirect
 	monorepo/bin-transfer-manager v0.0.0-20230419025515-44dea928ef34 // indirect
 	monorepo/bin-webhook-manager v0.0.0-20240313071253-ebca1db1437c // indirect
