@@ -10,11 +10,10 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	commonsock "monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-talk-manager/models/message"
 	"monorepo/bin-talk-manager/pkg/messagehandler"
 )
 
-func (h *listenHandler) processV1Messages(ctx context.Context, m commonsock.Request) (commonsock.Response, error) {
+func (h *listenHandler) processV1Messages(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
 	switch m.Method {
 	case "POST":
 		return h.v1MessagesPost(ctx, m)
@@ -25,7 +24,7 @@ func (h *listenHandler) processV1Messages(ctx context.Context, m commonsock.Requ
 	}
 }
 
-func (h *listenHandler) v1MessagesPost(ctx context.Context, m commonsock.Request) (commonsock.Response, error) {
+func (h *listenHandler) v1MessagesPost(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
 	var req struct {
 		CustomerID string  `json:"customer_id"`
 		ChatID     string  `json:"chat_id"`
@@ -37,7 +36,7 @@ func (h *listenHandler) v1MessagesPost(ctx context.Context, m commonsock.Request
 		Medias     string  `json:"medias"`
 	}
 
-	err := json.Unmarshal(m.Data.([]byte), &req)
+	err := json.Unmarshal(m.Data, &req)
 	if err != nil {
 		log.Errorf("Failed to parse request: %v", err)
 		return simpleResponse(400), nil
@@ -63,7 +62,7 @@ func (h *listenHandler) v1MessagesPost(ctx context.Context, m commonsock.Request
 		ParentID:   parentID,
 		OwnerType:  req.OwnerType,
 		OwnerID:    ownerID,
-		Type:       message.Type(req.Type),
+		Type:       req.Type,
 		Text:       req.Text,
 		Medias:     req.Medias,
 	}
@@ -75,14 +74,14 @@ func (h *listenHandler) v1MessagesPost(ctx context.Context, m commonsock.Request
 	}
 
 	data, _ := json.Marshal(msg)
-	return commonsock.Response{
+	return &commonsock.Response{
 		StatusCode: 201,
 		DataType:   "application/json",
-		Data:       string(data),
+		Data:       data,
 	}, nil
 }
 
-func (h *listenHandler) v1MessagesGet(ctx context.Context, m commonsock.Request) (commonsock.Response, error) {
+func (h *listenHandler) v1MessagesGet(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
 	u, _ := url.Parse(m.URI)
 
 	// Parse pagination
@@ -96,7 +95,7 @@ func (h *listenHandler) v1MessagesGet(ctx context.Context, m commonsock.Request)
 	// Parse filters from request body
 	var filters map[string]any
 	if m.Data != nil {
-		json.Unmarshal(m.Data.([]byte), &filters)
+		json.Unmarshal(m.Data, &filters)
 	}
 
 	// TODO: Convert filters to typed filters using utilhandler
@@ -107,14 +106,14 @@ func (h *listenHandler) v1MessagesGet(ctx context.Context, m commonsock.Request)
 	}
 
 	data, _ := json.Marshal(messages)
-	return commonsock.Response{
+	return &commonsock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
-		Data:       string(data),
+		Data:       data,
 	}, nil
 }
 
-func (h *listenHandler) processV1MessagesID(ctx context.Context, m commonsock.Request) (commonsock.Response, error) {
+func (h *listenHandler) processV1MessagesID(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
 	matches := regV1MessagesID.FindStringSubmatch(m.URI)
 	messageID := uuid.FromStringOrNil(matches[1])
 
@@ -125,10 +124,10 @@ func (h *listenHandler) processV1MessagesID(ctx context.Context, m commonsock.Re
 			return simpleResponse(404), nil
 		}
 		data, _ := json.Marshal(msg)
-		return commonsock.Response{
+		return &commonsock.Response{
 			StatusCode: 200,
 			DataType:   "application/json",
-			Data:       string(data),
+			Data:       data,
 		}, nil
 
 	case "DELETE":
@@ -137,10 +136,10 @@ func (h *listenHandler) processV1MessagesID(ctx context.Context, m commonsock.Re
 			return simpleResponse(500), nil
 		}
 		data, _ := json.Marshal(msg)
-		return commonsock.Response{
+		return &commonsock.Response{
 			StatusCode: 200,
 			DataType:   "application/json",
-			Data:       string(data),
+			Data:       data,
 		}, nil
 
 	default:

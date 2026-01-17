@@ -1,17 +1,30 @@
 package main
 
 import (
+	"context"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 
-	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
-	"monorepo/bin-talk-manager/internal/config"
-
+	"github.com/go-redis/redis/v8"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+
+	commondb "monorepo/bin-common-handler/pkg/databasehandler"
+	commonnotify "monorepo/bin-common-handler/pkg/notifyhandler"
+	commonreq "monorepo/bin-common-handler/pkg/requesthandler"
+	commonsock "monorepo/bin-common-handler/pkg/sockhandler"
+	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/models/sock"
+	"monorepo/bin-talk-manager/internal/config"
+	"monorepo/bin-talk-manager/pkg/dbhandler"
+	"monorepo/bin-talk-manager/pkg/listenhandler"
+	"monorepo/bin-talk-manager/pkg/messagehandler"
+	"monorepo/bin-talk-manager/pkg/participanthandler"
+	"monorepo/bin-talk-manager/pkg/reactionhandler"
+	"monorepo/bin-talk-manager/pkg/talkhandler"
 )
 
 var (
@@ -33,11 +46,11 @@ func main() {
 	}
 
 	if errBind := config.Bootstrap(rootCmd); errBind != nil {
-		logrus.Fatalf("Failed to bootstrap config: %v", errBind)
+		log.Fatalf("Failed to bootstrap config: %v", errBind)
 	}
 
 	if errExecute := rootCmd.Execute(); errExecute != nil {
-		logrus.Errorf("Command execution failed: %v", errExecute)
+		log.Errorf("Command execution failed: %v", errExecute)
 		os.Exit(1)
 	}
 }
@@ -46,19 +59,66 @@ func runDaemon() error {
 	initSignal()
 	initProm(config.Get().PrometheusEndpoint, config.Get().PrometheusListenAddress)
 
-	log := logrus.WithField("func", "runDaemon")
-	log.WithField("config", config.Get()).Info("Starting talk-manager...")
+	logger := log.WithField("func", "runDaemon")
+	cfg := config.Get()
+	logger.WithField("config", cfg).Info("Starting talk-manager...")
 
-	sqlDB, err := commondatabasehandler.Connect(config.Get().DatabaseDSN)
+	// Initialize database
+	db, err := commondb.Connect(cfg.DatabaseDSN)
 	if err != nil {
-		logrus.Fatalf("Could not connect to the database: %v", err)
+		log.Fatalf("Could not connect to the database: %v", err)
 	}
-	defer commondatabasehandler.Close(sqlDB)
+	defer commondb.Close(db)
 
-	// TODO: Initialize cache, handlers, and start listening
+	// Initialize RabbitMQ
+	sockHandler := commonsock.NewSockHandler(sock.TypeRabbitMQ, cfg.RabbitMQAddress)
+	sockHandler.Connect()
+	defer sockHandler.Close()
+	logger.Info("RabbitMQ initialized")
+
+	// Initialize request and notify handlers
+	reqHandler := commonreq.NewRequestHandler(sockHandler, commonoutline.ServiceNameTalkManager)
+	notifyHandler := commonnotify.NewNotifyHandler(
+		sockHandler,
+		reqHandler,
+		commonoutline.QueueNameTalkEvent,
+		commonoutline.ServiceNameTalkManager,
+	)
+
+	// Initialize Redis
+	redisClient := redis.NewClient(&redis.Options{
+		Addr:     cfg.RedisAddress,
+		Password: cfg.RedisPassword,
+		DB:       cfg.RedisDatabase,
+	})
+	defer redisClient.Close()
+	logger.Info("Redis initialized")
+
+	// Initialize database handler
+	dbHandler := dbhandler.New(db, redisClient)
+
+	// Initialize business logic handlers
+	talkHandler := talkhandler.New(dbHandler, notifyHandler)
+	messageHandler := messagehandler.New(dbHandler, sockHandler, notifyHandler)
+	participantHandler := participanthandler.New(dbHandler, sockHandler, notifyHandler)
+	reactionHandler := reactionhandler.New(dbHandler, sockHandler, notifyHandler)
+
+	// Initialize listen handler
+	listenHandler := listenhandler.New(
+		sockHandler,
+		talkHandler,
+		messageHandler,
+		participantHandler,
+		reactionHandler,
+	)
+
+	// Start listening for RabbitMQ messages
+	ctx := context.Background()
+	go listenHandler.Listen(ctx)
+	logger.Infof("Listening for RabbitMQ messages on queue: %s", commonoutline.QueueNameTalkRequest)
 
 	<-chDone
-	log.Info("Talk-manager stopped safely.")
+	logger.Info("Talk-manager stopped safely.")
 	return nil
 }
 
@@ -66,7 +126,7 @@ func initSignal() {
 	signal.Notify(chSigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	go func() {
 		sig := <-chSigs
-		logrus.Infof("Received signal: %v", sig)
+		log.Infof("Received signal: %v", sig)
 		chDone <- true
 	}()
 }
@@ -74,10 +134,10 @@ func initSignal() {
 func initProm(endpoint, listen string) {
 	http.Handle(endpoint, promhttp.Handler())
 	go func() {
-		logrus.Infof("Prometheus metrics server starting on %s%s", listen, endpoint)
+		log.Infof("Prometheus metrics server starting on %s%s", listen, endpoint)
 		if err := http.ListenAndServe(listen, nil); err != nil {
 			// Prometheus server error is logged but not treated as fatal to avoid unsafe exit from a goroutine.
-			logrus.Errorf("Prometheus server error: %v", err)
+			log.Errorf("Prometheus server error: %v", err)
 		}
 	}()
 }

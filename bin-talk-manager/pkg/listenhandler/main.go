@@ -2,6 +2,7 @@ package listenhandler
 
 import (
 	"context"
+	"encoding/json"
 	"regexp"
 
 	log "github.com/sirupsen/logrus"
@@ -10,6 +11,7 @@ import (
 	"monorepo/bin-talk-manager/pkg/participanthandler"
 	"monorepo/bin-talk-manager/pkg/reactionhandler"
 	"monorepo/bin-talk-manager/pkg/talkhandler"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	commonsock "monorepo/bin-common-handler/models/sock"
 	commonsockhandler "monorepo/bin-common-handler/pkg/sockhandler"
 )
@@ -51,30 +53,46 @@ func New(
 }
 
 // Listen starts listening for RabbitMQ messages
-func (h *listenHandler) Listen(ctx context.Context) {
-	h.sockHandler.SubscribeSync(ctx, h.processRequest)
+func (h *listenHandler) Listen(ctx context.Context) error {
+	// Create queue
+	if err := h.sockHandler.QueueCreate(string(commonoutline.QueueNameTalkRequest), "normal"); err != nil {
+		return err
+	}
+
+	// Start consuming RPC requests
+	return h.sockHandler.ConsumeRPC(
+		ctx,
+		string(commonoutline.QueueNameTalkRequest),
+		string(commonoutline.ServiceNameTalkManager),
+		false, // exclusive
+		false, // noLocal
+		false, // noWait
+		10,    // workers
+		h.processRequest,
+	)
 }
 
 // processRequest routes incoming requests to appropriate handlers
-func (h *listenHandler) processRequest(ctx context.Context, m commonsock.Request) (commonsock.Response, error) {
+func (h *listenHandler) processRequest(m *commonsock.Request) (*commonsock.Response, error) {
+	ctx := context.Background()
 	log.Debugf("Received request: %s %s", m.Method, m.URI)
 
 	// Route based on URI pattern
 	switch {
 	case regV1Talks.MatchString(m.URI):
-		return h.processV1Talks(ctx, m)
+		return h.processV1Talks(ctx, *m)
 	case regV1TalksID.MatchString(m.URI):
-		return h.processV1TalksID(ctx, m)
+		return h.processV1TalksID(ctx, *m)
 	case regV1TalksIDParticipants.MatchString(m.URI):
-		return h.processV1TalksIDParticipants(ctx, m)
+		return h.processV1TalksIDParticipants(ctx, *m)
 	case regV1TalksIDParticipantsID.MatchString(m.URI):
-		return h.processV1TalksIDParticipantsID(ctx, m)
+		return h.processV1TalksIDParticipantsID(ctx, *m)
 	case regV1Messages.MatchString(m.URI):
-		return h.processV1Messages(ctx, m)
+		return h.processV1Messages(ctx, *m)
 	case regV1MessagesID.MatchString(m.URI):
-		return h.processV1MessagesID(ctx, m)
+		return h.processV1MessagesID(ctx, *m)
 	case regV1MessagesIDReactions.MatchString(m.URI):
-		return h.processV1MessagesIDReactions(ctx, m)
+		return h.processV1MessagesIDReactions(ctx, *m)
 	default:
 		log.Warnf("Unknown URI: %s", m.URI)
 		return simpleResponse(404), nil
@@ -82,10 +100,10 @@ func (h *listenHandler) processRequest(ctx context.Context, m commonsock.Request
 }
 
 // simpleResponse creates a simple response with status code
-func simpleResponse(statusCode int) commonsock.Response {
-	return commonsock.Response{
+func simpleResponse(statusCode int) *commonsock.Response {
+	return &commonsock.Response{
 		StatusCode: statusCode,
 		DataType:   "application/json",
-		Data:       "{}",
+		Data:       json.RawMessage("{}"),
 	}
 }

@@ -13,7 +13,7 @@ import (
 	"monorepo/bin-talk-manager/models/talk"
 )
 
-func (h *listenHandler) processV1Talks(ctx context.Context, m commonsock.Request) (commonsock.Response, error) {
+func (h *listenHandler) processV1Talks(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
 	switch m.Method {
 	case "POST":
 		return h.v1TalksPost(ctx, m)
@@ -24,13 +24,13 @@ func (h *listenHandler) processV1Talks(ctx context.Context, m commonsock.Request
 	}
 }
 
-func (h *listenHandler) v1TalksPost(ctx context.Context, m commonsock.Request) (commonsock.Response, error) {
+func (h *listenHandler) v1TalksPost(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
 	var req struct {
 		CustomerID string `json:"customer_id"`
 		Type       string `json:"type"`
 	}
 
-	err := json.Unmarshal(m.Data.([]byte), &req)
+	err := json.Unmarshal(m.Data, &req)
 	if err != nil {
 		log.Errorf("Failed to parse request: %v", err)
 		return simpleResponse(400), nil
@@ -47,14 +47,14 @@ func (h *listenHandler) v1TalksPost(ctx context.Context, m commonsock.Request) (
 	}
 
 	data, _ := json.Marshal(t)
-	return commonsock.Response{
+	return &commonsock.Response{
 		StatusCode: 201,
 		DataType:   "application/json",
-		Data:       string(data),
+		Data:       data,
 	}, nil
 }
 
-func (h *listenHandler) v1TalksGet(ctx context.Context, m commonsock.Request) (commonsock.Response, error) {
+func (h *listenHandler) v1TalksGet(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
 	u, _ := url.Parse(m.URI)
 
 	// Parse pagination
@@ -67,8 +67,8 @@ func (h *listenHandler) v1TalksGet(ctx context.Context, m commonsock.Request) (c
 
 	// Parse filters from request body
 	var filters map[string]any
-	if m.Data != nil {
-		json.Unmarshal(m.Data.([]byte), &filters)
+	if len(m.Data) > 0 {
+		json.Unmarshal(m.Data, &filters)
 	}
 
 	// TODO: Convert filters to typed filters using utilhandler
@@ -79,14 +79,14 @@ func (h *listenHandler) v1TalksGet(ctx context.Context, m commonsock.Request) (c
 	}
 
 	data, _ := json.Marshal(talks)
-	return commonsock.Response{
+	return &commonsock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
-		Data:       string(data),
+		Data:       data,
 	}, nil
 }
 
-func (h *listenHandler) processV1TalksID(ctx context.Context, m commonsock.Request) (commonsock.Response, error) {
+func (h *listenHandler) processV1TalksID(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
 	matches := regV1TalksID.FindStringSubmatch(m.URI)
 	talkID := uuid.FromStringOrNil(matches[1])
 
@@ -97,10 +97,10 @@ func (h *listenHandler) processV1TalksID(ctx context.Context, m commonsock.Reque
 			return simpleResponse(404), nil
 		}
 		data, _ := json.Marshal(t)
-		return commonsock.Response{
+		return &commonsock.Response{
 			StatusCode: 200,
 			DataType:   "application/json",
-			Data:       string(data),
+			Data:       data,
 		}, nil
 
 	case "DELETE":
@@ -109,10 +109,10 @@ func (h *listenHandler) processV1TalksID(ctx context.Context, m commonsock.Reque
 			return simpleResponse(500), nil
 		}
 		data, _ := json.Marshal(t)
-		return commonsock.Response{
+		return &commonsock.Response{
 			StatusCode: 200,
 			DataType:   "application/json",
-			Data:       string(data),
+			Data:       data,
 		}, nil
 
 	default:
