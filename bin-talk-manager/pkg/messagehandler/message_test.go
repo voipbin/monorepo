@@ -54,7 +54,7 @@ func Test_MessageCreate(t *testing.T) {
 					ID:         chatID,
 					CustomerID: customerID,
 				},
-				Type: chat.TypeNormal,
+				Type: chat.TypeDirect,
 			},
 			responseParticipants: []*participant.Participant{
 				{
@@ -92,7 +92,7 @@ func Test_MessageCreate(t *testing.T) {
 					ID:         chatID,
 					CustomerID: customerID,
 				},
-				Type: chat.TypeNormal,
+				Type: chat.TypeDirect,
 			},
 			responseParticipants: []*participant.Participant{
 				{
@@ -139,7 +139,7 @@ func Test_MessageCreate(t *testing.T) {
 					ID:         chatID,
 					CustomerID: customerID,
 				},
-				Type: chat.TypeNormal,
+				Type: chat.TypeDirect,
 			},
 			responseParticipants: []*participant.Participant{
 				{
@@ -185,7 +185,7 @@ func Test_MessageCreate(t *testing.T) {
 					ID:         chatID,
 					CustomerID: customerID,
 				},
-				Type: chat.TypeNormal,
+				Type: chat.TypeDirect,
 			},
 			responseParticipants: []*participant.Participant{
 				{
@@ -222,7 +222,7 @@ func Test_MessageCreate(t *testing.T) {
 					ID:         chatID,
 					CustomerID: customerID,
 				},
-				Type: chat.TypeNormal,
+				Type: chat.TypeDirect,
 			},
 			responseParticipants: []*participant.Participant{
 				{
@@ -497,7 +497,7 @@ func Test_MessageCreate_error(t *testing.T) {
 					ID:         chatID,
 					CustomerID: customerID,
 				},
-				Type: chat.TypeNormal,
+				Type: chat.TypeDirect,
 			},
 			getTalkError:         nil,
 			responseParticipants: []*participant.Participant{}, // Empty - sender not participant
@@ -522,7 +522,7 @@ func Test_MessageCreate_error(t *testing.T) {
 					ID:         chatID,
 					CustomerID: customerID,
 				},
-				Type: chat.TypeNormal,
+				Type: chat.TypeDirect,
 			},
 			getTalkError:         nil,
 			responseParticipants: nil,
@@ -548,7 +548,7 @@ func Test_MessageCreate_error(t *testing.T) {
 					ID:         chatID,
 					CustomerID: customerID,
 				},
-				Type: chat.TypeNormal,
+				Type: chat.TypeDirect,
 			},
 			getTalkError: nil,
 			responseParticipants: []*participant.Participant{
@@ -588,7 +588,7 @@ func Test_MessageCreate_error(t *testing.T) {
 					ID:         chatID,
 					CustomerID: customerID,
 				},
-				Type: chat.TypeNormal,
+				Type: chat.TypeDirect,
 			},
 			getTalkError: nil,
 			responseParticipants: []*participant.Participant{
@@ -628,7 +628,7 @@ func Test_MessageCreate_error(t *testing.T) {
 					ID:         chatID,
 					CustomerID: customerID,
 				},
-				Type: chat.TypeNormal,
+				Type: chat.TypeDirect,
 			},
 			getTalkError: nil,
 			responseParticipants: []*participant.Participant{
@@ -676,7 +676,7 @@ func Test_MessageCreate_error(t *testing.T) {
 					ID:         chatID,
 					CustomerID: customerID,
 				},
-				Type: chat.TypeNormal,
+				Type: chat.TypeDirect,
 			},
 			getTalkError: nil,
 			responseParticipants: []*participant.Participant{

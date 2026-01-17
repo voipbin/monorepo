@@ -10,13 +10,18 @@ import (
 	"github.com/sirupsen/logrus"
 
 	commonsock "monorepo/bin-common-handler/models/sock"
+	commonutil "monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-talk-manager/models/chat"
 )
 
 func (h *listenHandler) v1ChatsPost(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
 	var req struct {
-		CustomerID string `json:"customer_id"`
-		Type       string `json:"type"`
+		CustomerID  string `json:"customer_id"`
+		Type        string `json:"type"`
+		Name        string `json:"name"`
+		Detail      string `json:"detail"`
+		CreatorType string `json:"creator_type"`
+		CreatorID   string `json:"creator_id"`
 	}
 
 	err := json.Unmarshal(m.Data, &req)
@@ -30,7 +35,9 @@ func (h *listenHandler) v1ChatsPost(ctx context.Context, m commonsock.Request) (
 		return simpleResponse(400), nil
 	}
 
-	t, err := h.chatHandler.ChatCreate(ctx, customerID, chat.Type(req.Type))
+	creatorID := uuid.FromStringOrNil(req.CreatorID)
+
+	t, err := h.chatHandler.ChatCreate(ctx, customerID, chat.Type(req.Type), req.Name, req.Detail, req.CreatorType, creatorID)
 	if err != nil {
 		return simpleResponse(500), nil
 	}
@@ -54,23 +61,29 @@ func (h *listenHandler) v1ChatsGet(ctx context.Context, m commonsock.Request) (*
 	}
 	pageToken := u.Query().Get("page_token")
 
-	// Parse filters from request body
-	var filters map[string]any
-	if len(m.Data) > 0 {
-		if err := json.Unmarshal(m.Data, &filters); err != nil {
-			logrus.Errorf("Failed to parse filters: %v", err)
-			return simpleResponse(400), nil
-		}
+	// Parse filters from request body using utilhandler pattern
+	tmpFilters, err := h.utilHandler.ParseFiltersFromRequestBody(m.Data)
+	if err != nil {
+		logrus.Errorf("Could not parse filters. err: %v", err)
+		return simpleResponse(400), nil
 	}
 
-	// TODO: Convert filters to typed filters using utilhandler
+	// Convert to typed filters
+	typedFilters, err := commonutil.ConvertFilters[chat.FieldStruct, chat.Field](
+		chat.FieldStruct{},
+		tmpFilters,
+	)
+	if err != nil {
+		logrus.Errorf("Could not convert filters. err: %v", err)
+		return simpleResponse(400), nil
+	}
 
-	talks, err := h.chatHandler.ChatList(ctx, nil, pageToken, pageSize)
+	chats, err := h.chatHandler.ChatList(ctx, typedFilters, pageToken, pageSize)
 	if err != nil {
 		return simpleResponse(500), nil
 	}
 
-	data, _ := json.Marshal(talks)
+	data, _ := json.Marshal(chats)
 	return &commonsock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",

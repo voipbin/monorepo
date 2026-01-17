@@ -5,6 +5,8 @@ CREATE TABLE chat_chats (
     id              BLOB PRIMARY KEY,
     customer_id     BLOB NOT NULL,
     type            TEXT NOT NULL,
+    name            TEXT DEFAULT '',
+    detail          TEXT DEFAULT '',
     tm_create       TEXT NOT NULL,
     tm_update       TEXT NOT NULL,
     tm_delete       TEXT

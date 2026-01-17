@@ -24,7 +24,7 @@ func Test_ChatCreate(t *testing.T) {
 					ID:         uuid.FromStringOrNil("586e8e64-e428-11ec-baf2-7b14625ea112"),
 					CustomerID: uuid.FromStringOrNil("5922f8c2-e428-11ec-b1a3-4bc67cb9daf4"),
 				},
-				Type: chat.TypeNormal,
+				Type: chat.TypeDirect,
 			},
 		},
 		{
@@ -87,7 +87,7 @@ func Test_ChatGet(t *testing.T) {
 					ID:         uuid.FromStringOrNil("786e8e64-e428-11ec-baf2-7b14625ea114"),
 					CustomerID: uuid.FromStringOrNil("7922f8c2-e428-11ec-b1a3-4bc67cb9daf6"),
 				},
-				Type: chat.TypeNormal,
+				Type: chat.TypeDirect,
 			},
 			getID:     uuid.FromStringOrNil("786e8e64-e428-11ec-baf2-7b14625ea114"),
 			expectErr: false,
@@ -99,7 +99,7 @@ func Test_ChatGet(t *testing.T) {
 					ID:         uuid.FromStringOrNil("886e8e64-e428-11ec-baf2-7b14625ea115"),
 					CustomerID: uuid.FromStringOrNil("8922f8c2-e428-11ec-b1a3-4bc67cb9daf7"),
 				},
-				Type: chat.TypeNormal,
+				Type: chat.TypeDirect,
 			},
 			getID:     uuid.FromStringOrNil("999e8e64-e428-11ec-baf2-7b14625ea999"),
 			expectErr: true,
@@ -154,7 +154,7 @@ func Test_ChatList(t *testing.T) {
 						ID:         uuid.FromStringOrNil("a86e8e64-e428-11ec-baf2-7b14625ea116"),
 						CustomerID: uuid.FromStringOrNil("a922f8c2-e428-11ec-b1a3-4bc67cb9daf8"),
 					},
-					Type: chat.TypeNormal,
+					Type: chat.TypeDirect,
 				},
 				{
 					Identity: commonidentity.Identity{
@@ -168,7 +168,7 @@ func Test_ChatList(t *testing.T) {
 						ID:         uuid.FromStringOrNil("c86e8e64-e428-11ec-baf2-7b14625ea118"),
 						CustomerID: uuid.FromStringOrNil("b922f8c2-e428-11ec-b1a3-4bc67cb9daf9"),
 					},
-					Type: chat.TypeNormal,
+					Type: chat.TypeDirect,
 				},
 			},
 			filters: map[chat.Field]any{
@@ -186,7 +186,7 @@ func Test_ChatList(t *testing.T) {
 						ID:         uuid.FromStringOrNil("d86e8e64-e428-11ec-baf2-7b14625ea119"),
 						CustomerID: uuid.FromStringOrNil("d922f8c2-e428-11ec-b1a3-4bc67cb9daf0"),
 					},
-					Type: chat.TypeNormal,
+					Type: chat.TypeDirect,
 				},
 				{
 					Identity: commonidentity.Identity{
@@ -212,21 +212,21 @@ func Test_ChatList(t *testing.T) {
 						ID:         uuid.FromStringOrNil("f86e8e64-e428-11ec-baf2-7b14625ea121"),
 						CustomerID: uuid.FromStringOrNil("f922f8c2-e428-11ec-b1a3-4bc67cb9daf1"),
 					},
-					Type: chat.TypeNormal,
+					Type: chat.TypeDirect,
 				},
 				{
 					Identity: commonidentity.Identity{
 						ID:         uuid.FromStringOrNil("186e8e64-e428-11ec-baf2-7b14625ea122"),
 						CustomerID: uuid.FromStringOrNil("f922f8c2-e428-11ec-b1a3-4bc67cb9daf1"),
 					},
-					Type: chat.TypeNormal,
+					Type: chat.TypeDirect,
 				},
 				{
 					Identity: commonidentity.Identity{
 						ID:         uuid.FromStringOrNil("286e8e64-e428-11ec-baf2-7b14625ea123"),
 						CustomerID: uuid.FromStringOrNil("f922f8c2-e428-11ec-b1a3-4bc67cb9daf1"),
 					},
-					Type: chat.TypeNormal,
+					Type: chat.TypeDirect,
 				},
 			},
 			filters: map[chat.Field]any{
@@ -281,7 +281,7 @@ func Test_TalkUpdate(t *testing.T) {
 					ID:         uuid.FromStringOrNil("386e8e64-e428-11ec-baf2-7b14625ea124"),
 					CustomerID: uuid.FromStringOrNil("3922f8c2-e428-11ec-b1a3-4bc67cb9daf2"),
 				},
-				Type: chat.TypeNormal,
+				Type: chat.TypeDirect,
 			},
 			updateID: uuid.FromStringOrNil("386e8e64-e428-11ec-baf2-7b14625ea124"),
 			fields: map[chat.Field]any{
@@ -335,7 +335,7 @@ func Test_ChatDelete(t *testing.T) {
 					ID:         uuid.FromStringOrNil("486e8e64-e428-11ec-baf2-7b14625ea125"),
 					CustomerID: uuid.FromStringOrNil("4922f8c2-e428-11ec-b1a3-4bc67cb9daf3"),
 				},
-				Type: chat.TypeNormal,
+				Type: chat.TypeDirect,
 			},
 			deleteID: uuid.FromStringOrNil("486e8e64-e428-11ec-baf2-7b14625ea125"),
 		},

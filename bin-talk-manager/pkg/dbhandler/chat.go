@@ -11,6 +11,7 @@ import (
 
 	commondb "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-talk-manager/models/chat"
+	"monorepo/bin-talk-manager/models/participant"
 )
 
 const tableChats = "chat_chats"
@@ -82,15 +83,49 @@ func (h *dbHandler) ChatGet(ctx context.Context, id uuid.UUID) (*chat.Chat, erro
 }
 
 func (h *dbHandler) ChatList(ctx context.Context, filters map[chat.Field]any, token string, size uint64) ([]*chat.Chat, error) {
-	fields := commondb.GetDBFields(&chat.Chat{})
+	// Prefix all chat fields with table name for JOIN queries
+	fields := make([]string, 0, len(chat.GetDBFields()))
+	for _, field := range chat.GetDBFields() {
+		fields = append(fields, tableChats+"."+field)
+	}
 
 	query := sq.Select(fields...).
 		From(tableChats).
-		OrderBy("tm_create DESC").
+		OrderBy(tableChats + ".tm_create DESC").
 		Limit(size).
 		PlaceholderFormat(sq.Question)
 
-	// Apply filters
+	// Check if owner filters are present (requires JOIN with participants)
+	ownerType, hasOwnerType := filters[chat.FieldOwnerType]
+	ownerID, hasOwnerID := filters[chat.FieldOwnerID]
+
+	if hasOwnerType || hasOwnerID {
+		// Add INNER JOIN with participants table to filter by owner
+		query = query.
+			InnerJoin(tableParticipants + " ON " + tableChats + ".id = " + tableParticipants + ".chat_id")
+
+		// Apply owner filters on participants table
+		if hasOwnerType {
+			query = query.Where(sq.Eq{tableParticipants + ".owner_type": ownerType})
+		}
+		if hasOwnerID {
+			// Convert ownerID to bytes if it's a UUID
+			if ownerUUID, ok := ownerID.(uuid.UUID); ok {
+				query = query.Where(sq.Eq{tableParticipants + ".owner_id": ownerUUID.Bytes()})
+			}
+		}
+
+		// Remove owner filters from map before applying to chats table
+		chatFilters := make(map[chat.Field]any)
+		for k, v := range filters {
+			if k != chat.FieldOwnerType && k != chat.FieldOwnerID {
+				chatFilters[k] = v
+			}
+		}
+		filters = chatFilters
+	}
+
+	// Apply remaining filters to chats table
 	query, err := commondb.ApplyFields(query, filters)
 	if err != nil {
 		logrus.Errorf("Failed to apply filters: %v", err)
@@ -99,7 +134,7 @@ func (h *dbHandler) ChatList(ctx context.Context, filters map[chat.Field]any, to
 
 	// Apply pagination token
 	if token != "" {
-		query = query.Where(sq.Lt{"tm_create": token})
+		query = query.Where(sq.Lt{tableChats + ".tm_create": token})
 	}
 
 	sqlQuery, args, err := query.ToSql()
@@ -125,6 +160,37 @@ func (h *dbHandler) ChatList(ctx context.Context, filters map[chat.Field]any, to
 			return nil, err
 		}
 		talks = append(talks, &t)
+	}
+
+	// Load participants for all chats
+	if len(talks) > 0 {
+		// Collect chat IDs
+		chatIDs := make([]uuid.UUID, len(talks))
+		for i, t := range talks {
+			chatIDs[i] = t.ID
+		}
+
+		// Fetch all participants for these chats
+		participants, err := h.ParticipantListByChatIDs(ctx, chatIDs)
+		if err != nil {
+			logrus.Errorf("Failed to load participants: %v", err)
+			// Continue without participants rather than failing entire request
+		} else {
+			// Group participants by chat_id
+			participantsByChatID := make(map[uuid.UUID][]*participant.Participant)
+			for _, p := range participants {
+				participantsByChatID[p.ChatID] = append(participantsByChatID[p.ChatID], p)
+			}
+
+			// Populate each chat's participants
+			for _, t := range talks {
+				if ps, ok := participantsByChatID[t.ID]; ok {
+					t.Participants = ps
+				} else {
+					t.Participants = []*participant.Participant{}
+				}
+			}
+		}
 	}
 
 	return talks, nil

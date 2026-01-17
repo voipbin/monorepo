@@ -12,34 +12,38 @@ import (
 	"github.com/pkg/errors"
 )
 
-// TalkV1ChatGet gets a talk by ID
-func (r *requestHandler) TalkV1ChatGet(ctx context.Context, talkID uuid.UUID) (*tkchat.Chat, error) {
-	uri := fmt.Sprintf("/v1/chats/%s", talkID.String())
+// TalkV1ChatGet gets a chat by ID
+func (r *requestHandler) TalkV1ChatGet(ctx context.Context, chatID uuid.UUID) (*tkchat.Chat, error) {
+	uri := fmt.Sprintf("/v1/chats/%s", chatID.String())
 
-	res, err := r.sendRequestTalk(ctx, uri, sock.RequestMethodGet, "talk/talks", requestTimeoutDefault, 0, "", nil)
+	res, err := r.sendRequestTalk(ctx, uri, sock.RequestMethodGet, "talk/chats", requestTimeoutDefault, 0, "", nil)
 	if err != nil {
 		return nil, err
 	}
 
 	if res.StatusCode != 200 {
-		return nil, fmt.Errorf("failed to get talk: status %d", res.StatusCode)
+		return nil, fmt.Errorf("failed to get chat: status %d", res.StatusCode)
 	}
 
 	var chat tkchat.Chat
 	if err := json.Unmarshal(res.Data, &chat); err != nil {
-		return nil, errors.Wrap(err, "could not unmarshal talk")
+		return nil, errors.Wrap(err, "could not unmarshal chat")
 	}
 
 	return &chat, nil
 }
 
-// TalkV1ChatCreate creates a new talk
-func (r *requestHandler) TalkV1ChatCreate(ctx context.Context, customerID uuid.UUID, talkType tkchat.Type) (*tkchat.Chat, error) {
+// TalkV1ChatCreate creates a new chat
+func (r *requestHandler) TalkV1ChatCreate(ctx context.Context, customerID uuid.UUID, chatType tkchat.Type, name string, detail string, creatorType string, creatorID uuid.UUID) (*tkchat.Chat, error) {
 	uri := "/v1/chats"
 
 	data := map[string]any{
-		"customer_id": customerID.String(),
-		"type":        string(talkType),
+		"customer_id":  customerID.String(),
+		"type":         string(chatType),
+		"name":         name,
+		"detail":       detail,
+		"creator_type": creatorType,
+		"creator_id":   creatorID.String(),
 	}
 
 	m, err := json.Marshal(data)
@@ -47,60 +51,73 @@ func (r *requestHandler) TalkV1ChatCreate(ctx context.Context, customerID uuid.U
 		return nil, errors.Wrap(err, "could not marshal request")
 	}
 
-	res, err := r.sendRequestTalk(ctx, uri, sock.RequestMethodPost, "talk/talks", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	res, err := r.sendRequestTalk(ctx, uri, sock.RequestMethodPost, "talk/chats", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}
 
 	if res.StatusCode != 201 && res.StatusCode != 200 {
-		return nil, fmt.Errorf("failed to create talk: status %d", res.StatusCode)
+		return nil, fmt.Errorf("failed to create chat: status %d", res.StatusCode)
 	}
 
 	var chat tkchat.Chat
 	if err := json.Unmarshal(res.Data, &chat); err != nil {
-		return nil, errors.Wrap(err, "could not unmarshal talk")
+		return nil, errors.Wrap(err, "could not unmarshal chat")
 	}
 
 	return &chat, nil
 }
 
-// TalkV1ChatDelete deletes a talk (soft delete)
-func (r *requestHandler) TalkV1ChatDelete(ctx context.Context, talkID uuid.UUID) (*tkchat.Chat, error) {
-	uri := fmt.Sprintf("/v1/chats/%s", talkID.String())
+// TalkV1ChatDelete deletes a chat (soft delete)
+func (r *requestHandler) TalkV1ChatDelete(ctx context.Context, chatID uuid.UUID) (*tkchat.Chat, error) {
+	uri := fmt.Sprintf("/v1/chats/%s", chatID.String())
 
-	res, err := r.sendRequestTalk(ctx, uri, sock.RequestMethodDelete, "talk/talks", requestTimeoutDefault, 0, "", nil)
+	res, err := r.sendRequestTalk(ctx, uri, sock.RequestMethodDelete, "talk/chats", requestTimeoutDefault, 0, "", nil)
 	if err != nil {
 		return nil, err
 	}
 
 	if res.StatusCode != 200 {
-		return nil, fmt.Errorf("failed to delete talk: status %d", res.StatusCode)
+		return nil, fmt.Errorf("failed to delete chat: status %d", res.StatusCode)
 	}
 
 	var chat tkchat.Chat
 	if err := json.Unmarshal(res.Data, &chat); err != nil {
-		return nil, errors.Wrap(err, "could not unmarshal talk")
+		return nil, errors.Wrap(err, "could not unmarshal chat")
 	}
 
 	return &chat, nil
 }
 
-// TalkV1ChatList gets a list of talks (simplified - for future expansion)
-func (r *requestHandler) TalkV1ChatList(ctx context.Context, pageToken string, pageSize uint64) ([]*tkchat.Chat, error) {
+// TalkV1ChatList gets a list of chats with optional filters
+func (r *requestHandler) TalkV1ChatList(ctx context.Context, filters map[string]any, pageToken string, pageSize uint64) ([]*tkchat.Chat, error) {
 	uri := fmt.Sprintf("/v1/chats?page_token=%s&page_size=%d", pageToken, pageSize)
 
-	res, err := r.sendRequestTalk(ctx, uri, sock.RequestMethodGet, "talk/talks", requestTimeoutDefault, 0, "", nil)
+	var data []byte
+	var err error
+
+	// Marshal filters to JSON for request body if provided
+	if len(filters) > 0 {
+		data, err = json.Marshal(filters)
+		if err != nil {
+			return nil, errors.Wrap(err, "could not marshal filters")
+		}
+	} else {
+		data = []byte("{}")
+	}
+
+	res, err := r.sendRequestTalk(ctx, uri, sock.RequestMethodGet, "talk/chats", requestTimeoutDefault, 0, ContentTypeJSON, data)
 	if err != nil {
 		return nil, err
 	}
 
 	if res.StatusCode != 200 {
-		return nil, fmt.Errorf("failed to list talks: status %d", res.StatusCode)
+		return nil, fmt.Errorf("failed to list chats: status %d", res.StatusCode)
 	}
 
 	var chats []*tkchat.Chat
 	if err := json.Unmarshal(res.Data, &chats); err != nil {
-		return nil, errors.Wrap(err, "could not unmarshal talks")
+		return nil, errors.Wrap(err, "could not unmarshal chats")
 	}
 
 	return chats, nil

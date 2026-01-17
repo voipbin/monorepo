@@ -139,3 +139,51 @@ func (h *dbHandler) ParticipantDelete(ctx context.Context, id uuid.UUID) error {
 	_, err = h.db.ExecContext(ctx, sqlQuery, args...)
 	return err
 }
+
+// ParticipantListByChatIDs gets all participants for multiple chat IDs
+func (h *dbHandler) ParticipantListByChatIDs(ctx context.Context, chatIDs []uuid.UUID) ([]*participant.Participant, error) {
+	if len(chatIDs) == 0 {
+		return []*participant.Participant{}, nil
+	}
+
+	fields := commondb.GetDBFields(&participant.Participant{})
+
+	// Convert UUIDs to bytes for query
+	chatIDBytes := make([]interface{}, len(chatIDs))
+	for i, id := range chatIDs {
+		chatIDBytes[i] = id.Bytes()
+	}
+
+	query := sq.Select(fields...).
+		From(tableParticipants).
+		Where(sq.Eq{"chat_id": chatIDBytes}).
+		OrderBy("tm_joined DESC").
+		PlaceholderFormat(sq.Question)
+
+	sqlQuery, args, err := query.ToSql()
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := h.db.QueryContext(ctx, sqlQuery, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if closeErr := rows.Close(); closeErr != nil {
+			logrus.Errorf("Failed to close rows: %v", closeErr)
+		}
+	}()
+
+	var participants []*participant.Participant
+	for rows.Next() {
+		var p participant.Participant
+		err = commondb.ScanRow(rows, &p)
+		if err != nil {
+			return nil, err
+		}
+		participants = append(participants, &p)
+	}
+
+	return participants, nil
+}

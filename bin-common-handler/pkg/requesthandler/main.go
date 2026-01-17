@@ -1134,11 +1134,11 @@ type RequestHandler interface {
 	TagV1TagGet(ctx context.Context, tagID uuid.UUID) (*tmtag.Tag, error)
 	TagV1TagList(ctx context.Context, pageToken string, pageSize uint64, filters map[tmtag.Field]any) ([]tmtag.Tag, error)
 
-	// talk-manager talk
-	TalkV1ChatGet(ctx context.Context, talkID uuid.UUID) (*tkchat.Chat, error)
-	TalkV1ChatCreate(ctx context.Context, customerID uuid.UUID, talkType tkchat.Type) (*tkchat.Chat, error)
-	TalkV1ChatDelete(ctx context.Context, talkID uuid.UUID) (*tkchat.Chat, error)
-	TalkV1ChatList(ctx context.Context, pageToken string, pageSize uint64) ([]*tkchat.Chat, error)
+	// talk-manager chat
+	TalkV1ChatGet(ctx context.Context, chatID uuid.UUID) (*tkchat.Chat, error)
+	TalkV1ChatCreate(ctx context.Context, customerID uuid.UUID, chatType tkchat.Type, name string, detail string, creatorType string, creatorID uuid.UUID) (*tkchat.Chat, error)
+	TalkV1ChatDelete(ctx context.Context, chatID uuid.UUID) (*tkchat.Chat, error)
+	TalkV1ChatList(ctx context.Context, filters map[string]any, pageToken string, pageSize uint64) ([]*tkchat.Chat, error)
 
 	// talk-manager participant
 	TalkV1ParticipantList(ctx context.Context, talkID uuid.UUID) ([]*talkparticipant.Participant, error)

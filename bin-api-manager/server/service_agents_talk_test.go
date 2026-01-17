@@ -50,7 +50,7 @@ func Test_talksGET(t *testing.T) {
 						ID:         uuid.FromStringOrNil("83d48228-3ed7-11ef-a9ca-070e7ba46a55"),
 						CustomerID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000"),
 					},
-					Type: tkchat.TypeNormal,
+					Type: tkchat.TypeDirect,
 				},
 				{
 					Identity: commonidentity.Identity{
@@ -130,7 +130,7 @@ func Test_talksIDGET(t *testing.T) {
 					ID:         uuid.FromStringOrNil("e66d1da0-3ed7-11ef-9208-4bcc069917a1"),
 					CustomerID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000"),
 				},
-				Type:     tkchat.TypeNormal,
+				Type:     tkchat.TypeDirect,
 				TMCreate: "2020-09-20T03:23:21.995000",
 			},
 
@@ -208,10 +208,10 @@ func Test_talksPOST(t *testing.T) {
 					ID:         uuid.FromStringOrNil("83d48228-3ed7-11ef-a9ca-070e7ba46a55"),
 					CustomerID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000"),
 				},
-				Type: tkchat.TypeNormal,
+				Type: tkchat.TypeDirect,
 			},
 
-			expectType: tkchat.TypeNormal,
+			expectType: tkchat.TypeDirect,
 			expectRes:  `{"id":"83d48228-3ed7-11ef-a9ca-070e7ba46a55","customer_id":"550e8400-e29b-41d4-a716-446655440000","type":"normal"}`,
 		},
 	}
@@ -281,7 +281,7 @@ func Test_talksIDDELETE(t *testing.T) {
 					ID:         uuid.FromStringOrNil("e66d1da0-3ed7-11ef-9208-4bcc069917a1"),
 					CustomerID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000"),
 				},
-				Type: tkchat.TypeNormal,
+				Type: tkchat.TypeDirect,
 			},
 
 			expectTalkID: uuid.FromStringOrNil("e66d1da0-3ed7-11ef-9208-4bcc069917a1"),

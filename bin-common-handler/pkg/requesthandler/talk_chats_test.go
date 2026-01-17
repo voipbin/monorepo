@@ -45,14 +45,14 @@ func Test_TalkV1ChatGet(t *testing.T) {
 			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
-				Data:       []byte(`{"id":"72179880-ec5f-11ec-920e-c77279756b6d","customer_id":"550e8400-e29b-41d4-a716-446655440000","type":"normal"}`),
+				Data:       []byte(`{"id":"72179880-ec5f-11ec-920e-c77279756b6d","customer_id":"550e8400-e29b-41d4-a716-446655440000","type":"direct"}`),
 			},
 			expectRes: &tkchat.Chat{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("72179880-ec5f-11ec-920e-c77279756b6d"),
 					CustomerID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000"),
 				},
-				Type: tkchat.TypeNormal,
+				Type: tkchat.TypeDirect,
 			},
 		},
 	}
@@ -102,27 +102,27 @@ func Test_TalkV1ChatCreate(t *testing.T) {
 			name: "normal",
 
 			customerID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000"),
-			talkType:   tkchat.TypeNormal,
+			talkType:   tkchat.TypeDirect,
 
 			expectQueue: "bin-manager.talk-manager.request",
 			expectRequest: &sock.Request{
 				URI:      "/v1/chats",
 				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"customer_id":"550e8400-e29b-41d4-a716-446655440000","type":"normal"}`),
+				Data:     []byte(`{"customer_id":"550e8400-e29b-41d4-a716-446655440000","type":"direct"}`),
 			},
 
 			response: &sock.Response{
 				StatusCode: 201,
 				DataType:   ContentTypeJSON,
-				Data:       []byte(`{"id":"72179880-ec5f-11ec-920e-c77279756b6d","customer_id":"550e8400-e29b-41d4-a716-446655440000","type":"normal"}`),
+				Data:       []byte(`{"id":"72179880-ec5f-11ec-920e-c77279756b6d","customer_id":"550e8400-e29b-41d4-a716-446655440000","type":"direct"}`),
 			},
 			expectRes: &tkchat.Chat{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("72179880-ec5f-11ec-920e-c77279756b6d"),
 					CustomerID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000"),
 				},
-				Type: tkchat.TypeNormal,
+				Type: tkchat.TypeDirect,
 			},
 		},
 	}
@@ -141,7 +141,7 @@ func Test_TalkV1ChatCreate(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectQueue, gomock.Any()).Return(tt.response, nil)
 
-			res, err := reqHandler.TalkV1ChatCreate(ctx, tt.customerID, tt.talkType)
+			res, err := reqHandler.TalkV1ChatCreate(ctx, tt.customerID, tt.talkType, "", "", "", uuid.Nil)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -181,14 +181,14 @@ func Test_TalkV1ChatDelete(t *testing.T) {
 			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
-				Data:       []byte(`{"id":"72179880-ec5f-11ec-920e-c77279756b6d","customer_id":"550e8400-e29b-41d4-a716-446655440000","type":"normal"}`),
+				Data:       []byte(`{"id":"72179880-ec5f-11ec-920e-c77279756b6d","customer_id":"550e8400-e29b-41d4-a716-446655440000","type":"direct"}`),
 			},
 			expectRes: &tkchat.Chat{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("72179880-ec5f-11ec-920e-c77279756b6d"),
 					CustomerID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000"),
 				},
-				Type: tkchat.TypeNormal,
+				Type: tkchat.TypeDirect,
 			},
 		},
 	}
@@ -249,7 +249,7 @@ func Test_TalkV1ChatList(t *testing.T) {
 			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
-				Data:       []byte(`[{"id":"72179880-ec5f-11ec-920e-c77279756b6d","customer_id":"550e8400-e29b-41d4-a716-446655440000","type":"normal"}]`),
+				Data:       []byte(`[{"id":"72179880-ec5f-11ec-920e-c77279756b6d","customer_id":"550e8400-e29b-41d4-a716-446655440000","type":"direct"}]`),
 			},
 			expectRes: []*tkchat.Chat{
 				{
@@ -257,7 +257,7 @@ func Test_TalkV1ChatList(t *testing.T) {
 						ID:         uuid.FromStringOrNil("72179880-ec5f-11ec-920e-c77279756b6d"),
 						CustomerID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000"),
 					},
-					Type: tkchat.TypeNormal,
+					Type: tkchat.TypeDirect,
 				},
 			},
 		},
@@ -277,7 +277,7 @@ func Test_TalkV1ChatList(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectQueue, gomock.Any()).Return(tt.response, nil)
 
-			res, err := reqHandler.TalkV1ChatList(ctx, tt.pageToken, tt.pageSize)
+			res, err := reqHandler.TalkV1ChatList(ctx, nil, tt.pageToken, tt.pageSize)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

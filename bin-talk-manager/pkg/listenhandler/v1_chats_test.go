@@ -12,6 +12,7 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-talk-manager/models/chat"
 	"monorepo/bin-talk-manager/pkg/chathandler"
 )
@@ -33,18 +34,18 @@ func Test_processV1TalkChatsPost(t *testing.T) {
 				URI:      "/v1/chats",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","type":"normal"}`),
+				Data:     []byte(`{"customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","type":"direct"}`),
 			},
 
 			customerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
-			chatType:   chat.TypeNormal,
+			chatType:   chat.TypeDirect,
 
 			responseChat: &chat.Chat{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("6ebc6880-31da-11ed-8e95-a3bc92af9795"),
 					CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
 				},
-				Type:     chat.TypeNormal,
+				Type:     chat.TypeDirect,
 				TMCreate: "2021-11-23 17:55:39.712000",
 				TMUpdate: "9999-01-01 00:00:00.000000",
 				TMDelete: "9999-01-01 00:00:00.000000",
@@ -52,7 +53,7 @@ func Test_processV1TalkChatsPost(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 201,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"6ebc6880-31da-11ed-8e95-a3bc92af9795","customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","type":"normal","tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
+				Data:       []byte(`{"id":"6ebc6880-31da-11ed-8e95-a3bc92af9795","customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","type":"direct","name":"","detail":"","tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
 			},
 		},
 		{
@@ -80,7 +81,7 @@ func Test_processV1TalkChatsPost(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 201,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"7fcd7990-42eb-11ed-9fa6-b4cd93af9796","customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","type":"group","tm_create":"2021-11-23 18:00:00.000000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
+				Data:       []byte(`{"id":"7fcd7990-42eb-11ed-9fa6-b4cd93af9796","customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","type":"group","name":"","detail":"","tm_create":"2021-11-23 18:00:00.000000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
 			},
 		},
 	}
@@ -99,7 +100,7 @@ func Test_processV1TalkChatsPost(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockChat.EXPECT().ChatCreate(ctx, tt.customerID, tt.chatType).Return(tt.responseChat, nil)
+			mockChat.EXPECT().ChatCreate(ctx, tt.customerID, tt.chatType, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseChat, nil)
 
 			res, err := h.v1ChatsPost(ctx, *tt.request)
 			if err != nil {
@@ -139,7 +140,7 @@ func Test_processV1TalkChatsPost_error(t *testing.T) {
 				URI:      "/v1/chats",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id":"","type":"normal"}`),
+				Data:     []byte(`{"customer_id":"","type":"direct"}`),
 			},
 			expectRes: &sock.Response{
 				StatusCode: 400,
@@ -204,7 +205,7 @@ func Test_processV1TalkChatsGet(t *testing.T) {
 						ID:         uuid.FromStringOrNil("6ebc6880-31da-11ed-8e95-a3bc92af9795"),
 						CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
 					},
-					Type:     chat.TypeNormal,
+					Type:     chat.TypeDirect,
 					TMCreate: "2021-11-23 17:55:39.712000",
 					TMUpdate: "9999-01-01 00:00:00.000000",
 					TMDelete: "9999-01-01 00:00:00.000000",
@@ -213,7 +214,7 @@ func Test_processV1TalkChatsGet(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"6ebc6880-31da-11ed-8e95-a3bc92af9795","customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","type":"normal","tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}]`),
+				Data:       []byte(`[{"id":"6ebc6880-31da-11ed-8e95-a3bc92af9795","customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","type":"direct","name":"","detail":"","tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}]`),
 			},
 		},
 		{
@@ -244,14 +245,17 @@ func Test_processV1TalkChatsGet(t *testing.T) {
 
 			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockChat := chathandler.NewMockChatHandler(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 
 			h := &listenHandler{
 				sockHandler: mockSock,
 				chatHandler: mockChat,
+				utilHandler: mockUtil,
 			}
 
 			ctx := context.Background()
-			mockChat.EXPECT().ChatList(ctx, nil, tt.pageToken, tt.pageSize).Return(tt.responseTalks, nil)
+			mockUtil.EXPECT().ParseFiltersFromRequestBody(tt.request.Data).Return(map[string]any{}, nil)
+			mockChat.EXPECT().ChatList(ctx, gomock.Any(), tt.pageToken, tt.pageSize).Return(tt.responseTalks, nil)
 
 			res, err := h.v1ChatsGet(ctx, *tt.request)
 			if err != nil {
@@ -288,7 +292,7 @@ func Test_processV1TalkChatsIDGet(t *testing.T) {
 					ID:         uuid.FromStringOrNil("6ebc6880-31da-11ed-8e95-a3bc92af9795"),
 					CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
 				},
-				Type:     chat.TypeNormal,
+				Type:     chat.TypeDirect,
 				TMCreate: "2021-11-23 17:55:39.712000",
 				TMUpdate: "9999-01-01 00:00:00.000000",
 				TMDelete: "9999-01-01 00:00:00.000000",
@@ -296,7 +300,7 @@ func Test_processV1TalkChatsIDGet(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"6ebc6880-31da-11ed-8e95-a3bc92af9795","customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","type":"normal","tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
+				Data:       []byte(`{"id":"6ebc6880-31da-11ed-8e95-a3bc92af9795","customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","type":"direct","name":"","detail":"","tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
 			},
 		},
 	}
@@ -352,7 +356,7 @@ func Test_processV1TalkChatsIDDelete(t *testing.T) {
 					ID:         uuid.FromStringOrNil("6ebc6880-31da-11ed-8e95-a3bc92af9795"),
 					CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
 				},
-				Type:     chat.TypeNormal,
+				Type:     chat.TypeDirect,
 				TMCreate: "2021-11-23 17:55:39.712000",
 				TMUpdate: "2021-11-23 18:00:00.000000",
 				TMDelete: "2021-11-23 18:00:00.000000",
@@ -360,7 +364,7 @@ func Test_processV1TalkChatsIDDelete(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"6ebc6880-31da-11ed-8e95-a3bc92af9795","customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","type":"normal","tm_create":"2021-11-23 17:55:39.712000","tm_update":"2021-11-23 18:00:00.000000","tm_delete":"2021-11-23 18:00:00.000000"}`),
+				Data:       []byte(`{"id":"6ebc6880-31da-11ed-8e95-a3bc92af9795","customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","type":"direct","name":"","detail":"","tm_create":"2021-11-23 17:55:39.712000","tm_update":"2021-11-23 18:00:00.000000","tm_delete":"2021-11-23 18:00:00.000000"}`),
 			},
 		},
 	}

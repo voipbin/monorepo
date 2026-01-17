@@ -13,11 +13,15 @@ import (
 )
 
 // ChatCreate creates a new talk
-func (h *chatHandler) ChatCreate(ctx context.Context, customerID uuid.UUID, chatType chat.Type) (*chat.Chat, error) {
+func (h *chatHandler) ChatCreate(ctx context.Context, customerID uuid.UUID, chatType chat.Type, name string, detail string, creatorType string, creatorID uuid.UUID) (*chat.Chat, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "ChatCreate",
-		"customer_id": customerID,
-		"type":        chatType,
+		"func":         "ChatCreate",
+		"customer_id":  customerID,
+		"type":         chatType,
+		"name":         name,
+		"detail":       detail,
+		"creator_type": creatorType,
+		"creator_id":   creatorID,
 	})
 	log.Debug("Creating a new talk")
 
@@ -28,18 +32,26 @@ func (h *chatHandler) ChatCreate(ctx context.Context, customerID uuid.UUID, chat
 	}
 
 	// Validate chat type
-	if chatType != chat.TypeNormal && chatType != chat.TypeGroup {
+	if chatType != chat.TypeDirect && chatType != chat.TypeGroup {
 		log.Errorf("Invalid chat type: %s", chatType)
 		return nil, errors.Errorf("invalid chat type: %s", chatType)
 	}
 
-	// Create chat object
+	// Validate creator (creator is optional)
+	if creatorType != "" && creatorID == uuid.Nil {
+		log.Error("Invalid creator ID: nil UUID with non-empty type")
+		return nil, errors.New("creator ID cannot be nil when creator type is specified")
+	}
+
+	// Create chat object using utilHandler for UUID generation
 	t := &chat.Chat{
 		Identity: commonidentity.Identity{
-			ID:         uuid.Must(uuid.NewV4()),
+			ID:         h.utilHandler.UUIDCreate(),
 			CustomerID: customerID,
 		},
-		Type: chatType,
+		Type:   chatType,
+		Name:   name,
+		Detail: detail,
 	}
 
 	// Save to database
@@ -47,6 +59,22 @@ func (h *chatHandler) ChatCreate(ctx context.Context, customerID uuid.UUID, chat
 	if err != nil {
 		log.Errorf("Failed to create chat in database. err: %v", err)
 		return nil, errors.Wrap(err, "failed to create chat in database")
+	}
+
+	// Add creator as participant if provided
+	if creatorType != "" && creatorID != uuid.Nil {
+		_, err = h.participantHandler.ParticipantAdd(ctx, customerID, t.ID, creatorID, creatorType)
+		if err != nil {
+			log.Errorf("Failed to add creator as participant. err: %v", err)
+			// Note: We don't fail the entire chat creation if participant addition fails
+			// The chat is already created; this is a best-effort participant addition
+		} else {
+			log.WithFields(logrus.Fields{
+				"chat_id":      t.ID,
+				"creator_type": creatorType,
+				"creator_id":   creatorID,
+			}).Debug("Creator added as participant")
+		}
 	}
 
 	// Publish webhook event

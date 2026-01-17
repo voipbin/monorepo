@@ -11,9 +11,11 @@ import (
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"monorepo/bin-talk-manager/models/chat"
 	"monorepo/bin-talk-manager/pkg/dbhandler"
+	"monorepo/bin-talk-manager/pkg/participanthandler"
 )
 
 func Test_ChatCreate(t *testing.T) {
@@ -30,20 +32,20 @@ func Test_ChatCreate(t *testing.T) {
 			name: "normal_type_normal",
 
 			customerID: uuid.FromStringOrNil("ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4"),
-			chatType:   chat.TypeNormal,
+			chatType:   chat.TypeDirect,
 
 			expectChat: &chat.Chat{
 				Identity: commonidentity.Identity{
 					CustomerID: uuid.FromStringOrNil("ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4"),
 				},
-				Type: chat.TypeNormal,
+				Type: chat.TypeDirect,
 			},
 			expectRes: &chat.Chat{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("31536998-da36-11ee-976a-b31b049d62c2"),
 					CustomerID: uuid.FromStringOrNil("ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4"),
 				},
-				Type: chat.TypeNormal,
+				Type: chat.TypeDirect,
 			},
 		},
 		{
@@ -75,18 +77,23 @@ func Test_ChatCreate(t *testing.T) {
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockParticipant := participanthandler.NewMockParticipantHandler(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 
 			h := &chatHandler{
-				dbHandler:     mockDB,
-				notifyHandler: mockNotify,
+				dbHandler:          mockDB,
+				participantHandler: mockParticipant,
+				notifyHandler:      mockNotify,
+				utilHandler:        mockUtil,
 			}
 
 			ctx := context.Background()
 
+			mockUtil.EXPECT().UUIDCreate().Return(tt.expectRes.ID)
 			mockDB.EXPECT().ChatCreate(ctx, gomock.Any()).Return(nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.customerID, chat.EventTypeChatCreated, gomock.Any())
 
-			res, err := h.ChatCreate(ctx, tt.customerID, tt.chatType)
+			res, err := h.ChatCreate(ctx, tt.customerID, tt.chatType, "", "", "", uuid.Nil)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -119,7 +126,7 @@ func Test_ChatCreate_error(t *testing.T) {
 			name: "error_nil_customer_id",
 
 			customerID: uuid.Nil,
-			chatType:   chat.TypeNormal,
+			chatType:   chat.TypeDirect,
 
 			expectError: "customer ID cannot be nil",
 		},
@@ -135,7 +142,7 @@ func Test_ChatCreate_error(t *testing.T) {
 			name: "error_database_failure",
 
 			customerID: uuid.FromStringOrNil("ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4"),
-			chatType:   chat.TypeNormal,
+			chatType:   chat.TypeDirect,
 
 			expectError: "failed to create chat in database",
 		},
@@ -148,20 +155,27 @@ func Test_ChatCreate_error(t *testing.T) {
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockParticipant := participanthandler.NewMockParticipantHandler(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 
 			h := &chatHandler{
-				dbHandler:     mockDB,
-				notifyHandler: mockNotify,
+				dbHandler:          mockDB,
+				participantHandler: mockParticipant,
+				notifyHandler:      mockNotify,
+				utilHandler:        mockUtil,
 			}
 
 			ctx := context.Background()
+
+			// Mock UUID creation for valid paths
+			mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("ac810dc4-298c-11ee-984c-ebb7811c4114")).AnyTimes()
 
 			// Only mock database call for database failure test
 			if tt.name == "error_database_failure" {
 				mockDB.EXPECT().ChatCreate(ctx, gomock.Any()).Return(fmt.Errorf("database error"))
 			}
 
-			res, err := h.ChatCreate(ctx, tt.customerID, tt.chatType)
+			res, err := h.ChatCreate(ctx, tt.customerID, tt.chatType, "", "", "", uuid.Nil)
 			if err == nil {
 				t.Errorf("Wrong match. expect: error, got: ok")
 			}
@@ -191,7 +205,7 @@ func Test_ChatGet(t *testing.T) {
 					ID:         uuid.FromStringOrNil("e8427fa8-17b2-4e9e-8855-90e516bcf1d3"),
 					CustomerID: uuid.FromStringOrNil("809656e2-305e-43cd-8d7b-ccb44373dddb"),
 				},
-				Type:     chat.TypeNormal,
+				Type:     chat.TypeDirect,
 				TMCreate: "2024-01-15 10:30:00.000000",
 			},
 		},
@@ -305,7 +319,7 @@ func Test_ChatList(t *testing.T) {
 						ID:         uuid.FromStringOrNil("e8427fa8-17b2-4e9e-8855-90e516bcf1d3"),
 						CustomerID: uuid.FromStringOrNil("809656e2-305e-43cd-8d7b-ccb44373dddb"),
 					},
-					Type:     chat.TypeNormal,
+					Type:     chat.TypeDirect,
 					TMCreate: "2024-01-15 10:30:00.000000",
 				},
 				{
@@ -453,7 +467,7 @@ func Test_ChatDelete(t *testing.T) {
 					ID:         uuid.FromStringOrNil("af243cbc-de04-4705-ad2b-78350d0a4fba"),
 					CustomerID: uuid.FromStringOrNil("809656e2-305e-43cd-8d7b-ccb44373dddb"),
 				},
-				Type:     chat.TypeNormal,
+				Type:     chat.TypeDirect,
 				TMCreate: "2024-01-15 10:30:00.000000",
 			},
 		},
@@ -542,7 +556,7 @@ func Test_ChatDelete_error(t *testing.T) {
 						ID:         tt.id,
 						CustomerID: uuid.FromStringOrNil("809656e2-305e-43cd-8d7b-ccb44373dddb"),
 					},
-					Type: chat.TypeNormal,
+					Type: chat.TypeDirect,
 				}
 				mockDB.EXPECT().ChatGet(ctx, tt.id).Return(responseChat, nil)
 				mockDB.EXPECT().ChatDelete(ctx, tt.id).Return(tt.deleteTalkError)
