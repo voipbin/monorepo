@@ -72,6 +72,21 @@ func (mr *MockParticipantHandlerMockRecorder) ParticipantList(ctx, customerID, c
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ParticipantList", reflect.TypeOf((*MockParticipantHandler)(nil).ParticipantList), ctx, customerID, chatID)
 }
 
+// ParticipantListWithFilters mocks base method.
+func (m *MockParticipantHandler) ParticipantListWithFilters(ctx context.Context, filters map[participant.Field]any, token string, size uint64) ([]*participant.Participant, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ParticipantListWithFilters", ctx, filters, token, size)
+	ret0, _ := ret[0].([]*participant.Participant)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ParticipantListWithFilters indicates an expected call of ParticipantListWithFilters.
+func (mr *MockParticipantHandlerMockRecorder) ParticipantListWithFilters(ctx, filters, token, size any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ParticipantListWithFilters", reflect.TypeOf((*MockParticipantHandler)(nil).ParticipantListWithFilters), ctx, filters, token, size)
+}
+
 // ParticipantRemove mocks base method.
 func (m *MockParticipantHandler) ParticipantRemove(ctx context.Context, customerID, participantID uuid.UUID) error {
 	m.ctrl.T.Helper()

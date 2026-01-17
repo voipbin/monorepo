@@ -12,6 +12,7 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-talk-manager/models/message"
 	"monorepo/bin-talk-manager/pkg/messagehandler"
 )
@@ -313,14 +314,19 @@ func Test_processV1MessagesGet(t *testing.T) {
 
 			mockSock := sockhandler.NewMockSockHandler(mc)
 			mockMessage := messagehandler.NewMockMessageHandler(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
 
 			h := &listenHandler{
 				sockHandler:    mockSock,
 				messageHandler: mockMessage,
+				utilHandler:    mockUtil,
 			}
 
 			ctx := context.Background()
-			mockMessage.EXPECT().MessageList(ctx, nil, tt.pageToken, tt.pageSize).Return(tt.responseMessages, nil)
+
+			// Set expectations for filter parsing
+			mockUtil.EXPECT().ParseFiltersFromRequestBody(tt.request.Data).Return(map[string]any{}, nil)
+			mockMessage.EXPECT().MessageList(ctx, gomock.Any(), tt.pageToken, tt.pageSize).Return(tt.responseMessages, nil)
 
 			res, err := h.v1MessagesGet(ctx, *tt.request)
 			if err != nil {

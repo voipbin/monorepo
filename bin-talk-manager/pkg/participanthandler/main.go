@@ -19,6 +19,9 @@ type ParticipantHandler interface {
 	// ParticipantList returns all participants for a talk
 	ParticipantList(ctx context.Context, customerID, chatID uuid.UUID) ([]*participant.Participant, error)
 
+	// ParticipantListWithFilters returns participants matching filter criteria
+	ParticipantListWithFilters(ctx context.Context, filters map[participant.Field]any, token string, size uint64) ([]*participant.Participant, error)
+
 	// ParticipantRemove removes a participant from a chat (hard delete)
 	ParticipantRemove(ctx context.Context, customerID, participantID uuid.UUID) error
 }

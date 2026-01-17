@@ -117,6 +117,29 @@ func (h *participantHandler) ParticipantList(ctx context.Context, customerID, ch
 	return participants, nil
 }
 
+// ParticipantListWithFilters returns participants matching filter criteria
+// Note: token and size parameters are currently ignored (no pagination implemented)
+func (h *participantHandler) ParticipantListWithFilters(ctx context.Context, filters map[participant.Field]any, token string, size uint64) ([]*participant.Participant, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "ParticipantListWithFilters",
+		"filters": filters,
+	})
+	log.Debug("Listing participants with filters")
+
+	// Get participants from database
+	participants, err := h.dbHandler.ParticipantList(ctx, filters)
+	if err != nil {
+		log.Errorf("Failed to list participants. err: %v", err)
+		return nil, fmt.Errorf("failed to list participants: %w", err)
+	}
+
+	// Augment log with result before final log
+	log = log.WithField("count", len(participants))
+	log.Info("Participants listed successfully")
+
+	return participants, nil
+}
+
 // ParticipantRemove removes a participant from a chat (hard delete)
 func (h *participantHandler) ParticipantRemove(ctx context.Context, customerID, participantID uuid.UUID) error {
 	log := logrus.WithFields(logrus.Fields{

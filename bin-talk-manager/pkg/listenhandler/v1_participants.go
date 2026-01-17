@@ -3,65 +3,45 @@ package listenhandler
 import (
 	"context"
 	"encoding/json"
+	"net/url"
+	"strconv"
 
-	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
 	commonsock "monorepo/bin-common-handler/models/sock"
+	commonutil "monorepo/bin-common-handler/pkg/utilhandler"
+	"monorepo/bin-talk-manager/models/participant"
 )
 
-func (h *listenHandler) v1ChatsIDParticipantsPost(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
-	matches := regV1ChatsIDParticipants.FindStringSubmatch(m.URI)
-	chatID := uuid.FromStringOrNil(matches[1])
+func (h *listenHandler) v1ParticipantsGet(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
+	u, _ := url.Parse(m.URI)
 
-	var req struct {
-		CustomerID string `json:"customer_id"`
-		OwnerType  string `json:"owner_type"`
-		OwnerID    string `json:"owner_id"`
+	// Parse pagination
+	tmpSize, _ := strconv.Atoi(u.Query().Get("page_size"))
+	pageSize := uint64(tmpSize)
+	if pageSize == 0 {
+		pageSize = 50
 	}
+	pageToken := u.Query().Get("page_token")
 
-	err := json.Unmarshal(m.Data, &req)
+	// Parse filters from request body using utilhandler pattern
+	tmpFilters, err := h.utilHandler.ParseFiltersFromRequestBody(m.Data)
 	if err != nil {
-		logrus.Errorf("Failed to parse request: %v", err)
+		logrus.Errorf("Could not parse filters. err: %v", err)
 		return simpleResponse(400), nil
 	}
 
-	customerID := uuid.FromStringOrNil(req.CustomerID)
-	ownerID := uuid.FromStringOrNil(req.OwnerID)
-
-	if customerID == uuid.Nil || ownerID == uuid.Nil {
-		return simpleResponse(400), nil
-	}
-
-	participant, err := h.participantHandler.ParticipantAdd(ctx, customerID, chatID, ownerID, req.OwnerType)
+	// Convert to typed filters
+	typedFilters, err := commonutil.ConvertFilters[participant.FieldStruct, participant.Field](
+		participant.FieldStruct{},
+		tmpFilters,
+	)
 	if err != nil {
-		logrus.Errorf("Failed to create participant: %v", err)
-		return simpleResponse(500), nil
-	}
-
-	data, _ := json.Marshal(participant)
-	return &commonsock.Response{
-		StatusCode: 201,
-		DataType:   "application/json",
-		Data:       data,
-	}, nil
-}
-
-func (h *listenHandler) v1ChatsIDParticipantsGet(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
-	matches := regV1ChatsIDParticipants.FindStringSubmatch(m.URI)
-	chatID := uuid.FromStringOrNil(matches[1])
-
-	// Parse customer_id from request body
-	var req struct {
-		CustomerID string `json:"customer_id"`
-	}
-	if err := json.Unmarshal(m.Data, &req); err != nil {
-		logrus.Errorf("Failed to parse request: %v", err)
+		logrus.Errorf("Could not convert filters. err: %v", err)
 		return simpleResponse(400), nil
 	}
-	customerID := uuid.FromStringOrNil(req.CustomerID)
 
-	participants, err := h.participantHandler.ParticipantList(ctx, customerID, chatID)
+	participants, err := h.participantHandler.ParticipantListWithFilters(ctx, typedFilters, pageToken, pageSize)
 	if err != nil {
 		return simpleResponse(500), nil
 	}
@@ -71,31 +51,5 @@ func (h *listenHandler) v1ChatsIDParticipantsGet(ctx context.Context, m commonso
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
-	}, nil
-}
-
-func (h *listenHandler) v1ChatsIDParticipantsIDDelete(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
-	matches := regV1ChatsIDParticipantsID.FindStringSubmatch(m.URI)
-	participantID := uuid.FromStringOrNil(matches[2])
-
-	// Parse customer_id from request body
-	var req struct {
-		CustomerID string `json:"customer_id"`
-	}
-	if err := json.Unmarshal(m.Data, &req); err != nil {
-		logrus.Errorf("Failed to parse request: %v", err)
-		return simpleResponse(400), nil
-	}
-	customerID := uuid.FromStringOrNil(req.CustomerID)
-
-	err := h.participantHandler.ParticipantRemove(ctx, customerID, participantID)
-	if err != nil {
-		return simpleResponse(500), nil
-	}
-
-	return &commonsock.Response{
-		StatusCode: 204,
-		DataType:   "application/json",
-		Data:       json.RawMessage("{}"),
 	}, nil
 }
