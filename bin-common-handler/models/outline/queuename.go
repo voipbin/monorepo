@@ -125,6 +125,11 @@ const (
 	QueueNameTagRequest   QueueName = "bin-manager.tag-manager.request"
 	QueueNameTagSubscribe QueueName = "bin-manager.tag-manager.subscribe"
 
+	// talk-manager
+	QueueNameTalkEvent     QueueName = "bin-manager.talk-manager.event"
+	QueueNameTalkRequest   QueueName = "bin-manager.talk-manager.request"
+	QueueNameTalkSubscribe QueueName = "bin-manager.talk-manager.subscribe"
+
 	// transcribe-manager
 	QueueNameTranscribeEvent     QueueName = "bin-manager.transcribe-manager.event"
 	QueueNameTranscribeRequest   QueueName = "bin-manager.transcribe-manager.request"
