@@ -91,7 +91,11 @@ func runDaemon() error {
 		Password: cfg.RedisPassword,
 		DB:       cfg.RedisDatabase,
 	})
-	defer func() { _ = redisClient.Close() }()
+	defer func() {
+		if err := redisClient.Close(); err != nil {
+			logger.Errorf("Failed to close Redis client: %v", err)
+		}
+	}()
 	logger.Info("Redis initialized")
 
 	// Initialize database handler

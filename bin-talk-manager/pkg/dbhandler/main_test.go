@@ -39,7 +39,11 @@ func TestMain(m *testing.M) {
 	}
 
 	dbTest = db
-	defer func() { _ = db.Close() }()
+	defer func() {
+		if err := db.Close(); err != nil {
+			log.Errorf("Failed to close test database: %v", err)
+		}
+	}()
 
 	os.Exit(m.Run())
 }

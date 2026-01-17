@@ -63,7 +63,10 @@ func (h *listenHandler) v1TalkChatsIDParticipantsGet(ctx context.Context, m comm
 	var req struct {
 		CustomerID string `json:"customer_id"`
 	}
-	_ = json.Unmarshal(m.Data, &req)
+	if err := json.Unmarshal(m.Data, &req); err != nil {
+		log.Errorf("Failed to parse request: %v", err)
+		return simpleResponse(400), nil
+	}
 	customerID := uuid.FromStringOrNil(req.CustomerID)
 
 	participants, err := h.participantHandler.ParticipantList(ctx, customerID, chatID)
@@ -89,7 +92,10 @@ func (h *listenHandler) processV1TalkChatsIDParticipantsID(ctx context.Context, 
 		var req struct {
 			CustomerID string `json:"customer_id"`
 		}
-		_ = json.Unmarshal(m.Data, &req)
+		if err := json.Unmarshal(m.Data, &req); err != nil {
+			log.Errorf("Failed to parse request: %v", err)
+			return simpleResponse(400), nil
+		}
 		customerID := uuid.FromStringOrNil(req.CustomerID)
 
 		err := h.participantHandler.ParticipantRemove(ctx, customerID, participantID)
