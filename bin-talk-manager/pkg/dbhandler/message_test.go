@@ -11,6 +11,7 @@ import (
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
+	commonutil "monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-talk-manager/models/message"
 )
 
@@ -78,8 +79,9 @@ func Test_MessageCreate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			h := &dbHandler{
-				db:    dbTest,
-				redis: nil,
+				db:          dbTest,
+				redis:       nil,
+			utilHandler: commonutil.NewUtilHandler(),
 			}
 			ctx := context.Background()
 
@@ -157,8 +159,9 @@ func Test_MessageGet(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			h := &dbHandler{
-				db:    dbTest,
-				redis: nil,
+				db:          dbTest,
+				redis:       nil,
+			utilHandler: commonutil.NewUtilHandler(),
 			}
 			ctx := context.Background()
 
@@ -337,8 +340,9 @@ func Test_MessageList(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			h := &dbHandler{
-				db:    dbTest,
-				redis: nil,
+				db:          dbTest,
+				redis:       nil,
+			utilHandler: commonutil.NewUtilHandler(),
 			}
 			ctx := context.Background()
 
@@ -396,8 +400,9 @@ func Test_MessageUpdate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			h := &dbHandler{
-				db:    dbTest,
-				redis: nil,
+				db:          dbTest,
+				redis:       nil,
+			utilHandler: commonutil.NewUtilHandler(),
 			}
 			ctx := context.Background()
 
@@ -452,8 +457,9 @@ func Test_MessageDelete(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			h := &dbHandler{
-				db:    dbTest,
-				redis: nil,
+				db:          dbTest,
+				redis:       nil,
+			utilHandler: commonutil.NewUtilHandler(),
 			}
 			ctx := context.Background()
 
@@ -527,8 +533,9 @@ func Test_MessageAddReactionAtomic(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			h := &dbHandler{
-				db:    dbTest,
-				redis: nil,
+				db:          dbTest,
+				redis:       nil,
+			utilHandler: commonutil.NewUtilHandler(),
 			}
 			ctx := context.Background()
 
@@ -575,8 +582,9 @@ func Test_MessageAddReactionAtomic_Concurrent(t *testing.T) {
 	t.Skip("Skipping concurrent reaction test - SQLite implementation not truly atomic (MySQL-specific feature)")
 
 	h := &dbHandler{
-		db:    dbTest,
-		redis: nil,
+		db:          dbTest,
+		redis:       nil,
+			utilHandler: commonutil.NewUtilHandler(),
 	}
 	ctx := context.Background()
 
@@ -688,8 +696,9 @@ func Test_MessageRemoveReactionAtomic(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			h := &dbHandler{
-				db:    dbTest,
-				redis: nil,
+				db:          dbTest,
+				redis:       nil,
+			utilHandler: commonutil.NewUtilHandler(),
 			}
 			ctx := context.Background()
 

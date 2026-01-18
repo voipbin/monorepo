@@ -12,6 +12,7 @@ import (
 	"monorepo/bin-talk-manager/models/message"
 	"monorepo/bin-talk-manager/models/participant"
 	"monorepo/bin-talk-manager/models/chat"
+	commonutil "monorepo/bin-common-handler/pkg/utilhandler"
 )
 
 // DBHandler defines database operations interface
@@ -43,14 +44,16 @@ type DBHandler interface {
 
 // dbHandler implements DBHandler
 type dbHandler struct {
-	db    *sql.DB
-	redis *redis.Client
+	db          *sql.DB
+	redis       *redis.Client
+	utilHandler commonutil.UtilHandler
 }
 
 // New creates a new DBHandler
-func New(db *sql.DB, redisClient *redis.Client) DBHandler {
+func New(db *sql.DB, redisClient *redis.Client, utilHandler commonutil.UtilHandler) DBHandler {
 	return &dbHandler{
-		db:    db,
-		redis: redisClient,
+		db:          db,
+		redis:       redisClient,
+		utilHandler: utilHandler,
 	}
 }

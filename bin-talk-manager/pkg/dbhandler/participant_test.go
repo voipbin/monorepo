@@ -8,6 +8,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonutil "monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-talk-manager/models/participant"
 )
 
@@ -49,8 +50,9 @@ func Test_ParticipantCreate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			h := &dbHandler{
-				db:    dbTest,
-				redis: nil,
+				db:          dbTest,
+				redis:       nil,
+			utilHandler: commonutil.NewUtilHandler(),
 			}
 			ctx := context.Background()
 
@@ -114,8 +116,9 @@ func Test_ParticipantCreate_UPSERT(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			h := &dbHandler{
-				db:    dbTest,
-				redis: nil,
+				db:          dbTest,
+				redis:       nil,
+			utilHandler: commonutil.NewUtilHandler(),
 			}
 			ctx := context.Background()
 
@@ -206,8 +209,9 @@ func Test_ParticipantGet(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			h := &dbHandler{
-				db:    dbTest,
-				redis: nil,
+				db:          dbTest,
+				redis:       nil,
+			utilHandler: commonutil.NewUtilHandler(),
 			}
 			ctx := context.Background()
 
@@ -394,8 +398,9 @@ func Test_ParticipantList(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			h := &dbHandler{
-				db:    dbTest,
-				redis: nil,
+				db:          dbTest,
+				redis:       nil,
+			utilHandler: commonutil.NewUtilHandler(),
 			}
 			ctx := context.Background()
 
@@ -445,8 +450,9 @@ func Test_ParticipantDelete(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			h := &dbHandler{
-				db:    dbTest,
-				redis: nil,
+				db:          dbTest,
+				redis:       nil,
+			utilHandler: commonutil.NewUtilHandler(),
 			}
 			ctx := context.Background()
 

@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
-	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
@@ -17,7 +16,7 @@ import (
 const tableMessages = "chat_messages"
 
 func (h *dbHandler) MessageCreate(ctx context.Context, m *message.Message) error {
-	now := time.Now().UTC().Format("2006-01-02T15:04:05.000000Z")
+	now := h.utilHandler.TimeGetCurTime()
 	m.TMCreate = now
 	m.TMUpdate = now
 
@@ -144,7 +143,7 @@ func (h *dbHandler) MessageList(ctx context.Context, filters map[message.Field]a
 }
 
 func (h *dbHandler) MessageUpdate(ctx context.Context, id uuid.UUID, fields map[message.Field]any) error {
-	now := time.Now().UTC().Format("2006-01-02T15:04:05.000000Z")
+	now := h.utilHandler.TimeGetCurTime()
 	fields[message.FieldTMUpdate] = now
 
 	preparedFields, err := commondb.PrepareFields(fields)
@@ -168,7 +167,7 @@ func (h *dbHandler) MessageUpdate(ctx context.Context, id uuid.UUID, fields map[
 }
 
 func (h *dbHandler) MessageDelete(ctx context.Context, id uuid.UUID) error {
-	now := time.Now().UTC().Format("2006-01-02T15:04:05.000000Z")
+	now := h.utilHandler.TimeGetCurTime()
 
 	query := sq.Update(tableMessages).
 		Set("tm_delete", now).
@@ -223,7 +222,7 @@ func (h *dbHandler) MessageAddReactionAtomic(ctx context.Context, messageID uuid
 	}
 
 	// Update atomically
-	now := time.Now().UTC().Format("2006-01-02T15:04:05.000000Z")
+	now := h.utilHandler.TimeGetCurTime()
 	query := `UPDATE chat_messages SET metadata = ?, tm_update = ? WHERE id = ?`
 
 	_, err = h.db.ExecContext(ctx, query, string(updatedJSON), now, messageID.Bytes())
@@ -269,7 +268,7 @@ func (h *dbHandler) MessageRemoveReactionAtomic(ctx context.Context, messageID u
 		return err
 	}
 
-	now := time.Now().UTC().Format("2006-01-02T15:04:05.000000Z")
+	now := h.utilHandler.TimeGetCurTime()
 	query := `UPDATE chat_messages SET metadata = ?, tm_update = ? WHERE id = ?`
 
 	_, err = h.db.ExecContext(ctx, query, string(updatedJSON), now, messageID.Bytes())

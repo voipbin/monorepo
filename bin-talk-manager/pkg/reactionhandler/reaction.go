@@ -3,7 +3,6 @@ package reactionhandler
 import (
 	"context"
 	"encoding/json"
-	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -63,7 +62,7 @@ func (h *reactionHandler) ReactionAdd(ctx context.Context, messageID uuid.UUID, 
 
 	// Add reaction atomically using MySQL JSON functions
 	// This prevents race conditions when multiple users add reactions simultaneously
-	now := time.Now().UTC().Format("2006-01-02T15:04:05.000000Z")
+	now := h.utilHandler.TimeGetCurTime()
 	reaction := message.Reaction{
 		Emoji:     emoji,
 		OwnerType: ownerType,

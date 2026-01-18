@@ -11,6 +11,7 @@ import (
 	"monorepo/bin-talk-manager/pkg/dbhandler"
 	commonsock "monorepo/bin-common-handler/pkg/sockhandler"
 	commonnotify "monorepo/bin-common-handler/pkg/notifyhandler"
+	commonutil "monorepo/bin-common-handler/pkg/utilhandler"
 )
 
 // ReactionHandler defines business logic for reactions
@@ -23,13 +24,15 @@ type reactionHandler struct {
 	dbHandler     dbhandler.DBHandler
 	sockHandler   commonsock.SockHandler
 	notifyHandler commonnotify.NotifyHandler
+	utilHandler   commonutil.UtilHandler
 }
 
 // New creates a new ReactionHandler
-func New(db dbhandler.DBHandler, sock commonsock.SockHandler, notify commonnotify.NotifyHandler) ReactionHandler {
+func New(db dbhandler.DBHandler, sock commonsock.SockHandler, notify commonnotify.NotifyHandler, utilHandler commonutil.UtilHandler) ReactionHandler {
 	return &reactionHandler{
 		dbHandler:     db,
 		sockHandler:   sock,
 		notifyHandler: notify,
+		utilHandler:   utilHandler,
 	}
 }

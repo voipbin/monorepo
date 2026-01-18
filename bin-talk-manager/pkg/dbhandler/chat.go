@@ -3,7 +3,6 @@ package dbhandler
 import (
 	"context"
 	"database/sql"
-	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
@@ -17,7 +16,7 @@ import (
 const tableChats = "chat_chats"
 
 func (h *dbHandler) ChatCreate(ctx context.Context, t *chat.Chat) error {
-	now := time.Now().UTC().Format("2006-01-02T15:04:05.000000Z")
+	now := h.utilHandler.TimeGetCurTime()
 	t.TMCreate = now
 	t.TMUpdate = now
 
@@ -197,7 +196,7 @@ func (h *dbHandler) ChatList(ctx context.Context, filters map[chat.Field]any, to
 }
 
 func (h *dbHandler) TalkUpdate(ctx context.Context, id uuid.UUID, fields map[chat.Field]any) error {
-	now := time.Now().UTC().Format("2006-01-02T15:04:05.000000Z")
+	now := h.utilHandler.TimeGetCurTime()
 	fields[chat.FieldTMUpdate] = now
 
 	preparedFields, err := commondb.PrepareFields(fields)
@@ -221,7 +220,7 @@ func (h *dbHandler) TalkUpdate(ctx context.Context, id uuid.UUID, fields map[cha
 }
 
 func (h *dbHandler) ChatDelete(ctx context.Context, id uuid.UUID) error {
-	now := time.Now().UTC().Format("2006-01-02T15:04:05.000000Z")
+	now := h.utilHandler.TimeGetCurTime()
 
 	query := sq.Update(tableChats).
 		Set("tm_delete", now).

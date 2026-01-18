@@ -3,7 +3,6 @@ package dbhandler
 import (
 	"context"
 	"database/sql"
-	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
@@ -16,7 +15,7 @@ import (
 const tableParticipants = "chat_participants"
 
 func (h *dbHandler) ParticipantCreate(ctx context.Context, p *participant.Participant) error {
-	now := time.Now().UTC().Format("2006-01-02T15:04:05.000000Z")
+	now := h.utilHandler.TimeGetCurTime()
 	p.TMJoined = now
 
 	// Use UPSERT to handle re-joins (participant leaves and joins again)

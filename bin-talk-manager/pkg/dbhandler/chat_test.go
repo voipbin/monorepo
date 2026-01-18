@@ -9,6 +9,7 @@ import (
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
+	commonutil "monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-talk-manager/models/chat"
 )
 
@@ -42,8 +43,9 @@ func Test_ChatCreate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			h := &dbHandler{
-				db:    dbTest,
-				redis: nil,
+				db:          dbTest,
+				redis:       nil,
+			utilHandler: commonutil.NewUtilHandler(),
 			}
 			ctx := context.Background()
 
@@ -109,8 +111,9 @@ func Test_ChatGet(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			h := &dbHandler{
-				db:    dbTest,
-				redis: nil,
+				db:          dbTest,
+				redis:       nil,
+			utilHandler: commonutil.NewUtilHandler(),
 			}
 			ctx := context.Background()
 
@@ -241,8 +244,9 @@ func Test_ChatList(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			h := &dbHandler{
-				db:    dbTest,
-				redis: nil,
+				db:          dbTest,
+				redis:       nil,
+			utilHandler: commonutil.NewUtilHandler(),
 			}
 			ctx := context.Background()
 
@@ -294,8 +298,9 @@ func Test_TalkUpdate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			h := &dbHandler{
-				db:    dbTest,
-				redis: nil,
+				db:          dbTest,
+				redis:       nil,
+			utilHandler: commonutil.NewUtilHandler(),
 			}
 			ctx := context.Background()
 
@@ -344,8 +349,9 @@ func Test_ChatDelete(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			h := &dbHandler{
-				db:    dbTest,
-				redis: nil,
+				db:          dbTest,
+				redis:       nil,
+			utilHandler: commonutil.NewUtilHandler(),
 			}
 			ctx := context.Background()
 

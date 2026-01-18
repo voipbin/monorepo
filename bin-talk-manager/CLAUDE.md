@@ -217,6 +217,77 @@ tm_joined = VALUES(tm_joined)
 
 The UNIQUE constraint on `(chat_id, owner_type, owner_id)` triggers the UPSERT behavior.
 
+### Timestamp Handling (REQUIRED)
+
+**CRITICAL: ALWAYS use utilHandler.TimeGetCurTime() for timestamp generation. NEVER use time.Now().UTC().Format() directly.**
+
+**The Rule:**
+All timestamp generation for database operations MUST use `utilHandler.TimeGetCurTime()` from `bin-common-handler/pkg/utilhandler`.
+
+**Why this matters:**
+1. **MySQL compatibility** - Returns format `YYYY-MM-DD HH:MM:SS.microseconds` that MySQL expects
+2. **Consistency** - All services use the same timestamp format
+3. **Testability** - Timestamps can be mocked in tests for deterministic results
+4. **No timezone issues** - Handles UTC conversion internally
+
+**Correct pattern:**
+```go
+// In handler (dbhandler, reactionhandler, etc.)
+type handler struct {
+    utilHandler commonutil.UtilHandler
+}
+
+// When setting timestamps
+func (h *handler) Create(ctx context.Context, resource *Resource) error {
+    now := h.utilHandler.TimeGetCurTime()  // ✅ CORRECT
+    resource.TMCreate = now
+    resource.TMUpdate = now
+    // ...
+}
+```
+
+**Wrong pattern:**
+```go
+// ❌ WRONG - Direct time formatting
+now := time.Now().UTC().Format("2006-01-02 15:04:05.000000")
+resource.TMCreate = now
+
+// ❌ WRONG - ISO 8601 format with T and Z
+now := time.Now().UTC().Format("2006-01-02T15:04:05.000000Z")
+resource.TMCreate = now  // Causes MySQL error!
+```
+
+**Testing pattern:**
+```go
+func Test_Create(t *testing.T) {
+    mc := gomock.NewController(t)
+    defer mc.Finish()
+
+    mockDB := dbhandler.NewMockDBHandler(mc)
+    mockUtil := commonutil.NewMockUtilHandler(mc)
+
+    h := &handler{
+        dbHandler:   mockDB,
+        utilHandler: mockUtil,
+    }
+
+    // Mock timestamp generation
+    mockUtil.EXPECT().TimeGetCurTime().Return("2024-01-17 10:30:00.000000")
+    mockDB.EXPECT().Create(ctx, gomock.Any()).Return(nil)
+
+    err := h.Create(ctx, resource)
+    // ...
+}
+```
+
+**Available utilHandler timestamp functions:**
+- `TimeGetCurTime()` - Current UTC time (use this for database timestamps)
+- `TimeGetCurTimeAdd(duration)` - Current time + duration
+- `TimeGetCurTimeRFC3339()` - RFC3339 format (for APIs, not database)
+- `TimeParse(timeString)` - Parse timestamp string to time.Time
+
+**Related pattern:** See `bin-flow-manager` for reference implementation.
+
 ## Testing Approach
 
 ### Test File Organization

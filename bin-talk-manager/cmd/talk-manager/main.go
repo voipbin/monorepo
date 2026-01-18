@@ -99,17 +99,17 @@ func runDaemon() error {
 	}()
 	logger.Info("Redis initialized")
 
-	// Initialize database handler
-	dbHandler := dbhandler.New(db, redisClient)
-
 	// Initialize utility handler
 	utilHandler := commonutil.NewUtilHandler()
+
+	// Initialize database handler
+	dbHandler := dbhandler.New(db, redisClient, utilHandler)
 
 	// Initialize business logic handlers
 	participantHandler := participanthandler.New(dbHandler, sockHandler, notifyHandler, utilHandler)
 	chatHandler := chathandler.New(dbHandler, participantHandler, notifyHandler, utilHandler)
 	messageHandler := messagehandler.New(dbHandler, sockHandler, notifyHandler, utilHandler)
-	reactionHandler := reactionhandler.New(dbHandler, sockHandler, notifyHandler)
+	reactionHandler := reactionhandler.New(dbHandler, sockHandler, notifyHandler, utilHandler)
 
 	// Initialize listen handler
 	listenHandler := listenhandler.New(

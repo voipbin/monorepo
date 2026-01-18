@@ -10,6 +10,7 @@ import (
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
+	commonutil "monorepo/bin-common-handler/pkg/utilhandler"
 
 	"monorepo/bin-talk-manager/models/message"
 	"monorepo/bin-talk-manager/pkg/dbhandler"
@@ -165,10 +166,12 @@ func Test_ReactionAdd(t *testing.T) {
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockUtil := commonutil.NewMockUtilHandler(mc)
 
 			h := &reactionHandler{
 				dbHandler:     mockDB,
 				notifyHandler: mockNotify,
+				utilHandler:   mockUtil,
 			}
 
 			ctx := context.Background()
@@ -178,6 +181,8 @@ func Test_ReactionAdd(t *testing.T) {
 
 			// If not idempotent case, mock atomic add and final get
 			if tt.responseUpdatedMessage != nil {
+				// Mock timestamp generation
+				mockUtil.EXPECT().TimeGetCurTime().Return("2024-01-17T10:30:00.000000Z")
 				mockDB.EXPECT().MessageAddReactionAtomic(ctx, tt.messageID, gomock.Any()).Return(nil)
 				mockDB.EXPECT().MessageGet(ctx, tt.messageID).Return(tt.responseUpdatedMessage, nil)
 			}
@@ -354,10 +359,12 @@ func Test_ReactionAdd_error(t *testing.T) {
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockUtil := commonutil.NewMockUtilHandler(mc)
 
 			h := &reactionHandler{
 				dbHandler:     mockDB,
 				notifyHandler: mockNotify,
+				utilHandler:   mockUtil,
 			}
 
 			ctx := context.Background()
@@ -373,6 +380,8 @@ func Test_ReactionAdd_error(t *testing.T) {
 
 				// Only mock atomic add if get succeeded and returned non-nil message
 				if tt.getError == nil && tt.responseMessage != nil {
+					// Mock UUID generation for timestamp
+					mockUtil.EXPECT().TimeGetCurTime().Return("2024-01-17T10:30:00.000000Z")
 					mockDB.EXPECT().MessageAddReactionAtomic(ctx, tt.messageID, gomock.Any()).Return(tt.atomicAddError)
 
 					// Only mock second get if atomic add succeeded
@@ -487,10 +496,12 @@ func Test_ReactionRemove(t *testing.T) {
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockUtil := commonutil.NewMockUtilHandler(mc)
 
 			h := &reactionHandler{
 				dbHandler:     mockDB,
 				notifyHandler: mockNotify,
+				utilHandler:   mockUtil,
 			}
 
 			ctx := context.Background()
@@ -621,10 +632,12 @@ func Test_ReactionRemove_error(t *testing.T) {
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockUtil := commonutil.NewMockUtilHandler(mc)
 
 			h := &reactionHandler{
 				dbHandler:     mockDB,
 				notifyHandler: mockNotify,
+				utilHandler:   mockUtil,
 			}
 
 			ctx := context.Background()
