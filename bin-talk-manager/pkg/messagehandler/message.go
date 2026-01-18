@@ -199,10 +199,24 @@ func (h *messageHandler) MessageDelete(ctx context.Context, id uuid.UUID) (*mess
 
 // publishMessageCreatedEvent publishes a webhook event for message creation
 func (h *messageHandler) publishMessageCreatedEvent(ctx context.Context, msg *message.Message) {
-	h.notifyHandler.PublishWebhookEvent(ctx, msg.CustomerID, message.EventTypeMessageCreated, msg)
+	// Convert to WebhookMessage before publishing
+	// This ensures medias is sent as []Media instead of JSON string
+	wm, err := msg.ConvertWebhookMessage()
+	if err != nil {
+		logrus.WithError(err).Error("Failed to convert message to webhook message")
+		return
+	}
+	h.notifyHandler.PublishWebhookEvent(ctx, msg.CustomerID, message.EventTypeMessageCreated, wm)
 }
 
 // publishMessageDeletedEvent publishes a webhook event for message deletion
 func (h *messageHandler) publishMessageDeletedEvent(ctx context.Context, msg *message.Message) {
-	h.notifyHandler.PublishWebhookEvent(ctx, msg.CustomerID, message.EventTypeMessageDeleted, msg)
+	// Convert to WebhookMessage before publishing
+	// This ensures medias is sent as []Media instead of JSON string
+	wm, err := msg.ConvertWebhookMessage()
+	if err != nil {
+		logrus.WithError(err).Error("Failed to convert message to webhook message")
+		return
+	}
+	h.notifyHandler.PublishWebhookEvent(ctx, msg.CustomerID, message.EventTypeMessageDeleted, wm)
 }

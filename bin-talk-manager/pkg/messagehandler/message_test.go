@@ -1134,8 +1134,8 @@ func Test_MessageDelete(t *testing.T) {
 			// Get updated message with tm_delete set
 			mockDB.EXPECT().MessageGet(ctx, tt.id).Return(tt.responseUpdatedMessage, nil)
 
-			// Publish webhook event
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseUpdatedMessage.CustomerID, message.EventTypeMessageDeleted, tt.responseUpdatedMessage)
+			// Publish webhook event (message is converted to WebhookMessage before publishing)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseUpdatedMessage.CustomerID, message.EventTypeMessageDeleted, gomock.Any())
 
 			res, err := h.MessageDelete(ctx, tt.id)
 			if err != nil {
