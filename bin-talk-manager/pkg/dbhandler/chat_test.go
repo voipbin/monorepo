@@ -25,7 +25,9 @@ func Test_ChatCreate(t *testing.T) {
 					ID:         uuid.FromStringOrNil("586e8e64-e428-11ec-baf2-7b14625ea112"),
 					CustomerID: uuid.FromStringOrNil("5922f8c2-e428-11ec-b1a3-4bc67cb9daf4"),
 				},
-				Type: chat.TypeDirect,
+				Type:   chat.TypeDirect,
+				Name:   "My Chat",
+				Detail: "This is a test chat",
 			},
 		},
 		{
@@ -35,7 +37,9 @@ func Test_ChatCreate(t *testing.T) {
 					ID:         uuid.FromStringOrNil("686e8e64-e428-11ec-baf2-7b14625ea113"),
 					CustomerID: uuid.FromStringOrNil("6922f8c2-e428-11ec-b1a3-4bc67cb9daf5"),
 				},
-				Type: chat.TypeGroup,
+				Type:   chat.TypeGroup,
+				Name:   "Group Chat",
+				Detail: "Group discussion",
 			},
 		},
 	}

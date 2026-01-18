@@ -17,14 +17,13 @@ import (
 
 func (h *listenHandler) v1MessagesPost(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
 	var req struct {
-		CustomerID string  `json:"customer_id"`
-		ChatID     string  `json:"chat_id"`
-		ParentID   *string `json:"parent_id,omitempty"`
-		OwnerType  string  `json:"owner_type"`
-		OwnerID    string  `json:"owner_id"`
-		Type       string  `json:"type"`
-		Text       string  `json:"text"`
-		Medias     string  `json:"medias"`
+		ChatID    string  `json:"chat_id"`
+		ParentID  *string `json:"parent_id,omitempty"`
+		OwnerType string  `json:"owner_type"`
+		OwnerID   string  `json:"owner_id"`
+		Type      string  `json:"type"`
+		Text      string  `json:"text"`
+		Medias    string  `json:"medias"`
 	}
 
 	err := json.Unmarshal(m.Data, &req)
@@ -33,11 +32,10 @@ func (h *listenHandler) v1MessagesPost(ctx context.Context, m commonsock.Request
 		return simpleResponse(400), nil
 	}
 
-	customerID := uuid.FromStringOrNil(req.CustomerID)
 	chatID := uuid.FromStringOrNil(req.ChatID)
 	ownerID := uuid.FromStringOrNil(req.OwnerID)
 
-	if customerID == uuid.Nil || chatID == uuid.Nil || ownerID == uuid.Nil {
+	if chatID == uuid.Nil || ownerID == uuid.Nil {
 		return simpleResponse(400), nil
 	}
 
@@ -48,14 +46,13 @@ func (h *listenHandler) v1MessagesPost(ctx context.Context, m commonsock.Request
 	}
 
 	createReq := messagehandler.MessageCreateRequest{
-		CustomerID: customerID,
-		ChatID:     chatID,
-		ParentID:   parentID,
-		OwnerType:  req.OwnerType,
-		OwnerID:    ownerID,
-		Type:       req.Type,
-		Text:       req.Text,
-		Medias:     req.Medias,
+		ChatID:    chatID,
+		ParentID:  parentID,
+		OwnerType: req.OwnerType,
+		OwnerID:   ownerID,
+		Type:      req.Type,
+		Text:      req.Text,
+		Medias:    req.Medias,
 	}
 
 	msg, err := h.messageHandler.MessageCreate(ctx, createReq)

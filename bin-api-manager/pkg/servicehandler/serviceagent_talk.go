@@ -37,9 +37,11 @@ func (h *serviceHandler) ServiceAgentTalkChatList(ctx context.Context, a *amagen
 	}
 
 	// Build filters to get talks where agent is a participant
+	// Exclude deleted chats
 	filters := map[string]any{
 		"owner_type": "agent",
 		"owner_id":   a.ID.String(),
+		"deleted":    false,
 	}
 
 	// Get talks with filters using consolidated method
@@ -58,10 +60,10 @@ func (h *serviceHandler) ServiceAgentTalkChatList(ctx context.Context, a *amagen
 }
 
 // ServiceAgentTalkCreate creates a new talk
-func (h *serviceHandler) ServiceAgentTalkChatCreate(ctx context.Context, a *amagent.Agent, talkType tkchat.Type) (*tkchat.WebhookMessage, error) {
-	// Create talk via RPC (name and detail default to empty for now)
+func (h *serviceHandler) ServiceAgentTalkChatCreate(ctx context.Context, a *amagent.Agent, talkType tkchat.Type, name string, detail string, participants []tkparticipant.ParticipantInput) (*tkchat.WebhookMessage, error) {
+	// Create talk via RPC with name, detail, and participants
 	// Agent is automatically added as first participant by talk-manager
-	tmp, err := h.reqHandler.TalkV1ChatCreate(ctx, a.CustomerID, talkType, "", "", "agent", a.ID)
+	tmp, err := h.reqHandler.TalkV1ChatCreate(ctx, a.CustomerID, talkType, name, detail, "agent", a.ID, participants)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not create talk.")
 	}
@@ -273,12 +275,12 @@ func (h *serviceHandler) ServiceAgentTalkMessageReactionCreate(ctx context.Conte
 
 // isParticipantOfTalk checks if an agent is a participant of a talk
 func (h *serviceHandler) isParticipantOfTalk(ctx context.Context, agentID uuid.UUID, talkID uuid.UUID) bool {
-	participants, err := h.reqHandler.TalkV1ParticipantList(ctx, talkID)
+	chat, err := h.talkGet(ctx, talkID)
 	if err != nil {
 		return false
 	}
 
-	for _, p := range participants {
+	for _, p := range chat.Participants {
 		if p.OwnerType == "agent" && p.OwnerID == agentID {
 			return true
 		}

@@ -102,6 +102,21 @@ func (mr *MockDBHandlerMockRecorder) ChatList(ctx, filters, token, size any) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatList", reflect.TypeOf((*MockDBHandler)(nil).ChatList), ctx, filters, token, size)
 }
 
+// FindDirectChatByParticipants mocks base method.
+func (m *MockDBHandler) FindDirectChatByParticipants(ctx context.Context, customerID uuid.UUID, ownerType1 string, ownerID1 uuid.UUID, ownerType2 string, ownerID2 uuid.UUID) (*chat.Chat, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindDirectChatByParticipants", ctx, customerID, ownerType1, ownerID1, ownerType2, ownerID2)
+	ret0, _ := ret[0].(*chat.Chat)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindDirectChatByParticipants indicates an expected call of FindDirectChatByParticipants.
+func (mr *MockDBHandlerMockRecorder) FindDirectChatByParticipants(ctx, customerID, ownerType1, ownerID1, ownerType2, ownerID2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindDirectChatByParticipants", reflect.TypeOf((*MockDBHandler)(nil).FindDirectChatByParticipants), ctx, customerID, ownerType1, ownerID1, ownerType2, ownerID2)
+}
+
 // MessageAddReactionAtomic mocks base method.
 func (m *MockDBHandler) MessageAddReactionAtomic(ctx context.Context, messageID uuid.UUID, reactionJSON string) error {
 	m.ctrl.T.Helper()
@@ -258,6 +273,21 @@ func (m *MockDBHandler) ParticipantList(ctx context.Context, filters map[partici
 func (mr *MockDBHandlerMockRecorder) ParticipantList(ctx, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ParticipantList", reflect.TypeOf((*MockDBHandler)(nil).ParticipantList), ctx, filters)
+}
+
+// ParticipantListByChatIDs mocks base method.
+func (m *MockDBHandler) ParticipantListByChatIDs(ctx context.Context, chatIDs []uuid.UUID) ([]*participant.Participant, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ParticipantListByChatIDs", ctx, chatIDs)
+	ret0, _ := ret[0].([]*participant.Participant)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ParticipantListByChatIDs indicates an expected call of ParticipantListByChatIDs.
+func (mr *MockDBHandlerMockRecorder) ParticipantListByChatIDs(ctx, chatIDs any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ParticipantListByChatIDs", reflect.TypeOf((*MockDBHandler)(nil).ParticipantListByChatIDs), ctx, chatIDs)
 }
 
 // TalkUpdate mocks base method.

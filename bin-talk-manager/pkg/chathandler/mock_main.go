@@ -12,6 +12,7 @@ package chathandler
 import (
 	context "context"
 	chat "monorepo/bin-talk-manager/models/chat"
+	participant "monorepo/bin-talk-manager/models/participant"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -43,18 +44,18 @@ func (m *MockChatHandler) EXPECT() *MockChatHandlerMockRecorder {
 }
 
 // ChatCreate mocks base method.
-func (m *MockChatHandler) ChatCreate(ctx context.Context, customerID uuid.UUID, chatType chat.Type, name, detail, creatorType string, creatorID uuid.UUID) (*chat.Chat, error) {
+func (m *MockChatHandler) ChatCreate(ctx context.Context, customerID uuid.UUID, chatType chat.Type, name, detail, creatorType string, creatorID uuid.UUID, participants []participant.ParticipantInput) (*chat.Chat, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChatCreate", ctx, customerID, chatType, name, detail, creatorType, creatorID)
+	ret := m.ctrl.Call(m, "ChatCreate", ctx, customerID, chatType, name, detail, creatorType, creatorID, participants)
 	ret0, _ := ret[0].(*chat.Chat)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ChatCreate indicates an expected call of ChatCreate.
-func (mr *MockChatHandlerMockRecorder) ChatCreate(ctx, customerID, chatType, name, detail, creatorType, creatorID any) *gomock.Call {
+func (mr *MockChatHandlerMockRecorder) ChatCreate(ctx, customerID, chatType, name, detail, creatorType, creatorID, participants any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatCreate", reflect.TypeOf((*MockChatHandler)(nil).ChatCreate), ctx, customerID, chatType, name, detail, creatorType, creatorID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatCreate", reflect.TypeOf((*MockChatHandler)(nil).ChatCreate), ctx, customerID, chatType, name, detail, creatorType, creatorID, participants)
 }
 
 // ChatDelete mocks base method.

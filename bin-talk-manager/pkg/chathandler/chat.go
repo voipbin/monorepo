@@ -10,18 +10,20 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"monorepo/bin-talk-manager/models/chat"
+	"monorepo/bin-talk-manager/models/participant"
 )
 
 // ChatCreate creates a new talk
-func (h *chatHandler) ChatCreate(ctx context.Context, customerID uuid.UUID, chatType chat.Type, name string, detail string, creatorType string, creatorID uuid.UUID) (*chat.Chat, error) {
+func (h *chatHandler) ChatCreate(ctx context.Context, customerID uuid.UUID, chatType chat.Type, name string, detail string, creatorType string, creatorID uuid.UUID, participants []participant.ParticipantInput) (*chat.Chat, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":         "ChatCreate",
-		"customer_id":  customerID,
-		"type":         chatType,
-		"name":         name,
-		"detail":       detail,
-		"creator_type": creatorType,
-		"creator_id":   creatorID,
+		"func":              "ChatCreate",
+		"customer_id":       customerID,
+		"type":              chatType,
+		"name":              name,
+		"detail":            detail,
+		"creator_type":      creatorType,
+		"creator_id":        creatorID,
+		"participants_count": len(participants),
 	})
 	log.Debug("Creating a new talk")
 
@@ -32,7 +34,7 @@ func (h *chatHandler) ChatCreate(ctx context.Context, customerID uuid.UUID, chat
 	}
 
 	// Validate chat type
-	if chatType != chat.TypeDirect && chatType != chat.TypeGroup {
+	if chatType != chat.TypeDirect && chatType != chat.TypeGroup && chatType != chat.TypeTalk {
 		log.Errorf("Invalid chat type: %s", chatType)
 		return nil, errors.Errorf("invalid chat type: %s", chatType)
 	}
@@ -41,6 +43,51 @@ func (h *chatHandler) ChatCreate(ctx context.Context, customerID uuid.UUID, chat
 	if creatorType != "" && creatorID == uuid.Nil {
 		log.Error("Invalid creator ID: nil UUID with non-empty type")
 		return nil, errors.New("creator ID cannot be nil when creator type is specified")
+	}
+
+	// Validate participants based on chat type
+	var otherParticipant *participant.ParticipantInput
+	switch chatType {
+	case chat.TypeDirect:
+		// Direct chats require exactly 1 additional participant (the other party)
+		// If creator included themselves in participants, we need exactly 2
+		// If creator is not in participants, we need exactly 1
+		otherParticipants := 0
+		for i := range participants {
+			p := &participants[i]
+			if p.OwnerType != creatorType || p.OwnerID != creatorID {
+				otherParticipants++
+				otherParticipant = p
+			}
+		}
+		if otherParticipants != 1 {
+			log.Errorf("Direct chat requires exactly 1 other participant, got %d", otherParticipants)
+			return nil, errors.Errorf("direct chat requires exactly 1 other participant, got %d", otherParticipants)
+		}
+
+		// Check if a direct chat already exists between these two participants
+		existingChat, err := h.dbHandler.FindDirectChatByParticipants(ctx, customerID, creatorType, creatorID, otherParticipant.OwnerType, otherParticipant.OwnerID)
+		if err != nil {
+			log.Errorf("Failed to check for existing direct chat. err: %v", err)
+			// Continue with creation on error (don't block)
+		} else if existingChat != nil {
+			// Found existing direct chat, load participants and return it
+			log.WithField("existing_chat_id", existingChat.ID).Debug("Found existing direct chat, returning it instead of creating new")
+			result, err := h.ChatGet(ctx, existingChat.ID)
+			if err != nil {
+				log.Errorf("Failed to reload existing chat with participants. err: %v", err)
+				// Return the existing chat without participants if reload fails
+				return existingChat, nil
+			}
+			return result, nil
+		}
+	case chat.TypeGroup:
+		// Group chats can start with just the creator
+		// Members can be added/removed later
+		// No validation needed for participants
+	case chat.TypeTalk:
+		// Talk type doesn't require additional participants (only creator)
+		// No validation needed for participants
 	}
 
 	// Create chat object using utilHandler for UUID generation
@@ -61,8 +108,17 @@ func (h *chatHandler) ChatCreate(ctx context.Context, customerID uuid.UUID, chat
 		return nil, errors.Wrap(err, "failed to create chat in database")
 	}
 
-	// Add creator as participant if provided
-	if creatorType != "" && creatorID != uuid.Nil {
+	// Check if creator is already in the participants list
+	creatorInParticipants := false
+	for _, p := range participants {
+		if p.OwnerType == creatorType && p.OwnerID == creatorID {
+			creatorInParticipants = true
+			break
+		}
+	}
+
+	// Add creator as participant if provided and not already in participants list
+	if creatorType != "" && creatorID != uuid.Nil && !creatorInParticipants {
 		_, err = h.participantHandler.ParticipantAdd(ctx, customerID, t.ID, creatorID, creatorType)
 		if err != nil {
 			log.Errorf("Failed to add creator as participant. err: %v", err)
@@ -77,8 +133,24 @@ func (h *chatHandler) ChatCreate(ctx context.Context, customerID uuid.UUID, chat
 		}
 	}
 
-	// Load participants into chat before returning
-	result, err := h.dbHandler.ChatGet(ctx, t.ID)
+	// Add all participants from the list
+	for _, p := range participants {
+		_, err = h.participantHandler.ParticipantAdd(ctx, customerID, t.ID, p.OwnerID, p.OwnerType)
+		if err != nil {
+			log.Errorf("Failed to add participant. owner_type: %s, owner_id: %v, err: %v", p.OwnerType, p.OwnerID, err)
+			// Note: We don't fail the entire chat creation if participant addition fails
+			// The chat is already created; this is a best-effort participant addition
+		} else {
+			log.WithFields(logrus.Fields{
+				"chat_id":    t.ID,
+				"owner_type": p.OwnerType,
+				"owner_id":   p.OwnerID,
+			}).Debug("Participant added")
+		}
+	}
+
+	// Load chat with participants before returning
+	result, err := h.ChatGet(ctx, t.ID)
 	if err != nil {
 		log.Errorf("Failed to reload chat with participants. err: %v", err)
 		// Return original chat without participants if reload fails
@@ -103,6 +175,16 @@ func (h *chatHandler) ChatGet(ctx context.Context, id uuid.UUID) (*chat.Chat, er
 	if err != nil {
 		log.Errorf("Failed to get talk. err: %v", err)
 		return nil, errors.Wrap(err, "failed to get talk")
+	}
+
+	// Load participants for this chat
+	participants, err := h.dbHandler.ParticipantListByChatIDs(ctx, []uuid.UUID{t.ID})
+	if err != nil {
+		log.Errorf("Failed to load participants: %v", err)
+		// Continue without participants rather than failing entire request
+		t.Participants = []*participant.Participant{}
+	} else {
+		t.Participants = participants
 	}
 
 	return t, nil

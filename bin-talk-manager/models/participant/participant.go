@@ -7,6 +7,12 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 )
 
+// ParticipantInput is used for adding participants during chat creation
+type ParticipantInput struct {
+	OwnerType string    `json:"owner_type"`
+	OwnerID   uuid.UUID `json:"owner_id"`
+}
+
 // Participant represents a chat participant
 type Participant struct {
 	commonidentity.Identity

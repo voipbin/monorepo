@@ -23,7 +23,15 @@ get:
 
 post:
   summary: Create a new talk chat
-  description: Creates a new talk chat and returns the created talk's details.
+  description: |
+    Creates a new talk chat and returns the created talk's details.
+
+    Participant requirements by type:
+    - `direct`: Requires exactly 1 other participant (creator is automatically added as second participant)
+    - `group`: Can start with 0 or more participants (creator is automatically added, members can be added/removed later)
+    - `talk`: No additional participants required (creator is automatically added)
+
+    Note: If the creator includes themselves in the participants list, they will not be added twice.
   tags:
     - Service Agent
   requestBody:
@@ -40,6 +48,11 @@ post:
             detail:
               type: string
               description: Talk description/detail (optional).
+            participants:
+              type: array
+              description: List of participants to add to the chat (creator is added automatically).
+              items:
+                $ref: '#/components/schemas/TalkManagerParticipantInput'
           required:
             - type
   responses:

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -13,6 +14,36 @@ import (
 	talkparticipant "monorepo/bin-talk-manager/models/participant"
 	tkchat "monorepo/bin-talk-manager/models/chat"
 )
+
+// extractResource extracts the resource name from event type (e.g., "message" from "message_created")
+func (h *subscribeHandler) extractResource(eventType string) string {
+	parts := strings.Split(eventType, "_")
+	if len(parts) > 0 {
+		return parts[0]
+	}
+	return eventType
+}
+
+// createTalkTopics generates both old and new format topics for talk events
+// Note: customer_id topics are NOT generated for talk events (agent-only)
+func (h *subscribeHandler) createTalkTopics(eventType string, ownerID uuid.UUID, resourceID uuid.UUID) []string {
+	topics := []string{}
+
+	if ownerID == uuid.Nil {
+		return topics
+	}
+
+	// Extract resource from event type (e.g., "message" from "message_created")
+	resource := h.extractResource(eventType)
+
+	// OLD FORMAT (backward compatible): agent_id:OWNER_ID:resource:ID
+	topics = append(topics, fmt.Sprintf("agent_id:%s:%s:%s", ownerID, resource, resourceID))
+
+	// NEW FORMAT (service-namespaced): agent_id:OWNER_ID:talk:event_type:ID
+	topics = append(topics, fmt.Sprintf("agent_id:%s:%s:%s:%s", ownerID, "talk", eventType, resourceID))
+
+	return topics
+}
 
 // processEventTalkManager handles all events from talk-manager
 func (h *subscribeHandler) processEventTalkManager(ctx context.Context, m *sock.Event) error {
@@ -50,21 +81,8 @@ func (h *subscribeHandler) processEventTalkMessage(ctx context.Context, m *sock.
 		return err
 	}
 
-	// Create topics for message creator and customer
-	topics := []string{}
-	service := h.getServiceNamespace(m.Publisher) // "talk"
-
-	// Creator's topic
-	if msg.OwnerID != uuid.Nil {
-		topics = append(topics,
-			fmt.Sprintf("agent_id:%s:%s:%s:%s", msg.OwnerID, service, m.Type, msg.ID))
-	}
-
-	// Customer topic
-	if msg.CustomerID != uuid.Nil {
-		topics = append(topics,
-			fmt.Sprintf("customer_id:%s:%s:%s:%s", msg.CustomerID, service, m.Type, msg.ID))
-	}
+	// Create topics for message creator (both old and new formats)
+	topics := h.createTalkTopics(m.Type, msg.OwnerID, msg.ID)
 
 	// CRITICAL: Add topics for all talk participants (not just creator)
 	// This ensures all participants in the talk receive the message notification
@@ -79,9 +97,8 @@ func (h *subscribeHandler) processEventTalkMessage(ctx context.Context, m *sock.
 					continue
 				}
 
-				// Add topic for each other participant
-				topics = append(topics,
-					fmt.Sprintf("agent_id:%s:%s:%s:%s", p.OwnerID, service, m.Type, msg.ID))
+				// Add topics for each other participant (both formats)
+				topics = append(topics, h.createTalkTopics(m.Type, p.OwnerID, msg.ID)...)
 			}
 		}
 	}
@@ -112,14 +129,10 @@ func (h *subscribeHandler) processEventTalk(ctx context.Context, m *sock.Event) 
 		return err
 	}
 
-	// Create topics
+	// Create topics for all participants (both old and new formats)
 	topics := []string{}
-	service := h.getServiceNamespace(m.Publisher) // "talk"
-
-	// Customer topic
-	if talk.CustomerID != uuid.Nil {
-		topics = append(topics,
-			fmt.Sprintf("customer_id:%s:%s:%s:%s", talk.CustomerID, service, m.Type, talk.ID))
+	for _, p := range talk.Participants {
+		topics = append(topics, h.createTalkTopics(m.Type, p.OwnerID, talk.ID)...)
 	}
 
 	// Publish to all topics
@@ -148,21 +161,8 @@ func (h *subscribeHandler) processEventTalkParticipant(ctx context.Context, m *s
 		return err
 	}
 
-	// Create topics
-	topics := []string{}
-	service := h.getServiceNamespace(m.Publisher) // "talk"
-
-	// Participant's topic
-	if participant.OwnerID != uuid.Nil {
-		topics = append(topics,
-			fmt.Sprintf("agent_id:%s:%s:%s:%s", participant.OwnerID, service, m.Type, participant.ID))
-	}
-
-	// Customer topic
-	if participant.CustomerID != uuid.Nil {
-		topics = append(topics,
-			fmt.Sprintf("customer_id:%s:%s:%s:%s", participant.CustomerID, service, m.Type, participant.ID))
-	}
+	// Create topics for the participant (both old and new formats)
+	topics := h.createTalkTopics(m.Type, participant.OwnerID, participant.ID)
 
 	// Publish to all topics
 	for _, topic := range topics {

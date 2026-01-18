@@ -35,11 +35,10 @@ func Test_processV1MessagesPost(t *testing.T) {
 				URI:      "/v1/messages",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","chat_id":"6ebc6880-31da-11ed-8e95-a3bc92af9795","owner_type":"agent","owner_id":"7fcd7990-42eb-11ed-9fa6-b4cd93af9796","type":"normal","text":"Hello world","medias":"[]"}`),
+				Data:     []byte(`{"chat_id":"6ebc6880-31da-11ed-8e95-a3bc92af9795","owner_type":"agent","owner_id":"7fcd7990-42eb-11ed-9fa6-b4cd93af9796","type":"normal","text":"Hello world","medias":"[]"}`),
 			},
 
 			createReq: messagehandler.MessageCreateRequest{
-				CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
 				ChatID:     uuid.FromStringOrNil("6ebc6880-31da-11ed-8e95-a3bc92af9795"),
 				ParentID:   nil,
 				OwnerType:  "agent",
@@ -51,7 +50,7 @@ func Test_processV1MessagesPost(t *testing.T) {
 			responseMessage: &message.Message{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("9ade9b10-64ed-11ed-b1c8-d6ef95af9798"),
-					CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
+				CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
 				},
 				Owner: commonidentity.Owner{
 					OwnerType: "agent",
@@ -79,11 +78,10 @@ func Test_processV1MessagesPost(t *testing.T) {
 				URI:      "/v1/messages",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","chat_id":"6ebc6880-31da-11ed-8e95-a3bc92af9795","parent_id":"8fde8a00-53fc-11ed-a0b7-c5de94af9797","owner_type":"agent","owner_id":"7fcd7990-42eb-11ed-9fa6-b4cd93af9796","type":"normal","text":"Reply to message","medias":"[]"}`),
+				Data:     []byte(`{"chat_id":"6ebc6880-31da-11ed-8e95-a3bc92af9795","parent_id":"8fde8a00-53fc-11ed-a0b7-c5de94af9797","owner_type":"agent","owner_id":"7fcd7990-42eb-11ed-9fa6-b4cd93af9796","type":"normal","text":"Reply to message","medias":"[]"}`),
 			},
 
 			createReq: messagehandler.MessageCreateRequest{
-				CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
 				ChatID:     uuid.FromStringOrNil("6ebc6880-31da-11ed-8e95-a3bc92af9795"),
 				ParentID:   &parentID,
 				OwnerType:  "agent",
@@ -95,7 +93,7 @@ func Test_processV1MessagesPost(t *testing.T) {
 			responseMessage: &message.Message{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("aaef9c20-75fe-11ed-c2d9-e7f006af9799"),
-					CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
+				CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
 				},
 				Owner: commonidentity.Owner{
 					OwnerType: "agent",
@@ -168,26 +166,12 @@ func Test_processV1MessagesPost_error(t *testing.T) {
 			},
 		},
 		{
-			name: "nil customer id",
-			request: &sock.Request{
-				URI:      "/v1/messages",
-				Method:   sock.RequestMethodPost,
-				DataType: "application/json",
-				Data:     []byte(`{"customer_id":"","chat_id":"6ebc6880-31da-11ed-8e95-a3bc92af9795","owner_type":"agent","owner_id":"7fcd7990-42eb-11ed-9fa6-b4cd93af9796","type":"normal","text":"test"}`),
-			},
-			expectRes: &sock.Response{
-				StatusCode: 400,
-				DataType:   "application/json",
-				Data:       json.RawMessage("{}"),
-			},
-		},
-		{
 			name: "nil chat id",
 			request: &sock.Request{
 				URI:      "/v1/messages",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","chat_id":"","owner_type":"agent","owner_id":"7fcd7990-42eb-11ed-9fa6-b4cd93af9796","type":"normal","text":"test"}`),
+				Data:     []byte(`{"chat_id":"","owner_type":"agent","owner_id":"7fcd7990-42eb-11ed-9fa6-b4cd93af9796","type":"normal","text":"test"}`),
 			},
 			expectRes: &sock.Response{
 				StatusCode: 400,
@@ -201,7 +185,7 @@ func Test_processV1MessagesPost_error(t *testing.T) {
 				URI:      "/v1/messages",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","chat_id":"6ebc6880-31da-11ed-8e95-a3bc92af9795","owner_type":"agent","owner_id":"","type":"normal","text":"test"}`),
+				Data:     []byte(`{"chat_id":"6ebc6880-31da-11ed-8e95-a3bc92af9795","owner_type":"agent","owner_id":"","type":"normal","text":"test"}`),
 			},
 			expectRes: &sock.Response{
 				StatusCode: 400,
@@ -264,7 +248,7 @@ func Test_processV1MessagesGet(t *testing.T) {
 				{
 					Identity: commonidentity.Identity{
 						ID:         uuid.FromStringOrNil("9ade9b10-64ed-11ed-b1c8-d6ef95af9798"),
-						CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
+				CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
 					},
 					Owner: commonidentity.Owner{
 						OwnerType: "agent",
@@ -361,7 +345,7 @@ func Test_processV1MessagesIDGet(t *testing.T) {
 			responseMessage: &message.Message{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("9ade9b10-64ed-11ed-b1c8-d6ef95af9798"),
-					CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
+				CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
 				},
 				Owner: commonidentity.Owner{
 					OwnerType: "agent",
@@ -433,7 +417,7 @@ func Test_processV1MessagesIDDelete(t *testing.T) {
 			responseMessage: &message.Message{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("9ade9b10-64ed-11ed-b1c8-d6ef95af9798"),
-					CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
+				CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
 				},
 				Owner: commonidentity.Owner{
 					OwnerType: "agent",

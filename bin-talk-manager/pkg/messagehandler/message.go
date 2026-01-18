@@ -10,23 +10,18 @@ import (
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-talk-manager/models/message"
-	"monorepo/bin-talk-manager/models/participant"
 )
 
 // MessageCreate creates a new message with threading validation
 func (h *messageHandler) MessageCreate(ctx context.Context, req MessageCreateRequest) (*message.Message, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "MessageCreate",
-		"customer_id": req.CustomerID,
-		"chat_id":     req.ChatID,
-		"owner_id":    req.OwnerID,
+		"func":     "MessageCreate",
+		"chat_id":  req.ChatID,
+		"owner_id": req.OwnerID,
 	})
 	log.Debug("Creating message")
 
 	// Validate required fields
-	if req.CustomerID == uuid.Nil {
-		return nil, errors.New("customer_id is required")
-	}
 	if req.ChatID == uuid.Nil {
 		return nil, errors.New("chat_id is required")
 	}
@@ -51,7 +46,7 @@ func (h *messageHandler) MessageCreate(ctx context.Context, req MessageCreateReq
 		}
 	}
 
-	// Validate chat exists
+	// Validate chat exists and get customer_id from it
 	chat, err := h.dbHandler.ChatGet(ctx, req.ChatID)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get chat")
@@ -60,16 +55,25 @@ func (h *messageHandler) MessageCreate(ctx context.Context, req MessageCreateReq
 		return nil, errors.New("chat not found")
 	}
 
-	// Validate sender is a participant
-	// Note: Participants don't have soft delete, so no need to check deleted flag
-	participants, err := h.dbHandler.ParticipantList(ctx, map[participant.Field]any{
-		participant.FieldChatID:  req.ChatID,
-		participant.FieldOwnerID: req.OwnerID,
-	})
+	// Use chat's customer_id (ensures consistency)
+	customerID := chat.CustomerID
+
+	// Load participants for validation
+	participants, err := h.dbHandler.ParticipantListByChatIDs(ctx, []uuid.UUID{req.ChatID})
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to check participant")
+		log.Errorf("Failed to load participants: %v", err)
+		return nil, errors.Wrap(err, "failed to load participants")
 	}
-	if len(participants) == 0 {
+
+	// Validate sender is a participant
+	isParticipant := false
+	for _, p := range participants {
+		if string(p.OwnerType) == req.OwnerType && p.OwnerID == req.OwnerID {
+			isParticipant = true
+			break
+		}
+	}
+	if !isParticipant {
 		return nil, errors.New("sender is not a participant in this talk")
 	}
 
@@ -111,11 +115,18 @@ func (h *messageHandler) MessageCreate(ctx context.Context, req MessageCreateReq
 		return nil, errors.Wrap(err, "failed to marshal metadata")
 	}
 
+	// Default medias to empty JSON array if not provided
+	// MySQL JSON column requires valid JSON, not empty string
+	medias := req.Medias
+	if medias == "" {
+		medias = "[]"
+	}
+
 	// Create message
 	msg := &message.Message{
 		Identity: commonidentity.Identity{
 			ID:         h.utilHandler.UUIDCreate(),
-			CustomerID: req.CustomerID,
+			CustomerID: customerID,
 		},
 		Owner: commonidentity.Owner{
 			OwnerType: commonidentity.OwnerType(req.OwnerType),
@@ -125,7 +136,7 @@ func (h *messageHandler) MessageCreate(ctx context.Context, req MessageCreateReq
 		ParentID: parentID,
 		Type:     message.Type(req.Type),
 		Text:     req.Text,
-		Medias:   req.Medias,
+		Medias:   medias,
 		Metadata: string(metadataJSON),
 	}
 

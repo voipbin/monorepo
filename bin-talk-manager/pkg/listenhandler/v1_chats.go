@@ -12,16 +12,21 @@ import (
 	commonsock "monorepo/bin-common-handler/models/sock"
 	commonutil "monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-talk-manager/models/chat"
+	"monorepo/bin-talk-manager/models/participant"
 )
 
 func (h *listenHandler) v1ChatsPost(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
 	var req struct {
-		CustomerID  string `json:"customer_id"`
-		Type        string `json:"type"`
-		Name        string `json:"name"`
-		Detail      string `json:"detail"`
-		CreatorType string `json:"creator_type"`
-		CreatorID   string `json:"creator_id"`
+		CustomerID   string `json:"customer_id"`
+		Type         string `json:"type"`
+		Name         string `json:"name"`
+		Detail       string `json:"detail"`
+		CreatorType  string `json:"creator_type"`
+		CreatorID    string `json:"creator_id"`
+		Participants []struct {
+			OwnerType string `json:"owner_type"`
+			OwnerID   string `json:"owner_id"`
+		} `json:"participants"`
 	}
 
 	err := json.Unmarshal(m.Data, &req)
@@ -37,7 +42,21 @@ func (h *listenHandler) v1ChatsPost(ctx context.Context, m commonsock.Request) (
 
 	creatorID := uuid.FromStringOrNil(req.CreatorID)
 
-	t, err := h.chatHandler.ChatCreate(ctx, customerID, chat.Type(req.Type), req.Name, req.Detail, req.CreatorType, creatorID)
+	// Parse participants
+	var participants []participant.ParticipantInput
+	for _, p := range req.Participants {
+		ownerID := uuid.FromStringOrNil(p.OwnerID)
+		if ownerID == uuid.Nil {
+			logrus.Errorf("Invalid participant owner_id: %s", p.OwnerID)
+			return simpleResponse(400), nil
+		}
+		participants = append(participants, participant.ParticipantInput{
+			OwnerType: p.OwnerType,
+			OwnerID:   ownerID,
+		})
+	}
+
+	t, err := h.chatHandler.ChatCreate(ctx, customerID, chat.Type(req.Type), req.Name, req.Detail, req.CreatorType, creatorID, participants)
 	if err != nil {
 		return simpleResponse(500), nil
 	}
