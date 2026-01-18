@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: talk-manager
+  labels:
+    app: talk-manager
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: talk-manager
+  template:
+    metadata:
+      labels:
+        app: talk-manager
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "2112"
+    spec:
+      containers:
+        - name: talk-manager
+          image: talk-manager-image
+          command:
+            - './talk-manager'
+          env:
+            - name: DATABASE_DSN
+              value: ${DATABASE_DSN}
+            - name: PROMETHEUS_ENDPOINT
+              value: "/metrics"
+            - name: PROMETHEUS_LISTEN_ADDRESS
+              value: ":2112"
+            - name: RABBITMQ_ADDRESS
+              value: ${RABBITMQ_ADDRESS}
+            - name: REDIS_ADDRESS
+              value: ${REDIS_ADDRESS}
+            - name: REDIS_PASSWORD
+              value: ${REDIS_PASSWORD}
+            - name: REDIS_DATABASE
+              value: "1"
+          ports:
+            - name: metrics
+              protocol: "TCP"
+              containerPort: 2112
+          resources:
+            limits:
+              cpu: "20m"
+              memory: "30M"

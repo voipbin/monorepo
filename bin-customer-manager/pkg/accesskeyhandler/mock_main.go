@@ -103,7 +103,7 @@ func (mr *MockAccesskeyHandlerMockRecorder) GetByToken(ctx, token any) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByToken", reflect.TypeOf((*MockAccesskeyHandler)(nil).GetByToken), ctx, token)
 }
 
-// ListByCustomerID mocks base method.
+// GetsByCustomerID mocks base method.
 func (m *MockAccesskeyHandler) GetsByCustomerID(ctx context.Context, size uint64, token string, customerID uuid.UUID) ([]*accesskey.Accesskey, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetsByCustomerID", ctx, size, token, customerID)
@@ -112,7 +112,7 @@ func (m *MockAccesskeyHandler) GetsByCustomerID(ctx context.Context, size uint64
 	return ret0, ret1
 }
 
-// ListByCustomerID indicates an expected call of GetsByCustomerID.
+// GetsByCustomerID indicates an expected call of GetsByCustomerID.
 func (mr *MockAccesskeyHandlerMockRecorder) GetsByCustomerID(ctx, size, token, customerID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByCustomerID", reflect.TypeOf((*MockAccesskeyHandler)(nil).GetsByCustomerID), ctx, size, token, customerID)

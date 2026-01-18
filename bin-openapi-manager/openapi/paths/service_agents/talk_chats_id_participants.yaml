@@ -1,0 +1,60 @@
+get:
+  summary: Get participants of a talk chat
+  description: Returns a list of participants in a specific talk chat.
+  tags:
+    - Service Agent
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The talk chat ID.
+  responses:
+    '200':
+      description: A list of participants.
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/TalkManagerParticipant'
+    '404':
+      description: Talk chat not found.
+
+post:
+  summary: Add a participant to a talk chat
+  description: Adds a new participant to a specific talk chat.
+  tags:
+    - Service Agent
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The talk chat ID.
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            owner_type:
+              type: string
+              description: Type of the owner (agent, customer, etc.).
+            owner_id:
+              type: string
+              description: ID of the owner to add as participant.
+          required:
+            - owner_type
+            - owner_id
+  responses:
+    '200':
+      description: Participant added successfully.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TalkManagerParticipant'
+    '404':
+      description: Talk chat not found.

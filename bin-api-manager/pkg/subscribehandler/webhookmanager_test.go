@@ -58,7 +58,10 @@ func Test_processEventWebhookManagerWebhookPublished(t *testing.T) {
 			},
 
 			expectTopics: []string{
+				// Old format (backward compatible)
 				"customer_id:5e4a0680-804e-11ec-8477-2fea5968d85b:activeflow:d5d70d9d-85ad-4ffc-90c1-fdda37c046b0",
+				// New format (service-namespaced)
+				"customer_id:5e4a0680-804e-11ec-8477-2fea5968d85b:webhook:activeflow_created:d5d70d9d-85ad-4ffc-90c1-fdda37c046b0",
 			},
 			expectEvent: `{"data":{"current_action":{"id":"00000000-0000-0000-0000-000000000001","next_id":"00000000-0000-0000-0000-000000000000","type":""},"customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","flow_id":"d78245f0-8239-4298-b27b-1e3fc2185ba0","forward_action_id":"00000000-0000-0000-0000-000000000000","id":"d5d70d9d-85ad-4ffc-90c1-fdda37c046b0","reference_id":"167e552a-a739-473d-b7a7-245b258a4af0","reference_type":"call","tm_create":"2022-07-23 15:02:35.763577","tm_delete":"9999-01-01 00:00:00.000000","tm_update":"2022-07-23 15:02:35.763577"},"type":"activeflow_created"}`,
 		},
@@ -84,8 +87,12 @@ func Test_processEventWebhookManagerWebhookPublished(t *testing.T) {
 			},
 
 			expectTopics: []string{
-				"agent_id:7b3d4468-da98-11ee-a5f0-e32e2e370da3:chatroom:7b0966c0-da98-11ee-97df-1786497422fb",
+				// Old format (backward compatible)
 				"customer_id:7b6cc58a-da98-11ee-b114-3fb0f4ae9318:chatroom:7b0966c0-da98-11ee-97df-1786497422fb",
+				"agent_id:7b3d4468-da98-11ee-a5f0-e32e2e370da3:chatroom:7b0966c0-da98-11ee-97df-1786497422fb",
+				// New format (service-namespaced)
+				"customer_id:7b6cc58a-da98-11ee-b114-3fb0f4ae9318:webhook:chatroom_created:7b0966c0-da98-11ee-97df-1786497422fb",
+				"agent_id:7b3d4468-da98-11ee-a5f0-e32e2e370da3:webhook:chatroom_created:7b0966c0-da98-11ee-97df-1786497422fb",
 			},
 			expectEvent: `{"data":{"customer_id":"7b6cc58a-da98-11ee-b114-3fb0f4ae9318","id":"7b0966c0-da98-11ee-97df-1786497422fb","owner_id":"7b3d4468-da98-11ee-a5f0-e32e2e370da3"},"type":"chatroom_created"}`,
 		},
@@ -138,7 +145,10 @@ func Test_createTopics(t *testing.T) {
 				},
 			},
 			expectTopics: []string{
+				// Old format
 				"customer_id:5e4a0680-804e-11ec-8477-2fea5968d85b:activeflow:d5d70d9d-85ad-4ffc-90c1-fdda37c046b0",
+				// New format
+				"customer_id:5e4a0680-804e-11ec-8477-2fea5968d85b:test-manager:activeflow_created:d5d70d9d-85ad-4ffc-90c1-fdda37c046b0",
 			},
 			expectError: false,
 		},
@@ -155,8 +165,12 @@ func Test_createTopics(t *testing.T) {
 				},
 			},
 			expectTopics: []string{
+				// Old format
 				"customer_id:7b6cc58a-da98-11ee-b114-3fb0f4ae9318:chatroom:7b0966c0-da98-11ee-97df-1786497422fb",
 				"agent_id:7b3d4468-da98-11ee-a5f0-e32e2e370da3:chatroom:7b0966c0-da98-11ee-97df-1786497422fb",
+				// New format
+				"customer_id:7b6cc58a-da98-11ee-b114-3fb0f4ae9318:test-manager:chatroom_created:7b0966c0-da98-11ee-97df-1786497422fb",
+				"agent_id:7b3d4468-da98-11ee-a5f0-e32e2e370da3:test-manager:chatroom_created:7b0966c0-da98-11ee-97df-1786497422fb",
 			},
 			expectError: false,
 		},
@@ -172,7 +186,10 @@ func Test_createTopics(t *testing.T) {
 				},
 			},
 			expectTopics: []string{
+				// Old format
 				"agent_id:8c3d4468-da98-11ee-a5f0-e32e2e370da3:task:8c0966c0-da98-11ee-97df-1786497422fb",
+				// New format
+				"agent_id:8c3d4468-da98-11ee-a5f0-e32e2e370da3:test-manager:task_created:8c0966c0-da98-11ee-97df-1786497422fb",
 			},
 			expectError: false,
 		},
@@ -194,7 +211,7 @@ func Test_createTopics(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			h := &subscribeHandler{}
 
-			topics, err := h.createTopics(tt.messageType, tt.data)
+			topics, err := h.createTopics(tt.messageType, tt.data, "test-manager")
 			if (err != nil) != tt.expectError {
 				t.Errorf("Unexpected error. expect: %v, got: %v", tt.expectError, err)
 			}

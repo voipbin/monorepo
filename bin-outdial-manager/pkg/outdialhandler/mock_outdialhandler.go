@@ -87,7 +87,7 @@ func (mr *MockOutdialHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockOutdialHandler)(nil).Get), ctx, id)
 }
 
-// ListByCustomerID mocks base method.
+// GetsByCustomerID mocks base method.
 func (m *MockOutdialHandler) GetsByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*outdial.Outdial, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetsByCustomerID", ctx, customerID, token, limit)
@@ -96,7 +96,7 @@ func (m *MockOutdialHandler) GetsByCustomerID(ctx context.Context, customerID uu
 	return ret0, ret1
 }
 
-// ListByCustomerID indicates an expected call of GetsByCustomerID.
+// GetsByCustomerID indicates an expected call of GetsByCustomerID.
 func (mr *MockOutdialHandlerMockRecorder) GetsByCustomerID(ctx, customerID, token, limit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetsByCustomerID", reflect.TypeOf((*MockOutdialHandler)(nil).GetsByCustomerID), ctx, customerID, token, limit)

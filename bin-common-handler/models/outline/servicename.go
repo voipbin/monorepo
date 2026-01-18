@@ -31,6 +31,7 @@ const (
 	ServiceNameSentinelManager   ServiceName = "sentinel-manager"
 	ServiceNameStorageManager    ServiceName = "storage-manager"
 	ServiceNameTagManager        ServiceName = "tag-manager"
+	ServiceNameTalkManager       ServiceName = "talk-manager"
 	ServiceNameTranscribeManager ServiceName = "transcribe-manager"
 	ServiceNameTTSManager        ServiceName = "tts-manager"
 	ServiceNameWebhookManager    ServiceName = "webhook-manager"

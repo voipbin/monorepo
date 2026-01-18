@@ -646,6 +646,83 @@ go tool cover -func=cp.out
 go test -v ./pkg/servicehandler/...
 ```
 
+### Testing with SQLite Test Databases
+
+**Pattern used across ALL services in the monorepo:**
+
+Each service has `scripts/database_scripts/` directory containing simplified SQL files for unit testing with SQLite.
+
+**Purpose:**
+- **Isolated unit tests** - Test database operations without requiring MySQL connection
+- **Fast test execution** - SQLite is lightweight and runs in-memory
+- **CI/CD friendly** - No external database dependencies needed
+- **Good enough for CRUD** - SQLite doesn't support all MySQL features, but sufficient for basic CRUD operation tests
+
+**Pattern:**
+```
+bin-<service-name>/
+└── scripts/
+    └── database_scripts/
+        ├── table_resource1.sql
+        ├── table_resource2.sql
+        └── table_resource3.sql
+```
+
+**SQL file format:**
+- Simplified CREATE TABLE statements compatible with SQLite
+- Copied and adapted from real schema in `bin-dbscheme-manager` Alembic migrations
+- MySQL-specific features removed or simplified (e.g., `BINARY(16)` → `BLOB`, `DATETIME(6)` → `TEXT`)
+- Primary keys and basic indexes included
+- Foreign keys simplified (SQLite has limited FK support in older versions)
+
+**Example (`table_chats.sql`):**
+```sql
+CREATE TABLE chat_chats (
+    id          BLOB PRIMARY KEY,
+    customer_id BLOB,
+    type        TEXT,
+    tm_create   TEXT,
+    tm_update   TEXT,
+    tm_delete   TEXT
+);
+
+CREATE INDEX idx_chat_chats_customer_id ON chat_chats(customer_id);
+```
+
+**Usage in tests:**
+```go
+func setupTestDB(t *testing.T) *sql.DB {
+    db, err := sql.Open("sqlite3", ":memory:")
+    require.NoError(t, err)
+
+    // Load schema from scripts/database_scripts/
+    schema, _ := os.ReadFile("../../scripts/database_scripts/table_chats.sql")
+    _, err = db.Exec(string(schema))
+    require.NoError(t, err)
+
+    return db
+}
+
+func TestChatCreate(t *testing.T) {
+    db := setupTestDB(t)
+    defer db.Close()
+
+    handler := dbhandler.New(db, nil)
+    // ... test CRUD operations
+}
+```
+
+**Important notes:**
+- These SQL files are NOT the source of truth (that's `bin-dbscheme-manager` Alembic migrations)
+- These are test fixtures, manually created/updated as needed
+- Not all MySQL features work in SQLite (stored procedures, full-text search, etc.)
+- For integration tests requiring MySQL-specific features, use actual MySQL test database
+
+**When to update:**
+- After creating new Alembic migration in `bin-dbscheme-manager`
+- When adding new tables or significant schema changes
+- When database handler tests fail due to schema mismatch
+
 ### Code Generation
 
 Many services use code generation for mocks and API specs:
@@ -1406,9 +1483,142 @@ Use this decision tree when adding new documentation:
 
 1. **Generate mocks** - Run `go generate ./...` after interface changes
 2. **Write table-driven tests** - Follow existing test patterns
-3. **Use structured logging** - Include context fields with `logrus.WithFields()`
+3. **Use structured logging** - Follow the function-scoped log pattern (see "Logging Standards" section below)
 4. **Handle errors properly** - Wrap errors with `github.com/pkg/errors`
 5. **Follow Go naming conventions** - See "Go Naming Conventions" section below
+
+#### Logging Standards
+
+**CRITICAL: All services in the monorepo MUST follow this logging pattern for consistency.**
+
+**The Pattern:**
+1. Create a function-scoped log variable at the beginning of each function
+2. Include the function name and meaningful input arguments in the initial fields
+3. Use the function-scoped log variable for all logging within that function
+4. Augment the log with result fields using `log = log.WithField()` or `log = log.WithFields()` before the final log statement
+5. Write appropriate log statements at key points (Debug for routine operations, Info for significant events, Error for failures)
+
+**Example (from bin-flow-manager):**
+```go
+func (h *activeflowHandler) ExecuteContinue(ctx context.Context, activeflowID uuid.UUID, caID uuid.UUID) error {
+    log := logrus.WithFields(logrus.Fields{
+        "func":              "ExecuteContinue",
+        "activeflow_id":     activeflowID,
+        "current_action_id": caID,
+    })
+    log.Debug("Executing continue")
+
+    // ... business logic ...
+
+    af, err := h.Get(ctx, activeflowID)
+    if err != nil {
+        log.Errorf("Could not get activeflow info: %v", err)
+        return errors.Wrapf(err, "could not get activeflow info")
+    }
+
+    // ... more logic ...
+
+    tmp, err := h.ExecuteNextAction(ctx, activeflowID, caID)
+    if err != nil {
+        return errors.Wrapf(err, "could not execute the next action")
+    }
+
+    // Augment log with result before final log
+    log = log.WithField("action", tmp)
+    log.Debug("Completed the activeflow execution")
+
+    return nil
+}
+```
+
+**Example (from bin-talk-manager):**
+```go
+func (h *participantHandler) ParticipantAdd(ctx context.Context, customerID, chatID, ownerID uuid.UUID, ownerType string) (*participant.Participant, error) {
+    log := log.WithFields(log.Fields{
+        "func":        "ParticipantAdd",
+        "customer_id": customerID,
+        "chat_id":     chatID,
+        "owner_id":    ownerID,
+        "owner_type":  ownerType,
+    })
+    log.Debug("Adding participant")
+
+    // ... validation and business logic ...
+
+    err := h.dbHandler.ParticipantCreate(ctx, p)
+    if err != nil {
+        log.Errorf("Failed to create participant. err: %v", err)
+        return nil, fmt.Errorf("failed to create participant: %w", err)
+    }
+
+    // Augment log with result before final log
+    log = log.WithField("participant_id", participantID)
+    log.Info("Participant added successfully")
+
+    h.notifyHandler.PublishWebhookEvent(ctx, customerID, participant.EventParticipantAdded, p)
+
+    return p, nil
+}
+```
+
+**Key Points:**
+
+1. **Function-scoped variable**: `log := log.WithFields(...)` or `log := logrus.WithFields(...)`
+   - Creates a logger with function context that can be augmented throughout the function
+   - Always include `"func": "FunctionName"` as the first field
+
+2. **Initial fields**: Include meaningful input parameters
+   - UUIDs: customer_id, chat_id, owner_id, etc.
+   - Important string parameters: owner_type, type, etc.
+   - Don't include every parameter - only meaningful ones for debugging
+
+3. **Augmenting log**: Use `log = log.WithField(key, value)` to add result fields
+   - Add before final success log statement
+   - Commonly added: generated IDs, counts, status changes
+   - Example: `log = log.WithField("participant_id", participantID)`
+
+4. **Log levels**:
+   - `log.Debug()` - Routine operations, entry/exit points
+   - `log.Info()` - Significant events (creation, updates, deletions)
+   - `log.Errorf()` - Error conditions with context
+
+**Import Pattern**
+
+**CRITICAL: Always use direct import without alias for clarity:**
+
+```go
+import (
+    "github.com/sirupsen/logrus"
+)
+
+func SomeFunction() {
+    log := logrus.WithFields(logrus.Fields{...})  // ✅ Clear that we're using logrus
+
+    // Later in the function, use the function-scoped log variable:
+    log.WithFields(logrus.Fields{
+        "key": "value",
+    }).Debug("message")
+
+    // For direct calls without function-scoped variable:
+    logrus.Debugf("Direct message: %v", value)  // ✅ Explicit logrus usage
+}
+```
+
+**Why no alias:**
+- Makes code immediately clear that `logrus` is being used (not stdlib `log`)
+- Avoids confusion when reading code
+- Prevents variable shadowing issues
+- Consistent with rest of monorepo
+
+**Benefits of This Pattern:**
+
+- **Consistent context**: All log statements within a function automatically include function name and input context
+- **Augmentable**: Can add result fields without repeating initial context
+- **Traceable**: Easy to trace execution flow with function names and IDs
+- **Maintainable**: Changing initial context only requires updating one line
+- **Debuggable**: Critical information (IDs, types, states) always logged
+
+**This pattern is mandatory for ALL new code and should be applied when refactoring existing code.**
 
 #### Go Naming Conventions
 

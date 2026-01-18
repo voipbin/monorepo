@@ -123,6 +123,10 @@ parameters:
     type: boolean
     default: false
 
+  run-bin-talk-manager:
+    type: boolean
+    default: false
+
   run-bin-transcribe-manager:
     type: boolean
     default: false
@@ -589,7 +593,7 @@ workflows:
             - release-approval
 
   bin-tag-manager:
-    when: 
+    when:
       or: [<< pipeline.parameters.run-bin-tag-manager >>, << pipeline.parameters.run-bin-common-handler >>]
     jobs:
       - bin-tag-manager-test
@@ -605,6 +609,25 @@ workflows:
           <<: *context_production
           requires:
             - bin-tag-manager-build
+            - release-approval
+
+  bin-talk-manager:
+    when:
+      or: [<< pipeline.parameters.run-bin-talk-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    jobs:
+      - bin-talk-manager-test
+      - bin-talk-manager-build:
+          <<: *context_production
+          requires:
+            - bin-talk-manager-test
+      - release-approval:
+          type: approval
+          requires:
+            - bin-talk-manager-build
+      - bin-talk-manager-release:
+          <<: *context_production
+          requires:
+            - bin-talk-manager-build
             - release-approval
 
   bin-transcribe-manager:
@@ -1272,6 +1295,30 @@ jobs:
           project-repository: bin-tag-manager
           image-name: tag-manager
           source-directory: bin-tag-manager
+
+  # bin-talk-manager
+  bin-talk-manager-test:
+    docker: *go_image
+    steps:
+      - go-test:
+          source-directory: bin-talk-manager
+
+  bin-talk-manager-build:
+    docker: *gcp_image
+    steps:
+      - docker-build:
+          project-id: voipbin
+          project-repository: bin-talk-manager
+          source-directory: bin-talk-manager
+
+  bin-talk-manager-release:
+    docker: *gcloud_image
+    steps:
+      - docker-release:
+          project-id: voipbin
+          project-repository: bin-talk-manager
+          image-name: talk-manager
+          source-directory: bin-talk-manager
 
   # bin-transcribe-manager
   bin-transcribe-manager-test:

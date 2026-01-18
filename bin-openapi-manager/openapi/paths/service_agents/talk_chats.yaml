@@ -1,0 +1,51 @@
+get:
+  summary: Get list of talk chats
+  description: Returns a list of talk chats for the authenticated agent.
+  tags:
+    - Service Agent
+  parameters:
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
+  responses:
+    '200':
+      description: A list of talk chats.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/CommonPagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TalkManagerTalk'
+
+post:
+  summary: Create a new talk chat
+  description: Creates a new talk chat and returns the created talk's details.
+  tags:
+    - Service Agent
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            type:
+              $ref: '#/components/schemas/TalkManagerTalkType'
+            name:
+              type: string
+              description: Talk name (optional).
+            detail:
+              type: string
+              description: Talk description/detail (optional).
+          required:
+            - type
+  responses:
+    '200':
+      description: The created talk chat's details.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TalkManagerTalk'

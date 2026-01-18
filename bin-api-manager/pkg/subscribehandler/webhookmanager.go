@@ -19,6 +19,30 @@ type commonWebhookData struct {
 	commonidentity.Owner
 }
 
+// getServiceNamespace maps RabbitMQ publisher name to topic namespace
+func (h *subscribeHandler) getServiceNamespace(publisher string) string {
+	namespaces := map[string]string{
+		"talk-manager":         "talk",
+		"chat-manager":         "chat",
+		"message-manager":      "message",
+		"call-manager":         "call",
+		"conference-manager":   "conference",
+		"flow-manager":         "flow",
+		"agent-manager":        "agent",
+		"billing-manager":      "billing",
+		"campaign-manager":     "campaign",
+		"conversation-manager": "conversation",
+		"webhook-manager":      "webhook",
+	}
+
+	if ns, ok := namespaces[publisher]; ok {
+		return ns
+	}
+
+	// Default: use publisher name as-is
+	return publisher
+}
+
 // processEventWebhookManagerWebhookPublished handles the webhook-manager's webhook_published event.
 func (h *subscribeHandler) processEventWebhookManagerWebhookPublished(ctx context.Context, m *sock.Event) error {
 	log := logrus.WithFields(logrus.Fields{
@@ -61,7 +85,7 @@ func (h *subscribeHandler) processEventWebhookManagerWebhookPublished(ctx contex
 	}
 	log.Debugf("Created data. data: %s", string(data))
 
-	topics, err := h.createTopics(whData.Type, d)
+	topics, err := h.createTopics(whData.Type, d, m.Publisher)
 	if err != nil {
 		log.Errorf("Could not create the topics")
 		return fmt.Errorf("could not create the topics")
@@ -79,7 +103,7 @@ func (h *subscribeHandler) processEventWebhookManagerWebhookPublished(ctx contex
 }
 
 // createTopic generates the topics
-func (h *subscribeHandler) createTopics(messageType string, d *commonWebhookData) ([]string, error) {
+func (h *subscribeHandler) createTopics(messageType string, d *commonWebhookData, publisher string) ([]string, error) {
 
 	res := []string{}
 
@@ -88,13 +112,29 @@ func (h *subscribeHandler) createTopics(messageType string, d *commonWebhookData
 		return nil, fmt.Errorf("wrong type of webhook message. message_type: %s", messageType)
 	}
 
-	resource := tmps[0]
+	// Get service namespace from publisher
+	service := h.getServiceNamespace(publisher)
 
+	// OLD FORMAT (backward compatible):
+	resource := tmps[0] // "message" from "message_created"
+
+	// Generate both old and new formats (for migration period)
+
+	// Old format (deprecated but kept for backward compatibility)
 	if d.CustomerID != uuid.Nil {
 		res = append(res, fmt.Sprintf("customer_id:%s:%s:%s", d.CustomerID, resource, d.ID))
 	}
 	if d.OwnerID != uuid.Nil {
 		res = append(res, fmt.Sprintf("agent_id:%s:%s:%s", d.OwnerID, resource, d.ID))
+	}
+
+	// NEW FORMAT (service-namespaced):
+	// agent_id:AGENT_ID:talk:message_created:MSG_ID
+	if d.CustomerID != uuid.Nil {
+		res = append(res, fmt.Sprintf("customer_id:%s:%s:%s:%s", d.CustomerID, service, messageType, d.ID))
+	}
+	if d.OwnerID != uuid.Nil {
+		res = append(res, fmt.Sprintf("agent_id:%s:%s:%s:%s", d.OwnerID, service, messageType, d.ID))
 	}
 
 	return res, nil

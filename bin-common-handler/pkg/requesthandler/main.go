@@ -76,6 +76,10 @@ import (
 
 	tmtag "monorepo/bin-tag-manager/models/tag"
 
+	talkmessage "monorepo/bin-talk-manager/models/message"
+	talkparticipant "monorepo/bin-talk-manager/models/participant"
+	tkchat "monorepo/bin-talk-manager/models/chat"
+
 	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
 	tmtranscript "monorepo/bin-transcribe-manager/models/transcript"
 
@@ -1129,6 +1133,26 @@ type RequestHandler interface {
 	TagV1TagDelete(ctx context.Context, tagID uuid.UUID) (*tmtag.Tag, error)
 	TagV1TagGet(ctx context.Context, tagID uuid.UUID) (*tmtag.Tag, error)
 	TagV1TagList(ctx context.Context, pageToken string, pageSize uint64, filters map[tmtag.Field]any) ([]tmtag.Tag, error)
+
+	// talk-manager chat
+	TalkV1ChatGet(ctx context.Context, chatID uuid.UUID) (*tkchat.Chat, error)
+	TalkV1ChatCreate(ctx context.Context, customerID uuid.UUID, chatType tkchat.Type, name string, detail string, creatorType string, creatorID uuid.UUID) (*tkchat.Chat, error)
+	TalkV1ChatDelete(ctx context.Context, chatID uuid.UUID) (*tkchat.Chat, error)
+	TalkV1ChatList(ctx context.Context, filters map[string]any, pageToken string, pageSize uint64) ([]*tkchat.Chat, error)
+
+	// talk-manager participant
+	TalkV1ParticipantList(ctx context.Context, talkID uuid.UUID) ([]*talkparticipant.Participant, error)
+	TalkV1ParticipantListWithFilters(ctx context.Context, filters map[string]any, pageToken string, pageSize uint64) ([]*talkparticipant.Participant, error)
+	TalkV1ParticipantCreate(ctx context.Context, talkID uuid.UUID, ownerType string, ownerID uuid.UUID) (*talkparticipant.Participant, error)
+	TalkV1ParticipantDelete(ctx context.Context, talkID uuid.UUID, participantID uuid.UUID) (*talkparticipant.Participant, error)
+
+	// talk-manager message
+	TalkV1MessageGet(ctx context.Context, messageID uuid.UUID) (*talkmessage.Message, error)
+	TalkV1MessageCreate(ctx context.Context, chatID uuid.UUID, parentID *uuid.UUID, ownerType string, ownerID uuid.UUID, msgType talkmessage.Type, text string) (*talkmessage.Message, error)
+	TalkV1MessageDelete(ctx context.Context, messageID uuid.UUID) (*talkmessage.Message, error)
+	TalkV1MessageList(ctx context.Context, pageToken string, pageSize uint64) ([]*talkmessage.Message, error)
+	TalkV1MessageListWithFilters(ctx context.Context, filters map[string]any, pageToken string, pageSize uint64) ([]*talkmessage.Message, error)
+	TalkV1MessageReactionCreate(ctx context.Context, messageID uuid.UUID, ownerType string, ownerID uuid.UUID, emoji string) (*talkmessage.Message, error)
 
 	// tts-manager speeches
 	TTSV1SpeecheCreate(ctx context.Context, callID uuid.UUID, text string, gender tmtts.Gender, language string, timeout int) (*tmtts.TTS, error)

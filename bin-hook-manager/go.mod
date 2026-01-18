@@ -10,6 +10,8 @@ replace monorepo/bin-call-manager => ../bin-call-manager
 
 replace monorepo/bin-common-handler => ../bin-common-handler
 
+replace monorepo/bin-talk-manager => ../bin-talk-manager
+
 replace monorepo/bin-campaign-manager => ../bin-campaign-manager
 
 replace monorepo/bin-chat-manager => ../bin-chat-manager
@@ -63,7 +65,7 @@ require (
 	github.com/joonix/log v0.0.0-20251205082533-cd78070927ea
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/prometheus/client_golang v1.23.2
-	github.com/sirupsen/logrus v1.9.3
+	github.com/sirupsen/logrus v1.9.4
 	go.uber.org/mock v0.6.0
 	golang.org/x/crypto v0.46.0 // indirect
 	golang.org/x/sys v0.40.0 // indirect
@@ -146,6 +148,7 @@ require (
 	monorepo/bin-queue-manager v0.0.0-20240402021210-adac880b81da // indirect
 	monorepo/bin-route-manager v0.0.0-20240313065038-1498b922bb24 // indirect
 	monorepo/bin-tag-manager v0.0.0-20240313070856-7d3433af905d // indirect
+	monorepo/bin-talk-manager v0.0.0-00010101000000-000000000000 // indirect
 	monorepo/bin-transfer-manager v0.0.0-20230419025515-44dea928ef34 // indirect
 	monorepo/bin-tts-manager v0.0.0-20240313070648-addf67d64996 // indirect
 	monorepo/bin-webhook-manager v0.0.0-20240313071253-ebca1db1437c // indirect
