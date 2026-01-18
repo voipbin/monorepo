@@ -72,8 +72,8 @@ golangci-lint run -v --timeout 5m
 **Changes to public-facing models:** Update OpenAPI schemas in bin-openapi-manager.
 
 **For complete workflows, troubleshooting, and detailed explanations, see:**
-- [docs/verification-workflows.md](docs/verification-workflows.md) - Complete verification details
-- [docs/special-cases.md](docs/special-cases.md) - bin-common-handler updates, OpenAPI sync
+- [verification-workflows.md](docs/verification-workflows.md) - Complete verification details
+- [special-cases.md](docs/special-cases.md) - bin-common-handler updates, OpenAPI sync
 
 ## Git Workflow
 
@@ -118,7 +118,7 @@ across the monorepo.
 5. Use dashes (`-`) for bullet points
 6. Add narrative summary for significant changes
 
-**For extended examples, branch management, and merge rules, see [docs/git-workflow-guide.md](docs/git-workflow-guide.md)**
+**For extended examples, branch management, and merge rules, see [git-workflow-guide.md](docs/git-workflow-guide.md)**
 
 ### Branch Management
 
@@ -157,11 +157,11 @@ git push -u origin NOJIRA-descriptive-change-summary
 
 **NEVER merge any branch to `main` without explicit user permission.**
 
-**For detailed branch strategies and merge workflows, see [docs/git-workflow-guide.md](docs/git-workflow-guide.md)**
+**For detailed branch strategies and merge workflows, see [git-workflow-guide.md](docs/git-workflow-guide.md)**
 
 ## Build & Development
 
-**For complete build commands, testing patterns, code generation, and linting, see [docs/development-guide.md](docs/development-guide.md)**
+**For complete build commands, testing patterns, code generation, and linting, see [development-guide.md](docs/development-guide.md)**
 
 Quick references:
 - Build: `cd bin-<service-name> && go build ./cmd/...`
@@ -185,11 +185,11 @@ Quick references:
 
 **Why:** Database changes are irreversible and require human authorization, testing, and VPN access.
 
-**For complete migration workflows, patterns, and troubleshooting, see [docs/common-workflows.md#database-migrations-with-alembic](docs/common-workflows.md#database-migrations-with-alembic)**
+**For complete migration workflows, patterns, and troubleshooting, see [common-workflows.md#database-migrations-with-alembic](docs/common-workflows.md#database-migrations-with-alembic)**
 
 ## Architecture
 
-**For service categories, inter-service communication, configuration, and deployment, see [docs/architecture-deep-dive.md](docs/architecture-deep-dive.md)**
+**For service categories, inter-service communication, configuration, and deployment, see [architecture-deep-dive.md](docs/architecture-deep-dive.md)**
 
 Key points:
 - 30+ Go microservices for VoIP, messaging, AI, and communication workflows
@@ -225,11 +225,11 @@ GET /v1/billings/{billing-id}
 Returns: Billing + Account + Reference Resource (Don't include related resources)
 ```
 
-**For exceptions, patterns, and authentication details, see [docs/reference.md#api-design-principles](docs/reference.md#api-design-principles)**
+**For exceptions, patterns, and authentication details, see [reference.md#api-design-principles](docs/reference.md#api-design-principles)**
 
 ## Common Workflows
 
-**For complete workflows and examples, see [docs/common-workflows.md](docs/common-workflows.md)**
+**For complete workflows and examples, see [common-workflows.md](docs/common-workflows.md)**
 
 Topics covered:
 - Adding a New API Endpoint
@@ -248,7 +248,7 @@ Follow these standards:
 - Follow Go naming conventions (List not Gets)
 - Handle errors properly
 
-**For detailed standards, logging examples, and naming conventions, see [docs/code-quality-standards.md](docs/code-quality-standards.md)**
+**For detailed standards, logging examples, and naming conventions, see [code-quality-standards.md](docs/code-quality-standards.md)**
 
 ### Common Gotchas
 
@@ -269,7 +269,7 @@ type Model struct {
 }
 ```
 
-**For complete gotcha explanations and troubleshooting, see [docs/code-quality-standards.md#common-gotchas](docs/code-quality-standards.md#common-gotchas)**
+**For complete gotcha explanations and troubleshooting, see [code-quality-standards.md#common-gotchas](docs/code-quality-standards.md#common-gotchas)**
 
 ## Where to Document New Information
 
@@ -303,7 +303,7 @@ Use this decision tree when adding new documentation:
 
 ## Reference
 
-**For dependencies, deployment info, security considerations, and resources, see [docs/reference.md](docs/reference.md)**
+**For dependencies, deployment info, security considerations, and resources, see [reference.md](docs/reference.md)**
 
 Quick links:
 - Admin Console: https://admin.voipbin.net/
