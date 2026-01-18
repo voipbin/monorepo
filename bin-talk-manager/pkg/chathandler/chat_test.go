@@ -139,6 +139,11 @@ func Test_ChatCreate(t *testing.T) {
 
 			ctx := context.Background()
 
+			// For direct type chats, mock FindDirectChatByParticipants (returns nil = no existing chat)
+			if tt.chatType == chat.TypeDirect && len(tt.participants) > 0 {
+				mockDB.EXPECT().FindDirectChatByParticipants(ctx, tt.customerID, gomock.Any(), gomock.Any(), tt.participants[0].OwnerType, tt.participants[0].OwnerID).Return(nil, nil)
+			}
+
 			mockUtil.EXPECT().UUIDCreate().Return(tt.expectRes.ID)
 			mockDB.EXPECT().ChatCreate(ctx, gomock.Any()).Return(nil)
 			mockDB.EXPECT().ChatGet(ctx, tt.expectRes.ID).Return(tt.expectRes, nil)
@@ -167,6 +172,63 @@ func Test_ChatCreate(t *testing.T) {
 				t.Errorf("Wrong match. ID should not be nil")
 			}
 		})
+	}
+}
+
+func Test_ChatCreate_direct_existing(t *testing.T) {
+	// Test that creating a direct chat returns existing chat if one already exists
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockParticipant := participanthandler.NewMockParticipantHandler(mc)
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+
+	h := &chatHandler{
+		dbHandler:          mockDB,
+		participantHandler: mockParticipant,
+		notifyHandler:      mockNotify,
+		utilHandler:        mockUtil,
+	}
+
+	ctx := context.Background()
+	customerID := uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b")
+	creatorType := "agent"
+	creatorID := uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
+	otherParticipantType := "agent"
+	otherParticipantID := uuid.FromStringOrNil("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb")
+
+	existingChatID := uuid.FromStringOrNil("existing0-chat-0000-0000-000000000000")
+	existingChat := &chat.Chat{
+		Identity: commonidentity.Identity{
+			ID:         existingChatID,
+			CustomerID: customerID,
+		},
+		Type: chat.TypeDirect,
+	}
+
+	participants := []participant.ParticipantInput{
+		{OwnerType: otherParticipantType, OwnerID: otherParticipantID},
+	}
+
+	// Mock FindDirectChatByParticipants returns an existing chat
+	mockDB.EXPECT().FindDirectChatByParticipants(ctx, customerID, creatorType, creatorID, otherParticipantType, otherParticipantID).Return(existingChat, nil)
+
+	// After finding existing chat, ChatGet is called to load participants
+	mockDB.EXPECT().ChatGet(ctx, existingChatID).Return(existingChat, nil)
+	mockDB.EXPECT().ParticipantListByChatIDs(ctx, gomock.Any()).Return([]*participant.Participant{}, nil)
+
+	// No ChatCreate, no participant additions, no webhook event (existing chat is returned)
+
+	res, err := h.ChatCreate(ctx, customerID, chat.TypeDirect, "", "", creatorType, creatorID, participants)
+	if err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	if res.ID != existingChatID {
+		t.Errorf("Wrong chat ID. expect: %v, got: %v", existingChatID, res.ID)
 	}
 }
 

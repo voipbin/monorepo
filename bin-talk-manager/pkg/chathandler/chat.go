@@ -46,20 +46,40 @@ func (h *chatHandler) ChatCreate(ctx context.Context, customerID uuid.UUID, chat
 	}
 
 	// Validate participants based on chat type
+	var otherParticipant *participant.ParticipantInput
 	switch chatType {
 	case chat.TypeDirect:
 		// Direct chats require exactly 1 additional participant (the other party)
 		// If creator included themselves in participants, we need exactly 2
 		// If creator is not in participants, we need exactly 1
 		otherParticipants := 0
-		for _, p := range participants {
+		for i := range participants {
+			p := &participants[i]
 			if p.OwnerType != creatorType || p.OwnerID != creatorID {
 				otherParticipants++
+				otherParticipant = p
 			}
 		}
 		if otherParticipants != 1 {
 			log.Errorf("Direct chat requires exactly 1 other participant, got %d", otherParticipants)
 			return nil, errors.Errorf("direct chat requires exactly 1 other participant, got %d", otherParticipants)
+		}
+
+		// Check if a direct chat already exists between these two participants
+		existingChat, err := h.dbHandler.FindDirectChatByParticipants(ctx, customerID, creatorType, creatorID, otherParticipant.OwnerType, otherParticipant.OwnerID)
+		if err != nil {
+			log.Errorf("Failed to check for existing direct chat. err: %v", err)
+			// Continue with creation on error (don't block)
+		} else if existingChat != nil {
+			// Found existing direct chat, load participants and return it
+			log.WithField("existing_chat_id", existingChat.ID).Debug("Found existing direct chat, returning it instead of creating new")
+			result, err := h.ChatGet(ctx, existingChat.ID)
+			if err != nil {
+				log.Errorf("Failed to reload existing chat with participants. err: %v", err)
+				// Return the existing chat without participants if reload fails
+				return existingChat, nil
+			}
+			return result, nil
 		}
 	case chat.TypeGroup:
 		// Group chats can start with just the creator

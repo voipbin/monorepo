@@ -252,3 +252,71 @@ func (h *dbHandler) ChatDelete(ctx context.Context, id uuid.UUID) error {
 	_, err = h.db.ExecContext(ctx, sqlQuery, args...)
 	return err
 }
+
+// FindDirectChatByParticipants finds an existing direct chat between exactly two participants.
+// Returns nil, nil if no matching chat is found.
+func (h *dbHandler) FindDirectChatByParticipants(ctx context.Context, customerID uuid.UUID, ownerType1 string, ownerID1 uuid.UUID, ownerType2 string, ownerID2 uuid.UUID) (*chat.Chat, error) {
+	// This query finds direct chats where:
+	// 1. Chat is of type 'direct'
+	// 2. Chat belongs to the customer
+	// 3. Chat is not deleted
+	// 4. Chat has exactly 2 participants
+	// 5. Both specified participants are members
+
+	// SQL approach:
+	// Find chat_id from participants where both users are participants,
+	// then filter by direct type, customer_id, and not deleted,
+	// and ensure exactly 2 participants
+
+	sqlQuery := `
+		SELECT c.id, c.customer_id, c.type, c.name, c.detail, c.tm_create, c.tm_update, c.tm_delete
+		FROM talk_chats c
+		WHERE c.customer_id = ?
+		  AND c.type = ?
+		  AND c.tm_delete = ?
+		  AND c.id IN (
+		      SELECT p1.chat_id
+		      FROM talk_participants p1
+		      JOIN talk_participants p2 ON p1.chat_id = p2.chat_id
+		      WHERE p1.owner_type = ? AND p1.owner_id = ?
+		        AND p2.owner_type = ? AND p2.owner_id = ?
+		  )
+		  AND (
+		      SELECT COUNT(*) FROM talk_participants p WHERE p.chat_id = c.id
+		  ) = 2
+		LIMIT 1
+	`
+
+	args := []interface{}{
+		customerID.Bytes(),
+		string(chat.TypeDirect),
+		commondb.DefaultTimeStamp,
+		ownerType1,
+		ownerID1.Bytes(),
+		ownerType2,
+		ownerID2.Bytes(),
+	}
+
+	rows, err := h.db.QueryContext(ctx, sqlQuery, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if closeErr := rows.Close(); closeErr != nil {
+			logrus.Errorf("Failed to close rows: %v", closeErr)
+		}
+	}()
+
+	if !rows.Next() {
+		// No existing direct chat found
+		return nil, nil
+	}
+
+	var t chat.Chat
+	err = commondb.ScanRow(rows, &t)
+	if err != nil {
+		return nil, err
+	}
+
+	return &t, nil
+}
