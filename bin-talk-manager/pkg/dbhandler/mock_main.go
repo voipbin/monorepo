@@ -260,6 +260,21 @@ func (mr *MockDBHandlerMockRecorder) ParticipantList(ctx, filters any) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ParticipantList", reflect.TypeOf((*MockDBHandler)(nil).ParticipantList), ctx, filters)
 }
 
+// ParticipantListByChatIDs mocks base method.
+func (m *MockDBHandler) ParticipantListByChatIDs(ctx context.Context, chatIDs []uuid.UUID) ([]*participant.Participant, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ParticipantListByChatIDs", ctx, chatIDs)
+	ret0, _ := ret[0].([]*participant.Participant)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ParticipantListByChatIDs indicates an expected call of ParticipantListByChatIDs.
+func (mr *MockDBHandlerMockRecorder) ParticipantListByChatIDs(ctx, chatIDs any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ParticipantListByChatIDs", reflect.TypeOf((*MockDBHandler)(nil).ParticipantListByChatIDs), ctx, chatIDs)
+}
+
 // TalkUpdate mocks base method.
 func (m *MockDBHandler) TalkUpdate(ctx context.Context, id uuid.UUID, fields map[chat.Field]any) error {
 	m.ctrl.T.Helper()

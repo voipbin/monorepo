@@ -28,6 +28,7 @@ type DBHandler interface {
 	ParticipantCreate(ctx context.Context, p *participant.Participant) error
 	ParticipantGet(ctx context.Context, id uuid.UUID) (*participant.Participant, error)
 	ParticipantList(ctx context.Context, filters map[participant.Field]any) ([]*participant.Participant, error)
+	ParticipantListByChatIDs(ctx context.Context, chatIDs []uuid.UUID) ([]*participant.Participant, error)
 	ParticipantDelete(ctx context.Context, id uuid.UUID) error
 
 	// Message operations

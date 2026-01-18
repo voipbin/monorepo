@@ -14,6 +14,7 @@ import (
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"monorepo/bin-talk-manager/models/chat"
+	"monorepo/bin-talk-manager/models/participant"
 	"monorepo/bin-talk-manager/pkg/dbhandler"
 	"monorepo/bin-talk-manager/pkg/participanthandler"
 )
@@ -92,6 +93,7 @@ func Test_ChatCreate(t *testing.T) {
 			mockUtil.EXPECT().UUIDCreate().Return(tt.expectRes.ID)
 			mockDB.EXPECT().ChatCreate(ctx, gomock.Any()).Return(nil)
 			mockDB.EXPECT().ChatGet(ctx, tt.expectRes.ID).Return(tt.expectRes, nil)
+			mockDB.EXPECT().ParticipantListByChatIDs(ctx, gomock.Any()).Return([]*participant.Participant{}, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.customerID, chat.EventTypeChatCreated, gomock.Any())
 
 			res, err := h.ChatCreate(ctx, tt.customerID, tt.chatType, "", "", "", uuid.Nil)
@@ -228,6 +230,7 @@ func Test_ChatGet(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().ChatGet(ctx, tt.id).Return(tt.responseChat, nil)
+			mockDB.EXPECT().ParticipantListByChatIDs(ctx, gomock.Any()).Return([]*participant.Participant{}, nil)
 
 			res, err := h.ChatGet(ctx, tt.id)
 			if err != nil {

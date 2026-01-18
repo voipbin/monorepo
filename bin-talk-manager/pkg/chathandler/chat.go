@@ -10,6 +10,7 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"monorepo/bin-talk-manager/models/chat"
+	"monorepo/bin-talk-manager/models/participant"
 )
 
 // ChatCreate creates a new talk
@@ -77,8 +78,8 @@ func (h *chatHandler) ChatCreate(ctx context.Context, customerID uuid.UUID, chat
 		}
 	}
 
-	// Load participants into chat before returning
-	result, err := h.dbHandler.ChatGet(ctx, t.ID)
+	// Load chat with participants before returning
+	result, err := h.ChatGet(ctx, t.ID)
 	if err != nil {
 		log.Errorf("Failed to reload chat with participants. err: %v", err)
 		// Return original chat without participants if reload fails
@@ -103,6 +104,16 @@ func (h *chatHandler) ChatGet(ctx context.Context, id uuid.UUID) (*chat.Chat, er
 	if err != nil {
 		log.Errorf("Failed to get talk. err: %v", err)
 		return nil, errors.Wrap(err, "failed to get talk")
+	}
+
+	// Load participants for this chat
+	participants, err := h.dbHandler.ParticipantListByChatIDs(ctx, []uuid.UUID{t.ID})
+	if err != nil {
+		log.Errorf("Failed to load participants: %v", err)
+		// Continue without participants rather than failing entire request
+		t.Participants = []*participant.Participant{}
+	} else {
+		t.Participants = participants
 	}
 
 	return t, nil
