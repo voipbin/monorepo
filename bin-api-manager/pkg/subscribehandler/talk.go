@@ -24,6 +24,27 @@ func (h *subscribeHandler) extractResource(eventType string) string {
 	return eventType
 }
 
+// createTalkTopics generates both old and new format topics for talk events
+// Note: customer_id topics are NOT generated for talk events (agent-only)
+func (h *subscribeHandler) createTalkTopics(eventType string, ownerID uuid.UUID, resourceID uuid.UUID) []string {
+	topics := []string{}
+
+	if ownerID == uuid.Nil {
+		return topics
+	}
+
+	// Extract resource from event type (e.g., "message" from "message_created")
+	resource := h.extractResource(eventType)
+
+	// OLD FORMAT (backward compatible): agent_id:OWNER_ID:resource:ID
+	topics = append(topics, fmt.Sprintf("agent_id:%s:%s:%s", ownerID, resource, resourceID))
+
+	// NEW FORMAT (service-namespaced): agent_id:OWNER_ID:talk:event_type:ID
+	topics = append(topics, fmt.Sprintf("agent_id:%s:%s:%s:%s", ownerID, "talk", eventType, resourceID))
+
+	return topics
+}
+
 // processEventTalkManager handles all events from talk-manager
 func (h *subscribeHandler) processEventTalkManager(ctx context.Context, m *sock.Event) error {
 	log := logrus.WithFields(logrus.Fields{
@@ -60,19 +81,8 @@ func (h *subscribeHandler) processEventTalkMessage(ctx context.Context, m *sock.
 		return err
 	}
 
-	// Create topics for message creator
-	topics := []string{}
-
-	// Extract resource from event type (e.g., "message" from "message_created")
-	resource := h.extractResource(m.Type)
-
-	// Creator's topic (OLD FORMAT: agent_id:owner_id:resource:id)
-	if msg.OwnerID != uuid.Nil {
-		topics = append(topics,
-			fmt.Sprintf("agent_id:%s:%s:%s", msg.OwnerID, resource, msg.ID))
-	}
-
-	// Note: customer_id topic is NOT published for talk events
+	// Create topics for message creator (both old and new formats)
+	topics := h.createTalkTopics(m.Type, msg.OwnerID, msg.ID)
 
 	// CRITICAL: Add topics for all talk participants (not just creator)
 	// This ensures all participants in the talk receive the message notification
@@ -87,9 +97,8 @@ func (h *subscribeHandler) processEventTalkMessage(ctx context.Context, m *sock.
 					continue
 				}
 
-				// Add topic for each other participant (OLD FORMAT)
-				topics = append(topics,
-					fmt.Sprintf("agent_id:%s:%s:%s", p.OwnerID, resource, msg.ID))
+				// Add topics for each other participant (both formats)
+				topics = append(topics, h.createTalkTopics(m.Type, p.OwnerID, msg.ID)...)
 			}
 		}
 	}
@@ -120,21 +129,11 @@ func (h *subscribeHandler) processEventTalk(ctx context.Context, m *sock.Event) 
 		return err
 	}
 
-	// Create topics
+	// Create topics for all participants (both old and new formats)
 	topics := []string{}
-
-	// Extract resource from event type (e.g., "chat" from "chat_created")
-	resource := h.extractResource(m.Type)
-
-	// Publish to all participants in the talk (OLD FORMAT: agent_id:owner_id:resource:id)
 	for _, p := range talk.Participants {
-		if p.OwnerID != uuid.Nil {
-			topics = append(topics,
-				fmt.Sprintf("agent_id:%s:%s:%s", p.OwnerID, resource, talk.ID))
-		}
+		topics = append(topics, h.createTalkTopics(m.Type, p.OwnerID, talk.ID)...)
 	}
-
-	// Note: customer_id topic is NOT published for talk events
 
 	// Publish to all topics
 	for _, topic := range topics {
@@ -162,19 +161,8 @@ func (h *subscribeHandler) processEventTalkParticipant(ctx context.Context, m *s
 		return err
 	}
 
-	// Create topics
-	topics := []string{}
-
-	// Extract resource from event type (e.g., "participant" from "participant_added")
-	resource := h.extractResource(m.Type)
-
-	// Participant's topic (OLD FORMAT: agent_id:owner_id:resource:id)
-	if participant.OwnerID != uuid.Nil {
-		topics = append(topics,
-			fmt.Sprintf("agent_id:%s:%s:%s", participant.OwnerID, resource, participant.ID))
-	}
-
-	// Note: customer_id topic is NOT published for talk events
+	// Create topics for the participant (both old and new formats)
+	topics := h.createTalkTopics(m.Type, participant.OwnerID, participant.ID)
 
 	// Publish to all topics
 	for _, topic := range topics {
