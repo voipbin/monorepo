@@ -48,17 +48,23 @@ func (h *chatHandler) ChatCreate(ctx context.Context, customerID uuid.UUID, chat
 	// Validate participants based on chat type
 	switch chatType {
 	case chat.TypeDirect:
-		// Direct chats require exactly 1 additional participant (2 total with creator)
-		if len(participants) != 1 {
-			log.Errorf("Direct chat requires exactly 1 participant, got %d", len(participants))
-			return nil, errors.Errorf("direct chat requires exactly 1 participant, got %d", len(participants))
+		// Direct chats require exactly 1 additional participant (the other party)
+		// If creator included themselves in participants, we need exactly 2
+		// If creator is not in participants, we need exactly 1
+		otherParticipants := 0
+		for _, p := range participants {
+			if p.OwnerType != creatorType || p.OwnerID != creatorID {
+				otherParticipants++
+			}
+		}
+		if otherParticipants != 1 {
+			log.Errorf("Direct chat requires exactly 1 other participant, got %d", otherParticipants)
+			return nil, errors.Errorf("direct chat requires exactly 1 other participant, got %d", otherParticipants)
 		}
 	case chat.TypeGroup:
-		// Group chats require at least 1 participant (creator is added automatically)
-		if len(participants) < 1 {
-			log.Errorf("Group chat requires at least 1 participant, got %d", len(participants))
-			return nil, errors.Errorf("group chat requires at least 1 participant, got %d", len(participants))
-		}
+		// Group chats can start with just the creator
+		// Members can be added/removed later
+		// No validation needed for participants
 	case chat.TypeTalk:
 		// Talk type doesn't require additional participants (only creator)
 		// No validation needed for participants
@@ -82,8 +88,17 @@ func (h *chatHandler) ChatCreate(ctx context.Context, customerID uuid.UUID, chat
 		return nil, errors.Wrap(err, "failed to create chat in database")
 	}
 
-	// Add creator as participant if provided
-	if creatorType != "" && creatorID != uuid.Nil {
+	// Check if creator is already in the participants list
+	creatorInParticipants := false
+	for _, p := range participants {
+		if p.OwnerType == creatorType && p.OwnerID == creatorID {
+			creatorInParticipants = true
+			break
+		}
+	}
+
+	// Add creator as participant if provided and not already in participants list
+	if creatorType != "" && creatorID != uuid.Nil && !creatorInParticipants {
 		_, err = h.participantHandler.ParticipantAdd(ctx, customerID, t.ID, creatorID, creatorType)
 		if err != nil {
 			log.Errorf("Failed to add creator as participant. err: %v", err)
@@ -98,7 +113,7 @@ func (h *chatHandler) ChatCreate(ctx context.Context, customerID uuid.UUID, chat
 		}
 	}
 
-	// Add additional participants if provided
+	// Add all participants from the list
 	for _, p := range participants {
 		_, err = h.participantHandler.ParticipantAdd(ctx, customerID, t.ID, p.OwnerID, p.OwnerType)
 		if err != nil {

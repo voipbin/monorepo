@@ -75,7 +75,28 @@ func Test_ChatCreate(t *testing.T) {
 			},
 		},
 		{
-			name: "normal_type_group",
+			name: "normal_type_group_no_participants",
+
+			customerID:   uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
+			chatType:     chat.TypeGroup,
+			participants: nil, // Group can start with just the creator
+
+			expectChat: &chat.Chat{
+				Identity: commonidentity.Identity{
+					CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
+				},
+				Type: chat.TypeGroup,
+			},
+			expectRes: &chat.Chat{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("ac810dc4-298c-11ee-984c-ebb7811c4114"),
+					CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
+				},
+				Type: chat.TypeGroup,
+			},
+		},
+		{
+			name: "normal_type_group_with_participants",
 
 			customerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
 			chatType:   chat.TypeGroup,
@@ -184,7 +205,7 @@ func Test_ChatCreate_error(t *testing.T) {
 			chatType:     chat.TypeDirect,
 			participants: nil,
 
-			expectError: "direct chat requires exactly 1 participant",
+			expectError: "direct chat requires exactly 1 other participant",
 		},
 		{
 			name: "error_direct_too_many_participants",
@@ -196,16 +217,7 @@ func Test_ChatCreate_error(t *testing.T) {
 				{OwnerType: "agent", OwnerID: uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222")},
 			},
 
-			expectError: "direct chat requires exactly 1 participant",
-		},
-		{
-			name: "error_group_no_participant",
-
-			customerID:   uuid.FromStringOrNil("ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4"),
-			chatType:     chat.TypeGroup,
-			participants: nil,
-
-			expectError: "group chat requires at least 1 participant",
+			expectError: "direct chat requires exactly 1 other participant",
 		},
 		{
 			name: "error_database_failure",
