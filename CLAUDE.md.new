@@ -271,6 +271,36 @@ type Model struct {
 
 **For complete gotcha explanations and troubleshooting, see [docs/code-quality-standards.md#common-gotchas](docs/code-quality-standards.md#common-gotchas)**
 
+## Where to Document New Information
+
+Use this decision tree when adding new documentation:
+
+**Does this apply to ALL services in the monorepo?**
+- **YES** → Add to Root CLAUDE.md
+  - Examples:
+    - New verification step required for all services
+    - New git workflow rule
+    - New shared pattern from bin-common-handler
+    - Changes to RabbitMQ communication pattern
+
+**NO → Does it affect 2+ services?**
+  - **YES → Is it a workflow spanning services?**
+    - **YES** → Add to Root CLAUDE.md "Common Workflows"
+      - Example: "Adding a New API Endpoint" (touches openapi-manager + api-manager + target service)
+    - **NO → Is it a shared pattern/gotcha?**
+      - **YES** → Add to Root CLAUDE.md "Shared Patterns" with note
+        - Example: "Parsing Filters from Request Body"
+        - **Note format:** Explain what the pattern is for, which services use it, when to apply it
+      - **NO** → Add to each affected service's CLAUDE.md
+        - Example: How conference-manager and call-manager handle recordings
+
+  - **NO** → Add to Service-Specific CLAUDE.md
+    - Examples:
+      - Service-specific API endpoints
+      - Handler patterns unique to this service
+      - Service-specific testing approaches
+      - Domain-specific implementation details
+
 ## Reference
 
 **For dependencies, deployment info, security considerations, and resources, see [docs/reference.md](docs/reference.md)**
