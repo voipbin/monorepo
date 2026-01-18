@@ -20,6 +20,41 @@ get:
     '404':
       description: Talk chat not found.
 
+put:
+  summary: Update talk chat
+  description: Updates a specific talk chat's name and/or detail.
+  tags:
+    - Service Agent
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The talk chat ID.
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+              description: The new name of the talk chat.
+            detail:
+              type: string
+              description: The new detail/description of the talk chat.
+  responses:
+    '200':
+      description: Talk chat updated successfully.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TalkManagerTalk'
+    '404':
+      description: Talk chat not found.
+
 delete:
   summary: Delete talk chat
   description: Deletes a specific talk chat (soft delete).
