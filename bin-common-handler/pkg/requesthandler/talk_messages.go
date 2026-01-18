@@ -165,7 +165,7 @@ func (r *requestHandler) TalkV1MessageReactionCreate(
 	req := tmrequest.V1DataMessagesIDReactionsPost{
 		OwnerType: ownerType,
 		OwnerID:   ownerID.String(),
-		Reaction:  emoji,
+		Emoji:     emoji,
 	}
 
 	m, err := json.Marshal(req)
