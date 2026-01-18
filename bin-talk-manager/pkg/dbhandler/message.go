@@ -19,6 +19,7 @@ func (h *dbHandler) MessageCreate(ctx context.Context, m *message.Message) error
 	now := h.utilHandler.TimeGetCurTime()
 	m.TMCreate = now
 	m.TMUpdate = now
+	m.TMDelete = commondb.DefaultTimeStamp
 
 	// Initialize empty metadata if not set
 	if m.Metadata == "" {

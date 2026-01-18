@@ -19,6 +19,7 @@ func (h *dbHandler) ChatCreate(ctx context.Context, t *chat.Chat) error {
 	now := h.utilHandler.TimeGetCurTime()
 	t.TMCreate = now
 	t.TMUpdate = now
+	t.TMDelete = commondb.DefaultTimeStamp
 
 	fields, err := commondb.PrepareFields(t)
 	if err != nil {
