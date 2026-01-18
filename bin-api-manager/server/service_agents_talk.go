@@ -87,7 +87,17 @@ func (h *server) PostServiceAgentsTalkChats(c *gin.Context) {
 	// Convert type (req.Type is non-pointer, required field)
 	talkType := tkchat.Type(req.Type)
 
-	res, err := h.serviceHandler.ServiceAgentTalkChatCreate(c.Request.Context(), &a, talkType)
+	// Extract optional name and detail
+	name := ""
+	if req.Name != nil {
+		name = *req.Name
+	}
+	detail := ""
+	if req.Detail != nil {
+		detail = *req.Detail
+	}
+
+	res, err := h.serviceHandler.ServiceAgentTalkChatCreate(c.Request.Context(), &a, talkType, name, detail)
 	if err != nil {
 		log.Errorf("Could not create talk. err: %v", err)
 		c.AbortWithStatus(400)

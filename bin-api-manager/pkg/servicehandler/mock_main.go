@@ -3656,18 +3656,18 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentMeUpdateStatus(ctx, a, sta
 }
 
 // ServiceAgentTalkChatCreate mocks base method.
-func (m *MockServiceHandler) ServiceAgentTalkChatCreate(ctx context.Context, a *agent.Agent, talkType chat0.Type) (*chat0.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentTalkChatCreate(ctx context.Context, a *agent.Agent, talkType chat0.Type, name, detail string) (*chat0.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ServiceAgentTalkChatCreate", ctx, a, talkType)
+	ret := m.ctrl.Call(m, "ServiceAgentTalkChatCreate", ctx, a, talkType, name, detail)
 	ret0, _ := ret[0].(*chat0.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ServiceAgentTalkChatCreate indicates an expected call of ServiceAgentTalkChatCreate.
-func (mr *MockServiceHandlerMockRecorder) ServiceAgentTalkChatCreate(ctx, a, talkType any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentTalkChatCreate(ctx, a, talkType, name, detail any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentTalkChatCreate", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentTalkChatCreate), ctx, a, talkType)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentTalkChatCreate", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentTalkChatCreate), ctx, a, talkType, name, detail)
 }
 
 // ServiceAgentTalkChatDelete mocks base method.

@@ -30,16 +30,6 @@ func (h *listenHandler) v1ChatsPost(ctx context.Context, m commonsock.Request) (
 		return simpleResponse(400), nil
 	}
 
-	// Log incoming request
-	logrus.WithFields(logrus.Fields{
-		"customer_id":  req.CustomerID,
-		"type":         req.Type,
-		"name":         req.Name,
-		"detail":       req.Detail,
-		"creator_type": req.CreatorType,
-		"creator_id":   req.CreatorID,
-	}).Info("Received chat creation request")
-
 	customerID := uuid.FromStringOrNil(req.CustomerID)
 	if customerID == uuid.Nil {
 		return simpleResponse(400), nil
@@ -51,15 +41,6 @@ func (h *listenHandler) v1ChatsPost(ctx context.Context, m commonsock.Request) (
 	if err != nil {
 		return simpleResponse(500), nil
 	}
-
-	// Log created chat response
-	logrus.WithFields(logrus.Fields{
-		"chat_id":     t.ID,
-		"customer_id": t.CustomerID,
-		"type":        t.Type,
-		"name":        t.Name,
-		"detail":      t.Detail,
-	}).Info("Chat created, returning response")
 
 	data, _ := json.Marshal(t)
 	return &commonsock.Response{

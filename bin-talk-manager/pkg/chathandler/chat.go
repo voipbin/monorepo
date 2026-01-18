@@ -54,15 +54,6 @@ func (h *chatHandler) ChatCreate(ctx context.Context, customerID uuid.UUID, chat
 		Detail: detail,
 	}
 
-	// Log chat object before saving
-	log.WithFields(logrus.Fields{
-		"chat_id":     t.ID,
-		"customer_id": t.CustomerID,
-		"type":        t.Type,
-		"name":        t.Name,
-		"detail":      t.Detail,
-	}).Info("Created chat object, about to save to database")
-
 	// Save to database
 	err := h.dbHandler.ChatCreate(ctx, t)
 	if err != nil {
@@ -93,15 +84,6 @@ func (h *chatHandler) ChatCreate(ctx context.Context, customerID uuid.UUID, chat
 		// Return original chat without participants if reload fails
 		result = t
 	}
-
-	// Log result after reload from database
-	log.WithFields(logrus.Fields{
-		"chat_id":     result.ID,
-		"customer_id": result.CustomerID,
-		"type":        result.Type,
-		"name":        result.Name,
-		"detail":      result.Detail,
-	}).Info("Reloaded chat from database")
 
 	// Publish webhook event
 	h.notifyHandler.PublishWebhookEvent(ctx, result.CustomerID, chat.EventTypeChatCreated, result)

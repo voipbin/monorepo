@@ -3049,8 +3049,14 @@ type TalkManagerTalk struct {
 	// CustomerId Resource's customer ID.
 	CustomerId *string `json:"customer_id,omitempty"`
 
+	// Detail Talk description/detail (optional).
+	Detail *string `json:"detail,omitempty"`
+
 	// Id Resource identifier.
 	Id *string `json:"id,omitempty"`
+
+	// Name Talk name (optional).
+	Name *string `json:"name,omitempty"`
 
 	// TmCreate Timestamp when the talk was created.
 	TmCreate *string `json:"tm_create,omitempty"`
@@ -4641,6 +4647,12 @@ type GetServiceAgentsTalkChatsParams struct {
 
 // PostServiceAgentsTalkChatsJSONBody defines parameters for PostServiceAgentsTalkChats.
 type PostServiceAgentsTalkChatsJSONBody struct {
+	// Detail Talk description/detail (optional).
+	Detail *string `json:"detail,omitempty"`
+
+	// Name Talk name (optional).
+	Name *string `json:"name,omitempty"`
+
 	// Type Type of the talk.
 	Type TalkManagerTalkType `json:"type"`
 }
