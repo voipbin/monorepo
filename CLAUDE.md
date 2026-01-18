@@ -47,21 +47,13 @@ go test ./... && \
 golangci-lint run -v --timeout 5m
 ```
 
-**What this does:**
-1. `go mod tidy` - Cleans up go.mod and go.sum files
-2. `go mod vendor` - Vendors dependencies for reproducible builds
-3. `go generate ./...` - Regenerates mocks and generated code
-4. `go test ./...` - Runs all tests to ensure nothing broke
-5. `golangci-lint run -v --timeout 5m` - Lints code for quality issues
-
 **This runs AFTER making changes but BEFORE `git commit`.**
 
 ### Dependency Update Workflow
 
-**Only when specifically updating dependencies, run this workflow:**
+**Only when specifically updating dependencies:**
 
 ```bash
-# Navigate to the service directory
 cd bin-<service-name>
 
 # Run the full update workflow (WITH dependency updates)
@@ -73,281 +65,23 @@ go test ./... && \
 golangci-lint run -v --timeout 5m
 ```
 
-**Why separate workflows?**
-- `go get -u ./...` updates ALL dependencies to latest versions
-- Mixing dependency updates with feature changes makes PR review harder
-- Dependency updates should be separate commits/PRs when possible
-- For regular code changes, only update dependencies if needed
+### Special Cases
 
-**Both workflows are MANDATORY before committing** - Do not skip any step. The monorepo's interdependencies require this to maintain consistency and catch issues early.
+**Changes to bin-common-handler:** Update ALL 30+ services in the monorepo.
 
-### Special Case: Changes to bin-common-handler
+**Changes to public-facing models:** Update OpenAPI schemas in bin-openapi-manager.
 
-**🚨 CRITICAL: If you make ANY changes to `bin-common-handler`, you MUST update ALL 30+ services in the monorepo.**
+**For complete workflows, troubleshooting, and detailed explanations, see:**
+- [verification-workflows.md](docs/verification-workflows.md) - Complete verification details
+- [special-cases.md](docs/special-cases.md) - bin-common-handler updates, OpenAPI sync
 
-The `bin-common-handler` is a shared library used by ALL other services. Changes to it require updating every service to maintain consistency across the entire monorepo.
+## Git Workflow
 
-#### What Counts as a "Change to bin-common-handler"
-
-Changes that affect dependent services include:
-- ✅ Adding new functions or methods (e.g., `PrepareFields()`, `ScanRow()`)
-- ✅ Modifying existing interfaces or function signatures
-- ✅ Adding/removing fields in shared models (`models/outline`, `models/identity`)
-- ✅ Changing behavior of existing handlers
-- ✅ Updating dependencies in bin-common-handler's `go.mod`
-
-#### Complete Update Workflow
-
-**Step 1: Make changes to bin-common-handler**
-```bash
-cd bin-common-handler
-
-# Make your changes, then run verification
-go mod tidy && \
-go mod vendor && \
-go generate ./... && \
-go test ./... && \
-golangci-lint run -v --timeout 5m
-```
-
-**Step 2: Update ALL services in monorepo**
-```bash
-# From monorepo root, update all 30+ services
-cd /home/pchero/gitvoipbin/monorepo
-
-find . -maxdepth 2 -name "go.mod" -execdir bash -c \
-  "echo 'Updating \$(basename \$(pwd))...' && \
-   go mod tidy && \
-   go mod vendor && \
-   go generate ./... && \
-   go clean -testcache && \
-   go test ./..." \;
-```
-
-**What this does for EACH service:**
-1. `go mod tidy` - Syncs go.mod with bin-common-handler changes (NOT `go get -u`)
-2. `go mod vendor` - Updates vendored bin-common-handler code
-3. `go generate ./...` - Regenerates mocks that depend on bin-common-handler interfaces
-4. **`go clean -testcache`** - **CRITICAL**: Clears test cache to force actual test execution
-5. `go test ./...` - Verifies the service still works with new bin-common-handler
-
-**⚠️ WARNING: ALWAYS use `go clean -testcache` when testing after bin-common-handler changes!**
-- Go caches test results, which can hide failures introduced by your changes
-- Cached tests show "PASS" even though they never actually re-ran with the new code
-- This is the #1 cause of missing test failures in the monorepo
-
-**Step 3: Verify key services compile**
-```bash
-# Spot check critical services
-cd bin-api-manager && go build ./...
-cd ../bin-call-manager && go build ./...
-cd ../bin-flow-manager && go build ./...
-```
-
-**Step 4: Commit ALL changes together**
-```bash
-cd /home/pchero/gitvoipbin/monorepo
-
-# Commit bin-common-handler changes
-git add bin-common-handler/
-git commit -m "feat(common-handler): add new database mapping utilities"
-
-# Commit dependency updates for all services
-git add */go.mod */go.sum
-git commit -m "chore: update dependencies after bin-common-handler changes"
-```
-
-#### Projects Affected
-
-**All services depend on bin-common-handler** (30+ projects):
-- bin-api-manager (REST API gateway)
-- bin-call-manager (Call routing)
-- bin-flow-manager (Flow execution)
-- bin-conference-manager (Conferencing)
-- bin-ai-manager (AI integration)
-- bin-webhook-manager (Webhooks)
-- bin-agent-manager (Agent management)
-- bin-customer-manager (Customer data)
-- And 22+ other services...
-
-#### Why This Is Critical
-
-- **Compilation errors**: Stale vendored dependencies will break builds
-- **Runtime failures**: Services may use outdated interfaces/models
-- **Test failures**: Mock regeneration required if interfaces changed
-- **Type mismatches**: Shared utility changes affect test expectations, not just interfaces
-- **Test cache masking failures**: Cached tests can hide breaking changes
-- **Inconsistent state**: Half-updated monorepo leads to subtle bugs
-
-#### Verification Checklist
-
-After changing bin-common-handler, verify EACH dependent service:
-
-- [ ] **`go mod tidy`** - Dependencies synced
-- [ ] **`go mod vendor`** - Vendored code updated
-- [ ] **`go generate ./...`** - Mocks regenerated
-- [ ] **`go clean -testcache`** - Test cache cleared ⚠️ NEVER SKIP THIS
-- [ ] **`go test ./...`** - All tests pass (actually ran, not cached)
-- [ ] **Test expectations updated** - If types/values changed in shared utilities
-- [ ] **`golangci-lint run`** - No linting issues
-- [ ] **`go build ./...`** - Compiles successfully
-
-**If ANY test fails:**
-1. Don't just regenerate mocks and retry
-2. Investigate WHAT changed in bin-common-handler
-3. Update test EXPECTATIONS to match new behavior
-4. Clear cache and re-run: `go clean -testcache && go test ./...`
-
-#### Common Mistakes to Avoid
-
-❌ **DON'T run tests without clearing cache first** - `go test` uses cached results, hiding failures
-❌ **DON'T just regenerate mocks and assume tests will pass** - Test EXPECTATIONS need updates for type changes
-❌ **DON'T run `go get -u`** - This updates ALL dependencies, not just bin-common-handler
-❌ **DON'T skip `go generate`** - Mocks will be stale if interfaces changed
-❌ **DON'T skip `go test`** - Won't catch breaking changes until production
-❌ **DON'T commit bin-common-handler alone** - All services must be updated together
-
-✅ **DO run `go clean -testcache` before testing** - Force actual test execution, not cached results
-✅ **DO update test expectations when shared utilities change types** - Especially for type conversions
-✅ **DO run the complete workflow** - `go mod tidy && go mod vendor && go generate && go clean -testcache && go test`
-✅ **DO verify tests ACTUALLY ran** (not cached) for all services before committing
-✅ **DO commit bin-common-handler and dependency updates together** (can be separate commits in same PR)
-
-#### Troubleshooting
-
-**If services fail to compile after update:**
-```bash
-# Clean and retry for specific service
-cd bin-<service-name>
-rm -rf vendor/
-go clean -modcache
-go mod tidy && go mod vendor && go build ./...
-```
-
-**If tests fail in multiple services after bin-common-handler changes:**
-
-🚨 **CRITICAL: Test failures are NOT just about regenerating mocks!**
-
-When bin-common-handler shared utilities change (especially type conversions, data transformations, or filter handling), test EXPECTATIONS must be updated to match the new behavior.
-
-**Common scenario (like the UUID filter bug):**
-1. You modify a shared utility in bin-common-handler (e.g., database field type conversion)
-2. This changes the TYPES of values passed to mocked functions (e.g., string → uuid.UUID)
-3. Mock expectations in tests still expect the OLD types
-4. Tests fail with "expected call doesn't match" errors
-5. **Solution**: Update test expectations to use the new types, NOT just regenerate mocks
-
-**Example - What to fix when type conversions change:**
-```go
-// ❌ WRONG - Old test expectation (before fix)
-expectFilters: map[Field]any{
-    FieldCustomerID: "5e4a0680-804e-11ec-8477-2fea5968d85b",  // String
-}
-
-// ✅ CORRECT - Updated test expectation (after UUID conversion fix)
-expectFilters: map[Field]any{
-    FieldCustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),  // UUID type
-}
-
-// Alternative: Use gomock.Any() if exact matching is problematic
-mockReq.EXPECT().SomeMethod(ctx, gomock.Any()).Return(response, nil)
-```
-
-**Systematic approach to fixing test failures:**
-1. **Identify the changed behavior** in bin-common-handler
-2. **Find all test files** with failing expectations (`grep -r "FieldCustomerID" *_test.go`)
-3. **Update test expectations** to match new types/behavior
-4. **Re-run with clean cache**: `go clean -testcache && go test ./...`
-5. **Verify actual execution**: Check test ran (not cached)
-
-**Common changes requiring test expectation updates:**
-- ✅ Type conversions (string → UUID, string → int, etc.)
-- ✅ Filter map value types
-- ✅ Field name changes or additions
-- ✅ Enum value changes
-- ✅ Default value changes
-
-**DON'T just regenerate mocks and assume tests will pass!**
-- Mock interfaces may be unchanged, but VALUES passed have changed types
-- Test expectations must be manually updated to match new value types
-
-**Never commit changes to bin-common-handler without updating dependent services.**
-
-### Special Case: Changes to Public-Facing Models and OpenAPI Schemas
-
-**CRITICAL: If you modify public-facing data structures in ANY service, you MUST verify and update the corresponding OpenAPI schemas in `bin-openapi-manager`.**
-
-**What are public-facing models?**
-Services expose data to external APIs, webhooks, and events through specific structs:
-- `WebhookMessage` structs (e.g., `call.WebhookMessage`, `conference.WebhookMessage`)
-- API response models that are returned to external clients
-- Any data structure used in RPC responses to `bin-api-manager`
-
-**The Rule:**
-When a service defines what data is exposed publicly (via `WebhookMessage` or similar), the corresponding OpenAPI schema in `bin-openapi-manager/openapi/openapi.yaml` MUST accurately reflect all fields.
-
-**Example Mapping:**
-```
-bin-call-manager/models/call/webhook.go → WebhookMessage struct
-    ↓ maps to ↓
-bin-openapi-manager/openapi/openapi.yaml → CallManagerCall schema
-
-bin-conference-manager/models/conference/webhook.go → WebhookMessage struct
-    ↓ maps to ↓
-bin-openapi-manager/openapi/openapi.yaml → ConferenceManagerConference schema
-```
-
-**Validation Process:**
-1. **Before modifying a WebhookMessage or public model:**
-   - Note all fields currently in the struct
-
-2. **After making changes:**
-   - Identify the corresponding OpenAPI schema in `bin-openapi-manager/openapi/openapi.yaml`
-   - Compare fields in the Go struct vs. OpenAPI schema
-   - Add any missing fields to the OpenAPI schema
-   - Remove deprecated fields from the OpenAPI schema
-   - Ensure field types match (string, array, object, etc.)
-   - Ensure enums are properly defined
-
-3. **Regenerate OpenAPI code:**
-```bash
-cd bin-openapi-manager
-go generate ./...
-```
-
-4. **Update dependent services:**
-```bash
-cd bin-api-manager
-go mod tidy && go mod vendor && go generate ./...
-```
-
-**Why this is critical:**
-- `bin-openapi-manager` is the source of truth for the public REST API contract
-- External API consumers rely on accurate OpenAPI documentation
-- API documentation (Swagger UI) must match actual service behavior
-- Type mismatches cause runtime errors and API consumer confusion
-
-**Common scenarios requiring validation:**
-- Adding new fields to a model
-- Changing field types or nullability
-- Adding new enum values
-- Renaming fields (breaking change - coordinate carefully)
-- Removing deprecated fields
-
-**Never commit changes to public-facing models without verifying OpenAPI schemas are synchronized.**
-
-## Git Workflow: Commit Message Format
-
-**CRITICAL: This is a monorepo containing multiple projects. Commit messages MUST specify which projects were affected.**
+### Commit Message Format
 
 **CRITICAL: Commit title MUST match the branch name exactly.**
 
-### Commit Message Structure
-
 **Title (first line):**
-
-The commit title MUST match the branch name exactly (same format, all lowercase with hyphens):
-
 ```
 VOIP-[ticket-number]-brief-description-of-change
 ```
@@ -356,132 +90,45 @@ or (when no JIRA ticket)
 NOJIRA-brief-description-of-change
 ```
 
-**Important:** Title uses the same format as branch name (all lowercase with hyphens)
-
 **Body (subsequent lines):**
 List each affected project with specific changes:
 ```
 - bin-common-handler: Fixed type handling in database mapper
 - bin-flow-manager: Updated flow execution to use new types
 - bin-call-manager: Refactored call handler to support new interface
-- bin-conference-manager: Updated conference creation logic
 ```
 
-**Complete Example (Narrative Style):**
-```
-VOIP-1190-refactor-database-handlers-to-use-commondatabasehandler
-
-Successfully refactored 22 microservices to adopt standardized commondatabasehandler
-pattern from bin-common-handler, improving type safety and code consistency across
-the entire monorepo.
-
-- bin-common-handler: Provides PrepareFields(), ScanRow(), ApplyFields(), and
-  GetDBFields() utilities for standardized database operations
-- bin-ai-manager: Adds db tags to ai, aicall, message, and summary models with
-  typed Field constants for type-safe database operations
-- bin-ai-manager: Migrates all dbhandler operations to use PrepareFields() for
-  INSERT/UPDATE and ScanRow() for result scanning
-- bin-call-manager: Adds field.go files for call, confbridge, groupcall, and
-  recording models with typed Field constants
-- bin-call-manager: Refactors all database queries to use Squirrel SetMap()
-  with PrepareFields() instead of Columns().Values()
-- bin-conference-manager: Adds ConvertStringMapToFieldMap() helper functions
-  for filter conversion from external APIs
-... (continue for all affected services)
-
-Test results: All 28 services passing (477 files modified)
-```
-
-**Commit Format (matches branch name):**
-```
-VOIP-[ticket-number]-brief-description-of-change
-
-[Narrative summary paragraph explaining what was accomplished, the impact,
-and high-level context. 2-3 sentences recommended for significant changes.]
-
-- bin-service-1: What changed
-- bin-service-2: What changed
-- bin-service-3: What changed
-```
-
-**Example:**
+**Complete Example:**
 ```
 NOJIRA-add-claude-md-reorganization-design
 
 Created comprehensive design document to reorganize CLAUDE.md documentation structure
-across the monorepo. Establishes clear boundaries between monorepo-wide rules in root
-CLAUDE.md and service-specific implementation details in service CLAUDE.md files,
-resolving confusion about where to document new information.
+across the monorepo.
 
 - docs: Define clear boundaries between root and service-specific CLAUDE.md files
 - docs: Establish decision framework for where to document new information
-- docs: Plan content migration from root to service-specific files (api-manager, flow-manager, billing-manager)
-- docs: Add notes strategy for shared patterns used across multiple services
-- docs: Document implementation plan with 5 phases and risk mitigation
+- docs: Plan content migration from root to service-specific files
 ```
 
-### Rules
+**Rules:**
+1. Always list affected projects
+2. Be specific about what changed in each project
+3. Keep title concise
+4. Use present tense
+5. Use dashes (`-`) for bullet points
+6. Add narrative summary for significant changes
 
-1. **Always list affected projects** - Even if it's just one project
-2. **Be specific** - Describe what changed in each project, not just "updated"
-3. **Keep title concise** - Detailed changes go in the body
-4. **Use present tense** - "Add feature" not "Added feature"
-5. **Use dashes (`-`) for bullet points** - Never use asterisks (`*`)
-6. **Add narrative summary** - For significant changes (new features, refactoring, multi-service updates), include 2-3 sentence summary paragraph before the bullet list explaining what was accomplished and the impact
-7. **Multiple bullets per service** - Complex changes should have multiple detailed bullets
-8. **Include test results** - For large changes, add summary line at the end (e.g., "Test results: All 28 services passing")
+**For extended examples, branch management, and merge rules, see [git-workflow-guide.md](docs/git-workflow-guide.md)**
 
-**Good examples:**
-```
-VOIP-1234-add-jwt-authentication-support
-
-- bin-api-manager: Implement JWT middleware and token validation
-- bin-customer-manager: Add token generation endpoints
-- bin-common-handler: Add JWT utility functions
-```
-
-```
-NOJIRA-fix-database-connection-leak
-
-- bin-call-manager: Close database connections in defer statements
-- bin-conference-manager: Add connection pool timeout handling
-```
-
-**Bad examples:**
-```
-Fixed bug  ❌ (No ticket number, no affected projects)
-```
-
-```
-VOIP-1234: Updated everything  ❌ (Old format with colon, not specific, no project list)
-```
-
-```
-VOIP-1234-add-feature
-- Updated files  ❌ (Not specific about which projects)
-```
-
-## Git Workflow: Branch Management
+### Branch Management
 
 **CRITICAL: Before making ANY changes or commits, ALWAYS check the current branch first.**
 
 **If the current branch is `main`:**
 1. **STOP - DO NOT make commits on main**
 2. Ask the user to create a feature branch first
-3. Suggest a branch name following this convention: `NOJIRA-brief-description` or `VOIP-1234-brief-description`
-4. Wait for user confirmation before proceeding with any code changes
-
-**Example prompt when starting work:**
-```
-You're currently on the main branch. It's recommended to create a feature branch before making changes.
-
-Suggested branch name: NOJIRA-fix-conference-customer-id
-
-Would you like to:
-1. Create and switch to this branch
-2. Use a different branch name
-3. Work on main anyway (not recommended)
-```
+3. Suggest a branch name: `NOJIRA-brief-description` or `VOIP-1234-brief-description`
+4. Wait for user confirmation before proceeding
 
 **Correct Workflow:**
 ```bash
@@ -493,460 +140,62 @@ git checkout -b NOJIRA-descriptive-change-summary
 
 # Step 3: Make your code changes
 
-# Step 4: Run the verification workflow BEFORE committing (from section above)
+# Step 4: Run verification workflow BEFORE committing
 go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m
 
 # Step 5: Commit changes (title matches branch name)
 git add .
 git commit -m "NOJIRA-descriptive-change-summary
 
-- project-name: What changed
 - project-name: What changed"
 
 # Step 6: Push to remote
 git push -u origin NOJIRA-descriptive-change-summary
 ```
 
-**Branch naming convention:**
-- Format: `NOJIRA-brief-description` or `VOIP-[ticket]-brief-description`
-- Use lowercase with hyphens separating words
-- Commit title MUST match branch name exactly
-- Examples:
-  - `NOJIRA-fix-conference-customer-id`
-  - `NOJIRA-add-user-authentication`
-  - `VOIP-1234-refactor-flow-manager`
-- Keep it concise but descriptive
-
-**Only proceed with working on main if the user explicitly confirms.**
-
-### CRITICAL: Never Commit Directly to Main
-
-**ALWAYS work on feature branches. NEVER commit directly to `main` without explicit user permission.**
-
-**Before making ANY changes or commits:**
-1. Check current branch: `git branch --show-current`
-2. If on `main`, create a feature branch FIRST
-3. Only commit to main if user explicitly approves
-
-**This applies to ALL changes:**
-- Code changes
-- Documentation updates (including CLAUDE.md)
-- Configuration files
-- Any other modifications
-
-**Prohibited workflow:**
-```bash
-# ❌ WRONG - Committing directly to main
-git branch --show-current  # shows: main
-# ... make changes to files ...
-git add .
-git commit -m "some change"  # NEVER DO THIS ON MAIN
-```
-
-**Correct workflow:**
-```bash
-# ✅ CORRECT - Create branch first
-git branch --show-current  # shows: main
-git checkout -b NOJIRA-descriptive-change-name  # Create feature branch FIRST
-# ... make changes to files ...
-git add .
-git commit -m "NOJIRA-descriptive-change-name
-
-- project-name: What changed"  # Safe - on feature branch, title matches branch
-```
-
-**Exception:**
-Only commit directly to main when user explicitly says:
-- "commit this to main"
-- "yes, commit directly to main" (in response to your question)
-
-### CRITICAL: Merging to Main Branch
+**NEVER commit directly to `main` without explicit user permission.**
 
 **NEVER merge any branch to `main` without explicit user permission.**
 
-**Prohibited actions without user approval:**
-- `git merge <branch>` while on main
-- `git merge <branch> --no-ff` while on main
-- Any operation that merges commits into main
+**For detailed branch strategies and merge workflows, see [git-workflow-guide.md](docs/git-workflow-guide.md)**
 
-**Required workflow:**
-1. ✅ Push feature branches to remote: `git push -u origin <branch-name>`
-2. ✅ Create pull requests on GitHub for review
-3. ❌ **DO NOT** merge to main directly - always ask user first
+## Build & Development
 
-**If user says "push it" or similar:**
-- **ONLY push the current branch** to remote
-- **DO NOT assume** this means merge to main
-- **ASK explicitly** if merge to main is intended
+**For complete build commands, testing patterns, code generation, and linting, see [development-guide.md](docs/development-guide.md)**
 
-**Example - What to do:**
-```
-User: "push it"
-Claude: "I'll push the current branch to remote. Should I also merge it to main, or just push the feature branch?"
-```
-
-**Only merge to main when the user explicitly says:**
-- "merge to main"
-- "merge it to main and push"
-- "yes, merge to main" (in response to your question)
-
-## Build & Development Commands
-
-### Prerequisites
-Some services require system libraries:
-```bash
-# ZMQ libraries (required by bin-api-manager and other services)
-apt update && apt install -y pkg-config libzmq5 libzmq3-dev libczmq4 libczmq-dev
-```
-
-### Building Services
-
-Each service follows the same build pattern:
-
-```bash
-# Navigate to a service directory
-cd bin-<service-name>
-
-# Configure git for private modules (if needed)
-git config --global url."https://${GL_DEPLOY_USER}:${GL_DEPLOY_TOKEN}@gitlab.com".insteadOf "https://gitlab.com"
-export GOPRIVATE="gitlab.com/voipbin"
-
-# Download dependencies
-go mod download
-
-# Vendor dependencies (optional but recommended for reproducible builds)
-go mod vendor
-
-# Build the service
-go build ./cmd/...
-
-# Run the service with default configuration
-./<service-name>
-
-# Show available configuration flags
-./<service-name> --help
-```
-
-### Testing
-
-```bash
-# From monorepo root: Run tests for all services
-find . -name "go.mod" -execdir go test ./... \;
-
-# Test a specific service
-cd bin-<service-name>
-go test -v ./...
-
-# Run tests with coverage
-go test -coverprofile cp.out -v ./...
-go tool cover -html=cp.out -o cp.html
-go tool cover -func=cp.out
-
-# Test a specific package
-go test -v ./pkg/servicehandler/...
-```
-
-### Testing with SQLite Test Databases
-
-**Pattern used across ALL services in the monorepo:**
-
-Each service has `scripts/database_scripts/` directory containing simplified SQL files for unit testing with SQLite.
-
-**Purpose:**
-- **Isolated unit tests** - Test database operations without requiring MySQL connection
-- **Fast test execution** - SQLite is lightweight and runs in-memory
-- **CI/CD friendly** - No external database dependencies needed
-- **Good enough for CRUD** - SQLite doesn't support all MySQL features, but sufficient for basic CRUD operation tests
-
-**Pattern:**
-```
-bin-<service-name>/
-└── scripts/
-    └── database_scripts/
-        ├── table_resource1.sql
-        ├── table_resource2.sql
-        └── table_resource3.sql
-```
-
-**SQL file format:**
-- Simplified CREATE TABLE statements compatible with SQLite
-- Copied and adapted from real schema in `bin-dbscheme-manager` Alembic migrations
-- MySQL-specific features removed or simplified (e.g., `BINARY(16)` → `BLOB`, `DATETIME(6)` → `TEXT`)
-- Primary keys and basic indexes included
-- Foreign keys simplified (SQLite has limited FK support in older versions)
-
-**Example (`table_chats.sql`):**
-```sql
-CREATE TABLE chat_chats (
-    id          BLOB PRIMARY KEY,
-    customer_id BLOB,
-    type        TEXT,
-    tm_create   TEXT,
-    tm_update   TEXT,
-    tm_delete   TEXT
-);
-
-CREATE INDEX idx_chat_chats_customer_id ON chat_chats(customer_id);
-```
-
-**Usage in tests:**
-```go
-func setupTestDB(t *testing.T) *sql.DB {
-    db, err := sql.Open("sqlite3", ":memory:")
-    require.NoError(t, err)
-
-    // Load schema from scripts/database_scripts/
-    schema, _ := os.ReadFile("../../scripts/database_scripts/table_chats.sql")
-    _, err = db.Exec(string(schema))
-    require.NoError(t, err)
-
-    return db
-}
-
-func TestChatCreate(t *testing.T) {
-    db := setupTestDB(t)
-    defer db.Close()
-
-    handler := dbhandler.New(db, nil)
-    // ... test CRUD operations
-}
-```
-
-**Important notes:**
-- These SQL files are NOT the source of truth (that's `bin-dbscheme-manager` Alembic migrations)
-- These are test fixtures, manually created/updated as needed
-- Not all MySQL features work in SQLite (stored procedures, full-text search, etc.)
-- For integration tests requiring MySQL-specific features, use actual MySQL test database
-
-**When to update:**
-- After creating new Alembic migration in `bin-dbscheme-manager`
-- When adding new tables or significant schema changes
-- When database handler tests fail due to schema mismatch
-
-### Code Generation
-
-Many services use code generation for mocks and API specs:
-
-```bash
-# Generate mocks for a specific service
-cd bin-<service-name>
-go generate ./...
-
-# Generate OpenAPI models (from bin-openapi-manager)
-cd bin-openapi-manager
-go generate ./...
-
-# Update all services in monorepo (run from root)
-ls -d */ | xargs -I {} bash -c "cd '{}' && go get -u ./... && go mod vendor && go generate ./... && go test ./..."
-```
-
-### Linting
-
-```bash
-# Run go vet
-go vet ./...
-
-# Run golangci-lint (recommended)
-golangci-lint run -v --timeout 5m
-```
+Quick references:
+- Build: `cd bin-<service-name> && go build ./cmd/...`
+- Test: `go test -v ./...`
+- Generate: `go generate ./...`
+- Lint: `golangci-lint run -v --timeout 5m`
 
 ## Database Migrations with Alembic
 
-### Overview
-
-Database schema changes for VoIPbin services are managed through Alembic migrations in the `bin-dbscheme-manager` service. This is the ONLY way to modify database schemas - never run manual SQL DDL statements against production databases.
-
-### ⚠️ CRITICAL: AI Security Boundaries
+**CRITICAL: Database schema changes ONLY through Alembic migrations in `bin-dbscheme-manager`.**
 
 **What AI CAN do:**
 - ✅ Create migration files (`alembic -c alembic.ini revision -m "..."`)
 - ✅ Edit migration files to add SQL in upgrade()/downgrade() functions
-- ✅ Read and explain migration file contents
 - ✅ Commit migration files to git
 
 **What AI MUST NEVER do:**
 - 🚫 Run `alembic upgrade` (applies migrations to database)
 - 🚫 Run `alembic downgrade` (rolls back database changes)
 - 🚫 Execute any SQL that modifies database schema
-- 🚫 Apply migrations automatically
 
-**Why:** Database schema changes are irreversible operations requiring:
-- Human review and explicit authorization
-- Testing on development environment first
-- VPN access to production database
-- Coordination with deployment schedule
-- Risk of data loss or service outages
+**Why:** Database changes are irreversible and require human authorization, testing, and VPN access.
 
-AI can assist with creating and reviewing migration files, but database execution requires human control.
+**For complete migration workflows, patterns, and troubleshooting, see [common-workflows.md#database-migrations-with-alembic](docs/common-workflows.md#database-migrations-with-alembic)**
 
-### When to Create Migrations
+## Architecture
 
-Create an Alembic migration whenever you:
-- Add new columns to existing tables
-- Create new tables
-- Modify column types or constraints
-- Add/remove indexes
-- Change foreign key relationships
+**For service categories, inter-service communication, configuration, and deployment, see [architecture-deep-dive.md](docs/architecture-deep-dive.md)**
 
-**Common scenarios:**
-- Adding fields to a model (e.g., adding `owner_type` column to `storage_files` table)
-- Creating tables for new features
-- Database refactoring to support new functionality
-
-### Migration Workflow
-
-**Step 1: Navigate to bin-dbscheme-manager**
-```bash
-cd bin-dbscheme-manager/bin-manager
-```
-
-**Step 2: Configure Alembic (first time only)**
-```bash
-# Copy sample config
-cp alembic.ini.sample alembic.ini
-
-# Edit alembic.ini and set database connection
-# sqlalchemy.url = mysql://user:pass@host/voipbin
-```
-
-**Step 3: Create migration file**
-```bash
-# Use descriptive naming: <table>_<action>_<type>_<items>
-alembic -c alembic.ini revision -m "storage_files add column owner_type"
-```
-
-This creates a new file in `main/versions/` with format: `<hash>_storage_files_add_column_owner_type.py`
-
-**Step 4: Edit migration file**
-
-Edit the generated file to add your SQL changes:
-```python
-def upgrade():
-    op.execute("""
-        ALTER TABLE storage_files
-        ADD COLUMN owner_type VARCHAR(255) DEFAULT '' AFTER owner_id
-    """)
-
-def downgrade():
-    op.execute("""
-        ALTER TABLE storage_files
-        DROP COLUMN owner_type
-    """)
-```
-
-**Step 5: Commit and push** (AI can do this)
-```bash
-cd /home/pchero/gitvoipbin/monorepo
-git add bin-dbscheme-manager/bin-manager/main/versions/<hash>_*.py
-git commit -m "feat(dbscheme): add owner_type column to storage_files table"
-git push
-```
-
-**Step 6: (HUMAN ONLY) Test migration locally**
-```bash
-# 🚫 AI MUST NOT execute these commands
-
-# Apply migration to local database
-alembic -c alembic.ini upgrade head
-
-# Verify schema change
-mysql -u user -p voipbin -e "DESCRIBE storage_files;"
-
-# Test rollback (optional)
-alembic -c alembic.ini downgrade -1
-alembic -c alembic.ini upgrade head
-```
-
-**Step 7: (HUMAN ONLY) Apply to staging/production**
-
-Connect to VPN first (REQUIRED), then apply migration:
-```bash
-# 🚫 AI MUST NOT execute these commands
-
-cd bin-dbscheme-manager/bin-manager
-alembic -c alembic.ini upgrade head
-```
-
-### Migration Best Practices
-
-1. **Always add rollback logic** - Implement both `upgrade()` and `downgrade()` functions
-2. **Use raw SQL** - Migrations use `op.execute()` with raw SQL, not SQLAlchemy DDL
-3. **Test locally first** - Never run untested migrations against staging/production
-4. **One change per migration** - Keep migrations focused and atomic
-5. **Descriptive names** - Follow naming convention: `<table>_<action>_<type>_<items>`
-6. **Coordinate with code** - Deploy code changes that depend on schema changes AFTER migration runs
-
-### Common Migration Patterns
-
-**Add column:**
-```python
-def upgrade():
-    op.execute("""
-        ALTER TABLE <table_name>
-        ADD COLUMN <column_name> <type> DEFAULT <default_value> AFTER <existing_column>
-    """)
-
-def downgrade():
-    op.execute("""
-        ALTER TABLE <table_name>
-        DROP COLUMN <column_name>
-    """)
-```
-
-**Create table:**
-```python
-def upgrade():
-    op.execute("""
-        CREATE TABLE <table_name> (
-            id BINARY(16) NOT NULL PRIMARY KEY,
-            customer_id BINARY(16) NOT NULL,
-            name VARCHAR(255) NOT NULL,
-            tm_create DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
-            INDEX idx_customer_id (customer_id)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-    """)
-
-def downgrade():
-    op.execute("""DROP TABLE <table_name>""")
-```
-
-### Troubleshooting
-
-**Issue: "Target database is not up to date"**
-```bash
-# Check current migration version
-alembic -c alembic.ini current
-
-# View migration history
-alembic -c alembic.ini history
-
-# Apply missing migrations
-alembic -c alembic.ini upgrade head
-```
-
-**Issue: Migration fails to apply**
-1. Check database connection in `alembic.ini`
-2. Verify VPN connection for remote databases
-3. Check SQL syntax in migration file
-4. Review error messages for constraint violations
-
-**Issue: Need to rollback migration**
-```bash
-# Rollback last migration
-alembic -c alembic.ini downgrade -1
-
-# Rollback to specific revision
-alembic -c alembic.ini downgrade <revision_id>
-```
-
-### Important Notes
-
-- VPN connection is MANDATORY for staging/production migrations
-- Never modify applied migrations - create new ones instead
-- Coordinate schema changes with dependent services
-- Test migrations against realistic data volumes
-- Document breaking changes in migration docstrings
-- See `bin-dbscheme-manager/CLAUDE.md` for service-specific details
+Key points:
+- 30+ Go microservices for VoIP, messaging, AI, and communication workflows
+- RabbitMQ RPC for inter-service communication (not HTTP)
+- Shared MySQL database, Redis cache, RabbitMQ broker
+- Kubernetes deployment on GCP GKE
 
 ## API Design Principles
 
@@ -961,8 +210,6 @@ API responses should contain ONLY the requested resource type, without including
 - Maintains clear service boundaries
 - Keeps APIs simple and predictable
 - Prevents tight coupling between services
-- Makes caching and performance optimization easier
-- Reduces breaking changes when related resources evolve
 
 **Examples:**
 
@@ -970,427 +217,59 @@ API responses should contain ONLY the requested resource type, without including
 ```
 GET /v1/billings/{billing-id}
 Returns: BillingManagerBilling (just the billing record)
-
-{
-  "id": "550e8400-...",
-  "account_id": "7b94f82f-...",
-  "reference_id": "8c95f93g-...",
-  "cost_total": 1.40,
-  ...
-}
 ```
 
 ❌ **WRONG - Combined Response:**
 ```
 GET /v1/billings/{billing-id}
-Returns: Billing + Account + Reference Resource
-
-{
-  "billing": { ... },
-  "account": { "name": "...", "balance": ... },  // Don't include
-  "call": { "duration": ..., "caller_id": ... }   // Don't include
-}
+Returns: Billing + Account + Reference Resource (Don't include related resources)
 ```
 
-**Exceptions to Atomic Response Rule:**
-
-1. **Pagination Metadata** - List responses can include `next_page_token` as it's directly related to the query:
-   ```json
-   {
-     "result": [...],
-     "next_page_token": "2024-01-15T10:30:00"
-   }
-   ```
-
-2. **Atomic Operation Responses** - When a single operation creates multiple related resources, the response can include all created resources:
-   ```
-   POST /v1/calls (with groupcall option)
-   Returns: { "call": {...}, "groupcall": {...} }
-
-   Reason: Call and groupcall are created atomically in one transaction,
-   so returning both is appropriate.
-   ```
-
-**How to Fetch Related Data:**
-For all other cases, clients should make separate requests:
-```
-1. GET /v1/billings/{billing-id} → Get billing record
-2. GET /v1/billing_accounts/{account-id} → Get account details (if needed)
-3. GET /v1/calls/{call-id} → Get call details (if needed)
-```
-
-**Note:** For authentication and authorization patterns, see `bin-api-manager/CLAUDE.md`.
-
-## Architecture
-
-### Service Categories
-
-**Core API & Gateway:**
-- `bin-api-manager` - External REST API gateway with JWT authentication, Swagger UI at `/swagger/index.html`
-- `bin-openapi-manager` - Centralized OpenAPI 3.0 specification repository, generates Go types used by all services
-
-**Call & Media Management:**
-- `bin-call-manager` - Inbound/outbound call routing, media control (recording, transcription, DTMF, hold, mute)
-- `bin-flow-manager` - Flow execution engine (IVR workflows), manages action sequences for calls
-- `bin-conference-manager` - Audio conferencing with recording, transcription, and media streaming
-- `bin-transcribe-manager` - Audio transcription services (STT)
-- `bin-tts-manager` - Text-to-Speech integration
-- `bin-registrar-manager` - SIP registrar (UDP/TCP/WebRTC)
-- `voip-asterisk-proxy` - Integration proxy for Asterisk PBX
-
-**AI & Automation:**
-- `bin-ai-manager` - AI chatbot integrations, summarization, task extraction
-- `bin-pipecat-manager` - AI voice assistant pipeline management
-
-**Queue & Routing:**
-- `bin-queue-manager` - Call queueing and distribution logic
-- `bin-route-manager` - Routing policies and rules
-- `bin-transfer-manager` - Call transfer logic
-
-**Customer & Agent Management:**
-- `bin-customer-manager` - Customer accounts and relationships
-- `bin-agent-manager` - Agent presence, status, permissions, addresses
-- `bin-billing-manager` - Billing accounts, balance tracking, subscription management
-
-**Campaign & Outbound:**
-- `bin-campaign-manager` - Outbound dialing campaigns with service level tracking
-- `bin-outdial-manager` - Outbound call dialer engine
-- `bin-number-manager` - DID and phone number provisioning
-
-**Messaging & Communication:**
-- `bin-message-manager` - SMS and messaging
-- `bin-email-manager` - Email sending and inbox parsing
-- `bin-chat-manager` - Web chat and live chat integration
-- `bin-conversation-manager` - Conversation thread management
-
-**Infrastructure & Utilities:**
-- `bin-common-handler` - Shared library (RabbitMQ handlers, data models, utilities)
-- `bin-storage-manager` - File storage backend (integrates with GCP Cloud Storage)
-- `bin-webhook-manager` - Webhook sender for customer notifications
-- `bin-hook-manager` - Webhook receivers
-- `bin-tag-manager` - Resource labeling and tagging
-- `bin-dbscheme-manager` - Database schemas and migrations
-- `bin-sentinel-manager` - Monitoring and health checks
-
-### Inter-Service Communication
-
-**RabbitMQ RPC Pattern:**
-Services communicate using RabbitMQ request/response pattern, not direct HTTP:
-
-```go
-// Request format (defined in bin-common-handler/models/sock)
-type Request struct {
-    URI        string      // e.g., "/v1/calls"
-    Method     string      // "GET", "POST", "PUT", "DELETE"
-    Publisher  string      // Sending service name
-    DataType   string      // "application/json"
-    Data       interface{} // Request payload
-}
-
-// Response format
-type Response struct {
-    StatusCode int         // HTTP-style status code
-    DataType   string      // "application/json"
-    Data       string      // JSON response
-}
-```
-
-**Queue Naming Convention:**
-- Request queues: `bin-manager.<service-name>.request`
-- Event queues: `bin-manager.<service-name>.event`
-- Delayed exchange: `bin-manager.delay`
-
-**Making Inter-Service Requests:**
-Use `bin-common-handler/pkg/requesthandler` which provides typed methods for all services:
-
-```go
-import "monorepo/bin-common-handler/pkg/requesthandler"
-
-// Example: Creating a call via call-manager
-reqHandler := requesthandler.New(sockHandler)
-call, err := reqHandler.CallV1CallCreate(context.Background(), createReq)
-```
-
-**Event Publishing:**
-Use `bin-common-handler/pkg/notifyhandler` for publishing events:
-
-```go
-import "monorepo/bin-common-handler/pkg/notifyhandler"
-
-notifyHandler := notifyhandler.New(sockHandler)
-notifyHandler.PublishEvent(event)
-```
-
-### Configuration Management
-
-Most services use **Cobra + Viper** for configuration (see `internal/config` packages). Configuration precedence:
-
-1. Command-line flags (highest priority)
-2. Environment variables
-3. Default values
-
-**Common configuration patterns:**
-
-```bash
-# Via command-line flags
-./service-name \
-  --database_dsn="user:pass@tcp(host:3306)/db" \
-  --rabbitmq_address="amqp://guest:guest@localhost:5672" \
-  --redis_address="localhost:6379" \
-  --redis_database=1 \
-  --prometheus_endpoint="/metrics" \
-  --prometheus_listen_address=":2112"
-
-# Via environment variables
-export DATABASE_DSN="user:pass@tcp(host:3306)/db"
-export RABBITMQ_ADDRESS="amqp://guest:guest@localhost:5672"
-./service-name
-```
-
-**Common configuration fields:**
-- Database: `--database_dsn` / `DATABASE_DSN`
-- RabbitMQ: `--rabbitmq_address` / `RABBITMQ_ADDRESS`
-- Redis: `--redis_address`, `--redis_password`, `--redis_database`
-- Prometheus: `--prometheus_endpoint`, `--prometheus_listen_address`
-- Queue names: `--rabbit_queue_listen`, `--rabbit_queue_event`
-
-### Package Organization Pattern
-
-Services follow a consistent structure:
-
-```
-bin-<service-name>/
-├── cmd/<service-name>/     # Main entry point
-│   ├── main.go            # Application initialization
-│   └── init.go            # Flag/config setup (some services)
-├── internal/              # Private packages
-│   └── config/           # Configuration management (Cobra/Viper)
-├── models/               # Data models and types
-├── pkg/                  # Business logic packages
-│   ├── dbhandler/       # Database and cache operations
-│   ├── cachehandler/    # Redis operations
-│   ├── listenhandler/   # RabbitMQ request handler
-│   ├── subscribehandler/ # Event subscription handler
-│   └── <domain>handler/ # Domain-specific handlers
-├── gens/                # Generated code (OpenAPI, mocks)
-├── openapi/            # OpenAPI specs (for api-manager)
-├── k8s/                # Kubernetes manifests
-├── vendor/             # Vendored dependencies
-├── go.mod              # Module definition with replace directives
-└── README.md
-```
-
-**Handler Pattern:**
-Each handler follows:
-1. Interface definition in `main.go` or package file
-2. Implementation struct with injected dependencies
-3. Mock generation via `//go:generate mockgen`
-4. Tests in `*_test.go` using table-driven tests
-
-### Database & Caching
-
-**MySQL** - Shared database for persistent storage
-- Query builder: `github.com/Masterminds/squirrel`
-- Access via `pkg/dbhandler` abstractions in each service
-
-**Redis** - Distributed cache for:
-- Activeflow state (flow-manager)
-- Call state and temporary data
-- Agent presence information
-- Rate limiting and throttling
-
-**Pattern:** Always use `dbhandler` packages - they provide unified interface to both database and cache.
-
-### Testing Patterns
-
-**Mock Generation:**
-```go
-//go:generate mockgen -package packagename -destination ./mock_main.go -source main.go -build_flags=-mod=mod
-```
-
-**Test Structure:**
-- Tests co-located with source: `*_test.go`
-- Table-driven tests with subtests
-- Mocks: `go.uber.org/mock`
-- 34+ test files in flow-manager, similar counts in other services
-
-**Running Tests:**
-```bash
-go test -v ./...
-go test -v ./pkg/specifichandler/...
-```
-
-### CircleCI Continuous Integration
-
-Path filtering enables selective service testing:
-- `.circleci/config.yml` - Path filter setup
-- `.circleci/config_work.yml` - Actual build jobs
-- Only changed services are tested on each commit
+**For exceptions, patterns, and authentication details, see [reference.md#api-design-principles](docs/reference.md#api-design-principles)**
 
 ## Common Workflows
 
-### Adding a New API Endpoint
+**For complete workflows and examples, see [common-workflows.md](docs/common-workflows.md)**
 
-1. Define OpenAPI spec in `bin-openapi-manager/openapi/paths/<resource>/`
-2. Regenerate models: `cd bin-openapi-manager && go generate ./...`
-3. Add handler in target service's `pkg/listenhandler/`
-4. Implement business logic in appropriate domain handler
-5. Register endpoint in `bin-api-manager` if public-facing
-6. Update Swagger docs in api-manager: `swag init`
+Topics covered:
+- Adding a New API Endpoint
+- Creating a New Flow Action
+- Adding a New Manager Service
+- Modifying Shared Models
+- Parsing Filters from Request Body
+- Database Migrations with Alembic
 
-### Creating a New Flow Action
+## Code Quality
 
-1. Define action type in `bin-flow-manager/models/action/`
-2. Add action handler in `bin-flow-manager/pkg/actionhandler/`
-3. Implement execution logic in target service (e.g., call-manager)
-4. Update flow-manager's request handler to route to new service
-5. Add tests for action validation and execution
+Follow these standards:
+- Generate mocks after interface changes (`go generate ./...`)
+- Write table-driven tests
+- Use function-scoped logging pattern
+- Follow Go naming conventions (List not Gets)
+- Handle errors properly
 
-### Adding a New Manager Service
+**For detailed standards, logging examples, and naming conventions, see [code-quality-standards.md](docs/code-quality-standards.md)**
 
-1. Create directory: `bin-<name>-manager/`
-2. Copy structure from existing service (e.g., tag-manager)
-3. Update `bin-api-manager/go.mod` with replace directive
-4. Add RabbitMQ queue names to `bin-common-handler/models/outline/`
-5. Add request methods to `bin-common-handler/pkg/requesthandler/`
-6. Update `.circleci/config.yml` path mappings
+### Common Gotchas
 
-### Modifying Shared Models
+#### UUID Fields and DB Tags
 
-When changing `bin-common-handler` or `bin-openapi-manager`:
-
-1. Make changes in the shared package
-2. Regenerate if needed: `go generate ./...`
-3. Test impact on dependent services
-4. Update all affected services' vendor directories if using vendoring
-5. Coordinate deployment - shared changes affect multiple services
-
-**Note:** For flow execution patterns and variable substitution, see `bin-flow-manager/CLAUDE.md`.
-
-### Parsing Filters from Request Body
-
-**Note:** This is a monorepo-wide pattern for all services that expose list endpoints (GET /v1/resources). Implemented using `bin-common-handler/pkg/utilhandler`. See individual service CLAUDE.md files for service-specific filter field definitions.
-
-**Pattern:** All list endpoints parse filters from request body (JSON), not URL query parameters.
-
-This pattern was implemented as part of the `commondatabasehandler` refactoring. See `docs/plans/2026-01-14-listenhandler-filter-parsing-implementation-plan.md` for complete implementation details.
-
-**🚨 CRITICAL RULE: NEVER parse filter data from URL query parameters**
-
-**ONLY pagination parameters** (`page_size`, `page_token`) should be parsed from URL query parameters:
-```go
-// ✅ CORRECT - Parse pagination from URL
-tmpSize, _ := strconv.Atoi(u.Query().Get(PageSize))
-pageSize := uint64(tmpSize)
-pageToken := u.Query().Get(PageToken)
-
-// ✅ CORRECT - Parse filters from request body
-tmpFilters, err := utilhandler.ParseFiltersFromRequestBody(m.Data)
-typedFilters, err := utilhandler.ConvertFilters[resource.FieldStruct, resource.Field](...)
-```
+**CRITICAL: UUID fields MUST use the `,uuid` db tag for proper type conversion.**
 
 ```go
-// ❌ WRONG - Never parse filter data from URL
-aicallID := uuid.FromStringOrNil(u.Query().Get("aicall_id"))  // BUG!
-customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))  // BUG!
+// ✅ CORRECT - UUID field with uuid tag
+type Model struct {
+    ID         uuid.UUID `db:"id,uuid"`
+    CustomerID uuid.UUID `db:"customer_id,uuid"`
+}
 
-// These will be uuid.Nil because requesthandler sends them in body, not URL
-// This causes empty query results and is a common bug pattern
-```
-
-**Why this is critical:**
-- `bin-common-handler/pkg/requesthandler` sends **ALL filters in request body**, not URL
-- Parsing from URL gets `uuid.Nil` or empty strings → database queries return empty results
-- This bug was found in `bin-ai-manager/v1_messages.go` (see `docs/plans/2026-01-16-fix-aimessages-empty-list-bug-design.md`)
-
-**Reference implementation:** `bin-agent-manager/pkg/listenhandler/v1_agents.go:20-53`
-
-**How it works:**
-
-**Step 1: Define FieldStruct in model package**
-
-Create or update `models/<resource>/filters.go`:
-```go
-package <resource>
-
-import "github.com/gofrs/uuid"
-
-type FieldStruct struct {
-    CustomerID uuid.UUID `filter:"customer_id"`
-    Deleted    bool      `filter:"deleted"`
-    Name       string    `filter:"name"`
-    // ... other filterable fields
+// ❌ WRONG - Missing uuid tag
+type Model struct {
+    ID         uuid.UUID `db:"id"`  // Will cause conversion issues
 }
 ```
 
-**Step 2: Parse filters in listenhandler**
-
-In `pkg/listenhandler/v1_<resource>s.go`:
-```go
-func (h *listenHandler) processV1<Resource>sGet(ctx context.Context, m sock.Request) (sock.Response, error) {
-    // Parse pagination from URL (unchanged)
-    u, err := url.Parse(m.URI)
-    // ...
-
-    // Parse filters from request body (NEW)
-    tmpFilters, err := h.utilHandler.ParseFiltersFromRequestBody(m.Data)
-    if err != nil {
-        log.Errorf("Could not parse filters. err: %v", err)
-        return simpleResponse(400), nil
-    }
-
-    // Convert to typed filters using FieldStruct
-    typedFilters, err := h.utilHandler.ConvertFilters[<resource>.FieldStruct, <resource>.Field](
-        <resource>.FieldStruct{},
-        tmpFilters,
-    )
-    if err != nil {
-        log.Errorf("Could not convert filters. err: %v", err)
-        return simpleResponse(400), nil
-    }
-
-    // Use typedFilters with dbhandler
-    items, err := h.<resource>Handler.<Resource>GetAll(ctx, typedFilters, pageOpts)
-    // ...
-}
-```
-
-**Step 3: Make requests with body filters**
-
-External API calls (via `bin-api-manager`):
-```bash
-curl -X GET https://api.voipbin.net/v1/conversations \
-  -H "Authorization: Bearer <token>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
-    "deleted": false,
-    "limit": 50
-  }'
-```
-
-Internal RPC calls (via `requesthandler`):
-```go
-// requesthandler already sends filters in body automatically
-conversations, err := reqHandler.ConversationV1ConversationGetAll(ctx, filters, pageOpts)
-```
-
-**Why this pattern:**
-
-1. **Consistency** - Matches how `requesthandler` has always sent filters (in body)
-2. **Type safety** - FieldStruct enables compile-time validation and type conversion
-3. **Complex filters** - Body JSON supports nested structures, URL params don't
-4. **No URL length limits** - Avoids issues with long filter strings
-
-**Migration notes:**
-
-- Old pattern: Filters in URL query params (e.g., `?customer_id=xxx&deleted=false`)
-- New pattern: Filters in request body JSON
-- Pagination still in URL: `?page=1&limit=50`
-
-For full implementation details, see:
-- `bin-common-handler/pkg/utilhandler/filters.go` - Generic filter parsing functions
-- `docs/plans/2026-01-14-listenhandler-filter-parsing-implementation-plan.md` - Complete implementation guide
+**For complete gotcha explanations and troubleshooting, see [code-quality-standards.md#common-gotchas](docs/code-quality-standards.md#common-gotchas)**
 
 ## Where to Document New Information
 
@@ -1422,315 +301,12 @@ Use this decision tree when adding new documentation:
       - Service-specific testing approaches
       - Domain-specific implementation details
 
-## Key Dependencies
+## Reference
 
-**All Services:**
-- `github.com/go-sql-driver/mysql` - MySQL driver
-- `github.com/go-redis/redis/v8` - Redis client
-- `github.com/rabbitmq/amqp091-go` - RabbitMQ client
-- `github.com/sirupsen/logrus` - Structured logging
-- `github.com/prometheus/client_golang` - Prometheus metrics
-- `go.uber.org/mock` - Mock generation for testing
+**For dependencies, deployment info, security considerations, and resources, see [reference.md](docs/reference.md)**
 
-**Common Tools:**
-- `github.com/Masterminds/squirrel` - SQL query builder
-- `github.com/spf13/cobra` - CLI framework
-- `github.com/spf13/viper` - Configuration management
-- `github.com/gofrs/uuid` - UUID generation
-
-**API Gateway Specific:**
-- `github.com/gin-gonic/gin` - HTTP router
-- `github.com/swaggo/swag` - Swagger documentation
-- `github.com/oapi-codegen/oapi-codegen` - OpenAPI code generation
-- `github.com/golang-jwt/jwt` - JWT authentication
-- `github.com/pebbe/zmq4` - ZeroMQ bindings
-
-**Cloud Integration:**
-- `cloud.google.com/go/storage` - GCP Cloud Storage
-
-## Deployment
-
-**Kubernetes:**
-- Each service has `k8s/` directory with manifests
-- Prometheus metrics exposed on configured port (default `:2112` on `/metrics`)
-- Dockerfiles for containerization
-
-**Infrastructure Requirements:**
-- GCP GKE cluster (recommended)
-- MySQL database
-- Redis cluster
-- RabbitMQ cluster
-- Asterisk/RTPEngine for media (external to this repo)
-- Public domain with TLS
-
-## Important Notes
-
-### Monorepo-Specific Practices
-
-1. **Always use replace directives** - All `monorepo/bin-*` imports use local paths in `go.mod`
-2. **Coordinate breaking changes** - Changes to shared packages affect multiple services
-3. **Test holistically** - Inter-service changes require testing communication flow
-4. **Update go.mod carefully** - Adding dependencies may affect all services
-
-### Communication Patterns
-
-1. **Never use HTTP between services** - Always use RabbitMQ RPC
-2. **Use typed request methods** - Don't construct `sock.Request` manually, use `requesthandler`
-3. **Handle async responses** - RabbitMQ RPC is asynchronous
-4. **Publish events for notifications** - Use `notifyhandler.PublishEvent()` for pub/sub
-
-### Code Quality
-
-1. **Generate mocks** - Run `go generate ./...` after interface changes
-2. **Write table-driven tests** - Follow existing test patterns
-3. **Use structured logging** - Follow the function-scoped log pattern (see "Logging Standards" section below)
-4. **Handle errors properly** - Wrap errors with `github.com/pkg/errors`
-5. **Follow Go naming conventions** - See "Go Naming Conventions" section below
-
-#### Logging Standards
-
-**CRITICAL: All services in the monorepo MUST follow this logging pattern for consistency.**
-
-**The Pattern:**
-1. Create a function-scoped log variable at the beginning of each function
-2. Include the function name and meaningful input arguments in the initial fields
-3. Use the function-scoped log variable for all logging within that function
-4. Augment the log with result fields using `log = log.WithField()` or `log = log.WithFields()` before the final log statement
-5. Write appropriate log statements at key points (Debug for routine operations, Info for significant events, Error for failures)
-
-**Example (from bin-flow-manager):**
-```go
-func (h *activeflowHandler) ExecuteContinue(ctx context.Context, activeflowID uuid.UUID, caID uuid.UUID) error {
-    log := logrus.WithFields(logrus.Fields{
-        "func":              "ExecuteContinue",
-        "activeflow_id":     activeflowID,
-        "current_action_id": caID,
-    })
-    log.Debug("Executing continue")
-
-    // ... business logic ...
-
-    af, err := h.Get(ctx, activeflowID)
-    if err != nil {
-        log.Errorf("Could not get activeflow info: %v", err)
-        return errors.Wrapf(err, "could not get activeflow info")
-    }
-
-    // ... more logic ...
-
-    tmp, err := h.ExecuteNextAction(ctx, activeflowID, caID)
-    if err != nil {
-        return errors.Wrapf(err, "could not execute the next action")
-    }
-
-    // Augment log with result before final log
-    log = log.WithField("action", tmp)
-    log.Debug("Completed the activeflow execution")
-
-    return nil
-}
-```
-
-**Example (from bin-talk-manager):**
-```go
-func (h *participantHandler) ParticipantAdd(ctx context.Context, customerID, chatID, ownerID uuid.UUID, ownerType string) (*participant.Participant, error) {
-    log := log.WithFields(log.Fields{
-        "func":        "ParticipantAdd",
-        "customer_id": customerID,
-        "chat_id":     chatID,
-        "owner_id":    ownerID,
-        "owner_type":  ownerType,
-    })
-    log.Debug("Adding participant")
-
-    // ... validation and business logic ...
-
-    err := h.dbHandler.ParticipantCreate(ctx, p)
-    if err != nil {
-        log.Errorf("Failed to create participant. err: %v", err)
-        return nil, fmt.Errorf("failed to create participant: %w", err)
-    }
-
-    // Augment log with result before final log
-    log = log.WithField("participant_id", participantID)
-    log.Info("Participant added successfully")
-
-    h.notifyHandler.PublishWebhookEvent(ctx, customerID, participant.EventParticipantAdded, p)
-
-    return p, nil
-}
-```
-
-**Key Points:**
-
-1. **Function-scoped variable**: `log := log.WithFields(...)` or `log := logrus.WithFields(...)`
-   - Creates a logger with function context that can be augmented throughout the function
-   - Always include `"func": "FunctionName"` as the first field
-
-2. **Initial fields**: Include meaningful input parameters
-   - UUIDs: customer_id, chat_id, owner_id, etc.
-   - Important string parameters: owner_type, type, etc.
-   - Don't include every parameter - only meaningful ones for debugging
-
-3. **Augmenting log**: Use `log = log.WithField(key, value)` to add result fields
-   - Add before final success log statement
-   - Commonly added: generated IDs, counts, status changes
-   - Example: `log = log.WithField("participant_id", participantID)`
-
-4. **Log levels**:
-   - `log.Debug()` - Routine operations, entry/exit points
-   - `log.Info()` - Significant events (creation, updates, deletions)
-   - `log.Errorf()` - Error conditions with context
-
-**Import Pattern**
-
-**CRITICAL: Always use direct import without alias for clarity:**
-
-```go
-import (
-    "github.com/sirupsen/logrus"
-)
-
-func SomeFunction() {
-    log := logrus.WithFields(logrus.Fields{...})  // ✅ Clear that we're using logrus
-
-    // Later in the function, use the function-scoped log variable:
-    log.WithFields(logrus.Fields{
-        "key": "value",
-    }).Debug("message")
-
-    // For direct calls without function-scoped variable:
-    logrus.Debugf("Direct message: %v", value)  // ✅ Explicit logrus usage
-}
-```
-
-**Why no alias:**
-- Makes code immediately clear that `logrus` is being used (not stdlib `log`)
-- Avoids confusion when reading code
-- Prevents variable shadowing issues
-- Consistent with rest of monorepo
-
-**Benefits of This Pattern:**
-
-- **Consistent context**: All log statements within a function automatically include function name and input context
-- **Augmentable**: Can add result fields without repeating initial context
-- **Traceable**: Easy to trace execution flow with function names and IDs
-- **Maintainable**: Changing initial context only requires updating one line
-- **Debuggable**: Critical information (IDs, types, states) always logged
-
-**This pattern is mandatory for ALL new code and should be applied when refactoring existing code.**
-
-#### Go Naming Conventions
-
-**CRITICAL: Use `List` not `Gets` for collection retrieval methods.**
-
-Following Go standard library conventions (e.g., `os.ReadDir`, `database/sql.Query`), methods that return collections should use `List` naming:
-
-```go
-// ✅ CORRECT - Use List for collection retrieval
-func (h *handler) CallList(ctx context.Context, filters map[Field]any) ([]*Call, error)
-func (h *handler) CallListByCustomerID(ctx context.Context, customerID uuid.UUID) ([]*Call, error)
-
-// ❌ WRONG - Don't use Gets
-func (h *handler) CallGets(ctx context.Context, filters map[Field]any) ([]*Call, error)
-func (h *handler) CallGetsByCustomerID(ctx context.Context, customerID uuid.UUID) ([]*Call, error)
-```
-
-**Naming patterns:**
-- **Single item retrieval:** `Get` (e.g., `CallGet(ctx, id)`)
-- **Collection retrieval:** `List` (e.g., `CallList(ctx, filters)`)
-- **Filtered collections:** `ListBy*` (e.g., `CallListByCustomerID(ctx, customerID)`)
-
-**Test function names:**
-- `Test_Get` - Tests single item retrieval
-- `Test_List` - Tests collection retrieval
-- `Test_ListByCustomerID` - Tests filtered collection retrieval
-
-**Function comments:**
-```go
-// ✅ CORRECT
-// List returns list of calls with filters
-func (h *handler) CallList(ctx context.Context, filters map[Field]any) ([]*Call, error)
-
-// ListByCustomerID returns list of calls by customer ID
-func (h *handler) CallListByCustomerID(ctx context.Context, customerID uuid.UUID) ([]*Call, error)
-
-// ❌ WRONG - Don't use Gets in comments
-// Gets returns list of calls
-func (h *handler) CallList(ctx context.Context, filters map[Field]any) ([]*Call, error)
-```
-
-**Why this matters:**
-- Consistency with Go standard library conventions
-- Makes code more idiomatic and easier to understand
-- Aligns with community best practices (effective Go, code review comments)
-- `Gets` is not a standard Go verb and sounds awkward
-
-### Common Gotchas
-
-#### UUID Fields and DB Tags
-
-**Note:** This affects all services using the `commondatabasehandler` pattern. Critical for database queries to work correctly across the monorepo.
-
-**CRITICAL: UUID fields MUST use the `,uuid` db tag for proper type conversion.**
-
-When adding `db:` struct tags to model fields, UUID fields require special handling:
-
-```go
-// ✅ CORRECT - UUID field with uuid tag
-type Model struct {
-    ID         uuid.UUID `db:"id,uuid"`
-    CustomerID uuid.UUID `db:"customer_id,uuid"`
-    Name       string    `db:"name"`
-}
-
-// ❌ WRONG - Missing uuid tag
-type Model struct {
-    ID         uuid.UUID `db:"id"`           // Will cause string-to-UUID conversion issues
-    CustomerID uuid.UUID `db:"customer_id"`  // Will cause filter parsing errors
-}
-```
-
-**Why this matters:**
-
-1. **Database queries fail silently** - Filters with UUID fields without `,uuid` tags are passed as strings instead of binary values, causing no database matches
-2. **Type conversion errors** - `commondatabasehandler.PrepareFields()` needs the `,uuid` tag to convert `uuid.UUID` → binary for MySQL
-3. **API bugs** - List endpoints return empty results even when data exists
-
-**Example bug:**
-```go
-// Bug: conversation model missing uuid tags
-type Conversation struct {
-    CustomerID uuid.UUID `db:"customer_id"`  // Missing ,uuid tag
-}
-
-// Result: GET /v1/conversations?customer_id=<uuid> returns []
-// Because filter is passed as string, not binary
-```
-
-**How to fix:**
-1. Add `,uuid` tag to ALL uuid.UUID fields in model structs
-2. Regenerate mocks: `go generate ./...`
-3. Update tests: If tests mock database queries, verify UUID values are `uuid.UUID` type, not strings
-4. Run verification workflow: `go mod tidy && go mod vendor && go generate ./... && go clean -testcache && go test ./...`
-
-**Always verify UUID fields have `,uuid` tags when:**
-- Adding new models
-- Refactoring to use `commondatabasehandler` pattern
-- Debugging empty API list responses
-- Reviewing pull requests with model changes
-
-### Security Considerations
-
-1. **JWT authentication** - bin-api-manager validates all external requests
-2. **No secrets in code** - Use environment variables or CLI flags
-3. **Base64 for certificates** - SSL certs passed as base64 strings in config
-4. **Validate input** - Always validate data at service boundaries
-
-## Resources
-
+Quick links:
 - Admin Console: https://admin.voipbin.net/
 - Agent Interface: https://talk.voipbin.net/
 - API Documentation: https://api.voipbin.net/docs/
 - Project Site: http://voipbin.net/
-- Architecture Diagram: `architecture_overview_all.png` in repo root
