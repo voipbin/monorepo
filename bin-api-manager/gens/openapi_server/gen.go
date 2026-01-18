@@ -4679,6 +4679,15 @@ type PostServiceAgentsTalkChatsJSONBody struct {
 	Type TalkManagerTalkType `json:"type"`
 }
 
+// PutServiceAgentsTalkChatsIdJSONBody defines parameters for PutServiceAgentsTalkChatsId.
+type PutServiceAgentsTalkChatsIdJSONBody struct {
+	// Detail The new detail/description of the talk chat.
+	Detail *string `json:"detail,omitempty"`
+
+	// Name The new name of the talk chat.
+	Name *string `json:"name,omitempty"`
+}
+
 // PostServiceAgentsTalkChatsIdParticipantsJSONBody defines parameters for PostServiceAgentsTalkChatsIdParticipants.
 type PostServiceAgentsTalkChatsIdParticipantsJSONBody struct {
 	// OwnerId ID of the owner to add as participant.
@@ -5123,6 +5132,9 @@ type PutServiceAgentsMeStatusJSONRequestBody PutServiceAgentsMeStatusJSONBody
 
 // PostServiceAgentsTalkChatsJSONRequestBody defines body for PostServiceAgentsTalkChats for application/json ContentType.
 type PostServiceAgentsTalkChatsJSONRequestBody PostServiceAgentsTalkChatsJSONBody
+
+// PutServiceAgentsTalkChatsIdJSONRequestBody defines body for PutServiceAgentsTalkChatsId for application/json ContentType.
+type PutServiceAgentsTalkChatsIdJSONRequestBody PutServiceAgentsTalkChatsIdJSONBody
 
 // PostServiceAgentsTalkChatsIdParticipantsJSONRequestBody defines body for PostServiceAgentsTalkChatsIdParticipants for application/json ContentType.
 type PostServiceAgentsTalkChatsIdParticipantsJSONRequestBody PostServiceAgentsTalkChatsIdParticipantsJSONBody
@@ -5888,6 +5900,9 @@ type ServerInterface interface {
 	// Get talk chat by ID
 	// (GET /service_agents/talk_chats/{id})
 	GetServiceAgentsTalkChatsId(c *gin.Context, id string)
+	// Update talk chat
+	// (PUT /service_agents/talk_chats/{id})
+	PutServiceAgentsTalkChatsId(c *gin.Context, id string)
 	// Get participants of a talk chat
 	// (GET /service_agents/talk_chats/{id}/participants)
 	GetServiceAgentsTalkChatsIdParticipants(c *gin.Context, id string)
@@ -12026,6 +12041,30 @@ func (siw *ServerInterfaceWrapper) GetServiceAgentsTalkChatsId(c *gin.Context) {
 	siw.Handler.GetServiceAgentsTalkChatsId(c, id)
 }
 
+// PutServiceAgentsTalkChatsId operation middleware
+func (siw *ServerInterfaceWrapper) PutServiceAgentsTalkChatsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PutServiceAgentsTalkChatsId(c, id)
+}
+
 // GetServiceAgentsTalkChatsIdParticipants operation middleware
 func (siw *ServerInterfaceWrapper) GetServiceAgentsTalkChatsIdParticipants(c *gin.Context) {
 
@@ -13159,6 +13198,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.POST(options.BaseURL+"/service_agents/talk_chats", wrapper.PostServiceAgentsTalkChats)
 	router.DELETE(options.BaseURL+"/service_agents/talk_chats/:id", wrapper.DeleteServiceAgentsTalkChatsId)
 	router.GET(options.BaseURL+"/service_agents/talk_chats/:id", wrapper.GetServiceAgentsTalkChatsId)
+	router.PUT(options.BaseURL+"/service_agents/talk_chats/:id", wrapper.PutServiceAgentsTalkChatsId)
 	router.GET(options.BaseURL+"/service_agents/talk_chats/:id/participants", wrapper.GetServiceAgentsTalkChatsIdParticipants)
 	router.POST(options.BaseURL+"/service_agents/talk_chats/:id/participants", wrapper.PostServiceAgentsTalkChatsIdParticipants)
 	router.DELETE(options.BaseURL+"/service_agents/talk_chats/:id/participants/:participant_id", wrapper.DeleteServiceAgentsTalkChatsIdParticipantsParticipantId)
@@ -17725,6 +17765,32 @@ func (response GetServiceAgentsTalkChatsId404Response) VisitGetServiceAgentsTalk
 	return nil
 }
 
+type PutServiceAgentsTalkChatsIdRequestObject struct {
+	Id   string `json:"id"`
+	Body *PutServiceAgentsTalkChatsIdJSONRequestBody
+}
+
+type PutServiceAgentsTalkChatsIdResponseObject interface {
+	VisitPutServiceAgentsTalkChatsIdResponse(w http.ResponseWriter) error
+}
+
+type PutServiceAgentsTalkChatsId200JSONResponse TalkManagerTalk
+
+func (response PutServiceAgentsTalkChatsId200JSONResponse) VisitPutServiceAgentsTalkChatsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutServiceAgentsTalkChatsId404Response struct {
+}
+
+func (response PutServiceAgentsTalkChatsId404Response) VisitPutServiceAgentsTalkChatsIdResponse(w http.ResponseWriter) error {
+	w.WriteHeader(404)
+	return nil
+}
+
 type GetServiceAgentsTalkChatsIdParticipantsRequestObject struct {
 	Id string `json:"id"`
 }
@@ -19128,6 +19194,9 @@ type StrictServerInterface interface {
 	// Get talk chat by ID
 	// (GET /service_agents/talk_chats/{id})
 	GetServiceAgentsTalkChatsId(ctx context.Context, request GetServiceAgentsTalkChatsIdRequestObject) (GetServiceAgentsTalkChatsIdResponseObject, error)
+	// Update talk chat
+	// (PUT /service_agents/talk_chats/{id})
+	PutServiceAgentsTalkChatsId(ctx context.Context, request PutServiceAgentsTalkChatsIdRequestObject) (PutServiceAgentsTalkChatsIdResponseObject, error)
 	// Get participants of a talk chat
 	// (GET /service_agents/talk_chats/{id}/participants)
 	GetServiceAgentsTalkChatsIdParticipants(ctx context.Context, request GetServiceAgentsTalkChatsIdParticipantsRequestObject) (GetServiceAgentsTalkChatsIdParticipantsResponseObject, error)
@@ -26459,6 +26528,41 @@ func (sh *strictHandler) GetServiceAgentsTalkChatsId(ctx *gin.Context, id string
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(GetServiceAgentsTalkChatsIdResponseObject); ok {
 		if err := validResponse.VisitGetServiceAgentsTalkChatsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PutServiceAgentsTalkChatsId operation middleware
+func (sh *strictHandler) PutServiceAgentsTalkChatsId(ctx *gin.Context, id string) {
+	var request PutServiceAgentsTalkChatsIdRequestObject
+
+	request.Id = id
+
+	var body PutServiceAgentsTalkChatsIdJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PutServiceAgentsTalkChatsId(ctx, request.(PutServiceAgentsTalkChatsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PutServiceAgentsTalkChatsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PutServiceAgentsTalkChatsIdResponseObject); ok {
+		if err := validResponse.VisitPutServiceAgentsTalkChatsIdResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

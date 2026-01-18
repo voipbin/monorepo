@@ -72,6 +72,23 @@ func (h *serviceHandler) ServiceAgentTalkChatCreate(ctx context.Context, a *amag
 	return res, nil
 }
 
+// ServiceAgentTalkChatUpdate updates a talk's name and/or detail
+func (h *serviceHandler) ServiceAgentTalkChatUpdate(ctx context.Context, a *amagent.Agent, talkID uuid.UUID, name *string, detail *string) (*tkchat.WebhookMessage, error) {
+	// Check permission
+	if !h.isParticipantOfTalk(ctx, a.ID, talkID) {
+		return nil, fmt.Errorf("agent is not a participant of this talk")
+	}
+
+	// Update talk via RPC
+	tmp, err := h.reqHandler.TalkV1ChatUpdate(ctx, talkID, name, detail)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Could not update talk.")
+	}
+
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}
+
 // ServiceAgentTalkDelete deletes a talk
 func (h *serviceHandler) ServiceAgentTalkChatDelete(ctx context.Context, a *amagent.Agent, talkID uuid.UUID) (*tkchat.WebhookMessage, error) {
 	// Check permission

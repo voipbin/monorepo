@@ -160,6 +160,48 @@ func (h *server) GetServiceAgentsTalkChatsId(c *gin.Context, id string) {
 	c.JSON(200, res)
 }
 
+// PutServiceAgentsTalkChatsId handles PUT /service_agents/talk_chats/{id}
+func (h *server) PutServiceAgentsTalkChatsId(c *gin.Context, id string) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "PutServiceAgentsTalkChatsId",
+		"request_address": c.ClientIP(),
+	})
+
+	tmp, exists := c.Get("agent")
+	if !exists {
+		log.Errorf("Could not find agent info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
+
+	target := uuid.FromStringOrNil(id)
+	if target == uuid.Nil {
+		log.Error("Could not parse the id.")
+		c.AbortWithStatus(400)
+		return
+	}
+
+	var req openapi_server.PutServiceAgentsTalkChatsIdJSONRequestBody
+	if err := c.ShouldBindJSON(&req); err != nil {
+		log.Errorf("Could not parse request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	res, err := h.serviceHandler.ServiceAgentTalkChatUpdate(c.Request.Context(), &a, target, req.Name, req.Detail)
+	if err != nil {
+		log.Errorf("Could not update talk. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
 // DeleteServiceAgentsTalkChatsId handles DELETE /service_agents/talk_chats/{id}
 func (h *server) DeleteServiceAgentsTalkChatsId(c *gin.Context, id string) {
 	log := logrus.WithFields(logrus.Fields{

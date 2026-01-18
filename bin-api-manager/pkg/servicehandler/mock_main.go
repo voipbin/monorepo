@@ -3715,6 +3715,21 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentTalkChatList(ctx, a, size,
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentTalkChatList", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentTalkChatList), ctx, a, size, token)
 }
 
+// ServiceAgentTalkChatUpdate mocks base method.
+func (m *MockServiceHandler) ServiceAgentTalkChatUpdate(ctx context.Context, a *agent.Agent, talkID uuid.UUID, name, detail *string) (*chat0.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceAgentTalkChatUpdate", ctx, a, talkID, name, detail)
+	ret0, _ := ret[0].(*chat0.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServiceAgentTalkChatUpdate indicates an expected call of ServiceAgentTalkChatUpdate.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentTalkChatUpdate(ctx, a, talkID, name, detail any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentTalkChatUpdate", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentTalkChatUpdate), ctx, a, talkID, name, detail)
+}
+
 // ServiceAgentTalkMessageCreate mocks base method.
 func (m *MockServiceHandler) ServiceAgentTalkMessageCreate(ctx context.Context, a *agent.Agent, chatID uuid.UUID, parentID *uuid.UUID, msgType message2.Type, text string) (*message2.WebhookMessage, error) {
 	m.ctrl.T.Helper()
