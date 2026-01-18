@@ -40,6 +40,7 @@ workflows:
             bin-sentinel-manager/.*     run-bin-sentinel-manager true
             bin-storage-manager/.*      run-bin-storage-manager true
             bin-tag-manager/.*          run-bin-tag-manager true
+            bin-talk-manager/.*         run-bin-talk-manager true
             bin-transcribe-manager/.*   run-bin-transcribe-manager true
             bin-transfer-manager/.*     run-bin-transfer-manager true
             bin-tts-manager/.*          run-bin-tts-manager true
