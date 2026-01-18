@@ -125,6 +125,21 @@ func (h *dbHandler) ChatList(ctx context.Context, filters map[chat.Field]any, to
 		filters = chatFilters
 	}
 
+	// Handle deleted filter (special filter-only field)
+	if deleted, hasDeleted := filters[chat.FieldDeleted]; hasDeleted {
+		if deletedBool, ok := deleted.(bool); ok {
+			if deletedBool {
+				// Get deleted chats (tm_delete != default timestamp)
+				query = query.Where(sq.NotEq{tableChats + ".tm_delete": commondb.DefaultTimeStamp})
+			} else {
+				// Get non-deleted chats (tm_delete == default timestamp)
+				query = query.Where(sq.Eq{tableChats + ".tm_delete": commondb.DefaultTimeStamp})
+			}
+		}
+		// Remove deleted filter from map before applying to chats table
+		delete(filters, chat.FieldDeleted)
+	}
+
 	// Apply remaining filters to chats table
 	query, err := commondb.ApplyFields(query, filters)
 	if err != nil {

@@ -37,9 +37,11 @@ func (h *serviceHandler) ServiceAgentTalkChatList(ctx context.Context, a *amagen
 	}
 
 	// Build filters to get talks where agent is a participant
+	// Exclude deleted chats
 	filters := map[string]any{
 		"owner_type": "agent",
 		"owner_id":   a.ID.String(),
+		"deleted":    false,
 	}
 
 	// Get talks with filters using consolidated method
