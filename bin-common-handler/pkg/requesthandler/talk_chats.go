@@ -102,6 +102,40 @@ func (r *requestHandler) TalkV1ChatDelete(ctx context.Context, chatID uuid.UUID)
 	return &chat, nil
 }
 
+// TalkV1ChatUpdate updates a chat's name and/or detail
+func (r *requestHandler) TalkV1ChatUpdate(ctx context.Context, chatID uuid.UUID, name *string, detail *string) (*tkchat.Chat, error) {
+	uri := fmt.Sprintf("/v1/chats/%s", chatID.String())
+
+	data := map[string]any{}
+	if name != nil {
+		data["name"] = *name
+	}
+	if detail != nil {
+		data["detail"] = *detail
+	}
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not marshal request")
+	}
+
+	res, err := r.sendRequestTalk(ctx, uri, sock.RequestMethodPut, "talk/chats", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
+		return nil, err
+	}
+
+	if res.StatusCode != 200 {
+		return nil, fmt.Errorf("failed to update chat: status %d", res.StatusCode)
+	}
+
+	var chat tkchat.Chat
+	if err := json.Unmarshal(res.Data, &chat); err != nil {
+		return nil, errors.Wrap(err, "could not unmarshal chat")
+	}
+
+	return &chat, nil
+}
+
 // TalkV1ChatList gets a list of chats with optional filters
 func (r *requestHandler) TalkV1ChatList(ctx context.Context, filters map[string]any, pageToken string, pageSize uint64) ([]*tkchat.Chat, error) {
 	uri := fmt.Sprintf("/v1/chats?page_token=%s&page_size=%d", pageToken, pageSize)

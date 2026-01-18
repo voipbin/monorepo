@@ -127,6 +127,35 @@ func (h *listenHandler) v1ChatsIDGet(ctx context.Context, m commonsock.Request) 
 	}, nil
 }
 
+func (h *listenHandler) v1ChatsIDPut(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
+	matches := regV1ChatsID.FindStringSubmatch(m.URI)
+	chatID := uuid.FromStringOrNil(matches[1])
+
+	var req struct {
+		Name   *string `json:"name"`
+		Detail *string `json:"detail"`
+	}
+
+	err := json.Unmarshal(m.Data, &req)
+	if err != nil {
+		logrus.Errorf("Failed to parse request: %v", err)
+		return simpleResponse(400), nil
+	}
+
+	t, err := h.chatHandler.ChatUpdate(ctx, chatID, req.Name, req.Detail)
+	if err != nil {
+		logrus.Errorf("Failed to update chat: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	data, _ := json.Marshal(t)
+	return &commonsock.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}, nil
+}
+
 func (h *listenHandler) v1ChatsIDDelete(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
 	matches := regV1ChatsID.FindStringSubmatch(m.URI)
 	chatID := uuid.FromStringOrNil(matches[1])

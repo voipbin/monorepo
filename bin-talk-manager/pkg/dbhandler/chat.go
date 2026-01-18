@@ -211,7 +211,7 @@ func (h *dbHandler) ChatList(ctx context.Context, filters map[chat.Field]any, to
 	return talks, nil
 }
 
-func (h *dbHandler) TalkUpdate(ctx context.Context, id uuid.UUID, fields map[chat.Field]any) error {
+func (h *dbHandler) ChatUpdate(ctx context.Context, id uuid.UUID, fields map[chat.Field]any) error {
 	now := h.utilHandler.TimeGetCurTime()
 	fields[chat.FieldTMUpdate] = now
 

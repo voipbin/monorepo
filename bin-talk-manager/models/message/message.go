@@ -105,3 +105,13 @@ func (m *Message) CreateWebhookEvent() ([]byte, error) {
 
 	return data, nil
 }
+
+// CreateWebhookEvent generates WebhookEvent JSON from WebhookMessage
+// This allows WebhookMessage to be passed directly to PublishWebhookEvent
+func (wm *WebhookMessage) CreateWebhookEvent() ([]byte, error) {
+	data, err := json.Marshal(wm)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}

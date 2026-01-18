@@ -314,8 +314,8 @@ func Test_TalkUpdate(t *testing.T) {
 			}
 
 			// Update talk
-			if err := h.TalkUpdate(ctx, tt.updateID, tt.fields); err != nil {
-				t.Errorf("Failed to update talk: %v", err)
+			if err := h.ChatUpdate(ctx, tt.updateID, tt.fields); err != nil {
+				t.Errorf("Failed to update chat: %v", err)
 			}
 
 			// Verify update

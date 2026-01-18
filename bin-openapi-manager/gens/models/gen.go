@@ -4670,6 +4670,15 @@ type PostServiceAgentsTalkChatsJSONBody struct {
 	Type TalkManagerTalkType `json:"type"`
 }
 
+// PutServiceAgentsTalkChatsIdJSONBody defines parameters for PutServiceAgentsTalkChatsId.
+type PutServiceAgentsTalkChatsIdJSONBody struct {
+	// Detail The new detail/description of the talk chat.
+	Detail *string `json:"detail,omitempty"`
+
+	// Name The new name of the talk chat.
+	Name *string `json:"name,omitempty"`
+}
+
 // PostServiceAgentsTalkChatsIdParticipantsJSONBody defines parameters for PostServiceAgentsTalkChatsIdParticipants.
 type PostServiceAgentsTalkChatsIdParticipantsJSONBody struct {
 	// OwnerId ID of the owner to add as participant.
@@ -5114,6 +5123,9 @@ type PutServiceAgentsMeStatusJSONRequestBody PutServiceAgentsMeStatusJSONBody
 
 // PostServiceAgentsTalkChatsJSONRequestBody defines body for PostServiceAgentsTalkChats for application/json ContentType.
 type PostServiceAgentsTalkChatsJSONRequestBody PostServiceAgentsTalkChatsJSONBody
+
+// PutServiceAgentsTalkChatsIdJSONRequestBody defines body for PutServiceAgentsTalkChatsId for application/json ContentType.
+type PutServiceAgentsTalkChatsIdJSONRequestBody PutServiceAgentsTalkChatsIdJSONBody
 
 // PostServiceAgentsTalkChatsIdParticipantsJSONRequestBody defines body for PostServiceAgentsTalkChatsIdParticipants for application/json ContentType.
 type PostServiceAgentsTalkChatsIdParticipantsJSONRequestBody PostServiceAgentsTalkChatsIdParticipantsJSONBody

@@ -325,6 +325,116 @@ func Test_talksIDDELETE(t *testing.T) {
 		})
 	}
 }
+
+func Test_talksIDPUT(t *testing.T) {
+	tests := []struct {
+		name  string
+		agent amagent.Agent
+
+		reqQuery string
+		reqBody  string
+
+		responseTalk *tkchat.WebhookMessage
+
+		expectTalkID uuid.UUID
+		expectName   *string
+		expectDetail *string
+	}{
+		{
+			name: "update name only",
+			agent: amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				},
+			},
+
+			reqQuery: "/service_agents/talk_chats/e66d1da0-3ed7-11ef-9208-4bcc069917a1",
+			reqBody:  `{"name":"Updated Name"}`,
+
+			responseTalk: &tkchat.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("e66d1da0-3ed7-11ef-9208-4bcc069917a1"),
+					CustomerID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000"),
+				},
+				Type: tkchat.TypeDirect,
+				Name: "Updated Name",
+			},
+
+			expectTalkID: uuid.FromStringOrNil("e66d1da0-3ed7-11ef-9208-4bcc069917a1"),
+			expectName:   ptrString("Updated Name"),
+			expectDetail: nil,
+		},
+		{
+			name: "update both name and detail",
+			agent: amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				},
+			},
+
+			reqQuery: "/service_agents/talk_chats/e66d1da0-3ed7-11ef-9208-4bcc069917a1",
+			reqBody:  `{"name":"New Name","detail":"New Detail"}`,
+
+			responseTalk: &tkchat.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("e66d1da0-3ed7-11ef-9208-4bcc069917a1"),
+					CustomerID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000"),
+				},
+				Type:   tkchat.TypeDirect,
+				Name:   "New Name",
+				Detail: "New Detail",
+			},
+
+			expectTalkID: uuid.FromStringOrNil("e66d1da0-3ed7-11ef-9208-4bcc069917a1"),
+			expectName:   ptrString("New Name"),
+			expectDetail: ptrString("New Detail"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+			h := &server{
+				serviceHandler: mockSvc,
+			}
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set("agent", tt.agent)
+			})
+			openapi_server.RegisterHandlers(r, h)
+
+			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBufferString(tt.reqBody))
+			req.Header.Set("Content-Type", "application/json")
+
+			mockSvc.EXPECT().ServiceAgentTalkChatUpdate(req.Context(), &tt.agent, tt.expectTalkID, tt.expectName, tt.expectDetail).Return(tt.responseTalk, nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+
+			res, err := json.Marshal(tt.responseTalk)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(w.Body.Bytes(), res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", res, w.Body.Bytes())
+			}
+		})
+	}
+}
+
+func ptrString(s string) *string {
+	return &s
+}
+
 func Test_talksIDParticipantsGET(t *testing.T) {
 	tests := []struct {
 		name  string

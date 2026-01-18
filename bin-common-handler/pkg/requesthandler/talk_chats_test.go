@@ -288,3 +288,103 @@ func Test_TalkV1ChatList(t *testing.T) {
 		})
 	}
 }
+
+func Test_TalkV1ChatUpdate(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		chatID uuid.UUID
+		chatName   *string
+		chatDetail *string
+
+		expectQueue   string
+		expectRequest *sock.Request
+
+		response  *sock.Response
+		expectRes *tkchat.Chat
+	}{
+		{
+			name: "update name only",
+
+			chatID: uuid.FromStringOrNil("72179880-ec5f-11ec-920e-c77279756b6d"),
+			chatName:   ptrString("Updated Name"),
+			chatDetail: nil,
+
+			expectQueue: "bin-manager.talk-manager.request",
+			expectRequest: &sock.Request{
+				URI:      "/v1/chats/72179880-ec5f-11ec-920e-c77279756b6d",
+				Method:   sock.RequestMethodPut,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"name":"Updated Name"}`),
+			},
+
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   ContentTypeJSON,
+				Data:       []byte(`{"id":"72179880-ec5f-11ec-920e-c77279756b6d","customer_id":"550e8400-e29b-41d4-a716-446655440000","type":"direct","name":"Updated Name"}`),
+			},
+			expectRes: &tkchat.Chat{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("72179880-ec5f-11ec-920e-c77279756b6d"),
+					CustomerID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000"),
+				},
+				Type: tkchat.TypeDirect,
+				Name: "Updated Name",
+			},
+		},
+		{
+			name: "update both name and detail",
+
+			chatID: uuid.FromStringOrNil("72179880-ec5f-11ec-920e-c77279756b6d"),
+			chatName:   ptrString("New Name"),
+			chatDetail: ptrString("New Detail"),
+
+			expectQueue: "bin-manager.talk-manager.request",
+
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   ContentTypeJSON,
+				Data:       []byte(`{"id":"72179880-ec5f-11ec-920e-c77279756b6d","customer_id":"550e8400-e29b-41d4-a716-446655440000","type":"direct","name":"New Name","detail":"New Detail"}`),
+			},
+			expectRes: &tkchat.Chat{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("72179880-ec5f-11ec-920e-c77279756b6d"),
+					CustomerID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000"),
+				},
+				Type:   tkchat.TypeDirect,
+				Name:   "New Name",
+				Detail: "New Detail",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectQueue, gomock.Any()).Return(tt.response, nil)
+
+			res, err := reqHandler.TalkV1ChatUpdate(ctx, tt.chatID, tt.chatName, tt.chatDetail)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func ptrString(s string) *string {
+	return &s
+}

@@ -142,5 +142,12 @@ func (h *reactionHandler) ReactionRemove(ctx context.Context, messageID uuid.UUI
 
 // publishReactionUpdated publishes a single webhook event for both add and remove
 func (h *reactionHandler) publishReactionUpdated(ctx context.Context, m *message.Message) {
-	h.notifyHandler.PublishWebhookEvent(ctx, m.CustomerID, message.EventTypeMessageReactionUpdated, m)
+	// Convert to WebhookMessage before publishing
+	// This ensures medias is sent as []Media instead of JSON string
+	wm, err := m.ConvertWebhookMessage()
+	if err != nil {
+		logrus.WithError(err).Error("Failed to convert message to webhook message")
+		return
+	}
+	h.notifyHandler.PublishWebhookEvent(ctx, m.CustomerID, message.EventTypeMessageReactionUpdated, wm)
 }

@@ -57,7 +57,7 @@ func (h *subscribeHandler) processEventTalkManager(ctx context.Context, m *sock.
 	switch m.Type {
 	case talkmessage.EventTypeMessageCreated, talkmessage.EventTypeMessageDeleted, talkmessage.EventTypeMessageReactionUpdated:
 		return h.processEventTalkMessage(ctx, m)
-	case tkchat.EventTypeChatCreated, tkchat.EventTypeChatDeleted:
+	case tkchat.EventTypeChatCreated, tkchat.EventTypeChatDeleted, tkchat.EventTypeChatUpdated:
 		return h.processEventTalk(ctx, m)
 	case talkparticipant.EventParticipantAdded, talkparticipant.EventParticipantRemoved:
 		return h.processEventTalkParticipant(ctx, m)

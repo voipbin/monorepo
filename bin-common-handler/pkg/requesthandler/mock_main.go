@@ -5541,6 +5541,21 @@ func (mr *MockRequestHandlerMockRecorder) TalkV1ChatList(ctx, filters, pageToken
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TalkV1ChatList", reflect.TypeOf((*MockRequestHandler)(nil).TalkV1ChatList), ctx, filters, pageToken, pageSize)
 }
 
+// TalkV1ChatUpdate mocks base method.
+func (m *MockRequestHandler) TalkV1ChatUpdate(ctx context.Context, chatID uuid.UUID, name, detail *string) (*chat0.Chat, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TalkV1ChatUpdate", ctx, chatID, name, detail)
+	ret0, _ := ret[0].(*chat0.Chat)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TalkV1ChatUpdate indicates an expected call of TalkV1ChatUpdate.
+func (mr *MockRequestHandlerMockRecorder) TalkV1ChatUpdate(ctx, chatID, name, detail any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TalkV1ChatUpdate", reflect.TypeOf((*MockRequestHandler)(nil).TalkV1ChatUpdate), ctx, chatID, name, detail)
+}
+
 // TalkV1MessageCreate mocks base method.
 func (m *MockRequestHandler) TalkV1MessageCreate(ctx context.Context, chatID uuid.UUID, parentID *uuid.UUID, ownerType string, ownerID uuid.UUID, msgType message3.Type, text string) (*message3.Message, error) {
 	m.ctrl.T.Helper()

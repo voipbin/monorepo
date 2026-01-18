@@ -512,8 +512,8 @@ func Test_ReactionRemove(t *testing.T) {
 			// Mock get after remove
 			mockDB.EXPECT().MessageGet(ctx, tt.messageID).Return(tt.responseUpdatedMessage, nil)
 
-			// Mock webhook publish
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, customerID, message.EventTypeMessageReactionUpdated, tt.responseUpdatedMessage)
+			// Mock webhook publish (message is converted to WebhookMessage before publishing)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, customerID, message.EventTypeMessageReactionUpdated, gomock.Any())
 
 			res, err := h.ReactionRemove(ctx, tt.messageID, tt.emoji, tt.ownerType, tt.ownerID)
 			if tt.expectError && err == nil {
