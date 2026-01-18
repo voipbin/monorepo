@@ -247,15 +247,14 @@ func Test_MessageCreate(t *testing.T) {
 			// Mock UUID generation
 			mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("93d48228-3ed7-11ef-a9ca-070e7ba46a55")).AnyTimes()
 
-			// Mock ChatGet - populate chat with customer_id and participants
+			// Mock ChatGet - populate chat with customer_id
 			if tt.responseChat != nil {
 				tt.responseChat.CustomerID = customerID
-				if tt.responseParticipants != nil {
-					tt.responseChat.Participants = tt.responseParticipants
-				}
 			}
 			mockDB.EXPECT().ChatGet(ctx, tt.req.ChatID).Return(tt.responseChat, nil)
 
+			// Mock ParticipantListByChatIDs to load participants for validation
+			mockDB.EXPECT().ParticipantListByChatIDs(ctx, []uuid.UUID{tt.req.ChatID}).Return(tt.responseParticipants, nil)
 
 			// Mock MessageGet for parent validation (if parent_id provided)
 			if tt.req.ParentID != nil {
@@ -688,15 +687,16 @@ func Test_MessageCreate_error(t *testing.T) {
 
 				if mediasValid {
 					// Mock ChatGet (always needed if basic validation passes)
-				// Populate chat with customer_id and participants
-				if tt.responseChat != nil {
-					tt.responseChat.CustomerID = customerID
-					if tt.responseParticipants != nil {
-						tt.responseChat.Participants = tt.responseParticipants
+					// Populate chat with customer_id
+					if tt.responseChat != nil {
+						tt.responseChat.CustomerID = customerID
 					}
-				}
 					mockDB.EXPECT().ChatGet(ctx, tt.req.ChatID).Return(tt.responseChat, tt.getTalkError)
 
+					// Mock ParticipantListByChatIDs if chat was found
+					if tt.getTalkError == nil && tt.responseChat != nil {
+						mockDB.EXPECT().ParticipantListByChatIDs(ctx, []uuid.UUID{tt.req.ChatID}).Return(tt.responseParticipants, tt.getParticipantsError)
+					}
 
 					// Mock MessageGet if parent_id provided and participant check passed
 					if tt.req.ParentID != nil &&

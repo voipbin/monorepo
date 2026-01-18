@@ -58,9 +58,16 @@ func (h *messageHandler) MessageCreate(ctx context.Context, req MessageCreateReq
 	// Use chat's customer_id (ensures consistency)
 	customerID := chat.CustomerID
 
-	// Validate sender is a participant using chat's participants
+	// Load participants for validation
+	participants, err := h.dbHandler.ParticipantListByChatIDs(ctx, []uuid.UUID{req.ChatID})
+	if err != nil {
+		log.Errorf("Failed to load participants: %v", err)
+		return nil, errors.Wrap(err, "failed to load participants")
+	}
+
+	// Validate sender is a participant
 	isParticipant := false
-	for _, p := range chat.Participants {
+	for _, p := range participants {
 		if string(p.OwnerType) == req.OwnerType && p.OwnerID == req.OwnerID {
 			isParticipant = true
 			break
