@@ -1,6 +1,6 @@
--- SQLite-compatible schema for chat_messages table
+-- SQLite-compatible schema for talk_messages table
 
-CREATE TABLE chat_messages (
+CREATE TABLE talk_messages (
     id              BLOB PRIMARY KEY,
     customer_id     BLOB NOT NULL,
     chat_id         BLOB NOT NULL,
@@ -16,7 +16,7 @@ CREATE TABLE chat_messages (
     tm_delete       TEXT
 );
 
-CREATE INDEX idx_chat_messages_chat_id ON chat_messages(chat_id);
-CREATE INDEX idx_chat_messages_parent_id ON chat_messages(parent_id);
-CREATE INDEX idx_chat_messages_customer_id ON chat_messages(customer_id);
-CREATE INDEX idx_chat_messages_owner ON chat_messages(owner_type, owner_id);
+CREATE INDEX idx_talk_messages_chat_id ON talk_messages(chat_id);
+CREATE INDEX idx_talk_messages_parent_id ON talk_messages(parent_id);
+CREATE INDEX idx_talk_messages_customer_id ON talk_messages(customer_id);
+CREATE INDEX idx_talk_messages_owner ON talk_messages(owner_type, owner_id);

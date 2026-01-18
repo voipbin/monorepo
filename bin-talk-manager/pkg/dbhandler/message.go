@@ -13,7 +13,7 @@ import (
 	"monorepo/bin-talk-manager/models/message"
 )
 
-const tableMessages = "chat_messages"
+const tableMessages = "talk_messages"
 
 func (h *dbHandler) MessageCreate(ctx context.Context, m *message.Message) error {
 	now := h.utilHandler.TimeGetCurTime()
@@ -191,7 +191,7 @@ func (h *dbHandler) MessageAddReactionAtomic(ctx context.Context, messageID uuid
 	// Get current metadata, parse it, add reaction, and update
 	var metadataJSON string
 	err := h.db.QueryRowContext(ctx,
-		"SELECT metadata FROM chat_messages WHERE id = ?",
+		"SELECT metadata FROM talk_messages WHERE id = ?",
 		messageID.Bytes(),
 	).Scan(&metadataJSON)
 	if err != nil {
@@ -223,7 +223,7 @@ func (h *dbHandler) MessageAddReactionAtomic(ctx context.Context, messageID uuid
 
 	// Update atomically
 	now := h.utilHandler.TimeGetCurTime()
-	query := `UPDATE chat_messages SET metadata = ?, tm_update = ? WHERE id = ?`
+	query := `UPDATE talk_messages SET metadata = ?, tm_update = ? WHERE id = ?`
 
 	_, err = h.db.ExecContext(ctx, query, string(updatedJSON), now, messageID.Bytes())
 	if err != nil {
@@ -239,7 +239,7 @@ func (h *dbHandler) MessageRemoveReactionAtomic(ctx context.Context, messageID u
 	// Get current metadata
 	var metadataJSON string
 	err := h.db.QueryRowContext(ctx,
-		"SELECT metadata FROM chat_messages WHERE id = ?",
+		"SELECT metadata FROM talk_messages WHERE id = ?",
 		messageID.Bytes(),
 	).Scan(&metadataJSON)
 	if err != nil {
@@ -269,7 +269,7 @@ func (h *dbHandler) MessageRemoveReactionAtomic(ctx context.Context, messageID u
 	}
 
 	now := h.utilHandler.TimeGetCurTime()
-	query := `UPDATE chat_messages SET metadata = ?, tm_update = ? WHERE id = ?`
+	query := `UPDATE talk_messages SET metadata = ?, tm_update = ? WHERE id = ?`
 
 	_, err = h.db.ExecContext(ctx, query, string(updatedJSON), now, messageID.Bytes())
 	if err != nil {

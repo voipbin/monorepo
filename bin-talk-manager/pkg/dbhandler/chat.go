@@ -13,7 +13,7 @@ import (
 	"monorepo/bin-talk-manager/models/participant"
 )
 
-const tableChats = "chat_chats"
+const tableChats = "talk_chats"
 
 func (h *dbHandler) ChatCreate(ctx context.Context, t *chat.Chat) error {
 	now := h.utilHandler.TimeGetCurTime()
