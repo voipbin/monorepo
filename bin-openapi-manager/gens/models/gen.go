@@ -610,6 +610,14 @@ const (
 	StorageManagerFileReferenceTypeRecording StorageManagerFileReferenceType = "recording"
 )
 
+// Defines values for TalkManagerMediaType.
+const (
+	TalkManagerMediaTypeAddress TalkManagerMediaType = "address"
+	TalkManagerMediaTypeAgent   TalkManagerMediaType = "agent"
+	TalkManagerMediaTypeFile    TalkManagerMediaType = "file"
+	TalkManagerMediaTypeLink    TalkManagerMediaType = "link"
+)
+
 // Defines values for TalkManagerMessageType.
 const (
 	TalkManagerMessageTypeNormal TalkManagerMessageType = "normal"
@@ -2956,9 +2964,24 @@ type TagManagerTag struct {
 
 // TalkManagerMedia defines model for TalkManagerMedia.
 type TalkManagerMedia struct {
-	// Type Type of media (file, link, address, agent).
-	Type *string `json:"type,omitempty"`
+	// Address Contains source or destination detail info.
+	Address *CommonAddress `json:"address,omitempty"`
+
+	// Agent Represents an agent resource.
+	Agent *AgentManagerAgent `json:"agent,omitempty"`
+
+	// FileId Valid only if the type is `file`.
+	FileId *string `json:"file_id,omitempty"`
+
+	// LinkUrl Valid only if the type is `link`.
+	LinkUrl *string `json:"link_url,omitempty"`
+
+	// Type Type of the media content.
+	Type *TalkManagerMediaType `json:"type,omitempty"`
 }
+
+// TalkManagerMediaType Type of the media content.
+type TalkManagerMediaType string
 
 // TalkManagerMessage defines model for TalkManagerMessage.
 type TalkManagerMessage struct {

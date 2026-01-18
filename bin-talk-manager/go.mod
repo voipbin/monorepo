@@ -69,6 +69,7 @@ require (
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/viper v1.21.0
 	go.uber.org/mock v0.6.0
+	monorepo/bin-agent-manager v0.0.0-20240328054741-55144017eccd
 	monorepo/bin-common-handler v0.0.0-20240408033155-50f0cd082334
 )
 
@@ -103,7 +104,6 @@ require (
 	golang.org/x/text v0.33.0 // indirect
 	google.golang.org/genproto v0.0.0-20251222181119-0a764e51fe1b // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
-	monorepo/bin-agent-manager v0.0.0-20240328054741-55144017eccd // indirect
 	monorepo/bin-ai-manager v0.0.0-20240313050825-1c666b883013 // indirect
 	monorepo/bin-billing-manager v0.0.0-20240408051040-600f0028fbab // indirect
 	monorepo/bin-call-manager v0.0.0-20240403030948-51eb7c33cf9a // indirect

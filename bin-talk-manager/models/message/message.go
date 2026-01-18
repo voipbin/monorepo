@@ -4,6 +4,9 @@ import (
 	"encoding/json"
 
 	"github.com/gofrs/uuid"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 )
 
@@ -52,10 +55,25 @@ type WebhookMessage struct {
 	TMDelete string `json:"tm_delete"`
 }
 
-// Media represents a media attachment (simplified from chat-manager)
+// MediaType defines the type of media content
+type MediaType string
+
+// Media type constants
+const (
+	MediaTypeAddress MediaType = "address" // the media contains address infos
+	MediaTypeAgent   MediaType = "agent"   // the media contains agent infos
+	MediaTypeFile    MediaType = "file"    // the media contains file info
+	MediaTypeLink    MediaType = "link"    // the media contains link info
+)
+
+// Media represents a media attachment
 type Media struct {
-	Type string `json:"type"` // "file", "link", "address", "agent"
-	// Add specific fields as needed based on Type
+	Type MediaType `json:"type,omitempty"`
+
+	Address commonaddress.Address `json:"address,omitempty"`  // valid only if the Type is address type
+	Agent   amagent.Agent         `json:"agent,omitempty"`    // valid only if the type is agent type
+	FileID  uuid.UUID             `json:"file_id,omitempty"`  // valid only if the Type is file
+	LinkURL string                `json:"link_url,omitempty"` // valid only if the Type is link type
 }
 
 // ConvertWebhookMessage converts Message to WebhookMessage
