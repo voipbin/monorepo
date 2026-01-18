@@ -21,11 +21,25 @@ func (h *dbHandler) ChatCreate(ctx context.Context, t *chat.Chat) error {
 	t.TMUpdate = now
 	t.TMDelete = commondb.DefaultTimeStamp
 
+	// Log input chat object
+	logrus.WithFields(logrus.Fields{
+		"chat_id":     t.ID,
+		"customer_id": t.CustomerID,
+		"type":        t.Type,
+		"name":        t.Name,
+		"detail":      t.Detail,
+	}).Info("ChatCreate: Input chat object")
+
 	fields, err := commondb.PrepareFields(t)
 	if err != nil {
 		logrus.Errorf("Failed to prepare fields: %v", err)
 		return err
 	}
+
+	// Log prepared fields
+	logrus.WithFields(logrus.Fields{
+		"prepared_fields": fields,
+	}).Info("ChatCreate: Prepared fields for database")
 
 	query := sq.Insert(tableChats).
 		SetMap(fields).
@@ -36,6 +50,12 @@ func (h *dbHandler) ChatCreate(ctx context.Context, t *chat.Chat) error {
 		logrus.Errorf("Failed to build query: %v", err)
 		return err
 	}
+
+	// Log SQL query
+	logrus.WithFields(logrus.Fields{
+		"sql":  sqlQuery,
+		"args": args,
+	}).Info("ChatCreate: Executing SQL query")
 
 	_, err = h.db.ExecContext(ctx, sqlQuery, args...)
 	if err != nil {
@@ -49,6 +69,12 @@ func (h *dbHandler) ChatCreate(ctx context.Context, t *chat.Chat) error {
 func (h *dbHandler) ChatGet(ctx context.Context, id uuid.UUID) (*chat.Chat, error) {
 	fields := commondb.GetDBFields(&chat.Chat{})
 
+	// Log fields being selected
+	logrus.WithFields(logrus.Fields{
+		"chat_id":         id,
+		"selected_fields": fields,
+	}).Info("ChatGet: Selecting fields from database")
+
 	query := sq.Select(fields...).
 		From(tableChats).
 		Where(sq.Eq{"id": id.Bytes()}).
@@ -58,6 +84,12 @@ func (h *dbHandler) ChatGet(ctx context.Context, id uuid.UUID) (*chat.Chat, erro
 	if err != nil {
 		return nil, err
 	}
+
+	// Log SQL query
+	logrus.WithFields(logrus.Fields{
+		"sql":  sqlQuery,
+		"args": args,
+	}).Info("ChatGet: Executing SQL query")
 
 	rows, err := h.db.QueryContext(ctx, sqlQuery, args...)
 	if err != nil {
@@ -78,6 +110,15 @@ func (h *dbHandler) ChatGet(ctx context.Context, id uuid.UUID) (*chat.Chat, erro
 	if err != nil {
 		return nil, err
 	}
+
+	// Log retrieved chat
+	logrus.WithFields(logrus.Fields{
+		"chat_id":     t.ID,
+		"customer_id": t.CustomerID,
+		"type":        t.Type,
+		"name":        t.Name,
+		"detail":      t.Detail,
+	}).Info("ChatGet: Retrieved chat from database")
 
 	return &t, nil
 }
