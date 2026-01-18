@@ -1148,12 +1148,12 @@ type RequestHandler interface {
 	TalkV1ParticipantDelete(ctx context.Context, talkID uuid.UUID, participantID uuid.UUID) (*talkparticipant.Participant, error)
 
 	// talk-manager message
-	TalkV1MessageGet(ctx context.Context, messageID uuid.UUID) (*talkmessage.Message, error)
-	TalkV1MessageCreate(ctx context.Context, chatID uuid.UUID, parentID *uuid.UUID, ownerType string, ownerID uuid.UUID, msgType talkmessage.Type, text string) (*talkmessage.Message, error)
-	TalkV1MessageDelete(ctx context.Context, messageID uuid.UUID) (*talkmessage.Message, error)
-	TalkV1MessageList(ctx context.Context, pageToken string, pageSize uint64) ([]*talkmessage.Message, error)
-	TalkV1MessageListWithFilters(ctx context.Context, filters map[string]any, pageToken string, pageSize uint64) ([]*talkmessage.Message, error)
-	TalkV1MessageReactionCreate(ctx context.Context, messageID uuid.UUID, ownerType string, ownerID uuid.UUID, emoji string) (*talkmessage.Message, error)
+	TalkV1MessageGet(ctx context.Context, messageID uuid.UUID) (*talkmessage.WebhookMessage, error)
+	TalkV1MessageCreate(ctx context.Context, chatID uuid.UUID, parentID *uuid.UUID, ownerType string, ownerID uuid.UUID, msgType talkmessage.Type, text string) (*talkmessage.WebhookMessage, error)
+	TalkV1MessageDelete(ctx context.Context, messageID uuid.UUID) (*talkmessage.WebhookMessage, error)
+	TalkV1MessageList(ctx context.Context, pageToken string, pageSize uint64) ([]*talkmessage.WebhookMessage, error)
+	TalkV1MessageListWithFilters(ctx context.Context, filters map[string]any, pageToken string, pageSize uint64) ([]*talkmessage.WebhookMessage, error)
+	TalkV1MessageReactionCreate(ctx context.Context, messageID uuid.UUID, ownerType string, ownerID uuid.UUID, emoji string) (*talkmessage.WebhookMessage, error)
 
 	// tts-manager speeches
 	TTSV1SpeecheCreate(ctx context.Context, callID uuid.UUID, text string, gender tmtts.Gender, language string, timeout int) (*tmtts.TTS, error)

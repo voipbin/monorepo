@@ -13,7 +13,7 @@ import (
 )
 
 // TalkV1MessageGet gets a message by ID
-func (r *requestHandler) TalkV1MessageGet(ctx context.Context, messageID uuid.UUID) (*talkmessage.Message, error) {
+func (r *requestHandler) TalkV1MessageGet(ctx context.Context, messageID uuid.UUID) (*talkmessage.WebhookMessage, error) {
 	uri := fmt.Sprintf("/v1/messages/%s", messageID.String())
 
 	res, err := r.sendRequestTalk(ctx, uri, sock.RequestMethodGet, "talk/messages", requestTimeoutDefault, 0, "", nil)
@@ -25,7 +25,7 @@ func (r *requestHandler) TalkV1MessageGet(ctx context.Context, messageID uuid.UU
 		return nil, fmt.Errorf("failed to get message: status %d", res.StatusCode)
 	}
 
-	var message talkmessage.Message
+	var message talkmessage.WebhookMessage
 	if err := json.Unmarshal(res.Data, &message); err != nil {
 		return nil, errors.Wrap(err, "could not unmarshal message")
 	}
@@ -42,7 +42,7 @@ func (r *requestHandler) TalkV1MessageCreate(
 	ownerID uuid.UUID,
 	msgType talkmessage.Type,
 	text string,
-) (*talkmessage.Message, error) {
+) (*talkmessage.WebhookMessage, error) {
 	uri := "/v1/messages"
 
 	data := map[string]any{
@@ -71,7 +71,7 @@ func (r *requestHandler) TalkV1MessageCreate(
 		return nil, fmt.Errorf("failed to create message: status %d", res.StatusCode)
 	}
 
-	var message talkmessage.Message
+	var message talkmessage.WebhookMessage
 	if err := json.Unmarshal(res.Data, &message); err != nil {
 		return nil, errors.Wrap(err, "could not unmarshal message")
 	}
@@ -80,7 +80,7 @@ func (r *requestHandler) TalkV1MessageCreate(
 }
 
 // TalkV1MessageDelete deletes a message (soft delete)
-func (r *requestHandler) TalkV1MessageDelete(ctx context.Context, messageID uuid.UUID) (*talkmessage.Message, error) {
+func (r *requestHandler) TalkV1MessageDelete(ctx context.Context, messageID uuid.UUID) (*talkmessage.WebhookMessage, error) {
 	uri := fmt.Sprintf("/v1/messages/%s", messageID.String())
 
 	res, err := r.sendRequestTalk(ctx, uri, sock.RequestMethodDelete, "talk/messages", requestTimeoutDefault, 0, "", nil)
@@ -92,7 +92,7 @@ func (r *requestHandler) TalkV1MessageDelete(ctx context.Context, messageID uuid
 		return nil, fmt.Errorf("failed to delete message: status %d", res.StatusCode)
 	}
 
-	var message talkmessage.Message
+	var message talkmessage.WebhookMessage
 	if err := json.Unmarshal(res.Data, &message); err != nil {
 		return nil, errors.Wrap(err, "could not unmarshal message")
 	}
@@ -101,7 +101,7 @@ func (r *requestHandler) TalkV1MessageDelete(ctx context.Context, messageID uuid
 }
 
 // TalkV1MessageList gets a list of messages (simplified - for future expansion)
-func (r *requestHandler) TalkV1MessageList(ctx context.Context, pageToken string, pageSize uint64) ([]*talkmessage.Message, error) {
+func (r *requestHandler) TalkV1MessageList(ctx context.Context, pageToken string, pageSize uint64) ([]*talkmessage.WebhookMessage, error) {
 	uri := fmt.Sprintf("/v1/messages?page_token=%s&page_size=%d", pageToken, pageSize)
 
 	res, err := r.sendRequestTalk(ctx, uri, sock.RequestMethodGet, "talk/messages", requestTimeoutDefault, 0, "", nil)
@@ -113,7 +113,7 @@ func (r *requestHandler) TalkV1MessageList(ctx context.Context, pageToken string
 		return nil, fmt.Errorf("failed to list messages: status %d", res.StatusCode)
 	}
 
-	var messages []*talkmessage.Message
+	var messages []*talkmessage.WebhookMessage
 	if err := json.Unmarshal(res.Data, &messages); err != nil {
 		return nil, errors.Wrap(err, "could not unmarshal messages")
 	}
@@ -122,7 +122,7 @@ func (r *requestHandler) TalkV1MessageList(ctx context.Context, pageToken string
 }
 
 // TalkV1MessageListWithFilters gets messages with filters
-func (r *requestHandler) TalkV1MessageListWithFilters(ctx context.Context, filters map[string]any, pageToken string, pageSize uint64) ([]*talkmessage.Message, error) {
+func (r *requestHandler) TalkV1MessageListWithFilters(ctx context.Context, filters map[string]any, pageToken string, pageSize uint64) ([]*talkmessage.WebhookMessage, error) {
 	uri := fmt.Sprintf("/v1/messages?page_token=%s&page_size=%d", pageToken, pageSize)
 
 	// Marshal filters to JSON
@@ -140,7 +140,7 @@ func (r *requestHandler) TalkV1MessageListWithFilters(ctx context.Context, filte
 		return nil, fmt.Errorf("failed to list messages: status %d", res.StatusCode)
 	}
 
-	var messages []*talkmessage.Message
+	var messages []*talkmessage.WebhookMessage
 	if err := json.Unmarshal(res.Data, &messages); err != nil {
 		return nil, errors.Wrap(err, "could not unmarshal messages")
 	}
@@ -155,7 +155,7 @@ func (r *requestHandler) TalkV1MessageReactionCreate(
 	ownerType string,
 	ownerID uuid.UUID,
 	emoji string,
-) (*talkmessage.Message, error) {
+) (*talkmessage.WebhookMessage, error) {
 	uri := fmt.Sprintf("/v1/messages/%s/reactions", messageID.String())
 
 	data := map[string]any{
@@ -178,7 +178,7 @@ func (r *requestHandler) TalkV1MessageReactionCreate(
 		return nil, fmt.Errorf("failed to create reaction: status %d", res.StatusCode)
 	}
 
-	var message talkmessage.Message
+	var message talkmessage.WebhookMessage
 	if err := json.Unmarshal(res.Data, &message); err != nil {
 		return nil, errors.Wrap(err, "could not unmarshal message")
 	}
