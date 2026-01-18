@@ -102,6 +102,20 @@ func (mr *MockDBHandlerMockRecorder) ChatList(ctx, filters, token, size any) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatList", reflect.TypeOf((*MockDBHandler)(nil).ChatList), ctx, filters, token, size)
 }
 
+// ChatUpdate mocks base method.
+func (m *MockDBHandler) ChatUpdate(ctx context.Context, id uuid.UUID, fields map[chat.Field]any) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChatUpdate", ctx, id, fields)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ChatUpdate indicates an expected call of ChatUpdate.
+func (mr *MockDBHandlerMockRecorder) ChatUpdate(ctx, id, fields any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatUpdate", reflect.TypeOf((*MockDBHandler)(nil).ChatUpdate), ctx, id, fields)
+}
+
 // FindDirectChatByParticipants mocks base method.
 func (m *MockDBHandler) FindDirectChatByParticipants(ctx context.Context, customerID uuid.UUID, ownerType1 string, ownerID1 uuid.UUID, ownerType2 string, ownerID2 uuid.UUID) (*chat.Chat, error) {
 	m.ctrl.T.Helper()
@@ -288,18 +302,4 @@ func (m *MockDBHandler) ParticipantListByChatIDs(ctx context.Context, chatIDs []
 func (mr *MockDBHandlerMockRecorder) ParticipantListByChatIDs(ctx, chatIDs any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ParticipantListByChatIDs", reflect.TypeOf((*MockDBHandler)(nil).ParticipantListByChatIDs), ctx, chatIDs)
-}
-
-// TalkUpdate mocks base method.
-func (m *MockDBHandler) TalkUpdate(ctx context.Context, id uuid.UUID, fields map[chat.Field]any) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TalkUpdate", ctx, id, fields)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// TalkUpdate indicates an expected call of TalkUpdate.
-func (mr *MockDBHandlerMockRecorder) TalkUpdate(ctx, id, fields any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TalkUpdate", reflect.TypeOf((*MockDBHandler)(nil).TalkUpdate), ctx, id, fields)
 }

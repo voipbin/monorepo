@@ -594,6 +594,259 @@ func Test_ChatList_error(t *testing.T) {
 	}
 }
 
+func Test_ChatUpdate(t *testing.T) {
+	tests := []struct {
+		name string
+
+		id     uuid.UUID
+		upName *string
+		upDetail *string
+
+		responseChat        *chat.Chat
+		responseUpdatedChat *chat.Chat
+	}{
+		{
+			name: "normal_update_name_only",
+
+			id:       uuid.FromStringOrNil("e8427fa8-17b2-4e9e-8855-90e516bcf1d3"),
+			upName:   strPtr("New Name"),
+			upDetail: nil,
+
+			responseChat: &chat.Chat{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("e8427fa8-17b2-4e9e-8855-90e516bcf1d3"),
+					CustomerID: uuid.FromStringOrNil("809656e2-305e-43cd-8d7b-ccb44373dddb"),
+				},
+				Type:     chat.TypeGroup,
+				Name:     "Old Name",
+				Detail:   "Old Detail",
+				TMCreate: "2024-01-15 10:30:00.000000",
+			},
+			responseUpdatedChat: &chat.Chat{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("e8427fa8-17b2-4e9e-8855-90e516bcf1d3"),
+					CustomerID: uuid.FromStringOrNil("809656e2-305e-43cd-8d7b-ccb44373dddb"),
+				},
+				Type:     chat.TypeGroup,
+				Name:     "New Name",
+				Detail:   "Old Detail",
+				TMCreate: "2024-01-15 10:30:00.000000",
+				TMUpdate: "2024-01-15 11:00:00.000000",
+			},
+		},
+		{
+			name: "normal_update_detail_only",
+
+			id:       uuid.FromStringOrNil("e8427fa8-17b2-4e9e-8855-90e516bcf1d3"),
+			upName:   nil,
+			upDetail: strPtr("New Detail"),
+
+			responseChat: &chat.Chat{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("e8427fa8-17b2-4e9e-8855-90e516bcf1d3"),
+					CustomerID: uuid.FromStringOrNil("809656e2-305e-43cd-8d7b-ccb44373dddb"),
+				},
+				Type:     chat.TypeGroup,
+				Name:     "Old Name",
+				Detail:   "Old Detail",
+				TMCreate: "2024-01-15 10:30:00.000000",
+			},
+			responseUpdatedChat: &chat.Chat{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("e8427fa8-17b2-4e9e-8855-90e516bcf1d3"),
+					CustomerID: uuid.FromStringOrNil("809656e2-305e-43cd-8d7b-ccb44373dddb"),
+				},
+				Type:     chat.TypeGroup,
+				Name:     "Old Name",
+				Detail:   "New Detail",
+				TMCreate: "2024-01-15 10:30:00.000000",
+				TMUpdate: "2024-01-15 11:00:00.000000",
+			},
+		},
+		{
+			name: "normal_update_both",
+
+			id:       uuid.FromStringOrNil("e8427fa8-17b2-4e9e-8855-90e516bcf1d3"),
+			upName:   strPtr("New Name"),
+			upDetail: strPtr("New Detail"),
+
+			responseChat: &chat.Chat{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("e8427fa8-17b2-4e9e-8855-90e516bcf1d3"),
+					CustomerID: uuid.FromStringOrNil("809656e2-305e-43cd-8d7b-ccb44373dddb"),
+				},
+				Type:     chat.TypeGroup,
+				Name:     "Old Name",
+				Detail:   "Old Detail",
+				TMCreate: "2024-01-15 10:30:00.000000",
+			},
+			responseUpdatedChat: &chat.Chat{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("e8427fa8-17b2-4e9e-8855-90e516bcf1d3"),
+					CustomerID: uuid.FromStringOrNil("809656e2-305e-43cd-8d7b-ccb44373dddb"),
+				},
+				Type:     chat.TypeGroup,
+				Name:     "New Name",
+				Detail:   "New Detail",
+				TMCreate: "2024-01-15 10:30:00.000000",
+				TMUpdate: "2024-01-15 11:00:00.000000",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &chatHandler{
+				dbHandler:     mockDB,
+				notifyHandler: mockNotify,
+			}
+
+			ctx := context.Background()
+
+			// Mock ChatGet before update (verify chat exists)
+			mockDB.EXPECT().ChatGet(ctx, tt.id).Return(tt.responseChat, nil)
+
+			// Mock ChatUpdate
+			mockDB.EXPECT().ChatUpdate(ctx, tt.id, gomock.Any()).Return(nil)
+
+			// Mock ChatGet after update (for returning updated chat with participants)
+			mockDB.EXPECT().ChatGet(ctx, tt.id).Return(tt.responseUpdatedChat, nil)
+			mockDB.EXPECT().ParticipantListByChatIDs(ctx, gomock.Any()).Return([]*participant.Participant{}, nil)
+
+			// Mock webhook publish
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseUpdatedChat.CustomerID, chat.EventTypeChatUpdated, gomock.Any())
+
+			res, err := h.ChatUpdate(ctx, tt.id, tt.upName, tt.upDetail)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if res.Name != tt.responseUpdatedChat.Name {
+				t.Errorf("Wrong name.\nexpect: %v\ngot: %v", tt.responseUpdatedChat.Name, res.Name)
+			}
+
+			if res.Detail != tt.responseUpdatedChat.Detail {
+				t.Errorf("Wrong detail.\nexpect: %v\ngot: %v", tt.responseUpdatedChat.Detail, res.Detail)
+			}
+		})
+	}
+}
+
+func Test_ChatUpdate_error(t *testing.T) {
+	tests := []struct {
+		name string
+
+		id       uuid.UUID
+		upName   *string
+		upDetail *string
+
+		getChatError    error
+		updateChatError error
+		getAfterError   error
+	}{
+		{
+			name: "error_nil_chat_id",
+
+			id:       uuid.Nil,
+			upName:   strPtr("New Name"),
+			upDetail: nil,
+		},
+		{
+			name: "error_no_fields_to_update",
+
+			id:       uuid.FromStringOrNil("e8427fa8-17b2-4e9e-8855-90e516bcf1d3"),
+			upName:   nil,
+			upDetail: nil,
+		},
+		{
+			name: "error_chat_not_found",
+
+			id:       uuid.FromStringOrNil("e8427fa8-17b2-4e9e-8855-90e516bcf1d3"),
+			upName:   strPtr("New Name"),
+			upDetail: nil,
+
+			getChatError: fmt.Errorf("not found"),
+		},
+		{
+			name: "error_update_failed",
+
+			id:       uuid.FromStringOrNil("e8427fa8-17b2-4e9e-8855-90e516bcf1d3"),
+			upName:   strPtr("New Name"),
+			upDetail: nil,
+
+			updateChatError: fmt.Errorf("database error"),
+		},
+		{
+			name: "error_get_after_update_failed",
+
+			id:       uuid.FromStringOrNil("e8427fa8-17b2-4e9e-8855-90e516bcf1d3"),
+			upName:   strPtr("New Name"),
+			upDetail: nil,
+
+			getAfterError: fmt.Errorf("database error"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &chatHandler{
+				dbHandler:     mockDB,
+				notifyHandler: mockNotify,
+			}
+
+			ctx := context.Background()
+
+			responseChat := &chat.Chat{
+				Identity: commonidentity.Identity{
+					ID:         tt.id,
+					CustomerID: uuid.FromStringOrNil("809656e2-305e-43cd-8d7b-ccb44373dddb"),
+				},
+				Type: chat.TypeGroup,
+			}
+
+			// Set up mocks based on which error we're testing
+			if tt.name == "error_nil_chat_id" || tt.name == "error_no_fields_to_update" {
+				// No mocks needed - validation fails before DB calls
+			} else if tt.getChatError != nil {
+				mockDB.EXPECT().ChatGet(ctx, tt.id).Return(nil, tt.getChatError)
+			} else if tt.updateChatError != nil {
+				mockDB.EXPECT().ChatGet(ctx, tt.id).Return(responseChat, nil)
+				mockDB.EXPECT().ChatUpdate(ctx, tt.id, gomock.Any()).Return(tt.updateChatError)
+			} else if tt.getAfterError != nil {
+				mockDB.EXPECT().ChatGet(ctx, tt.id).Return(responseChat, nil)
+				mockDB.EXPECT().ChatUpdate(ctx, tt.id, gomock.Any()).Return(nil)
+				mockDB.EXPECT().ChatGet(ctx, tt.id).Return(nil, tt.getAfterError)
+			}
+
+			res, err := h.ChatUpdate(ctx, tt.id, tt.upName, tt.upDetail)
+			if err == nil {
+				t.Errorf("Wrong match. expect: error, got: ok")
+			}
+
+			if res != nil {
+				t.Errorf("Wrong match. expect: nil result, got: %v", res)
+			}
+		})
+	}
+}
+
+// strPtr is a helper function to get a pointer to a string
+func strPtr(s string) *string {
+	return &s
+}
+
 func Test_ChatDelete(t *testing.T) {
 	tests := []struct {
 		name string

@@ -102,3 +102,18 @@ func (mr *MockChatHandlerMockRecorder) ChatList(ctx, filters, token, size any) *
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatList", reflect.TypeOf((*MockChatHandler)(nil).ChatList), ctx, filters, token, size)
 }
+
+// ChatUpdate mocks base method.
+func (m *MockChatHandler) ChatUpdate(ctx context.Context, id uuid.UUID, name, detail *string) (*chat.Chat, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChatUpdate", ctx, id, name, detail)
+	ret0, _ := ret[0].(*chat.Chat)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ChatUpdate indicates an expected call of ChatUpdate.
+func (mr *MockChatHandlerMockRecorder) ChatUpdate(ctx, id, name, detail any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatUpdate", reflect.TypeOf((*MockChatHandler)(nil).ChatUpdate), ctx, id, name, detail)
+}

@@ -104,6 +104,10 @@ func (h *listenHandler) processRequest(m *commonsock.Request) (*commonsock.Respo
 		response, err = h.v1ChatsIDGet(ctx, *m)
 
 	// chats/<chat-id>
+	case regV1ChatsID.MatchString(m.URI) && m.Method == commonsock.RequestMethodPut:
+		response, err = h.v1ChatsIDPut(ctx, *m)
+
+	// chats/<chat-id>
 	case regV1ChatsID.MatchString(m.URI) && m.Method == commonsock.RequestMethodDelete:
 		response, err = h.v1ChatsIDDelete(ctx, *m)
 

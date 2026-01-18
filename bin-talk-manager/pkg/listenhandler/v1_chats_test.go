@@ -333,6 +333,190 @@ func Test_processV1TalkChatsIDGet(t *testing.T) {
 	}
 }
 
+func Test_processV1TalkChatsIDPut(t *testing.T) {
+	tests := []struct {
+		name    string
+		request *sock.Request
+
+		chatID       uuid.UUID
+		name_        *string
+		detail       *string
+		responseChat *chat.Chat
+		expectRes    *sock.Response
+	}{
+		{
+			name: "normal_update_name",
+			request: &sock.Request{
+				URI:      "/v1/chats/6ebc6880-31da-11ed-8e95-a3bc92af9795",
+				Method:   sock.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{"name":"New Name"}`),
+			},
+
+			chatID: uuid.FromStringOrNil("6ebc6880-31da-11ed-8e95-a3bc92af9795"),
+			name_:  strPtrListen("New Name"),
+			detail: nil,
+			responseChat: &chat.Chat{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("6ebc6880-31da-11ed-8e95-a3bc92af9795"),
+					CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
+				},
+				Type:     chat.TypeGroup,
+				Name:     "New Name",
+				Detail:   "Old Detail",
+				TMCreate: "2021-11-23 17:55:39.712000",
+				TMUpdate: "2021-11-23 18:00:00.000000",
+				TMDelete: "9999-01-01 00:00:00.000000",
+			},
+			expectRes: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"6ebc6880-31da-11ed-8e95-a3bc92af9795","customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","type":"group","name":"New Name","detail":"Old Detail","tm_create":"2021-11-23 17:55:39.712000","tm_update":"2021-11-23 18:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
+			},
+		},
+		{
+			name: "normal_update_detail",
+			request: &sock.Request{
+				URI:      "/v1/chats/6ebc6880-31da-11ed-8e95-a3bc92af9795",
+				Method:   sock.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{"detail":"New Detail"}`),
+			},
+
+			chatID: uuid.FromStringOrNil("6ebc6880-31da-11ed-8e95-a3bc92af9795"),
+			name_:  nil,
+			detail: strPtrListen("New Detail"),
+			responseChat: &chat.Chat{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("6ebc6880-31da-11ed-8e95-a3bc92af9795"),
+					CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
+				},
+				Type:     chat.TypeGroup,
+				Name:     "Old Name",
+				Detail:   "New Detail",
+				TMCreate: "2021-11-23 17:55:39.712000",
+				TMUpdate: "2021-11-23 18:00:00.000000",
+				TMDelete: "9999-01-01 00:00:00.000000",
+			},
+			expectRes: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"6ebc6880-31da-11ed-8e95-a3bc92af9795","customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","type":"group","name":"Old Name","detail":"New Detail","tm_create":"2021-11-23 17:55:39.712000","tm_update":"2021-11-23 18:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
+			},
+		},
+		{
+			name: "normal_update_both",
+			request: &sock.Request{
+				URI:      "/v1/chats/6ebc6880-31da-11ed-8e95-a3bc92af9795",
+				Method:   sock.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{"name":"New Name","detail":"New Detail"}`),
+			},
+
+			chatID: uuid.FromStringOrNil("6ebc6880-31da-11ed-8e95-a3bc92af9795"),
+			name_:  strPtrListen("New Name"),
+			detail: strPtrListen("New Detail"),
+			responseChat: &chat.Chat{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("6ebc6880-31da-11ed-8e95-a3bc92af9795"),
+					CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
+				},
+				Type:     chat.TypeGroup,
+				Name:     "New Name",
+				Detail:   "New Detail",
+				TMCreate: "2021-11-23 17:55:39.712000",
+				TMUpdate: "2021-11-23 18:00:00.000000",
+				TMDelete: "9999-01-01 00:00:00.000000",
+			},
+			expectRes: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"6ebc6880-31da-11ed-8e95-a3bc92af9795","customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","type":"group","name":"New Name","detail":"New Detail","tm_create":"2021-11-23 17:55:39.712000","tm_update":"2021-11-23 18:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockChat := chathandler.NewMockChatHandler(mc)
+
+			h := &listenHandler{
+				sockHandler: mockSock,
+				chatHandler: mockChat,
+			}
+
+			ctx := context.Background()
+			mockChat.EXPECT().ChatUpdate(ctx, tt.chatID, tt.name_, tt.detail).Return(tt.responseChat, nil)
+
+			res, err := h.v1ChatsIDPut(ctx, *tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_processV1TalkChatsIDPut_error(t *testing.T) {
+	tests := []struct {
+		name      string
+		request   *sock.Request
+		expectRes *sock.Response
+	}{
+		{
+			name: "invalid json",
+			request: &sock.Request{
+				URI:      "/v1/chats/6ebc6880-31da-11ed-8e95-a3bc92af9795",
+				Method:   sock.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{invalid json`),
+			},
+			expectRes: &sock.Response{
+				StatusCode: 400,
+				DataType:   "application/json",
+				Data:       json.RawMessage("{}"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockChat := chathandler.NewMockChatHandler(mc)
+
+			h := &listenHandler{
+				sockHandler: mockSock,
+				chatHandler: mockChat,
+			}
+
+			ctx := context.Background()
+			res, err := h.v1ChatsIDPut(ctx, *tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+// strPtrListen is a helper function to get a pointer to a string
+func strPtrListen(s string) *string {
+	return &s
+}
+
 func Test_processV1TalkChatsIDDelete(t *testing.T) {
 	tests := []struct {
 		name    string

@@ -208,6 +208,63 @@ func (h *chatHandler) ChatList(ctx context.Context, filters map[chat.Field]any, 
 	return talks, nil
 }
 
+// ChatUpdate updates a chat's name and/or detail
+func (h *chatHandler) ChatUpdate(ctx context.Context, id uuid.UUID, name *string, detail *string) (*chat.Chat, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "ChatUpdate",
+		"chat_id": id,
+	})
+	log.Debug("Updating chat")
+
+	// Validate input
+	if id == uuid.Nil {
+		log.Error("Invalid chat ID: nil UUID")
+		return nil, errors.New("chat ID cannot be nil")
+	}
+
+	// Check at least one field is being updated
+	if name == nil && detail == nil {
+		log.Error("No fields to update")
+		return nil, errors.New("at least one field must be provided for update")
+	}
+
+	// Verify chat exists
+	_, err := h.dbHandler.ChatGet(ctx, id)
+	if err != nil {
+		log.Errorf("Failed to get chat before update. err: %v", err)
+		return nil, errors.Wrap(err, "failed to get chat before update")
+	}
+
+	// Build update fields
+	fields := make(map[chat.Field]any)
+	if name != nil {
+		fields[chat.FieldName] = *name
+	}
+	if detail != nil {
+		fields[chat.FieldDetail] = *detail
+	}
+
+	// Update in database
+	err = h.dbHandler.ChatUpdate(ctx, id, fields)
+	if err != nil {
+		log.Errorf("Failed to update chat. err: %v", err)
+		return nil, errors.Wrap(err, "failed to update chat")
+	}
+
+	// Get updated chat with participants
+	result, err := h.ChatGet(ctx, id)
+	if err != nil {
+		log.Errorf("Failed to get chat after update. err: %v", err)
+		return nil, errors.Wrap(err, "failed to get chat after update")
+	}
+
+	// Publish webhook event
+	h.notifyHandler.PublishWebhookEvent(ctx, result.CustomerID, chat.EventTypeChatUpdated, result)
+
+	log.Debug("Chat updated successfully")
+	return result, nil
+}
+
 // ChatDelete soft deletes a talk
 func (h *chatHandler) ChatDelete(ctx context.Context, id uuid.UUID) (*chat.Chat, error) {
 	log := logrus.WithFields(logrus.Fields{
