@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -13,6 +14,15 @@ import (
 	talkparticipant "monorepo/bin-talk-manager/models/participant"
 	tkchat "monorepo/bin-talk-manager/models/chat"
 )
+
+// extractResource extracts the resource name from event type (e.g., "message" from "message_created")
+func (h *subscribeHandler) extractResource(eventType string) string {
+	parts := strings.Split(eventType, "_")
+	if len(parts) > 0 {
+		return parts[0]
+	}
+	return eventType
+}
 
 // processEventTalkManager handles all events from talk-manager
 func (h *subscribeHandler) processEventTalkManager(ctx context.Context, m *sock.Event) error {
@@ -50,21 +60,19 @@ func (h *subscribeHandler) processEventTalkMessage(ctx context.Context, m *sock.
 		return err
 	}
 
-	// Create topics for message creator and customer
+	// Create topics for message creator
 	topics := []string{}
-	service := h.getServiceNamespace(m.Publisher) // "talk"
 
-	// Creator's topic
+	// Extract resource from event type (e.g., "message" from "message_created")
+	resource := h.extractResource(m.Type)
+
+	// Creator's topic (OLD FORMAT: agent_id:owner_id:resource:id)
 	if msg.OwnerID != uuid.Nil {
 		topics = append(topics,
-			fmt.Sprintf("agent_id:%s:%s:%s:%s", msg.OwnerID, service, m.Type, msg.ID))
+			fmt.Sprintf("agent_id:%s:%s:%s", msg.OwnerID, resource, msg.ID))
 	}
 
-	// Customer topic
-	if msg.CustomerID != uuid.Nil {
-		topics = append(topics,
-			fmt.Sprintf("customer_id:%s:%s:%s:%s", msg.CustomerID, service, m.Type, msg.ID))
-	}
+	// Note: customer_id topic is NOT published for talk events
 
 	// CRITICAL: Add topics for all talk participants (not just creator)
 	// This ensures all participants in the talk receive the message notification
@@ -79,9 +87,9 @@ func (h *subscribeHandler) processEventTalkMessage(ctx context.Context, m *sock.
 					continue
 				}
 
-				// Add topic for each other participant
+				// Add topic for each other participant (OLD FORMAT)
 				topics = append(topics,
-					fmt.Sprintf("agent_id:%s:%s:%s:%s", p.OwnerID, service, m.Type, msg.ID))
+					fmt.Sprintf("agent_id:%s:%s:%s", p.OwnerID, resource, msg.ID))
 			}
 		}
 	}
@@ -114,13 +122,19 @@ func (h *subscribeHandler) processEventTalk(ctx context.Context, m *sock.Event) 
 
 	// Create topics
 	topics := []string{}
-	service := h.getServiceNamespace(m.Publisher) // "talk"
 
-	// Customer topic
-	if talk.CustomerID != uuid.Nil {
-		topics = append(topics,
-			fmt.Sprintf("customer_id:%s:%s:%s:%s", talk.CustomerID, service, m.Type, talk.ID))
+	// Extract resource from event type (e.g., "chat" from "chat_created")
+	resource := h.extractResource(m.Type)
+
+	// Publish to all participants in the talk (OLD FORMAT: agent_id:owner_id:resource:id)
+	for _, p := range talk.Participants {
+		if p.OwnerID != uuid.Nil {
+			topics = append(topics,
+				fmt.Sprintf("agent_id:%s:%s:%s", p.OwnerID, resource, talk.ID))
+		}
 	}
+
+	// Note: customer_id topic is NOT published for talk events
 
 	// Publish to all topics
 	for _, topic := range topics {
@@ -150,19 +164,17 @@ func (h *subscribeHandler) processEventTalkParticipant(ctx context.Context, m *s
 
 	// Create topics
 	topics := []string{}
-	service := h.getServiceNamespace(m.Publisher) // "talk"
 
-	// Participant's topic
+	// Extract resource from event type (e.g., "participant" from "participant_added")
+	resource := h.extractResource(m.Type)
+
+	// Participant's topic (OLD FORMAT: agent_id:owner_id:resource:id)
 	if participant.OwnerID != uuid.Nil {
 		topics = append(topics,
-			fmt.Sprintf("agent_id:%s:%s:%s:%s", participant.OwnerID, service, m.Type, participant.ID))
+			fmt.Sprintf("agent_id:%s:%s:%s", participant.OwnerID, resource, participant.ID))
 	}
 
-	// Customer topic
-	if participant.CustomerID != uuid.Nil {
-		topics = append(topics,
-			fmt.Sprintf("customer_id:%s:%s:%s:%s", participant.CustomerID, service, m.Type, participant.ID))
-	}
+	// Note: customer_id topic is NOT published for talk events
 
 	// Publish to all topics
 	for _, topic := range topics {
