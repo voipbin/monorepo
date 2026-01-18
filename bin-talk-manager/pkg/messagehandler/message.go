@@ -115,6 +115,13 @@ func (h *messageHandler) MessageCreate(ctx context.Context, req MessageCreateReq
 		return nil, errors.Wrap(err, "failed to marshal metadata")
 	}
 
+	// Default medias to empty JSON array if not provided
+	// MySQL JSON column requires valid JSON, not empty string
+	medias := req.Medias
+	if medias == "" {
+		medias = "[]"
+	}
+
 	// Create message
 	msg := &message.Message{
 		Identity: commonidentity.Identity{
@@ -129,7 +136,7 @@ func (h *messageHandler) MessageCreate(ctx context.Context, req MessageCreateReq
 		ParentID: parentID,
 		Type:     message.Type(req.Type),
 		Text:     req.Text,
-		Medias:   req.Medias,
+		Medias:   medias,
 		Metadata: string(metadataJSON),
 	}
 
