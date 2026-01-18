@@ -10,23 +10,18 @@ import (
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-talk-manager/models/message"
-	"monorepo/bin-talk-manager/models/participant"
 )
 
 // MessageCreate creates a new message with threading validation
 func (h *messageHandler) MessageCreate(ctx context.Context, req MessageCreateRequest) (*message.Message, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "MessageCreate",
-		"customer_id": req.CustomerID,
-		"chat_id":     req.ChatID,
-		"owner_id":    req.OwnerID,
+		"func":     "MessageCreate",
+		"chat_id":  req.ChatID,
+		"owner_id": req.OwnerID,
 	})
 	log.Debug("Creating message")
 
 	// Validate required fields
-	if req.CustomerID == uuid.Nil {
-		return nil, errors.New("customer_id is required")
-	}
 	if req.ChatID == uuid.Nil {
 		return nil, errors.New("chat_id is required")
 	}
@@ -51,7 +46,7 @@ func (h *messageHandler) MessageCreate(ctx context.Context, req MessageCreateReq
 		}
 	}
 
-	// Validate chat exists
+	// Validate chat exists and get customer_id from it
 	chat, err := h.dbHandler.ChatGet(ctx, req.ChatID)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get chat")
@@ -60,16 +55,18 @@ func (h *messageHandler) MessageCreate(ctx context.Context, req MessageCreateReq
 		return nil, errors.New("chat not found")
 	}
 
-	// Validate sender is a participant
-	// Note: Participants don't have soft delete, so no need to check deleted flag
-	participants, err := h.dbHandler.ParticipantList(ctx, map[participant.Field]any{
-		participant.FieldChatID:  req.ChatID,
-		participant.FieldOwnerID: req.OwnerID,
-	})
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to check participant")
+	// Use chat's customer_id (ensures consistency)
+	customerID := chat.CustomerID
+
+	// Validate sender is a participant using chat's participants
+	isParticipant := false
+	for _, p := range chat.Participants {
+		if string(p.OwnerType) == req.OwnerType && p.OwnerID == req.OwnerID {
+			isParticipant = true
+			break
+		}
 	}
-	if len(participants) == 0 {
+	if !isParticipant {
 		return nil, errors.New("sender is not a participant in this talk")
 	}
 
@@ -115,7 +112,7 @@ func (h *messageHandler) MessageCreate(ctx context.Context, req MessageCreateReq
 	msg := &message.Message{
 		Identity: commonidentity.Identity{
 			ID:         h.utilHandler.UUIDCreate(),
-			CustomerID: req.CustomerID,
+			CustomerID: customerID,
 		},
 		Owner: commonidentity.Owner{
 			OwnerType: commonidentity.OwnerType(req.OwnerType),

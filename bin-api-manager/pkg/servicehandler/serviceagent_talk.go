@@ -273,12 +273,12 @@ func (h *serviceHandler) ServiceAgentTalkMessageReactionCreate(ctx context.Conte
 
 // isParticipantOfTalk checks if an agent is a participant of a talk
 func (h *serviceHandler) isParticipantOfTalk(ctx context.Context, agentID uuid.UUID, talkID uuid.UUID) bool {
-	participants, err := h.reqHandler.TalkV1ParticipantList(ctx, talkID)
+	chat, err := h.talkGet(ctx, talkID)
 	if err != nil {
 		return false
 	}
 
-	for _, p := range participants {
+	for _, p := range chat.Participants {
 		if p.OwnerType == "agent" && p.OwnerID == agentID {
 			return true
 		}
