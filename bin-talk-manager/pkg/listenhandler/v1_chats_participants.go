@@ -51,23 +51,18 @@ func (h *listenHandler) v1ChatsIDParticipantsGet(ctx context.Context, m commonso
 	matches := regV1ChatsIDParticipants.FindStringSubmatch(m.URI)
 	chatID := uuid.FromStringOrNil(matches[1])
 
-	var req struct {
-		CustomerID string `json:"customer_id"`
+	if chatID == uuid.Nil {
+		return simpleResponse(400), nil
 	}
 
-	err := json.Unmarshal(m.Data, &req)
+	// Get chat to retrieve customer_id for authorization
+	chat, err := h.chatHandler.ChatGet(ctx, chatID)
 	if err != nil {
-		logrus.Errorf("Failed to parse request: %v", err)
-		return simpleResponse(400), nil
+		logrus.Errorf("Failed to get chat: %v", err)
+		return simpleResponse(404), nil
 	}
 
-	customerID := uuid.FromStringOrNil(req.CustomerID)
-
-	if customerID == uuid.Nil || chatID == uuid.Nil {
-		return simpleResponse(400), nil
-	}
-
-	participants, err := h.participantHandler.ParticipantList(ctx, customerID, chatID)
+	participants, err := h.participantHandler.ParticipantList(ctx, chat.CustomerID, chatID)
 	if err != nil {
 		logrus.Errorf("Failed to list participants: %v", err)
 		return simpleResponse(500), nil
@@ -83,25 +78,21 @@ func (h *listenHandler) v1ChatsIDParticipantsGet(ctx context.Context, m commonso
 
 func (h *listenHandler) v1ChatsIDParticipantsIDDelete(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
 	matches := regV1ChatsIDParticipantsID.FindStringSubmatch(m.URI)
+	chatID := uuid.FromStringOrNil(matches[1])
 	participantID := uuid.FromStringOrNil(matches[2])
 
-	var req struct {
-		CustomerID string `json:"customer_id"`
+	if chatID == uuid.Nil || participantID == uuid.Nil {
+		return simpleResponse(400), nil
 	}
 
-	err := json.Unmarshal(m.Data, &req)
+	// Get chat to retrieve customer_id for authorization
+	chat, err := h.chatHandler.ChatGet(ctx, chatID)
 	if err != nil {
-		logrus.Errorf("Failed to parse request: %v", err)
-		return simpleResponse(400), nil
+		logrus.Errorf("Failed to get chat: %v", err)
+		return simpleResponse(404), nil
 	}
 
-	customerID := uuid.FromStringOrNil(req.CustomerID)
-
-	if customerID == uuid.Nil || participantID == uuid.Nil {
-		return simpleResponse(400), nil
-	}
-
-	err = h.participantHandler.ParticipantRemove(ctx, customerID, participantID)
+	err = h.participantHandler.ParticipantRemove(ctx, chat.CustomerID, participantID)
 	if err != nil {
 		logrus.Errorf("Failed to remove participant: %v", err)
 		return simpleResponse(500), nil

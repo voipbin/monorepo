@@ -12,7 +12,9 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
+	"monorepo/bin-talk-manager/models/chat"
 	"monorepo/bin-talk-manager/models/participant"
+	"monorepo/bin-talk-manager/pkg/chathandler"
 	"monorepo/bin-talk-manager/pkg/participanthandler"
 )
 
@@ -267,14 +269,22 @@ func Test_processV1TalksIDParticipantsGet(t *testing.T) {
 			defer mc.Finish()
 
 			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockChat := chathandler.NewMockChatHandler(mc)
 			mockParticipant := participanthandler.NewMockParticipantHandler(mc)
 
 			h := &listenHandler{
 				sockHandler:        mockSock,
+				chatHandler:        mockChat,
 				participantHandler: mockParticipant,
 			}
 
 			ctx := context.Background()
+			mockChat.EXPECT().ChatGet(ctx, tt.chatID).Return(&chat.Chat{
+				Identity: commonidentity.Identity{
+					ID:         tt.chatID,
+					CustomerID: tt.customerID,
+				},
+			}, nil)
 			mockParticipant.EXPECT().ParticipantList(ctx, tt.customerID, tt.chatID).Return(tt.responseParticipants, nil)
 
 			res, err := h.v1ChatsIDParticipantsGet(ctx, *tt.request)
@@ -294,6 +304,7 @@ func Test_processV1TalksIDParticipantsIDDelete(t *testing.T) {
 		name    string
 		request *sock.Request
 
+		chatID        uuid.UUID
 		participantID uuid.UUID
 		customerID    uuid.UUID
 		expectRes     *sock.Response
@@ -307,6 +318,7 @@ func Test_processV1TalksIDParticipantsIDDelete(t *testing.T) {
 				Data:     []byte(`{"customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b"}`),
 			},
 
+			chatID:        uuid.FromStringOrNil("6ebc6880-31da-11ed-8e95-a3bc92af9795"),
 			participantID: uuid.FromStringOrNil("bbef9d30-75fe-11ed-c3ea-f8e017af9700"),
 			customerID:    uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
 			expectRes: &sock.Response{
@@ -323,14 +335,22 @@ func Test_processV1TalksIDParticipantsIDDelete(t *testing.T) {
 			defer mc.Finish()
 
 			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockChat := chathandler.NewMockChatHandler(mc)
 			mockParticipant := participanthandler.NewMockParticipantHandler(mc)
 
 			h := &listenHandler{
 				sockHandler:        mockSock,
+				chatHandler:        mockChat,
 				participantHandler: mockParticipant,
 			}
 
 			ctx := context.Background()
+			mockChat.EXPECT().ChatGet(ctx, tt.chatID).Return(&chat.Chat{
+				Identity: commonidentity.Identity{
+					ID:         tt.chatID,
+					CustomerID: tt.customerID,
+				},
+			}, nil)
 			mockParticipant.EXPECT().ParticipantRemove(ctx, tt.customerID, tt.participantID).Return(nil)
 
 			res, err := h.v1ChatsIDParticipantsIDDelete(ctx, *tt.request)
