@@ -205,17 +205,35 @@ This prevents lost updates when multiple users add reactions simultaneously.
 
 ### Participant Re-join Support (UPSERT)
 
-The participant handler uses MySQL's `INSERT ... ON DUPLICATE KEY UPDATE` to allow users to leave and re-join talks:
+The participant handler uses UPSERT to allow users to leave and re-join talks. The UNIQUE constraint on `(chat_id, owner_type, owner_id)` triggers the UPSERT behavior.
 
+**CRITICAL: MySQL vs SQLite UPSERT syntax difference**
+
+**Production (MySQL)** uses `ON DUPLICATE KEY UPDATE`:
 ```sql
 INSERT INTO talk_participants
 (id, customer_id, chat_id, owner_type, owner_id, tm_joined)
 VALUES (?, ?, ?, ?, ?, ?)
 ON DUPLICATE KEY UPDATE
+id = VALUES(id),
 tm_joined = VALUES(tm_joined)
 ```
 
-The UNIQUE constraint on `(chat_id, owner_type, owner_id)` triggers the UPSERT behavior.
+**Tests (SQLite)** use `ON CONFLICT DO UPDATE`:
+```sql
+INSERT INTO talk_participants
+(id, customer_id, chat_id, owner_type, owner_id, tm_joined)
+VALUES (?, ?, ?, ?, ?, ?)
+ON CONFLICT(chat_id, owner_type, owner_id) DO UPDATE SET
+id = excluded.id,
+tm_joined = excluded.tm_joined
+```
+
+**Important notes:**
+- Production code in `pkg/dbhandler/participant.go` MUST use MySQL syntax
+- Test schemas in `scripts/database_scripts/` use SQLite syntax
+- Both achieve the same result: re-joining participants update `tm_joined` timestamp
+- The UNIQUE constraint is required in both databases for UPSERT to work
 
 ### Timestamp Handling (REQUIRED)
 

@@ -3,6 +3,7 @@ package dbhandler
 import (
 	"context"
 	"database/sql"
+	"strings"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
@@ -18,32 +19,77 @@ func (h *dbHandler) ParticipantCreate(ctx context.Context, p *participant.Partic
 	now := h.utilHandler.TimeGetCurTime()
 	p.TMJoined = now
 
-	// Use UPSERT to handle re-joins (participant leaves and joins again)
-	// SQLite: ON CONFLICT DO UPDATE prevents unique constraint violations
-	query := `
-		INSERT INTO talk_participants
-		(id, customer_id, chat_id, owner_type, owner_id, tm_joined)
-		VALUES (?, ?, ?, ?, ?, ?)
-		ON CONFLICT(chat_id, owner_type, owner_id) DO UPDATE SET
-		id = excluded.id,
-		tm_joined = excluded.tm_joined
-	`
-
-	_, err := h.db.ExecContext(ctx, query,
-		p.ID.Bytes(),
-		p.CustomerID.Bytes(),
-		p.ChatID.Bytes(),
-		p.OwnerType,
-		p.OwnerID.Bytes(),
-		now,
-	)
-
+	// Try INSERT first
+	fields, err := commondb.PrepareFields(p)
 	if err != nil {
-		logrus.Errorf("Failed to create/update participant: %v", err)
+		logrus.Errorf("Failed to prepare fields: %v", err)
+		return err
+	}
+
+	query := sq.Insert(tableParticipants).
+		SetMap(fields).
+		PlaceholderFormat(sq.Question)
+
+	sqlQuery, args, err := query.ToSql()
+	if err != nil {
+		logrus.Errorf("Failed to build query: %v", err)
+		return err
+	}
+
+	_, err = h.db.ExecContext(ctx, sqlQuery, args...)
+	if err != nil {
+		// If unique constraint violation, update existing record
+		// Error 1062 (MySQL) or "UNIQUE constraint failed" (SQLite)
+		if sqErr, ok := err.(interface{ Error() string }); ok {
+			errMsg := sqErr.Error()
+			if contains(errMsg, "UNIQUE") || contains(errMsg, "1062") || contains(errMsg, "Duplicate") {
+				// Update existing participant
+				updateFields := map[participant.Field]any{
+					participant.FieldID:       p.ID,
+					participant.FieldTMJoined: now,
+				}
+
+				preparedUpdateFields, err := commondb.PrepareFields(updateFields)
+				if err != nil {
+					logrus.Errorf("Failed to prepare update fields: %v", err)
+					return err
+				}
+
+				updateQuery := sq.Update(tableParticipants).
+					SetMap(preparedUpdateFields).
+					Where(sq.And{
+						sq.Eq{"chat_id": p.ChatID.Bytes()},
+						sq.Eq{"owner_type": p.OwnerType},
+						sq.Eq{"owner_id": p.OwnerID.Bytes()},
+					}).
+					PlaceholderFormat(sq.Question)
+
+				updateSQL, updateArgs, err := updateQuery.ToSql()
+				if err != nil {
+					logrus.Errorf("Failed to build update query: %v", err)
+					return err
+				}
+
+				_, err = h.db.ExecContext(ctx, updateSQL, updateArgs...)
+				if err != nil {
+					logrus.Errorf("Failed to update participant: %v", err)
+					return err
+				}
+
+				return nil
+			}
+		}
+
+		logrus.Errorf("Failed to create participant: %v", err)
 		return err
 	}
 
 	return nil
+}
+
+// contains checks if a string contains a substring
+func contains(s, substr string) bool {
+	return strings.Contains(s, substr)
 }
 
 func (h *dbHandler) ParticipantGet(ctx context.Context, id uuid.UUID) (*participant.Participant, error) {

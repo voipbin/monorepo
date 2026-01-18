@@ -91,6 +91,7 @@ func Test_ChatCreate(t *testing.T) {
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.expectRes.ID)
 			mockDB.EXPECT().ChatCreate(ctx, gomock.Any()).Return(nil)
+			mockDB.EXPECT().ChatGet(ctx, tt.expectRes.ID).Return(tt.expectRes, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.customerID, chat.EventTypeChatCreated, gomock.Any())
 
 			res, err := h.ChatCreate(ctx, tt.customerID, tt.chatType, "", "", "", uuid.Nil)

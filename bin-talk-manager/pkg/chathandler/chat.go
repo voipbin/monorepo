@@ -77,11 +77,19 @@ func (h *chatHandler) ChatCreate(ctx context.Context, customerID uuid.UUID, chat
 		}
 	}
 
-	// Publish webhook event
-	h.notifyHandler.PublishWebhookEvent(ctx, t.CustomerID, chat.EventTypeChatCreated, t)
+	// Load participants into chat before returning
+	result, err := h.dbHandler.ChatGet(ctx, t.ID)
+	if err != nil {
+		log.Errorf("Failed to reload chat with participants. err: %v", err)
+		// Return original chat without participants if reload fails
+		result = t
+	}
 
-	log.WithField("chat_id", t.ID).Debug("Chat created successfully")
-	return t, nil
+	// Publish webhook event
+	h.notifyHandler.PublishWebhookEvent(ctx, result.CustomerID, chat.EventTypeChatCreated, result)
+
+	log.WithField("chat_id", result.ID).Debug("Chat created successfully")
+	return result, nil
 }
 
 // ChatGet retrieves a chat by ID
