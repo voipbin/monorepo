@@ -61,7 +61,14 @@ func (h *listenHandler) v1MessagesPost(ctx context.Context, m commonsock.Request
 		return simpleResponse(500), nil
 	}
 
-	data, _ := json.Marshal(msg)
+	// Convert to WebhookMessage for API response (medias as array, not string)
+	wm, err := msg.ConvertWebhookMessage()
+	if err != nil {
+		logrus.Errorf("Failed to convert message: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	data, _ := json.Marshal(wm)
 	return &commonsock.Response{
 		StatusCode: 201,
 		DataType:   "application/json",
@@ -102,7 +109,18 @@ func (h *listenHandler) v1MessagesGet(ctx context.Context, m commonsock.Request)
 		return simpleResponse(500), nil
 	}
 
-	data, _ := json.Marshal(messages)
+	// Convert to WebhookMessages for API response (medias as array, not string)
+	webhookMessages := []*message.WebhookMessage{}
+	for _, msg := range messages {
+		wm, err := msg.ConvertWebhookMessage()
+		if err != nil {
+			logrus.Errorf("Failed to convert message: %v", err)
+			continue
+		}
+		webhookMessages = append(webhookMessages, wm)
+	}
+
+	data, _ := json.Marshal(webhookMessages)
 	return &commonsock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
@@ -119,7 +137,14 @@ func (h *listenHandler) v1MessagesIDGet(ctx context.Context, m commonsock.Reques
 		return simpleResponse(404), nil
 	}
 
-	data, _ := json.Marshal(msg)
+	// Convert to WebhookMessage for API response (medias as array, not string)
+	wm, err := msg.ConvertWebhookMessage()
+	if err != nil {
+		logrus.Errorf("Failed to convert message: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	data, _ := json.Marshal(wm)
 	return &commonsock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
@@ -136,7 +161,14 @@ func (h *listenHandler) v1MessagesIDDelete(ctx context.Context, m commonsock.Req
 		return simpleResponse(500), nil
 	}
 
-	data, _ := json.Marshal(msg)
+	// Convert to WebhookMessage for API response (medias as array, not string)
+	wm, err := msg.ConvertWebhookMessage()
+	if err != nil {
+		logrus.Errorf("Failed to convert message: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	data, _ := json.Marshal(wm)
 	return &commonsock.Response{
 		StatusCode: 200,
 		DataType:   "application/json",
