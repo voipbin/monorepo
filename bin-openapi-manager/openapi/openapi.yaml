@@ -3556,6 +3556,12 @@ components:
           description: Resource's customer ID.
         type:
           $ref: '#/components/schemas/TalkManagerTalkType'
+        name:
+          type: string
+          description: Talk name (optional).
+        detail:
+          type: string
+          description: Talk description/detail (optional).
         tm_create:
           type: string
           description: Timestamp when the talk was created.

@@ -36,10 +36,12 @@ def upgrade():
     op.execute("""
         CREATE TABLE talk_participants (
             id              BINARY(16) PRIMARY KEY,
+            customer_id     BINARY(16) NOT NULL,
             chat_id         BINARY(16) NOT NULL,
             owner_type      VARCHAR(255) NOT NULL,
             owner_id        BINARY(16) NOT NULL,
             tm_joined       DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+            INDEX idx_customer_id (customer_id),
             INDEX idx_chat_id (chat_id),
             INDEX idx_owner (owner_type, owner_id),
             UNIQUE KEY unique_participant (chat_id, owner_type, owner_id),
