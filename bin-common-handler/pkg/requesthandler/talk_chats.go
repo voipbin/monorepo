@@ -7,6 +7,7 @@ import (
 
 	"monorepo/bin-common-handler/models/sock"
 	tkchat "monorepo/bin-talk-manager/models/chat"
+	tkparticipant "monorepo/bin-talk-manager/models/participant"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -34,7 +35,7 @@ func (r *requestHandler) TalkV1ChatGet(ctx context.Context, chatID uuid.UUID) (*
 }
 
 // TalkV1ChatCreate creates a new chat
-func (r *requestHandler) TalkV1ChatCreate(ctx context.Context, customerID uuid.UUID, chatType tkchat.Type, name string, detail string, creatorType string, creatorID uuid.UUID) (*tkchat.Chat, error) {
+func (r *requestHandler) TalkV1ChatCreate(ctx context.Context, customerID uuid.UUID, chatType tkchat.Type, name string, detail string, creatorType string, creatorID uuid.UUID, participants []tkparticipant.ParticipantInput) (*tkchat.Chat, error) {
 	uri := "/v1/chats"
 
 	data := map[string]any{
@@ -44,6 +45,18 @@ func (r *requestHandler) TalkV1ChatCreate(ctx context.Context, customerID uuid.U
 		"detail":       detail,
 		"creator_type": creatorType,
 		"creator_id":   creatorID.String(),
+	}
+
+	// Add participants if provided
+	if len(participants) > 0 {
+		participantList := make([]map[string]string, 0, len(participants))
+		for _, p := range participants {
+			participantList = append(participantList, map[string]string{
+				"owner_type": p.OwnerType,
+				"owner_id":   p.OwnerID.String(),
+			})
+		}
+		data["participants"] = participantList
 	}
 
 	m, err := json.Marshal(data)

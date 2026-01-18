@@ -14,15 +14,16 @@ import (
 )
 
 // ChatCreate creates a new talk
-func (h *chatHandler) ChatCreate(ctx context.Context, customerID uuid.UUID, chatType chat.Type, name string, detail string, creatorType string, creatorID uuid.UUID) (*chat.Chat, error) {
+func (h *chatHandler) ChatCreate(ctx context.Context, customerID uuid.UUID, chatType chat.Type, name string, detail string, creatorType string, creatorID uuid.UUID, participants []participant.ParticipantInput) (*chat.Chat, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":         "ChatCreate",
-		"customer_id":  customerID,
-		"type":         chatType,
-		"name":         name,
-		"detail":       detail,
-		"creator_type": creatorType,
-		"creator_id":   creatorID,
+		"func":              "ChatCreate",
+		"customer_id":       customerID,
+		"type":              chatType,
+		"name":              name,
+		"detail":            detail,
+		"creator_type":      creatorType,
+		"creator_id":        creatorID,
+		"participants_count": len(participants),
 	})
 	log.Debug("Creating a new talk")
 
@@ -33,7 +34,7 @@ func (h *chatHandler) ChatCreate(ctx context.Context, customerID uuid.UUID, chat
 	}
 
 	// Validate chat type
-	if chatType != chat.TypeDirect && chatType != chat.TypeGroup {
+	if chatType != chat.TypeDirect && chatType != chat.TypeGroup && chatType != chat.TypeTalk {
 		log.Errorf("Invalid chat type: %s", chatType)
 		return nil, errors.Errorf("invalid chat type: %s", chatType)
 	}
@@ -42,6 +43,25 @@ func (h *chatHandler) ChatCreate(ctx context.Context, customerID uuid.UUID, chat
 	if creatorType != "" && creatorID == uuid.Nil {
 		log.Error("Invalid creator ID: nil UUID with non-empty type")
 		return nil, errors.New("creator ID cannot be nil when creator type is specified")
+	}
+
+	// Validate participants based on chat type
+	switch chatType {
+	case chat.TypeDirect:
+		// Direct chats require exactly 1 additional participant (2 total with creator)
+		if len(participants) != 1 {
+			log.Errorf("Direct chat requires exactly 1 participant, got %d", len(participants))
+			return nil, errors.Errorf("direct chat requires exactly 1 participant, got %d", len(participants))
+		}
+	case chat.TypeGroup:
+		// Group chats require at least 1 participant (creator is added automatically)
+		if len(participants) < 1 {
+			log.Errorf("Group chat requires at least 1 participant, got %d", len(participants))
+			return nil, errors.Errorf("group chat requires at least 1 participant, got %d", len(participants))
+		}
+	case chat.TypeTalk:
+		// Talk type doesn't require additional participants (only creator)
+		// No validation needed for participants
 	}
 
 	// Create chat object using utilHandler for UUID generation
@@ -75,6 +95,22 @@ func (h *chatHandler) ChatCreate(ctx context.Context, customerID uuid.UUID, chat
 				"creator_type": creatorType,
 				"creator_id":   creatorID,
 			}).Debug("Creator added as participant")
+		}
+	}
+
+	// Add additional participants if provided
+	for _, p := range participants {
+		_, err = h.participantHandler.ParticipantAdd(ctx, customerID, t.ID, p.OwnerID, p.OwnerType)
+		if err != nil {
+			log.Errorf("Failed to add participant. owner_type: %s, owner_id: %v, err: %v", p.OwnerType, p.OwnerID, err)
+			// Note: We don't fail the entire chat creation if participant addition fails
+			// The chat is already created; this is a best-effort participant addition
+		} else {
+			log.WithFields(logrus.Fields{
+				"chat_id":    t.ID,
+				"owner_type": p.OwnerType,
+				"owner_id":   p.OwnerID,
+			}).Debug("Participant added")
 		}
 	}
 

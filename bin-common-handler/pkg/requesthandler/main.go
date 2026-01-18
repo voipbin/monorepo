@@ -1136,7 +1136,7 @@ type RequestHandler interface {
 
 	// talk-manager chat
 	TalkV1ChatGet(ctx context.Context, chatID uuid.UUID) (*tkchat.Chat, error)
-	TalkV1ChatCreate(ctx context.Context, customerID uuid.UUID, chatType tkchat.Type, name string, detail string, creatorType string, creatorID uuid.UUID) (*tkchat.Chat, error)
+	TalkV1ChatCreate(ctx context.Context, customerID uuid.UUID, chatType tkchat.Type, name string, detail string, creatorType string, creatorID uuid.UUID, participants []talkparticipant.ParticipantInput) (*tkchat.Chat, error)
 	TalkV1ChatDelete(ctx context.Context, chatID uuid.UUID) (*tkchat.Chat, error)
 	TalkV1ChatList(ctx context.Context, filters map[string]any, pageToken string, pageSize uint64) ([]*tkchat.Chat, error)
 

@@ -100,7 +100,7 @@ func Test_processV1TalkChatsPost(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockChat.EXPECT().ChatCreate(ctx, tt.customerID, tt.chatType, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseChat, nil)
+			mockChat.EXPECT().ChatCreate(ctx, tt.customerID, tt.chatType, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseChat, nil)
 
 			res, err := h.v1ChatsPost(ctx, *tt.request)
 			if err != nil {

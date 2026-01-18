@@ -5,6 +5,7 @@ import (
 	"monorepo/bin-api-manager/gens/openapi_server"
 	tkchat "monorepo/bin-talk-manager/models/chat"
 	tkmessage "monorepo/bin-talk-manager/models/message"
+	tkparticipant "monorepo/bin-talk-manager/models/participant"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -97,7 +98,24 @@ func (h *server) PostServiceAgentsTalkChats(c *gin.Context) {
 		detail = *req.Detail
 	}
 
-	res, err := h.serviceHandler.ServiceAgentTalkChatCreate(c.Request.Context(), &a, talkType, name, detail)
+	// Parse participants if provided
+	var participants []tkparticipant.ParticipantInput
+	if req.Participants != nil {
+		for _, p := range *req.Participants {
+			ownerID := uuid.FromStringOrNil(p.OwnerId)
+			if ownerID == uuid.Nil {
+				log.Errorf("Invalid participant owner_id: %s", p.OwnerId)
+				c.AbortWithStatus(400)
+				return
+			}
+			participants = append(participants, tkparticipant.ParticipantInput{
+				OwnerType: p.OwnerType,
+				OwnerID:   ownerID,
+			})
+		}
+	}
+
+	res, err := h.serviceHandler.ServiceAgentTalkChatCreate(c.Request.Context(), &a, talkType, name, detail, participants)
 	if err != nil {
 		log.Errorf("Could not create talk. err: %v", err)
 		c.AbortWithStatus(400)

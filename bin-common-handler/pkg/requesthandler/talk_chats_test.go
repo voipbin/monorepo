@@ -141,7 +141,7 @@ func Test_TalkV1ChatCreate(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectQueue, gomock.Any()).Return(tt.response, nil)
 
-			res, err := reqHandler.TalkV1ChatCreate(ctx, tt.customerID, tt.talkType, "", "", "", uuid.Nil)
+			res, err := reqHandler.TalkV1ChatCreate(ctx, tt.customerID, tt.talkType, "", "", "", uuid.Nil, nil)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

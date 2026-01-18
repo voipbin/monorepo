@@ -627,8 +627,9 @@ const (
 
 // Defines values for TalkManagerTalkType.
 const (
+	TalkManagerTalkTypeDirect TalkManagerTalkType = "direct"
 	TalkManagerTalkTypeGroup  TalkManagerTalkType = "group"
-	TalkManagerTalkTypeNormal TalkManagerTalkType = "normal"
+	TalkManagerTalkTypeTalk   TalkManagerTalkType = "talk"
 )
 
 // Defines values for TranscribeManagerTranscribeDirection.
@@ -3038,6 +3039,15 @@ type TalkManagerParticipant struct {
 	TmJoined *string `json:"tm_joined,omitempty"`
 }
 
+// TalkManagerParticipantInput Participant information for chat creation.
+type TalkManagerParticipantInput struct {
+	// OwnerId Owner ID (UUID).
+	OwnerId string `json:"owner_id"`
+
+	// OwnerType Owner type (e.g., "agent", "customer").
+	OwnerType string `json:"owner_type"`
+}
+
 // TalkManagerReaction defines model for TalkManagerReaction.
 type TalkManagerReaction struct {
 	// Emoji Emoji character for the reaction.
@@ -4661,6 +4671,9 @@ type PostServiceAgentsTalkChatsJSONBody struct {
 
 	// Name Talk name (optional).
 	Name *string `json:"name,omitempty"`
+
+	// Participants List of participants to add to the chat (creator is added automatically).
+	Participants *[]TalkManagerParticipantInput `json:"participants,omitempty"`
 
 	// Type Type of the talk.
 	Type TalkManagerTalkType `json:"type"`

@@ -58,10 +58,10 @@ func (h *serviceHandler) ServiceAgentTalkChatList(ctx context.Context, a *amagen
 }
 
 // ServiceAgentTalkCreate creates a new talk
-func (h *serviceHandler) ServiceAgentTalkChatCreate(ctx context.Context, a *amagent.Agent, talkType tkchat.Type, name string, detail string) (*tkchat.WebhookMessage, error) {
-	// Create talk via RPC with name and detail
+func (h *serviceHandler) ServiceAgentTalkChatCreate(ctx context.Context, a *amagent.Agent, talkType tkchat.Type, name string, detail string, participants []tkparticipant.ParticipantInput) (*tkchat.WebhookMessage, error) {
+	// Create talk via RPC with name, detail, and participants
 	// Agent is automatically added as first participant by talk-manager
-	tmp, err := h.reqHandler.TalkV1ChatCreate(ctx, a.CustomerID, talkType, name, detail, "agent", a.ID)
+	tmp, err := h.reqHandler.TalkV1ChatCreate(ctx, a.CustomerID, talkType, name, detail, "agent", a.ID, participants)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not create talk.")
 	}

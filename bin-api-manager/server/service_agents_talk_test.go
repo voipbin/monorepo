@@ -237,7 +237,7 @@ func Test_talksPOST(t *testing.T) {
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBufferString(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ServiceAgentTalkChatCreate(req.Context(), &tt.agent, tt.expectType, "", "").Return(tt.responseTalk, nil)
+			mockSvc.EXPECT().ServiceAgentTalkChatCreate(req.Context(), &tt.agent, tt.expectType, "", "", gomock.Any()).Return(tt.responseTalk, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

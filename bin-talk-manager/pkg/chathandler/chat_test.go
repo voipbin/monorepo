@@ -23,28 +23,53 @@ func Test_ChatCreate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customerID uuid.UUID
-		chatType   chat.Type
+		customerID   uuid.UUID
+		chatType     chat.Type
+		participants []participant.ParticipantInput
 
 		expectChat *chat.Chat
 		expectRes  *chat.Chat
 	}{
 		{
-			name: "normal_type_normal",
+			name: "normal_type_talk",
 
-			customerID: uuid.FromStringOrNil("ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4"),
-			chatType:   chat.TypeDirect,
+			customerID:   uuid.FromStringOrNil("ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4"),
+			chatType:     chat.TypeTalk,
+			participants: nil, // Talk type doesn't require participants
 
 			expectChat: &chat.Chat{
 				Identity: commonidentity.Identity{
 					CustomerID: uuid.FromStringOrNil("ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4"),
 				},
-				Type: chat.TypeDirect,
+				Type: chat.TypeTalk,
 			},
 			expectRes: &chat.Chat{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("31536998-da36-11ee-976a-b31b049d62c2"),
 					CustomerID: uuid.FromStringOrNil("ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4"),
+				},
+				Type: chat.TypeTalk,
+			},
+		},
+		{
+			name: "normal_type_direct",
+
+			customerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
+			chatType:   chat.TypeDirect,
+			participants: []participant.ParticipantInput{
+				{OwnerType: "agent", OwnerID: uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111")},
+			},
+
+			expectChat: &chat.Chat{
+				Identity: commonidentity.Identity{
+					CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
+				},
+				Type: chat.TypeDirect,
+			},
+			expectRes: &chat.Chat{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("ac810dc4-298c-11ee-984c-ebb7811c4114"),
+					CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
 				},
 				Type: chat.TypeDirect,
 			},
@@ -54,6 +79,9 @@ func Test_ChatCreate(t *testing.T) {
 
 			customerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
 			chatType:   chat.TypeGroup,
+			participants: []participant.ParticipantInput{
+				{OwnerType: "agent", OwnerID: uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222")},
+			},
 
 			expectChat: &chat.Chat{
 				Identity: commonidentity.Identity{
@@ -96,7 +124,12 @@ func Test_ChatCreate(t *testing.T) {
 			mockDB.EXPECT().ParticipantListByChatIDs(ctx, gomock.Any()).Return([]*participant.Participant{}, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.customerID, chat.EventTypeChatCreated, gomock.Any())
 
-			res, err := h.ChatCreate(ctx, tt.customerID, tt.chatType, "", "", "", uuid.Nil)
+			// Mock participant additions for each provided participant
+			for range tt.participants {
+				mockParticipant.EXPECT().ParticipantAdd(ctx, tt.customerID, tt.expectRes.ID, gomock.Any(), gomock.Any()).Return(&participant.Participant{}, nil)
+			}
+
+			res, err := h.ChatCreate(ctx, tt.customerID, tt.chatType, "", "", "", uuid.Nil, tt.participants)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -120,32 +153,66 @@ func Test_ChatCreate_error(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customerID uuid.UUID
-		chatType   chat.Type
+		customerID   uuid.UUID
+		chatType     chat.Type
+		participants []participant.ParticipantInput
 
 		expectError string
 	}{
 		{
 			name: "error_nil_customer_id",
 
-			customerID: uuid.Nil,
-			chatType:   chat.TypeDirect,
+			customerID:   uuid.Nil,
+			chatType:     chat.TypeTalk,
+			participants: nil,
 
 			expectError: "customer ID cannot be nil",
 		},
 		{
 			name: "error_invalid_type",
 
-			customerID: uuid.FromStringOrNil("ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4"),
-			chatType:   "invalid_type",
+			customerID:   uuid.FromStringOrNil("ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4"),
+			chatType:     "invalid_type",
+			participants: nil,
 
 			expectError: "invalid chat type",
 		},
 		{
-			name: "error_database_failure",
+			name: "error_direct_no_participant",
+
+			customerID:   uuid.FromStringOrNil("ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4"),
+			chatType:     chat.TypeDirect,
+			participants: nil,
+
+			expectError: "direct chat requires exactly 1 participant",
+		},
+		{
+			name: "error_direct_too_many_participants",
 
 			customerID: uuid.FromStringOrNil("ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4"),
 			chatType:   chat.TypeDirect,
+			participants: []participant.ParticipantInput{
+				{OwnerType: "agent", OwnerID: uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111")},
+				{OwnerType: "agent", OwnerID: uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222")},
+			},
+
+			expectError: "direct chat requires exactly 1 participant",
+		},
+		{
+			name: "error_group_no_participant",
+
+			customerID:   uuid.FromStringOrNil("ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4"),
+			chatType:     chat.TypeGroup,
+			participants: nil,
+
+			expectError: "group chat requires at least 1 participant",
+		},
+		{
+			name: "error_database_failure",
+
+			customerID:   uuid.FromStringOrNil("ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4"),
+			chatType:     chat.TypeTalk,
+			participants: nil,
 
 			expectError: "failed to create chat in database",
 		},
@@ -178,7 +245,7 @@ func Test_ChatCreate_error(t *testing.T) {
 				mockDB.EXPECT().ChatCreate(ctx, gomock.Any()).Return(fmt.Errorf("database error"))
 			}
 
-			res, err := h.ChatCreate(ctx, tt.customerID, tt.chatType, "", "", "", uuid.Nil)
+			res, err := h.ChatCreate(ctx, tt.customerID, tt.chatType, "", "", "", uuid.Nil, tt.participants)
 			if err == nil {
 				t.Errorf("Wrong match. expect: error, got: ok")
 			}

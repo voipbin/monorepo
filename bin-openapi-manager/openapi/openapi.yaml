@@ -3540,11 +3540,26 @@ components:
       type: string
       description: Type of the talk.
       enum:
-        - normal
+        - direct
         - group
+        - talk
       x-enum-varnames:
-        - TalkManagerTalkTypeNormal
+        - TalkManagerTalkTypeDirect
         - TalkManagerTalkTypeGroup
+        - TalkManagerTalkTypeTalk
+    TalkManagerParticipantInput:
+      type: object
+      description: Participant information for chat creation.
+      properties:
+        owner_type:
+          type: string
+          description: Owner type (e.g., "agent", "customer").
+        owner_id:
+          type: string
+          description: Owner ID (UUID).
+      required:
+        - owner_type
+        - owner_id
     TalkManagerTalk:
       type: object
       properties:
