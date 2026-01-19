@@ -5557,10 +5557,10 @@ func (mr *MockRequestHandlerMockRecorder) TalkV1ChatUpdate(ctx, chatID, name, de
 }
 
 // TalkV1MessageCreate mocks base method.
-func (m *MockRequestHandler) TalkV1MessageCreate(ctx context.Context, chatID uuid.UUID, parentID *uuid.UUID, ownerType string, ownerID uuid.UUID, msgType message3.Type, text string) (*message3.WebhookMessage, error) {
+func (m *MockRequestHandler) TalkV1MessageCreate(ctx context.Context, chatID uuid.UUID, parentID *uuid.UUID, ownerType string, ownerID uuid.UUID, msgType message3.Type, text string) (*message3.Message, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TalkV1MessageCreate", ctx, chatID, parentID, ownerType, ownerID, msgType, text)
-	ret0, _ := ret[0].(*message3.WebhookMessage)
+	ret0, _ := ret[0].(*message3.Message)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -5572,10 +5572,10 @@ func (mr *MockRequestHandlerMockRecorder) TalkV1MessageCreate(ctx, chatID, paren
 }
 
 // TalkV1MessageDelete mocks base method.
-func (m *MockRequestHandler) TalkV1MessageDelete(ctx context.Context, messageID uuid.UUID) (*message3.WebhookMessage, error) {
+func (m *MockRequestHandler) TalkV1MessageDelete(ctx context.Context, messageID uuid.UUID) (*message3.Message, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TalkV1MessageDelete", ctx, messageID)
-	ret0, _ := ret[0].(*message3.WebhookMessage)
+	ret0, _ := ret[0].(*message3.Message)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -5587,10 +5587,10 @@ func (mr *MockRequestHandlerMockRecorder) TalkV1MessageDelete(ctx, messageID any
 }
 
 // TalkV1MessageGet mocks base method.
-func (m *MockRequestHandler) TalkV1MessageGet(ctx context.Context, messageID uuid.UUID) (*message3.WebhookMessage, error) {
+func (m *MockRequestHandler) TalkV1MessageGet(ctx context.Context, messageID uuid.UUID) (*message3.Message, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TalkV1MessageGet", ctx, messageID)
-	ret0, _ := ret[0].(*message3.WebhookMessage)
+	ret0, _ := ret[0].(*message3.Message)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -5602,10 +5602,10 @@ func (mr *MockRequestHandlerMockRecorder) TalkV1MessageGet(ctx, messageID any) *
 }
 
 // TalkV1MessageList mocks base method.
-func (m *MockRequestHandler) TalkV1MessageList(ctx context.Context, pageToken string, pageSize uint64) ([]*message3.WebhookMessage, error) {
+func (m *MockRequestHandler) TalkV1MessageList(ctx context.Context, pageToken string, pageSize uint64) ([]*message3.Message, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TalkV1MessageList", ctx, pageToken, pageSize)
-	ret0, _ := ret[0].([]*message3.WebhookMessage)
+	ret0, _ := ret[0].([]*message3.Message)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -5617,10 +5617,10 @@ func (mr *MockRequestHandlerMockRecorder) TalkV1MessageList(ctx, pageToken, page
 }
 
 // TalkV1MessageListWithFilters mocks base method.
-func (m *MockRequestHandler) TalkV1MessageListWithFilters(ctx context.Context, filters map[string]any, pageToken string, pageSize uint64) ([]*message3.WebhookMessage, error) {
+func (m *MockRequestHandler) TalkV1MessageListWithFilters(ctx context.Context, filters map[string]any, pageToken string, pageSize uint64) ([]*message3.Message, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TalkV1MessageListWithFilters", ctx, filters, pageToken, pageSize)
-	ret0, _ := ret[0].([]*message3.WebhookMessage)
+	ret0, _ := ret[0].([]*message3.Message)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -5632,10 +5632,10 @@ func (mr *MockRequestHandlerMockRecorder) TalkV1MessageListWithFilters(ctx, filt
 }
 
 // TalkV1MessageReactionCreate mocks base method.
-func (m *MockRequestHandler) TalkV1MessageReactionCreate(ctx context.Context, messageID uuid.UUID, ownerType string, ownerID uuid.UUID, emoji string) (*message3.WebhookMessage, error) {
+func (m *MockRequestHandler) TalkV1MessageReactionCreate(ctx context.Context, messageID uuid.UUID, ownerType string, ownerID uuid.UUID, emoji string) (*message3.Message, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TalkV1MessageReactionCreate", ctx, messageID, ownerType, ownerID, emoji)
-	ret0, _ := ret[0].(*message3.WebhookMessage)
+	ret0, _ := ret[0].(*message3.Message)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

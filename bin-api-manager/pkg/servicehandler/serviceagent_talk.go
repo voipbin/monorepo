@@ -5,9 +5,9 @@ import (
 	"fmt"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	tkchat "monorepo/bin-talk-manager/models/chat"
 	tkmessage "monorepo/bin-talk-manager/models/message"
 	tkparticipant "monorepo/bin-talk-manager/models/participant"
-	tkchat "monorepo/bin-talk-manager/models/chat"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -175,7 +175,13 @@ func (h *serviceHandler) ServiceAgentTalkMessageGet(ctx context.Context, a *amag
 		return nil, fmt.Errorf("agent is not a participant of this talk")
 	}
 
-	return tmp, nil
+	// Convert to WebhookMessage
+	res, err := tmp.ConvertWebhookMessage()
+	if err != nil {
+		return nil, errors.Wrapf(err, "Could not convert message.")
+	}
+
+	return res, nil
 }
 
 // ServiceAgentTalkMessageList gets list of messages for a specific chat
@@ -189,13 +195,23 @@ func (h *serviceHandler) ServiceAgentTalkMessageList(ctx context.Context, a *ama
 		return nil, fmt.Errorf("agent is not a participant of this chat")
 	}
 
-	// Get messages for this specific chat (already WebhookMessage format)
+	// Get messages for this specific chat
 	messages, err := h.talkMessageListByTalkIDs(ctx, []uuid.UUID{chatID}, size, token)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not get messages.")
 	}
 
-	return messages, nil
+	// Convert to WebhookMessages
+	res := []*tkmessage.WebhookMessage{}
+	for _, m := range messages {
+		wm, err := m.ConvertWebhookMessage()
+		if err != nil {
+			continue
+		}
+		res = append(res, wm)
+	}
+
+	return res, nil
 }
 
 // ServiceAgentTalkMessageCreate creates a new message
@@ -205,10 +221,16 @@ func (h *serviceHandler) ServiceAgentTalkMessageCreate(ctx context.Context, a *a
 		return nil, fmt.Errorf("agent is not a participant of this talk")
 	}
 
-	// Create message via RPC (already returns WebhookMessage)
-	res, err := h.reqHandler.TalkV1MessageCreate(ctx, chatID, parentID, "agent", a.ID, msgType, text)
+	// Create message via RPC
+	tmp, err := h.reqHandler.TalkV1MessageCreate(ctx, chatID, parentID, "agent", a.ID, msgType, text)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not create message.")
+	}
+
+	// Convert to WebhookMessage
+	res, err := tmp.ConvertWebhookMessage()
+	if err != nil {
+		return nil, errors.Wrapf(err, "Could not convert message.")
 	}
 
 	return res, nil
@@ -227,10 +249,16 @@ func (h *serviceHandler) ServiceAgentTalkMessageDelete(ctx context.Context, a *a
 		return nil, fmt.Errorf("agent does not own this message")
 	}
 
-	// Delete message via RPC (already returns WebhookMessage)
-	res, err := h.reqHandler.TalkV1MessageDelete(ctx, messageID)
+	// Delete message via RPC
+	deleted, err := h.reqHandler.TalkV1MessageDelete(ctx, messageID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not delete message.")
+	}
+
+	// Convert to WebhookMessage
+	res, err := deleted.ConvertWebhookMessage()
+	if err != nil {
+		return nil, errors.Wrapf(err, "Could not convert message.")
 	}
 
 	return res, nil
@@ -249,10 +277,16 @@ func (h *serviceHandler) ServiceAgentTalkMessageReactionCreate(ctx context.Conte
 		return nil, fmt.Errorf("agent is not a participant of this talk")
 	}
 
-	// Add reaction via RPC (already returns WebhookMessage)
-	res, err := h.reqHandler.TalkV1MessageReactionCreate(ctx, messageID, "agent", a.ID, emoji)
+	// Add reaction via RPC
+	updated, err := h.reqHandler.TalkV1MessageReactionCreate(ctx, messageID, "agent", a.ID, emoji)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not add reaction.")
+	}
+
+	// Convert to WebhookMessage
+	res, err := updated.ConvertWebhookMessage()
+	if err != nil {
+		return nil, errors.Wrapf(err, "Could not convert message.")
 	}
 
 	return res, nil
@@ -282,16 +316,16 @@ func (h *serviceHandler) talkGet(ctx context.Context, talkID uuid.UUID) (*tkchat
 }
 
 // talkMessageGet gets a message by ID via RPC
-func (h *serviceHandler) talkMessageGet(ctx context.Context, messageID uuid.UUID) (*tkmessage.WebhookMessage, error) {
+func (h *serviceHandler) talkMessageGet(ctx context.Context, messageID uuid.UUID) (*tkmessage.Message, error) {
 	return h.reqHandler.TalkV1MessageGet(ctx, messageID)
 }
 
 // talkMessageListByTalkIDs gets messages by talk IDs
-func (h *serviceHandler) talkMessageListByTalkIDs(ctx context.Context, talkIDs []uuid.UUID, size uint64, token string) ([]*tkmessage.WebhookMessage, error) {
+func (h *serviceHandler) talkMessageListByTalkIDs(ctx context.Context, talkIDs []uuid.UUID, size uint64, token string) ([]*tkmessage.Message, error) {
 	// Build filters with chat_ids (note: currently only supports single chat_id due to filter limitations)
 	// For multiple chat IDs, this would need to make multiple requests or enhanced backend support
 	if len(talkIDs) == 0 {
-		return []*tkmessage.WebhookMessage{}, nil
+		return []*tkmessage.Message{}, nil
 	}
 
 	// For now, filter by first talk ID (simplified implementation)
