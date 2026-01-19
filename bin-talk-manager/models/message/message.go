@@ -94,7 +94,7 @@ func (m *Message) ConvertWebhookMessage() (*WebhookMessage, error) {
 	}, nil
 }
 
-// CreateWebhookEvent generates WebhookEvent JSON
+// CreateWebhookEvent generates WebhookEvent JSON from Message
 func (m *Message) CreateWebhookEvent() ([]byte, error) {
 	e, err := m.ConvertWebhookMessage()
 	if err != nil {

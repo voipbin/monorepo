@@ -34,7 +34,7 @@ func Test_processV1MessagesIDReactionsPost(t *testing.T) {
 				URI:      "/v1/messages/9ade9b10-64ed-11ed-b1c8-d6ef95af9798/reactions",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"owner_type":"agent","owner_id":"7fcd7990-42eb-11ed-9fa6-b4cd93af9796","reaction":"👍"}`),
+				Data:     []byte(`{"owner_type":"agent","owner_id":"7fcd7990-42eb-11ed-9fa6-b4cd93af9796","emoji":"👍"}`),
 			},
 
 			messageID: uuid.FromStringOrNil("9ade9b10-64ed-11ed-b1c8-d6ef95af9798"),
@@ -71,7 +71,7 @@ func Test_processV1MessagesIDReactionsPost(t *testing.T) {
 				URI:      "/v1/messages/9ade9b10-64ed-11ed-b1c8-d6ef95af9798/reactions",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"owner_type":"customer","owner_id":"8ede8b40-86ef-11ed-d4fb-e9e028af9801","reaction":"❤️"}`),
+				Data:     []byte(`{"owner_type":"customer","owner_id":"8ede8b40-86ef-11ed-d4fb-e9e028af9801","emoji":"❤️"}`),
 			},
 
 			messageID: uuid.FromStringOrNil("9ade9b10-64ed-11ed-b1c8-d6ef95af9798"),
@@ -160,7 +160,7 @@ func Test_processV1MessagesIDReactionsPost_error(t *testing.T) {
 				URI:      "/v1/messages/9ade9b10-64ed-11ed-b1c8-d6ef95af9798/reactions",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"owner_type":"agent","owner_id":"","reaction":"👍"}`),
+				Data:     []byte(`{"owner_type":"agent","owner_id":"","emoji":"👍"}`),
 			},
 			messageID: uuid.FromStringOrNil("9ade9b10-64ed-11ed-b1c8-d6ef95af9798"),
 			expectRes: &sock.Response{
@@ -215,7 +215,7 @@ func Test_processV1MessagesIDReactionsDelete(t *testing.T) {
 				URI:      "/v1/messages/9ade9b10-64ed-11ed-b1c8-d6ef95af9798/reactions",
 				Method:   sock.RequestMethodDelete,
 				DataType: "application/json",
-				Data:     []byte(`{"owner_type":"agent","owner_id":"7fcd7990-42eb-11ed-9fa6-b4cd93af9796","reaction":"👍"}`),
+				Data:     []byte(`{"owner_type":"agent","owner_id":"7fcd7990-42eb-11ed-9fa6-b4cd93af9796","emoji":"👍"}`),
 			},
 
 			messageID: uuid.FromStringOrNil("9ade9b10-64ed-11ed-b1c8-d6ef95af9798"),
@@ -252,7 +252,7 @@ func Test_processV1MessagesIDReactionsDelete(t *testing.T) {
 				URI:      "/v1/messages/9ade9b10-64ed-11ed-b1c8-d6ef95af9798/reactions",
 				Method:   sock.RequestMethodDelete,
 				DataType: "application/json",
-				Data:     []byte(`{"owner_type":"customer","owner_id":"8ede8b40-86ef-11ed-d4fb-e9e028af9801","reaction":"❤️"}`),
+				Data:     []byte(`{"owner_type":"customer","owner_id":"8ede8b40-86ef-11ed-d4fb-e9e028af9801","emoji":"❤️"}`),
 			},
 
 			messageID: uuid.FromStringOrNil("9ade9b10-64ed-11ed-b1c8-d6ef95af9798"),
@@ -341,7 +341,7 @@ func Test_processV1MessagesIDReactionsDelete_error(t *testing.T) {
 				URI:      "/v1/messages/9ade9b10-64ed-11ed-b1c8-d6ef95af9798/reactions",
 				Method:   sock.RequestMethodDelete,
 				DataType: "application/json",
-				Data:     []byte(`{"owner_type":"agent","owner_id":"","reaction":"👍"}`),
+				Data:     []byte(`{"owner_type":"agent","owner_id":"","emoji":"👍"}`),
 			},
 			messageID: uuid.FromStringOrNil("9ade9b10-64ed-11ed-b1c8-d6ef95af9798"),
 			expectRes: &sock.Response{
