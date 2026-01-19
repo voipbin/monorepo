@@ -17,13 +17,13 @@ import (
 
 func (h *listenHandler) v1MessagesPost(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
 	var req struct {
-		ChatID    string  `json:"chat_id"`
-		ParentID  *string `json:"parent_id,omitempty"`
-		OwnerType string  `json:"owner_type"`
-		OwnerID   string  `json:"owner_id"`
-		Type      string  `json:"type"`
-		Text      string  `json:"text"`
-		Medias    string  `json:"medias"`
+		ChatID    string          `json:"chat_id"`
+		ParentID  *string         `json:"parent_id,omitempty"`
+		OwnerType string          `json:"owner_type"`
+		OwnerID   string          `json:"owner_id"`
+		Type      string          `json:"type"`
+		Text      string          `json:"text"`
+		Medias    []message.Media `json:"medias"`
 	}
 
 	err := json.Unmarshal(m.Data, &req)

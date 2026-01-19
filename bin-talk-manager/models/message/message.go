@@ -26,10 +26,10 @@ type Message struct {
 	ChatID   uuid.UUID  `json:"chat_id" db:"chat_id,uuid"`
 	ParentID *uuid.UUID `json:"parent_id,omitempty" db:"parent_id"`
 
-	Type     Type   `json:"type" db:"type"`
-	Text     string `json:"text" db:"text"`
-	Medias   string `json:"medias" db:"medias"`     // JSON string
-	Metadata string `json:"metadata" db:"metadata"` // JSON string
+	Type     Type     `json:"type" db:"type"`
+	Text     string   `json:"text" db:"text"`
+	Medias   []Media  `json:"medias" db:"medias,json"`
+	Metadata Metadata `json:"metadata" db:"metadata,json"`
 
 	// Timestamps
 	TMCreate string `json:"tm_create" db:"tm_create"`
@@ -77,23 +77,8 @@ type Media struct {
 }
 
 // ConvertWebhookMessage converts Message to WebhookMessage
+// Now that Message uses proper types, this is a simple field copy
 func (m *Message) ConvertWebhookMessage() (*WebhookMessage, error) {
-	// Parse Medias JSON string to []Media
-	var medias []Media
-	if m.Medias != "" {
-		if err := json.Unmarshal([]byte(m.Medias), &medias); err != nil {
-			return nil, err
-		}
-	}
-
-	// Parse Metadata JSON string to Metadata struct
-	var metadata Metadata
-	if m.Metadata != "" {
-		if err := json.Unmarshal([]byte(m.Metadata), &metadata); err != nil {
-			return nil, err
-		}
-	}
-
 	return &WebhookMessage{
 		Identity: m.Identity,
 		Owner:    m.Owner,
@@ -101,8 +86,8 @@ func (m *Message) ConvertWebhookMessage() (*WebhookMessage, error) {
 		ParentID: m.ParentID,
 		Type:     m.Type,
 		Text:     m.Text,
-		Medias:   medias,
-		Metadata: metadata,
+		Medias:   m.Medias,
+		Metadata: m.Metadata,
 		TMCreate: m.TMCreate,
 		TMUpdate: m.TMUpdate,
 		TMDelete: m.TMDelete,

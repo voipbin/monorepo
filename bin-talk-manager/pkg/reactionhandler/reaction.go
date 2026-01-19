@@ -45,13 +45,7 @@ func (h *reactionHandler) ReactionAdd(ctx context.Context, messageID uuid.UUID, 
 		return nil, errors.New("message not found")
 	}
 
-	var metadata message.Metadata
-	if err := json.Unmarshal([]byte(m.Metadata), &metadata); err != nil {
-		log.Errorf("Failed to unmarshal metadata: %v", err)
-		return nil, errors.Wrap(err, "failed to parse message metadata")
-	}
-
-	for _, r := range metadata.Reactions {
+	for _, r := range m.Metadata.Reactions {
 		if r.Emoji == emoji && r.OwnerType == ownerType && r.OwnerID == ownerID {
 			// Already exists, return current message (idempotent)
 			log.Debug("Reaction already exists, returning current message")

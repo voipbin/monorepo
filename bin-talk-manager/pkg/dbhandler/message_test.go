@@ -31,11 +31,11 @@ func Test_MessageCreate(t *testing.T) {
 					OwnerType: commonidentity.OwnerTypeAgent,
 					OwnerID:   uuid.FromStringOrNil("6922f8c2-e428-11ec-b1a3-4bc67cb9da12"),
 				},
-				ChatID: uuid.FromStringOrNil("7922f8c2-e428-11ec-b1a3-4bc67cb9da13"),
-				Type:   message.TypeNormal,
-				Text:   "Hello world",
-				Medias: "",
-				Metadata: "",
+				ChatID:   uuid.FromStringOrNil("7922f8c2-e428-11ec-b1a3-4bc67cb9da13"),
+				Type:     message.TypeNormal,
+				Text:     "Hello world",
+				Medias:   []message.Media{},
+				Metadata: message.Metadata{Reactions: []message.Reaction{}},
 			},
 		},
 		{
@@ -49,11 +49,11 @@ func Test_MessageCreate(t *testing.T) {
 					OwnerType: commonidentity.OwnerTypeNone,
 					OwnerID:   uuid.Nil,
 				},
-				ChatID: uuid.FromStringOrNil("9922f8c2-e428-11ec-b1a3-4bc67cb9da18"),
-				Type:   message.TypeSystem,
-				Text:   "User joined the chat",
-				Medias: "",
-				Metadata: "",
+				ChatID:   uuid.FromStringOrNil("9922f8c2-e428-11ec-b1a3-4bc67cb9da18"),
+				Type:     message.TypeSystem,
+				Text:     "User joined the chat",
+				Medias:   []message.Media{},
+				Metadata: message.Metadata{Reactions: []message.Reaction{}},
 			},
 		},
 		{
@@ -70,8 +70,13 @@ func Test_MessageCreate(t *testing.T) {
 				ChatID: uuid.FromStringOrNil("a922f8c2-e428-11ec-b1a3-4bc67cb9da21"),
 				Type:   message.TypeNormal,
 				Text:   "Check this file",
-				Medias: `[{"type":"file","url":"https://example.com/file.pdf"}]`,
-				Metadata: "",
+				Medias: []message.Media{
+					{
+						Type:    message.MediaTypeLink,
+						LinkURL: "https://example.com/file.pdf",
+					},
+				},
+				Metadata: message.Metadata{Reactions: []message.Reaction{}},
 			},
 		},
 	}
@@ -518,7 +523,8 @@ func Test_MessageAddReactionAtomic(t *testing.T) {
 				ChatID:   uuid.FromStringOrNil("8922f8c2-e428-11ec-b1a3-4bc67cb9da46"),
 				Type:     message.TypeNormal,
 				Text:     "Message with reactions",
-				Metadata: "",
+				Medias:   []message.Media{},
+				Metadata: message.Metadata{Reactions: []message.Reaction{}},
 			},
 			reaction: message.Reaction{
 				Emoji:     "👍",
@@ -560,17 +566,12 @@ func Test_MessageAddReactionAtomic(t *testing.T) {
 				t.Errorf("Failed to get message: %v", err)
 			}
 
-			var metadata message.Metadata
-			if err := json.Unmarshal([]byte(res.Metadata), &metadata); err != nil {
-				t.Errorf("Failed to unmarshal metadata: %v", err)
+			if len(res.Metadata.Reactions) != tt.expectCount {
+				t.Errorf("Wrong reaction count. expect: %d, got: %d", tt.expectCount, len(res.Metadata.Reactions))
 			}
 
-			if len(metadata.Reactions) != tt.expectCount {
-				t.Errorf("Wrong reaction count. expect: %d, got: %d", tt.expectCount, len(metadata.Reactions))
-			}
-
-			if metadata.Reactions[0].Emoji != tt.reaction.Emoji {
-				t.Errorf("Wrong emoji. expect: %s, got: %s", tt.reaction.Emoji, metadata.Reactions[0].Emoji)
+			if res.Metadata.Reactions[0].Emoji != tt.reaction.Emoji {
+				t.Errorf("Wrong emoji. expect: %s, got: %s", tt.reaction.Emoji, res.Metadata.Reactions[0].Emoji)
 			}
 		})
 	}
@@ -601,7 +602,8 @@ func Test_MessageAddReactionAtomic_Concurrent(t *testing.T) {
 		ChatID:   uuid.FromStringOrNil("9922f8c2-e428-11ec-b1a3-4bc67cb9da50"),
 		Type:     message.TypeNormal,
 		Text:     "Concurrent reactions test",
-		Metadata: "",
+		Medias:   []message.Media{},
+		Metadata: message.Metadata{Reactions: []message.Reaction{}},
 	}
 
 	if err := h.MessageCreate(ctx, testMessage); err != nil {
@@ -644,13 +646,8 @@ func Test_MessageAddReactionAtomic_Concurrent(t *testing.T) {
 		t.Errorf("Failed to get message: %v", err)
 	}
 
-	var metadata message.Metadata
-	if err := json.Unmarshal([]byte(res.Metadata), &metadata); err != nil {
-		t.Errorf("Failed to unmarshal metadata: %v", err)
-	}
-
-	if len(metadata.Reactions) != reactionCount {
-		t.Errorf("Wrong reaction count. expect: %d, got: %d", reactionCount, len(metadata.Reactions))
+	if len(res.Metadata.Reactions) != reactionCount {
+		t.Errorf("Wrong reaction count. expect: %d, got: %d", reactionCount, len(res.Metadata.Reactions))
 	}
 }
 
@@ -678,7 +675,8 @@ func Test_MessageRemoveReactionAtomic(t *testing.T) {
 				ChatID:   uuid.FromStringOrNil("a922f8c2-e428-11ec-b1a3-4bc67cb9da53"),
 				Type:     message.TypeNormal,
 				Text:     "Message with reaction to remove",
-				Metadata: "",
+				Medias:   []message.Media{},
+				Metadata: message.Metadata{Reactions: []message.Reaction{}},
 			},
 			addReaction: message.Reaction{
 				Emoji:     "👍",
@@ -728,15 +726,8 @@ func Test_MessageRemoveReactionAtomic(t *testing.T) {
 				t.Errorf("Failed to get message: %v", err)
 			}
 
-			var metadata message.Metadata
-			if res.Metadata != "" {
-				if err := json.Unmarshal([]byte(res.Metadata), &metadata); err != nil {
-					t.Errorf("Failed to unmarshal metadata: %v", err)
-				}
-			}
-
-			if len(metadata.Reactions) != tt.expectCount {
-				t.Errorf("Wrong reaction count. expect: %d, got: %d", tt.expectCount, len(metadata.Reactions))
+			if len(res.Metadata.Reactions) != tt.expectCount {
+				t.Errorf("Wrong reaction count. expect: %d, got: %d", tt.expectCount, len(res.Metadata.Reactions))
 			}
 		})
 	}
