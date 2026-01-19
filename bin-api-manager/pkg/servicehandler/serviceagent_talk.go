@@ -163,8 +163,10 @@ func (h *serviceHandler) ServiceAgentTalkParticipantList(ctx context.Context, a 
 
 // ServiceAgentTalkParticipantCreate adds a participant to a chat
 func (h *serviceHandler) ServiceAgentTalkParticipantCreate(ctx context.Context, a *amagent.Agent, chatID uuid.UUID, ownerType string, ownerID uuid.UUID) (*tkparticipant.WebhookMessage, error) {
-	// Check permission - must be a participant to add others
-	if !h.isParticipantOfTalk(ctx, a.ID, chatID) {
+	// Check permission - must be a participant OR joining a public "talk" type chat
+	// For "talk" type chats (public channels): anyone in the customer can add themselves (join)
+	// For group/direct chats: only existing participants can add others
+	if !h.canAddParticipant(ctx, a, chatID, ownerType, ownerID) {
 		return nil, fmt.Errorf("agent is not a participant of this chat")
 	}
 
@@ -397,4 +399,32 @@ func (h *serviceHandler) talkMessageListByChatIDs(ctx context.Context, chatIDs [
 	}
 
 	return h.reqHandler.TalkV1MessageListWithFilters(ctx, filters, token, size)
+}
+
+// canAddParticipant checks if an agent can add a participant to a chat
+// Returns true if:
+// - Agent is already a participant (can add anyone)
+// - Chat is a "talk" type (public channel) and agent is adding themselves (joining)
+func (h *serviceHandler) canAddParticipant(ctx context.Context, a *amagent.Agent, chatID uuid.UUID, ownerType string, ownerID uuid.UUID) bool {
+	chat, err := h.talkGet(ctx, chatID)
+	if err != nil {
+		return false
+	}
+
+	// Check if agent is already a participant - can add anyone
+	for _, p := range chat.Participants {
+		if p.OwnerType == "agent" && p.OwnerID == a.ID {
+			return true
+		}
+	}
+
+	// For "talk" type (public channels): allow agent to add themselves (join)
+	if chat.Type == tkchat.TypeTalk && chat.CustomerID == a.CustomerID {
+		// Agent can only add themselves to a public channel
+		if ownerType == "agent" && ownerID == a.ID {
+			return true
+		}
+	}
+
+	return false
 }
