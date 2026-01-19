@@ -5,9 +5,9 @@ import (
 	"fmt"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	tkchat "monorepo/bin-talk-manager/models/chat"
 	tkmessage "monorepo/bin-talk-manager/models/message"
 	tkparticipant "monorepo/bin-talk-manager/models/participant"
-	tkchat "monorepo/bin-talk-manager/models/chat"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -175,6 +175,7 @@ func (h *serviceHandler) ServiceAgentTalkMessageGet(ctx context.Context, a *amag
 		return nil, fmt.Errorf("agent is not a participant of this talk")
 	}
 
+	// Convert to WebhookMessage
 	res, err := tmp.ConvertWebhookMessage()
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not convert message.")
@@ -200,12 +201,12 @@ func (h *serviceHandler) ServiceAgentTalkMessageList(ctx context.Context, a *ama
 		return nil, errors.Wrapf(err, "Could not get messages.")
 	}
 
-	// Convert to webhook messages
+	// Convert to WebhookMessages
 	res := []*tkmessage.WebhookMessage{}
 	for _, m := range messages {
 		wm, err := m.ConvertWebhookMessage()
 		if err != nil {
-			continue // Skip messages that can't be converted
+			continue
 		}
 		res = append(res, wm)
 	}
@@ -226,6 +227,7 @@ func (h *serviceHandler) ServiceAgentTalkMessageCreate(ctx context.Context, a *a
 		return nil, errors.Wrapf(err, "Could not create message.")
 	}
 
+	// Convert to WebhookMessage
 	res, err := tmp.ConvertWebhookMessage()
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not convert message.")
@@ -253,6 +255,7 @@ func (h *serviceHandler) ServiceAgentTalkMessageDelete(ctx context.Context, a *a
 		return nil, errors.Wrapf(err, "Could not delete message.")
 	}
 
+	// Convert to WebhookMessage
 	res, err := deleted.ConvertWebhookMessage()
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not convert message.")
@@ -275,12 +278,13 @@ func (h *serviceHandler) ServiceAgentTalkMessageReactionCreate(ctx context.Conte
 	}
 
 	// Add reaction via RPC
-	result, err := h.reqHandler.TalkV1MessageReactionCreate(ctx, messageID, "agent", a.ID, emoji)
+	updated, err := h.reqHandler.TalkV1MessageReactionCreate(ctx, messageID, "agent", a.ID, emoji)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not add reaction.")
 	}
 
-	res, err := result.ConvertWebhookMessage()
+	// Convert to WebhookMessage
+	res, err := updated.ConvertWebhookMessage()
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not convert message.")
 	}

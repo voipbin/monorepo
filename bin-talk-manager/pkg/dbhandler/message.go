@@ -21,9 +21,12 @@ func (h *dbHandler) MessageCreate(ctx context.Context, m *message.Message) error
 	m.TMUpdate = now
 	m.TMDelete = commondb.DefaultTimeStamp
 
-	// Initialize empty metadata if not set
-	if m.Metadata == "" {
-		m.Metadata = `{"reactions":[]}`
+	// Initialize empty arrays if nil
+	if m.Medias == nil {
+		m.Medias = []message.Media{}
+	}
+	if m.Metadata.Reactions == nil {
+		m.Metadata.Reactions = []message.Reaction{}
 	}
 
 	fields, err := commondb.PrepareFields(m)

@@ -43,7 +43,7 @@ func Test_TalkV1MessageGet(t *testing.T) {
 			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
-				Data:       []byte(`{"id":"72179880-ec5f-11ec-920e-c77279756b6d","customer_id":"550e8400-e29b-41d4-a716-446655440000","owner_type":"agent","owner_id":"660e8400-e29b-41d4-a716-446655440000","chat_id":"770e8400-e29b-41d4-a716-446655440000","type":"normal","text":"Hello"}`),
+				Data:       []byte(`{"id":"72179880-ec5f-11ec-920e-c77279756b6d","customer_id":"550e8400-e29b-41d4-a716-446655440000","owner_type":"agent","owner_id":"660e8400-e29b-41d4-a716-446655440000","chat_id":"770e8400-e29b-41d4-a716-446655440000","type":"normal","text":"Hello","medias":[],"metadata":{"reactions":[]}}`),
 			},
 			expectRes: &talkmessage.Message{
 				Identity: commonidentity.Identity{
@@ -54,9 +54,11 @@ func Test_TalkV1MessageGet(t *testing.T) {
 					OwnerType: "agent",
 					OwnerID:   uuid.FromStringOrNil("660e8400-e29b-41d4-a716-446655440000"),
 				},
-				ChatID: uuid.FromStringOrNil("770e8400-e29b-41d4-a716-446655440000"),
-				Type:   talkmessage.TypeNormal,
-				Text:   "Hello",
+				ChatID:   uuid.FromStringOrNil("770e8400-e29b-41d4-a716-446655440000"),
+				Type:     talkmessage.TypeNormal,
+				Text:     "Hello",
+				Medias:   []talkmessage.Media{},
+				Metadata: talkmessage.Metadata{Reactions: []talkmessage.Reaction{}},
 			},
 		},
 	}
@@ -121,7 +123,7 @@ func Test_TalkV1MessageCreate(t *testing.T) {
 			response: &sock.Response{
 				StatusCode: 201,
 				DataType:   ContentTypeJSON,
-				Data:       []byte(`{"id":"72179880-ec5f-11ec-920e-c77279756b6d","customer_id":"550e8400-e29b-41d4-a716-446655440000","owner_type":"agent","owner_id":"660e8400-e29b-41d4-a716-446655440000","chat_id":"770e8400-e29b-41d4-a716-446655440000","type":"normal","text":"Hello"}`),
+				Data:       []byte(`{"id":"72179880-ec5f-11ec-920e-c77279756b6d","customer_id":"550e8400-e29b-41d4-a716-446655440000","owner_type":"agent","owner_id":"660e8400-e29b-41d4-a716-446655440000","chat_id":"770e8400-e29b-41d4-a716-446655440000","type":"normal","text":"Hello","medias":[],"metadata":{"reactions":[]}}`),
 			},
 			expectRes: &talkmessage.Message{
 				Identity: commonidentity.Identity{
@@ -132,9 +134,11 @@ func Test_TalkV1MessageCreate(t *testing.T) {
 					OwnerType: "agent",
 					OwnerID:   uuid.FromStringOrNil("660e8400-e29b-41d4-a716-446655440000"),
 				},
-				ChatID: uuid.FromStringOrNil("770e8400-e29b-41d4-a716-446655440000"),
-				Type:   talkmessage.TypeNormal,
-				Text:   "Hello",
+				ChatID:   uuid.FromStringOrNil("770e8400-e29b-41d4-a716-446655440000"),
+				Type:     talkmessage.TypeNormal,
+				Text:     "Hello",
+				Medias:   []talkmessage.Media{},
+				Metadata: talkmessage.Metadata{Reactions: []talkmessage.Reaction{}},
 			},
 		},
 		{
@@ -152,7 +156,7 @@ func Test_TalkV1MessageCreate(t *testing.T) {
 			response: &sock.Response{
 				StatusCode: 201,
 				DataType:   ContentTypeJSON,
-				Data:       []byte(`{"id":"72179880-ec5f-11ec-920e-c77279756b6d","customer_id":"550e8400-e29b-41d4-a716-446655440000","owner_type":"agent","owner_id":"660e8400-e29b-41d4-a716-446655440000","chat_id":"770e8400-e29b-41d4-a716-446655440000","parent_id":"880e8400-e29b-41d4-a716-446655440000","type":"normal","text":"Reply"}`),
+				Data:       []byte(`{"id":"72179880-ec5f-11ec-920e-c77279756b6d","customer_id":"550e8400-e29b-41d4-a716-446655440000","owner_type":"agent","owner_id":"660e8400-e29b-41d4-a716-446655440000","chat_id":"770e8400-e29b-41d4-a716-446655440000","parent_id":"880e8400-e29b-41d4-a716-446655440000","type":"normal","text":"Reply","medias":[],"metadata":{"reactions":[]}}`),
 			},
 			expectRes: &talkmessage.Message{
 				Identity: commonidentity.Identity{
@@ -167,6 +171,8 @@ func Test_TalkV1MessageCreate(t *testing.T) {
 				ParentID: &parentID,
 				Type:     talkmessage.TypeNormal,
 				Text:     "Reply",
+				Medias:   []talkmessage.Media{},
+				Metadata: talkmessage.Metadata{Reactions: []talkmessage.Reaction{}},
 			},
 		},
 	}
@@ -225,7 +231,7 @@ func Test_TalkV1MessageDelete(t *testing.T) {
 			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
-				Data:       []byte(`{"id":"72179880-ec5f-11ec-920e-c77279756b6d","customer_id":"550e8400-e29b-41d4-a716-446655440000","owner_type":"agent","owner_id":"660e8400-e29b-41d4-a716-446655440000","chat_id":"770e8400-e29b-41d4-a716-446655440000","type":"normal","text":"Hello"}`),
+				Data:       []byte(`{"id":"72179880-ec5f-11ec-920e-c77279756b6d","customer_id":"550e8400-e29b-41d4-a716-446655440000","owner_type":"agent","owner_id":"660e8400-e29b-41d4-a716-446655440000","chat_id":"770e8400-e29b-41d4-a716-446655440000","type":"normal","text":"Hello","medias":[],"metadata":{"reactions":[]}}`),
 			},
 			expectRes: &talkmessage.Message{
 				Identity: commonidentity.Identity{
@@ -236,9 +242,11 @@ func Test_TalkV1MessageDelete(t *testing.T) {
 					OwnerType: "agent",
 					OwnerID:   uuid.FromStringOrNil("660e8400-e29b-41d4-a716-446655440000"),
 				},
-				ChatID: uuid.FromStringOrNil("770e8400-e29b-41d4-a716-446655440000"),
-				Type:   talkmessage.TypeNormal,
-				Text:   "Hello",
+				ChatID:   uuid.FromStringOrNil("770e8400-e29b-41d4-a716-446655440000"),
+				Type:     talkmessage.TypeNormal,
+				Text:     "Hello",
+				Medias:   []talkmessage.Media{},
+				Metadata: talkmessage.Metadata{Reactions: []talkmessage.Reaction{}},
 			},
 		},
 	}
@@ -299,7 +307,7 @@ func Test_TalkV1MessageList(t *testing.T) {
 			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
-				Data:       []byte(`[{"id":"72179880-ec5f-11ec-920e-c77279756b6d","customer_id":"550e8400-e29b-41d4-a716-446655440000","owner_type":"agent","owner_id":"660e8400-e29b-41d4-a716-446655440000","chat_id":"770e8400-e29b-41d4-a716-446655440000","type":"normal","text":"Hello"}]`),
+				Data:       []byte(`[{"id":"72179880-ec5f-11ec-920e-c77279756b6d","customer_id":"550e8400-e29b-41d4-a716-446655440000","owner_type":"agent","owner_id":"660e8400-e29b-41d4-a716-446655440000","chat_id":"770e8400-e29b-41d4-a716-446655440000","type":"normal","text":"Hello","medias":[],"metadata":{"reactions":[]}}]`),
 			},
 			expectRes: []*talkmessage.Message{
 				{
@@ -311,9 +319,11 @@ func Test_TalkV1MessageList(t *testing.T) {
 						OwnerType: "agent",
 						OwnerID:   uuid.FromStringOrNil("660e8400-e29b-41d4-a716-446655440000"),
 					},
-					ChatID: uuid.FromStringOrNil("770e8400-e29b-41d4-a716-446655440000"),
-					Type:   talkmessage.TypeNormal,
-					Text:   "Hello",
+					ChatID:   uuid.FromStringOrNil("770e8400-e29b-41d4-a716-446655440000"),
+					Type:     talkmessage.TypeNormal,
+					Text:     "Hello",
+					Medias:   []talkmessage.Media{},
+					Metadata: talkmessage.Metadata{Reactions: []talkmessage.Reaction{}},
 				},
 			},
 		},
@@ -373,7 +383,7 @@ func Test_TalkV1MessageReactionCreate(t *testing.T) {
 			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
-				Data:       []byte(`{"id":"72179880-ec5f-11ec-920e-c77279756b6d","customer_id":"550e8400-e29b-41d4-a716-446655440000","owner_type":"agent","owner_id":"660e8400-e29b-41d4-a716-446655440000","chat_id":"770e8400-e29b-41d4-a716-446655440000","type":"normal","text":"Hello","reactions":[{"emoji":"👍","owner_type":"agent","owner_id":"660e8400-e29b-41d4-a716-446655440000"}]}`),
+				Data:       []byte(`{"id":"72179880-ec5f-11ec-920e-c77279756b6d","customer_id":"550e8400-e29b-41d4-a716-446655440000","owner_type":"agent","owner_id":"660e8400-e29b-41d4-a716-446655440000","chat_id":"770e8400-e29b-41d4-a716-446655440000","type":"normal","text":"Hello","medias":[],"metadata":{"reactions":[{"emoji":"👍","owner_type":"agent","owner_id":"660e8400-e29b-41d4-a716-446655440000"}]}}`),
 			},
 			expectRes: &talkmessage.Message{
 				Identity: commonidentity.Identity{
@@ -384,9 +394,11 @@ func Test_TalkV1MessageReactionCreate(t *testing.T) {
 					OwnerType: "agent",
 					OwnerID:   uuid.FromStringOrNil("660e8400-e29b-41d4-a716-446655440000"),
 				},
-				ChatID: uuid.FromStringOrNil("770e8400-e29b-41d4-a716-446655440000"),
-				Type:   talkmessage.TypeNormal,
-				Text:   "Hello",
+				ChatID:   uuid.FromStringOrNil("770e8400-e29b-41d4-a716-446655440000"),
+				Type:     talkmessage.TypeNormal,
+				Text:     "Hello",
+				Medias:   []talkmessage.Media{},
+				Metadata: talkmessage.Metadata{Reactions: []talkmessage.Reaction{{Emoji: "👍", OwnerType: "agent", OwnerID: uuid.FromStringOrNil("660e8400-e29b-41d4-a716-446655440000")}}},
 			},
 		},
 	}

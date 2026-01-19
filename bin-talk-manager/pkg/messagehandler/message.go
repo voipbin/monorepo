@@ -2,7 +2,6 @@ package messagehandler
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -38,12 +37,9 @@ func (h *messageHandler) MessageCreate(ctx context.Context, req MessageCreateReq
 		return nil, errors.New("type must be either 'normal' or 'system'")
 	}
 
-	// Validate Medias JSON format if provided
-	if req.Medias != "" {
-		var medias []message.Media
-		if err := json.Unmarshal([]byte(req.Medias), &medias); err != nil {
-			return nil, errors.Wrap(err, "invalid medias JSON format")
-		}
+	// Initialize medias to empty slice if nil
+	if req.Medias == nil {
+		req.Medias = []message.Media{}
 	}
 
 	// Validate chat exists and get customer_id from it
@@ -107,19 +103,8 @@ func (h *messageHandler) MessageCreate(ctx context.Context, req MessageCreateReq
 	}
 
 	// Initialize metadata with empty reactions array
-	defaultMetadata := map[string]interface{}{
-		"reactions": []interface{}{},
-	}
-	metadataJSON, err := json.Marshal(defaultMetadata)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to marshal metadata")
-	}
-
-	// Default medias to empty JSON array if not provided
-	// MySQL JSON column requires valid JSON, not empty string
-	medias := req.Medias
-	if medias == "" {
-		medias = "[]"
+	defaultMetadata := message.Metadata{
+		Reactions: []message.Reaction{},
 	}
 
 	// Create message
@@ -136,8 +121,8 @@ func (h *messageHandler) MessageCreate(ctx context.Context, req MessageCreateReq
 		ParentID: parentID,
 		Type:     message.Type(req.Type),
 		Text:     req.Text,
-		Medias:   medias,
-		Metadata: string(metadataJSON),
+		Medias:   req.Medias,
+		Metadata: defaultMetadata,
 	}
 
 	if err := h.dbHandler.MessageCreate(ctx, msg); err != nil {
@@ -146,7 +131,7 @@ func (h *messageHandler) MessageCreate(ctx context.Context, req MessageCreateReq
 
 	// Augment log with result before final log
 	log = log.WithField("message_id", msg.ID)
-	log.Debug("Message created successfully")
+	log.WithField("message", msg).Debug("Message created successfully")
 
 	// Publish webhook event
 	h.publishMessageCreatedEvent(ctx, msg)

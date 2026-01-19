@@ -24,13 +24,13 @@ type MessageHandler interface {
 
 // MessageCreateRequest defines the input for creating a message
 type MessageCreateRequest struct {
-	ChatID    uuid.UUID  `json:"chat_id"`
-	ParentID  *uuid.UUID `json:"parent_id"` // Optional - for threaded messages
-	OwnerType string     `json:"owner_type"`
-	OwnerID   uuid.UUID  `json:"owner_id"`
-	Type      string     `json:"type"`
-	Text      string     `json:"text"`
-	Medias    string     `json:"medias"` // JSON string
+	ChatID    uuid.UUID       `json:"chat_id"`
+	ParentID  *uuid.UUID      `json:"parent_id"` // Optional - for threaded messages
+	OwnerType string          `json:"owner_type"`
+	OwnerID   uuid.UUID       `json:"owner_id"`
+	Type      string          `json:"type"`
+	Text      string          `json:"text"`
+	Medias    []message.Media `json:"medias"`
 }
 
 type messageHandler struct {

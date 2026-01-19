@@ -3639,12 +3639,38 @@ components:
           type: string
           description: Timestamp when the message was deleted.
 
+    TalkManagerMediaType:
+      type: string
+      description: Type of the media content.
+      enum:
+        - address
+        - agent
+        - file
+        - link
+      x-enum-varnames:
+        - TalkManagerMediaTypeAddress
+        - TalkManagerMediaTypeAgent
+        - TalkManagerMediaTypeFile
+        - TalkManagerMediaTypeLink
+
     TalkManagerMedia:
       type: object
       properties:
         type:
+          $ref: '#/components/schemas/TalkManagerMediaType'
+        address:
+          description: Valid only if the type is `address`.
+          $ref: '#/components/schemas/CommonAddress'
+        agent:
+          description: Valid only if the type is `agent`.
+          $ref: '#/components/schemas/AgentManagerAgent'
+        file_id:
+          description: Valid only if the type is `file`.
           type: string
-          description: Type of media (file, link, address, agent).
+        link_url:
+          description: Valid only if the type is `link`.
+          type: string
+          format: uri
 
     TalkManagerMetadata:
       type: object

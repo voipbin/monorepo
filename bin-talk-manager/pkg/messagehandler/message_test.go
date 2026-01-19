@@ -46,7 +46,7 @@ func Test_MessageCreate(t *testing.T) {
 				OwnerID:    ownerID,
 				Type:       message.TypeNormal,
 				Text:       "Hello, this is a root message",
-				Medias:     "",
+				Medias:     nil,
 			},
 
 			responseChat: &chat.Chat{
@@ -81,7 +81,7 @@ func Test_MessageCreate(t *testing.T) {
 				OwnerID:    ownerID,
 				Type:       message.TypeNormal,
 				Text:       "This is a reply to a message",
-				Medias:     "",
+				Medias:     nil,
 			},
 
 			responseChat: &chat.Chat{
@@ -124,7 +124,7 @@ func Test_MessageCreate(t *testing.T) {
 				OwnerID:    ownerID,
 				Type:       message.TypeNormal,
 				Text:       "Reply to deleted message",
-				Medias:     "",
+				Medias:     nil,
 			},
 
 			responseChat: &chat.Chat{
@@ -166,7 +166,7 @@ func Test_MessageCreate(t *testing.T) {
 				OwnerID:    uuid.FromStringOrNil("62b0e2b7-0583-4f78-9406-45b00d17a9b4"),
 				Type:       message.TypeSystem,
 				Text:       "Agent joined the conversation",
-				Medias:     "",
+				Medias:     nil,
 			},
 
 			responseChat: &chat.Chat{
@@ -200,7 +200,7 @@ func Test_MessageCreate(t *testing.T) {
 				OwnerID:    ownerID,
 				Type:       message.TypeNormal,
 				Text:       "Check this file",
-				Medias:     `[{"type":"file"}]`,
+				Medias:     []message.Media{{Type: message.MediaTypeFile}},
 			},
 
 			responseChat: &chat.Chat{
@@ -296,8 +296,8 @@ func Test_MessageCreate(t *testing.T) {
 					t.Errorf("Wrong match. ID should not be nil")
 				}
 
-				if res.Metadata == "" {
-					t.Errorf("Wrong match. Metadata should be initialized")
+				if res.Metadata.Reactions == nil {
+					t.Errorf("Wrong match. Metadata.Reactions should be initialized")
 				}
 
 				// Verify ParentID matches request
@@ -400,20 +400,6 @@ func Test_MessageCreate_error(t *testing.T) {
 				OwnerID:    ownerID,
 				Type:       "invalid_type",
 				Text:       "Test message",
-			},
-
-			expectError: true,
-		},
-		{
-			name: "error_invalid_medias_json_format",
-
-			req: MessageCreateRequest{
-				ChatID:     chatID,
-				OwnerType:  "agent",
-				OwnerID:    ownerID,
-				Type:       message.TypeNormal,
-				Text:       "Test message",
-				Medias:     `{invalid json}`,
 			},
 
 			expectError: true,
@@ -677,15 +663,8 @@ func Test_MessageCreate_error(t *testing.T) {
 				tt.req.Type != "" &&
 				tt.req.Type == message.TypeNormal || tt.req.Type == message.TypeSystem {
 
-				// Check medias JSON format
-				mediasValid := true
-				if tt.req.Medias != "" {
-					if tt.req.Medias == `{invalid json}` {
-						mediasValid = false
-					}
-				}
-
-				if mediasValid {
+				// Medias is now []Media type, so no JSON validation needed
+				{
 					// Mock ChatGet (always needed if basic validation passes)
 					// Populate chat with customer_id
 					if tt.responseChat != nil {
@@ -760,7 +739,7 @@ func Test_MessageGet(t *testing.T) {
 				ChatID:   uuid.FromStringOrNil("ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4"),
 				Type:     message.TypeNormal,
 				Text:     "Hello, world!",
-				Metadata: `{"reactions":[]}`,
+				Metadata: message.Metadata{Reactions: []message.Reaction{}},
 				TMCreate: "2024-01-15 10:30:00.000000",
 			},
 		},
@@ -782,7 +761,7 @@ func Test_MessageGet(t *testing.T) {
 				ParentID: func() *uuid.UUID { id := uuid.FromStringOrNil("04bc94c1-9cc1-4ce8-8559-39d6f1892109"); return &id }(),
 				Type:     message.TypeNormal,
 				Text:     "This is a reply",
-				Metadata: `{"reactions":[]}`,
+				Metadata: message.Metadata{Reactions: []message.Reaction{}},
 				TMCreate: "2024-01-15 11:00:00.000000",
 			},
 		},
@@ -908,7 +887,7 @@ func Test_MessageList(t *testing.T) {
 					ChatID:   uuid.FromStringOrNil("ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4"),
 					Type:     message.TypeNormal,
 					Text:     "First message",
-					Metadata: `{"reactions":[]}`,
+					Metadata: message.Metadata{Reactions: []message.Reaction{}},
 					TMCreate: "2024-01-15 10:30:00.000000",
 				},
 				{
@@ -923,7 +902,7 @@ func Test_MessageList(t *testing.T) {
 					ChatID:   uuid.FromStringOrNil("ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4"),
 					Type:     message.TypeNormal,
 					Text:     "Second message",
-					Metadata: `{"reactions":[]}`,
+					Metadata: message.Metadata{Reactions: []message.Reaction{}},
 					TMCreate: "2024-01-15 11:00:00.000000",
 				},
 			},
@@ -953,7 +932,7 @@ func Test_MessageList(t *testing.T) {
 					ChatID:   uuid.FromStringOrNil("ac810dc4-298c-11ee-984c-ebb7811c4114"),
 					Type:     message.TypeNormal,
 					Text:     "Agent message",
-					Metadata: `{"reactions":[]}`,
+					Metadata: message.Metadata{Reactions: []message.Reaction{}},
 					TMCreate: "2024-01-15 12:00:00.000000",
 				},
 			},
@@ -1085,7 +1064,7 @@ func Test_MessageDelete(t *testing.T) {
 				ChatID:   uuid.FromStringOrNil("ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4"),
 				Type:     message.TypeNormal,
 				Text:     "Message to delete",
-				Metadata: `{"reactions":[]}`,
+				Metadata: message.Metadata{Reactions: []message.Reaction{}},
 				TMCreate: "2024-01-15 10:30:00.000000",
 				TMDelete: "",
 			},
@@ -1101,7 +1080,7 @@ func Test_MessageDelete(t *testing.T) {
 				ChatID:   uuid.FromStringOrNil("ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4"),
 				Type:     message.TypeNormal,
 				Text:     "Message to delete",
-				Metadata: `{"reactions":[]}`,
+				Metadata: message.Metadata{Reactions: []message.Reaction{}},
 				TMCreate: "2024-01-15 10:30:00.000000",
 				TMDelete: "2024-01-17 15:00:00.000000",
 			},
