@@ -13,21 +13,11 @@ import (
 	commonutil "monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-talk-manager/models/chat"
 	"monorepo/bin-talk-manager/models/participant"
+	"monorepo/bin-talk-manager/pkg/listenhandler/models/request"
 )
 
 func (h *listenHandler) v1ChatsPost(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
-	var req struct {
-		CustomerID   string `json:"customer_id"`
-		Type         string `json:"type"`
-		Name         string `json:"name"`
-		Detail       string `json:"detail"`
-		CreatorType  string `json:"creator_type"`
-		CreatorID    string `json:"creator_id"`
-		Participants []struct {
-			OwnerType string `json:"owner_type"`
-			OwnerID   string `json:"owner_id"`
-		} `json:"participants"`
-	}
+	var req request.V1DataChatsPost
 
 	err := json.Unmarshal(m.Data, &req)
 	if err != nil {
@@ -131,10 +121,7 @@ func (h *listenHandler) v1ChatsIDPut(ctx context.Context, m commonsock.Request) 
 	matches := regV1ChatsID.FindStringSubmatch(m.URI)
 	chatID := uuid.FromStringOrNil(matches[1])
 
-	var req struct {
-		Name   *string `json:"name"`
-		Detail *string `json:"detail"`
-	}
+	var req request.V1DataChatsIDPut
 
 	err := json.Unmarshal(m.Data, &req)
 	if err != nil {

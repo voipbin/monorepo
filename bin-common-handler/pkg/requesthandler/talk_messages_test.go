@@ -102,6 +102,7 @@ func Test_TalkV1MessageCreate(t *testing.T) {
 		ownerID   uuid.UUID
 		msgType   talkmessage.Type
 		text      string
+		medias    []talkmessage.Media
 
 		expectQueue string
 
@@ -117,6 +118,7 @@ func Test_TalkV1MessageCreate(t *testing.T) {
 			ownerID:   uuid.FromStringOrNil("660e8400-e29b-41d4-a716-446655440000"),
 			msgType:   talkmessage.TypeNormal,
 			text:      "Hello",
+			medias:    []talkmessage.Media{},
 
 			expectQueue: "bin-manager.talk-manager.request",
 
@@ -150,6 +152,7 @@ func Test_TalkV1MessageCreate(t *testing.T) {
 			ownerID:   uuid.FromStringOrNil("660e8400-e29b-41d4-a716-446655440000"),
 			msgType:   talkmessage.TypeNormal,
 			text:      "Reply",
+			medias:    []talkmessage.Media{},
 
 			expectQueue: "bin-manager.talk-manager.request",
 
@@ -191,7 +194,7 @@ func Test_TalkV1MessageCreate(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectQueue, gomock.Any()).Return(tt.response, nil)
 
-			res, err := reqHandler.TalkV1MessageCreate(ctx, tt.chatID, tt.parentID, tt.ownerType, tt.ownerID, tt.msgType, tt.text)
+			res, err := reqHandler.TalkV1MessageCreate(ctx, tt.chatID, tt.parentID, tt.ownerType, tt.ownerID, tt.msgType, tt.text, tt.medias)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

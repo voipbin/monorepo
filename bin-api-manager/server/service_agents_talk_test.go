@@ -765,6 +765,7 @@ func Test_talkMessagesPOST(t *testing.T) {
 		expectParentID *uuid.UUID
 		expectType     tkmessage.Type
 		expectText     string
+		expectMedias   []tkmessage.Media
 	}{
 		{
 			name: "normal",
@@ -796,6 +797,7 @@ func Test_talkMessagesPOST(t *testing.T) {
 			expectParentID: nil,
 			expectType:     tkmessage.TypeNormal,
 			expectText:     "Hello",
+			expectMedias:   nil,
 		},
 	}
 
@@ -820,7 +822,7 @@ func Test_talkMessagesPOST(t *testing.T) {
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBufferString(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ServiceAgentTalkMessageCreate(req.Context(), &tt.agent, tt.expectChatID, tt.expectParentID, tt.expectType, tt.expectText).Return(tt.responseMessage, nil)
+			mockSvc.EXPECT().ServiceAgentTalkMessageCreate(req.Context(), &tt.agent, tt.expectChatID, tt.expectParentID, tt.expectType, tt.expectText, tt.expectMedias).Return(tt.responseMessage, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

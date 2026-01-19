@@ -8,17 +8,14 @@ import (
 	"github.com/sirupsen/logrus"
 
 	commonsock "monorepo/bin-common-handler/models/sock"
+	"monorepo/bin-talk-manager/pkg/listenhandler/models/request"
 )
 
 func (h *listenHandler) v1ChatsIDParticipantsPost(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
 	matches := regV1ChatsIDParticipants.FindStringSubmatch(m.URI)
 	chatID := uuid.FromStringOrNil(matches[1])
 
-	var req struct {
-		CustomerID string `json:"customer_id"`
-		OwnerType  string `json:"owner_type"`
-		OwnerID    string `json:"owner_id"`
-	}
+	var req request.V1DataChatsIDParticipantsPost
 
 	err := json.Unmarshal(m.Data, &req)
 	if err != nil {

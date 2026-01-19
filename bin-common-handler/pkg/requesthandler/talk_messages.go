@@ -7,6 +7,7 @@ import (
 
 	"monorepo/bin-common-handler/models/sock"
 	talkmessage "monorepo/bin-talk-manager/models/message"
+	tmrequest "monorepo/bin-talk-manager/pkg/listenhandler/models/request"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -42,22 +43,25 @@ func (r *requestHandler) TalkV1MessageCreate(
 	ownerID uuid.UUID,
 	msgType talkmessage.Type,
 	text string,
+	medias []talkmessage.Media,
 ) (*talkmessage.Message, error) {
 	uri := "/v1/messages"
 
-	data := map[string]any{
-		"chat_id":    chatID.String(),
-		"owner_type": ownerType,
-		"owner_id":   ownerID.String(),
-		"type":       string(msgType),
-		"text":       text,
+	req := tmrequest.V1DataMessagesPost{
+		ChatID:    chatID.String(),
+		OwnerType: ownerType,
+		OwnerID:   ownerID.String(),
+		Type:      string(msgType),
+		Text:      text,
+		Medias:    medias,
 	}
 
 	if parentID != nil {
-		data["parent_id"] = parentID.String()
+		parentIDStr := parentID.String()
+		req.ParentID = &parentIDStr
 	}
 
-	m, err := json.Marshal(data)
+	m, err := json.Marshal(req)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not marshal request")
 	}
@@ -158,13 +162,13 @@ func (r *requestHandler) TalkV1MessageReactionCreate(
 ) (*talkmessage.Message, error) {
 	uri := fmt.Sprintf("/v1/messages/%s/reactions", messageID.String())
 
-	data := map[string]any{
-		"owner_type": ownerType,
-		"owner_id":   ownerID.String(),
-		"emoji":      emoji,
+	req := tmrequest.V1DataMessagesIDReactionsPost{
+		OwnerType: ownerType,
+		OwnerID:   ownerID.String(),
+		Reaction:  emoji,
 	}
 
-	m, err := json.Marshal(data)
+	m, err := json.Marshal(req)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not marshal request")
 	}

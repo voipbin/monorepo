@@ -463,7 +463,26 @@ func (h *server) PostServiceAgentsTalkMessages(c *gin.Context) {
 	// Convert type (req.Type is non-pointer, required field)
 	msgType := tkmessage.Type(req.Type)
 
-	res, err := h.serviceHandler.ServiceAgentTalkMessageCreate(c.Request.Context(), &a, chatID, parentID, msgType, req.Text)
+	// Convert medias
+	var medias []tkmessage.Media
+	if req.Medias != nil {
+		for _, m := range *req.Medias {
+			media := tkmessage.Media{}
+			if m.Type != nil {
+				media.Type = tkmessage.MediaType(*m.Type)
+			}
+			if m.FileId != nil {
+				media.FileID = uuid.FromStringOrNil(*m.FileId)
+			}
+			if m.LinkUrl != nil {
+				media.LinkURL = *m.LinkUrl
+			}
+			// Note: Address and Agent fields require deeper conversion if needed
+			medias = append(medias, media)
+		}
+	}
+
+	res, err := h.serviceHandler.ServiceAgentTalkMessageCreate(c.Request.Context(), &a, chatID, parentID, msgType, req.Text, medias)
 	if err != nil {
 		log.Errorf("Could not create message. err: %v", err)
 		c.AbortWithStatus(400)

@@ -12,19 +12,12 @@ import (
 	commonsock "monorepo/bin-common-handler/models/sock"
 	commonutil "monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-talk-manager/models/message"
+	"monorepo/bin-talk-manager/pkg/listenhandler/models/request"
 	"monorepo/bin-talk-manager/pkg/messagehandler"
 )
 
 func (h *listenHandler) v1MessagesPost(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
-	var req struct {
-		ChatID    string          `json:"chat_id"`
-		ParentID  *string         `json:"parent_id,omitempty"`
-		OwnerType string          `json:"owner_type"`
-		OwnerID   string          `json:"owner_id"`
-		Type      string          `json:"type"`
-		Text      string          `json:"text"`
-		Medias    []message.Media `json:"medias"`
-	}
+	var req request.V1DataMessagesPost
 
 	err := json.Unmarshal(m.Data, &req)
 	if err != nil {

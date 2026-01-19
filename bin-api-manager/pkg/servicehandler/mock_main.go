@@ -3731,18 +3731,18 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentTalkChatUpdate(ctx, a, tal
 }
 
 // ServiceAgentTalkMessageCreate mocks base method.
-func (m *MockServiceHandler) ServiceAgentTalkMessageCreate(ctx context.Context, a *agent.Agent, chatID uuid.UUID, parentID *uuid.UUID, msgType message2.Type, text string) (*message2.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentTalkMessageCreate(ctx context.Context, a *agent.Agent, chatID uuid.UUID, parentID *uuid.UUID, msgType message2.Type, text string, medias []message2.Media) (*message2.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ServiceAgentTalkMessageCreate", ctx, a, chatID, parentID, msgType, text)
+	ret := m.ctrl.Call(m, "ServiceAgentTalkMessageCreate", ctx, a, chatID, parentID, msgType, text, medias)
 	ret0, _ := ret[0].(*message2.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ServiceAgentTalkMessageCreate indicates an expected call of ServiceAgentTalkMessageCreate.
-func (mr *MockServiceHandlerMockRecorder) ServiceAgentTalkMessageCreate(ctx, a, chatID, parentID, msgType, text any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentTalkMessageCreate(ctx, a, chatID, parentID, msgType, text, medias any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentTalkMessageCreate", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentTalkMessageCreate), ctx, a, chatID, parentID, msgType, text)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentTalkMessageCreate", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentTalkMessageCreate), ctx, a, chatID, parentID, msgType, text, medias)
 }
 
 // ServiceAgentTalkMessageDelete mocks base method.

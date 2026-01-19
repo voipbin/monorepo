@@ -8,17 +8,14 @@ import (
 	"github.com/sirupsen/logrus"
 
 	commonsock "monorepo/bin-common-handler/models/sock"
+	"monorepo/bin-talk-manager/pkg/listenhandler/models/request"
 )
 
 func (h *listenHandler) v1MessagesIDReactionsPost(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
 	matches := regV1MessagesIDReactions.FindStringSubmatch(m.URI)
 	messageID := uuid.FromStringOrNil(matches[1])
 
-	var req struct {
-		OwnerType string `json:"owner_type"`
-		OwnerID   string `json:"owner_id"`
-		Reaction  string `json:"reaction"`
-	}
+	var req request.V1DataMessagesIDReactionsPost
 
 	err := json.Unmarshal(m.Data, &req)
 	if err != nil {
@@ -49,11 +46,7 @@ func (h *listenHandler) v1MessagesIDReactionsDelete(ctx context.Context, m commo
 	matches := regV1MessagesIDReactions.FindStringSubmatch(m.URI)
 	messageID := uuid.FromStringOrNil(matches[1])
 
-	var req struct {
-		OwnerType string `json:"owner_type"`
-		OwnerID   string `json:"owner_id"`
-		Reaction  string `json:"reaction"`
-	}
+	var req request.V1DataMessagesIDReactionsPost
 
 	err := json.Unmarshal(m.Data, &req)
 	if err != nil {

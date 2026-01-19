@@ -1149,7 +1149,7 @@ type RequestHandler interface {
 
 	// talk-manager message
 	TalkV1MessageGet(ctx context.Context, messageID uuid.UUID) (*talkmessage.Message, error)
-	TalkV1MessageCreate(ctx context.Context, chatID uuid.UUID, parentID *uuid.UUID, ownerType string, ownerID uuid.UUID, msgType talkmessage.Type, text string) (*talkmessage.Message, error)
+	TalkV1MessageCreate(ctx context.Context, chatID uuid.UUID, parentID *uuid.UUID, ownerType string, ownerID uuid.UUID, msgType talkmessage.Type, text string, medias []talkmessage.Media) (*talkmessage.Message, error)
 	TalkV1MessageDelete(ctx context.Context, messageID uuid.UUID) (*talkmessage.Message, error)
 	TalkV1MessageList(ctx context.Context, pageToken string, pageSize uint64) ([]*talkmessage.Message, error)
 	TalkV1MessageListWithFilters(ctx context.Context, filters map[string]any, pageToken string, pageSize uint64) ([]*talkmessage.Message, error)
