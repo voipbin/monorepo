@@ -11,6 +11,7 @@ import (
 	"monorepo/bin-api-manager/pkg/zmqpubhandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
+	requesthandler "monorepo/bin-common-handler/pkg/requesthandler"
 	tkchat "monorepo/bin-talk-manager/models/chat"
 	tkparticipant "monorepo/bin-talk-manager/models/participant"
 )
@@ -20,7 +21,8 @@ func Test_processEventTalk(t *testing.T) {
 	tests := []struct {
 		name string
 
-		event *sock.Event
+		event        *sock.Event
+		participants []*tkparticipant.Participant
 
 		expectTopics []string
 	}{
@@ -38,22 +40,22 @@ func Test_processEventTalk(t *testing.T) {
 							CustomerID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000"),
 						},
 						Type: tkchat.TypeDirect,
-						Participants: []*tkparticipant.WebhookMessage{
-							{
-								Identity: commonidentity.Identity{
-									ID:         uuid.FromStringOrNil("f66d1da0-3ed7-11ef-9208-4bcc069917a2"),
-									CustomerID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000"),
-								},
-								Owner: commonidentity.Owner{
-									OwnerType: "agent",
-									OwnerID:   uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
-								},
-							},
-						},
 					}
 					data, _ := json.Marshal(chat)
 					return data
 				}(),
+			},
+			participants: []*tkparticipant.Participant{
+				{
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("f66d1da0-3ed7-11ef-9208-4bcc069917a2"),
+						CustomerID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000"),
+					},
+					Owner: commonidentity.Owner{
+						OwnerType: "agent",
+						OwnerID:   uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+					},
+				},
 			},
 
 			expectTopics: []string{
@@ -79,32 +81,32 @@ func Test_processEventTalk(t *testing.T) {
 						Type:   tkchat.TypeGroup,
 						Name:   "Updated Name",
 						Detail: "Updated Detail",
-						Participants: []*tkparticipant.WebhookMessage{
-							{
-								Identity: commonidentity.Identity{
-									ID:         uuid.FromStringOrNil("f66d1da0-3ed7-11ef-9208-4bcc069917a2"),
-									CustomerID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000"),
-								},
-								Owner: commonidentity.Owner{
-									OwnerType: "agent",
-									OwnerID:   uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
-								},
-							},
-							{
-								Identity: commonidentity.Identity{
-									ID:         uuid.FromStringOrNil("g66d1da0-3ed7-11ef-9208-4bcc069917a3"),
-									CustomerID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000"),
-								},
-								Owner: commonidentity.Owner{
-									OwnerType: "agent",
-									OwnerID:   uuid.FromStringOrNil("ddb5213a-8003-11ec-84ca-9fa226fcda9f"),
-								},
-							},
-						},
 					}
 					data, _ := json.Marshal(chat)
 					return data
 				}(),
+			},
+			participants: []*tkparticipant.Participant{
+				{
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("f66d1da0-3ed7-11ef-9208-4bcc069917a2"),
+						CustomerID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000"),
+					},
+					Owner: commonidentity.Owner{
+						OwnerType: "agent",
+						OwnerID:   uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+					},
+				},
+				{
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("g66d1da0-3ed7-11ef-9208-4bcc069917a3"),
+						CustomerID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000"),
+					},
+					Owner: commonidentity.Owner{
+						OwnerType: "agent",
+						OwnerID:   uuid.FromStringOrNil("ddb5213a-8003-11ec-84ca-9fa226fcda9f"),
+					},
+				},
 			},
 
 			expectTopics: []string{
@@ -132,22 +134,22 @@ func Test_processEventTalk(t *testing.T) {
 							CustomerID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000"),
 						},
 						Type: tkchat.TypeDirect,
-						Participants: []*tkparticipant.WebhookMessage{
-							{
-								Identity: commonidentity.Identity{
-									ID:         uuid.FromStringOrNil("f66d1da0-3ed7-11ef-9208-4bcc069917a2"),
-									CustomerID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000"),
-								},
-								Owner: commonidentity.Owner{
-									OwnerType: "agent",
-									OwnerID:   uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
-								},
-							},
-						},
 					}
 					data, _ := json.Marshal(chat)
 					return data
 				}(),
+			},
+			participants: []*tkparticipant.Participant{
+				{
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("f66d1da0-3ed7-11ef-9208-4bcc069917a2"),
+						CustomerID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000"),
+					},
+					Owner: commonidentity.Owner{
+						OwnerType: "agent",
+						OwnerID:   uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+					},
+				},
 			},
 
 			expectTopics: []string{
@@ -165,10 +167,19 @@ func Test_processEventTalk(t *testing.T) {
 			defer mc.Finish()
 
 			mockZMQ := zmqpubhandler.NewMockZMQPubHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
 
 			h := &subscribeHandler{
 				zmqpubHandler: mockZMQ,
+				reqHandler:    mockReq,
 			}
+
+			// Parse event data to get chat ID
+			var chatMsg tkchat.WebhookMessage
+			_ = json.Unmarshal(tt.event.Data, &chatMsg)
+
+			// Mock TalkV1ParticipantList call
+			mockReq.EXPECT().TalkV1ParticipantList(gomock.Any(), chatMsg.ID).Return(tt.participants, nil)
 
 			for _, topic := range tt.expectTopics {
 				mockZMQ.EXPECT().Publish(topic, gomock.Any()).Return(nil)
