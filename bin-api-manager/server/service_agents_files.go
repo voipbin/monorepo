@@ -38,7 +38,7 @@ func (h *server) PostServiceAgentsFiles(c *gin.Context) {
 	}
 	log.WithField("file", header).Debugf("Checking uploaded file header. filename: %s", header.Filename)
 
-	res, err := h.serviceHandler.ServiceAgentFileCreate(c.Request.Context(), &a, f, "", "", header.Filename)
+	res, err := h.serviceHandler.ServiceAgentFileCreate(c.Request.Context(), &a, f, header.Filename, "Uploaded by agent", header.Filename)
 	if err != nil {
 		log.Errorf("Could not upload the file. err: %v", err)
 		c.AbortWithStatus(400)
