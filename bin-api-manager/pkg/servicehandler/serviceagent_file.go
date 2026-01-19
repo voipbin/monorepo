@@ -125,7 +125,8 @@ func (h *serviceHandler) ServiceAgentFileGet(ctx context.Context, a *amagent.Age
 		return nil, fmt.Errorf("could not find file info. err: %v", err)
 	}
 
-	if f.OwnerID != a.ID {
+	// Check permission - file must belong to the same customer
+	if f.CustomerID != a.CustomerID {
 		log.Info("The user has no permission.")
 		return nil, fmt.Errorf("user has no permission")
 	}

@@ -3,6 +3,7 @@ package servicehandler
 import (
 	"context"
 	"fmt"
+	"sort"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 	tkchat "monorepo/bin-talk-manager/models/chat"
@@ -31,28 +32,70 @@ func (h *serviceHandler) ServiceAgentTalkChatGet(ctx context.Context, a *amagent
 }
 
 // ServiceAgentTalkList gets list of talks for the agent
+// Returns:
+// - All public "talk" type chats for the customer (regardless of participation)
+// - "group" type chats where the agent is a participant
+// - "direct" type chats where the agent is a participant
 func (h *serviceHandler) ServiceAgentTalkChatList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*tkchat.WebhookMessage, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	// Build filters to get talks where agent is a participant
-	// Exclude deleted chats
-	filters := map[string]any{
+	// Query A: All public talk-type chats for the customer (no participant filter)
+	talkFilters := map[string]any{
+		"customer_id": a.CustomerID.String(),
+		"type":        string(tkchat.TypeTalk),
+		"deleted":     false,
+	}
+	talkChats, err := h.reqHandler.TalkV1ChatList(ctx, talkFilters, token, size)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Could not get talk-type chats.")
+	}
+
+	// Query B: Private chats (group/direct) where agent is participant
+	privateFilters := map[string]any{
 		"owner_type": "agent",
 		"owner_id":   a.ID.String(),
 		"deleted":    false,
 	}
-
-	// Get talks with filters using consolidated method
-	talks, err := h.reqHandler.TalkV1ChatList(ctx, filters, token, size)
+	privateChats, err := h.reqHandler.TalkV1ChatList(ctx, privateFilters, token, size)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not get talks.")
+		return nil, errors.Wrapf(err, "Could not get private chats.")
+	}
+
+	// Combine results and deduplicate
+	seen := make(map[uuid.UUID]bool)
+	var allChats []*tkchat.Chat
+
+	// Add talk-type chats first
+	for _, c := range talkChats {
+		if !seen[c.ID] {
+			seen[c.ID] = true
+			allChats = append(allChats, c)
+		}
+	}
+
+	// Add private chats (group/direct only, skip talk-type to avoid duplicates)
+	for _, c := range privateChats {
+		if !seen[c.ID] && c.Type != tkchat.TypeTalk {
+			seen[c.ID] = true
+			allChats = append(allChats, c)
+		}
+	}
+
+	// Sort by tm_create descending
+	sort.Slice(allChats, func(i, j int) bool {
+		return allChats[i].TMCreate > allChats[j].TMCreate
+	})
+
+	// Limit to requested size
+	if uint64(len(allChats)) > size {
+		allChats = allChats[:size]
 	}
 
 	// Convert to webhook messages
 	res := []*tkchat.WebhookMessage{}
-	for _, t := range talks {
+	for _, t := range allChats {
 		res = append(res, t.ConvertWebhookMessage())
 	}
 
@@ -190,8 +233,10 @@ func (h *serviceHandler) ServiceAgentTalkMessageList(ctx context.Context, a *ama
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	// Check permission - agent must be participant of the chat
-	if !h.isParticipantOfTalk(ctx, a.ID, chatID) {
+	// Check permission - agent must have access to the chat
+	// Public "talk" type chats are accessible to all agents in the customer
+	// For group/direct chats, agent must be a participant
+	if !h.canAccessChat(ctx, a.ID, a.CustomerID, chatID) {
 		return nil, fmt.Errorf("agent is not a participant of this chat")
 	}
 
@@ -301,6 +346,31 @@ func (h *serviceHandler) isParticipantOfTalk(ctx context.Context, agentID uuid.U
 		return false
 	}
 
+	for _, p := range chat.Participants {
+		if p.OwnerType == "agent" && p.OwnerID == agentID {
+			return true
+		}
+	}
+
+	return false
+}
+
+// canAccessChat checks if an agent can access a chat (view messages)
+// Returns true if:
+// - Chat is a public "talk" type (anyone in the customer can view)
+// - Agent is a participant of the chat (for group/direct types)
+func (h *serviceHandler) canAccessChat(ctx context.Context, agentID uuid.UUID, customerID uuid.UUID, talkID uuid.UUID) bool {
+	chat, err := h.talkGet(ctx, talkID)
+	if err != nil {
+		return false
+	}
+
+	// Public talk-type chats are accessible to all agents in the customer
+	if chat.Type == tkchat.TypeTalk && chat.CustomerID == customerID {
+		return true
+	}
+
+	// For group/direct chats, check if agent is a participant
 	for _, p := range chat.Participants {
 		if p.OwnerType == "agent" && p.OwnerID == agentID {
 			return true
