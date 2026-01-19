@@ -50,12 +50,10 @@ func (h *serviceHandler) ServiceAgentTalkChatList(ctx context.Context, a *amagen
 		return nil, errors.Wrapf(err, "Could not get chats.")
 	}
 
-	// Convert to webhook messages (exclude participants for list response)
+	// Convert to webhook messages
 	res := []*tkchat.WebhookMessage{}
 	for _, c := range chats {
-		wm := c.ConvertWebhookMessage()
-		wm.Participants = nil
-		res = append(res, wm)
+		res = append(res, c.ConvertWebhookMessage())
 	}
 
 	return res, nil
@@ -79,12 +77,10 @@ func (h *serviceHandler) ServiceAgentTalkChannelList(ctx context.Context, a *ama
 		return nil, errors.Wrapf(err, "Could not get channels.")
 	}
 
-	// Convert to webhook messages (exclude participants for list response)
+	// Convert to webhook messages
 	res := []*tkchat.WebhookMessage{}
 	for _, c := range channels {
-		wm := c.ConvertWebhookMessage()
-		wm.Participants = nil
-		res = append(res, wm)
+		res = append(res, c.ConvertWebhookMessage())
 	}
 
 	return res, nil
@@ -363,12 +359,12 @@ func (h *serviceHandler) ServiceAgentTalkMessageReactionCreate(ctx context.Conte
 
 // isParticipantOfTalk checks if an agent is a participant of a chat
 func (h *serviceHandler) isParticipantOfTalk(ctx context.Context, agentID uuid.UUID, chatID uuid.UUID) bool {
-	chat, err := h.talkGet(ctx, chatID)
+	participants, err := h.talkParticipantList(ctx, chatID)
 	if err != nil {
 		return false
 	}
 
-	for _, p := range chat.Participants {
+	for _, p := range participants {
 		if p.OwnerType == "agent" && p.OwnerID == agentID {
 			return true
 		}
@@ -393,7 +389,12 @@ func (h *serviceHandler) canAccessChat(ctx context.Context, agentID uuid.UUID, c
 	}
 
 	// For group/direct chats, check if agent is a participant
-	for _, p := range chat.Participants {
+	participants, err := h.talkParticipantList(ctx, chatID)
+	if err != nil {
+		return false
+	}
+
+	for _, p := range participants {
 		if p.OwnerType == "agent" && p.OwnerID == agentID {
 			return true
 		}
@@ -405,6 +406,11 @@ func (h *serviceHandler) canAccessChat(ctx context.Context, agentID uuid.UUID, c
 // talkGet gets a chat by ID via RPC
 func (h *serviceHandler) talkGet(ctx context.Context, chatID uuid.UUID) (*tkchat.Chat, error) {
 	return h.reqHandler.TalkV1ChatGet(ctx, chatID)
+}
+
+// talkParticipantList gets participants for a chat by chatID via RPC
+func (h *serviceHandler) talkParticipantList(ctx context.Context, chatID uuid.UUID) ([]*tkparticipant.Participant, error) {
+	return h.reqHandler.TalkV1ParticipantList(ctx, chatID)
 }
 
 // talkMessageGet gets a message by ID via RPC
@@ -440,9 +446,12 @@ func (h *serviceHandler) canAddParticipant(ctx context.Context, a *amagent.Agent
 	}
 
 	// Check if agent is already a participant - can add anyone
-	for _, p := range chat.Participants {
-		if p.OwnerType == "agent" && p.OwnerID == a.ID {
-			return true
+	participants, err := h.talkParticipantList(ctx, chatID)
+	if err == nil {
+		for _, p := range participants {
+			if p.OwnerType == "agent" && p.OwnerID == a.ID {
+				return true
+			}
 		}
 	}
 

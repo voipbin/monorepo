@@ -2,6 +2,7 @@ package participanthandler
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 
 	"github.com/gofrs/uuid"
@@ -179,6 +180,11 @@ func (h *participantHandler) ParticipantRemove(ctx context.Context, customerID, 
 	// Retrieve participant before deletion (for webhook payload)
 	p, err := h.dbHandler.ParticipantGet(ctx, participantID)
 	if err != nil {
+		// If participant doesn't exist, treat as successful deletion (idempotent)
+		if err == sql.ErrNoRows {
+			log.Infof("Participant already removed (not found). participant_id: %s", participantID)
+			return nil
+		}
 		log.Errorf("Failed to get participant for deletion. err: %v", err)
 		return fmt.Errorf("failed to get participant: %w", err)
 	}
@@ -186,6 +192,11 @@ func (h *participantHandler) ParticipantRemove(ctx context.Context, customerID, 
 	// Delete from database (hard delete)
 	err = h.dbHandler.ParticipantDelete(ctx, participantID)
 	if err != nil {
+		// If already deleted, treat as success (idempotent)
+		if err == sql.ErrNoRows {
+			log.Infof("Participant already removed (delete). participant_id: %s", participantID)
+			return nil
+		}
 		log.Errorf("Failed to delete participant. err: %v", err)
 		return fmt.Errorf("failed to delete participant: %w", err)
 	}
