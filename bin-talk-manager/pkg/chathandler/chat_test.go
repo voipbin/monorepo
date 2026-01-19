@@ -152,7 +152,7 @@ func Test_ChatCreate(t *testing.T) {
 
 			// Mock participant additions for each provided participant
 			for range tt.participants {
-				mockParticipant.EXPECT().ParticipantAdd(ctx, tt.customerID, tt.expectRes.ID, gomock.Any(), gomock.Any()).Return(&participant.Participant{}, nil)
+				mockParticipant.EXPECT().ParticipantAdd(ctx, tt.expectRes.ID, gomock.Any(), gomock.Any()).Return(&participant.Participant{}, nil)
 			}
 
 			res, err := h.ChatCreate(ctx, tt.customerID, tt.chatType, "", "", "", uuid.Nil, tt.participants)

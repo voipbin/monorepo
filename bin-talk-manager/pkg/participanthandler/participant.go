@@ -13,21 +13,16 @@ import (
 
 // ParticipantAdd adds a participant to a talk
 // Uses UPSERT behavior - if participant already exists, updates it
-func (h *participantHandler) ParticipantAdd(ctx context.Context, customerID, chatID, ownerID uuid.UUID, ownerType string) (*participant.Participant, error) {
+func (h *participantHandler) ParticipantAdd(ctx context.Context, chatID, ownerID uuid.UUID, ownerType string) (*participant.Participant, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "ParticipantAdd",
-		"customer_id": customerID,
-		"chat_id":     chatID,
-		"owner_id":    ownerID,
-		"owner_type":  ownerType,
+		"func":       "ParticipantAdd",
+		"chat_id":    chatID,
+		"owner_id":   ownerID,
+		"owner_type": ownerType,
 	})
 	log.Debug("Adding participant")
 
 	// Validate inputs
-	if customerID == uuid.Nil {
-		log.Error("Invalid customer_id: cannot be nil")
-		return nil, fmt.Errorf("customer_id is required")
-	}
 	if chatID == uuid.Nil {
 		log.Error("Invalid chat_id: cannot be nil")
 		return nil, fmt.Errorf("chat_id is required")
@@ -40,6 +35,25 @@ func (h *participantHandler) ParticipantAdd(ctx context.Context, customerID, cha
 		log.Error("Invalid owner_type: cannot be empty")
 		return nil, fmt.Errorf("owner_type is required")
 	}
+
+	// Validate chat exists and is not deleted
+	chat, err := h.dbHandler.ChatGet(ctx, chatID)
+	if err != nil {
+		log.Errorf("Failed to get chat: %v", err)
+		return nil, fmt.Errorf("failed to get chat: %w", err)
+	}
+	if chat == nil {
+		log.Error("Chat not found")
+		return nil, fmt.Errorf("chat not found")
+	}
+	if chat.TMDelete != "" {
+		log.Error("Chat has been deleted")
+		return nil, fmt.Errorf("chat has been deleted")
+	}
+
+	// Get customer_id from the chat
+	customerID := chat.CustomerID
+	log = log.WithField("customer_id", customerID)
 
 	// Generate new participant ID
 	participantID := h.utilHandler.UUIDCreate()
@@ -58,7 +72,7 @@ func (h *participantHandler) ParticipantAdd(ctx context.Context, customerID, cha
 	}
 
 	// Create in database (UPSERT behavior)
-	err := h.dbHandler.ParticipantCreate(ctx, p)
+	err = h.dbHandler.ParticipantCreate(ctx, p)
 	if err != nil {
 		log.Errorf("Failed to create participant. err: %v", err)
 		return nil, fmt.Errorf("failed to create participant: %w", err)

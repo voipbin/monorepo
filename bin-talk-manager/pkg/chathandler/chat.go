@@ -119,7 +119,7 @@ func (h *chatHandler) ChatCreate(ctx context.Context, customerID uuid.UUID, chat
 
 	// Add creator as participant if provided and not already in participants list
 	if creatorType != "" && creatorID != uuid.Nil && !creatorInParticipants {
-		_, err = h.participantHandler.ParticipantAdd(ctx, customerID, t.ID, creatorID, creatorType)
+		_, err = h.participantHandler.ParticipantAdd(ctx, t.ID, creatorID, creatorType)
 		if err != nil {
 			log.Errorf("Failed to add creator as participant. err: %v", err)
 			// Note: We don't fail the entire chat creation if participant addition fails
@@ -135,7 +135,7 @@ func (h *chatHandler) ChatCreate(ctx context.Context, customerID uuid.UUID, chat
 
 	// Add all participants from the list
 	for _, p := range participants {
-		_, err = h.participantHandler.ParticipantAdd(ctx, customerID, t.ID, p.OwnerID, p.OwnerType)
+		_, err = h.participantHandler.ParticipantAdd(ctx, t.ID, p.OwnerID, p.OwnerType)
 		if err != nil {
 			log.Errorf("Failed to add participant. owner_type: %s, owner_id: %v, err: %v", p.OwnerType, p.OwnerID, err)
 			// Note: We don't fail the entire chat creation if participant addition fails

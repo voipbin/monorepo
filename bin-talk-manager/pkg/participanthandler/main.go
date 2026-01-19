@@ -7,6 +7,7 @@ import (
 
 	commonnotify "monorepo/bin-common-handler/pkg/notifyhandler"
 	commonutil "monorepo/bin-common-handler/pkg/utilhandler"
+	"monorepo/bin-talk-manager/models/chat"
 	"monorepo/bin-talk-manager/models/participant"
 )
 
@@ -15,7 +16,7 @@ import (
 // ParticipantHandler defines the interface for participant business logic operations
 type ParticipantHandler interface {
 	// ParticipantAdd adds a participant to a chat (upsert behavior)
-	ParticipantAdd(ctx context.Context, customerID, chatID, ownerID uuid.UUID, ownerType string) (*participant.Participant, error)
+	ParticipantAdd(ctx context.Context, chatID, ownerID uuid.UUID, ownerType string) (*participant.Participant, error)
 
 	// ParticipantList returns all participants for a talk
 	ParticipantList(ctx context.Context, customerID, chatID uuid.UUID) ([]*participant.Participant, error)
@@ -51,6 +52,9 @@ type DBHandler interface {
 	ParticipantGet(ctx context.Context, id uuid.UUID) (*participant.Participant, error)
 	ParticipantList(ctx context.Context, filters map[participant.Field]any) ([]*participant.Participant, error)
 	ParticipantDelete(ctx context.Context, id uuid.UUID) error
+
+	// Chat operations
+	ChatGet(ctx context.Context, id uuid.UUID) (*chat.Chat, error)
 
 	// Chat member count operations
 	ChatMemberCountIncrement(ctx context.Context, chatID uuid.UUID) error

@@ -15,6 +15,10 @@ func (h *listenHandler) v1ChatsIDParticipantsPost(ctx context.Context, m commons
 	matches := regV1ChatsIDParticipants.FindStringSubmatch(m.URI)
 	chatID := uuid.FromStringOrNil(matches[1])
 
+	if chatID == uuid.Nil {
+		return simpleResponse(400), nil
+	}
+
 	var req request.V1DataChatsIDParticipantsPost
 
 	err := json.Unmarshal(m.Data, &req)
@@ -23,14 +27,13 @@ func (h *listenHandler) v1ChatsIDParticipantsPost(ctx context.Context, m commons
 		return simpleResponse(400), nil
 	}
 
-	customerID := uuid.FromStringOrNil(req.CustomerID)
 	ownerID := uuid.FromStringOrNil(req.OwnerID)
-
-	if customerID == uuid.Nil || chatID == uuid.Nil || ownerID == uuid.Nil {
+	if ownerID == uuid.Nil {
 		return simpleResponse(400), nil
 	}
 
-	participant, err := h.participantHandler.ParticipantAdd(ctx, customerID, chatID, ownerID, req.OwnerType)
+	// ParticipantAdd will validate chat exists and get customer_id from it
+	participant, err := h.participantHandler.ParticipantAdd(ctx, chatID, ownerID, req.OwnerType)
 	if err != nil {
 		logrus.Errorf("Failed to add participant: %v", err)
 		return simpleResponse(500), nil
