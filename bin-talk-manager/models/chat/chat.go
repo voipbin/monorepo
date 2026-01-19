@@ -31,6 +31,9 @@ type Chat struct {
 	Name   string `json:"name" db:"name"`
 	Detail string `json:"detail" db:"detail"`
 
+	// Member count (atomically updated on participant join/leave)
+	MemberCount int `json:"member_count" db:"member_count"`
+
 	// Timestamps
 	TMCreate string `json:"tm_create" db:"tm_create"`
 	TMUpdate string `json:"tm_update" db:"tm_update"`
@@ -44,12 +47,13 @@ type Chat struct {
 type WebhookMessage struct {
 	commonidentity.Identity
 
-	Type     Type   `json:"type,omitempty"`
-	Name     string `json:"name,omitempty"`
-	Detail   string `json:"detail,omitempty"`
-	TMCreate string `json:"tm_create,omitempty"`
-	TMUpdate string `json:"tm_update,omitempty"`
-	TMDelete string `json:"tm_delete,omitempty"`
+	Type        Type   `json:"type,omitempty"`
+	Name        string `json:"name,omitempty"`
+	Detail      string `json:"detail,omitempty"`
+	MemberCount int    `json:"member_count,omitempty"`
+	TMCreate    string `json:"tm_create,omitempty"`
+	TMUpdate    string `json:"tm_update,omitempty"`
+	TMDelete    string `json:"tm_delete,omitempty"`
 
 	// Participants in this chat
 	Participants []*participant.WebhookMessage `json:"participants,omitempty"`
@@ -58,13 +62,14 @@ type WebhookMessage struct {
 // ConvertWebhookMessage converts Chat to WebhookMessage
 func (t *Chat) ConvertWebhookMessage() *WebhookMessage {
 	wm := &WebhookMessage{
-		Identity: t.Identity,
-		Type:     t.Type,
-		Name:     t.Name,
-		Detail:   t.Detail,
-		TMCreate: t.TMCreate,
-		TMUpdate: t.TMUpdate,
-		TMDelete: t.TMDelete,
+		Identity:    t.Identity,
+		Type:        t.Type,
+		Name:        t.Name,
+		Detail:      t.Detail,
+		MemberCount: t.MemberCount,
+		TMCreate:    t.TMCreate,
+		TMUpdate:    t.TMUpdate,
+		TMDelete:    t.TMDelete,
 	}
 
 	// Convert participants if present

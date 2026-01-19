@@ -93,6 +93,9 @@ func Test_ParticipantAdd(t *testing.T) {
 			// Mock database create (UPSERT behavior)
 			mockDB.EXPECT().ParticipantCreate(ctx, gomock.Any()).Return(nil)
 
+			// Mock member count increment
+			mockDB.EXPECT().ChatMemberCountIncrement(ctx, tt.chatID).Return(nil)
+
 			// Mock webhook event publishing
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.customerID, participant.EventParticipantAdded, gomock.Any())
 
@@ -493,6 +496,9 @@ func Test_ParticipantRemove(t *testing.T) {
 
 			// Hard delete from database
 			mockDB.EXPECT().ParticipantDelete(ctx, tt.participantID).Return(nil)
+
+			// Mock member count decrement
+			mockDB.EXPECT().ChatMemberCountDecrement(ctx, tt.responseParticipant.ChatID).Return(nil)
 
 			// Publish webhook event
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.customerID, participant.EventParticipantRemoved, tt.responseParticipant)

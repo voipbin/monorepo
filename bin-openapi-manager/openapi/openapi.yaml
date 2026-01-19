@@ -3577,6 +3577,9 @@ components:
         detail:
           type: string
           description: Talk description/detail (optional).
+        member_count:
+          type: integer
+          description: Number of participants in this chat.
         tm_create:
           type: string
           description: Timestamp when the talk was created.

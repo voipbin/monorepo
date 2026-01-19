@@ -51,6 +51,10 @@ type DBHandler interface {
 	ParticipantGet(ctx context.Context, id uuid.UUID) (*participant.Participant, error)
 	ParticipantList(ctx context.Context, filters map[participant.Field]any) ([]*participant.Participant, error)
 	ParticipantDelete(ctx context.Context, id uuid.UUID) error
+
+	// Chat member count operations
+	ChatMemberCountIncrement(ctx context.Context, chatID uuid.UUID) error
+	ChatMemberCountDecrement(ctx context.Context, chatID uuid.UUID) error
 }
 
 // SockHandler defines the interface for RabbitMQ socket operations

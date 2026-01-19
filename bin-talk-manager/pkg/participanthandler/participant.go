@@ -64,6 +64,12 @@ func (h *participantHandler) ParticipantAdd(ctx context.Context, customerID, cha
 		return nil, fmt.Errorf("failed to create participant: %w", err)
 	}
 
+	// Increment chat member count
+	if err := h.dbHandler.ChatMemberCountIncrement(ctx, chatID); err != nil {
+		log.Errorf("Failed to increment chat member count. err: %v", err)
+		// Continue despite error - participant was created successfully
+	}
+
 	// Augment log with result before final log
 	log = log.WithField("participant_id", participantID)
 	log.Info("Participant added successfully")
@@ -167,6 +173,12 @@ func (h *participantHandler) ParticipantRemove(ctx context.Context, customerID, 
 	if err != nil {
 		log.Errorf("Failed to delete participant. err: %v", err)
 		return fmt.Errorf("failed to delete participant: %w", err)
+	}
+
+	// Decrement chat member count
+	if err := h.dbHandler.ChatMemberCountDecrement(ctx, p.ChatID); err != nil {
+		log.Errorf("Failed to decrement chat member count. err: %v", err)
+		// Continue despite error - participant was deleted successfully
 	}
 
 	log.Info("Participant removed successfully")

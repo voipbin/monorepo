@@ -3088,6 +3088,9 @@ type TalkManagerTalk struct {
 	// Id Resource identifier.
 	Id *string `json:"id,omitempty"`
 
+	// MemberCount Number of participants in this chat.
+	MemberCount *int `json:"member_count,omitempty"`
+
 	// Name Talk name (optional).
 	Name *string `json:"name,omitempty"`
 

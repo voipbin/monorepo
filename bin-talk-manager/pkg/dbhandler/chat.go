@@ -253,6 +253,37 @@ func (h *dbHandler) ChatDelete(ctx context.Context, id uuid.UUID) error {
 	return err
 }
 
+// ChatMemberCountIncrement atomically increments the member_count by 1
+func (h *dbHandler) ChatMemberCountIncrement(ctx context.Context, chatID uuid.UUID) error {
+	now := h.utilHandler.TimeGetCurTime()
+
+	sqlQuery := `UPDATE talk_chats SET member_count = member_count + 1, tm_update = ? WHERE id = ?`
+
+	_, err := h.db.ExecContext(ctx, sqlQuery, now, chatID.Bytes())
+	if err != nil {
+		logrus.Errorf("Failed to increment member_count: %v", err)
+		return err
+	}
+
+	return nil
+}
+
+// ChatMemberCountDecrement atomically decrements the member_count by 1 (minimum 0)
+func (h *dbHandler) ChatMemberCountDecrement(ctx context.Context, chatID uuid.UUID) error {
+	now := h.utilHandler.TimeGetCurTime()
+
+	// Use GREATEST to ensure member_count doesn't go below 0
+	sqlQuery := `UPDATE talk_chats SET member_count = GREATEST(member_count - 1, 0), tm_update = ? WHERE id = ?`
+
+	_, err := h.db.ExecContext(ctx, sqlQuery, now, chatID.Bytes())
+	if err != nil {
+		logrus.Errorf("Failed to decrement member_count: %v", err)
+		return err
+	}
+
+	return nil
+}
+
 // FindDirectChatByParticipants finds an existing direct chat between exactly two participants.
 // Returns nil, nil if no matching chat is found.
 func (h *dbHandler) FindDirectChatByParticipants(ctx context.Context, customerID uuid.UUID, ownerType1 string, ownerID1 uuid.UUID, ownerType2 string, ownerID2 uuid.UUID) (*chat.Chat, error) {

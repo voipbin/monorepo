@@ -7,6 +7,7 @@ CREATE TABLE talk_chats (
     type            TEXT NOT NULL,
     name            TEXT DEFAULT '',
     detail          TEXT DEFAULT '',
+    member_count    INTEGER NOT NULL DEFAULT 0,
     tm_create       TEXT NOT NULL,
     tm_update       TEXT NOT NULL,
     tm_delete       TEXT
