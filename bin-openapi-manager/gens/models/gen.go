@@ -4669,6 +4669,15 @@ type PutServiceAgentsMeStatusJSONBody struct {
 	Status AgentManagerAgentStatus `json:"status"`
 }
 
+// GetServiceAgentsTalkChannelsParams defines parameters for GetServiceAgentsTalkChannels.
+type GetServiceAgentsTalkChannelsParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
 // GetServiceAgentsTalkChatsParams defines parameters for GetServiceAgentsTalkChats.
 type GetServiceAgentsTalkChatsParams struct {
 	// PageSize The size of results.

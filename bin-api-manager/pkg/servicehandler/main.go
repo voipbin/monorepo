@@ -709,17 +709,20 @@ type ServiceHandler interface {
 		medias []cvmedia.Media,
 	) (*cvmessage.WebhookMessage, error)
 
-	// service_agent talk
-	ServiceAgentTalkChatGet(ctx context.Context, a *amagent.Agent, talkID uuid.UUID) (*tkchat.WebhookMessage, error)
+	// service_agent talk chat
+	ServiceAgentTalkChatGet(ctx context.Context, a *amagent.Agent, chatID uuid.UUID) (*tkchat.WebhookMessage, error)
 	ServiceAgentTalkChatList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*tkchat.WebhookMessage, error)
 	ServiceAgentTalkChatCreate(ctx context.Context, a *amagent.Agent, talkType tkchat.Type, name string, detail string, participants []tkparticipant.ParticipantInput) (*tkchat.WebhookMessage, error)
-	ServiceAgentTalkChatUpdate(ctx context.Context, a *amagent.Agent, talkID uuid.UUID, name *string, detail *string) (*tkchat.WebhookMessage, error)
-	ServiceAgentTalkChatDelete(ctx context.Context, a *amagent.Agent, talkID uuid.UUID) (*tkchat.WebhookMessage, error)
+	ServiceAgentTalkChatUpdate(ctx context.Context, a *amagent.Agent, chatID uuid.UUID, name *string, detail *string) (*tkchat.WebhookMessage, error)
+	ServiceAgentTalkChatDelete(ctx context.Context, a *amagent.Agent, chatID uuid.UUID) (*tkchat.WebhookMessage, error)
+
+	// service_agent talk channel (public channels for discovery)
+	ServiceAgentTalkChannelList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*tkchat.WebhookMessage, error)
 
 	// service_agent talk participant
-	ServiceAgentTalkParticipantList(ctx context.Context, a *amagent.Agent, talkID uuid.UUID) ([]*tkparticipant.WebhookMessage, error)
-	ServiceAgentTalkParticipantCreate(ctx context.Context, a *amagent.Agent, talkID uuid.UUID, ownerType string, ownerID uuid.UUID) (*tkparticipant.WebhookMessage, error)
-	ServiceAgentTalkParticipantDelete(ctx context.Context, a *amagent.Agent, talkID uuid.UUID, participantID uuid.UUID) (*tkparticipant.WebhookMessage, error)
+	ServiceAgentTalkParticipantList(ctx context.Context, a *amagent.Agent, chatID uuid.UUID) ([]*tkparticipant.WebhookMessage, error)
+	ServiceAgentTalkParticipantCreate(ctx context.Context, a *amagent.Agent, chatID uuid.UUID, ownerType string, ownerID uuid.UUID) (*tkparticipant.WebhookMessage, error)
+	ServiceAgentTalkParticipantDelete(ctx context.Context, a *amagent.Agent, chatID uuid.UUID, participantID uuid.UUID) (*tkparticipant.WebhookMessage, error)
 
 	// service_agent talk message
 	ServiceAgentTalkMessageGet(ctx context.Context, a *amagent.Agent, messageID uuid.UUID) (*tkmessage.WebhookMessage, error)
