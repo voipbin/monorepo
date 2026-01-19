@@ -215,14 +215,14 @@ func (h *serviceHandler) ServiceAgentTalkMessageList(ctx context.Context, a *ama
 }
 
 // ServiceAgentTalkMessageCreate creates a new message
-func (h *serviceHandler) ServiceAgentTalkMessageCreate(ctx context.Context, a *amagent.Agent, chatID uuid.UUID, parentID *uuid.UUID, msgType tkmessage.Type, text string) (*tkmessage.WebhookMessage, error) {
+func (h *serviceHandler) ServiceAgentTalkMessageCreate(ctx context.Context, a *amagent.Agent, chatID uuid.UUID, parentID *uuid.UUID, msgType tkmessage.Type, text string, medias []tkmessage.Media) (*tkmessage.WebhookMessage, error) {
 	// Check permission
 	if !h.isParticipantOfTalk(ctx, a.ID, chatID) {
 		return nil, fmt.Errorf("agent is not a participant of this talk")
 	}
 
 	// Create message via RPC
-	tmp, err := h.reqHandler.TalkV1MessageCreate(ctx, chatID, parentID, "agent", a.ID, msgType, text)
+	tmp, err := h.reqHandler.TalkV1MessageCreate(ctx, chatID, parentID, "agent", a.ID, msgType, text, medias)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not create message.")
 	}
