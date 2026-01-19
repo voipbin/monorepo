@@ -161,7 +161,7 @@ func Test_PostServiceAgentsFiles(t *testing.T) {
 			req, _ := http.NewRequest("POST", tt.reqQuery, body)
 			req.Header.Add("Content-Type", writer.FormDataContentType())
 
-			mockSvc.EXPECT().ServiceAgentFileCreate(req.Context(), &tt.agent, gomock.Any(), "", "", tt.filename).Return(tt.responseFile, nil)
+			mockSvc.EXPECT().ServiceAgentFileCreate(req.Context(), &tt.agent, gomock.Any(), tt.filename, "Uploaded by agent", tt.filename).Return(tt.responseFile, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
