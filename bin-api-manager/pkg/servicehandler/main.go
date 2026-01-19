@@ -715,6 +715,7 @@ type ServiceHandler interface {
 	ServiceAgentTalkChatCreate(ctx context.Context, a *amagent.Agent, talkType tkchat.Type, name string, detail string, participants []tkparticipant.ParticipantInput) (*tkchat.WebhookMessage, error)
 	ServiceAgentTalkChatUpdate(ctx context.Context, a *amagent.Agent, chatID uuid.UUID, name *string, detail *string) (*tkchat.WebhookMessage, error)
 	ServiceAgentTalkChatDelete(ctx context.Context, a *amagent.Agent, chatID uuid.UUID) (*tkchat.WebhookMessage, error)
+	ServiceAgentTalkChatJoin(ctx context.Context, a *amagent.Agent, chatID uuid.UUID) (*tkparticipant.WebhookMessage, error)
 
 	// service_agent talk channel (public channels for discovery)
 	ServiceAgentTalkChannelList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*tkchat.WebhookMessage, error)

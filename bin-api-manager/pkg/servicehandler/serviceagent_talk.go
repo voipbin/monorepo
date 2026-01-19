@@ -137,6 +137,34 @@ func (h *serviceHandler) ServiceAgentTalkChatDelete(ctx context.Context, a *amag
 	return res, nil
 }
 
+// ServiceAgentTalkChatJoin allows an agent to join a "talk" type chat (public channel)
+func (h *serviceHandler) ServiceAgentTalkChatJoin(ctx context.Context, a *amagent.Agent, chatID uuid.UUID) (*tkparticipant.WebhookMessage, error) {
+	// Get the chat to verify it's a "talk" type
+	chat, err := h.talkGet(ctx, chatID)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Could not get chat.")
+	}
+
+	// Only allow joining "talk" type chats (public channels)
+	if chat.Type != tkchat.TypeTalk {
+		return nil, fmt.Errorf("can only join talk-type chats")
+	}
+
+	// Verify chat belongs to the same customer
+	if chat.CustomerID != a.CustomerID {
+		return nil, fmt.Errorf("chat does not belong to agent's customer")
+	}
+
+	// Add the agent as a participant (using their own ID)
+	tmp, err := h.reqHandler.TalkV1ParticipantCreate(ctx, chatID, "agent", a.ID)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Could not join chat.")
+	}
+
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}
+
 // ServiceAgentTalkParticipantList gets list of participants in a chat
 func (h *serviceHandler) ServiceAgentTalkParticipantList(ctx context.Context, a *amagent.Agent, chatID uuid.UUID) ([]*tkparticipant.WebhookMessage, error) {
 	// Check permission - agent must have access to the chat

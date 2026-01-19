@@ -5941,6 +5941,9 @@ type ServerInterface interface {
 	// Update talk chat
 	// (PUT /service_agents/talk_chats/{id})
 	PutServiceAgentsTalkChatsId(c *gin.Context, id string)
+	// Join a talk chat
+	// (POST /service_agents/talk_chats/{id}/join)
+	PostServiceAgentsTalkChatsIdJoin(c *gin.Context, id string)
 	// Get participants of a talk chat
 	// (GET /service_agents/talk_chats/{id}/participants)
 	GetServiceAgentsTalkChatsIdParticipants(c *gin.Context, id string)
@@ -12137,6 +12140,30 @@ func (siw *ServerInterfaceWrapper) PutServiceAgentsTalkChatsId(c *gin.Context) {
 	siw.Handler.PutServiceAgentsTalkChatsId(c, id)
 }
 
+// PostServiceAgentsTalkChatsIdJoin operation middleware
+func (siw *ServerInterfaceWrapper) PostServiceAgentsTalkChatsIdJoin(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostServiceAgentsTalkChatsIdJoin(c, id)
+}
+
 // GetServiceAgentsTalkChatsIdParticipants operation middleware
 func (siw *ServerInterfaceWrapper) GetServiceAgentsTalkChatsIdParticipants(c *gin.Context) {
 
@@ -13272,6 +13299,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.DELETE(options.BaseURL+"/service_agents/talk_chats/:id", wrapper.DeleteServiceAgentsTalkChatsId)
 	router.GET(options.BaseURL+"/service_agents/talk_chats/:id", wrapper.GetServiceAgentsTalkChatsId)
 	router.PUT(options.BaseURL+"/service_agents/talk_chats/:id", wrapper.PutServiceAgentsTalkChatsId)
+	router.POST(options.BaseURL+"/service_agents/talk_chats/:id/join", wrapper.PostServiceAgentsTalkChatsIdJoin)
 	router.GET(options.BaseURL+"/service_agents/talk_chats/:id/participants", wrapper.GetServiceAgentsTalkChatsIdParticipants)
 	router.POST(options.BaseURL+"/service_agents/talk_chats/:id/participants", wrapper.PostServiceAgentsTalkChatsIdParticipants)
 	router.DELETE(options.BaseURL+"/service_agents/talk_chats/:id/participants/:participant_id", wrapper.DeleteServiceAgentsTalkChatsIdParticipantsParticipantId)
@@ -17885,6 +17913,39 @@ func (response PutServiceAgentsTalkChatsId404Response) VisitPutServiceAgentsTalk
 	return nil
 }
 
+type PostServiceAgentsTalkChatsIdJoinRequestObject struct {
+	Id string `json:"id"`
+}
+
+type PostServiceAgentsTalkChatsIdJoinResponseObject interface {
+	VisitPostServiceAgentsTalkChatsIdJoinResponse(w http.ResponseWriter) error
+}
+
+type PostServiceAgentsTalkChatsIdJoin200JSONResponse TalkManagerParticipant
+
+func (response PostServiceAgentsTalkChatsIdJoin200JSONResponse) VisitPostServiceAgentsTalkChatsIdJoinResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostServiceAgentsTalkChatsIdJoin400Response struct {
+}
+
+func (response PostServiceAgentsTalkChatsIdJoin400Response) VisitPostServiceAgentsTalkChatsIdJoinResponse(w http.ResponseWriter) error {
+	w.WriteHeader(400)
+	return nil
+}
+
+type PostServiceAgentsTalkChatsIdJoin404Response struct {
+}
+
+func (response PostServiceAgentsTalkChatsIdJoin404Response) VisitPostServiceAgentsTalkChatsIdJoinResponse(w http.ResponseWriter) error {
+	w.WriteHeader(404)
+	return nil
+}
+
 type GetServiceAgentsTalkChatsIdParticipantsRequestObject struct {
 	Id string `json:"id"`
 }
@@ -19294,6 +19355,9 @@ type StrictServerInterface interface {
 	// Update talk chat
 	// (PUT /service_agents/talk_chats/{id})
 	PutServiceAgentsTalkChatsId(ctx context.Context, request PutServiceAgentsTalkChatsIdRequestObject) (PutServiceAgentsTalkChatsIdResponseObject, error)
+	// Join a talk chat
+	// (POST /service_agents/talk_chats/{id}/join)
+	PostServiceAgentsTalkChatsIdJoin(ctx context.Context, request PostServiceAgentsTalkChatsIdJoinRequestObject) (PostServiceAgentsTalkChatsIdJoinResponseObject, error)
 	// Get participants of a talk chat
 	// (GET /service_agents/talk_chats/{id}/participants)
 	GetServiceAgentsTalkChatsIdParticipants(ctx context.Context, request GetServiceAgentsTalkChatsIdParticipantsRequestObject) (GetServiceAgentsTalkChatsIdParticipantsResponseObject, error)
@@ -26687,6 +26751,33 @@ func (sh *strictHandler) PutServiceAgentsTalkChatsId(ctx *gin.Context, id string
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PutServiceAgentsTalkChatsIdResponseObject); ok {
 		if err := validResponse.VisitPutServiceAgentsTalkChatsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostServiceAgentsTalkChatsIdJoin operation middleware
+func (sh *strictHandler) PostServiceAgentsTalkChatsIdJoin(ctx *gin.Context, id string) {
+	var request PostServiceAgentsTalkChatsIdJoinRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostServiceAgentsTalkChatsIdJoin(ctx, request.(PostServiceAgentsTalkChatsIdJoinRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostServiceAgentsTalkChatsIdJoin")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostServiceAgentsTalkChatsIdJoinResponseObject); ok {
+		if err := validResponse.VisitPostServiceAgentsTalkChatsIdJoinResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

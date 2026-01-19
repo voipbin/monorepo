@@ -4235,6 +4235,8 @@ paths:
     $ref: './paths/service_agents/talk_chats_id_participants_id.yaml'
   /service_agents/talk_chats/{id}/participants:
     $ref: './paths/service_agents/talk_chats_id_participants.yaml'
+  /service_agents/talk_chats/{id}/join:
+    $ref: './paths/service_agents/talk_chats_id_join.yaml'
   /service_agents/talk_chats/{id}:
     $ref: './paths/service_agents/talk_chats_id.yaml'
   /service_agents/talk_chats:

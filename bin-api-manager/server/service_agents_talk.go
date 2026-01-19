@@ -286,6 +286,41 @@ func (h *server) DeleteServiceAgentsTalkChatsId(c *gin.Context, id string) {
 	c.JSON(200, res)
 }
 
+// PostServiceAgentsTalkChatsIdJoin handles POST /service_agents/talk_chats/{id}/join
+func (h *server) PostServiceAgentsTalkChatsIdJoin(c *gin.Context, id string) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "PostServiceAgentsTalkChatsIdJoin",
+		"request_address": c.ClientIP(),
+	})
+
+	tmp, exists := c.Get("agent")
+	if !exists {
+		log.Errorf("Could not find agent info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
+
+	target := uuid.FromStringOrNil(id)
+	if target == uuid.Nil {
+		log.Error("Could not parse the id.")
+		c.AbortWithStatus(400)
+		return
+	}
+
+	res, err := h.serviceHandler.ServiceAgentTalkChatJoin(c.Request.Context(), &a, target)
+	if err != nil {
+		log.Errorf("Could not join chat. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
 // GetServiceAgentsTalkChatsIdParticipants handles GET /service_agents/talk_chats/{id}/participants
 func (h *server) GetServiceAgentsTalkChatsIdParticipants(c *gin.Context, id string) {
 	log := logrus.WithFields(logrus.Fields{

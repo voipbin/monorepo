@@ -1,0 +1,26 @@
+post:
+  summary: Join a talk chat
+  description: |
+    Allows the authenticated agent to join a "talk" type chat (public channel).
+    This is a convenience endpoint that automatically adds the agent as a participant.
+    Only works for "talk" type chats - for group/direct chats, use the participants endpoint.
+  tags:
+    - Service Agent
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The talk chat ID to join.
+  responses:
+    '200':
+      description: Successfully joined the chat.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TalkManagerParticipant'
+    '400':
+      description: Bad request - chat is not a "talk" type or other validation error.
+    '404':
+      description: Talk chat not found.
