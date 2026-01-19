@@ -131,7 +131,7 @@ func (h *messageHandler) MessageCreate(ctx context.Context, req MessageCreateReq
 
 	// Augment log with result before final log
 	log = log.WithField("message_id", msg.ID)
-	log.WithField("message", msg).Debug("Message created successfully")
+	log.WithField("message", msg).Debugf("Message created successfully. message_id: %s", msg.ID)
 
 	// Publish webhook event
 	h.publishMessageCreatedEvent(ctx, msg)

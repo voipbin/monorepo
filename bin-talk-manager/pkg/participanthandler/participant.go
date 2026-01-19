@@ -72,7 +72,7 @@ func (h *participantHandler) ParticipantAdd(ctx context.Context, customerID, cha
 
 	// Augment log with result before final log
 	log = log.WithField("participant_id", participantID)
-	log.Info("Participant added successfully")
+	log.Infof("Participant added successfully. participant_id: %s", participantID)
 
 	// Publish webhook event
 	h.notifyHandler.PublishWebhookEvent(ctx, customerID, participant.EventParticipantAdded, p)
@@ -114,7 +114,7 @@ func (h *participantHandler) ParticipantList(ctx context.Context, customerID, ch
 
 	// Augment log with result before final log
 	log = log.WithField("count", len(participants))
-	log.Info("Participants listed successfully")
+	log.Infof("Participants listed successfully. count: %d", len(participants))
 
 	return participants, nil
 }
@@ -137,7 +137,7 @@ func (h *participantHandler) ParticipantListWithFilters(ctx context.Context, fil
 
 	// Augment log with result before final log
 	log = log.WithField("count", len(participants))
-	log.Info("Participants listed successfully")
+	log.Infof("Participants listed successfully. count: %d", len(participants))
 
 	return participants, nil
 }
@@ -181,7 +181,7 @@ func (h *participantHandler) ParticipantRemove(ctx context.Context, customerID, 
 		// Continue despite error - participant was deleted successfully
 	}
 
-	log.Info("Participant removed successfully")
+	log.Infof("Participant removed successfully. participant_id: %s", participantID)
 
 	// Publish webhook event
 	h.notifyHandler.PublishWebhookEvent(ctx, customerID, participant.EventParticipantRemoved, p)
