@@ -40,7 +40,6 @@ func Test_canAccessChat(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("c1111111-1111-1111-1111-111111111111"),
 				},
 				Type:         tkchat.TypeTalk,
-				Participants: []*tkparticipant.Participant{},
 			},
 			expectResult: true,
 		},
@@ -55,7 +54,6 @@ func Test_canAccessChat(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("c9999999-9999-9999-9999-999999999999"), // different customer
 				},
 				Type:         tkchat.TypeTalk,
-				Participants: []*tkparticipant.Participant{},
 			},
 			expectResult: false,
 		},
@@ -70,17 +68,6 @@ func Test_canAccessChat(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("c3333333-3333-3333-3333-333333333333"),
 				},
 				Type: tkchat.TypeGroup,
-				Participants: []*tkparticipant.Participant{
-					{
-						Identity: commonidentity.Identity{
-							ID: uuid.FromStringOrNil("p3333333-3333-3333-3333-333333333333"),
-						},
-						Owner: commonidentity.Owner{
-							OwnerType: "agent",
-							OwnerID:   uuid.FromStringOrNil("a3333333-3333-3333-3333-333333333333"),
-						},
-					},
-				},
 			},
 			expectResult: true,
 		},
@@ -95,17 +82,6 @@ func Test_canAccessChat(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("c4444444-4444-4444-4444-444444444444"),
 				},
 				Type: tkchat.TypeGroup,
-				Participants: []*tkparticipant.Participant{
-					{
-						Identity: commonidentity.Identity{
-							ID: uuid.FromStringOrNil("p4444444-4444-4444-4444-444444444444"),
-						},
-						Owner: commonidentity.Owner{
-							OwnerType: "agent",
-							OwnerID:   uuid.FromStringOrNil("a9999999-9999-9999-9999-999999999999"), // different agent
-						},
-					},
-				},
 			},
 			expectResult: false,
 		},
@@ -120,17 +96,6 @@ func Test_canAccessChat(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("c5555555-5555-5555-5555-555555555555"),
 				},
 				Type: tkchat.TypeDirect,
-				Participants: []*tkparticipant.Participant{
-					{
-						Identity: commonidentity.Identity{
-							ID: uuid.FromStringOrNil("p5555555-5555-5555-5555-555555555555"),
-						},
-						Owner: commonidentity.Owner{
-							OwnerType: "agent",
-							OwnerID:   uuid.FromStringOrNil("a5555555-5555-5555-5555-555555555555"),
-						},
-					},
-				},
 			},
 			expectResult: true,
 		},
@@ -178,14 +143,6 @@ func Test_isParticipantOfTalk(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("d1111111-1111-1111-1111-111111111111"),
 				},
-				Participants: []*tkparticipant.Participant{
-					{
-						Owner: commonidentity.Owner{
-							OwnerType: "agent",
-							OwnerID:   uuid.FromStringOrNil("a1111111-1111-1111-1111-111111111111"),
-						},
-					},
-				},
 			},
 			expectResult: true,
 		},
@@ -196,14 +153,6 @@ func Test_isParticipantOfTalk(t *testing.T) {
 			responseChat: &tkchat.Chat{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("d2222222-2222-2222-2222-222222222222"),
-				},
-				Participants: []*tkparticipant.Participant{
-					{
-						Owner: commonidentity.Owner{
-							OwnerType: "agent",
-							OwnerID:   uuid.FromStringOrNil("a9999999-9999-9999-9999-999999999999"),
-						},
-					},
 				},
 			},
 			expectResult: false,
@@ -216,7 +165,6 @@ func Test_isParticipantOfTalk(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("d3333333-3333-3333-3333-333333333333"),
 				},
-				Participants: []*tkparticipant.Participant{},
 			},
 			expectResult: false,
 		},
@@ -277,14 +225,6 @@ func Test_ServiceAgentTalkChatList(t *testing.T) {
 					Type:     tkchat.TypeGroup,
 					Name:     "Test Chat",
 					TMCreate: "2024-01-01 00:00:00.000000",
-					Participants: []*tkparticipant.Participant{
-						{
-							Owner: commonidentity.Owner{
-								OwnerType: "agent",
-								OwnerID:   uuid.FromStringOrNil("a1111111-1111-1111-1111-111111111111"),
-							},
-						},
-					},
 				},
 			},
 			expectFilters: map[string]any{
@@ -301,7 +241,6 @@ func Test_ServiceAgentTalkChatList(t *testing.T) {
 					Type:         tkchat.TypeGroup,
 					Name:         "Test Chat",
 					TMCreate:     "2024-01-01 00:00:00.000000",
-					Participants: nil, // participants should be excluded
 				},
 			},
 		},
@@ -368,14 +307,6 @@ func Test_ServiceAgentTalkChannelList(t *testing.T) {
 					Type:     tkchat.TypeTalk,
 					Name:     "General Channel",
 					TMCreate: "2024-01-01 00:00:00.000000",
-					Participants: []*tkparticipant.Participant{
-						{
-							Owner: commonidentity.Owner{
-								OwnerType: "agent",
-								OwnerID:   uuid.FromStringOrNil("a2222222-2222-2222-2222-222222222222"),
-							},
-						},
-					},
 				},
 			},
 			expectFilters: map[string]any{
@@ -392,7 +323,6 @@ func Test_ServiceAgentTalkChannelList(t *testing.T) {
 					Type:         tkchat.TypeTalk,
 					Name:         "General Channel",
 					TMCreate:     "2024-01-01 00:00:00.000000",
-					Participants: nil, // participants should be excluded
 				},
 			},
 		},
@@ -457,14 +387,6 @@ func Test_canAddParticipant(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("c1111111-1111-1111-1111-111111111111"),
 				},
 				Type: tkchat.TypeGroup,
-				Participants: []*tkparticipant.Participant{
-					{
-						Owner: commonidentity.Owner{
-							OwnerType: "agent",
-							OwnerID:   uuid.FromStringOrNil("a1111111-1111-1111-1111-111111111111"), // agent is participant
-						},
-					},
-				},
 			},
 			expectResult: true,
 		},
@@ -485,14 +407,6 @@ func Test_canAddParticipant(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("c3333333-3333-3333-3333-333333333333"),
 				},
 				Type: tkchat.TypeTalk,
-				Participants: []*tkparticipant.Participant{
-					{
-						Owner: commonidentity.Owner{
-							OwnerType: "agent",
-							OwnerID:   uuid.FromStringOrNil("a3333333-3333-3333-3333-333333333333"), // agent is participant
-						},
-					},
-				},
 			},
 			expectResult: true,
 		},
@@ -513,7 +427,6 @@ func Test_canAddParticipant(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("c5555555-5555-5555-5555-555555555555"),
 				},
 				Type:         tkchat.TypeTalk,
-				Participants: []*tkparticipant.Participant{}, // agent is not participant
 			},
 			expectResult: true,
 		},
@@ -534,7 +447,6 @@ func Test_canAddParticipant(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("c6666666-6666-6666-6666-666666666666"),
 				},
 				Type:         tkchat.TypeTalk,
-				Participants: []*tkparticipant.Participant{}, // agent is not participant
 			},
 			expectResult: false,
 		},
@@ -555,7 +467,6 @@ func Test_canAddParticipant(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("c8888888-8888-8888-8888-888888888888"),
 				},
 				Type:         tkchat.TypeGroup,
-				Participants: []*tkparticipant.Participant{}, // agent is not participant
 			},
 			expectResult: false,
 		},
@@ -576,7 +487,6 @@ func Test_canAddParticipant(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("cccccccc-cccc-cccc-cccc-cccccccccccc"),
 				},
 				Type:         tkchat.TypeGroup,
-				Participants: []*tkparticipant.Participant{}, // agent is not participant
 			},
 			expectResult: false,
 		},
@@ -597,7 +507,6 @@ func Test_canAddParticipant(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("cccccccc-cccc-cccc-cccc-cccccccccccc"), // different customer
 				},
 				Type:         tkchat.TypeTalk,
-				Participants: []*tkparticipant.Participant{},
 			},
 			expectResult: false,
 		},
@@ -657,14 +566,6 @@ func Test_ServiceAgentTalkParticipantCreate(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("c1111111-1111-1111-1111-111111111111"),
 				},
 				Type: tkchat.TypeGroup,
-				Participants: []*tkparticipant.Participant{
-					{
-						Owner: commonidentity.Owner{
-							OwnerType: "agent",
-							OwnerID:   uuid.FromStringOrNil("a1111111-1111-1111-1111-111111111111"),
-						},
-					},
-				},
 			},
 			responseParticipant: &tkparticipant.Participant{
 				Identity: commonidentity.Identity{
@@ -696,7 +597,6 @@ func Test_ServiceAgentTalkParticipantCreate(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("c3333333-3333-3333-3333-333333333333"),
 				},
 				Type:         tkchat.TypeTalk,
-				Participants: []*tkparticipant.Participant{},
 			},
 			responseParticipant: &tkparticipant.Participant{
 				Identity: commonidentity.Identity{
@@ -728,7 +628,6 @@ func Test_ServiceAgentTalkParticipantCreate(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("c4444444-4444-4444-4444-444444444444"),
 				},
 				Type:         tkchat.TypeGroup,
-				Participants: []*tkparticipant.Participant{},
 			},
 			responseParticipant: nil,
 			expectError:         true,
