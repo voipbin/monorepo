@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
-	"monorepo/bin-talk-manager/models/participant"
 )
 
 // Type represents the type of chat
@@ -38,9 +37,6 @@ type Chat struct {
 	TMCreate string `json:"tm_create" db:"tm_create"`
 	TMUpdate string `json:"tm_update" db:"tm_update"`
 	TMDelete string `json:"tm_delete" db:"tm_delete"`
-
-	// Participants in this chat (populated for list operations)
-	Participants []*participant.Participant `json:"participants,omitempty" db:"-"`
 }
 
 // WebhookMessage is the webhook payload for chat events
@@ -54,14 +50,11 @@ type WebhookMessage struct {
 	TMCreate    string `json:"tm_create,omitempty"`
 	TMUpdate    string `json:"tm_update,omitempty"`
 	TMDelete    string `json:"tm_delete,omitempty"`
-
-	// Participants in this chat
-	Participants []*participant.WebhookMessage `json:"participants,omitempty"`
 }
 
 // ConvertWebhookMessage converts Chat to WebhookMessage
 func (t *Chat) ConvertWebhookMessage() *WebhookMessage {
-	wm := &WebhookMessage{
+	return &WebhookMessage{
 		Identity:    t.Identity,
 		Type:        t.Type,
 		Name:        t.Name,
@@ -71,16 +64,6 @@ func (t *Chat) ConvertWebhookMessage() *WebhookMessage {
 		TMUpdate:    t.TMUpdate,
 		TMDelete:    t.TMDelete,
 	}
-
-	// Convert participants if present
-	if len(t.Participants) > 0 {
-		wm.Participants = make([]*participant.WebhookMessage, 0, len(t.Participants))
-		for _, p := range t.Participants {
-			wm.Participants = append(wm.Participants, p.ConvertWebhookMessage())
-		}
-	}
-
-	return wm
 }
 
 // CreateWebhookEvent generates WebhookEvent JSON

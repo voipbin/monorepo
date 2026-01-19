@@ -177,16 +177,6 @@ func (h *chatHandler) ChatGet(ctx context.Context, id uuid.UUID) (*chat.Chat, er
 		return nil, errors.Wrap(err, "failed to get talk")
 	}
 
-	// Load participants for this chat
-	participants, err := h.dbHandler.ParticipantListByChatIDs(ctx, []uuid.UUID{t.ID})
-	if err != nil {
-		log.Errorf("Failed to load participants: %v", err)
-		// Continue without participants rather than failing entire request
-		t.Participants = []*participant.Participant{}
-	} else {
-		t.Participants = participants
-	}
-
 	return t, nil
 }
 

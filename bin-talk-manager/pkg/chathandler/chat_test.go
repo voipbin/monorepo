@@ -147,7 +147,6 @@ func Test_ChatCreate(t *testing.T) {
 			mockUtil.EXPECT().UUIDCreate().Return(tt.expectRes.ID)
 			mockDB.EXPECT().ChatCreate(ctx, gomock.Any()).Return(nil)
 			mockDB.EXPECT().ChatGet(ctx, tt.expectRes.ID).Return(tt.expectRes, nil)
-			mockDB.EXPECT().ParticipantListByChatIDs(ctx, gomock.Any()).Return([]*participant.Participant{}, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.customerID, chat.EventTypeChatCreated, gomock.Any())
 
 			// Mock participant additions for each provided participant
@@ -218,7 +217,6 @@ func Test_ChatCreate_direct_existing(t *testing.T) {
 
 	// After finding existing chat, ChatGet is called to load participants
 	mockDB.EXPECT().ChatGet(ctx, existingChatID).Return(existingChat, nil)
-	mockDB.EXPECT().ParticipantListByChatIDs(ctx, gomock.Any()).Return([]*participant.Participant{}, nil)
 
 	// No ChatCreate, no participant additions, no webhook event (existing chat is returned)
 
@@ -371,7 +369,6 @@ func Test_ChatGet(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().ChatGet(ctx, tt.id).Return(tt.responseChat, nil)
-			mockDB.EXPECT().ParticipantListByChatIDs(ctx, gomock.Any()).Return([]*participant.Participant{}, nil)
 
 			res, err := h.ChatGet(ctx, tt.id)
 			if err != nil {
@@ -717,7 +714,6 @@ func Test_ChatUpdate(t *testing.T) {
 
 			// Mock ChatGet after update (for returning updated chat with participants)
 			mockDB.EXPECT().ChatGet(ctx, tt.id).Return(tt.responseUpdatedChat, nil)
-			mockDB.EXPECT().ParticipantListByChatIDs(ctx, gomock.Any()).Return([]*participant.Participant{}, nil)
 
 			// Mock webhook publish
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseUpdatedChat.CustomerID, chat.EventTypeChatUpdated, gomock.Any())

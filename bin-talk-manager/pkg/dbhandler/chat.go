@@ -10,7 +10,6 @@ import (
 
 	commondb "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-talk-manager/models/chat"
-	"monorepo/bin-talk-manager/models/participant"
 )
 
 const tableChats = "talk_chats"
@@ -175,37 +174,6 @@ func (h *dbHandler) ChatList(ctx context.Context, filters map[chat.Field]any, to
 			return nil, err
 		}
 		talks = append(talks, &t)
-	}
-
-	// Load participants for all chats
-	if len(talks) > 0 {
-		// Collect chat IDs
-		chatIDs := make([]uuid.UUID, len(talks))
-		for i, t := range talks {
-			chatIDs[i] = t.ID
-		}
-
-		// Fetch all participants for these chats
-		participants, err := h.ParticipantListByChatIDs(ctx, chatIDs)
-		if err != nil {
-			logrus.Errorf("Failed to load participants: %v", err)
-			// Continue without participants rather than failing entire request
-		} else {
-			// Group participants by chat_id
-			participantsByChatID := make(map[uuid.UUID][]*participant.Participant)
-			for _, p := range participants {
-				participantsByChatID[p.ChatID] = append(participantsByChatID[p.ChatID], p)
-			}
-
-			// Populate each chat's participants
-			for _, t := range talks {
-				if ps, ok := participantsByChatID[t.ID]; ok {
-					t.Participants = ps
-				} else {
-					t.Participants = []*participant.Participant{}
-				}
-			}
-		}
 	}
 
 	return talks, nil
