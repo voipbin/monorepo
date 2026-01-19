@@ -9,6 +9,7 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 
+	commondb "monorepo/bin-common-handler/pkg/databasehandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	commonutil "monorepo/bin-common-handler/pkg/utilhandler"
@@ -94,7 +95,7 @@ func Test_ParticipantAdd(t *testing.T) {
 					ID:         tt.chatID,
 					CustomerID: tt.customerID,
 				},
-				TMDelete: "", // not deleted
+				TMDelete: commondb.DefaultTimeStamp, // not deleted
 			}
 			mockDB.EXPECT().ChatGet(ctx, tt.chatID).Return(mockChat, nil)
 
@@ -223,7 +224,7 @@ func Test_ParticipantAdd_error(t *testing.T) {
 					ID:         uuid.FromStringOrNil("ac810dc4-298c-11ee-984c-ebb7811c4114"),
 					CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
 				},
-				TMDelete: "", // Not deleted
+				TMDelete: commondb.DefaultTimeStamp, // Not deleted
 			},
 			createError: fmt.Errorf("database error"),
 			expectError: true,
@@ -255,7 +256,7 @@ func Test_ParticipantAdd_error(t *testing.T) {
 					mockDB.EXPECT().ChatGet(ctx, tt.chatID).Return(tt.chatGetChat, nil)
 
 					// Only mock create if chat is not deleted
-					if tt.chatGetChat.TMDelete == "" {
+					if tt.chatGetChat.TMDelete >= commondb.DefaultTimeStamp {
 						mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("93d48228-3ed7-11ef-a9ca-070e7ba46a55"))
 						mockDB.EXPECT().ParticipantCreate(ctx, gomock.Any()).Return(tt.createError)
 					}
