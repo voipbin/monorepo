@@ -4,6 +4,7 @@ package zmqsubhandler
 
 import (
 	"context"
+	"sync"
 
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
@@ -16,6 +17,7 @@ type ZMQSubHandler interface {
 	Terminate()
 
 	Run(ctx context.Context, ws *websocket.Conn) error
+	RunWithMutex(ctx context.Context, ws *websocket.Conn, writeMu *sync.Mutex) error
 
 	Subscribe(topic string) error
 	Unsubscribe(topic string) error
