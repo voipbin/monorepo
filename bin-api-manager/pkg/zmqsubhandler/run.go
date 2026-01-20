@@ -2,6 +2,7 @@ package zmqsubhandler
 
 import (
 	"context"
+	"sync"
 	"syscall"
 	"time"
 
@@ -27,6 +28,33 @@ func (h *zmqSubHandler) Run(ctx context.Context, ws *websocket.Conn) error {
 
 		// send the message to the websocket
 		if errWrite := ws.WriteMessage(websocket.TextMessage, []byte(message)); errWrite != nil {
+			log.Infof("Could not write the message to the websocket correctly. err: %v", errWrite)
+			return errors.Wrapf(errWrite, "could not write the message to the websocket correctly")
+		}
+	}
+}
+
+// RunWithMutex runs the pubsub subscriber with mutex protection for websocket writes
+func (h *zmqSubHandler) RunWithMutex(ctx context.Context, ws *websocket.Conn, writeMu *sync.Mutex) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "RunWithMutex",
+	})
+
+	for {
+		// receive the message from the subscriber
+		topic, message, err := h.receiveMessage(ctx)
+		if err != nil {
+			log.Infof("Could not receive the message correctly. err: %v", err)
+			return errors.Wrapf(err, "could not receive the message correctly")
+		}
+		log.Debugf("Received message from the pubsub subscriber. topic: %s", topic)
+
+		// send the message to the websocket with mutex protection
+		writeMu.Lock()
+		errWrite := ws.WriteMessage(websocket.TextMessage, []byte(message))
+		writeMu.Unlock()
+
+		if errWrite != nil {
 			log.Infof("Could not write the message to the websocket correctly. err: %v", errWrite)
 			return errors.Wrapf(errWrite, "could not write the message to the websocket correctly")
 		}

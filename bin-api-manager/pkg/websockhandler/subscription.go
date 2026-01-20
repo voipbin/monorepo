@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"sync"
+	"time"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 
@@ -13,6 +15,17 @@ import (
 
 	"monorepo/bin-api-manager/models/hook"
 	"monorepo/bin-api-manager/pkg/zmqsubhandler"
+)
+
+const (
+	// writeWait is the time allowed to write a message to the peer
+	writeWait = 10 * time.Second
+
+	// pongWait is the time allowed to read the next pong message from the peer
+	pongWait = 60 * time.Second
+
+	// pingPeriod sends pings to peer with this period. Must be less than pongWait.
+	pingPeriod = 30 * time.Second
 )
 
 // subscriptionRun creates a new websocket and starts socket message listen.
@@ -33,6 +46,21 @@ func (h *websockHandler) subscriptionRun(ctx context.Context, w http.ResponseWri
 	}()
 	log.Debugf("Created a new websocket correctly.")
 
+	// create a mutex for protecting concurrent writes to the websocket
+	var writeMu sync.Mutex
+
+	// set up pong handler to extend read deadline on each pong received
+	ws.SetPongHandler(func(string) error {
+		log.Debugf("Received pong from client")
+		return ws.SetReadDeadline(time.Now().Add(pongWait))
+	})
+
+	// set initial read deadline
+	if err := ws.SetReadDeadline(time.Now().Add(pongWait)); err != nil {
+		log.Errorf("Could not set initial read deadline. err: %v", err)
+		return err
+	}
+
 	// create a new subscriber zmqSub
 	zmqSub, err := zmqsubhandler.NewZMQSubHandler()
 	if err != nil {
@@ -46,7 +74,8 @@ func (h *websockHandler) subscriptionRun(ctx context.Context, w http.ResponseWri
 	// we are expecting when the websocket closed, everything is closed too.
 	newCtx, newCancel := context.WithCancel(ctx)
 	go h.subscriptionRunWebsock(newCtx, newCancel, a, ws, zmqSub)
-	go h.subscriptionRunZMQSub(newCtx, newCancel, ws, zmqSub)
+	go h.subscriptionRunZMQSub(newCtx, newCancel, ws, zmqSub, &writeMu)
+	go h.subscriptionRunPinger(newCtx, newCancel, ws, &writeMu)
 
 	<-newCtx.Done()
 	log.Debugf("Websocket connection has been closed. agent_id: %s", a.ID)
@@ -60,13 +89,14 @@ func (h *websockHandler) subscriptionRunZMQSub(
 	cancel context.CancelFunc,
 	ws *websocket.Conn,
 	zmqSub zmqsubhandler.ZMQSubHandler,
+	writeMu *sync.Mutex,
 ) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "subscriptionRunZMQSub",
 	})
 	defer cancel()
 
-	if errRun := zmqSub.Run(ctx, ws); errRun != nil {
+	if errRun := zmqSub.RunWithMutex(ctx, ws, writeMu); errRun != nil {
 		log.Infof("The zmq subscriber run has finished. err: %v", errRun)
 		return
 	}
@@ -144,4 +174,43 @@ func (h *websockHandler) subscriptionHandleMessage(ctx context.Context, a *amage
 	}
 
 	return nil
+}
+
+// subscriptionRunPinger sends periodic ping frames to keep the WebSocket connection alive
+func (h *websockHandler) subscriptionRunPinger(
+	ctx context.Context,
+	cancel context.CancelFunc,
+	ws *websocket.Conn,
+	writeMu *sync.Mutex,
+) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "subscriptionRunPinger",
+	})
+	defer cancel()
+
+	ticker := time.NewTicker(pingPeriod)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			writeMu.Lock()
+			if err := ws.SetWriteDeadline(time.Now().Add(writeWait)); err != nil {
+				log.Infof("Could not set write deadline. err: %v", err)
+				writeMu.Unlock()
+				return
+			}
+			if err := ws.WriteMessage(websocket.PingMessage, nil); err != nil {
+				log.Infof("Could not write ping message. err: %v", err)
+				writeMu.Unlock()
+				return
+			}
+			writeMu.Unlock()
+			log.Debugf("Sent ping message to client")
+
+		case <-ctx.Done():
+			log.Debugf("Context canceled, exiting pinger goroutine")
+			return
+		}
+	}
 }
