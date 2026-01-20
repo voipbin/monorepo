@@ -167,6 +167,554 @@
 <p>Additionally, the Conference API allows developers to establish voice, video, and WebRTC (Web Real-Time Communication) calls, enabling seamless voice and video communication between two users. These calls can be stored within the conferences, ensuring that all relevant communications are organized and easily accessible.</p>
 <img alt="_images/conference_overview_flow.png" src="_images/conference_overview_flow.png" />
 <p>By leveraging the Conference API, developers can build robust communication applications with the capability to host multi-user conferences and support various communication modes. The API’s flexibility and functionality provide a foundation for creating feature-rich and scalable communication solutions to meet diverse user needs. Whether for collaboration, remote meetings, customer support, or any other scenario requiring real-time communication, the Conference API offers a reliable and efficient means to establish and manage communication sessions between multiple users.</p>
+<section id="how-conferences-work">
+<h3>How Conferences Work<a class="headerlink" href="#how-conferences-work" title="Link to this heading"></a></h3>
+<p>A conference is a virtual room where multiple participants can communicate. Understanding the architecture helps you build reliable applications.</p>
+<p><strong>Conference Architecture</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────────┐
+│                      Conference Architecture                             │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Application Layer                         Infrastructure Layer
+┌─────────────────────────┐              ┌─────────────────────────┐
+│      Conference         │              │       Confbridge        │
+│   (conference-manager)  │              │    (call-manager)       │
+│                         │              │                         │
+│  • Participant list     │──────────────│  • Audio mixing         │
+│  • Recording control    │   manages    │  • Voice bridge         │
+│  • Transcription        │              │  • Join/leave events    │
+│  • Metadata &amp; state     │              │  • Media streams        │
+└─────────────────────────┘              └─────────────────────────┘
+          │                                        │
+          │                                        │
+          ▼                                        ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         Participants (Calls)                             │
+│                                                                          │
+│  ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐          │
+│  │ Call A   │    │ Call B   │    │ Call C   │    │ Call D   │          │
+│  │ (phone)  │    │ (WebRTC) │    │ (SIP)    │    │ (phone)  │          │
+│  └──────────┘    └──────────┘    └──────────┘    └──────────┘          │
+│                                                                          │
+│                     All audio mixed together                            │
+└─────────────────────────────────────────────────────────────────────────┘
+</pre></div>
+</div>
+<p><strong>Key Concepts</strong></p>
+<ul class="simple">
+<li><p><strong>Conference</strong>: High-level container that manages participants, recording, and transcription</p></li>
+<li><p><strong>Confbridge</strong>: Low-level audio bridge that actually mixes the audio</p></li>
+<li><p><strong>Conferencecall</strong>: A participant in the conference (links a call to a conference)</p></li>
+</ul>
+</section>
+<section id="conference-lifecycle">
+<h3>Conference Lifecycle<a class="headerlink" href="#conference-lifecycle" title="Link to this heading"></a></h3>
+<p>Every conference moves through a predictable set of states.</p>
+<p><strong>State Diagram</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────────┐
+│                     Conference State Machine                             │
+└─────────────────────────────────────────────────────────────────────────┘
+
+                POST /v1/conferences
+                       │
+                       ▼
+                ┌────────────┐
+                │  starting  │ (brief initialization)
+                └─────┬──────┘
+                      │
+                      ▼
+                ┌────────────┐
+                │progressing │◀────────────────────────────────┐
+                │  (active)  │                                 │
+                └─────┬──────┘                                 │
+                      │                                        │
+                      │ DELETE or timeout                      │
+                      ▼                                        │
+                ┌────────────┐      still has                  │
+                │terminating │──────participants ──────────────┘
+                │ (closing)  │
+                └─────┬──────┘
+                      │
+                      │ all participants left
+                      ▼
+                ┌────────────┐
+                │ terminated │
+                │  (closed)  │
+                └────────────┘
+</pre></div>
+</div>
+<p><strong>State Descriptions</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Status</p></th>
+<th class="head"><p>What’s happening</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>starting</p></td>
+<td><p>Conference is being initialized. Brief transitional state.</p></td>
+</tr>
+<tr class="row-odd"><td><p>progressing</p></td>
+<td><p>Conference is active. Participants can join, recording can start.</p></td>
+</tr>
+<tr class="row-even"><td><p>terminating</p></td>
+<td><p>Conference is closing. No new participants. Waiting for everyone
+to leave.</p></td>
+</tr>
+<tr class="row-odd"><td><p>terminated</p></td>
+<td><p>Conference is completely closed. No further operations possible.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="participant-lifecycle">
+<h3>Participant Lifecycle<a class="headerlink" href="#participant-lifecycle" title="Link to this heading"></a></h3>
+<p>Each participant (conferencecall) has their own lifecycle independent of the conference.</p>
+<p><strong>Participant States</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────────┐
+│                   Participant (Conferencecall) States                    │
+└─────────────────────────────────────────────────────────────────────────┘
+
+     Flow triggers join
+            │
+            ▼
+     ┌────────────┐
+     │  joining   │  (pre-flow executing, connecting to bridge)
+     └─────┬──────┘
+           │
+           │ audio connected
+           ▼
+     ┌────────────┐
+     │   joined   │  (actively in conference, can hear/speak)
+     └─────┬──────┘
+           │
+           │ hangup or kicked
+           ▼
+     ┌────────────┐
+     │  leaving   │  (being removed from bridge)
+     └─────┬──────┘
+           │
+           │ fully disconnected
+           ▼
+     ┌────────────┐
+     │   leaved   │  (no longer in conference)
+     └────────────┘
+</pre></div>
+</div>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Status</p></th>
+<th class="head"><p>What’s happening</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>joining</p></td>
+<td><p>Participant is connecting. Pre-conference flow may be executing.</p></td>
+</tr>
+<tr class="row-odd"><td><p>joined</p></td>
+<td><p>Participant is active. Audio is flowing. Can hear and speak.</p></td>
+</tr>
+<tr class="row-even"><td><p>leaving</p></td>
+<td><p>Participant is being disconnected from the conference.</p></td>
+</tr>
+<tr class="row-odd"><td><p>leaved</p></td>
+<td><p>Participant has fully left. No longer part of the conference.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="joining-a-conference">
+<h3>Joining a Conference<a class="headerlink" href="#joining-a-conference" title="Link to this heading"></a></h3>
+<p>When a participant joins a conference, a coordinated sequence occurs.</p>
+<p><strong>Join Sequence</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────────┐
+│                      Participant Join Sequence                           │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Flow                    Conference-Manager              Call-Manager
+  │                            │                             │
+  │ conference_join action     │                             │
+  │───────────────────────────▶│                             │
+  │                            │                             │
+  │                            │ Create conferencecall       │
+  │                            │ status: joining             │
+  │                            │                             │
+  │                            │ Pre-flow? Execute it        │
+  │                            │                             │
+  │                            │ Push confbridge_join        │
+  │                            │────────────────────────────▶│
+  │                            │                             │
+  │                            │                             │ Connect call
+  │                            │                             │ to audio bridge
+  │                            │                             │
+  │                            │   confbridge_joined event   │
+  │                            │◀────────────────────────────│
+  │                            │                             │
+  │                            │ Update conferencecall       │
+  │                            │ status: joined              │
+  │                            │                             │
+  │                            │ Add to participant list     │
+  │                            │                             │
+  │◀───────────────────────────│                             │
+  │    Continue flow           │                             │
+</pre></div>
+</div>
+<p><strong>What Happens at Each Step</strong></p>
+<ol class="arabic simple">
+<li><p><strong>Flow Action</strong>: Your flow executes a <code class="docutils literal notranslate"><span class="pre">conference_join</span></code> action</p></li>
+<li><p><strong>Conferencecall Created</strong>: A participant record is created with status “joining”</p></li>
+<li><p><strong>Pre-Flow (Optional)</strong>: If configured, a welcome flow plays (greeting, instructions)</p></li>
+<li><p><strong>Audio Connected</strong>: The call’s audio is routed to the conference bridge</p></li>
+<li><p><strong>Joined</strong>: Participant can now hear and be heard by others in the conference</p></li>
+</ol>
+</section>
+<section id="leaving-a-conference">
+<h3>Leaving a Conference<a class="headerlink" href="#leaving-a-conference" title="Link to this heading"></a></h3>
+<p>Participants can leave naturally (hangup) or be removed via API.</p>
+<p><strong>Natural Leave (Call Ends)</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────────┐
+│                    Natural Leave (Participant Hangup)                    │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Participant              Call-Manager              Conference-Manager
+    │                         │                            │
+    │ Hangs up phone          │                            │
+    │────────────────────────▶│                            │
+    │                         │                            │
+    │                         │ Detects leave from bridge  │
+    │                         │                            │
+    │                         │  confbridge_leaved event   │
+    │                         │───────────────────────────▶│
+    │                         │                            │
+    │                         │                            │ Update status
+    │                         │                            │ to &quot;leaved&quot;
+    │                         │                            │
+    │                         │                            │ Remove from
+    │                         │                            │ participant list
+    │                         │                            │
+</pre></div>
+</div>
+<p><strong>Forced Removal (API)</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>DELETE /v1/conferencecalls/{participant-id}
+                 │
+                 ▼
+┌────────────────────────────────────────┐
+│ 1. Validate participant is in          │
+│    &quot;joining&quot; or &quot;joined&quot; status        │
+│                                        │
+│ 2. Update status to &quot;leaving&quot;          │
+│                                        │
+│ 3. Send kick request to confbridge     │
+│                                        │
+│ 4. Confbridge removes participant      │
+│                                        │
+│ 5. confbridge_leaved event fires       │
+│                                        │
+│ 6. Update status to &quot;leaved&quot;           │
+└────────────────────────────────────────┘
+</pre></div>
+</div>
+</section>
+<section id="conference-types">
+<h3>Conference Types<a class="headerlink" href="#conference-types" title="Link to this heading"></a></h3>
+<p>VoIPBIN supports different conference types for different use cases.</p>
+<p><strong>Type: Conference (Standard)</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────────┐
+│                    Type: Conference (Multi-Party)                        │
+└─────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        Conference Room                                   │
+│                                                                          │
+│   ┌──────┐    ┌──────┐    ┌──────┐    ┌──────┐    ┌──────┐            │
+│   │User A│    │User B│    │User C│    │User D│    │User E│            │
+│   └──────┘    └──────┘    └──────┘    └──────┘    └──────┘            │
+│                                                                          │
+│   • Supports 2+ participants                                            │
+│   • Remains active even with 0 or 1 participant                         │
+│   • Only terminates when explicitly deleted                             │
+│   • Recording captures all participants                                 │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+</pre></div>
+</div>
+<p><strong>Type: Connect (1:1 Bridge)</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────────┐
+│                      Type: Connect (Two-Party)                           │
+└─────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        Connect Bridge                                    │
+│                                                                          │
+│         ┌────────────┐              ┌────────────┐                      │
+│         │  Caller    │◀────────────▶│   Agent    │                      │
+│         └────────────┘              └────────────┘                      │
+│                                                                          │
+│   • Designed for exactly 2 participants                                 │
+│   • Auto-ejects remaining participant when one leaves                   │
+│   • Useful for customer-agent calls                                     │
+│   • Conference terminates when empty                                    │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+
+When one participant leaves:
+┌──────────┐           ┌──────────┐
+│  Caller  │           │  Agent   │
+│  leaves  │──────────▶│ AUTO-KICK│
+└──────────┘           └──────────┘
+                             │
+                             ▼
+                   Conference terminates
+</pre></div>
+</div>
+</section>
+<section id="recording">
+<h3>Recording<a class="headerlink" href="#recording" title="Link to this heading"></a></h3>
+<p>Conferences support recording all participant audio into a single file.</p>
+<p><strong>Starting a Recording</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>POST /v1/conferences/{id}/recording_start
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│                     Recording Active                                     │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Conference
+┌─────────────────────────────────────────────────────────────────────────┐
+│                                                                          │
+│   ┌──────┐    ┌──────┐    ┌──────┐                                     │
+│   │User A│    │User B│    │User C│                                     │
+│   └──┬───┘    └──┬───┘    └──┬───┘                                     │
+│      │           │           │                                          │
+│      └───────────┴───────────┘                                          │
+│                  │                                                       │
+│                  ▼                                                       │
+│          ┌─────────────┐                                                │
+│          │  Recording  │                                                │
+│          │    File     │                                                │
+│          └─────────────┘                                                │
+│                                                                          │
+│   recording_id: &quot;abc-123&quot;  (current active recording)                   │
+│   recording_ids: [&quot;abc-123&quot;, ...]  (all recordings history)             │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+</pre></div>
+</div>
+<p><strong>Recording Rules</strong></p>
+<ul class="simple">
+<li><p>Only one active recording per conference at a time</p></li>
+<li><p>Recording can only start when conference is in “progressing” status</p></li>
+<li><p>All participant audio is mixed into a single recording</p></li>
+<li><p>Maximum duration: 24 hours</p></li>
+<li><p>Recording history is preserved in <code class="docutils literal notranslate"><span class="pre">recording_ids</span></code> array</p></li>
+</ul>
+<p><strong>Stopping a Recording</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>POST /v1/conferences/{id}/recording_stop
+
+• Stops active recording
+• Clears recording_id field
+• Recording file becomes available for download
+</pre></div>
+</div>
+</section>
+<section id="transcription">
+<h3>Transcription<a class="headerlink" href="#transcription" title="Link to this heading"></a></h3>
+<p>Real-time transcription converts conference audio to text.</p>
+<p><strong>Starting Transcription</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>POST /v1/conferences/{id}/transcribe_start
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    Transcription Active                                  │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Conference Audio                              Transcription Service
+┌─────────────────────┐                      ┌─────────────────────┐
+│ User A: &quot;Hello&quot;     │                      │                     │
+│ User B: &quot;Hi there&quot;  │─────────────────────▶│  Speech-to-Text     │
+│ User C: &quot;Welcome&quot;   │      audio stream    │                     │
+└─────────────────────┘                      └──────────┬──────────┘
+                                                        │
+                                                        ▼
+                                             ┌─────────────────────┐
+                                             │ Transcript Output   │
+                                             │ &quot;Hello. Hi there.   │
+                                             │  Welcome.&quot;          │
+                                             └─────────────────────┘
+</pre></div>
+</div>
+<p><strong>Transcription Rules</strong></p>
+<ul class="simple">
+<li><p>Only one active transcription per conference at a time</p></li>
+<li><p>Can only start when conference is in “progressing” status</p></li>
+<li><p>Language must be specified for accurate transcription</p></li>
+<li><p>History preserved in <code class="docutils literal notranslate"><span class="pre">transcribe_ids</span></code> array</p></li>
+</ul>
+</section>
+<section id="timeout-and-auto-cleanup">
+<h3>Timeout and Auto-Cleanup<a class="headerlink" href="#timeout-and-auto-cleanup" title="Link to this heading"></a></h3>
+<p>Conferences can be configured to automatically terminate after a period.</p>
+<p><strong>Timeout Behavior</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────────┐
+│                     Conference Timeout                                   │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Conference created                                      Timeout expires
+with timeout: 3600 (1 hour)                            │
+     │                                                  │
+     ▼                                                  ▼
+─────●──────────────────────────────────────────────────●─────────────▶
+     │◀───────────── 3600 seconds ────────────────────▶│    Time
+     │                                                  │
+     │ Conference is progressing                        │ Auto-terminate
+     │ Participants can join/leave                      │ All participants
+     │                                                  │ kicked
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Set <code class="docutils literal notranslate"><span class="pre">timeout</span></code> when creating the conference (in seconds)</p></li>
+<li><p>When timeout expires, conference moves to “terminating”</p></li>
+<li><p>All remaining participants are kicked</p></li>
+<li><p>Conference transitions to “terminated”</p></li>
+</ul>
+<p><strong>Auto-Cleanup When Empty</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Conference in &quot;terminating&quot; status
+            │
+            ▼
+┌────────────────────────┐
+│ Any participants left? │
+└───────────┬────────────┘
+            │
+   ┌────────┴────────┐
+   │                 │
+  Yes               No
+   │                 │
+   ▼                 ▼
+Wait for them    Conference destroyed
+to leave         Status: terminated
+</pre></div>
+</div>
+</section>
+<section id="health-checks">
+<h3>Health Checks<a class="headerlink" href="#health-checks" title="Link to this heading"></a></h3>
+<p>The system continuously monitors participant health.</p>
+<p><strong>Health Check Process</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────────┐
+│                    Participant Health Checks                             │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Every 5 seconds, for each participant:
+
+┌────────────────────────────────────────┐
+│ 1. Is the participant&#39;s call still     │
+│    in &quot;progressing&quot; status?            │
+│                                        │
+│ 2. Is the conference still in          │
+│    &quot;progressing&quot; status?               │
+│                                        │
+│ 3. Was the participant created less    │
+│    than 24 hours ago?                  │
+└────────────────────────────────────────┘
+                 │
+        ┌────────┴────────┐
+        │                 │
+     All Yes          Any No
+        │                 │
+        ▼                 ▼
+   Continue         Remove participant
+   monitoring       (after 2 retries)
+</pre></div>
+</div>
+</section>
+<section id="common-scenarios">
+<h3>Common Scenarios<a class="headerlink" href="#common-scenarios" title="Link to this heading"></a></h3>
+<p><strong>Scenario 1: Simple Conference Call</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1. Create conference
+   POST /v1/conferences
+   → Conference in &quot;progressing&quot; status
+
+2. Participants join through flow
+   ┌──────────┐  ┌──────────┐  ┌──────────┐
+   │ User A   │  │ User B   │  │ User C   │
+   │  joins   │  │  joins   │  │  joins   │
+   └──────────┘  └──────────┘  └──────────┘
+
+3. All can hear each other
+
+4. Users hang up one by one
+
+5. Delete conference when done
+   DELETE /v1/conferences/{id}
+</pre></div>
+</div>
+<p><strong>Scenario 2: Recorded Meeting</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mf">1.</span> <span class="n">Create</span> <span class="n">conference</span>
+<span class="mf">2.</span> <span class="n">Start</span> <span class="n">recording</span>
+   <span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">conferences</span><span class="o">/</span><span class="p">{</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">recording_start</span>
+<span class="mf">3.</span> <span class="n">Participants</span> <span class="n">join</span> <span class="ow">and</span> <span class="n">talk</span>
+<span class="mf">4.</span> <span class="n">Stop</span> <span class="n">recording</span>
+   <span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">conferences</span><span class="o">/</span><span class="p">{</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">recording_stop</span>
+<span class="mf">5.</span> <span class="n">Recording</span> <span class="n">file</span> <span class="n">available</span> <span class="k">for</span> <span class="n">download</span>
+</pre></div>
+</div>
+<p><strong>Scenario 3: Customer-Agent Connect</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1. Create connect-type conference
+   POST /v1/conferences
+   { &quot;type&quot;: &quot;connect&quot; }
+
+2. Customer call joins
+3. Agent call joins
+4. Customer and agent talk
+
+5. When either hangs up:
+   → Other is auto-ejected
+   → Conference terminates
+</pre></div>
+</div>
+</section>
+<section id="events-and-webhooks">
+<h3>Events and Webhooks<a class="headerlink" href="#events-and-webhooks" title="Link to this heading"></a></h3>
+<p>Conference changes trigger events you can subscribe to.</p>
+<p><strong>Event Types</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────────┐
+│                     Conference Events                                    │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Event                    When it fires
+─────────────────────────────────────────────────────────────────────────
+conference_created       Conference is created
+conference_updated       Participant joins/leaves, recording starts/stops
+conference_deleted       Conference is terminated
+</pre></div>
+</div>
+</section>
+<section id="best-practices">
+<h3>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading"></a></h3>
+<p><strong>1. Choose the Right Conference Type</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Use Case                          Type
+────────────────────────────────────────────────────
+Team meeting (3+ people)          conference
+Customer support call             connect
+Webinar/broadcast                 conference
+</pre></div>
+</div>
+<p><strong>2. Set Appropriate Timeouts</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>• Short meetings: timeout: 3600 (1 hour)
+• Long workshops: timeout: 14400 (4 hours)
+• Persistent rooms: timeout: 0 (no timeout)
+</pre></div>
+</div>
+<p><strong>3. Handle Participant Lifecycle</strong></p>
+<ul class="simple">
+<li><p>Subscribe to <code class="docutils literal notranslate"><span class="pre">conference_updated</span></code> events to track joins/leaves</p></li>
+<li><p>Implement cleanup logic when all participants leave</p></li>
+<li><p>Consider pre-flows for instructions or greetings</p></li>
+</ul>
+<p><strong>4. Recording Best Practices</strong></p>
+<ul class="simple">
+<li><p>Notify participants that recording is active (legal requirement)</p></li>
+<li><p>Set reasonable duration limits</p></li>
+<li><p>Download and store recordings promptly</p></li>
+</ul>
+</section>
 </section>
 <section id="conference-struct-conference">
 <span id="id1"></span><h2>Conference<a class="headerlink" href="#conference-struct-conference" title="Link to this heading"></a></h2>
@@ -532,7 +1080,22 @@
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
 <li><a class="reference internal" href="#">Conference</a><ul>
-<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#overview">Overview</a><ul>
+<li><a class="reference internal" href="#how-conferences-work">How Conferences Work</a></li>
+<li><a class="reference internal" href="#conference-lifecycle">Conference Lifecycle</a></li>
+<li><a class="reference internal" href="#participant-lifecycle">Participant Lifecycle</a></li>
+<li><a class="reference internal" href="#joining-a-conference">Joining a Conference</a></li>
+<li><a class="reference internal" href="#leaving-a-conference">Leaving a Conference</a></li>
+<li><a class="reference internal" href="#conference-types">Conference Types</a></li>
+<li><a class="reference internal" href="#recording">Recording</a></li>
+<li><a class="reference internal" href="#transcription">Transcription</a></li>
+<li><a class="reference internal" href="#timeout-and-auto-cleanup">Timeout and Auto-Cleanup</a></li>
+<li><a class="reference internal" href="#health-checks">Health Checks</a></li>
+<li><a class="reference internal" href="#common-scenarios">Common Scenarios</a></li>
+<li><a class="reference internal" href="#events-and-webhooks">Events and Webhooks</a></li>
+<li><a class="reference internal" href="#best-practices">Best Practices</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#conference-struct-conference">Conference</a><ul>
 <li><a class="reference internal" href="#conference-struct-conference-conference">Conference</a><ul>
 <li><a class="reference internal" href="#example">Example</a></li>

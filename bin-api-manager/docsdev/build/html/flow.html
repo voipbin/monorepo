@@ -170,6 +170,236 @@
 <p>When an incoming call is received on one of your VoIPBIN numbers or destinations, the platform identifies the associated URL and sends a request.</p>
 <p>The Flow instructions are then processed, providing a step-by-step guide on how to handle the call. This might involve greeting the caller, presenting options, gathering input, or executing various actions based on the caller’s response.</p>
 </section>
+<section id="understanding-flow-execution">
+<h3>Understanding Flow Execution<a class="headerlink" href="#understanding-flow-execution" title="Link to this heading"></a></h3>
+<p>Think of a Flow like a recipe. Each action is a step, and VoIPBIN follows the steps one by one until the recipe is complete.</p>
+<p><strong>The Execution Cursor</strong></p>
+<p>VoIPBIN uses a “cursor” to track where it is in the flow - like a finger pointing at the current step:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Flow Actions Array:
+┌─────────┐   ┌─────────┐   ┌─────────┐   ┌─────────┐   ┌─────────┐
+│ answer  │──▶│  talk   │──▶│ digits  │──▶│ branch  │──▶│ hangup  │
+└─────────┘   └─────────┘   └─────────┘   └─────────┘   └─────────┘
+                   ▲
+                   │
+                cursor
+              (current step)
+</pre></div>
+</div>
+<p>As each action completes, the cursor moves to the next one. When the cursor reaches the end, the flow is complete.</p>
+<p><strong>What Happens During Execution</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────┐
+│                    Flow Execution Engine                             │
+└─────────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+                       ┌───────────────┐
+                       │  Get next     │
+                       │  action       │
+                       └───────┬───────┘
+                               │
+                               ▼
+                       ┌───────────────┐
+                  ┌────│  End of flow? │────┐
+                  │yes └───────────────┘ no │
+                  │                         │
+                  ▼                         ▼
+           ┌────────────┐          ┌────────────────┐
+           │   Stop     │          │ Execute action │
+           │  (done)    │          └───────┬────────┘
+           └────────────┘                  │
+                                           ▼
+                                ┌─────────────────────┐
+                                │ What kind of result?│
+                                └──────────┬──────────┘
+                                           │
+                    ┌──────────────────────┼──────────────────────┐
+                    │                      │                      │
+                    ▼                      ▼                      ▼
+             ┌────────────┐         ┌────────────┐         ┌────────────┐
+             │   Next     │         │   Wait     │         │   Block    │
+             │ (continue) │         │ (external) │         │  (pause)   │
+             └─────┬──────┘         └────────────┘         └────────────┘
+                   │
+                   │ loop back
+                   └──────────────────────────────────────────────▶
+</pre></div>
+</div>
+</section>
+<section id="action-execution-patterns">
+<h3>Action Execution Patterns<a class="headerlink" href="#action-execution-patterns" title="Link to this heading"></a></h3>
+<p>Actions behave differently depending on their type. Understanding these patterns helps you predict flow behavior.</p>
+<p><strong>Immediate Actions (Execute and Continue)</strong></p>
+<p>These actions complete instantly and the cursor moves to the next action:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌──────────┐     ┌──────────┐     ┌──────────┐
+│  goto    │────▶│  branch  │────▶│ variable │
+└──────────┘     └──────────┘     └──────────┘
+     │                │                │
+     └────────────────┴────────────────┘
+                      │
+               Cursor moves immediately
+</pre></div>
+</div>
+<p>Examples: <code class="docutils literal notranslate"><span class="pre">goto</span></code>, <code class="docutils literal notranslate"><span class="pre">branch</span></code>, <code class="docutils literal notranslate"><span class="pre">variable_set</span></code>, <code class="docutils literal notranslate"><span class="pre">condition_variable</span></code></p>
+<p><strong>Media Actions (Wait for Completion)</strong></p>
+<p>These actions take time and the flow waits for them to finish:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌──────────┐     ┌──────────────────────────────┐     ┌──────────┐
+│  talk    │────▶│  Playing &quot;Welcome to...&quot;     │────▶│  next    │
+└──────────┘     │  (audio playing, please wait)│     │  action  │
+                 └──────────────────────────────┘     └──────────┘
+                              │
+                    Cursor waits here until
+                    audio finishes playing
+</pre></div>
+</div>
+<p>Examples: <code class="docutils literal notranslate"><span class="pre">talk</span></code>, <code class="docutils literal notranslate"><span class="pre">play</span></code>, <code class="docutils literal notranslate"><span class="pre">digits_receive</span></code>, <code class="docutils literal notranslate"><span class="pre">recording_start</span></code></p>
+<p><strong>Fire-and-Forget Actions (Dispatch and Continue)</strong></p>
+<p>These actions send something out but don’t wait for a response:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌────────────┐     ┌────────────────────┐
+│ email_send │────▶│ Email dispatched!  │────▶ Continue immediately
+└────────────┘     │ (delivery is async)│
+                   └────────────────────┘
+</pre></div>
+</div>
+<p>Examples: <code class="docutils literal notranslate"><span class="pre">message_send</span></code>, <code class="docutils literal notranslate"><span class="pre">email_send</span></code>, <code class="docutils literal notranslate"><span class="pre">webhook_send</span></code></p>
+<p><strong>Blocking Actions (Pause Until Triggered)</strong></p>
+<p>These actions pause the flow until something external happens:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌──────────┐     ┌──────────────────────────────┐
+│  block   │────▶│  Flow is paused...           │
+└──────────┘     │  Waiting for API call to     │
+                 │  resume execution            │
+                 └──────────────────────────────┘
+                              │
+                 Call POST /activeflows/{id}/execute
+                              │
+                              ▼
+                 ┌──────────────────────────────┐
+                 │  Flow resumes, cursor moves  │
+                 └──────────────────────────────┘
+</pre></div>
+</div>
+<p>Examples: <code class="docutils literal notranslate"><span class="pre">block</span></code></p>
+<p><strong>Nested Actions (Push a Stack)</strong></p>
+<p>Some actions start a sub-flow that runs inside the main flow:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Main Flow:                                Nested Stack (from queue_join):
+┌────────┐  ┌────────────┐               ┌─────────────────────────────┐
+│ answer │─▶│ queue_join │──────────────▶│ wait_flow actions...        │
+└────────┘  └────────────┘               │ (talk, play, etc.)          │
+                  ▲                      └─────────────┬───────────────┘
+                  │                                    │
+                  │      When agent answers or         │
+                  │      caller hangs up               │
+                  └────────────────────────────────────┘
+                          Return to main flow
+</pre></div>
+</div>
+<p>Examples: <code class="docutils literal notranslate"><span class="pre">queue_join</span></code>, <code class="docutils literal notranslate"><span class="pre">ai_talk</span></code>, <code class="docutils literal notranslate"><span class="pre">conference_join</span></code>, <code class="docutils literal notranslate"><span class="pre">fetch_flow</span></code></p>
+</section>
+<section id="branching-and-decision-making">
+<h3>Branching and Decision Making<a class="headerlink" href="#branching-and-decision-making" title="Link to this heading"></a></h3>
+<p>Flows can make decisions and take different paths based on conditions.</p>
+<p><strong>The Branch Action</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">branch</span></code> action reads a variable and jumps to different actions based on its value:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌──────────────────────────────────────────────────────────────────────┐
+│                         Branch Decision                               │
+└──────────────────────────────────────────────────────────────────────┘
+
+                          Variable value?
+                                │
+                ┌───────────────┼───────────────┐
+                │               │               │
+                ▼               ▼               ▼
+              &quot;1&quot;             &quot;2&quot;           (default)
+                │               │               │
+                ▼               ▼               ▼
+        ┌────────────┐  ┌────────────┐  ┌────────────┐
+        │  Sales     │  │  Support   │  │  Operator  │
+        │  menu      │  │  menu      │  │  (fallback)│
+        └────────────┘  └────────────┘  └────────────┘
+</pre></div>
+</div>
+<p><strong>How Variables Get Set</strong></p>
+<p>Variables are set by previous actions and then read by branch:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Step 1: Collect input
+┌─────────────────┐
+│ digits_receive  │  ──▶  User presses &quot;2&quot;
+└─────────────────┘       voipbin.call.digits = &quot;2&quot;
+
+Step 2: Branch based on input
+┌─────────────────┐
+│     branch      │  ──▶  Read voipbin.call.digits
+│                 │       Value is &quot;2&quot;
+│ variable:       │       Jump to Support menu
+│  voipbin.call.  │
+│  digits         │
+└─────────────────┘
+</pre></div>
+</div>
+<p><strong>Condition Actions</strong></p>
+<p>For more complex logic, use condition actions:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>condition_variable:
+┌───────────────────────────────────────────────────────────────────┐
+│  IF ${customer.tier} equals &quot;premium&quot;                              │
+│     → Continue to next action (VIP treatment)                      │
+│  ELSE                                                              │
+│     → Jump to false_target_id (standard treatment)                 │
+└───────────────────────────────────────────────────────────────────┘
+</pre></div>
+</div>
+<p>Available conditions:
+- <code class="docutils literal notranslate"><span class="pre">equal</span></code>, <code class="docutils literal notranslate"><span class="pre">not_equal</span></code>
+- <code class="docutils literal notranslate"><span class="pre">greater</span></code>, <code class="docutils literal notranslate"><span class="pre">less</span></code>
+- <code class="docutils literal notranslate"><span class="pre">greater_equal</span></code>, <code class="docutils literal notranslate"><span class="pre">less_equal</span></code></p>
+</section>
+<section id="the-variable-system">
+<h3>The Variable System<a class="headerlink" href="#the-variable-system" title="Link to this heading"></a></h3>
+<p>Variables store information during flow execution. They’re like sticky notes that actions can write and read.</p>
+<p><strong>Built-in Variables</strong></p>
+<p>VoIPBIN automatically creates these variables:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────┐
+│                    Built-in Variables                            │
+├─────────────────────────────────┬───────────────────────────────┤
+│ voipbin.activeflow.id           │ Current activeflow ID         │
+├─────────────────────────────────┼───────────────────────────────┤
+│ voipbin.activeflow.reference_id │ The call/conversation ID      │
+├─────────────────────────────────┼───────────────────────────────┤
+│ voipbin.call.digits             │ DTMF digits received          │
+├─────────────────────────────────┼───────────────────────────────┤
+│ voipbin.call.caller_id          │ Caller&#39;s phone number         │
+├─────────────────────────────────┼───────────────────────────────┤
+│ voipbin.message.text            │ Received message content      │
+├─────────────────────────────────┼───────────────────────────────┤
+│ voipbin.recording.id            │ Current recording ID          │
+└─────────────────────────────────┴───────────────────────────────┘
+</pre></div>
+</div>
+<p><strong>Custom Variables</strong></p>
+<p>You can set your own variables with the <code class="docutils literal notranslate"><span class="pre">variable_set</span></code> action:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;variable_set&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;customer.language&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Using Variables in Actions</strong></p>
+<p>Variables are substituted using <code class="docutils literal notranslate"><span class="pre">${variable.name}</span></code> syntax:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello $</span><span class="si">{customer.name}</span><span class="s2">, welcome back!&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;$</span><span class="si">{customer.language}</span><span class="s2">&quot;</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Before this action executes, VoIPBIN replaces the placeholders:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Before</span><span class="p">:</span> <span class="s2">&quot;Hello $</span><span class="si">{customer.name}</span><span class="s2">, welcome back!&quot;</span>
+<span class="n">After</span><span class="p">:</span>  <span class="s2">&quot;Hello John Smith, welcome back!&quot;</span>
+</pre></div>
+</div>
+</section>
 <section id="unified-flow">
 <span id="flow-overview-unified-flow"></span><h3>Unified flow<a class="headerlink" href="#unified-flow" title="Link to this heading"></a></h3>
 <p>VoIPBIN’s Unified Flow feature is a game-changer, allowing users to create a single flow that can be attached to multiple communication channels, including voice and video calls, SMS, and RESTful API triggers.</p>
@@ -179,18 +409,89 @@
 <span id="flow-overview-non-linear-action-execution"></span><h3>Non-linear action execution<a class="headerlink" href="#non-linear-action-execution" title="Link to this heading"></a></h3>
 <p>VoIPBIN’s Flow provides the flexibility of Non-Linear action execution.</p>
 <p>Users can customize their actions in both linear and non-linear ways, allowing them to define complex logic and decision trees to handle various call scenarios.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Linear Execution:
+┌───┐   ┌───┐   ┌───┐   ┌───┐
+│ 1 │──▶│ 2 │──▶│ 3 │──▶│ 4 │
+└───┘   └───┘   └───┘   └───┘
+
+Non-Linear Execution (with goto and branch):
+┌───┐   ┌───┐   ┌───┐   ┌───┐
+│ 1 │──▶│ 2 │──▶│ 3 │──▶│ 4 │
+└───┘   └─┬─┘   └───┘   └─┬─┘
+          │               │
+          │   ┌───────────┘
+          │   │ (goto back to 2)
+          ▼   ▼
+        ┌───────┐
+        │ Loop! │
+        └───────┘
+</pre></div>
+</div>
 <img alt="_images/flow_overview_non_linear.png" src="_images/flow_overview_non_linear.png" />
 </section>
 <section id="flow-fork">
 <span id="flow-overview-flow-fork"></span><h3>Flow fork<a class="headerlink" href="#flow-fork" title="Link to this heading"></a></h3>
 <p>Certain flow actions, such as fetch, fetch_flow, queue_join, and more, enable flow forking.</p>
 <p>When the flow is forked, the execution cursor moves to the forked flow and starts executing the actions within it. Once the forked flow reaches its end, the execution cursor moves back to the following action of the forking action, continuing the flow execution.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Main Flow                         Forked Flow (from queue_join)
+┌─────────┐                      ┌─────────────────────────────────┐
+│ answer  │                      │                                 │
+└────┬────┘                      │  ┌──────┐   ┌──────┐   ┌──────┐│
+     │                           │  │ talk │──▶│ play │──▶│ talk ││
+     ▼                           │  └──────┘   └──────┘   └──────┘│
+┌────────────┐                   │         Wait Flow               │
+│ queue_join │═══════════════════▶└─────────────────────────────────┘
+└────┬───────┘                            │
+     │                                    │ (returns when done)
+     │◀═══════════════════════════════════╝
+     │
+     ▼
+┌──────────┐
+│ continue │
+└──────────┘
+</pre></div>
+</div>
 <img alt="_images/flow_overview_fork.png" src="_images/flow_overview_fork.png" />
 </section>
 <section id="actions">
 <span id="flow-overview-actions"></span><h3>Actions<a class="headerlink" href="#actions" title="Link to this heading"></a></h3>
 <p>Within VoIPBIN, actions dictate the course of the platform’s response in a given flow, encompassing tasks such as initiating calls, playing sounds or prompts, activating text-to-speech, sending SMS or DTMFs, and dispatching SNS messages. These diverse actions serve as indispensable building blocks for crafting customized voice applications, ensuring the creation of uniquely tailored call experiences for users.</p>
 <p>VoIPBIN’s Flow provides developers with a versatile and robust toolkit, empowering them to forge dynamic voice applications, efficiently manage incoming calls, and curate personalized call encounters. Through its non-linear execution, cohesive flow capabilities, and an array of actions including SMS, DTMFs, SNS messages, and more, VoIPBIN’s Flow unveils limitless possibilities for the development of sophisticated and interactive voice applications, precisely tailored to meet specific business needs.</p>
+<p><strong>Action Categories</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Category</p></th>
+<th class="head"><p>Actions</p></th>
+<th class="head"><p>Behavior</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Media</p></td>
+<td><p>talk, play, recording_start, recording_stop</p></td>
+<td><p>Wait for completion</p></td>
+</tr>
+<tr class="row-odd"><td><p>Input</p></td>
+<td><p>digits_receive, transcribe_start</p></td>
+<td><p>Wait for input</p></td>
+</tr>
+<tr class="row-even"><td><p>Control</p></td>
+<td><p>goto, branch, condition_*, stop, empty</p></td>
+<td><p>Immediate</p></td>
+</tr>
+<tr class="row-odd"><td><p>Communication</p></td>
+<td><p>message_send, email_send, webhook_send</p></td>
+<td><p>Fire and forget</p></td>
+</tr>
+<tr class="row-even"><td><p>Nested</p></td>
+<td><p>queue_join, ai_talk, conference_join, fetch</p></td>
+<td><p>Push stack, return</p></td>
+</tr>
+<tr class="row-odd"><td><p>Call Control</p></td>
+<td><p>answer, hangup, hold, mute, connect, transfer</p></td>
+<td><p>Immediate or wait</p></td>
+</tr>
+</tbody>
+</table>
 </section>
 <section id="flow-execution">
 <span id="flow-overview-flow-execution"></span><h3>Flow execution<a class="headerlink" href="#flow-execution" title="Link to this heading"></a></h3>
@@ -199,6 +500,19 @@
 <h4>Incoming/Outgoing Calls<a class="headerlink" href="#incoming-outgoing-calls" title="Link to this heading"></a></h4>
 <p>VoIPBIN facilitates flow execution with both incoming and outgoing calls. Users have the option to register a flow to a specific number. Upon an incoming call to the registered number, VoIPBIN will seamlessly execute the associated flow.
 Users can also initiate a call with a predefined flow. Once the outgoing call is answered, the attached flow will be triggered.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Incoming Call Flow:
+┌──────────────┐      ┌─────────────────┐      ┌───────────────┐
+│  Caller dials│─────▶│  VoIPBIN looks  │─────▶│  Flow starts  │
+│  your number │      │  up the number  │      │  executing    │
+└──────────────┘      └─────────────────┘      └───────────────┘
+
+Outgoing Call Flow:
+┌──────────────┐      ┌─────────────────┐      ┌───────────────┐
+│  POST /calls │─────▶│  Call connects  │─────▶│  Flow starts  │
+│  with actions│      │  (answered)     │      │  executing    │
+└──────────────┘      └─────────────────┘      └───────────────┘
+</pre></div>
+</div>
 </section>
 <section id="received-messages">
 <h4>Received Messages<a class="headerlink" href="#received-messages" title="Link to this heading"></a></h4>
@@ -234,6 +548,47 @@ These diverse methods offer users and developers flexibility in integrating and 
 See detail about API calling at <a class="reference external" href="https://api.voipbin.net/redoc/#tag/Activeflow">here</a>.
 And due to the absence of any media-based incoming or outgoing elements in the API, certain actions within the flow—such as answer, talk, transcribe, and others—will be ignored. Instead, the execution cursor will proceed to the next action in the sequence.</p>
 </section>
+</section>
+<section id="flow-lifecycle">
+<h3>Flow Lifecycle<a class="headerlink" href="#flow-lifecycle" title="Link to this heading"></a></h3>
+<p>Understanding when flows start, run, and end helps you design reliable applications.</p>
+<p><strong>Flow States</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌────────────┐         ┌────────────┐         ┌────────────┐
+│  Created   │────────▶│  Running   │────────▶│   Ended    │
+└────────────┘         └────────────┘         └────────────┘
+      │                      │                      │
+      │                      │                      │
+Activeflow          Cursor executing         Final state
+instance created    actions                  (no more changes)
+</pre></div>
+</div>
+<p><strong>What Ends a Flow</strong></p>
+<p>A flow ends when any of these happen:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────┐
+│                    Flow Termination Triggers                     │
+└─────────────────────────────────────────────────────────────────┘
+
+1. End of actions reached
+   ┌───┐   ┌───┐   ┌───┐   ┌─────────┐
+   │ 1 │──▶│ 2 │──▶│ 3 │──▶│  END    │  ← Cursor reaches end
+   └───┘   └───┘   └───┘   └─────────┘
+
+2. Stop action executed
+   ┌───┐   ┌──────┐
+   │ 1 │──▶│ stop │  ← Explicit stop command
+   └───┘   └──────┘
+
+3. Call hangs up (for call-based flows)
+   ┌───┐   ┌───┐   ┌───┐
+   │ 1 │──▶│ 2 │──▶│ X │  ← Caller or callee hung up
+   └───┘   └───┘   └───┘
+
+4. API stop request
+   POST /activeflows/{id}/stop  ← External stop command
+</pre></div>
+</div>
+<p><strong>After Flow Ends</strong></p>
+<p>When a flow ends, if <code class="docutils literal notranslate"><span class="pre">on_complete_flow_id</span></code> is set, the next flow starts automatically (see below).</p>
 </section>
 <section id="flow-actions-and-interrupt-actions">
 <h3>Flow Actions and Interrupt Actions<a class="headerlink" href="#flow-actions-and-interrupt-actions" title="Link to this heading"></a></h3>
@@ -292,6 +647,19 @@ And due to the absence of any media-based incoming or outgoing elements in the A
 <section id="interrupt-actions">
 <h4>Interrupt Actions<a class="headerlink" href="#interrupt-actions" title="Link to this heading"></a></h4>
 <p>Interrupt actions are specialized commands that can be triggered asynchronously—at any point during the flow—to handle unexpected events or to initiate high-priority tasks. Unlike standard actions, interrupt actions are designed to override or temporarily suspend the normal flow progression.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Normal Flow Execution              Interrupt Arrives!
+┌───┐   ┌───┐   ┌───┐             ┌─────────────────┐
+│ 1 │──▶│ 2 │──▶│ 3 │◀────────────│ Transfer Request│
+└───┘   └───┘   └───┘             └─────────────────┘
+             ▲                            │
+             │                            ▼
+             │                    ┌─────────────────┐
+             │                    │ Interrupt takes │
+             └────────────────────│ over, then      │
+               (resume later)     │ returns         │
+                                  └─────────────────┘
+</pre></div>
+</div>
 <p>Common interrupt actions include:</p>
 <ul class="simple">
 <li><p>Attended Transfer: Initiates a transfer even if the call is mid-flow. This allows an operator to consult with a transferee before completing the transfer.</p></li>
@@ -321,6 +689,26 @@ And due to the absence of any media-based incoming or outgoing elements in the A
 <p>With on_complete_flow_id, developers can define a follow-up flow that executes after the call or flow ends, enabling tasks such as call-summary generation, sending emails, processing recordings, or running analytics.</p>
 <section id="how-it-works">
 <h4>How it works<a class="headerlink" href="#how-it-works" title="Link to this heading"></a></h4>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌───────────────────────────────────────────────────────────────────────┐
+│                    On Complete Flow Chain                              │
+└───────────────────────────────────────────────────────────────────────┘
+
+Flow A (Main Call Flow)                  Flow B (After Call Work)
+┌─────────────────────────┐             ┌─────────────────────────┐
+│ answer                  │             │ fetch recording         │
+│ talk &quot;Hello&quot;            │             │ ai_summarize            │
+│ connect to agent        │             │ email_send summary      │
+│ (call happens...)       │             │ webhook_send analytics  │
+│ hangup                  │             │                         │
+│                         │             │                         │
+│ on_complete_flow_id: B  │────────────▶│ (inherits variables)    │
+└─────────────────────────┘             └─────────────────────────┘
+          │                                        │
+          │ Call ends                              │ Flow B starts
+          │ Flow A stops                           │ automatically
+          ▼                                        ▼
+</pre></div>
+</div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Caller</span>             <span class="n">VoIPBIN</span> <span class="n">Engine</span>              <span class="n">Flow</span> <span class="n">A</span>                <span class="n">Flow</span> <span class="n">B</span>
 <span class="o">|</span>                      <span class="o">|</span>                        <span class="o">|</span>                     <span class="o">|</span>
 <span class="o">|</span> <span class="o">---</span> <span class="n">Incoming</span> <span class="n">Call</span> <span class="o">--&gt;|</span>                        <span class="o">|</span>                     <span class="o">|</span>
@@ -353,11 +741,40 @@ And due to the absence of any media-based incoming or outgoing elements in the A
 <p>When a flow ends—either by reaching the end of its action list, encountering a stop action, or due to call termination—VoIPBIN checks whether on_complete_flow_id is defined.</p>
 <p>If so, VoIPBIN starts the referenced flow as a new independent session.</p>
 <p>Most runtime variables from the original flow (e.g., ${voipbin.recording.id}, ${voipbin.call.id}) are inherited automatically, allowing seamless post-call workflows without requiring manual variable passing.</p>
+<p><strong>Variable Inheritance</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Flow A ends with these variables:
+┌─────────────────────────────────────────┐
+│ voipbin.call.id = &quot;abc-123&quot;             │
+│ voipbin.recording.id = &quot;rec-456&quot;        │
+│ customer.name = &quot;John&quot;                  │
+│ voipbin.activeflow.complete_count = 0   │
+└─────────────────────────────────────────┘
+                     │
+                     │ copied to
+                     ▼
+Flow B starts with these variables:
+┌─────────────────────────────────────────┐
+│ voipbin.call.id = &quot;abc-123&quot;             │  ← inherited
+│ voipbin.recording.id = &quot;rec-456&quot;        │  ← inherited
+│ customer.name = &quot;John&quot;                  │  ← inherited
+│ voipbin.activeflow.complete_count = 1   │  ← incremented
+└─────────────────────────────────────────┘
+</pre></div>
+</div>
 </section>
 </section>
 <section id="execution-limits">
 <h3>Execution limits<a class="headerlink" href="#execution-limits" title="Link to this heading"></a></h3>
 <p>To prevent infinite recursion, VoIPBIN enforces:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Flow A ──▶ Flow B ──▶ Flow C ──▶ Flow D ──▶ Flow E ──▶ STOP
+  │          │          │          │          │
+count=0    count=1    count=2    count=3    count=4
+                                               │
+                                               │ count=5 would be blocked
+                                               ▼
+                                        Maximum depth reached
+</pre></div>
+</div>
 <ul class="simple">
 <li><p>A maximum of 5 chained on-complete executions. Beyond this limit, no further follow-up flows are triggered.</p></li>
 <li><p>Circular references should be avoided, even though safeguards exist.</p></li>
@@ -379,6 +796,50 @@ And due to the absence of any media-based incoming or outgoing elements in the A
 </pre></div>
 </div>
 <p>This configuration ensures that when <em>flow_initial</em> completes—regardless of how the call ended—the <em>flow_after_call_work</em> flow starts immediately in a new session, while preserving key session variables from the original flow.</p>
+</section>
+<section id="error-handling-in-flows">
+<h3>Error Handling in Flows<a class="headerlink" href="#error-handling-in-flows" title="Link to this heading"></a></h3>
+<p>When something goes wrong during flow execution, VoIPBIN handles it gracefully.</p>
+<p><strong>Error Scenarios</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Scenario</p></th>
+<th class="head"><p>What happens</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Invalid action</p></td>
+<td><p>Action is skipped, flow continues to next action</p></td>
+</tr>
+<tr class="row-odd"><td><p>Media action fails</p></td>
+<td><p>Error logged, flow continues or stops based on severity</p></td>
+</tr>
+<tr class="row-even"><td><p>External service down</p></td>
+<td><p>Fire-and-forget actions continue, blocking ones may fail</p></td>
+</tr>
+<tr class="row-odd"><td><p>Infinite loop detected</p></td>
+<td><p>Flow stops after max iterations (safety limit)</p></td>
+</tr>
+<tr class="row-even"><td><p>Call hangs up</p></td>
+<td><p>Flow ends immediately, on_complete_flow runs if set</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Safety Limits</strong></p>
+<p>VoIPBIN prevents runaway flows with built-in limits:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Maximum</span> <span class="n">iterations</span> <span class="n">per</span> <span class="n">execution</span> <span class="n">cycle</span><span class="p">:</span> <span class="mi">1000</span>
+<span class="n">Maximum</span> <span class="n">total</span> <span class="n">executions</span> <span class="n">per</span> <span class="n">activeflow</span><span class="p">:</span> <span class="mi">100</span>
+<span class="n">Maximum</span> <span class="n">on_complete_flow</span> <span class="n">chain</span> <span class="n">depth</span><span class="p">:</span> <span class="mi">5</span>
+</pre></div>
+</div>
+<p>If these limits are exceeded, the flow stops automatically to protect system resources.</p>
+<p><strong>Best Practices for Error Handling</strong></p>
+<ol class="arabic simple">
+<li><p><strong>Set default branches</strong>: Always include a <code class="docutils literal notranslate"><span class="pre">default_target_id</span></code> in branch actions</p></li>
+<li><p><strong>Use timeouts</strong>: Configure appropriate durations for input actions</p></li>
+<li><p><strong>Log with webhooks</strong>: Send important events to your webhook for monitoring</p></li>
+<li><p><strong>Plan for hangup</strong>: Remember that call-based flows end when the call ends</p></li>
+</ol>
 </section>
 </section>
 <section id="flow-struct-flow">
@@ -2539,6 +3000,10 @@ This doesn’t affect existing calls.</p>
 <li><a class="reference internal" href="#">Flow</a><ul>
 <li><a class="reference internal" href="#overview">Overview</a><ul>
 <li><a class="reference internal" href="#how-the-flow-works">How the flow works</a></li>
+<li><a class="reference internal" href="#understanding-flow-execution">Understanding Flow Execution</a></li>
+<li><a class="reference internal" href="#action-execution-patterns">Action Execution Patterns</a></li>
+<li><a class="reference internal" href="#branching-and-decision-making">Branching and Decision Making</a></li>
+<li><a class="reference internal" href="#the-variable-system">The Variable System</a></li>
 <li><a class="reference internal" href="#unified-flow">Unified flow</a></li>
 <li><a class="reference internal" href="#non-linear-action-execution">Non-linear action execution</a></li>
 <li><a class="reference internal" href="#flow-fork">Flow fork</a></li>
@@ -2550,6 +3015,7 @@ This doesn’t affect existing calls.</p>
 <li><a class="reference internal" href="#api">API</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#flow-lifecycle">Flow Lifecycle</a></li>
 <li><a class="reference internal" href="#flow-actions-and-interrupt-actions">Flow Actions and Interrupt Actions</a><ul>
 <li><a class="reference internal" href="#standard-flow-actions">Standard Flow Actions</a></li>
 <li><a class="reference internal" href="#interrupt-actions">Interrupt Actions</a></li>
@@ -2564,6 +3030,7 @@ This doesn’t affect existing calls.</p>
 <li><a class="reference internal" href="#execution-limits">Execution limits</a></li>
 <li><a class="reference internal" href="#behavior-on-termination">Behavior on termination</a></li>
 <li><a class="reference internal" href="#example">Example</a></li>
+<li><a class="reference internal" href="#error-handling-in-flows">Error Handling in Flows</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#flow-struct-flow">Flow</a><ul>

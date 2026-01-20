@@ -194,7 +194,429 @@
 <li><p>Extension numbers should not contain any special characters, such as spaces, parentheses, or hyphens.</p></li>
 </ul>
 <p>The absence of special characters ensures consistent and reliable processing of extension numbers within the VoIPBIN system, promoting smooth communication and interaction.</p>
-<p>With the VoIPBIN call API’s robust features and support for various protocols, developers can create versatile and efficient call applications, enabling seamless communication and collaboration for end-users.</p>
+</section>
+<section id="call-lifecycle">
+<h3>Call Lifecycle<a class="headerlink" href="#call-lifecycle" title="Link to this heading"></a></h3>
+<p>Every call in VoIPBIN follows a predictable lifecycle from creation to termination. Understanding this lifecycle helps you build reliable applications that respond correctly to call state changes.</p>
+<p><strong>State Diagram</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>                               ┌──────────────┐
+                               │   dialing    │
+                               │ (call starts)│
+                               └──────┬───────┘
+                                      │
+                ┌─────────────────────┼─────────────────────┐
+                │                     │                     │
+                ▼                     ▼                     ▼
+         ┌────────────┐        ┌────────────┐        ┌────────────┐
+         │  ringing   │        │ canceling  │        │  hangup    │
+         │ (dest rang)│        │ (caller    │        │ (failed)   │
+         └─────┬──────┘        │  cancels)  │        └────────────┘
+               │               └─────┬──────┘
+               │                     │
+               ▼                     │
+        ┌─────────────┐              │
+        │ progressing │              │
+        │ (answered)  │              │
+        └──────┬──────┘              │
+               │                     │
+      ┌────────┴────────┐            │
+      ▼                 ▼            │
+┌────────────┐   ┌────────────┐      │
+│terminating │   │  hangup    │      │
+│  (ending   │   │  (remote   │      │
+│   locally) │   │  hangup)   │      │
+└─────┬──────┘   └────────────┘      │
+      │                              │
+      └──────────────┬───────────────┘
+                     ▼
+              ┌────────────┐
+              │   hangup   │
+              │  (final)   │
+              └────────────┘
+</pre></div>
+</div>
+<p><strong>State Descriptions</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Status</p></th>
+<th class="head"><p>What is happening</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>dialing</p></td>
+<td><p>Call has been created. The system is attempting to reach the
+destination through the phone network.</p></td>
+</tr>
+<tr class="row-odd"><td><p>ringing</p></td>
+<td><p>The destination device is ringing. The person being called can
+now answer.</p></td>
+</tr>
+<tr class="row-even"><td><p>progressing</p></td>
+<td><p>The call has been answered. Both parties can now hear each
+other. Media (audio/video) is flowing.</p></td>
+</tr>
+<tr class="row-odd"><td><p>terminating</p></td>
+<td><p>The system is ending the call. This happens when your
+application hangs up or a flow action ends the call.</p></td>
+</tr>
+<tr class="row-even"><td><p>canceling</p></td>
+<td><p>The caller is canceling before the destination answered.
+Only happens for outgoing calls.</p></td>
+</tr>
+<tr class="row-odd"><td><p>hangup</p></td>
+<td><p>The call has ended. This is the final state - no further
+changes are possible.</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Key Behaviors</strong></p>
+<ul class="simple">
+<li><p>States only move forward, never backward. A call that reached “progressing” cannot go back to “ringing”.</p></li>
+<li><p>Once a call reaches “hangup”, it cannot change anymore.</p></li>
+<li><p>The “canceling” state only applies to outgoing calls (when the originator hangs up before answer).</p></li>
+</ul>
+</section>
+<section id="what-happens-at-each-stage">
+<h3>What Happens At Each Stage<a class="headerlink" href="#what-happens-at-each-stage" title="Link to this heading"></a></h3>
+<p><strong>During Dialing</strong></p>
+<p>When you create an outbound call or receive an inbound call, the call enters the dialing state.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Your App                    VoIPBIN                    Destination
+   │                           │                            │
+   │  POST /v1/calls           │                            │
+   │──────────────────────────▶│                            │
+   │                           │  SIP INVITE                │
+   │                           │───────────────────────────▶│
+   │                           │                            │
+   │  Call object              │                            │
+   │  status: &quot;dialing&quot;        │                            │
+   │◀──────────────────────────│                            │
+</pre></div>
+</div>
+<p>At this point:</p>
+<ul class="simple">
+<li><p>VoIPBIN is trying to reach the destination</p></li>
+<li><p>No audio is flowing yet</p></li>
+<li><p>The call may fail if the network is unreachable</p></li>
+</ul>
+<p><strong>During Ringing</strong></p>
+<p>The destination device is ringing. The person can pick up the phone.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>│                           │                            │
+│                           │  180 Ringing               │
+│                           │◀───────────────────────────│
+│  Webhook: call_updated    │                            │
+│  status: &quot;ringing&quot;        │       ♪ Ring Ring ♪        │
+│◀──────────────────────────│                            │
+</pre></div>
+</div>
+<p>At this point:</p>
+<ul class="simple">
+<li><p>The destination phone is ringing</p></li>
+<li><p>Early media (ringback tone) may be playing</p></li>
+<li><p>The caller is waiting for an answer</p></li>
+</ul>
+<p><strong>During Progressing (Answered)</strong></p>
+<p>The call has been answered. This is when real communication begins.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>│                           │                            │
+│                           │  200 OK                    │
+│                           │◀───────────────────────────│
+│  Webhook: call_updated    │                            │
+│  status: &quot;progressing&quot;    │   ◀═══════════════════▶    │
+│◀──────────────────────────│        (Audio flows)       │
+</pre></div>
+</div>
+<p>At this point:</p>
+<ul class="simple">
+<li><p>Both parties can hear each other</p></li>
+<li><p>Flow actions start executing (if defined)</p></li>
+<li><p>Recording can begin</p></li>
+<li><p>Media controls (hold, mute) become available</p></li>
+</ul>
+<p><strong>During Hangup</strong></p>
+<p>The call has ended. Check the hangup_by and hangup_reason fields to understand why.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>│                           │                            │
+│                           │  BYE                       │
+│                           │◀───────────────────────────│
+│  Webhook: call_updated    │                            │
+│  status: &quot;hangup&quot;         │                            │
+│  hangup_by: &quot;remote&quot;      │                            │
+│  hangup_reason: &quot;normal&quot;  │                            │
+│◀──────────────────────────│                            │
+</pre></div>
+</div>
+</section>
+<section id="understanding-hangup-reasons">
+<h3>Understanding Hangup Reasons<a class="headerlink" href="#understanding-hangup-reasons" title="Link to this heading"></a></h3>
+<p>When a call ends, VoIPBIN tells you why it ended. This helps you build appropriate responses for different scenarios.</p>
+<p><strong>Hangup Reason Values</strong></p>
+<p><strong>Hangup By Values</strong></p>
+<p><strong>Common Scenarios</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Scenario: Normal conversation
+────────────────────────────
+hangup_by: &quot;remote&quot;
+hangup_reason: &quot;normal&quot;
+→ The other person hung up after talking
+
+Scenario: Missed call
+────────────────────────────
+hangup_by: &quot;remote&quot;
+hangup_reason: &quot;noanswer&quot;
+→ Phone rang but nobody answered
+
+Scenario: Your app ended the call
+────────────────────────────
+hangup_by: &quot;local&quot;
+hangup_reason: &quot;normal&quot;
+→ Your flow action or API call ended it
+
+Scenario: Network problem
+────────────────────────────
+hangup_by: &quot;remote&quot;
+hangup_reason: &quot;failed&quot;
+→ Call never connected due to network issues
+</pre></div>
+</div>
+</section>
+<section id="media-control-operations">
+<h3>Media Control Operations<a class="headerlink" href="#media-control-operations" title="Link to this heading"></a></h3>
+<p>Once a call is in the “progressing” state (answered), you can control the audio in several ways. Each operation is independent - you can combine them as needed.</p>
+<p><strong>Hold</strong></p>
+<p>Pauses the call. The other party hears silence (or music if MOH is enabled).</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Before Hold                          After Hold
+┌─────────┐     audio      ┌─────────┐     ┌─────────┐     silence   ┌─────────┐
+│ Caller  │ ◀═══════════▶  │ VoIPBIN │     │ Caller  │ ────────────▶ │ VoIPBIN │
+└─────────┘                └─────────┘     └─────────┘  (or music)   └─────────┘
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Use hold when the caller needs to wait (e.g., while transferring)</p></li>
+<li><p>The caller stays connected but cannot hear ongoing activity</p></li>
+<li><p>Unhold resumes normal audio</p></li>
+</ul>
+<p><strong>Mute</strong></p>
+<p>Silences audio in one or both directions without putting the call on hold.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Mute &quot;in&quot;                    Mute &quot;out&quot;                   Mute &quot;both&quot;
+┌────┐  ───X──▶  ┌────┐     ┌────┐  ◀──X───  ┌────┐      ┌────┐  ──X──  ┌────┐
+│ A  │  ◀──────  │ B  │     │ A  │  ───────▶ │ B  │      │ A  │  ──X──  │ B  │
+└────┘           └────┘     └────┘           └────┘      └────┘         └────┘
+A cannot hear B            A cannot be heard           Complete silence
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>“in”: The call cannot hear incoming audio</p></li>
+<li><p>“out”: The call’s audio is not sent to others</p></li>
+<li><p>“both”: Complete silence in both directions</p></li>
+</ul>
+<p><strong>Recording</strong></p>
+<p>Captures the call audio for later playback.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────┐         ┌─────────┐         ┌─────────┐
+│ Caller  │ ◀═════▶ │ VoIPBIN │ ◀═════▶ │  Dest   │
+└─────────┘         └────┬────┘         └─────────┘
+                         │
+                         ▼ (recording)
+                    ┌─────────┐
+                    │  File   │
+                    └─────────┘
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>recording_id shows the current recording (if active)</p></li>
+<li><p>recording_ids lists all recordings made during this call’s lifetime</p></li>
+<li><p>You can start and stop recording multiple times in one call</p></li>
+</ul>
+</section>
+<section id="call-chaining">
+<h3>Call Chaining<a class="headerlink" href="#call-chaining" title="Link to this heading"></a></h3>
+<p>VoIPBIN’s call concept differs from traditional 1:1 calls. A single logical conversation may involve multiple call objects linked together.</p>
+<p><strong>The Two-Call Model</strong></p>
+<p>When you make a call from A to B through VoIPBIN, there are actually two separate calls:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Traditional View:     A ─────────────────────▶ B
+
+VoIPBIN Reality:      A ◀─── Call 1 ───▶ VoIPBIN ◀─── Call 2 ───▶ B
+                               │                        │
+                               └────────────────────────┘
+                                      (bridged audio)
+</pre></div>
+</div>
+<p><strong>Why Two Calls?</strong></p>
+<p>This design enables powerful features:</p>
+<ul class="simple">
+<li><p><strong>Recording</strong>: VoIPBIN can record both sides independently</p></li>
+<li><p><strong>Conferencing</strong>: Add more parties without changing the original calls</p></li>
+<li><p><strong>Transfer</strong>: Move calls between agents without dropping the caller</p></li>
+<li><p><strong>Flow Control</strong>: Run different actions on each call leg</p></li>
+</ul>
+<p><strong>Master and Chained Calls</strong></p>
+<p>When calls are related, they form a chain:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────┐
+│                    Master Call                       │
+│  master_call_id: 00000000-0000-0000-0000-000000000000 │
+│  chained_call_ids: [call-2-id, call-3-id]            │
+└─────────────────────────┬───────────────────────────┘
+                          │
+          ┌───────────────┼───────────────┐
+          ▼               ▼               ▼
+    ┌──────────┐    ┌──────────┐    ┌──────────┐
+    │ Call 2   │    │ Call 3   │    │ Call 4   │
+    │ master:  │    │ master:  │    │ master:  │
+    │ call-1-id│    │ call-1-id│    │ call-1-id│
+    └──────────┘    └──────────┘    └──────────┘
+</pre></div>
+</div>
+<p><strong>Chaining Behaviors</strong></p>
+<ul class="simple">
+<li><p>When the master call hangs up, all chained calls automatically hang up</p></li>
+<li><p>Chained calls can only be added while the master is in dialing, ringing, or progressing state</p></li>
+<li><p>Each chained call tracks its master via the master_call_id field</p></li>
+</ul>
+<p><strong>Common Use Case: Transfer</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Step 1: Caller and Agent talking
+┌────────┐       ┌─────────┐       ┌────────┐
+│ Caller │◀─────▶│ VoIPBIN │◀─────▶│ Agent  │
+└────────┘       └────┬────┘       └────────┘
+                      │
+                 Master Call
+
+Step 2: Agent initiates transfer to Supervisor
+┌────────┐       ┌─────────┐       ┌────────┐
+│ Caller │◀─────▶│ VoIPBIN │       │ Agent  │ (on hold)
+└────────┘       └────┬────┘       └────────┘
+                      │
+                      ├──────────▶ ┌────────────┐
+                      │            │ Supervisor │ (ringing)
+                 Chained Call      └────────────┘
+
+Step 3: Supervisor answers, Agent drops
+┌────────┐       ┌─────────┐       ┌────────────┐
+│ Caller │◀─────▶│ VoIPBIN │◀─────▶│ Supervisor │
+└────────┘       └─────────┘       └────────────┘
+</pre></div>
+</div>
+</section>
+<section id="timestamps-explained">
+<h3>Timestamps Explained<a class="headerlink" href="#timestamps-explained" title="Link to this heading"></a></h3>
+<p>Each call tracks important moments in its lifecycle:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Timeline of a successful call:
+
+│ tm_create                    tm_ringing          tm_progressing              tm_hangup
+│     │                            │                    │                          │
+▼     ▼                            ▼                    ▼                          ▼
+──────●────────────────────────────●────────────────────●──────────────────────────●──────▶
+      │                            │                    │                          │
+      │◀─── dialing ──────────────▶│◀─── ringing ──────▶│◀──── progressing ───────▶│
+      │                            │                    │                          │
+   Call created              Phone started           Call answered            Call ended
+                               ringing
+</pre></div>
+</div>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Timestamp</p></th>
+<th class="head"><p>When it’s set</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>tm_create</p></td>
+<td><p>When the call object was created in VoIPBIN</p></td>
+</tr>
+<tr class="row-odd"><td><p>tm_ringing</p></td>
+<td><p>When the destination phone started ringing</p></td>
+</tr>
+<tr class="row-even"><td><p>tm_progressing</p></td>
+<td><p>When the call was answered</p></td>
+</tr>
+<tr class="row-odd"><td><p>tm_hangup</p></td>
+<td><p>When the call ended</p></td>
+</tr>
+<tr class="row-even"><td><p>tm_update</p></td>
+<td><p>Last time any call property changed</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Calculating Durations</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Ring</span> <span class="n">duration</span> <span class="o">=</span> <span class="n">tm_progressing</span> <span class="o">-</span> <span class="n">tm_ringing</span>
+<span class="n">Talk</span> <span class="n">duration</span> <span class="o">=</span> <span class="n">tm_hangup</span> <span class="o">-</span> <span class="n">tm_progressing</span>
+<span class="n">Total</span> <span class="n">duration</span> <span class="o">=</span> <span class="n">tm_hangup</span> <span class="o">-</span> <span class="n">tm_create</span>
+</pre></div>
+</div>
+</section>
+<section id="route-failover">
+<h3>Route Failover<a class="headerlink" href="#route-failover" title="Link to this heading"></a></h3>
+<p>When an outgoing call fails during dialing or ringing, VoIPBIN can automatically try alternate routes.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────┐
+│                       Call Attempt Flow                          │
+└─────────────────────────────────────────────────────────────────┘
+
+                          Create Call
+                               │
+                               ▼
+                       ┌──────────────┐
+                       │   Route 1    │
+                       │  (Primary)   │
+                       └──────┬───────┘
+                              │
+                      ┌───────┴───────┐
+                      ▼               ▼
+                 Connected?       Failed?
+                      │               │
+                      ▼               ▼
+                  Success      ┌──────────────┐
+                               │   Route 2    │
+                               │  (Backup)    │
+                               └──────┬───────┘
+                                      │
+                              ┌───────┴───────┐
+                              ▼               ▼
+                         Connected?       Failed?
+                              │               │
+                              ▼               ▼
+                          Success      ┌──────────────┐
+                                       │   Route 3    │
+                                       │  (Last try)  │
+                                       └──────┬───────┘
+                                              │
+                                              ▼
+                                        Final Result
+</pre></div>
+</div>
+<p><strong>Failover Rules</strong></p>
+<p>Not all failures trigger failover. VoIPBIN only tries the next route when recovery is possible:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Hangup Reason</p></th>
+<th class="head"><p>Failover</p></th>
+<th class="head"><p>Why</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>failed</p></td>
+<td><p>Yes</p></td>
+<td><p>Network issue - another route might work</p></td>
+</tr>
+<tr class="row-odd"><td><p>busy</p></td>
+<td><p>No</p></td>
+<td><p>The person is busy - trying again won’t help</p></td>
+</tr>
+<tr class="row-even"><td><p>noanswer</p></td>
+<td><p>No</p></td>
+<td><p>They didn’t answer - their choice</p></td>
+</tr>
+<tr class="row-odd"><td><p>cancel</p></td>
+<td><p>No</p></td>
+<td><p>Caller cancelled - no need to retry</p></td>
+</tr>
+<tr class="row-even"><td><p>normal</p></td>
+<td><p>No</p></td>
+<td><p>Call succeeded - nothing to retry</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>No Failover Cases</strong></p>
+<p>Failover is disabled in these situations:</p>
+<ul class="simple">
+<li><p>Incoming calls (the route is fixed by the caller)</p></li>
+<li><p>Conference calls</p></li>
+<li><p>Calls where flow execution already started (early_execution flag)</p></li>
+</ul>
 </section>
 <section id="incoming-call">
 <h3>Incoming call<a class="headerlink" href="#incoming-call" title="Link to this heading"></a></h3>
@@ -204,11 +626,27 @@ When an incoming call is received, the VoIPBIN system processes the call request
 <section id="execution-of-call-flow-for-incoming-call">
 <h3>Execution of Call Flow for incoming call<a class="headerlink" href="#execution-of-call-flow-for-incoming-call" title="Link to this heading"></a></h3>
 <p>The execution of the call flow for incoming calls involves a simple yet effective sequence of actions:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>External Caller                VoIPBIN                    Your Flow
+      │                           │                           │
+      │  INVITE (call request)    │                           │
+      │──────────────────────────▶│                           │
+      │                           │  Lookup destination       │
+      │                           │  Find matching flow       │
+      │                           │                           │
+      │  100 Trying               │                           │
+      │◀──────────────────────────│                           │
+      │                           │  Execute flow actions     │
+      │                           │──────────────────────────▶│
+      │  180 Ringing / 200 OK     │                           │
+      │◀──────────────────────────│◀──────────────────────────│
+      │                           │                           │
+</pre></div>
+</div>
 <ul class="simple">
-<li><p>Call Verification: When an incoming call is received, the VoIPBIN system verifies the call’s authenticity and checks for any potential security risks, such as spoofed or fraudulent calls. This verification process ensures that legitimate calls are allowed to proceed.</p></li>
-<li><p>Determine Call Flow: After successful verification, the system determines the appropriate call flow based on the destination of the incoming call. The call flow includes a set of predefined actions and configurations tailored to handle calls directed to a specific user, department, or interactive voice response (IVR) system.</p></li>
-<li><p>Execute Call Flow: Once the call flow is determined, the system proceeds to execute it without delay. The call flow actions are triggered in accordance with the predefined configuration for the call destination.</p></li>
-<li><p>End the Call: After executing the call flow actions, the system initiates the process of ending the call. The call is terminated, and the connection with the external party is disconnected.</p></li>
+<li><p><strong>Call Verification</strong>: When an incoming call is received, the VoIPBIN system verifies the call’s authenticity and checks for any potential security risks, such as spoofed or fraudulent calls. This verification process ensures that legitimate calls are allowed to proceed.</p></li>
+<li><p><strong>Determine Call Flow</strong>: After successful verification, the system determines the appropriate call flow based on the destination of the incoming call. The call flow includes a set of predefined actions and configurations tailored to handle calls directed to a specific user, department, or interactive voice response (IVR) system.</p></li>
+<li><p><strong>Execute Call Flow</strong>: Once the call flow is determined, the system proceeds to execute it without delay. The call flow actions are triggered in accordance with the predefined configuration for the call destination.</p></li>
+<li><p><strong>End the Call</strong>: After executing the call flow actions, the system initiates the process of ending the call. The call is terminated, and the connection with the external party is disconnected.</p></li>
 </ul>
 <p>By following this streamlined call flow process, the VoIPBIN system efficiently handles incoming calls, ensures their secure and verified handling, and executes the appropriate flow actions based on the call destination. After executing the call flow, the system promptly ends the call, completing the call handling process for the incoming call. Customizable flow actions allow users to tailor the call handling process according to their application’s needs, optimizing user experience and call management efficiency.</p>
 <img alt="_images/call_incoming.png" src="_images/call_incoming.png" />
@@ -221,13 +659,32 @@ To utilize the outgoing call feature, users need to provide the necessary call p
 <section id="execution-of-call-flow-for-outgoing-call">
 <h3>Execution of Call Flow for outgoing call<a class="headerlink" href="#execution-of-call-flow-for-outgoing-call" title="Link to this heading"></a></h3>
 <p>Once the outgoing call request is initiated, the VoIPBIN system starts the process of connecting to the destination phone number. During this phase, the system waits for the called party to answer the call. The call flow refers to the sequence of actions and events that occur from the moment the call is initiated until it is successfully answered or terminated.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Your Application               VoIPBIN                    Destination
+      │                           │                           │
+      │  POST /v1/calls           │                           │
+      │  (with flow actions)      │                           │
+      │──────────────────────────▶│                           │
+      │                           │  INVITE                   │
+      │                           │──────────────────────────▶│
+      │  Call created             │                           │
+      │  status: &quot;dialing&quot;        │  180 Ringing              │
+      │◀──────────────────────────│◀──────────────────────────│
+      │                           │                           │
+      │  Webhook: &quot;ringing&quot;       │  200 OK (answered)        │
+      │◀──────────────────────────│◀──────────────────────────│
+      │                           │                           │
+      │  Webhook: &quot;progressing&quot;   │  ◀═══════════════════▶    │
+      │◀──────────────────────────│  Execute flow actions     │
+      │                           │                           │
+</pre></div>
+</div>
 <p>The call flow execution occurs as follows:</p>
 <ul class="simple">
-<li><p>Initiation: The user triggers the outgoing call request, providing the necessary call parameters.</p></li>
-<li><p>Call Setup: The VoIPBIN system processes the request and establishes a connection with the destination phone number.</p></li>
-<li><p>Wait for Call Answer: After the call setup, the system waits for the called party to answer the call. This waiting period involves ringing the called party’s phone and monitoring the call status.</p></li>
-<li><p>Call Answered: Once the called party answers the outgoing call, the system proceeds to execute the predefined call flow actions.</p></li>
-<li><p>Flow Actions Execution: The call flow actions are a set of customizable operations that are executed upon call answer. These actions can include call recording, call routing, call analytics, notifications, and post-call actions, among others.</p></li>
+<li><p><strong>Initiation</strong>: The user triggers the outgoing call request, providing the necessary call parameters.</p></li>
+<li><p><strong>Call Setup</strong>: The VoIPBIN system processes the request and establishes a connection with the destination phone number.</p></li>
+<li><p><strong>Wait for Call Answer</strong>: After the call setup, the system waits for the called party to answer the call. This waiting period involves ringing the called party’s phone and monitoring the call status.</p></li>
+<li><p><strong>Call Answered</strong>: Once the called party answers the outgoing call, the system proceeds to execute the predefined call flow actions.</p></li>
+<li><p><strong>Flow Actions Execution</strong>: The call flow actions are a set of customizable operations that are executed upon call answer. These actions can include call recording, call routing, call analytics, notifications, and post-call actions, among others.</p></li>
 </ul>
 <p>The call flow execution is critical for ensuring a smooth and efficient communication experience. By customizing the flow actions, users can tailor the call handling process to meet the specific requirements of their application or service, enhancing user engagement and overall call management.</p>
 <img alt="_images/call_outgoing.png" src="_images/call_outgoing.png" />
@@ -236,6 +693,7 @@ To utilize the outgoing call feature, users need to provide the necessary call p
 <h3>Error handling and Termination<a class="headerlink" href="#error-handling-and-termination" title="Link to this heading"></a></h3>
 <p>During the incoming/outgoing call process, various errors may occur, such as call failures or network issues.
 The VoIPBIN system have robust error handling mechanisms to gracefully manage such situations. In case of a failed call attempt or call rejection, the system log relevant information for further analysis or reporting purposes.</p>
+<p><strong>Common Error Scenarios</strong></p>
 </section>
 <section id="call-concept">
 <h3>Call concept<a class="headerlink" href="#call-concept" title="Link to this heading"></a></h3>
@@ -1414,6 +1872,13 @@ When the destination answer the call, it will play the given media file.</p>
 <li><a class="reference internal" href="#protocol">Protocol</a></li>
 <li><a class="reference internal" href="#pstn-phone-number-format">PSTN/Phone Number Format</a></li>
 <li><a class="reference internal" href="#extension-number-format">Extension Number Format</a></li>
+<li><a class="reference internal" href="#call-lifecycle">Call Lifecycle</a></li>
+<li><a class="reference internal" href="#what-happens-at-each-stage">What Happens At Each Stage</a></li>
+<li><a class="reference internal" href="#understanding-hangup-reasons">Understanding Hangup Reasons</a></li>
+<li><a class="reference internal" href="#media-control-operations">Media Control Operations</a></li>
+<li><a class="reference internal" href="#call-chaining">Call Chaining</a></li>
+<li><a class="reference internal" href="#timestamps-explained">Timestamps Explained</a></li>
+<li><a class="reference internal" href="#route-failover">Route Failover</a></li>
 <li><a class="reference internal" href="#incoming-call">Incoming call</a></li>
 <li><a class="reference internal" href="#execution-of-call-flow-for-incoming-call">Execution of Call Flow for incoming call</a></li>
 <li><a class="reference internal" href="#outgoing-call">Outgoing call</a></li>

@@ -162,29 +162,317 @@
 <p>The activeflow is a dynamic entity within the VoIPBIN system that plays a vital role in representing the real-time state of a registered flow. As the flow is executed, it generates an activeflow, which contains an action cursor and relevant status information. This activeflow serves as a control interface, providing efficient management and flexibility during flow execution.</p>
 <p>In essence, the activeflow concept is a powerful tool that facilitates the smooth and flexible execution of registered flows. Its dynamic nature allows for real-time updates, ensuring that users can monitor and manage the flow execution efficiently.</p>
 <p>By providing real-time status updates and a flexible control interface, the activeflow becomes a valuable tool for businesses to efficiently manage complex workflows and automate their critical processes. The stop functionality adds an extra layer of control and adaptability, allowing users to make informed decisions and optimize their flow executions as required.</p>
+<section id="flow-vs-activeflow">
+<h2>Flow vs ActiveFlow<a class="headerlink" href="#flow-vs-activeflow" title="Link to this heading"></a></h2>
+<p>Understanding the difference between a Flow and an ActiveFlow is essential for working with VoIPBIN.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────────┐
+│                        Flow vs ActiveFlow                                │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Flow (Template)                         ActiveFlow (Running Instance)
+┌─────────────────────────┐            ┌─────────────────────────────────┐
+│ • Static definition     │            │ • Dynamic execution state       │
+│ • Reusable template     │            │ • One-time instance             │
+│ • Stored in database    │            │ • Tracks current position       │
+│ • No execution state    │            │ • Contains variables            │
+│                         │            │ • Linked to call/conversation   │
+└─────────────────────────┘            └─────────────────────────────────┘
+           │                                        ▲
+           │     When triggered                     │
+           └────────────────────────────────────────┘
+                    Creates
+</pre></div>
+</div>
+<p><strong>Analogy</strong>: A Flow is like a recipe book. An ActiveFlow is like actually cooking that recipe - you track which step you’re on, what ingredients you’ve used, and the current state of the dish.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Flow (Recipe Book)                    ActiveFlow (Cooking Session)
+┌────────────────────┐               ┌────────────────────────────────┐
+│ Step 1: Answer     │               │ Step 1: Answer ✓ (done)        │
+│ Step 2: Talk       │   ──────▶     │ Step 2: Talk ◀── current       │
+│ Step 3: Branch     │               │ Step 3: Branch (pending)       │
+│ Step 4: Hangup     │               │ Step 4: Hangup (pending)       │
+└────────────────────┘               │                                │
+                                     │ Variables:                     │
+                                     │   caller_id: &quot;+1234567890&quot;     │
+                                     │   digits: &quot;2&quot;                  │
+                                     └────────────────────────────────┘
+</pre></div>
+</div>
+</section>
+<section id="activeflow-states">
+<h2>ActiveFlow States<a class="headerlink" href="#activeflow-states" title="Link to this heading"></a></h2>
+<p>An activeflow has two possible states during its lifecycle:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌────────────┐                              ┌────────────┐
+│  running   │─────────────────────────────▶│   ended    │
+└────────────┘                              └────────────┘
+      │                                            │
+      │                                            │
+Actions executing                           Final state
+Cursor moving                               No more changes
+Variables updating                          History preserved
+</pre></div>
+</div>
+</section>
 <section id="execution">
 <h2>Execution<a class="headerlink" href="#execution" title="Link to this heading"></a></h2>
 <p>The activeflow’s significance lies in its ability to manage complex workflows and automate business processes effectively. As the flow progresses through its various stages, the activeflow dynamically represents its current state. This representation provides valuable insights into the flow’s progress and status, enabling efficient and informed management of its execution.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌───────────────────────────────────────────────────────────────────────┐
+│                     ActiveFlow Execution Model                         │
+└───────────────────────────────────────────────────────────────────────┘
+
+Incoming Call           ActiveFlow Created            Execution Begins
+     │                        │                            │
+     ▼                        ▼                            ▼
+┌─────────┐              ┌─────────┐                 ┌─────────────┐
+│  CALL   │─────────────▶│  NEW    │────────────────▶│  RUNNING    │
+│ arrives │              │ instance│                 │  actions    │
+└─────────┘              └─────────┘                 └──────┬──────┘
+                              │                            │
+                              │                            ▼
+                              │                      ┌───────────┐
+                              │  Variables set:      │  cursor   │
+                              │  • reference_type    │  moves    │──┐
+                              │  • reference_id      └───────────┘  │
+                              │  • customer_id                      │
+                              │  • flow_id                          │
+                              └─────────────────────────────────────┘
+</pre></div>
+</div>
 <img alt="_images/activeflow_overview_execution.png" src="_images/activeflow_overview_execution.png" />
+</section>
+<section id="how-the-cursor-works">
+<h2>How the Cursor Works<a class="headerlink" href="#how-the-cursor-works" title="Link to this heading"></a></h2>
+<p>The activeflow maintains a “cursor” that tracks the current position in the flow:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Action Array:
+┌─────────┐   ┌─────────┐   ┌─────────┐   ┌─────────┐   ┌─────────┐
+│ answer  │   │  talk   │   │ digits  │   │ branch  │   │ hangup  │
+│ index:0 │   │ index:1 │   │ index:2 │   │ index:3 │   │ index:4 │
+└─────────┘   └─────────┘   └─────────┘   └─────────┘   └─────────┘
+                   ▲
+                   │
+                current_action (cursor is here)
+</pre></div>
+</div>
+<p><strong>Cursor Movement Rules:</strong></p>
+<ol class="arabic simple">
+<li><p><strong>Sequential</strong>: By default, cursor moves to the next action in array order</p></li>
+<li><p><strong>Jump</strong>: Actions like <code class="docutils literal notranslate"><span class="pre">goto</span></code> and <code class="docutils literal notranslate"><span class="pre">branch</span></code> can jump to any action by ID</p></li>
+<li><p><strong>Nested</strong>: Some actions push a new stack (queue_join, ai_talk), cursor enters nested stack</p></li>
+<li><p><strong>Return</strong>: When nested stack completes, cursor returns to original position</p></li>
+</ol>
+</section>
+<section id="stack-based-execution">
+<h2>Stack-Based Execution<a class="headerlink" href="#stack-based-execution" title="Link to this heading"></a></h2>
+<p>ActiveFlows use a stack-based model to handle nested flows (like queue wait flows or AI conversations):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────┐
+│                       Stack-Based Execution                          │
+└─────────────────────────────────────────────────────────────────────┘
+
+Main Stack                          Nested Stack (from queue_join)
+┌─────────────────────┐            ┌─────────────────────────────────┐
+│ 1. answer           │            │                                 │
+│ 2. queue_join ══════╬═══════════▶│ wait_flow actions:              │
+│ 3. talk &quot;connected&quot; │            │   • talk &quot;Please hold...&quot;       │
+│ 4. hangup           │            │   • play music.mp3              │
+└─────────────────────┘            │   • (loops until agent answers) │
+       ▲                           └─────────────────────────────────┘
+       │                                         │
+       │    When agent answers,                  │
+       └─────────────────────────────────────────┘
+             return to main stack
+</pre></div>
+</div>
+<p><strong>Stack Map Structure:</strong></p>
+<p>The activeflow maintains a <code class="docutils literal notranslate"><span class="pre">stack_map</span></code> that tracks all stacks:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">stack_map</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;main&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="n">actions</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">],</span>
+        <span class="n">current_index</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">return_stack</span><span class="p">:</span> <span class="n">null</span><span class="p">,</span>
+        <span class="n">return_action</span><span class="p">:</span> <span class="n">null</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;queue-wait-abc123&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="n">actions</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="n">wait</span> <span class="n">flow</span> <span class="n">actions</span><span class="o">...</span><span class="p">],</span>
+        <span class="n">current_index</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">return_stack</span><span class="p">:</span> <span class="s2">&quot;main&quot;</span><span class="p">,</span>
+        <span class="n">return_action</span><span class="p">:</span> <span class="s2">&quot;talk connected&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="reference-types">
+<h2>Reference Types<a class="headerlink" href="#reference-types" title="Link to this heading"></a></h2>
+<p>Each activeflow is linked to a reference - the entity that triggered it:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌────────────────────────────────────────────────────────────────────┐
+│                    ActiveFlow Reference Types                       │
+└────────────────────────────────────────────────────────────────────┘
+</pre></div>
+</div>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Reference Type</p></th>
+<th class="head"><p>When it’s used</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>call</p></td>
+<td><p>Flow was triggered by an incoming or outgoing call</p></td>
+</tr>
+<tr class="row-odd"><td><p>conversation</p></td>
+<td><p>Flow was triggered by a message in a conversation</p></td>
+</tr>
+<tr class="row-even"><td><p>api</p></td>
+<td><p>Flow was triggered directly via API call</p></td>
+</tr>
+<tr class="row-odd"><td><p>campaign</p></td>
+<td><p>Flow was triggered by an outbound campaign</p></td>
+</tr>
+<tr class="row-even"><td><p>transcribe</p></td>
+<td><p>Flow was triggered for transcription processing</p></td>
+</tr>
+<tr class="row-odd"><td><p>recording</p></td>
+<td><p>Flow was triggered for recording processing</p></td>
+</tr>
+<tr class="row-even"><td><p>ai</p></td>
+<td><p>Flow was triggered for AI processing</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Reference Impact on Actions:</strong></p>
+<p>The reference type determines which actions are available:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Reference: call                     Reference: api
+┌─────────────────────────┐        ┌─────────────────────────┐
+│ ✓ answer                │        │ ✗ answer (no call)      │
+│ ✓ talk                  │        │ ✗ talk (no media)       │
+│ ✓ digits_receive        │        │ ✗ digits_receive        │
+│ ✓ recording_start       │        │ ✗ recording_start       │
+│ ✓ message_send          │        │ ✓ message_send          │
+│ ✓ email_send            │        │ ✓ email_send            │
+│ ✓ webhook_send          │        │ ✓ webhook_send          │
+│ ✓ variable_set          │        │ ✓ variable_set          │
+└─────────────────────────┘        └─────────────────────────┘
+</pre></div>
+</div>
+<p>When an action is not available for the reference type, it is skipped and execution continues to the next action.</p>
 </section>
 <section id="status-and-control-interface">
 <h2>Status and Control interface<a class="headerlink" href="#status-and-control-interface" title="Link to this heading"></a></h2>
 <p>The activeflow includes essential status information that allows users to monitor the flow’s progress closely. This information encompasses details about the activeflow’s current state, including completed and pending actions. Additionally, the activeflow offers a control interface that empowers users to manage the execution process. This interface enables actions such as stopping the activeflow at any point and modifying its configuration or parameters as needed.</p>
+<p><strong>Control API Endpoints:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────┐
+│                    ActiveFlow Control Interface                      │
+└─────────────────────────────────────────────────────────────────────┘
+
+GET /v1/activeflows/{id}
+├── View current state
+├── See current_action
+├── Review executed_actions
+└── Check variables
+
+POST /v1/activeflows/{id}/execute
+├── Resume a blocked flow
+├── Push new actions
+└── Continue execution
+
+POST /v1/activeflows/{id}/stop
+├── Immediately stop execution
+├── Status changes to &quot;ended&quot;
+└── Triggers on_complete_flow if set
+</pre></div>
+</div>
 </section>
 <section id="activeflow-lifecycle">
 <h2>Activeflow Lifecycle<a class="headerlink" href="#activeflow-lifecycle" title="Link to this heading"></a></h2>
 <p>The activeflow executes the actions until one of the following conditions is met:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────┐
+│                  ActiveFlow Termination Conditions                   │
+└─────────────────────────────────────────────────────────────────────┘
+
+Condition 1: End of Actions
+┌───┐   ┌───┐   ┌───┐   ┌─────────┐
+│ 1 │──▶│ 2 │──▶│ 3 │──▶│  DONE   │  → Status: ended
+└───┘   └───┘   └───┘   └─────────┘
+
+Condition 2: Stop Action
+┌───┐   ┌───┐   ┌──────┐
+│ 1 │──▶│ 2 │──▶│ stop │  → Status: ended
+└───┘   └───┘   └──────┘
+
+Condition 3: Reference Ends (e.g., call hangup)
+┌───┐   ┌───┐   ┌───┐
+│ 1 │──▶│ 2 │──▶│ X │  → Call hangup → Status: ended
+└───┘   └───┘   └───┘
+
+Condition 4: API Stop Request
+┌───┐   ┌───┐   ┌───┐
+│ 1 │──▶│ 2 │──▶│ 3 │  + POST /stop → Status: ended
+└───┘   └───┘   └───┘
+</pre></div>
+</div>
 <ul class="simple">
 <li><p><strong>Main Service Type Completion:</strong> The activeflow continues executing flow actions until the primary service type is completed. For instance, in the case of a call service, actions will be executed until the call is hung up.</p></li>
 <li><p><strong>Stop Action Execution:</strong> Execution ceases if an action with the type “stop” is encountered in the flow.</p></li>
 <li><p><strong>User-Initiated Interruption:</strong> Users can actively interrupt their activeflow by sending a POST request to the endpoint: <a class="reference external" href="https://api.voipbin.net/v1/activeflows">https://api.voipbin.net/v1/activeflows</a>/&lt;activeflow-id&gt;/stop.</p></li>
 </ul>
 </section>
+<section id="variable-management">
+<h2>Variable Management<a class="headerlink" href="#variable-management" title="Link to this heading"></a></h2>
+<p>Each activeflow maintains its own set of variables that persist throughout execution:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────┐
+│                    ActiveFlow Variable Storage                       │
+└─────────────────────────────────────────────────────────────────────┘
+
+ActiveFlow: abc-123-def
+┌─────────────────────────────────────────────────────────────────────┐
+│ Variables Map                                                        │
+├─────────────────────────────────┬───────────────────────────────────┤
+│ voipbin.activeflow.id           │ &quot;abc-123-def&quot;                     │
+│ voipbin.activeflow.reference_id │ &quot;call-456&quot;                        │
+│ voipbin.call.digits             │ &quot;2&quot;                               │
+│ voipbin.call.caller_id          │ &quot;+14155551234&quot;                    │
+│ customer.language               │ &quot;en-US&quot;                           │
+│ customer.tier                   │ &quot;premium&quot;                         │
+└─────────────────────────────────┴───────────────────────────────────┘
+</pre></div>
+</div>
+<p><strong>Variable Lifecycle:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1. Created when activeflow starts (built-in variables)
+      │
+      ▼
+2. Updated by actions (digits_receive, variable_set, fetch)
+      │
+      ▼
+3. Read by actions (branch, condition_variable, talk with ${var})
+      │
+      ▼
+4. Inherited by on_complete_flow (if configured)
+      │
+      ▼
+5. Preserved in database when activeflow ends
+</pre></div>
+</div>
+</section>
 <section id="executed-actions">
 <h2>Executed Actions<a class="headerlink" href="#executed-actions" title="Link to this heading"></a></h2>
 <p>Within the CPaaS environment, flows can be complex, incorporating various service types such as call, SMS, chat, and more. Handling history logs for these diverse services requires a structured approach.</p>
 <p>VoIPBIN simplifies the tracking of executed actions by providing a comprehensive history log within the activeflow. Unlike traditional telephony services with straightforward flows, CPaaS services demand a more flexible approach due to their diverse nature.</p>
 <p>In VoIPBIN, each action in the activeflow defines a distinct step in the service’s behavior. This ensures clarity in tracking the sequence of actions performed.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────┐
+│                    Executed Actions History                          │
+└─────────────────────────────────────────────────────────────────────┘
+
+Time ──────────────────────────────────────────────────────────────▶
+
+┌──────────┐   ┌──────────┐   ┌──────────┐   ┌──────────┐
+│ answer   │──▶│ talk     │──▶│ connect  │──▶│ message  │
+│ 10:00:01 │   │ 10:00:02 │   │ 10:00:15 │   │ 10:00:45 │
+└──────────┘   └──────────┘   └──────────┘   └──────────┘
+     ▼              ▼              ▼              ▼
+┌─────────────────────────────────────────────────────────┐
+│              executed_actions array                      │
+└─────────────────────────────────────────────────────────┘
+</pre></div>
+</div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;executed_actions&quot;</span><span class="p">:</span> <span class="p">[</span>
         <span class="p">{</span>
@@ -226,6 +514,127 @@
 </div>
 <p>With the detailed information provided in the executed_actions array, customers can easily review and understand the history logs of their CPaaS services.</p>
 </section>
+<section id="on-complete-flow">
+<h2>On Complete Flow<a class="headerlink" href="#on-complete-flow" title="Link to this heading"></a></h2>
+<p>When an activeflow ends, it can trigger another flow automatically:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────┐
+│                    On Complete Flow Chain                            │
+└─────────────────────────────────────────────────────────────────────┘
+
+ActiveFlow A                             ActiveFlow B
+┌─────────────────────────┐             ┌─────────────────────────┐
+│ on_complete_flow_id: B  │             │ Created automatically   │
+│                         │             │                         │
+│ status: &quot;ended&quot;         │────────────▶│ status: &quot;running&quot;       │
+│                         │             │                         │
+│ Variables:              │  inherited  │ Variables:              │
+│   call_id: &quot;123&quot;        │────────────▶│   call_id: &quot;123&quot;        │
+│   recording_id: &quot;456&quot;   │             │   recording_id: &quot;456&quot;   │
+└─────────────────────────┘             └─────────────────────────┘
+</pre></div>
+</div>
+<p><strong>Key Behaviors:</strong></p>
+<ul class="simple">
+<li><p>New activeflow is created with a new ID</p></li>
+<li><p>Variables are copied from parent to child</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">reference_activeflow_id</span></code> is set to parent’s ID (tracks the chain)</p></li>
+<li><p>Maximum chain depth is 5 (prevents infinite loops)</p></li>
+</ul>
+</section>
+<section id="error-handling">
+<h2>Error Handling<a class="headerlink" href="#error-handling" title="Link to this heading"></a></h2>
+<p>ActiveFlows handle errors gracefully to ensure reliable execution:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────┐
+│                    Error Handling Scenarios                          │
+└─────────────────────────────────────────────────────────────────────┘
+
+Scenario: Action fails
+┌───┐   ┌───┐   ┌─────┐   ┌───┐
+│ 1 │──▶│ 2 │──▶│ ERR │──▶│ 4 │  (skip failed action, continue)
+└───┘   └───┘   └─────┘   └───┘
+
+Scenario: Critical failure
+┌───┐   ┌───┐   ┌─────┐
+│ 1 │──▶│ 2 │──▶│ ERR │  → Status: ended (flow stops)
+└───┘   └───┘   └─────┘
+
+Scenario: Max iterations exceeded
+┌───┐   ┌───┐   ┌───┐   ┌───┐
+│ 1 │◀─▶│ 2 │◀─▶│ 3 │◀─▶│ X │  → Infinite loop detected, stop
+└───┘   └───┘   └───┘   └───┘
+</pre></div>
+</div>
+<p><strong>Safety Limits:</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Limit</p></th>
+<th class="head"><p>Value</p></th>
+<th class="head"><p>Purpose</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Max iterations per cycle</p></td>
+<td><p>1000</p></td>
+<td><p>Prevents infinite loops in goto/branch</p></td>
+</tr>
+<tr class="row-odd"><td><p>Max total execute calls</p></td>
+<td><p>100</p></td>
+<td><p>Prevents runaway execution</p></td>
+</tr>
+<tr class="row-even"><td><p>Max on_complete chain depth</p></td>
+<td><p>5</p></td>
+<td><p>Prevents infinite flow chaining</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="common-use-cases">
+<h2>Common Use Cases<a class="headerlink" href="#common-use-cases" title="Link to this heading"></a></h2>
+<p><strong>Use Case 1: IVR Menu with History Tracking</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌────────────────────────────────────────────────────────────────────┐
+│ executed_actions shows the complete journey:                        │
+│                                                                     │
+│ 1. answer ─▶ 2. talk &quot;Welcome&quot; ─▶ 3. digits &quot;2&quot; ─▶ 4. branch       │
+│      ─▶ 5. talk &quot;Support&quot; ─▶ 6. queue_join ─▶ 7. connect agent     │
+└────────────────────────────────────────────────────────────────────┘
+</pre></div>
+</div>
+<p><strong>Use Case 2: Post-Call Processing</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Call Flow ActiveFlow                After Call Work ActiveFlow
+┌──────────────────────┐           ┌──────────────────────────────┐
+│ answer               │           │ fetch recording              │
+│ talk                 │           │ ai_summarize                 │
+│ connect to agent     │           │ webhook_send summary         │
+│ (call ends)          │──────────▶│ email_send transcript        │
+│                      │           │                              │
+│ on_complete: &quot;acw&quot;   │           │ Inherits: recording_id,      │
+└──────────────────────┘           │           call_id            │
+                                   └──────────────────────────────┘
+</pre></div>
+</div>
+<p><strong>Use Case 3: Debugging Flow Execution</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>GET /v1/activeflows/{id}
+
+Response shows:
+{
+    &quot;status&quot;: &quot;running&quot;,
+    &quot;current_action&quot;: {
+        &quot;type&quot;: &quot;digits_receive&quot;,
+        &quot;option&quot;: { &quot;duration&quot;: 5000 }
+    },
+    &quot;executed_actions&quot;: [
+        { &quot;type&quot;: &quot;answer&quot;, ... },
+        { &quot;type&quot;: &quot;talk&quot;, &quot;option&quot;: { &quot;text&quot;: &quot;Welcome&quot; } }
+    ],
+    &quot;variables&quot;: {
+        &quot;voipbin.call.caller_id&quot;: &quot;+14155551234&quot;
+    }
+}
+
+→ You can see exactly where the flow is and what has happened
+</pre></div>
+</div>
+</section>
 </section>
 
 </main>
@@ -237,10 +646,19 @@
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
 <li><a class="reference internal" href="#">Overview</a><ul>
+<li><a class="reference internal" href="#flow-vs-activeflow">Flow vs ActiveFlow</a></li>
+<li><a class="reference internal" href="#activeflow-states">ActiveFlow States</a></li>
 <li><a class="reference internal" href="#execution">Execution</a></li>
+<li><a class="reference internal" href="#how-the-cursor-works">How the Cursor Works</a></li>
+<li><a class="reference internal" href="#stack-based-execution">Stack-Based Execution</a></li>
+<li><a class="reference internal" href="#reference-types">Reference Types</a></li>
 <li><a class="reference internal" href="#status-and-control-interface">Status and Control interface</a></li>
 <li><a class="reference internal" href="#activeflow-lifecycle">Activeflow Lifecycle</a></li>
+<li><a class="reference internal" href="#variable-management">Variable Management</a></li>
 <li><a class="reference internal" href="#executed-actions">Executed Actions</a></li>
+<li><a class="reference internal" href="#on-complete-flow">On Complete Flow</a></li>
+<li><a class="reference internal" href="#error-handling">Error Handling</a></li>
+<li><a class="reference internal" href="#common-use-cases">Common Use Cases</a></li>
 </ul>
 </li>
 </ul>
