@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en" data-content_root="./">
+<head>
+    <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+        <title>Overview &mdash; voipbin  documentation</title>
+    
+    <link rel="stylesheet" type="text/css" href="_static/dist/fontawesome.css" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8e8a900e" />
+      <link rel="stylesheet" type="text/css" href="_static/dist/theme.css?v=310cf088" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+            <link rel="index" title="Index" href="genindex.html" />
+            <link rel="search" title="Search" href="search.html" />
+            <link rel="top" title="voipbin  documentation" href="#" />
+    </head>
+<body>
+    <script type="text/javascript" src="_static/dist/blocking.js"></script>
+    <header class="container-fluid bg-primary">
+        <a class="btn btn-sm btn-light skip-to-content-link" href="#main">Skip to content</a>
+        <div class="container-fluid">
+            <div class="navbar navbar-expand-lg navbar-dark font-weight-bold">
+                    <a href="intro.html"
+                        title="voipbin"
+                        class="logo navbar-brand"
+                    >
+                        <img src="_static/images/voipbin-high-resolution-logo-white-transparent.png" width="45" height="80" alt="voipbin"
+                            class="logo-img"
+                        />
+                        VoIPBin Documentation
+                    </a>
+                
+                
+                    <div class="collapse navbar-collapse justify-content-end">
+                        <ul class="navbar-nav">
+                            
+                                
+                                
+                                <li class="nav-item"><a class="nav-link"  href="http://voipbin.net">Project</a></li>
+                            
+                                
+                                
+                                <li class="nav-item"><a class="nav-link"  href="https://admin.voipbin.net">Admin</a></li>
+                            
+                        </ul>
+                    </div>
+                
+                <button class="navbar-toggler btn btn-primary d-lg-none" type="button" data-toggle="collapse" data-target="#collapseSidebar" aria-expanded="false" aria-controls="collapseExample">
+                    <span class="navbar-toggler-icon"></span>
+                    <span class="sr-only">menu</span>
+                </button>
+            </div>
+        </div>
+    </header>
+    <div class="container-fluid">
+        <div class="row">
+            <aside class="col-12 col-lg-3 sidebar-container">
+                <div id="collapseSidebar" class="collapse sticky-top d-lg-block pt-5 pr-lg-4">
+<div id="searchbox" class="searchbox mb-6 px-1" role="search">
+    <form id="search-form" action="search.html" autocomplete="off" method="get" role="search">
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <div class="input-group-text border-right-0 bg-white py-3 pl-3 pr-2"><span class="fas fa-search"></span></div>
+            </div>
+            <input class="form-control py-3 pr-3 pl-1 h-100 border-left-0" type="search" name="q" placeholder="Search documentation" aria-label="Search documentation" id="searchinput" />
+        </div>
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+    </form>
+</div><div class="site-toc">
+    <nav class="toc mt-3" aria-label="Main menu">
+        <ul>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="common.html">Common</a></li>
+<li class="toctree-l1"><a class="reference internal" href="restful_api.html">RESTful API(Application Programming Interface)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sdk.html">SDK(Software Development Kit)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="accesskey.html">Accesskey</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="activeflow.html">Activeflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="call.html">Call</a></li>
+<li class="toctree-l1"><a class="reference internal" href="message.html">Message</a></li>
+<li class="toctree-l1"><a class="reference internal" href="email.html">Email</a></li>
+<li class="toctree-l1"><a class="reference internal" href="agent.html">Agent</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conference.html">Conference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mediastream.html">Mediastream</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conversation.html">Conversation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extension.html">Extension</a></li>
+<li class="toctree-l1"><a class="reference internal" href="number.html">Number</a></li>
+<li class="toctree-l1"><a class="reference internal" href="queue.html">Queue</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recording.html">Recording</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a></li>
+<li class="toctree-l1"><a class="reference internal" href="campaign.html">Campaign</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outdial.html">Outdial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outplan.html">Outplan</a></li>
+<li class="toctree-l1"><a class="reference internal" href="webhook.html">Webhook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="customer.html">Customer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chat.html">Chat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="talk.html">Talk</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ai.html">AI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="provider.html">Provider</a></li>
+<li class="toctree-l1"><a class="reference internal" href="route.html">Route</a></li>
+<li class="toctree-l1"><a class="reference internal" href="variable.html">Variable</a></li>
+<li class="toctree-l1"><a class="reference internal" href="websocket.html">Websocket</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trunk.html">Trunk</a></li>
+<li class="toctree-l1"><a class="reference internal" href="billing_account.html">Billing Account</a></li>
+<li class="toctree-l1"><a class="reference internal" href="storage.html">Storage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transcribe.html">Transcribe</a></li>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+</ul>
+
+    </nav>
+    <template data-toggle-item-template>
+        <button class="btn btn-sm btn-link toctree-expand" type="button">
+            <span class="sr-only">Toggle menu contents</span>
+        </button>
+    </template>
+</div>
+                    <div class="d-lg-none border-bottom">
+                        
+                    </div>
+                </div>
+            </aside>
+            <div class="col-12 col-lg-9 pt-5">
+                <header class="row align-items-baseline">
+                    <div class="col">
+                        <nav aria-label="breadcrumb">
+    <ol class="breadcrumb m-0 p-0 bg-transparent">
+        <li class="breadcrumb-item"><a href="index.html">Docs</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Overview</li>
+    </ol>
+</nav>
+                    </div>
+                    <div class="col-sm-12 col-lg-auto mt-3 mt-lg-3">
+                        <noscript>
+                            <p>JavaScript is required to toggle light/dark mode..</p>
+                        </noscript>
+                        <button id="wagtail-theme" class="btn btn-sm btn-light text-decoration-none" type="button">
+                            <span class="dark-only"><i class="fas fa-sun"></i> Light mode</span>
+                            <span class="light-only"><i class="fas fa-moon"></i> Dark mode</span>
+                        </button>
+    <a class="btn btn-sm btn-light text-decoration-none" href="_sources/architecture_overview.rst.txt" rel="nofollow">
+        <span class="btn-icon"><span class="fas fa-code"></span></span>
+        <span class="btn-text">View source</span>
+    </a>
+                        
+                    </div>
+                </header>
+                <div class="row" >
+                    <div class="col-12">
+                        <hr class="w-100 my-4">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 col-lg-9 order-last order-lg-first rst-content">
+                        <main role="main" id="main">
+    <section id="overview">
+<span id="architecture-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h1>
+<p>VoIPBIN is a cloud-native Communication Platform as a Service (CPaaS) built on modern microservices architecture. The platform provides comprehensive communication capabilities including PSTN calls, WebRTC, SMS, conferencing, AI-powered features, and workflow orchestration.</p>
+<p>VoIPBIN is designed from the ground up for scalability, reliability, and developer productivity, enabling businesses to build sophisticated communication solutions through simple API calls.</p>
+<img alt="_images/architecture_overview_all.png" src="_images/architecture_overview_all.png" />
+<section id="high-level-system-architecture">
+<h2>High-Level System Architecture<a class="headerlink" href="#high-level-system-architecture" title="Link to this heading"></a></h2>
+<p>VoIPBIN consists of three major architectural layers:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌──────────────────────────────────────────────────────────────────┐
+│                      Client Applications                         │
+│  (Web Apps, Mobile Apps, Server-to-Server Integrations)          │
+└────────────────────────┬─────────────────────────────────────────┘
+                         │ HTTPS/REST API
+                         ▼
+┌──────────────────────────────────────────────────────────────────┐
+│                     API Gateway Layer                            │
+│                    (bin-api-manager)                             │
+│  • Authentication &amp; Authorization                                │
+│  • Rate Limiting &amp; Throttling                                    │
+│  • Request Routing &amp; Load Balancing                              │
+└────────────────────────┬─────────────────────────────────────────┘
+                         │ RabbitMQ RPC
+                         ▼
+┌──────────────────────────────────────────────────────────────────┐
+│                  Microservices Layer                             │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐            │
+│  │ Call Manager │  │ Flow Manager │  │  AI Manager  │            │
+│  └──────────────┘  └──────────────┘  └──────────────┘            │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐            │
+│  │Chat Manager  │  │ SMS Manager  │  │Queue Manager │            │
+│  └──────────────┘  └──────────────┘  └──────────────┘            │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐            │
+│  │Agent Manager │  │ Billing Mgr  │  │Webhook Mgr   │            │
+│  └──────────────┘  └──────────────┘  └──────────────┘            │
+│                    ... 30+ services                              │
+└────────────────────────┬─────────────────────────────────────────┘
+                         │
+                         ▼
+┌──────────────────────────────────────────────────────────────────┐
+│              Real-Time Communication Layer                       │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐            │
+│  │  Kamailio    │  │   Asterisk   │  │  RTPEngine   │            │
+│  │ (SIP Proxy)  │  │(Media Server)│  │(Media Proxy) │            │
+│  └──────────────┘  └──────────────┘  └──────────────┘            │
+└──────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────┐
+│                  Shared Infrastructure                           │
+│  • MySQL Database  • Redis Cache  • RabbitMQ  • Kubernetes       │
+└──────────────────────────────────────────────────────────────────┘
+</pre></div>
+</div>
+</section>
+<section id="architectural-layers">
+<h2>Architectural Layers<a class="headerlink" href="#architectural-layers" title="Link to this heading"></a></h2>
+<p><strong>1. API Gateway Layer</strong></p>
+<p>The API Gateway (bin-api-manager) serves as the single entry point for all external requests:</p>
+<ul class="simple">
+<li><p><strong>Authentication</strong>: JWT-based authentication for all API requests</p></li>
+<li><p><strong>Authorization</strong>: Permission checks based on customer and agent roles</p></li>
+<li><p><strong>Request Routing</strong>: Routes authenticated requests to appropriate backend services via RabbitMQ RPC</p></li>
+<li><p><strong>Protocol Translation</strong>: Converts HTTP/REST to internal RabbitMQ messaging</p></li>
+<li><p><strong>Response Aggregation</strong>: Collects responses from backend services and returns to clients</p></li>
+</ul>
+<p><strong>2. Microservices Layer</strong></p>
+<p>VoIPBIN consists of 30+ specialized Go microservices, organized by domain:</p>
+<p><strong>Communication Services:</strong>
+* bin-call-manager: Call lifecycle and routing
+* bin-conference-manager: Conference bridge management
+* bin-sms-manager: SMS messaging
+* bin-chat-manager: Real-time chat</p>
+<p><strong>AI Services:</strong>
+* bin-ai-manager: AI assistant, transcription, summarization
+* bin-transcribe-manager: Speech-to-text processing
+* bin-tts-manager: Text-to-speech synthesis</p>
+<p><strong>Workflow Services:</strong>
+* bin-flow-manager: Call flow orchestration and IVR
+* bin-queue-manager: Call queue management
+* bin-campaign-manager: Outbound campaign automation</p>
+<p><strong>Management Services:</strong>
+* bin-agent-manager: Agent state and presence
+* bin-billing-manager: Usage tracking and billing
+* bin-webhook-manager: Webhook delivery
+* bin-storage-manager: File and media storage</p>
+<p><strong>3. Real-Time Communication Layer</strong></p>
+<p>See <a class="reference internal" href="architecture_rtc.html#architecture-rtc"><span class="std std-ref">RTC Architecture</span></a> for detailed information about the VoIP stack.</p>
+</section>
+<section id="core-design-principles">
+<h2>Core Design Principles<a class="headerlink" href="#core-design-principles" title="Link to this heading"></a></h2>
+<p>VoIPBIN is designed around these key architectural principles:</p>
+<p><strong>Microservices Architecture</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Service Isolation:
+┌────────────┐     ┌────────────┐     ┌────────────┐
+│  Service A │     │  Service B │     │  Service C │
+│            │     │            │     │            │
+│  • Domain  │     │  • Domain  │     │  • Domain  │
+│  • Logic   │     │  • Logic   │     │  • Logic   │
+│  • Data    │     │  • Data    │     │  • Data    │
+└──────┬─────┘     └──────┬─────┘     └──────┬─────┘
+       │                  │                  │
+       └──────────────────┴──────────────────┘
+                Message Queue (RabbitMQ)
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>Domain Isolation</strong>: Each service owns its domain logic and data</p></li>
+<li><p><strong>Independent Deployment</strong>: Services can be deployed independently</p></li>
+<li><p><strong>Technology Flexibility</strong>: Services can use different technologies as needed</p></li>
+<li><p><strong>Fault Isolation</strong>: Failure in one service doesn’t cascade</p></li>
+</ul>
+<p><strong>Event-Driven Architecture</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Event Flow:
+┌──────────────┐     Event        ┌──────────────┐
+│   Service    │────────────────▶ │   Message    │
+│  (Publisher) │                  │    Queue     │
+└──────────────┘                  └───────┬──────┘
+                                          │
+                                          ├────────────────┐
+                                          │                │
+                                          ▼                ▼
+                                 ┌────────────┐   ┌────────────┐
+                                 │ Subscriber │   │ Subscriber │
+                                 │ Service A  │   │ Service B  │
+                                 └────────────┘   └────────────┘
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>Asynchronous Communication</strong>: Services communicate via events</p></li>
+<li><p><strong>Loose Coupling</strong>: Publishers don’t know about subscribers</p></li>
+<li><p><strong>Scalability</strong>: Multiple subscribers can process events in parallel</p></li>
+<li><p><strong>Reliability</strong>: Message queues provide guaranteed delivery</p></li>
+</ul>
+<p><strong>API Gateway Pattern</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>External Request Flow:
+
+Client App                  API Gateway              Backend Services
+    │                           │                           │
+    │  HTTPS/REST               │                           │
+    ├──────────────────────────▶│                           │
+    │                           │  1. Authenticate          │
+    │                           │  2. Authorize             │
+    │                           │  3. Route Request         │
+    │                           │                           │
+    │                           │  RabbitMQ RPC             │
+    │                           ├──────────────────────────▶│
+    │                           │                           │
+    │                           │  Response                 │
+    │                           │◀──────────────────────────┤
+    │  JSON Response            │                           │
+    │◀──────────────────────────┤                           │
+    │                           │                           │
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>Single Entry Point</strong>: All external traffic goes through one gateway</p></li>
+<li><p><strong>Security Layer</strong>: Authentication and authorization at the edge</p></li>
+<li><p><strong>Protocol Translation</strong>: HTTP to internal messaging protocols</p></li>
+<li><p><strong>Service Discovery</strong>: Gateway knows how to reach all services</p></li>
+</ul>
+<p><strong>Shared Data Layer</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Data Architecture:
+
+┌────────────┐  ┌────────────┐  ┌────────────┐
+│  Service   │  │  Service   │  │  Service   │
+│      A     │  │      B     │  │      C     │
+└──────┬─────┘  └───────┬────┘  └────────┬───┘
+       │                │                │
+       ├────────────────┼────────────────┤
+       │                │                │
+       ▼                ▼                ▼
+┌───────────────────────────────────────────┐
+│           Redis Cache (Hot Data)          │
+└───────────────────────────────────────────┘
+       ▼                ▼                ▼
+┌───────────────────────────────────────────┐
+│         MySQL Database (Cold Data)        │
+└───────────────────────────────────────────┘
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>Shared MySQL</strong>: Single source of truth for all data</p></li>
+<li><p><strong>Redis Cache</strong>: Fast access to frequently used data</p></li>
+<li><p><strong>Consistent Schema</strong>: All services use common database schema</p></li>
+<li><p><strong>Transaction Support</strong>: ACID guarantees for critical operations</p></li>
+</ul>
+</section>
+<section id="communication-channels">
+<h2>Communication Channels<a class="headerlink" href="#communication-channels" title="Link to this heading"></a></h2>
+<p>VoIPBIN supports multiple communication channels through dedicated gateways:</p>
+<p><strong>Voice Communication:</strong></p>
+<ul class="simple">
+<li><p><strong>PSTN</strong>: Traditional phone calls via carrier integrations</p></li>
+<li><p><strong>WebRTC</strong>: Browser-based voice and video calls</p></li>
+<li><p><strong>SIP</strong>: Direct SIP trunking for enterprise customers</p></li>
+</ul>
+<p><strong>Messaging:</strong></p>
+<ul class="simple">
+<li><p><strong>SMS</strong>: Text messaging via carrier integrations</p></li>
+<li><p><strong>Chat</strong>: Real-time chat with WebSocket support</p></li>
+<li><p><strong>Email</strong>: Email notifications and campaigns</p></li>
+</ul>
+<p><strong>AI-Enhanced Communication:</strong></p>
+<ul class="simple">
+<li><p><strong>AI Assistants</strong>: Voice-enabled AI agents for customer service</p></li>
+<li><p><strong>Transcription</strong>: Real-time and batch speech-to-text</p></li>
+<li><p><strong>Summarization</strong>: Call summarization and insights</p></li>
+<li><p><strong>Sentiment Analysis</strong>: Real-time emotion detection</p></li>
+</ul>
+</section>
+<section id="integration-capabilities">
+<h2>Integration Capabilities<a class="headerlink" href="#integration-capabilities" title="Link to this heading"></a></h2>
+<p>VoIPBIN provides multiple integration methods:</p>
+<p><strong>REST API:</strong></p>
+<ul class="simple">
+<li><p>Comprehensive REST API for all platform features</p></li>
+<li><p>OpenAPI/Swagger documentation</p></li>
+<li><p>SDKs for multiple languages</p></li>
+</ul>
+<p><strong>WebSocket:</strong></p>
+<ul class="simple">
+<li><p>Real-time event streaming</p></li>
+<li><p>Bi-directional media streaming</p></li>
+<li><p>Live transcription feeds</p></li>
+</ul>
+<p><strong>Webhooks:</strong></p>
+<ul class="simple">
+<li><p>Event notifications to external systems</p></li>
+<li><p>Configurable retry policies</p></li>
+<li><p>Signature verification for security</p></li>
+</ul>
+<p><strong>Direct Database Access:</strong></p>
+<ul class="simple">
+<li><p>Read replicas for reporting</p></li>
+<li><p>Analytics database for business intelligence</p></li>
+</ul>
+</section>
+<section id="key-architectural-benefits">
+<h2>Key Architectural Benefits<a class="headerlink" href="#key-architectural-benefits" title="Link to this heading"></a></h2>
+<p>VoIPBIN’s architecture is designed to deliver these advantages:</p>
+<p><strong>Scalability</strong></p>
+<ul class="simple">
+<li><p><strong>Horizontal Scaling</strong>: Add more service instances to handle increased load</p></li>
+<li><p><strong>Independent Scaling</strong>: Scale only the services that need more capacity</p></li>
+<li><p><strong>Auto-Scaling</strong>: Kubernetes automatically scales based on metrics</p></li>
+<li><p><strong>Global Distribution</strong>: Deploy services across multiple regions</p></li>
+</ul>
+<p><strong>Reliability</strong></p>
+<ul class="simple">
+<li><p><strong>Fault Isolation</strong>: Issues in one service don’t affect others</p></li>
+<li><p><strong>Circuit Breakers</strong>: Prevent cascading failures</p></li>
+<li><p><strong>Automatic Failover</strong>: Kubernetes restarts failed containers</p></li>
+<li><p><strong>SIP Session Recovery</strong>: Maintain calls even when servers crash</p></li>
+<li><p><strong>Message Persistence</strong>: RabbitMQ ensures no messages are lost</p></li>
+</ul>
+<p><strong>Security</strong></p>
+<ul class="simple">
+<li><p><strong>API Gateway Security</strong>: All authentication at the edge</p></li>
+<li><p><strong>Service Isolation</strong>: Services communicate via internal network only</p></li>
+<li><p><strong>Encryption</strong>: TLS for all external communication</p></li>
+<li><p><strong>Secret Management</strong>: Kubernetes secrets for sensitive data</p></li>
+<li><p><strong>Audit Logging</strong>: Complete audit trail of all operations</p></li>
+</ul>
+<p><strong>Developer Productivity</strong></p>
+<ul class="simple">
+<li><p><strong>Simple REST API</strong>: Easy to integrate with any application</p></li>
+<li><p><strong>Comprehensive Docs</strong>: Detailed documentation with examples</p></li>
+<li><p><strong>Webhook Events</strong>: Real-time notifications of system events</p></li>
+<li><p><strong>Test Environment</strong>: Sandbox for development and testing</p></li>
+<li><p><strong>SDK Support</strong>: Official SDKs for popular languages</p></li>
+</ul>
+<p><strong>Operational Excellence</strong></p>
+<ul class="simple">
+<li><p><strong>Centralized Logging</strong>: All logs aggregated in one place</p></li>
+<li><p><strong>Metrics &amp; Monitoring</strong>: Prometheus metrics for all services</p></li>
+<li><p><strong>Distributed Tracing</strong>: Track requests across services</p></li>
+<li><p><strong>Health Checks</strong>: Automated health monitoring</p></li>
+<li><p><strong>Zero-Downtime Deploys</strong>: Rolling updates without service interruption</p></li>
+</ul>
+</section>
+<section id="service-dependencies">
+<h2>Service Dependencies<a class="headerlink" href="#service-dependencies" title="Link to this heading"></a></h2>
+<p>VoIPBIN services have well-defined dependencies for coordinated operations:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Core Service Dependencies:
+
+┌─────────────────────────────────────────────────────────────────┐
+│                     bin-api-manager                             │
+│                    (API Gateway)                                │
+│  ─────────────────────────────────────────────────────────────  │
+│    Depends on: ALL backend services for RPC routing             │
+└─────────────────────────────────────────────────────────────────┘
+                             │
+     ┌───────────────────────┼───────────────────────┐
+     │                       │                       │
+     ▼                       ▼                       ▼
+┌─────────────┐        ┌─────────────┐        ┌─────────────┐
+│bin-call-mgr │        │bin-flow-mgr │        │bin-ai-mgr   │
+└──────┬──────┘        └──────┬──────┘        └──────┬──────┘
+       │                      │                      │
+       │                      │                      │
+       ▼                      ▼                      ▼
+┌─────────────┐        ┌─────────────┐        ┌─────────────┐
+│bin-billing  │        │bin-call-mgr │        │bin-transcribe│
+│bin-webhook  │        │bin-queue-mgr│        │bin-tts-mgr  │
+│bin-number   │        │bin-ai-mgr   │        │bin-pipecat  │
+└─────────────┘        └─────────────┘        └─────────────┘
+</pre></div>
+</div>
+<p><strong>Key Dependency Patterns:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Call Processing Chain:
+bin-call-manager
+  ├──▶ bin-flow-manager      (IVR and call flows)
+  ├──▶ bin-billing-manager   (usage tracking)
+  ├──▶ bin-webhook-manager   (event notifications)
+  ├──▶ bin-transcribe-manager (call transcription)
+  └──▶ bin-number-manager    (phone number lookup)
+
+AI Voice Pipeline:
+bin-pipecat-manager
+  ├──▶ bin-ai-manager        (LLM coordination)
+  ├──▶ bin-call-manager      (call control)
+  └──▶ bin-transcribe-manager (STT)
+
+Flow Orchestration:
+bin-flow-manager
+  ├──▶ bin-call-manager      (call actions)
+  ├──▶ bin-queue-manager     (queue operations)
+  ├──▶ bin-ai-manager        (AI interactions)
+  └──▶ bin-conference-manager (conference bridges)
+
+Infrastructure Monitoring:
+bin-sentinel-manager
+  └──▶ bin-call-manager      (SIP session recovery events)
+</pre></div>
+</div>
+<p><strong>Circular Dependencies:</strong></p>
+<p>VoIPBIN avoids circular dependencies through:</p>
+<ul class="simple">
+<li><p><strong>Event-Driven Decoupling</strong>: Services publish events, others subscribe</p></li>
+<li><p><strong>Gateway Orchestration</strong>: API Gateway coordinates cross-service operations</p></li>
+<li><p><strong>Shared Data Layer</strong>: Services share data via MySQL, not direct calls</p></li>
+</ul>
+</section>
+<section id="technology-stack">
+<h2>Technology Stack<a class="headerlink" href="#technology-stack" title="Link to this heading"></a></h2>
+<p>VoIPBIN is built on modern, proven technologies:</p>
+<p><strong>Backend Services:</strong></p>
+<ul class="simple">
+<li><p><strong>Language</strong>: Go (Golang) for all microservices</p></li>
+<li><p><strong>API Framework</strong>: Gin for HTTP routing</p></li>
+<li><p><strong>RPC</strong>: RabbitMQ for inter-service communication</p></li>
+<li><p><strong>Database</strong>: MySQL for persistent storage</p></li>
+<li><p><strong>Cache</strong>: Redis for session and hot data</p></li>
+</ul>
+<p><strong>Real-Time Communication:</strong></p>
+<ul class="simple">
+<li><p><strong>SIP Proxy</strong>: Kamailio for SIP routing</p></li>
+<li><p><strong>Media Server</strong>: Asterisk for call processing</p></li>
+<li><p><strong>Media Proxy</strong>: RTPEngine for RTP handling</p></li>
+</ul>
+<p><strong>Infrastructure:</strong></p>
+<ul class="simple">
+<li><p><strong>Container Runtime</strong>: Docker for containerization</p></li>
+<li><p><strong>Orchestration</strong>: Kubernetes (GKE) for container management</p></li>
+<li><p><strong>Cloud Provider</strong>: Google Cloud Platform</p></li>
+<li><p><strong>Monitoring</strong>: Prometheus + Grafana for metrics</p></li>
+<li><p><strong>Logging</strong>: ELK stack for centralized logging</p></li>
+</ul>
+<p><strong>Message Queue:</strong></p>
+<ul class="simple">
+<li><p><strong>Broker</strong>: RabbitMQ for async messaging</p></li>
+<li><p><strong>Event Bus</strong>: ZeroMQ for pub/sub events</p></li>
+</ul>
+<p>This architecture enables VoIPBIN to deliver enterprise-grade communication services at scale while maintaining developer simplicity and operational excellence.</p>
+</section>
+</section>
+
+</main>
+                        
+                    </div>
+                    
+                    <nav class="col-12 col-lg-3 pb-4">
+                        <div class="sticky-top toc page-toc" aria-labelledby="page-toc-heading">
+                            <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
+                            <ul>
+<li><a class="reference internal" href="#">Overview</a><ul>
+<li><a class="reference internal" href="#high-level-system-architecture">High-Level System Architecture</a></li>
+<li><a class="reference internal" href="#architectural-layers">Architectural Layers</a></li>
+<li><a class="reference internal" href="#core-design-principles">Core Design Principles</a></li>
+<li><a class="reference internal" href="#communication-channels">Communication Channels</a></li>
+<li><a class="reference internal" href="#integration-capabilities">Integration Capabilities</a></li>
+<li><a class="reference internal" href="#key-architectural-benefits">Key Architectural Benefits</a></li>
+<li><a class="reference internal" href="#service-dependencies">Service Dependencies</a></li>
+<li><a class="reference internal" href="#technology-stack">Technology Stack</a></li>
+</ul>
+</li>
+</ul>
+
+                        </div>
+                    </nav>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer class="container-fluid bg-primary text-light">
+        <div class="container">
+            <div class="row">
+        <div class="col p-4">
+            
+                <nav aria-label="Footer">
+                    <ul class="nav justify-content-center mb-2">
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="http://voipbin.net">About Us</a></li>
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="http://voipbin.net">Contact</a></li>
+                        
+                    </ul>
+                </nav>
+            
+            <div class="text-center">
+                    &copy; Copyright 2024, Sungtae Kim
+            </div>
+            <div class="text-center text-white-50 font-italic mt-3">
+                <small>
+                    Created using
+                    <a class="text-white" href="https://github.com/wagtail/sphinx_wagtail_theme" rel="nofollow" target="_blank">
+                        Sphinx Wagtail Theme 6.5.0
+                    </a>
+                    and
+                    <a class="text-white" href="https://www.sphinx-doc.org/" rel="nofollow" target="_blank">
+                        Sphinx 9.1.0
+                    </a>
+                </small>
+            </div>
+        </div>
+    </div>
+        </div>
+    </footer>
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=fd6eb6e6"></script>
+        <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+        <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="_static/copybutton.js?v=f281be69"></script>
+        <script type="text/javascript" src="_static/dist/theme.js"></script>
+        <script type="text/javascript" src="_static/dist/vendor.js"></script>
+        <script type="text/javascript" src="_static/searchtools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script type="text/javascript">
+            document.addEventListener('DOMContentLoaded', function() { Search.loadIndex("searchindex.js"); });
+        </script>
+        <script type="text/javascript" id="searchindexloader"></script>
+    </body>
+</html>

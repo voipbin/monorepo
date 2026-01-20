@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en" data-content_root="./">
+<head>
+    <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+        <title>Talk &mdash; voipbin  documentation</title>
+    
+    <link rel="stylesheet" type="text/css" href="_static/dist/fontawesome.css" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8e8a900e" />
+      <link rel="stylesheet" type="text/css" href="_static/dist/theme.css?v=310cf088" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+            <link rel="index" title="Index" href="genindex.html" />
+            <link rel="search" title="Search" href="search.html" />
+            <link rel="top" title="voipbin  documentation" href="#" />
+            <link rel="next" title="AI" href="ai.html" />
+            <link rel="prev" title="Chat" href="chat.html" />
+    </head>
+<body>
+    <script type="text/javascript" src="_static/dist/blocking.js"></script>
+    <header class="container-fluid bg-primary">
+        <a class="btn btn-sm btn-light skip-to-content-link" href="#main">Skip to content</a>
+        <div class="container-fluid">
+            <div class="navbar navbar-expand-lg navbar-dark font-weight-bold">
+                    <a href="intro.html"
+                        title="voipbin"
+                        class="logo navbar-brand"
+                    >
+                        <img src="_static/images/voipbin-high-resolution-logo-white-transparent.png" width="45" height="80" alt="voipbin"
+                            class="logo-img"
+                        />
+                        VoIPBin Documentation
+                    </a>
+                
+                
+                    <div class="collapse navbar-collapse justify-content-end">
+                        <ul class="navbar-nav">
+                            
+                                
+                                
+                                <li class="nav-item"><a class="nav-link"  href="http://voipbin.net">Project</a></li>
+                            
+                                
+                                
+                                <li class="nav-item"><a class="nav-link"  href="https://admin.voipbin.net">Admin</a></li>
+                            
+                        </ul>
+                    </div>
+                
+                <button class="navbar-toggler btn btn-primary d-lg-none" type="button" data-toggle="collapse" data-target="#collapseSidebar" aria-expanded="false" aria-controls="collapseExample">
+                    <span class="navbar-toggler-icon"></span>
+                    <span class="sr-only">menu</span>
+                </button>
+            </div>
+        </div>
+    </header>
+    <div class="container-fluid">
+        <div class="row">
+            <aside class="col-12 col-lg-3 sidebar-container">
+                <div id="collapseSidebar" class="collapse sticky-top d-lg-block pt-5 pr-lg-4">
+<div id="searchbox" class="searchbox mb-6 px-1" role="search">
+    <form id="search-form" action="search.html" autocomplete="off" method="get" role="search">
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <div class="input-group-text border-right-0 bg-white py-3 pl-3 pr-2"><span class="fas fa-search"></span></div>
+            </div>
+            <input class="form-control py-3 pr-3 pl-1 h-100 border-left-0" type="search" name="q" placeholder="Search documentation" aria-label="Search documentation" id="searchinput" />
+        </div>
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+    </form>
+</div><div class="site-toc">
+    <nav class="toc mt-3" aria-label="Main menu">
+        <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="common.html">Common</a></li>
+<li class="toctree-l1"><a class="reference internal" href="restful_api.html">RESTful API(Application Programming Interface)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sdk.html">SDK(Software Development Kit)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="accesskey.html">Accesskey</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="activeflow.html">Activeflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="call.html">Call</a></li>
+<li class="toctree-l1"><a class="reference internal" href="message.html">Message</a></li>
+<li class="toctree-l1"><a class="reference internal" href="email.html">Email</a></li>
+<li class="toctree-l1"><a class="reference internal" href="agent.html">Agent</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conference.html">Conference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mediastream.html">Mediastream</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conversation.html">Conversation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extension.html">Extension</a></li>
+<li class="toctree-l1"><a class="reference internal" href="number.html">Number</a></li>
+<li class="toctree-l1"><a class="reference internal" href="queue.html">Queue</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recording.html">Recording</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a></li>
+<li class="toctree-l1"><a class="reference internal" href="campaign.html">Campaign</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outdial.html">Outdial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outplan.html">Outplan</a></li>
+<li class="toctree-l1"><a class="reference internal" href="webhook.html">Webhook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="customer.html">Customer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chat.html">Chat</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Talk</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ai.html">AI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="provider.html">Provider</a></li>
+<li class="toctree-l1"><a class="reference internal" href="route.html">Route</a></li>
+<li class="toctree-l1"><a class="reference internal" href="variable.html">Variable</a></li>
+<li class="toctree-l1"><a class="reference internal" href="websocket.html">Websocket</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trunk.html">Trunk</a></li>
+<li class="toctree-l1"><a class="reference internal" href="billing_account.html">Billing Account</a></li>
+<li class="toctree-l1"><a class="reference internal" href="storage.html">Storage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transcribe.html">Transcribe</a></li>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+</ul>
+
+    </nav>
+    <template data-toggle-item-template>
+        <button class="btn btn-sm btn-link toctree-expand" type="button">
+            <span class="sr-only">Toggle menu contents</span>
+        </button>
+    </template>
+</div>
+                    <div class="d-lg-none border-bottom">
+                        
+                    </div>
+                </div>
+            </aside>
+            <div class="col-12 col-lg-9 pt-5">
+                <header class="row align-items-baseline">
+                    <div class="col">
+                        <nav aria-label="breadcrumb">
+    <ol class="breadcrumb m-0 p-0 bg-transparent">
+        <li class="breadcrumb-item"><a href="index.html">Docs</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Talk</li>
+    </ol>
+</nav>
+                    </div>
+                    <div class="col-sm-12 col-lg-auto mt-3 mt-lg-3">
+                        <noscript>
+                            <p>JavaScript is required to toggle light/dark mode..</p>
+                        </noscript>
+                        <button id="wagtail-theme" class="btn btn-sm btn-light text-decoration-none" type="button">
+                            <span class="dark-only"><i class="fas fa-sun"></i> Light mode</span>
+                            <span class="light-only"><i class="fas fa-moon"></i> Dark mode</span>
+                        </button>
+    <a class="btn btn-sm btn-light text-decoration-none" href="_sources/talk.rst.txt" rel="nofollow">
+        <span class="btn-icon"><span class="fas fa-code"></span></span>
+        <span class="btn-text">View source</span>
+    </a>
+                        
+                    </div>
+                </header>
+                <div class="row" >
+                    <div class="col-12">
+                        <hr class="w-100 my-4">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 col-lg-9 order-last order-lg-first rst-content">
+                        <main role="main" id="main">
+    <section id="talk">
+<span id="talk-main"></span><h1>Talk<a class="headerlink" href="#talk" title="Link to this heading"></a></h1>
+<section id="overview">
+<span id="talk-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<p>The VoIPBIN Talk API provides a modern messaging platform designed for real-time communication between agents. This feature enables efficient message exchange with support for threading, reactions, and group conversations, fostering collaborative teamwork and enhancing internal communication.</p>
+<section id="talk-and-participants">
+<h3>Talk and Participants<a class="headerlink" href="#talk-and-participants" title="Link to this heading"></a></h3>
+<p>The Talk functionality allows agents to create conversations and exchange messages with one another. Agents can engage in one-on-one talk sessions for private conversations, or create group talks that allow multiple agents to participate in discussions related to shared projects, tasks, or team-wide announcements.</p>
+<p>Participants are managed independently, allowing agents to join and leave talks dynamically. Each talk maintains a list of active participants who can send and receive messages within the conversation.</p>
+</section>
+<section id="messages-with-threading-and-reactions">
+<h3>Messages with Threading and Reactions<a class="headerlink" href="#messages-with-threading-and-reactions" title="Link to this heading"></a></h3>
+<p>The Message represents individual messages exchanged within a talk. Messages support several advanced features:</p>
+<p><strong>Threading</strong>: Messages can be replies to other messages by specifying a parent message ID. This creates conversation threads that help organize discussions around specific topics within a talk.</p>
+<p><strong>Reactions</strong>: Agents can add emoji reactions to messages, providing quick feedback without sending a full message. Multiple agents can react to the same message with different emojis.</p>
+<p><strong>Media Attachments</strong>: Messages can include media attachments such as files, links, or other content types to enrich communication.</p>
+<p><strong>Message Types</strong>: Messages can be of type “normal” (regular agent messages) or “system” (automated system notifications).</p>
+<p>By leveraging the Talk API with its threading, reactions, and participant management features, organizations can streamline internal communication, enhance team collaboration, and foster a more connected and productive work environment. The Talk service provides a modern messaging platform that improves workflow efficiency and ensures that agents have a reliable platform for instant communication and information sharing.</p>
+</section>
+</section>
+<section id="talk-struct-talk">
+<span id="id1"></span><h2>Talk<a class="headerlink" href="#talk-struct-talk" title="Link to this heading"></a></h2>
+<section id="talk-struct-talk-talk">
+<span id="id2"></span><h3>Talk<a class="headerlink" href="#talk-struct-talk-talk" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>id: Talk’s unique identifier.</p></li>
+<li><p>customer_id: Customer’s unique identifier.</p></li>
+<li><p>type: Talk’s type. See detail <a class="reference internal" href="talk_struct_talk.html#talk-struct-talk-type"><span class="std std-ref">here</span></a>.</p></li>
+<li><p>tm_create: Timestamp when the talk was created.</p></li>
+<li><p>tm_update: Timestamp when the talk was last updated.</p></li>
+<li><p>tm_delete: Timestamp when the talk was deleted (soft delete).</p></li>
+</ul>
+<section id="example">
+<h4>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h4>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;e8b2e976-f043-44c8-bb89-e214e225e813&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-17 10:30:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-17 10:30:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="type">
+<span id="talk-struct-talk-type"></span><h3>Type<a class="headerlink" href="#type" title="Link to this heading"></a></h3>
+<p>Talk’s type determines whether it’s a one-on-one or group conversation.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>normal</p></td>
+<td><p>1:1 talk between two agents.</p></td>
+</tr>
+<tr class="row-odd"><td><p>group</p></td>
+<td><p>Group talk with multiple participants.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="message">
+<span id="talk-struct-message"></span><h2>Message<a class="headerlink" href="#message" title="Link to this heading"></a></h2>
+<section id="talk-struct-message-message">
+<span id="id3"></span><h3>Message<a class="headerlink" href="#talk-struct-message-message" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;owner_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;owner_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;chat_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;parent_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;medias&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
+        <span class="p">}</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;reactions&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;emoji&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;owner_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;owner_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
+            <span class="p">}</span>
+        <span class="p">]</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>id: Message’s unique identifier.</p></li>
+<li><p>customer_id: Customer’s unique identifier.</p></li>
+<li><p>owner_type: Type of the message owner (e.g., “agent”).</p></li>
+<li><p>owner_id: Owner’s unique identifier.</p></li>
+<li><p>chat_id: Talk’s unique identifier that this message belongs to.</p></li>
+<li><p>parent_id: Parent message ID for threaded replies (optional).</p></li>
+<li><p>type: Message type. See detail <a class="reference internal" href="talk_struct_message.html#talk-struct-message-type"><span class="std std-ref">here</span></a>.</p></li>
+<li><p>text: Message text content.</p></li>
+<li><p>medias: Array of media attachments.</p></li>
+<li><p>metadata: Message metadata including reactions.</p></li>
+<li><p>tm_create: Timestamp when the message was created.</p></li>
+<li><p>tm_update: Timestamp when the message was last updated.</p></li>
+<li><p>tm_delete: Timestamp when the message was deleted (soft delete).</p></li>
+</ul>
+<section id="id4">
+<h4>Example<a class="headerlink" href="#id4" title="Link to this heading"></a></h4>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;a3c5e8f2-4d3a-4b5c-9e7f-1a2b3c4d5e6f&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;owner_type&quot;</span><span class="p">:</span> <span class="s2">&quot;agent&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;owner_id&quot;</span><span class="p">:</span> <span class="s2">&quot;eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;chat_id&quot;</span><span class="p">:</span> <span class="s2">&quot;e8b2e976-f043-44c8-bb89-e214e225e813&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;parent_id&quot;</span><span class="p">:</span> <span class="s2">&quot;b2d4f7a1-3c2e-4f5a-8d9c-2e3f4a5b6c7d&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;That&#39;s a great idea! Let&#39;s proceed with that approach.&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;medias&quot;</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;reactions&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;emoji&quot;</span><span class="p">:</span> <span class="s2">&quot;👍&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;owner_type&quot;</span><span class="p">:</span> <span class="s2">&quot;agent&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;owner_id&quot;</span><span class="p">:</span> <span class="s2">&quot;47fe0b7c-7333-46cf-8b23-61e14e62490a&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-17 10:35:00.000000&quot;</span>
+            <span class="p">}</span>
+        <span class="p">]</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-17 10:32:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-17 10:32:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="talk-struct-message-type">
+<span id="id5"></span><h3>Type<a class="headerlink" href="#talk-struct-message-type" title="Link to this heading"></a></h3>
+<p>Message type indicates whether it’s a regular message or system notification.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>normal</p></td>
+<td><p>Regular message sent by an agent.</p></td>
+</tr>
+<tr class="row-odd"><td><p>system</p></td>
+<td><p>System-generated notification message.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="threading">
+<h3>Threading<a class="headerlink" href="#threading" title="Link to this heading"></a></h3>
+<p>Messages can form conversation threads by specifying a parent message ID. When a message includes a <code class="docutils literal notranslate"><span class="pre">parent_id</span></code>, it appears as a reply to the parent message, creating a nested conversation structure within the talk.</p>
+<p><strong>Threading Rules:</strong></p>
+<ul class="simple">
+<li><p>Parent message must exist in the same talk.</p></li>
+<li><p>Parent message can be deleted (soft delete) - the thread structure is preserved.</p></li>
+<li><p>Replies can have their own replies, creating multi-level threads.</p></li>
+</ul>
+</section>
+<section id="reactions">
+<h3>Reactions<a class="headerlink" href="#reactions" title="Link to this heading"></a></h3>
+<p>Agents can add emoji reactions to messages. Reactions are stored in the message metadata and include:</p>
+<ul class="simple">
+<li><p><strong>emoji</strong>: The emoji character (e.g., “👍”, “❤️”, “😊”).</p></li>
+<li><p><strong>owner_type</strong>: Type of the reactor (e.g., “agent”).</p></li>
+<li><p><strong>owner_id</strong>: Unique identifier of the agent who reacted.</p></li>
+<li><p><strong>tm_create</strong>: Timestamp when the reaction was added.</p></li>
+</ul>
+<p>Multiple agents can react to the same message, and the same agent can add multiple different emoji reactions. Reactions provide quick feedback without sending a full message response.</p>
+</section>
+</section>
+<section id="participant">
+<span id="talk-struct-participant"></span><h2>Participant<a class="headerlink" href="#participant" title="Link to this heading"></a></h2>
+<section id="talk-struct-participant-participant">
+<span id="id6"></span><h3>Participant<a class="headerlink" href="#talk-struct-participant-participant" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;owner_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;owner_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;chat_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_joined&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>id: Participant’s unique identifier.</p></li>
+<li><p>customer_id: Customer’s unique identifier.</p></li>
+<li><p>owner_type: Type of the participant (e.g., “agent”).</p></li>
+<li><p>owner_id: Participant’s unique identifier.</p></li>
+<li><p>chat_id: Talk’s unique identifier that this participant belongs to.</p></li>
+<li><p>tm_joined: Timestamp when the participant joined the talk.</p></li>
+</ul>
+<section id="id7">
+<h4>Example<a class="headerlink" href="#id7" title="Link to this heading"></a></h4>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;f4d6e9b3-5c4a-4d5e-9f8a-2b3c4d5e6f7g&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;owner_type&quot;</span><span class="p">:</span> <span class="s2">&quot;agent&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;owner_id&quot;</span><span class="p">:</span> <span class="s2">&quot;eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;chat_id&quot;</span><span class="p">:</span> <span class="s2">&quot;e8b2e976-f043-44c8-bb89-e214e225e813&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_joined&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-17 10:30:00.000000&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="participant-management">
+<h3>Participant Management<a class="headerlink" href="#participant-management" title="Link to this heading"></a></h3>
+<p>Participants can be added to or removed from talks dynamically. When a participant is removed and later re-added, their join timestamp is updated to reflect the most recent join time.</p>
+<p><strong>Participant Rules:</strong></p>
+<ul class="simple">
+<li><p>Each talk can have multiple participants.</p></li>
+<li><p>The same agent cannot be added as a participant twice (enforced by unique constraint).</p></li>
+<li><p>When a participant is removed, they are hard-deleted from the database.</p></li>
+<li><p>Re-adding a participant creates a new record with a new join timestamp.</p></li>
+<li><p>Only participants of a talk can view messages and send new messages.</p></li>
+</ul>
+<p><strong>Permissions:</strong></p>
+<ul class="simple">
+<li><p>Participants can view all messages in the talk.</p></li>
+<li><p>Participants can send messages to the talk.</p></li>
+<li><p>Participants can add reactions to any message in the talk.</p></li>
+<li><p>Non-participants cannot access talk messages or send messages.</p></li>
+</ul>
+</section>
+</section>
+<section id="tutorial">
+<span id="talk-tutorial"></span><h2>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h2>
+<p>This tutorial demonstrates how to use the Talk API to create conversations, manage participants, send messages with threading and reactions.</p>
+<section id="create-a-talk">
+<h3>Create a Talk<a class="headerlink" href="#create-a-talk" title="Link to this heading"></a></h3>
+<p>Create a new talk conversation:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">POST</span> <span class="o">/</span><span class="n">service_agents</span><span class="o">/</span><span class="n">talk_chats</span>
+<span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Response:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;e8b2e976-f043-44c8-bb89-e214e225e813&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-17 10:30:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-17 10:30:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="add-participants">
+<h3>Add Participants<a class="headerlink" href="#add-participants" title="Link to this heading"></a></h3>
+<p>Add agents to the talk:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">POST</span> <span class="o">/</span><span class="n">service_agents</span><span class="o">/</span><span class="n">talk_chats</span><span class="o">/</span><span class="n">e8b2e976</span><span class="o">-</span><span class="n">f043</span><span class="o">-</span><span class="mi">44</span><span class="n">c8</span><span class="o">-</span><span class="n">bb89</span><span class="o">-</span><span class="n">e214e225e813</span><span class="o">/</span><span class="n">participants</span>
+<span class="p">{</span>
+    <span class="s2">&quot;owner_type&quot;</span><span class="p">:</span> <span class="s2">&quot;agent&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;owner_id&quot;</span><span class="p">:</span> <span class="s2">&quot;47fe0b7c-7333-46cf-8b23-61e14e62490a&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Response:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;f4d6e9b3-5c4a-4d5e-9f8a-2b3c4d5e6f7g&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;owner_type&quot;</span><span class="p">:</span> <span class="s2">&quot;agent&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;owner_id&quot;</span><span class="p">:</span> <span class="s2">&quot;47fe0b7c-7333-46cf-8b23-61e14e62490a&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;chat_id&quot;</span><span class="p">:</span> <span class="s2">&quot;e8b2e976-f043-44c8-bb89-e214e225e813&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_joined&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-17 10:31:00.000000&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="send-a-message">
+<h3>Send a Message<a class="headerlink" href="#send-a-message" title="Link to this heading"></a></h3>
+<p>Send a message to the talk:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">POST</span> <span class="o">/</span><span class="n">service_agents</span><span class="o">/</span><span class="n">talk_messages</span>
+<span class="p">{</span>
+    <span class="s2">&quot;chat_id&quot;</span><span class="p">:</span> <span class="s2">&quot;e8b2e976-f043-44c8-bb89-e214e225e813&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello team! Let&#39;s discuss the new feature.&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Response:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;a3c5e8f2-4d3a-4b5c-9e7f-1a2b3c4d5e6f&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;owner_type&quot;</span><span class="p">:</span> <span class="s2">&quot;agent&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;owner_id&quot;</span><span class="p">:</span> <span class="s2">&quot;eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;chat_id&quot;</span><span class="p">:</span> <span class="s2">&quot;e8b2e976-f043-44c8-bb89-e214e225e813&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello team! Let&#39;s discuss the new feature.&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;medias&quot;</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;reactions&quot;</span><span class="p">:</span> <span class="p">[]</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-17 10:32:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-17 10:32:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="reply-to-a-message-threading">
+<h3>Reply to a Message (Threading)<a class="headerlink" href="#reply-to-a-message-threading" title="Link to this heading"></a></h3>
+<p>Reply to an existing message by specifying the parent_id:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">POST</span> <span class="o">/</span><span class="n">service_agents</span><span class="o">/</span><span class="n">talk_messages</span>
+<span class="p">{</span>
+    <span class="s2">&quot;chat_id&quot;</span><span class="p">:</span> <span class="s2">&quot;e8b2e976-f043-44c8-bb89-e214e225e813&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;parent_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a3c5e8f2-4d3a-4b5c-9e7f-1a2b3c4d5e6f&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Great idea! I&#39;ll start working on the requirements.&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Response:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;b2d4f7a1-3c2e-4f5a-8d9c-2e3f4a5b6c7d&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;owner_type&quot;</span><span class="p">:</span> <span class="s2">&quot;agent&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;owner_id&quot;</span><span class="p">:</span> <span class="s2">&quot;47fe0b7c-7333-46cf-8b23-61e14e62490a&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;chat_id&quot;</span><span class="p">:</span> <span class="s2">&quot;e8b2e976-f043-44c8-bb89-e214e225e813&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;parent_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a3c5e8f2-4d3a-4b5c-9e7f-1a2b3c4d5e6f&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Great idea! I&#39;ll start working on the requirements.&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;medias&quot;</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;reactions&quot;</span><span class="p">:</span> <span class="p">[]</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-17 10:33:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-17 10:33:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="add-a-reaction">
+<h3>Add a Reaction<a class="headerlink" href="#add-a-reaction" title="Link to this heading"></a></h3>
+<p>Add an emoji reaction to a message:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">POST</span> <span class="o">/</span><span class="n">service_agents</span><span class="o">/</span><span class="n">talk_messages</span><span class="o">/</span><span class="n">b2d4f7a1</span><span class="o">-</span><span class="mi">3</span><span class="n">c2e</span><span class="o">-</span><span class="mi">4</span><span class="n">f5a</span><span class="o">-</span><span class="mi">8</span><span class="n">d9c</span><span class="o">-</span><span class="mf">2e3</span><span class="n">f4a5b6c7d</span><span class="o">/</span><span class="n">reactions</span>
+<span class="p">{</span>
+    <span class="s2">&quot;emoji&quot;</span><span class="p">:</span> <span class="s2">&quot;👍&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Response:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;b2d4f7a1-3c2e-4f5a-8d9c-2e3f4a5b6c7d&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;owner_type&quot;</span><span class="p">:</span> <span class="s2">&quot;agent&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;owner_id&quot;</span><span class="p">:</span> <span class="s2">&quot;47fe0b7c-7333-46cf-8b23-61e14e62490a&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;chat_id&quot;</span><span class="p">:</span> <span class="s2">&quot;e8b2e976-f043-44c8-bb89-e214e225e813&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;parent_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a3c5e8f2-4d3a-4b5c-9e7f-1a2b3c4d5e6f&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Great idea! I&#39;ll start working on the requirements.&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;medias&quot;</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;reactions&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;emoji&quot;</span><span class="p">:</span> <span class="s2">&quot;👍&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;owner_type&quot;</span><span class="p">:</span> <span class="s2">&quot;agent&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;owner_id&quot;</span><span class="p">:</span> <span class="s2">&quot;eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-17 10:34:00.000000&quot;</span>
+            <span class="p">}</span>
+        <span class="p">]</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-17 10:33:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-17 10:34:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="list-messages">
+<h3>List Messages<a class="headerlink" href="#list-messages" title="Link to this heading"></a></h3>
+<p>Retrieve messages from a talk with pagination:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>GET /service_agents/talk_messages?page_size=50
+</pre></div>
+</div>
+<p>Response:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;a3c5e8f2-4d3a-4b5c-9e7f-1a2b3c4d5e6f&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;owner_type&quot;</span><span class="p">:</span> <span class="s2">&quot;agent&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;owner_id&quot;</span><span class="p">:</span> <span class="s2">&quot;eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;chat_id&quot;</span><span class="p">:</span> <span class="s2">&quot;e8b2e976-f043-44c8-bb89-e214e225e813&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello team! Let&#39;s discuss the new feature.&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;medias&quot;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;reactions&quot;</span><span class="p">:</span> <span class="p">[]</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-17 10:32:00.000000&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-17 10:32:00.000000&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;b2d4f7a1-3c2e-4f5a-8d9c-2e3f4a5b6c7d&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;owner_type&quot;</span><span class="p">:</span> <span class="s2">&quot;agent&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;owner_id&quot;</span><span class="p">:</span> <span class="s2">&quot;47fe0b7c-7333-46cf-8b23-61e14e62490a&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;chat_id&quot;</span><span class="p">:</span> <span class="s2">&quot;e8b2e976-f043-44c8-bb89-e214e225e813&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;parent_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a3c5e8f2-4d3a-4b5c-9e7f-1a2b3c4d5e6f&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Great idea! I&#39;ll start working on the requirements.&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;medias&quot;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;reactions&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="p">{</span>
+                        <span class="s2">&quot;emoji&quot;</span><span class="p">:</span> <span class="s2">&quot;👍&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;owner_type&quot;</span><span class="p">:</span> <span class="s2">&quot;agent&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;owner_id&quot;</span><span class="p">:</span> <span class="s2">&quot;eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-17 10:34:00.000000&quot;</span>
+                    <span class="p">}</span>
+                <span class="p">]</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-17 10:33:00.000000&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-17 10:34:00.000000&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+        <span class="p">}</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;next_page_token&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-17 10:33:00.000000&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="remove-a-participant">
+<h3>Remove a Participant<a class="headerlink" href="#remove-a-participant" title="Link to this heading"></a></h3>
+<p>Remove a participant from the talk:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">DELETE</span> <span class="o">/</span><span class="n">service_agents</span><span class="o">/</span><span class="n">talk_chats</span><span class="o">/</span><span class="n">e8b2e976</span><span class="o">-</span><span class="n">f043</span><span class="o">-</span><span class="mi">44</span><span class="n">c8</span><span class="o">-</span><span class="n">bb89</span><span class="o">-</span><span class="n">e214e225e813</span><span class="o">/</span><span class="n">participants</span><span class="o">/</span><span class="n">f4d6e9b3</span><span class="o">-</span><span class="mi">5</span><span class="n">c4a</span><span class="o">-</span><span class="mi">4</span><span class="n">d5e</span><span class="o">-</span><span class="mi">9</span><span class="n">f8a</span><span class="o">-</span><span class="mi">2</span><span class="n">b3c4d5e6f7g</span>
+</pre></div>
+</div>
+<p>Response:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;f4d6e9b3-5c4a-4d5e-9f8a-2b3c4d5e6f7g&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;owner_type&quot;</span><span class="p">:</span> <span class="s2">&quot;agent&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;owner_id&quot;</span><span class="p">:</span> <span class="s2">&quot;47fe0b7c-7333-46cf-8b23-61e14e62490a&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;chat_id&quot;</span><span class="p">:</span> <span class="s2">&quot;e8b2e976-f043-44c8-bb89-e214e225e813&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_joined&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-17 10:31:00.000000&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="delete-a-talk">
+<h3>Delete a Talk<a class="headerlink" href="#delete-a-talk" title="Link to this heading"></a></h3>
+<p>Delete a talk (soft delete):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">DELETE</span> <span class="o">/</span><span class="n">service_agents</span><span class="o">/</span><span class="n">talk_chats</span><span class="o">/</span><span class="n">e8b2e976</span><span class="o">-</span><span class="n">f043</span><span class="o">-</span><span class="mi">44</span><span class="n">c8</span><span class="o">-</span><span class="n">bb89</span><span class="o">-</span><span class="n">e214e225e813</span>
+</pre></div>
+</div>
+<p>Response:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;e8b2e976-f043-44c8-bb89-e214e225e813&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-17 10:30:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-17 10:35:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-17 10:35:00.000000&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+</main>
+                        <nav aria-label="Page navigation" class="py-4 my-5 clearfix font-weight-bold border-top">
+    <a class="float-left" href="chat.html" title="Previous">
+        <span aria-hidden="true">←&nbsp;</span>Chat
+    </a>
+    <a class="float-right" href="ai.html" title="Next">
+        AI <span aria-hidden="true">&nbsp;→</span>
+    </a>
+</nav>
+                    </div>
+                    
+                    <nav class="col-12 col-lg-3 pb-4">
+                        <div class="sticky-top toc page-toc" aria-labelledby="page-toc-heading">
+                            <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
+                            <ul>
+<li><a class="reference internal" href="#">Talk</a><ul>
+<li><a class="reference internal" href="#overview">Overview</a><ul>
+<li><a class="reference internal" href="#talk-and-participants">Talk and Participants</a></li>
+<li><a class="reference internal" href="#messages-with-threading-and-reactions">Messages with Threading and Reactions</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#talk-struct-talk">Talk</a><ul>
+<li><a class="reference internal" href="#talk-struct-talk-talk">Talk</a><ul>
+<li><a class="reference internal" href="#example">Example</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#type">Type</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#message">Message</a><ul>
+<li><a class="reference internal" href="#talk-struct-message-message">Message</a><ul>
+<li><a class="reference internal" href="#id4">Example</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#talk-struct-message-type">Type</a></li>
+<li><a class="reference internal" href="#threading">Threading</a></li>
+<li><a class="reference internal" href="#reactions">Reactions</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#participant">Participant</a><ul>
+<li><a class="reference internal" href="#talk-struct-participant-participant">Participant</a><ul>
+<li><a class="reference internal" href="#id7">Example</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#participant-management">Participant Management</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#tutorial">Tutorial</a><ul>
+<li><a class="reference internal" href="#create-a-talk">Create a Talk</a></li>
+<li><a class="reference internal" href="#add-participants">Add Participants</a></li>
+<li><a class="reference internal" href="#send-a-message">Send a Message</a></li>
+<li><a class="reference internal" href="#reply-to-a-message-threading">Reply to a Message (Threading)</a></li>
+<li><a class="reference internal" href="#add-a-reaction">Add a Reaction</a></li>
+<li><a class="reference internal" href="#list-messages">List Messages</a></li>
+<li><a class="reference internal" href="#remove-a-participant">Remove a Participant</a></li>
+<li><a class="reference internal" href="#delete-a-talk">Delete a Talk</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+                        </div>
+                    </nav>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer class="container-fluid bg-primary text-light">
+        <div class="container">
+            <div class="row">
+        <div class="col p-4">
+            
+                <nav aria-label="Footer">
+                    <ul class="nav justify-content-center mb-2">
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="http://voipbin.net">About Us</a></li>
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="http://voipbin.net">Contact</a></li>
+                        
+                    </ul>
+                </nav>
+            
+            <div class="text-center">
+                    &copy; Copyright 2024, Sungtae Kim
+            </div>
+            <div class="text-center text-white-50 font-italic mt-3">
+                <small>
+                    Created using
+                    <a class="text-white" href="https://github.com/wagtail/sphinx_wagtail_theme" rel="nofollow" target="_blank">
+                        Sphinx Wagtail Theme 6.5.0
+                    </a>
+                    and
+                    <a class="text-white" href="https://www.sphinx-doc.org/" rel="nofollow" target="_blank">
+                        Sphinx 9.1.0
+                    </a>
+                </small>
+            </div>
+        </div>
+    </div>
+        </div>
+    </footer>
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=fd6eb6e6"></script>
+        <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+        <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="_static/copybutton.js?v=f281be69"></script>
+        <script type="text/javascript" src="_static/dist/theme.js"></script>
+        <script type="text/javascript" src="_static/dist/vendor.js"></script>
+        <script type="text/javascript" src="_static/searchtools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script type="text/javascript">
+            document.addEventListener('DOMContentLoaded', function() { Search.loadIndex("searchindex.js"); });
+        </script>
+        <script type="text/javascript" id="searchindexloader"></script>
+    </body>
+</html>

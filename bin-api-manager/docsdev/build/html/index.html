@@ -1,0 +1,1724 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en" data-content_root="./">
+<head>
+    <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+        <title>Welcome to voipbin’s documentation! &mdash; voipbin  documentation</title>
+    
+    <link rel="stylesheet" type="text/css" href="_static/dist/fontawesome.css" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8e8a900e" />
+      <link rel="stylesheet" type="text/css" href="_static/dist/theme.css?v=310cf088" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+            <link rel="index" title="Index" href="genindex.html" />
+            <link rel="search" title="Search" href="search.html" />
+            <link rel="top" title="voipbin  documentation" href="#" />
+            <link rel="next" title="Introduction" href="intro.html" />
+    </head>
+<body>
+    <script type="text/javascript" src="_static/dist/blocking.js"></script>
+    <header class="container-fluid bg-primary">
+        <a class="btn btn-sm btn-light skip-to-content-link" href="#main">Skip to content</a>
+        <div class="container-fluid">
+            <div class="navbar navbar-expand-lg navbar-dark font-weight-bold">
+                    <a href="intro.html"
+                        title="voipbin"
+                        class="logo navbar-brand"
+                    >
+                        <img src="_static/images/voipbin-high-resolution-logo-white-transparent.png" width="45" height="80" alt="voipbin"
+                            class="logo-img"
+                        />
+                        VoIPBin Documentation
+                    </a>
+                
+                
+                    <div class="collapse navbar-collapse justify-content-end">
+                        <ul class="navbar-nav">
+                            
+                                
+                                
+                                <li class="nav-item"><a class="nav-link"  href="http://voipbin.net">Project</a></li>
+                            
+                                
+                                
+                                <li class="nav-item"><a class="nav-link"  href="https://admin.voipbin.net">Admin</a></li>
+                            
+                        </ul>
+                    </div>
+                
+                <button class="navbar-toggler btn btn-primary d-lg-none" type="button" data-toggle="collapse" data-target="#collapseSidebar" aria-expanded="false" aria-controls="collapseExample">
+                    <span class="navbar-toggler-icon"></span>
+                    <span class="sr-only">menu</span>
+                </button>
+            </div>
+        </div>
+    </header>
+    <div class="container-fluid">
+        <div class="row">
+            <aside class="col-12 col-lg-3 sidebar-container">
+                <div id="collapseSidebar" class="collapse sticky-top d-lg-block pt-5 pr-lg-4">
+<div id="searchbox" class="searchbox mb-6 px-1" role="search">
+    <form id="search-form" action="search.html" autocomplete="off" method="get" role="search">
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <div class="input-group-text border-right-0 bg-white py-3 pl-3 pr-2"><span class="fas fa-search"></span></div>
+            </div>
+            <input class="form-control py-3 pr-3 pl-1 h-100 border-left-0" type="search" name="q" placeholder="Search documentation" aria-label="Search documentation" id="searchinput" />
+        </div>
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+    </form>
+</div><div class="site-toc">
+    <nav class="toc mt-3" aria-label="Main menu">
+        <ul>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="common.html">Common</a></li>
+<li class="toctree-l1"><a class="reference internal" href="restful_api.html">RESTful API(Application Programming Interface)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sdk.html">SDK(Software Development Kit)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="accesskey.html">Accesskey</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="activeflow.html">Activeflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="call.html">Call</a></li>
+<li class="toctree-l1"><a class="reference internal" href="message.html">Message</a></li>
+<li class="toctree-l1"><a class="reference internal" href="email.html">Email</a></li>
+<li class="toctree-l1"><a class="reference internal" href="agent.html">Agent</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conference.html">Conference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mediastream.html">Mediastream</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conversation.html">Conversation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extension.html">Extension</a></li>
+<li class="toctree-l1"><a class="reference internal" href="number.html">Number</a></li>
+<li class="toctree-l1"><a class="reference internal" href="queue.html">Queue</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recording.html">Recording</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a></li>
+<li class="toctree-l1"><a class="reference internal" href="campaign.html">Campaign</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outdial.html">Outdial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outplan.html">Outplan</a></li>
+<li class="toctree-l1"><a class="reference internal" href="webhook.html">Webhook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="customer.html">Customer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chat.html">Chat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="talk.html">Talk</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ai.html">AI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="provider.html">Provider</a></li>
+<li class="toctree-l1"><a class="reference internal" href="route.html">Route</a></li>
+<li class="toctree-l1"><a class="reference internal" href="variable.html">Variable</a></li>
+<li class="toctree-l1"><a class="reference internal" href="websocket.html">Websocket</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trunk.html">Trunk</a></li>
+<li class="toctree-l1"><a class="reference internal" href="billing_account.html">Billing Account</a></li>
+<li class="toctree-l1"><a class="reference internal" href="storage.html">Storage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transcribe.html">Transcribe</a></li>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+</ul>
+
+    </nav>
+    <template data-toggle-item-template>
+        <button class="btn btn-sm btn-link toctree-expand" type="button">
+            <span class="sr-only">Toggle menu contents</span>
+        </button>
+    </template>
+</div>
+                    <div class="d-lg-none border-bottom">
+                        
+                    </div>
+                </div>
+            </aside>
+            <div class="col-12 col-lg-9 pt-5">
+                <header class="row align-items-baseline">
+                    <div class="col">
+                        <nav aria-label="breadcrumb">
+    <ol class="breadcrumb m-0 p-0 bg-transparent">
+        <li class="breadcrumb-item"><a href="#">Docs</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Welcome to voipbin’s documentation!</li>
+    </ol>
+</nav>
+                    </div>
+                    <div class="col-sm-12 col-lg-auto mt-3 mt-lg-3">
+                        <noscript>
+                            <p>JavaScript is required to toggle light/dark mode..</p>
+                        </noscript>
+                        <button id="wagtail-theme" class="btn btn-sm btn-light text-decoration-none" type="button">
+                            <span class="dark-only"><i class="fas fa-sun"></i> Light mode</span>
+                            <span class="light-only"><i class="fas fa-moon"></i> Dark mode</span>
+                        </button>
+    <a class="btn btn-sm btn-light text-decoration-none" href="_sources/index.rst.txt" rel="nofollow">
+        <span class="btn-icon"><span class="fas fa-code"></span></span>
+        <span class="btn-text">View source</span>
+    </a>
+                        
+                    </div>
+                </header>
+                <div class="row" >
+                    <div class="col-12">
+                        <hr class="w-100 my-4">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 col-lg-9 order-last order-lg-first rst-content">
+                        <main role="main" id="main">
+    <section id="welcome-to-voipbin-s-documentation">
+<h1>Welcome to voipbin’s documentation!<a class="headerlink" href="#welcome-to-voipbin-s-documentation" title="Link to this heading"></a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="intro.html#channels">Channels</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="intro.html#programmable-voice">Programmable voice</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="intro.html#account-notifications">Account Notifications</a></li>
+<li class="toctree-l4"><a class="reference internal" href="intro.html#call-tracking">Call Tracking</a></li>
+<li class="toctree-l4"><a class="reference internal" href="intro.html#programmable-calling">Programmable calling</a></li>
+<li class="toctree-l4"><a class="reference internal" href="intro.html#global-conferencing">Global conferencing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="intro.html#interactive-voice-response-ivr">Interactive voice response(IVR)</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="intro.html#messaging">Messaging</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="intro.html#programmable-messaging-api">Programmable Messaging API</a></li>
+<li class="toctree-l4"><a class="reference internal" href="intro.html#conversations-api">Conversations API</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="intro.html#video">Video</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="intro.html#applications">Applications</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="intro.html#flow">Flow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="intro.html#agent">Agent</a></li>
+<li class="toctree-l3"><a class="reference internal" href="intro.html#campaign">Campaign</a></li>
+<li class="toctree-l3"><a class="reference internal" href="intro.html#conference">Conference</a></li>
+<li class="toctree-l3"><a class="reference internal" href="intro.html#conversation">Conversation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="intro.html#trunk">Trunk</a></li>
+<li class="toctree-l3"><a class="reference internal" href="intro.html#queue">Queue</a></li>
+<li class="toctree-l3"><a class="reference internal" href="intro.html#webhook">Webhook</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#signup">Signup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="quickstart.html#sign-up-to-voipbin">Sign up to VoIPBin</a></li>
+<li class="toctree-l3"><a class="reference internal" href="quickstart.html#what-happens-next">What Happens Next</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#authentication">Authentication</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="quickstart.html#generate-token">Generate Token</a></li>
+<li class="toctree-l3"><a class="reference internal" href="quickstart.html#generate-accesskey">Generate Accesskey</a></li>
+<li class="toctree-l3"><a class="reference internal" href="quickstart.html#using-your-token-or-accesskey">Using Your Token or Accesskey</a></li>
+<li class="toctree-l3"><a class="reference internal" href="quickstart.html#example-to-retrieve-a-list-of-access-keys">Example to retrieve a list of access keys</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#call">Call</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="quickstart.html#make-your-first-voice-call-with-manual-actions">Make your first voice call with manual actions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="quickstart.html#make-your-first-voice-call-with-existing-flow">Make your first voice call with existing flow</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#queue">Queue</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="quickstart.html#create-your-first-queue">Create your first queue</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="common.html">Common</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="common.html#overview">Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="common.html#common-data-structures">Common Data Structures</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="common.html#address-structure">Address Structure</a></li>
+<li class="toctree-l4"><a class="reference internal" href="common.html#timestamp-format">Timestamp Format</a></li>
+<li class="toctree-l4"><a class="reference internal" href="common.html#uuid-format">UUID Format</a></li>
+<li class="toctree-l4"><a class="reference internal" href="common.html#empty-uuid">Empty UUID</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="common.html#common-patterns">Common Patterns</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="common.html#pagination">Pagination</a></li>
+<li class="toctree-l4"><a class="reference internal" href="common.html#filtering-and-searching">Filtering and Searching</a></li>
+<li class="toctree-l4"><a class="reference internal" href="common.html#soft-deletion">Soft Deletion</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="common.html#address">Address</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="common.html#common-struct-address-address">Address</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="common.html#example">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="common.html#type">Type</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="restful_api.html">RESTful API(Application Programming Interface)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="restful_api.html#api-reference-documentation">API Reference Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="restful_api.html#getting-started-with-the-api">Getting Started with the API</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="restful_api.html#authentication">Authentication</a></li>
+<li class="toctree-l3"><a class="reference internal" href="restful_api.html#base-url">Base URL</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="restful_api.html#api-conventions">API Conventions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="restful_api.html#request-format">Request Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="restful_api.html#response-format">Response Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="restful_api.html#common-http-status-codes">Common HTTP Status Codes</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="sdk.html">SDK(Software Development Kit)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="sdk.html#overview">Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="sdk.html#accesskey">Accesskey</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sdk.html#support-languages">Support Languages</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="architecture.html#overview">Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#high-level-system-architecture">High-Level System Architecture</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#architectural-layers">Architectural Layers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#core-design-principles">Core Design Principles</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#communication-channels">Communication Channels</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#integration-capabilities">Integration Capabilities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#key-architectural-benefits">Key Architectural Benefits</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#service-dependencies">Service Dependencies</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#technology-stack">Technology Stack</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="architecture.html#backend-microservices">Backend Microservices</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#microservices-organization">Microservices Organization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#service-characteristics">Service Characteristics</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#api-gateway-bin-api-manager">API Gateway - bin-api-manager</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#special-service-architectures">Special Service Architectures</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#service-independence">Service Independence</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#service-communication-patterns">Service Communication Patterns</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#service-discovery-and-configuration">Service Discovery and Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#health-monitoring">Health Monitoring</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#error-handling-and-resilience">Error Handling and Resilience</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#deployment-architecture">Deployment Architecture</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#monitoring-and-observability">Monitoring and Observability</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#best-practices">Best Practices</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="architecture.html#inter-service-communication">Inter-Service Communication</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#communication-patterns-overview">Communication Patterns Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#rabbitmq-rpc-pattern">RabbitMQ RPC Pattern</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#rabbitmq-pub-sub-pattern">RabbitMQ Pub/Sub Pattern</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#zeromq-event-streaming">ZeroMQ Event Streaming</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#websocket-communication">WebSocket Communication</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#message-reliability">Message Reliability</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#message-ordering">Message Ordering</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#error-handling-and-retries">Error Handling and Retries</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#performance-optimization">Performance Optimization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#monitoring-and-debugging">Monitoring and Debugging</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#id3">Best Practices</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="architecture.html#data-architecture">Data Architecture</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#data-layer-overview">Data Layer Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#mysql-database">MySQL Database</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#database-migrations">Database Migrations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#redis-cache">Redis Cache</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#session-management">Session Management</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#data-consistency">Data Consistency</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#data-backup-and-recovery">Data Backup and Recovery</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#performance-monitoring">Performance Monitoring</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#scalability-considerations">Scalability Considerations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#id4">Best Practices</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="architecture.html#real-time-communication-rtc">Real-Time Communication (RTC)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#voip-stack-overview">VoIP Stack Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#kamailio-sip-edge-router">Kamailio - SIP Edge Router</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#asterisk-media-and-call-processing">Asterisk - Media and Call Processing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#rtpengine-media-proxy-and-transcoding">RTPEngine - Media Proxy and Transcoding</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#conference-architecture">Conference Architecture</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="architecture.html#conference-flow">Conference Flow</a></li>
+<li class="toctree-l4"><a class="reference internal" href="architecture.html#calls-as-conferences">1:1 Calls as Conferences</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#sip-session-recovery">SIP Session Recovery</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="architecture.html#how-it-works">How It Works</a></li>
+<li class="toctree-l4"><a class="reference internal" href="architecture.html#detailed-steps">Detailed Steps</a></li>
+<li class="toctree-l4"><a class="reference internal" href="architecture.html#asterisk-patch-for-recovery">Asterisk Patch for Recovery</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="architecture.html#system-request-flows">System Request Flows</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#request-flow-overview">Request Flow Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#flow-1-create-call-simple">Flow 1: Create Call (Simple)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#flow-2-get-call-with-caching">Flow 2: Get Call with Caching</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#flow-3-call-with-event-broadcasting">Flow 3: Call with Event Broadcasting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#flow-4-complex-multi-service-flow">Flow 4: Complex Multi-Service Flow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#flow-5-real-time-event-notification">Flow 5: Real-Time Event Notification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#flow-6-error-handling-flow">Flow 6: Error Handling Flow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#id7">Performance Optimization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#best-practices-for-developers">Best Practices for Developers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#debugging-request-flows">Debugging Request Flows</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture.html#summary">Summary</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="accesskey.html">Accesskey</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="accesskey.html#accesskey-api-overview">Accesskey API Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="accesskey.html#api-usage">API Usage</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="accesskey.html#example-request">Example Request</a></li>
+<li class="toctree-l4"><a class="reference internal" href="accesskey.html#description-of-parameters">Description of Parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="accesskey.html#authentication">Authentication</a></li>
+<li class="toctree-l3"><a class="reference internal" href="accesskey.html#lifecycles-and-expiry">Lifecycles and Expiry</a></li>
+<li class="toctree-l3"><a class="reference internal" href="accesskey.html#notes">Notes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="accesskey.html#struct">Struct</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="accesskey.html#accesskey-struct-accesskey">Accesskey</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="accesskey.html#tutorial">Tutorial</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="accesskey.html#create-retrieve-and-manage-accesskeys">Create, Retrieve, and Manage Accesskeys</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="flow.html#overview">Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#how-the-flow-works">How the flow works</a></li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#unified-flow">Unified flow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#non-linear-action-execution">Non-linear action execution</a></li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#flow-fork">Flow fork</a></li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#actions">Actions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#flow-execution">Flow execution</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#incoming-outgoing-calls">Incoming/Outgoing Calls</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#received-messages">Received Messages</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#outbound-campaigns">Outbound Campaigns</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#api">API</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#flow-actions-and-interrupt-actions">Flow Actions and Interrupt Actions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#standard-flow-actions">Standard Flow Actions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#interrupt-actions">Interrupt Actions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#how-interrupt-actions-work">How Interrupt Actions Work</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#integration-and-best-practices">Integration and Best Practices</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#the-on-complete-flow-id">The on complete flow id</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#how-it-works">How it works</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#execution-limits">Execution limits</a></li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#behavior-on-termination">Behavior on termination</a></li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#example">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="flow.html#flow-struct-flow">Flow</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#flow-struct-flow-flow">Flow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#type">Type</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="flow.html#action">Action</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#flow-struct-action-action">Action</a></li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#flow-struct-action-type">Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#agent-call">Agent Call</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#parameters">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id5">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#amd">AMD</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id6">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#machine-handle">Machine handle</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id7">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#answer">Answer</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id8">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id9">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#beep">Beep</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id10">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id11">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#branch">Branch</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id12">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id13">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#call">Call</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id14">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id15">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#chatbot-talk">Chatbot Talk</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id16">Parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#confbridge-join">Confbridge Join</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id17">Parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#condition-call-digits">Condition Call Digits</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id18">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id19">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#condition-call-status">Condition Call Status</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id20">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id21">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#condition-datetime">Condition Datetime</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id22">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id23">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#condition-variable">Condition Variable</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id24">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id25">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#conference-join">Conference Join</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id26">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id27">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#connect">Connect</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id28">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id29">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#conversation-send">Conversation send</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id30">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id31">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#digits-receive">Digits Receive</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id32">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id33">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#digits-send">Digits Send</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id34">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id35">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#echo">Echo</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id36">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id37">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#external-media-start">External Media Start</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id38">Parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#external-media-stop">External Media Stop</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id39">Parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#fetch">Fetch</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id40">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id41">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#fetch-flow">Fetch Flow</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id42">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id43">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#goto">Goto</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id44">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id45">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#hangup">Hangup</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id46">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id47">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#hangup-relay">Hangup Relay</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id48">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id49">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#message-send">Message send</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id50">Parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#play">Play</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id51">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id52">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#queue-join">Queue Join</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id53">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id54">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#recording-start">Recording Start</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id55">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id56">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#recording-stop">Recording Stop</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id57">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id58">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#sleep">Sleep</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id59">Parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#stream-echo">Stream Echo</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id60">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id61">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#talk">Talk</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id62">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#digits-handle">Digits handle</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id63">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#transcribe-recording">Transcribe recording</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id64">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id65">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#transcribe-start">Transcribe start</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id66">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id67">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#transcribe-stop">Transcribe stop</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id68">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id69">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#variable-set">Variable Set</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id70">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id71">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#webhook-send">Webhook send</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id72">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id73">Example</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="flow.html#actvieflow">Actvieflow</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#activeflow">Activeflow</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="flow.html#id74">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#reference-type">Reference type</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="flow.html#tutorial-basic">Tutorial basic</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#get-list-of-flows">Get list of flows</a></li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#get-detail-of-specified-flow">Get detail of specified flow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#create-a-flow">Create a flow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#update-the-flow">Update the flow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#delete-the-flow">Delete the flow</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="flow.html#tutorial-scenario">Tutorial scenario</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#simple-voicemail">Simple voicemail</a></li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#simple-branch">Simple branch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#simple-message-send">Simple message send</a></li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#simple-message-send-and-make-a-new-outbound-call">Simple message send and make a new outbound call</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="activeflow.html">Activeflow</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="activeflow.html#overview">Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="activeflow.html#execution">Execution</a></li>
+<li class="toctree-l3"><a class="reference internal" href="activeflow.html#status-and-control-interface">Status and Control interface</a></li>
+<li class="toctree-l3"><a class="reference internal" href="activeflow.html#activeflow-lifecycle">Activeflow Lifecycle</a></li>
+<li class="toctree-l3"><a class="reference internal" href="activeflow.html#executed-actions">Executed Actions</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="activeflow.html#activeflow-struct-activeflow">Activeflow</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="activeflow.html#activeflow-struct-activeflow-activeflow">Activeflow</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="activeflow.html#example">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="activeflow.html#status">Status</a></li>
+<li class="toctree-l3"><a class="reference internal" href="activeflow.html#reference-type">Reference type</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="activeflow.html#tutorial">Tutorial</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="activeflow.html#get-activeflow-list">Get activeflow list</a></li>
+<li class="toctree-l3"><a class="reference internal" href="activeflow.html#stop-activeflow">Stop activeflow</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="call.html">Call</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="call.html#overview">Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="call.html#protocol">Protocol</a></li>
+<li class="toctree-l3"><a class="reference internal" href="call.html#pstn-phone-number-format">PSTN/Phone Number Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="call.html#extension-number-format">Extension Number Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="call.html#incoming-call">Incoming call</a></li>
+<li class="toctree-l3"><a class="reference internal" href="call.html#execution-of-call-flow-for-incoming-call">Execution of Call Flow for incoming call</a></li>
+<li class="toctree-l3"><a class="reference internal" href="call.html#outgoing-call">Outgoing call</a></li>
+<li class="toctree-l3"><a class="reference internal" href="call.html#execution-of-call-flow-for-outgoing-call">Execution of Call Flow for outgoing call</a></li>
+<li class="toctree-l3"><a class="reference internal" href="call.html#error-handling-and-termination">Error handling and Termination</a></li>
+<li class="toctree-l3"><a class="reference internal" href="call.html#call-concept">Call concept</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="call.html#comparison-traditional-call-concept-vs-voipbin-call-concept">Comparison: Traditional Call Concept vs VoIPBIN Call Concept</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="call.html#transfer">Transfer</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="call.html#blind-transfer">Blind Transfer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="call.html#attended-transfer">Attended Transfer</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="call.html#groupcall">Groupcall</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="call.html#ringall">Ringall</a></li>
+<li class="toctree-l3"><a class="reference internal" href="call.html#linear">Linear</a></li>
+<li class="toctree-l3"><a class="reference internal" href="call.html#nested-groupcall">Nested groupcall</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="call.html#struct-call">Struct Call</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="call.html#call-struct-call-call">Call</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="call.html#example">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="call.html#type">Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="call.html#status">Status</a></li>
+<li class="toctree-l3"><a class="reference internal" href="call.html#direction">Direction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="call.html#hangup-by">Hangup by</a></li>
+<li class="toctree-l3"><a class="reference internal" href="call.html#hangup-reason">Hangup reason</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="call.html#struct-groupcall">Struct Groupcall</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="call.html#call-struct-groupcall-groupcall">Groupcall</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="call.html#id3">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="call.html#ring-method">Ring method</a></li>
+<li class="toctree-l3"><a class="reference internal" href="call.html#answer-method">Answer method</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="call.html#tutorial">Tutorial</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="call.html#simple-outbound-call-with-tts">Simple outbound call with TTS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="call.html#simple-outbound-call-with-media-file-play">Simple outbound call with media file play</a></li>
+<li class="toctree-l3"><a class="reference internal" href="call.html#simple-outbound-call-with-tts-and-connect">Simple outbound call with TTS and connect</a></li>
+<li class="toctree-l3"><a class="reference internal" href="call.html#simple-outbound-call-with-talk-and-digits-send">Simple outbound call with talk and digits_send</a></li>
+<li class="toctree-l3"><a class="reference internal" href="call.html#simple-outbound-call-with-branch">Simple outbound call with Branch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="call.html#get-call-list">Get call list</a></li>
+<li class="toctree-l3"><a class="reference internal" href="call.html#get-specific-call">Get specific call</a></li>
+<li class="toctree-l3"><a class="reference internal" href="call.html#make-a-groupcall">Make a groupcall</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="message.html">Message</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="message.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="message.html#message-struct-message">Message</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="message.html#message-struct-message-message">Message</a></li>
+<li class="toctree-l3"><a class="reference internal" href="message.html#target">Target</a></li>
+<li class="toctree-l3"><a class="reference internal" href="message.html#type">Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="message.html#direction">Direction</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="message.html#tutorial">Tutorial</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="message.html#send-a-message">Send a message</a></li>
+<li class="toctree-l3"><a class="reference internal" href="message.html#get-list-of-messages">Get list of messages</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="email.html">Email</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="email.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="email.html#email-and-mailbox">Email and Mailbox</a></li>
+<li class="toctree-l2"><a class="reference internal" href="email.html#email-message">Email Message</a></li>
+<li class="toctree-l2"><a class="reference internal" href="email.html#email-struct-email">Email</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="email.html#email-struct-email-email">Email</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="email.html#example">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="email.html#status">Status</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="email.html#attachment">Attachment</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="email.html#email-struct-attachment-attachment">Attachment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="email.html#type">Type</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="email.html#tutorial">Tutorial</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="email.html#get-list-of-emails">Get list of emails</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="email.html#id4">Example</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="agent.html">Agent</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="agent.html#overview">Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="agent.html#call-to-agent">Call to agent</a></li>
+<li class="toctree-l3"><a class="reference internal" href="agent.html#permission">Permission</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="agent.html#struct">Struct</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="agent.html#agent-struct-agent-agent">Agent</a></li>
+<li class="toctree-l3"><a class="reference internal" href="agent.html#ring-method">Ring method</a></li>
+<li class="toctree-l3"><a class="reference internal" href="agent.html#status">Status</a></li>
+<li class="toctree-l3"><a class="reference internal" href="agent.html#id2">Permission</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="agent.html#tutorial">Tutorial</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="agent.html#create-a-new-agent">Create a new agent</a></li>
+<li class="toctree-l3"><a class="reference internal" href="agent.html#update-agent-s-status">Update agent’s status</a></li>
+<li class="toctree-l3"><a class="reference internal" href="agent.html#update-agent-s-addresses">Update agent’s addresses</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="conference.html">Conference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="conference.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="conference.html#conference-struct-conference">Conference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="conference.html#conference-struct-conference-conference">Conference</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="conference.html#example">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="conference.html#type">Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="conference.html#status">Status</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="conference.html#conferencecall">conferencecall</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="conference.html#id3">Conferencecall</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="conference.html#id4">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="conference.html#reference-type">Reference type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="conference.html#conference-struct-conferencecall-status">Status</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="conference.html#tutorial">Tutorial</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="conference.html#install-channel-line">Install channel: line</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="conference.html#id6">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="conference.html#get-list-of-conferences">Get list of conferences</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="conference.html#id7">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="conference.html#get-detail-of-conference">Get detail of conference</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="conference.html#id8">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="conference.html#create-a-new-conference">Create a new conference</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="conference.html#id9">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="conference.html#kick-the-conferencecall-from-the-conference">Kick the conferencecall from the conference</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="conference.html#id10">Example</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="mediastream.html">Mediastream</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="mediastream.html#overview">Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="mediastream.html#available-resources">Available resources</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mediastream.html#bi-directional-streaming">Bi-directional streaming</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mediastream.html#uni-directional-streaming">Uni-directional streaming</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mediastream.html#encapsulation-types">Encapsulation Types</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mediastream.html#codec">Codec</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="mediastream.html#tutorial">Tutorial</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="mediastream.html#bi-directional-media-streaming-for-calls">Bi-Directional Media Streaming for Calls</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mediastream.html#bi-directional-media-streaming-for-conferences">Bi-Directional Media Streaming for Conferences</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mediastream.html#id1">Encapsulation Types</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mediastream.html#websocket-client-examples">WebSocket Client Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mediastream.html#uni-directional-streaming-with-flow-action">Uni-Directional Streaming with Flow Action</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mediastream.html#common-use-cases">Common Use Cases</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mediastream.html#audio-format-details">Audio Format Details</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mediastream.html#best-practices">Best Practices</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mediastream.html#connection-lifecycle">Connection Lifecycle</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mediastream.html#troubleshooting">Troubleshooting</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="conversation.html">Conversation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="conversation.html#overview">Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="conversation.html#unified-conversation">Unified conversation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="conversation.html#seperated-conversation-room">Seperated conversation room</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="conversation.html#conversation-struct-conversation">Conversation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="conversation.html#conversation-struct-conversation-conversation">Conversation</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="conversation.html#example">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="conversation.html#reference-type">Reference type</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="conversation.html#message">Message</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="conversation.html#conversation-struct-message-message">Message</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="conversation.html#id4">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="conversation.html#direction">Direction</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="conversation.html#tutorial">Tutorial</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="conversation.html#setup-the-conversation">Setup the conversation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="conversation.html#get-list-of-conversations">Get list of conversations</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="conversation.html#id5">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="conversation.html#get-detail-of-conversation">Get detail of conversation</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="conversation.html#id6">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="conversation.html#send-a-message-to-the-conversation">Send a message to the conversation</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="conversation.html#id7">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="conversation.html#get-list-of-conversation-messages">Get list of conversation messages</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="conversation.html#id8">Example</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="extension.html">Extension</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="extension.html#overview">Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="extension.html#registration-address">Registration address</a></li>
+<li class="toctree-l3"><a class="reference internal" href="extension.html#registration">Registration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="extension.html#proxy-authentication-required">407 Proxy Authentication Required</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="extension.html#extension-struct-extension">Extension</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="extension.html#extension-struct-extension-extension">Extension</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="extension.html#tutorial">Tutorial</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="extension.html#get-list-of-extensions">Get list of extensions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="extension.html#get-detail-of-specified-extension">Get detail of specified extension</a></li>
+<li class="toctree-l3"><a class="reference internal" href="extension.html#create-a-extension">Create a extension</a></li>
+<li class="toctree-l3"><a class="reference internal" href="extension.html#update-the-extension">Update the extension</a></li>
+<li class="toctree-l3"><a class="reference internal" href="extension.html#delete-the-extension">Delete the extension</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="number.html">Number</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="number.html#overview">Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="number.html#flow-execution">Flow execution</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="number.html#number-struct-number">Number</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="number.html#number-struct-number-number">Number</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="number.html#example">example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="number.html#status">Status</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="number.html#tutorial">Tutorial</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="number.html#get-list-of-available-numbers">Get list of available-numbers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="number.html#get-list-of-numbers">Get list of numbers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="number.html#get-detail-of-number">Get detail of number</a></li>
+<li class="toctree-l3"><a class="reference internal" href="number.html#delete-number">Delete number</a></li>
+<li class="toctree-l3"><a class="reference internal" href="number.html#create-number">Create number</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="queue.html">Queue</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="queue.html#overview">Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="queue.html#the-purpose-of-call-queueing">The purpose of call queueing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="queue.html#flow-execution">Flow Execution</a></li>
+<li class="toctree-l3"><a class="reference internal" href="queue.html#agent-searching">Agent searching</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="queue.html#queue-struct-queue">Queue</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="queue.html#queue-struct-queue-queue">Queue</a></li>
+<li class="toctree-l3"><a class="reference internal" href="queue.html#routing-method">Routing Method</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="queue.html#queuecall">Queuecall</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="queue.html#queue-struct-queuecall-queuecall">Queuecall</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="queue.html#example">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="queue.html#reference-type">Reference type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="queue.html#status">Status</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="queue.html#tutorial">Tutorial</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="queue.html#create-a-new-queue">Create a new queue</a></li>
+<li class="toctree-l3"><a class="reference internal" href="queue.html#get-list-of-queues">Get list of queues</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="recording.html">Recording</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="recording.html#overview">Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="recording.html#list-call-recording-metadata">List Call Recording Metadata</a></li>
+<li class="toctree-l3"><a class="reference internal" href="recording.html#retrieve-detailed-information-with-the-single-call-recording-metadata-api">Retrieve Detailed Information with the Single Call Recording Metadata API</a></li>
+<li class="toctree-l3"><a class="reference internal" href="recording.html#delete-call-recordings">Delete Call Recordings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="recording.html#download-call-recording-audio-files">Download Call Recording Audio Files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="recording.html#asynchronously-export-call-recordings-in-bulk">Asynchronously Export Call Recordings in Bulk</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="recording.html#recording-struct-recording">Recording</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="recording.html#recording-struct-recording-recording">Recording</a></li>
+<li class="toctree-l3"><a class="reference internal" href="recording.html#type">Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="recording.html#status">Status</a></li>
+<li class="toctree-l3"><a class="reference internal" href="recording.html#format">Format</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="recording.html#tutorial">Tutorial</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="recording.html#get-list-of-recordings">Get list of recordings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="recording.html#get-detail-of-recording">Get detail of recording</a></li>
+<li class="toctree-l3"><a class="reference internal" href="recording.html#simple-recordingfile-download">Simple recordingfile download</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tag.html#overview">Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tag.html#key-features-and-use-cases">Key Features and Use Cases</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tag.html#tag-struct-tag">Tag</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tag.html#tag-struct-tag-tag">Tag</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tag.html#tutorial">Tutorial</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tag.html#create-a-new-tag">Create a new tag</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="campaign.html">Campaign</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="campaign.html#overview">Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="campaign.html#resource">Resource</a></li>
+<li class="toctree-l3"><a class="reference internal" href="campaign.html#w1h">5W1H</a></li>
+<li class="toctree-l3"><a class="reference internal" href="campaign.html#dialing-strategy">Dialing strategy</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="campaign.html#campaign-struct-campaign">Campaign</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="campaign.html#campaign-struct-campaign-campaign">Campaign</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="campaign.html#example">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="campaign.html#type">Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="campaign.html#status">Status</a></li>
+<li class="toctree-l3"><a class="reference internal" href="campaign.html#service-level">Service level</a></li>
+<li class="toctree-l3"><a class="reference internal" href="campaign.html#end-handle">End handle</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="campaign.html#campaigncall">Campaigncall</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="campaign.html#campaign-struct-campaigncall-campaigncall">Campaigncall</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="campaign.html#id4">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="campaign.html#reference-type">Reference type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="campaign.html#campaign-struct-campaigncall-status">Status</a></li>
+<li class="toctree-l3"><a class="reference internal" href="campaign.html#result">Result</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="campaign.html#tutorial">Tutorial</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="campaign.html#get-list-of-campaigns">Get list of campaigns</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="campaign.html#id6">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="campaign.html#get-detail-of-campaign">Get detail of campaign</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="campaign.html#id7">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="campaign.html#create-a-new-campaign">Create a new campaign</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="campaign.html#id8">Example</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="outdial.html">Outdial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="outdial.html#overview">Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="outdial.html#id1">Outdial</a></li>
+<li class="toctree-l3"><a class="reference internal" href="outdial.html#outdial-target">Outdial target</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="outdial.html#outdial-struct-outdial">Outdial</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="outdial.html#outdial-struct-outdial-outdial">Outdial</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="outdial.html#example">example</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="outdial.html#outdialtarget">Outdialtarget</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="outdial.html#outdial-struct-outdialtarget-outdialtarget">Outdialtarget</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="outdial.html#id5">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="outdial.html#status">Status</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="outdial.html#tutorial">Tutorial</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="outdial.html#get-list-of-outdials">Get list of outdials</a></li>
+<li class="toctree-l3"><a class="reference internal" href="outdial.html#get-a-detail-of-outdial">Get a detail of outdial</a></li>
+<li class="toctree-l3"><a class="reference internal" href="outdial.html#create-a-new-outdial">Create a new outdial</a></li>
+<li class="toctree-l3"><a class="reference internal" href="outdial.html#create-a-new-outdialtarget">Create a new outdialtarget</a></li>
+<li class="toctree-l3"><a class="reference internal" href="outdial.html#get-list-of-outdialtargets">Get list of outdialtargets</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="outplan.html">Outplan</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="outplan.html#overview">Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="outplan.html#key-features">Key features</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="outplan.html#outplan-struct-outplan">Outplan</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="outplan.html#outplan-struct-outplan-outplan">Outplan</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="outplan.html#example">example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="outplan.html#try-interval">Try interval</a></li>
+<li class="toctree-l3"><a class="reference internal" href="outplan.html#max-try-count">Max try count</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="outplan.html#tutorial">Tutorial</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="outplan.html#get-list-of-outplans">Get list of outplans</a></li>
+<li class="toctree-l3"><a class="reference internal" href="outplan.html#get-detail-of-outplan">Get detail of outplan</a></li>
+<li class="toctree-l3"><a class="reference internal" href="outplan.html#create-a-new-outplan">Create a new outplan</a></li>
+<li class="toctree-l3"><a class="reference internal" href="outplan.html#update-outplan-s-dial-info">Update outplan’s dial info</a></li>
+<li class="toctree-l3"><a class="reference internal" href="outplan.html#delete-outplan">Delete outplan</a></li>
+<li class="toctree-l3"><a class="reference internal" href="outplan.html#update-outplan-s-basic-info">Update outplan’s basic info</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="webhook.html">Webhook</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="webhook.html#overview">Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="webhook.html#notification-mechanism">Notification Mechanism</a></li>
+<li class="toctree-l3"><a class="reference internal" href="webhook.html#types-of-webhooks">Types of Webhooks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="webhook.html#custom-endpoints">Custom Endpoints</a></li>
+<li class="toctree-l3"><a class="reference internal" href="webhook.html#benefits-of-webhooks">Benefits of Webhooks</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="webhook.html#webhook-struct-webhook">Webhook</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="webhook.html#activeflow-created">activeflow_created</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="webhook.html#example">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="webhook.html#activeflow-updated">activeflow_updated</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="webhook.html#id2">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="webhook.html#activeflow-deleted">activeflow_deleted</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="webhook.html#id3">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="webhook.html#call-created">call_created</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="webhook.html#id4">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="webhook.html#call-ringing">call_ringing</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="webhook.html#id5">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="webhook.html#call-answered">call_answered</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="webhook.html#id6">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="webhook.html#call-updated">call_updated</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="webhook.html#id7">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="webhook.html#call-hungup">call_hungup</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="webhook.html#id8">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="webhook.html#queue-created">queue_created</a></li>
+<li class="toctree-l3"><a class="reference internal" href="webhook.html#queue-updated">queue_updated</a></li>
+<li class="toctree-l3"><a class="reference internal" href="webhook.html#queue-deleted">queue_deleted</a></li>
+<li class="toctree-l3"><a class="reference internal" href="webhook.html#queuecall-created">queuecall_created</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="webhook.html#id9">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="webhook.html#queuecall-entering">queuecall_entering</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="webhook.html#id10">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="webhook.html#queuecall-kicking">queuecall_kicking</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="webhook.html#id11">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="webhook.html#queuecall-serviced">queuecall_serviced</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="webhook.html#id12">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="webhook.html#queuecall-done">queuecall_done</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="webhook.html#id13">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="webhook.html#queuecall-abandoned">queuecall_abandoned</a></li>
+<li class="toctree-l3"><a class="reference internal" href="webhook.html#agent-created">agent_created</a></li>
+<li class="toctree-l3"><a class="reference internal" href="webhook.html#agent-updated">agent_updated</a></li>
+<li class="toctree-l3"><a class="reference internal" href="webhook.html#agent-deleted">agent_deleted</a></li>
+<li class="toctree-l3"><a class="reference internal" href="webhook.html#agent-status-updated">agent_status_updated</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="webhook.html#id14">Example</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="webhook.html#tutorial">Tutorial</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="webhook.html#create-a-webhook">Create a Webhook</a></li>
+<li class="toctree-l3"><a class="reference internal" href="webhook.html#get-list-of-webhooks">Get List of Webhooks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="webhook.html#update-a-webhook">Update a Webhook</a></li>
+<li class="toctree-l3"><a class="reference internal" href="webhook.html#delete-a-webhook">Delete a Webhook</a></li>
+<li class="toctree-l3"><a class="reference internal" href="webhook.html#webhook-event-types">Webhook Event Types</a></li>
+<li class="toctree-l3"><a class="reference internal" href="webhook.html#receiving-webhook-events">Receiving Webhook Events</a></li>
+<li class="toctree-l3"><a class="reference internal" href="webhook.html#testing-webhooks">Testing Webhooks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="webhook.html#webhook-payload-structure">Webhook Payload Structure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="webhook.html#best-practices">Best Practices</a></li>
+<li class="toctree-l3"><a class="reference internal" href="webhook.html#common-use-cases">Common Use Cases</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="customer.html">Customer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="customer.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="customer.html#customer-struct-customer">Customer</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="customer.html#customer-struct-customer-customer">Customer</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="customer.html#example">Example</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="customer.html#tutorial">Tutorial</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="customer.html#get-list-of-customers">Get list of customers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="customer.html#get-detail-of-customer">Get detail of customer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="customer.html#create-a-new-customer">Create a new customer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="customer.html#delete-customer">Delete customer</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="chat.html">Chat</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="chat.html#overview">Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="chat.html#chat-and-chatroom">Chat and Chatroom</a></li>
+<li class="toctree-l3"><a class="reference internal" href="chat.html#chatmessage-and-charoommessage">Chatmessage and Charoommessage</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="chat.html#chat-struct-chat">Chat</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="chat.html#chat-struct-chat-chat">Chat</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="chat.html#example">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="chat.html#type">Type</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="chat.html#chatroom">Chatroom</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="chat.html#chat-struct-chatroom-chatroom">Chatroom</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="chat.html#id4">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="chat.html#chat-struct-chatroom-type">Type</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="chat.html#chatmessage">Chatmessage</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="chat.html#chat-struct-chatmessage-chatmessage">Chatmessage</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="chat.html#id7">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="chat.html#chat-struct-chatmessage-type">Type</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="chat.html#chatroommessage">Chatroommessage</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="chat.html#chat-struct-chatroommessage-chatroommessage">Chatroommessage</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="chat.html#id10">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="chat.html#chat-struct-chatroommessage-type">Type</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="chat.html#tutorial">Tutorial</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="chat.html#get-list-of-chats">Get list of chats</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="chat.html#id12">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="chat.html#get-detail-of-chat">Get detail of chat</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="chat.html#id13">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="chat.html#create-a-new-chat">Create a new chat</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="chat.html#id14">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="chat.html#get-list-of-chatrooms">Get list of chatrooms</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="chat.html#id15">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="chat.html#send-chatmessage">Send chatmessage</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="chat.html#id16">Example</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="talk.html">Talk</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="talk.html#overview">Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="talk.html#talk-and-participants">Talk and Participants</a></li>
+<li class="toctree-l3"><a class="reference internal" href="talk.html#messages-with-threading-and-reactions">Messages with Threading and Reactions</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="talk.html#talk-struct-talk">Talk</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="talk.html#talk-struct-talk-talk">Talk</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="talk.html#example">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="talk.html#type">Type</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="talk.html#message">Message</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="talk.html#talk-struct-message-message">Message</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="talk.html#id4">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="talk.html#talk-struct-message-type">Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="talk.html#threading">Threading</a></li>
+<li class="toctree-l3"><a class="reference internal" href="talk.html#reactions">Reactions</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="talk.html#participant">Participant</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="talk.html#talk-struct-participant-participant">Participant</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="talk.html#id7">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="talk.html#participant-management">Participant Management</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="talk.html#tutorial">Tutorial</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="talk.html#create-a-talk">Create a Talk</a></li>
+<li class="toctree-l3"><a class="reference internal" href="talk.html#add-participants">Add Participants</a></li>
+<li class="toctree-l3"><a class="reference internal" href="talk.html#send-a-message">Send a Message</a></li>
+<li class="toctree-l3"><a class="reference internal" href="talk.html#reply-to-a-message-threading">Reply to a Message (Threading)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="talk.html#add-a-reaction">Add a Reaction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="talk.html#list-messages">List Messages</a></li>
+<li class="toctree-l3"><a class="reference internal" href="talk.html#remove-a-participant">Remove a Participant</a></li>
+<li class="toctree-l3"><a class="reference internal" href="talk.html#delete-a-talk">Delete a Talk</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="ai.html">AI</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="ai.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai.html#how-it-works">How it works</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#action-component">Action component</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#tts-stt-ai-engine">TTS/STT + AI Engine</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#voice-detection-and-play-interruption">Voice Detection and Play Interruption:</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#context-retention">Context Retention</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#multilingual-support">Multilingual support</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#external-ai-agent-integration">External AI Agent Integration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#mcp-server">MCP Server</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="ai.html#using-the-ai">Using the AI</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#initial-prompt">Initial Prompt</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ai.html#example-prompt">Example Prompt:</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="ai.html#ai-talk">AI Talk</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#key-features">Key Features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#built-in-elevenlabs-voice-ids">Built-in ElevenLabs Voice IDs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#other-elevenlabs-voice-id-options">Other ElevenLabs Voice ID Options</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="ai.html#ai-summary">AI Summary</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#supported-resources">Supported Resources</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#choosing-between-real-time-and-non-real-time-summaries">Choosing Between Real-time and Non-Real-time Summaries</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#ai-summary-behavior">AI Summary Behavior</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#ensuring-full-coverage">Ensuring Full Coverage</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="ai.html#ai-struct-ai">AI</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#ai-struct-ai-ai">AI</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ai.html#example">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#type">Type</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="ai.html#tutorial">Tutorial</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#simple-ai-voice-assistant">Simple AI Voice Assistant</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#ai-talk-with-real-time-conversation">AI Talk with Real-Time Conversation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#ai-with-custom-voice-id">AI with Custom Voice ID</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#ai-summary-for-call-transcription">AI Summary for Call Transcription</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#real-time-ai-summary">Real-Time AI Summary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#best-practices">Best Practices</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="provider.html">Provider</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="provider.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="provider.html#provider-struct-provider">Provider</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="provider.html#provider-struct-provider-provider">Provider</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="provider.html#example">example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="provider.html#type">Type</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="provider.html#tutorial">Tutorial</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="provider.html#get-list-of-providers">Get list of providers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="provider.html#get-detail-of-provider">Get detail of provider</a></li>
+<li class="toctree-l3"><a class="reference internal" href="provider.html#create-a-new-provider">Create a new provider</a></li>
+<li class="toctree-l3"><a class="reference internal" href="provider.html#update-provider">Update provider</a></li>
+<li class="toctree-l3"><a class="reference internal" href="provider.html#delete-provider">Delete provider</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="route.html">Route</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="route.html#overview">Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="route.html#route-failover">Route Failover</a></li>
+<li class="toctree-l3"><a class="reference internal" href="route.html#dynamic-routing-decisions">Dynamic Routing Decisions</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="route.html#route-struct-route">Route</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="route.html#route-struct-route-route">Route</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="route.html#example">example</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="route.html#tutorial">Tutorial</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="route.html#get-list-of-routes">Get list of routes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="route.html#get-detail-of-route">Get detail of route</a></li>
+<li class="toctree-l3"><a class="reference internal" href="route.html#create-a-new-route">Create a new route</a></li>
+<li class="toctree-l3"><a class="reference internal" href="route.html#update-route">Update route</a></li>
+<li class="toctree-l3"><a class="reference internal" href="route.html#delete-route">Delete route</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="variable.html">Variable</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="variable.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="variable.html#using-variables-in-flows">Using Variables in Flows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="variable.html#capturing-and-setting-dynamic-values">Capturing and Setting Dynamic Values</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="variable.html#automatically-by-the-system">Automatically by the system</a></li>
+<li class="toctree-l3"><a class="reference internal" href="variable.html#by-actions-within-the-flow">By actions within the flow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="variable.html#manually-via-variable-set-action">Manually via variable_set action</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="variable.html#integration-with-applications">Integration with Applications</a></li>
+<li class="toctree-l2"><a class="reference internal" href="variable.html#best-practices-and-considerations">Best Practices and Considerations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="variable.html#variable-variable">Variable</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="variable.html#activeflow">Activeflow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="variable.html#call">Call</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="variable.html#source-address">Source address</a></li>
+<li class="toctree-l4"><a class="reference internal" href="variable.html#destination-address">Destination address</a></li>
+<li class="toctree-l4"><a class="reference internal" href="variable.html#others">Others</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="variable.html#message">Message</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="variable.html#id2">Source address</a></li>
+<li class="toctree-l4"><a class="reference internal" href="variable.html#target-destination-address">Target destination address</a></li>
+<li class="toctree-l4"><a class="reference internal" href="variable.html#id3">Message</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="variable.html#queue">Queue</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="variable.html#queue-info">Queue info</a></li>
+<li class="toctree-l4"><a class="reference internal" href="variable.html#queuecall-info">Queuecall info</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="variable.html#ai-call">AI Call</a></li>
+<li class="toctree-l3"><a class="reference internal" href="variable.html#ai-summary">AI Summary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="variable.html#recording">Recording</a></li>
+<li class="toctree-l3"><a class="reference internal" href="variable.html#transcribe">Transcribe</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="websocket.html">Websocket</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="websocket.html#overview">Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="websocket.html#websocket-endpoint">Websocket endpoint</a></li>
+<li class="toctree-l3"><a class="reference internal" href="websocket.html#topic-subscription-unsubscription">Topic Subscription/Unsubscription</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="websocket.html#customer-level-topics">Customer Level Topics</a></li>
+<li class="toctree-l4"><a class="reference internal" href="websocket.html#agent-level-topics">Agent Level Topics</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="websocket.html#pattern-matching-subscription">Pattern Matching Subscription</a></li>
+<li class="toctree-l3"><a class="reference internal" href="websocket.html#real-time-event-updates">Real-Time Event Updates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="websocket.html#benefits-of-websocket">Benefits of WebSocket</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="websocket.html#struct">Struct</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="websocket.html#subscribe">Subscribe</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="websocket.html#example">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="websocket.html#unsubscribe">Unsubscribe</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="websocket.html#id1">Example</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="websocket.html#tutorial">Tutorial</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="websocket.html#connect-to-websocket">Connect to WebSocket</a></li>
+<li class="toctree-l3"><a class="reference internal" href="websocket.html#subscribe-to-events">Subscribe to Events</a></li>
+<li class="toctree-l3"><a class="reference internal" href="websocket.html#unsubscribe-from-events">Unsubscribe from Events</a></li>
+<li class="toctree-l3"><a class="reference internal" href="websocket.html#websocket-client-examples">WebSocket Client Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="websocket.html#topic-pattern-matching">Topic Pattern Matching</a></li>
+<li class="toctree-l3"><a class="reference internal" href="websocket.html#permission-requirements">Permission Requirements</a></li>
+<li class="toctree-l3"><a class="reference internal" href="websocket.html#event-message-format">Event Message Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="websocket.html#common-use-cases">Common Use Cases</a></li>
+<li class="toctree-l3"><a class="reference internal" href="websocket.html#best-practices">Best Practices</a></li>
+<li class="toctree-l3"><a class="reference internal" href="websocket.html#connection-lifecycle">Connection Lifecycle</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="trunk.html">Trunk</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="trunk.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="trunk.html#trunking">Trunking</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="trunk.html#server-address">Server address</a></li>
+<li class="toctree-l3"><a class="reference internal" href="trunk.html#authentication">Authentication</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="trunk.html#basic-authentication">Basic authentication</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="trunk.html#call-handle">Call handle</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="trunk.html#early-media-handle">Early media handle</a></li>
+<li class="toctree-l4"><a class="reference internal" href="trunk.html#realy-hangup-cause">Realy hangup cause</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="trunk.html#domain-name">Domain name</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="billing_account.html">Billing Account</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="billing_account.html#overview">Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="billing_account.html#balance-add">Balance add</a></li>
+<li class="toctree-l3"><a class="reference internal" href="billing_account.html#rate">Rate</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="billing_account.html#tutorial">Tutorial</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="billing_account.html#check-account-balance">Check Account Balance</a></li>
+<li class="toctree-l3"><a class="reference internal" href="billing_account.html#add-balance-admin-only">Add Balance (Admin Only)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="billing_account.html#understanding-service-rates">Understanding Service Rates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="billing_account.html#check-balance-before-call">Check Balance Before Call</a></li>
+<li class="toctree-l3"><a class="reference internal" href="billing_account.html#monitor-balance-with-webhooks">Monitor Balance with Webhooks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="billing_account.html#common-use-cases">Common Use Cases</a></li>
+<li class="toctree-l3"><a class="reference internal" href="billing_account.html#best-practices">Best Practices</a></li>
+<li class="toctree-l3"><a class="reference internal" href="billing_account.html#balance-management-workflow">Balance Management Workflow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="billing_account.html#troubleshooting">Troubleshooting</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="billing_account.html#struct">Struct</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="billing_account.html#billing-account-struct-billing-account">Billing account</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="storage.html">Storage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="storage.html#overview">Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="storage.html#file-management">File Management</a></li>
+<li class="toctree-l3"><a class="reference internal" href="storage.html#storage-account-management">Storage Account Management</a></li>
+<li class="toctree-l3"><a class="reference internal" href="storage.html#quota">Quota</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="storage.html#account">Account</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="storage.html#storage-struct-account-account">Account</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="storage.html#example">example</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="storage.html#file">File</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="storage.html#storage-struct-file-file">File</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="storage.html#id3">example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="storage.html#reference-type">Reference Type</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="transcribe.html">Transcribe</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="transcribe.html#overview">Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="transcribe.html#real-time-capability">Real-Time capability</a></li>
+<li class="toctree-l3"><a class="reference internal" href="transcribe.html#transcription">Transcription</a></li>
+<li class="toctree-l3"><a class="reference internal" href="transcribe.html#enable-transcribe">Enable transcribe</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="transcribe.html#automatic-trigger-in-the-flow">Automatic Trigger in the Flow</a></li>
+<li class="toctree-l4"><a class="reference internal" href="transcribe.html#interrupt-trigger-manual-api-request">Interrupt Trigger(Manual API Request)</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="transcribe.html#supported-languages">Supported Languages</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="transcribe.html#tutorial">Tutorial</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="transcribe.html#start-transcription-with-flow-action">Start Transcription with Flow Action</a></li>
+<li class="toctree-l3"><a class="reference internal" href="transcribe.html#start-transcription-via-api-manual">Start Transcription via API (Manual)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="transcribe.html#get-transcription-results">Get Transcription Results</a></li>
+<li class="toctree-l3"><a class="reference internal" href="transcribe.html#understanding-transcription-direction">Understanding Transcription Direction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="transcribe.html#real-time-transcription-with-websocket">Real-Time Transcription with WebSocket</a></li>
+<li class="toctree-l3"><a class="reference internal" href="transcribe.html#receive-transcripts-via-webhook">Receive Transcripts via Webhook</a></li>
+<li class="toctree-l3"><a class="reference internal" href="transcribe.html#id1">Supported Languages</a></li>
+<li class="toctree-l3"><a class="reference internal" href="transcribe.html#common-use-cases">Common Use Cases</a></li>
+<li class="toctree-l3"><a class="reference internal" href="transcribe.html#best-practices">Best Practices</a></li>
+<li class="toctree-l3"><a class="reference internal" href="transcribe.html#transcription-lifecycle">Transcription Lifecycle</a></li>
+<li class="toctree-l3"><a class="reference internal" href="transcribe.html#troubleshooting">Troubleshooting</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="transcribe.html#transcribe-struct-transcribe">Transcribe</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="transcribe.html#id3">Transcribe</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="transcribe.html#example">example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="transcribe.html#reference-type">reference_type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="transcribe.html#status">status</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="transcribe.html#transcribe-struct-transcription">Transcription</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="transcribe.html#id5">Transcription</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="transcribe.html#id6">example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="transcribe.html#direction">direction</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="glossary.html#terms">Terms</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="glossary.html#accesskey">Accesskey</a></li>
+<li class="toctree-l3"><a class="reference internal" href="glossary.html#action">Action</a></li>
+<li class="toctree-l3"><a class="reference internal" href="glossary.html#activeflow">Activeflow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="glossary.html#agent">Agent</a></li>
+<li class="toctree-l3"><a class="reference internal" href="glossary.html#branch">Branch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="glossary.html#call-leg">Call Leg</a></li>
+<li class="toctree-l3"><a class="reference internal" href="glossary.html#campaign">Campaign</a></li>
+<li class="toctree-l3"><a class="reference internal" href="glossary.html#conference">Conference</a></li>
+<li class="toctree-l3"><a class="reference internal" href="glossary.html#did-direct-inward-dialing">DID (Direct Inward Dialing)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="glossary.html#dtmf-dual-tone-multi-frequency">DTMF (Dual-Tone Multi-Frequency)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="glossary.html#e-164">E.164</a></li>
+<li class="toctree-l3"><a class="reference internal" href="glossary.html#flow">Flow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="glossary.html#flow-fork">Flow Fork</a></li>
+<li class="toctree-l3"><a class="reference internal" href="glossary.html#interrupt-action">Interrupt Action</a></li>
+<li class="toctree-l3"><a class="reference internal" href="glossary.html#ivr-interactive-voice-response">IVR (Interactive Voice Response)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="glossary.html#media-server">Media Server</a></li>
+<li class="toctree-l3"><a class="reference internal" href="glossary.html#pstn-public-switched-telephone-network">PSTN (Public Switched Telephone Network)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="glossary.html#queue">Queue</a></li>
+<li class="toctree-l3"><a class="reference internal" href="glossary.html#rtp-real-time-transport-protocol">RTP (Real-time Transport Protocol)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="glossary.html#sip-session-initiation-protocol">SIP (Session Initiation Protocol)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="glossary.html#sip-trunk">SIP Trunk</a></li>
+<li class="toctree-l3"><a class="reference internal" href="glossary.html#stt-speech-to-text">STT (Speech-to-Text)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="glossary.html#tts-text-to-speech">TTS (Text-to-Speech)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="glossary.html#variable">Variable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="glossary.html#webhook">Webhook</a></li>
+<li class="toctree-l3"><a class="reference internal" href="glossary.html#webrtc-web-real-time-communication">WebRTC (Web Real-Time Communication)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="glossary.html#timestamp">Timestamp</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="glossary.html#requirement-levels-indicator">Requirement levels indicator</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Link to this heading"></a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</section>
+
+</main>
+                        <nav aria-label="Page navigation" class="py-4 my-5 clearfix font-weight-bold border-top">
+    <a class="float-right" href="intro.html" title="Next">
+        Introduction <span aria-hidden="true">&nbsp;→</span>
+    </a>
+</nav>
+                    </div>
+                    
+                    <nav class="col-12 col-lg-3 pb-4">
+                        <div class="sticky-top toc page-toc" aria-labelledby="page-toc-heading">
+                            <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
+                            <ul>
+<li><a class="reference internal" href="#">Welcome to voipbin’s documentation!</a></li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+
+                        </div>
+                    </nav>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer class="container-fluid bg-primary text-light">
+        <div class="container">
+            <div class="row">
+        <div class="col p-4">
+            
+                <nav aria-label="Footer">
+                    <ul class="nav justify-content-center mb-2">
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="http://voipbin.net">About Us</a></li>
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="http://voipbin.net">Contact</a></li>
+                        
+                    </ul>
+                </nav>
+            
+            <div class="text-center">
+                    &copy; Copyright 2024, Sungtae Kim
+            </div>
+            <div class="text-center text-white-50 font-italic mt-3">
+                <small>
+                    Created using
+                    <a class="text-white" href="https://github.com/wagtail/sphinx_wagtail_theme" rel="nofollow" target="_blank">
+                        Sphinx Wagtail Theme 6.5.0
+                    </a>
+                    and
+                    <a class="text-white" href="https://www.sphinx-doc.org/" rel="nofollow" target="_blank">
+                        Sphinx 9.1.0
+                    </a>
+                </small>
+            </div>
+        </div>
+    </div>
+        </div>
+    </footer>
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=fd6eb6e6"></script>
+        <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+        <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="_static/copybutton.js?v=f281be69"></script>
+        <script type="text/javascript" src="_static/dist/theme.js"></script>
+        <script type="text/javascript" src="_static/dist/vendor.js"></script>
+        <script type="text/javascript" src="_static/searchtools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script type="text/javascript">
+            document.addEventListener('DOMContentLoaded', function() { Search.loadIndex("searchindex.js"); });
+        </script>
+        <script type="text/javascript" id="searchindexloader"></script>
+    </body>
+</html>

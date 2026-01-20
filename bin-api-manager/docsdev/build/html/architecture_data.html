@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en" data-content_root="./">
+<head>
+    <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+        <title>Data Architecture &mdash; voipbin  documentation</title>
+    
+    <link rel="stylesheet" type="text/css" href="_static/dist/fontawesome.css" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8e8a900e" />
+      <link rel="stylesheet" type="text/css" href="_static/dist/theme.css?v=310cf088" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+            <link rel="index" title="Index" href="genindex.html" />
+            <link rel="search" title="Search" href="search.html" />
+            <link rel="top" title="voipbin  documentation" href="#" />
+    </head>
+<body>
+    <script type="text/javascript" src="_static/dist/blocking.js"></script>
+    <header class="container-fluid bg-primary">
+        <a class="btn btn-sm btn-light skip-to-content-link" href="#main">Skip to content</a>
+        <div class="container-fluid">
+            <div class="navbar navbar-expand-lg navbar-dark font-weight-bold">
+                    <a href="intro.html"
+                        title="voipbin"
+                        class="logo navbar-brand"
+                    >
+                        <img src="_static/images/voipbin-high-resolution-logo-white-transparent.png" width="45" height="80" alt="voipbin"
+                            class="logo-img"
+                        />
+                        VoIPBin Documentation
+                    </a>
+                
+                
+                    <div class="collapse navbar-collapse justify-content-end">
+                        <ul class="navbar-nav">
+                            
+                                
+                                
+                                <li class="nav-item"><a class="nav-link"  href="http://voipbin.net">Project</a></li>
+                            
+                                
+                                
+                                <li class="nav-item"><a class="nav-link"  href="https://admin.voipbin.net">Admin</a></li>
+                            
+                        </ul>
+                    </div>
+                
+                <button class="navbar-toggler btn btn-primary d-lg-none" type="button" data-toggle="collapse" data-target="#collapseSidebar" aria-expanded="false" aria-controls="collapseExample">
+                    <span class="navbar-toggler-icon"></span>
+                    <span class="sr-only">menu</span>
+                </button>
+            </div>
+        </div>
+    </header>
+    <div class="container-fluid">
+        <div class="row">
+            <aside class="col-12 col-lg-3 sidebar-container">
+                <div id="collapseSidebar" class="collapse sticky-top d-lg-block pt-5 pr-lg-4">
+<div id="searchbox" class="searchbox mb-6 px-1" role="search">
+    <form id="search-form" action="search.html" autocomplete="off" method="get" role="search">
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <div class="input-group-text border-right-0 bg-white py-3 pl-3 pr-2"><span class="fas fa-search"></span></div>
+            </div>
+            <input class="form-control py-3 pr-3 pl-1 h-100 border-left-0" type="search" name="q" placeholder="Search documentation" aria-label="Search documentation" id="searchinput" />
+        </div>
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+    </form>
+</div><div class="site-toc">
+    <nav class="toc mt-3" aria-label="Main menu">
+        <ul>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="common.html">Common</a></li>
+<li class="toctree-l1"><a class="reference internal" href="restful_api.html">RESTful API(Application Programming Interface)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sdk.html">SDK(Software Development Kit)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="accesskey.html">Accesskey</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="activeflow.html">Activeflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="call.html">Call</a></li>
+<li class="toctree-l1"><a class="reference internal" href="message.html">Message</a></li>
+<li class="toctree-l1"><a class="reference internal" href="email.html">Email</a></li>
+<li class="toctree-l1"><a class="reference internal" href="agent.html">Agent</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conference.html">Conference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mediastream.html">Mediastream</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conversation.html">Conversation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extension.html">Extension</a></li>
+<li class="toctree-l1"><a class="reference internal" href="number.html">Number</a></li>
+<li class="toctree-l1"><a class="reference internal" href="queue.html">Queue</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recording.html">Recording</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a></li>
+<li class="toctree-l1"><a class="reference internal" href="campaign.html">Campaign</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outdial.html">Outdial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outplan.html">Outplan</a></li>
+<li class="toctree-l1"><a class="reference internal" href="webhook.html">Webhook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="customer.html">Customer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chat.html">Chat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="talk.html">Talk</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ai.html">AI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="provider.html">Provider</a></li>
+<li class="toctree-l1"><a class="reference internal" href="route.html">Route</a></li>
+<li class="toctree-l1"><a class="reference internal" href="variable.html">Variable</a></li>
+<li class="toctree-l1"><a class="reference internal" href="websocket.html">Websocket</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trunk.html">Trunk</a></li>
+<li class="toctree-l1"><a class="reference internal" href="billing_account.html">Billing Account</a></li>
+<li class="toctree-l1"><a class="reference internal" href="storage.html">Storage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transcribe.html">Transcribe</a></li>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+</ul>
+
+    </nav>
+    <template data-toggle-item-template>
+        <button class="btn btn-sm btn-link toctree-expand" type="button">
+            <span class="sr-only">Toggle menu contents</span>
+        </button>
+    </template>
+</div>
+                    <div class="d-lg-none border-bottom">
+                        
+                    </div>
+                </div>
+            </aside>
+            <div class="col-12 col-lg-9 pt-5">
+                <header class="row align-items-baseline">
+                    <div class="col">
+                        <nav aria-label="breadcrumb">
+    <ol class="breadcrumb m-0 p-0 bg-transparent">
+        <li class="breadcrumb-item"><a href="index.html">Docs</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Data Architecture</li>
+    </ol>
+</nav>
+                    </div>
+                    <div class="col-sm-12 col-lg-auto mt-3 mt-lg-3">
+                        <noscript>
+                            <p>JavaScript is required to toggle light/dark mode..</p>
+                        </noscript>
+                        <button id="wagtail-theme" class="btn btn-sm btn-light text-decoration-none" type="button">
+                            <span class="dark-only"><i class="fas fa-sun"></i> Light mode</span>
+                            <span class="light-only"><i class="fas fa-moon"></i> Dark mode</span>
+                        </button>
+    <a class="btn btn-sm btn-light text-decoration-none" href="_sources/architecture_data.rst.txt" rel="nofollow">
+        <span class="btn-icon"><span class="fas fa-code"></span></span>
+        <span class="btn-text">View source</span>
+    </a>
+                        
+                    </div>
+                </header>
+                <div class="row" >
+                    <div class="col-12">
+                        <hr class="w-100 my-4">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 col-lg-9 order-last order-lg-first rst-content">
+                        <main role="main" id="main">
+    <section id="data-architecture">
+<span id="architecture-data"></span><h1>Data Architecture<a class="headerlink" href="#data-architecture" title="Link to this heading"></a></h1>
+<p>VoIPBIN uses a shared data layer with MySQL for persistent storage and Redis for caching and session management. This architecture provides consistency across services while enabling high-performance data access.</p>
+<section id="data-layer-overview">
+<h2>Data Layer Overview<a class="headerlink" href="#data-layer-overview" title="Link to this heading"></a></h2>
+<p>VoIPBIN’s data architecture consists of three layers:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Data Architecture:
+
+┌─────────────────────────────────────────────────────────┐
+│                   Application Layer                     │
+│            (30+ Microservices)                          │
+└────────────────────┬───────────────────┬────────────────┘
+                     │                   │
+                     │                   │
+     ┌───────────────▼──────┐   ┌────────▼───────────┐
+     │                      │   │                    │
+     │   Redis Cache        │   │   MySQL Database   │
+     │   (Hot Data)         │   │   (Persistent)     │
+     │                      │   │                    │
+     │  • Sessions          │   │  • All entities    │
+     │  • Frequently read   │   │  • Relationships   │
+     │  • Temporary data    │   │  • Audit logs      │
+     │                      │   │                    │
+     └──────────────────────┘   └────────────────────┘
+
+     Cache-Aside Pattern:
+     1. Check cache first
+     2. If miss, query database
+     3. Store in cache for next time
+</pre></div>
+</div>
+</section>
+<section id="mysql-database">
+<h2>MySQL Database<a class="headerlink" href="#mysql-database" title="Link to this heading"></a></h2>
+<p>VoIPBIN uses a single shared MySQL database accessed by all services.</p>
+<p><strong>Database Characteristics</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Shared Database Pattern:
+
+┌──────────────┐  ┌──────────────┐  ┌──────────────┐
+│   Service A  │  │   Service B  │  │   Service C  │
+│              │  │              │  │              │
+│  call-mgr    │  │  flow-mgr    │  │  agent-mgr   │
+└──────┬───────┘  └──────┬───────┘  └──────┬───────┘
+       │                 │                 │
+       │   Connection    │                 │
+       │   Pooling       │                 │
+       └────────┬────────┴─────────────────┘
+                │
+                ▼
+     ┌────────────────────────────┐
+     │      MySQL Database        │
+     │                            │
+     │  ┌──────────────────────┐  │
+     │  │  calls table         │  │
+     │  │  conferences table   │  │
+     │  │  agents table        │  │
+     │  │  flows table         │  │
+     │  │  customers table     │  │
+     │  │  ... 100+ tables     │  │
+     │  └──────────────────────┘  │
+     └────────────────────────────┘
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>Shared Schema</strong>: All services access same database</p></li>
+<li><p><strong>Logical Separation</strong>: Services own specific tables</p></li>
+<li><p><strong>ACID Transactions</strong>: Strong consistency guarantees</p></li>
+<li><p><strong>Connection Pooling</strong>: Each service maintains pool</p></li>
+</ul>
+<p><strong>Schema Organization</strong></p>
+<p>Tables are logically grouped by domain:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Table Organization:
+
+Communication Domain:
+• calls                - Call records
+• conferences          - Conference bridges
+• sms                  - SMS messages
+• chats                - Chat messages
+• emails               - Email records
+
+Workflow Domain:
+• flows                - Call flow definitions
+• flow_actions         - Flow action steps
+• queues               - Call queues
+• campaigns            - Campaign definitions
+
+Management Domain:
+• customers            - Customer accounts
+• agents               - Agent records
+• billings             - Billing records
+• webhooks             - Webhook configurations
+• accesskeys           - API keys
+
+Resource Domain:
+• numbers              - Phone numbers
+• recordings           - Call recordings
+• transcribes          - Transcription jobs
+• transcripts          - Transcript segments
+</pre></div>
+</div>
+<p><strong>Common Table Pattern</strong></p>
+<p>All tables follow a consistent structure:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Standard</span> <span class="n">Table</span> <span class="n">Schema</span><span class="p">:</span>
+
+<span class="n">CREATE</span> <span class="n">TABLE</span> <span class="n">resource</span> <span class="p">(</span>
+    <span class="nb">id</span>              <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">36</span><span class="p">)</span> <span class="n">PRIMARY</span> <span class="n">KEY</span><span class="p">,</span>    <span class="o">--</span> <span class="n">UUID</span>
+    <span class="n">customer_id</span>     <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">36</span><span class="p">)</span> <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>       <span class="o">--</span> <span class="n">Ownership</span>
+
+    <span class="o">--</span> <span class="n">Resource</span><span class="o">-</span><span class="n">specific</span> <span class="n">fields</span>
+    <span class="n">name</span>            <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">255</span><span class="p">),</span>
+    <span class="n">status</span>          <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">50</span><span class="p">),</span>
+    <span class="n">detail</span>          <span class="n">TEXT</span><span class="p">,</span>
+
+    <span class="o">--</span> <span class="n">Timestamps</span>
+    <span class="n">tm_create</span>       <span class="n">DATETIME</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span> <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>       <span class="o">--</span> <span class="n">Creation</span> <span class="n">time</span>
+    <span class="n">tm_update</span>       <span class="n">DATETIME</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span> <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>       <span class="o">--</span> <span class="n">Last</span> <span class="n">update</span>
+    <span class="n">tm_delete</span>       <span class="n">DATETIME</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span> <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>       <span class="o">--</span> <span class="n">Soft</span> <span class="n">delete</span>
+
+    <span class="o">--</span> <span class="n">Indexes</span>
+    <span class="n">INDEX</span> <span class="n">idx_customer</span> <span class="p">(</span><span class="n">customer_id</span><span class="p">),</span>
+    <span class="n">INDEX</span> <span class="n">idx_status</span> <span class="p">(</span><span class="n">status</span><span class="p">),</span>
+    <span class="n">INDEX</span> <span class="n">idx_tm_create</span> <span class="p">(</span><span class="n">tm_create</span><span class="p">),</span>
+    <span class="n">INDEX</span> <span class="n">idx_tm_delete</span> <span class="p">(</span><span class="n">tm_delete</span><span class="p">)</span>
+<span class="p">)</span> <span class="n">ENGINE</span><span class="o">=</span><span class="n">InnoDB</span> <span class="n">DEFAULT</span> <span class="n">CHARSET</span><span class="o">=</span><span class="n">utf8mb4</span><span class="p">;</span>
+</pre></div>
+</div>
+<p><strong>Key Design Patterns:</strong></p>
+<ul class="simple">
+<li><p><strong>UUID Primary Keys</strong>: Globally unique identifiers</p></li>
+<li><p><strong>Customer Ownership</strong>: Every resource has customer_id</p></li>
+<li><p><strong>Soft Deletes</strong>: tm_delete = ‘9999-01-01’ for active records</p></li>
+<li><p><strong>Microsecond Timestamps</strong>: DATETIME(6) for precise ordering</p></li>
+<li><p><strong>UTF8MB4</strong>: Full Unicode support including emojis</p></li>
+</ul>
+<p><strong>Data Access Patterns</strong></p>
+<p>Services access data through consistent patterns:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Data Access Flow:
+
+Service Handler
+     │
+     │  1. Validate Input
+     ▼
+┌──────────────────────┐
+│  Business Logic      │
+└──────┬───────────────┘
+       │  2. Check Cache
+       ▼
+┌──────────────────────┐
+│  Cache Handler       │
+│  (Redis)             │
+└──────┬───────────────┘
+       │  Cache Miss
+       │  3. Query DB
+       ▼
+┌──────────────────────┐
+│  DB Handler          │
+│  (MySQL)             │
+└──────┬───────────────┘
+       │  4. Store in Cache
+       ▼
+┌──────────────────────┐
+│  Return Result       │
+└──────────────────────┘
+</pre></div>
+</div>
+<p><strong>Transaction Handling</strong></p>
+<p>VoIPBIN uses transactions for consistency:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Transaction Example:
+
+BEGIN TRANSACTION
+    │
+    │  1. Create Call Record
+    ├──▶ INSERT INTO calls ...
+    │
+    │  2. Update Customer Stats
+    ├──▶ UPDATE customers SET total_calls = total_calls + 1 ...
+    │
+    │  3. Create Billing Entry
+    ├──▶ INSERT INTO billings ...
+    │
+    │  If all succeed:
+    │    COMMIT
+    │  If any fails:
+    │    ROLLBACK
+    │
+END TRANSACTION
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>ACID Guarantees</strong>: Atomic, Consistent, Isolated, Durable</p></li>
+<li><p><strong>Rollback on Error</strong>: All changes reverted if any step fails</p></li>
+<li><p><strong>Isolation Levels</strong>: READ COMMITTED for most operations</p></li>
+<li><p><strong>Lock Timeout</strong>: 30 seconds to prevent deadlocks</p></li>
+</ul>
+<p><strong>Query Optimization</strong></p>
+<p>VoIPBIN optimizes queries for performance:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Query Optimization Strategies:
+
+1. Proper Indexing:
+   ┌─────────────────────────────────┐
+   │ INDEX idx_customer_status       │
+   │ ON calls (customer_id, status)  │
+   └─────────────────────────────────┘
+
+   SELECT * FROM calls
+   WHERE customer_id = ? AND status = &#39;active&#39;
+   → Uses index, fast lookup
+
+2. Avoid SELECT *:
+   ┌─────────────────────────────────┐
+   │ SELECT id, status, tm_create    │
+   │ FROM calls WHERE ...            │
+   └─────────────────────────────────┘
+   → Only retrieve needed columns
+
+3. Pagination:
+   ┌─────────────────────────────────┐
+   │ SELECT * FROM calls             │
+   │ WHERE customer_id = ?           │
+   │ LIMIT 50 OFFSET 0               │
+   └─────────────────────────────────┘
+   → Limit result size
+
+4. Connection Pooling:
+   ┌─────────────────────────────────┐
+   │ Pool Size: 10-50 connections    │
+   │ Max Idle: 5 minutes             │
+   │ Max Lifetime: 1 hour            │
+   └─────────────────────────────────┘
+   → Reuse connections
+</pre></div>
+</div>
+</section>
+<section id="database-migrations">
+<h2>Database Migrations<a class="headerlink" href="#database-migrations" title="Link to this heading"></a></h2>
+<p>Schema changes are managed through Alembic migrations:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Migration Workflow:
+
+Development                 Migration Script              Production
+     │                            │                           │
+     │  1. Schema Change          │                           │
+     │     Needed                 │                           │
+     ▼                            │                           │
+┌─────────────┐                   │                           │
+│ Create      │                   │                           │
+│ Migration   │──────────────────▶│                           │
+│ Script      │                   │                           │
+└─────────────┘                   │                           │
+     │                            │                           │
+     │  2. Test Locally           │                           │
+     ▼                            │                           │
+┌─────────────┐                   │                           │
+│ Run         │                   │                           │
+│ Migration   │◀──────────────────│                           │
+│ (dev DB)    │                   │                           │
+└─────────────┘                   │                           │
+     │                            │                           │
+     │  3. Commit to Git          │                           │
+     ▼                            │                           │
+┌─────────────┐                   │                           │
+│ Code Review │                   │                           │
+│ &amp; Approval  │                   │                           │
+└─────────────┘                   │                           │
+     │                            │                           │
+     │  4. Deploy                 │                           │
+     │                            │  5. Manual Execution      │
+     │                            │     (by human)            │
+     │                            ├──────────────────────────▶│
+     │                            │                           │
+     │                            │  alembic upgrade head     │
+     │                            │                           │
+</pre></div>
+</div>
+<p><strong>Migration Best Practices:</strong></p>
+<ul class="simple">
+<li><p><strong>Version Control</strong>: All migrations in git</p></li>
+<li><p><strong>Forward Only</strong>: Never modify existing migrations</p></li>
+<li><p><strong>Backward Compatible</strong>: Support gradual rollout</p></li>
+<li><p><strong>Manual Execution</strong>: Humans run migrations, not automation</p></li>
+<li><p><strong>Testing</strong>: Test on staging before production</p></li>
+</ul>
+</section>
+<section id="redis-cache">
+<h2>Redis Cache<a class="headerlink" href="#redis-cache" title="Link to this heading"></a></h2>
+<p>Redis provides fast access to frequently used data:</p>
+<p><strong>Cache Architecture</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Redis Cache Pattern:
+
+Application Request
+     │
+     │  1. Generate Cache Key
+     │     key = &quot;call:123&quot;
+     ▼
+┌────────────────────┐
+│  Check Redis       │
+│  GET call:123      │
+└────┬───────────────┘
+     │
+     ├─ Cache Hit ────────┐
+     │                    │
+     │                    ▼
+     │              ┌────────────────┐
+     │              │ Return Cached  │
+     │              │ Data (fast)    │
+     │              └────────────────┘
+     │
+     ├─ Cache Miss ───────┐
+     │                    │
+     │                    ▼
+     │              ┌────────────────┐
+     │              │ Query MySQL    │
+     │              └────┬───────────┘
+     │                   │
+     │                   ▼
+     │              ┌────────────────┐
+     │              │ Store in Redis │
+     │              │ SET call:123   │
+     │              │ EX 300 (5 min) │
+     │              └────┬───────────┘
+     │                   │
+     │                   ▼
+     │              ┌────────────────┐
+     │              │ Return Data    │
+     │              └────────────────┘
+</pre></div>
+</div>
+<p><strong>Cache Key Patterns</strong></p>
+<p>VoIPBIN uses structured cache keys:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Key Naming Convention:
+&lt;resource&gt;:&lt;id&gt;[:&lt;field&gt;]
+
+Examples:
+• call:abc-123              → Full call record
+• agent:xyz-789:status      → Agent status only
+• customer:customer-456     → Customer record
+• queue:queue-999:stats     → Queue statistics
+• flow:flow-111:definition  → Flow definition
+
+Advantages:
+• Predictable keys
+• Easy to invalidate
+• Pattern matching for bulk operations
+</pre></div>
+</div>
+<p><strong>Data Structures</strong></p>
+<p>Redis supports multiple data structures:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Redis Data Structures:
+
+1. String (Simple Values):
+   SET call:123:status &quot;active&quot;
+   GET call:123:status
+   → &quot;active&quot;
+
+2. Hash (Object Fields):
+   HSET call:123 status &quot;active&quot; duration &quot;120&quot;
+   HGET call:123 status
+   → &quot;active&quot;
+   HGETALL call:123
+   → {&quot;status&quot;: &quot;active&quot;, &quot;duration&quot;: &quot;120&quot;}
+
+3. List (Ordered Collection):
+   LPUSH queue:456:waiting call:123
+   LPUSH queue:456:waiting call:789
+   LRANGE queue:456:waiting 0 -1
+   → [call:789, call:123]
+
+4. Set (Unique Collection):
+   SADD conference:999:participants agent:111
+   SADD conference:999:participants agent:222
+   SMEMBERS conference:999:participants
+   → [agent:111, agent:222]
+
+5. Sorted Set (Scored Collection):
+   ZADD leaderboard 100 agent:111
+   ZADD leaderboard 95 agent:222
+   ZRANGE leaderboard 0 -1 WITHSCORES
+   → [(agent:111, 100), (agent:222, 95)]
+</pre></div>
+</div>
+<p><strong>Cache Expiration</strong></p>
+<p>All cached data has Time-To-Live (TTL):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>TTL Strategy:
+
+Data Type              TTL        Reason
+─────────────────────────────────────────────
+Session tokens         1 hour     Security
+User profiles          5 min      Frequently updated
+Call records           1 min      Real-time changes
+Configuration          1 hour     Rarely changes
+Static data            24 hours   Almost never changes
+
+Set TTL:
+SET key value EX 300   # 5 minutes
+SETEX key 300 value    # Same as above
+EXPIRE key 300         # Set TTL on existing key
+</pre></div>
+</div>
+<p><strong>Cache Invalidation</strong></p>
+<p>VoIPBIN invalidates cache on updates:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Cache Invalidation Flow:
+
+Update Request
+     │
+     │  1. Update Database
+     ▼
+┌────────────────────┐
+│  UPDATE calls      │
+│  SET status=&#39;ended&#39;│
+│  WHERE id=&#39;123&#39;    │
+└────┬───────────────┘
+     │
+     │  2. Invalidate Cache
+     ▼
+┌────────────────────┐
+│  DEL call:123      │
+└────┬───────────────┘
+     │
+     │  3. Return Success
+     ▼
+┌────────────────────┐
+│  Response to Client│
+└────────────────────┘
+
+Next Read:
+• Cache miss
+• Fetch from DB
+• Store in cache with new data
+</pre></div>
+</div>
+<p><strong>Cache Patterns</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Common Cache Patterns:
+
+1. Cache-Aside (Read Through):
+   App checks cache → Cache miss → Query DB → Store in cache
+
+2. Write-Through:
+   App writes to cache → Cache writes to DB → Return success
+
+3. Write-Behind (Async):
+   App writes to cache → Return success → Cache writes to DB later
+
+VoIPBIN primarily uses Cache-Aside for simplicity and consistency.
+</pre></div>
+</div>
+</section>
+<section id="session-management">
+<h2>Session Management<a class="headerlink" href="#session-management" title="Link to this heading"></a></h2>
+<p>Redis stores session data for authenticated users:</p>
+<p><strong>Session Structure</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Session Data in Redis:
+
+Key: session:&lt;token-hash&gt;
+Type: Hash
+TTL: 1 hour (refreshed on activity)
+
+Data:
+┌─────────────────────────────────────┐
+│ customer_id    : customer-123       │
+│ agent_id       : agent-456          │
+│ permissions    : [&quot;admin&quot;, &quot;call&quot;]  │
+│ login_time     : 2026-01-20 12:00   │
+│ last_activity  : 2026-01-20 12:30   │
+│ ip_address     : 192.168.1.100      │
+│ user_agent     : Mozilla/5.0 ...    │
+└─────────────────────────────────────┘
+</pre></div>
+</div>
+<p><strong>Session Lifecycle</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Session Flow:
+
+1. Login:
+   ┌────────────────────────────┐
+   │ Generate JWT token         │
+   │ Hash token → session_key   │
+   │ Store session in Redis     │
+   │ SET session:xyz {...}      │
+   │ EXPIRE session:xyz 3600    │
+   └────────────────────────────┘
+
+2. Request:
+   ┌────────────────────────────┐
+   │ Extract token from header  │
+   │ Hash token → session_key   │
+   │ GET session:xyz            │
+   │ Validate session data      │
+   │ EXPIRE session:xyz 3600    │  ← Refresh TTL
+   └────────────────────────────┘
+
+3. Logout:
+   ┌────────────────────────────┐
+   │ Extract token from header  │
+   │ Hash token → session_key   │
+   │ DEL session:xyz            │
+   └────────────────────────────┘
+</pre></div>
+</div>
+</section>
+<section id="data-consistency">
+<h2>Data Consistency<a class="headerlink" href="#data-consistency" title="Link to this heading"></a></h2>
+<p>VoIPBIN ensures consistency across data layers:</p>
+<p><strong>Consistency Model</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Consistency Strategy:
+
+Strong Consistency:        Eventual Consistency:
+┌──────────────┐           ┌──────────────┐
+│   MySQL      │           │   Redis      │
+│  (Source of  │           │  (May be     │
+│   Truth)     │           │   stale)     │
+└──────┬───────┘           └──────┬───────┘
+       │                          │
+       │  Always consistent       │  May lag behind
+       │  ACID transactions       │  Best effort
+       │                          │
+       └──────────┬───────────────┘
+                  │
+            Database is authoritative
+</pre></div>
+</div>
+<p><strong>Write Path</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Write Flow (Strong Consistency):
+
+1. Write Request
+   │
+   ▼
+2. Update Database First
+   ├─ BEGIN TRANSACTION
+   ├─ UPDATE table ...
+   ├─ COMMIT
+   │
+   ▼
+3. Invalidate Cache
+   ├─ DEL cache_key
+   │
+   ▼
+4. Publish Event
+   ├─ Notify subscribers
+   │
+   ▼
+5. Return Success
+
+Database updated before cache invalidation
+ensures consistency.
+</pre></div>
+</div>
+<p><strong>Read Path</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Read Flow (Eventual Consistency Acceptable):
+
+1. Read Request
+   │
+   ▼
+2. Check Cache
+   ├─ Cache Hit → Return (may be slightly stale)
+   ├─ Cache Miss → Continue
+   │
+   ▼
+3. Query Database
+   ├─ SELECT * FROM table WHERE ...
+   │
+   ▼
+4. Store in Cache
+   ├─ SET cache_key value EX ttl
+   │
+   ▼
+5. Return Result
+</pre></div>
+</div>
+</section>
+<section id="data-backup-and-recovery">
+<h2>Data Backup and Recovery<a class="headerlink" href="#data-backup-and-recovery" title="Link to this heading"></a></h2>
+<p>VoIPBIN implements comprehensive backup strategy:</p>
+<p><strong>Backup Architecture</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Backup Strategy:
+
+Production Database
+     │
+     │  Continuous Replication
+     ▼
+┌────────────────────┐
+│  Read Replica      │  ← Used for backups
+└────┬───────────────┘    (no production impact)
+     │
+     │  Daily Full Backup
+     ▼
+┌────────────────────┐
+│  Backup Storage    │
+│  (Google Cloud)    │
+│                    │
+│  • Daily: 30 days  │
+│  • Weekly: 1 year  │
+│  • Monthly: 7 years│
+└────────────────────┘
+</pre></div>
+</div>
+<p><strong>Backup Schedule</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Backup Timeline:
+
+Daily (3 AM UTC):
+┌──────────────────────────────┐
+│ Full database dump           │
+│ Stored for 30 days           │
+│ ~100 GB compressed           │
+└──────────────────────────────┘
+
+Weekly (Sunday 3 AM):
+┌──────────────────────────────┐
+│ Full database dump           │
+│ Stored for 1 year            │
+│ Long-term retention          │
+└──────────────────────────────┘
+
+Continuous:
+┌──────────────────────────────┐
+│ Binary logs (point-in-time)  │
+│ Stored for 7 days            │
+│ For recovery between backups │
+└──────────────────────────────┘
+</pre></div>
+</div>
+<p><strong>Recovery Procedures</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Recovery Scenarios:
+
+1. Recent Data Loss (&lt; 7 days):
+   ┌────────────────────────────┐
+   │ Restore latest daily backup│
+   │ Apply binary logs          │
+   │ Point-in-time recovery     │
+   └────────────────────────────┘
+   Recovery time: 1-2 hours
+
+2. Older Data Loss (&lt; 1 year):
+   ┌────────────────────────────┐
+   │ Restore weekly backup      │
+   │ No binary logs available   │
+   └────────────────────────────┘
+   Recovery time: 2-4 hours
+
+3. Disaster Recovery:
+   ┌────────────────────────────┐
+   │ Failover to replica        │
+   │ Promote to primary         │
+   │ Restore from backup        │
+   └────────────────────────────┘
+   Recovery time: 15 minutes
+</pre></div>
+</div>
+</section>
+<section id="performance-monitoring">
+<h2>Performance Monitoring<a class="headerlink" href="#performance-monitoring" title="Link to this heading"></a></h2>
+<p>VoIPBIN monitors data layer performance:</p>
+<p><strong>Database Metrics</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Key Database Metrics:
+
+Query Performance:
+┌─────────────────────────────────────┐
+│ Slow queries (&gt; 1 second): 0.1%     │
+│ Average query time: 5ms             │
+│ P95 query time: 50ms                │
+│ P99 query time: 200ms               │
+└─────────────────────────────────────┘
+
+Connection Pool:
+┌─────────────────────────────────────┐
+│ Active connections: 45/50           │
+│ Idle connections: 5/50              │
+│ Wait time: &lt; 1ms                    │
+└─────────────────────────────────────┘
+
+Table Size:
+┌─────────────────────────────────────┐
+│ calls:        50 million rows       │
+│ conferences:  5 million rows        │
+│ agents:       10,000 rows           │
+│ Total size:   500 GB                │
+└─────────────────────────────────────┘
+</pre></div>
+</div>
+<p><strong>Cache Metrics</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Redis Performance:
+
+Hit Rate:
+┌─────────────────────────────────────┐
+│ Cache hits:   95%                   │
+│ Cache misses: 5%                    │
+│ Target:       &gt; 90%                 │
+└─────────────────────────────────────┘
+
+Memory Usage:
+┌─────────────────────────────────────┐
+│ Used memory: 8 GB / 16 GB           │
+│ Peak memory: 12 GB                  │
+│ Eviction:    LRU policy             │
+└─────────────────────────────────────┘
+
+Latency:
+┌─────────────────────────────────────┐
+│ P50: 0.5ms                          │
+│ P95: 2ms                            │
+│ P99: 5ms                            │
+└─────────────────────────────────────┘
+</pre></div>
+</div>
+</section>
+<section id="scalability-considerations">
+<h2>Scalability Considerations<a class="headerlink" href="#scalability-considerations" title="Link to this heading"></a></h2>
+<p>As VoIPBIN scales, data layer adapts:</p>
+<p><strong>Database Scaling</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Scaling Strategy:
+
+Current (&lt; 1M customers):
+┌──────────────────────────┐
+│   Single Primary         │
+│   + Read Replicas (3)    │
+└──────────────────────────┘
+
+Future (&gt; 1M customers):
+┌──────────────────────────┐
+│   Sharding by Customer   │
+│                          │
+│   Shard 1: customers A-M │
+│   Shard 2: customers N-Z │
+└──────────────────────────┘
+</pre></div>
+</div>
+<p><strong>Cache Scaling</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Redis Scaling:
+
+Current:
+┌──────────────────────────┐
+│  Single Redis Instance   │
+│  16 GB Memory            │
+└──────────────────────────┘
+
+Future:
+┌──────────────────────────┐
+│  Redis Cluster           │
+│  • Multiple nodes        │
+│  • Automatic sharding    │
+│  • High availability     │
+└──────────────────────────┘
+</pre></div>
+</div>
+</section>
+<section id="best-practices">
+<h2>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading"></a></h2>
+<p><strong>Database:</strong></p>
+<ul class="simple">
+<li><p>Use indexes for all WHERE clauses</p></li>
+<li><p>Avoid SELECT <a href="#id1"><span class="problematic" id="id2">*</span></a>, specify columns</p></li>
+<li><p>Use connection pooling</p></li>
+<li><p>Set appropriate timeouts</p></li>
+<li><p>Monitor slow queries</p></li>
+<li><p>Regular ANALYZE TABLE for statistics</p></li>
+</ul>
+<p><strong>Cache:</strong></p>
+<ul class="simple">
+<li><p>Set appropriate TTLs</p></li>
+<li><p>Invalidate on updates</p></li>
+<li><p>Use structured keys</p></li>
+<li><p>Monitor hit rates</p></li>
+<li><p>Handle cache failures gracefully</p></li>
+<li><p>Don’t store large objects (&gt; 1MB)</p></li>
+</ul>
+<p><strong>Security:</strong></p>
+<ul class="simple">
+<li><p>Use parameterized queries (prevent SQL injection)</p></li>
+<li><p>Encrypt sensitive data at rest</p></li>
+<li><p>Use SSL/TLS for connections</p></li>
+<li><p>Rotate database credentials regularly</p></li>
+<li><p>Audit database access</p></li>
+<li><p>Restrict network access</p></li>
+</ul>
+<p><strong>Monitoring:</strong></p>
+<ul class="simple">
+<li><p>Track query performance</p></li>
+<li><p>Monitor connection pool utilization</p></li>
+<li><p>Alert on cache hit rate &lt; 90%</p></li>
+<li><p>Alert on slow queries</p></li>
+<li><p>Monitor disk space</p></li>
+<li><p>Track replication lag</p></li>
+</ul>
+</section>
+</section>
+
+</main>
+                        
+                    </div>
+                    
+                    <nav class="col-12 col-lg-3 pb-4">
+                        <div class="sticky-top toc page-toc" aria-labelledby="page-toc-heading">
+                            <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
+                            <ul>
+<li><a class="reference internal" href="#">Data Architecture</a><ul>
+<li><a class="reference internal" href="#data-layer-overview">Data Layer Overview</a></li>
+<li><a class="reference internal" href="#mysql-database">MySQL Database</a></li>
+<li><a class="reference internal" href="#database-migrations">Database Migrations</a></li>
+<li><a class="reference internal" href="#redis-cache">Redis Cache</a></li>
+<li><a class="reference internal" href="#session-management">Session Management</a></li>
+<li><a class="reference internal" href="#data-consistency">Data Consistency</a></li>
+<li><a class="reference internal" href="#data-backup-and-recovery">Data Backup and Recovery</a></li>
+<li><a class="reference internal" href="#performance-monitoring">Performance Monitoring</a></li>
+<li><a class="reference internal" href="#scalability-considerations">Scalability Considerations</a></li>
+<li><a class="reference internal" href="#best-practices">Best Practices</a></li>
+</ul>
+</li>
+</ul>
+
+                        </div>
+                    </nav>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer class="container-fluid bg-primary text-light">
+        <div class="container">
+            <div class="row">
+        <div class="col p-4">
+            
+                <nav aria-label="Footer">
+                    <ul class="nav justify-content-center mb-2">
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="http://voipbin.net">About Us</a></li>
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="http://voipbin.net">Contact</a></li>
+                        
+                    </ul>
+                </nav>
+            
+            <div class="text-center">
+                    &copy; Copyright 2024, Sungtae Kim
+            </div>
+            <div class="text-center text-white-50 font-italic mt-3">
+                <small>
+                    Created using
+                    <a class="text-white" href="https://github.com/wagtail/sphinx_wagtail_theme" rel="nofollow" target="_blank">
+                        Sphinx Wagtail Theme 6.5.0
+                    </a>
+                    and
+                    <a class="text-white" href="https://www.sphinx-doc.org/" rel="nofollow" target="_blank">
+                        Sphinx 9.1.0
+                    </a>
+                </small>
+            </div>
+        </div>
+    </div>
+        </div>
+    </footer>
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=fd6eb6e6"></script>
+        <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+        <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="_static/copybutton.js?v=f281be69"></script>
+        <script type="text/javascript" src="_static/dist/theme.js"></script>
+        <script type="text/javascript" src="_static/dist/vendor.js"></script>
+        <script type="text/javascript" src="_static/searchtools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script type="text/javascript">
+            document.addEventListener('DOMContentLoaded', function() { Search.loadIndex("searchindex.js"); });
+        </script>
+        <script type="text/javascript" id="searchindexloader"></script>
+    </body>
+</html>

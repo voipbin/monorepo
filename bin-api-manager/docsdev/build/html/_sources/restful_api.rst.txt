@@ -1,0 +1,80 @@
+.. _restful_api:
+
+**********************************************
+RESTful API(Application Programming Interface)
+**********************************************
+The VoIPBIN RESTful API offers a robust set of endpoints designed to facilitate seamless Voice over IP (VoIP) communications. By leveraging the OpenAPI specification, the API ensures a standardized, well-documented, and comprehensive interface for developers. This allows for easy integration and interaction with the VoIPBIN service, enabling efficient management of VoIP functionalities and services.
+
+API Reference Documentation
+============================
+
+For complete API endpoint documentation including request/response schemas, authentication requirements, and interactive examples, see:
+
+* **ReDoc (Recommended)**: https://api.voipbin.net/redoc/index.html
+* **Swagger UI**: https://api.voipbin.net/swagger/index.html
+
+Getting Started with the API
+=============================
+
+Authentication
+--------------
+All API requests must be authenticated using either:
+
+* **JWT Token**: Include in ``Authorization: Bearer <token>`` header
+* **Access Key**: Include as ``?accesskey=<key>`` query parameter
+
+For details, see :ref:`Authentication <quickstart_authentication>`.
+
+Base URL
+--------
+All API endpoints are prefixed with::
+
+    https://api.voipbin.net/v1.0/
+
+API Conventions
+===============
+
+Request Format
+--------------
+* All POST and PUT requests must use ``Content-Type: application/json``
+* Request bodies must be valid JSON
+* URL parameters must be URL-encoded
+
+Response Format
+---------------
+All API responses return JSON with consistent structure:
+
+Success Response (2xx)::
+
+    {
+        "id": "resource-id",
+        "field1": "value1",
+        ...
+    }
+
+List Response::
+
+    {
+        "result": [...],
+        "next_page_token": "token-for-next-page"
+    }
+
+Error Response (4xx, 5xx)::
+
+    {
+        "error": "error_code",
+        "message": "Human-readable error description"
+    }
+
+Common HTTP Status Codes
+------------------------
+* **200 OK**: Request succeeded
+* **201 Created**: Resource created successfully
+* **400 Bad Request**: Invalid request parameters
+* **401 Unauthorized**: Missing or invalid authentication
+* **403 Forbidden**: Insufficient permissions
+* **404 Not Found**: Resource does not exist
+* **429 Too Many Requests**: Rate limit exceeded
+* **500 Internal Server Error**: Server error
+
+For detailed endpoint documentation, parameter descriptions, and response schemas, visit the API reference documentation linked above.

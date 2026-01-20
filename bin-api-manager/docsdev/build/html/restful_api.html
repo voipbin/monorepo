@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en" data-content_root="./">
+<head>
+    <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+        <title>RESTful API(Application Programming Interface) &mdash; voipbin  documentation</title>
+    
+    <link rel="stylesheet" type="text/css" href="_static/dist/fontawesome.css" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8e8a900e" />
+      <link rel="stylesheet" type="text/css" href="_static/dist/theme.css?v=310cf088" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+            <link rel="index" title="Index" href="genindex.html" />
+            <link rel="search" title="Search" href="search.html" />
+            <link rel="top" title="voipbin  documentation" href="#" />
+            <link rel="next" title="SDK(Software Development Kit)" href="sdk.html" />
+            <link rel="prev" title="Common" href="common.html" />
+    </head>
+<body>
+    <script type="text/javascript" src="_static/dist/blocking.js"></script>
+    <header class="container-fluid bg-primary">
+        <a class="btn btn-sm btn-light skip-to-content-link" href="#main">Skip to content</a>
+        <div class="container-fluid">
+            <div class="navbar navbar-expand-lg navbar-dark font-weight-bold">
+                    <a href="intro.html"
+                        title="voipbin"
+                        class="logo navbar-brand"
+                    >
+                        <img src="_static/images/voipbin-high-resolution-logo-white-transparent.png" width="45" height="80" alt="voipbin"
+                            class="logo-img"
+                        />
+                        VoIPBin Documentation
+                    </a>
+                
+                
+                    <div class="collapse navbar-collapse justify-content-end">
+                        <ul class="navbar-nav">
+                            
+                                
+                                
+                                <li class="nav-item"><a class="nav-link"  href="http://voipbin.net">Project</a></li>
+                            
+                                
+                                
+                                <li class="nav-item"><a class="nav-link"  href="https://admin.voipbin.net">Admin</a></li>
+                            
+                        </ul>
+                    </div>
+                
+                <button class="navbar-toggler btn btn-primary d-lg-none" type="button" data-toggle="collapse" data-target="#collapseSidebar" aria-expanded="false" aria-controls="collapseExample">
+                    <span class="navbar-toggler-icon"></span>
+                    <span class="sr-only">menu</span>
+                </button>
+            </div>
+        </div>
+    </header>
+    <div class="container-fluid">
+        <div class="row">
+            <aside class="col-12 col-lg-3 sidebar-container">
+                <div id="collapseSidebar" class="collapse sticky-top d-lg-block pt-5 pr-lg-4">
+<div id="searchbox" class="searchbox mb-6 px-1" role="search">
+    <form id="search-form" action="search.html" autocomplete="off" method="get" role="search">
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <div class="input-group-text border-right-0 bg-white py-3 pl-3 pr-2"><span class="fas fa-search"></span></div>
+            </div>
+            <input class="form-control py-3 pr-3 pl-1 h-100 border-left-0" type="search" name="q" placeholder="Search documentation" aria-label="Search documentation" id="searchinput" />
+        </div>
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+    </form>
+</div><div class="site-toc">
+    <nav class="toc mt-3" aria-label="Main menu">
+        <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="common.html">Common</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">RESTful API(Application Programming Interface)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sdk.html">SDK(Software Development Kit)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="accesskey.html">Accesskey</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="activeflow.html">Activeflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="call.html">Call</a></li>
+<li class="toctree-l1"><a class="reference internal" href="message.html">Message</a></li>
+<li class="toctree-l1"><a class="reference internal" href="email.html">Email</a></li>
+<li class="toctree-l1"><a class="reference internal" href="agent.html">Agent</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conference.html">Conference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mediastream.html">Mediastream</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conversation.html">Conversation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extension.html">Extension</a></li>
+<li class="toctree-l1"><a class="reference internal" href="number.html">Number</a></li>
+<li class="toctree-l1"><a class="reference internal" href="queue.html">Queue</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recording.html">Recording</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a></li>
+<li class="toctree-l1"><a class="reference internal" href="campaign.html">Campaign</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outdial.html">Outdial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outplan.html">Outplan</a></li>
+<li class="toctree-l1"><a class="reference internal" href="webhook.html">Webhook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="customer.html">Customer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chat.html">Chat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="talk.html">Talk</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ai.html">AI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="provider.html">Provider</a></li>
+<li class="toctree-l1"><a class="reference internal" href="route.html">Route</a></li>
+<li class="toctree-l1"><a class="reference internal" href="variable.html">Variable</a></li>
+<li class="toctree-l1"><a class="reference internal" href="websocket.html">Websocket</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trunk.html">Trunk</a></li>
+<li class="toctree-l1"><a class="reference internal" href="billing_account.html">Billing Account</a></li>
+<li class="toctree-l1"><a class="reference internal" href="storage.html">Storage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transcribe.html">Transcribe</a></li>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+</ul>
+
+    </nav>
+    <template data-toggle-item-template>
+        <button class="btn btn-sm btn-link toctree-expand" type="button">
+            <span class="sr-only">Toggle menu contents</span>
+        </button>
+    </template>
+</div>
+                    <div class="d-lg-none border-bottom">
+                        
+                    </div>
+                </div>
+            </aside>
+            <div class="col-12 col-lg-9 pt-5">
+                <header class="row align-items-baseline">
+                    <div class="col">
+                        <nav aria-label="breadcrumb">
+    <ol class="breadcrumb m-0 p-0 bg-transparent">
+        <li class="breadcrumb-item"><a href="index.html">Docs</a></li>
+        <li class="breadcrumb-item active" aria-current="page">RESTful API(Application Programming Interface)</li>
+    </ol>
+</nav>
+                    </div>
+                    <div class="col-sm-12 col-lg-auto mt-3 mt-lg-3">
+                        <noscript>
+                            <p>JavaScript is required to toggle light/dark mode..</p>
+                        </noscript>
+                        <button id="wagtail-theme" class="btn btn-sm btn-light text-decoration-none" type="button">
+                            <span class="dark-only"><i class="fas fa-sun"></i> Light mode</span>
+                            <span class="light-only"><i class="fas fa-moon"></i> Dark mode</span>
+                        </button>
+    <a class="btn btn-sm btn-light text-decoration-none" href="_sources/restful_api.rst.txt" rel="nofollow">
+        <span class="btn-icon"><span class="fas fa-code"></span></span>
+        <span class="btn-text">View source</span>
+    </a>
+                        
+                    </div>
+                </header>
+                <div class="row" >
+                    <div class="col-12">
+                        <hr class="w-100 my-4">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 col-lg-9 order-last order-lg-first rst-content">
+                        <main role="main" id="main">
+    <section id="restful-api-application-programming-interface">
+<span id="restful-api"></span><h1>RESTful API(Application Programming Interface)<a class="headerlink" href="#restful-api-application-programming-interface" title="Link to this heading"></a></h1>
+<p>The VoIPBIN RESTful API offers a robust set of endpoints designed to facilitate seamless Voice over IP (VoIP) communications. By leveraging the OpenAPI specification, the API ensures a standardized, well-documented, and comprehensive interface for developers. This allows for easy integration and interaction with the VoIPBIN service, enabling efficient management of VoIP functionalities and services.</p>
+<section id="api-reference-documentation">
+<h2>API Reference Documentation<a class="headerlink" href="#api-reference-documentation" title="Link to this heading"></a></h2>
+<p>For complete API endpoint documentation including request/response schemas, authentication requirements, and interactive examples, see:</p>
+<ul class="simple">
+<li><p><strong>ReDoc (Recommended)</strong>: <a class="reference external" href="https://api.voipbin.net/redoc/index.html">https://api.voipbin.net/redoc/index.html</a></p></li>
+<li><p><strong>Swagger UI</strong>: <a class="reference external" href="https://api.voipbin.net/swagger/index.html">https://api.voipbin.net/swagger/index.html</a></p></li>
+</ul>
+</section>
+<section id="getting-started-with-the-api">
+<h2>Getting Started with the API<a class="headerlink" href="#getting-started-with-the-api" title="Link to this heading"></a></h2>
+<section id="authentication">
+<h3>Authentication<a class="headerlink" href="#authentication" title="Link to this heading"></a></h3>
+<p>All API requests must be authenticated using either:</p>
+<ul class="simple">
+<li><p><strong>JWT Token</strong>: Include in <code class="docutils literal notranslate"><span class="pre">Authorization:</span> <span class="pre">Bearer</span> <span class="pre">&lt;token&gt;</span></code> header</p></li>
+<li><p><strong>Access Key</strong>: Include as <code class="docutils literal notranslate"><span class="pre">?accesskey=&lt;key&gt;</span></code> query parameter</p></li>
+</ul>
+<p>For details, see <a class="reference internal" href="quickstart_authentication.html#quickstart-authentication"><span class="std std-ref">Authentication</span></a>.</p>
+</section>
+<section id="base-url">
+<h3>Base URL<a class="headerlink" href="#base-url" title="Link to this heading"></a></h3>
+<p>All API endpoints are prefixed with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">api</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span><span class="o">/</span><span class="n">v1</span><span class="mf">.0</span><span class="o">/</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="api-conventions">
+<h2>API Conventions<a class="headerlink" href="#api-conventions" title="Link to this heading"></a></h2>
+<section id="request-format">
+<h3>Request Format<a class="headerlink" href="#request-format" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>All POST and PUT requests must use <code class="docutils literal notranslate"><span class="pre">Content-Type:</span> <span class="pre">application/json</span></code></p></li>
+<li><p>Request bodies must be valid JSON</p></li>
+<li><p>URL parameters must be URL-encoded</p></li>
+</ul>
+</section>
+<section id="response-format">
+<h3>Response Format<a class="headerlink" href="#response-format" title="Link to this heading"></a></h3>
+<p>All API responses return JSON with consistent structure:</p>
+<p>Success Response (2xx):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;resource-id&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;field1&quot;</span><span class="p">:</span> <span class="s2">&quot;value1&quot;</span><span class="p">,</span>
+    <span class="o">...</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>List Response:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">],</span>
+    <span class="s2">&quot;next_page_token&quot;</span><span class="p">:</span> <span class="s2">&quot;token-for-next-page&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Error Response (4xx, 5xx):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;error_code&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Human-readable error description&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="common-http-status-codes">
+<h3>Common HTTP Status Codes<a class="headerlink" href="#common-http-status-codes" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>200 OK</strong>: Request succeeded</p></li>
+<li><p><strong>201 Created</strong>: Resource created successfully</p></li>
+<li><p><strong>400 Bad Request</strong>: Invalid request parameters</p></li>
+<li><p><strong>401 Unauthorized</strong>: Missing or invalid authentication</p></li>
+<li><p><strong>403 Forbidden</strong>: Insufficient permissions</p></li>
+<li><p><strong>404 Not Found</strong>: Resource does not exist</p></li>
+<li><p><strong>429 Too Many Requests</strong>: Rate limit exceeded</p></li>
+<li><p><strong>500 Internal Server Error</strong>: Server error</p></li>
+</ul>
+<p>For detailed endpoint documentation, parameter descriptions, and response schemas, visit the API reference documentation linked above.</p>
+</section>
+</section>
+</section>
+
+</main>
+                        <nav aria-label="Page navigation" class="py-4 my-5 clearfix font-weight-bold border-top">
+    <a class="float-left" href="common.html" title="Previous">
+        <span aria-hidden="true">←&nbsp;</span>Common
+    </a>
+    <a class="float-right" href="sdk.html" title="Next">
+        SDK(Software Development Kit) <span aria-hidden="true">&nbsp;→</span>
+    </a>
+</nav>
+                    </div>
+                    
+                    <nav class="col-12 col-lg-3 pb-4">
+                        <div class="sticky-top toc page-toc" aria-labelledby="page-toc-heading">
+                            <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
+                            <ul>
+<li><a class="reference internal" href="#">RESTful API(Application Programming Interface)</a><ul>
+<li><a class="reference internal" href="#api-reference-documentation">API Reference Documentation</a></li>
+<li><a class="reference internal" href="#getting-started-with-the-api">Getting Started with the API</a><ul>
+<li><a class="reference internal" href="#authentication">Authentication</a></li>
+<li><a class="reference internal" href="#base-url">Base URL</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#api-conventions">API Conventions</a><ul>
+<li><a class="reference internal" href="#request-format">Request Format</a></li>
+<li><a class="reference internal" href="#response-format">Response Format</a></li>
+<li><a class="reference internal" href="#common-http-status-codes">Common HTTP Status Codes</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+                        </div>
+                    </nav>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer class="container-fluid bg-primary text-light">
+        <div class="container">
+            <div class="row">
+        <div class="col p-4">
+            
+                <nav aria-label="Footer">
+                    <ul class="nav justify-content-center mb-2">
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="http://voipbin.net">About Us</a></li>
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="http://voipbin.net">Contact</a></li>
+                        
+                    </ul>
+                </nav>
+            
+            <div class="text-center">
+                    &copy; Copyright 2024, Sungtae Kim
+            </div>
+            <div class="text-center text-white-50 font-italic mt-3">
+                <small>
+                    Created using
+                    <a class="text-white" href="https://github.com/wagtail/sphinx_wagtail_theme" rel="nofollow" target="_blank">
+                        Sphinx Wagtail Theme 6.5.0
+                    </a>
+                    and
+                    <a class="text-white" href="https://www.sphinx-doc.org/" rel="nofollow" target="_blank">
+                        Sphinx 9.1.0
+                    </a>
+                </small>
+            </div>
+        </div>
+    </div>
+        </div>
+    </footer>
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=fd6eb6e6"></script>
+        <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+        <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="_static/copybutton.js?v=f281be69"></script>
+        <script type="text/javascript" src="_static/dist/theme.js"></script>
+        <script type="text/javascript" src="_static/dist/vendor.js"></script>
+        <script type="text/javascript" src="_static/searchtools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script type="text/javascript">
+            document.addEventListener('DOMContentLoaded', function() { Search.loadIndex("searchindex.js"); });
+        </script>
+        <script type="text/javascript" id="searchindexloader"></script>
+    </body>
+</html>
