@@ -167,7 +167,7 @@ Call transfer is a common feature in CPaaS that allows an ongoing phone call to 
 <section id="blind-transfer">
 <span id="call-transfer-blind-transfer"></span><h2>Blind Transfer<a class="headerlink" href="#blind-transfer" title="Link to this heading"></a></h2>
 <p>Blind transfer is the simplest type of call transfer. In this type of transfer, the person initiating the transfer simply transfers the call to another person or phone number without first speaking to them. This is useful when the person receiving the call is known to be available and ready to take the call. Blind transfer is commonly used in call center environments where a caller needs to be routed to the appropriate agent or department.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Caller</span>           <span class="n">VoIPBin</span>        <span class="n">Transferer</span>        <span class="n">Transferee</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Caller</span>           <span class="n">VoIPBIN</span>        <span class="n">Transferer</span>        <span class="n">Transferee</span>
 <span class="o">|</span>                  <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
 <span class="o">|</span>    <span class="n">Call</span> <span class="ow">in</span>       <span class="o">|</span> <span class="n">Call</span> <span class="ow">in</span>        <span class="o">|</span>                <span class="o">|</span>
 <span class="o">|</span>    <span class="n">progress</span>      <span class="o">|</span> <span class="n">progress</span>       <span class="o">|</span>                <span class="o">|</span>
@@ -194,19 +194,19 @@ Call transfer is a common feature in CPaaS that allows an ongoing phone call to 
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>The Caller initiates a call to the VoIPBin and the call is in progress.</p></li>
+<li><p>The Caller initiates a call to the VoIPBIN and the call is in progress.</p></li>
 <li><p>The Transferer, who is already on a call, decides to transfer the Caller to the Transferee.</p></li>
-<li><p>The Transferer sends a transfer request to the VoIPBin, indicating the Transferee’s number.</p></li>
-<li><p>The VoIPBin dials to the Transferee.</p></li>
-<li><p>The VoIPBin hangs up the transferer right after dials to the transferee.</p></li>
+<li><p>The Transferer sends a transfer request to the VoIPBIN, indicating the Transferee’s number.</p></li>
+<li><p>The VoIPBIN dials to the Transferee.</p></li>
+<li><p>The VoIPBIN hangs up the transferer right after dials to the transferee.</p></li>
 <li><p>The Transferee answers the call and is connected to the Caller.</p></li>
 </ul>
-<p>This is the basic process of an blind transfer using a CPaaS like VoIPBin.</p>
+<p>This is the basic process of an blind transfer using a CPaaS like VoIPBIN.</p>
 </section>
 <section id="attended-transfer">
 <span id="call-transfer-attended-transfer"></span><h2>Attended Transfer<a class="headerlink" href="#attended-transfer" title="Link to this heading"></a></h2>
 <p>Attended transfer, also known as consultative transfer, involves the person initiating the transfer first speaking to the person who will be taking the call. This allows the person initiating the transfer to provide context or information about the caller or the reason for the transfer. Once the person who will be taking the call is ready, the transfer is initiated and the original caller is connected to the new person or device. Attended transfer is commonly used in situations where the person receiving the call may need more information before taking the call, such as when transferring a call to a supervisor or manager.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Caller</span>           <span class="n">VoIPBin</span>        <span class="n">Transferer</span>        <span class="n">Transferee</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Caller</span>           <span class="n">VoIPBIN</span>        <span class="n">Transferer</span>        <span class="n">Transferee</span>
 <span class="o">|</span>                  <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
 <span class="o">|</span>    <span class="n">Call</span> <span class="ow">in</span>       <span class="o">|</span> <span class="n">Call</span> <span class="ow">in</span>        <span class="o">|</span>                <span class="o">|</span>
 <span class="o">|</span>    <span class="n">progress</span>      <span class="o">|</span> <span class="n">progress</span>       <span class="o">|</span>                <span class="o">|</span>
@@ -245,16 +245,16 @@ Call transfer is a common feature in CPaaS that allows an ongoing phone call to 
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>The Caller initiates a call to the VoIPBin, and the call is in progress with transferer.</p></li>
+<li><p>The Caller initiates a call to the VoIPBIN, and the call is in progress with transferer.</p></li>
 <li><p>The Transferer, who is already on a call, decides to transfer the Caller to the Transferee.</p></li>
-<li><p>The Transferer sends a transfer request to the VoIPBin, indicating the Transferee’s number.</p></li>
-<li><p>The VoIPBin dials to the Transferee.</p></li>
-<li><p>The VoIPBin puts the Caller on music on hold and mute.</p></li>
+<li><p>The Transferer sends a transfer request to the VoIPBIN, indicating the Transferee’s number.</p></li>
+<li><p>The VoIPBIN dials to the Transferee.</p></li>
+<li><p>The VoIPBIN puts the Caller on music on hold and mute.</p></li>
 <li><p>The Transferee answers the call and is connected to the Transferer and talk to each other.</p></li>
 <li><p>The Transferer drops out of the call.</p></li>
-<li><p>The VoIPBin turn off the Caller’s Music on hold and the Caller and Transferee can now hear each other.</p></li>
+<li><p>The VoIPBIN turn off the Caller’s Music on hold and the Caller and Transferee can now hear each other.</p></li>
 </ul>
-<p>This is the basic process of an attended transfer using a CPaaS like VoIPBin. It allows for seamless communication between parties and can help businesses manage their incoming calls more efficiently.</p>
+<p>This is the basic process of an attended transfer using a CPaaS like VoIPBIN. It allows for seamless communication between parties and can help businesses manage their incoming calls more efficiently.</p>
 </section>
 </section>
 

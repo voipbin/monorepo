@@ -4,7 +4,7 @@ Authentication
 ==============
 In this Quickstart, you'll learn how to authenticate your requests using either a **Token** or an **Accesskey**.
 
-To interact with the VoIPBin API, you need to authenticate your requests using either a **Token** or an **Accesskey**. Both options serve the same purpose — validating your request and authenticating your identity.
+To interact with the VoIPBIN API, you need to authenticate your requests using either a **Token** or an **Accesskey**. Both options serve the same purpose — validating your request and authenticating your identity.
 
 Generate Token
 --------------
@@ -28,7 +28,7 @@ The token will be valid for 7 days.
 
 Generate Accesskey
 ------------------
-You can generate your access key directly from the VoIPBin admin page, as shown in the image below. 
+You can generate your access key directly from the VoIPBIN admin page, as shown in the image below. 
 
 To use the API, you will need an access key, so generating it from the admin page is required. When creating the access key, you can specify an expire parameter to define how long the access key will remain valid.
 

@@ -163,14 +163,14 @@
 <span id="transcribe-main"></span><h1>Transcribe<a class="headerlink" href="#transcribe" title="Link to this heading"></a></h1>
 <section id="overview">
 <span id="transcribe-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
-<p>Voipbin’s transcription functionality is designed to cater to a range of communication needs, covering calls, conferences, and recordings. This comprehensive support ensures that users can transcribe various types of interactions accurately and efficiently.</p>
-<p>Whether it’s a one-on-one conversation, a large conference call, or a recorded discussion, Voipbin’s transcription service handles it with ease. By distinguishing between audio input and output, it provides nuanced transcriptions that accurately reflect the dialogue exchanged during communication sessions. This differentiation ensures that users can clearly identify who said what, enhancing the clarity and usefulness of the transcribed content.</p>
+<p>VoIPBIN’s transcription functionality is designed to cater to a range of communication needs, covering calls, conferences, and recordings. This comprehensive support ensures that users can transcribe various types of interactions accurately and efficiently.</p>
+<p>Whether it’s a one-on-one conversation, a large conference call, or a recorded discussion, VoIPBIN’s transcription service handles it with ease. By distinguishing between audio input and output, it provides nuanced transcriptions that accurately reflect the dialogue exchanged during communication sessions. This differentiation ensures that users can clearly identify who said what, enhancing the clarity and usefulness of the transcribed content.</p>
 <section id="real-time-capability">
 <h3>Real-Time capability<a class="headerlink" href="#real-time-capability" title="Link to this heading"></a></h3>
-<p>One notable aspect of Voipbin’s transcription service is its real-time capability. This feature enables users to transcribe conversations as they occur, providing instant access to written records of ongoing discussions. Real-time transcription not only facilitates live communication but also streamlines documentation processes by eliminating the need for manual transcription after the fact. This functionality is particularly valuable in fast-paced environments where quick access to accurate information is essential.</p>
-<p>Additionally, Voipbin offers enhanced flexibility through websocket event subscription. Users can subscribe or unsubscribe to the transcript event using websocket event subscribe, ensuring seamless integration with their applications or systems. This allows for dynamic control over real-time transcription notifications, tailored to specific needs and workflows.</p>
-<p>Moreover, Voipbin offers an added feature for enhanced integration and convenience. By including webhook information in your customer settings, you can receive real-time updates through the <cite>transcript_created</cite> event of your transcription process. This enables seamless integration with your existing systems or applications, ensuring that you stay informed of transcription progress without manual intervention.</p>
-<p>Overall, Voipbin’s transcription service offers a comprehensive solution for capturing and documenting verbal communication across various platforms. Whether users need transcriptions for analysis, reference, or archival purposes, Voipbin’s transcription feature delivers accurate and timely results, enhancing communication workflows and productivity.</p>
+<p>One notable aspect of VoIPBIN’s transcription service is its real-time capability. This feature enables users to transcribe conversations as they occur, providing instant access to written records of ongoing discussions. Real-time transcription not only facilitates live communication but also streamlines documentation processes by eliminating the need for manual transcription after the fact. This functionality is particularly valuable in fast-paced environments where quick access to accurate information is essential.</p>
+<p>Additionally, VoIPBIN offers enhanced flexibility through websocket event subscription. Users can subscribe or unsubscribe to the transcript event using websocket event subscribe, ensuring seamless integration with their applications or systems. This allows for dynamic control over real-time transcription notifications, tailored to specific needs and workflows.</p>
+<p>Moreover, VoIPBIN offers an added feature for enhanced integration and convenience. By including webhook information in your customer settings, you can receive real-time updates through the <cite>transcript_created</cite> event of your transcription process. This enables seamless integration with your existing systems or applications, ensuring that you stay informed of transcription progress without manual intervention.</p>
+<p>Overall, VoIPBIN’s transcription service offers a comprehensive solution for capturing and documenting verbal communication across various platforms. Whether users need transcriptions for analysis, reference, or archival purposes, VoIPBIN’s transcription feature delivers accurate and timely results, enhancing communication workflows and productivity.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcript_created&quot;</span><span class="p">,</span>
     <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -187,8 +187,8 @@
 </section>
 <section id="transcription">
 <span id="transcribe-overview-transcription"></span><h3>Transcription<a class="headerlink" href="#transcription" title="Link to this heading"></a></h3>
-<p>Voipbin’s transcription service not only captures the spoken word but also provides additional context by distinguishing between audio input and output. This unique feature enables users to discern the direction of the voice within each transcription, offering valuable insight into the flow of communication.</p>
-<p>By indicating whether the audio is incoming or outgoing, Voipbin’s transcription service adds an extra layer of clarity to the transcribed content. Users can easily identify who initiated a statement or response, enhancing their understanding of the conversation dynamics.</p>
+<p>VoIPBIN’s transcription service not only captures the spoken word but also provides additional context by distinguishing between audio input and output. This unique feature enables users to discern the direction of the voice within each transcription, offering valuable insight into the flow of communication.</p>
+<p>By indicating whether the audio is incoming or outgoing, VoIPBIN’s transcription service adds an extra layer of clarity to the transcribed content. Users can easily identify who initiated a statement or response, enhancing their understanding of the conversation dynamics.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+--------+</span>                               <span class="o">+-------+</span>
 <span class="o">|</span><span class="n">Customer</span><span class="o">|------</span> <span class="n">Direction</span><span class="p">:</span> <span class="ow">in</span> <span class="o">---------&gt;|</span><span class="n">Voipbin</span><span class="o">|</span>
 <span class="o">|</span>        <span class="o">|</span>                               <span class="o">|</span>       <span class="o">|</span>
@@ -197,7 +197,7 @@
 </pre></div>
 </div>
 <p>For example, in a call or conference scenario, users can quickly determine whether a particular remark was made by the caller or the recipient. Similarly, in recorded discussions, the audio in/out indication helps differentiate between speakers, facilitating more accurate transcription and analysis.</p>
-<p>This audio in/out distinguish feature empowers users to gain a deeper understanding of the context and dynamics of communication, leading to more effective collaboration, documentation, and analysis. Whether it’s monitoring customer interactions, conducting research, or reviewing meeting minutes, Voipbin’s transcription service offers enhanced clarity and insight into verbal communication.</p>
+<p>This audio in/out distinguish feature empowers users to gain a deeper understanding of the context and dynamics of communication, leading to more effective collaboration, documentation, and analysis. Whether it’s monitoring customer interactions, conducting research, or reviewing meeting minutes, VoIPBIN’s transcription service offers enhanced clarity and insight into verbal communication.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
     <span class="p">{</span>
         <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;06af78f0-b063-48c0-b22d-d31a5af0aa88&quot;</span><span class="p">,</span>
@@ -221,7 +221,7 @@
 </section>
 <section id="enable-transcribe">
 <h3>Enable transcribe<a class="headerlink" href="#enable-transcribe" title="Link to this heading"></a></h3>
-<p>Voipbin provides two different methods to start the transcribe.</p>
+<p>VoIPBIN provides two different methods to start the transcribe.</p>
 <section id="automatic-trigger-in-the-flow">
 <h4>Automatic Trigger in the Flow<a class="headerlink" href="#automatic-trigger-in-the-flow" title="Link to this heading"></a></h4>
 <p>Add the <cite>transcribe_start</cite> action in the action flow. This action automatically triggers transcribe when the flow reaches it. See detail <a class="reference internal" href="flow_struct_action.html#flow-struct-action-transribe-start"><span class="std std-ref">here</span></a>.</p>
@@ -256,7 +256,7 @@
 </section>
 <section id="supported-languages">
 <span id="transcribe-overview-supported-languages"></span><h3>Supported Languages<a class="headerlink" href="#supported-languages" title="Link to this heading"></a></h3>
-<p>VoIPBin supports transcription in over 70 languages and regional variants, enabling global communication scenarios. You can specify the desired language using the language option (e.g., “en-US”, “ko-KR”). Below is a non-exhaustive list of available language codes:</p>
+<p>VoIPBIN supports transcription in over 70 languages and regional variants, enabling global communication scenarios. You can specify the desired language using the language option (e.g., “en-US”, “ko-KR”). Below is a non-exhaustive list of available language codes:</p>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Language Code</p></th>
@@ -677,10 +677,499 @@
 <p>To ensure optimal transcription results, choose the correct code that best matches your speaker’s language and dialect.</p>
 </section>
 </section>
+<section id="tutorial">
+<span id="transcribe-tutorial"></span><h2>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h2>
+<section id="start-transcription-with-flow-action">
+<h3>Start Transcription with Flow Action<a class="headerlink" href="#start-transcription-with-flow-action" title="Link to this heading"></a></h3>
+<p>The easiest way to enable transcription is by adding a <code class="docutils literal notranslate"><span class="pre">transcribe_start</span></code> action to your call flow. This automatically begins transcription when the call reaches that action.</p>
+<p><strong>Create Call with Automatic Transcription:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;source&quot;: {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;+15551234567&quot;
+        },
+        &quot;destinations&quot;: [
+            {
+                &quot;type&quot;: &quot;tel&quot;,
+                &quot;target&quot;: &quot;+15559876543&quot;
+            }
+        ],
+        &quot;actions&quot;: [
+            {
+                &quot;type&quot;: &quot;answer&quot;
+            },
+            {
+                &quot;type&quot;: &quot;transcribe_start&quot;,
+                &quot;option&quot;: {
+                    &quot;language&quot;: &quot;en-US&quot;
+                }
+            },
+            {
+                &quot;type&quot;: &quot;talk&quot;,
+                &quot;option&quot;: {
+                    &quot;text&quot;: &quot;This call is being transcribed for quality assurance&quot;,
+                    &quot;language&quot;: &quot;en-US&quot;
+                }
+            }
+        ]
+    }&#39;
+</pre></div>
+</div>
+<p>Transcription starts when the call reaches the <code class="docutils literal notranslate"><span class="pre">transcribe_start</span></code> action and continues until the call ends.</p>
+</section>
+<section id="start-transcription-via-api-manual">
+<h3>Start Transcription via API (Manual)<a class="headerlink" href="#start-transcription-via-api-manual" title="Link to this heading"></a></h3>
+<p>For existing calls or conferences, start transcription manually by making an API request.</p>
+<p><strong>Transcribe an Active Call:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/transcribes?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;resource_type&quot;: &quot;call&quot;,
+        &quot;resource_id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
+        &quot;language&quot;: &quot;en-US&quot;
+    }&#39;
+
+{
+    &quot;id&quot;: &quot;8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce&quot;,
+    &quot;customer_id&quot;: &quot;12345678-1234-1234-1234-123456789012&quot;,
+    &quot;resource_type&quot;: &quot;call&quot;,
+    &quot;resource_id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
+    &quot;language&quot;: &quot;en-US&quot;,
+    &quot;status&quot;: &quot;active&quot;,
+    &quot;tm_create&quot;: &quot;2026-01-20 12:00:00.000000&quot;,
+    &quot;tm_update&quot;: &quot;2026-01-20 12:00:00.000000&quot;,
+    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+}
+</pre></div>
+</div>
+<p><strong>Transcribe a Conference:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/transcribes?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;resource_type&quot;: &quot;conference&quot;,
+        &quot;resource_id&quot;: &quot;c1d2e3f4-a5b6-7890-cdef-123456789abc&quot;,
+        &quot;language&quot;: &quot;en-US&quot;
+    }&#39;
+</pre></div>
+</div>
+<p><strong>Transcribe a Recording:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/transcribes?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;resource_type&quot;: &quot;recording&quot;,
+        &quot;resource_id&quot;: &quot;r1s2t3u4-v5w6-x789-yz01-234567890def&quot;,
+        &quot;language&quot;: &quot;en-US&quot;
+    }&#39;
+</pre></div>
+</div>
+</section>
+<section id="get-transcription-results">
+<h3>Get Transcription Results<a class="headerlink" href="#get-transcription-results" title="Link to this heading"></a></h3>
+<p>Retrieve transcription data after the transcription completes or during real-time transcription.</p>
+<p><strong>Get Transcription by ID:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/transcribes/8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+
+{
+    &quot;id&quot;: &quot;8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce&quot;,
+    &quot;customer_id&quot;: &quot;12345678-1234-1234-1234-123456789012&quot;,
+    &quot;resource_type&quot;: &quot;call&quot;,
+    &quot;resource_id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
+    &quot;language&quot;: &quot;en-US&quot;,
+    &quot;status&quot;: &quot;completed&quot;,
+    &quot;tm_create&quot;: &quot;2026-01-20 12:00:00.000000&quot;,
+    &quot;tm_update&quot;: &quot;2026-01-20 12:05:00.000000&quot;,
+    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+}
+</pre></div>
+</div>
+<p><strong>Get Transcripts (Text Results):</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/transcripts?token=&lt;YOUR_AUTH_TOKEN&gt;&amp;transcribe_id=8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce&#39;
+
+{
+    &quot;result&quot;: [
+        {
+            &quot;id&quot;: &quot;06af78f0-b063-48c0-b22d-d31a5af0aa88&quot;,
+            &quot;transcribe_id&quot;: &quot;8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce&quot;,
+            &quot;direction&quot;: &quot;in&quot;,
+            &quot;message&quot;: &quot;Hi, good to see you. How are you today?&quot;,
+            &quot;tm_transcript&quot;: &quot;0001-01-01 00:01:04.441160&quot;,
+            &quot;tm_create&quot;: &quot;2024-04-01 07:22:07.229309&quot;
+        },
+        {
+            &quot;id&quot;: &quot;3c95ea10-a5b7-4a68-aebf-ed1903baf110&quot;,
+            &quot;transcribe_id&quot;: &quot;8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce&quot;,
+            &quot;direction&quot;: &quot;out&quot;,
+            &quot;message&quot;: &quot;Welcome to the transcribe test. All your voice will be transcribed.&quot;,
+            &quot;tm_transcript&quot;: &quot;0001-01-01 00:00:43.116830&quot;,
+            &quot;tm_create&quot;: &quot;2024-04-01 07:17:27.208337&quot;
+        }
+    ]
+}
+</pre></div>
+</div>
+</section>
+<section id="understanding-transcription-direction">
+<h3>Understanding Transcription Direction<a class="headerlink" href="#understanding-transcription-direction" title="Link to this heading"></a></h3>
+<p>VoIPBIN distinguishes between incoming and outgoing audio:</p>
+<p><strong>Direction: “in”</strong> - Audio from the customer/caller to VoIPBIN</p>
+<p><strong>Direction: “out”</strong> - Audio from VoIPBIN to the customer/caller</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Customer</span>  <span class="o">-----</span><span class="s2">&quot;in&quot;</span><span class="o">------&gt;</span>  <span class="n">VoIPBIN</span>
+         <span class="o">&lt;----</span><span class="s2">&quot;out&quot;</span><span class="o">-------</span>
+</pre></div>
+</div>
+<p>This helps identify who said what in the conversation:
+- <strong>“in”</strong>: What the customer said
+- <strong>“out”</strong>: What VoIPBIN played (TTS, recordings, or other party in the call)</p>
+</section>
+<section id="real-time-transcription-with-websocket">
+<h3>Real-Time Transcription with WebSocket<a class="headerlink" href="#real-time-transcription-with-websocket" title="Link to this heading"></a></h3>
+<p>Subscribe to real-time transcription events via WebSocket to get transcripts as they’re generated during the call.</p>
+<p><strong>1. Connect to WebSocket:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>wss://api.voipbin.net/v1.0/ws?token=&lt;YOUR_AUTH_TOKEN&gt;
+</pre></div>
+</div>
+<p><strong>2. Subscribe to Transcription Events:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;customer_id:12345678-1234-1234-1234-123456789012:transcribe:8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce&quot;</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>3. Receive Real-Time Transcripts:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;event_type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcript_created&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-01-20T12:00:00.000000Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;9d59e7f0-7bdc-4c52-bb8c-bab718952050&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;transcribe_id&quot;</span><span class="p">:</span> <span class="s2">&quot;8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;out&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello, this is a transcribe test call.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_transcript&quot;</span><span class="p">:</span> <span class="s2">&quot;0001-01-01 00:00:08.991840&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-04-04 07:15:59.233415&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Python WebSocket Example:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">websocket</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">on_message</span><span class="p">(</span><span class="n">ws</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;event_type&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;transcript_created&#39;</span><span class="p">:</span>
+        <span class="n">transcript</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
+        <span class="n">direction</span> <span class="o">=</span> <span class="n">transcript</span><span class="p">[</span><span class="s1">&#39;direction&#39;</span><span class="p">]</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">transcript</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">]</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">direction</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Process transcription in real-time</span>
+        <span class="c1"># - Display in UI</span>
+        <span class="c1"># - Run sentiment analysis</span>
+        <span class="c1"># - Detect keywords</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">on_open</span><span class="p">(</span><span class="n">ws</span><span class="p">):</span>
+    <span class="c1"># Subscribe to transcription events</span>
+    <span class="n">subscription</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;customer_id:12345678-1234-1234-1234-123456789012:transcribe:*&quot;</span>
+        <span class="p">]</span>
+    <span class="p">}</span>
+    <span class="n">ws</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">subscription</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Subscribed to transcription events&quot;</span><span class="p">)</span>
+
+<span class="n">token</span> <span class="o">=</span> <span class="s2">&quot;&lt;YOUR_AUTH_TOKEN&gt;&quot;</span>
+<span class="n">ws_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;wss://api.voipbin.net/v1.0/ws?token=</span><span class="si">{</span><span class="n">token</span><span class="si">}</span><span class="s2">&quot;</span>
+
+<span class="n">ws</span> <span class="o">=</span> <span class="n">websocket</span><span class="o">.</span><span class="n">WebSocketApp</span><span class="p">(</span>
+    <span class="n">ws_url</span><span class="p">,</span>
+    <span class="n">on_open</span><span class="o">=</span><span class="n">on_open</span><span class="p">,</span>
+    <span class="n">on_message</span><span class="o">=</span><span class="n">on_message</span>
+<span class="p">)</span>
+
+<span class="n">ws</span><span class="o">.</span><span class="n">run_forever</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="receive-transcripts-via-webhook">
+<h3>Receive Transcripts via Webhook<a class="headerlink" href="#receive-transcripts-via-webhook" title="Link to this heading"></a></h3>
+<p>Configure webhooks to automatically receive transcription events.</p>
+<p><strong>1. Create Webhook:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/webhooks?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;name&quot;: &quot;Transcription Webhook&quot;,
+        &quot;uri&quot;: &quot;https://your-server.com/webhook&quot;,
+        &quot;method&quot;: &quot;POST&quot;,
+        &quot;event_types&quot;: [
+            &quot;transcribe.started&quot;,
+            &quot;transcribe.completed&quot;,
+            &quot;transcript.created&quot;
+        ]
+    }&#39;
+</pre></div>
+</div>
+<p><strong>2. Webhook Payload Example:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">POST</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">your</span><span class="o">-</span><span class="n">server</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">webhook</span>
+
+<span class="p">{</span>
+    <span class="s2">&quot;event_type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcript_created&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-01-20T12:00:00.000000Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;9d59e7f0-7bdc-4c52-bb8c-bab718952050&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;transcribe_id&quot;</span><span class="p">:</span> <span class="s2">&quot;8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;in&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;I need help with my account&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_transcript&quot;</span><span class="p">:</span> <span class="s2">&quot;0001-01-01 00:00:15.500000&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-04-04 07:16:05.100000&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>3. Process Webhook in Your Server:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Python Flask example</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">flask</span><span class="w"> </span><span class="kn">import</span> <span class="n">Flask</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">jsonify</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/webhook&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">transcription_webhook</span><span class="p">():</span>
+    <span class="n">payload</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">get_json</span><span class="p">()</span>
+    <span class="n">event_type</span> <span class="o">=</span> <span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;event_type&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">&#39;transcript_created&#39;</span><span class="p">:</span>
+        <span class="n">transcript</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
+        <span class="n">transcribe_id</span> <span class="o">=</span> <span class="n">transcript</span><span class="p">[</span><span class="s1">&#39;transcribe_id&#39;</span><span class="p">]</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="n">transcript</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">]</span>
+        <span class="n">direction</span> <span class="o">=</span> <span class="n">transcript</span><span class="p">[</span><span class="s1">&#39;direction&#39;</span><span class="p">]</span>
+
+        <span class="c1"># Store transcript in database</span>
+        <span class="n">store_transcript</span><span class="p">(</span><span class="n">transcribe_id</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">direction</span><span class="p">)</span>
+
+        <span class="c1"># Analyze content</span>
+        <span class="n">sentiment</span> <span class="o">=</span> <span class="n">analyze_sentiment</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="n">keywords</span> <span class="o">=</span> <span class="n">extract_keywords</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+
+        <span class="c1"># Trigger actions based on content</span>
+        <span class="k">if</span> <span class="s1">&#39;urgent&#39;</span> <span class="ow">in</span> <span class="n">message</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+            <span class="n">alert_supervisor</span><span class="p">(</span><span class="n">transcribe_id</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;received&#39;</span><span class="p">}),</span> <span class="mi">200</span>
+</pre></div>
+</div>
+</section>
+<section id="id1">
+<h3>Supported Languages<a class="headerlink" href="#id1" title="Link to this heading"></a></h3>
+<p>VoIPBIN supports transcription in multiple languages. See <a class="reference internal" href="transcribe_overview.html#transcribe-overview-supported-languages"><span class="std std-ref">supported languages</span></a>.</p>
+<p><strong>Common Languages:</strong>
+- <code class="docutils literal notranslate"><span class="pre">en-US</span></code> - English (United States)
+- <code class="docutils literal notranslate"><span class="pre">en-GB</span></code> - English (United Kingdom)
+- <code class="docutils literal notranslate"><span class="pre">es-ES</span></code> - Spanish (Spain)
+- <code class="docutils literal notranslate"><span class="pre">fr-FR</span></code> - French (France)
+- <code class="docutils literal notranslate"><span class="pre">de-DE</span></code> - German (Germany)
+- <code class="docutils literal notranslate"><span class="pre">ja-JP</span></code> - Japanese (Japan)
+- <code class="docutils literal notranslate"><span class="pre">ko-KR</span></code> - Korean (Korea)
+- <code class="docutils literal notranslate"><span class="pre">zh-CN</span></code> - Chinese (Simplified)</p>
+<p><strong>Example with Different Language:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcribe_start&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;ja-JP&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="common-use-cases">
+<h3>Common Use Cases<a class="headerlink" href="#common-use-cases" title="Link to this heading"></a></h3>
+<p><strong>1. Customer Service Quality Assurance:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Monitor customer service calls</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">on_transcript</span><span class="p">(</span><span class="n">transcript</span><span class="p">):</span>
+    <span class="c1"># Check for quality metrics</span>
+    <span class="k">if</span> <span class="n">contains_greeting</span><span class="p">(</span><span class="n">transcript</span><span class="p">):</span>
+        <span class="n">mark_greeting_present</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">contains_problem_resolution</span><span class="p">(</span><span class="n">transcript</span><span class="p">):</span>
+        <span class="n">mark_resolved</span><span class="p">()</span>
+
+    <span class="c1"># Flag negative sentiment</span>
+    <span class="k">if</span> <span class="n">analyze_sentiment</span><span class="p">(</span><span class="n">transcript</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">0.3</span><span class="p">:</span>
+        <span class="n">flag_for_review</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><strong>2. Compliance and Record-Keeping:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Store all call transcripts for compliance</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">store_for_compliance</span><span class="p">(</span><span class="n">transcribe_id</span><span class="p">):</span>
+    <span class="n">transcripts</span> <span class="o">=</span> <span class="n">get_transcripts</span><span class="p">(</span><span class="n">transcribe_id</span><span class="p">)</span>
+
+    <span class="c1"># Create formatted record</span>
+    <span class="n">record</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;call_id&#39;</span><span class="p">:</span> <span class="n">call_id</span><span class="p">,</span>
+        <span class="s1">&#39;date&#39;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span>
+        <span class="s1">&#39;full_transcript&#39;</span><span class="p">:</span> <span class="n">format_transcript</span><span class="p">(</span><span class="n">transcripts</span><span class="p">),</span>
+        <span class="s1">&#39;participants&#39;</span><span class="p">:</span> <span class="n">get_participants</span><span class="p">(</span><span class="n">call_id</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="c1"># Store in compliance database</span>
+    <span class="n">compliance_db</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>3. Real-Time Agent Assistance:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Help agents during calls</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">on_real_time_transcript</span><span class="p">(</span><span class="n">transcript</span><span class="p">):</span>
+    <span class="c1"># Detect customer questions</span>
+    <span class="k">if</span> <span class="n">is_question</span><span class="p">(</span><span class="n">transcript</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">]):</span>
+        <span class="c1"># Suggest answers to agent</span>
+        <span class="n">answers</span> <span class="o">=</span> <span class="n">knowledge_base</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">transcript</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">])</span>
+        <span class="n">display_to_agent</span><span class="p">(</span><span class="n">answers</span><span class="p">)</span>
+
+    <span class="c1"># Detect customer frustration</span>
+    <span class="k">if</span> <span class="n">detect_frustration</span><span class="p">(</span><span class="n">transcript</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">]):</span>
+        <span class="n">suggest_supervisor_escalation</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><strong>4. Automated Call Summarization:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Generate call summaries</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">summarize_call</span><span class="p">(</span><span class="n">transcribe_id</span><span class="p">):</span>
+    <span class="n">transcripts</span> <span class="o">=</span> <span class="n">get_all_transcripts</span><span class="p">(</span><span class="n">transcribe_id</span><span class="p">)</span>
+
+    <span class="c1"># Combine all transcripts</span>
+    <span class="n">full_text</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">t</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">transcripts</span><span class="p">])</span>
+
+    <span class="c1"># Generate summary using AI</span>
+    <span class="n">summary</span> <span class="o">=</span> <span class="n">ai_summarize</span><span class="p">(</span><span class="n">full_text</span><span class="p">)</span>
+
+    <span class="c1"># Extract key points</span>
+    <span class="n">action_items</span> <span class="o">=</span> <span class="n">extract_action_items</span><span class="p">(</span><span class="n">full_text</span><span class="p">)</span>
+    <span class="n">topics</span> <span class="o">=</span> <span class="n">extract_topics</span><span class="p">(</span><span class="n">full_text</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s1">&#39;summary&#39;</span><span class="p">:</span> <span class="n">summary</span><span class="p">,</span>
+        <span class="s1">&#39;action_items&#39;</span><span class="p">:</span> <span class="n">action_items</span><span class="p">,</span>
+        <span class="s1">&#39;topics&#39;</span><span class="p">:</span> <span class="n">topics</span>
+    <span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>5. Keyword Detection and Alerting:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Monitor for important keywords</span>
+<span class="n">ALERT_KEYWORDS</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;urgent&#39;</span><span class="p">,</span> <span class="s1">&#39;emergency&#39;</span><span class="p">,</span> <span class="s1">&#39;cancel&#39;</span><span class="p">,</span> <span class="s1">&#39;complaint&#39;</span><span class="p">,</span> <span class="s1">&#39;lawsuit&#39;</span><span class="p">]</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">on_transcript</span><span class="p">(</span><span class="n">transcript</span><span class="p">):</span>
+    <span class="n">message</span> <span class="o">=</span> <span class="n">transcript</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">keyword</span> <span class="ow">in</span> <span class="n">ALERT_KEYWORDS</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">keyword</span> <span class="ow">in</span> <span class="n">message</span><span class="p">:</span>
+            <span class="c1"># Send immediate alert</span>
+            <span class="n">send_alert</span><span class="p">(</span>
+                <span class="n">transcribe_id</span><span class="o">=</span><span class="n">transcript</span><span class="p">[</span><span class="s1">&#39;transcribe_id&#39;</span><span class="p">],</span>
+                <span class="n">keyword</span><span class="o">=</span><span class="n">keyword</span><span class="p">,</span>
+                <span class="n">context</span><span class="o">=</span><span class="n">message</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Escalate to supervisor</span>
+            <span class="n">escalate_call</span><span class="p">(</span><span class="n">transcript</span><span class="p">[</span><span class="s1">&#39;transcribe_id&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p><strong>6. Multi-Language Customer Support:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Auto-detect and transcribe in customer&#39;s language</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">start_multilingual_transcription</span><span class="p">(</span><span class="n">call_id</span><span class="p">):</span>
+    <span class="c1"># Detect language from first few seconds</span>
+    <span class="n">detected_language</span> <span class="o">=</span> <span class="n">detect_language</span><span class="p">(</span><span class="n">call_id</span><span class="p">)</span>
+
+    <span class="c1"># Start transcription in detected language</span>
+    <span class="n">start_transcribe</span><span class="p">(</span>
+        <span class="n">resource_id</span><span class="o">=</span><span class="n">call_id</span><span class="p">,</span>
+        <span class="n">language</span><span class="o">=</span><span class="n">detected_language</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Optionally translate to agent&#39;s language</span>
+    <span class="k">if</span> <span class="n">detected_language</span> <span class="o">!=</span> <span class="s1">&#39;en-US&#39;</span><span class="p">:</span>
+        <span class="n">enable_translation</span><span class="p">(</span><span class="n">call_id</span><span class="p">,</span> <span class="n">target_lang</span><span class="o">=</span><span class="s1">&#39;en-US&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="best-practices">
+<h3>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading"></a></h3>
+<p><strong>1. Choose the Right Trigger Method:</strong>
+- <strong>Flow Action</strong>: Use when transcription is always needed for specific flows
+- <strong>Manual API</strong>: Use when transcription is conditional or triggered by user action</p>
+<p><strong>2. Handle Real-Time Events Efficiently:</strong>
+- Process transcripts asynchronously to avoid blocking
+- Buffer transcripts if processing takes time
+- Use queues for high-volume scenarios</p>
+<p><strong>3. Language Selection:</strong>
+- Auto-detect language when possible
+- Set correct language for better accuracy
+- Test with actual customer accents and dialects</p>
+<p><strong>4. Data Management:</strong>
+- Store transcripts separately from call records
+- Implement retention policies (GDPR, compliance)
+- Encrypt sensitive transcriptions</p>
+<p><strong>5. Error Handling:</strong>
+- Handle cases where transcription fails
+- Retry logic for temporary failures
+- Log failures for debugging</p>
+<p><strong>6. Testing:</strong>
+- Test with various audio qualities
+- Verify accuracy with different accents
+- Test real-time latency</p>
+</section>
+<section id="transcription-lifecycle">
+<h3>Transcription Lifecycle<a class="headerlink" href="#transcription-lifecycle" title="Link to this heading"></a></h3>
+<p><strong>1. Start Transcription:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>POST /v1.0/transcribes
+→ Returns transcribe_id
+</pre></div>
+</div>
+<p><strong>2. Active Transcription:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Status: &quot;active&quot;
+→ Transcripts being generated in real-time
+</pre></div>
+</div>
+<p><strong>3. Receive Transcripts:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Via WebSocket: transcript_created events
+Via Webhook: POST to your endpoint
+Via API: GET /v1.0/transcripts?transcribe_id=...
+</pre></div>
+</div>
+<p><strong>4. Completion:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Status: &quot;completed&quot;
+→ All transcripts available via API
+</pre></div>
+</div>
+</section>
+<section id="troubleshooting">
+<h3>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h3>
+<p><strong>Common Issues:</strong></p>
+<p><strong>No transcripts generated:</strong>
+- Verify call has audio
+- Check language setting is correct
+- Ensure transcription started successfully</p>
+<p><strong>Poor transcription accuracy:</strong>
+- Use correct language code
+- Check audio quality
+- Verify clear speech (no background noise)</p>
+<p><strong>Missing real-time events:</strong>
+- Verify WebSocket subscription is active
+- Check topic pattern matches transcribe_id
+- Ensure network connection is stable</p>
+<p><strong>Delayed transcripts:</strong>
+- Real-time transcription has ~2-5 second delay (normal)
+- Check network latency
+- Verify server can handle webhook volume</p>
+<p>For more information about transcription features and configuration, see <a class="reference internal" href="transcribe_overview.html#transcribe-overview"><span class="std std-ref">Transcribe Overview</span></a>.</p>
+</section>
+</section>
 <section id="transcribe-struct-transcribe">
-<span id="id1"></span><h2>Transcribe<a class="headerlink" href="#transcribe-struct-transcribe" title="Link to this heading"></a></h2>
-<section id="id2">
-<h3>Transcribe<a class="headerlink" href="#id2" title="Link to this heading"></a></h3>
+<span id="id2"></span><h2>Transcribe<a class="headerlink" href="#transcribe-struct-transcribe" title="Link to this heading"></a></h2>
+<section id="id3">
+<h3>Transcribe<a class="headerlink" href="#id3" title="Link to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
@@ -762,9 +1251,9 @@
 </section>
 </section>
 <section id="transcribe-struct-transcription">
-<span id="id3"></span><h2>Transcription<a class="headerlink" href="#transcribe-struct-transcription" title="Link to this heading"></a></h2>
-<section id="id4">
-<h3>Transcription<a class="headerlink" href="#id4" title="Link to this heading"></a></h3>
+<span id="id4"></span><h2>Transcription<a class="headerlink" href="#transcribe-struct-transcription" title="Link to this heading"></a></h2>
+<section id="id5">
+<h3>Transcription<a class="headerlink" href="#id5" title="Link to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;transcribe_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
@@ -782,8 +1271,8 @@
 <li><p>message: Transcription’s message.</p></li>
 <li><p>tm_transcript: Transcription’s timestamp. “0001-01-01 00:00:00” is the beginning of the transcribe.</p></li>
 </ul>
-<section id="id5">
-<h4>example<a class="headerlink" href="#id5" title="Link to this heading"></a></h4>
+<section id="id6">
+<h4>example<a class="headerlink" href="#id6" title="Link to this heading"></a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;06af78f0-b063-48c0-b22d-d31a5af0aa88&quot;</span><span class="p">,</span>
     <span class="s2">&quot;transcribe_id&quot;</span><span class="p">:</span> <span class="s2">&quot;bbf08426-3979-41bc-a544-5fc92c237848&quot;</span><span class="p">,</span>
@@ -845,8 +1334,22 @@
 <li><a class="reference internal" href="#supported-languages">Supported Languages</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#tutorial">Tutorial</a><ul>
+<li><a class="reference internal" href="#start-transcription-with-flow-action">Start Transcription with Flow Action</a></li>
+<li><a class="reference internal" href="#start-transcription-via-api-manual">Start Transcription via API (Manual)</a></li>
+<li><a class="reference internal" href="#get-transcription-results">Get Transcription Results</a></li>
+<li><a class="reference internal" href="#understanding-transcription-direction">Understanding Transcription Direction</a></li>
+<li><a class="reference internal" href="#real-time-transcription-with-websocket">Real-Time Transcription with WebSocket</a></li>
+<li><a class="reference internal" href="#receive-transcripts-via-webhook">Receive Transcripts via Webhook</a></li>
+<li><a class="reference internal" href="#id1">Supported Languages</a></li>
+<li><a class="reference internal" href="#common-use-cases">Common Use Cases</a></li>
+<li><a class="reference internal" href="#best-practices">Best Practices</a></li>
+<li><a class="reference internal" href="#transcription-lifecycle">Transcription Lifecycle</a></li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#transcribe-struct-transcribe">Transcribe</a><ul>
-<li><a class="reference internal" href="#id2">Transcribe</a><ul>
+<li><a class="reference internal" href="#id3">Transcribe</a><ul>
 <li><a class="reference internal" href="#example">example</a></li>
 </ul>
 </li>
@@ -855,8 +1358,8 @@
 </ul>
 </li>
 <li><a class="reference internal" href="#transcribe-struct-transcription">Transcription</a><ul>
-<li><a class="reference internal" href="#id4">Transcription</a><ul>
-<li><a class="reference internal" href="#id5">example</a></li>
+<li><a class="reference internal" href="#id5">Transcription</a><ul>
+<li><a class="reference internal" href="#id6">example</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#direction">direction</a></li>

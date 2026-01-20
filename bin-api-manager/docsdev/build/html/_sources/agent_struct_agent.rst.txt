@@ -67,8 +67,8 @@ offline    Offline.
 ringing    Ringing.
 ========== ============
 
-Permissio
----------
+Permission
+----------
 Agent's permission
 
 ============== ================

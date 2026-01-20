@@ -163,18 +163,18 @@
 <span id="websocket-main"></span><h1>Websocket<a class="headerlink" href="#websocket" title="Link to this heading"></a></h1>
 <section id="overview">
 <span id="websocket-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
-<p>WebSocket, a powerful feature within VoIPBin, revolutionizes web applications by enabling them to subscribe to specific event topics. This capability facilitates real-time updates, ensuring dynamic data changes are seamlessly communicated during runtime.</p>
-<p>WebSocket establishes a persistent and bi-directional connection with the VoIPBin server, providing web applications with real-time capabilities for constructing dynamic and interactive communication applications.</p>
+<p>WebSocket, a powerful feature within VoIPBIN, revolutionizes web applications by enabling them to subscribe to specific event topics. This capability facilitates real-time updates, ensuring dynamic data changes are seamlessly communicated during runtime.</p>
+<p>WebSocket establishes a persistent and bi-directional connection with the VoIPBIN server, providing web applications with real-time capabilities for constructing dynamic and interactive communication applications.</p>
 <section id="websocket-endpoint">
 <h3>Websocket endpoint<a class="headerlink" href="#websocket-endpoint" title="Link to this heading"></a></h3>
-<p>To leverage WebSocket in VoIPBin, connect to the following endpoint:</p>
+<p>To leverage WebSocket in VoIPBIN, connect to the following endpoint:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>GET wss://api.voipbin.net/v1.0/ws?token=&lt;your authtoken here&gt;
 </pre></div>
 </div>
 </section>
 <section id="topic-subscription-unsubscription">
 <h3>Topic Subscription/Unsubscription<a class="headerlink" href="#topic-subscription-unsubscription" title="Link to this heading"></a></h3>
-<p>WebSocket functionality empowers users to finely tune their event subscriptions in the VoIPBin system, tailoring updates to match their application’s specific resource needs. This section outlines the process for subscribing or unsubscribing from event topics.</p>
+<p>WebSocket functionality empowers users to finely tune their event subscriptions in the VoIPBIN system, tailoring updates to match their application’s specific resource needs. This section outlines the process for subscribing or unsubscribing from event topics.</p>
 <p>To initiate a subscription or unsubscription, send the following JSON message through the established WebSocket:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;subscribe|unsubscribe&gt;&quot;</span><span class="p">,</span>
@@ -224,14 +224,14 @@
 </section>
 <section id="real-time-event-updates">
 <h3>Real-Time Event Updates<a class="headerlink" href="#real-time-event-updates" title="Link to this heading"></a></h3>
-<p>When an event transpires for a subscribed topic, VoIPBin dispatches the corresponding event data to the WebSocket connection. Web applications receive this data in real-time, facilitating immediate updates and dynamic data changes within the application.</p>
+<p>When an event transpires for a subscribed topic, VoIPBIN dispatches the corresponding event data to the WebSocket connection. Web applications receive this data in real-time, facilitating immediate updates and dynamic data changes within the application.</p>
 <p>Web applications can seamlessly process these event updates to trigger actions, update UI elements, or reflect changes in the user interface without resorting to manual page refreshes. WebSocket ensures a seamless and interactive user experience, keeping users consistently informed with the latest information.</p>
 </section>
 <section id="benefits-of-websocket">
 <h3>Benefits of WebSocket<a class="headerlink" href="#benefits-of-websocket" title="Link to this heading"></a></h3>
 <p>WebSocket extends various benefits to web applications leveraging VoIPBin:</p>
 <ul class="simple">
-<li><p>Real-Time Communication: WebSocket fosters instant updates and event notifications, establishing real-time communication between the web application and the VoIPBin server.</p></li>
+<li><p>Real-Time Communication: WebSocket fosters instant updates and event notifications, establishing real-time communication between the web application and the VoIPBIN server.</p></li>
 <li><p>Dynamic Data Updates: WebSocket facilitates the handling of dynamic data changes, enabling the creation of dynamic and interactive user interfaces.</p></li>
 <li><p>Efficient Subscription: Pattern matching subscription efficiency allows users to subscribe to multiple resources without the need for individual subscriptions.</p></li>
 <li><p>Reduced Latency: By eliminating the need for repeated HTTP requests, WebSocket reduces latency, enhancing the overall responsiveness of the application.</p></li>
@@ -283,6 +283,512 @@
 </section>
 </section>
 </section>
+<section id="tutorial">
+<span id="websocket-tutorial"></span><h2>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h2>
+<section id="connect-to-websocket">
+<h3>Connect to WebSocket<a class="headerlink" href="#connect-to-websocket" title="Link to this heading"></a></h3>
+<p>Establish a WebSocket connection to receive real-time event updates from VoIPBIN. The WebSocket provides bi-directional communication for subscribing to specific event topics.</p>
+<p><strong>WebSocket Endpoint:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>wss://api.voipbin.net/v1.0/ws?token=&lt;YOUR_AUTH_TOKEN&gt;
+</pre></div>
+</div>
+</section>
+<section id="subscribe-to-events">
+<h3>Subscribe to Events<a class="headerlink" href="#subscribe-to-events" title="Link to this heading"></a></h3>
+<p>After connecting, send a subscription message to receive events for specific resources.</p>
+<p><strong>Subscription Message Format:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;customer_id:&lt;your-customer-id&gt;:call:&lt;call-id&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;customer_id:&lt;your-customer-id&gt;:activeflow:&lt;activeflow-id&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;agent_id:&lt;your-agent-id&gt;:queue:&lt;queue-id&gt;&quot;</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Example Subscription:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;customer_id:12345678-1234-1234-1234-123456789012:call:*&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;customer_id:12345678-1234-1234-1234-123456789012:message:*&quot;</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>This subscribes to all call and message events for your customer account.</p>
+</section>
+<section id="unsubscribe-from-events">
+<h3>Unsubscribe from Events<a class="headerlink" href="#unsubscribe-from-events" title="Link to this heading"></a></h3>
+<p>Stop receiving events for specific topics by sending an unsubscribe message.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;unsubscribe&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;customer_id:12345678-1234-1234-1234-123456789012:call:*&quot;</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="websocket-client-examples">
+<h3>WebSocket Client Examples<a class="headerlink" href="#websocket-client-examples" title="Link to this heading"></a></h3>
+<p><strong>Python Example:</strong></p>
+<p>Using the <code class="docutils literal notranslate"><span class="pre">websocket-client</span></code> library:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">websocket</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">on_message</span><span class="p">(</span><span class="n">ws</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle incoming WebSocket messages&quot;&quot;&quot;</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+    <span class="n">event_type</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;event_type&#39;</span><span class="p">)</span>
+    <span class="n">resource_data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;data&#39;</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Received event: </span><span class="si">{</span><span class="n">event_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">&#39;call.status&#39;</span><span class="p">:</span>
+        <span class="n">call_id</span> <span class="o">=</span> <span class="n">resource_data</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="n">resource_data</span><span class="p">[</span><span class="s1">&#39;status&#39;</span><span class="p">]</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Call </span><span class="si">{</span><span class="n">call_id</span><span class="si">}</span><span class="s2"> status: </span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">&#39;message.received&#39;</span><span class="p">:</span>
+        <span class="n">message_text</span> <span class="o">=</span> <span class="n">resource_data</span><span class="p">[</span><span class="s1">&#39;text&#39;</span><span class="p">]</span>
+        <span class="n">from_number</span> <span class="o">=</span> <span class="n">resource_data</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">][</span><span class="s1">&#39;target&#39;</span><span class="p">]</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Message from </span><span class="si">{</span><span class="n">from_number</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">message_text</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">&#39;activeflow.updated&#39;</span><span class="p">:</span>
+        <span class="n">activeflow_id</span> <span class="o">=</span> <span class="n">resource_data</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+        <span class="n">current_action</span> <span class="o">=</span> <span class="n">resource_data</span><span class="p">[</span><span class="s1">&#39;current_action&#39;</span><span class="p">][</span><span class="s1">&#39;type&#39;</span><span class="p">]</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Activeflow </span><span class="si">{</span><span class="n">activeflow_id</span><span class="si">}</span><span class="s2"> executing: </span><span class="si">{</span><span class="n">current_action</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">on_error</span><span class="p">(</span><span class="n">ws</span><span class="p">,</span> <span class="n">error</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle WebSocket errors&quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error: </span><span class="si">{</span><span class="n">error</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">on_close</span><span class="p">(</span><span class="n">ws</span><span class="p">,</span> <span class="n">close_status_code</span><span class="p">,</span> <span class="n">close_msg</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle WebSocket connection close&quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Connection closed: </span><span class="si">{</span><span class="n">close_status_code</span><span class="si">}</span><span class="s2"> - </span><span class="si">{</span><span class="n">close_msg</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">on_open</span><span class="p">(</span><span class="n">ws</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle WebSocket connection open&quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;WebSocket connection established&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Subscribe to events after connection opens</span>
+    <span class="n">subscription</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;customer_id:12345678-1234-1234-1234-123456789012:call:*&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;customer_id:12345678-1234-1234-1234-123456789012:message:*&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;customer_id:12345678-1234-1234-1234-123456789012:activeflow:*&quot;</span>
+        <span class="p">]</span>
+    <span class="p">}</span>
+    <span class="n">ws</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">subscription</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Subscribed to events&quot;</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="c1"># Replace with your actual token</span>
+    <span class="n">token</span> <span class="o">=</span> <span class="s2">&quot;&lt;YOUR_AUTH_TOKEN&gt;&quot;</span>
+    <span class="n">ws_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;wss://api.voipbin.net/v1.0/ws?token=</span><span class="si">{</span><span class="n">token</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="c1"># Create WebSocket connection</span>
+    <span class="n">ws</span> <span class="o">=</span> <span class="n">websocket</span><span class="o">.</span><span class="n">WebSocketApp</span><span class="p">(</span>
+        <span class="n">ws_url</span><span class="p">,</span>
+        <span class="n">on_open</span><span class="o">=</span><span class="n">on_open</span><span class="p">,</span>
+        <span class="n">on_message</span><span class="o">=</span><span class="n">on_message</span><span class="p">,</span>
+        <span class="n">on_error</span><span class="o">=</span><span class="n">on_error</span><span class="p">,</span>
+        <span class="n">on_close</span><span class="o">=</span><span class="n">on_close</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Run forever (blocks)</span>
+    <span class="n">ws</span><span class="o">.</span><span class="n">run_forever</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><strong>JavaScript (Browser) Example:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>const token = &#39;&lt;YOUR_AUTH_TOKEN&gt;&#39;;
+const wsUrl = `wss://api.voipbin.net/v1.0/ws?token=${token}`;
+
+// Create WebSocket connection
+const ws = new WebSocket(wsUrl);
+
+ws.onopen = function(event) {
+    console.log(&#39;WebSocket connection established&#39;);
+
+    // Subscribe to events
+    const subscription = {
+        type: &#39;subscribe&#39;,
+        topics: [
+            &#39;customer_id:12345678-1234-1234-1234-123456789012:call:*&#39;,
+            &#39;customer_id:12345678-1234-1234-1234-123456789012:message:*&#39;
+        ]
+    };
+    ws.send(JSON.stringify(subscription));
+    console.log(&#39;Subscribed to events&#39;);
+};
+
+ws.onmessage = function(event) {
+    const data = JSON.parse(event.data);
+    const eventType = data.event_type;
+
+    console.log(`Received event: ${eventType}`);
+
+    switch(eventType) {
+        case &#39;call.status&#39;:
+            handleCallStatus(data.data);
+            break;
+        case &#39;message.received&#39;:
+            handleMessageReceived(data.data);
+            break;
+        case &#39;activeflow.updated&#39;:
+            handleActiveflowUpdate(data.data);
+            break;
+        default:
+            console.log(&#39;Unknown event type:&#39;, eventType);
+    }
+};
+
+ws.onerror = function(error) {
+    console.error(&#39;WebSocket error:&#39;, error);
+};
+
+ws.onclose = function(event) {
+    console.log(&#39;WebSocket connection closed:&#39;, event.code, event.reason);
+
+    // Implement reconnection logic if needed
+    setTimeout(function() {
+        console.log(&#39;Reconnecting...&#39;);
+        // Recreate connection
+    }, 5000);
+};
+
+function handleCallStatus(callData) {
+    console.log(`Call ${callData.id} status: ${callData.status}`);
+    // Update UI
+    document.getElementById(&#39;call-status&#39;).textContent = callData.status;
+}
+
+function handleMessageReceived(messageData) {
+    console.log(`Message from ${messageData.source.target}: ${messageData.text}`);
+    // Display message in UI
+    const messageList = document.getElementById(&#39;messages&#39;);
+    const messageElement = document.createElement(&#39;div&#39;);
+    messageElement.textContent = `${messageData.source.target}: ${messageData.text}`;
+    messageList.appendChild(messageElement);
+}
+
+function handleActiveflowUpdate(activeflowData) {
+    console.log(`Activeflow ${activeflowData.id} action: ${activeflowData.current_action.type}`);
+    // Update flow visualization
+}
+</pre></div>
+</div>
+<p><strong>Node.js Example:</strong></p>
+<p>Using the <code class="docutils literal notranslate"><span class="pre">ws</span></code> library:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>const WebSocket = require(&#39;ws&#39;);
+
+const token = &#39;&lt;YOUR_AUTH_TOKEN&gt;&#39;;
+const wsUrl = `wss://api.voipbin.net/v1.0/ws?token=${token}`;
+
+// Create WebSocket connection
+const ws = new WebSocket(wsUrl);
+
+ws.on(&#39;open&#39;, function() {
+    console.log(&#39;WebSocket connection established&#39;);
+
+    // Subscribe to events
+    const subscription = {
+        type: &#39;subscribe&#39;,
+        topics: [
+            &#39;customer_id:12345678-1234-1234-1234-123456789012:call:*&#39;,
+            &#39;customer_id:12345678-1234-1234-1234-123456789012:message:*&#39;,
+            &#39;customer_id:12345678-1234-1234-1234-123456789012:queue:*&#39;
+        ]
+    };
+    ws.send(JSON.stringify(subscription));
+    console.log(&#39;Subscribed to events&#39;);
+});
+
+ws.on(&#39;message&#39;, function(data) {
+    const message = JSON.parse(data);
+    const eventType = message.event_type;
+
+    console.log(`Received event: ${eventType}`);
+
+    // Process events
+    switch(eventType) {
+        case &#39;call.status&#39;:
+            console.log(`Call ${message.data.id}: ${message.data.status}`);
+            break;
+
+        case &#39;queue.joined&#39;:
+            console.log(`Caller ${message.data.call_id} joined queue ${message.data.queue_id}`);
+            // Notify agents
+            notifyAgents(message.data);
+            break;
+
+        case &#39;message.received&#39;:
+            console.log(`Message: ${message.data.text}`);
+            // Process message
+            processIncomingMessage(message.data);
+            break;
+    }
+});
+
+ws.on(&#39;error&#39;, function(error) {
+    console.error(&#39;WebSocket error:&#39;, error);
+});
+
+ws.on(&#39;close&#39;, function(code, reason) {
+    console.log(`WebSocket closed: ${code} - ${reason}`);
+
+    // Implement reconnection
+    setTimeout(function() {
+        console.log(&#39;Reconnecting...&#39;);
+        // Recreate connection
+    }, 5000);
+});
+
+function notifyAgents(queueData) {
+    // Notify available agents about new call in queue
+    console.log(`Notifying agents about queue entry`);
+}
+
+function processIncomingMessage(messageData) {
+    // Auto-respond or route to agent
+    console.log(`Processing message from ${messageData.source.target}`);
+}
+</pre></div>
+</div>
+</section>
+<section id="topic-pattern-matching">
+<h3>Topic Pattern Matching<a class="headerlink" href="#topic-pattern-matching" title="Link to this heading"></a></h3>
+<p>WebSocket supports wildcard subscriptions using <code class="docutils literal notranslate"><span class="pre">*</span></code> to match multiple resources.</p>
+<p><strong>Subscribe to all calls:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;customer_id:12345678-1234-1234-1234-123456789012:call:*&quot;</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Subscribe to specific call:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;customer_id:12345678-1234-1234-1234-123456789012:call:a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Subscribe to multiple resource types:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;customer_id:12345678-1234-1234-1234-123456789012:call:*&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;customer_id:12345678-1234-1234-1234-123456789012:message:*&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;customer_id:12345678-1234-1234-1234-123456789012:conference:*&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;customer_id:12345678-1234-1234-1234-123456789012:queue:*&quot;</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Agent-level subscription:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;agent_id:98765432-4321-4321-4321-210987654321:queue:*&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;agent_id:98765432-4321-4321-4321-210987654321:call:*&quot;</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="permission-requirements">
+<h3>Permission Requirements<a class="headerlink" href="#permission-requirements" title="Link to this heading"></a></h3>
+<p><strong>Customer-Level Topics:</strong></p>
+<p>To subscribe to customer-level topics, you need:
+- Admin permission, OR
+- Manager permission</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">customer_id</span><span class="p">:</span><span class="o">&lt;</span><span class="n">customer</span><span class="o">-</span><span class="nb">id</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">resource</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">resource</span><span class="o">-</span><span class="nb">id</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p><strong>Agent-Level Topics:</strong></p>
+<p>Only the owner of the agent can subscribe:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">agent_id</span><span class="p">:</span><span class="o">&lt;</span><span class="n">agent</span><span class="o">-</span><span class="nb">id</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">resource</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">resource</span><span class="o">-</span><span class="nb">id</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+</section>
+<section id="event-message-format">
+<h3>Event Message Format<a class="headerlink" href="#event-message-format" title="Link to this heading"></a></h3>
+<p>All WebSocket events follow this structure:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;event_type&quot;</span><span class="p">:</span> <span class="s2">&quot;call.status&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-01-20T10:30:00.000000Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;topic&quot;</span><span class="p">:</span> <span class="s2">&quot;customer_id:12345678-1234-1234-1234-123456789012:call:a1b2c3d4&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="o">//</span> <span class="n">Event</span><span class="o">-</span><span class="n">specific</span> <span class="n">resource</span> <span class="n">data</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Fields:</strong>
+- <code class="docutils literal notranslate"><span class="pre">event_type</span></code>: Type of event (e.g., <code class="docutils literal notranslate"><span class="pre">call.status</span></code>, <code class="docutils literal notranslate"><span class="pre">message.received</span></code>)
+- <code class="docutils literal notranslate"><span class="pre">timestamp</span></code>: When the event occurred (ISO 8601 in UTC)
+- <code class="docutils literal notranslate"><span class="pre">topic</span></code>: The topic that triggered this event
+- <code class="docutils literal notranslate"><span class="pre">data</span></code>: Resource-specific data (call, message, activeflow, etc.)</p>
+</section>
+<section id="common-use-cases">
+<h3>Common Use Cases<a class="headerlink" href="#common-use-cases" title="Link to this heading"></a></h3>
+<p><strong>Real-Time Call Monitoring:</strong></p>
+<p>Monitor all active calls in real-time:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Python example</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">on_message</span><span class="p">(</span><span class="n">ws</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;event_type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;call.status&#39;</span><span class="p">:</span>
+        <span class="n">call</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">call</span><span class="p">[</span><span class="s1">&#39;status&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;answered&#39;</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Call </span><span class="si">{</span><span class="n">call</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> answered - Duration tracking started&quot;</span><span class="p">)</span>
+            <span class="n">start_call_timer</span><span class="p">(</span><span class="n">call</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">])</span>
+
+        <span class="k">elif</span> <span class="n">call</span><span class="p">[</span><span class="s1">&#39;status&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;hangup&#39;</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Call </span><span class="si">{</span><span class="n">call</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> ended&quot;</span><span class="p">)</span>
+            <span class="n">stop_call_timer</span><span class="p">(</span><span class="n">call</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">])</span>
+            <span class="n">calculate_call_metrics</span><span class="p">(</span><span class="n">call</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Live Agent Dashboard:</strong></p>
+<p>Update agent status and queue information in real-time:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span># JavaScript example
+ws.onmessage = function(event) {
+    const data = JSON.parse(event.data);
+
+    if (data.event_type === &#39;queue.joined&#39;) {
+        // Update queue count
+        updateQueueCount(data.data.queue_id, &#39;+1&#39;);
+        // Show notification to agents
+        notifyAgents(`New caller in queue`);
+    }
+
+    if (data.event_type === &#39;agent.status&#39;) {
+        // Update agent availability display
+        updateAgentStatus(data.data.agent_id, data.data.status);
+    }
+};
+</pre></div>
+</div>
+<p><strong>Flow Execution Visualization:</strong></p>
+<p>Visualize flow execution in real-time:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span># Node.js example
+ws.on(&#39;message&#39;, function(data) {
+    const message = JSON.parse(data);
+
+    if (message.event_type === &#39;activeflow.updated&#39;) {
+        const activeflow = message.data;
+
+        // Update flow diagram
+        highlightCurrentAction(
+            activeflow.flow_id,
+            activeflow.current_action.id
+        );
+
+        // Log action execution
+        console.log(`Flow ${activeflow.flow_id}: Executing ${activeflow.current_action.type}`);
+    }
+});
+</pre></div>
+</div>
+<p><strong>Auto-Reply to Messages:</strong></p>
+<p>Respond to messages immediately when received:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Python example</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">on_message</span><span class="p">(</span><span class="n">ws</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;event_type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;message.received&#39;</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
+
+        <span class="c1"># Auto-reply logic</span>
+        <span class="k">if</span> <span class="s1">&#39;help&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;text&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+            <span class="n">send_auto_reply</span><span class="p">(</span>
+                <span class="n">to</span><span class="o">=</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">][</span><span class="s1">&#39;target&#39;</span><span class="p">],</span>
+                <span class="n">text</span><span class="o">=</span><span class="s2">&quot;Thanks for reaching out! Our team will respond soon. For urgent matters, please call us at +15551234567.&quot;</span>
+            <span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="best-practices">
+<h3>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading"></a></h3>
+<p><strong>1. Connection Management:</strong>
+- Implement automatic reconnection with exponential backoff
+- Handle connection drops gracefully
+- Monitor connection health with ping/pong</p>
+<p><strong>2. Subscription Management:</strong>
+- Subscribe only to events you need
+- Use wildcards (<code class="docutils literal notranslate"><span class="pre">*</span></code>) for broad monitoring
+- Unsubscribe from unused topics to reduce load</p>
+<p><strong>3. Error Handling:</strong>
+- Catch and log all WebSocket errors
+- Implement timeout handling
+- Validate incoming message format</p>
+<p><strong>4. Performance:</strong>
+- Process messages asynchronously if handling is time-consuming
+- Batch UI updates to avoid excessive rendering
+- Use message queues for high-volume scenarios</p>
+<p><strong>5. Security:</strong>
+- Always use WSS (WebSocket Secure) in production
+- Rotate authentication tokens regularly
+- Validate message sources</p>
+<p><strong>6. Testing:</strong>
+- Test reconnection logic thoroughly
+- Simulate connection failures
+- Verify subscription/unsubscription works correctly</p>
+</section>
+<section id="connection-lifecycle">
+<h3>Connection Lifecycle<a class="headerlink" href="#connection-lifecycle" title="Link to this heading"></a></h3>
+<p><strong>1. Connect:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ws</span> <span class="o">=</span> <span class="n">new</span> <span class="n">WebSocket</span><span class="p">(</span><span class="s1">&#39;wss://api.voipbin.net/v1.0/ws?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;</span><span class="p">);</span>
+</pre></div>
+</div>
+<p><strong>2. Subscribe on Open:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ws</span><span class="o">.</span><span class="n">onopen</span> <span class="o">=</span> <span class="n">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">ws</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">JSON</span><span class="o">.</span><span class="n">stringify</span><span class="p">({</span>
+        <span class="nb">type</span><span class="p">:</span> <span class="s1">&#39;subscribe&#39;</span><span class="p">,</span>
+        <span class="n">topics</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;customer_id:&lt;id&gt;:call:*&#39;</span><span class="p">]</span>
+    <span class="p">}));</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+<p><strong>3. Handle Messages:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ws</span><span class="o">.</span><span class="n">onmessage</span> <span class="o">=</span> <span class="n">function</span><span class="p">(</span><span class="n">event</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">const</span> <span class="n">data</span> <span class="o">=</span> <span class="n">JSON</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">data</span><span class="p">);</span>
+    <span class="o">//</span> <span class="n">Process</span> <span class="n">event</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+<p><strong>4. Handle Disconnection:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ws</span><span class="o">.</span><span class="n">onclose</span> <span class="o">=</span> <span class="n">function</span><span class="p">(</span><span class="n">event</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s1">&#39;Disconnected&#39;</span><span class="p">);</span>
+    <span class="o">//</span> <span class="n">Implement</span> <span class="n">reconnection</span>
+    <span class="n">setTimeout</span><span class="p">(</span><span class="n">reconnect</span><span class="p">,</span> <span class="mi">5000</span><span class="p">);</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+<p><strong>5. Graceful Shutdown:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">Unsubscribe</span> <span class="n">before</span> <span class="n">closing</span>
+<span class="n">ws</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">JSON</span><span class="o">.</span><span class="n">stringify</span><span class="p">({</span>
+    <span class="nb">type</span><span class="p">:</span> <span class="s1">&#39;unsubscribe&#39;</span><span class="p">,</span>
+    <span class="n">topics</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;customer_id:&lt;id&gt;:call:*&#39;</span><span class="p">]</span>
+<span class="p">}));</span>
+
+<span class="o">//</span> <span class="n">Close</span> <span class="n">connection</span>
+<span class="n">ws</span><span class="o">.</span><span class="n">close</span><span class="p">();</span>
+</pre></div>
+</div>
+<p>For more details about WebSocket topics and event types, see <a class="reference internal" href="websocket_overview.html#websocket-overview"><span class="std std-ref">WebSocket Overview</span></a>.</p>
+</section>
+</section>
 </section>
 
 </main>
@@ -322,6 +828,19 @@
 <li><a class="reference internal" href="#id1">Example</a></li>
 </ul>
 </li>
+</ul>
+</li>
+<li><a class="reference internal" href="#tutorial">Tutorial</a><ul>
+<li><a class="reference internal" href="#connect-to-websocket">Connect to WebSocket</a></li>
+<li><a class="reference internal" href="#subscribe-to-events">Subscribe to Events</a></li>
+<li><a class="reference internal" href="#unsubscribe-from-events">Unsubscribe from Events</a></li>
+<li><a class="reference internal" href="#websocket-client-examples">WebSocket Client Examples</a></li>
+<li><a class="reference internal" href="#topic-pattern-matching">Topic Pattern Matching</a></li>
+<li><a class="reference internal" href="#permission-requirements">Permission Requirements</a></li>
+<li><a class="reference internal" href="#event-message-format">Event Message Format</a></li>
+<li><a class="reference internal" href="#common-use-cases">Common Use Cases</a></li>
+<li><a class="reference internal" href="#best-practices">Best Practices</a></li>
+<li><a class="reference internal" href="#connection-lifecycle">Connection Lifecycle</a></li>
 </ul>
 </li>
 </ul>

@@ -5,3 +5,4 @@ Mediastream
 **************
 
 .. include:: mediastream_overview.rst
+.. include:: mediastream_tutorial.rst

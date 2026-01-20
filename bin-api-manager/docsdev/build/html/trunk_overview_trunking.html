@@ -167,24 +167,24 @@
 </section>
 <section id="authentication">
 <h2>Authentication<a class="headerlink" href="#authentication" title="Link to this heading"></a></h2>
-<p>Currently, The VoIPBin’s trunking authentication supports only the Basic authentication.</p>
+<p>Currently, The VoIPBIN’s trunking authentication supports only the Basic authentication.</p>
 <ul class="simple">
 <li><p>Basic authentication</p></li>
 <li><p>IP base authentication(WIP)</p></li>
 </ul>
 <section id="basic-authentication">
 <h3>Basic authentication<a class="headerlink" href="#basic-authentication" title="Link to this heading"></a></h3>
-<p>To make a SIP outgoing call through a VoIPBin using basic authentication, you need to follow a few steps:</p>
+<p>To make a SIP outgoing call through a VoIPBIN using basic authentication, you need to follow a few steps:</p>
 <ol class="arabic simple">
 <li><p>Choose a SIP client: You can use a software-based SIP client, such as Zoiper or X-Lite, or a hardware-based SIP phone, such as a Cisco or Grandstream phone.</p></li>
-<li><p>Configure your SIP client: You need to configure your SIP client with VoIPBin credentials, such as your name, extension, password, domain info.</p></li>
+<li><p>Configure your SIP client: You need to configure your SIP client with VoIPBIN credentials, such as your name, extension, password, domain info.</p></li>
 <li><p>Set up your outgoing call settings: In your SIP client, you need to specify the destination address(phone number or extension) you want to call and set any additional options, such as the call type, call quality, or call duration.</p></li>
 <li><p>Initiate the call: Once you have configured your SIP client and set up your outgoing call settings, you can initiate the call by clicking on the call button or using a keypad command.</p></li>
-<li><p>Authenticate your credentials: When you initiate the call, your SIP client sends your authentication credentials to the VoIPBin, using the basic authentication method. The VoIPBin then verifies your credentials and authorizes the call.</p></li>
-<li><p>Make the call: Once your credentials are verified, the VoIPBin establishes the call and connects you with the destination address.</p></li>
+<li><p>Authenticate your credentials: When you initiate the call, your SIP client sends your authentication credentials to the VoIPBIN, using the basic authentication method. The VoIPBIN then verifies your credentials and authorizes the call.</p></li>
+<li><p>Make the call: Once your credentials are verified, the VoIPBIN establishes the call and connects you with the destination address.</p></li>
 </ol>
-<p>By following these steps, you can make a SIP outgoing call through VoIPBin using basic authentication. This process can be used for a variety of business and personal applications, such as remote work, conferencing, and customer support.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">UA</span>                                   <span class="n">VoIPBin</span>                                 <span class="n">Destination</span>
+<p>By following these steps, you can make a SIP outgoing call through VoIPBIN using basic authentication. This process can be used for a variety of business and personal applications, such as remote work, conferencing, and customer support.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">UA</span>                                   <span class="n">VoIPBIN</span>                                 <span class="n">Destination</span>
 
 <span class="o">|</span>                                        <span class="o">|</span>                                        <span class="o">|</span>
 <span class="o">|----------------</span> <span class="n">INVITE</span> <span class="o">---------------&gt;|</span>                                        <span class="o">|</span>
@@ -216,7 +216,7 @@
 </section>
 <section id="call-handle">
 <h2>Call handle<a class="headerlink" href="#call-handle" title="Link to this heading"></a></h2>
-<p>Unlike the normal VoIPBin’s normal call handle, the VoIPBin handles trunking outbound call in a different way. The VoIPBin executes special flow for the trunking call.
+<p>Unlike the normal VoIPBIN’s normal call handle, the VoIPBIN handles trunking outbound call in a different way. The VoIPBIN executes special flow for the trunking call.
 It executes the follow features:</p>
 <ul class="simple">
 <li><p>Enable the early media.</p></li>
@@ -224,8 +224,8 @@ It executes the follow features:</p>
 </ul>
 <section id="early-media-handle">
 <h3>Early media handle<a class="headerlink" href="#early-media-handle" title="Link to this heading"></a></h3>
-<p>The VoIPBin enables the the early-media feature for the trunking outbound call.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">UA</span>                                   <span class="n">VoIPBin</span>                                 <span class="n">Destination</span>
+<p>The VoIPBIN enables the the early-media feature for the trunking outbound call.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">UA</span>                                   <span class="n">VoIPBIN</span>                                 <span class="n">Destination</span>
 
 <span class="o">|</span>                                        <span class="o">|</span>                                        <span class="o">|</span>
 <span class="o">===================================================================================</span>
@@ -241,8 +241,8 @@ It executes the follow features:</p>
 </section>
 <section id="realy-hangup-cause">
 <h3>Realy hangup cause<a class="headerlink" href="#realy-hangup-cause" title="Link to this heading"></a></h3>
-<p>The VoIPBin delivers the hangup cause code from the outgoing call.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">UA</span>                                   <span class="n">VoIPBin</span>                                 <span class="n">Destination</span>
+<p>The VoIPBIN delivers the hangup cause code from the outgoing call.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">UA</span>                                   <span class="n">VoIPBIN</span>                                 <span class="n">Destination</span>
 
 <span class="o">|</span>                                        <span class="o">|</span>                                        <span class="o">|</span>
 <span class="o">===================================================================================</span>

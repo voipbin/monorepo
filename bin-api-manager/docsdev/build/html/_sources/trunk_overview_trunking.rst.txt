@@ -12,27 +12,27 @@ Once you created trunk, the voipbin generates the trunk server address for you.
 
 Authentication
 --------------
-Currently, The VoIPBin's trunking authentication supports only the Basic authentication.
+Currently, The VoIPBIN's trunking authentication supports only the Basic authentication.
 
 * Basic authentication
 * IP base authentication(WIP)
 
 Basic authentication
 ++++++++++++++++++++
-To make a SIP outgoing call through a VoIPBin using basic authentication, you need to follow a few steps:
+To make a SIP outgoing call through a VoIPBIN using basic authentication, you need to follow a few steps:
 
 1. Choose a SIP client: You can use a software-based SIP client, such as Zoiper or X-Lite, or a hardware-based SIP phone, such as a Cisco or Grandstream phone.
-2. Configure your SIP client: You need to configure your SIP client with VoIPBin credentials, such as your name, extension, password, domain info.
+2. Configure your SIP client: You need to configure your SIP client with VoIPBIN credentials, such as your name, extension, password, domain info.
 3. Set up your outgoing call settings: In your SIP client, you need to specify the destination address(phone number or extension) you want to call and set any additional options, such as the call type, call quality, or call duration.
 4. Initiate the call: Once you have configured your SIP client and set up your outgoing call settings, you can initiate the call by clicking on the call button or using a keypad command.
-5. Authenticate your credentials: When you initiate the call, your SIP client sends your authentication credentials to the VoIPBin, using the basic authentication method. The VoIPBin then verifies your credentials and authorizes the call.
-6. Make the call: Once your credentials are verified, the VoIPBin establishes the call and connects you with the destination address.
+5. Authenticate your credentials: When you initiate the call, your SIP client sends your authentication credentials to the VoIPBIN, using the basic authentication method. The VoIPBIN then verifies your credentials and authorizes the call.
+6. Make the call: Once your credentials are verified, the VoIPBIN establishes the call and connects you with the destination address.
 
-By following these steps, you can make a SIP outgoing call through VoIPBin using basic authentication. This process can be used for a variety of business and personal applications, such as remote work, conferencing, and customer support.
+By following these steps, you can make a SIP outgoing call through VoIPBIN using basic authentication. This process can be used for a variety of business and personal applications, such as remote work, conferencing, and customer support.
 
 .. code::
 
-    UA                                   VoIPBin                                 Destination
+    UA                                   VoIPBIN                                 Destination
 
     |                                        |                                        |
     |---------------- INVITE --------------->|                                        |
@@ -62,7 +62,7 @@ By following these steps, you can make a SIP outgoing call through VoIPBin using
 
 Call handle
 -------------------
-Unlike the normal VoIPBin's normal call handle, the VoIPBin handles trunking outbound call in a different way. The VoIPBin executes special flow for the trunking call.
+Unlike the normal VoIPBIN's normal call handle, the VoIPBIN handles trunking outbound call in a different way. The VoIPBIN executes special flow for the trunking call.
 It executes the follow features:
 
 * Enable the early media.
@@ -70,11 +70,11 @@ It executes the follow features:
 
 Early media handle
 ++++++++++++++++++
-The VoIPBin enables the the early-media feature for the trunking outbound call.
+The VoIPBIN enables the the early-media feature for the trunking outbound call.
 
 .. code::
 
-    UA                                   VoIPBin                                 Destination
+    UA                                   VoIPBIN                                 Destination
 
     |                                        |                                        |
     ===================================================================================
@@ -89,11 +89,11 @@ The VoIPBin enables the the early-media feature for the trunking outbound call.
 
 Realy hangup cause
 ++++++++++++++++++
-The VoIPBin delivers the hangup cause code from the outgoing call.
+The VoIPBIN delivers the hangup cause code from the outgoing call.
 
 .. code::
 
-    UA                                   VoIPBin                                 Destination
+    UA                                   VoIPBIN                                 Destination
 
     |                                        |                                        |
     ===================================================================================

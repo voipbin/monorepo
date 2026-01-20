@@ -10,7 +10,7 @@ Gets the list of registered extensions of the given domain.
 
 .. code::
 
-    $ curl -k --location --request GET 'https://api.voipbin.net/v1.0/extensions?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTQzMzE0OTgsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.Gg1WsbrKDnQQh7Pvi5y5CV51NVQBz7pgU_T9TxshXPs&domain_id=cc6a05eb-33a4-444b-bf8a-359de7d95499'
+    $ curl -k --location --request GET 'https://api.voipbin.net/v1.0/extensions?token=<YOUR_AUTH_TOKEN>&domain_id=cc6a05eb-33a4-444b-bf8a-359de7d95499'
 
     {
         "result": [
@@ -37,7 +37,7 @@ Gets the detail of registered extension.
 
 .. code::
 
-    $ curl -k --location --request GET 'https://api.voipbin.net/v1.0/extensions/0e7f8158-c770-4930-a98e-f2165b189c1f?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTQzMzE0OTgsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.Gg1WsbrKDnQQh7Pvi5y5CV51NVQBz7pgU_T9TxshXPs'
+    $ curl -k --location --request GET 'https://api.voipbin.net/v1.0/extensions/0e7f8158-c770-4930-a98e-f2165b189c1f?token=<YOUR_AUTH_TOKEN>'
 
     {
         "id": "0e7f8158-c770-4930-a98e-f2165b189c1f",
@@ -60,7 +60,7 @@ Create a new extension.
 
 .. code::
 
-    $ curl -k --location --request POST 'https://api.voipbin.net/v1.0/extensions?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTQzMzE0OTgsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.Gg1WsbrKDnQQh7Pvi5y5CV51NVQBz7pgU_T9TxshXPs' \
+    $ curl -k --location --request POST 'https://api.voipbin.net/v1.0/extensions?token=<YOUR_AUTH_TOKEN>' \
     --header 'Content-Type: application/json' \
     --data-raw '{
         "name": "test domain",
@@ -87,11 +87,11 @@ Create a new extension.
 Update the extension
 --------------------
 
-Update the existed extension with given info.
+Update the existing extension with given info.
 
 .. code::
 
-    $ curl -k --location --request PUT 'https://api.voipbin.net/v1.0/extensions/6a7934ff-0e1c-4857-857b-23c9e27d267b?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTQzMzE0OTgsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.Gg1WsbrKDnQQh7Pvi5y5CV51NVQBz7pgU_T9TxshXPs' \
+    $ curl -k --location --request PUT 'https://api.voipbin.net/v1.0/extensions/6a7934ff-0e1c-4857-857b-23c9e27d267b?token=<YOUR_AUTH_TOKEN>' \
     --header 'Content-Type: application/json' \
     --data-raw '{
         "name": "update test extension name",
@@ -115,9 +115,9 @@ Update the existed extension with given info.
 Delete the extension
 --------------------
 
-Delete the existed extension of given id.
+Delete the existing extension of given id.
 
 .. code::
 
-    $ curl --location --request DELETE 'https://api.voipbin.net/v1.0/extensions/6a7934ff-0e1c-4857-857b-23c9e27d267b?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTQzMzE0OTgsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.Gg1WsbrKDnQQh7Pvi5y5CV51NVQBz7pgU_T9TxshXPs'
+    $ curl --location --request DELETE 'https://api.voipbin.net/v1.0/extensions/6a7934ff-0e1c-4857-857b-23c9e27d267b?token=<YOUR_AUTH_TOKEN>'
 

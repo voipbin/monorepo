@@ -194,40 +194,497 @@
 <li><p>Extension numbers should not contain any special characters, such as spaces, parentheses, or hyphens.</p></li>
 </ul>
 <p>The absence of special characters ensures consistent and reliable processing of extension numbers within the VoIPBIN system, promoting smooth communication and interaction.</p>
-<p>With the VoIPBIN call API’s robust features and support for various protocols, developers can create versatile and efficient call applications, enabling seamless communication and collaboration for end-users.</p>
+</section>
+<section id="call-lifecycle">
+<h3>Call Lifecycle<a class="headerlink" href="#call-lifecycle" title="Link to this heading"></a></h3>
+<p>Every call in VoIPBIN follows a predictable lifecycle from creation to termination. Understanding this lifecycle helps you build reliable applications that respond correctly to call state changes.</p>
+<p><strong>State Diagram</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>                               ┌──────────────┐
+                               │   dialing    │
+                               │ (call starts)│
+                               └──────┬───────┘
+                                      │
+                ┌─────────────────────┼─────────────────────┐
+                │                     │                     │
+                ▼                     ▼                     ▼
+         ┌────────────┐        ┌────────────┐        ┌────────────┐
+         │  ringing   │        │ canceling  │        │  hangup    │
+         │ (dest rang)│        │ (caller    │        │ (failed)   │
+         └─────┬──────┘        │  cancels)  │        └────────────┘
+               │               └─────┬──────┘
+               │                     │
+               ▼                     │
+        ┌─────────────┐              │
+        │ progressing │              │
+        │ (answered)  │              │
+        └──────┬──────┘              │
+               │                     │
+      ┌────────┴────────┐            │
+      ▼                 ▼            │
+┌────────────┐   ┌────────────┐      │
+│terminating │   │  hangup    │      │
+│  (ending   │   │  (remote   │      │
+│   locally) │   │  hangup)   │      │
+└─────┬──────┘   └────────────┘      │
+      │                              │
+      └──────────────┬───────────────┘
+                     ▼
+              ┌────────────┐
+              │   hangup   │
+              │  (final)   │
+              └────────────┘
+</pre></div>
+</div>
+<p><strong>State Descriptions</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Status</p></th>
+<th class="head"><p>What is happening</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>dialing</p></td>
+<td><p>Call has been created. The system is attempting to reach the
+destination through the phone network.</p></td>
+</tr>
+<tr class="row-odd"><td><p>ringing</p></td>
+<td><p>The destination device is ringing. The person being called can
+now answer.</p></td>
+</tr>
+<tr class="row-even"><td><p>progressing</p></td>
+<td><p>The call has been answered. Both parties can now hear each
+other. Media (audio/video) is flowing.</p></td>
+</tr>
+<tr class="row-odd"><td><p>terminating</p></td>
+<td><p>The system is ending the call. This happens when your
+application hangs up or a flow action ends the call.</p></td>
+</tr>
+<tr class="row-even"><td><p>canceling</p></td>
+<td><p>The caller is canceling before the destination answered.
+Only happens for outgoing calls.</p></td>
+</tr>
+<tr class="row-odd"><td><p>hangup</p></td>
+<td><p>The call has ended. This is the final state - no further
+changes are possible.</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Key Behaviors</strong></p>
+<ul class="simple">
+<li><p>States only move forward, never backward. A call that reached “progressing” cannot go back to “ringing”.</p></li>
+<li><p>Once a call reaches “hangup”, it cannot change anymore.</p></li>
+<li><p>The “canceling” state only applies to outgoing calls (when the originator hangs up before answer).</p></li>
+</ul>
+</section>
+<section id="what-happens-at-each-stage">
+<h3>What Happens At Each Stage<a class="headerlink" href="#what-happens-at-each-stage" title="Link to this heading"></a></h3>
+<p><strong>During Dialing</strong></p>
+<p>When you create an outbound call or receive an inbound call, the call enters the dialing state.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Your App                    VoIPBIN                    Destination
+   │                           │                            │
+   │  POST /v1/calls           │                            │
+   │──────────────────────────▶│                            │
+   │                           │  SIP INVITE                │
+   │                           │───────────────────────────▶│
+   │                           │                            │
+   │  Call object              │                            │
+   │  status: &quot;dialing&quot;        │                            │
+   │◀──────────────────────────│                            │
+</pre></div>
+</div>
+<p>At this point:</p>
+<ul class="simple">
+<li><p>VoIPBIN is trying to reach the destination</p></li>
+<li><p>No audio is flowing yet</p></li>
+<li><p>The call may fail if the network is unreachable</p></li>
+</ul>
+<p><strong>During Ringing</strong></p>
+<p>The destination device is ringing. The person can pick up the phone.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>│                           │                            │
+│                           │  180 Ringing               │
+│                           │◀───────────────────────────│
+│  Webhook: call_updated    │                            │
+│  status: &quot;ringing&quot;        │       ♪ Ring Ring ♪        │
+│◀──────────────────────────│                            │
+</pre></div>
+</div>
+<p>At this point:</p>
+<ul class="simple">
+<li><p>The destination phone is ringing</p></li>
+<li><p>Early media (ringback tone) may be playing</p></li>
+<li><p>The caller is waiting for an answer</p></li>
+</ul>
+<p><strong>During Progressing (Answered)</strong></p>
+<p>The call has been answered. This is when real communication begins.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>│                           │                            │
+│                           │  200 OK                    │
+│                           │◀───────────────────────────│
+│  Webhook: call_updated    │                            │
+│  status: &quot;progressing&quot;    │   ◀═══════════════════▶    │
+│◀──────────────────────────│        (Audio flows)       │
+</pre></div>
+</div>
+<p>At this point:</p>
+<ul class="simple">
+<li><p>Both parties can hear each other</p></li>
+<li><p>Flow actions start executing (if defined)</p></li>
+<li><p>Recording can begin</p></li>
+<li><p>Media controls (hold, mute) become available</p></li>
+</ul>
+<p><strong>During Hangup</strong></p>
+<p>The call has ended. Check the hangup_by and hangup_reason fields to understand why.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>│                           │                            │
+│                           │  BYE                       │
+│                           │◀───────────────────────────│
+│  Webhook: call_updated    │                            │
+│  status: &quot;hangup&quot;         │                            │
+│  hangup_by: &quot;remote&quot;      │                            │
+│  hangup_reason: &quot;normal&quot;  │                            │
+│◀──────────────────────────│                            │
+</pre></div>
+</div>
+</section>
+<section id="understanding-hangup-reasons">
+<h3>Understanding Hangup Reasons<a class="headerlink" href="#understanding-hangup-reasons" title="Link to this heading"></a></h3>
+<p>When a call ends, VoIPBIN tells you why it ended. This helps you build appropriate responses for different scenarios.</p>
+<p><strong>Hangup Reason Values</strong></p>
+<p><strong>Hangup By Values</strong></p>
+<p><strong>Common Scenarios</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Scenario: Normal conversation
+────────────────────────────
+hangup_by: &quot;remote&quot;
+hangup_reason: &quot;normal&quot;
+→ The other person hung up after talking
+
+Scenario: Missed call
+────────────────────────────
+hangup_by: &quot;remote&quot;
+hangup_reason: &quot;noanswer&quot;
+→ Phone rang but nobody answered
+
+Scenario: Your app ended the call
+────────────────────────────
+hangup_by: &quot;local&quot;
+hangup_reason: &quot;normal&quot;
+→ Your flow action or API call ended it
+
+Scenario: Network problem
+────────────────────────────
+hangup_by: &quot;remote&quot;
+hangup_reason: &quot;failed&quot;
+→ Call never connected due to network issues
+</pre></div>
+</div>
+</section>
+<section id="media-control-operations">
+<h3>Media Control Operations<a class="headerlink" href="#media-control-operations" title="Link to this heading"></a></h3>
+<p>Once a call is in the “progressing” state (answered), you can control the audio in several ways. Each operation is independent - you can combine them as needed.</p>
+<p><strong>Hold</strong></p>
+<p>Pauses the call. The other party hears silence (or music if MOH is enabled).</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Before Hold                          After Hold
+┌─────────┐     audio      ┌─────────┐     ┌─────────┐     silence   ┌─────────┐
+│ Caller  │ ◀═══════════▶  │ VoIPBIN │     │ Caller  │ ────────────▶ │ VoIPBIN │
+└─────────┘                └─────────┘     └─────────┘  (or music)   └─────────┘
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Use hold when the caller needs to wait (e.g., while transferring)</p></li>
+<li><p>The caller stays connected but cannot hear ongoing activity</p></li>
+<li><p>Unhold resumes normal audio</p></li>
+</ul>
+<p><strong>Mute</strong></p>
+<p>Silences audio in one or both directions without putting the call on hold.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Mute &quot;in&quot;                    Mute &quot;out&quot;                   Mute &quot;both&quot;
+┌────┐  ───X──▶  ┌────┐     ┌────┐  ◀──X───  ┌────┐      ┌────┐  ──X──  ┌────┐
+│ A  │  ◀──────  │ B  │     │ A  │  ───────▶ │ B  │      │ A  │  ──X──  │ B  │
+└────┘           └────┘     └────┘           └────┘      └────┘         └────┘
+A cannot hear B            A cannot be heard           Complete silence
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>“in”: The call cannot hear incoming audio</p></li>
+<li><p>“out”: The call’s audio is not sent to others</p></li>
+<li><p>“both”: Complete silence in both directions</p></li>
+</ul>
+<p><strong>Recording</strong></p>
+<p>Captures the call audio for later playback.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────┐         ┌─────────┐         ┌─────────┐
+│ Caller  │ ◀═════▶ │ VoIPBIN │ ◀═════▶ │  Dest   │
+└─────────┘         └────┬────┘         └─────────┘
+                         │
+                         ▼ (recording)
+                    ┌─────────┐
+                    │  File   │
+                    └─────────┘
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>recording_id shows the current recording (if active)</p></li>
+<li><p>recording_ids lists all recordings made during this call’s lifetime</p></li>
+<li><p>You can start and stop recording multiple times in one call</p></li>
+</ul>
+</section>
+<section id="call-chaining">
+<h3>Call Chaining<a class="headerlink" href="#call-chaining" title="Link to this heading"></a></h3>
+<p>VoIPBIN’s call concept differs from traditional 1:1 calls. A single logical conversation may involve multiple call objects linked together.</p>
+<p><strong>The Two-Call Model</strong></p>
+<p>When you make a call from A to B through VoIPBIN, there are actually two separate calls:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Traditional View:     A ─────────────────────▶ B
+
+VoIPBIN Reality:      A ◀─── Call 1 ───▶ VoIPBIN ◀─── Call 2 ───▶ B
+                               │                        │
+                               └────────────────────────┘
+                                      (bridged audio)
+</pre></div>
+</div>
+<p><strong>Why Two Calls?</strong></p>
+<p>This design enables powerful features:</p>
+<ul class="simple">
+<li><p><strong>Recording</strong>: VoIPBIN can record both sides independently</p></li>
+<li><p><strong>Conferencing</strong>: Add more parties without changing the original calls</p></li>
+<li><p><strong>Transfer</strong>: Move calls between agents without dropping the caller</p></li>
+<li><p><strong>Flow Control</strong>: Run different actions on each call leg</p></li>
+</ul>
+<p><strong>Master and Chained Calls</strong></p>
+<p>When calls are related, they form a chain:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────┐
+│                    Master Call                       │
+│  master_call_id: 00000000-0000-0000-0000-000000000000 │
+│  chained_call_ids: [call-2-id, call-3-id]            │
+└─────────────────────────┬───────────────────────────┘
+                          │
+          ┌───────────────┼───────────────┐
+          ▼               ▼               ▼
+    ┌──────────┐    ┌──────────┐    ┌──────────┐
+    │ Call 2   │    │ Call 3   │    │ Call 4   │
+    │ master:  │    │ master:  │    │ master:  │
+    │ call-1-id│    │ call-1-id│    │ call-1-id│
+    └──────────┘    └──────────┘    └──────────┘
+</pre></div>
+</div>
+<p><strong>Chaining Behaviors</strong></p>
+<ul class="simple">
+<li><p>When the master call hangs up, all chained calls automatically hang up</p></li>
+<li><p>Chained calls can only be added while the master is in dialing, ringing, or progressing state</p></li>
+<li><p>Each chained call tracks its master via the master_call_id field</p></li>
+</ul>
+<p><strong>Common Use Case: Transfer</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Step 1: Caller and Agent talking
+┌────────┐       ┌─────────┐       ┌────────┐
+│ Caller │◀─────▶│ VoIPBIN │◀─────▶│ Agent  │
+└────────┘       └────┬────┘       └────────┘
+                      │
+                 Master Call
+
+Step 2: Agent initiates transfer to Supervisor
+┌────────┐       ┌─────────┐       ┌────────┐
+│ Caller │◀─────▶│ VoIPBIN │       │ Agent  │ (on hold)
+└────────┘       └────┬────┘       └────────┘
+                      │
+                      ├──────────▶ ┌────────────┐
+                      │            │ Supervisor │ (ringing)
+                 Chained Call      └────────────┘
+
+Step 3: Supervisor answers, Agent drops
+┌────────┐       ┌─────────┐       ┌────────────┐
+│ Caller │◀─────▶│ VoIPBIN │◀─────▶│ Supervisor │
+└────────┘       └─────────┘       └────────────┘
+</pre></div>
+</div>
+</section>
+<section id="timestamps-explained">
+<h3>Timestamps Explained<a class="headerlink" href="#timestamps-explained" title="Link to this heading"></a></h3>
+<p>Each call tracks important moments in its lifecycle:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Timeline of a successful call:
+
+│ tm_create                    tm_ringing          tm_progressing              tm_hangup
+│     │                            │                    │                          │
+▼     ▼                            ▼                    ▼                          ▼
+──────●────────────────────────────●────────────────────●──────────────────────────●──────▶
+      │                            │                    │                          │
+      │◀─── dialing ──────────────▶│◀─── ringing ──────▶│◀──── progressing ───────▶│
+      │                            │                    │                          │
+   Call created              Phone started           Call answered            Call ended
+                               ringing
+</pre></div>
+</div>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Timestamp</p></th>
+<th class="head"><p>When it’s set</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>tm_create</p></td>
+<td><p>When the call object was created in VoIPBIN</p></td>
+</tr>
+<tr class="row-odd"><td><p>tm_ringing</p></td>
+<td><p>When the destination phone started ringing</p></td>
+</tr>
+<tr class="row-even"><td><p>tm_progressing</p></td>
+<td><p>When the call was answered</p></td>
+</tr>
+<tr class="row-odd"><td><p>tm_hangup</p></td>
+<td><p>When the call ended</p></td>
+</tr>
+<tr class="row-even"><td><p>tm_update</p></td>
+<td><p>Last time any call property changed</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Calculating Durations</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Ring</span> <span class="n">duration</span> <span class="o">=</span> <span class="n">tm_progressing</span> <span class="o">-</span> <span class="n">tm_ringing</span>
+<span class="n">Talk</span> <span class="n">duration</span> <span class="o">=</span> <span class="n">tm_hangup</span> <span class="o">-</span> <span class="n">tm_progressing</span>
+<span class="n">Total</span> <span class="n">duration</span> <span class="o">=</span> <span class="n">tm_hangup</span> <span class="o">-</span> <span class="n">tm_create</span>
+</pre></div>
+</div>
+</section>
+<section id="route-failover">
+<h3>Route Failover<a class="headerlink" href="#route-failover" title="Link to this heading"></a></h3>
+<p>When an outgoing call fails during dialing or ringing, VoIPBIN can automatically try alternate routes.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────┐
+│                       Call Attempt Flow                          │
+└─────────────────────────────────────────────────────────────────┘
+
+                          Create Call
+                               │
+                               ▼
+                       ┌──────────────┐
+                       │   Route 1    │
+                       │  (Primary)   │
+                       └──────┬───────┘
+                              │
+                      ┌───────┴───────┐
+                      ▼               ▼
+                 Connected?       Failed?
+                      │               │
+                      ▼               ▼
+                  Success      ┌──────────────┐
+                               │   Route 2    │
+                               │  (Backup)    │
+                               └──────┬───────┘
+                                      │
+                              ┌───────┴───────┐
+                              ▼               ▼
+                         Connected?       Failed?
+                              │               │
+                              ▼               ▼
+                          Success      ┌──────────────┐
+                                       │   Route 3    │
+                                       │  (Last try)  │
+                                       └──────┬───────┘
+                                              │
+                                              ▼
+                                        Final Result
+</pre></div>
+</div>
+<p><strong>Failover Rules</strong></p>
+<p>Not all failures trigger failover. VoIPBIN only tries the next route when recovery is possible:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Hangup Reason</p></th>
+<th class="head"><p>Failover</p></th>
+<th class="head"><p>Why</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>failed</p></td>
+<td><p>Yes</p></td>
+<td><p>Network issue - another route might work</p></td>
+</tr>
+<tr class="row-odd"><td><p>busy</p></td>
+<td><p>No</p></td>
+<td><p>The person is busy - trying again won’t help</p></td>
+</tr>
+<tr class="row-even"><td><p>noanswer</p></td>
+<td><p>No</p></td>
+<td><p>They didn’t answer - their choice</p></td>
+</tr>
+<tr class="row-odd"><td><p>cancel</p></td>
+<td><p>No</p></td>
+<td><p>Caller cancelled - no need to retry</p></td>
+</tr>
+<tr class="row-even"><td><p>normal</p></td>
+<td><p>No</p></td>
+<td><p>Call succeeded - nothing to retry</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>No Failover Cases</strong></p>
+<p>Failover is disabled in these situations:</p>
+<ul class="simple">
+<li><p>Incoming calls (the route is fixed by the caller)</p></li>
+<li><p>Conference calls</p></li>
+<li><p>Calls where flow execution already started (early_execution flag)</p></li>
+</ul>
 </section>
 <section id="incoming-call">
 <h3>Incoming call<a class="headerlink" href="#incoming-call" title="Link to this heading"></a></h3>
-<p>The VoIPBin system provides the functionality to receive incoming calls from external parties. This feature allows users to accept and handle incoming calls through their VoIP services. Incoming calls are crucial for various communication applications and call center setups as they enable users to receive inquiries, provide support, and engage with customers, clients, or other users.
-When an incoming call is received, the VoIPBin system processes the call request and prepares for call handling based on the specified parameters and configurations.</p>
+<p>The VoIPBIN system provides the functionality to receive incoming calls from external parties. This feature allows users to accept and handle incoming calls through their VoIP services. Incoming calls are crucial for various communication applications and call center setups as they enable users to receive inquiries, provide support, and engage with customers, clients, or other users.
+When an incoming call is received, the VoIPBIN system processes the call request and prepares for call handling based on the specified parameters and configurations.</p>
 </section>
 <section id="execution-of-call-flow-for-incoming-call">
 <h3>Execution of Call Flow for incoming call<a class="headerlink" href="#execution-of-call-flow-for-incoming-call" title="Link to this heading"></a></h3>
 <p>The execution of the call flow for incoming calls involves a simple yet effective sequence of actions:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>External Caller                VoIPBIN                    Your Flow
+      │                           │                           │
+      │  INVITE (call request)    │                           │
+      │──────────────────────────▶│                           │
+      │                           │  Lookup destination       │
+      │                           │  Find matching flow       │
+      │                           │                           │
+      │  100 Trying               │                           │
+      │◀──────────────────────────│                           │
+      │                           │  Execute flow actions     │
+      │                           │──────────────────────────▶│
+      │  180 Ringing / 200 OK     │                           │
+      │◀──────────────────────────│◀──────────────────────────│
+      │                           │                           │
+</pre></div>
+</div>
 <ul class="simple">
-<li><p>Call Verification: When an incoming call is received, the VoIPBin system verifies the call’s authenticity and checks for any potential security risks, such as spoofed or fraudulent calls. This verification process ensures that legitimate calls are allowed to proceed.</p></li>
-<li><p>Determine Call Flow: After successful verification, the system determines the appropriate call flow based on the destination of the incoming call. The call flow includes a set of predefined actions and configurations tailored to handle calls directed to a specific user, department, or interactive voice response (IVR) system.</p></li>
-<li><p>Execute Call Flow: Once the call flow is determined, the system proceeds to execute it without delay. The call flow actions are triggered in accordance with the predefined configuration for the call destination.</p></li>
-<li><p>End the Call: After executing the call flow actions, the system initiates the process of ending the call. The call is terminated, and the connection with the external party is disconnected.</p></li>
+<li><p><strong>Call Verification</strong>: When an incoming call is received, the VoIPBIN system verifies the call’s authenticity and checks for any potential security risks, such as spoofed or fraudulent calls. This verification process ensures that legitimate calls are allowed to proceed.</p></li>
+<li><p><strong>Determine Call Flow</strong>: After successful verification, the system determines the appropriate call flow based on the destination of the incoming call. The call flow includes a set of predefined actions and configurations tailored to handle calls directed to a specific user, department, or interactive voice response (IVR) system.</p></li>
+<li><p><strong>Execute Call Flow</strong>: Once the call flow is determined, the system proceeds to execute it without delay. The call flow actions are triggered in accordance with the predefined configuration for the call destination.</p></li>
+<li><p><strong>End the Call</strong>: After executing the call flow actions, the system initiates the process of ending the call. The call is terminated, and the connection with the external party is disconnected.</p></li>
 </ul>
-<p>By following this streamlined call flow process, the VoIPBin system efficiently handles incoming calls, ensures their secure and verified handling, and executes the appropriate flow actions based on the call destination. After executing the call flow, the system promptly ends the call, completing the call handling process for the incoming call. Customizable flow actions allow users to tailor the call handling process according to their application’s needs, optimizing user experience and call management efficiency.</p>
+<p>By following this streamlined call flow process, the VoIPBIN system efficiently handles incoming calls, ensures their secure and verified handling, and executes the appropriate flow actions based on the call destination. After executing the call flow, the system promptly ends the call, completing the call handling process for the incoming call. Customizable flow actions allow users to tailor the call handling process according to their application’s needs, optimizing user experience and call management efficiency.</p>
 <img alt="_images/call_incoming.png" src="_images/call_incoming.png" />
 </section>
 <section id="outgoing-call">
 <h3>Outgoing call<a class="headerlink" href="#outgoing-call" title="Link to this heading"></a></h3>
-<p>The VoIPBin system offers the outgoing call feature, enabling users to initiate calls to external parties through their VoIP services. This feature is commonly used in various communication applications and call center setups to establish connections with customers, clients, or other users outside the organization.
-To utilize the outgoing call feature, users need to provide the necessary call parameters, such as the destination phone number, caller ID information, and any additional call settings. These parameters are submitted to the VoIPBin system, which then processes the request and attempts to establish a connection with the specified destination.</p>
+<p>The VoIPBIN system offers the outgoing call feature, enabling users to initiate calls to external parties through their VoIP services. This feature is commonly used in various communication applications and call center setups to establish connections with customers, clients, or other users outside the organization.
+To utilize the outgoing call feature, users need to provide the necessary call parameters, such as the destination phone number, caller ID information, and any additional call settings. These parameters are submitted to the VoIPBIN system, which then processes the request and attempts to establish a connection with the specified destination.</p>
 </section>
 <section id="execution-of-call-flow-for-outgoing-call">
 <h3>Execution of Call Flow for outgoing call<a class="headerlink" href="#execution-of-call-flow-for-outgoing-call" title="Link to this heading"></a></h3>
-<p>Once the outgoing call request is initiated, the VoIPBin system starts the process of connecting to the destination phone number. During this phase, the system waits for the called party to answer the call. The call flow refers to the sequence of actions and events that occur from the moment the call is initiated until it is successfully answered or terminated.</p>
+<p>Once the outgoing call request is initiated, the VoIPBIN system starts the process of connecting to the destination phone number. During this phase, the system waits for the called party to answer the call. The call flow refers to the sequence of actions and events that occur from the moment the call is initiated until it is successfully answered or terminated.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Your Application               VoIPBIN                    Destination
+      │                           │                           │
+      │  POST /v1/calls           │                           │
+      │  (with flow actions)      │                           │
+      │──────────────────────────▶│                           │
+      │                           │  INVITE                   │
+      │                           │──────────────────────────▶│
+      │  Call created             │                           │
+      │  status: &quot;dialing&quot;        │  180 Ringing              │
+      │◀──────────────────────────│◀──────────────────────────│
+      │                           │                           │
+      │  Webhook: &quot;ringing&quot;       │  200 OK (answered)        │
+      │◀──────────────────────────│◀──────────────────────────│
+      │                           │                           │
+      │  Webhook: &quot;progressing&quot;   │  ◀═══════════════════▶    │
+      │◀──────────────────────────│  Execute flow actions     │
+      │                           │                           │
+</pre></div>
+</div>
 <p>The call flow execution occurs as follows:</p>
 <ul class="simple">
-<li><p>Initiation: The user triggers the outgoing call request, providing the necessary call parameters.</p></li>
-<li><p>Call Setup: The VoIPBin system processes the request and establishes a connection with the destination phone number.</p></li>
-<li><p>Wait for Call Answer: After the call setup, the system waits for the called party to answer the call. This waiting period involves ringing the called party’s phone and monitoring the call status.</p></li>
-<li><p>Call Answered: Once the called party answers the outgoing call, the system proceeds to execute the predefined call flow actions.</p></li>
-<li><p>Flow Actions Execution: The call flow actions are a set of customizable operations that are executed upon call answer. These actions can include call recording, call routing, call analytics, notifications, and post-call actions, among others.</p></li>
+<li><p><strong>Initiation</strong>: The user triggers the outgoing call request, providing the necessary call parameters.</p></li>
+<li><p><strong>Call Setup</strong>: The VoIPBIN system processes the request and establishes a connection with the destination phone number.</p></li>
+<li><p><strong>Wait for Call Answer</strong>: After the call setup, the system waits for the called party to answer the call. This waiting period involves ringing the called party’s phone and monitoring the call status.</p></li>
+<li><p><strong>Call Answered</strong>: Once the called party answers the outgoing call, the system proceeds to execute the predefined call flow actions.</p></li>
+<li><p><strong>Flow Actions Execution</strong>: The call flow actions are a set of customizable operations that are executed upon call answer. These actions can include call recording, call routing, call analytics, notifications, and post-call actions, among others.</p></li>
 </ul>
 <p>The call flow execution is critical for ensuring a smooth and efficient communication experience. By customizing the flow actions, users can tailor the call handling process to meet the specific requirements of their application or service, enhancing user engagement and overall call management.</p>
 <img alt="_images/call_outgoing.png" src="_images/call_outgoing.png" />
@@ -235,35 +692,36 @@ To utilize the outgoing call feature, users need to provide the necessary call p
 <section id="error-handling-and-termination">
 <h3>Error handling and Termination<a class="headerlink" href="#error-handling-and-termination" title="Link to this heading"></a></h3>
 <p>During the incoming/outgoing call process, various errors may occur, such as call failures or network issues.
-The VoIPBin system have robust error handling mechanisms to gracefully manage such situations. In case of a failed call attempt or call rejection, the system log relevant information for further analysis or reporting purposes.</p>
+The VoIPBIN system have robust error handling mechanisms to gracefully manage such situations. In case of a failed call attempt or call rejection, the system log relevant information for further analysis or reporting purposes.</p>
+<p><strong>Common Error Scenarios</strong></p>
 </section>
 <section id="call-concept">
 <h3>Call concept<a class="headerlink" href="#call-concept" title="Link to this heading"></a></h3>
-<p>The concept of a call in Voipbin departs from the traditional 1:1 call model. Here’s an overview:</p>
+<p>The concept of a call in VoIPBIN departs from the traditional 1:1 call model. Here’s an overview:</p>
 <p>In Voipbin, a call includes source, destination, and additional metadata. Moreover, the call can be associated with multiple other calls, creating a dynamic journey that goes beyond the standard 1:1 connection. Envision a call’s trajectory as it connects to an agent and then diverges to another destination.</p>
 <p>In Voipbin, the conventional call scenario A -&gt; B is delineated by two distinct calls:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">A</span>            <span class="n">Voipbin</span>            <span class="n">B</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">A</span>            <span class="n">VoIPBIN</span>            <span class="n">B</span>
 <span class="o">|&lt;--</span> <span class="n">Call</span> <span class="mi">1</span> <span class="o">---&gt;|</span>               <span class="o">|</span>
 <span class="o">|</span>               <span class="o">|&lt;---</span> <span class="n">Call</span> <span class="mi">2</span> <span class="o">--&gt;|</span>
 <span class="o">|&lt;-----</span><span class="n">RTP</span><span class="o">-----&gt;|&lt;-----</span><span class="n">RTP</span><span class="o">-----&gt;|</span>
 </pre></div>
 </div>
 <section id="comparison-traditional-call-concept-vs-voipbin-call-concept">
-<h4>Comparison: Traditional Call Concept vs Voipbin Call Concept<a class="headerlink" href="#comparison-traditional-call-concept-vs-voipbin-call-concept" title="Link to this heading"></a></h4>
+<h4>Comparison: Traditional Call Concept vs VoIPBIN Call Concept<a class="headerlink" href="#comparison-traditional-call-concept-vs-voipbin-call-concept" title="Link to this heading"></a></h4>
 <p>Traditional Call Concept</p>
 <ul class="simple">
 <li><p>Follows a 1:1 model where a call is a direct connection between a source and a destination.</p></li>
 <li><p>Typically involves a straightforward flow from the caller to the recipient.</p></li>
 <li><p>Limited in handling complex call journeys or interactions with multiple parties.</p></li>
 </ul>
-<p>Voipbin Call Concept</p>
+<p>VoIPBIN Call Concept</p>
 <ul class="simple">
 <li><p>Deviates from the traditional 1:1 model, allowing for more intricate call structures.</p></li>
 <li><p>Encompasses source, destination, and additional metadata in a call.</p></li>
 <li><p>Permits connections to multiple other calls, creating dynamic call journeys.</p></li>
 <li><p>Visualizes a call’s path, which may involve connecting to an agent and branching to additional destinations.</p></li>
 </ul>
-<p>In summary, while the traditional call concept adheres to a simple point-to-point model, the Voipbin call concept introduces a more flexible and multifaceted approach, accommodating diverse call scenarios and interactions.</p>
+<p>In summary, while the traditional call concept adheres to a simple point-to-point model, the VoIPBIN call concept introduces a more flexible and multifaceted approach, accommodating diverse call scenarios and interactions.</p>
 </section>
 </section>
 </section>
@@ -277,7 +735,7 @@ Call transfer is a common feature in CPaaS that allows an ongoing phone call to 
 <section id="blind-transfer">
 <span id="call-transfer-blind-transfer"></span><h3>Blind Transfer<a class="headerlink" href="#blind-transfer" title="Link to this heading"></a></h3>
 <p>Blind transfer is the simplest type of call transfer. In this type of transfer, the person initiating the transfer simply transfers the call to another person or phone number without first speaking to them. This is useful when the person receiving the call is known to be available and ready to take the call. Blind transfer is commonly used in call center environments where a caller needs to be routed to the appropriate agent or department.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Caller</span>           <span class="n">VoIPBin</span>        <span class="n">Transferer</span>        <span class="n">Transferee</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Caller</span>           <span class="n">VoIPBIN</span>        <span class="n">Transferer</span>        <span class="n">Transferee</span>
 <span class="o">|</span>                  <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
 <span class="o">|</span>    <span class="n">Call</span> <span class="ow">in</span>       <span class="o">|</span> <span class="n">Call</span> <span class="ow">in</span>        <span class="o">|</span>                <span class="o">|</span>
 <span class="o">|</span>    <span class="n">progress</span>      <span class="o">|</span> <span class="n">progress</span>       <span class="o">|</span>                <span class="o">|</span>
@@ -304,19 +762,19 @@ Call transfer is a common feature in CPaaS that allows an ongoing phone call to 
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>The Caller initiates a call to the VoIPBin and the call is in progress.</p></li>
+<li><p>The Caller initiates a call to the VoIPBIN and the call is in progress.</p></li>
 <li><p>The Transferer, who is already on a call, decides to transfer the Caller to the Transferee.</p></li>
-<li><p>The Transferer sends a transfer request to the VoIPBin, indicating the Transferee’s number.</p></li>
-<li><p>The VoIPBin dials to the Transferee.</p></li>
-<li><p>The VoIPBin hangs up the transferer right after dials to the transferee.</p></li>
+<li><p>The Transferer sends a transfer request to the VoIPBIN, indicating the Transferee’s number.</p></li>
+<li><p>The VoIPBIN dials to the Transferee.</p></li>
+<li><p>The VoIPBIN hangs up the transferer right after dials to the transferee.</p></li>
 <li><p>The Transferee answers the call and is connected to the Caller.</p></li>
 </ul>
-<p>This is the basic process of an blind transfer using a CPaaS like VoIPBin.</p>
+<p>This is the basic process of an blind transfer using a CPaaS like VoIPBIN.</p>
 </section>
 <section id="attended-transfer">
 <span id="call-transfer-attended-transfer"></span><h3>Attended Transfer<a class="headerlink" href="#attended-transfer" title="Link to this heading"></a></h3>
 <p>Attended transfer, also known as consultative transfer, involves the person initiating the transfer first speaking to the person who will be taking the call. This allows the person initiating the transfer to provide context or information about the caller or the reason for the transfer. Once the person who will be taking the call is ready, the transfer is initiated and the original caller is connected to the new person or device. Attended transfer is commonly used in situations where the person receiving the call may need more information before taking the call, such as when transferring a call to a supervisor or manager.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Caller</span>           <span class="n">VoIPBin</span>        <span class="n">Transferer</span>        <span class="n">Transferee</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Caller</span>           <span class="n">VoIPBIN</span>        <span class="n">Transferer</span>        <span class="n">Transferee</span>
 <span class="o">|</span>                  <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
 <span class="o">|</span>    <span class="n">Call</span> <span class="ow">in</span>       <span class="o">|</span> <span class="n">Call</span> <span class="ow">in</span>        <span class="o">|</span>                <span class="o">|</span>
 <span class="o">|</span>    <span class="n">progress</span>      <span class="o">|</span> <span class="n">progress</span>       <span class="o">|</span>                <span class="o">|</span>
@@ -355,28 +813,28 @@ Call transfer is a common feature in CPaaS that allows an ongoing phone call to 
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>The Caller initiates a call to the VoIPBin, and the call is in progress with transferer.</p></li>
+<li><p>The Caller initiates a call to the VoIPBIN, and the call is in progress with transferer.</p></li>
 <li><p>The Transferer, who is already on a call, decides to transfer the Caller to the Transferee.</p></li>
-<li><p>The Transferer sends a transfer request to the VoIPBin, indicating the Transferee’s number.</p></li>
-<li><p>The VoIPBin dials to the Transferee.</p></li>
-<li><p>The VoIPBin puts the Caller on music on hold and mute.</p></li>
+<li><p>The Transferer sends a transfer request to the VoIPBIN, indicating the Transferee’s number.</p></li>
+<li><p>The VoIPBIN dials to the Transferee.</p></li>
+<li><p>The VoIPBIN puts the Caller on music on hold and mute.</p></li>
 <li><p>The Transferee answers the call and is connected to the Transferer and talk to each other.</p></li>
 <li><p>The Transferer drops out of the call.</p></li>
-<li><p>The VoIPBin turn off the Caller’s Music on hold and the Caller and Transferee can now hear each other.</p></li>
+<li><p>The VoIPBIN turn off the Caller’s Music on hold and the Caller and Transferee can now hear each other.</p></li>
 </ul>
-<p>This is the basic process of an attended transfer using a CPaaS like VoIPBin. It allows for seamless communication between parties and can help businesses manage their incoming calls more efficiently.</p>
+<p>This is the basic process of an attended transfer using a CPaaS like VoIPBIN. It allows for seamless communication between parties and can help businesses manage their incoming calls more efficiently.</p>
 </section>
 </section>
 <section id="groupcall">
 <span id="call-groupcall"></span><h2>Groupcall<a class="headerlink" href="#groupcall" title="Link to this heading"></a></h2>
-<p>The Groupcall feature in Voipbin is a blast calling functionality that enables team members to communicate in real-time. When a Group Call is initiated, an alert is sent to all team members, allowing them to join the call with a single click. The feature uses VoIP technology to enable high-quality audio communication and offers benefits such as increased productivity, improved collaboration, and enhanced connectivity.</p>
+<p>The Groupcall feature in VoIPBIN is a blast calling functionality that enables team members to communicate in real-time. When a Group Call is initiated, an alert is sent to all team members, allowing them to join the call with a single click. The feature uses VoIP technology to enable high-quality audio communication and offers benefits such as increased productivity, improved collaboration, and enhanced connectivity.</p>
 <section id="ringall">
 <h3>Ringall<a class="headerlink" href="#ringall" title="Link to this heading"></a></h3>
 <p>Ringall send the dial request to the all of destinations.</p>
-<p>The ringall ring method is a way to make calls to multiple destinations simultaneously. When you initiate a groupcall using the ringall method, VoIPBin will place calls to all of the destinations on your list at once.
+<p>The ringall ring method is a way to make calls to multiple destinations simultaneously. When you initiate a groupcall using the ringall method, VoIPBIN will place calls to all of the destinations on your list at once.
 This means that each destination’s phone will start ringing simultaneously, and the person who answers first will begin executing the call flow specified for that groupcall, while all other destinations that have not yet been answered will be hung up immediately.
 This ensures that only one call is active at a time and the call flow is executed by the person who answered first.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Client</span>           <span class="n">VoIPBin</span>        <span class="n">Destination</span><span class="o">-</span><span class="mi">1</span>    <span class="n">Destination</span><span class="o">-</span><span class="mi">2</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Client</span>           <span class="n">VoIPBIN</span>        <span class="n">Destination</span><span class="o">-</span><span class="mi">1</span>    <span class="n">Destination</span><span class="o">-</span><span class="mi">2</span>
 <span class="o">|</span>                  <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
 <span class="o">|</span>    <span class="n">Groupcall</span>     <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
 <span class="o">|</span>    <span class="n">request</span>       <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
@@ -395,16 +853,16 @@ This ensures that only one call is active at a time and the call flow is execute
 <span class="o">|</span>                  <span class="o">|---------------&gt;|</span>                <span class="o">|</span>
 </pre></div>
 </div>
-<p>The diagram shows the sequence of events for a Group Call request in VoIPBin with two destination endpoints, Destination-1 and Destination-2.
-* The Client initiates the Group Call request by sending a request message to the VoIPBin server.
+<p>The diagram shows the sequence of events for a Group Call request in VoIPBIN with two destination endpoints, Destination-1 and Destination-2.
+* The Client initiates the Group Call request by sending a request message to the VoIPBIN server.
 * The server then sends a Dial message to Destination-1 and Destination-2 to establish the call.
 * After Destination-2 answers the call, it sends an Answer message back to the server.
-* The VoIPBin cancels the call to Destination-1 by sending a Cancel message to Destination-1.</p>
+* The VoIPBIN cancels the call to Destination-1 by sending a Cancel message to Destination-1.</p>
 </section>
 <section id="linear">
 <h3>Linear<a class="headerlink" href="#linear" title="Link to this heading"></a></h3>
 <p>The linear ring method is a way to call a list of destinations one by one, in a specific order.</p>
-<p>When you initiate a groupcall using the linear method, VoIPBin will call the first destination on your list. If that destination does not answer, VoIPBin will move on to the next destination on the list and call it instead.
+<p>When you initiate a groupcall using the linear method, VoIPBIN will call the first destination on your list. If that destination does not answer, VoIPBIN will move on to the next destination on the list and call it instead.
 This process will continue until one of the destinations answers the call, at which point the call flow specified for the groupcall will be executed. If all of the destinations on the list have been called and none of them have answered, the call will end without any further action.</p>
 <p>The linear method is useful when you want to call a list of destinations in a specific order and don’t want to simultaneously ring all destinations at once.</p>
 <p>For example, you might use the linear method for a sales team to call potential clients one by one, in a specific order based on priority.</p>
@@ -424,12 +882,12 @@ This process will continue until one of the destinations answers the call, at wh
 <h3>Nested groupcall<a class="headerlink" href="#nested-groupcall" title="Link to this heading"></a></h3>
 <p>A nested groupcall is a groupcall that is included as one of the destinations in another groupcall. When a groupcall with a nested groupcall is initiated, the nested groupcall is also initiated, creating a “nested” groupcall within the main groupcall.</p>
 <p>For example, let’s say you have a groupcall with the following list of destinations: Destination A, Destination B, and Destination C. Destination C is a nested groupcall that includes its own list of destinations: Destination X and Destination Y.</p>
-<p>When you initiate the main groupcall, VoIPBin will begin calling Destination A and Destination B simultaneously according to the ring method you’ve specified (either ringall or linear). When it reaches Destination C, the nested groupcall is initiated and VoIPBin will begin calling Destination X and Destination Y according to the ring method specified in the nested groupcall.</p>
+<p>When you initiate the main groupcall, VoIPBIN will begin calling Destination A and Destination B simultaneously according to the ring method you’ve specified (either ringall or linear). When it reaches Destination C, the nested groupcall is initiated and VoIPBIN will begin calling Destination X and Destination Y according to the ring method specified in the nested groupcall.</p>
 <p>Once a destination in the nested groupcall has answered the call, the flow specified for that groupcall is executed. The child groupcall informs the master groupcall that it has answered call. The master groupcall then hangs up any remaining calls that have not yet been answered in the child groupcall, and stops calling the remaining destinations in the main groupcall list.</p>
-<p>In VoIPBin, the main groupcall is considered the “master” groupcall and the nested groupcall is considered a “chained” groupcall. Each chained groupcall is assigned a unique ID, and the IDs of all chained groupcalls are stored in a list within the master groupcall. This allows VoIPBin to keep track of all nested groupcalls and their current status within the main call.</p>
+<p>In VoIPBIN, the main groupcall is considered the “master” groupcall and the nested groupcall is considered a “chained” groupcall. Each chained groupcall is assigned a unique ID, and the IDs of all chained groupcalls are stored in a list within the master groupcall. This allows VoIPBIN to keep track of all nested groupcalls and their current status within the main call.</p>
 <p>It is also possible to have chained groupcalls within chained groupcalls, creating multiple levels of nesting. This means that a nested groupcall can itself include another groupcall as one of its destinations, forming a chain of groupcalls. The nested groupcalls can continue to be chained in a cascading manner, allowing for complex call flows and routing scenarios.</p>
 <p>For example, the main groupcall may include a chained groupcall as one of its destinations, and that chained groupcall may, in turn, include another chained groupcall within it. This nesting can extend to multiple levels, providing a highly flexible and customizable approach to call routing and management.</p>
-<p>By allowing nested and chained groupcalls, VoIPBin empowers users to design and implement intricate call flows that cater to their specific needs. This functionality opens up possibilities for applications such as multi-level call routing, call forwarding to different departments or teams, and advanced call handling scenarios.</p>
+<p>By allowing nested and chained groupcalls, VoIPBIN empowers users to design and implement intricate call flows that cater to their specific needs. This functionality opens up possibilities for applications such as multi-level call routing, call forwarding to different departments or teams, and advanced call handling scenarios.</p>
 <p>The ability to include nested groupcalls within a main groupcall is a powerful feature that allows for more complex call flows and routing strategies. It can be used, for example, to create more sophisticated call routing trees that can handle a wide range of call scenarios and use cases.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">groupcall1</span>            <span class="n">destinationA</span>        <span class="n">destinationB</span>        <span class="n">destinationC</span>
     <span class="o">|-----</span> <span class="n">ring</span> <span class="o">----------&gt;|</span>                   <span class="o">|</span>       <span class="p">(</span><span class="n">groupcall</span> <span class="n">destination</span> <span class="n">linear</span><span class="p">)</span>
@@ -804,17 +1262,17 @@ This process will continue until one of the destinations answers the call, at wh
 <h3>Simple outbound call with TTS<a class="headerlink" href="#simple-outbound-call-with-tts" title="Link to this heading"></a></h3>
 <p>Making an outbound call with TTS(Text-to-Speech) action.
 When the destination answer the call, it will speak the given text message.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MDcyNjM5MjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.py7AwXIO0ZNBWSS1PN-05L9oYEREjGgbkkE6CcVyuzw&#39; \
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
     --data-raw &#39;{
         &quot;source&quot;: {
             &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+821028286521&quot;
+            &quot;target&quot;: &quot;+15551234567&quot;
         },
         &quot;destinations&quot;: [
             {
                 &quot;type&quot;: &quot;tel&quot;,
-                &quot;target&quot;: &quot;+821021656521&quot;
+                &quot;target&quot;: &quot;+15559876543&quot;
             }
         ],
         &quot;actions&quot;: [
@@ -835,17 +1293,17 @@ When the destination answer the call, it will speak the given text message.</p>
 <h3>Simple outbound call with media file play<a class="headerlink" href="#simple-outbound-call-with-media-file-play" title="Link to this heading"></a></h3>
 <p>Making an outbound call with media file play action.
 When the destination answer the call, it will play the given media file.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM&#39; \
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
 --header &#39;Content-Type: application/json&#39; \
 --data-raw &#39;{
     &quot;source&quot;: {
         &quot;type&quot;: &quot;tel&quot;,
-        &quot;target&quot;: &quot;+821028286521&quot;
+        &quot;target&quot;: &quot;+15551234567&quot;
     },
     &quot;destinations&quot;: [
         {
             &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+821021656521&quot;
+            &quot;target&quot;: &quot;+15559876543&quot;
         }
     ],
     &quot;actions&quot;: [
@@ -873,12 +1331,12 @@ When the destination answer the call, it will play the given media file.</p>
         &quot;recording_ids&quot;: [],
         &quot;source&quot;: {
             &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+821028286521&quot;,
+            &quot;target&quot;: &quot;+15551234567&quot;,
             &quot;name&quot;: &quot;&quot;
         },
         &quot;destination&quot;: {
             &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+821021656521&quot;,
+            &quot;target&quot;: &quot;+15559876543&quot;,
             &quot;name&quot;: &quot;&quot;
         },
         &quot;status&quot;: &quot;dialing&quot;,
@@ -898,18 +1356,18 @@ When the destination answer the call, it will play the given media file.</p>
 <section id="simple-outbound-call-with-tts-and-connect">
 <h3>Simple outbound call with TTS and connect<a class="headerlink" href="#simple-outbound-call-with-tts-and-connect" title="Link to this heading"></a></h3>
 <p>Making an outbound call with TTS(Text-to-Speech) and connect to other destination.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM&#39; \
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
 --header &#39;Content-Type: application/json&#39; \
---header &#39;Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM&#39; \
+--header &#39;Cookie: token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
 --data-raw &#39;{
     &quot;source&quot;: {
         &quot;type&quot;: &quot;tel&quot;,
-        &quot;target&quot;: &quot;+821021656521&quot;
+        &quot;target&quot;: &quot;+15559876543&quot;
     },
     &quot;destinations&quot;: [
         {
             &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+821021656521&quot;
+            &quot;target&quot;: &quot;+15559876543&quot;
         }
     ],
     &quot;actions&quot;: [
@@ -926,12 +1384,12 @@ When the destination answer the call, it will play the given media file.</p>
             &quot;option&quot;: {
                 &quot;source&quot;: {
                     &quot;type&quot;: &quot;tel&quot;,
-                    &quot;target&quot;: &quot;+821021656521&quot;
+                    &quot;target&quot;: &quot;+15559876543&quot;
                 },
                 &quot;destinations&quot;: [
                     {
                         &quot;type&quot;: &quot;tel&quot;,
-                        &quot;target&quot;: &quot;+821043126521&quot;
+                        &quot;target&quot;: &quot;+15551111111&quot;
                     }
                 ]
             }
@@ -952,12 +1410,12 @@ When the destination answer the call, it will play the given media file.</p>
         &quot;recording_ids&quot;: [],
         &quot;source&quot;: {
             &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+821021656521&quot;,
+            &quot;target&quot;: &quot;+15559876543&quot;,
             &quot;name&quot;: &quot;&quot;
         },
         &quot;destination&quot;: {
             &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+821021656521&quot;,
+            &quot;target&quot;: &quot;+15559876543&quot;,
             &quot;name&quot;: &quot;&quot;
         },
         &quot;status&quot;: &quot;dialing&quot;,
@@ -980,12 +1438,12 @@ When the destination answer the call, it will play the given media file.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821028286521&quot;</span>
+        <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15551234567&quot;</span>
     <span class="p">},</span>
     <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span>
         <span class="p">{</span>
             <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821021656521&quot;</span>
+            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15559876543&quot;</span>
         <span class="p">}</span>
     <span class="p">],</span>
     <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
@@ -1029,12 +1487,12 @@ When the destination answer the call, it will play the given media file.</p>
         <span class="s2">&quot;recording_ids&quot;</span><span class="p">:</span> <span class="p">[],</span>
         <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821028286521&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15551234567&quot;</span><span class="p">,</span>
             <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
         <span class="p">},</span>
         <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821021656521&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15559876543&quot;</span><span class="p">,</span>
             <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
         <span class="p">},</span>
         <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;dialing&quot;</span><span class="p">,</span>
@@ -1085,18 +1543,18 @@ When the destination answer the call, it will play the given media file.</p>
        <span class="n">Hangup</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdXN0b21lciI6IntcImlkXCI6XCI1ZTRhMDY4MC04MDRlLTExZWMtODQ3Ny0yZmVhNTk2OGQ4NWJcIixcInVzZXJuYW1lXCI6XCJhZG1pblwiLFwibmFtZVwiOlwiYWRtaW5cIixcImRldGFpbFwiOlwiYWRtaW4gYWNjb3VudFwiLFwid2ViaG9va19tZXRob2RcIjpcIlBPU1RcIixcIndlYmhvb2tfdXJpXCI6XCJodHRwczovL2VueDM4NTN6M2pnMnEueC5waXBlZHJlYW0ubmV0L1wiLFwicGVybWlzc2lvbl9pZHNcIjpbXCIwMzc5NmUxNC03Y2I0LTExZWMtOWRiYS1lNzIwMjNlZmQxYzZcIl0sXCJ0bV9jcmVhdGVcIjpcIjIwMjItMDItMDEgMDA6MDA6MDAuMDAwMDAwXCIsXCJ0bV91cGRhdGVcIjpcIjIwMjItMDQtMTQgMDE6Mjg6NDYuNDU0ODk3XCIsXCJ0bV9kZWxldGVcIjpcIjk5OTktMDEtMDEgMDA6MDA6MDAuMDAwMDAwXCJ9IiwiZXhwIjoxNjUyMjkwNDYyfQ.-jaqJyjISxKmyDxRiFYopD0FA8vlZ_jJ1Sd9mqxCun0&#39; \
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
 --header &#39;Content-Type: application/json&#39; \
---header &#39;Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdXN0b21lciI6IntcImlkXCI6XCI1ZTRhMDY4MC04MDRlLTExZWMtODQ3Ny0yZmVhNTk2OGQ4NWJcIixcInVzZXJuYW1lXCI6XCJhZG1pblwiLFwibmFtZVwiOlwiYWRtaW5cIixcImRldGFpbFwiOlwiYWRtaW4gYWNjb3VudFwiLFwid2ViaG9va19tZXRob2RcIjpcIlBPU1RcIixcIndlYmhvb2tfdXJpXCI6XCJodHRwczovL2VueDM4NTN6M2pnMnEueC5waXBlZHJlYW0ubmV0L1wiLFwicGVybWlzc2lvbl9pZHNcIjpbXCIwMzc5NmUxNC03Y2I0LTExZWMtOWRiYS1lNzIwMjNlZmQxYzZcIl0sXCJ0bV9jcmVhdGVcIjpcIjIwMjItMDItMDEgMDA6MDA6MDAuMDAwMDAwXCIsXCJ0bV91cGRhdGVcIjpcIjIwMjItMDQtMTQgMDE6Mjg6NDYuNDU0ODk3XCIsXCJ0bV9kZWxldGVcIjpcIjk5OTktMDEtMDEgMDA6MDA6MDAuMDAwMDAwXCJ9IiwiZXhwIjoxNjUyMjkwNDYyfQ.-jaqJyjISxKmyDxRiFYopD0FA8vlZ_jJ1Sd9mqxCun0&#39; \
+--header &#39;Cookie: token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
 --data-raw &#39;{
     &quot;source&quot;: {
         &quot;type&quot;: &quot;tel&quot;,
-        &quot;target&quot;: &quot;+821028286521&quot;
+        &quot;target&quot;: &quot;+15551234567&quot;
     },
     &quot;destinations&quot;: [
         {
             &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+821021656521&quot;
+            &quot;target&quot;: &quot;+15559876543&quot;
         }
     ],
     &quot;actions&quot;: [
@@ -1205,14 +1663,14 @@ When the destination answer the call, it will play the given media file.</p>
         &quot;recording_ids&quot;: [],
         &quot;source&quot;: {
             &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+821028286521&quot;,
+            &quot;target&quot;: &quot;+15551234567&quot;,
             &quot;target_name&quot;: &quot;&quot;,
             &quot;name&quot;: &quot;&quot;,
             &quot;detail&quot;: &quot;&quot;
         },
         &quot;destination&quot;: {
             &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+821021656521&quot;,
+            &quot;target&quot;: &quot;+15559876543&quot;,
             &quot;target_name&quot;: &quot;&quot;,
             &quot;name&quot;: &quot;&quot;,
             &quot;detail&quot;: &quot;&quot;
@@ -1238,7 +1696,7 @@ When the destination answer the call, it will play the given media file.</p>
 <section id="get-call-list">
 <h3>Get call list<a class="headerlink" href="#get-call-list" title="Link to this heading"></a></h3>
 <p>Getting a list of calls.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/calls?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
     &quot;result&quot;: [
@@ -1282,7 +1740,7 @@ When the destination answer the call, it will play the given media file.</p>
 <section id="get-specific-call">
 <h3>Get specific call<a class="headerlink" href="#get-specific-call" title="Link to this heading"></a></h3>
 <p>Getting a given call uuid’s call info.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/calls/f457951b-9918-44af-a834-2216b1cc31bc?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/calls/f457951b-9918-44af-a834-2216b1cc31bc?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
     &quot;id&quot;: &quot;f457951b-9918-44af-a834-2216b1cc31bc&quot;,
@@ -1298,12 +1756,12 @@ When the destination answer the call, it will play the given media file.</p>
     ],
     &quot;source&quot;: {
         &quot;type&quot;: &quot;tel&quot;,
-        &quot;target&quot;: &quot;+821028286521&quot;,
+        &quot;target&quot;: &quot;+15551234567&quot;,
         &quot;name&quot;: &quot;&quot;
     },
     &quot;destination&quot;: {
         &quot;type&quot;: &quot;tel&quot;,
-        &quot;target&quot;: &quot;+821021656521&quot;,
+        &quot;target&quot;: &quot;+15559876543&quot;,
         &quot;name&quot;: &quot;&quot;
     },
     &quot;status&quot;: &quot;hangup&quot;,
@@ -1327,7 +1785,7 @@ When the destination answer the call, it will play the given media file.</p>
     --data-raw &#39;{
         &quot;source&quot;: {
             &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+821100000001&quot;
+            &quot;target&quot;: &quot;+15552222222&quot;
         },
         &quot;destinations&quot;: [
             {
@@ -1356,7 +1814,7 @@ When the destination answer the call, it will play the given media file.</p>
     &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
     &quot;source&quot;: {
         &quot;type&quot;: &quot;tel&quot;,
-        &quot;target&quot;: &quot;+821028286521&quot;,
+        &quot;target&quot;: &quot;+15551234567&quot;,
         &quot;target_name&quot;: &quot;&quot;,
         &quot;name&quot;: &quot;&quot;,
         &quot;detail&quot;: &quot;&quot;
@@ -1414,13 +1872,20 @@ When the destination answer the call, it will play the given media file.</p>
 <li><a class="reference internal" href="#protocol">Protocol</a></li>
 <li><a class="reference internal" href="#pstn-phone-number-format">PSTN/Phone Number Format</a></li>
 <li><a class="reference internal" href="#extension-number-format">Extension Number Format</a></li>
+<li><a class="reference internal" href="#call-lifecycle">Call Lifecycle</a></li>
+<li><a class="reference internal" href="#what-happens-at-each-stage">What Happens At Each Stage</a></li>
+<li><a class="reference internal" href="#understanding-hangup-reasons">Understanding Hangup Reasons</a></li>
+<li><a class="reference internal" href="#media-control-operations">Media Control Operations</a></li>
+<li><a class="reference internal" href="#call-chaining">Call Chaining</a></li>
+<li><a class="reference internal" href="#timestamps-explained">Timestamps Explained</a></li>
+<li><a class="reference internal" href="#route-failover">Route Failover</a></li>
 <li><a class="reference internal" href="#incoming-call">Incoming call</a></li>
 <li><a class="reference internal" href="#execution-of-call-flow-for-incoming-call">Execution of Call Flow for incoming call</a></li>
 <li><a class="reference internal" href="#outgoing-call">Outgoing call</a></li>
 <li><a class="reference internal" href="#execution-of-call-flow-for-outgoing-call">Execution of Call Flow for outgoing call</a></li>
 <li><a class="reference internal" href="#error-handling-and-termination">Error handling and Termination</a></li>
 <li><a class="reference internal" href="#call-concept">Call concept</a><ul>
-<li><a class="reference internal" href="#comparison-traditional-call-concept-vs-voipbin-call-concept">Comparison: Traditional Call Concept vs Voipbin Call Concept</a></li>
+<li><a class="reference internal" href="#comparison-traditional-call-concept-vs-voipbin-call-concept">Comparison: Traditional Call Concept vs VoIPBIN Call Concept</a></li>
 </ul>
 </li>
 </ul>

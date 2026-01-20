@@ -10,7 +10,7 @@ Example
 
 .. code::
 
-    $ curl -k --location --request GET 'https://api.voipbin.net/v1.0/available_numbers?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTUwNTQxMjYsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.uV26jlo9kdV-qxxj32cjNa99JRcD96HkFF0h_cuEXLA&country_code=US&page_size=5'
+    $ curl -k --location --request GET 'https://api.voipbin.net/v1.0/available_numbers?token=<YOUR_AUTH_TOKEN>&country_code=US&page_size=5'
 
     {
     "result": [
@@ -39,7 +39,7 @@ Example
 
 .. code::
 
-    $ curl -k --location --request GET 'https://api.voipbin.net/v1.0/numbers?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTUwNTQxMjYsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.uV26jlo9kdV-qxxj32cjNa99JRcD96HkFF0h_cuEXLA&page_size=10'
+    $ curl -k --location --request GET 'https://api.voipbin.net/v1.0/numbers?token=<YOUR_AUTH_TOKEN>&page_size=10'
 
     {
         "result": [
@@ -79,7 +79,7 @@ Example
 
 .. code::
 
-    $ curl -k --location --request GET 'https://api.voipbin.net/v1.0/numbers/d5532488-0b2d-11eb-b18c-172ab8f2d3d8?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTUwNTQxMjYsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.uV26jlo9kdV-qxxj32cjNa99JRcD96HkFF0h_cuEXLA'
+    $ curl -k --location --request GET 'https://api.voipbin.net/v1.0/numbers/d5532488-0b2d-11eb-b18c-172ab8f2d3d8?token=<YOUR_AUTH_TOKEN>'
 
     {
         "id": "d5532488-0b2d-11eb-b18c-172ab8f2d3d8",
@@ -101,7 +101,7 @@ Example
 
 .. code::
 
-    $ curl -k --location --request DELETE 'https://api.voipbin.net/v1.0/numbers/b7ee1086-fcbc-4f6f-96e5-7f9271e25279?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTUwNTQxMjYsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.uV26jlo9kdV-qxxj32cjNa99JRcD96HkFF0h_cuEXLA'
+    $ curl -k --location --request DELETE 'https://api.voipbin.net/v1.0/numbers/b7ee1086-fcbc-4f6f-96e5-7f9271e25279?token=<YOUR_AUTH_TOKEN>'
 
     {
         "id": "b7ee1086-fcbc-4f6f-96e5-7f9271e25279",
@@ -123,7 +123,7 @@ Example
 
 .. code::
 
-    $ curl -k --location --request POST 'https://api.voipbin.net/v1.0/numbers?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTUwNTQxMjYsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.uV26jlo9kdV-qxxj32cjNa99JRcD96HkFF0h_cuEXLA' \
+    $ curl -k --location --request POST 'https://api.voipbin.net/v1.0/numbers?token=<YOUR_AUTH_TOKEN>' \
     --header 'Content-Type: application/json' \
     --data-raw '{
         "number": "+16062067563"

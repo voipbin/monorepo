@@ -163,7 +163,7 @@
 <h1>Trunk<a class="headerlink" href="#trunk" title="Link to this heading"></a></h1>
 <section id="overview">
 <span id="trunk-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
-<p>The VoIPBin’s Trunk service could be divided into trunking and registration.</p>
+<p>The VoIPBIN’s Trunk service could be divided into trunking and registration.</p>
 <p>Trunking is a voice-over internet protocol (VoIP) technology that allows businesses to make and receive phone calls over the internet using a SIP (session initiation protocol) provider. Rather than relying on traditional phone lines, SIP trunking enables voice communication through the internet, making it a more flexible, scalable, and cost-effective solution for businesses of all sizes. With SIP trunking, businesses can connect their existing phone systems to a SIP provider, which routes calls to the public switched telephone network (PSTN) and other SIP-enabled devices, such as IP phones, softphones, and mobile devices. This technology can help businesses reduce their communication costs, improve call quality, and enhance their overall communication capabilities.</p>
 <p>Registration is a process by which a user or device identifies itself to a server or service to gain access to its features or resources. In telephony and VoIP systems, registration is typically used to establish a connection between a user’s device and a service provider, such as a SIP trunking provider or a PBX (private branch exchange) system. During the registration process, the user’s device sends its identification information, such as a username, password, and IP address, to the service provider. The service provider then verifies the information and grants access to the user’s device, allowing it to make and receive calls over the network. Registration is an essential step in establishing secure and reliable communication between devices and service providers, and it is a key aspect of many telephony and VoIP systems.</p>
 <p>In short, trunking is needed for the making a call, and the registration is needed for the a receiving a call.</p>
@@ -178,24 +178,24 @@
 </section>
 <section id="authentication">
 <h3>Authentication<a class="headerlink" href="#authentication" title="Link to this heading"></a></h3>
-<p>Currently, The VoIPBin’s trunking authentication supports only the Basic authentication.</p>
+<p>Currently, The VoIPBIN’s trunking authentication supports only the Basic authentication.</p>
 <ul class="simple">
 <li><p>Basic authentication</p></li>
 <li><p>IP base authentication(WIP)</p></li>
 </ul>
 <section id="basic-authentication">
 <h4>Basic authentication<a class="headerlink" href="#basic-authentication" title="Link to this heading"></a></h4>
-<p>To make a SIP outgoing call through a VoIPBin using basic authentication, you need to follow a few steps:</p>
+<p>To make a SIP outgoing call through a VoIPBIN using basic authentication, you need to follow a few steps:</p>
 <ol class="arabic simple">
 <li><p>Choose a SIP client: You can use a software-based SIP client, such as Zoiper or X-Lite, or a hardware-based SIP phone, such as a Cisco or Grandstream phone.</p></li>
-<li><p>Configure your SIP client: You need to configure your SIP client with VoIPBin credentials, such as your name, extension, password, domain info.</p></li>
+<li><p>Configure your SIP client: You need to configure your SIP client with VoIPBIN credentials, such as your name, extension, password, domain info.</p></li>
 <li><p>Set up your outgoing call settings: In your SIP client, you need to specify the destination address(phone number or extension) you want to call and set any additional options, such as the call type, call quality, or call duration.</p></li>
 <li><p>Initiate the call: Once you have configured your SIP client and set up your outgoing call settings, you can initiate the call by clicking on the call button or using a keypad command.</p></li>
-<li><p>Authenticate your credentials: When you initiate the call, your SIP client sends your authentication credentials to the VoIPBin, using the basic authentication method. The VoIPBin then verifies your credentials and authorizes the call.</p></li>
-<li><p>Make the call: Once your credentials are verified, the VoIPBin establishes the call and connects you with the destination address.</p></li>
+<li><p>Authenticate your credentials: When you initiate the call, your SIP client sends your authentication credentials to the VoIPBIN, using the basic authentication method. The VoIPBIN then verifies your credentials and authorizes the call.</p></li>
+<li><p>Make the call: Once your credentials are verified, the VoIPBIN establishes the call and connects you with the destination address.</p></li>
 </ol>
-<p>By following these steps, you can make a SIP outgoing call through VoIPBin using basic authentication. This process can be used for a variety of business and personal applications, such as remote work, conferencing, and customer support.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">UA</span>                                   <span class="n">VoIPBin</span>                                 <span class="n">Destination</span>
+<p>By following these steps, you can make a SIP outgoing call through VoIPBIN using basic authentication. This process can be used for a variety of business and personal applications, such as remote work, conferencing, and customer support.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">UA</span>                                   <span class="n">VoIPBIN</span>                                 <span class="n">Destination</span>
 
 <span class="o">|</span>                                        <span class="o">|</span>                                        <span class="o">|</span>
 <span class="o">|----------------</span> <span class="n">INVITE</span> <span class="o">---------------&gt;|</span>                                        <span class="o">|</span>
@@ -227,7 +227,7 @@
 </section>
 <section id="call-handle">
 <h3>Call handle<a class="headerlink" href="#call-handle" title="Link to this heading"></a></h3>
-<p>Unlike the normal VoIPBin’s normal call handle, the VoIPBin handles trunking outbound call in a different way. The VoIPBin executes special flow for the trunking call.
+<p>Unlike the normal VoIPBIN’s normal call handle, the VoIPBIN handles trunking outbound call in a different way. The VoIPBIN executes special flow for the trunking call.
 It executes the follow features:</p>
 <ul class="simple">
 <li><p>Enable the early media.</p></li>
@@ -235,8 +235,8 @@ It executes the follow features:</p>
 </ul>
 <section id="early-media-handle">
 <h4>Early media handle<a class="headerlink" href="#early-media-handle" title="Link to this heading"></a></h4>
-<p>The VoIPBin enables the the early-media feature for the trunking outbound call.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">UA</span>                                   <span class="n">VoIPBin</span>                                 <span class="n">Destination</span>
+<p>The VoIPBIN enables the the early-media feature for the trunking outbound call.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">UA</span>                                   <span class="n">VoIPBIN</span>                                 <span class="n">Destination</span>
 
 <span class="o">|</span>                                        <span class="o">|</span>                                        <span class="o">|</span>
 <span class="o">===================================================================================</span>
@@ -252,8 +252,8 @@ It executes the follow features:</p>
 </section>
 <section id="realy-hangup-cause">
 <h4>Realy hangup cause<a class="headerlink" href="#realy-hangup-cause" title="Link to this heading"></a></h4>
-<p>The VoIPBin delivers the hangup cause code from the outgoing call.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">UA</span>                                   <span class="n">VoIPBin</span>                                 <span class="n">Destination</span>
+<p>The VoIPBIN delivers the hangup cause code from the outgoing call.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">UA</span>                                   <span class="n">VoIPBIN</span>                                 <span class="n">Destination</span>
 
 <span class="o">|</span>                                        <span class="o">|</span>                                        <span class="o">|</span>
 <span class="o">===================================================================================</span>
@@ -270,8 +270,8 @@ It executes the follow features:</p>
 </section>
 <section id="domain-name">
 <span id="trunk-overview-domain-name"></span><h2>Domain name<a class="headerlink" href="#domain-name" title="Link to this heading"></a></h2>
-<p>The SIP Domain resource in Voipbin entails a personalized DNS hostname designed to accept SIP (Session Initiation Protocol) traffic for your account. When a SIP request is directed to this domain, like <a class="reference external" href="sip:alice&#64;example.trunk.voipbin.net">sip:alice&#64;example.trunk.voipbin.net</a>, it is directed to Voipbin. Subsequently, Voipbin verifies the request’s authenticity and channels it to the designated voice_url linked with the SIP domain.</p>
-<p>This pivotal component facilitates the management of SIP traffic within your Voipbin account. It accommodates incoming SIP requests from diverse sources, ensuring seamless communication and integration with Voipbin services. Businesses and developers can leverage the SIP Domain resource to create bespoke DNS hostnames, seamlessly integrate Voipbin services into existing systems, and construct scalable, reliable SIP-based communication solutions. This capability is particularly beneficial for organizations seeking to manage SIP-based communications securely and efficiently.</p>
+<p>The SIP Domain resource in VoIPBIN entails a personalized DNS hostname designed to accept SIP (Session Initiation Protocol) traffic for your account. When a SIP request is directed to this domain, like <a class="reference external" href="sip:alice&#64;example.trunk.voipbin.net">sip:alice&#64;example.trunk.voipbin.net</a>, it is directed to Voipbin. Subsequently, VoIPBIN verifies the request’s authenticity and channels it to the designated voice_url linked with the SIP domain.</p>
+<p>This pivotal component facilitates the management of SIP traffic within your VoIPBIN account. It accommodates incoming SIP requests from diverse sources, ensuring seamless communication and integration with VoIPBIN services. Businesses and developers can leverage the SIP Domain resource to create bespoke DNS hostnames, seamlessly integrate VoIPBIN services into existing systems, and construct scalable, reliable SIP-based communication solutions. This capability is particularly beneficial for organizations seeking to manage SIP-based communications securely and efficiently.</p>
 </section>
 </section>
 

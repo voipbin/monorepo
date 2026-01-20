@@ -2,7 +2,7 @@
 
 Overview
 ========
-VoIPBin's AI is a built-in AI agent that enables automated, intelligent voice interactions during live calls. Designed for seamless integration within VoIPBin's flow, the AI utilizes ChatGPT as its AI engine to process and respond to user inputs in real time. This allows developers to create dynamic and interactive voice experiences without requiring manual intervention.
+VoIPBIN's AI is a built-in AI agent that enables automated, intelligent voice interactions during live calls. Designed for seamless integration within VoIPBIN's flow, the AI utilizes ChatGPT as its AI engine to process and respond to user inputs in real time. This allows developers to create dynamic and interactive voice experiences without requiring manual intervention.
 
 How it works
 ============
@@ -10,7 +10,7 @@ How it works
 Action component
 ----------------
 
-The AI is integrated as one of the configurable components within a VoIPBin flow. When a call reaches an AI action, the system triggers the AI to generate a response based on the provided prompt. The response is then processed and played back to the caller using text-to-speech (TTS). If the response is in a structured JSON format, VoIPBin executes the defined actions accordingly.
+The AI is integrated as one of the configurable components within a VoIPBIN flow. When a call reaches an AI action, the system triggers the AI to generate a response based on the provided prompt. The response is then processed and played back to the caller using text-to-speech (TTS). If the response is in a structured JSON format, VoIPBIN executes the defined actions accordingly.
 
 .. image:: _static/images/ai_overview_overview.png
     :alt: AI component in action builder
@@ -19,7 +19,7 @@ The AI is integrated as one of the configurable components within a VoIPBin flow
 TTS/STT + AI Engine
 -------------------
 
-VoIPBin's AI is built using TTS/STT + AI Engine, where speech-to-text (STT) converts spoken words into text, and text-to-speech (TTS) converts responses back into audio. The system processes these in real time, enabling seamless conversations.
+VoIPBIN's AI is built using TTS/STT + AI Engine, where speech-to-text (STT) converts spoken words into text, and text-to-speech (TTS) converts responses back into audio. The system processes these in real time, enabling seamless conversations.
 
 .. image:: _static/images/ai_overview_stt_tts.png
     :alt: AI implementation using TTS/STT + AI Engine
@@ -27,19 +27,19 @@ VoIPBin's AI is built using TTS/STT + AI Engine, where speech-to-text (STT) conv
 
 Voice Detection and Play Interruption:
 --------------------------------------
-In addition to basic TTS and STT functionalities, VoIPBin incorporates voice detection to create a more natural conversational flow. While the AI is speaking (i.e., playing TTS media), if the system detects the caller's voice, it immediately stops the TTS playback and routes the caller's speech (via STT) to the AI engine. This play interruption feature ensures that if the user starts talking, their input is prioritized, enabling a dynamic interaction that more closely resembles a real conversation.
+In addition to basic TTS and STT functionalities, VoIPBIN incorporates voice detection to create a more natural conversational flow. While the AI is speaking (i.e., playing TTS media), if the system detects the caller's voice, it immediately stops the TTS playback and routes the caller's speech (via STT) to the AI engine. This play interruption feature ensures that if the user starts talking, their input is prioritized, enabling a dynamic interaction that more closely resembles a real conversation.
 
 Context Retention
 -----------------
-VoIPBin's AI supports context saving. During a conversation, the AI remembers prior exchanges, allowing it to maintain continuity and respond based on earlier parts of the interaction. This provides a more natural and human-like dialogue experience.
+VoIPBIN's AI supports context saving. During a conversation, the AI remembers prior exchanges, allowing it to maintain continuity and respond based on earlier parts of the interaction. This provides a more natural and human-like dialogue experience.
 
 Multilingual support
 --------------------
-VoIPBin's AI supports multiple languages. See supported languages: :ref:`supported languages <transcribe-overview-supported_languages>`.
+VoIPBIN's AI supports multiple languages. See supported languages: :ref:`supported languages <transcribe-overview-supported_languages>`.
 
 External AI Agent Integration
 -----------------------------
-For users who prefer to use external AI services, VoIPBin offers media stream access via MCP (Media Control Protocol). This allows third-party AI engines to process voice data directly, enabling deeper customization and advanced AI capabilities.
+For users who prefer to use external AI services, VoIPBIN offers media stream access via MCP (Media Control Protocol). This allows third-party AI engines to process voice data directly, enabling deeper customization and advanced AI capabilities.
 
 MCP Server
 ----------
@@ -66,7 +66,7 @@ Example Prompt:
 AI Talk
 =======
 
-**AI Talk** enables real-time conversational AI with voice in VoIPBin, powered by **ElevenLabs' voice engine** for natural-sounding speech.
+**AI Talk** enables real-time conversational AI with voice in VoIPBIN, powered by **ElevenLabs' voice engine** for natural-sounding speech.
 
 .. image:: _static/images/ai_overview_ai_talk.png
     :alt: AI Talk component in action builder
@@ -84,7 +84,7 @@ Key Features
 
 Built-in ElevenLabs Voice IDs
 ---------------------------------
-VoIPBin uses a predefined set of voice IDs for various languages and genders. Here are the default ElevenLabs Voice IDs currently in use:
+VoIPBIN uses a predefined set of voice IDs for various languages and genders. Here are the default ElevenLabs Voice IDs currently in use:
 
 =========================== ==================================== =================================== =================================
 Language                    Male Voice ID (Name)                 Female Voice ID (Name)              Neutral Voice ID (Name)
@@ -120,7 +120,7 @@ Polish                      ``H5xTcsAIeS5RAykjz57a`` (Alex)      ``W0sqKm1Sfw1Ez
 
 Other ElevenLabs Voice ID Options
 ---------------------------------
-Voipbin allows you to personalize the text-to-speech output by specifying a custom ElevenLabs Voice ID. By setting the *voipbin.tts.elevenlabs.voice_id* variable, you can override the default voice selection.
+VoIPBIN allows you to personalize the text-to-speech output by specifying a custom ElevenLabs Voice ID. By setting the *voipbin.tts.elevenlabs.voice_id* variable, you can override the default voice selection.
 
 ..
 
@@ -131,7 +131,7 @@ See how to set the variables :ref:`here <variable_overview>`.
 AI Summary
 ==========
 
-The AI Summary feature in VoIPBin generates structured summaries of call transcriptions, recordings, or conference discussions. It provides a concise summary of key points, decisions, and action items based on the provided transcription source.
+The AI Summary feature in VoIPBIN generates structured summaries of call transcriptions, recordings, or conference discussions. It provides a concise summary of key points, decisions, and action items based on the provided transcription source.
 
 .. image:: _static/images/ai_overview_summary.png
     :alt: AI summary component in action builder

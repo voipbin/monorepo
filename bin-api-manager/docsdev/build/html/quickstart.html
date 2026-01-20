@@ -163,7 +163,7 @@
 <span id="quickstart-main"></span><h1>Quickstart<a class="headerlink" href="#quickstart" title="Link to this heading"></a></h1>
 <section id="signup">
 <span id="quickstart-signup"></span><h2>Signup<a class="headerlink" href="#signup" title="Link to this heading"></a></h2>
-<p>In this Quickstart, you’ll learn how to sign up and receive your account credentials to start using the VoIPBin API.</p>
+<p>In this Quickstart, you’ll learn how to sign up and receive your account credentials to start using the VoIPBIN API.</p>
 <section id="sign-up-to-voipbin">
 <h3>Sign up to VoIPBin<a class="headerlink" href="#sign-up-to-voipbin" title="Link to this heading"></a></h3>
 <p>To begin, send a sign-up request email to:</p>
@@ -172,9 +172,9 @@
 <ul class="simple">
 <li><p>Your name or organization name.</p></li>
 <li><p>Contact information.</p></li>
-<li><p>A brief description of how you plan to use VoIPBin.</p></li>
+<li><p>A brief description of how you plan to use VoIPBIN.</p></li>
 </ul>
-<p><strong>Note:</strong> VoIPBin is currently a personal project. Automatic account creation is not available at this time, so all requests are handled manually. Please allow some time for your request to be processed.</p>
+<p><strong>Note:</strong> VoIPBIN is currently a personal project. Automatic account creation is not available at this time, so all requests are handled manually. Please allow some time for your request to be processed.</p>
 </section>
 <section id="what-happens-next">
 <h3>What Happens Next<a class="headerlink" href="#what-happens-next" title="Link to this heading"></a></h3>
@@ -183,14 +183,14 @@
 <li><p><strong>ID</strong>: Your unique account identifier.</p></li>
 <li><p><strong>Password</strong>: A secure password to access your account.</p></li>
 </ul>
-<p>Keep these credentials secure, as they are required to log in and access VoIPBin services.</p>
-<p>After receiving your account credentials, you can start exploring VoIPBin features. Begin with the tutorial guides to understand how to configure and use the API effectively.</p>
+<p>Keep these credentials secure, as they are required to log in and access VoIPBIN services.</p>
+<p>After receiving your account credentials, you can start exploring VoIPBIN features. Begin with the tutorial guides to understand how to configure and use the API effectively.</p>
 </section>
 </section>
 <section id="authentication">
 <span id="quickstart-authentication"></span><h2>Authentication<a class="headerlink" href="#authentication" title="Link to this heading"></a></h2>
 <p>In this Quickstart, you’ll learn how to authenticate your requests using either a <strong>Token</strong> or an <strong>Accesskey</strong>.</p>
-<p>To interact with the VoIPBin API, you need to authenticate your requests using either a <strong>Token</strong> or an <strong>Accesskey</strong>. Both options serve the same purpose — validating your request and authenticating your identity.</p>
+<p>To interact with the VoIPBIN API, you need to authenticate your requests using either a <strong>Token</strong> or an <strong>Accesskey</strong>. Both options serve the same purpose — validating your request and authenticating your identity.</p>
 <section id="generate-token">
 <h3>Generate Token<a class="headerlink" href="#generate-token" title="Link to this heading"></a></h3>
 <p>To generate a JWT token, send a request with your username and password, as shown in the example below:</p>
@@ -211,7 +211,7 @@
 </section>
 <section id="generate-accesskey">
 <h3>Generate Accesskey<a class="headerlink" href="#generate-accesskey" title="Link to this heading"></a></h3>
-<p>You can generate your access key directly from the VoIPBin admin page, as shown in the image below.</p>
+<p>You can generate your access key directly from the VoIPBIN admin page, as shown in the image below.</p>
 <p>To use the API, you will need an access key, so generating it from the admin page is required. When creating the access key, you can specify an expire parameter to define how long the access key will remain valid.</p>
 <img alt="_images/quickstart_authentication_accesskey.png" src="_images/quickstart_authentication_accesskey.png" />
 <p>For more details on how to use the <strong>Accesskey</strong>, refer to the full tutorial <a class="reference internal" href="accesskey.html#accesskey-main"><span class="std std-ref">here</span></a>.</p>
@@ -246,7 +246,7 @@
 <p>In this Quickstart, you’ll learn how to make an outbound voice call.</p>
 <section id="make-your-first-voice-call-with-manual-actions">
 <h3>Make your first voice call with manual actions<a class="headerlink" href="#make-your-first-voice-call-with-manual-actions" title="Link to this heading"></a></h3>
-<p>Use the Voipbin API to initiate an outbound telephone call from your Voipbin account.</p>
+<p>Use the VoIPBIN API to initiate an outbound telephone call from your VoIPBIN account.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=your-voipbin-token&#39; \
     --header &#39;Content-Type: application/json&#39; \
     --data-raw &#39;{
@@ -316,9 +316,9 @@
 </pre></div>
 </div>
 </section>
-<section id="make-your-first-voice-call-with-existed-flow">
-<h3>Make your first voice call with existed flow<a class="headerlink" href="#make-your-first-voice-call-with-existed-flow" title="Link to this heading"></a></h3>
-<p>Use the Voipbin API to initiate an outbound telephone call with existed flow.</p>
+<section id="make-your-first-voice-call-with-existing-flow">
+<h3>Make your first voice call with existing flow<a class="headerlink" href="#make-your-first-voice-call-with-existing-flow" title="Link to this heading"></a></h3>
+<p>Use the VoIPBIN API to initiate an outbound telephone call with existing flow.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=your-voipbin-token&#39; \
     --header &#39;Content-Type: application/json&#39; \
     --data-raw &#39;{
@@ -490,7 +490,7 @@
 </li>
 <li><a class="reference internal" href="#call">Call</a><ul>
 <li><a class="reference internal" href="#make-your-first-voice-call-with-manual-actions">Make your first voice call with manual actions</a></li>
-<li><a class="reference internal" href="#make-your-first-voice-call-with-existed-flow">Make your first voice call with existed flow</a></li>
+<li><a class="reference internal" href="#make-your-first-voice-call-with-existing-flow">Make your first voice call with existing flow</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#queue">Queue</a><ul>

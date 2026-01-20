@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en" data-content_root="./">
+<head>
+    <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+        <title>Inter-Service Communication &mdash; voipbin  documentation</title>
+    
+    <link rel="stylesheet" type="text/css" href="_static/dist/fontawesome.css" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8e8a900e" />
+      <link rel="stylesheet" type="text/css" href="_static/dist/theme.css?v=310cf088" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+            <link rel="index" title="Index" href="genindex.html" />
+            <link rel="search" title="Search" href="search.html" />
+            <link rel="top" title="voipbin  documentation" href="#" />
+    </head>
+<body>
+    <script type="text/javascript" src="_static/dist/blocking.js"></script>
+    <header class="container-fluid bg-primary">
+        <a class="btn btn-sm btn-light skip-to-content-link" href="#main">Skip to content</a>
+        <div class="container-fluid">
+            <div class="navbar navbar-expand-lg navbar-dark font-weight-bold">
+                    <a href="intro.html"
+                        title="voipbin"
+                        class="logo navbar-brand"
+                    >
+                        <img src="_static/images/voipbin-high-resolution-logo-white-transparent.png" width="45" height="80" alt="voipbin"
+                            class="logo-img"
+                        />
+                        VoIPBin Documentation
+                    </a>
+                
+                
+                    <div class="collapse navbar-collapse justify-content-end">
+                        <ul class="navbar-nav">
+                            
+                                
+                                
+                                <li class="nav-item"><a class="nav-link"  href="http://voipbin.net">Project</a></li>
+                            
+                                
+                                
+                                <li class="nav-item"><a class="nav-link"  href="https://admin.voipbin.net">Admin</a></li>
+                            
+                        </ul>
+                    </div>
+                
+                <button class="navbar-toggler btn btn-primary d-lg-none" type="button" data-toggle="collapse" data-target="#collapseSidebar" aria-expanded="false" aria-controls="collapseExample">
+                    <span class="navbar-toggler-icon"></span>
+                    <span class="sr-only">menu</span>
+                </button>
+            </div>
+        </div>
+    </header>
+    <div class="container-fluid">
+        <div class="row">
+            <aside class="col-12 col-lg-3 sidebar-container">
+                <div id="collapseSidebar" class="collapse sticky-top d-lg-block pt-5 pr-lg-4">
+<div id="searchbox" class="searchbox mb-6 px-1" role="search">
+    <form id="search-form" action="search.html" autocomplete="off" method="get" role="search">
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <div class="input-group-text border-right-0 bg-white py-3 pl-3 pr-2"><span class="fas fa-search"></span></div>
+            </div>
+            <input class="form-control py-3 pr-3 pl-1 h-100 border-left-0" type="search" name="q" placeholder="Search documentation" aria-label="Search documentation" id="searchinput" />
+        </div>
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+    </form>
+</div><div class="site-toc">
+    <nav class="toc mt-3" aria-label="Main menu">
+        <ul>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="common.html">Common</a></li>
+<li class="toctree-l1"><a class="reference internal" href="restful_api.html">RESTful API(Application Programming Interface)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sdk.html">SDK(Software Development Kit)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="accesskey.html">Accesskey</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="activeflow.html">Activeflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="call.html">Call</a></li>
+<li class="toctree-l1"><a class="reference internal" href="message.html">Message</a></li>
+<li class="toctree-l1"><a class="reference internal" href="email.html">Email</a></li>
+<li class="toctree-l1"><a class="reference internal" href="agent.html">Agent</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conference.html">Conference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mediastream.html">Mediastream</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conversation.html">Conversation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extension.html">Extension</a></li>
+<li class="toctree-l1"><a class="reference internal" href="number.html">Number</a></li>
+<li class="toctree-l1"><a class="reference internal" href="queue.html">Queue</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recording.html">Recording</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a></li>
+<li class="toctree-l1"><a class="reference internal" href="campaign.html">Campaign</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outdial.html">Outdial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outplan.html">Outplan</a></li>
+<li class="toctree-l1"><a class="reference internal" href="webhook.html">Webhook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="customer.html">Customer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chat.html">Chat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="talk.html">Talk</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ai.html">AI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="provider.html">Provider</a></li>
+<li class="toctree-l1"><a class="reference internal" href="route.html">Route</a></li>
+<li class="toctree-l1"><a class="reference internal" href="variable.html">Variable</a></li>
+<li class="toctree-l1"><a class="reference internal" href="websocket.html">Websocket</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trunk.html">Trunk</a></li>
+<li class="toctree-l1"><a class="reference internal" href="billing_account.html">Billing Account</a></li>
+<li class="toctree-l1"><a class="reference internal" href="storage.html">Storage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transcribe.html">Transcribe</a></li>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+</ul>
+
+    </nav>
+    <template data-toggle-item-template>
+        <button class="btn btn-sm btn-link toctree-expand" type="button">
+            <span class="sr-only">Toggle menu contents</span>
+        </button>
+    </template>
+</div>
+                    <div class="d-lg-none border-bottom">
+                        
+                    </div>
+                </div>
+            </aside>
+            <div class="col-12 col-lg-9 pt-5">
+                <header class="row align-items-baseline">
+                    <div class="col">
+                        <nav aria-label="breadcrumb">
+    <ol class="breadcrumb m-0 p-0 bg-transparent">
+        <li class="breadcrumb-item"><a href="index.html">Docs</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Inter-Service Communication</li>
+    </ol>
+</nav>
+                    </div>
+                    <div class="col-sm-12 col-lg-auto mt-3 mt-lg-3">
+                        <noscript>
+                            <p>JavaScript is required to toggle light/dark mode..</p>
+                        </noscript>
+                        <button id="wagtail-theme" class="btn btn-sm btn-light text-decoration-none" type="button">
+                            <span class="dark-only"><i class="fas fa-sun"></i> Light mode</span>
+                            <span class="light-only"><i class="fas fa-moon"></i> Dark mode</span>
+                        </button>
+    <a class="btn btn-sm btn-light text-decoration-none" href="_sources/architecture_communication.rst.txt" rel="nofollow">
+        <span class="btn-icon"><span class="fas fa-code"></span></span>
+        <span class="btn-text">View source</span>
+    </a>
+                        
+                    </div>
+                </header>
+                <div class="row" >
+                    <div class="col-12">
+                        <hr class="w-100 my-4">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 col-lg-9 order-last order-lg-first rst-content">
+                        <main role="main" id="main">
+    <section id="inter-service-communication">
+<span id="architecture-communication"></span><h1>Inter-Service Communication<a class="headerlink" href="#inter-service-communication" title="Link to this heading"></a></h1>
+<p>VoIPBIN’s microservices communicate through multiple messaging patterns optimized for different use cases. The architecture uses RabbitMQ for RPC and pub/sub, ZeroMQ for high-performance events, and WebSocket for real-time client communication.</p>
+<section id="communication-patterns-overview">
+<h2>Communication Patterns Overview<a class="headerlink" href="#communication-patterns-overview" title="Link to this heading"></a></h2>
+<p>VoIPBIN uses three primary communication mechanisms:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Communication Architecture:
+
+┌─────────────────────────────────────────────────────────┐
+│                  RabbitMQ (Primary Bus)                 │
+│                                                         │
+│  ┌───────────────────────┐  ┌───────────────────────┐   │
+│  │   RPC (Synchronous)   │  │  Pub/Sub (Async)      │   │
+│  │   Request-Response    │  │  Event Broadcasting   │   │
+│  └───────────────────────┘  └───────────────────────┘   │
+└─────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────┐
+│              ZeroMQ (High-Performance Events)           │
+│                                                         │
+│  • Real-time event streaming                            │
+│  • Agent presence updates                               │
+│  • Call state changes                                   │
+└─────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────┐
+│              WebSocket (Client Communication)           │
+│                                                         │
+│  • Real-time client notifications                       │
+│  • Bi-directional media streaming                       │
+│  • Live transcription feeds                             │
+└─────────────────────────────────────────────────────────┘
+</pre></div>
+</div>
+</section>
+<section id="rabbitmq-rpc-pattern">
+<h2>RabbitMQ RPC Pattern<a class="headerlink" href="#rabbitmq-rpc-pattern" title="Link to this heading"></a></h2>
+<p>VoIPBIN uses RabbitMQ for synchronous request-response communication between services.</p>
+<p><strong>RPC Flow</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>RPC Request-Response Pattern:
+
+Client Service          RabbitMQ             Server Service
+     │                     │                       │
+     │  1. Send Request    │                       │
+     │  ┌────────────┐     │                       │
+     │  │ call_id    │     │                       │
+     │  │ action     │     │                       │
+     │  │ reply_to   │     │                       │
+     │  └────────────┘     │                       │
+     ├────────────────────▶│                       │
+     │  Queue: bin-manager.│                       │
+     │         call.request│                       │
+     │                     │  2. Dequeue           │
+     │                     ├──────────────────────▶│
+     │                     │                       │
+     │                     │  3. Process Request   │
+     │                     │     (business logic)  │
+     │                     │                       │
+     │                     │  4. Send Response     │
+     │                     │◀──────────────────────┤
+     │                     │  Queue: reply_to      │
+     │  5. Receive Response│                       │
+     │◀────────────────────┤                       │
+     │  ┌────────────┐     │                       │
+     │  │ status     │     │                       │
+     │  │ data       │     │                       │
+     │  │ error      │     │                       │
+     │  └────────────┘     │                       │
+     │                     │                       │
+</pre></div>
+</div>
+<p><strong>Queue Naming Convention</strong></p>
+<p>All RPC queues follow a consistent naming pattern:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Queue Name Format:
+bin-manager.&lt;service&gt;.&lt;operation&gt;
+
+Examples:
+• bin-manager.call.request        → bin-call-manager
+• bin-manager.conference.request  → bin-conference-manager
+• bin-manager.sms.request         → bin-sms-manager
+• bin-manager.flow.request        → bin-flow-manager
+• bin-manager.billing.request     → bin-billing-manager
+</pre></div>
+</div>
+<p><strong>Message Structure</strong></p>
+<p>RPC messages use a standardized JSON format:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Request</span> <span class="n">Message</span><span class="p">:</span>
+<span class="p">{</span>
+  <span class="s2">&quot;message_id&quot;</span><span class="p">:</span> <span class="s2">&quot;uuid-v4&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-01-20T12:00:00.000Z&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;route&quot;</span><span class="p">:</span> <span class="s2">&quot;/v1/calls&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;POST&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;headers&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;customer-123&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;agent_id&quot;</span><span class="p">:</span> <span class="s2">&quot;agent-456&quot;</span>
+  <span class="p">},</span>
+  <span class="s2">&quot;body&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span> <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15551234567&quot;</span><span class="p">},</span>
+    <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span> <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15559876543&quot;</span><span class="p">}]</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">Response</span> <span class="n">Message</span><span class="p">:</span>
+<span class="p">{</span>
+  <span class="s2">&quot;message_id&quot;</span><span class="p">:</span> <span class="s2">&quot;uuid-v4&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-01-20T12:00:01.000Z&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;status_code&quot;</span><span class="p">:</span> <span class="mi">200</span><span class="p">,</span>
+  <span class="s2">&quot;body&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;call-789&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ringing&quot;</span><span class="p">,</span>
+    <span class="o">...</span>
+  <span class="p">},</span>
+  <span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="n">null</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>RPC Implementation Pattern</strong></p>
+<p>Services implement RPC handlers following this pattern:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Service RPC Handler:
+
+┌────────────────────────────────────────────────┐
+│        bin-call-manager                        │
+│                                                │
+│  1. Listen on Queue                            │
+│     ├─ bin-manager.call.request                │
+│     │                                          │
+│  2. Receive Message                            │
+│     ├─ Deserialize JSON                        │
+│     ├─ Validate request                        │
+│     │                                          │
+│  3. Route to Handler                           │
+│     ├─ Parse route: POST /v1/calls             │
+│     ├─ Call: CallCreate(ctx, req)              │
+│     │                                          │
+│  4. Execute Business Logic                     │
+│     ├─ Validate data                           │
+│     ├─ Create call record                      │
+│     ├─ Initiate SIP call                       │
+│     │                                          │
+│  5. Send Response                              │
+│     ├─ Serialize result                        │
+│     └─ Reply to reply_to queue                 │
+│                                                │
+└────────────────────────────────────────────────┘
+</pre></div>
+</div>
+<p><strong>Load Balancing</strong></p>
+<p>Multiple service instances share the same queue:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Load Balanced RPC:
+
+API Gateway                Queue              Service Instances
+     │                      │                       │
+     │  Request 1           │                       │
+     ├─────────────────────▶│                       │
+     │                      ├──────────────────────▶│ Instance 1
+     │                      │  (round-robin)        │ (processes req 1)
+     │                      │                       │
+     │  Request 2           │                       │
+     ├─────────────────────▶│                       │
+     │                      ├──────────────────────▶│ Instance 2
+     │                      │  (round-robin)        │ (processes req 2)
+     │                      │                       │
+     │  Request 3           │                       │
+     ├─────────────────────▶│                       │
+     │                      ├──────────────────────▶│ Instance 3
+     │                      │  (round-robin)        │ (processes req 3)
+     │                      │                       │
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>Fair Distribution</strong>: RabbitMQ distributes messages evenly</p></li>
+<li><p><strong>No Coordination</strong>: Instances don’t need to know about each other</p></li>
+<li><p><strong>Dynamic Scaling</strong>: Add/remove instances without configuration</p></li>
+<li><p><strong>Automatic Recovery</strong>: If instance fails, messages redelivered</p></li>
+</ul>
+</section>
+<section id="rabbitmq-pub-sub-pattern">
+<h2>RabbitMQ Pub/Sub Pattern<a class="headerlink" href="#rabbitmq-pub-sub-pattern" title="Link to this heading"></a></h2>
+<p>For asynchronous event notifications, VoIPBIN uses RabbitMQ’s pub/sub (fanout exchange) pattern.</p>
+<p><strong>Pub/Sub Flow</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Event Publishing Pattern:
+
+Publisher               Exchange              Subscribers
+     │                      │                       │
+     │  1. Publish Event    │                       │
+     │  ┌────────────┐      │                       │
+     │  │event: call │      │                       │
+     │  │      .created│    │                       │
+     │  │data: {...} │      │                       │
+     │  └────────────┘      │                       │
+     ├─────────────────────▶│                       │
+     │  Exchange:           │                       │
+     │  call.events         │                       │
+     │                      │  2. Fanout to all     │
+     │                      │     subscribers       │
+     │                      ├──────┬────────────────┤
+     │                      │      │                │
+     │                      │      ▼                ▼
+     │                      │  ┌────────┐      ┌────────┐
+     │                      │  │Billing │      │Webhook │
+     │                      │  │Manager │      │Manager │
+     │                      │  └────────┘      └────────┘
+     │                      │      │                │
+     │                      │  3. Process       3. Process
+     │                      │     event             event
+     │                      │     independently     independently
+</pre></div>
+</div>
+<p><strong>Event Types</strong></p>
+<p>VoIPBIN publishes events for major state changes:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Event Categories:
+
+Call Events:
+• call.created       - New call initiated
+• call.ringing       - Call ringing
+• call.answered      - Call answered
+• call.ended         - Call terminated
+
+Conference Events:
+• conference.created       - Conference created
+• conference.participant_joined
+• conference.participant_left
+• conference.ended
+
+SMS Events:
+• sms.sent           - SMS sent successfully
+• sms.delivered      - SMS delivered to recipient
+• sms.failed         - SMS delivery failed
+
+Agent Events:
+• agent.login        - Agent logged in
+• agent.logout       - Agent logged out
+• agent.status_change - Agent status changed
+
+Transcription Events:
+• transcribe.started - Transcription started
+• transcribe.completed
+• transcript.created - New transcript segment
+</pre></div>
+</div>
+<p><strong>Event Message Structure</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Event</span> <span class="n">Message</span> <span class="n">Format</span><span class="p">:</span>
+<span class="p">{</span>
+  <span class="s2">&quot;event_id&quot;</span><span class="p">:</span> <span class="s2">&quot;uuid-v4&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;event_type&quot;</span><span class="p">:</span> <span class="s2">&quot;call.created&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-01-20T12:00:00.000Z&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;customer-123&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;resource_type&quot;</span><span class="p">:</span> <span class="s2">&quot;call&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;resource_id&quot;</span><span class="p">:</span> <span class="s2">&quot;call-789&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;call-789&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="s2">&quot;+15551234567&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="s2">&quot;+15559876543&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ringing&quot;</span><span class="p">,</span>
+    <span class="o">...</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Subscriber Pattern</strong></p>
+<p>Services subscribe to events they’re interested in:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Subscriber Implementation:
+
+┌────────────────────────────────────────────────┐
+│         bin-billing-manager                    │
+│                                                │
+│  1. Declare Exchange                           │
+│     └─ call.events (fanout)                    │
+│                                                │
+│  2. Create Queue                               │
+│     └─ billing.call.events (unique)            │
+│                                                │
+│  3. Bind Queue to Exchange                     │
+│     └─ Receive all events from exchange        │
+│                                                │
+│  4. Consume Events                             │
+│     ├─ call.created → Track call start         │
+│     ├─ call.answered → Start billing           │
+│     ├─ call.ended → Calculate charges          │
+│     └─ Other events → Ignore                   │
+│                                                │
+└────────────────────────────────────────────────┘
+</pre></div>
+</div>
+<p><strong>Event Processing Guarantees</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Event Processing:
+
+┌──────────────┐
+│   Publish    │
+└──────┬───────┘
+       │
+       │  RabbitMQ persists event
+       │  (survives broker restart)
+       ▼
+┌──────────────┐
+│   Deliver    │
+└──────┬───────┘
+       │
+       │  Subscriber processes
+       │  (may retry on failure)
+       ▼
+┌──────────────┐
+│     ACK      │
+└──────────────┘
+       │
+       │  Remove from queue
+       │  (event processed successfully)
+       ▼
+┌──────────────┐
+│   Complete   │
+└──────────────┘
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>At-Least-Once Delivery</strong>: Events delivered at least once (may duplicate)</p></li>
+<li><p><strong>Persistent</strong>: Events survive broker restart</p></li>
+<li><p><strong>Manual ACK</strong>: Subscriber acknowledges after processing</p></li>
+<li><p><strong>Retry on Failure</strong>: Redelivered if subscriber crashes</p></li>
+</ul>
+</section>
+<section id="zeromq-event-streaming">
+<h2>ZeroMQ Event Streaming<a class="headerlink" href="#zeromq-event-streaming" title="Link to this heading"></a></h2>
+<p>For high-performance, low-latency event streaming, VoIPBIN uses ZeroMQ pub/sub sockets.</p>
+<p><strong>ZMQ Architecture</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>ZeroMQ Pub/Sub Pattern:
+
+Publishers                               Subscribers
+     │                                        │
+     │  Call Manager                          │
+     │  (publishes call events)               │
+     ├──────────────────────┐                 │
+     │  ZMQ PUB Socket      │                 │
+     │  tcp://*:5555        │                 │
+     └──────────┬───────────┘                 │
+                │                             │
+                │  Event Stream               │
+                │  (no broker)                │
+                │                             │
+                ├────────────────────────────▶│ Agent Manager
+                │                             │ (agent presence)
+                │                             │
+                ├────────────────────────────▶│ Webhook Manager
+                │                             │ (webhook delivery)
+                │                             │
+                └────────────────────────────▶│ Talk Manager
+                                              │ (agent UI updates)
+</pre></div>
+</div>
+<p><strong>Key Differences from RabbitMQ</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>RabbitMQ vs ZeroMQ:
+
+RabbitMQ:                          ZeroMQ:
+┌────────────┐                     ┌────────────┐
+│ Publisher  │                     │ Publisher  │
+└──────┬─────┘                     └──────┬─────┘
+       │                                  │
+       │ Reliable                         │ Fast
+       │ Persistent                       │ In-memory
+       │ Broker-based                     │ Direct socket
+       ▼                                  ▼
+┌────────────┐                     ┌────────────┐
+│  RabbitMQ  │                     │ Subscriber │
+│   Broker   │                     │  (Direct)  │
+└──────┬─────┘                     └────────────┘
+       │
+       │ At-least-once
+       ▼
+┌────────────┐
+│ Subscriber │
+└────────────┘
+</pre></div>
+</div>
+<p><strong>RabbitMQ:</strong>
+* Persistent, reliable
+* Guaranteed delivery
+* Message queuing
+* Higher latency (~10ms)</p>
+<p><strong>ZeroMQ:</strong>
+* In-memory, fast
+* Best-effort delivery
+* Direct sockets
+* Lower latency (&lt;1ms)</p>
+<p><strong>Use Cases</strong></p>
+<p>VoIPBIN uses ZeroMQ for:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>ZeroMQ Use Cases:
+
+✓ Agent Presence Updates
+  • Agent login/logout
+  • Status changes (available, busy, away)
+  • Real-time UI updates
+  • High frequency, acceptable loss
+
+✓ Call State Changes
+  • Call ringing, answered, ended
+  • Conference participant updates
+  • Duplicate with RabbitMQ (redundant)
+  • Speed over reliability
+
+✓ Real-Time Metrics
+  • Queue statistics
+  • Active call counts
+  • System health metrics
+  • Dashboard updates
+
+✗ NOT Used For:
+  • Billing events (use RabbitMQ)
+  • Webhook delivery (use RabbitMQ)
+  • Critical state changes (use RabbitMQ)
+</pre></div>
+</div>
+<p><strong>ZMQ Message Format</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>ZMQ Message Structure:
+
+Topic (routing key)
+│
+├─ &quot;agent.presence&quot;
+│  {
+│    &quot;agent_id&quot;: &quot;agent-123&quot;,
+│    &quot;status&quot;: &quot;available&quot;,
+│    &quot;timestamp&quot;: &quot;2026-01-20T12:00:00.000Z&quot;
+│  }
+│
+├─ &quot;call.state&quot;
+│  {
+│    &quot;call_id&quot;: &quot;call-789&quot;,
+│    &quot;status&quot;: &quot;answered&quot;,
+│    &quot;timestamp&quot;: &quot;2026-01-20T12:00:01.000Z&quot;
+│  }
+│
+└─ &quot;queue.stats&quot;
+   {
+     &quot;queue_id&quot;: &quot;queue-456&quot;,
+     &quot;waiting&quot;: 5,
+     &quot;active&quot;: 3
+   }
+</pre></div>
+</div>
+<p><strong>Topic Filtering</strong></p>
+<p>Subscribers can filter events by topic:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Topic-Based Filtering:
+
+Subscriber A:
+• Subscribe to: &quot;agent.*&quot;
+• Receives:
+  - agent.presence
+  - agent.login
+  - agent.logout
+
+Subscriber B:
+• Subscribe to: &quot;call.*&quot;
+• Receives:
+  - call.state
+  - call.metrics
+
+Subscriber C:
+• Subscribe to: &quot;&quot;  (empty = all)
+• Receives: everything
+</pre></div>
+</div>
+</section>
+<section id="websocket-communication">
+<h2>WebSocket Communication<a class="headerlink" href="#websocket-communication" title="Link to this heading"></a></h2>
+<p>For real-time client communication, VoIPBIN uses WebSocket connections.</p>
+<p><strong>WebSocket Architecture</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>WebSocket Connection Flow:
+
+Client (Browser/App)    API Gateway         Backend Services
+     │                      │                       │
+     │  1. HTTP Upgrade     │                       │
+     │  (WebSocket)         │                       │
+     ├─────────────────────▶│                       │
+     │                      │  2. Authenticate      │
+     │                      │     (JWT token)       │
+     │                      │                       │
+     │  3. Connection       │                       │
+     │     Established      │                       │
+     │◀─────────────────────┤                       │
+     │                      │                       │
+     │  4. Subscribe        │                       │
+     │  {&quot;type&quot;:&quot;subscribe&quot;,│                       │
+     │   &quot;topics&quot;:[&quot;...&quot;]}  │                       │
+     ├─────────────────────▶│                       │
+     │                      │  5. Register          │
+     │                      │     subscription      │
+     │                      │                       │
+     │                      │  6. Backend Event     │
+     │                      │◀──────────────────────┤
+     │                      │  (via RabbitMQ/ZMQ)   │
+     │                      │                       │
+     │  7. Push to Client   │                       │
+     │◀─────────────────────┤                       │
+     │  {&quot;event&quot;:&quot;call.     │                       │
+     │   created&quot;,...}      │                       │
+     │                      │                       │
+</pre></div>
+</div>
+<p><strong>Subscription Topics</strong></p>
+<p>Clients subscribe to specific event topics:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Topic Pattern:
+customer_id:&lt;id&gt;:&lt;resource&gt;:&lt;resource_id&gt;
+
+Examples:
+• customer_id:123:call:*
+  → All calls for customer 123
+
+• customer_id:123:call:call-789
+  → Specific call updates
+
+• customer_id:123:agent:agent-456
+  → Specific agent updates
+
+• customer_id:123:queue:*
+  → All queues for customer
+
+• customer_id:123:conference:conf-999
+  → Specific conference updates
+</pre></div>
+</div>
+<p><strong>WebSocket Use Cases</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>WebSocket Applications:
+
+Agent Dashboard:
+┌──────────────────────────────────────┐
+│ • Real-time call notifications       │
+│ • Queue status updates               │
+│ • Agent presence                     │
+│ • Live chat messages                 │
+└──────────────────────────────────────┘
+
+Customer Portal:
+┌──────────────────────────────────────┐
+│ • Call status updates                │
+│ • Campaign progress                  │
+│ • Billing updates                    │
+│ • System notifications               │
+└──────────────────────────────────────┘
+
+Media Streaming:
+┌──────────────────────────────────────┐
+│ • Bi-directional audio (RTP)         │
+│ • Live transcription feed            │
+│ • Real-time metrics                  │
+└──────────────────────────────────────┘
+</pre></div>
+</div>
+<p><strong>Connection Management</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>WebSocket Lifecycle:
+
+┌────────────┐
+│  Connect   │  Client establishes WebSocket
+└──────┬─────┘
+       │
+       ▼
+┌────────────┐
+│ Authenticate│  Validate JWT token
+└──────┬─────┘
+       │
+       ▼
+┌────────────┐
+│ Subscribe  │  Client subscribes to topics
+└──────┬─────┘
+       │
+       ▼
+┌────────────┐
+│  Active    │  Bi-directional communication
+│            │  • Server pushes events
+│            │  • Client sends commands
+│            │  • Pinger sends ping frames
+└──────┬─────┘
+       │
+       │  (Keep-alive ping/pong)
+       │
+       ▼
+┌────────────┐
+│ Disconnect │  Connection closed
+└────────────┘
+</pre></div>
+</div>
+<p><strong>Keep-Alive Mechanism (Server-Side Ping/Pong)</strong></p>
+<p>VoIPBIN implements server-side keep-alive to prevent load balancer timeouts:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Keep-Alive Configuration:
+
+┌────────────────────────────────────────────────┐
+│  Ping Interval:  30 seconds                    │
+│  Pong Wait:      60 seconds                    │
+│  Write Timeout:  10 seconds                    │
+└────────────────────────────────────────────────┘
+
+Keep-Alive Flow:
+
+Server                                    Client
+   │                                         │
+   │  Every 30s: Send Ping Frame             │
+   ├────────────────────────────────────────▶│
+   │                                         │
+   │  Automatic Pong Response                │
+   │◀────────────────────────────────────────┤
+   │                                         │
+   │  Reset read deadline (60s)              │
+   │                                         │
+
+Error Detection:
+┌────────────────────────────────────────────────┐
+│  No pong within 60s → Connection dead          │
+│  Write failure → Connection broken             │
+│  Either error → Close and cleanup              │
+└────────────────────────────────────────────────┘
+</pre></div>
+</div>
+<p><strong>Keep-Alive Benefits:</strong></p>
+<ul class="simple">
+<li><p><strong>Prevents Idle Drops</strong>: Load balancers see regular traffic</p></li>
+<li><p><strong>Dead Connection Detection</strong>: Server detects unresponsive clients</p></li>
+<li><p><strong>Automatic Cleanup</strong>: Zombie connections closed promptly</p></li>
+<li><p><strong>RFC 6455 Compliant</strong>: Uses standard WebSocket ping/pong frames</p></li>
+</ul>
+<p><strong>Connection Features:</strong></p>
+<ul class="simple">
+<li><p><strong>Keepalive</strong>: Server-side ping every 30 seconds</p></li>
+<li><p><strong>Dead Detection</strong>: 60-second timeout for pong response</p></li>
+<li><p><strong>Auto-Reconnect</strong>: Client should reconnect on disconnect</p></li>
+<li><p><strong>Subscription Restore</strong>: Re-subscribe after reconnect</p></li>
+<li><p><strong>Write Protection</strong>: Mutex prevents concurrent write race conditions</p></li>
+</ul>
+</section>
+<section id="message-reliability">
+<h2>Message Reliability<a class="headerlink" href="#message-reliability" title="Link to this heading"></a></h2>
+<p>Different patterns provide different reliability guarantees:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Reliability Comparison:
+
+Pattern          Delivery          Persistence    Use Case
+───────────────────────────────────────────────────────────
+RabbitMQ RPC     Exactly-once     Yes            Critical ops
+                 (request-reply)
+
+RabbitMQ Pub/Sub At-least-once    Yes            Important events
+                 (may duplicate)
+
+ZeroMQ Pub/Sub   Best-effort      No             Real-time updates
+                 (may lose)
+
+WebSocket        Best-effort      No             Client notifications
+                 (may lose)
+</pre></div>
+</div>
+<p><strong>Reliability Patterns</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Ensuring Reliability:
+
+Critical Operations (RabbitMQ RPC):
+┌────────────────────────────────────┐
+│ • Persistent messages              │
+│ • Manual acknowledgment            │
+│ • Automatic retry                  │
+│ • Timeout handling                 │
+│ • Idempotent operations            │
+└────────────────────────────────────┘
+
+Important Events (RabbitMQ Pub/Sub):
+┌────────────────────────────────────┐
+│ • Persistent messages              │
+│ • Multiple subscribers             │
+│ • Redundant processing OK          │
+│ • Deduplication in subscriber      │
+└────────────────────────────────────┘
+
+Real-Time Updates (ZeroMQ):
+┌────────────────────────────────────┐
+│ • No persistence                   │
+│ • Fast delivery                    │
+│ • Acceptable loss                  │
+│ • Often duplicated in RabbitMQ     │
+└────────────────────────────────────┘
+</pre></div>
+</div>
+</section>
+<section id="message-ordering">
+<h2>Message Ordering<a class="headerlink" href="#message-ordering" title="Link to this heading"></a></h2>
+<p>VoIPBIN guarantees ordering within specific boundaries:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Ordering Guarantees:
+
+Same Queue:              Different Queues:
+┌──────────┐             ┌──────────┐  ┌──────────┐
+│ Message 1│             │ Message 1│  │ Message 2│
+└─────┬────┘             └─────┬────┘  └─────┬────┘
+      │                        │             │
+      │ Queue A                │ Queue A     │ Queue B
+      │                        │             │
+      ▼                        ▼             ▼
+┌──────────┐             ┌──────────┐  ┌──────────┐
+│ Message 2│             │ Service A│  │ Service B│
+└─────┬────┘             └──────────┘  └──────────┘
+      │                        │             │
+      │                        │  May arrive in any order
+      ▼                        ▼             ▼
+┌──────────┐             ┌──────────┐  ┌──────────┐
+│ Message 3│             │ Ordered  │  │ No order │
+└──────────┘             │ delivery │  │ guarantee│
+                         └──────────┘  └──────────┘
+
+Ordered ✓               Unordered ✗
+</pre></div>
+</div>
+<p><strong>Ordering Strategy:</strong></p>
+<ul class="simple">
+<li><p><strong>Within Queue</strong>: Messages delivered in order to same consumer</p></li>
+<li><p><strong>Across Queues</strong>: No ordering guarantee</p></li>
+<li><p><strong>Single Publisher</strong>: Maintains order if using single connection</p></li>
+<li><p><strong>Application Logic</strong>: Handle out-of-order messages when necessary</p></li>
+</ul>
+</section>
+<section id="error-handling-and-retries">
+<h2>Error Handling and Retries<a class="headerlink" href="#error-handling-and-retries" title="Link to this heading"></a></h2>
+<p>VoIPBIN implements comprehensive error handling:</p>
+<p><strong>Retry Strategy</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Exponential Backoff Retry:
+
+Attempt    Delay      Total Time
+──────────────────────────────────
+1          0s         0s
+2          1s         1s
+3          2s         3s
+4          4s         7s
+5          8s         15s
+6          16s        31s
+7          32s        63s
+Max: 7 attempts, ~1 minute total
+</pre></div>
+</div>
+<p><strong>Dead Letter Queue</strong></p>
+<p>Failed messages move to dead letter queue for investigation:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Dead Letter Processing:
+
+Normal Flow:              Failed Flow:
+┌──────────┐              ┌──────────┐
+│ Message  │              │ Message  │
+└─────┬────┘              └─────┬────┘
+      │                         │
+      │ Process                 │ Process (fails)
+      ▼                         ▼
+┌──────────┐              ┌──────────┐
+│  Success │              │  Retry   │
+└──────────┘              └─────┬────┘
+                                │ (max retries exceeded)
+                                ▼
+                          ┌──────────┐
+                          │   DLQ    │ Dead Letter Queue
+                          └─────┬────┘
+                                │
+                                │ Manual investigation
+                                │ or automated recovery
+                                ▼
+                          ┌──────────┐
+                          │  Alert   │
+                          └──────────┘
+</pre></div>
+</div>
+<p><strong>Error Categories</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Error Handling by Type:
+
+Transient Errors (Retry):
+• Network timeout
+• Database connection lost
+• Service temporarily unavailable
+→ Retry with exponential backoff
+
+Permanent Errors (Don&#39;t Retry):
+• Invalid data format
+• Resource not found
+• Permission denied
+→ Send to DLQ, alert operator
+
+Business Errors (Log and Return):
+• Insufficient balance
+• Invalid phone number
+• Duplicate request
+→ Return error to caller
+</pre></div>
+</div>
+</section>
+<section id="performance-optimization">
+<h2>Performance Optimization<a class="headerlink" href="#performance-optimization" title="Link to this heading"></a></h2>
+<p>VoIPBIN optimizes messaging performance:</p>
+<p><strong>Connection Pooling</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Connection Management:
+
+Service Instance
+┌────────────────────────────────────┐
+│                                    │
+│  Connection Pool (5 connections)   │
+│  ┌────┐ ┌────┐ ┌────┐ ┌────┐ ┌────┐│
+│  │ 1  │ │ 2  │ │ 3  │ │ 4  │ │ 5  ││
+│  └─┬──┘ └─┬──┘ └─┬──┘ └─┬──┘ └─┬──┘│
+│    │      │      │      │      │   │
+└────┼──────┼──────┼──────┼──────┼───┘
+     │      │      │      │      │
+     └──────┴──────┴──────┴──────┘
+                │
+                │ Single TCP connection
+                ▼
+          ┌──────────┐
+          │ RabbitMQ │
+          └──────────┘
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>Reuse Connections</strong>: Don’t create per-request</p></li>
+<li><p><strong>Multiple Channels</strong>: Use channels for concurrency</p></li>
+<li><p><strong>Connection Limits</strong>: Pool size based on load</p></li>
+<li><p><strong>Health Checks</strong>: Monitor connection health</p></li>
+</ul>
+<p><strong>Batch Processing</strong></p>
+<p>For high-volume operations:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Batch vs Individual:
+
+Individual Messages:     Batch Processing:
+┌────┐ ┌────┐ ┌────┐    ┌──────────────┐
+│ M1 │ │ M2 │ │ M3 │    │ M1, M2, M3   │
+└─┬──┘ └─┬──┘ └─┬──┘    │ M4, M5, M6   │
+  │      │      │       │ ... (100)    │
+  ▼      ▼      ▼       └──────┬───────┘
+Send 100 times            Send once
+(high overhead)           (low overhead)
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>Bulk Publishing</strong>: Send multiple messages at once</p></li>
+<li><p><strong>Bulk ACK</strong>: Acknowledge multiple messages together</p></li>
+<li><p><strong>Reduced Overhead</strong>: Fewer network round-trips</p></li>
+<li><p><strong>Higher Throughput</strong>: 10x-100x improvement</p></li>
+</ul>
+</section>
+<section id="monitoring-and-debugging">
+<h2>Monitoring and Debugging<a class="headerlink" href="#monitoring-and-debugging" title="Link to this heading"></a></h2>
+<p>VoIPBIN monitors all communication channels:</p>
+<p><strong>Metrics</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Message Queue Metrics:
+
+Queue Depth:
+┌─────────────────────────────────┐
+│     Pending Messages            │
+│  ┌──┐┌──┐┌──┐┌──┐┌──┐           │
+│  │M1││M2││M3││M4││M5│...        │
+│  └──┘└──┘└──┘└──┘└──┘           │
+└─────────────────────────────────┘
+Alert if &gt; 1000 messages
+
+Processing Rate:
+Messages/sec: ████████ 850/s
+Target:       ████████ 1000/s
+Alert if &lt; 500/s
+
+Error Rate:
+Failures:     ██ 2%
+Target:       ██ &lt; 5%
+Alert if &gt; 10%
+</pre></div>
+</div>
+<p><strong>Distributed Tracing</strong></p>
+<p>Track requests across services:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Trace ID: trace-123
+
+1. API Gateway          [50ms]
+   ├─ Authenticate      [5ms]
+   ├─ Authorize         [10ms]
+   └─ Send RPC          [35ms]
+       │
+       ▼
+2. Call Manager         [80ms]
+   ├─ Validate          [10ms]
+   ├─ Create Record     [20ms]
+   └─ Initiate Call     [50ms]
+       │
+       ▼
+3. RTC Manager          [120ms]
+   └─ Setup Media       [120ms]
+
+Total: 250ms
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>Correlation IDs</strong>: Track requests across services</p></li>
+<li><p><strong>Timing</strong>: Measure latency at each hop</p></li>
+<li><p><strong>Errors</strong>: Identify where failures occur</p></li>
+<li><p><strong>Dependencies</strong>: Visualize service interactions</p></li>
+</ul>
+</section>
+<section id="best-practices">
+<h2>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading"></a></h2>
+<p><strong>Message Design:</strong></p>
+<ul class="simple">
+<li><p>Keep messages small (&lt;1MB)</p></li>
+<li><p>Use JSON for human-readable format</p></li>
+<li><p>Include timestamps for debugging</p></li>
+<li><p>Add correlation IDs for tracing</p></li>
+</ul>
+<p><strong>Error Handling:</strong></p>
+<ul class="simple">
+<li><p>Always handle errors gracefully</p></li>
+<li><p>Implement retry with exponential backoff</p></li>
+<li><p>Use dead letter queues for failed messages</p></li>
+<li><p>Alert on high error rates</p></li>
+</ul>
+<p><strong>Performance:</strong></p>
+<ul class="simple">
+<li><p>Use connection pooling</p></li>
+<li><p>Batch messages when possible</p></li>
+<li><p>Set appropriate timeouts</p></li>
+<li><p>Monitor queue depths</p></li>
+</ul>
+<p><strong>Security:</strong></p>
+<ul class="simple">
+<li><p>Encrypt sensitive data in messages</p></li>
+<li><p>Validate all incoming messages</p></li>
+<li><p>Use authentication for connections</p></li>
+<li><p>Limit message size to prevent abuse</p></li>
+</ul>
+</section>
+</section>
+
+</main>
+                        
+                    </div>
+                    
+                    <nav class="col-12 col-lg-3 pb-4">
+                        <div class="sticky-top toc page-toc" aria-labelledby="page-toc-heading">
+                            <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
+                            <ul>
+<li><a class="reference internal" href="#">Inter-Service Communication</a><ul>
+<li><a class="reference internal" href="#communication-patterns-overview">Communication Patterns Overview</a></li>
+<li><a class="reference internal" href="#rabbitmq-rpc-pattern">RabbitMQ RPC Pattern</a></li>
+<li><a class="reference internal" href="#rabbitmq-pub-sub-pattern">RabbitMQ Pub/Sub Pattern</a></li>
+<li><a class="reference internal" href="#zeromq-event-streaming">ZeroMQ Event Streaming</a></li>
+<li><a class="reference internal" href="#websocket-communication">WebSocket Communication</a></li>
+<li><a class="reference internal" href="#message-reliability">Message Reliability</a></li>
+<li><a class="reference internal" href="#message-ordering">Message Ordering</a></li>
+<li><a class="reference internal" href="#error-handling-and-retries">Error Handling and Retries</a></li>
+<li><a class="reference internal" href="#performance-optimization">Performance Optimization</a></li>
+<li><a class="reference internal" href="#monitoring-and-debugging">Monitoring and Debugging</a></li>
+<li><a class="reference internal" href="#best-practices">Best Practices</a></li>
+</ul>
+</li>
+</ul>
+
+                        </div>
+                    </nav>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer class="container-fluid bg-primary text-light">
+        <div class="container">
+            <div class="row">
+        <div class="col p-4">
+            
+                <nav aria-label="Footer">
+                    <ul class="nav justify-content-center mb-2">
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="http://voipbin.net">About Us</a></li>
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="http://voipbin.net">Contact</a></li>
+                        
+                    </ul>
+                </nav>
+            
+            <div class="text-center">
+                    &copy; Copyright 2024, Sungtae Kim
+            </div>
+            <div class="text-center text-white-50 font-italic mt-3">
+                <small>
+                    Created using
+                    <a class="text-white" href="https://github.com/wagtail/sphinx_wagtail_theme" rel="nofollow" target="_blank">
+                        Sphinx Wagtail Theme 6.5.0
+                    </a>
+                    and
+                    <a class="text-white" href="https://www.sphinx-doc.org/" rel="nofollow" target="_blank">
+                        Sphinx 9.1.0
+                    </a>
+                </small>
+            </div>
+        </div>
+    </div>
+        </div>
+    </footer>
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=fd6eb6e6"></script>
+        <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+        <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="_static/copybutton.js?v=f281be69"></script>
+        <script type="text/javascript" src="_static/dist/theme.js"></script>
+        <script type="text/javascript" src="_static/dist/vendor.js"></script>
+        <script type="text/javascript" src="_static/searchtools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script type="text/javascript">
+            document.addEventListener('DOMContentLoaded', function() { Search.loadIndex("searchindex.js"); });
+        </script>
+        <script type="text/javascript" id="searchindexloader"></script>
+    </body>
+</html>

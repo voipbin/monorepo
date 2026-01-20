@@ -280,12 +280,12 @@
 <span id="message-tutorial"></span><h2>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h2>
 <section id="send-a-message">
 <h3>Send a message<a class="headerlink" href="#send-a-message" title="Link to this heading"></a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/messages?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdXN0b21lciI6IntcImlkXCI6XCI1ZTRhMDY4MC04MDRlLTExZWMtODQ3Ny0yZmVhNTk2OGQ4NWJcIixcInVzZXJuYW1lXCI6XCJhZG1pblwiLFwibmFtZVwiOlwiYWRtaW5cIixcImRldGFpbFwiOlwiYWRtaW4gYWNjb3VudFwiLFwid2ViaG9va19tZXRob2RcIjpcIlBPU1RcIixcIndlYmhvb2tfdXJpXCI6XCJodHRwczovL2VuN2V2YWp3aG1xYnQueC5waXBlZHJlYW0ubmV0XCIsXCJwZXJtaXNzaW9uX2lkc1wiOltcIjAzNzk2ZTE0LTdjYjQtMTFlYy05ZGJhLWU3MjAyM2VmZDFjNlwiXSxcInRtX2NyZWF0ZVwiOlwiMjAyMi0wMi0wMSAwMDowMDowMC4wMDAwMDBcIixcInRtX3VwZGF0ZVwiOlwiMjAyMi0wMi0wMiAxODowNToxMC42NTA1MjVcIixcInRtX2RlbGV0ZVwiOlwiOTk5OS0wMS0wMSAwMDowMDowMC4wMDAwMDBcIn0iLCJleHAiOjE2NDc3ODQ2ODR9.ynnHtevhobwPYoXeDzfhWzaYrOX_kfiNA7zBMFl_nwo&#39; \
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/messages?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
 --header &#39;Content-Type: application/json&#39; \
 --data-raw &#39;{
     &quot;source&quot;: {
         &quot;type&quot;: &quot;tel&quot;,
-        &quot;target&quot;: &quot;+821021656521&quot;
+        &quot;target&quot;: &quot;+15559876543&quot;
     },
     &quot;destinations&quot;: [
         {
@@ -300,7 +300,7 @@
 </section>
 <section id="get-list-of-messages">
 <h3>Get list of messages<a class="headerlink" href="#get-list-of-messages" title="Link to this heading"></a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/messages?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdXN0b21lciI6IntcImlkXCI6XCI1ZTRhMDY4MC04MDRlLTExZWMtODQ3Ny0yZmVhNTk2OGQ4NWJcIixcInVzZXJuYW1lXCI6XCJhZG1pblwiLFwibmFtZVwiOlwiYWRtaW5cIixcImRldGFpbFwiOlwiYWRtaW4gYWNjb3VudFwiLFwid2ViaG9va19tZXRob2RcIjpcIlBPU1RcIixcIndlYmhvb2tfdXJpXCI6XCJodHRwczovL2VuN2V2YWp3aG1xYnQueC5waXBlZHJlYW0ubmV0XCIsXCJwZXJtaXNzaW9uX2lkc1wiOltcIjAzNzk2ZTE0LTdjYjQtMTFlYy05ZGJhLWU3MjAyM2VmZDFjNlwiXSxcInRtX2NyZWF0ZVwiOlwiMjAyMi0wMi0wMSAwMDowMDowMC4wMDAwMDBcIixcInRtX3VwZGF0ZVwiOlwiMjAyMi0wMi0wMiAxODowNToxMC42NTA1MjVcIixcInRtX2RlbGV0ZVwiOlwiOTk5OS0wMS0wMSAwMDowMDowMC4wMDAwMDBcIn0iLCJleHAiOjE2NDc3ODQ2ODR9.ynnHtevhobwPYoXeDzfhWzaYrOX_kfiNA7zBMFl_nwo&amp;page_size=10&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/messages?token=&lt;YOUR_AUTH_TOKEN&gt;&amp;page_size=10&#39;
 
 {
 &quot;result&quot;: [
@@ -309,7 +309,7 @@
         &quot;type&quot;: &quot;sms&quot;,
         &quot;source&quot;: {
             &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+821028286521&quot;,
+            &quot;target&quot;: &quot;+15551234567&quot;,
             &quot;target_name&quot;: &quot;&quot;,
             &quot;name&quot;: &quot;&quot;,
             &quot;detail&quot;: &quot;&quot;
@@ -318,7 +318,7 @@
             {
                 &quot;destination&quot;: {
                     &quot;type&quot;: &quot;tel&quot;,
-                    &quot;target&quot;: &quot;+821021656521&quot;,
+                    &quot;target&quot;: &quot;+15559876543&quot;,
                     &quot;target_name&quot;: &quot;&quot;,
                     &quot;name&quot;: &quot;&quot;,
                     &quot;detail&quot;: &quot;&quot;

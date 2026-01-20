@@ -9,7 +9,7 @@ Getting a list of activeflows.
 
 .. code::
 
-    $ curl -k --location --request GET 'https://api.voipbin.net/v1.0/activeflows?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM'
+    $ curl -k --location --request GET 'https://api.voipbin.net/v1.0/activeflows?token=<YOUR_AUTH_TOKEN>'
 
     {
         "result": [

@@ -222,6 +222,447 @@ See detail <a class="reference internal" href="flow_struct_action.html#flow-stru
 </ul>
 </section>
 </section>
+<section id="tutorial">
+<span id="mediastream-tutorial"></span><h2>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h2>
+<section id="bi-directional-media-streaming-for-calls">
+<h3>Bi-Directional Media Streaming for Calls<a class="headerlink" href="#bi-directional-media-streaming-for-calls" title="Link to this heading"></a></h3>
+<p>Connect to a call’s media stream via WebSocket to send and receive audio in real-time. This allows you to build custom audio processing applications without SIP signaling.</p>
+<p><strong>Establish WebSocket Connection:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>GET https://api.voipbin.net/v1.0/calls/&lt;call-id&gt;/media_stream?encapsulation=rtp&amp;token=&lt;YOUR_AUTH_TOKEN&gt;
+</pre></div>
+</div>
+<p><strong>Example:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>GET https://api.voipbin.net/v1.0/calls/652af662-eb45-11ee-b1a5-6fde165f9226/media_stream?encapsulation=rtp&amp;token=&lt;YOUR_AUTH_TOKEN&gt;
+</pre></div>
+</div>
+<p>This creates a bi-directional WebSocket connection where you can:
+- <strong>Receive audio</strong> from the call (what the other party is saying)
+- <strong>Send audio</strong> to the call (inject audio into the conversation)</p>
+</section>
+<section id="bi-directional-media-streaming-for-conferences">
+<h3>Bi-Directional Media Streaming for Conferences<a class="headerlink" href="#bi-directional-media-streaming-for-conferences" title="Link to this heading"></a></h3>
+<p>Access a conference’s media stream to monitor or participate in the conference audio.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>GET https://api.voipbin.net/v1.0/conferences/&lt;conference-id&gt;/media_stream?encapsulation=rtp&amp;token=&lt;YOUR_AUTH_TOKEN&gt;
+</pre></div>
+</div>
+<p><strong>Example:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>GET https://api.voipbin.net/v1.0/conferences/1ed12456-eb4b-11ee-bba8-1bfb2838807a/media_stream?encapsulation=rtp&amp;token=&lt;YOUR_AUTH_TOKEN&gt;
+</pre></div>
+</div>
+<p>This allows you to:
+- Listen to all conference participants
+- Inject audio into the conference
+- Build custom conference recording or analysis tools</p>
+</section>
+<section id="id1">
+<h3>Encapsulation Types<a class="headerlink" href="#id1" title="Link to this heading"></a></h3>
+<p>VoIPBIN supports three encapsulation types for media streaming:</p>
+<p><strong>1. RTP (Real-time Transport Protocol)</strong></p>
+<p>Standard protocol for audio/video over IP networks.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>?encapsulation=rtp
+</pre></div>
+</div>
+<p><strong>Use cases:</strong>
+- Standard VoIP integration
+- Compatible with most audio processing tools
+- Industry-standard protocol</p>
+<p><strong>2. SLN (Signed Linear Mono)</strong></p>
+<p>Raw audio stream without headers or padding.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>?encapsulation=sln
+</pre></div>
+</div>
+<p><strong>Use cases:</strong>
+- Minimal overhead needed
+- Simple audio processing
+- Direct PCM audio access</p>
+<p><strong>3. AudioSocket</strong></p>
+<p>Asterisk-specific protocol for simple audio streaming.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>?encapsulation=audiosocket
+</pre></div>
+</div>
+<p><strong>Use cases:</strong>
+- Asterisk integration
+- Low-overhead streaming
+- Simple audio applications</p>
+<p><strong>Codec:</strong> All formats use <strong>16-bit, 8kHz, mono</strong> audio (ulaw for RTP/SLN, PCM little-endian for AudioSocket)</p>
+</section>
+<section id="websocket-client-examples">
+<h3>WebSocket Client Examples<a class="headerlink" href="#websocket-client-examples" title="Link to this heading"></a></h3>
+<p><strong>Python Example (RTP Streaming):</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">websocket</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">struct</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">on_message</span><span class="p">(</span><span class="n">ws</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Receive audio data from the call&quot;&quot;&quot;</span>
+    <span class="c1"># message contains RTP packets</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Received </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">message</span><span class="p">)</span><span class="si">}</span><span class="s2"> bytes of audio&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Process audio here</span>
+    <span class="c1"># - Save to file</span>
+    <span class="c1"># - Run speech recognition</span>
+    <span class="c1"># - Analyze audio</span>
+    <span class="n">process_audio</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">on_open</span><span class="p">(</span><span class="n">ws</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Connection established, can start sending audio&quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Media stream connected&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Send audio to the call</span>
+    <span class="c1"># audio_data should be RTP packets</span>
+    <span class="n">audio_data</span> <span class="o">=</span> <span class="n">generate_audio</span><span class="p">()</span>
+    <span class="n">ws</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">audio_data</span><span class="p">,</span> <span class="n">opcode</span><span class="o">=</span><span class="n">websocket</span><span class="o">.</span><span class="n">ABNF</span><span class="o">.</span><span class="n">OPCODE_BINARY</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">on_error</span><span class="p">(</span><span class="n">ws</span><span class="p">,</span> <span class="n">error</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error: </span><span class="si">{</span><span class="n">error</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">on_close</span><span class="p">(</span><span class="n">ws</span><span class="p">,</span> <span class="n">close_status_code</span><span class="p">,</span> <span class="n">close_msg</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Connection closed: </span><span class="si">{</span><span class="n">close_status_code</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Connect to media stream</span>
+<span class="n">call_id</span> <span class="o">=</span> <span class="s2">&quot;652af662-eb45-11ee-b1a5-6fde165f9226&quot;</span>
+<span class="n">token</span> <span class="o">=</span> <span class="s2">&quot;&lt;YOUR_AUTH_TOKEN&gt;&quot;</span>
+<span class="n">ws_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;wss://api.voipbin.net/v1.0/calls/</span><span class="si">{</span><span class="n">call_id</span><span class="si">}</span><span class="s2">/media_stream?encapsulation=rtp&amp;token=</span><span class="si">{</span><span class="n">token</span><span class="si">}</span><span class="s2">&quot;</span>
+
+<span class="n">ws</span> <span class="o">=</span> <span class="n">websocket</span><span class="o">.</span><span class="n">WebSocketApp</span><span class="p">(</span>
+    <span class="n">ws_url</span><span class="p">,</span>
+    <span class="n">on_open</span><span class="o">=</span><span class="n">on_open</span><span class="p">,</span>
+    <span class="n">on_message</span><span class="o">=</span><span class="n">on_message</span><span class="p">,</span>
+    <span class="n">on_error</span><span class="o">=</span><span class="n">on_error</span><span class="p">,</span>
+    <span class="n">on_close</span><span class="o">=</span><span class="n">on_close</span>
+<span class="p">)</span>
+
+<span class="n">ws</span><span class="o">.</span><span class="n">run_forever</span><span class="p">()</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">process_audio</span><span class="p">(</span><span class="n">rtp_packet</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Process received RTP audio&quot;&quot;&quot;</span>
+    <span class="c1"># Extract payload from RTP packet</span>
+    <span class="c1"># RTP header is typically 12 bytes</span>
+    <span class="n">payload</span> <span class="o">=</span> <span class="n">rtp_packet</span><span class="p">[</span><span class="mi">12</span><span class="p">:]</span>
+
+    <span class="c1"># Save or process audio</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;received_audio.raw&#39;</span><span class="p">,</span> <span class="s1">&#39;ab&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_audio</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate RTP packets to send&quot;&quot;&quot;</span>
+    <span class="c1"># This is a simplified example</span>
+    <span class="c1"># In production, properly construct RTP packets</span>
+
+    <span class="c1"># Read audio file</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;audio_to_inject.raw&#39;</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">audio_data</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">160</span><span class="p">)</span>  <span class="c1"># 20ms of 8kHz audio</span>
+
+    <span class="c1"># Construct RTP header (simplified)</span>
+    <span class="c1"># In production, use a proper RTP library</span>
+    <span class="k">return</span> <span class="n">audio_data</span>
+</pre></div>
+</div>
+<p><strong>JavaScript Example (Browser):</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>const callId = &#39;652af662-eb45-11ee-b1a5-6fde165f9226&#39;;
+const token = &#39;&lt;YOUR_AUTH_TOKEN&gt;&#39;;
+const wsUrl = `wss://api.voipbin.net/v1.0/calls/${callId}/media_stream?encapsulation=rtp&amp;token=${token}`;
+
+const ws = new WebSocket(wsUrl);
+ws.binaryType = &#39;arraybuffer&#39;;
+
+ws.onopen = function() {
+    console.log(&#39;Media stream connected&#39;);
+
+    // Send audio to the call
+    const audioData = generateAudio();
+    ws.send(audioData);
+};
+
+ws.onmessage = function(event) {
+    // Receive audio from the call
+    const audioData = event.data;
+    console.log(`Received ${audioData.byteLength} bytes`);
+
+    // Process audio
+    processAudio(new Uint8Array(audioData));
+};
+
+ws.onerror = function(error) {
+    console.error(&#39;WebSocket error:&#39;, error);
+};
+
+ws.onclose = function() {
+    console.log(&#39;Media stream closed&#39;);
+};
+
+function processAudio(audioBuffer) {
+    // Process received audio
+    // - Play through Web Audio API
+    // - Run speech recognition
+    // - Visualize audio
+}
+
+function generateAudio() {
+    // Generate audio to send
+    // Returns ArrayBuffer with RTP packets
+    return new ArrayBuffer(172); // RTP packet size
+}
+</pre></div>
+</div>
+<p><strong>Node.js Example (AudioSocket):</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>const WebSocket = require(&#39;ws&#39;);
+const fs = require(&#39;fs&#39;);
+
+const callId = &#39;652af662-eb45-11ee-b1a5-6fde165f9226&#39;;
+const token = &#39;&lt;YOUR_AUTH_TOKEN&gt;&#39;;
+const wsUrl = `wss://api.voipbin.net/v1.0/calls/${callId}/media_stream?encapsulation=audiosocket&amp;token=${token}`;
+
+const ws = new WebSocket(wsUrl);
+
+ws.on(&#39;open&#39;, function() {
+    console.log(&#39;AudioSocket connected&#39;);
+
+    // Send audio file
+    const audioFile = fs.readFileSync(&#39;audio.pcm&#39;);
+
+    // Send in chunks (20ms = 320 bytes for 16-bit 8kHz mono)
+    const chunkSize = 320;
+    for (let i = 0; i &lt; audioFile.length; i += chunkSize) {
+        const chunk = audioFile.slice(i, i + chunkSize);
+        ws.send(chunk);
+    }
+});
+
+ws.on(&#39;message&#39;, function(data) {
+    // Receive audio from call
+    console.log(`Received ${data.length} bytes`);
+
+    // Save received audio
+    fs.appendFileSync(&#39;received_audio.pcm&#39;, data);
+});
+
+ws.on(&#39;error&#39;, function(error) {
+    console.error(&#39;Error:&#39;, error);
+});
+
+ws.on(&#39;close&#39;, function() {
+    console.log(&#39;AudioSocket closed&#39;);
+});
+</pre></div>
+</div>
+</section>
+<section id="uni-directional-streaming-with-flow-action">
+<h3>Uni-Directional Streaming with Flow Action<a class="headerlink" href="#uni-directional-streaming-with-flow-action" title="Link to this heading"></a></h3>
+<p>For sending audio to a call without receiving audio back, use the <code class="docutils literal notranslate"><span class="pre">external_media_start</span></code> flow action.</p>
+<p><strong>Create Call with External Media:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;source&quot;: {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;+15551234567&quot;
+        },
+        &quot;destinations&quot;: [
+            {
+                &quot;type&quot;: &quot;tel&quot;,
+                &quot;target&quot;: &quot;+15559876543&quot;
+            }
+        ],
+        &quot;actions&quot;: [
+            {
+                &quot;type&quot;: &quot;answer&quot;
+            },
+            {
+                &quot;type&quot;: &quot;external_media_start&quot;,
+                &quot;option&quot;: {
+                    &quot;url&quot;: &quot;wss://your-media-server.com/audio-stream&quot;,
+                    &quot;encapsulation&quot;: &quot;audiosocket&quot;
+                }
+            }
+        ]
+    }&#39;
+</pre></div>
+</div>
+<p>This creates a uni-directional stream where VoIPBIN:
+1. Establishes the call
+2. Connects to your media server via WebSocket
+3. Receives audio from your server
+4. Plays that audio to the call participant</p>
+<p><strong>Your media server receives:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>WebSocket connection from VoIPBIN
+→ Send audio chunks (PCM format for AudioSocket)
+→ VoIPBIN plays audio to call
+</pre></div>
+</div>
+</section>
+<section id="common-use-cases">
+<h3>Common Use Cases<a class="headerlink" href="#common-use-cases" title="Link to this heading"></a></h3>
+<p><strong>1. Real-Time Speech Recognition:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Python example</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">on_message</span><span class="p">(</span><span class="n">ws</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+    <span class="c1"># Extract audio from RTP packet</span>
+    <span class="n">audio</span> <span class="o">=</span> <span class="n">extract_audio</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+
+    <span class="c1"># Send to speech recognition API</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">speech_to_text</span><span class="p">(</span><span class="n">audio</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Recognized: </span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Store transcription</span>
+    <span class="n">save_transcription</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>2. Audio Injection / IVR Replacement:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Node.js example</span>
+<span class="n">ws</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="s1">&#39;open&#39;</span><span class="p">,</span> <span class="n">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="o">//</span> <span class="n">Play</span> <span class="n">custom</span> <span class="n">audio</span> <span class="n">prompts</span>
+    <span class="n">const</span> <span class="n">prompt1</span> <span class="o">=</span> <span class="n">fs</span><span class="o">.</span><span class="n">readFileSync</span><span class="p">(</span><span class="s1">&#39;welcome.pcm&#39;</span><span class="p">);</span>
+    <span class="n">ws</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">prompt1</span><span class="p">);</span>
+
+    <span class="o">//</span> <span class="n">Wait</span> <span class="k">for</span> <span class="n">DTMF</span> <span class="ow">or</span> <span class="n">speech</span>
+    <span class="o">//</span> <span class="n">Then</span> <span class="n">play</span> <span class="nb">next</span> <span class="n">prompt</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+<p><strong>3. Conference Recording:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Python example</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">on_message</span><span class="p">(</span><span class="n">ws</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+    <span class="c1"># Save all conference audio</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;conference_</span><span class="si">{</span><span class="n">conference_id</span><span class="si">}</span><span class="s1">.raw&#39;</span><span class="p">,</span> <span class="s1">&#39;ab&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">extract_audio</span><span class="p">(</span><span class="n">message</span><span class="p">))</span>
+</pre></div>
+</div>
+<p><strong>4. Real-Time Audio Analysis:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">on_message</span><span class="p">(</span><span class="n">ws</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+    <span class="n">audio</span> <span class="o">=</span> <span class="n">extract_audio</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+
+    <span class="c1"># Detect emotion</span>
+    <span class="n">emotion</span> <span class="o">=</span> <span class="n">analyze_emotion</span><span class="p">(</span><span class="n">audio</span><span class="p">)</span>
+
+    <span class="c1"># Detect keywords</span>
+    <span class="k">if</span> <span class="n">detect_keyword</span><span class="p">(</span><span class="n">audio</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;help&#39;</span><span class="p">,</span> <span class="s1">&#39;urgent&#39;</span><span class="p">]):</span>
+        <span class="n">alert_supervisor</span><span class="p">()</span>
+
+    <span class="c1"># Calculate audio quality</span>
+    <span class="n">quality</span> <span class="o">=</span> <span class="n">measure_quality</span><span class="p">(</span><span class="n">audio</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>5. Custom Music on Hold:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ws</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="s1">&#39;open&#39;</span><span class="p">,</span> <span class="n">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="o">//</span> <span class="n">Play</span> <span class="n">custom</span> <span class="n">music</span> <span class="ow">or</span> <span class="n">messages</span>
+    <span class="n">const</span> <span class="n">music</span> <span class="o">=</span> <span class="n">fs</span><span class="o">.</span><span class="n">readFileSync</span><span class="p">(</span><span class="s1">&#39;hold_music.pcm&#39;</span><span class="p">);</span>
+
+    <span class="o">//</span> <span class="n">Loop</span> <span class="n">music</span> <span class="k">while</span> <span class="n">call</span> <span class="ow">is</span> <span class="n">on</span> <span class="n">hold</span>
+    <span class="n">setInterval</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="n">ws</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">music</span><span class="p">);</span>
+    <span class="p">},</span> <span class="mi">1000</span><span class="p">);</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+<p><strong>6. AI-Powered Voice Assistant:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ws</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="s1">&#39;message&#39;</span><span class="p">,</span> <span class="n">function</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="p">{</span>
+    <span class="o">//</span> <span class="n">Receive</span> <span class="n">customer</span> <span class="n">audio</span>
+    <span class="n">const</span> <span class="n">audio</span> <span class="o">=</span> <span class="n">extractAudio</span><span class="p">(</span><span class="n">data</span><span class="p">);</span>
+
+    <span class="o">//</span> <span class="n">Send</span> <span class="n">to</span> <span class="n">AI</span> <span class="k">for</span> <span class="n">processing</span>
+    <span class="n">const</span> <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">aiProcess</span><span class="p">(</span><span class="n">audio</span><span class="p">);</span>
+
+    <span class="o">//</span> <span class="n">Convert</span> <span class="n">AI</span> <span class="n">response</span> <span class="n">to</span> <span class="n">audio</span>
+    <span class="n">const</span> <span class="n">responseAudio</span> <span class="o">=</span> <span class="n">textToSpeech</span><span class="p">(</span><span class="n">response</span><span class="p">);</span>
+
+    <span class="o">//</span> <span class="n">Send</span> <span class="n">back</span> <span class="n">to</span> <span class="n">call</span>
+    <span class="n">ws</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">responseAudio</span><span class="p">);</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+</section>
+<section id="audio-format-details">
+<h3>Audio Format Details<a class="headerlink" href="#audio-format-details" title="Link to this heading"></a></h3>
+<p><strong>RTP Format:</strong>
+- Codec: ulaw (G.711 μ-law)
+- Sample rate: 8 kHz
+- Bits: 16-bit
+- Channels: Mono
+- Packet size: 160 bytes payload (20ms audio)</p>
+<p><strong>SLN Format:</strong>
+- Raw PCM audio
+- No headers or padding
+- Sample rate: 8 kHz
+- Bits: 16-bit signed
+- Channels: Mono</p>
+<p><strong>AudioSocket Format:</strong>
+- PCM little-endian
+- Sample rate: 8 kHz
+- Bits: 16-bit
+- Channels: Mono
+- Chunk size: 320 bytes (20ms of audio)</p>
+</section>
+<section id="best-practices">
+<h3>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading"></a></h3>
+<p><strong>1. Buffer Management:</strong>
+- Maintain audio buffers to handle jitter
+- Send audio in consistent 20ms chunks
+- Don’t send too fast or too slow</p>
+<p><strong>2. Error Handling:</strong>
+- Implement reconnection logic
+- Handle WebSocket disconnections gracefully
+- Log errors for debugging</p>
+<p><strong>3. Audio Quality:</strong>
+- Use proper RTP packet construction
+- Maintain correct timing for audio chunks
+- Monitor for packet loss</p>
+<p><strong>4. Resource Management:</strong>
+- Close WebSocket when done
+- Don’t leave connections open indefinitely
+- Clean up audio buffers and files</p>
+<p><strong>5. Testing:</strong>
+- Test with various network conditions
+- Verify audio quality with real calls
+- Monitor latency and packet loss</p>
+<p><strong>6. Security:</strong>
+- Use WSS (secure WebSocket) in production
+- Validate authentication tokens
+- Encrypt sensitive audio data</p>
+</section>
+<section id="connection-lifecycle">
+<h3>Connection Lifecycle<a class="headerlink" href="#connection-lifecycle" title="Link to this heading"></a></h3>
+<p><strong>1. Establish Connection:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>GET /v1.0/calls/&lt;call-id&gt;/media_stream?encapsulation=rtp&amp;token=&lt;token&gt;
+</pre></div>
+</div>
+<p><strong>2. WebSocket Upgrade:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">HTTP</span><span class="o">/</span><span class="mf">1.1</span> <span class="mi">101</span> <span class="n">Switching</span> <span class="n">Protocols</span>
+<span class="n">Upgrade</span><span class="p">:</span> <span class="n">websocket</span>
+<span class="n">Connection</span><span class="p">:</span> <span class="n">Upgrade</span>
+</pre></div>
+</div>
+<p><strong>3. Bi-Directional Communication:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Client ←→ VoIPBIN
+- Send audio: Binary frames with RTP packets
+- Receive audio: Binary frames with RTP packets
+</pre></div>
+</div>
+<p><strong>4. Close Connection:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ws</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="troubleshooting">
+<h3>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h3>
+<p><strong>Common Issues:</strong></p>
+<p><strong>No audio received:</strong>
+- Check WebSocket connection is established
+- Verify call is active and answered
+- Ensure correct encapsulation type</p>
+<p><strong>Audio quality poor:</strong>
+- Check network latency
+- Verify audio format matches requirements
+- Monitor packet loss</p>
+<p><strong>Connection drops:</strong>
+- Implement reconnection logic
+- Check firewall rules for WebSocket
+- Verify authentication token is valid</p>
+<p><strong>Can’t send audio:</strong>
+- Ensure binary frames are used (not text)
+- Verify audio format is correct
+- Check audio chunk size (typically 20ms)</p>
+<p>For more information about media stream configuration, see <span class="xref std std-ref">Media Stream Overview</span>.</p>
+</section>
+</section>
 </section>
 
 </main>
@@ -246,6 +687,19 @@ See detail <a class="reference internal" href="flow_struct_action.html#flow-stru
 <li><a class="reference internal" href="#uni-directional-streaming">Uni-directional streaming</a></li>
 <li><a class="reference internal" href="#encapsulation-types">Encapsulation Types</a></li>
 <li><a class="reference internal" href="#codec">Codec</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#tutorial">Tutorial</a><ul>
+<li><a class="reference internal" href="#bi-directional-media-streaming-for-calls">Bi-Directional Media Streaming for Calls</a></li>
+<li><a class="reference internal" href="#bi-directional-media-streaming-for-conferences">Bi-Directional Media Streaming for Conferences</a></li>
+<li><a class="reference internal" href="#id1">Encapsulation Types</a></li>
+<li><a class="reference internal" href="#websocket-client-examples">WebSocket Client Examples</a></li>
+<li><a class="reference internal" href="#uni-directional-streaming-with-flow-action">Uni-Directional Streaming with Flow Action</a></li>
+<li><a class="reference internal" href="#common-use-cases">Common Use Cases</a></li>
+<li><a class="reference internal" href="#audio-format-details">Audio Format Details</a></li>
+<li><a class="reference internal" href="#best-practices">Best Practices</a></li>
+<li><a class="reference internal" href="#connection-lifecycle">Connection Lifecycle</a></li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
 </ul>
 </li>
 </ul>

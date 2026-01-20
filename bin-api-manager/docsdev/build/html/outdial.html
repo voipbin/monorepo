@@ -337,7 +337,7 @@
 <section id="get-list-of-outdials">
 <h3>Get list of outdials<a class="headerlink" href="#get-list-of-outdials" title="Link to this heading"></a></h3>
 <p>Example</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/outdials?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdXN0b21lciI6IntcImlkXCI6XCI1ZTRhMDY4MC04MDRlLTExZWMtODQ3Ny0yZmVhNTk2OGQ4NWJcIixcInVzZXJuYW1lXCI6XCJhZG1pblwiLFwibmFtZVwiOlwiYWRtaW5cIixcImRldGFpbFwiOlwiYWRtaW4gYWNjb3VudFwiLFwid2ViaG9va19tZXRob2RcIjpcIlBPU1RcIixcIndlYmhvb2tfdXJpXCI6XCJodHRwczovL2VueDM4NTN6M2pnMnEueC5waXBlZHJlYW0ubmV0L1wiLFwicGVybWlzc2lvbl9pZHNcIjpbXCIwMzc5NmUxNC03Y2I0LTExZWMtOWRiYS1lNzIwMjNlZmQxYzZcIl0sXCJ0bV9jcmVhdGVcIjpcIjIwMjItMDItMDEgMDA6MDA6MDAuMDAwMDAwXCIsXCJ0bV91cGRhdGVcIjpcIjIwMjItMDQtMTQgMDE6Mjg6NDYuNDU0ODk3XCIsXCJ0bV9kZWxldGVcIjpcIjk5OTktMDEtMDEgMDA6MDA6MDAuMDAwMDAwXCJ9IiwiZXhwIjoxNjUxNTU2OTA2fQ.hQ1WXO7Ionnw7FL9_keqZ2Np__Djm3lkIH5BJl1QSMs&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/outdials?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
     &quot;result&quot;: [
@@ -359,7 +359,7 @@
 </section>
 <section id="get-a-detail-of-outdial">
 <h3>Get a detail of outdial<a class="headerlink" href="#get-a-detail-of-outdial" title="Link to this heading"></a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">--</span><span class="n">location</span> <span class="o">--</span><span class="n">request</span> <span class="n">GET</span> <span class="s1">&#39;https://api.voipbin.net/v1.0/outdials/40bea034-1d17-474d-a5de-da00d0861c69?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdXN0b21lciI6IntcImlkXCI6XCI1ZTRhMDY4MC04MDRlLTExZWMtODQ3Ny0yZmVhNTk2OGQ4NWJcIixcInVzZXJuYW1lXCI6XCJhZG1pblwiLFwibmFtZVwiOlwiYWRtaW5cIixcImRldGFpbFwiOlwiYWRtaW4gYWNjb3VudFwiLFwid2ViaG9va19tZXRob2RcIjpcIlBPU1RcIixcIndlYmhvb2tfdXJpXCI6XCJodHRwczovL2VueDM4NTN6M2pnMnEueC5waXBlZHJlYW0ubmV0L1wiLFwicGVybWlzc2lvbl9pZHNcIjpbXCIwMzc5NmUxNC03Y2I0LTExZWMtOWRiYS1lNzIwMjNlZmQxYzZcIl0sXCJ0bV9jcmVhdGVcIjpcIjIwMjItMDItMDEgMDA6MDA6MDAuMDAwMDAwXCIsXCJ0bV91cGRhdGVcIjpcIjIwMjItMDQtMTQgMDE6Mjg6NDYuNDU0ODk3XCIsXCJ0bV9kZWxldGVcIjpcIjk5OTktMDEtMDEgMDA6MDA6MDAuMDAwMDAwXCJ9IiwiZXhwIjoxNjUxNTU2OTA2fQ.hQ1WXO7Ionnw7FL9_keqZ2Np__Djm3lkIH5BJl1QSMs&#39;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">--</span><span class="n">location</span> <span class="o">--</span><span class="n">request</span> <span class="n">GET</span> <span class="s1">&#39;https://api.voipbin.net/v1.0/outdials/40bea034-1d17-474d-a5de-da00d0861c69?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;</span>
 
 <span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;40bea034-1d17-474d-a5de-da00d0861c69&quot;</span><span class="p">,</span>
@@ -377,9 +377,9 @@
 <section id="create-a-new-outdial">
 <h3>Create a new outdial<a class="headerlink" href="#create-a-new-outdial" title="Link to this heading"></a></h3>
 <p>Example</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/outdials?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdXN0b21lciI6IntcImlkXCI6XCI1ZTRhMDY4MC04MDRlLTExZWMtODQ3Ny0yZmVhNTk2OGQ4NWJcIixcInVzZXJuYW1lXCI6XCJhZG1pblwiLFwibmFtZVwiOlwiYWRtaW5cIixcImRldGFpbFwiOlwiYWRtaW4gYWNjb3VudFwiLFwid2ViaG9va19tZXRob2RcIjpcIlBPU1RcIixcIndlYmhvb2tfdXJpXCI6XCJodHRwczovL2VueDM4NTN6M2pnMnEueC5waXBlZHJlYW0ubmV0L1wiLFwicGVybWlzc2lvbl9pZHNcIjpbXCIwMzc5NmUxNC03Y2I0LTExZWMtOWRiYS1lNzIwMjNlZmQxYzZcIl0sXCJ0bV9jcmVhdGVcIjpcIjIwMjItMDItMDEgMDA6MDA6MDAuMDAwMDAwXCIsXCJ0bV91cGRhdGVcIjpcIjIwMjItMDQtMTQgMDE6Mjg6NDYuNDU0ODk3XCIsXCJ0bV9kZWxldGVcIjpcIjk5OTktMDEtMDEgMDA6MDA6MDAuMDAwMDAwXCJ9IiwiZXhwIjoxNjUxNTU2OTA2fQ.hQ1WXO7Ionnw7FL9_keqZ2Np__Djm3lkIH5BJl1QSMs&#39; \
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/outdials?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
-    --header &#39;Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdXN0b21lciI6IntcImlkXCI6XCI1ZTRhMDY4MC04MDRlLTExZWMtODQ3Ny0yZmVhNTk2OGQ4NWJcIixcInVzZXJuYW1lXCI6XCJhZG1pblwiLFwibmFtZVwiOlwiYWRtaW5cIixcImRldGFpbFwiOlwiYWRtaW4gYWNjb3VudFwiLFwid2ViaG9va19tZXRob2RcIjpcIlBPU1RcIixcIndlYmhvb2tfdXJpXCI6XCJodHRwczovL2VueDM4NTN6M2pnMnEueC5waXBlZHJlYW0ubmV0L1wiLFwicGVybWlzc2lvbl9pZHNcIjpbXCIwMzc5NmUxNC03Y2I0LTExZWMtOWRiYS1lNzIwMjNlZmQxYzZcIl0sXCJ0bV9jcmVhdGVcIjpcIjIwMjItMDItMDEgMDA6MDA6MDAuMDAwMDAwXCIsXCJ0bV91cGRhdGVcIjpcIjIwMjItMDQtMTQgMDE6Mjg6NDYuNDU0ODk3XCIsXCJ0bV9kZWxldGVcIjpcIjk5OTktMDEtMDEgMDA6MDA6MDAuMDAwMDAwXCJ9IiwiZXhwIjoxNjUxNTU2OTA2fQ.hQ1WXO7Ionnw7FL9_keqZ2Np__Djm3lkIH5BJl1QSMs&#39; \
+    --header &#39;Cookie: token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --data-raw &#39;{
         &quot;name&quot;: &quot;test outdial&quot;,
         &quot;detail&quot;: &quot;outdial for test use.&quot;,
@@ -391,16 +391,16 @@
 <section id="create-a-new-outdialtarget">
 <h3>Create a new outdialtarget<a class="headerlink" href="#create-a-new-outdialtarget" title="Link to this heading"></a></h3>
 <p>Example</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/outdials/40bea034-1d17-474d-a5de-da00d0861c69/targets?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdXN0b21lciI6IntcImlkXCI6XCI1ZTRhMDY4MC04MDRlLTExZWMtODQ3Ny0yZmVhNTk2OGQ4NWJcIixcInVzZXJuYW1lXCI6XCJhZG1pblwiLFwibmFtZVwiOlwiYWRtaW5cIixcImRldGFpbFwiOlwiYWRtaW4gYWNjb3VudFwiLFwid2ViaG9va19tZXRob2RcIjpcIlBPU1RcIixcIndlYmhvb2tfdXJpXCI6XCJodHRwczovL2VueDM4NTN6M2pnMnEueC5waXBlZHJlYW0ubmV0L1wiLFwicGVybWlzc2lvbl9pZHNcIjpbXCIwMzc5NmUxNC03Y2I0LTExZWMtOWRiYS1lNzIwMjNlZmQxYzZcIl0sXCJ0bV9jcmVhdGVcIjpcIjIwMjItMDItMDEgMDA6MDA6MDAuMDAwMDAwXCIsXCJ0bV91cGRhdGVcIjpcIjIwMjItMDQtMTQgMDE6Mjg6NDYuNDU0ODk3XCIsXCJ0bV9kZWxldGVcIjpcIjk5OTktMDEtMDEgMDA6MDA6MDAuMDAwMDAwXCJ9IiwiZXhwIjoxNjUxNTU2OTA2fQ.hQ1WXO7Ionnw7FL9_keqZ2Np__Djm3lkIH5BJl1QSMs&#39; \
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/outdials/40bea034-1d17-474d-a5de-da00d0861c69/targets?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
-    --header &#39;Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdXN0b21lciI6IntcImlkXCI6XCI1ZTRhMDY4MC04MDRlLTExZWMtODQ3Ny0yZmVhNTk2OGQ4NWJcIixcInVzZXJuYW1lXCI6XCJhZG1pblwiLFwibmFtZVwiOlwiYWRtaW5cIixcImRldGFpbFwiOlwiYWRtaW4gYWNjb3VudFwiLFwid2ViaG9va19tZXRob2RcIjpcIlBPU1RcIixcIndlYmhvb2tfdXJpXCI6XCJodHRwczovL2VueDM4NTN6M2pnMnEueC5waXBlZHJlYW0ubmV0L1wiLFwicGVybWlzc2lvbl9pZHNcIjpbXCIwMzc5NmUxNC03Y2I0LTExZWMtOWRiYS1lNzIwMjNlZmQxYzZcIl0sXCJ0bV9jcmVhdGVcIjpcIjIwMjItMDItMDEgMDA6MDA6MDAuMDAwMDAwXCIsXCJ0bV91cGRhdGVcIjpcIjIwMjItMDQtMTQgMDE6Mjg6NDYuNDU0ODk3XCIsXCJ0bV9kZWxldGVcIjpcIjk5OTktMDEtMDEgMDA6MDA6MDAuMDAwMDAwXCJ9IiwiZXhwIjoxNjUxNTU2OTA2fQ.hQ1WXO7Ionnw7FL9_keqZ2Np__Djm3lkIH5BJl1QSMs&#39; \
+    --header &#39;Cookie: token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --data-raw &#39;{
         &quot;name&quot;: &quot;test destination 0&quot;,
         &quot;detail&quot;: &quot;test detatination 0 detail&quot;,
         &quot;data&quot;: &quot;test data&quot;,
         &quot;destination_0&quot;: {
             &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+821021656521&quot;
+            &quot;target&quot;: &quot;+15559876543&quot;
         }
     }&#39;
 
@@ -413,7 +413,7 @@
     &quot;status&quot;: &quot;idle&quot;,
     &quot;destination_0&quot;: {
         &quot;type&quot;: &quot;tel&quot;,
-        &quot;target&quot;: &quot;+821021656521&quot;,
+        &quot;target&quot;: &quot;+15559876543&quot;,
         &quot;target_name&quot;: &quot;&quot;,
         &quot;name&quot;: &quot;&quot;,
         &quot;detail&quot;: &quot;&quot;
@@ -437,7 +437,7 @@
 <section id="get-list-of-outdialtargets">
 <h3>Get list of outdialtargets<a class="headerlink" href="#get-list-of-outdialtargets" title="Link to this heading"></a></h3>
 <p>Example</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/outdials/40bea034-1d17-474d-a5de-da00d0861c69/targets?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdXN0b21lciI6IntcImlkXCI6XCI1ZTRhMDY4MC04MDRlLTExZWMtODQ3Ny0yZmVhNTk2OGQ4NWJcIixcInVzZXJuYW1lXCI6XCJhZG1pblwiLFwibmFtZVwiOlwiYWRtaW5cIixcImRldGFpbFwiOlwiYWRtaW4gYWNjb3VudFwiLFwid2ViaG9va19tZXRob2RcIjpcIlBPU1RcIixcIndlYmhvb2tfdXJpXCI6XCJodHRwczovL2VueDM4NTN6M2pnMnEueC5waXBlZHJlYW0ubmV0L1wiLFwicGVybWlzc2lvbl9pZHNcIjpbXCIwMzc5NmUxNC03Y2I0LTExZWMtOWRiYS1lNzIwMjNlZmQxYzZcIl0sXCJ0bV9jcmVhdGVcIjpcIjIwMjItMDItMDEgMDA6MDA6MDAuMDAwMDAwXCIsXCJ0bV91cGRhdGVcIjpcIjIwMjItMDQtMTQgMDE6Mjg6NDYuNDU0ODk3XCIsXCJ0bV9kZWxldGVcIjpcIjk5OTktMDEtMDEgMDA6MDA6MDAuMDAwMDAwXCJ9IiwiZXhwIjoxNjUxNTU2OTA2fQ.hQ1WXO7Ionnw7FL9_keqZ2Np__Djm3lkIH5BJl1QSMs&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/outdials/40bea034-1d17-474d-a5de-da00d0861c69/targets?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
     &quot;result&quot;: [
@@ -450,7 +450,7 @@
             &quot;status&quot;: &quot;done&quot;,
             &quot;destination_0&quot;: {
                 &quot;type&quot;: &quot;tel&quot;,
-                &quot;target&quot;: &quot;+821021656521&quot;,
+                &quot;target&quot;: &quot;+15559876543&quot;,
                 &quot;target_name&quot;: &quot;&quot;,
                 &quot;name&quot;: &quot;&quot;,
                 &quot;detail&quot;: &quot;&quot;
