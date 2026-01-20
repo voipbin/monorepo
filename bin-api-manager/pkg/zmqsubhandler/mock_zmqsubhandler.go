@@ -12,6 +12,7 @@ package zmqsubhandler
 import (
 	context "context"
 	reflect "reflect"
+	sync "sync"
 
 	websocket "github.com/gorilla/websocket"
 	gomock "go.uber.org/mock/gomock"
@@ -53,6 +54,20 @@ func (m *MockZMQSubHandler) Run(ctx context.Context, ws *websocket.Conn) error {
 func (mr *MockZMQSubHandlerMockRecorder) Run(ctx, ws any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Run", reflect.TypeOf((*MockZMQSubHandler)(nil).Run), ctx, ws)
+}
+
+// RunWithMutex mocks base method.
+func (m *MockZMQSubHandler) RunWithMutex(ctx context.Context, ws *websocket.Conn, writeMu *sync.Mutex) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RunWithMutex", ctx, ws, writeMu)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RunWithMutex indicates an expected call of RunWithMutex.
+func (mr *MockZMQSubHandlerMockRecorder) RunWithMutex(ctx, ws, writeMu any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunWithMutex", reflect.TypeOf((*MockZMQSubHandler)(nil).RunWithMutex), ctx, ws, writeMu)
 }
 
 // Subscribe mocks base method.
