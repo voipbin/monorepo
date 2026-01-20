@@ -829,7 +829,7 @@ Example
 
 Fetch Flow
 ----------
-Fetch the next flow from the existed flow.
+Fetch the next flow from the existing flow.
 
 Parameters
 ++++++++++

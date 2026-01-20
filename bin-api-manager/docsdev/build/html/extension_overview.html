@@ -163,27 +163,27 @@
 <p>Calling a registered SIP endpoint follows the same process as calling any other SIP URI. However, you will now use the Address of Record (AOR) of your registered SIP extension (endpoint).</p>
 <section id="registration-address">
 <h2>Registration address<a class="headerlink" href="#registration-address" title="Link to this heading"></a></h2>
-<p>When calling your registered SIP extension (endpoint), you should use the general SIP domain URI, omitting the Voipbin’s SIP URI. Specifically, the format to call your registered SIP extension is as follows:</p>
+<p>When calling your registered SIP extension (endpoint), you should use the general SIP domain URI, omitting the VoIPBIN’s SIP URI. Specifically, the format to call your registered SIP extension is as follows:</p>
 <p><cite>{extension}&#64;{your voipbin customer id}.registrar.voipbin.net</cite></p>
-<p>By using this format, Voipbin can route the call to your registered SIP endpoint based on the extension and domain information provided. This allows you to receive incoming calls on your SIP endpoint and handle them using your SIP-enabled system.</p>
-<p>The setup of domain, extension, and registration is crucial for integrating your SIP-based communication infrastructure with Voipbin. Once properly configured, you can seamlessly communicate with your SIP endpoint through Voipbin’s SIP services, ensuring efficient and reliable voice communication for your business or application needs. This integration empowers businesses and developers to create robust and scalable communication solutions, streamlining call handling and enhancing overall communication experiences.</p>
+<p>By using this format, VoIPBIN can route the call to your registered SIP endpoint based on the extension and domain information provided. This allows you to receive incoming calls on your SIP endpoint and handle them using your SIP-enabled system.</p>
+<p>The setup of domain, extension, and registration is crucial for integrating your SIP-based communication infrastructure with Voipbin. Once properly configured, you can seamlessly communicate with your SIP endpoint through VoIPBIN’s SIP services, ensuring efficient and reliable voice communication for your business or application needs. This integration empowers businesses and developers to create robust and scalable communication solutions, streamlining call handling and enhancing overall communication experiences.</p>
 </section>
 <section id="registration">
 <h2>Registration<a class="headerlink" href="#registration" title="Link to this heading"></a></h2>
-<p>The extension registration is the process of identifying and authenticating a user or device on a SIP network. When a device wants to make or receive calls or messages on the network, it must first register with the VoIPBin by sending a REGISTER message.</p>
-<p>This message includes information about the user or device, such as its address, phone number, and authentication credentials (e.g., username and password). The VoIPBin verifies the user’s credentials and then responds with a confirmation message, such as a 200 OK response.</p>
+<p>The extension registration is the process of identifying and authenticating a user or device on a SIP network. When a device wants to make or receive calls or messages on the network, it must first register with the VoIPBIN by sending a REGISTER message.</p>
+<p>This message includes information about the user or device, such as its address, phone number, and authentication credentials (e.g., username and password). The VoIPBIN verifies the user’s credentials and then responds with a confirmation message, such as a 200 OK response.</p>
 <p>Once the device is registered, it can make and receive calls and messages on the SIP network. SIP registration is important for ensuring secure and reliable communication between devices on the network, as well as for enabling advanced features like call forwarding, voicemail, and presence.</p>
 </section>
 <section id="proxy-authentication-required">
 <h2>407 Proxy Authentication Required<a class="headerlink" href="#proxy-authentication-required" title="Link to this heading"></a></h2>
-<p>When a user or device sends a SIP REGISTER message to a VoIPBin with basic authentication, the VoIPBin will typically respond with a 407 Proxy Authentication Required message if the user’s credentials are not valid or not provided.</p>
+<p>When a user or device sends a SIP REGISTER message to a VoIPBIN with basic authentication, the VoIPBIN will typically respond with a 407 Proxy Authentication Required message if the user’s credentials are not valid or not provided.</p>
 <p>Here is an example of this process:</p>
 <ol class="arabic simple">
-<li><p>The user or device sends a REGISTER message to the VoIPBin with its identification information.</p></li>
-<li><p>The VoIPBin checks the user’s credentials, and if they are not valid or not provided, it responds with a 407 Proxy Authentication Required message.</p></li>
+<li><p>The user or device sends a REGISTER message to the VoIPBIN with its identification information.</p></li>
+<li><p>The VoIPBIN checks the user’s credentials, and if they are not valid or not provided, it responds with a 407 Proxy Authentication Required message.</p></li>
 <li><p>The 407 response includes a “Nonce” value, which is a unique and random number used to help prevent replay attacks. The user’s device must use this “Nonce” value, along with the username, password, and other information, to create an “Authorization” header for the next REGISTER message.</p></li>
 <li><p>The user’s device sends a second REGISTER message with the Authorization header, including the “Nonce” value and other authentication information.</p></li>
-<li><p>The VoIPBin verifies the user’s credentials using the basic authentication method, and if they are valid, it sends a 200 OK response, confirming the registration.</p></li>
+<li><p>The VoIPBIN verifies the user’s credentials using the basic authentication method, and if they are valid, it sends a 200 OK response, confirming the registration.</p></li>
 </ol>
 <p>Once the user’s device is registered, it can receive calls and messages on the SIP network.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">UA</span>                                   <span class="n">VoIPBin</span>

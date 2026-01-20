@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en" data-content_root="./">
+<head>
+    <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+        <title>Backend Microservices &mdash; voipbin  documentation</title>
+    
+    <link rel="stylesheet" type="text/css" href="_static/dist/fontawesome.css" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8e8a900e" />
+      <link rel="stylesheet" type="text/css" href="_static/dist/theme.css?v=310cf088" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+            <link rel="index" title="Index" href="genindex.html" />
+            <link rel="search" title="Search" href="search.html" />
+            <link rel="top" title="voipbin  documentation" href="#" />
+    </head>
+<body>
+    <script type="text/javascript" src="_static/dist/blocking.js"></script>
+    <header class="container-fluid bg-primary">
+        <a class="btn btn-sm btn-light skip-to-content-link" href="#main">Skip to content</a>
+        <div class="container-fluid">
+            <div class="navbar navbar-expand-lg navbar-dark font-weight-bold">
+                    <a href="intro.html"
+                        title="voipbin"
+                        class="logo navbar-brand"
+                    >
+                        <img src="_static/images/voipbin-high-resolution-logo-white-transparent.png" width="45" height="80" alt="voipbin"
+                            class="logo-img"
+                        />
+                        VoIPBin Documentation
+                    </a>
+                
+                
+                    <div class="collapse navbar-collapse justify-content-end">
+                        <ul class="navbar-nav">
+                            
+                                
+                                
+                                <li class="nav-item"><a class="nav-link"  href="http://voipbin.net">Project</a></li>
+                            
+                                
+                                
+                                <li class="nav-item"><a class="nav-link"  href="https://admin.voipbin.net">Admin</a></li>
+                            
+                        </ul>
+                    </div>
+                
+                <button class="navbar-toggler btn btn-primary d-lg-none" type="button" data-toggle="collapse" data-target="#collapseSidebar" aria-expanded="false" aria-controls="collapseExample">
+                    <span class="navbar-toggler-icon"></span>
+                    <span class="sr-only">menu</span>
+                </button>
+            </div>
+        </div>
+    </header>
+    <div class="container-fluid">
+        <div class="row">
+            <aside class="col-12 col-lg-3 sidebar-container">
+                <div id="collapseSidebar" class="collapse sticky-top d-lg-block pt-5 pr-lg-4">
+<div id="searchbox" class="searchbox mb-6 px-1" role="search">
+    <form id="search-form" action="search.html" autocomplete="off" method="get" role="search">
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <div class="input-group-text border-right-0 bg-white py-3 pl-3 pr-2"><span class="fas fa-search"></span></div>
+            </div>
+            <input class="form-control py-3 pr-3 pl-1 h-100 border-left-0" type="search" name="q" placeholder="Search documentation" aria-label="Search documentation" id="searchinput" />
+        </div>
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+    </form>
+</div><div class="site-toc">
+    <nav class="toc mt-3" aria-label="Main menu">
+        <ul>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="common.html">Common</a></li>
+<li class="toctree-l1"><a class="reference internal" href="restful_api.html">RESTful API(Application Programming Interface)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sdk.html">SDK(Software Development Kit)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="accesskey.html">Accesskey</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="activeflow.html">Activeflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="call.html">Call</a></li>
+<li class="toctree-l1"><a class="reference internal" href="message.html">Message</a></li>
+<li class="toctree-l1"><a class="reference internal" href="email.html">Email</a></li>
+<li class="toctree-l1"><a class="reference internal" href="agent.html">Agent</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conference.html">Conference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mediastream.html">Mediastream</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conversation.html">Conversation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extension.html">Extension</a></li>
+<li class="toctree-l1"><a class="reference internal" href="number.html">Number</a></li>
+<li class="toctree-l1"><a class="reference internal" href="queue.html">Queue</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recording.html">Recording</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a></li>
+<li class="toctree-l1"><a class="reference internal" href="campaign.html">Campaign</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outdial.html">Outdial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outplan.html">Outplan</a></li>
+<li class="toctree-l1"><a class="reference internal" href="webhook.html">Webhook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="customer.html">Customer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chat.html">Chat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="talk.html">Talk</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ai.html">AI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="provider.html">Provider</a></li>
+<li class="toctree-l1"><a class="reference internal" href="route.html">Route</a></li>
+<li class="toctree-l1"><a class="reference internal" href="variable.html">Variable</a></li>
+<li class="toctree-l1"><a class="reference internal" href="websocket.html">Websocket</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trunk.html">Trunk</a></li>
+<li class="toctree-l1"><a class="reference internal" href="billing_account.html">Billing Account</a></li>
+<li class="toctree-l1"><a class="reference internal" href="storage.html">Storage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transcribe.html">Transcribe</a></li>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+</ul>
+
+    </nav>
+    <template data-toggle-item-template>
+        <button class="btn btn-sm btn-link toctree-expand" type="button">
+            <span class="sr-only">Toggle menu contents</span>
+        </button>
+    </template>
+</div>
+                    <div class="d-lg-none border-bottom">
+                        
+                    </div>
+                </div>
+            </aside>
+            <div class="col-12 col-lg-9 pt-5">
+                <header class="row align-items-baseline">
+                    <div class="col">
+                        <nav aria-label="breadcrumb">
+    <ol class="breadcrumb m-0 p-0 bg-transparent">
+        <li class="breadcrumb-item"><a href="index.html">Docs</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Backend Microservices</li>
+    </ol>
+</nav>
+                    </div>
+                    <div class="col-sm-12 col-lg-auto mt-3 mt-lg-3">
+                        <noscript>
+                            <p>JavaScript is required to toggle light/dark mode..</p>
+                        </noscript>
+                        <button id="wagtail-theme" class="btn btn-sm btn-light text-decoration-none" type="button">
+                            <span class="dark-only"><i class="fas fa-sun"></i> Light mode</span>
+                            <span class="light-only"><i class="fas fa-moon"></i> Dark mode</span>
+                        </button>
+    <a class="btn btn-sm btn-light text-decoration-none" href="_sources/architecture_backend.rst.txt" rel="nofollow">
+        <span class="btn-icon"><span class="fas fa-code"></span></span>
+        <span class="btn-text">View source</span>
+    </a>
+                        
+                    </div>
+                </header>
+                <div class="row" >
+                    <div class="col-12">
+                        <hr class="w-100 my-4">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 col-lg-9 order-last order-lg-first rst-content">
+                        <main role="main" id="main">
+    <section id="backend-microservices">
+<span id="architecture-backend"></span><h1>Backend Microservices<a class="headerlink" href="#backend-microservices" title="Link to this heading"></a></h1>
+<p>VoIPBIN’s backend consists of 30+ specialized Go microservices organized into functional domains. Each service owns its specific business logic and communicates with others through a message queue, enabling independent scaling, deployment, and development.</p>
+<section id="microservices-organization">
+<h2>Microservices Organization<a class="headerlink" href="#microservices-organization" title="Link to this heading"></a></h2>
+<p>Services are organized by functional domain:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>VoIPBIN Microservices Architecture
+
+┌─────────────────────────────────────────────────────────────┐
+│                   Communication Services                    │
+├─────────────────────────────────────────────────────────────┤
+│  bin-call-manager        │  Call lifecycle and routing      │
+│  bin-conference-manager  │  Conference bridge management    │
+│  bin-message-manager     │  SMS messaging (Telnyx/MsgBird)  │
+│  bin-chat-manager        │  Real-time chat                  │
+│  bin-email-manager       │  Email campaigns                 │
+│  bin-transfer-manager    │  Call transfer operations        │
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│                      AI Services                            │
+├─────────────────────────────────────────────────────────────┤
+│  bin-ai-manager          │  AI assistants and processing    │
+│  bin-transcribe-manager  │  Speech-to-text transcription    │
+│  bin-tts-manager         │  Text-to-speech synthesis        │
+│  bin-pipecat-manager     │  Real-time AI voice (Go/Python)  │
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│                    Workflow Services                        │
+├─────────────────────────────────────────────────────────────┤
+│  bin-flow-manager        │  Call flow and IVR orchestration │
+│  bin-queue-manager       │  Call queue management           │
+│  bin-campaign-manager    │  Outbound campaign automation    │
+│  bin-outdial-manager     │  Outbound dialing targets        │
+│  bin-conversation-manager│  Conversation tracking           │
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│                   Management Services                       │
+├─────────────────────────────────────────────────────────────┤
+│  bin-agent-manager       │  Agent state and presence        │
+│  bin-billing-manager     │  Usage tracking and billing      │
+│  bin-customer-manager    │  Customer and API key management │
+│  bin-webhook-manager     │  Webhook delivery                │
+│  bin-storage-manager     │  File, media, and recordings     │
+│  bin-number-manager      │  Phone number management         │
+│  bin-tag-manager         │  Customer tag management         │
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│                  Integration Services                       │
+├─────────────────────────────────────────────────────────────┤
+│  bin-talk-manager        │  Agent UI backend                │
+│  bin-hook-manager        │  External webhook gateway        │
+│  bin-sentinel-manager    │  Kubernetes pod monitoring       │
+│  bin-route-manager       │  Call routing and providers      │
+│  bin-registrar-manager   │  SIP registration management     │
+└─────────────────────────────────────────────────────────────┘
+</pre></div>
+</div>
+</section>
+<section id="service-characteristics">
+<h2>Service Characteristics<a class="headerlink" href="#service-characteristics" title="Link to this heading"></a></h2>
+<p>Each microservice follows these design principles:</p>
+<p><strong>Domain Isolation</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Service Boundary:
+
+┌────────────────────────────────────────┐
+│         bin-call-manager               │
+│                                        │
+│  ┌──────────────────────────────────┐  │
+│  │   Domain Logic (Call Handling)   │  │
+│  └──────────────────────────────────┘  │
+│                                        │
+│  ┌──────────────────────────────────┐  │
+│  │   Data Access (Call Records)     │  │
+│  └──────────────────────────────────┘  │
+│                                        │
+│  ┌──────────────────────────────────┐  │
+│  │   RPC Handlers (Message Queue)   │  │
+│  └──────────────────────────────────┘  │
+└────────────────────────────────────────┘
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>Single Responsibility</strong>: Each service owns one specific domain</p></li>
+<li><p><strong>Encapsulated Logic</strong>: Business rules contained within the service</p></li>
+<li><p><strong>Data Ownership</strong>: Service owns its database tables and schema</p></li>
+<li><p><strong>Clear Boundaries</strong>: Well-defined interfaces and APIs</p></li>
+</ul>
+<p><strong>Technology Stack</strong></p>
+<p>All backend services share a common technology stack:</p>
+<ul class="simple">
+<li><p><strong>Language</strong>: Go (Golang) 1.21+</p></li>
+<li><p><strong>HTTP Framework</strong>: Gin for REST endpoints (when needed)</p></li>
+<li><p><strong>Database</strong>: MySQL 8.0 via sqlx</p></li>
+<li><p><strong>Cache</strong>: Redis 7.0 via go-redis</p></li>
+<li><p><strong>Message Queue</strong>: RabbitMQ via bin-common-handler</p></li>
+<li><p><strong>Logging</strong>: Structured logging with logrus</p></li>
+<li><p><strong>Monitoring</strong>: Prometheus metrics</p></li>
+</ul>
+<p><strong>Common Structure</strong></p>
+<p>All services follow a consistent directory structure:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>bin-&lt;service&gt;-manager/
+├── cmd/
+│   └── &lt;service&gt;-manager/
+│       └── main.go                 # Entry point
+├── pkg/
+│   ├── &lt;domain&gt;handler/            # Business logic
+│   ├── dbhandler/                  # Database operations
+│   ├── cachehandler/               # Redis operations
+│   └── listenhandler/              # RabbitMQ RPC handlers
+├── models/
+│   └── &lt;resource&gt;/                 # Data models
+└── go.mod                          # Dependencies
+</pre></div>
+</div>
+</section>
+<section id="api-gateway-bin-api-manager">
+<h2>API Gateway - bin-api-manager<a class="headerlink" href="#api-gateway-bin-api-manager" title="Link to this heading"></a></h2>
+<p>The API Gateway serves as the single entry point for all external requests, handling authentication, authorization, and request routing to backend services.</p>
+<p><strong>Gateway Responsibilities</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>API Gateway Layer:
+
+External Clients
+(Web, Mobile, Server)
+     │
+     │ HTTPS
+     ▼
+┌────────────────────────────────────────┐
+│        bin-api-manager                 │
+│                                        │
+│  1. ┌────────────────────────────┐     │
+│     │  Authentication (JWT)      │     │
+│     └────────────────────────────┘     │
+│                                        │
+│  2. ┌─────────────────────────────┐    │
+│     │  Authorization (Permissions)│    │
+│     └─────────────────────────────┘    │
+│                                        │
+│  3. ┌────────────────────────────┐     │
+│     │  Rate Limiting / Throttling│     │
+│     └────────────────────────────┘     │
+│                                        │
+│  4. ┌────────────────────────────┐     │
+│     │  Request Routing (RabbitMQ)│     │
+│     └────────────────────────────┘     │
+│                                        │
+│  5. ┌────────────────────────────┐     │
+│     │  Response Aggregation      │     │
+│     └────────────────────────────┘     │
+└────────────────────────────────────────┘
+     │
+     │ RabbitMQ RPC
+     ▼
+Backend Services
+</pre></div>
+</div>
+<p><strong>Authentication Flow</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>JWT Authentication:
+
+Client                    API Gateway              Backend Service
+  │                            │                          │
+  │  POST /auth/login          │                          │
+  ├───────────────────────────▶│                          │
+  │  {user, pass}              │                          │
+  │                            │                          │
+  │                            │  Verify credentials      │
+  │                            │                          │
+  │  JWT Token                 │                          │
+  │◀───────────────────────────┤                          │
+  │                            │                          │
+  │                            │                          │
+  │  GET /calls?token=xyz      │                          │
+  ├───────────────────────────▶│                          │
+  │                            │  1. Validate JWT         │
+  │                            │  2. Extract customer_id  │
+  │                            │  3. Check permissions    │
+  │                            │                          │
+  │                            │  RPC: GetCalls(ctx)      │
+  │                            ├─────────────────────────▶│
+  │                            │                          │
+  │                            │  [Call List]             │
+  │                            │◀─────────────────────────┤
+  │                            │                          │
+  │  [Call List]               │  4. Return response      │
+  │◀───────────────────────────┤                          │
+  │                            │                          │
+</pre></div>
+</div>
+<p><strong>Authentication Components:</strong></p>
+<ul class="simple">
+<li><p><strong>JWT Validation</strong>: Validates token signature and expiration</p></li>
+<li><p><strong>Customer Extraction</strong>: Extracts customer_id from JWT claims</p></li>
+<li><p><strong>Permission Check</strong>: Verifies user has required permissions</p></li>
+<li><p><strong>Context Propagation</strong>: Passes auth context to backend services</p></li>
+</ul>
+<p><strong>Authorization Pattern</strong></p>
+<p>VoIPBIN implements authorization at the API Gateway, NOT in backend services:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Authorization Check:
+
+┌─────────────────────────────────────────────────────┐
+│              bin-api-manager (Gateway)              │
+│                                                     │
+│  1. Fetch Resource                                  │
+│     ├──────▶ bin-call-manager.GetCall(call_id)      │
+│     │                                               │
+│  2. Check Authorization                             │
+│     │  if call.customer_id != jwt.customer_id:      │
+│     │      return 404 (not 403, for security)       │
+│     │                                               │
+│  3. Return Resource                                 │
+│     └──────▶ return call                            │
+│                                                     │
+└─────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────┐
+│           bin-call-manager (Backend)                │
+│                                                     │
+│  • NO authentication logic                          │
+│  • NO customer_id validation                        │
+│  • Just process RPC requests                        │
+│  • Return requested data                            │
+│                                                     │
+└─────────────────────────────────────────────────────┘
+</pre></div>
+</div>
+<p><strong>Key Authorization Principles:</strong></p>
+<ul class="simple">
+<li><p><strong>Gateway-Only Auth</strong>: All authorization logic in bin-api-manager</p></li>
+<li><p><strong>Fetch-Then-Check</strong>: Fetch resource first, then verify ownership</p></li>
+<li><p><strong>Return 404, Not 403</strong>: Return “not found” for unauthorized access (security)</p></li>
+<li><p><strong>Backend Trust</strong>: Backend services trust the gateway</p></li>
+</ul>
+<p><strong>Request Routing</strong></p>
+<p>The gateway routes requests to appropriate backend services:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Routing Decision:
+
+HTTP Request          Gateway Router          Backend Service
+    │                      │                        │
+    │  GET /v1.0/calls     │                        │
+    ├─────────────────────▶│                        │
+    │                      │  Parse: &quot;calls&quot;        │
+    │                      │  → bin-call-manager    │
+    │                      │                        │
+    │                      │  RPC Request           │
+    │                      ├───────────────────────▶│
+    │                      │                        │
+    │                      │  RPC Response          │
+    │                      │◀───────────────────────┤
+    │                      │                        │
+    │  JSON Response       │                        │
+    │◀─────────────────────┤                        │
+    │                      │                        │
+</pre></div>
+</div>
+<p><strong>Routing Table:</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>HTTP Endpoint</p></th>
+<th class="head"><p>Backend Service</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>/v1.0/calls</p></td>
+<td><p>bin-call-manager</p></td>
+</tr>
+<tr class="row-odd"><td><p>/v1.0/conferences</p></td>
+<td><p>bin-conference-manager</p></td>
+</tr>
+<tr class="row-even"><td><p>/v1.0/messages</p></td>
+<td><p>bin-message-manager</p></td>
+</tr>
+<tr class="row-odd"><td><p>/v1.0/chats</p></td>
+<td><p>bin-chat-manager</p></td>
+</tr>
+<tr class="row-even"><td><p>/v1.0/emails</p></td>
+<td><p>bin-email-manager</p></td>
+</tr>
+<tr class="row-odd"><td><p>/v1.0/agents</p></td>
+<td><p>bin-agent-manager</p></td>
+</tr>
+<tr class="row-even"><td><p>/v1.0/queues</p></td>
+<td><p>bin-queue-manager</p></td>
+</tr>
+<tr class="row-odd"><td><p>/v1.0/campaigns</p></td>
+<td><p>bin-campaign-manager</p></td>
+</tr>
+<tr class="row-even"><td><p>/v1.0/outdials</p></td>
+<td><p>bin-outdial-manager</p></td>
+</tr>
+<tr class="row-odd"><td><p>/v1.0/flows</p></td>
+<td><p>bin-flow-manager</p></td>
+</tr>
+<tr class="row-even"><td><p>/v1.0/conversations</p></td>
+<td><p>bin-conversation-manager</p></td>
+</tr>
+<tr class="row-odd"><td><p>/v1.0/billings</p></td>
+<td><p>bin-billing-manager</p></td>
+</tr>
+<tr class="row-even"><td><p>/v1.0/customers</p></td>
+<td><p>bin-customer-manager</p></td>
+</tr>
+<tr class="row-odd"><td><p>/v1.0/webhooks</p></td>
+<td><p>bin-webhook-manager</p></td>
+</tr>
+<tr class="row-even"><td><p>/v1.0/transcribes</p></td>
+<td><p>bin-transcribe-manager</p></td>
+</tr>
+<tr class="row-odd"><td><p>/v1.0/numbers</p></td>
+<td><p>bin-number-manager</p></td>
+</tr>
+<tr class="row-even"><td><p>/v1.0/routes</p></td>
+<td><p>bin-route-manager</p></td>
+</tr>
+<tr class="row-odd"><td><p>/v1.0/tags</p></td>
+<td><p>bin-tag-manager</p></td>
+</tr>
+<tr class="row-even"><td><p>/v1.0/storage</p></td>
+<td><p>bin-storage-manager</p></td>
+</tr>
+<tr class="row-odd"><td><p>/v1.0/transfers</p></td>
+<td><p>bin-transfer-manager</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="special-service-architectures">
+<h2>Special Service Architectures<a class="headerlink" href="#special-service-architectures" title="Link to this heading"></a></h2>
+<p>Some services have unique architectures that differ from the standard microservice pattern:</p>
+<p><strong>bin-pipecat-manager (Hybrid Go/Python)</strong></p>
+<p>This service combines Go and Python for AI-powered voice conversations:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Hybrid Architecture:
+
+┌───────────────────────────────────────────────────────────┐
+│                  bin-pipecat-manager                       │
+│                                                            │
+│   Go Service (Port 8080)         Python Service (Port 8000)│
+│   ┌─────────────────────┐        ┌─────────────────────┐  │
+│   │ • RabbitMQ RPC      │  HTTP  │ • FastAPI server    │  │
+│   │ • WebSocket server  │◀──────▶│ • Pipecat pipelines │  │
+│   │ • Session lifecycle │        │ • STT/LLM/TTS       │  │
+│   │ • Audiosocket (RTP) │        │ • Tool execution    │  │
+│   └──────────┬──────────┘        └─────────────────────┘  │
+│              │                                             │
+└──────────────┼─────────────────────────────────────────────┘
+               │
+               │ Audiosocket (8kHz PCM)
+               ▼
+          Asterisk PBX
+
+Audio Flow:
+Asterisk (8kHz) ──audiosocket──▶ Go ──websocket/protobuf──▶ Python
+                                    ◀───────────────────────
+STT → LLM → TTS pipeline executed in Python/Pipecat
+</pre></div>
+</div>
+<p><strong>Key Features:</strong></p>
+<ul class="simple">
+<li><p><strong>Dual Runtime</strong>: Go for infrastructure, Python for AI pipelines</p></li>
+<li><p><strong>Protobuf Frames</strong>: Efficient audio frame serialization</p></li>
+<li><p><strong>Sample Rate Conversion</strong>: 8kHz (Asterisk) ↔ 16kHz (AI services)</p></li>
+<li><p><strong>Tool Calling</strong>: LLM can invoke VoIP functions (connect_call, send_email)</p></li>
+</ul>
+<p><strong>bin-sentinel-manager (Kubernetes Monitoring)</strong></p>
+<p>This service monitors pod lifecycle events in Kubernetes:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Kubernetes Monitoring:
+
+┌───────────────────────────────────────────────────────────┐
+│              Kubernetes Cluster (voip namespace)          │
+│                                                            │
+│  ┌────────────┐  ┌────────────┐  ┌────────────┐           │
+│  │ asterisk-  │  │ asterisk-  │  │ asterisk-  │           │
+│  │   call     │  │ conference │  │ registrar  │           │
+│  └──────┬─────┘  └──────┬─────┘  └──────┬─────┘           │
+│         │               │               │                  │
+│         └───────────────┴───────────────┘                  │
+│                         │                                  │
+│             Pod Events (Update/Delete)                     │
+│                         │                                  │
+│                         ▼                                  │
+│         ┌───────────────────────────────┐                  │
+│         │     bin-sentinel-manager      │                  │
+│         │                               │                  │
+│         │  • Pod informers (client-go)  │                  │
+│         │  • Label selector filtering   │                  │
+│         │  • Event publishing           │                  │
+│         └───────────────┬───────────────┘                  │
+│                         │                                  │
+└─────────────────────────┼──────────────────────────────────┘
+                          │
+                          │ RabbitMQ Events
+                          ▼
+                ┌───────────────────┐
+                │  bin-call-manager │
+                │  (SIP Recovery)   │
+                └───────────────────┘
+</pre></div>
+</div>
+<p><strong>Key Features:</strong></p>
+<ul class="simple">
+<li><p><strong>In-Cluster Monitoring</strong>: Uses Kubernetes client-go with RBAC</p></li>
+<li><p><strong>Label-Based Filtering</strong>: Watches specific pod labels (app=asterisk-<a href="#id1"><span class="problematic" id="id2">*</span></a>)</p></li>
+<li><p><strong>Event Publishing</strong>: Notifies services via RabbitMQ for recovery actions</p></li>
+<li><p><strong>Prometheus Metrics</strong>: Exports pod state change counters</p></li>
+<li><p><strong>SIP Session Recovery</strong>: Enables call-manager to recover sessions when pods crash</p></li>
+</ul>
+<p><strong>bin-hook-manager (Webhook Gateway)</strong></p>
+<p>This service receives external webhooks and routes them internally:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>External Webhook Flow:
+
+External Provider                    VoIPBIN Internal
+(Telnyx, MessageBird)                Services
+     │                                    │
+     │ HTTPS POST                         │
+     │ /v1.0/hooks/messages               │
+     ▼                                    │
+┌────────────────┐                        │
+│ bin-hook-manager│                        │
+│                │   RabbitMQ             │
+│ • Validate    ├───────────────────────▶│ bin-message-manager
+│ • Parse       │                         │ bin-email-manager
+│ • Route       │                         │ bin-conversation-manager
+└────────────────┘                        │
+</pre></div>
+</div>
+<p><strong>Key Features:</strong></p>
+<ul class="simple">
+<li><p><strong>Public Endpoint</strong>: Receives webhooks from external providers</p></li>
+<li><p><strong>Message Routing</strong>: Forwards to internal services via RabbitMQ</p></li>
+<li><p><strong>Provider Support</strong>: Handles Telnyx, MessageBird delivery notifications</p></li>
+<li><p><strong>Thin Proxy</strong>: No business logic, just routing</p></li>
+</ul>
+</section>
+<section id="service-independence">
+<h2>Service Independence<a class="headerlink" href="#service-independence" title="Link to this heading"></a></h2>
+<p>VoIPBIN’s microservices architecture enables true service independence:</p>
+<p><strong>Independent Deployment</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Service Deployment:
+
+┌──────────────┐  ┌──────────────┐  ┌──────────────┐
+│  Service A   │  │  Service B   │  │  Service C   │
+│  v1.2.3      │  │  v2.0.1      │  │  v1.5.0      │
+└──────┬───────┘  └──────┬───────┘  └──────┬───────┘
+       │                 │                 │
+       │                 │  Deploy v2.1.0  │
+       │                 │  (no impact)    │
+       │                 ▼                 │
+       │          ┌──────────────┐         │
+       │          │  Service B   │         │
+       │          │  v2.1.0      │         │
+       │          └──────────────┘         │
+       │                 │                 │
+       └─────────────────┴─────────────────┘
+                   Message Queue
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>No Downtime</strong>: Services update without affecting others</p></li>
+<li><p><strong>Version Independence</strong>: Each service has its own version</p></li>
+<li><p><strong>Gradual Rollout</strong>: Can deploy to subset of instances</p></li>
+<li><p><strong>Quick Rollback</strong>: Easy to revert problematic deployments</p></li>
+</ul>
+<p><strong>Independent Scaling</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Horizontal Scaling:
+
+Normal Load:              High Call Load:
+┌──────────┐              ┌──────────┐ ┌──────────┐ ┌──────────┐
+│   Call   │              │   Call   │ │   Call   │ │   Call   │
+│  Manager │              │ Manager  │ │ Manager  │ │ Manager  │
+│   x1     │              │   x1     │ │   x2     │ │   x3     │
+└──────────┘              └──────────┘ └──────────┘ └──────────┘
+┌──────────┐              ┌──────────┐
+│   SMS    │              │   SMS    │
+│  Manager │              │  Manager │
+│   x1     │              │   x1     │
+└──────────┘              └──────────┘
+
+Scale only what needs scaling
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>Targeted Scaling</strong>: Scale only services experiencing load</p></li>
+<li><p><strong>Cost Optimization</strong>: Don’t over-provision underutilized services</p></li>
+<li><p><strong>Auto-Scaling</strong>: Kubernetes HPA scales based on metrics</p></li>
+<li><p><strong>Resource Efficiency</strong>: Better resource utilization</p></li>
+</ul>
+<p><strong>Independent Development</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Development Isolation:
+
+Team A              Team B              Team C
+   │                   │                   │
+   │  bin-call-        │  bin-flow-        │  bin-ai-
+   │  manager          │  manager          │  manager
+   │                   │                   │
+   │  • Go codebase    │  • Go codebase    │  • Go codebase
+   │  • Own git        │  • Own git        │  • Own git
+   │    branch         │    branch         │    branch
+   │  • Own CI/CD      │  • Own CI/CD      │  • Own CI/CD
+   │  • Own tests      │  • Own tests      │  • Own tests
+   │                   │                   │
+   └───────────────────┴───────────────────┘
+          Coordinate only via:
+          • Message contracts
+          • Database schema
+          • API contracts
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>Team Autonomy</strong>: Teams work independently</p></li>
+<li><p><strong>Faster Development</strong>: No coordination bottleneck</p></li>
+<li><p><strong>Technology Flexibility</strong>: Can use different libraries</p></li>
+<li><p><strong>Clear Ownership</strong>: Each team owns specific domains</p></li>
+</ul>
+</section>
+<section id="service-communication-patterns">
+<h2>Service Communication Patterns<a class="headerlink" href="#service-communication-patterns" title="Link to this heading"></a></h2>
+<p>Services communicate primarily through RabbitMQ RPC:</p>
+<p><strong>Synchronous RPC (Request-Response)</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>RPC Communication:
+
+API Gateway                RabbitMQ              Call Manager
+     │                         │                      │
+     │  1. Call Request        │                      │
+     ├────────────────────────▶│                      │
+     │  Queue: bin-manager.    │                      │
+     │         call.request    │                      │
+     │                         │  2. Dequeue Request  │
+     │                         ├─────────────────────▶│
+     │                         │                      │
+     │                         │  3. Process Request  │
+     │                         │      (create call)   │
+     │                         │                      │
+     │                         │  4. Send Response    │
+     │                         │◀─────────────────────┤
+     │  5. Response            │                      │
+     │◀────────────────────────┤                      │
+     │                         │                      │
+</pre></div>
+</div>
+<p><strong>Asynchronous Events (Pub/Sub)</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Event Broadcasting:
+
+Call Manager          RabbitMQ Exchange        Subscribers
+     │                      │                       │
+     │  1. Call Created     │                       │
+     │  (publish event)     │                       │
+     ├─────────────────────▶│                       │
+     │                      │                       │
+     │                      │  2. Broadcast         │
+     │                      │      to all           │
+     │                      ├──────────┬────────────┤
+     │                      │          │            │
+     │                      │          ▼            ▼
+     │                      │    ┌──────────┐ ┌──────────┐
+     │                      │    │ Billing  │ │ Webhook  │
+     │                      │    │ Manager  │ │ Manager  │
+     │                      │    └──────────┘ └──────────┘
+     │                      │                       │
+     │                      │    Process event      │
+     │                      │    independently      │
+</pre></div>
+</div>
+<p><strong>Communication Patterns Used:</strong></p>
+<ul class="simple">
+<li><p><strong>RPC (Synchronous)</strong>: For request-response operations (GET, POST, DELETE)</p></li>
+<li><p><strong>Pub/Sub (Asynchronous)</strong>: For event notifications (call.created, sms.sent)</p></li>
+<li><p><strong>Webhooks</strong>: For external system notifications</p></li>
+<li><p><strong>WebSocket</strong>: For real-time client updates</p></li>
+</ul>
+</section>
+<section id="service-discovery-and-configuration">
+<h2>Service Discovery and Configuration<a class="headerlink" href="#service-discovery-and-configuration" title="Link to this heading"></a></h2>
+<p>VoIPBIN uses a hybrid approach for service discovery:</p>
+<p><strong>Queue-Based Discovery</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Service Registration:
+
+┌────────────────────────────────────────────────┐
+│            RabbitMQ Queue Naming               │
+│                                                │
+│  bin-manager.&lt;service&gt;.&lt;operation&gt;             │
+│                                                │
+│  Examples:                                     │
+│  • bin-manager.call.request                    │
+│  • bin-manager.conference.request              │
+│  • bin-manager.sms.request                     │
+│                                                │
+│  Services listen on their named queues         │
+│  Clients send to known queue names             │
+└────────────────────────────────────────────────┘
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>Convention-Based</strong>: Queue names follow predictable pattern</p></li>
+<li><p><strong>No Registry</strong>: No central service registry needed</p></li>
+<li><p><strong>Self-Registering</strong>: Services create queues on startup</p></li>
+<li><p><strong>Load Balanced</strong>: Multiple instances share same queue</p></li>
+</ul>
+<p><strong>Configuration Management</strong></p>
+<p>Services receive configuration through multiple sources:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Configuration Sources:
+
+┌────────────────┐
+│   Service      │
+└────┬───────────┘
+     │
+     ├──────▶ Environment Variables
+     │       • Database connection
+     │       • RabbitMQ address
+     │       • Redis address
+     │
+     ├──────▶ Command-Line Flags
+     │       • Port number
+     │       • Log level
+     │
+     ├──────▶ bin-config-manager
+     │       • Feature flags
+     │       • Business logic config
+     │
+     └──────▶ Database
+             • Dynamic configuration
+             • Customer-specific settings
+</pre></div>
+</div>
+</section>
+<section id="health-monitoring">
+<h2>Health Monitoring<a class="headerlink" href="#health-monitoring" title="Link to this heading"></a></h2>
+<p>All services expose health check endpoints:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Health Check Architecture:
+
+Kubernetes              Service Health          Dependencies
+     │                       │                       │
+     │  1. Health Check      │                       │
+     ├──────────────────────▶│                       │
+     │  GET /health          │                       │
+     │                       │  2. Check MySQL       │
+     │                       ├──────────────────────▶│
+     │                       │     (ping)            │
+     │                       │                       │
+     │                       │  3. Check Redis       │
+     │                       ├──────────────────────▶│
+     │                       │     (ping)            │
+     │                       │                       │
+     │                       │  4. Check RabbitMQ    │
+     │                       ├──────────────────────▶│
+     │                       │     (connection)      │
+     │                       │                       │
+     │  200 OK / 503 Error   │                       │
+     │◀──────────────────────┤                       │
+     │                       │                       │
+     │  5. Restart if failed │                       │
+     │  (after retries)      │                       │
+</pre></div>
+</div>
+<p><strong>Health Check Components:</strong></p>
+<ul class="simple">
+<li><p><strong>Liveness Probe</strong>: Is the service running?</p></li>
+<li><p><strong>Readiness Probe</strong>: Is the service ready to accept traffic?</p></li>
+<li><p><strong>Dependency Checks</strong>: Are database, cache, queue healthy?</p></li>
+<li><p><strong>Auto-Recovery</strong>: Kubernetes restarts unhealthy pods</p></li>
+</ul>
+</section>
+<section id="error-handling-and-resilience">
+<h2>Error Handling and Resilience<a class="headerlink" href="#error-handling-and-resilience" title="Link to this heading"></a></h2>
+<p>Services implement multiple resilience patterns:</p>
+<p><strong>Circuit Breaker</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Circuit Breaker States:
+
+Closed (Normal)         Open (Failed)          Half-Open (Testing)
+     │                       │                       │
+     │  Requests pass        │  Requests rejected    │  Limited requests
+     │  through              │  immediately          │  allowed
+     │                       │                       │
+     │  ───────────▶         │  ────────X            │  ───────────▶
+     │                       │                       │
+     │  If failures          │  After timeout        │  If success
+     │  exceed threshold     │  period               │  threshold met
+     │                       │                       │
+     └──────────────────────▶│                       │
+                             │◀──────────────────────┤
+                             │                       │
+                             └──────────────────────▶│
+                               If still failing      │
+                                                     │
+                                                     └──────▶ Closed
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>Prevent Cascade Failures</strong>: Stop calling failed services</p></li>
+<li><p><strong>Fast Fail</strong>: Return error immediately when circuit open</p></li>
+<li><p><strong>Auto-Recovery</strong>: Periodically test if service recovered</p></li>
+</ul>
+<p><strong>Retry with Backoff</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Exponential Backoff:
+
+Attempt 1: Immediate
+     │
+     │ Failed
+     ▼
+Attempt 2: Wait 1s
+     │
+     │ Failed
+     ▼
+Attempt 3: Wait 2s
+     │
+     │ Failed
+     ▼
+Attempt 4: Wait 4s
+     │
+     │ Failed
+     ▼
+Attempt 5: Wait 8s
+     │
+     │ Failed
+     ▼
+Give up, return error
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>Transient Failures</strong>: Retry on temporary failures</p></li>
+<li><p><strong>Backoff Strategy</strong>: Increase wait time between retries</p></li>
+<li><p><strong>Max Attempts</strong>: Limit total number of retries</p></li>
+<li><p><strong>Idempotency</strong>: Ensure operations safe to retry</p></li>
+</ul>
+<p><strong>Timeouts</strong></p>
+<p>All RPC calls have strict timeouts:</p>
+<ul class="simple">
+<li><p><strong>Default Timeout</strong>: 30 seconds for most operations</p></li>
+<li><p><strong>Long Operations</strong>: 120 seconds for complex workflows</p></li>
+<li><p><strong>Streaming</strong>: No timeout for streaming operations</p></li>
+<li><p><strong>Context Propagation</strong>: Timeout passed through call chain</p></li>
+</ul>
+</section>
+<section id="deployment-architecture">
+<h2>Deployment Architecture<a class="headerlink" href="#deployment-architecture" title="Link to this heading"></a></h2>
+<p>Services deploy to Kubernetes on Google Cloud Platform:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Kubernetes Deployment:
+
+┌─────────────────────────────────────────────────────────┐
+│                      GKE Cluster                        │
+│                                                         │
+│  ┌───────────────────────────────────────────────────┐  │
+│  │              Namespace: production                │  │
+│  │                                                   │  │
+│  │  ┌─────────────────────────────────────────────┐  │  │
+│  │  │  Deployment: bin-call-manager               │  │  │
+│  │  │  ┌─────────┐  ┌─────────┐  ┌─────────┐      │  │  │
+│  │  │  │  Pod 1  │  │  Pod 2  │  │  Pod 3  │      │  │  │
+│  │  │  └─────────┘  └─────────┘  └─────────┘      │  │  │
+│  │  │  Replicas: 3    HPA: 3-10                   │  │  │
+│  │  └─────────────────────────────────────────────┘  │  │
+│  │                                                   │  │
+│  │  ┌─────────────────────────────────────────────┐  │  │
+│  │  │  Deployment: bin-api-manager                │  │  │
+│  │  │  ┌─────────┐  ┌─────────┐  ┌─────────┐      │  │  │
+│  │  │  │  Pod 1  │  │  Pod 2  │  │  Pod 3  │      │  │  │
+│  │  │  └─────────┘  └─────────┘  └─────────┘      │  │  │
+│  │  │  Replicas: 3    HPA: 3-20                   │  │  │
+│  │  └─────────────────────────────────────────────┘  │  │
+│  │                                                   │  │
+│  │  ... 30+ more deployments                         │  │
+│  │                                                   │  │
+│  └───────────────────────────────────────────────────┘  │
+│                                                         │
+│  ┌───────────────────────────────────────────────────┐  │
+│  │         Shared Resources (same cluster)           │  │
+│  │  • MySQL StatefulSet                              │  │
+│  │  • Redis StatefulSet                              │  │
+│  │  • RabbitMQ StatefulSet                           │  │
+│  │  • Prometheus Monitoring                          │  │
+│  └───────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────┘
+</pre></div>
+</div>
+<p><strong>Deployment Characteristics:</strong></p>
+<ul class="simple">
+<li><p><strong>Container-Based</strong>: Each service runs in Docker containers</p></li>
+<li><p><strong>Replica Sets</strong>: Multiple instances for high availability</p></li>
+<li><p><strong>Auto-Scaling</strong>: HPA (Horizontal Pod Autoscaler) based on CPU/memory</p></li>
+<li><p><strong>Rolling Updates</strong>: Zero-downtime deployments</p></li>
+<li><p><strong>Resource Limits</strong>: CPU and memory limits per container</p></li>
+<li><p><strong>Health Probes</strong>: Automatic restart of failed containers</p></li>
+</ul>
+</section>
+<section id="monitoring-and-observability">
+<h2>Monitoring and Observability<a class="headerlink" href="#monitoring-and-observability" title="Link to this heading"></a></h2>
+<p>Comprehensive monitoring across all services:</p>
+<p><strong>Metrics Collection</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Metrics Pipeline:
+
+Services                Prometheus              Grafana
+(30+ services)              │                      │
+     │                      │                      │
+     │  Expose /metrics     │                      │
+     │  endpoint            │                      │
+     │                      │                      │
+     │  Scrape every 15s    │                      │
+     ├─────────────────────▶│                      │
+     │                      │                      │
+     │                      │  Time-series DB      │
+     │                      │  stores metrics      │
+     │                      │                      │
+     │                      │  Query metrics       │
+     │                      ├─────────────────────▶│
+     │                      │                      │
+     │                      │  Visualize           │
+     │                      │  dashboards          │
+     │                      │                      │
+</pre></div>
+</div>
+<p><strong>Key Metrics:</strong></p>
+<ul class="simple">
+<li><p><strong>Request Rate</strong>: Requests per second per service</p></li>
+<li><p><strong>Error Rate</strong>: Failed requests percentage</p></li>
+<li><p><strong>Latency</strong>: P50, P95, P99 response times</p></li>
+<li><p><strong>Resource Usage</strong>: CPU, memory, disk per pod</p></li>
+<li><p><strong>Queue Depth</strong>: RabbitMQ queue backlogs</p></li>
+<li><p><strong>Database Connections</strong>: Active connections per service</p></li>
+</ul>
+<p><strong>Logging</strong></p>
+<p>All services use structured logging:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-01-20T12:00:00.000Z&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;level&quot;</span><span class="p">:</span> <span class="s2">&quot;info&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;service&quot;</span><span class="p">:</span> <span class="s2">&quot;bin-call-manager&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;instance&quot;</span><span class="p">:</span> <span class="s2">&quot;pod-xyz&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Call created successfully&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;call_id&quot;</span><span class="p">:</span> <span class="s2">&quot;abc-123-def&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;customer-789&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;duration_ms&quot;</span><span class="p">:</span> <span class="mi">45</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>Structured Format</strong>: JSON logs for easy parsing</p></li>
+<li><p><strong>Centralized Collection</strong>: All logs aggregated in one place</p></li>
+<li><p><strong>Searchable</strong>: Full-text search across all services</p></li>
+<li><p><strong>Correlation IDs</strong>: Track requests across services</p></li>
+</ul>
+</section>
+<section id="best-practices">
+<h2>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading"></a></h2>
+<p>VoIPBIN’s backend follows these best practices:</p>
+<p><strong>Service Design:</strong></p>
+<ul class="simple">
+<li><p>One service, one responsibility</p></li>
+<li><p>Services communicate via messages, not direct calls</p></li>
+<li><p>Shared database, but logical isolation by tables</p></li>
+<li><p>Idempotent operations for safe retries</p></li>
+</ul>
+<p><strong>Error Handling:</strong></p>
+<ul class="simple">
+<li><p>Always return errors, never panic</p></li>
+<li><p>Use context for timeouts and cancellation</p></li>
+<li><p>Implement circuit breakers for external dependencies</p></li>
+<li><p>Log errors with full context</p></li>
+</ul>
+<p><strong>Performance:</strong></p>
+<ul class="simple">
+<li><p>Use connection pooling for database and Redis</p></li>
+<li><p>Implement caching for frequently accessed data</p></li>
+<li><p>Use batch operations where possible</p></li>
+<li><p>Monitor and optimize hot paths</p></li>
+</ul>
+<p><strong>Security:</strong></p>
+<ul class="simple">
+<li><p>No authentication logic in backend services</p></li>
+<li><p>Trust the API gateway for auth decisions</p></li>
+<li><p>Validate all inputs at service boundaries</p></li>
+<li><p>Use parameterized queries to prevent SQL injection</p></li>
+</ul>
+<p><strong>Testing:</strong></p>
+<ul class="simple">
+<li><p>Unit tests for business logic</p></li>
+<li><p>Integration tests with mock dependencies</p></li>
+<li><p>End-to-end tests for critical flows</p></li>
+<li><p>Load tests before production deployment</p></li>
+</ul>
+</section>
+</section>
+
+</main>
+                        
+                    </div>
+                    
+                    <nav class="col-12 col-lg-3 pb-4">
+                        <div class="sticky-top toc page-toc" aria-labelledby="page-toc-heading">
+                            <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
+                            <ul>
+<li><a class="reference internal" href="#">Backend Microservices</a><ul>
+<li><a class="reference internal" href="#microservices-organization">Microservices Organization</a></li>
+<li><a class="reference internal" href="#service-characteristics">Service Characteristics</a></li>
+<li><a class="reference internal" href="#api-gateway-bin-api-manager">API Gateway - bin-api-manager</a></li>
+<li><a class="reference internal" href="#special-service-architectures">Special Service Architectures</a></li>
+<li><a class="reference internal" href="#service-independence">Service Independence</a></li>
+<li><a class="reference internal" href="#service-communication-patterns">Service Communication Patterns</a></li>
+<li><a class="reference internal" href="#service-discovery-and-configuration">Service Discovery and Configuration</a></li>
+<li><a class="reference internal" href="#health-monitoring">Health Monitoring</a></li>
+<li><a class="reference internal" href="#error-handling-and-resilience">Error Handling and Resilience</a></li>
+<li><a class="reference internal" href="#deployment-architecture">Deployment Architecture</a></li>
+<li><a class="reference internal" href="#monitoring-and-observability">Monitoring and Observability</a></li>
+<li><a class="reference internal" href="#best-practices">Best Practices</a></li>
+</ul>
+</li>
+</ul>
+
+                        </div>
+                    </nav>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer class="container-fluid bg-primary text-light">
+        <div class="container">
+            <div class="row">
+        <div class="col p-4">
+            
+                <nav aria-label="Footer">
+                    <ul class="nav justify-content-center mb-2">
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="http://voipbin.net">About Us</a></li>
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="http://voipbin.net">Contact</a></li>
+                        
+                    </ul>
+                </nav>
+            
+            <div class="text-center">
+                    &copy; Copyright 2024, Sungtae Kim
+            </div>
+            <div class="text-center text-white-50 font-italic mt-3">
+                <small>
+                    Created using
+                    <a class="text-white" href="https://github.com/wagtail/sphinx_wagtail_theme" rel="nofollow" target="_blank">
+                        Sphinx Wagtail Theme 6.5.0
+                    </a>
+                    and
+                    <a class="text-white" href="https://www.sphinx-doc.org/" rel="nofollow" target="_blank">
+                        Sphinx 9.1.0
+                    </a>
+                </small>
+            </div>
+        </div>
+    </div>
+        </div>
+    </footer>
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=fd6eb6e6"></script>
+        <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+        <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="_static/copybutton.js?v=f281be69"></script>
+        <script type="text/javascript" src="_static/dist/theme.js"></script>
+        <script type="text/javascript" src="_static/dist/vendor.js"></script>
+        <script type="text/javascript" src="_static/searchtools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script type="text/javascript">
+            document.addEventListener('DOMContentLoaded', function() { Search.loadIndex("searchindex.js"); });
+        </script>
+        <script type="text/javascript" id="searchindexloader"></script>
+    </body>
+</html>

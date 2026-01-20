@@ -6,7 +6,7 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
-        <title>RTC(Real-Time Communication) &mdash; voipbin  documentation</title>
+        <title>Real-Time Communication (RTC) &mdash; voipbin  documentation</title>
     
     <link rel="stylesheet" type="text/css" href="_static/dist/fontawesome.css" />
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8e8a900e" />
@@ -130,7 +130,7 @@
                         <nav aria-label="breadcrumb">
     <ol class="breadcrumb m-0 p-0 bg-transparent">
         <li class="breadcrumb-item"><a href="index.html">Docs</a></li>
-        <li class="breadcrumb-item active" aria-current="page">RTC(Real-Time Communication)</li>
+        <li class="breadcrumb-item active" aria-current="page">Real-Time Communication (RTC)</li>
     </ol>
 </nav>
                     </div>
@@ -157,116 +157,380 @@
                 <div class="row">
                     <div class="col-12 col-lg-9 order-last order-lg-first rst-content">
                         <main role="main" id="main">
-    <section id="rtc-real-time-communication">
-<span id="architecture-rtc"></span><h1>RTC(Real-Time Communication)<a class="headerlink" href="#rtc-real-time-communication" title="Link to this heading"></a></h1>
-<section id="voip">
-<h2>VoIP<a class="headerlink" href="#voip" title="Link to this heading"></a></h2>
-<p>In voipbin, VoIP stacks are consist with Kamailio, Asterisk, RTPEngine.</p>
+    <section id="real-time-communication-rtc">
+<span id="architecture-rtc"></span><h1>Real-Time Communication (RTC)<a class="headerlink" href="#real-time-communication-rtc" title="Link to this heading"></a></h1>
+<p>VoIPBIN’s RTC architecture handles all real-time voice and video communication through a distributed stack of specialized components. The architecture separates signaling (SIP) from media (RTP) processing, enabling independent scaling and fault tolerance.</p>
+<section id="voip-stack-overview">
+<h2>VoIP Stack Overview<a class="headerlink" href="#voip-stack-overview" title="Link to this heading"></a></h2>
+<p>VoIPBIN’s VoIP stack consists of three main components working together:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>SIP Traffic Flow:
+
+External Client                                      Internal Services
+     │                                                      │
+     │ SIP (INVITE, etc.)                                   │
+     ▼                                                      ▼
+┌──────────┐         ┌──────────┐         ┌──────────────────┐
+│   Load   │  SIP    │ Kamailio │  SIP    │    Asterisk      │
+│ Balancer │◀───────▶│   Farm   │◀───────▶│     (Call)       │
+└──────────┘         └─────┬────┘         └────────┬─────────┘
+                           │                       │
+                           │ RTP Control           │ RTP Control
+                           ▼                       │
+                     ┌──────────┐                  │
+                     │ RTPEngine│                  │
+                     │   Farm   │◀─────────────────┘
+                     └─────┬────┘  Media
+                           │
+                           │ RTP (Audio/Video)
+                           ▼
+                     External Client
+</pre></div>
+</div>
 <img alt="Architecture VoIP" src="_images/architecture_rtc_voip.png" />
-<p>The Voipbin architecture utilizes a stateless Kamailio farm, ensuring high availability and fault tolerance.
-Kamailio instances are designed to operate in a stateless mode, allowing them to scale dynamically and recover seamlessly.</p>
-<p>This configuration enables zero-downtime operations, as traffic is automatically redirected to other Kamailio instances through a load balancer whenever an instance becomes unavailable.</p>
-<p>The architecture also integrates an RTPEngine farm and an Asterisk-call farm to handle SIP signaling and RTP media streams effectively.</p>
+<p><strong>Key Characteristics:</strong></p>
 <ul class="simple">
-<li><p>SIP Traffic Flow: Incoming and outgoing SIP traffic is distributed by the load balancer to the Kamailio instances. Kamailio handles the signaling and routes it to the appropriate Asterisk-call instance based on the session requirements.</p></li>
-<li><p>RTP Media Flow: Media streams (RTP) are processed by the RTPEngine farm, which works in tandem with Kamailio to manage the media paths efficiently. This separation of signaling and media handling ensures scalability and optimal performance.</p></li>
+<li><p><strong>Stateless SIP Proxies</strong>: Kamailio instances maintain no state, enabling dynamic scaling</p></li>
+<li><p><strong>Distributed Media Processing</strong>: RTPEngine handles all media transcoding and routing</p></li>
+<li><p><strong>Separated Concerns</strong>: Signaling (Kamailio) and media (RTPEngine, Asterisk) are independent</p></li>
+<li><p><strong>Zero-Downtime</strong>: Load balancer redirects traffic when instances fail</p></li>
+<li><p><strong>Horizontal Scaling</strong>: Add more instances of any component to handle increased load</p></li>
 </ul>
-<p>The accompanying diagram illustrates the end-to-end flow:</p>
-<ul class="simple">
-<li><p>Calls are initiated and routed through the load balancer to the stateless Kamailio farm.</p></li>
-<li><p>SIP signaling is processed by Kamailio and routed to the appropriate Asterisk-call instance.</p></li>
-<li><p>Media streams are directed through the RTPEngine farm to handle RTP traffic.</p></li>
-</ul>
-<p>This modular design ensures that Voipbin can provide reliable, scalable, and robust VoIP services, accommodating high traffic loads while maintaining seamless operation.</p>
+<p><strong>Traffic Flow:</strong></p>
+<ol class="arabic simple">
+<li><p><strong>SIP Signaling</strong>: Load balancer distributes SIP traffic to Kamailio instances</p></li>
+<li><p><strong>Call Routing</strong>: Kamailio routes signaling to appropriate Asterisk instance</p></li>
+<li><p><strong>Media Setup</strong>: RTPEngine handles RTP media streams and transcoding</p></li>
+<li><p><strong>Call Control</strong>: Asterisk manages call state and conference bridges</p></li>
+</ol>
+<p>This modular design ensures VoIPBIN can provide reliable, scalable VoIP services while accommodating high traffic loads.</p>
 </section>
-<section id="kamailio">
-<h2>Kamailio<a class="headerlink" href="#kamailio" title="Link to this heading"></a></h2>
-<p>The Kamailio is an open-source SIP server that provides a flexible and scalable platform for handling SIP signaling.</p>
+<section id="kamailio-sip-edge-router">
+<h2>Kamailio - SIP Edge Router<a class="headerlink" href="#kamailio-sip-edge-router" title="Link to this heading"></a></h2>
+<p>Kamailio is an open-source SIP server providing the edge routing layer for all SIP traffic.</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://www.kamailio.org/">https://www.kamailio.org/</a></p></li>
+<li><p><strong>Official Site</strong>: <a class="reference external" href="https://www.kamailio.org/">https://www.kamailio.org/</a></p></li>
 </ul>
-<p>In the voipbin, the Kamailio farm is responsible for managing SIP signaling, including call routing, registration, and authentication as the edge router.</p>
-<p>Key features of voipbin’s Kamailio include:</p>
+<p><strong>Role in VoIPBIN:</strong></p>
+<p>Kamailio acts as the stateless SIP proxy and edge router, responsible for:</p>
 <ul class="simple">
-<li><p>Load balancing: Distributing incoming SIP traffic across multiple Kamailio instances to ensure optimal performance and fault tolerance.</p></li>
-<li><p>Stateless: Operating in a stateless mode to enable dynamic scaling and seamless failover. It allowes Kamailio instances to be added or removed without affecting ongoing calls.</p></li>
+<li><p><strong>SIP Routing</strong>: Forwarding SIP messages to appropriate backend services</p></li>
+<li><p><strong>Load Distribution</strong>: Balancing traffic across Asterisk instances</p></li>
+<li><p><strong>Authentication</strong>: Validating SIP registration credentials</p></li>
+<li><p><strong>Protocol Handling</strong>: Managing SIP message parsing and routing</p></li>
 </ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Stateless Operation:
+
+Client          Kamailio-1        Kamailio-2        Asterisk
+  │                 │                 │                 │
+  │ INVITE          │                 │                 │
+  ├────────────────▶│                 │                 │
+  │                 │ Forward         │                 │
+  │                 ├──────────────────────────────────▶│
+  │                 │                 │                 │
+  │                 │                 │                 │
+  │ 200 OK          │                 │                 │
+  │◀────────────────┼───────────────────────────────────│
+  │                 │                 │                 │
+  │ ACK             │                 │                 │
+  ├──────────────────────────────────▶│                 │
+  │                 │                 │ Forward         │
+  │                 │                 ├────────────────▶│
+  │                 │                 │                 │
+
+Note: Different Kamailio instances handle different messages
+      in the same call (stateless operation)
+</pre></div>
+</div>
 <img alt="Architecture Kamailio" src="_images/architecture_rtc_kamailio.png" />
-<p>In the picture above, the Kamailio is receiving the SIP traffic from the client and forwarding it to the Asterisk. But the followed SIP messages are going to the different Kamailio instances.</p>
-</section>
-<section id="asterisk">
-<h2>Asterisk<a class="headerlink" href="#asterisk" title="Link to this heading"></a></h2>
-<p>Asterisk is an open-source communications platform that provides a wide range of telephony services, including call processing, voicemail, and conferencing.</p>
-<img alt="Architecture Asterisk" src="_images/architecture_rtc_asterisk.png" />
-<p>VoIPBIN employs three distinct Asterisk farms to optimize scalability, stability, and failover:</p>
+<p><strong>Key Features:</strong></p>
 <ul class="simple">
-<li><p>Asterisk-Call: Handles call processing, including call setup, media handling, and call termination.</p></li>
-<li><p>Asterisk-Conference: Manages conference calls, including setup, participant management, and termination.</p></li>
-<li><p>Asterisk-Registrar: Handles SIP registration, including user authentication and registration lifecycle management.</p></li>
+<li><p><strong>Load Balancing</strong>: Distributes incoming SIP traffic across multiple instances</p></li>
+<li><p><strong>Stateless Operation</strong>: No state maintained, enabling dynamic scaling and failover</p></li>
+<li><p><strong>High Availability</strong>: Instances can be added or removed without affecting ongoing calls</p></li>
+<li><p><strong>Fast Performance</strong>: C-based implementation with minimal overhead</p></li>
 </ul>
-<p>Each Asterisk farm operates independently to ensure modularity, allowing for targeted scaling and fault isolation. However, Asterisk-Call and Asterisk-Conference communicate when bridging calls into a conference session.</p>
-</section>
-<section id="rtpengine">
-<h2>RTPEngine<a class="headerlink" href="#rtpengine" title="Link to this heading"></a></h2>
-<p>The RTPEngine is an open-source media proxy that provides real-time transport protocol (RTP) processing and media handling capabilities.</p>
-<img alt="Architecture RTPEngine" src="_images/architecture_rtc_rtpengine.png" />
-<p>In the voipbin, RTPEngine farm is responsible for codec edge server. All transcoding and media handling are done by the RTPEngine.
-For internal, the voipbin uses ulaw codec only. But for external, it can be changed to other codecs. The RTPEngine is responsible for transcoding the codec for internal and external.</p>
-</section>
-<section id="conference">
-<h2>Conference<a class="headerlink" href="#conference" title="Link to this heading"></a></h2>
-<p>In Voipbin, conference functionality is powered by the Asterisk-Conference component.</p>
-<img alt="Architecture Conference" src="_images/architecture_rtc_conference.png" />
-<p>VoIPbin leverages a dedicated Asterisk-Conference component for handling conference calls. This approach offers several advantages:</p>
+<p><strong>Stateless Benefits:</strong></p>
+<p>In the diagram above, Kamailio receives initial SIP traffic from the client and forwards it to Asterisk. However, subsequent SIP messages in the same call may go to different Kamailio instances. This stateless design allows for:</p>
 <ul class="simple">
-<li><p>Isolation and Scalability: By separating conference handling from general call processing (handled by Asterisk-Call components), VoIPbin ensures stable and scalable conference services. This isolation minimizes the impact of conference-related issues on other call flows.</p></li>
-<li><p>Flexibility: The Asterisk-Conference component can be independently scaled and optimized based on conference usage patterns.</p></li>
-<li><p>Centralized Management: All conference-related operations, including creation, management, and termination, are managed centrally by the Asterisk-Conference component.</p></li>
+<li><p>Instant failover without session loss</p></li>
+<li><p>Dynamic scaling without coordination</p></li>
+<li><p>Simplified operations and deployment</p></li>
+</ul>
+</section>
+<section id="asterisk-media-and-call-processing">
+<h2>Asterisk - Media and Call Processing<a class="headerlink" href="#asterisk-media-and-call-processing" title="Link to this heading"></a></h2>
+<p>Asterisk is an open-source communications platform providing comprehensive telephony services.</p>
+<img alt="Architecture Asterisk" src="_images/architecture_rtc_asterisk.png" />
+<p><strong>VoIPBIN’s Three Asterisk Farms:</strong></p>
+<p>VoIPBIN employs three specialized Asterisk farms for optimized scalability and fault isolation:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Asterisk Farm Architecture:
+
+┌─────────────────────────────────────────────────────────┐
+│                  Kamailio Farm                          │
+└──────┬─────────────────────────────────────┬────────────┘
+       │                                     │
+       │ All Calls                           │ Registrations
+       ▼                 Conferences         ▼
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│  Asterisk   │    │  Asterisk   │    │  Asterisk   │
+│    Call     │    │ Conference  │    │  Registrar  │
+│   Farm      │    │    Farm     │    │    Farm     │
+│             │───▶│             │    │             │
+│ • 1:1 calls │    │ • N-way     │    │ • SIP       │
+│ • Call      │    │   conference│    │   REGISTER  │
+│   bridging  │    │ • Mixing    │    │ • Auth      │
+│ • Transfers │    │ • Recording │    │ • Presence  │
+└─────────────┘    └─────────────┘    └─────────────┘
+</pre></div>
+</div>
+<p><strong>1. Asterisk-Call Farm</strong></p>
+<p>Handles 1:1 call processing:</p>
+<ul class="simple">
+<li><p>Call setup and teardown</p></li>
+<li><p>Media bridging between two parties</p></li>
+<li><p>Call transfers and forwarding</p></li>
+<li><p>DTMF processing</p></li>
+<li><p>Call recording</p></li>
+</ul>
+<p><strong>2. Asterisk-Conference Farm</strong></p>
+<p>Manages multi-party conference calls:</p>
+<ul class="simple">
+<li><p>Conference bridge creation and management</p></li>
+<li><p>Participant mixing (up to hundreds of participants)</p></li>
+<li><p>Conference recording</p></li>
+<li><p>Participant management (mute, kick, etc.)</p></li>
+<li><p>Audio/video conferencing</p></li>
+</ul>
+<p><strong>3. Asterisk-Registrar Farm</strong></p>
+<p>Handles SIP registration:</p>
+<ul class="simple">
+<li><p>User authentication</p></li>
+<li><p>Registration lifecycle management</p></li>
+<li><p>Presence information</p></li>
+<li><p>Contact database</p></li>
+</ul>
+<p><strong>Farm Benefits:</strong></p>
+<ul class="simple">
+<li><p><strong>Independent Scaling</strong>: Scale each farm based on specific load patterns</p></li>
+<li><p><strong>Fault Isolation</strong>: Issues in one farm don’t affect others</p></li>
+<li><p><strong>Optimized Configuration</strong>: Each farm can be tuned for its specific workload</p></li>
+<li><p><strong>Targeted Upgrades</strong>: Update farms independently without full system downtime</p></li>
+</ul>
+<p><strong>Inter-Farm Communication:</strong></p>
+<p>While farms operate independently, Asterisk-Call and Asterisk-Conference communicate when bridging calls into conference sessions, enabling seamless transitions from 1:1 calls to conferences.</p>
+</section>
+<section id="rtpengine-media-proxy-and-transcoding">
+<h2>RTPEngine - Media Proxy and Transcoding<a class="headerlink" href="#rtpengine-media-proxy-and-transcoding" title="Link to this heading"></a></h2>
+<p>RTPEngine is an open-source media proxy providing RTP processing and transcoding capabilities.</p>
+<img alt="Architecture RTPEngine" src="_images/architecture_rtc_rtpengine.png" />
+<p><strong>Role in VoIPBIN:</strong></p>
+<p>RTPEngine serves as the codec edge server and media proxy:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Codec Transcoding:
+
+External Client                      VoIPBIN Internal
+(Various Codecs)                     (ulaw only)
+     │                                     │
+     │ RTP (G.722, Opus, etc.)             │
+     ▼                                     ▼
+┌─────────────────────────────────────────────┐
+│            RTPEngine Farm                   │
+│                                             │
+│  • Transcode external → ulaw (internal)     │
+│  • Transcode ulaw (internal) → external     │
+│  • NAT traversal                            │
+│  • Packet switching                         │
+│  • SRTP/RTP conversion                      │
+└──────────────────┬──────────────────────────┘
+                   │
+                   │ RTP (ulaw)
+                   ▼
+               Asterisk Farm
+</pre></div>
+</div>
+<p><strong>Responsibilities:</strong></p>
+<ul class="simple">
+<li><p><strong>Codec Transcoding</strong>: Convert between external codecs and internal ulaw</p></li>
+<li><p><strong>NAT Traversal</strong>: Handle media through NAT and firewalls</p></li>
+<li><p><strong>SRTP Support</strong>: Encrypt/decrypt media streams</p></li>
+<li><p><strong>Packet Routing</strong>: Efficient RTP packet switching</p></li>
+<li><p><strong>Load Distribution</strong>: Distribute media processing across instances</p></li>
+</ul>
+<p><strong>Internal Codec Strategy:</strong></p>
+<ul class="simple">
+<li><p><strong>Internal</strong>: VoIPBIN uses ulaw codec exclusively for all internal communication</p></li>
+<li><p><strong>External</strong>: Clients can use any supported codec (G.711, G.722, Opus, etc.)</p></li>
+<li><p><strong>Edge Transcoding</strong>: RTPEngine performs all transcoding at the edge</p></li>
+<li><p><strong>Performance</strong>: Internal ulaw ensures minimal CPU overhead for media processing</p></li>
+</ul>
+<p>This edge transcoding strategy ensures optimal internal performance while supporting diverse client codecs.</p>
+</section>
+<section id="conference-architecture">
+<h2>Conference Architecture<a class="headerlink" href="#conference-architecture" title="Link to this heading"></a></h2>
+<p>VoIPBIN’s conference functionality is powered by the dedicated Asterisk-Conference farm.</p>
+<img alt="Architecture Conference" src="_images/architecture_rtc_conference.png" />
+<p><strong>Conference Design:</strong></p>
+<p>VoIPBIN leverages a dedicated Asterisk-Conference component for all conference calls:</p>
+<p><strong>Advantages:</strong></p>
+<ul class="simple">
+<li><p><strong>Isolation and Scalability</strong>: Conference processing separated from regular calls ensures stable service</p></li>
+<li><p><strong>Independent Scaling</strong>: Conference farm scales based on conferencing usage patterns</p></li>
+<li><p><strong>Centralized Management</strong>: All conference operations managed in one place</p></li>
+<li><p><strong>Fault Isolation</strong>: Conference issues don’t impact regular call processing</p></li>
 </ul>
 <section id="conference-flow">
 <h3>Conference Flow<a class="headerlink" href="#conference-flow" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Conference Lifecycle:
+
+Flow Manager       Asterisk-Conf      Conference Bridge
+     │                  │                    │
+     │ 1. Create Conf   │                    │
+     ├─────────────────▶│                    │
+     │                  │ 2. Create Bridge   │
+     │                  ├───────────────────▶│
+     │                  │                    │
+     │ 3. Add Part. 1   │                    │
+     ├─────────────────▶│ 4. Join Bridge     │
+     │                  ├───────────────────▶│
+     │                  │                    │
+     │ 5. Add Part. 2   │                    │
+     ├─────────────────▶│ 6. Join Bridge     │
+     │                  ├───────────────────▶│
+     │                  │                    │
+     │                  │  [Audio Mixing]    │
+     │                  │◀──────────────────▶│
+     │                  │                    │
+     │ 7. End Conf      │                    │
+     ├─────────────────▶│ 8. Destroy Bridge  │
+     │                  ├───────────────────▶│
+     │                  │                    │
+</pre></div>
+</div>
+<p><strong>Conference Steps:</strong></p>
+<ol class="arabic simple">
+<li><p><strong>Call Initiation</strong>: Flow Manager requests conference creation (via “connect” or “conference_join” action)</p></li>
+<li><p><strong>Conference Establishment</strong>: Asterisk-Conference creates dedicated bridge for participants</p></li>
+<li><p><strong>Participant Joining</strong>: Participants added to bridge sequentially or simultaneously</p></li>
+<li><p><strong>Conference Interaction</strong>: Participants communicate with voice/video, screen sharing, etc.</p></li>
+<li><p><strong>Conference Termination</strong>: Bridge destroyed when conference ends or all participants leave</p></li>
+</ol>
+<p><strong>Conference Features:</strong></p>
 <ul class="simple">
-<li><p>Call Initiation: When a call flow requires a conference (e.g., through “connect” or “conference_join” actions), the Flow Manager initiates a new call to the designated Asterisk-Conference component.</p></li>
-<li><p>Conference Establishment: The Asterisk-Conference component establishes a dedicated bridge for the conference participants.</p></li>
-<li><p>Participant Joining: Participants are added to the conference bridge, either simultaneously or sequentially, as determined by the call flow.</p></li>
-<li><p>Conference Interaction: Participants can interact within the conference, including voice and video communication, screen sharing (if enabled), and other conference-specific features.</p></li>
-<li><p>Conference Termination: When the conference ends (e.g., all participants leave, or the conference is explicitly terminated), the Asterisk-Conference component releases resources and cleans up the conference bridge.</p></li>
+<li><p>Audio and video mixing</p></li>
+<li><p>Recording capabilities</p></li>
+<li><p>Dynamic participant management</p></li>
+<li><p>Mute/unmute controls</p></li>
+<li><p>Moderator capabilities</p></li>
+<li><p>Entry/exit tones</p></li>
 </ul>
 </section>
-<section id="calls-as-a-special-case-of-conferencing">
-<h3>1:1 Calls as a Special Case of Conferencing<a class="headerlink" href="#calls-as-a-special-case-of-conferencing" title="Link to this heading"></a></h3>
-<p>VoIPbin considers 1:1 calls as a special case of conferencing with only two participants.
-This approach provides a consistent and unified framework for handling both 1:1 calls and multi-party conferences within the system.</p>
-<p>This kind of approach gives these advantages.</p>
+<section id="calls-as-conferences">
+<h3>1:1 Calls as Conferences<a class="headerlink" href="#calls-as-conferences" title="Link to this heading"></a></h3>
+<p>VoIPBIN treats 1:1 calls as special cases of conferencing with only two participants:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1:1 Call = Conference with 2 Participants
+
+┌──────────────┐         ┌──────────────┐
+│ Participant A│         │ Participant B│
+└──────┬───────┘         └──────┬───────┘
+       │                        │
+       │    Conference Bridge   │
+       │    (2 participants)    │
+       └───────────┬────────────┘
+                   │
+              Asterisk-Call
+              (manages bridge)
+</pre></div>
+</div>
+<p><strong>Benefits of Unified Approach:</strong></p>
 <ul class="simple">
-<li><p>Simplified Development and Maintenance: By treating 1:1 calls as conferences, VoIPbin can leverage the same underlying infrastructure and logic for both scenarios, simplifying development and maintenance.</p></li>
-<li><p>Enhanced Flexibility: This approach allows for seamless transitions between 1:1 calls and multi-party conferences, enabling dynamic changes to call scenarios as needed.</p></li>
-<li><p>Improved Resource Utilization: By utilizing the same conference infrastructure for both 1:1 calls and multi-party conferences, VoIPbin can optimize resource allocation and improve overall system efficiency.</p></li>
+<li><p><strong>Simplified Development</strong>: Same infrastructure for 1:1 calls and conferences</p></li>
+<li><p><strong>Enhanced Flexibility</strong>: Seamless transitions from 1:1 to multi-party conferences</p></li>
+<li><p><strong>Improved Resource Utilization</strong>: Optimized resource allocation across all call types</p></li>
+<li><p><strong>Consistent Features</strong>: Same feature set available for all call types</p></li>
+<li><p><strong>Easier Maintenance</strong>: Single codebase for all call scenarios</p></li>
 </ul>
+<p><strong>Example Transition:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1:1 Call → Multi-Party Conference:
+
+Initial State:         Add 3rd Party:          Result:
+┌─────┐  ┌─────┐      ┌─────┐  ┌─────┐      ┌─────┐  ┌─────┐
+│  A  │──│  B  │      │  A  │──│  B  │      │  A  │──│  B  │
+└─────┘  └─────┘      └─────┘  └─────┘      └─────┘  └─────┘
+                             │                     │
+                             │                     │
+                             ▼                     ▼
+                          ┌─────┐               ┌─────┐
+                          │  C  │               │  C  │
+                          └─────┘               └─────┘
+
+2-participant bridge   Add participant      3-participant bridge
+(1:1 call)            without disruption    (conference)
+</pre></div>
+</div>
 </section>
 </section>
 <section id="sip-session-recovery">
 <h2>SIP Session Recovery<a class="headerlink" href="#sip-session-recovery" title="Link to this heading"></a></h2>
-<p>VoIPBin provides <strong>SIP session recovery</strong> to maintain active SIP sessions even when an Asterisk instance crashes unexpectedly. This feature prevents issues such as call drops, abrupt conference exits, and media channel failures by making the client perceive the session as uninterrupted.</p>
+<p>VoIPBIN provides <strong>SIP session recovery</strong> to maintain active SIP sessions even when an Asterisk instance crashes unexpectedly. This feature prevents call drops, conference exits, and media failures by making the client perceive the session as uninterrupted.</p>
 <div class="video_wrapper" style="">
 <iframe allowfullscreen="true" src="https://www.youtube.com/embed/GMd-pOwyrtA" style="border: 0; height: 345px; width: 560px">
 </iframe></div><section id="how-it-works">
 <h3>How It Works<a class="headerlink" href="#how-it-works" title="Link to this heading"></a></h3>
-<p>When an Asterisk instance crashes, all SIP sessions managed by that instance disappear immediately. Normally, because there is no BYE message, clients experience unexpected call termination. VoIPBin recovers sessions through the following steps:</p>
+<p>When an Asterisk instance crashes, all SIP sessions managed by that instance disappear immediately. Without a BYE message, clients experience unexpected termination. VoIPBIN recovers sessions through an automated process:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Session Recovery Flow:
+
+Asterisk-1     Client       Sentinel    Call-manager  HOMER DB    Asterisk-2
+    │             │             │              │         │            │
+    │   Active    │             │              │         │            │
+    │   Session   │             │              │         │            │
+    │◀───────────▶│             │              │         │            │
+    │             │             │              │         │            │
+    X  CRASH      │             │              │         │            │
+                  │             │              │         │            │
+                  │          Detect Crash      │         │            │
+                  │             │              |         │            │
+                  │     Publish Crash event    |         │            │
+                  │             │─────────────▶|         │            │
+                  │                       Query Sessions │            │
+                  │                      Get SIP Headers │            │
+                  │                            |◀────────│            │
+                  │                            |                      │
+                  │                   Create Channels                 │
+                  │                            |─────────────────────▶│
+                  │                                                   │
+                  │                                                   │
+                  │                                                   │
+                  │          Send Recovery INVITE                     │
+                  │◀──────────────────────────────────────────────────│
+                  │                                                   │
+                  │   200 OK (same Call-ID)                           │
+                  ├──────────────────────────────────────────────────▶│
+                  │                                                   │
+        Session   │                                                   │
+       Recovered  │                                                   │
+                  │◀─────────────────────────────────────────────────▶│
+</pre></div>
+</div>
 <img alt="SIP Session Recovery Flow" src="_images/architecture_rtc_sip_session_recovery_flow.png" />
 </section>
 <section id="detailed-steps">
 <h3>Detailed Steps<a class="headerlink" href="#detailed-steps" title="Link to this heading"></a></h3>
-<p>1. <strong>Crash Detection</strong>
-The <cite>sentinel-manager</cite> quickly detects the abnormal termination of an Asterisk instance.</p>
-<p>2. <strong>Session Lookup</strong>
-The internal database is queried to retrieve all sessions handled by the failed instance.</p>
-<p>3. <strong>SIP Field Collection (via HOMER)</strong>
-The HOMER API is used to obtain SIP header information such as Call-ID, From/To headers, Routes, etc.</p>
-<p>4. <strong>Create SIP Channels on Another Asterisk</strong>
-A healthy Asterisk instance is selected, and new SIP channels are created with the same SIP information as the original sessions.</p>
-<p>5. <strong>Set Recovery Channel Variables</strong>
-The following channel variables are set to ensure the new INVITE is recognized as a continuation of the original session:</p>
+<p><strong>1. Crash Detection</strong></p>
+<p>The <cite>sentinel-manager</cite> quickly detects abnormal termination of an Asterisk instance.</p>
+<p><strong>2. Session Lookup</strong></p>
+<p>The internal database is queried to retrieve all active sessions from the failed instance.</p>
+<p><strong>3. SIP Field Collection (via HOMER)</strong></p>
+<p>The HOMER SIP capture API provides SIP header information:</p>
+<ul class="simple">
+<li><p>Call-ID</p></li>
+<li><p>From/To headers and tags</p></li>
+<li><p>Route headers</p></li>
+<li><p>CSeq values</p></li>
+<li><p>Other SIP state information</p></li>
+</ul>
+<p><strong>4. Create SIP Channels on Another Asterisk</strong></p>
+<p>A healthy Asterisk instance is selected and new SIP channels are created with original session information.</p>
+<p><strong>5. Set Recovery Channel Variables</strong></p>
+<p>Channel variables are set to ensure the new INVITE appears as continuation:</p>
 <ul class="simple">
 <li><p>PJSIP_RECOVERY_FROM_DISPLAY</p></li>
 <li><p>PJSIP_RECOVERY_FROM_URI</p></li>
@@ -274,23 +538,28 @@ The following channel variables are set to ensure the new INVITE is recognized a
 <li><p>PJSIP_RECOVERY_TO_DISPLAY</p></li>
 <li><p>PJSIP_RECOVERY_TO_URI</p></li>
 <li><p>PJSIP_RECOVERY_TO_TAG</p></li>
-<li><p>Call-ID, CSeq, Routes, and other SIP headers are similarly restored.</p></li>
+<li><p>Call-ID, CSeq, Routes (preserved from original session)</p></li>
 </ul>
-<p>6. <strong>Send Recovery INVITE</strong>
-The INVITE reuses the original Call-ID and tags, so the client interprets it as a re-INVITE and maintains the session.</p>
-<p>7. <strong>Restore RTP and SIP Sessions</strong>
-Signaling and media are fully re-established, restoring the call to its previous state.</p>
-<p>8. <strong>Resume Flow Execution</strong>
-The recovered session resumes Flow execution from just before the crash:
-- If the user was on a call with another party, the conversation continues without interruption.
-- If the user was in a conference, they are reconnected to the same conference bridge.</p>
+<p><strong>6. Send Recovery INVITE</strong></p>
+<p>The INVITE reuses the original Call-ID and tags, so the client interprets it as a re-INVITE within the existing session.</p>
+<p><strong>7. Restore RTP and SIP Sessions</strong></p>
+<p>Signaling and media are fully re-established, restoring the call to its previous state.</p>
+<p><strong>8. Resume Flow Execution</strong></p>
+<p>The recovered session resumes Flow execution from before the crash:</p>
+<ul class="simple">
+<li><p><strong>Active Calls</strong>: Conversation continues without interruption</p></li>
+<li><p><strong>Conferences</strong>: User reconnected to same conference bridge</p></li>
+<li><p><strong>Call State</strong>: All call variables and state restored</p></li>
+</ul>
 </section>
 <section id="asterisk-patch-for-recovery">
 <h3>Asterisk Patch for Recovery<a class="headerlink" href="#asterisk-patch-for-recovery" title="Link to this heading"></a></h3>
-<p>To support this functionality, VoIPBin patches Asterisk’s PJSIP stack to override SIP header fields based on channel variables:</p>
-<img alt="SIP Session Recovery Flow" src="_images/architecture_rtc_sip_session_recovery_diagram.png" />
-<p>This patch allows a newly created SIP channel to impersonate the original one, making the recovery INVITE appear as a legitimate continuation of the previous session.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">val_from_display_c_str</span> <span class="o">=</span> <span class="n">pbx_builtin_getvar_helper</span><span class="p">(</span><span class="n">session</span><span class="o">-&gt;</span><span class="n">channel</span><span class="p">,</span> <span class="s2">&quot;PJSIP_RECOVERY_FROM_DISPLAY&quot;</span><span class="p">);</span>
+<p>VoIPBIN patches Asterisk’s PJSIP stack to override SIP header fields based on channel variables:</p>
+<img alt="SIP Session Recovery Diagram" src="_images/architecture_rtc_sip_session_recovery_diagram.png" />
+<p><strong>Patch Implementation:</strong></p>
+<p>This patch allows a newly created SIP channel to impersonate the original one, making the recovery INVITE appear as a legitimate continuation:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">Extract</span> <span class="n">recovery</span> <span class="n">variables</span> <span class="kn">from</span><span class="w"> </span><span class="nn">channel</span>
+<span class="n">val_from_display_c_str</span> <span class="o">=</span> <span class="n">pbx_builtin_getvar_helper</span><span class="p">(</span><span class="n">session</span><span class="o">-&gt;</span><span class="n">channel</span><span class="p">,</span> <span class="s2">&quot;PJSIP_RECOVERY_FROM_DISPLAY&quot;</span><span class="p">);</span>
 <span class="n">val_from_uri_c_str</span>     <span class="o">=</span> <span class="n">pbx_builtin_getvar_helper</span><span class="p">(</span><span class="n">session</span><span class="o">-&gt;</span><span class="n">channel</span><span class="p">,</span> <span class="s2">&quot;PJSIP_RECOVERY_FROM_URI&quot;</span><span class="p">);</span>
 <span class="n">val_from_tag_c_str</span>     <span class="o">=</span> <span class="n">pbx_builtin_getvar_helper</span><span class="p">(</span><span class="n">session</span><span class="o">-&gt;</span><span class="n">channel</span><span class="p">,</span> <span class="s2">&quot;PJSIP_RECOVERY_FROM_TAG&quot;</span><span class="p">);</span>
 
@@ -298,12 +567,21 @@ The recovered session resumes Flow execution from just before the crash:
 <span class="n">val_to_uri_c_str</span>       <span class="o">=</span> <span class="n">pbx_builtin_getvar_helper</span><span class="p">(</span><span class="n">session</span><span class="o">-&gt;</span><span class="n">channel</span><span class="p">,</span> <span class="s2">&quot;PJSIP_RECOVERY_TO_URI&quot;</span><span class="p">);</span>
 <span class="n">val_to_tag_c_str</span>       <span class="o">=</span> <span class="n">pbx_builtin_getvar_helper</span><span class="p">(</span><span class="n">session</span><span class="o">-&gt;</span><span class="n">channel</span><span class="p">,</span> <span class="s2">&quot;PJSIP_RECOVERY_TO_TAG&quot;</span><span class="p">);</span>
 
-<span class="o">//</span> <span class="n">Call</span><span class="o">-</span><span class="n">ID</span><span class="p">,</span> <span class="n">CSeq</span><span class="p">,</span> <span class="n">Routes</span><span class="p">,</span> <span class="ow">and</span> <span class="n">others</span> <span class="n">are</span> <span class="n">handled</span> <span class="n">similarly</span>
+<span class="o">//</span> <span class="n">Call</span><span class="o">-</span><span class="n">ID</span><span class="p">,</span> <span class="n">CSeq</span><span class="p">,</span> <span class="n">Routes</span><span class="p">,</span> <span class="ow">and</span> <span class="n">other</span> <span class="n">headers</span> <span class="n">are</span> <span class="n">handled</span> <span class="n">similarly</span>
+<span class="o">//</span> <span class="n">Override</span> <span class="n">PJSIP</span> <span class="n">headers</span> <span class="k">with</span> <span class="n">recovery</span> <span class="n">values</span>
 </pre></div>
 </div>
-<p>The full patch is available on GitHub:</p>
+<p><strong>Full Patch:</strong></p>
+<p>The complete implementation is available on GitHub:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/voipbin/etc/blob/main/asterisk/add_pjsip_recovery.patch">https://github.com/voipbin/etc/blob/main/asterisk/add_pjsip_recovery.patch</a></p></li>
+</ul>
+<p><strong>Recovery Guarantees:</strong></p>
+<ul class="simple">
+<li><p><strong>Transparent to Client</strong>: Client sees normal re-INVITE, no indication of crash</p></li>
+<li><p><strong>State Preservation</strong>: All call state and variables restored</p></li>
+<li><p><strong>Media Continuity</strong>: Audio/video streams resume without gaps</p></li>
+<li><p><strong>Flow Continuity</strong>: Call flow resumes at exact point before crash</p></li>
 </ul>
 </section>
 </section>
@@ -317,14 +595,14 @@ The recovered session resumes Flow execution from just before the crash:
                         <div class="sticky-top toc page-toc" aria-labelledby="page-toc-heading">
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
-<li><a class="reference internal" href="#">RTC(Real-Time Communication)</a><ul>
-<li><a class="reference internal" href="#voip">VoIP</a></li>
-<li><a class="reference internal" href="#kamailio">Kamailio</a></li>
-<li><a class="reference internal" href="#asterisk">Asterisk</a></li>
-<li><a class="reference internal" href="#rtpengine">RTPEngine</a></li>
-<li><a class="reference internal" href="#conference">Conference</a><ul>
+<li><a class="reference internal" href="#">Real-Time Communication (RTC)</a><ul>
+<li><a class="reference internal" href="#voip-stack-overview">VoIP Stack Overview</a></li>
+<li><a class="reference internal" href="#kamailio-sip-edge-router">Kamailio - SIP Edge Router</a></li>
+<li><a class="reference internal" href="#asterisk-media-and-call-processing">Asterisk - Media and Call Processing</a></li>
+<li><a class="reference internal" href="#rtpengine-media-proxy-and-transcoding">RTPEngine - Media Proxy and Transcoding</a></li>
+<li><a class="reference internal" href="#conference-architecture">Conference Architecture</a><ul>
 <li><a class="reference internal" href="#conference-flow">Conference Flow</a></li>
-<li><a class="reference internal" href="#calls-as-a-special-case-of-conferencing">1:1 Calls as a Special Case of Conferencing</a></li>
+<li><a class="reference internal" href="#calls-as-conferences">1:1 Calls as Conferences</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#sip-session-recovery">SIP Session Recovery</a><ul>

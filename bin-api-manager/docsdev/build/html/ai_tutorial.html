@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en" data-content_root="./">
+<head>
+    <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+        <title>Tutorial &mdash; voipbin  documentation</title>
+    
+    <link rel="stylesheet" type="text/css" href="_static/dist/fontawesome.css" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8e8a900e" />
+      <link rel="stylesheet" type="text/css" href="_static/dist/theme.css?v=310cf088" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+            <link rel="index" title="Index" href="genindex.html" />
+            <link rel="search" title="Search" href="search.html" />
+            <link rel="top" title="voipbin  documentation" href="#" />
+    </head>
+<body>
+    <script type="text/javascript" src="_static/dist/blocking.js"></script>
+    <header class="container-fluid bg-primary">
+        <a class="btn btn-sm btn-light skip-to-content-link" href="#main">Skip to content</a>
+        <div class="container-fluid">
+            <div class="navbar navbar-expand-lg navbar-dark font-weight-bold">
+                    <a href="intro.html"
+                        title="voipbin"
+                        class="logo navbar-brand"
+                    >
+                        <img src="_static/images/voipbin-high-resolution-logo-white-transparent.png" width="45" height="80" alt="voipbin"
+                            class="logo-img"
+                        />
+                        VoIPBin Documentation
+                    </a>
+                
+                
+                    <div class="collapse navbar-collapse justify-content-end">
+                        <ul class="navbar-nav">
+                            
+                                
+                                
+                                <li class="nav-item"><a class="nav-link"  href="http://voipbin.net">Project</a></li>
+                            
+                                
+                                
+                                <li class="nav-item"><a class="nav-link"  href="https://admin.voipbin.net">Admin</a></li>
+                            
+                        </ul>
+                    </div>
+                
+                <button class="navbar-toggler btn btn-primary d-lg-none" type="button" data-toggle="collapse" data-target="#collapseSidebar" aria-expanded="false" aria-controls="collapseExample">
+                    <span class="navbar-toggler-icon"></span>
+                    <span class="sr-only">menu</span>
+                </button>
+            </div>
+        </div>
+    </header>
+    <div class="container-fluid">
+        <div class="row">
+            <aside class="col-12 col-lg-3 sidebar-container">
+                <div id="collapseSidebar" class="collapse sticky-top d-lg-block pt-5 pr-lg-4">
+<div id="searchbox" class="searchbox mb-6 px-1" role="search">
+    <form id="search-form" action="search.html" autocomplete="off" method="get" role="search">
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <div class="input-group-text border-right-0 bg-white py-3 pl-3 pr-2"><span class="fas fa-search"></span></div>
+            </div>
+            <input class="form-control py-3 pr-3 pl-1 h-100 border-left-0" type="search" name="q" placeholder="Search documentation" aria-label="Search documentation" id="searchinput" />
+        </div>
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+    </form>
+</div><div class="site-toc">
+    <nav class="toc mt-3" aria-label="Main menu">
+        <ul>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="common.html">Common</a></li>
+<li class="toctree-l1"><a class="reference internal" href="restful_api.html">RESTful API(Application Programming Interface)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sdk.html">SDK(Software Development Kit)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="accesskey.html">Accesskey</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="activeflow.html">Activeflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="call.html">Call</a></li>
+<li class="toctree-l1"><a class="reference internal" href="message.html">Message</a></li>
+<li class="toctree-l1"><a class="reference internal" href="email.html">Email</a></li>
+<li class="toctree-l1"><a class="reference internal" href="agent.html">Agent</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conference.html">Conference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mediastream.html">Mediastream</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conversation.html">Conversation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extension.html">Extension</a></li>
+<li class="toctree-l1"><a class="reference internal" href="number.html">Number</a></li>
+<li class="toctree-l1"><a class="reference internal" href="queue.html">Queue</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recording.html">Recording</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a></li>
+<li class="toctree-l1"><a class="reference internal" href="campaign.html">Campaign</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outdial.html">Outdial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outplan.html">Outplan</a></li>
+<li class="toctree-l1"><a class="reference internal" href="webhook.html">Webhook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="customer.html">Customer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chat.html">Chat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="talk.html">Talk</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ai.html">AI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="provider.html">Provider</a></li>
+<li class="toctree-l1"><a class="reference internal" href="route.html">Route</a></li>
+<li class="toctree-l1"><a class="reference internal" href="variable.html">Variable</a></li>
+<li class="toctree-l1"><a class="reference internal" href="websocket.html">Websocket</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trunk.html">Trunk</a></li>
+<li class="toctree-l1"><a class="reference internal" href="billing_account.html">Billing Account</a></li>
+<li class="toctree-l1"><a class="reference internal" href="storage.html">Storage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transcribe.html">Transcribe</a></li>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+</ul>
+
+    </nav>
+    <template data-toggle-item-template>
+        <button class="btn btn-sm btn-link toctree-expand" type="button">
+            <span class="sr-only">Toggle menu contents</span>
+        </button>
+    </template>
+</div>
+                    <div class="d-lg-none border-bottom">
+                        
+                    </div>
+                </div>
+            </aside>
+            <div class="col-12 col-lg-9 pt-5">
+                <header class="row align-items-baseline">
+                    <div class="col">
+                        <nav aria-label="breadcrumb">
+    <ol class="breadcrumb m-0 p-0 bg-transparent">
+        <li class="breadcrumb-item"><a href="index.html">Docs</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Tutorial</li>
+    </ol>
+</nav>
+                    </div>
+                    <div class="col-sm-12 col-lg-auto mt-3 mt-lg-3">
+                        <noscript>
+                            <p>JavaScript is required to toggle light/dark mode..</p>
+                        </noscript>
+                        <button id="wagtail-theme" class="btn btn-sm btn-light text-decoration-none" type="button">
+                            <span class="dark-only"><i class="fas fa-sun"></i> Light mode</span>
+                            <span class="light-only"><i class="fas fa-moon"></i> Dark mode</span>
+                        </button>
+    <a class="btn btn-sm btn-light text-decoration-none" href="_sources/ai_tutorial.rst.txt" rel="nofollow">
+        <span class="btn-icon"><span class="fas fa-code"></span></span>
+        <span class="btn-text">View source</span>
+    </a>
+                        
+                    </div>
+                </header>
+                <div class="row" >
+                    <div class="col-12">
+                        <hr class="w-100 my-4">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 col-lg-9 order-last order-lg-first rst-content">
+                        <main role="main" id="main">
+    <section id="tutorial">
+<span id="ai-tutorial"></span><h1>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h1>
+<section id="simple-ai-voice-assistant">
+<h2>Simple AI Voice Assistant<a class="headerlink" href="#simple-ai-voice-assistant" title="Link to this heading"></a></h2>
+<p>Create a basic AI voice assistant that answers questions during a call. The AI will listen to the caller’s speech, process it, and respond using text-to-speech.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;source&quot;: {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;+15551234567&quot;
+        },
+        &quot;destinations&quot;: [
+            {
+                &quot;type&quot;: &quot;tel&quot;,
+                &quot;target&quot;: &quot;+15559876543&quot;
+            }
+        ],
+        &quot;actions&quot;: [
+            {
+                &quot;type&quot;: &quot;answer&quot;
+            },
+            {
+                &quot;type&quot;: &quot;ai&quot;,
+                &quot;option&quot;: {
+                    &quot;initial_prompt&quot;: &quot;You are a helpful customer service assistant. Answer questions politely and concisely.&quot;,
+                    &quot;language&quot;: &quot;en-US&quot;,
+                    &quot;voice_type&quot;: &quot;female&quot;
+                }
+            }
+        ]
+    }&#39;
+</pre></div>
+</div>
+<p>This creates a call with an AI assistant that will:
+1. Answer the incoming call
+2. Listen to the caller’s speech using STT (Speech-to-Text)
+3. Process the input through the AI engine with the given prompt
+4. Respond using TTS (Text-to-Speech)</p>
+</section>
+<section id="ai-talk-with-real-time-conversation">
+<h2>AI Talk with Real-Time Conversation<a class="headerlink" href="#ai-talk-with-real-time-conversation" title="Link to this heading"></a></h2>
+<p>Use AI Talk for more natural, low-latency conversations powered by ElevenLabs. This enables interruption detection where the AI stops speaking when the caller starts talking.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;source&quot;: {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;+15551234567&quot;
+        },
+        &quot;destinations&quot;: [
+            {
+                &quot;type&quot;: &quot;tel&quot;,
+                &quot;target&quot;: &quot;+15559876543&quot;
+            }
+        ],
+        &quot;actions&quot;: [
+            {
+                &quot;type&quot;: &quot;answer&quot;
+            },
+            {
+                &quot;type&quot;: &quot;ai_talk&quot;,
+                &quot;option&quot;: {
+                    &quot;initial_prompt&quot;: &quot;You are an expert sales representative for VoIPBIN. Help customers understand our calling and messaging platform. Be enthusiastic but professional.&quot;,
+                    &quot;language&quot;: &quot;en-US&quot;,
+                    &quot;voice_type&quot;: &quot;male&quot;
+                }
+            }
+        ]
+    }&#39;
+</pre></div>
+</div>
+<p>AI Talk provides:
+- <strong>Interruption Detection</strong>: Stops speaking when caller talks
+- <strong>Low Latency</strong>: Streams responses in chunks for faster perceived response time
+- <strong>Natural Voice</strong>: Uses ElevenLabs for high-quality voice output
+- <strong>Context Retention</strong>: Remembers previous conversation exchanges</p>
+</section>
+<section id="ai-with-custom-voice-id">
+<h2>AI with Custom Voice ID<a class="headerlink" href="#ai-with-custom-voice-id" title="Link to this heading"></a></h2>
+<p>Customize the AI voice by specifying an ElevenLabs Voice ID using variables.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;source&quot;: {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;+15551234567&quot;
+        },
+        &quot;destinations&quot;: [
+            {
+                &quot;type&quot;: &quot;tel&quot;,
+                &quot;target&quot;: &quot;+15559876543&quot;
+            }
+        ],
+        &quot;actions&quot;: [
+            {
+                &quot;type&quot;: &quot;answer&quot;
+            },
+            {
+                &quot;type&quot;: &quot;variable_set&quot;,
+                &quot;option&quot;: {
+                    &quot;key&quot;: &quot;voipbin.tts.elevenlabs.voice_id&quot;,
+                    &quot;value&quot;: &quot;21m00Tcm4TlvDq8ikWAM&quot;
+                }
+            },
+            {
+                &quot;type&quot;: &quot;ai_talk&quot;,
+                &quot;option&quot;: {
+                    &quot;initial_prompt&quot;: &quot;You are a friendly receptionist. Greet callers warmly and help them with their inquiries.&quot;,
+                    &quot;language&quot;: &quot;en-US&quot;
+                }
+            }
+        ]
+    }&#39;
+</pre></div>
+</div>
+<p>See <span class="xref std std-ref">Built-in ElevenLabs Voice IDs</span> for available voice options.</p>
+</section>
+<section id="ai-summary-for-call-transcription">
+<h2>AI Summary for Call Transcription<a class="headerlink" href="#ai-summary-for-call-transcription" title="Link to this heading"></a></h2>
+<p>Generate an AI-powered summary of a call transcription. This is useful for post-call analysis and record-keeping.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;source&quot;: {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;+15551234567&quot;
+        },
+        &quot;destinations&quot;: [
+            {
+                &quot;type&quot;: &quot;tel&quot;,
+                &quot;target&quot;: &quot;+15559876543&quot;
+            }
+        ],
+        &quot;actions&quot;: [
+            {
+                &quot;type&quot;: &quot;answer&quot;
+            },
+            {
+                &quot;type&quot;: &quot;transcribe_start&quot;,
+                &quot;option&quot;: {
+                    &quot;language&quot;: &quot;en-US&quot;
+                }
+            },
+            {
+                &quot;type&quot;: &quot;talk&quot;,
+                &quot;option&quot;: {
+                    &quot;text&quot;: &quot;Hello! This call is being transcribed and summarized. Please tell me about your experience with our service.&quot;,
+                    &quot;language&quot;: &quot;en-US&quot;
+                }
+            },
+            {
+                &quot;type&quot;: &quot;wait&quot;,
+                &quot;option&quot;: {
+                    &quot;duration&quot;: 30000
+                }
+            },
+            {
+                &quot;type&quot;: &quot;ai_summary&quot;,
+                &quot;option&quot;: {
+                    &quot;source_type&quot;: &quot;transcribe&quot;,
+                    &quot;source_id&quot;: &quot;${voipbin.transcribe.id}&quot;
+                }
+            },
+            {
+                &quot;type&quot;: &quot;talk&quot;,
+                &quot;option&quot;: {
+                    &quot;text&quot;: &quot;Thank you for your feedback. We have recorded and summarized your call.&quot;,
+                    &quot;language&quot;: &quot;en-US&quot;
+                }
+            }
+        ]
+    }&#39;
+</pre></div>
+</div>
+<p>The AI summary will:
+- Process the transcription from <code class="docutils literal notranslate"><span class="pre">transcribe_start</span></code>
+- Generate a structured summary of key points
+- Store the summary in <code class="docutils literal notranslate"><span class="pre">${voipbin.ai_summary.result}</span></code>
+- Can be accessed via webhook or API after the call</p>
+</section>
+<section id="real-time-ai-summary">
+<h2>Real-Time AI Summary<a class="headerlink" href="#real-time-ai-summary" title="Link to this heading"></a></h2>
+<p>Get AI summaries while the call is still active. Useful for live call monitoring and agent assistance.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;source&quot;: {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;+15551234567&quot;
+        },
+        &quot;destinations&quot;: [
+            {
+                &quot;type&quot;: &quot;tel&quot;,
+                &quot;target&quot;: &quot;+15559876543&quot;
+            }
+        ],
+        &quot;actions&quot;: [
+            {
+                &quot;type&quot;: &quot;answer&quot;
+            },
+            {
+                &quot;type&quot;: &quot;transcribe_start&quot;,
+                &quot;option&quot;: {
+                    &quot;language&quot;: &quot;en-US&quot;,
+                    &quot;real_time&quot;: true
+                }
+            },
+            {
+                &quot;type&quot;: &quot;ai_summary&quot;,
+                &quot;option&quot;: {
+                    &quot;source_type&quot;: &quot;call&quot;,
+                    &quot;source_id&quot;: &quot;${voipbin.call.id}&quot;,
+                    &quot;real_time&quot;: true
+                }
+            },
+            {
+                &quot;type&quot;: &quot;connect&quot;,
+                &quot;option&quot;: {
+                    &quot;source&quot;: {
+                        &quot;type&quot;: &quot;tel&quot;,
+                        &quot;target&quot;: &quot;+15551234567&quot;
+                    },
+                    &quot;destinations&quot;: [
+                        {
+                            &quot;type&quot;: &quot;tel&quot;,
+                            &quot;target&quot;: &quot;+15551111111&quot;
+                        }
+                    ]
+                }
+            }
+        ]
+    }&#39;
+</pre></div>
+</div>
+<p>Real-time summaries provide:
+- <strong>Live Updates</strong>: Summary updates as conversation progresses
+- <strong>Agent Assistance</strong>: Provides context to agents joining mid-call
+- <strong>Call Monitoring</strong>: Enables supervisors to quickly understand ongoing calls</p>
+</section>
+<section id="best-practices">
+<h2>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading"></a></h2>
+<p><strong>Initial Prompt Design:</strong>
+- Be specific about the AI’s role and behavior
+- Include constraints (e.g., “Keep responses under 30 seconds”)
+- Define the tone (professional, friendly, technical, etc.)</p>
+<p><strong>Language Support:</strong>
+- AI supports multiple languages (see <a class="reference internal" href="transcribe_overview.html#transcribe-overview-supported-languages"><span class="std std-ref">supported languages</span></a>)
+- Match the <code class="docutils literal notranslate"><span class="pre">language</span></code> parameter with caller’s expected language
+- AI can detect and respond in multiple languages if not constrained</p>
+<p><strong>Context Retention:</strong>
+- AI remembers conversation history within the same call
+- Variables set during the call are available to AI
+- Use context to build multi-turn conversations</p>
+<p><strong>Error Handling:</strong>
+- Always include fallback actions after AI actions
+- Handle cases where AI may not understand the input
+- Provide clear instructions to callers about what they can ask</p>
+<p>For more details on AI features and configuration, see <span class="xref std std-ref">AI Overview</span>.</p>
+</section>
+</section>
+
+</main>
+                        
+                    </div>
+                    
+                    <nav class="col-12 col-lg-3 pb-4">
+                        <div class="sticky-top toc page-toc" aria-labelledby="page-toc-heading">
+                            <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
+                            <ul>
+<li><a class="reference internal" href="#">Tutorial</a><ul>
+<li><a class="reference internal" href="#simple-ai-voice-assistant">Simple AI Voice Assistant</a></li>
+<li><a class="reference internal" href="#ai-talk-with-real-time-conversation">AI Talk with Real-Time Conversation</a></li>
+<li><a class="reference internal" href="#ai-with-custom-voice-id">AI with Custom Voice ID</a></li>
+<li><a class="reference internal" href="#ai-summary-for-call-transcription">AI Summary for Call Transcription</a></li>
+<li><a class="reference internal" href="#real-time-ai-summary">Real-Time AI Summary</a></li>
+<li><a class="reference internal" href="#best-practices">Best Practices</a></li>
+</ul>
+</li>
+</ul>
+
+                        </div>
+                    </nav>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer class="container-fluid bg-primary text-light">
+        <div class="container">
+            <div class="row">
+        <div class="col p-4">
+            
+                <nav aria-label="Footer">
+                    <ul class="nav justify-content-center mb-2">
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="http://voipbin.net">About Us</a></li>
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="http://voipbin.net">Contact</a></li>
+                        
+                    </ul>
+                </nav>
+            
+            <div class="text-center">
+                    &copy; Copyright 2024, Sungtae Kim
+            </div>
+            <div class="text-center text-white-50 font-italic mt-3">
+                <small>
+                    Created using
+                    <a class="text-white" href="https://github.com/wagtail/sphinx_wagtail_theme" rel="nofollow" target="_blank">
+                        Sphinx Wagtail Theme 6.5.0
+                    </a>
+                    and
+                    <a class="text-white" href="https://www.sphinx-doc.org/" rel="nofollow" target="_blank">
+                        Sphinx 9.1.0
+                    </a>
+                </small>
+            </div>
+        </div>
+    </div>
+        </div>
+    </footer>
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=fd6eb6e6"></script>
+        <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+        <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="_static/copybutton.js?v=f281be69"></script>
+        <script type="text/javascript" src="_static/dist/theme.js"></script>
+        <script type="text/javascript" src="_static/dist/vendor.js"></script>
+        <script type="text/javascript" src="_static/searchtools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script type="text/javascript">
+            document.addEventListener('DOMContentLoaded', function() { Search.loadIndex("searchindex.js"); });
+        </script>
+        <script type="text/javascript" id="searchindexloader"></script>
+    </body>
+</html>

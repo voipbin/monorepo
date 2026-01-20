@@ -3,3 +3,4 @@ api-manager
 !cmd/*
 .vscode
 .DS_Store
+docsdev/.venv_docs/

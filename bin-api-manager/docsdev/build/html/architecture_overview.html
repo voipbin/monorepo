@@ -159,48 +159,377 @@
                         <main role="main" id="main">
     <section id="overview">
 <span id="architecture-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h1>
-<p>VoIPbin is a cloud-based communications platform offering a diverse range of features and channels, including PSTN calls, WebRTC, SMS, SNS, Chat, call queues, conferencing, billing management, and more.
-Its architecture is designed to be scalable, reliable, and secure, enabling businesses to effectively communicate with their customers across various touchpoints.</p>
+<p>VoIPBIN is a cloud-native Communication Platform as a Service (CPaaS) built on modern microservices architecture. The platform provides comprehensive communication capabilities including PSTN calls, WebRTC, SMS, conferencing, AI-powered features, and workflow orchestration.</p>
+<p>VoIPBIN is designed from the ground up for scalability, reliability, and developer productivity, enabling businesses to build sophisticated communication solutions through simple API calls.</p>
 <img alt="_images/architecture_overview_all.png" src="_images/architecture_overview_all.png" />
-<section id="core-components">
-<h2>Core Components<a class="headerlink" href="#core-components" title="Link to this heading"></a></h2>
+<section id="high-level-system-architecture">
+<h2>High-Level System Architecture<a class="headerlink" href="#high-level-system-architecture" title="Link to this heading"></a></h2>
+<p>VoIPBIN consists of three major architectural layers:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌──────────────────────────────────────────────────────────────────┐
+│                      Client Applications                         │
+│  (Web Apps, Mobile Apps, Server-to-Server Integrations)          │
+└────────────────────────┬─────────────────────────────────────────┘
+                         │ HTTPS/REST API
+                         ▼
+┌──────────────────────────────────────────────────────────────────┐
+│                     API Gateway Layer                            │
+│                    (bin-api-manager)                             │
+│  • Authentication &amp; Authorization                                │
+│  • Rate Limiting &amp; Throttling                                    │
+│  • Request Routing &amp; Load Balancing                              │
+└────────────────────────┬─────────────────────────────────────────┘
+                         │ RabbitMQ RPC
+                         ▼
+┌──────────────────────────────────────────────────────────────────┐
+│                  Microservices Layer                             │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐            │
+│  │ Call Manager │  │ Flow Manager │  │  AI Manager  │            │
+│  └──────────────┘  └──────────────┘  └──────────────┘            │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐            │
+│  │Chat Manager  │  │ SMS Manager  │  │Queue Manager │            │
+│  └──────────────┘  └──────────────┘  └──────────────┘            │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐            │
+│  │Agent Manager │  │ Billing Mgr  │  │Webhook Mgr   │            │
+│  └──────────────┘  └──────────────┘  └──────────────┘            │
+│                    ... 30+ services                              │
+└────────────────────────┬─────────────────────────────────────────┘
+                         │
+                         ▼
+┌──────────────────────────────────────────────────────────────────┐
+│              Real-Time Communication Layer                       │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐            │
+│  │  Kamailio    │  │   Asterisk   │  │  RTPEngine   │            │
+│  │ (SIP Proxy)  │  │(Media Server)│  │(Media Proxy) │            │
+│  └──────────────┘  └──────────────┘  └──────────────┘            │
+└──────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────┐
+│                  Shared Infrastructure                           │
+│  • MySQL Database  • Redis Cache  • RabbitMQ  • Kubernetes       │
+└──────────────────────────────────────────────────────────────────┘
+</pre></div>
+</div>
+</section>
+<section id="architectural-layers">
+<h2>Architectural Layers<a class="headerlink" href="#architectural-layers" title="Link to this heading"></a></h2>
+<p><strong>1. API Gateway Layer</strong></p>
+<p>The API Gateway (bin-api-manager) serves as the single entry point for all external requests:</p>
 <ul class="simple">
-<li><p><strong>Flow Manager</strong>: Orchestrates all communication flows, determining the appropriate path based on user input, system configuration, and business logic. Interacts with other components to execute defined flows, including call routing, call queuing, call transfers, conferencing, and interactions with various communication channels.</p></li>
-<li><p><strong>Media Servers</strong>: Handle real-time media processing, such as transcoding, mixing, echo cancellation, and jitter buffering, ensuring high-quality media streams for voice and video communication.</p></li>
-<li><p><strong>Signaling Servers</strong>: Manage call setup, routing, and teardown using protocols like SIP. Establish connections, negotiate codecs, and handle call control signals.</p></li>
-<li><p><strong>Database</strong>: Stores user data, call records, system configurations, and other critical information for system operation.</p></li>
-<li><p><strong>Message Queue</strong>: Facilitates asynchronous communication between components, enabling efficient message delivery and decoupling them for improved system responsiveness.</p></li>
-<li><p><strong>Load Balancer</strong>: Distributes incoming traffic across multiple servers, ensuring high availability and optimal performance.</p></li>
-<li><p><strong>Cache</strong>: Stores frequently accessed data, such as user profiles and call routing information, to improve response times and reduce the load on the database.</p></li>
-<li><p><strong>Cloud Infrastructure</strong>: Leverages cloud services like AWS, Azure, or Google Cloud for scalability, flexibility, and cost-effectiveness.</p></li>
+<li><p><strong>Authentication</strong>: JWT-based authentication for all API requests</p></li>
+<li><p><strong>Authorization</strong>: Permission checks based on customer and agent roles</p></li>
+<li><p><strong>Request Routing</strong>: Routes authenticated requests to appropriate backend services via RabbitMQ RPC</p></li>
+<li><p><strong>Protocol Translation</strong>: Converts HTTP/REST to internal RabbitMQ messaging</p></li>
+<li><p><strong>Response Aggregation</strong>: Collects responses from backend services and returns to clients</p></li>
+</ul>
+<p><strong>2. Microservices Layer</strong></p>
+<p>VoIPBIN consists of 30+ specialized Go microservices, organized by domain:</p>
+<p><strong>Communication Services:</strong>
+* bin-call-manager: Call lifecycle and routing
+* bin-conference-manager: Conference bridge management
+* bin-sms-manager: SMS messaging
+* bin-chat-manager: Real-time chat</p>
+<p><strong>AI Services:</strong>
+* bin-ai-manager: AI assistant, transcription, summarization
+* bin-transcribe-manager: Speech-to-text processing
+* bin-tts-manager: Text-to-speech synthesis</p>
+<p><strong>Workflow Services:</strong>
+* bin-flow-manager: Call flow orchestration and IVR
+* bin-queue-manager: Call queue management
+* bin-campaign-manager: Outbound campaign automation</p>
+<p><strong>Management Services:</strong>
+* bin-agent-manager: Agent state and presence
+* bin-billing-manager: Usage tracking and billing
+* bin-webhook-manager: Webhook delivery
+* bin-storage-manager: File and media storage</p>
+<p><strong>3. Real-Time Communication Layer</strong></p>
+<p>See <a class="reference internal" href="architecture_rtc.html#architecture-rtc"><span class="std std-ref">RTC Architecture</span></a> for detailed information about the VoIP stack.</p>
+</section>
+<section id="core-design-principles">
+<h2>Core Design Principles<a class="headerlink" href="#core-design-principles" title="Link to this heading"></a></h2>
+<p>VoIPBIN is designed around these key architectural principles:</p>
+<p><strong>Microservices Architecture</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Service Isolation:
+┌────────────┐     ┌────────────┐     ┌────────────┐
+│  Service A │     │  Service B │     │  Service C │
+│            │     │            │     │            │
+│  • Domain  │     │  • Domain  │     │  • Domain  │
+│  • Logic   │     │  • Logic   │     │  • Logic   │
+│  • Data    │     │  • Data    │     │  • Data    │
+└──────┬─────┘     └──────┬─────┘     └──────┬─────┘
+       │                  │                  │
+       └──────────────────┴──────────────────┘
+                Message Queue (RabbitMQ)
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>Domain Isolation</strong>: Each service owns its domain logic and data</p></li>
+<li><p><strong>Independent Deployment</strong>: Services can be deployed independently</p></li>
+<li><p><strong>Technology Flexibility</strong>: Services can use different technologies as needed</p></li>
+<li><p><strong>Fault Isolation</strong>: Failure in one service doesn’t cascade</p></li>
+</ul>
+<p><strong>Event-Driven Architecture</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Event Flow:
+┌──────────────┐     Event        ┌──────────────┐
+│   Service    │────────────────▶ │   Message    │
+│  (Publisher) │                  │    Queue     │
+└──────────────┘                  └───────┬──────┘
+                                          │
+                                          ├────────────────┐
+                                          │                │
+                                          ▼                ▼
+                                 ┌────────────┐   ┌────────────┐
+                                 │ Subscriber │   │ Subscriber │
+                                 │ Service A  │   │ Service B  │
+                                 └────────────┘   └────────────┘
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>Asynchronous Communication</strong>: Services communicate via events</p></li>
+<li><p><strong>Loose Coupling</strong>: Publishers don’t know about subscribers</p></li>
+<li><p><strong>Scalability</strong>: Multiple subscribers can process events in parallel</p></li>
+<li><p><strong>Reliability</strong>: Message queues provide guaranteed delivery</p></li>
+</ul>
+<p><strong>API Gateway Pattern</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>External Request Flow:
+
+Client App                  API Gateway              Backend Services
+    │                           │                           │
+    │  HTTPS/REST               │                           │
+    ├──────────────────────────▶│                           │
+    │                           │  1. Authenticate          │
+    │                           │  2. Authorize             │
+    │                           │  3. Route Request         │
+    │                           │                           │
+    │                           │  RabbitMQ RPC             │
+    │                           ├──────────────────────────▶│
+    │                           │                           │
+    │                           │  Response                 │
+    │                           │◀──────────────────────────┤
+    │  JSON Response            │                           │
+    │◀──────────────────────────┤                           │
+    │                           │                           │
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>Single Entry Point</strong>: All external traffic goes through one gateway</p></li>
+<li><p><strong>Security Layer</strong>: Authentication and authorization at the edge</p></li>
+<li><p><strong>Protocol Translation</strong>: HTTP to internal messaging protocols</p></li>
+<li><p><strong>Service Discovery</strong>: Gateway knows how to reach all services</p></li>
+</ul>
+<p><strong>Shared Data Layer</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Data Architecture:
+
+┌────────────┐  ┌────────────┐  ┌────────────┐
+│  Service   │  │  Service   │  │  Service   │
+│      A     │  │      B     │  │      C     │
+└──────┬─────┘  └───────┬────┘  └────────┬───┘
+       │                │                │
+       ├────────────────┼────────────────┤
+       │                │                │
+       ▼                ▼                ▼
+┌───────────────────────────────────────────┐
+│           Redis Cache (Hot Data)          │
+└───────────────────────────────────────────┘
+       ▼                ▼                ▼
+┌───────────────────────────────────────────┐
+│         MySQL Database (Cold Data)        │
+└───────────────────────────────────────────┘
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>Shared MySQL</strong>: Single source of truth for all data</p></li>
+<li><p><strong>Redis Cache</strong>: Fast access to frequently used data</p></li>
+<li><p><strong>Consistent Schema</strong>: All services use common database schema</p></li>
+<li><p><strong>Transaction Support</strong>: ACID guarantees for critical operations</p></li>
 </ul>
 </section>
 <section id="communication-channels">
 <h2>Communication Channels<a class="headerlink" href="#communication-channels" title="Link to this heading"></a></h2>
+<p>VoIPBIN supports multiple communication channels through dedicated gateways:</p>
+<p><strong>Voice Communication:</strong></p>
 <ul class="simple">
-<li><p><strong>PSTN Gateway</strong>: Connects to the Public Switched Telephone Network (PSTN) for traditional voice calls.</p></li>
-<li><p><strong>WebRTC Gateway</strong>: Enables real-time, browser-based voice and video communication.</p></li>
-<li><p><strong>SMS Gateway</strong>: Handles the sending and receiving of SMS messages.</p></li>
-<li><p><strong>SNS Gateway</strong>: Integrates with various social media and messaging platforms.</p></li>
-<li><p><strong>Chat Gateway</strong>: Enables real-time chat functionality within the platform.</p></li>
+<li><p><strong>PSTN</strong>: Traditional phone calls via carrier integrations</p></li>
+<li><p><strong>WebRTC</strong>: Browser-based voice and video calls</p></li>
+<li><p><strong>SIP</strong>: Direct SIP trunking for enterprise customers</p></li>
+</ul>
+<p><strong>Messaging:</strong></p>
+<ul class="simple">
+<li><p><strong>SMS</strong>: Text messaging via carrier integrations</p></li>
+<li><p><strong>Chat</strong>: Real-time chat with WebSocket support</p></li>
+<li><p><strong>Email</strong>: Email notifications and campaigns</p></li>
+</ul>
+<p><strong>AI-Enhanced Communication:</strong></p>
+<ul class="simple">
+<li><p><strong>AI Assistants</strong>: Voice-enabled AI agents for customer service</p></li>
+<li><p><strong>Transcription</strong>: Real-time and batch speech-to-text</p></li>
+<li><p><strong>Summarization</strong>: Call summarization and insights</p></li>
+<li><p><strong>Sentiment Analysis</strong>: Real-time emotion detection</p></li>
 </ul>
 </section>
-<section id="integration-services">
-<h2>Integration Services<a class="headerlink" href="#integration-services" title="Link to this heading"></a></h2>
+<section id="integration-capabilities">
+<h2>Integration Capabilities<a class="headerlink" href="#integration-capabilities" title="Link to this heading"></a></h2>
+<p>VoIPBIN provides multiple integration methods:</p>
+<p><strong>REST API:</strong></p>
 <ul class="simple">
-<li><p><strong>Webhook Service</strong>: Allows for seamless integration with external applications through custom webhooks, enabling data synchronization and triggering actions based on events within the VoIPbin platform.</p></li>
+<li><p>Comprehensive REST API for all platform features</p></li>
+<li><p>OpenAPI/Swagger documentation</p></li>
+<li><p>SDKs for multiple languages</p></li>
+</ul>
+<p><strong>WebSocket:</strong></p>
+<ul class="simple">
+<li><p>Real-time event streaming</p></li>
+<li><p>Bi-directional media streaming</p></li>
+<li><p>Live transcription feeds</p></li>
+</ul>
+<p><strong>Webhooks:</strong></p>
+<ul class="simple">
+<li><p>Event notifications to external systems</p></li>
+<li><p>Configurable retry policies</p></li>
+<li><p>Signature verification for security</p></li>
+</ul>
+<p><strong>Direct Database Access:</strong></p>
+<ul class="simple">
+<li><p>Read replicas for reporting</p></li>
+<li><p>Analytics database for business intelligence</p></li>
 </ul>
 </section>
-<section id="key-architectural-considerations">
-<h2>Key Architectural Considerations<a class="headerlink" href="#key-architectural-considerations" title="Link to this heading"></a></h2>
-<p>The voipbin has designed based on this considerations.</p>
+<section id="key-architectural-benefits">
+<h2>Key Architectural Benefits<a class="headerlink" href="#key-architectural-benefits" title="Link to this heading"></a></h2>
+<p>VoIPBIN’s architecture is designed to deliver these advantages:</p>
+<p><strong>Scalability</strong></p>
 <ul class="simple">
-<li><p><strong>Scalability</strong>: The system must be designed to scale seamlessly to accommodate increasing call volumes, user base, and data traffic across all communication channels.</p></li>
-<li><p><strong>Reliability</strong>: High availability and fault tolerance are critical to ensure uninterrupted service and minimize downtime. This can be achieved through redundancy, load balancing, and automated failover mechanisms.</p></li>
-<li><p><strong>Security</strong>: Robust security measures are essential to protect user data, prevent fraud, and comply with relevant regulations. This includes measures like encryption, access control, and intrusion detection.</p></li>
-<li><p><strong>Flexibility</strong>: The architecture should be flexible enough to adapt to evolving communication technologies, changing business requirements, and new features.</p></li>
+<li><p><strong>Horizontal Scaling</strong>: Add more service instances to handle increased load</p></li>
+<li><p><strong>Independent Scaling</strong>: Scale only the services that need more capacity</p></li>
+<li><p><strong>Auto-Scaling</strong>: Kubernetes automatically scales based on metrics</p></li>
+<li><p><strong>Global Distribution</strong>: Deploy services across multiple regions</p></li>
 </ul>
-<p>This combined description provides a comprehensive overview of the VoIPbin system architecture, highlighting the key components, communication channels, integration services, and architectural considerations.</p>
+<p><strong>Reliability</strong></p>
+<ul class="simple">
+<li><p><strong>Fault Isolation</strong>: Issues in one service don’t affect others</p></li>
+<li><p><strong>Circuit Breakers</strong>: Prevent cascading failures</p></li>
+<li><p><strong>Automatic Failover</strong>: Kubernetes restarts failed containers</p></li>
+<li><p><strong>SIP Session Recovery</strong>: Maintain calls even when servers crash</p></li>
+<li><p><strong>Message Persistence</strong>: RabbitMQ ensures no messages are lost</p></li>
+</ul>
+<p><strong>Security</strong></p>
+<ul class="simple">
+<li><p><strong>API Gateway Security</strong>: All authentication at the edge</p></li>
+<li><p><strong>Service Isolation</strong>: Services communicate via internal network only</p></li>
+<li><p><strong>Encryption</strong>: TLS for all external communication</p></li>
+<li><p><strong>Secret Management</strong>: Kubernetes secrets for sensitive data</p></li>
+<li><p><strong>Audit Logging</strong>: Complete audit trail of all operations</p></li>
+</ul>
+<p><strong>Developer Productivity</strong></p>
+<ul class="simple">
+<li><p><strong>Simple REST API</strong>: Easy to integrate with any application</p></li>
+<li><p><strong>Comprehensive Docs</strong>: Detailed documentation with examples</p></li>
+<li><p><strong>Webhook Events</strong>: Real-time notifications of system events</p></li>
+<li><p><strong>Test Environment</strong>: Sandbox for development and testing</p></li>
+<li><p><strong>SDK Support</strong>: Official SDKs for popular languages</p></li>
+</ul>
+<p><strong>Operational Excellence</strong></p>
+<ul class="simple">
+<li><p><strong>Centralized Logging</strong>: All logs aggregated in one place</p></li>
+<li><p><strong>Metrics &amp; Monitoring</strong>: Prometheus metrics for all services</p></li>
+<li><p><strong>Distributed Tracing</strong>: Track requests across services</p></li>
+<li><p><strong>Health Checks</strong>: Automated health monitoring</p></li>
+<li><p><strong>Zero-Downtime Deploys</strong>: Rolling updates without service interruption</p></li>
+</ul>
+</section>
+<section id="service-dependencies">
+<h2>Service Dependencies<a class="headerlink" href="#service-dependencies" title="Link to this heading"></a></h2>
+<p>VoIPBIN services have well-defined dependencies for coordinated operations:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Core Service Dependencies:
+
+┌─────────────────────────────────────────────────────────────────┐
+│                     bin-api-manager                             │
+│                    (API Gateway)                                │
+│  ─────────────────────────────────────────────────────────────  │
+│    Depends on: ALL backend services for RPC routing             │
+└─────────────────────────────────────────────────────────────────┘
+                             │
+     ┌───────────────────────┼───────────────────────┐
+     │                       │                       │
+     ▼                       ▼                       ▼
+┌─────────────┐        ┌─────────────┐        ┌─────────────┐
+│bin-call-mgr │        │bin-flow-mgr │        │bin-ai-mgr   │
+└──────┬──────┘        └──────┬──────┘        └──────┬──────┘
+       │                      │                      │
+       │                      │                      │
+       ▼                      ▼                      ▼
+┌─────────────┐        ┌─────────────┐        ┌─────────────┐
+│bin-billing  │        │bin-call-mgr │        │bin-transcribe│
+│bin-webhook  │        │bin-queue-mgr│        │bin-tts-mgr  │
+│bin-number   │        │bin-ai-mgr   │        │bin-pipecat  │
+└─────────────┘        └─────────────┘        └─────────────┘
+</pre></div>
+</div>
+<p><strong>Key Dependency Patterns:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Call Processing Chain:
+bin-call-manager
+  ├──▶ bin-flow-manager      (IVR and call flows)
+  ├──▶ bin-billing-manager   (usage tracking)
+  ├──▶ bin-webhook-manager   (event notifications)
+  ├──▶ bin-transcribe-manager (call transcription)
+  └──▶ bin-number-manager    (phone number lookup)
+
+AI Voice Pipeline:
+bin-pipecat-manager
+  ├──▶ bin-ai-manager        (LLM coordination)
+  ├──▶ bin-call-manager      (call control)
+  └──▶ bin-transcribe-manager (STT)
+
+Flow Orchestration:
+bin-flow-manager
+  ├──▶ bin-call-manager      (call actions)
+  ├──▶ bin-queue-manager     (queue operations)
+  ├──▶ bin-ai-manager        (AI interactions)
+  └──▶ bin-conference-manager (conference bridges)
+
+Infrastructure Monitoring:
+bin-sentinel-manager
+  └──▶ bin-call-manager      (SIP session recovery events)
+</pre></div>
+</div>
+<p><strong>Circular Dependencies:</strong></p>
+<p>VoIPBIN avoids circular dependencies through:</p>
+<ul class="simple">
+<li><p><strong>Event-Driven Decoupling</strong>: Services publish events, others subscribe</p></li>
+<li><p><strong>Gateway Orchestration</strong>: API Gateway coordinates cross-service operations</p></li>
+<li><p><strong>Shared Data Layer</strong>: Services share data via MySQL, not direct calls</p></li>
+</ul>
+</section>
+<section id="technology-stack">
+<h2>Technology Stack<a class="headerlink" href="#technology-stack" title="Link to this heading"></a></h2>
+<p>VoIPBIN is built on modern, proven technologies:</p>
+<p><strong>Backend Services:</strong></p>
+<ul class="simple">
+<li><p><strong>Language</strong>: Go (Golang) for all microservices</p></li>
+<li><p><strong>API Framework</strong>: Gin for HTTP routing</p></li>
+<li><p><strong>RPC</strong>: RabbitMQ for inter-service communication</p></li>
+<li><p><strong>Database</strong>: MySQL for persistent storage</p></li>
+<li><p><strong>Cache</strong>: Redis for session and hot data</p></li>
+</ul>
+<p><strong>Real-Time Communication:</strong></p>
+<ul class="simple">
+<li><p><strong>SIP Proxy</strong>: Kamailio for SIP routing</p></li>
+<li><p><strong>Media Server</strong>: Asterisk for call processing</p></li>
+<li><p><strong>Media Proxy</strong>: RTPEngine for RTP handling</p></li>
+</ul>
+<p><strong>Infrastructure:</strong></p>
+<ul class="simple">
+<li><p><strong>Container Runtime</strong>: Docker for containerization</p></li>
+<li><p><strong>Orchestration</strong>: Kubernetes (GKE) for container management</p></li>
+<li><p><strong>Cloud Provider</strong>: Google Cloud Platform</p></li>
+<li><p><strong>Monitoring</strong>: Prometheus + Grafana for metrics</p></li>
+<li><p><strong>Logging</strong>: ELK stack for centralized logging</p></li>
+</ul>
+<p><strong>Message Queue:</strong></p>
+<ul class="simple">
+<li><p><strong>Broker</strong>: RabbitMQ for async messaging</p></li>
+<li><p><strong>Event Bus</strong>: ZeroMQ for pub/sub events</p></li>
+</ul>
+<p>This architecture enables VoIPBIN to deliver enterprise-grade communication services at scale while maintaining developer simplicity and operational excellence.</p>
 </section>
 </section>
 
@@ -213,10 +542,14 @@ Its architecture is designed to be scalable, reliable, and secure, enabling busi
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
 <li><a class="reference internal" href="#">Overview</a><ul>
-<li><a class="reference internal" href="#core-components">Core Components</a></li>
+<li><a class="reference internal" href="#high-level-system-architecture">High-Level System Architecture</a></li>
+<li><a class="reference internal" href="#architectural-layers">Architectural Layers</a></li>
+<li><a class="reference internal" href="#core-design-principles">Core Design Principles</a></li>
 <li><a class="reference internal" href="#communication-channels">Communication Channels</a></li>
-<li><a class="reference internal" href="#integration-services">Integration Services</a></li>
-<li><a class="reference internal" href="#key-architectural-considerations">Key Architectural Considerations</a></li>
+<li><a class="reference internal" href="#integration-capabilities">Integration Capabilities</a></li>
+<li><a class="reference internal" href="#key-architectural-benefits">Key Architectural Benefits</a></li>
+<li><a class="reference internal" href="#service-dependencies">Service Dependencies</a></li>
+<li><a class="reference internal" href="#technology-stack">Technology Stack</a></li>
 </ul>
 </li>
 </ul>

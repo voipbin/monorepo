@@ -331,9 +331,9 @@ Executed Actions
 ----------------
 Within the CPaaS environment, flows can be complex, incorporating various service types such as call, SMS, chat, and more. Handling history logs for these diverse services requires a structured approach.
 
-VoIPBin simplifies the tracking of executed actions by providing a comprehensive history log within the activeflow. Unlike traditional telephony services with straightforward flows, CPaaS services demand a more flexible approach due to their diverse nature.
+VoIPBIN simplifies the tracking of executed actions by providing a comprehensive history log within the activeflow. Unlike traditional telephony services with straightforward flows, CPaaS services demand a more flexible approach due to their diverse nature.
 
-In VoIPBin, each action in the activeflow defines a distinct step in the service's behavior. This ensures clarity in tracking the sequence of actions performed.
+In VoIPBIN, each action in the activeflow defines a distinct step in the service's behavior. This ensures clarity in tracking the sequence of actions performed.
 
 ::
 

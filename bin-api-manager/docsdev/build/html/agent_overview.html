@@ -160,21 +160,533 @@
     <section id="overview">
 <span id="agent-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h1>
 <p>The agent, also known as the call center agent or phone agent, plays a crucial role as a representative of a company, handling calls with private or business customers on behalf of the organization. Typically, agents work in a call center environment, where multiple agents are employed to efficiently manage incoming and outgoing calls. The call center may be operated by the company itself or outsourced to an external service provider. In the case of external service providers, a single site may serve various clients from different businesses.</p>
+<p>In VoIPBIN, agents are the people (or endpoints) that receive calls from queues. They have statuses, skills (tags), and contact addresses that determine when and how they can receive calls.</p>
+<section id="agent-status">
+<h2>Agent Status<a class="headerlink" href="#agent-status" title="Link to this heading"></a></h2>
+<p>Every agent has a status that reflects their current availability. The status determines whether an agent can receive calls from queues.</p>
+<p><strong>Status Overview</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────────┐
+│                         Agent Status States                              │
+└─────────────────────────────────────────────────────────────────────────┘
+
+                  ┌───────────────────────────────────────────┐
+                  │              User Actions                  │
+                  │   (Agent manually changes their status)    │
+                  └───────────────────┬───────────────────────┘
+                                      │
+          ┌───────────────────────────┼───────────────────────────┐
+          │                           │                           │
+          ▼                           ▼                           ▼
+    ┌───────────┐              ┌───────────┐              ┌───────────┐
+    │ available │              │   away    │              │  offline  │
+    │ (ready)   │              │ (break)   │              │(logged out)│
+    └─────┬─────┘              └───────────┘              └───────────┘
+          │
+          │ Call routed to agent
+          ▼
+    ┌───────────┐
+    │  ringing  │
+    │ (incoming)│
+    └─────┬─────┘
+          │
+          │ Agent answers
+          ▼
+    ┌───────────┐
+    │   busy    │
+    │ (on call) │
+    └─────┬─────┘
+          │
+          │ Call ends
+          ▼
+    (returns to previous status)
+</pre></div>
+</div>
+<p><strong>Status Descriptions</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Status</p></th>
+<th class="head"><p>What it means</p></th>
+<th class="head"><p>Can receive
+queue calls?</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>available</p></td>
+<td><p>Agent is logged in and ready to take calls</p></td>
+<td><p>Yes</p></td>
+</tr>
+<tr class="row-odd"><td><p>away</p></td>
+<td><p>Agent is temporarily unavailable (break, meeting, etc.)</p></td>
+<td><p>No</p></td>
+</tr>
+<tr class="row-even"><td><p>busy</p></td>
+<td><p>Agent is currently handling a call</p></td>
+<td><p>No</p></td>
+</tr>
+<tr class="row-odd"><td><p>offline</p></td>
+<td><p>Agent is logged out of the system</p></td>
+<td><p>No</p></td>
+</tr>
+<tr class="row-even"><td><p>ringing</p></td>
+<td><p>System is attempting to deliver a call to the agent</p></td>
+<td><p>No</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Status Transitions</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Manual transitions (agent controls):
+┌───────────┐ ◀────────────────────────────────▶ ┌───────────┐
+│ available │          User changes status       │   away    │
+└───────────┘ ◀────────────────────────────────▶ └───────────┘
+      ▲                                                ▲
+      │              User logs in/out                  │
+      ▼                                                ▼
+┌───────────┐ ◀────────────────────────────────▶ ┌───────────┐
+│  offline  │                                    │  offline  │
+└───────────┘                                    └───────────┘
+
+Automatic transitions (system controls):
+┌───────────┐        Call routed         ┌───────────┐
+│ available │───────────────────────────▶│  ringing  │
+└───────────┘                            └─────┬─────┘
+      ▲                                        │
+      │ Call ends                              │ Agent answers
+      │ (or timeout)                           ▼
+      │                                  ┌───────────┐
+      └──────────────────────────────────│   busy    │
+                                         └───────────┘
+</pre></div>
+</div>
+</section>
+<section id="agent-tags-skills">
+<h2>Agent Tags (Skills)<a class="headerlink" href="#agent-tags-skills" title="Link to this heading"></a></h2>
+<p>Tags define what skills or groups an agent belongs to. They’re used for skill-based routing from queues.</p>
+<p><strong>How Tags Work</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────────┐
+│                         Skill-Based Routing                              │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Agent Tags:                              Queue Requirements:
+┌─────────────────────────┐             ┌─────────────────────────┐
+│ Agent Smith             │             │ Support Queue           │
+│ Tags:                   │             │ Required Tags:          │
+│  • english              │             │  • english              │
+│  • billing              │             │  • billing              │
+│  • vip_support          │             └─────────────────────────┘
+└─────────────────────────┘                        │
+          │                                        │
+          └────────────────────┬───────────────────┘
+                               │
+                               ▼
+                      ┌───────────────────┐
+                      │ Agent Smith has   │
+                      │ ALL required tags │
+                      │ → Eligible!       │
+                      └───────────────────┘
+</pre></div>
+</div>
+<p><strong>Tag Matching Rules</strong></p>
+<ul class="simple">
+<li><p>Agent must have <strong>ALL</strong> tags the queue requires</p></li>
+<li><p>Having extra tags is fine (agent has “vip_support” but queue doesn’t require it)</p></li>
+<li><p>Tags can represent anything: languages, skills, departments, locations</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Example Tag Structure:
+┌─────────────────────────────────────────────────────────────────────────┐
+│                                                                          │
+│  Language Tags:     english, spanish, french, german                    │
+│                                                                          │
+│  Skill Tags:        billing, tech_support, sales, returns               │
+│                                                                          │
+│  Tier Tags:         tier1, tier2, supervisor, manager                   │
+│                                                                          │
+│  Department Tags:   customer_service, operations, hr                    │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+</pre></div>
+</div>
+<p><strong>Managing Agent Tags</strong></p>
+<p>Update an agent’s tags via the API:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">PUT</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">agents</span><span class="o">/</span><span class="p">{</span><span class="n">agent</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">tag_ids</span>
+
+<span class="p">{</span>
+    <span class="s2">&quot;tag_ids&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;uuid-for-english-tag&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;uuid-for-billing-tag&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;uuid-for-tier2-tag&quot;</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="contact-addresses">
+<h2>Contact Addresses<a class="headerlink" href="#contact-addresses" title="Link to this heading"></a></h2>
+<p>Each agent can have multiple contact addresses - these are the endpoints where calls are delivered when the agent is selected.</p>
+<p><strong>Address Types</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────────┐
+│                        Agent Contact Addresses                           │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Agent: John Smith
+┌─────────────────────────────────────────────────────────────────────────┐
+│ Addresses:                                                               │
+│                                                                          │
+│  1. Extension: 1001                                                     │
+│     → Rings desk phone registered to extension 1001                     │
+│                                                                          │
+│  2. Tel: +14155551234                                                   │
+│     → Rings mobile phone at this number                                 │
+│                                                                          │
+│  3. SIP: john@company.com                                               │
+│     → Rings SIP softphone client                                        │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+</pre></div>
+</div>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>extension</p></td>
+<td><p>Internal extension number (must be registered with VoIPBIN)</p></td>
+</tr>
+<tr class="row-odd"><td><p>tel</p></td>
+<td><p>External phone number in E.164 format (+15551234567)</p></td>
+</tr>
+<tr class="row-even"><td><p>sip</p></td>
+<td><p>Direct SIP address (<a class="reference external" href="mailto:user&#37;&#52;&#48;domain">user<span>&#64;</span>domain</a>)</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Address Uniqueness</strong></p>
+<p>Each address can only belong to one agent per customer:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>✓ Agent A has extension 1001 in Customer X
+✓ Agent B has extension 1001 in Customer Y  (different customer, OK)
+✗ Agent B has extension 1001 in Customer X  (same customer, CONFLICT)
+</pre></div>
+</div>
+</section>
 <section id="call-to-agent">
 <h2>Call to agent<a class="headerlink" href="#call-to-agent" title="Link to this heading"></a></h2>
 <p>To reach an agent, VoIPBIN employs a system that allows the agent to have multiple addresses. When a call is initiated to agents, VoIPBIN generates calls to every agent’s address simultaneously. If an agent answers one of the calls, VoIPBIN automatically terminates the other calls, streamlining the communication process and ensuring that only one connection is established with the available agent.</p>
+<p><strong>Simultaneous Ring</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────────┐
+│                      Agent with Multiple Addresses                       │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Queue finds Agent Smith (available)
+               │
+               ▼
+┌──────────────────────────────┐
+│  Ring ALL addresses at once  │
+└──────────────────────────────┘
+               │
+     ┌─────────┼─────────┐
+     ▼         ▼         ▼
+┌─────────┐ ┌─────────┐ ┌─────────┐
+│ Ext 1001│ │ Mobile  │ │ SIP App │
+│  RING!  │ │  RING!  │ │  RING!  │
+└────┬────┘ └────┬────┘ └────┬────┘
+     │          │          │
+     │          │          │ Agent answers on mobile!
+     │          │          ▼
+     │          │    ┌───────────┐
+     │          │    │ CONNECTED │
+     │          │    └───────────┘
+     │          │
+     ▼          ▼
+┌─────────┐ ┌─────────┐
+│ CANCEL  │ │ CANCEL  │  ← Other calls automatically cancelled
+└─────────┘ └─────────┘
+</pre></div>
+</div>
 <img alt="_images/agent_call.png" src="_images/agent_call.png" />
 <p>This approach enables efficient call handling, minimizing the time customers spend waiting for an available agent. The call distribution mechanism ensures that agents are optimally utilized, enhancing customer service and overall call center productivity.</p>
 </section>
+<section id="agent-lifecycle">
+<h2>Agent Lifecycle<a class="headerlink" href="#agent-lifecycle" title="Link to this heading"></a></h2>
+<p>Understanding the agent lifecycle helps you manage your call center effectively.</p>
+<p><strong>Creating an Agent</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────────┐
+│                         Agent Creation                                   │
+└─────────────────────────────────────────────────────────────────────────┘
+
+POST /v1/agents
+┌───────────────────────────────────────┐
+│ {                                     │
+│   &quot;username&quot;: &quot;john@company.com&quot;,     │
+│   &quot;password&quot;: &quot;secure_password&quot;,      │
+│   &quot;name&quot;: &quot;John Smith&quot;,               │
+│   &quot;tag_ids&quot;: [...],                   │
+│   &quot;addresses&quot;: [...]                  │
+│ }                                     │
+└───────────────────────────────────────┘
+                 │
+                 ▼
+┌───────────────────────────────────────┐
+│ Agent Created                         │
+│ • Status: offline (default)           │
+│ • Permission: user (default)          │
+│ • Ready to be configured              │
+└───────────────────────────────────────┘
+</pre></div>
+</div>
+<p><strong>Agent Login Flow</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────────┐
+│                          Agent Login                                     │
+└─────────────────────────────────────────────────────────────────────────┘
+
+1. Agent calls login API
+   POST /v1/login
+   { &quot;username&quot;: &quot;...&quot;, &quot;password&quot;: &quot;...&quot; }
+          │
+          ▼
+2. System validates credentials
+   ┌────────────────┐
+   │ Check password │
+   │ hash in DB     │
+   └────────────────┘
+          │
+          ▼
+3. Return agent info
+   ┌────────────────────────────────────┐
+   │ {                                  │
+   │   &quot;id&quot;: &quot;agent-uuid&quot;,              │
+   │   &quot;name&quot;: &quot;John Smith&quot;,            │
+   │   &quot;status&quot;: &quot;offline&quot;,             │
+   │   &quot;permission&quot;: &quot;user&quot;,            │
+   │   ...                              │
+   │ }                                  │
+   └────────────────────────────────────┘
+          │
+          ▼
+4. Agent sets status to &quot;available&quot;
+   PUT /v1/agents/{id}/status
+   { &quot;status&quot;: &quot;available&quot; }
+          │
+          ▼
+5. Agent is now ready to receive calls!
+</pre></div>
+</div>
+<p><strong>Guest Agent</strong></p>
+<p>Every customer account automatically has a guest agent created:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────────┐
+│                          Guest Agent                                     │
+└─────────────────────────────────────────────────────────────────────────┘
+
+• Created automatically when customer account is created
+• Has admin permissions
+• Cannot be deleted
+• Cannot have password changed
+• Ensures account always has at least one admin
+</pre></div>
+</div>
+</section>
+<section id="how-agents-receive-queue-calls">
+<h2>How Agents Receive Queue Calls<a class="headerlink" href="#how-agents-receive-queue-calls" title="Link to this heading"></a></h2>
+<p>The complete flow of how a call is routed from a queue to an agent:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────────┐
+│                    Queue to Agent Call Flow                              │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Step 1: Call waiting in queue
+┌──────────────────────┐
+│ Queuecall: waiting   │
+│ Queue: Support       │
+│ Required tags:       │
+│  • english           │
+│  • billing           │
+└──────────┬───────────┘
+           │
+           ▼
+Step 2: Queue searches for agents
+┌──────────────────────────────────────────────────────────────────────┐
+│ SELECT agents WHERE:                                                  │
+│   • customer_id = queue&#39;s customer_id                                │
+│   • status = &#39;available&#39;                                             │
+│   • has ALL required tags (english AND billing)                      │
+└──────────────────────────────────────────────────────────────────────┘
+           │
+           ▼
+Step 3: Select one agent (random)
+┌──────────────────────────────────────────────────────────────────────┐
+│ Found: Agent A, Agent C, Agent E                                      │
+│ Selected: Agent C (random)                                            │
+└──────────────────────────────────────────────────────────────────────┘
+           │
+           ▼
+Step 4: Route call to agent
+┌──────────────────────┐
+│ Agent C status:      │
+│ available → ringing  │
+└──────────┬───────────┘
+           │
+           │ Agent&#39;s phones ring
+           ▼
+Step 5: Agent answers
+┌──────────────────────┐
+│ Agent C status:      │
+│ ringing → busy       │
+│                      │
+│ Queuecall status:    │
+│ waiting → service    │
+└──────────────────────┘
+</pre></div>
+</div>
+</section>
+<section id="status-events-and-webhooks">
+<h2>Status Events and Webhooks<a class="headerlink" href="#status-events-and-webhooks" title="Link to this heading"></a></h2>
+<p>Agent status changes trigger events that you can subscribe to:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────────┐
+│                      Agent Status Events                                 │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Agent changes status
+       │
+       ▼
+┌──────────────────────┐
+│ agent_status_updated │
+│ event generated      │
+└──────────┬───────────┘
+           │
+           ├─────────────────────────────────────────┐
+           │                                         │
+           ▼                                         ▼
+┌──────────────────────┐              ┌──────────────────────┐
+│ Webhook notification │              │ Internal event       │
+│ to your endpoint     │              │ (other services)     │
+└──────────────────────┘              └──────────────────────┘
+</pre></div>
+</div>
+<p><strong>Example Webhook Payload</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;event_type&quot;</span><span class="p">:</span> <span class="s2">&quot;agent_status_updated&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;agent-uuid&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;John Smith&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;available&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;previous_status&quot;</span><span class="p">:</span> <span class="s2">&quot;offline&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:30:00Z&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
 <section id="permission">
 <h2>Permission<a class="headerlink" href="#permission" title="Link to this heading"></a></h2>
-<p>In the VoIPBin ecosystem, permissions play a crucial role in governing the actions that can be performed by the system’s agents. Each API within VoIPBin is subject to specific permission limitations, ensuring a secure and controlled environment.</p>
-<p>VoIPBin employs a robust permission framework to regulate access to its APIs, enhancing security and preventing unauthorized actions. Agents, representing entities interacting with the system, are assigned permissions that align with their intended functionalities.</p>
-<p>Every API in VoIPBin is associated with granular permission limitations. These limitations are designed to:</p>
+<p>In the VoIPBIN ecosystem, permissions play a crucial role in governing the actions that can be performed by the system’s agents. Each API within VoIPBIN is subject to specific permission limitations, ensuring a secure and controlled environment.</p>
+<p><strong>Permission Levels</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────────┐
+│                       Permission Hierarchy                               │
+└─────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│                           ADMIN                                          │
+│  • Full access to all APIs                                              │
+│  • Can manage other agents                                              │
+│  • Can view billing and account settings                                │
+│  • Can create/delete resources                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+                                │
+                                │ More restricted
+                                ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                            USER                                          │
+│  • Can view and use assigned resources                                  │
+│  • Can update own status                                                │
+│  • Cannot manage other agents                                           │
+│  • Limited administrative access                                        │
+└─────────────────────────────────────────────────────────────────────────┘
+</pre></div>
+</div>
+<p>VoIPBIN employs a robust permission framework to regulate access to its APIs, enhancing security and preventing unauthorized actions. Agents, representing entities interacting with the system, are assigned permissions that align with their intended functionalities.</p>
+<p>Every API in VoIPBIN is associated with granular permission limitations. These limitations are designed to:</p>
 <ul class="simple">
 <li><p>Restrict Access: Ensure that only authorized agents can invoke specific APIs.</p></li>
 </ul>
 <p>For clarity, consider an example where an agent is granted permission to access the “activeflows” API but is restricted from invoking certain actions within it. This granular control ensures that agents operate within defined boundaries.</p>
+</section>
+<section id="best-practices">
+<h2>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading"></a></h2>
+<p><strong>1. Set Up Appropriate Tags</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Good tag design:
+┌─────────────────────────────────────────┐
+│ • Use consistent naming                 │
+│ • Group by category (skill_, lang_)     │
+│ • Keep tags meaningful and specific     │
+│ • Document what each tag means          │
+└─────────────────────────────────────────┘
+</pre></div>
+</div>
+<p><strong>2. Configure Multiple Addresses</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>For reliability:
+┌─────────────────────────────────────────┐
+│ Agent Smith:                            │
+│  • Primary: Extension 1001 (desk)       │
+│  • Backup: +15551234567 (mobile)        │
+│                                         │
+│ → If desk phone is busy/down,           │
+│   mobile still rings                    │
+└─────────────────────────────────────────┘
+</pre></div>
+</div>
+<p><strong>3. Monitor Agent Status</strong></p>
+<ul class="simple">
+<li><p>Subscribe to status webhooks to track agent availability</p></li>
+<li><p>Build dashboards showing real-time agent status</p></li>
+<li><p>Set up alerts for agents stuck in unusual states</p></li>
+</ul>
+<p><strong>4. Handle Status Transitions Properly</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Common flow:
+1. Agent logs in → Status: offline
+2. Agent sets available → Status: available
+3. Call comes in → Status: ringing (automatic)
+4. Agent answers → Status: busy (automatic)
+5. Call ends → Status: available (if was available before)
+6. Agent takes break → Status: away (manual)
+7. Agent logs out → Status: offline (manual)
+</pre></div>
+</div>
+</section>
+<section id="common-scenarios">
+<h2>Common Scenarios<a class="headerlink" href="#common-scenarios" title="Link to this heading"></a></h2>
+<p><strong>Scenario 1: Agent Day Start</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>08:55 - Agent logs in
+       Status: offline
+
+09:00 - Agent sets available
+       Status: available
+       → Now eligible for queue calls
+</pre></div>
+</div>
+<p><strong>Scenario 2: Taking a Break</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Agent is available, receives call
+       Status: available → ringing → busy
+
+Call ends
+       Status: busy → available
+
+Agent takes lunch break
+       Status: available → away
+       → Not eligible for calls
+
+Agent returns
+       Status: away → available
+       → Eligible again
+</pre></div>
+</div>
+<p><strong>Scenario 3: End of Day</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Agent finishes last call
+       Status: busy → available
+
+Agent logs out for the day
+       Status: available → offline
+       → Not eligible for calls
+</pre></div>
+</div>
 </section>
 </section>
 
@@ -187,8 +699,16 @@
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
 <li><a class="reference internal" href="#">Overview</a><ul>
+<li><a class="reference internal" href="#agent-status">Agent Status</a></li>
+<li><a class="reference internal" href="#agent-tags-skills">Agent Tags (Skills)</a></li>
+<li><a class="reference internal" href="#contact-addresses">Contact Addresses</a></li>
 <li><a class="reference internal" href="#call-to-agent">Call to agent</a></li>
+<li><a class="reference internal" href="#agent-lifecycle">Agent Lifecycle</a></li>
+<li><a class="reference internal" href="#how-agents-receive-queue-calls">How Agents Receive Queue Calls</a></li>
+<li><a class="reference internal" href="#status-events-and-webhooks">Status Events and Webhooks</a></li>
 <li><a class="reference internal" href="#permission">Permission</a></li>
+<li><a class="reference internal" href="#best-practices">Best Practices</a></li>
+<li><a class="reference internal" href="#common-scenarios">Common Scenarios</a></li>
 </ul>
 </li>
 </ul>

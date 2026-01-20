@@ -392,12 +392,12 @@ VoIPBIN's Flow provides developers with a versatile and robust toolkit, empoweri
 
 Flow execution
 --------------
-In VoIPBin, the execution of flows is versatile and can be initiated through various methods:
+In VoIPBIN, the execution of flows is versatile and can be initiated through various methods:
 
 Incoming/Outgoing Calls
 +++++++++++++++++++++++
 
-VoIPBin facilitates flow execution with both incoming and outgoing calls. Users have the option to register a flow to a specific number. Upon an incoming call to the registered number, VoIPBin will seamlessly execute the associated flow.
+VoIPBIN facilitates flow execution with both incoming and outgoing calls. Users have the option to register a flow to a specific number. Upon an incoming call to the registered number, VoIPBIN will seamlessly execute the associated flow.
 Users can also initiate a call with a predefined flow. Once the outgoing call is answered, the attached flow will be triggered.
 
 ::
@@ -417,7 +417,7 @@ Users can also initiate a call with a predefined flow. Once the outgoing call is
 Received Messages
 ++++++++++++++++++
 
-VoIPBin allows users to register flows to received messages. When a message is received, the registered flow will be executed.
+VoIPBIN allows users to register flows to received messages. When a message is received, the registered flow will be executed.
 For example, you can register the flow like the below.
 
 .. code::
@@ -443,7 +443,7 @@ See detail about available variables at :ref:`here <variable-main>`.
 Outbound Campaigns
 ++++++++++++++++++
 
-The VoIPBin platform integrates flows into outbound campaigns, providing a structured and automated approach to execution.
+The VoIPBIN platform integrates flows into outbound campaigns, providing a structured and automated approach to execution.
 
 API
 +++

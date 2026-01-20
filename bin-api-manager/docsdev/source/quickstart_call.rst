@@ -6,7 +6,7 @@ In this Quickstart, you'll learn how to make an outbound voice call.
 
 Make your first voice call with manual actions
 -----------------------------------------------
-Use the Voipbin API to initiate an outbound telephone call from your Voipbin account.
+Use the VoIPBIN API to initiate an outbound telephone call from your VoIPBIN account.
 
 .. code::
 
@@ -77,9 +77,9 @@ Use the Voipbin API to initiate an outbound telephone call from your Voipbin acc
         }
     ]
 
-Make your first voice call with existed flow
---------------------------------------------
-Use the Voipbin API to initiate an outbound telephone call with existed flow.
+Make your first voice call with existing flow
+---------------------------------------------
+Use the VoIPBIN API to initiate an outbound telephone call with existing flow.
 
 .. code::
 

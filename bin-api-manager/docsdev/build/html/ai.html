@@ -163,35 +163,35 @@
 <h1>AI<a class="headerlink" href="#ai" title="Link to this heading"></a></h1>
 <section id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
-<p>VoIPBin’s AI is a built-in AI agent that enables automated, intelligent voice interactions during live calls. Designed for seamless integration within VoIPBin’s flow, the AI utilizes ChatGPT as its AI engine to process and respond to user inputs in real time. This allows developers to create dynamic and interactive voice experiences without requiring manual intervention.</p>
+<p>VoIPBIN’s AI is a built-in AI agent that enables automated, intelligent voice interactions during live calls. Designed for seamless integration within VoIPBIN’s flow, the AI utilizes ChatGPT as its AI engine to process and respond to user inputs in real time. This allows developers to create dynamic and interactive voice experiences without requiring manual intervention.</p>
 </section>
 <section id="how-it-works">
 <h2>How it works<a class="headerlink" href="#how-it-works" title="Link to this heading"></a></h2>
 <section id="action-component">
 <h3>Action component<a class="headerlink" href="#action-component" title="Link to this heading"></a></h3>
-<p>The AI is integrated as one of the configurable components within a VoIPBin flow. When a call reaches an AI action, the system triggers the AI to generate a response based on the provided prompt. The response is then processed and played back to the caller using text-to-speech (TTS). If the response is in a structured JSON format, VoIPBin executes the defined actions accordingly.</p>
+<p>The AI is integrated as one of the configurable components within a VoIPBIN flow. When a call reaches an AI action, the system triggers the AI to generate a response based on the provided prompt. The response is then processed and played back to the caller using text-to-speech (TTS). If the response is in a structured JSON format, VoIPBIN executes the defined actions accordingly.</p>
 <img alt="AI component in action builder" class="align-center" src="_images/ai_overview_overview.png" />
 </section>
 <section id="tts-stt-ai-engine">
 <h3>TTS/STT + AI Engine<a class="headerlink" href="#tts-stt-ai-engine" title="Link to this heading"></a></h3>
-<p>VoIPBin’s AI is built using TTS/STT + AI Engine, where speech-to-text (STT) converts spoken words into text, and text-to-speech (TTS) converts responses back into audio. The system processes these in real time, enabling seamless conversations.</p>
+<p>VoIPBIN’s AI is built using TTS/STT + AI Engine, where speech-to-text (STT) converts spoken words into text, and text-to-speech (TTS) converts responses back into audio. The system processes these in real time, enabling seamless conversations.</p>
 <img alt="AI implementation using TTS/STT + AI Engine" class="align-center" src="_images/ai_overview_stt_tts.png" />
 </section>
 <section id="voice-detection-and-play-interruption">
 <h3>Voice Detection and Play Interruption:<a class="headerlink" href="#voice-detection-and-play-interruption" title="Link to this heading"></a></h3>
-<p>In addition to basic TTS and STT functionalities, VoIPBin incorporates voice detection to create a more natural conversational flow. While the AI is speaking (i.e., playing TTS media), if the system detects the caller’s voice, it immediately stops the TTS playback and routes the caller’s speech (via STT) to the AI engine. This play interruption feature ensures that if the user starts talking, their input is prioritized, enabling a dynamic interaction that more closely resembles a real conversation.</p>
+<p>In addition to basic TTS and STT functionalities, VoIPBIN incorporates voice detection to create a more natural conversational flow. While the AI is speaking (i.e., playing TTS media), if the system detects the caller’s voice, it immediately stops the TTS playback and routes the caller’s speech (via STT) to the AI engine. This play interruption feature ensures that if the user starts talking, their input is prioritized, enabling a dynamic interaction that more closely resembles a real conversation.</p>
 </section>
 <section id="context-retention">
 <h3>Context Retention<a class="headerlink" href="#context-retention" title="Link to this heading"></a></h3>
-<p>VoIPBin’s AI supports context saving. During a conversation, the AI remembers prior exchanges, allowing it to maintain continuity and respond based on earlier parts of the interaction. This provides a more natural and human-like dialogue experience.</p>
+<p>VoIPBIN’s AI supports context saving. During a conversation, the AI remembers prior exchanges, allowing it to maintain continuity and respond based on earlier parts of the interaction. This provides a more natural and human-like dialogue experience.</p>
 </section>
 <section id="multilingual-support">
 <h3>Multilingual support<a class="headerlink" href="#multilingual-support" title="Link to this heading"></a></h3>
-<p>VoIPBin’s AI supports multiple languages. See supported languages: <a class="reference internal" href="transcribe_overview.html#transcribe-overview-supported-languages"><span class="std std-ref">supported languages</span></a>.</p>
+<p>VoIPBIN’s AI supports multiple languages. See supported languages: <a class="reference internal" href="transcribe_overview.html#transcribe-overview-supported-languages"><span class="std std-ref">supported languages</span></a>.</p>
 </section>
 <section id="external-ai-agent-integration">
 <h3>External AI Agent Integration<a class="headerlink" href="#external-ai-agent-integration" title="Link to this heading"></a></h3>
-<p>For users who prefer to use external AI services, VoIPBin offers media stream access via MCP (Media Control Protocol). This allows third-party AI engines to process voice data directly, enabling deeper customization and advanced AI capabilities.</p>
+<p>For users who prefer to use external AI services, VoIPBIN offers media stream access via MCP (Media Control Protocol). This allows third-party AI engines to process voice data directly, enabling deeper customization and advanced AI capabilities.</p>
 </section>
 <section id="mcp-server">
 <h3>MCP Server<a class="headerlink" href="#mcp-server" title="Link to this heading"></a></h3>
@@ -218,7 +218,7 @@
 </section>
 <section id="ai-talk">
 <h2>AI Talk<a class="headerlink" href="#ai-talk" title="Link to this heading"></a></h2>
-<p><strong>AI Talk</strong> enables real-time conversational AI with voice in VoIPBin, powered by <strong>ElevenLabs’ voice engine</strong> for natural-sounding speech.</p>
+<p><strong>AI Talk</strong> enables real-time conversational AI with voice in VoIPBIN, powered by <strong>ElevenLabs’ voice engine</strong> for natural-sounding speech.</p>
 <a class="reference internal image-reference" href="_images/ai_overview_ai_talk.png"><img alt="AI Talk component in action builder" class="align-center" src="_images/ai_overview_ai_talk.png" style="width: 300px;" />
 </a>
 <section id="key-features">
@@ -233,7 +233,7 @@ This ensures a smooth and continuous conversation flow.</p></li>
 </section>
 <section id="built-in-elevenlabs-voice-ids">
 <h3>Built-in ElevenLabs Voice IDs<a class="headerlink" href="#built-in-elevenlabs-voice-ids" title="Link to this heading"></a></h3>
-<p>VoIPBin uses a predefined set of voice IDs for various languages and genders. Here are the default ElevenLabs Voice IDs currently in use:</p>
+<p>VoIPBIN uses a predefined set of voice IDs for various languages and genders. Here are the default ElevenLabs Voice IDs currently in use:</p>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Language</p></th>
@@ -318,7 +318,7 @@ This ensures a smooth and continuous conversation flow.</p></li>
 </section>
 <section id="other-elevenlabs-voice-id-options">
 <h3>Other ElevenLabs Voice ID Options<a class="headerlink" href="#other-elevenlabs-voice-id-options" title="Link to this heading"></a></h3>
-<p>Voipbin allows you to personalize the text-to-speech output by specifying a custom ElevenLabs Voice ID. By setting the <em>voipbin.tts.elevenlabs.voice_id</em> variable, you can override the default voice selection.</p>
+<p>VoIPBIN allows you to personalize the text-to-speech output by specifying a custom ElevenLabs Voice ID. By setting the <em>voipbin.tts.elevenlabs.voice_id</em> variable, you can override the default voice selection.</p>
 <blockquote>
 <div><p>voipbin.tts.elevenlabs.voice_id: &lt;Your Custom Voice ID&gt;</p>
 </div></blockquote>
@@ -327,7 +327,7 @@ This ensures a smooth and continuous conversation flow.</p></li>
 </section>
 <section id="ai-summary">
 <h2>AI Summary<a class="headerlink" href="#ai-summary" title="Link to this heading"></a></h2>
-<p>The AI Summary feature in VoIPBin generates structured summaries of call transcriptions, recordings, or conference discussions. It provides a concise summary of key points, decisions, and action items based on the provided transcription source.</p>
+<p>The AI Summary feature in VoIPBIN generates structured summaries of call transcriptions, recordings, or conference discussions. It provides a concise summary of key points, decisions, and action items based on the provided transcription source.</p>
 <img alt="AI summary component in action builder" class="align-center" src="_images/ai_overview_summary.png" />
 <section id="supported-resources">
 <h3>Supported Resources<a class="headerlink" href="#supported-resources" title="Link to this heading"></a></h3>
@@ -447,6 +447,267 @@ This ensures a smooth and continuous conversation flow.</p></li>
 </table>
 </section>
 </section>
+<section id="tutorial">
+<span id="ai-tutorial"></span><h2>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h2>
+<section id="simple-ai-voice-assistant">
+<h3>Simple AI Voice Assistant<a class="headerlink" href="#simple-ai-voice-assistant" title="Link to this heading"></a></h3>
+<p>Create a basic AI voice assistant that answers questions during a call. The AI will listen to the caller’s speech, process it, and respond using text-to-speech.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;source&quot;: {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;+15551234567&quot;
+        },
+        &quot;destinations&quot;: [
+            {
+                &quot;type&quot;: &quot;tel&quot;,
+                &quot;target&quot;: &quot;+15559876543&quot;
+            }
+        ],
+        &quot;actions&quot;: [
+            {
+                &quot;type&quot;: &quot;answer&quot;
+            },
+            {
+                &quot;type&quot;: &quot;ai&quot;,
+                &quot;option&quot;: {
+                    &quot;initial_prompt&quot;: &quot;You are a helpful customer service assistant. Answer questions politely and concisely.&quot;,
+                    &quot;language&quot;: &quot;en-US&quot;,
+                    &quot;voice_type&quot;: &quot;female&quot;
+                }
+            }
+        ]
+    }&#39;
+</pre></div>
+</div>
+<p>This creates a call with an AI assistant that will:
+1. Answer the incoming call
+2. Listen to the caller’s speech using STT (Speech-to-Text)
+3. Process the input through the AI engine with the given prompt
+4. Respond using TTS (Text-to-Speech)</p>
+</section>
+<section id="ai-talk-with-real-time-conversation">
+<h3>AI Talk with Real-Time Conversation<a class="headerlink" href="#ai-talk-with-real-time-conversation" title="Link to this heading"></a></h3>
+<p>Use AI Talk for more natural, low-latency conversations powered by ElevenLabs. This enables interruption detection where the AI stops speaking when the caller starts talking.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;source&quot;: {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;+15551234567&quot;
+        },
+        &quot;destinations&quot;: [
+            {
+                &quot;type&quot;: &quot;tel&quot;,
+                &quot;target&quot;: &quot;+15559876543&quot;
+            }
+        ],
+        &quot;actions&quot;: [
+            {
+                &quot;type&quot;: &quot;answer&quot;
+            },
+            {
+                &quot;type&quot;: &quot;ai_talk&quot;,
+                &quot;option&quot;: {
+                    &quot;initial_prompt&quot;: &quot;You are an expert sales representative for VoIPBIN. Help customers understand our calling and messaging platform. Be enthusiastic but professional.&quot;,
+                    &quot;language&quot;: &quot;en-US&quot;,
+                    &quot;voice_type&quot;: &quot;male&quot;
+                }
+            }
+        ]
+    }&#39;
+</pre></div>
+</div>
+<p>AI Talk provides:
+- <strong>Interruption Detection</strong>: Stops speaking when caller talks
+- <strong>Low Latency</strong>: Streams responses in chunks for faster perceived response time
+- <strong>Natural Voice</strong>: Uses ElevenLabs for high-quality voice output
+- <strong>Context Retention</strong>: Remembers previous conversation exchanges</p>
+</section>
+<section id="ai-with-custom-voice-id">
+<h3>AI with Custom Voice ID<a class="headerlink" href="#ai-with-custom-voice-id" title="Link to this heading"></a></h3>
+<p>Customize the AI voice by specifying an ElevenLabs Voice ID using variables.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;source&quot;: {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;+15551234567&quot;
+        },
+        &quot;destinations&quot;: [
+            {
+                &quot;type&quot;: &quot;tel&quot;,
+                &quot;target&quot;: &quot;+15559876543&quot;
+            }
+        ],
+        &quot;actions&quot;: [
+            {
+                &quot;type&quot;: &quot;answer&quot;
+            },
+            {
+                &quot;type&quot;: &quot;variable_set&quot;,
+                &quot;option&quot;: {
+                    &quot;key&quot;: &quot;voipbin.tts.elevenlabs.voice_id&quot;,
+                    &quot;value&quot;: &quot;21m00Tcm4TlvDq8ikWAM&quot;
+                }
+            },
+            {
+                &quot;type&quot;: &quot;ai_talk&quot;,
+                &quot;option&quot;: {
+                    &quot;initial_prompt&quot;: &quot;You are a friendly receptionist. Greet callers warmly and help them with their inquiries.&quot;,
+                    &quot;language&quot;: &quot;en-US&quot;
+                }
+            }
+        ]
+    }&#39;
+</pre></div>
+</div>
+<p>See <span class="xref std std-ref">Built-in ElevenLabs Voice IDs</span> for available voice options.</p>
+</section>
+<section id="ai-summary-for-call-transcription">
+<h3>AI Summary for Call Transcription<a class="headerlink" href="#ai-summary-for-call-transcription" title="Link to this heading"></a></h3>
+<p>Generate an AI-powered summary of a call transcription. This is useful for post-call analysis and record-keeping.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;source&quot;: {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;+15551234567&quot;
+        },
+        &quot;destinations&quot;: [
+            {
+                &quot;type&quot;: &quot;tel&quot;,
+                &quot;target&quot;: &quot;+15559876543&quot;
+            }
+        ],
+        &quot;actions&quot;: [
+            {
+                &quot;type&quot;: &quot;answer&quot;
+            },
+            {
+                &quot;type&quot;: &quot;transcribe_start&quot;,
+                &quot;option&quot;: {
+                    &quot;language&quot;: &quot;en-US&quot;
+                }
+            },
+            {
+                &quot;type&quot;: &quot;talk&quot;,
+                &quot;option&quot;: {
+                    &quot;text&quot;: &quot;Hello! This call is being transcribed and summarized. Please tell me about your experience with our service.&quot;,
+                    &quot;language&quot;: &quot;en-US&quot;
+                }
+            },
+            {
+                &quot;type&quot;: &quot;wait&quot;,
+                &quot;option&quot;: {
+                    &quot;duration&quot;: 30000
+                }
+            },
+            {
+                &quot;type&quot;: &quot;ai_summary&quot;,
+                &quot;option&quot;: {
+                    &quot;source_type&quot;: &quot;transcribe&quot;,
+                    &quot;source_id&quot;: &quot;${voipbin.transcribe.id}&quot;
+                }
+            },
+            {
+                &quot;type&quot;: &quot;talk&quot;,
+                &quot;option&quot;: {
+                    &quot;text&quot;: &quot;Thank you for your feedback. We have recorded and summarized your call.&quot;,
+                    &quot;language&quot;: &quot;en-US&quot;
+                }
+            }
+        ]
+    }&#39;
+</pre></div>
+</div>
+<p>The AI summary will:
+- Process the transcription from <code class="docutils literal notranslate"><span class="pre">transcribe_start</span></code>
+- Generate a structured summary of key points
+- Store the summary in <code class="docutils literal notranslate"><span class="pre">${voipbin.ai_summary.result}</span></code>
+- Can be accessed via webhook or API after the call</p>
+</section>
+<section id="real-time-ai-summary">
+<h3>Real-Time AI Summary<a class="headerlink" href="#real-time-ai-summary" title="Link to this heading"></a></h3>
+<p>Get AI summaries while the call is still active. Useful for live call monitoring and agent assistance.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;source&quot;: {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;+15551234567&quot;
+        },
+        &quot;destinations&quot;: [
+            {
+                &quot;type&quot;: &quot;tel&quot;,
+                &quot;target&quot;: &quot;+15559876543&quot;
+            }
+        ],
+        &quot;actions&quot;: [
+            {
+                &quot;type&quot;: &quot;answer&quot;
+            },
+            {
+                &quot;type&quot;: &quot;transcribe_start&quot;,
+                &quot;option&quot;: {
+                    &quot;language&quot;: &quot;en-US&quot;,
+                    &quot;real_time&quot;: true
+                }
+            },
+            {
+                &quot;type&quot;: &quot;ai_summary&quot;,
+                &quot;option&quot;: {
+                    &quot;source_type&quot;: &quot;call&quot;,
+                    &quot;source_id&quot;: &quot;${voipbin.call.id}&quot;,
+                    &quot;real_time&quot;: true
+                }
+            },
+            {
+                &quot;type&quot;: &quot;connect&quot;,
+                &quot;option&quot;: {
+                    &quot;source&quot;: {
+                        &quot;type&quot;: &quot;tel&quot;,
+                        &quot;target&quot;: &quot;+15551234567&quot;
+                    },
+                    &quot;destinations&quot;: [
+                        {
+                            &quot;type&quot;: &quot;tel&quot;,
+                            &quot;target&quot;: &quot;+15551111111&quot;
+                        }
+                    ]
+                }
+            }
+        ]
+    }&#39;
+</pre></div>
+</div>
+<p>Real-time summaries provide:
+- <strong>Live Updates</strong>: Summary updates as conversation progresses
+- <strong>Agent Assistance</strong>: Provides context to agents joining mid-call
+- <strong>Call Monitoring</strong>: Enables supervisors to quickly understand ongoing calls</p>
+</section>
+<section id="best-practices">
+<h3>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading"></a></h3>
+<p><strong>Initial Prompt Design:</strong>
+- Be specific about the AI’s role and behavior
+- Include constraints (e.g., “Keep responses under 30 seconds”)
+- Define the tone (professional, friendly, technical, etc.)</p>
+<p><strong>Language Support:</strong>
+- AI supports multiple languages (see <a class="reference internal" href="transcribe_overview.html#transcribe-overview-supported-languages"><span class="std std-ref">supported languages</span></a>)
+- Match the <code class="docutils literal notranslate"><span class="pre">language</span></code> parameter with caller’s expected language
+- AI can detect and respond in multiple languages if not constrained</p>
+<p><strong>Context Retention:</strong>
+- AI remembers conversation history within the same call
+- Variables set during the call are available to AI
+- Use context to build multi-turn conversations</p>
+<p><strong>Error Handling:</strong>
+- Always include fallback actions after AI actions
+- Handle cases where AI may not understand the input
+- Provide clear instructions to callers about what they can ask</p>
+<p>For more details on AI features and configuration, see <span class="xref std std-ref">AI Overview</span>.</p>
+</section>
+</section>
 </section>
 
 </main>
@@ -502,6 +763,15 @@ This ensures a smooth and continuous conversation flow.</p></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#type">Type</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#tutorial">Tutorial</a><ul>
+<li><a class="reference internal" href="#simple-ai-voice-assistant">Simple AI Voice Assistant</a></li>
+<li><a class="reference internal" href="#ai-talk-with-real-time-conversation">AI Talk with Real-Time Conversation</a></li>
+<li><a class="reference internal" href="#ai-with-custom-voice-id">AI with Custom Voice ID</a></li>
+<li><a class="reference internal" href="#ai-summary-for-call-transcription">AI Summary for Call Transcription</a></li>
+<li><a class="reference internal" href="#real-time-ai-summary">Real-Time AI Summary</a></li>
+<li><a class="reference internal" href="#best-practices">Best Practices</a></li>
 </ul>
 </li>
 </ul>

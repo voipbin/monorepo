@@ -2,7 +2,7 @@
 
 Channels
 ========
-VoIPBin offers a comprehensive range of channels to cater to various communication needs, empowering users to build robust and scalable communication applications.
+VoIPBIN offers a comprehensive range of channels to cater to various communication needs, empowering users to build robust and scalable communication applications.
 
 .. image:: _static/images/intro_feature_feature.png
 
@@ -16,7 +16,7 @@ See detail at :ref:`here <call-overview>`.
 
 Account Notifications
 +++++++++++++++++++++
-VoIPBin provides Messaging and Voice APIs that allow businesses to keep their customers informed about every change to their accounts. This enables proactive and personalized communication, enhancing the overall customer experience.
+VoIPBIN provides Messaging and Voice APIs that allow businesses to keep their customers informed about every change to their accounts. This enables proactive and personalized communication, enhancing the overall customer experience.
 
 Call Tracking
 +++++++++++++
@@ -24,21 +24,21 @@ With Call Tracking, businesses can accurately attribute calls, measure the effec
 
 Programmable calling
 ++++++++++++++++++++
-Using VoIPBin's action flow, developers can rapidly build scalable WebRTC/PSTN/VoIP voice applications with uniform performance across all protocols and devices. This flexibility ensures a seamless and consistent communication experience for users.
+Using VoIPBIN's action flow, developers can rapidly build scalable WebRTC/PSTN/VoIP voice applications with uniform performance across all protocols and devices. This flexibility ensures a seamless and consistent communication experience for users.
 
 Global conferencing
 +++++++++++++++++++
-VoIPBin facilitates multi-party calling experiences with global dial-in/out support. The Global Conferencing feature enables businesses to connect participants from different geographical locations, fostering collaboration and communication across borders.
+VoIPBIN facilitates multi-party calling experiences with global dial-in/out support. The Global Conferencing feature enables businesses to connect participants from different geographical locations, fostering collaboration and communication across borders.
 
 Interactive voice response(IVR)
 +++++++++++++++++++++++++++++++
-The IVR system offered by VoIPBin enables businesses to increase customer engagement and reduce operational costs. With the ability to respond to commands and build text-to-speech experiences in hundreds of languages, businesses can deliver personalized and efficient customer service.
+The IVR system offered by VoIPBIN enables businesses to increase customer engagement and reduce operational costs. With the ability to respond to commands and build text-to-speech experiences in hundreds of languages, businesses can deliver personalized and efficient customer service.
 
 .. _intro-channels-messaging:
 
 Messaging
 ---------
-Messaging on the VoIPBin platform provides a centralized and scalable solution to engage customers across their preferred channels. VoIPBin's enterprise-ready APIs and intelligent network ensure unrivaled reliability at any scale.
+Messaging on the VoIPBIN platform provides a centralized and scalable solution to engage customers across their preferred channels. VoIPBIN's enterprise-ready APIs and intelligent network ensure unrivaled reliability at any scale.
 
 Programmable Messaging API
 ++++++++++++++++++++++++++
@@ -56,4 +56,4 @@ See detail at :ref:`here <conversation-overview>`.
 
 Video
 -----
-VoIPBin Video allows developers to build memorable and customized video experiences. With this feature, businesses can embed video experiences into their applications at scale, enhancing engagement and communication with users.
+VoIPBIN Video allows developers to build memorable and customized video experiences. With this feature, businesses can embed video experiences into their applications at scale, enhancing engagement and communication with users.

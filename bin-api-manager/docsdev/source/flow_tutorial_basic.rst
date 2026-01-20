@@ -10,7 +10,7 @@ Gets the list of registered flows.
 
 .. code::
 
-    $ curl -k --location --request GET 'https://api.voipbin.net/v1.0/flows?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM'
+    $ curl -k --location --request GET 'https://api.voipbin.net/v1.0/flows?token=<YOUR_AUTH_TOKEN>'
 
     {
         "result": [
@@ -69,7 +69,7 @@ Gets the detail of registered flows.
 
 .. code::
 
-    $ curl -k --location --request GET 'https://api.voipbin.net/v1.0/flows/decc2634-0b2a-11eb-b38d-87a8f1051188?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM'
+    $ curl -k --location --request GET 'https://api.voipbin.net/v1.0/flows/decc2634-0b2a-11eb-b38d-87a8f1051188?token=<YOUR_AUTH_TOKEN>'
 
     {
         "id": "decc2634-0b2a-11eb-b38d-87a8f1051188",
@@ -108,7 +108,7 @@ When the call is incoming, this flow will answer the call first, then speak the 
 
 .. code::
 
-    $ curl -k --location --request POST 'https://api.voipbin.net/v1.0/flows?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM' \
+    $ curl -k --location --request POST 'https://api.voipbin.net/v1.0/flows?token=<YOUR_AUTH_TOKEN>' \
     --header 'Content-Type: application/json' \
     --data-raw '{
         "name": "test flow",
@@ -160,7 +160,7 @@ This doesn't affect existing calls. Flow changes will only affect new calls.
 
 .. code::
 
-    $ curl -k --location --request PUT 'https://api.voipbin.net/v1.0/flows/decc2634-0b2a-11eb-b38d-87a8f1051188?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM' \
+    $ curl -k --location --request PUT 'https://api.voipbin.net/v1.0/flows/decc2634-0b2a-11eb-b38d-87a8f1051188?token=<YOUR_AUTH_TOKEN>' \
     --header 'Content-Type: application/json' \
     --data-raw '{
         "name": "test flow update",
@@ -246,5 +246,5 @@ This doesn't affect existing calls.
 
 .. code::
 
-    $ curl -k --location --request GET 'https://api.voipbin.net/v1.0/flows/af9dae94-ef07-11ea-a101-8f52e568f39b?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM' \
+    $ curl -k --location --request GET 'https://api.voipbin.net/v1.0/flows/af9dae94-ef07-11ea-a101-8f52e568f39b?token=<YOUR_AUTH_TOKEN>' \
 

@@ -10,7 +10,7 @@ Example
 
 .. code::
 
-    $ curl -k --location --request GET 'https://api.voipbin.net/v1.0/recordings?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTIyMzIxOTcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.of3jiawHOaTaq5t7USc25aVcSag-RhuXfYNdItXrDds&page_size=10&page_token=2021-05-03+21%3A35%3A02.809'
+    $ curl -k --location --request GET 'https://api.voipbin.net/v1.0/recordings?token=<YOUR_AUTH_TOKEN>&page_size=10&page_token=2021-05-03+21%3A35%3A02.809'
 
     {
         "result": [
@@ -68,7 +68,7 @@ Example
 
 .. code::
 
-    $ curl -k --location --request GET 'https://api.voipbin.net/v1.0/recordings/f27d65bc-2f10-49e1-a49d-a7762965df13?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTIyMzIxOTcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.of3jiawHOaTaq5t7USc25aVcSag-RhuXfYNdItXrDds'
+    $ curl -k --location --request GET 'https://api.voipbin.net/v1.0/recordings/f27d65bc-2f10-49e1-a49d-a7762965df13?token=<YOUR_AUTH_TOKEN>'
 
     {
         "id": "f27d65bc-2f10-49e1-a49d-a7762965df13",
@@ -93,7 +93,7 @@ Example
 
 .. code::
 
-    $ curl -k --location --request GET 'https://api.voipbin.net/v1.0/recordingfiles/348d988b-2ac9-4702-84f0-ae81301ad349?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTIyMzIxOTcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.of3jiawHOaTaq5t7USc25aVcSag-RhuXfYNdItXrDds' -o tmp.wav
+    $ curl -k --location --request GET 'https://api.voipbin.net/v1.0/recordingfiles/348d988b-2ac9-4702-84f0-ae81301ad349?token=<YOUR_AUTH_TOKEN>' -o tmp.wav
 
     $ play tmp.wav                                                                                                                                                                                     11s
 

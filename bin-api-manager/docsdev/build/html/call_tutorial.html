@@ -163,17 +163,17 @@
 <h2>Simple outbound call with TTS<a class="headerlink" href="#simple-outbound-call-with-tts" title="Link to this heading"></a></h2>
 <p>Making an outbound call with TTS(Text-to-Speech) action.
 When the destination answer the call, it will speak the given text message.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MDcyNjM5MjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.py7AwXIO0ZNBWSS1PN-05L9oYEREjGgbkkE6CcVyuzw&#39; \
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
     --data-raw &#39;{
         &quot;source&quot;: {
             &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+821028286521&quot;
+            &quot;target&quot;: &quot;+15551234567&quot;
         },
         &quot;destinations&quot;: [
             {
                 &quot;type&quot;: &quot;tel&quot;,
-                &quot;target&quot;: &quot;+821021656521&quot;
+                &quot;target&quot;: &quot;+15559876543&quot;
             }
         ],
         &quot;actions&quot;: [
@@ -194,17 +194,17 @@ When the destination answer the call, it will speak the given text message.</p>
 <h2>Simple outbound call with media file play<a class="headerlink" href="#simple-outbound-call-with-media-file-play" title="Link to this heading"></a></h2>
 <p>Making an outbound call with media file play action.
 When the destination answer the call, it will play the given media file.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM&#39; \
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
 --header &#39;Content-Type: application/json&#39; \
 --data-raw &#39;{
     &quot;source&quot;: {
         &quot;type&quot;: &quot;tel&quot;,
-        &quot;target&quot;: &quot;+821028286521&quot;
+        &quot;target&quot;: &quot;+15551234567&quot;
     },
     &quot;destinations&quot;: [
         {
             &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+821021656521&quot;
+            &quot;target&quot;: &quot;+15559876543&quot;
         }
     ],
     &quot;actions&quot;: [
@@ -232,12 +232,12 @@ When the destination answer the call, it will play the given media file.</p>
         &quot;recording_ids&quot;: [],
         &quot;source&quot;: {
             &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+821028286521&quot;,
+            &quot;target&quot;: &quot;+15551234567&quot;,
             &quot;name&quot;: &quot;&quot;
         },
         &quot;destination&quot;: {
             &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+821021656521&quot;,
+            &quot;target&quot;: &quot;+15559876543&quot;,
             &quot;name&quot;: &quot;&quot;
         },
         &quot;status&quot;: &quot;dialing&quot;,
@@ -257,18 +257,18 @@ When the destination answer the call, it will play the given media file.</p>
 <section id="simple-outbound-call-with-tts-and-connect">
 <h2>Simple outbound call with TTS and connect<a class="headerlink" href="#simple-outbound-call-with-tts-and-connect" title="Link to this heading"></a></h2>
 <p>Making an outbound call with TTS(Text-to-Speech) and connect to other destination.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM&#39; \
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
 --header &#39;Content-Type: application/json&#39; \
---header &#39;Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM&#39; \
+--header &#39;Cookie: token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
 --data-raw &#39;{
     &quot;source&quot;: {
         &quot;type&quot;: &quot;tel&quot;,
-        &quot;target&quot;: &quot;+821021656521&quot;
+        &quot;target&quot;: &quot;+15559876543&quot;
     },
     &quot;destinations&quot;: [
         {
             &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+821021656521&quot;
+            &quot;target&quot;: &quot;+15559876543&quot;
         }
     ],
     &quot;actions&quot;: [
@@ -285,12 +285,12 @@ When the destination answer the call, it will play the given media file.</p>
             &quot;option&quot;: {
                 &quot;source&quot;: {
                     &quot;type&quot;: &quot;tel&quot;,
-                    &quot;target&quot;: &quot;+821021656521&quot;
+                    &quot;target&quot;: &quot;+15559876543&quot;
                 },
                 &quot;destinations&quot;: [
                     {
                         &quot;type&quot;: &quot;tel&quot;,
-                        &quot;target&quot;: &quot;+821043126521&quot;
+                        &quot;target&quot;: &quot;+15551111111&quot;
                     }
                 ]
             }
@@ -311,12 +311,12 @@ When the destination answer the call, it will play the given media file.</p>
         &quot;recording_ids&quot;: [],
         &quot;source&quot;: {
             &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+821021656521&quot;,
+            &quot;target&quot;: &quot;+15559876543&quot;,
             &quot;name&quot;: &quot;&quot;
         },
         &quot;destination&quot;: {
             &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+821021656521&quot;,
+            &quot;target&quot;: &quot;+15559876543&quot;,
             &quot;name&quot;: &quot;&quot;
         },
         &quot;status&quot;: &quot;dialing&quot;,
@@ -339,12 +339,12 @@ When the destination answer the call, it will play the given media file.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821028286521&quot;</span>
+        <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15551234567&quot;</span>
     <span class="p">},</span>
     <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span>
         <span class="p">{</span>
             <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821021656521&quot;</span>
+            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15559876543&quot;</span>
         <span class="p">}</span>
     <span class="p">],</span>
     <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
@@ -388,12 +388,12 @@ When the destination answer the call, it will play the given media file.</p>
         <span class="s2">&quot;recording_ids&quot;</span><span class="p">:</span> <span class="p">[],</span>
         <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821028286521&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15551234567&quot;</span><span class="p">,</span>
             <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
         <span class="p">},</span>
         <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821021656521&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15559876543&quot;</span><span class="p">,</span>
             <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
         <span class="p">},</span>
         <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;dialing&quot;</span><span class="p">,</span>
@@ -444,18 +444,18 @@ When the destination answer the call, it will play the given media file.</p>
        <span class="n">Hangup</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdXN0b21lciI6IntcImlkXCI6XCI1ZTRhMDY4MC04MDRlLTExZWMtODQ3Ny0yZmVhNTk2OGQ4NWJcIixcInVzZXJuYW1lXCI6XCJhZG1pblwiLFwibmFtZVwiOlwiYWRtaW5cIixcImRldGFpbFwiOlwiYWRtaW4gYWNjb3VudFwiLFwid2ViaG9va19tZXRob2RcIjpcIlBPU1RcIixcIndlYmhvb2tfdXJpXCI6XCJodHRwczovL2VueDM4NTN6M2pnMnEueC5waXBlZHJlYW0ubmV0L1wiLFwicGVybWlzc2lvbl9pZHNcIjpbXCIwMzc5NmUxNC03Y2I0LTExZWMtOWRiYS1lNzIwMjNlZmQxYzZcIl0sXCJ0bV9jcmVhdGVcIjpcIjIwMjItMDItMDEgMDA6MDA6MDAuMDAwMDAwXCIsXCJ0bV91cGRhdGVcIjpcIjIwMjItMDQtMTQgMDE6Mjg6NDYuNDU0ODk3XCIsXCJ0bV9kZWxldGVcIjpcIjk5OTktMDEtMDEgMDA6MDA6MDAuMDAwMDAwXCJ9IiwiZXhwIjoxNjUyMjkwNDYyfQ.-jaqJyjISxKmyDxRiFYopD0FA8vlZ_jJ1Sd9mqxCun0&#39; \
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
 --header &#39;Content-Type: application/json&#39; \
---header &#39;Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdXN0b21lciI6IntcImlkXCI6XCI1ZTRhMDY4MC04MDRlLTExZWMtODQ3Ny0yZmVhNTk2OGQ4NWJcIixcInVzZXJuYW1lXCI6XCJhZG1pblwiLFwibmFtZVwiOlwiYWRtaW5cIixcImRldGFpbFwiOlwiYWRtaW4gYWNjb3VudFwiLFwid2ViaG9va19tZXRob2RcIjpcIlBPU1RcIixcIndlYmhvb2tfdXJpXCI6XCJodHRwczovL2VueDM4NTN6M2pnMnEueC5waXBlZHJlYW0ubmV0L1wiLFwicGVybWlzc2lvbl9pZHNcIjpbXCIwMzc5NmUxNC03Y2I0LTExZWMtOWRiYS1lNzIwMjNlZmQxYzZcIl0sXCJ0bV9jcmVhdGVcIjpcIjIwMjItMDItMDEgMDA6MDA6MDAuMDAwMDAwXCIsXCJ0bV91cGRhdGVcIjpcIjIwMjItMDQtMTQgMDE6Mjg6NDYuNDU0ODk3XCIsXCJ0bV9kZWxldGVcIjpcIjk5OTktMDEtMDEgMDA6MDA6MDAuMDAwMDAwXCJ9IiwiZXhwIjoxNjUyMjkwNDYyfQ.-jaqJyjISxKmyDxRiFYopD0FA8vlZ_jJ1Sd9mqxCun0&#39; \
+--header &#39;Cookie: token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
 --data-raw &#39;{
     &quot;source&quot;: {
         &quot;type&quot;: &quot;tel&quot;,
-        &quot;target&quot;: &quot;+821028286521&quot;
+        &quot;target&quot;: &quot;+15551234567&quot;
     },
     &quot;destinations&quot;: [
         {
             &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+821021656521&quot;
+            &quot;target&quot;: &quot;+15559876543&quot;
         }
     ],
     &quot;actions&quot;: [
@@ -564,14 +564,14 @@ When the destination answer the call, it will play the given media file.</p>
         &quot;recording_ids&quot;: [],
         &quot;source&quot;: {
             &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+821028286521&quot;,
+            &quot;target&quot;: &quot;+15551234567&quot;,
             &quot;target_name&quot;: &quot;&quot;,
             &quot;name&quot;: &quot;&quot;,
             &quot;detail&quot;: &quot;&quot;
         },
         &quot;destination&quot;: {
             &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+821021656521&quot;,
+            &quot;target&quot;: &quot;+15559876543&quot;,
             &quot;target_name&quot;: &quot;&quot;,
             &quot;name&quot;: &quot;&quot;,
             &quot;detail&quot;: &quot;&quot;
@@ -597,7 +597,7 @@ When the destination answer the call, it will play the given media file.</p>
 <section id="get-call-list">
 <h2>Get call list<a class="headerlink" href="#get-call-list" title="Link to this heading"></a></h2>
 <p>Getting a list of calls.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/calls?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
     &quot;result&quot;: [
@@ -641,7 +641,7 @@ When the destination answer the call, it will play the given media file.</p>
 <section id="get-specific-call">
 <h2>Get specific call<a class="headerlink" href="#get-specific-call" title="Link to this heading"></a></h2>
 <p>Getting a given call uuid’s call info.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/calls/f457951b-9918-44af-a834-2216b1cc31bc?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/calls/f457951b-9918-44af-a834-2216b1cc31bc?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
     &quot;id&quot;: &quot;f457951b-9918-44af-a834-2216b1cc31bc&quot;,
@@ -657,12 +657,12 @@ When the destination answer the call, it will play the given media file.</p>
     ],
     &quot;source&quot;: {
         &quot;type&quot;: &quot;tel&quot;,
-        &quot;target&quot;: &quot;+821028286521&quot;,
+        &quot;target&quot;: &quot;+15551234567&quot;,
         &quot;name&quot;: &quot;&quot;
     },
     &quot;destination&quot;: {
         &quot;type&quot;: &quot;tel&quot;,
-        &quot;target&quot;: &quot;+821021656521&quot;,
+        &quot;target&quot;: &quot;+15559876543&quot;,
         &quot;name&quot;: &quot;&quot;
     },
     &quot;status&quot;: &quot;hangup&quot;,
@@ -686,7 +686,7 @@ When the destination answer the call, it will play the given media file.</p>
     --data-raw &#39;{
         &quot;source&quot;: {
             &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+821100000001&quot;
+            &quot;target&quot;: &quot;+15552222222&quot;
         },
         &quot;destinations&quot;: [
             {
@@ -715,7 +715,7 @@ When the destination answer the call, it will play the given media file.</p>
     &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
     &quot;source&quot;: {
         &quot;type&quot;: &quot;tel&quot;,
-        &quot;target&quot;: &quot;+821028286521&quot;,
+        &quot;target&quot;: &quot;+15551234567&quot;,
         &quot;target_name&quot;: &quot;&quot;,
         &quot;name&quot;: &quot;&quot;,
         &quot;detail&quot;: &quot;&quot;

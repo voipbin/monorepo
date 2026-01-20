@@ -5,4 +5,5 @@ Billing Account
 ***************
 
 .. include:: billing_account_overview.rst
+.. include:: billing_account_tutorial.rst
 .. include:: billing_account_struct.rst

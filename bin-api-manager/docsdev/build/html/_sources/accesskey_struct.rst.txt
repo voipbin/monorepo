@@ -8,7 +8,7 @@ Struct
 Accesskey
 ---------
 
-.. code-block:: json
+.. code::
 
    {
       "id": "5f1f8f7e-9b3d-4c60-8465-b69e9f28b6db",

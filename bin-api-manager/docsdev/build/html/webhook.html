@@ -1021,6 +1021,373 @@
 </section>
 </section>
 </section>
+<section id="tutorial">
+<span id="webhook-tutorial"></span><h2>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h2>
+<section id="create-a-webhook">
+<h3>Create a Webhook<a class="headerlink" href="#create-a-webhook" title="Link to this heading"></a></h3>
+<p>Register a webhook endpoint to receive real-time event notifications from VoIPBIN. Webhooks notify your server when events occur (call status changes, messages received, etc.).</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/webhooks?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;name&quot;: &quot;Production Webhook&quot;,
+        &quot;detail&quot;: &quot;Main webhook for production events&quot;,
+        &quot;uri&quot;: &quot;https://your-server.com/voipbin/webhook&quot;,
+        &quot;method&quot;: &quot;POST&quot;,
+        &quot;event_types&quot;: [
+            &quot;call.status&quot;,
+            &quot;message.received&quot;,
+            &quot;recording.completed&quot;
+        ]
+    }&#39;
+
+{
+    &quot;id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
+    &quot;customer_id&quot;: &quot;12345678-1234-1234-1234-123456789012&quot;,
+    &quot;name&quot;: &quot;Production Webhook&quot;,
+    &quot;detail&quot;: &quot;Main webhook for production events&quot;,
+    &quot;uri&quot;: &quot;https://your-server.com/voipbin/webhook&quot;,
+    &quot;method&quot;: &quot;POST&quot;,
+    &quot;event_types&quot;: [
+        &quot;call.status&quot;,
+        &quot;message.received&quot;,
+        &quot;recording.completed&quot;
+    ],
+    &quot;status&quot;: &quot;active&quot;,
+    &quot;tm_create&quot;: &quot;2026-01-20 10:30:00.000000&quot;,
+    &quot;tm_update&quot;: &quot;2026-01-20 10:30:00.000000&quot;,
+    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+}
+</pre></div>
+</div>
+<p>The webhook is now active and will receive POST requests when specified events occur.</p>
+</section>
+<section id="get-list-of-webhooks">
+<h3>Get List of Webhooks<a class="headerlink" href="#get-list-of-webhooks" title="Link to this heading"></a></h3>
+<p>Retrieve all registered webhooks for your account.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/webhooks?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+
+{
+    &quot;result&quot;: [
+        {
+            &quot;id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
+            &quot;customer_id&quot;: &quot;12345678-1234-1234-1234-123456789012&quot;,
+            &quot;name&quot;: &quot;Production Webhook&quot;,
+            &quot;detail&quot;: &quot;Main webhook for production events&quot;,
+            &quot;uri&quot;: &quot;https://your-server.com/voipbin/webhook&quot;,
+            &quot;method&quot;: &quot;POST&quot;,
+            &quot;event_types&quot;: [
+                &quot;call.status&quot;,
+                &quot;message.received&quot;
+            ],
+            &quot;status&quot;: &quot;active&quot;,
+            &quot;tm_create&quot;: &quot;2026-01-20 10:30:00.000000&quot;,
+            &quot;tm_update&quot;: &quot;2026-01-20 10:30:00.000000&quot;,
+            &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+        }
+    ]
+}
+</pre></div>
+</div>
+</section>
+<section id="update-a-webhook">
+<h3>Update a Webhook<a class="headerlink" href="#update-a-webhook" title="Link to this heading"></a></h3>
+<p>Modify an existing webhook’s configuration, such as changing the URI or event types.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/webhooks/a1b2c3d4-e5f6-7890-abcd-ef1234567890?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;name&quot;: &quot;Production Webhook - Updated&quot;,
+        &quot;event_types&quot;: [
+            &quot;call.status&quot;,
+            &quot;call.completed&quot;,
+            &quot;message.received&quot;,
+            &quot;recording.completed&quot;,
+            &quot;transcribe.completed&quot;
+        ]
+    }&#39;
+</pre></div>
+</div>
+</section>
+<section id="delete-a-webhook">
+<h3>Delete a Webhook<a class="headerlink" href="#delete-a-webhook" title="Link to this heading"></a></h3>
+<p>Remove a webhook when it’s no longer needed.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE &#39;https://api.voipbin.net/v1.0/webhooks/a1b2c3d4-e5f6-7890-abcd-ef1234567890?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+</pre></div>
+</div>
+</section>
+<section id="webhook-event-types">
+<h3>Webhook Event Types<a class="headerlink" href="#webhook-event-types" title="Link to this heading"></a></h3>
+<p>VoIPBIN sends different event types to your webhook endpoint. Common event types include:</p>
+<p><strong>Call Events:</strong>
+- <code class="docutils literal notranslate"><span class="pre">call.status</span></code> - Call status changed (dialing, ringing, answered, hangup)
+- <code class="docutils literal notranslate"><span class="pre">call.completed</span></code> - Call ended
+- <code class="docutils literal notranslate"><span class="pre">call.recording</span></code> - Recording status changed</p>
+<p><strong>Message Events:</strong>
+- <code class="docutils literal notranslate"><span class="pre">message.received</span></code> - Incoming message received
+- <code class="docutils literal notranslate"><span class="pre">message.sent</span></code> - Outgoing message sent
+- <code class="docutils literal notranslate"><span class="pre">message.delivered</span></code> - Message delivery confirmed</p>
+<p><strong>Recording Events:</strong>
+- <code class="docutils literal notranslate"><span class="pre">recording.started</span></code> - Recording started
+- <code class="docutils literal notranslate"><span class="pre">recording.completed</span></code> - Recording finished and available</p>
+<p><strong>Transcription Events:</strong>
+- <code class="docutils literal notranslate"><span class="pre">transcribe.started</span></code> - Transcription started
+- <code class="docutils literal notranslate"><span class="pre">transcribe.completed</span></code> - Transcription finished
+- <code class="docutils literal notranslate"><span class="pre">transcribe.updated</span></code> - Real-time transcription update</p>
+<p><strong>Queue Events:</strong>
+- <code class="docutils literal notranslate"><span class="pre">queue.joined</span></code> - Caller joined queue
+- <code class="docutils literal notranslate"><span class="pre">queue.answered</span></code> - Agent answered queued call
+- <code class="docutils literal notranslate"><span class="pre">queue.abandoned</span></code> - Caller left queue</p>
+<p><strong>Conference Events:</strong>
+- <code class="docutils literal notranslate"><span class="pre">conference.participant.joined</span></code> - Participant joined conference
+- <code class="docutils literal notranslate"><span class="pre">conference.participant.left</span></code> - Participant left conference
+- <code class="docutils literal notranslate"><span class="pre">conference.ended</span></code> - Conference ended</p>
+</section>
+<section id="receiving-webhook-events">
+<h3>Receiving Webhook Events<a class="headerlink" href="#receiving-webhook-events" title="Link to this heading"></a></h3>
+<p>Your webhook endpoint should accept POST requests and process the JSON payload. Here’s an example webhook server implementation:</p>
+<p><strong>Python (Flask) Example:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">flask</span><span class="w"> </span><span class="kn">import</span> <span class="n">Flask</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">jsonify</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">hmac</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">hashlib</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/voipbin/webhook&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">voipbin_webhook</span><span class="p">():</span>
+    <span class="c1"># Get the webhook payload</span>
+    <span class="n">payload</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">get_json</span><span class="p">()</span>
+
+    <span class="c1"># Process different event types</span>
+    <span class="n">event_type</span> <span class="o">=</span> <span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;event_type&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">&#39;call.completed&#39;</span><span class="p">:</span>
+        <span class="n">call_id</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+        <span class="n">duration</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;duration&#39;</span><span class="p">]</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;status&#39;</span><span class="p">]</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Call </span><span class="si">{</span><span class="n">call_id</span><span class="si">}</span><span class="s2"> completed: </span><span class="si">{</span><span class="n">duration</span><span class="si">}</span><span class="s2">s, status: </span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Your business logic here</span>
+        <span class="c1"># - Update CRM</span>
+        <span class="c1"># - Send notifications</span>
+        <span class="c1"># - Trigger workflows</span>
+
+    <span class="k">elif</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">&#39;message.received&#39;</span><span class="p">:</span>
+        <span class="n">message_id</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+        <span class="n">from_number</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;source&#39;</span><span class="p">][</span><span class="s1">&#39;target&#39;</span><span class="p">]</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;text&#39;</span><span class="p">]</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Message from </span><span class="si">{</span><span class="n">from_number</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Process the message</span>
+        <span class="c1"># - Auto-reply</span>
+        <span class="c1"># - Route to agent</span>
+        <span class="c1"># - Store in database</span>
+
+    <span class="k">elif</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">&#39;recording.completed&#39;</span><span class="p">:</span>
+        <span class="n">recording_id</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;url&#39;</span><span class="p">]</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Recording </span><span class="si">{</span><span class="n">recording_id</span><span class="si">}</span><span class="s2"> available at: </span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Handle recording</span>
+        <span class="c1"># - Download and store</span>
+        <span class="c1"># - Transcribe</span>
+        <span class="c1"># - Send to customer</span>
+
+    <span class="c1"># Return 200 OK to acknowledge receipt</span>
+    <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;received&#39;</span><span class="p">}),</span> <span class="mi">200</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s1">&#39;0.0.0.0&#39;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">5000</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Node.js (Express) Example:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>const express = require(&#39;express&#39;);
+const app = express();
+
+app.use(express.json());
+
+app.post(&#39;/voipbin/webhook&#39;, (req, res) =&gt; {
+    const payload = req.body;
+    const eventType = payload.event_type;
+
+    console.log(`Received event: ${eventType}`);
+
+    switch(eventType) {
+        case &#39;call.completed&#39;:
+            handleCallCompleted(payload.data);
+            break;
+        case &#39;message.received&#39;:
+            handleMessageReceived(payload.data);
+            break;
+        case &#39;recording.completed&#39;:
+            handleRecordingCompleted(payload.data);
+            break;
+        default:
+            console.log(`Unknown event type: ${eventType}`);
+    }
+
+    // Acknowledge receipt
+    res.status(200).json({ status: &#39;received&#39; });
+});
+
+function handleCallCompleted(data) {
+    console.log(`Call ${data.id} completed`);
+    // Your logic here
+}
+
+function handleMessageReceived(data) {
+    console.log(`Message from ${data.source.target}: ${data.text}`);
+    // Your logic here
+}
+
+function handleRecordingCompleted(data) {
+    console.log(`Recording available: ${data.url}`);
+    // Your logic here
+}
+
+app.listen(5000, () =&gt; {
+    console.log(&#39;Webhook server listening on port 5000&#39;);
+});
+</pre></div>
+</div>
+</section>
+<section id="testing-webhooks">
+<h3>Testing Webhooks<a class="headerlink" href="#testing-webhooks" title="Link to this heading"></a></h3>
+<p><strong>Local Development:</strong></p>
+<p>Use tools like ngrok to expose your local server for testing:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span># Install ngrok
+$ brew install ngrok  # macOS
+$ snap install ngrok  # Linux
+
+# Start your webhook server locally
+$ python webhook_server.py
+
+# Expose it via ngrok
+$ ngrok http 5000
+
+# Use the ngrok URL in your webhook configuration
+# Example: https://abc123.ngrok.io/voipbin/webhook
+</pre></div>
+</div>
+<p><strong>Testing with curl:</strong></p>
+<p>Simulate a webhook event to test your endpoint:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;http://localhost:5000/voipbin/webhook&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;event_type&quot;: &quot;call.completed&quot;,
+        &quot;timestamp&quot;: &quot;2026-01-20T10:30:00.000000Z&quot;,
+        &quot;data&quot;: {
+            &quot;id&quot;: &quot;test-call-id&quot;,
+            &quot;status&quot;: &quot;completed&quot;,
+            &quot;duration&quot;: 120,
+            &quot;source&quot;: {
+                &quot;type&quot;: &quot;tel&quot;,
+                &quot;target&quot;: &quot;+15551234567&quot;
+            },
+            &quot;destination&quot;: {
+                &quot;type&quot;: &quot;tel&quot;,
+                &quot;target&quot;: &quot;+15559876543&quot;
+            }
+        }
+    }&#39;
+</pre></div>
+</div>
+</section>
+<section id="webhook-payload-structure">
+<h3>Webhook Payload Structure<a class="headerlink" href="#webhook-payload-structure" title="Link to this heading"></a></h3>
+<p>All webhook events follow this structure:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;event_type&quot;</span><span class="p">:</span> <span class="s2">&quot;call.completed&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-01-20T10:30:00.000000Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;webhook_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;12345678-1234-1234-1234-123456789012&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="o">//</span> <span class="n">Event</span><span class="o">-</span><span class="n">specific</span> <span class="n">data</span>
+        <span class="o">//</span> <span class="n">Structure</span> <span class="n">varies</span> <span class="n">by</span> <span class="n">event</span> <span class="nb">type</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Fields:</strong>
+- <code class="docutils literal notranslate"><span class="pre">event_type</span></code>: Type of event that occurred
+- <code class="docutils literal notranslate"><span class="pre">timestamp</span></code>: When the event occurred (ISO 8601 format in UTC)
+- <code class="docutils literal notranslate"><span class="pre">webhook_id</span></code>: ID of the webhook that triggered this event
+- <code class="docutils literal notranslate"><span class="pre">customer_id</span></code>: Your VoIPBIN customer ID
+- <code class="docutils literal notranslate"><span class="pre">data</span></code>: Event-specific data (varies by event type)</p>
+</section>
+<section id="best-practices">
+<h3>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading"></a></h3>
+<p><strong>1. Acknowledge Quickly:</strong>
+- Return 200 OK immediately upon receiving the webhook
+- Process time-consuming tasks asynchronously (queue jobs, background workers)
+- VoIPBIN expects a response within 5 seconds</p>
+<p><strong>2. Handle Duplicates:</strong>
+- Webhooks may be delivered more than once
+- Use the event ID or timestamp to detect and ignore duplicates
+- Implement idempotent processing</p>
+<p><strong>3. Secure Your Endpoint:</strong>
+- Use HTTPS for production webhooks
+- Validate webhook authenticity (check source IP, use signatures)
+- Implement rate limiting to prevent abuse</p>
+<p><strong>4. Error Handling:</strong>
+- Log all webhook events for debugging
+- Return appropriate HTTP status codes
+- Implement retry logic for failed processing</p>
+<p><strong>5. Event Filtering:</strong>
+- Subscribe only to events you need
+- Filter events in your webhook handler
+- Update webhook configuration as requirements change</p>
+<p><strong>6. Monitoring:</strong>
+- Track webhook delivery success/failure rates
+- Set up alerts for high failure rates
+- Monitor webhook processing times</p>
+</section>
+<section id="common-use-cases">
+<h3>Common Use Cases<a class="headerlink" href="#common-use-cases" title="Link to this heading"></a></h3>
+<p><strong>CRM Integration:</strong>
+Automatically update your CRM when calls complete:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">&#39;call.completed&#39;</span><span class="p">:</span>
+    <span class="n">call_data</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
+
+    <span class="c1"># Update CRM contact record</span>
+    <span class="n">crm</span><span class="o">.</span><span class="n">update_contact</span><span class="p">(</span>
+        <span class="n">phone</span><span class="o">=</span><span class="n">call_data</span><span class="p">[</span><span class="s1">&#39;destination&#39;</span><span class="p">][</span><span class="s1">&#39;target&#39;</span><span class="p">],</span>
+        <span class="n">last_call_date</span><span class="o">=</span><span class="n">call_data</span><span class="p">[</span><span class="s1">&#39;tm_hangup&#39;</span><span class="p">],</span>
+        <span class="n">call_duration</span><span class="o">=</span><span class="n">call_data</span><span class="p">[</span><span class="s1">&#39;duration&#39;</span><span class="p">],</span>
+        <span class="n">call_status</span><span class="o">=</span><span class="n">call_data</span><span class="p">[</span><span class="s1">&#39;status&#39;</span><span class="p">]</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Auto-Reply to Messages:</strong>
+Respond automatically to incoming messages:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">&#39;message.received&#39;</span><span class="p">:</span>
+    <span class="n">message</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
+    <span class="n">from_number</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">][</span><span class="s1">&#39;target&#39;</span><span class="p">]</span>
+
+    <span class="c1"># Send auto-reply</span>
+    <span class="n">voipbin_api</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span>
+        <span class="n">to</span><span class="o">=</span><span class="n">from_number</span><span class="p">,</span>
+        <span class="n">text</span><span class="o">=</span><span class="s2">&quot;Thanks for your message! We&#39;ll respond soon.&quot;</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Recording Distribution:</strong>
+Email recordings to stakeholders when completed:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">&#39;recording.completed&#39;</span><span class="p">:</span>
+    <span class="n">recording</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
+
+    <span class="c1"># Send email with recording link</span>
+    <span class="n">email</span><span class="o">.</span><span class="n">send</span><span class="p">(</span>
+        <span class="n">to</span><span class="o">=</span><span class="s1">&#39;team@company.com&#39;</span><span class="p">,</span>
+        <span class="n">subject</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;Call Recording Available&#39;</span><span class="p">,</span>
+        <span class="n">body</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;Recording URL: </span><span class="si">{</span><span class="n">recording</span><span class="p">[</span><span class="s2">&quot;url&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+<p>For more information about webhook configuration and event types, see <a class="reference internal" href="webhook_overview.html#webhook-overview"><span class="std std-ref">Webhook Overview</span></a>.</p>
+</section>
+</section>
 </section>
 
 </main>
@@ -1110,6 +1477,19 @@
 <li><a class="reference internal" href="#id14">Example</a></li>
 </ul>
 </li>
+</ul>
+</li>
+<li><a class="reference internal" href="#tutorial">Tutorial</a><ul>
+<li><a class="reference internal" href="#create-a-webhook">Create a Webhook</a></li>
+<li><a class="reference internal" href="#get-list-of-webhooks">Get List of Webhooks</a></li>
+<li><a class="reference internal" href="#update-a-webhook">Update a Webhook</a></li>
+<li><a class="reference internal" href="#delete-a-webhook">Delete a Webhook</a></li>
+<li><a class="reference internal" href="#webhook-event-types">Webhook Event Types</a></li>
+<li><a class="reference internal" href="#receiving-webhook-events">Receiving Webhook Events</a></li>
+<li><a class="reference internal" href="#testing-webhooks">Testing Webhooks</a></li>
+<li><a class="reference internal" href="#webhook-payload-structure">Webhook Payload Structure</a></li>
+<li><a class="reference internal" href="#best-practices">Best Practices</a></li>
+<li><a class="reference internal" href="#common-use-cases">Common Use Cases</a></li>
 </ul>
 </li>
 </ul>

@@ -159,18 +159,18 @@
                         <main role="main" id="main">
     <section id="overview">
 <span id="websocket-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h1>
-<p>WebSocket, a powerful feature within VoIPBin, revolutionizes web applications by enabling them to subscribe to specific event topics. This capability facilitates real-time updates, ensuring dynamic data changes are seamlessly communicated during runtime.</p>
-<p>WebSocket establishes a persistent and bi-directional connection with the VoIPBin server, providing web applications with real-time capabilities for constructing dynamic and interactive communication applications.</p>
+<p>WebSocket, a powerful feature within VoIPBIN, revolutionizes web applications by enabling them to subscribe to specific event topics. This capability facilitates real-time updates, ensuring dynamic data changes are seamlessly communicated during runtime.</p>
+<p>WebSocket establishes a persistent and bi-directional connection with the VoIPBIN server, providing web applications with real-time capabilities for constructing dynamic and interactive communication applications.</p>
 <section id="websocket-endpoint">
 <h2>Websocket endpoint<a class="headerlink" href="#websocket-endpoint" title="Link to this heading"></a></h2>
-<p>To leverage WebSocket in VoIPBin, connect to the following endpoint:</p>
+<p>To leverage WebSocket in VoIPBIN, connect to the following endpoint:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>GET wss://api.voipbin.net/v1.0/ws?token=&lt;your authtoken here&gt;
 </pre></div>
 </div>
 </section>
 <section id="topic-subscription-unsubscription">
 <h2>Topic Subscription/Unsubscription<a class="headerlink" href="#topic-subscription-unsubscription" title="Link to this heading"></a></h2>
-<p>WebSocket functionality empowers users to finely tune their event subscriptions in the VoIPBin system, tailoring updates to match their application’s specific resource needs. This section outlines the process for subscribing or unsubscribing from event topics.</p>
+<p>WebSocket functionality empowers users to finely tune their event subscriptions in the VoIPBIN system, tailoring updates to match their application’s specific resource needs. This section outlines the process for subscribing or unsubscribing from event topics.</p>
 <p>To initiate a subscription or unsubscription, send the following JSON message through the established WebSocket:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;subscribe|unsubscribe&gt;&quot;</span><span class="p">,</span>
@@ -220,14 +220,14 @@
 </section>
 <section id="real-time-event-updates">
 <h2>Real-Time Event Updates<a class="headerlink" href="#real-time-event-updates" title="Link to this heading"></a></h2>
-<p>When an event transpires for a subscribed topic, VoIPBin dispatches the corresponding event data to the WebSocket connection. Web applications receive this data in real-time, facilitating immediate updates and dynamic data changes within the application.</p>
+<p>When an event transpires for a subscribed topic, VoIPBIN dispatches the corresponding event data to the WebSocket connection. Web applications receive this data in real-time, facilitating immediate updates and dynamic data changes within the application.</p>
 <p>Web applications can seamlessly process these event updates to trigger actions, update UI elements, or reflect changes in the user interface without resorting to manual page refreshes. WebSocket ensures a seamless and interactive user experience, keeping users consistently informed with the latest information.</p>
 </section>
 <section id="benefits-of-websocket">
 <h2>Benefits of WebSocket<a class="headerlink" href="#benefits-of-websocket" title="Link to this heading"></a></h2>
 <p>WebSocket extends various benefits to web applications leveraging VoIPBin:</p>
 <ul class="simple">
-<li><p>Real-Time Communication: WebSocket fosters instant updates and event notifications, establishing real-time communication between the web application and the VoIPBin server.</p></li>
+<li><p>Real-Time Communication: WebSocket fosters instant updates and event notifications, establishing real-time communication between the web application and the VoIPBIN server.</p></li>
 <li><p>Dynamic Data Updates: WebSocket facilitates the handling of dynamic data changes, enabling the creation of dynamic and interactive user interfaces.</p></li>
 <li><p>Efficient Subscription: Pattern matching subscription efficiency allows users to subscribe to multiple resources without the need for individual subscriptions.</p></li>
 <li><p>Reduced Latency: By eliminating the need for repeated HTTP requests, WebSocket reduces latency, enhancing the overall responsiveness of the application.</p></li>

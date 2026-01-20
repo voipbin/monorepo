@@ -8,12 +8,12 @@ Send a message
 
 .. code::
 
-    $ curl --location --request POST 'https://api.voipbin.net/v1.0/messages?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdXN0b21lciI6IntcImlkXCI6XCI1ZTRhMDY4MC04MDRlLTExZWMtODQ3Ny0yZmVhNTk2OGQ4NWJcIixcInVzZXJuYW1lXCI6XCJhZG1pblwiLFwibmFtZVwiOlwiYWRtaW5cIixcImRldGFpbFwiOlwiYWRtaW4gYWNjb3VudFwiLFwid2ViaG9va19tZXRob2RcIjpcIlBPU1RcIixcIndlYmhvb2tfdXJpXCI6XCJodHRwczovL2VuN2V2YWp3aG1xYnQueC5waXBlZHJlYW0ubmV0XCIsXCJwZXJtaXNzaW9uX2lkc1wiOltcIjAzNzk2ZTE0LTdjYjQtMTFlYy05ZGJhLWU3MjAyM2VmZDFjNlwiXSxcInRtX2NyZWF0ZVwiOlwiMjAyMi0wMi0wMSAwMDowMDowMC4wMDAwMDBcIixcInRtX3VwZGF0ZVwiOlwiMjAyMi0wMi0wMiAxODowNToxMC42NTA1MjVcIixcInRtX2RlbGV0ZVwiOlwiOTk5OS0wMS0wMSAwMDowMDowMC4wMDAwMDBcIn0iLCJleHAiOjE2NDc3ODQ2ODR9.ynnHtevhobwPYoXeDzfhWzaYrOX_kfiNA7zBMFl_nwo' \
+    $ curl --location --request POST 'https://api.voipbin.net/v1.0/messages?token=<YOUR_AUTH_TOKEN>' \
     --header 'Content-Type: application/json' \
     --data-raw '{
         "source": {
             "type": "tel",
-            "target": "+821021656521"
+            "target": "+15559876543"
         },
         "destinations": [
             {
@@ -29,7 +29,7 @@ Get list of messages
 
 .. code::
 
-    $ curl --location --request GET 'https://api.voipbin.net/v1.0/messages?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdXN0b21lciI6IntcImlkXCI6XCI1ZTRhMDY4MC04MDRlLTExZWMtODQ3Ny0yZmVhNTk2OGQ4NWJcIixcInVzZXJuYW1lXCI6XCJhZG1pblwiLFwibmFtZVwiOlwiYWRtaW5cIixcImRldGFpbFwiOlwiYWRtaW4gYWNjb3VudFwiLFwid2ViaG9va19tZXRob2RcIjpcIlBPU1RcIixcIndlYmhvb2tfdXJpXCI6XCJodHRwczovL2VuN2V2YWp3aG1xYnQueC5waXBlZHJlYW0ubmV0XCIsXCJwZXJtaXNzaW9uX2lkc1wiOltcIjAzNzk2ZTE0LTdjYjQtMTFlYy05ZGJhLWU3MjAyM2VmZDFjNlwiXSxcInRtX2NyZWF0ZVwiOlwiMjAyMi0wMi0wMSAwMDowMDowMC4wMDAwMDBcIixcInRtX3VwZGF0ZVwiOlwiMjAyMi0wMi0wMiAxODowNToxMC42NTA1MjVcIixcInRtX2RlbGV0ZVwiOlwiOTk5OS0wMS0wMSAwMDowMDowMC4wMDAwMDBcIn0iLCJleHAiOjE2NDc3ODQ2ODR9.ynnHtevhobwPYoXeDzfhWzaYrOX_kfiNA7zBMFl_nwo&page_size=10'
+    $ curl --location --request GET 'https://api.voipbin.net/v1.0/messages?token=<YOUR_AUTH_TOKEN>&page_size=10'
 
     {
     "result": [
@@ -38,7 +38,7 @@ Get list of messages
             "type": "sms",
             "source": {
                 "type": "tel",
-                "target": "+821028286521",
+                "target": "+15551234567",
                 "target_name": "",
                 "name": "",
                 "detail": ""
@@ -47,7 +47,7 @@ Get list of messages
                 {
                     "destination": {
                         "type": "tel",
-                        "target": "+821021656521",
+                        "target": "+15559876543",
                         "target_name": "",
                         "name": "",
                         "detail": ""

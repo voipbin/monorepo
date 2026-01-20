@@ -2,7 +2,7 @@
 
 Overview
 ========
-The Storage API on VoIPBin is designed to help users manage their stored files and monitor their storage usage. This feature allows users to efficiently oversee their data within their allocated storage quota.
+The Storage API on VoIPBIN is designed to help users manage their stored files and monitor their storage usage. This feature allows users to efficiently oversee their data within their allocated storage quota.
 
 The API provides endpoints for various file operations, such as uploading, retrieving, and deleting files, as well as monitoring overall storage usage. These functionalities enable users to manage their data effectively.
 

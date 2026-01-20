@@ -10,7 +10,7 @@ To use the Accesskey, pass the `token` in the query parameters or headers of you
 
 Example Request
 ~~~~~~~~~~~~~~~
-.. code-block:: bash
+.. code::
 
    curl --location 'https://api.voipbin.net/v1.0/calls?accesskey=DuRWq5T4DAK32dw4'
 

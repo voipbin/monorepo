@@ -165,16 +165,446 @@
 <h2>The purpose of call queueing<a class="headerlink" href="#the-purpose-of-call-queueing" title="Link to this heading"></a></h2>
 <p>Call queueing is intended to prevent callers from being turned away in the case of insufficient staff capacity. The purpose of the pre-recorded music or messages is to shorten the subjective waiting time. At the same time, call queues can be used for advertising products or services. As soon as the call can be dealt with, the caller is automatically transferred from the call queue to the member of staff responsible. If customer or contract data has to be requested in several stages, multiple downstream call queues can be used.</p>
 </section>
+<section id="how-queue-routing-works">
+<h2>How Queue Routing Works<a class="headerlink" href="#how-queue-routing-works" title="Link to this heading"></a></h2>
+<p>When a call joins a queue, a coordinated process begins to match the caller with an available agent.</p>
+<p><strong>The Queue Journey</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────────┐
+│                       Call&#39;s Journey Through Queue                       │
+└─────────────────────────────────────────────────────────────────────────┘
+
+1. Call Joins Queue          2. Wait Flow Plays         3. Agent Search
+┌─────────────────┐         ┌─────────────────┐        ┌─────────────────┐
+│                 │         │  ♪ Hold music   │        │  Check for      │
+│  queue_join     │────────▶│  &quot;Please wait&quot;  │───────▶│  available      │
+│  action         │         │  announcements  │        │  agents         │
+└─────────────────┘         └─────────────────┘        └────────┬────────┘
+                                    ▲                          │
+                                    │                    ┌─────┴─────┐
+                                    │                    │           │
+                                    │               No agents    Agent found!
+                                    │                    │           │
+                                    └────────────────────┘           │
+                                      Retry every 1 second           │
+                                                                     ▼
+                                                          ┌─────────────────┐
+                                                          │  4. Connect     │
+                                                          │  agent to call  │
+                                                          └────────┬────────┘
+                                                                   │
+                                                                   ▼
+                                                          ┌─────────────────┐
+                                                          │  5. Caller and  │
+                                                          │  agent talking  │
+                                                          └─────────────────┘
+</pre></div>
+</div>
+<p><strong>What Happens Step by Step</strong></p>
+<ol class="arabic simple">
+<li><p><strong>Call Joins Queue</strong>: When your flow executes a <code class="docutils literal notranslate"><span class="pre">queue_join</span></code> action, a queuecall is created</p></li>
+<li><p><strong>Conference Bridge Created</strong>: A private conference room is set up for this call</p></li>
+<li><p><strong>Wait Flow Starts</strong>: The caller hears music and announcements from your configured wait flow</p></li>
+<li><p><strong>Agent Search Begins</strong>: The system immediately starts looking for available agents</p></li>
+<li><p><strong>Continuous Checking</strong>: Every second, the system checks if any matching agents are now available</p></li>
+<li><p><strong>Agent Found</strong>: When an agent matches, they’re invited to join the conference</p></li>
+<li><p><strong>Service Begins</strong>: Both parties are connected and can talk</p></li>
+</ol>
+</section>
+<section id="queuecall-lifecycle">
+<h2>Queuecall Lifecycle<a class="headerlink" href="#queuecall-lifecycle" title="Link to this heading"></a></h2>
+<p>Every call in a queue moves through a series of states:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────────┐
+│                      Queuecall State Machine                             │
+└─────────────────────────────────────────────────────────────────────────┘
+
+                            ┌────────────┐
+                            │ initiating │
+                            │  (brief)   │
+                            └─────┬──────┘
+                                  │
+                                  ▼
+                       ┌──────────────────┐
+       wait_timeout───▶│     waiting      │
+       exceeded        │ (in wait flow)   │
+           │           └────────┬─────────┘
+           │                    │ agent found
+           │                    ▼
+           │           ┌──────────────────┐
+           │           │    connecting    │
+           │           │  (dialing agent) │
+           │           └────────┬─────────┘
+           │                    │ agent joins
+           │                    ▼
+           │           ┌──────────────────┐         service_timeout
+           │           │     service      │◀────────── exceeded
+           │           │ (agent on call)  │                │
+           │           └────────┬─────────┘                │
+           │                    │                          │
+           │           ┌────────┴────────┐                 │
+           │           ▼                 ▼                 ▼
+           │    ┌────────────┐    ┌─────────────┐
+           └───▶│  abandoned │    │    done     │
+                │  (failed)  │    │ (success)   │
+                └────────────┘    └─────────────┘
+</pre></div>
+</div>
+<p><strong>State Descriptions</strong></p>
+</section>
+<section id="agent-searching">
+<h2>Agent Searching<a class="headerlink" href="#agent-searching" title="Link to this heading"></a></h2>
+<p>While the call is in the queue, the queue continuously searches for available agents to handle the call. Each queue has tags associated with it that determine which agents can receive calls from that queue.</p>
+<p><strong>How Agent Matching Works</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────────┐
+│                      Agent Matching Process                              │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Queue Configuration:                    Agent Pool:
+┌────────────────────────┐             ┌────────────────────────────────┐
+│ Tag IDs:               │             │ Agent A                        │
+│  • &quot;english&quot;           │             │  Tags: english, billing, vip   │
+│  • &quot;billing&quot;           │             │  Status: available             │
+│                        │             │  ──────────────────────────    │
+└────────────────────────┘             │ Agent B                        │
+          │                            │  Tags: english                 │
+          │                            │  Status: available             │
+          │                            │  ──────────────────────────    │
+          ▼                            │ Agent C                        │
+┌────────────────────────┐             │  Tags: english, billing        │
+│ Search for agents with │             │  Status: busy                  │
+│ ALL of these tags:     │             │  ──────────────────────────    │
+│  • english ✓           │             │ Agent D                        │
+│  • billing ✓           │             │  Tags: spanish, billing        │
+└────────────────────────┘             │  Status: available             │
+          │                            └────────────────────────────────┘
+          │
+          ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│ Results:                                                                │
+│  ✓ Agent A - Has english + billing + vip, is available                 │
+│  ✗ Agent B - Missing &quot;billing&quot; tag                                     │
+│  ✗ Agent C - Has tags but is busy                                      │
+│  ✗ Agent D - Missing &quot;english&quot; tag                                     │
+│                                                                         │
+│  → Agent A is selected!                                                 │
+└────────────────────────────────────────────────────────────────────────┘
+</pre></div>
+</div>
+<img alt="_images/queue_overview_agent.png" src="_images/queue_overview_agent.png" />
+<p><strong>Tag Requirements</strong></p>
+<p>Tags work as a skill-based filter:</p>
+<ul class="simple">
+<li><p>Agents must have <strong>ALL</strong> tags the queue requires (AND logic)</p></li>
+<li><p>Having extra tags is fine (Agent A has “vip” but queue doesn’t require it)</p></li>
+<li><p>If an agent is missing even one required tag, they’re excluded</p></li>
+<li><p>Tags define skills, languages, departments, or any grouping you need</p></li>
+</ul>
+<p><strong>Agent Status</strong></p>
+<p>The agent’s status must be “available” to receive queue calls:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Agent Statuses and Queue Eligibility:
+┌────────────────┬─────────────────────────────────────────────┐
+│ Status         │ Can receive queue calls?                    │
+├────────────────┼─────────────────────────────────────────────┤
+│ available      │ ✓ Yes - Agent is ready to take calls        │
+│ busy           │ ✗ No - Agent is handling another call       │
+│ wrap-up        │ ✗ No - Agent is finishing previous call     │
+│ away           │ ✗ No - Agent is temporarily away            │
+│ offline        │ ✗ No - Agent is not logged in               │
+└────────────────┴─────────────────────────────────────────────┘
+</pre></div>
+</div>
+<p><strong>Selection Method</strong></p>
+<p>When multiple agents match, the system uses random selection:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Multiple agents available:
+┌────────────┐   ┌────────────┐   ┌────────────┐
+│  Agent A   │   │  Agent C   │   │  Agent E   │
+│ (matches)  │   │ (matches)  │   │ (matches)  │
+└────────────┘   └────────────┘   └────────────┘
+      │               │               │
+      └───────────────┼───────────────┘
+                      │
+                      ▼
+                Random Selection
+                      │
+                      ▼
+               One agent picked
+</pre></div>
+</div>
+</section>
 <section id="flow-execution">
 <h2>Flow Execution<a class="headerlink" href="#flow-execution" title="Link to this heading"></a></h2>
 <p>A call placed in the queue will progress through the queue’s waiting actions, continuing through pre-defined steps until an available agent is located. These waiting actions may involve playing pre-recorded music, messages, or custom actions, enhancing the caller’s experience while awaiting assistance in the queue.</p>
+<p><strong>Wait Flow Structure</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────────┐
+│                          Wait Flow Execution                             │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Caller enters queue
+       │
+       ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                            Wait Flow Loop                               │
+│                                                                         │
+│    ┌──────────┐     ┌──────────┐     ┌──────────┐     ┌──────────┐    │
+│    │ &quot;Please  │────▶│  ♪ Hold  │────▶│ &quot;Your    │────▶│  ♪ Hold  │    │
+│    │  hold&quot;   │     │  music   │     │ position │     │  music   │    │
+│    │  (talk)  │     │  (play)  │     │  is 3&quot;   │     │  (play)  │    │
+│    └──────────┘     └──────────┘     └──────────┘     └──────────┘    │
+│         ▲                                                    │         │
+│         │                                                    │         │
+│         └────────────────────────────────────────────────────┘         │
+│                        (loops until agent found)                        │
+└────────────────────────────────────────────────────────────────────────┘
+       │
+       │ Agent found!
+       ▼
+┌────────────────┐
+│ Wait flow ends │
+│ Service begins │
+└────────────────┘
+</pre></div>
+</div>
 <img alt="_images/queue_overview_flow.png" src="_images/queue_overview_flow.png" />
+<p><strong>Wait Flow Features</strong></p>
+<ul class="simple">
+<li><p><strong>Looping</strong>: The wait flow automatically repeats until the call is answered or times out</p></li>
+<li><p><strong>Custom Actions</strong>: You can use any flow action that makes sense while waiting</p></li>
+<li><p><strong>Announcements</strong>: Play position updates, estimated wait time, or promotional messages</p></li>
+<li><p><strong>Music</strong>: Play hold music to make the wait feel shorter</p></li>
+</ul>
 </section>
-<section id="agent-searching">
-<h2>Agent searching<a class="headerlink" href="#agent-searching" title="Link to this heading"></a></h2>
-<p>While the call is in the queue, the queue will be searching for available agents to handle the call. Each valid queue has tags associated with it. The queue will search for agents with the same tags as the valid status.</p>
-<img alt="_images/queue_overview_agent.png" src="_images/queue_overview_agent.png" />
-<p>The agent status, such as available, unavailable, or busy, will be taken into account when searching for available agents. Once an available agent is found, the call will be routed to that agent for further handling, and the waiting actions will cease. This process ensures that calls are efficiently handled by available agents in the call center. The agent searching mechanism enhances call center productivity and customer satisfaction by reducing wait times and optimizing resource allocation.</p>
+<section id="timeout-handling">
+<h2>Timeout Handling<a class="headerlink" href="#timeout-handling" title="Link to this heading"></a></h2>
+<p>Queues have two distinct timeout mechanisms to prevent calls from being stuck indefinitely:</p>
+<p><strong>Wait Timeout</strong></p>
+<p>Controls how long a caller can wait before being removed from the queue:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────────┐
+│                          Wait Timeout                                    │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Call joins queue                                     Wait timeout reached
+     │                                                     │
+     ▼                                                     ▼
+─────●─────────────────────────────────────────────────────●─────────────▶
+     │◀─────────────── wait_timeout (ms) ────────────────▶│    Time
+     │                                                     │
+     │ Caller hears wait flow                              │ Call is kicked
+     │ System searches for agents                          │ Status: abandoned
+     │                                                     │
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Set via queue’s <code class="docutils literal notranslate"><span class="pre">wait_timeout</span></code> field (milliseconds)</p></li>
+<li><p>0 means no timeout (wait forever)</p></li>
+<li><p>When exceeded, the call is removed with status “abandoned”</p></li>
+</ul>
+<p><strong>Service Timeout</strong></p>
+<p>Controls how long a conversation can last once connected:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────────┐
+│                         Service Timeout                                  │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Agent connects                                    Service timeout reached
+     │                                                     │
+     ▼                                                     ▼
+─────●─────────────────────────────────────────────────────●─────────────▶
+     │◀───────────── service_timeout (ms) ───────────────▶│    Time
+     │                                                     │
+     │ Agent and caller talking                            │ Call is ended
+     │ (status: service)                                   │ Status: done
+     │                                                     │
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Set via queue’s <code class="docutils literal notranslate"><span class="pre">service_timeout</span></code> field (milliseconds)</p></li>
+<li><p>0 means no timeout (talk forever)</p></li>
+<li><p>When exceeded, the call is ended gracefully</p></li>
+</ul>
+<p><strong>Timeout Scenarios</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Scenario 1: Caller waits too long
+┌──────────┐                                        ┌───────────┐
+│ waiting  │───── wait_timeout exceeded ──────────▶│ abandoned │
+└──────────┘                                        └───────────┘
+
+Scenario 2: Caller hangs up while waiting
+┌──────────┐                                        ┌───────────┐
+│ waiting  │───── caller hangup ──────────────────▶│ abandoned │
+└──────────┘                                        └───────────┘
+
+Scenario 3: Successful call, normal end
+┌──────────┐   ┌───────────┐   ┌─────────┐         ┌──────┐
+│ waiting  │──▶│ connecting│──▶│ service │──hangup▶│ done │
+└──────────┘   └───────────┘   └─────────┘         └──────┘
+</pre></div>
+</div>
+</section>
+<section id="queue-metrics-and-tracking">
+<h2>Queue Metrics and Tracking<a class="headerlink" href="#queue-metrics-and-tracking" title="Link to this heading"></a></h2>
+<p>Queues track detailed metrics for reporting and analysis:</p>
+<p><strong>Per-Queue Statistics</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────────┐
+│                        Queue Statistics                                  │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Queue: &quot;Customer Support&quot;
+┌─────────────────────────────────┬───────────────────────────────────────┐
+│ total_incoming_count            │ 1,234 calls entered this queue        │
+├─────────────────────────────────┼───────────────────────────────────────┤
+│ total_serviced_count            │ 1,100 calls reached an agent          │
+├─────────────────────────────────┼───────────────────────────────────────┤
+│ total_abandoned_count           │ 134 calls abandoned (11% abandon rate)│
+└─────────────────────────────────┴───────────────────────────────────────┘
+</pre></div>
+</div>
+<p><strong>Per-Queuecall Metrics</strong></p>
+<p>Each call in the queue tracks:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Queuecall: &quot;abc-123-def&quot;
+┌─────────────────────────────────┬───────────────────────────────────────┐
+│ duration_waiting                │ 45,000 ms (45 seconds in wait flow)   │
+├─────────────────────────────────┼───────────────────────────────────────┤
+│ duration_service                │ 180,000 ms (3 minutes with agent)     │
+├─────────────────────────────────┼───────────────────────────────────────┤
+│ tm_create                       │ 2024-01-15 10:30:00 (entered queue)   │
+├─────────────────────────────────┼───────────────────────────────────────┤
+│ tm_service                      │ 2024-01-15 10:30:45 (agent connected) │
+├─────────────────────────────────┼───────────────────────────────────────┤
+│ tm_end                          │ 2024-01-15 10:33:45 (call ended)      │
+└─────────────────────────────────┴───────────────────────────────────────┘
+</pre></div>
+</div>
+<p><strong>Calculating Service Levels</strong></p>
+<p>You can calculate key performance indicators from these metrics:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Service Level     = (total_serviced_count / total_incoming_count) × 100
+                  = (1100 / 1234) × 100 = 89.1%
+
+Abandonment Rate  = (total_abandoned_count / total_incoming_count) × 100
+                  = (134 / 1234) × 100 = 10.9%
+
+Average Wait Time = Sum of all duration_waiting / total_incoming_count
+</pre></div>
+</div>
+</section>
+<section id="when-no-agents-are-available">
+<h2>When No Agents Are Available<a class="headerlink" href="#when-no-agents-are-available" title="Link to this heading"></a></h2>
+<p>If no agents match or all matching agents are busy, the caller waits:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────────┐
+│                    No Agents Available Scenario                          │
+└─────────────────────────────────────────────────────────────────────────┘
+
+10:00:00 - Call joins queue, no agents available
+     │
+     ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│ System checks for agents every 1 second:                                 │
+│                                                                          │
+│ 10:00:01 - Check agents... none available                               │
+│ 10:00:02 - Check agents... none available                               │
+│ 10:00:03 - Check agents... none available                               │
+│ 10:00:04 - Check agents... Agent A just became available!               │
+│                                                                          │
+│ Caller hears wait flow the entire time                                  │
+└─────────────────────────────────────────────────────────────────────────┘
+     │
+     ▼
+10:00:04 - Agent A is connected
+</pre></div>
+</div>
+<p><strong>Retry Behavior</strong></p>
+<ul class="simple">
+<li><p>System retries every 1 second</p></li>
+<li><p>Caller continuously hears the wait flow</p></li>
+<li><p>As soon as any agent becomes available and matches, they’re connected</p></li>
+<li><p>This continues until wait_timeout (if configured) or an agent answers</p></li>
+</ul>
+</section>
+<section id="conference-bridge-architecture">
+<h2>Conference Bridge Architecture<a class="headerlink" href="#conference-bridge-architecture" title="Link to this heading"></a></h2>
+<p>Each queuecall gets its own private conference bridge:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────────┐
+│                      Conference Bridge Model                             │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Queuecall for Caller A                    Queuecall for Caller B
+┌─────────────────────────┐              ┌─────────────────────────┐
+│ Conference Bridge #1    │              │ Conference Bridge #2    │
+│ ┌─────────┐ ┌─────────┐ │              │ ┌─────────┐ ┌─────────┐ │
+│ │ Caller  │ │  Agent  │ │              │ │ Caller  │ │  Agent  │ │
+│ │   A     │ │   1     │ │              │ │   B     │ │   2     │ │
+│ └─────────┘ └─────────┘ │              │ └─────────┘ └─────────┘ │
+└─────────────────────────┘              └─────────────────────────┘
+</pre></div>
+</div>
+<p><strong>Why This Design?</strong></p>
+<ul class="simple">
+<li><p>Each call is isolated in its own bridge</p></li>
+<li><p>Caller joins immediately, hears wait flow</p></li>
+<li><p>Agent joins when available, both can talk</p></li>
+<li><p>Clean separation - no cross-talk between calls</p></li>
+</ul>
+</section>
+<section id="common-queue-scenarios">
+<h2>Common Queue Scenarios<a class="headerlink" href="#common-queue-scenarios" title="Link to this heading"></a></h2>
+<p><strong>Scenario 1: Quick Answer</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Caller dials → Enters queue → Agent available → Connected in 2 seconds
+                                                │
+                                                ▼
+                                        duration_waiting: 2000ms
+                                        status: done
+</pre></div>
+</div>
+<p><strong>Scenario 2: Wait Then Connect</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Caller dials → Enters queue → No agents → Waits 45 seconds → Agent available
+                                 │                                  │
+                                 ▼                                  ▼
+                          ♪ Hold music plays              Connected!
+                          Position announcements          duration_waiting: 45000ms
+</pre></div>
+</div>
+<p><strong>Scenario 3: Caller Abandons</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Caller dials → Enters queue → Waits 2 minutes → Caller hangs up
+                                 │                      │
+                                 ▼                      ▼
+                          ♪ Hold music plays      status: abandoned
+                                                  duration_waiting: 120000ms
+</pre></div>
+</div>
+<p><strong>Scenario 4: Wait Timeout</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Caller dials → Enters queue → Waits 5 minutes → wait_timeout exceeded
+                                 │                      │
+                                 ▼                      ▼
+                          ♪ Hold music plays      Kicked from queue
+                                                  status: abandoned
+</pre></div>
+</div>
+</section>
+<section id="best-practices">
+<h2>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading"></a></h2>
+<p><strong>1. Configure Appropriate Timeouts</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">wait_timeout</span><span class="p">:</span> <span class="mi">300000</span>    <span class="p">(</span><span class="mi">5</span> <span class="n">minutes</span> <span class="o">-</span> <span class="n">reasonable</span> <span class="k">for</span> <span class="n">customer</span> <span class="n">service</span><span class="p">)</span>
+<span class="n">service_timeout</span><span class="p">:</span> <span class="mi">0</span>      <span class="p">(</span><span class="n">no</span> <span class="n">limit</span> <span class="k">for</span> <span class="n">service</span> <span class="o">-</span> <span class="n">let</span> <span class="n">conversations</span> <span class="n">finish</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>2. Design Engaging Wait Flows</strong></p>
+<ul class="simple">
+<li><p>Mix music with periodic announcements</p></li>
+<li><p>Provide position in queue updates</p></li>
+<li><p>Offer callback options for long waits</p></li>
+<li><p>Keep announcements concise</p></li>
+</ul>
+<p><strong>3. Tag Agents Thoughtfully</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Good tag structure:
+┌─────────────────────────────────────────┐
+│ Language tags: english, spanish, french │
+│ Skill tags: billing, tech_support, sales│
+│ Tier tags: tier1, tier2, supervisor     │
+└─────────────────────────────────────────┘
+</pre></div>
+</div>
+<p><strong>4. Monitor Key Metrics</strong></p>
+<ul class="simple">
+<li><p>Track abandonment rates - high rates indicate understaffing or long waits</p></li>
+<li><p>Monitor average wait times - aim for your service level target</p></li>
+<li><p>Review service durations - identify training opportunities</p></li>
+</ul>
 </section>
 </section>
 
@@ -188,8 +618,16 @@
                             <ul>
 <li><a class="reference internal" href="#">Overview</a><ul>
 <li><a class="reference internal" href="#the-purpose-of-call-queueing">The purpose of call queueing</a></li>
+<li><a class="reference internal" href="#how-queue-routing-works">How Queue Routing Works</a></li>
+<li><a class="reference internal" href="#queuecall-lifecycle">Queuecall Lifecycle</a></li>
+<li><a class="reference internal" href="#agent-searching">Agent Searching</a></li>
 <li><a class="reference internal" href="#flow-execution">Flow Execution</a></li>
-<li><a class="reference internal" href="#agent-searching">Agent searching</a></li>
+<li><a class="reference internal" href="#timeout-handling">Timeout Handling</a></li>
+<li><a class="reference internal" href="#queue-metrics-and-tracking">Queue Metrics and Tracking</a></li>
+<li><a class="reference internal" href="#when-no-agents-are-available">When No Agents Are Available</a></li>
+<li><a class="reference internal" href="#conference-bridge-architecture">Conference Bridge Architecture</a></li>
+<li><a class="reference internal" href="#common-queue-scenarios">Common Queue Scenarios</a></li>
+<li><a class="reference internal" href="#best-practices">Best Practices</a></li>
 </ul>
 </li>
 </ul>
