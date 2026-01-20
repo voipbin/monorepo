@@ -144,10 +144,10 @@ func Test_canAccessChat(t *testing.T) {
 
 			mockReq.EXPECT().TalkV1ChatGet(ctx, tt.chatID).Return(tt.responseChat, nil)
 
-		// Mock TalkV1ParticipantList when not (TypeTalk AND same customer)
-		if !(tt.responseChat.Type == tkchat.TypeTalk && tt.responseChat.CustomerID == tt.customerID) {
-			mockReq.EXPECT().TalkV1ParticipantList(ctx, tt.chatID).Return(tt.responseParticipants, nil)
-		}
+			// Mock TalkV1ParticipantList when not (TypeTalk AND same customer)
+			if !(tt.responseChat.Type == tkchat.TypeTalk && tt.responseChat.CustomerID == tt.customerID) {
+				mockReq.EXPECT().TalkV1ParticipantList(ctx, tt.chatID).Return(tt.responseParticipants, nil)
+			}
 
 			res := h.canAccessChat(ctx, tt.agentID, tt.customerID, tt.chatID)
 			if res != tt.expectResult {
@@ -164,16 +164,19 @@ func Test_isParticipantOfTalk(t *testing.T) {
 		agentID uuid.UUID
 		chatID  uuid.UUID
 
-		responseChat *tkchat.Chat
-		expectResult bool
+		responseParticipants []*tkparticipant.Participant
+		expectResult         bool
 	}{
 		{
 			name:    "agent is participant - should return true",
 			agentID: uuid.FromStringOrNil("a1111111-1111-1111-1111-111111111111"),
 			chatID:  uuid.FromStringOrNil("d1111111-1111-1111-1111-111111111111"),
-			responseChat: &tkchat.Chat{
-				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("d1111111-1111-1111-1111-111111111111"),
+			responseParticipants: []*tkparticipant.Participant{
+				{
+					Owner: commonidentity.Owner{
+						OwnerType: "agent",
+						OwnerID:   uuid.FromStringOrNil("a1111111-1111-1111-1111-111111111111"),
+					},
 				},
 			},
 			expectResult: true,
@@ -182,23 +185,22 @@ func Test_isParticipantOfTalk(t *testing.T) {
 			name:    "agent is not participant - should return false",
 			agentID: uuid.FromStringOrNil("a2222222-2222-2222-2222-222222222222"),
 			chatID:  uuid.FromStringOrNil("d2222222-2222-2222-2222-222222222222"),
-			responseChat: &tkchat.Chat{
-				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("d2222222-2222-2222-2222-222222222222"),
+			responseParticipants: []*tkparticipant.Participant{
+				{
+					Owner: commonidentity.Owner{
+						OwnerType: "agent",
+						OwnerID:   uuid.FromStringOrNil("a9999999-9999-9999-9999-999999999999"), // different agent
+					},
 				},
 			},
 			expectResult: false,
 		},
 		{
-			name:    "no participants - should return false",
-			agentID: uuid.FromStringOrNil("a3333333-3333-3333-3333-333333333333"),
-			chatID:  uuid.FromStringOrNil("d3333333-3333-3333-3333-333333333333"),
-			responseChat: &tkchat.Chat{
-				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("d3333333-3333-3333-3333-333333333333"),
-				},
-			},
-			expectResult: false,
+			name:                 "no participants - should return false",
+			agentID:              uuid.FromStringOrNil("a3333333-3333-3333-3333-333333333333"),
+			chatID:               uuid.FromStringOrNil("d3333333-3333-3333-3333-333333333333"),
+			responseParticipants: []*tkparticipant.Participant{},
+			expectResult:         false,
 		},
 	}
 
@@ -216,7 +218,7 @@ func Test_isParticipantOfTalk(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().TalkV1ChatGet(ctx, tt.chatID).Return(tt.responseChat, nil)
+			mockReq.EXPECT().TalkV1ParticipantList(ctx, tt.chatID).Return(tt.responseParticipants, nil)
 
 			res := h.isParticipantOfTalk(ctx, tt.agentID, tt.chatID)
 			if res != tt.expectResult {
@@ -270,9 +272,9 @@ func Test_ServiceAgentTalkChatList(t *testing.T) {
 						ID:         uuid.FromStringOrNil("d1111111-1111-1111-1111-111111111111"),
 						CustomerID: uuid.FromStringOrNil("c1111111-1111-1111-1111-111111111111"),
 					},
-					Type:         tkchat.TypeGroup,
-					Name:         "Test Chat",
-					TMCreate:     "2024-01-01 00:00:00.000000",
+					Type:     tkchat.TypeGroup,
+					Name:     "Test Chat",
+					TMCreate: "2024-01-01 00:00:00.000000",
 				},
 			},
 		},
@@ -352,9 +354,9 @@ func Test_ServiceAgentTalkChannelList(t *testing.T) {
 						ID:         uuid.FromStringOrNil("d1111111-1111-1111-1111-111111111111"),
 						CustomerID: uuid.FromStringOrNil("c1111111-1111-1111-1111-111111111111"),
 					},
-					Type:         tkchat.TypeTalk,
-					Name:         "General Channel",
-					TMCreate:     "2024-01-01 00:00:00.000000",
+					Type:     tkchat.TypeTalk,
+					Name:     "General Channel",
+					TMCreate: "2024-01-01 00:00:00.000000",
 				},
 			},
 		},
@@ -399,8 +401,9 @@ func Test_canAddParticipant(t *testing.T) {
 		ownerType string
 		ownerID   uuid.UUID
 
-		responseChat *tkchat.Chat
-		expectResult bool
+		responseChat         *tkchat.Chat
+		responseParticipants []*tkparticipant.Participant
+		expectResult         bool
 	}{
 		{
 			name: "existing participant adding another agent to group chat - should succeed",
@@ -419,6 +422,14 @@ func Test_canAddParticipant(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("c1111111-1111-1111-1111-111111111111"),
 				},
 				Type: tkchat.TypeGroup,
+			},
+			responseParticipants: []*tkparticipant.Participant{
+				{
+					Owner: commonidentity.Owner{
+						OwnerType: "agent",
+						OwnerID:   uuid.FromStringOrNil("a1111111-1111-1111-1111-111111111111"), // agent is participant
+					},
+				},
 			},
 			expectResult: true,
 		},
@@ -440,6 +451,14 @@ func Test_canAddParticipant(t *testing.T) {
 				},
 				Type: tkchat.TypeTalk,
 			},
+			responseParticipants: []*tkparticipant.Participant{
+				{
+					Owner: commonidentity.Owner{
+						OwnerType: "agent",
+						OwnerID:   uuid.FromStringOrNil("a3333333-3333-3333-3333-333333333333"), // agent is participant
+					},
+				},
+			},
 			expectResult: true,
 		},
 		{
@@ -458,9 +477,10 @@ func Test_canAddParticipant(t *testing.T) {
 					ID:         uuid.FromStringOrNil("d5555555-5555-5555-5555-555555555555"),
 					CustomerID: uuid.FromStringOrNil("c5555555-5555-5555-5555-555555555555"),
 				},
-				Type:         tkchat.TypeTalk,
+				Type: tkchat.TypeTalk,
 			},
-			expectResult: true,
+			responseParticipants: []*tkparticipant.Participant{},
+			expectResult:         true,
 		},
 		{
 			name: "non-participant agent trying to add someone else to talk-type chat - should fail",
@@ -478,9 +498,10 @@ func Test_canAddParticipant(t *testing.T) {
 					ID:         uuid.FromStringOrNil("d6666666-6666-6666-6666-666666666666"),
 					CustomerID: uuid.FromStringOrNil("c6666666-6666-6666-6666-666666666666"),
 				},
-				Type:         tkchat.TypeTalk,
+				Type: tkchat.TypeTalk,
 			},
-			expectResult: false,
+			responseParticipants: []*tkparticipant.Participant{},
+			expectResult:         false,
 		},
 		{
 			name: "non-participant agent trying to add anyone to group chat - should fail",
@@ -498,9 +519,10 @@ func Test_canAddParticipant(t *testing.T) {
 					ID:         uuid.FromStringOrNil("d8888888-8888-8888-8888-888888888888"),
 					CustomerID: uuid.FromStringOrNil("c8888888-8888-8888-8888-888888888888"),
 				},
-				Type:         tkchat.TypeGroup,
+				Type: tkchat.TypeGroup,
 			},
-			expectResult: false,
+			responseParticipants: []*tkparticipant.Participant{},
+			expectResult:         false,
 		},
 		{
 			name: "non-participant agent trying to add themselves to group chat - should fail",
@@ -518,9 +540,10 @@ func Test_canAddParticipant(t *testing.T) {
 					ID:         uuid.FromStringOrNil("dddddddd-dddd-dddd-dddd-dddddddddddd"),
 					CustomerID: uuid.FromStringOrNil("cccccccc-cccc-cccc-cccc-cccccccccccc"),
 				},
-				Type:         tkchat.TypeGroup,
+				Type: tkchat.TypeGroup,
 			},
-			expectResult: false,
+			responseParticipants: []*tkparticipant.Participant{},
+			expectResult:         false,
 		},
 		{
 			name: "non-participant agent from different customer trying to join talk-type chat - should fail",
@@ -538,9 +561,10 @@ func Test_canAddParticipant(t *testing.T) {
 					ID:         uuid.FromStringOrNil("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"),
 					CustomerID: uuid.FromStringOrNil("cccccccc-cccc-cccc-cccc-cccccccccccc"), // different customer
 				},
-				Type:         tkchat.TypeTalk,
+				Type: tkchat.TypeTalk,
 			},
-			expectResult: false,
+			responseParticipants: []*tkparticipant.Participant{},
+			expectResult:         false,
 		},
 	}
 
@@ -559,6 +583,7 @@ func Test_canAddParticipant(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().TalkV1ChatGet(ctx, tt.chatID).Return(tt.responseChat, nil)
+			mockReq.EXPECT().TalkV1ParticipantList(ctx, tt.chatID).Return(tt.responseParticipants, nil)
 
 			res := h.canAddParticipant(ctx, tt.agent, tt.chatID, tt.ownerType, tt.ownerID)
 			if res != tt.expectResult {
@@ -577,9 +602,10 @@ func Test_ServiceAgentTalkParticipantCreate(t *testing.T) {
 		ownerType string
 		ownerID   uuid.UUID
 
-		responseChat        *tkchat.Chat
-		responseParticipant *tkparticipant.Participant
-		expectError         bool
+		responseChat         *tkchat.Chat
+		responseParticipants []*tkparticipant.Participant
+		responseParticipant  *tkparticipant.Participant
+		expectError          bool
 	}{
 		{
 			name: "existing participant adding another agent - should succeed",
@@ -598,6 +624,14 @@ func Test_ServiceAgentTalkParticipantCreate(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("c1111111-1111-1111-1111-111111111111"),
 				},
 				Type: tkchat.TypeGroup,
+			},
+			responseParticipants: []*tkparticipant.Participant{
+				{
+					Owner: commonidentity.Owner{
+						OwnerType: "agent",
+						OwnerID:   uuid.FromStringOrNil("a1111111-1111-1111-1111-111111111111"), // agent is participant
+					},
+				},
 			},
 			responseParticipant: &tkparticipant.Participant{
 				Identity: commonidentity.Identity{
@@ -628,8 +662,9 @@ func Test_ServiceAgentTalkParticipantCreate(t *testing.T) {
 					ID:         uuid.FromStringOrNil("d3333333-3333-3333-3333-333333333333"),
 					CustomerID: uuid.FromStringOrNil("c3333333-3333-3333-3333-333333333333"),
 				},
-				Type:         tkchat.TypeTalk,
+				Type: tkchat.TypeTalk,
 			},
+			responseParticipants: []*tkparticipant.Participant{}, // Non-participant self-joining
 			responseParticipant: &tkparticipant.Participant{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("p3333333-3333-3333-3333-333333333333"),
@@ -659,10 +694,11 @@ func Test_ServiceAgentTalkParticipantCreate(t *testing.T) {
 					ID:         uuid.FromStringOrNil("d4444444-4444-4444-4444-444444444444"),
 					CustomerID: uuid.FromStringOrNil("c4444444-4444-4444-4444-444444444444"),
 				},
-				Type:         tkchat.TypeGroup,
+				Type: tkchat.TypeGroup,
 			},
-			responseParticipant: nil,
-			expectError:         true,
+			responseParticipants: []*tkparticipant.Participant{}, // Not a participant
+			responseParticipant:  nil,
+			expectError:          true,
 		},
 	}
 
@@ -682,6 +718,7 @@ func Test_ServiceAgentTalkParticipantCreate(t *testing.T) {
 
 			// Mock the chat get call for permission check
 			mockReq.EXPECT().TalkV1ChatGet(ctx, tt.chatID).Return(tt.responseChat, nil)
+			mockReq.EXPECT().TalkV1ParticipantList(ctx, tt.chatID).Return(tt.responseParticipants, nil)
 
 			// Only expect participant create call if not expecting error
 			if !tt.expectError {
