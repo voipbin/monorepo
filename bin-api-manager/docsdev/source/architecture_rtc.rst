@@ -11,7 +11,7 @@ In voipbin, VoIP stacks are consist with Kamailio, Asterisk, RTPEngine.
 .. image:: _static/images/architecture_rtc_voip.png
     :alt: Architecture VoIP
 
-The Voipbin architecture utilizes a stateless Kamailio farm, ensuring high availability and fault tolerance. 
+The VoIPBIN architecture utilizes a stateless Kamailio farm, ensuring high availability and fault tolerance. 
 Kamailio instances are designed to operate in a stateless mode, allowing them to scale dynamically and recover seamlessly. 
 
 This configuration enables zero-downtime operations, as traffic is automatically redirected to other Kamailio instances through a load balancer whenever an instance becomes unavailable.
@@ -27,7 +27,7 @@ The accompanying diagram illustrates the end-to-end flow:
 * SIP signaling is processed by Kamailio and routed to the appropriate Asterisk-call instance.
 * Media streams are directed through the RTPEngine farm to handle RTP traffic.
 
-This modular design ensures that Voipbin can provide reliable, scalable, and robust VoIP services, accommodating high traffic loads while maintaining seamless operation.
+This modular design ensures that VoIPBIN can provide reliable, scalable, and robust VoIP services, accommodating high traffic loads while maintaining seamless operation.
 
 Kamailio
 --------
@@ -108,14 +108,14 @@ This kind of approach gives these advantages.
 
 SIP Session Recovery
 --------------------
-VoIPBin provides **SIP session recovery** to maintain active SIP sessions even when an Asterisk instance crashes unexpectedly. This feature prevents issues such as call drops, abrupt conference exits, and media channel failures by making the client perceive the session as uninterrupted.
+VoIPBIN provides **SIP session recovery** to maintain active SIP sessions even when an Asterisk instance crashes unexpectedly. This feature prevents issues such as call drops, abrupt conference exits, and media channel failures by making the client perceive the session as uninterrupted.
 
 .. youtube:: GMd-pOwyrtA
 
 How It Works
 ++++++++++++
 
-When an Asterisk instance crashes, all SIP sessions managed by that instance disappear immediately. Normally, because there is no BYE message, clients experience unexpected call termination. VoIPBin recovers sessions through the following steps:
+When an Asterisk instance crashes, all SIP sessions managed by that instance disappear immediately. Normally, because there is no BYE message, clients experience unexpected call termination. VoIPBIN recovers sessions through the following steps:
 
 .. image:: _static/images/architecture_rtc_sip_session_recovery_flow.png
     :alt: SIP Session Recovery Flow
@@ -160,7 +160,7 @@ The recovered session resumes Flow execution from just before the crash:
 Asterisk Patch for Recovery
 +++++++++++++++++++++++++++
 
-To support this functionality, VoIPBin patches Asterisk's PJSIP stack to override SIP header fields based on channel variables:
+To support this functionality, VoIPBIN patches Asterisk's PJSIP stack to override SIP header fields based on channel variables:
 
 .. image:: _static/images/architecture_rtc_sip_session_recovery_diagram.png
     :alt: SIP Session Recovery Flow

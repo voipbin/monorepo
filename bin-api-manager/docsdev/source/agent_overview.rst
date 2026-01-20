@@ -437,7 +437,7 @@ Agent status changes trigger events that you can subscribe to:
 
 Permission
 ----------
-In the VoIPBin ecosystem, permissions play a crucial role in governing the actions that can be performed by the system's agents. Each API within VoIPBin is subject to specific permission limitations, ensuring a secure and controlled environment.
+In the VoIPBIN ecosystem, permissions play a crucial role in governing the actions that can be performed by the system's agents. Each API within VoIPBIN is subject to specific permission limitations, ensuring a secure and controlled environment.
 
 **Permission Levels**
 
@@ -465,9 +465,9 @@ In the VoIPBin ecosystem, permissions play a crucial role in governing the actio
     │  • Limited administrative access                                        │
     └─────────────────────────────────────────────────────────────────────────┘
 
-VoIPBin employs a robust permission framework to regulate access to its APIs, enhancing security and preventing unauthorized actions. Agents, representing entities interacting with the system, are assigned permissions that align with their intended functionalities.
+VoIPBIN employs a robust permission framework to regulate access to its APIs, enhancing security and preventing unauthorized actions. Agents, representing entities interacting with the system, are assigned permissions that align with their intended functionalities.
 
-Every API in VoIPBin is associated with granular permission limitations. These limitations are designed to:
+Every API in VoIPBIN is associated with granular permission limitations. These limitations are designed to:
 
 * Restrict Access: Ensure that only authorized agents can invoke specific APIs.
 

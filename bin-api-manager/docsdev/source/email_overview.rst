@@ -2,7 +2,7 @@
 
 Overview
 ========
-The VoIPBin's email API delivers a powerful, flexible email service designed to simplify the integration of email communication into your applications. 
+The VoIPBIN's email API delivers a powerful, flexible email service designed to simplify the integration of email communication into your applications. 
 Whether you need to send transactional notifications, marketing emails, or alerts, this feature provides a reliable and scalable solution to meet your needs.
 
 Email and Mailbox
@@ -27,5 +27,5 @@ Key elements include:
 These attributes ensure that every email sent through the API is complete and conforms to modern email standards.
 
 By integrating the Email API, organizations can streamline communication processes, automate notifications, and significantly enhance user interaction. 
-This feature aligns with VoIPBin's commitment to providing a comprehensive suite of communication tools that improve connectivity and collaboration across platforms.
+This feature aligns with VoIPBIN's commitment to providing a comprehensive suite of communication tools that improve connectivity and collaboration across platforms.
 

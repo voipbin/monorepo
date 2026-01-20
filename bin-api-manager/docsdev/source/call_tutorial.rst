@@ -11,17 +11,17 @@ When the destination answer the call, it will speak the given text message.
 
 .. code::
 
-    $ curl --location --request POST 'https://api.voipbin.net/v1.0/calls?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MDcyNjM5MjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.py7AwXIO0ZNBWSS1PN-05L9oYEREjGgbkkE6CcVyuzw' \
+    $ curl --location --request POST 'https://api.voipbin.net/v1.0/calls?token=<YOUR_AUTH_TOKEN>' \
         --header 'Content-Type: application/json' \
         --data-raw '{
             "source": {
                 "type": "tel",
-                "target": "+821028286521"
+                "target": "+15551234567"
             },
             "destinations": [
                 {
                     "type": "tel",
-                    "target": "+821021656521"
+                    "target": "+15559876543"
                 }
             ],
             "actions": [
@@ -45,17 +45,17 @@ When the destination answer the call, it will play the given media file.
 
 .. code::
 
-    $ curl --location --request POST 'https://api.voipbin.net/v1.0/calls?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM' \
+    $ curl --location --request POST 'https://api.voipbin.net/v1.0/calls?token=<YOUR_AUTH_TOKEN>' \
     --header 'Content-Type: application/json' \
     --data-raw '{
         "source": {
             "type": "tel",
-            "target": "+821028286521"
+            "target": "+15551234567"
         },
         "destinations": [
             {
                 "type": "tel",
-                "target": "+821021656521"
+                "target": "+15559876543"
             }
         ],
         "actions": [
@@ -83,12 +83,12 @@ When the destination answer the call, it will play the given media file.
             "recording_ids": [],
             "source": {
                 "type": "tel",
-                "target": "+821028286521",
+                "target": "+15551234567",
                 "name": ""
             },
             "destination": {
                 "type": "tel",
-                "target": "+821021656521",
+                "target": "+15559876543",
                 "name": ""
             },
             "status": "dialing",
@@ -111,18 +111,18 @@ Making an outbound call with TTS(Text-to-Speech) and connect to other destinatio
 
 .. code::
 
-    $ curl -k --location --request POST 'https://api.voipbin.net/v1.0/calls?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM' \
+    $ curl -k --location --request POST 'https://api.voipbin.net/v1.0/calls?token=<YOUR_AUTH_TOKEN>' \
     --header 'Content-Type: application/json' \
-    --header 'Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM' \
+    --header 'Cookie: token=<YOUR_AUTH_TOKEN>' \
     --data-raw '{
         "source": {
             "type": "tel",
-            "target": "+821021656521"
+            "target": "+15559876543"
         },
         "destinations": [
             {
                 "type": "tel",
-                "target": "+821021656521"
+                "target": "+15559876543"
             }
         ],
         "actions": [
@@ -139,12 +139,12 @@ Making an outbound call with TTS(Text-to-Speech) and connect to other destinatio
                 "option": {
                     "source": {
                         "type": "tel",
-                        "target": "+821021656521"
+                        "target": "+15559876543"
                     },
                     "destinations": [
                         {
                             "type": "tel",
-                            "target": "+821043126521"
+                            "target": "+15551111111"
                         }
                     ]
                 }
@@ -165,12 +165,12 @@ Making an outbound call with TTS(Text-to-Speech) and connect to other destinatio
             "recording_ids": [],
             "source": {
                 "type": "tel",
-                "target": "+821021656521",
+                "target": "+15559876543",
                 "name": ""
             },
             "destination": {
                 "type": "tel",
-                "target": "+821021656521",
+                "target": "+15559876543",
                 "name": ""
             },
             "status": "dialing",
@@ -194,12 +194,12 @@ Making an outbound call. After answer the call, it will play the TTS and then se
     {
         "source": {
             "type": "tel",
-            "target": "+821028286521"
+            "target": "+15551234567"
         },
         "destinations": [
             {
                 "type": "tel",
-                "target": "+821021656521"
+                "target": "+15559876543"
             }
         ],
         "actions": [
@@ -243,12 +243,12 @@ Making an outbound call. After answer the call, it will play the TTS and then se
             "recording_ids": [],
             "source": {
                 "type": "tel",
-                "target": "+821028286521",
+                "target": "+15551234567",
                 "name": ""
             },
             "destination": {
                 "type": "tel",
-                "target": "+821021656521",
+                "target": "+15559876543",
                 "name": ""
             },
             "status": "dialing",
@@ -304,18 +304,18 @@ Making an outbound call with brach. It will get the digits from the call and wil
 
 .. code::
 
-    $ curl --location --request POST 'https://api.voipbin.net/v1.0/calls?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdXN0b21lciI6IntcImlkXCI6XCI1ZTRhMDY4MC04MDRlLTExZWMtODQ3Ny0yZmVhNTk2OGQ4NWJcIixcInVzZXJuYW1lXCI6XCJhZG1pblwiLFwibmFtZVwiOlwiYWRtaW5cIixcImRldGFpbFwiOlwiYWRtaW4gYWNjb3VudFwiLFwid2ViaG9va19tZXRob2RcIjpcIlBPU1RcIixcIndlYmhvb2tfdXJpXCI6XCJodHRwczovL2VueDM4NTN6M2pnMnEueC5waXBlZHJlYW0ubmV0L1wiLFwicGVybWlzc2lvbl9pZHNcIjpbXCIwMzc5NmUxNC03Y2I0LTExZWMtOWRiYS1lNzIwMjNlZmQxYzZcIl0sXCJ0bV9jcmVhdGVcIjpcIjIwMjItMDItMDEgMDA6MDA6MDAuMDAwMDAwXCIsXCJ0bV91cGRhdGVcIjpcIjIwMjItMDQtMTQgMDE6Mjg6NDYuNDU0ODk3XCIsXCJ0bV9kZWxldGVcIjpcIjk5OTktMDEtMDEgMDA6MDA6MDAuMDAwMDAwXCJ9IiwiZXhwIjoxNjUyMjkwNDYyfQ.-jaqJyjISxKmyDxRiFYopD0FA8vlZ_jJ1Sd9mqxCun0' \
+    $ curl --location --request POST 'https://api.voipbin.net/v1.0/calls?token=<YOUR_AUTH_TOKEN>' \
     --header 'Content-Type: application/json' \
-    --header 'Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdXN0b21lciI6IntcImlkXCI6XCI1ZTRhMDY4MC04MDRlLTExZWMtODQ3Ny0yZmVhNTk2OGQ4NWJcIixcInVzZXJuYW1lXCI6XCJhZG1pblwiLFwibmFtZVwiOlwiYWRtaW5cIixcImRldGFpbFwiOlwiYWRtaW4gYWNjb3VudFwiLFwid2ViaG9va19tZXRob2RcIjpcIlBPU1RcIixcIndlYmhvb2tfdXJpXCI6XCJodHRwczovL2VueDM4NTN6M2pnMnEueC5waXBlZHJlYW0ubmV0L1wiLFwicGVybWlzc2lvbl9pZHNcIjpbXCIwMzc5NmUxNC03Y2I0LTExZWMtOWRiYS1lNzIwMjNlZmQxYzZcIl0sXCJ0bV9jcmVhdGVcIjpcIjIwMjItMDItMDEgMDA6MDA6MDAuMDAwMDAwXCIsXCJ0bV91cGRhdGVcIjpcIjIwMjItMDQtMTQgMDE6Mjg6NDYuNDU0ODk3XCIsXCJ0bV9kZWxldGVcIjpcIjk5OTktMDEtMDEgMDA6MDA6MDAuMDAwMDAwXCJ9IiwiZXhwIjoxNjUyMjkwNDYyfQ.-jaqJyjISxKmyDxRiFYopD0FA8vlZ_jJ1Sd9mqxCun0' \
+    --header 'Cookie: token=<YOUR_AUTH_TOKEN>' \
     --data-raw '{
         "source": {
             "type": "tel",
-            "target": "+821028286521"
+            "target": "+15551234567"
         },
         "destinations": [
             {
                 "type": "tel",
-                "target": "+821021656521"
+                "target": "+15559876543"
             }
         ],
         "actions": [
@@ -424,14 +424,14 @@ Making an outbound call with brach. It will get the digits from the call and wil
             "recording_ids": [],
             "source": {
                 "type": "tel",
-                "target": "+821028286521",
+                "target": "+15551234567",
                 "target_name": "",
                 "name": "",
                 "detail": ""
             },
             "destination": {
                 "type": "tel",
-                "target": "+821021656521",
+                "target": "+15559876543",
                 "target_name": "",
                 "name": "",
                 "detail": ""
@@ -459,7 +459,7 @@ Getting a list of calls.
 
 .. code::
 
-    $ curl -k --location --request GET 'https://api.voipbin.net/v1.0/calls?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM'
+    $ curl -k --location --request GET 'https://api.voipbin.net/v1.0/calls?token=<YOUR_AUTH_TOKEN>'
 
     {
         "result": [
@@ -506,7 +506,7 @@ Getting a given call uuid's call info.
 
 .. code::
 
-    $ curl -k --location --request GET 'https://api.voipbin.net/v1.0/calls/f457951b-9918-44af-a834-2216b1cc31bc?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTI4NDIyMjcsInVzZXIiOnsiaWQiOjEsInBlcm1pc3Npb24iOjEsInVzZXJuYW1lIjoiYWRtaW4ifX0.OWJihCRfaRtQKtV9fmfgxtpMk6TMQQtq9cSefln7vxM'
+    $ curl -k --location --request GET 'https://api.voipbin.net/v1.0/calls/f457951b-9918-44af-a834-2216b1cc31bc?token=<YOUR_AUTH_TOKEN>'
 
     {
         "id": "f457951b-9918-44af-a834-2216b1cc31bc",
@@ -522,12 +522,12 @@ Getting a given call uuid's call info.
         ],
         "source": {
             "type": "tel",
-            "target": "+821028286521",
+            "target": "+15551234567",
             "name": ""
         },
         "destination": {
             "type": "tel",
-            "target": "+821021656521",
+            "target": "+15559876543",
             "name": ""
         },
         "status": "hangup",
@@ -553,7 +553,7 @@ Make a groupcall to the multiple destinations.
         --data-raw '{
             "source": {
                 "type": "tel",
-                "target": "+821100000001"
+                "target": "+15552222222"
             },
             "destinations": [
                 {
@@ -582,7 +582,7 @@ Make a groupcall to the multiple destinations.
         "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
         "source": {
             "type": "tel",
-            "target": "+821028286521",
+            "target": "+15551234567",
             "target_name": "",
             "name": "",
             "detail": ""

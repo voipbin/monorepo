@@ -2,13 +2,13 @@
 
 Overview
 ========
-WebSocket, a powerful feature within VoIPBin, revolutionizes web applications by enabling them to subscribe to specific event topics. This capability facilitates real-time updates, ensuring dynamic data changes are seamlessly communicated during runtime.
+WebSocket, a powerful feature within VoIPBIN, revolutionizes web applications by enabling them to subscribe to specific event topics. This capability facilitates real-time updates, ensuring dynamic data changes are seamlessly communicated during runtime.
 
-WebSocket establishes a persistent and bi-directional connection with the VoIPBin server, providing web applications with real-time capabilities for constructing dynamic and interactive communication applications.
+WebSocket establishes a persistent and bi-directional connection with the VoIPBIN server, providing web applications with real-time capabilities for constructing dynamic and interactive communication applications.
 
 Websocket endpoint
 ----------------------
-To leverage WebSocket in VoIPBin, connect to the following endpoint:
+To leverage WebSocket in VoIPBIN, connect to the following endpoint:
 
 .. code::
 
@@ -16,7 +16,7 @@ To leverage WebSocket in VoIPBin, connect to the following endpoint:
 
 Topic Subscription/Unsubscription
 ------------------------------------
-WebSocket functionality empowers users to finely tune their event subscriptions in the VoIPBin system, tailoring updates to match their application's specific resource needs. This section outlines the process for subscribing or unsubscribing from event topics.
+WebSocket functionality empowers users to finely tune their event subscriptions in the VoIPBIN system, tailoring updates to match their application's specific resource needs. This section outlines the process for subscribing or unsubscribing from event topics.
 
 To initiate a subscription or unsubscription, send the following JSON message through the established WebSocket:
 
@@ -77,7 +77,7 @@ This pattern matching approach streamlines and enhances topic subscriptions, ena
 
 Real-Time Event Updates
 -----------------------
-When an event transpires for a subscribed topic, VoIPBin dispatches the corresponding event data to the WebSocket connection. Web applications receive this data in real-time, facilitating immediate updates and dynamic data changes within the application.
+When an event transpires for a subscribed topic, VoIPBIN dispatches the corresponding event data to the WebSocket connection. Web applications receive this data in real-time, facilitating immediate updates and dynamic data changes within the application.
 
 Web applications can seamlessly process these event updates to trigger actions, update UI elements, or reflect changes in the user interface without resorting to manual page refreshes. WebSocket ensures a seamless and interactive user experience, keeping users consistently informed with the latest information.
 
@@ -85,7 +85,7 @@ Benefits of WebSocket
 ---------------------
 WebSocket extends various benefits to web applications leveraging VoIPBin:
 
-* Real-Time Communication: WebSocket fosters instant updates and event notifications, establishing real-time communication between the web application and the VoIPBin server.
+* Real-Time Communication: WebSocket fosters instant updates and event notifications, establishing real-time communication between the web application and the VoIPBIN server.
 * Dynamic Data Updates: WebSocket facilitates the handling of dynamic data changes, enabling the creation of dynamic and interactive user interfaces.
 * Efficient Subscription: Pattern matching subscription efficiency allows users to subscribe to multiple resources without the need for individual subscriptions.
 * Reduced Latency: By eliminating the need for repeated HTTP requests, WebSocket reduces latency, enhancing the overall responsiveness of the application.
