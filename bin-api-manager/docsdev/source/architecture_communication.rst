@@ -17,10 +17,10 @@ VoIPBIN uses three primary communication mechanisms:
     ┌─────────────────────────────────────────────────────────┐
     │                  RabbitMQ (Primary Bus)                 │
     │                                                         │
-    │  ┌───────────────────────┐  ┌───────────────────────┐ │
-    │  │   RPC (Synchronous)   │  │  Pub/Sub (Async)      │ │
-    │  │   Request-Response    │  │  Event Broadcasting   │ │
-    │  └───────────────────────┘  └───────────────────────┘ │
+    │  ┌───────────────────────┐  ┌───────────────────────┐   │
+    │  │   RPC (Synchronous)   │  │  Pub/Sub (Async)      │   │
+    │  │   Request-Response    │  │  Event Broadcasting   │   │
+    │  └───────────────────────┘  └───────────────────────┘   │
     └─────────────────────────────────────────────────────────┘
 
     ┌─────────────────────────────────────────────────────────┐
@@ -149,8 +149,8 @@ Services implement RPC handlers following this pattern:
     │     ├─ Validate request                        │
     │     │                                          │
     │  3. Route to Handler                           │
-    │     ├─ Parse route: POST /v1/calls            │
-    │     ├─ Call: CallCreate(ctx, req)             │
+    │     ├─ Parse route: POST /v1/calls             │
+    │     ├─ Call: CallCreate(ctx, req)              │
     │     │                                          │
     │  4. Execute Business Logic                     │
     │     ├─ Validate data                           │
@@ -214,8 +214,8 @@ For asynchronous event notifications, VoIPBIN uses RabbitMQ's pub/sub (fanout ex
          │  │data: {...} │      │                       │
          │  └────────────┘      │                       │
          ├─────────────────────▶│                       │
-         │  Exchange:            │                       │
-         │  call.events          │                       │
+         │  Exchange:           │                       │
+         │  call.events         │                       │
          │                      │  2. Fanout to all     │
          │                      │     subscribers       │
          │                      ├──────┬────────────────┤
@@ -579,24 +579,24 @@ Clients subscribe to specific event topics:
     Agent Dashboard:
     ┌──────────────────────────────────────┐
     │ • Real-time call notifications       │
-    │ • Queue status updates                │
-    │ • Agent presence                      │
-    │ • Live chat messages                  │
+    │ • Queue status updates               │
+    │ • Agent presence                     │
+    │ • Live chat messages                 │
     └──────────────────────────────────────┘
 
     Customer Portal:
     ┌──────────────────────────────────────┐
-    │ • Call status updates                 │
-    │ • Campaign progress                   │
-    │ • Billing updates                     │
-    │ • System notifications                │
+    │ • Call status updates                │
+    │ • Campaign progress                  │
+    │ • Billing updates                    │
+    │ • System notifications               │
     └──────────────────────────────────────┘
 
     Media Streaming:
     ┌──────────────────────────────────────┐
     │ • Bi-directional audio (RTP)         │
-    │ • Live transcription feed             │
-    │ • Real-time metrics                   │
+    │ • Live transcription feed            │
+    │ • Real-time metrics                  │
     └──────────────────────────────────────┘
 
 **Connection Management**
@@ -624,18 +624,64 @@ Clients subscribe to specific event topics:
     │  Active    │  Bi-directional communication
     │            │  • Server pushes events
     │            │  • Client sends commands
+    │            │  • Pinger sends ping frames
     └──────┬─────┘
            │
-           │  (Keepalive pings)
+           │  (Keep-alive ping/pong)
            │
            ▼
     ┌────────────┐
     │ Disconnect │  Connection closed
     └────────────┘
 
-* **Keepalive**: Ping/pong every 30 seconds
-* **Auto-Reconnect**: Client reconnects on disconnect
+**Keep-Alive Mechanism (Server-Side Ping/Pong)**
+
+VoIPBIN implements server-side keep-alive to prevent load balancer timeouts:
+
+.. code::
+
+    Keep-Alive Configuration:
+
+    ┌────────────────────────────────────────────────┐
+    │  Ping Interval:  30 seconds                    │
+    │  Pong Wait:      60 seconds                    │
+    │  Write Timeout:  10 seconds                    │
+    └────────────────────────────────────────────────┘
+
+    Keep-Alive Flow:
+
+    Server                                    Client
+       │                                         │
+       │  Every 30s: Send Ping Frame             │
+       ├────────────────────────────────────────▶│
+       │                                         │
+       │  Automatic Pong Response                │
+       │◀────────────────────────────────────────┤
+       │                                         │
+       │  Reset read deadline (60s)              │
+       │                                         │
+
+    Error Detection:
+    ┌────────────────────────────────────────────────┐
+    │  No pong within 60s → Connection dead          │
+    │  Write failure → Connection broken             │
+    │  Either error → Close and cleanup              │
+    └────────────────────────────────────────────────┘
+
+**Keep-Alive Benefits:**
+
+* **Prevents Idle Drops**: Load balancers see regular traffic
+* **Dead Connection Detection**: Server detects unresponsive clients
+* **Automatic Cleanup**: Zombie connections closed promptly
+* **RFC 6455 Compliant**: Uses standard WebSocket ping/pong frames
+
+**Connection Features:**
+
+* **Keepalive**: Server-side ping every 30 seconds
+* **Dead Detection**: 60-second timeout for pong response
+* **Auto-Reconnect**: Client should reconnect on disconnect
 * **Subscription Restore**: Re-subscribe after reconnect
+* **Write Protection**: Mutex prevents concurrent write race conditions
 
 Message Reliability
 -------------------
@@ -823,8 +869,8 @@ VoIPBIN optimizes messaging performance:
     │  ┌────┐ ┌────┐ ┌────┐ ┌────┐ ┌────┐│
     │  │ 1  │ │ 2  │ │ 3  │ │ 4  │ │ 5  ││
     │  └─┬──┘ └─┬──┘ └─┬──┘ └─┬──┘ └─┬──┘│
-    │    │      │      │      │      │    │
-    └────┼──────┼──────┼──────┼──────┼────┘
+    │    │      │      │      │      │   │
+    └────┼──────┼──────┼──────┼──────┼───┘
          │      │      │      │      │
          └──────┴──────┴──────┴──────┘
                     │
@@ -851,8 +897,8 @@ For high-volume operations:
     ┌────┐ ┌────┐ ┌────┐    ┌──────────────┐
     │ M1 │ │ M2 │ │ M3 │    │ M1, M2, M3   │
     └─┬──┘ └─┬──┘ └─┬──┘    │ M4, M5, M6   │
-      │      │      │        │ ... (100)    │
-      ▼      ▼      ▼        └──────┬───────┘
+      │      │      │       │ ... (100)    │
+      ▼      ▼      ▼       └──────┬───────┘
     Send 100 times            Send once
     (high overhead)           (low overhead)
 
@@ -875,9 +921,9 @@ VoIPBIN monitors all communication channels:
     Queue Depth:
     ┌─────────────────────────────────┐
     │     Pending Messages            │
-    │  ┌──┐┌──┐┌──┐┌──┐┌──┐          │
+    │  ┌──┐┌──┐┌──┐┌──┐┌──┐           │
     │  │M1││M2││M3││M4││M5│...        │
-    │  └──┘└──┘└──┘└──┘└──┘          │
+    │  └──┘└──┘└──┘└──┘└──┘           │
     └─────────────────────────────────┘
     Alert if > 1000 messages
 

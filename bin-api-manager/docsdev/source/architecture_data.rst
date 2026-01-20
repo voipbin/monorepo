@@ -20,7 +20,7 @@ VoIPBIN's data architecture consists of three layers:
     └────────────────────┬───────────────────┬────────────────┘
                          │                   │
                          │                   │
-         ┌───────────────▼─────┐   ┌─────────▼──────────┐
+         ┌───────────────▼──────┐   ┌────────▼───────────┐
          │                      │   │                    │
          │   Redis Cache        │   │   MySQL Database   │
          │   (Hot Data)         │   │   (Persistent)     │

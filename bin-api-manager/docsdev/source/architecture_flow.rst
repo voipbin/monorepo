@@ -105,50 +105,50 @@ This flow shows how a basic call creation request flows through the system.
     │     → Queue: bin-manager.call.request          │
     │                                                │
     │  b) Route to available consumer                │
-    │     → bin-call-manager instance 2 (of 3)      │
+    │     → bin-call-manager instance 2 (of 3)       │
     └────────────────────────────────────────────────┘
         │
         ▼
 
     4. Call Manager (bin-call-manager):
 
-    ┌────────────────────────────────────────────────┐
-    │  a) Receive RPC message                        │
-    │     → Parse route: POST /v1/calls              │
-    │     → Extract customer_id, agent_id            │
-    │                                                │
-    │  b) Validate business logic                    │
-    │     → Check billing balance                    │
-    │     → ✓ Sufficient funds                       │
-    │                                                │
-    │  c) Create call record                         │
-    │     → Generate call_id = "call-789"            │
-    │     → INSERT INTO calls (...)                  │
-    │     → Status: "initiating"                     │
-    │                                                │
-    │  d) Initiate SIP call                          │
-    │     → Send to bin-rtc-manager                  │
-    │     → Request Asterisk channel creation        │
-    │                                                │
-    │  e) Update call status                         │
+    ┌─────────────────────────────────────────────────┐
+    │  a) Receive RPC message                         │
+    │     → Parse route: POST /v1/calls               │
+    │     → Extract customer_id, agent_id             │
+    │                                                 │
+    │  b) Validate business logic                     │
+    │     → Check billing balance                     │
+    │     → ✓ Sufficient funds                        │
+    │                                                 │
+    │  c) Create call record                          │
+    │     → Generate call_id = "call-789"             │
+    │     → INSERT INTO calls (...)                   │
+    │     → Status: "initiating"                      │
+    │                                                 │
+    │  d) Initiate SIP call                           │
+    │     → Send to bin-rtc-manager                   │
+    │     → Request Asterisk channel creation         │
+    │                                                 │
+    │  e) Update call status                          │
     │     → UPDATE calls SET status='ringing' WHERE...│
-    │                                                │
-    │  f) Publish event                              │
-    │     → Event: call.created                      │
-    │     → RabbitMQ exchange: call.events           │
-    │                                                │
-    │  g) Build response                             │
-    │     {                                          │
-    │       "id": "call-789",                        │
-    │       "status": "ringing",                     │
-    │       "source": "+15551234567",                │
-    │       "destination": "+15559876543",           │
-    │       "tm_create": "2026-01-20T12:00:00.000Z"  │
-    │     }                                          │
-    │                                                │
-    │  h) Send RPC response                          │
-    │     → Reply to: reply_to queue                 │
-    └────────────────────────────────────────────────┘
+    │                                                 │
+    │  f) Publish event                               │
+    │     → Event: call.created                       │
+    │     → RabbitMQ exchange: call.events            │
+    │                                                 │
+    │  g) Build response                              │
+    │     {                                           │
+    │       "id": "call-789",                         │
+    │       "status": "ringing",                      │
+    │       "source": "+15551234567",                 │
+    │       "destination": "+15559876543",            │
+    │       "tm_create": "2026-01-20T12:00:00.000Z"   │
+    │     }                                           │
+    │                                                 │
+    │  h) Send RPC response                           │
+    │     → Reply to: reply_to queue                  │
+    └─────────────────────────────────────────────────┘
         │
         ▼
 
@@ -351,8 +351,8 @@ This flow demonstrates a complex operation involving multiple services.
 
     Client                API Gateway         Flow Manager        Conference Mgr      Call Manager
       │                       │                    │                    │                  │
-      │  POST /conferences/  │                    │                    │                  │
-      │  conf-123/join       │                    │                    │                  │
+      │  POST /conferences/   │                    │                    │                  │
+      │  conf-123/join        │                    │                    │                  │
       ├──────────────────────▶│                    │                    │                  │
       │                       │  Auth + RPC        │                    │                  │
       │                       ├───────────────────▶│                    │                  │
@@ -369,11 +369,11 @@ This flow demonstrates a complex operation involving multiple services.
       │                       │                    │  Actions:          │                  │
       │                       │                    │                    │                  │
       │                       │                    │  Action 1: Answer  │                  │
-      │                       │                    ├─────────────────────────────────────▶│
+      │                       │                    ├──────────────────────────────────────▶│
       │                       │                    │                    │                  │
       │                       │                    │  Action 2: Talk    │                  │
       │                       │                    │  "Welcome to conf" │                  │
-      │                       │                    ├─────────────────────────────────────▶│
+      │                       │                    ├──────────────────────────────────────▶│
       │                       │                    │                    │                  │
       │                       │                    │  Action 3: Join    │                  │
       │                       │                    │  Conference        │                  │
@@ -418,7 +418,7 @@ This flow shows how real-time events reach clients via WebSocket.
         │  WebSocket Connect        │                       │
         ├──────────────────────────▶│                       │
         │  wss://api.voipbin.net/ws │                       │
-        │  ?token=eyJhbGc...         │                       │
+        │  ?token=eyJhbGc...        │                       │
         │                           │  Validate JWT         │
         │                           │  → customer_id: 123   │
         │                           │                       │
@@ -554,18 +554,18 @@ VoIPBIN optimizes flow performance through several techniques:
 
     Sequential (Slow):           Parallel (Fast):
     ┌──────────┐                 ┌──────────┐
-    │ Task A   │ 50ms             │ Task A   │ 50ms
+    │ Task A   │ 50ms            │ Task A   │ 50ms
     └────┬─────┘                 └────┬─────┘
-         │                             │
-         ▼                             │
+         │                            │
+         ▼                            │
     ┌──────────┐                      │
     │ Task B   │ 50ms                 ├─────────────┐
     └────┬─────┘                      │             │
-         │                             ▼             ▼
+         │                            ▼             ▼
          ▼                        ┌──────────┐ ┌──────────┐
-    ┌──────────┐                 │ Task B   │ │ Task C   │
+    ┌──────────┐                  │ Task B   │ │ Task C   │
     │ Task C   │ 50ms             │ 50ms     │ │ 50ms     │
-    └──────────┘                 └──────────┘ └──────────┘
+    └──────────┘                  └──────────┘ └──────────┘
 
     Total: 150ms                 Total: 50ms (3x faster)
 

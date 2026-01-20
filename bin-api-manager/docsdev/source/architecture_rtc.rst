@@ -20,15 +20,15 @@ VoIPBIN's VoIP stack consists of three main components working together:
          ▼                                                      ▼
     ┌──────────┐         ┌──────────┐         ┌──────────────────┐
     │   Load   │  SIP    │ Kamailio │  SIP    │    Asterisk      │
-    │ Balancer ├────────▶│   Farm   ├────────▶│  (Call/Conf)     │
+    │ Balancer │◀───────▶│   Farm   │◀───────▶│     (Call)       │
     └──────────┘         └─────┬────┘         └────────┬─────────┘
                                │                       │
                                │ RTP Control           │ RTP Control
-                               ▼                       ▼
-                         ┌──────────┐           ┌──────────┐
-                         │ RTPEngine│           │ RTPEngine│
-                         │   Farm   │◀──────────│   Farm   │
-                         └─────┬────┘  Media    └──────────┘
+                               ▼                       │
+                         ┌──────────┐                  │
+                         │ RTPEngine│                  │
+                         │   Farm   │◀─────────────────┘
+                         └─────┬────┘  Media    
                                │
                                │ RTP (Audio/Video)
                                ▼
@@ -79,14 +79,14 @@ Kamailio acts as the stateless SIP proxy and edge router, responsible for:
       │ INVITE          │                 │                 │
       ├────────────────▶│                 │                 │
       │                 │ Forward         │                 │
-      │                 ├─────────────────────────────────▶ │
+      │                 ├──────────────────────────────────▶│
       │                 │                 │                 │
       │                 │                 │                 │
       │ 200 OK          │                 │                 │
-      │◀────────────────┼─────────────────────────────────┤ │
+      │◀────────────────┼───────────────────────────────────│
       │                 │                 │                 │
       │ ACK             │                 │                 │
-      ├─────────────────────────────────▶│                 │
+      ├──────────────────────────────────▶│                 │
       │                 │                 │ Forward         │
       │                 │                 ├────────────────▶│
       │                 │                 │                 │
@@ -130,19 +130,19 @@ VoIPBIN employs three specialized Asterisk farms for optimized scalability and f
 
     ┌─────────────────────────────────────────────────────────┐
     │                  Kamailio Farm                          │
-    └──────┬──────────────────┬──────────────────┬────────────┘
-           │                  │                  │
-           │ 1:1 Calls        │ Conferences      │ Registrations
-           ▼                  ▼                  ▼
+    └──────┬─────────────────────────────────────┬────────────┘
+           │                                     │
+           │ All Calls                           │ Registrations
+           ▼                 Conferences         ▼
     ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
     │  Asterisk   │    │  Asterisk   │    │  Asterisk   │
     │    Call     │    │ Conference  │    │  Registrar  │
     │   Farm      │    │    Farm     │    │    Farm     │
-    │             │    │             │    │             │
-    │ • 1:1 calls │    │ • N-way     │    │ • SIP      │
-    │ • Call      │    │   conference│    │   REGISTER │
-    │   bridging  │    │ • Mixing    │    │ • Auth     │
-    │ • Transfers │    │ • Recording │    │ • Presence │
+    │             │───▶│             │    │             │
+    │ • 1:1 calls │    │ • N-way     │    │ • SIP       │
+    │ • Call      │    │   conference│    │   REGISTER  │
+    │   bridging  │    │ • Mixing    │    │ • Auth      │
+    │ • Transfers │    │ • Recording │    │ • Presence  │
     └─────────────┘    └─────────────┘    └─────────────┘
 
 **1. Asterisk-Call Farm**
@@ -204,11 +204,11 @@ RTPEngine serves as the codec edge server and media proxy:
     External Client                      VoIPBIN Internal
     (Various Codecs)                     (ulaw only)
          │                                     │
-         │ RTP (G.722, Opus, etc.)            │
+         │ RTP (G.722, Opus, etc.)             │
          ▼                                     ▼
     ┌─────────────────────────────────────────────┐
-    │            RTPEngine Farm                    │
-    │                                              │
+    │            RTPEngine Farm                   │
+    │                                             │
     │  • Transcode external → ulaw (internal)     │
     │  • Transcode ulaw (internal) → external     │
     │  • NAT traversal                            │
@@ -271,11 +271,11 @@ Conference Flow
          │                  ├───────────────────▶│
          │                  │                    │
          │ 3. Add Part. 1   │                    │
-         ├─────────────────▶│ 4. Join Bridge    │
+         ├─────────────────▶│ 4. Join Bridge     │
          │                  ├───────────────────▶│
          │                  │                    │
          │ 5. Add Part. 2   │                    │
-         ├─────────────────▶│ 6. Join Bridge    │
+         ├─────────────────▶│ 6. Join Bridge     │
          │                  ├───────────────────▶│
          │                  │                    │
          │                  │  [Audio Mixing]    │
@@ -367,34 +367,36 @@ When an Asterisk instance crashes, all SIP sessions managed by that instance dis
 
     Session Recovery Flow:
 
-    Asterisk-1     Client       Sentinel      HOMER DB    Asterisk-2
-        │             │             │              │            │
-        │   Active    │             │              │            │
-        │   Session   │             │              │            │
-        │◀───────────▶│             │              │            │
-        │             │             │              │            │
-        X  CRASH      │             │              │            │
-        │             │             │              │            │
-        │             │       1. Detect Crash      │            │
-        │             │             │              │            │
-        │             │       2. Query Sessions    │            │
-        │             │             ├─────────────▶│            │
-        │             │             │              │            │
-        │             │       3. Get SIP Headers   │            │
-        │             │             │◀─────────────┤            │
-        │             │             │              │            │
-        │             │       4. Create Channels   │            │
-        │             │             ├──────────────────────────▶│
-        │             │             │              │            │
-        │             │       5. Send Recovery INVITE           │
-        │             │◀───────────────────────────────────────┤│
-        │             │             │              │            │
-        │             │  200 OK (same Call-ID)    │            │
-        │             ├───────────────────────────────────────▶│
-        │             │             │              │            │
-        │   Session   │             │              │            │
-        │  Recovered  │             │              │            │
-        │             │◀───────────────────────────────────────▶│
+    Asterisk-1     Client       Sentinel    Call-manager  HOMER DB    Asterisk-2
+        │             │             │              │         │            │
+        │   Active    │             │              │         │            │
+        │   Session   │             │              │         │            │
+        │◀───────────▶│             │              │         │            │
+        │             │             │              │         │            │
+        X  CRASH      │             │              │         │            │
+                      │             │              │         │            │
+                      │          Detect Crash      │         │            │
+                      │             │              |         │            │
+                      │     Publish Crash event    |         │            │
+                      │             │─────────────▶|         │            │
+                      │                       Query Sessions │            │
+                      │                      Get SIP Headers │            │
+                      │                            |◀────────│            │
+                      │                            |                      │
+                      │                   Create Channels                 │
+                      │                            |─────────────────────▶│
+                      │                                                   │
+                      │                                                   │
+                      │                                                   │
+                      │          Send Recovery INVITE                     │
+                      │◀──────────────────────────────────────────────────│
+                      │                                                   │
+                      │   200 OK (same Call-ID)                           │
+                      ├──────────────────────────────────────────────────▶│
+                      │                                                   │
+            Session   │                                                   │
+           Recovered  │                                                   │
+                      │◀─────────────────────────────────────────────────▶│
 
 .. image:: _static/images/architecture_rtc_sip_session_recovery_flow.png
     :alt: SIP Session Recovery Flow

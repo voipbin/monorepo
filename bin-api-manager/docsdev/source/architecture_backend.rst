@@ -19,9 +19,10 @@ Services are organized by functional domain:
     ├─────────────────────────────────────────────────────────────┤
     │  bin-call-manager        │  Call lifecycle and routing      │
     │  bin-conference-manager  │  Conference bridge management    │
-    │  bin-sms-manager         │  SMS messaging                   │
+    │  bin-message-manager     │  SMS messaging (Telnyx/MsgBird)  │
     │  bin-chat-manager        │  Real-time chat                  │
     │  bin-email-manager       │  Email campaigns                 │
+    │  bin-transfer-manager    │  Call transfer operations        │
     └─────────────────────────────────────────────────────────────┘
 
     ┌─────────────────────────────────────────────────────────────┐
@@ -30,7 +31,7 @@ Services are organized by functional domain:
     │  bin-ai-manager          │  AI assistants and processing    │
     │  bin-transcribe-manager  │  Speech-to-text transcription    │
     │  bin-tts-manager         │  Text-to-speech synthesis        │
-    │  bin-summary-manager     │  Call summarization              │
+    │  bin-pipecat-manager     │  Real-time AI voice (Go/Python)  │
     └─────────────────────────────────────────────────────────────┘
 
     ┌─────────────────────────────────────────────────────────────┐
@@ -39,7 +40,8 @@ Services are organized by functional domain:
     │  bin-flow-manager        │  Call flow and IVR orchestration │
     │  bin-queue-manager       │  Call queue management           │
     │  bin-campaign-manager    │  Outbound campaign automation    │
-    │  bin-conversation-mgr    │  Conversation tracking           │
+    │  bin-outdial-manager     │  Outbound dialing targets        │
+    │  bin-conversation-manager│  Conversation tracking           │
     └─────────────────────────────────────────────────────────────┘
 
     ┌─────────────────────────────────────────────────────────────┐
@@ -47,21 +49,21 @@ Services are organized by functional domain:
     ├─────────────────────────────────────────────────────────────┤
     │  bin-agent-manager       │  Agent state and presence        │
     │  bin-billing-manager     │  Usage tracking and billing      │
-    │  bin-customer-manager    │  Customer account management     │
+    │  bin-customer-manager    │  Customer and API key management │
     │  bin-webhook-manager     │  Webhook delivery                │
-    │  bin-storage-manager     │  File and media storage          │
+    │  bin-storage-manager     │  File, media, and recordings     │
     │  bin-number-manager      │  Phone number management         │
-    │  bin-accesskey-manager   │  API key management              │
+    │  bin-tag-manager         │  Customer tag management         │
     └─────────────────────────────────────────────────────────────┘
 
     ┌─────────────────────────────────────────────────────────────┐
     │                  Integration Services                       │
     ├─────────────────────────────────────────────────────────────┤
     │  bin-talk-manager        │  Agent UI backend                │
-    │  bin-config-manager      │  Configuration management        │
-    │  bin-sentinel-manager    │  Health monitoring               │
-    │  bin-record-manager      │  Call recording                  │
-    │  bin-rtc-manager         │  Real-time communication control │
+    │  bin-hook-manager        │  External webhook gateway        │
+    │  bin-sentinel-manager    │  Kubernetes pod monitoring       │
+    │  bin-route-manager       │  Call routing and providers      │
+    │  bin-registrar-manager   │  SIP registration management     │
     └─────────────────────────────────────────────────────────────┘
 
 Service Characteristics
@@ -78,17 +80,17 @@ Each microservice follows these design principles:
     ┌────────────────────────────────────────┐
     │         bin-call-manager               │
     │                                        │
-    │  ┌──────────────────────────────────┐ │
-    │  │   Domain Logic (Call Handling)   │ │
-    │  └──────────────────────────────────┘ │
+    │  ┌──────────────────────────────────┐  │
+    │  │   Domain Logic (Call Handling)   │  │
+    │  └──────────────────────────────────┘  │
     │                                        │
-    │  ┌──────────────────────────────────┐ │
-    │  │   Data Access (Call Records)     │ │
-    │  └──────────────────────────────────┘ │
+    │  ┌──────────────────────────────────┐  │
+    │  │   Data Access (Call Records)     │  │
+    │  └──────────────────────────────────┘  │
     │                                        │
-    │  ┌──────────────────────────────────┐ │
-    │  │   RPC Handlers (Message Queue)   │ │
-    │  └──────────────────────────────────┘ │
+    │  ┌──────────────────────────────────┐  │
+    │  │   RPC Handlers (Message Queue)   │  │
+    │  └──────────────────────────────────┘  │
     └────────────────────────────────────────┘
 
 * **Single Responsibility**: Each service owns one specific domain
@@ -146,25 +148,25 @@ The API Gateway serves as the single entry point for all external requests, hand
     ┌────────────────────────────────────────┐
     │        bin-api-manager                 │
     │                                        │
-    │  1. ┌────────────────────────────┐    │
-    │     │  Authentication (JWT)      │    │
-    │     └────────────────────────────┘    │
+    │  1. ┌────────────────────────────┐     │
+    │     │  Authentication (JWT)      │     │
+    │     └────────────────────────────┘     │
     │                                        │
-    │  2. ┌────────────────────────────┐    │
-    │     │  Authorization (Permissions)│   │
-    │     └────────────────────────────┘    │
+    │  2. ┌─────────────────────────────┐    │
+    │     │  Authorization (Permissions)│    │
+    │     └─────────────────────────────┘    │
     │                                        │
-    │  3. ┌────────────────────────────┐    │
-    │     │  Rate Limiting / Throttling│    │
-    │     └────────────────────────────┘    │
+    │  3. ┌────────────────────────────┐     │
+    │     │  Rate Limiting / Throttling│     │
+    │     └────────────────────────────┘     │
     │                                        │
-    │  4. ┌────────────────────────────┐    │
-    │     │  Request Routing (RabbitMQ)│    │
-    │     └────────────────────────────┘    │
+    │  4. ┌────────────────────────────┐     │
+    │     │  Request Routing (RabbitMQ)│     │
+    │     └────────────────────────────┘     │
     │                                        │
-    │  5. ┌────────────────────────────┐    │
-    │     │  Response Aggregation      │    │
-    │     └────────────────────────────┘    │
+    │  5. ┌────────────────────────────┐     │
+    │     │  Response Aggregation      │     │
+    │     └────────────────────────────┘     │
     └────────────────────────────────────────┘
          │
          │ RabbitMQ RPC
@@ -224,14 +226,14 @@ VoIPBIN implements authorization at the API Gateway, NOT in backend services:
     │              bin-api-manager (Gateway)              │
     │                                                     │
     │  1. Fetch Resource                                  │
-    │     ├──────▶ bin-call-manager.GetCall(call_id)     │
+    │     ├──────▶ bin-call-manager.GetCall(call_id)      │
     │     │                                               │
     │  2. Check Authorization                             │
-    │     │  if call.customer_id != jwt.customer_id:     │
-    │     │      return 404 (not 403, for security)      │
+    │     │  if call.customer_id != jwt.customer_id:      │
+    │     │      return 404 (not 403, for security)       │
     │     │                                               │
     │  3. Return Resource                                 │
-    │     └──────▶ return call                           │
+    │     └──────▶ return call                            │
     │                                                     │
     └─────────────────────────────────────────────────────┘
 
@@ -279,22 +281,147 @@ The gateway routes requests to appropriate backend services:
 
 **Routing Table:**
 
-===============================  ========================
+===============================  ===========================
 HTTP Endpoint                    Backend Service
-===============================  ========================
+===============================  ===========================
 /v1.0/calls                      bin-call-manager
 /v1.0/conferences                bin-conference-manager
-/v1.0/sms                        bin-sms-manager
+/v1.0/messages                   bin-message-manager
 /v1.0/chats                      bin-chat-manager
+/v1.0/emails                     bin-email-manager
 /v1.0/agents                     bin-agent-manager
 /v1.0/queues                     bin-queue-manager
 /v1.0/campaigns                  bin-campaign-manager
+/v1.0/outdials                   bin-outdial-manager
 /v1.0/flows                      bin-flow-manager
+/v1.0/conversations              bin-conversation-manager
 /v1.0/billings                   bin-billing-manager
+/v1.0/customers                  bin-customer-manager
 /v1.0/webhooks                   bin-webhook-manager
 /v1.0/transcribes                bin-transcribe-manager
 /v1.0/numbers                    bin-number-manager
-===============================  ========================
+/v1.0/routes                     bin-route-manager
+/v1.0/tags                       bin-tag-manager
+/v1.0/storage                    bin-storage-manager
+/v1.0/transfers                  bin-transfer-manager
+===============================  ===========================
+
+Special Service Architectures
+-----------------------------
+
+Some services have unique architectures that differ from the standard microservice pattern:
+
+**bin-pipecat-manager (Hybrid Go/Python)**
+
+This service combines Go and Python for AI-powered voice conversations:
+
+.. code::
+
+    Hybrid Architecture:
+
+    ┌───────────────────────────────────────────────────────────┐
+    │                  bin-pipecat-manager                       │
+    │                                                            │
+    │   Go Service (Port 8080)         Python Service (Port 8000)│
+    │   ┌─────────────────────┐        ┌─────────────────────┐  │
+    │   │ • RabbitMQ RPC      │  HTTP  │ • FastAPI server    │  │
+    │   │ • WebSocket server  │◀──────▶│ • Pipecat pipelines │  │
+    │   │ • Session lifecycle │        │ • STT/LLM/TTS       │  │
+    │   │ • Audiosocket (RTP) │        │ • Tool execution    │  │
+    │   └──────────┬──────────┘        └─────────────────────┘  │
+    │              │                                             │
+    └──────────────┼─────────────────────────────────────────────┘
+                   │
+                   │ Audiosocket (8kHz PCM)
+                   ▼
+              Asterisk PBX
+
+    Audio Flow:
+    Asterisk (8kHz) ──audiosocket──▶ Go ──websocket/protobuf──▶ Python
+                                        ◀───────────────────────
+    STT → LLM → TTS pipeline executed in Python/Pipecat
+
+**Key Features:**
+
+* **Dual Runtime**: Go for infrastructure, Python for AI pipelines
+* **Protobuf Frames**: Efficient audio frame serialization
+* **Sample Rate Conversion**: 8kHz (Asterisk) ↔ 16kHz (AI services)
+* **Tool Calling**: LLM can invoke VoIP functions (connect_call, send_email)
+
+**bin-sentinel-manager (Kubernetes Monitoring)**
+
+This service monitors pod lifecycle events in Kubernetes:
+
+.. code::
+
+    Kubernetes Monitoring:
+
+    ┌───────────────────────────────────────────────────────────┐
+    │              Kubernetes Cluster (voip namespace)          │
+    │                                                            │
+    │  ┌────────────┐  ┌────────────┐  ┌────────────┐           │
+    │  │ asterisk-  │  │ asterisk-  │  │ asterisk-  │           │
+    │  │   call     │  │ conference │  │ registrar  │           │
+    │  └──────┬─────┘  └──────┬─────┘  └──────┬─────┘           │
+    │         │               │               │                  │
+    │         └───────────────┴───────────────┘                  │
+    │                         │                                  │
+    │             Pod Events (Update/Delete)                     │
+    │                         │                                  │
+    │                         ▼                                  │
+    │         ┌───────────────────────────────┐                  │
+    │         │     bin-sentinel-manager      │                  │
+    │         │                               │                  │
+    │         │  • Pod informers (client-go)  │                  │
+    │         │  • Label selector filtering   │                  │
+    │         │  • Event publishing           │                  │
+    │         └───────────────┬───────────────┘                  │
+    │                         │                                  │
+    └─────────────────────────┼──────────────────────────────────┘
+                              │
+                              │ RabbitMQ Events
+                              ▼
+                    ┌───────────────────┐
+                    │  bin-call-manager │
+                    │  (SIP Recovery)   │
+                    └───────────────────┘
+
+**Key Features:**
+
+* **In-Cluster Monitoring**: Uses Kubernetes client-go with RBAC
+* **Label-Based Filtering**: Watches specific pod labels (app=asterisk-*)
+* **Event Publishing**: Notifies services via RabbitMQ for recovery actions
+* **Prometheus Metrics**: Exports pod state change counters
+* **SIP Session Recovery**: Enables call-manager to recover sessions when pods crash
+
+**bin-hook-manager (Webhook Gateway)**
+
+This service receives external webhooks and routes them internally:
+
+.. code::
+
+    External Webhook Flow:
+
+    External Provider                    VoIPBIN Internal
+    (Telnyx, MessageBird)                Services
+         │                                    │
+         │ HTTPS POST                         │
+         │ /v1.0/hooks/messages               │
+         ▼                                    │
+    ┌────────────────┐                        │
+    │ bin-hook-manager│                        │
+    │                │   RabbitMQ             │
+    │ • Validate    ├───────────────────────▶│ bin-message-manager
+    │ • Parse       │                         │ bin-email-manager
+    │ • Route       │                         │ bin-conversation-manager
+    └────────────────┘                        │
+
+**Key Features:**
+
+* **Public Endpoint**: Receives webhooks from external providers
+* **Message Routing**: Forwards to internal services via RabbitMQ
+* **Provider Support**: Handles Telnyx, MessageBird delivery notifications
+* **Thin Proxy**: No business logic, just routing
 
 Service Independence
 --------------------
@@ -627,36 +754,36 @@ Services deploy to Kubernetes on Google Cloud Platform:
     ┌─────────────────────────────────────────────────────────┐
     │                      GKE Cluster                        │
     │                                                         │
-    │  ┌───────────────────────────────────────────────────┐ │
-    │  │              Namespace: production                │ │
-    │  │                                                   │ │
-    │  │  ┌─────────────────────────────────────────────┐ │ │
-    │  │  │  Deployment: bin-call-manager               │ │ │
-    │  │  │  ┌─────────┐  ┌─────────┐  ┌─────────┐     │ │ │
-    │  │  │  │  Pod 1  │  │  Pod 2  │  │  Pod 3  │     │ │ │
-    │  │  │  └─────────┘  └─────────┘  └─────────┘     │ │ │
-    │  │  │  Replicas: 3    HPA: 3-10                   │ │ │
-    │  │  └─────────────────────────────────────────────┘ │ │
-    │  │                                                   │ │
-    │  │  ┌─────────────────────────────────────────────┐ │ │
-    │  │  │  Deployment: bin-api-manager                │ │ │
-    │  │  │  ┌─────────┐  ┌─────────┐  ┌─────────┐     │ │ │
-    │  │  │  │  Pod 1  │  │  Pod 2  │  │  Pod 3  │     │ │ │
-    │  │  │  └─────────┘  └─────────┘  └─────────┘     │ │ │
-    │  │  │  Replicas: 3    HPA: 3-20                   │ │ │
-    │  │  └─────────────────────────────────────────────┘ │ │
-    │  │                                                   │ │
-    │  │  ... 30+ more deployments                         │ │
-    │  │                                                   │ │
-    │  └───────────────────────────────────────────────────┘ │
+    │  ┌───────────────────────────────────────────────────┐  │
+    │  │              Namespace: production                │  │
+    │  │                                                   │  │
+    │  │  ┌─────────────────────────────────────────────┐  │  │
+    │  │  │  Deployment: bin-call-manager               │  │  │
+    │  │  │  ┌─────────┐  ┌─────────┐  ┌─────────┐      │  │  │
+    │  │  │  │  Pod 1  │  │  Pod 2  │  │  Pod 3  │      │  │  │
+    │  │  │  └─────────┘  └─────────┘  └─────────┘      │  │  │
+    │  │  │  Replicas: 3    HPA: 3-10                   │  │  │
+    │  │  └─────────────────────────────────────────────┘  │  │
+    │  │                                                   │  │
+    │  │  ┌─────────────────────────────────────────────┐  │  │
+    │  │  │  Deployment: bin-api-manager                │  │  │
+    │  │  │  ┌─────────┐  ┌─────────┐  ┌─────────┐      │  │  │
+    │  │  │  │  Pod 1  │  │  Pod 2  │  │  Pod 3  │      │  │  │
+    │  │  │  └─────────┘  └─────────┘  └─────────┘      │  │  │
+    │  │  │  Replicas: 3    HPA: 3-20                   │  │  │
+    │  │  └─────────────────────────────────────────────┘  │  │
+    │  │                                                   │  │
+    │  │  ... 30+ more deployments                         │  │
+    │  │                                                   │  │
+    │  └───────────────────────────────────────────────────┘  │
     │                                                         │
-    │  ┌───────────────────────────────────────────────────┐ │
-    │  │         Shared Resources (same cluster)           │ │
-    │  │  • MySQL StatefulSet                              │ │
-    │  │  • Redis StatefulSet                              │ │
-    │  │  • RabbitMQ StatefulSet                           │ │
-    │  │  • Prometheus Monitoring                          │ │
-    │  └───────────────────────────────────────────────────┘ │
+    │  ┌───────────────────────────────────────────────────┐  │
+    │  │         Shared Resources (same cluster)           │  │
+    │  │  • MySQL StatefulSet                              │  │
+    │  │  • Redis StatefulSet                              │  │
+    │  │  • RabbitMQ StatefulSet                           │  │
+    │  │  • Prometheus Monitoring                          │  │
+    │  └───────────────────────────────────────────────────┘  │
     └─────────────────────────────────────────────────────────┘
 
 **Deployment Characteristics:**
