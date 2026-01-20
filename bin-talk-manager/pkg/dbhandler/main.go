@@ -23,6 +23,8 @@ type DBHandler interface {
 	ChatList(ctx context.Context, filters map[chat.Field]any, token string, size uint64) ([]*chat.Chat, error)
 	ChatUpdate(ctx context.Context, id uuid.UUID, fields map[chat.Field]any) error
 	ChatDelete(ctx context.Context, id uuid.UUID) error
+	ChatMemberCountIncrement(ctx context.Context, chatID uuid.UUID) error
+	ChatMemberCountDecrement(ctx context.Context, chatID uuid.UUID) error
 	// FindDirectChatByParticipants finds an existing direct chat between exactly two participants
 	FindDirectChatByParticipants(ctx context.Context, customerID uuid.UUID, ownerType1 string, ownerID1 uuid.UUID, ownerType2 string, ownerID2 uuid.UUID) (*chat.Chat, error)
 

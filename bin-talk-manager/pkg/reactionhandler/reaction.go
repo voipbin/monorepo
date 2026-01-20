@@ -82,7 +82,7 @@ func (h *reactionHandler) ReactionAdd(ctx context.Context, messageID uuid.UUID, 
 		return nil, errors.Wrap(err, "failed to get updated message")
 	}
 
-	log.Debug("Reaction added successfully")
+	log.Debugf("Reaction added successfully. message_id: %s, emoji: %s", messageID, emoji)
 
 	h.publishReactionUpdated(ctx, m)
 
@@ -127,7 +127,7 @@ func (h *reactionHandler) ReactionRemove(ctx context.Context, messageID uuid.UUI
 		return nil, errors.Wrap(err, "failed to get updated message")
 	}
 
-	log.Debug("Reaction removed successfully")
+	log.Debugf("Reaction removed successfully. message_id: %s, emoji: %s", messageID, emoji)
 
 	h.publishReactionUpdated(ctx, m)
 

@@ -11,6 +11,7 @@ package participanthandler
 
 import (
 	context "context"
+	chat "monorepo/bin-talk-manager/models/chat"
 	participant "monorepo/bin-talk-manager/models/participant"
 	reflect "reflect"
 
@@ -43,18 +44,18 @@ func (m *MockParticipantHandler) EXPECT() *MockParticipantHandlerMockRecorder {
 }
 
 // ParticipantAdd mocks base method.
-func (m *MockParticipantHandler) ParticipantAdd(ctx context.Context, customerID, chatID, ownerID uuid.UUID, ownerType string) (*participant.Participant, error) {
+func (m *MockParticipantHandler) ParticipantAdd(ctx context.Context, chatID, ownerID uuid.UUID, ownerType string) (*participant.Participant, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ParticipantAdd", ctx, customerID, chatID, ownerID, ownerType)
+	ret := m.ctrl.Call(m, "ParticipantAdd", ctx, chatID, ownerID, ownerType)
 	ret0, _ := ret[0].(*participant.Participant)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ParticipantAdd indicates an expected call of ParticipantAdd.
-func (mr *MockParticipantHandlerMockRecorder) ParticipantAdd(ctx, customerID, chatID, ownerID, ownerType any) *gomock.Call {
+func (mr *MockParticipantHandlerMockRecorder) ParticipantAdd(ctx, chatID, ownerID, ownerType any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ParticipantAdd", reflect.TypeOf((*MockParticipantHandler)(nil).ParticipantAdd), ctx, customerID, chatID, ownerID, ownerType)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ParticipantAdd", reflect.TypeOf((*MockParticipantHandler)(nil).ParticipantAdd), ctx, chatID, ownerID, ownerType)
 }
 
 // ParticipantList mocks base method.
@@ -123,6 +124,49 @@ func NewMockDBHandler(ctrl *gomock.Controller) *MockDBHandler {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockDBHandler) EXPECT() *MockDBHandlerMockRecorder {
 	return m.recorder
+}
+
+// ChatGet mocks base method.
+func (m *MockDBHandler) ChatGet(ctx context.Context, id uuid.UUID) (*chat.Chat, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChatGet", ctx, id)
+	ret0, _ := ret[0].(*chat.Chat)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ChatGet indicates an expected call of ChatGet.
+func (mr *MockDBHandlerMockRecorder) ChatGet(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatGet", reflect.TypeOf((*MockDBHandler)(nil).ChatGet), ctx, id)
+}
+
+// ChatMemberCountDecrement mocks base method.
+func (m *MockDBHandler) ChatMemberCountDecrement(ctx context.Context, chatID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChatMemberCountDecrement", ctx, chatID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ChatMemberCountDecrement indicates an expected call of ChatMemberCountDecrement.
+func (mr *MockDBHandlerMockRecorder) ChatMemberCountDecrement(ctx, chatID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatMemberCountDecrement", reflect.TypeOf((*MockDBHandler)(nil).ChatMemberCountDecrement), ctx, chatID)
+}
+
+// ChatMemberCountIncrement mocks base method.
+func (m *MockDBHandler) ChatMemberCountIncrement(ctx context.Context, chatID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChatMemberCountIncrement", ctx, chatID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ChatMemberCountIncrement indicates an expected call of ChatMemberCountIncrement.
+func (mr *MockDBHandlerMockRecorder) ChatMemberCountIncrement(ctx, chatID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatMemberCountIncrement", reflect.TypeOf((*MockDBHandler)(nil).ChatMemberCountIncrement), ctx, chatID)
 }
 
 // ParticipantCreate mocks base method.

@@ -3097,6 +3097,9 @@ type TalkManagerTalk struct {
 	// Id Resource identifier.
 	Id *string `json:"id,omitempty"`
 
+	// MemberCount Number of participants in this chat.
+	MemberCount *int `json:"member_count,omitempty"`
+
 	// Name Talk name (optional).
 	Name *string `json:"name,omitempty"`
 
@@ -4678,6 +4681,15 @@ type PutServiceAgentsMeStatusJSONBody struct {
 	Status AgentManagerAgentStatus `json:"status"`
 }
 
+// GetServiceAgentsTalkChannelsParams defines parameters for GetServiceAgentsTalkChannels.
+type GetServiceAgentsTalkChannelsParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
 // GetServiceAgentsTalkChatsParams defines parameters for GetServiceAgentsTalkChats.
 type GetServiceAgentsTalkChatsParams struct {
 	// PageSize The size of results.
@@ -5911,6 +5923,9 @@ type ServerInterface interface {
 	// Update authenticated agent's status
 	// (PUT /service_agents/me/status)
 	PutServiceAgentsMeStatus(c *gin.Context)
+	// Get list of public talk channels
+	// (GET /service_agents/talk_channels)
+	GetServiceAgentsTalkChannels(c *gin.Context, params GetServiceAgentsTalkChannelsParams)
 	// Get list of talk chats
 	// (GET /service_agents/talk_chats)
 	GetServiceAgentsTalkChats(c *gin.Context, params GetServiceAgentsTalkChatsParams)
@@ -5926,6 +5941,9 @@ type ServerInterface interface {
 	// Update talk chat
 	// (PUT /service_agents/talk_chats/{id})
 	PutServiceAgentsTalkChatsId(c *gin.Context, id string)
+	// Join a talk chat
+	// (POST /service_agents/talk_chats/{id}/join)
+	PostServiceAgentsTalkChatsIdJoin(c *gin.Context, id string)
 	// Get participants of a talk chat
 	// (GET /service_agents/talk_chats/{id}/participants)
 	GetServiceAgentsTalkChatsIdParticipants(c *gin.Context, id string)
@@ -11969,6 +11987,40 @@ func (siw *ServerInterfaceWrapper) PutServiceAgentsMeStatus(c *gin.Context) {
 	siw.Handler.PutServiceAgentsMeStatus(c)
 }
 
+// GetServiceAgentsTalkChannels operation middleware
+func (siw *ServerInterfaceWrapper) GetServiceAgentsTalkChannels(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetServiceAgentsTalkChannelsParams
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetServiceAgentsTalkChannels(c, params)
+}
+
 // GetServiceAgentsTalkChats operation middleware
 func (siw *ServerInterfaceWrapper) GetServiceAgentsTalkChats(c *gin.Context) {
 
@@ -12086,6 +12138,30 @@ func (siw *ServerInterfaceWrapper) PutServiceAgentsTalkChatsId(c *gin.Context) {
 	}
 
 	siw.Handler.PutServiceAgentsTalkChatsId(c, id)
+}
+
+// PostServiceAgentsTalkChatsIdJoin operation middleware
+func (siw *ServerInterfaceWrapper) PostServiceAgentsTalkChatsIdJoin(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostServiceAgentsTalkChatsIdJoin(c, id)
 }
 
 // GetServiceAgentsTalkChatsIdParticipants operation middleware
@@ -13217,11 +13293,13 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.PUT(options.BaseURL+"/service_agents/me/addresses", wrapper.PutServiceAgentsMeAddresses)
 	router.PUT(options.BaseURL+"/service_agents/me/password", wrapper.PutServiceAgentsMePassword)
 	router.PUT(options.BaseURL+"/service_agents/me/status", wrapper.PutServiceAgentsMeStatus)
+	router.GET(options.BaseURL+"/service_agents/talk_channels", wrapper.GetServiceAgentsTalkChannels)
 	router.GET(options.BaseURL+"/service_agents/talk_chats", wrapper.GetServiceAgentsTalkChats)
 	router.POST(options.BaseURL+"/service_agents/talk_chats", wrapper.PostServiceAgentsTalkChats)
 	router.DELETE(options.BaseURL+"/service_agents/talk_chats/:id", wrapper.DeleteServiceAgentsTalkChatsId)
 	router.GET(options.BaseURL+"/service_agents/talk_chats/:id", wrapper.GetServiceAgentsTalkChatsId)
 	router.PUT(options.BaseURL+"/service_agents/talk_chats/:id", wrapper.PutServiceAgentsTalkChatsId)
+	router.POST(options.BaseURL+"/service_agents/talk_chats/:id/join", wrapper.PostServiceAgentsTalkChatsIdJoin)
 	router.GET(options.BaseURL+"/service_agents/talk_chats/:id/participants", wrapper.GetServiceAgentsTalkChatsIdParticipants)
 	router.POST(options.BaseURL+"/service_agents/talk_chats/:id/participants", wrapper.PostServiceAgentsTalkChatsIdParticipants)
 	router.DELETE(options.BaseURL+"/service_agents/talk_chats/:id/participants/:participant_id", wrapper.DeleteServiceAgentsTalkChatsIdParticipantsParticipantId)
@@ -17700,6 +17778,27 @@ func (response PutServiceAgentsMeStatus200JSONResponse) VisitPutServiceAgentsMeS
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetServiceAgentsTalkChannelsRequestObject struct {
+	Params GetServiceAgentsTalkChannelsParams
+}
+
+type GetServiceAgentsTalkChannelsResponseObject interface {
+	VisitGetServiceAgentsTalkChannelsResponse(w http.ResponseWriter) error
+}
+
+type GetServiceAgentsTalkChannels200JSONResponse struct {
+	// NextPageToken The token for next pagination.
+	NextPageToken *string            `json:"next_page_token,omitempty"`
+	Result        *[]TalkManagerTalk `json:"result,omitempty"`
+}
+
+func (response GetServiceAgentsTalkChannels200JSONResponse) VisitGetServiceAgentsTalkChannelsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type GetServiceAgentsTalkChatsRequestObject struct {
 	Params GetServiceAgentsTalkChatsParams
 }
@@ -17810,6 +17909,39 @@ type PutServiceAgentsTalkChatsId404Response struct {
 }
 
 func (response PutServiceAgentsTalkChatsId404Response) VisitPutServiceAgentsTalkChatsIdResponse(w http.ResponseWriter) error {
+	w.WriteHeader(404)
+	return nil
+}
+
+type PostServiceAgentsTalkChatsIdJoinRequestObject struct {
+	Id string `json:"id"`
+}
+
+type PostServiceAgentsTalkChatsIdJoinResponseObject interface {
+	VisitPostServiceAgentsTalkChatsIdJoinResponse(w http.ResponseWriter) error
+}
+
+type PostServiceAgentsTalkChatsIdJoin200JSONResponse TalkManagerParticipant
+
+func (response PostServiceAgentsTalkChatsIdJoin200JSONResponse) VisitPostServiceAgentsTalkChatsIdJoinResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostServiceAgentsTalkChatsIdJoin400Response struct {
+}
+
+func (response PostServiceAgentsTalkChatsIdJoin400Response) VisitPostServiceAgentsTalkChatsIdJoinResponse(w http.ResponseWriter) error {
+	w.WriteHeader(400)
+	return nil
+}
+
+type PostServiceAgentsTalkChatsIdJoin404Response struct {
+}
+
+func (response PostServiceAgentsTalkChatsIdJoin404Response) VisitPostServiceAgentsTalkChatsIdJoinResponse(w http.ResponseWriter) error {
 	w.WriteHeader(404)
 	return nil
 }
@@ -19205,6 +19337,9 @@ type StrictServerInterface interface {
 	// Update authenticated agent's status
 	// (PUT /service_agents/me/status)
 	PutServiceAgentsMeStatus(ctx context.Context, request PutServiceAgentsMeStatusRequestObject) (PutServiceAgentsMeStatusResponseObject, error)
+	// Get list of public talk channels
+	// (GET /service_agents/talk_channels)
+	GetServiceAgentsTalkChannels(ctx context.Context, request GetServiceAgentsTalkChannelsRequestObject) (GetServiceAgentsTalkChannelsResponseObject, error)
 	// Get list of talk chats
 	// (GET /service_agents/talk_chats)
 	GetServiceAgentsTalkChats(ctx context.Context, request GetServiceAgentsTalkChatsRequestObject) (GetServiceAgentsTalkChatsResponseObject, error)
@@ -19220,6 +19355,9 @@ type StrictServerInterface interface {
 	// Update talk chat
 	// (PUT /service_agents/talk_chats/{id})
 	PutServiceAgentsTalkChatsId(ctx context.Context, request PutServiceAgentsTalkChatsIdRequestObject) (PutServiceAgentsTalkChatsIdResponseObject, error)
+	// Join a talk chat
+	// (POST /service_agents/talk_chats/{id}/join)
+	PostServiceAgentsTalkChatsIdJoin(ctx context.Context, request PostServiceAgentsTalkChatsIdJoinRequestObject) (PostServiceAgentsTalkChatsIdJoinResponseObject, error)
 	// Get participants of a talk chat
 	// (GET /service_agents/talk_chats/{id}/participants)
 	GetServiceAgentsTalkChatsIdParticipants(ctx context.Context, request GetServiceAgentsTalkChatsIdParticipantsRequestObject) (GetServiceAgentsTalkChatsIdParticipantsResponseObject, error)
@@ -26444,6 +26582,33 @@ func (sh *strictHandler) PutServiceAgentsMeStatus(ctx *gin.Context) {
 	}
 }
 
+// GetServiceAgentsTalkChannels operation middleware
+func (sh *strictHandler) GetServiceAgentsTalkChannels(ctx *gin.Context, params GetServiceAgentsTalkChannelsParams) {
+	var request GetServiceAgentsTalkChannelsRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetServiceAgentsTalkChannels(ctx, request.(GetServiceAgentsTalkChannelsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetServiceAgentsTalkChannels")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetServiceAgentsTalkChannelsResponseObject); ok {
+		if err := validResponse.VisitGetServiceAgentsTalkChannelsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
 // GetServiceAgentsTalkChats operation middleware
 func (sh *strictHandler) GetServiceAgentsTalkChats(ctx *gin.Context, params GetServiceAgentsTalkChatsParams) {
 	var request GetServiceAgentsTalkChatsRequestObject
@@ -26586,6 +26751,33 @@ func (sh *strictHandler) PutServiceAgentsTalkChatsId(ctx *gin.Context, id string
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PutServiceAgentsTalkChatsIdResponseObject); ok {
 		if err := validResponse.VisitPutServiceAgentsTalkChatsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostServiceAgentsTalkChatsIdJoin operation middleware
+func (sh *strictHandler) PostServiceAgentsTalkChatsIdJoin(ctx *gin.Context, id string) {
+	var request PostServiceAgentsTalkChatsIdJoinRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostServiceAgentsTalkChatsIdJoin(ctx, request.(PostServiceAgentsTalkChatsIdJoinRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostServiceAgentsTalkChatsIdJoin")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostServiceAgentsTalkChatsIdJoinResponseObject); ok {
+		if err := validResponse.VisitPostServiceAgentsTalkChatsIdJoinResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

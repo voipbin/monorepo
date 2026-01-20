@@ -3577,6 +3577,9 @@ components:
         detail:
           type: string
           description: Talk description/detail (optional).
+        member_count:
+          type: integer
+          description: Number of participants in this chat.
         tm_create:
           type: string
           description: Timestamp when the talk was created.
@@ -4232,10 +4235,14 @@ paths:
     $ref: './paths/service_agents/talk_chats_id_participants_id.yaml'
   /service_agents/talk_chats/{id}/participants:
     $ref: './paths/service_agents/talk_chats_id_participants.yaml'
+  /service_agents/talk_chats/{id}/join:
+    $ref: './paths/service_agents/talk_chats_id_join.yaml'
   /service_agents/talk_chats/{id}:
     $ref: './paths/service_agents/talk_chats_id.yaml'
   /service_agents/talk_chats:
     $ref: './paths/service_agents/talk_chats.yaml'
+  /service_agents/talk_channels:
+    $ref: './paths/service_agents/talk_channels.yaml'
 
   /service_agents/talk_messages/{id}/reactions:
     $ref: './paths/service_agents/talk_messages_id_reactions.yaml'

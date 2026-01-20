@@ -2,32 +2,29 @@ package participanthandler
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	commondb "monorepo/bin-common-handler/pkg/databasehandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-talk-manager/models/participant"
 )
 
 // ParticipantAdd adds a participant to a talk
 // Uses UPSERT behavior - if participant already exists, updates it
-func (h *participantHandler) ParticipantAdd(ctx context.Context, customerID, chatID, ownerID uuid.UUID, ownerType string) (*participant.Participant, error) {
+func (h *participantHandler) ParticipantAdd(ctx context.Context, chatID, ownerID uuid.UUID, ownerType string) (*participant.Participant, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "ParticipantAdd",
-		"customer_id": customerID,
-		"chat_id":     chatID,
-		"owner_id":    ownerID,
-		"owner_type":  ownerType,
+		"func":       "ParticipantAdd",
+		"chat_id":    chatID,
+		"owner_id":   ownerID,
+		"owner_type": ownerType,
 	})
 	log.Debug("Adding participant")
 
 	// Validate inputs
-	if customerID == uuid.Nil {
-		log.Error("Invalid customer_id: cannot be nil")
-		return nil, fmt.Errorf("customer_id is required")
-	}
 	if chatID == uuid.Nil {
 		log.Error("Invalid chat_id: cannot be nil")
 		return nil, fmt.Errorf("chat_id is required")
@@ -40,6 +37,25 @@ func (h *participantHandler) ParticipantAdd(ctx context.Context, customerID, cha
 		log.Error("Invalid owner_type: cannot be empty")
 		return nil, fmt.Errorf("owner_type is required")
 	}
+
+	// Validate chat exists and is not deleted
+	chat, err := h.dbHandler.ChatGet(ctx, chatID)
+	if err != nil {
+		log.Errorf("Failed to get chat: %v", err)
+		return nil, fmt.Errorf("failed to get chat: %w", err)
+	}
+	if chat == nil {
+		log.Error("Chat not found")
+		return nil, fmt.Errorf("chat not found")
+	}
+	if chat.TMDelete < commondb.DefaultTimeStamp {
+		log.Error("Chat has been deleted")
+		return nil, fmt.Errorf("chat has been deleted")
+	}
+
+	// Get customer_id from the chat
+	customerID := chat.CustomerID
+	log = log.WithField("customer_id", customerID)
 
 	// Generate new participant ID
 	participantID := h.utilHandler.UUIDCreate()
@@ -58,15 +74,21 @@ func (h *participantHandler) ParticipantAdd(ctx context.Context, customerID, cha
 	}
 
 	// Create in database (UPSERT behavior)
-	err := h.dbHandler.ParticipantCreate(ctx, p)
+	err = h.dbHandler.ParticipantCreate(ctx, p)
 	if err != nil {
 		log.Errorf("Failed to create participant. err: %v", err)
 		return nil, fmt.Errorf("failed to create participant: %w", err)
 	}
 
+	// Increment chat member count
+	if err := h.dbHandler.ChatMemberCountIncrement(ctx, chatID); err != nil {
+		log.Errorf("Failed to increment chat member count. err: %v", err)
+		// Continue despite error - participant was created successfully
+	}
+
 	// Augment log with result before final log
 	log = log.WithField("participant_id", participantID)
-	log.Info("Participant added successfully")
+	log.Infof("Participant added successfully. participant_id: %s", participantID)
 
 	// Publish webhook event
 	h.notifyHandler.PublishWebhookEvent(ctx, customerID, participant.EventParticipantAdded, p)
@@ -108,7 +130,7 @@ func (h *participantHandler) ParticipantList(ctx context.Context, customerID, ch
 
 	// Augment log with result before final log
 	log = log.WithField("count", len(participants))
-	log.Info("Participants listed successfully")
+	log.Infof("Participants listed successfully. count: %d", len(participants))
 
 	return participants, nil
 }
@@ -131,7 +153,7 @@ func (h *participantHandler) ParticipantListWithFilters(ctx context.Context, fil
 
 	// Augment log with result before final log
 	log = log.WithField("count", len(participants))
-	log.Info("Participants listed successfully")
+	log.Infof("Participants listed successfully. count: %d", len(participants))
 
 	return participants, nil
 }
@@ -158,6 +180,11 @@ func (h *participantHandler) ParticipantRemove(ctx context.Context, customerID, 
 	// Retrieve participant before deletion (for webhook payload)
 	p, err := h.dbHandler.ParticipantGet(ctx, participantID)
 	if err != nil {
+		// If participant doesn't exist, treat as successful deletion (idempotent)
+		if err == sql.ErrNoRows {
+			log.Infof("Participant already removed (not found). participant_id: %s", participantID)
+			return nil
+		}
 		log.Errorf("Failed to get participant for deletion. err: %v", err)
 		return fmt.Errorf("failed to get participant: %w", err)
 	}
@@ -165,11 +192,22 @@ func (h *participantHandler) ParticipantRemove(ctx context.Context, customerID, 
 	// Delete from database (hard delete)
 	err = h.dbHandler.ParticipantDelete(ctx, participantID)
 	if err != nil {
+		// If already deleted, treat as success (idempotent)
+		if err == sql.ErrNoRows {
+			log.Infof("Participant already removed (delete). participant_id: %s", participantID)
+			return nil
+		}
 		log.Errorf("Failed to delete participant. err: %v", err)
 		return fmt.Errorf("failed to delete participant: %w", err)
 	}
 
-	log.Info("Participant removed successfully")
+	// Decrement chat member count
+	if err := h.dbHandler.ChatMemberCountDecrement(ctx, p.ChatID); err != nil {
+		log.Errorf("Failed to decrement chat member count. err: %v", err)
+		// Continue despite error - participant was deleted successfully
+	}
+
+	log.Infof("Participant removed successfully. participant_id: %s", participantID)
 
 	// Publish webhook event
 	h.notifyHandler.PublishWebhookEvent(ctx, customerID, participant.EventParticipantRemoved, p)

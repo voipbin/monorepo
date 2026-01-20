@@ -13,47 +13,74 @@ import (
 	"github.com/pkg/errors"
 )
 
-// ServiceAgentTalkGet gets a talk by ID
-func (h *serviceHandler) ServiceAgentTalkChatGet(ctx context.Context, a *amagent.Agent, talkID uuid.UUID) (*tkchat.WebhookMessage, error) {
-	// Get talk
-	tmp, err := h.talkGet(ctx, talkID)
-	if err != nil {
-		return nil, errors.Wrapf(err, "Could not get talk.")
+// ServiceAgentTalkChatGet gets a chat by ID
+func (h *serviceHandler) ServiceAgentTalkChatGet(ctx context.Context, a *amagent.Agent, chatID uuid.UUID) (*tkchat.WebhookMessage, error) {
+	// Check permission - agent must have access to the chat
+	// Public "talk" type chats are accessible to all agents in the customer
+	// For group/direct chats, agent must be a participant
+	if !h.canAccessChat(ctx, a.ID, a.CustomerID, chatID) {
+		return nil, fmt.Errorf("agent has no permission to access this chat")
 	}
 
-	// Check permission - must be a participant
-	if !h.isParticipantOfTalk(ctx, a.ID, talkID) {
-		return nil, fmt.Errorf("agent is not a participant of this talk")
+	// Get chat
+	tmp, err := h.talkGet(ctx, chatID)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Could not get chat.")
 	}
 
 	res := tmp.ConvertWebhookMessage()
 	return res, nil
 }
 
-// ServiceAgentTalkList gets list of talks for the agent
+// ServiceAgentTalkChatList gets list of chats where the agent is a participant
+// Returns only chats where the agent has joined (talk, group, or direct types)
 func (h *serviceHandler) ServiceAgentTalkChatList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*tkchat.WebhookMessage, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	// Build filters to get talks where agent is a participant
-	// Exclude deleted chats
+	// Get chats where agent is a participant
 	filters := map[string]any{
 		"owner_type": "agent",
 		"owner_id":   a.ID.String(),
 		"deleted":    false,
 	}
-
-	// Get talks with filters using consolidated method
-	talks, err := h.reqHandler.TalkV1ChatList(ctx, filters, token, size)
+	chats, err := h.reqHandler.TalkV1ChatList(ctx, filters, token, size)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not get talks.")
+		return nil, errors.Wrapf(err, "Could not get chats.")
 	}
 
 	// Convert to webhook messages
 	res := []*tkchat.WebhookMessage{}
-	for _, t := range talks {
-		res = append(res, t.ConvertWebhookMessage())
+	for _, c := range chats {
+		res = append(res, c.ConvertWebhookMessage())
+	}
+
+	return res, nil
+}
+
+// ServiceAgentTalkChannelList gets all public "talk" type channels for the customer
+// Returns all public channels regardless of agent participation (for discovery/joining)
+func (h *serviceHandler) ServiceAgentTalkChannelList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*tkchat.WebhookMessage, error) {
+	if token == "" {
+		token = h.utilHandler.TimeGetCurTime()
+	}
+
+	// Get all public talk-type channels for the customer
+	filters := map[string]any{
+		"customer_id": a.CustomerID.String(),
+		"type":        string(tkchat.TypeTalk),
+		"deleted":     false,
+	}
+	channels, err := h.reqHandler.TalkV1ChatList(ctx, filters, token, size)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Could not get channels.")
+	}
+
+	// Convert to webhook messages
+	res := []*tkchat.WebhookMessage{}
+	for _, c := range channels {
+		res = append(res, c.ConvertWebhookMessage())
 	}
 
 	return res, nil
@@ -72,15 +99,15 @@ func (h *serviceHandler) ServiceAgentTalkChatCreate(ctx context.Context, a *amag
 	return res, nil
 }
 
-// ServiceAgentTalkChatUpdate updates a talk's name and/or detail
-func (h *serviceHandler) ServiceAgentTalkChatUpdate(ctx context.Context, a *amagent.Agent, talkID uuid.UUID, name *string, detail *string) (*tkchat.WebhookMessage, error) {
-	// Check permission
-	if !h.isParticipantOfTalk(ctx, a.ID, talkID) {
-		return nil, fmt.Errorf("agent is not a participant of this talk")
+// ServiceAgentTalkChatUpdate updates a chat's name and/or detail
+func (h *serviceHandler) ServiceAgentTalkChatUpdate(ctx context.Context, a *amagent.Agent, chatID uuid.UUID, name *string, detail *string) (*tkchat.WebhookMessage, error) {
+	// Check permission - must be a participant to modify
+	if !h.isParticipantOfTalk(ctx, a.ID, chatID) {
+		return nil, fmt.Errorf("agent is not a participant of this chat")
 	}
 
-	// Update talk via RPC
-	tmp, err := h.reqHandler.TalkV1ChatUpdate(ctx, talkID, name, detail)
+	// Update chat via RPC
+	tmp, err := h.reqHandler.TalkV1ChatUpdate(ctx, chatID, name, detail)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not update talk.")
 	}
@@ -89,15 +116,15 @@ func (h *serviceHandler) ServiceAgentTalkChatUpdate(ctx context.Context, a *amag
 	return res, nil
 }
 
-// ServiceAgentTalkDelete deletes a talk
-func (h *serviceHandler) ServiceAgentTalkChatDelete(ctx context.Context, a *amagent.Agent, talkID uuid.UUID) (*tkchat.WebhookMessage, error) {
-	// Check permission
-	if !h.isParticipantOfTalk(ctx, a.ID, talkID) {
-		return nil, fmt.Errorf("agent is not a participant of this talk")
+// ServiceAgentTalkChatDelete deletes a chat
+func (h *serviceHandler) ServiceAgentTalkChatDelete(ctx context.Context, a *amagent.Agent, chatID uuid.UUID) (*tkchat.WebhookMessage, error) {
+	// Check permission - must be a participant to delete
+	if !h.isParticipantOfTalk(ctx, a.ID, chatID) {
+		return nil, fmt.Errorf("agent is not a participant of this chat")
 	}
 
-	// Delete talk via RPC
-	tmp, err := h.reqHandler.TalkV1ChatDelete(ctx, talkID)
+	// Delete chat via RPC
+	tmp, err := h.reqHandler.TalkV1ChatDelete(ctx, chatID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not delete talk.")
 	}
@@ -106,15 +133,45 @@ func (h *serviceHandler) ServiceAgentTalkChatDelete(ctx context.Context, a *amag
 	return res, nil
 }
 
-// ServiceAgentTalkParticipantList gets list of participants in a talk
-func (h *serviceHandler) ServiceAgentTalkParticipantList(ctx context.Context, a *amagent.Agent, talkID uuid.UUID) ([]*tkparticipant.WebhookMessage, error) {
-	// Check permission
-	if !h.isParticipantOfTalk(ctx, a.ID, talkID) {
-		return nil, fmt.Errorf("agent is not a participant of this talk")
+// ServiceAgentTalkChatJoin allows an agent to join a "talk" type chat (public channel)
+func (h *serviceHandler) ServiceAgentTalkChatJoin(ctx context.Context, a *amagent.Agent, chatID uuid.UUID) (*tkparticipant.WebhookMessage, error) {
+	// Get the chat to verify it's a "talk" type
+	chat, err := h.talkGet(ctx, chatID)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Could not get chat.")
+	}
+
+	// Only allow joining "talk" type chats (public channels)
+	if chat.Type != tkchat.TypeTalk {
+		return nil, fmt.Errorf("can only join talk-type chats")
+	}
+
+	// Verify chat belongs to the same customer
+	if chat.CustomerID != a.CustomerID {
+		return nil, fmt.Errorf("chat does not belong to agent's customer")
+	}
+
+	// Add the agent as a participant (using their own ID)
+	tmp, err := h.reqHandler.TalkV1ParticipantCreate(ctx, chatID, "agent", a.ID)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Could not join chat.")
+	}
+
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}
+
+// ServiceAgentTalkParticipantList gets list of participants in a chat
+func (h *serviceHandler) ServiceAgentTalkParticipantList(ctx context.Context, a *amagent.Agent, chatID uuid.UUID) ([]*tkparticipant.WebhookMessage, error) {
+	// Check permission - agent must have access to the chat
+	// Public "talk" type chats are accessible to all agents in the customer
+	// For group/direct chats, agent must be a participant
+	if !h.canAccessChat(ctx, a.ID, a.CustomerID, chatID) {
+		return nil, fmt.Errorf("agent has no permission to access this chat")
 	}
 
 	// Get participants via RPC
-	participants, err := h.reqHandler.TalkV1ParticipantList(ctx, talkID)
+	participants, err := h.reqHandler.TalkV1ParticipantList(ctx, chatID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not get participants.")
 	}
@@ -128,15 +185,17 @@ func (h *serviceHandler) ServiceAgentTalkParticipantList(ctx context.Context, a 
 	return res, nil
 }
 
-// ServiceAgentTalkParticipantCreate adds a participant to a talk
-func (h *serviceHandler) ServiceAgentTalkParticipantCreate(ctx context.Context, a *amagent.Agent, talkID uuid.UUID, ownerType string, ownerID uuid.UUID) (*tkparticipant.WebhookMessage, error) {
-	// Check permission
-	if !h.isParticipantOfTalk(ctx, a.ID, talkID) {
-		return nil, fmt.Errorf("agent is not a participant of this talk")
+// ServiceAgentTalkParticipantCreate adds a participant to a chat
+func (h *serviceHandler) ServiceAgentTalkParticipantCreate(ctx context.Context, a *amagent.Agent, chatID uuid.UUID, ownerType string, ownerID uuid.UUID) (*tkparticipant.WebhookMessage, error) {
+	// Check permission - must be a participant OR joining a public "talk" type chat
+	// For "talk" type chats (public channels): anyone in the customer can add themselves (join)
+	// For group/direct chats: only existing participants can add others
+	if !h.canAddParticipant(ctx, a, chatID, ownerType, ownerID) {
+		return nil, fmt.Errorf("agent is not a participant of this chat")
 	}
 
 	// Add participant via RPC
-	tmp, err := h.reqHandler.TalkV1ParticipantCreate(ctx, talkID, ownerType, ownerID)
+	tmp, err := h.reqHandler.TalkV1ParticipantCreate(ctx, chatID, ownerType, ownerID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not add participant.")
 	}
@@ -145,15 +204,15 @@ func (h *serviceHandler) ServiceAgentTalkParticipantCreate(ctx context.Context, 
 	return res, nil
 }
 
-// ServiceAgentTalkParticipantDelete removes a participant from a talk
-func (h *serviceHandler) ServiceAgentTalkParticipantDelete(ctx context.Context, a *amagent.Agent, talkID uuid.UUID, participantID uuid.UUID) (*tkparticipant.WebhookMessage, error) {
-	// Check permission
-	if !h.isParticipantOfTalk(ctx, a.ID, talkID) {
-		return nil, fmt.Errorf("agent is not a participant of this talk")
+// ServiceAgentTalkParticipantDelete removes a participant from a chat
+func (h *serviceHandler) ServiceAgentTalkParticipantDelete(ctx context.Context, a *amagent.Agent, chatID uuid.UUID, participantID uuid.UUID) (*tkparticipant.WebhookMessage, error) {
+	// Check permission - must be a participant to remove others
+	if !h.isParticipantOfTalk(ctx, a.ID, chatID) {
+		return nil, fmt.Errorf("agent is not a participant of this chat")
 	}
 
 	// Delete participant via RPC
-	tmp, err := h.reqHandler.TalkV1ParticipantDelete(ctx, talkID, participantID)
+	tmp, err := h.reqHandler.TalkV1ParticipantDelete(ctx, chatID, participantID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not delete participant.")
 	}
@@ -170,9 +229,11 @@ func (h *serviceHandler) ServiceAgentTalkMessageGet(ctx context.Context, a *amag
 		return nil, errors.Wrapf(err, "Could not get message.")
 	}
 
-	// Check permission - must be participant of the talk
-	if !h.isParticipantOfTalk(ctx, a.ID, tmp.ChatID) {
-		return nil, fmt.Errorf("agent is not a participant of this talk")
+	// Check permission - agent must have access to the chat
+	// Public "talk" type chats are accessible to all agents in the customer
+	// For group/direct chats, agent must be a participant
+	if !h.canAccessChat(ctx, a.ID, a.CustomerID, tmp.ChatID) {
+		return nil, fmt.Errorf("agent has no permission to access this chat")
 	}
 
 	// Convert to WebhookMessage
@@ -190,13 +251,15 @@ func (h *serviceHandler) ServiceAgentTalkMessageList(ctx context.Context, a *ama
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	// Check permission - agent must be participant of the chat
-	if !h.isParticipantOfTalk(ctx, a.ID, chatID) {
+	// Check permission - agent must have access to the chat
+	// Public "talk" type chats are accessible to all agents in the customer
+	// For group/direct chats, agent must be a participant
+	if !h.canAccessChat(ctx, a.ID, a.CustomerID, chatID) {
 		return nil, fmt.Errorf("agent is not a participant of this chat")
 	}
 
 	// Get messages for this specific chat
-	messages, err := h.talkMessageListByTalkIDs(ctx, []uuid.UUID{chatID}, size, token)
+	messages, err := h.talkMessageListByChatIDs(ctx, []uuid.UUID{chatID}, size, token)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not get messages.")
 	}
@@ -294,14 +357,14 @@ func (h *serviceHandler) ServiceAgentTalkMessageReactionCreate(ctx context.Conte
 
 // Helper functions
 
-// isParticipantOfTalk checks if an agent is a participant of a talk
-func (h *serviceHandler) isParticipantOfTalk(ctx context.Context, agentID uuid.UUID, talkID uuid.UUID) bool {
-	chat, err := h.talkGet(ctx, talkID)
+// isParticipantOfTalk checks if an agent is a participant of a chat
+func (h *serviceHandler) isParticipantOfTalk(ctx context.Context, agentID uuid.UUID, chatID uuid.UUID) bool {
+	participants, err := h.talkParticipantList(ctx, chatID)
 	if err != nil {
 		return false
 	}
 
-	for _, p := range chat.Participants {
+	for _, p := range participants {
 		if p.OwnerType == "agent" && p.OwnerID == agentID {
 			return true
 		}
@@ -310,9 +373,44 @@ func (h *serviceHandler) isParticipantOfTalk(ctx context.Context, agentID uuid.U
 	return false
 }
 
-// talkGet gets a talk by ID via RPC
-func (h *serviceHandler) talkGet(ctx context.Context, talkID uuid.UUID) (*tkchat.Chat, error) {
-	return h.reqHandler.TalkV1ChatGet(ctx, talkID)
+// canAccessChat checks if an agent can access a chat (view messages)
+// Returns true if:
+// - Chat is a public "talk" type (anyone in the customer can view)
+// - Agent is a participant of the chat (for group/direct types)
+func (h *serviceHandler) canAccessChat(ctx context.Context, agentID uuid.UUID, customerID uuid.UUID, chatID uuid.UUID) bool {
+	chat, err := h.talkGet(ctx, chatID)
+	if err != nil {
+		return false
+	}
+
+	// Public talk-type chats are accessible to all agents in the customer
+	if chat.Type == tkchat.TypeTalk && chat.CustomerID == customerID {
+		return true
+	}
+
+	// For group/direct chats, check if agent is a participant
+	participants, err := h.talkParticipantList(ctx, chatID)
+	if err != nil {
+		return false
+	}
+
+	for _, p := range participants {
+		if p.OwnerType == "agent" && p.OwnerID == agentID {
+			return true
+		}
+	}
+
+	return false
+}
+
+// talkGet gets a chat by ID via RPC
+func (h *serviceHandler) talkGet(ctx context.Context, chatID uuid.UUID) (*tkchat.Chat, error) {
+	return h.reqHandler.TalkV1ChatGet(ctx, chatID)
+}
+
+// talkParticipantList gets participants for a chat by chatID via RPC
+func (h *serviceHandler) talkParticipantList(ctx context.Context, chatID uuid.UUID) ([]*tkparticipant.Participant, error) {
+	return h.reqHandler.TalkV1ParticipantList(ctx, chatID)
 }
 
 // talkMessageGet gets a message by ID via RPC
@@ -320,19 +418,50 @@ func (h *serviceHandler) talkMessageGet(ctx context.Context, messageID uuid.UUID
 	return h.reqHandler.TalkV1MessageGet(ctx, messageID)
 }
 
-// talkMessageListByTalkIDs gets messages by talk IDs
-func (h *serviceHandler) talkMessageListByTalkIDs(ctx context.Context, talkIDs []uuid.UUID, size uint64, token string) ([]*tkmessage.Message, error) {
+// talkMessageListByChatIDs gets messages by chat IDs
+func (h *serviceHandler) talkMessageListByChatIDs(ctx context.Context, chatIDs []uuid.UUID, size uint64, token string) ([]*tkmessage.Message, error) {
 	// Build filters with chat_ids (note: currently only supports single chat_id due to filter limitations)
 	// For multiple chat IDs, this would need to make multiple requests or enhanced backend support
-	if len(talkIDs) == 0 {
+	if len(chatIDs) == 0 {
 		return []*tkmessage.Message{}, nil
 	}
 
-	// For now, filter by first talk ID (simplified implementation)
-	// TODO: Enhance to support multiple talk IDs when backend supports it
+	// For now, filter by first chat ID (simplified implementation)
+	// TODO: Enhance to support multiple chat IDs when backend supports it
 	filters := map[string]any{
-		"chat_id": talkIDs[0].String(),
+		"chat_id": chatIDs[0].String(),
 	}
 
 	return h.reqHandler.TalkV1MessageListWithFilters(ctx, filters, token, size)
+}
+
+// canAddParticipant checks if an agent can add a participant to a chat
+// Returns true if:
+// - Agent is already a participant (can add anyone)
+// - Chat is a "talk" type (public channel) and agent is adding themselves (joining)
+func (h *serviceHandler) canAddParticipant(ctx context.Context, a *amagent.Agent, chatID uuid.UUID, ownerType string, ownerID uuid.UUID) bool {
+	chat, err := h.talkGet(ctx, chatID)
+	if err != nil {
+		return false
+	}
+
+	// Check if agent is already a participant - can add anyone
+	participants, err := h.talkParticipantList(ctx, chatID)
+	if err == nil {
+		for _, p := range participants {
+			if p.OwnerType == "agent" && p.OwnerID == a.ID {
+				return true
+			}
+		}
+	}
+
+	// For "talk" type (public channels): allow agent to add themselves (join)
+	if chat.Type == tkchat.TypeTalk && chat.CustomerID == a.CustomerID {
+		// Agent can only add themselves to a public channel
+		if ownerType == "agent" && ownerID == a.ID {
+			return true
+		}
+	}
+
+	return false
 }

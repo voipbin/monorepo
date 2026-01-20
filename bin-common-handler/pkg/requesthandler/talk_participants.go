@@ -73,10 +73,17 @@ func (r *requestHandler) TalkV1ParticipantDelete(ctx context.Context, chatID, pa
 		return nil, err
 	}
 
-	if res.StatusCode != 200 {
+	// Accept both 200 OK (with body) and 204 No Content (without body)
+	if res.StatusCode != 200 && res.StatusCode != 204 {
 		return nil, fmt.Errorf("failed to delete participant: status %d", res.StatusCode)
 	}
 
+	// 204 No Content returns no body
+	if res.StatusCode == 204 {
+		return nil, nil
+	}
+
+	// 200 OK returns the deleted participant
 	var participant tkparticipant.Participant
 	if err := json.Unmarshal(res.Data, &participant); err != nil {
 		return nil, errors.Wrap(err, "could not unmarshal participant")

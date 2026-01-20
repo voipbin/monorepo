@@ -60,6 +60,55 @@ func (h *server) GetServiceAgentsTalkChats(c *gin.Context, params openapi_server
 	c.JSON(200, res)
 }
 
+// GetServiceAgentsTalkChannels handles GET /service_agents/talk_channels
+// Returns all public "talk" type channels for the customer (for discovery/joining)
+func (h *server) GetServiceAgentsTalkChannels(c *gin.Context, params openapi_server.GetServiceAgentsTalkChannelsParams) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "GetServiceAgentsTalkChannels",
+		"request_address": c.ClientIP(),
+	})
+
+	tmp, exists := c.Get("agent")
+	if !exists {
+		log.Errorf("Could not find agent info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
+
+	pageSize := uint64(100)
+	if params.PageSize != nil {
+		pageSize = uint64(*params.PageSize)
+	}
+	if pageSize <= 0 || pageSize > 100 {
+		pageSize = 100
+		log.Debugf("Invalid requested page size. Set to default. page_size: %d", pageSize)
+	}
+
+	pageToken := ""
+	if params.PageToken != nil {
+		pageToken = *params.PageToken
+	}
+
+	tmps, err := h.serviceHandler.ServiceAgentTalkChannelList(c.Request.Context(), &a, pageSize, pageToken)
+	if err != nil {
+		logrus.Errorf("Could not get channels info. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	nextToken := ""
+	if len(tmps) > 0 {
+		nextToken = tmps[len(tmps)-1].TMCreate
+	}
+
+	res := GenerateListResponse(tmps, nextToken)
+	c.JSON(200, res)
+}
+
 // PostServiceAgentsTalkChats handles POST /service_agents/talk_chats
 func (h *server) PostServiceAgentsTalkChats(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
@@ -230,6 +279,41 @@ func (h *server) DeleteServiceAgentsTalkChatsId(c *gin.Context, id string) {
 	res, err := h.serviceHandler.ServiceAgentTalkChatDelete(c.Request.Context(), &a, target)
 	if err != nil {
 		log.Errorf("Could not delete talk. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
+// PostServiceAgentsTalkChatsIdJoin handles POST /service_agents/talk_chats/{id}/join
+func (h *server) PostServiceAgentsTalkChatsIdJoin(c *gin.Context, id string) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "PostServiceAgentsTalkChatsIdJoin",
+		"request_address": c.ClientIP(),
+	})
+
+	tmp, exists := c.Get("agent")
+	if !exists {
+		log.Errorf("Could not find agent info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
+
+	target := uuid.FromStringOrNil(id)
+	if target == uuid.Nil {
+		log.Error("Could not parse the id.")
+		c.AbortWithStatus(400)
+		return
+	}
+
+	res, err := h.serviceHandler.ServiceAgentTalkChatJoin(c.Request.Context(), &a, target)
+	if err != nil {
+		log.Errorf("Could not join chat. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}

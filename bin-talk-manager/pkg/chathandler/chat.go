@@ -119,7 +119,7 @@ func (h *chatHandler) ChatCreate(ctx context.Context, customerID uuid.UUID, chat
 
 	// Add creator as participant if provided and not already in participants list
 	if creatorType != "" && creatorID != uuid.Nil && !creatorInParticipants {
-		_, err = h.participantHandler.ParticipantAdd(ctx, customerID, t.ID, creatorID, creatorType)
+		_, err = h.participantHandler.ParticipantAdd(ctx, t.ID, creatorID, creatorType)
 		if err != nil {
 			log.Errorf("Failed to add creator as participant. err: %v", err)
 			// Note: We don't fail the entire chat creation if participant addition fails
@@ -135,7 +135,7 @@ func (h *chatHandler) ChatCreate(ctx context.Context, customerID uuid.UUID, chat
 
 	// Add all participants from the list
 	for _, p := range participants {
-		_, err = h.participantHandler.ParticipantAdd(ctx, customerID, t.ID, p.OwnerID, p.OwnerType)
+		_, err = h.participantHandler.ParticipantAdd(ctx, t.ID, p.OwnerID, p.OwnerType)
 		if err != nil {
 			log.Errorf("Failed to add participant. owner_type: %s, owner_id: %v, err: %v", p.OwnerType, p.OwnerID, err)
 			// Note: We don't fail the entire chat creation if participant addition fails
@@ -160,7 +160,7 @@ func (h *chatHandler) ChatCreate(ctx context.Context, customerID uuid.UUID, chat
 	// Publish webhook event
 	h.notifyHandler.PublishWebhookEvent(ctx, result.CustomerID, chat.EventTypeChatCreated, result)
 
-	log.WithField("chat_id", result.ID).Debug("Chat created successfully")
+	log.WithField("chat_id", result.ID).Debugf("Chat created successfully. chat_id: %s", result.ID)
 	return result, nil
 }
 
@@ -175,16 +175,6 @@ func (h *chatHandler) ChatGet(ctx context.Context, id uuid.UUID) (*chat.Chat, er
 	if err != nil {
 		log.Errorf("Failed to get talk. err: %v", err)
 		return nil, errors.Wrap(err, "failed to get talk")
-	}
-
-	// Load participants for this chat
-	participants, err := h.dbHandler.ParticipantListByChatIDs(ctx, []uuid.UUID{t.ID})
-	if err != nil {
-		log.Errorf("Failed to load participants: %v", err)
-		// Continue without participants rather than failing entire request
-		t.Participants = []*participant.Participant{}
-	} else {
-		t.Participants = participants
 	}
 
 	return t, nil
@@ -261,7 +251,7 @@ func (h *chatHandler) ChatUpdate(ctx context.Context, id uuid.UUID, name *string
 	// Publish webhook event
 	h.notifyHandler.PublishWebhookEvent(ctx, result.CustomerID, chat.EventTypeChatUpdated, result)
 
-	log.Debug("Chat updated successfully")
+	log.Debugf("Chat updated successfully. chat_id: %s", id)
 	return result, nil
 }
 
@@ -290,6 +280,6 @@ func (h *chatHandler) ChatDelete(ctx context.Context, id uuid.UUID) (*chat.Chat,
 	// Publish webhook event
 	h.notifyHandler.PublishWebhookEvent(ctx, t.CustomerID, chat.EventTypeChatDeleted, t)
 
-	log.Debug("Chat deleted successfully")
+	log.Debugf("Chat deleted successfully. chat_id: %s", id)
 	return t, nil
 }

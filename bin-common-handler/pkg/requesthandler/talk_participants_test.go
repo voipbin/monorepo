@@ -170,7 +170,7 @@ func Test_TalkV1ParticipantDelete(t *testing.T) {
 		expectRes *talkparticipant.Participant
 	}{
 		{
-			name: "normal",
+			name: "normal - status 200 with body",
 
 			talkID:        uuid.FromStringOrNil("770e8400-e29b-41d4-a716-446655440000"),
 			participantID: uuid.FromStringOrNil("72179880-ec5f-11ec-920e-c77279756b6d"),
@@ -198,6 +198,26 @@ func Test_TalkV1ParticipantDelete(t *testing.T) {
 				},
 				ChatID: uuid.FromStringOrNil("770e8400-e29b-41d4-a716-446655440000"),
 			},
+		},
+		{
+			name: "status 204 no content",
+
+			talkID:        uuid.FromStringOrNil("770e8400-e29b-41d4-a716-446655440000"),
+			participantID: uuid.FromStringOrNil("72179880-ec5f-11ec-920e-c77279756b6d"),
+
+			expectQueue: "bin-manager.talk-manager.request",
+			expectRequest: &sock.Request{
+				URI:      "/v1/chats/770e8400-e29b-41d4-a716-446655440000/participants/72179880-ec5f-11ec-920e-c77279756b6d",
+				Method:   sock.RequestMethodDelete,
+				DataType: ContentTypeNone,
+			},
+
+			response: &sock.Response{
+				StatusCode: 204,
+				DataType:   ContentTypeNone,
+				Data:       nil,
+			},
+			expectRes: nil,
 		},
 	}
 

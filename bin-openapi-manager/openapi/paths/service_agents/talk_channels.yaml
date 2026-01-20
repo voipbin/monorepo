@@ -1,0 +1,25 @@
+get:
+  summary: Get list of public talk channels
+  description: |
+    Returns a list of all public "talk" type channels for the customer.
+    This endpoint is for discovering available public channels that the agent can join.
+    Unlike /service_agents/talk_chats which returns only joined chats, this returns all public channels regardless of participation.
+  tags:
+    - Service Agent
+  parameters:
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
+  responses:
+    '200':
+      description: A list of public talk channels.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/CommonPagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TalkManagerTalk'

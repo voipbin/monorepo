@@ -24,7 +24,6 @@ func Test_processV1TalksIDParticipantsPost(t *testing.T) {
 		request *sock.Request
 
 		chatID      uuid.UUID
-		customerID  uuid.UUID
 		ownerType   string
 		ownerID     uuid.UUID
 		responseParticipant *participant.Participant
@@ -36,13 +35,12 @@ func Test_processV1TalksIDParticipantsPost(t *testing.T) {
 				URI:      "/v1/chats/6ebc6880-31da-11ed-8e95-a3bc92af9795/participants",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","owner_type":"agent","owner_id":"7fcd7990-42eb-11ed-9fa6-b4cd93af9796"}`),
+				Data:     []byte(`{"owner_type":"agent","owner_id":"7fcd7990-42eb-11ed-9fa6-b4cd93af9796"}`),
 			},
 
-			chatID:     uuid.FromStringOrNil("6ebc6880-31da-11ed-8e95-a3bc92af9795"),
-			customerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
-			ownerType:  "agent",
-			ownerID:    uuid.FromStringOrNil("7fcd7990-42eb-11ed-9fa6-b4cd93af9796"),
+			chatID:    uuid.FromStringOrNil("6ebc6880-31da-11ed-8e95-a3bc92af9795"),
+			ownerType: "agent",
+			ownerID:   uuid.FromStringOrNil("7fcd7990-42eb-11ed-9fa6-b4cd93af9796"),
 			responseParticipant: &participant.Participant{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("bbef9d30-75fe-11ed-c3ea-f8e017af9700"),
@@ -67,13 +65,12 @@ func Test_processV1TalksIDParticipantsPost(t *testing.T) {
 				URI:      "/v1/chats/6ebc6880-31da-11ed-8e95-a3bc92af9795/participants",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","owner_type":"customer","owner_id":"8ede8b40-86ef-11ed-d4fb-e9e028af9801"}`),
+				Data:     []byte(`{"owner_type":"customer","owner_id":"8ede8b40-86ef-11ed-d4fb-e9e028af9801"}`),
 			},
 
-			chatID:     uuid.FromStringOrNil("6ebc6880-31da-11ed-8e95-a3bc92af9795"),
-			customerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
-			ownerType:  "customer",
-			ownerID:    uuid.FromStringOrNil("8ede8b40-86ef-11ed-d4fb-e9e028af9801"),
+			chatID:    uuid.FromStringOrNil("6ebc6880-31da-11ed-8e95-a3bc92af9795"),
+			ownerType: "customer",
+			ownerID:   uuid.FromStringOrNil("8ede8b40-86ef-11ed-d4fb-e9e028af9801"),
 			responseParticipant: &participant.Participant{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("cce09e40-86ef-11ed-e5ec-e0e039af9902"),
@@ -108,7 +105,7 @@ func Test_processV1TalksIDParticipantsPost(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			mockParticipant.EXPECT().ParticipantAdd(ctx, tt.customerID, tt.chatID, tt.ownerID, tt.ownerType).Return(tt.responseParticipant, nil)
+			mockParticipant.EXPECT().ParticipantAdd(ctx, tt.chatID, tt.ownerID, tt.ownerType).Return(tt.responseParticipant, nil)
 
 			res, err := h.v1ChatsIDParticipantsPost(ctx, *tt.request)
 			if err != nil {
@@ -145,27 +142,12 @@ func Test_processV1TalksIDParticipantsPost_error(t *testing.T) {
 			},
 		},
 		{
-			name: "nil customer id",
-			request: &sock.Request{
-				URI:      "/v1/chats/6ebc6880-31da-11ed-8e95-a3bc92af9795/participants",
-				Method:   sock.RequestMethodPost,
-				DataType: "application/json",
-				Data:     []byte(`{"customer_id":"","owner_type":"agent","owner_id":"7fcd7990-42eb-11ed-9fa6-b4cd93af9796"}`),
-			},
-			chatID: uuid.FromStringOrNil("6ebc6880-31da-11ed-8e95-a3bc92af9795"),
-			expectRes: &sock.Response{
-				StatusCode: 400,
-				DataType:   "application/json",
-				Data:       json.RawMessage("{}"),
-			},
-		},
-		{
 			name: "nil owner id",
 			request: &sock.Request{
 				URI:      "/v1/chats/6ebc6880-31da-11ed-8e95-a3bc92af9795/participants",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","owner_type":"agent","owner_id":""}`),
+				Data:     []byte(`{"owner_type":"agent","owner_id":""}`),
 			},
 			chatID: uuid.FromStringOrNil("6ebc6880-31da-11ed-8e95-a3bc92af9795"),
 			expectRes: &sock.Response{

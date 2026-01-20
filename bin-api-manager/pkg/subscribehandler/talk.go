@@ -129,9 +129,17 @@ func (h *subscribeHandler) processEventTalk(ctx context.Context, m *sock.Event) 
 		return err
 	}
 
-	// Create topics for all participants (both old and new formats)
+	// Fetch participants separately (since webhooks no longer include participants)
+	participants, err := h.reqHandler.TalkV1ParticipantList(ctx, talk.ID)
+	if err != nil {
+		log.Errorf("Could not get participants for chat %s: %v", talk.ID, err)
+		// Continue without participants - better to deliver partial notification than none
+		participants = []*talkparticipant.Participant{}
+	}
+
+	// Create topics for all participants
 	topics := []string{}
-	for _, p := range talk.Participants {
+	for _, p := range participants {
 		topics = append(topics, h.createTalkTopics(m.Type, p.OwnerID, talk.ID)...)
 	}
 

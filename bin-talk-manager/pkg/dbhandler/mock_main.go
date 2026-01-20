@@ -102,6 +102,34 @@ func (mr *MockDBHandlerMockRecorder) ChatList(ctx, filters, token, size any) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatList", reflect.TypeOf((*MockDBHandler)(nil).ChatList), ctx, filters, token, size)
 }
 
+// ChatMemberCountDecrement mocks base method.
+func (m *MockDBHandler) ChatMemberCountDecrement(ctx context.Context, chatID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChatMemberCountDecrement", ctx, chatID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ChatMemberCountDecrement indicates an expected call of ChatMemberCountDecrement.
+func (mr *MockDBHandlerMockRecorder) ChatMemberCountDecrement(ctx, chatID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatMemberCountDecrement", reflect.TypeOf((*MockDBHandler)(nil).ChatMemberCountDecrement), ctx, chatID)
+}
+
+// ChatMemberCountIncrement mocks base method.
+func (m *MockDBHandler) ChatMemberCountIncrement(ctx context.Context, chatID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChatMemberCountIncrement", ctx, chatID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ChatMemberCountIncrement indicates an expected call of ChatMemberCountIncrement.
+func (mr *MockDBHandlerMockRecorder) ChatMemberCountIncrement(ctx, chatID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChatMemberCountIncrement", reflect.TypeOf((*MockDBHandler)(nil).ChatMemberCountIncrement), ctx, chatID)
+}
+
 // ChatUpdate mocks base method.
 func (m *MockDBHandler) ChatUpdate(ctx context.Context, id uuid.UUID, fields map[chat.Field]any) error {
 	m.ctrl.T.Helper()

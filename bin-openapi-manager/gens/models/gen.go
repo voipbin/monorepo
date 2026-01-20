@@ -3088,6 +3088,9 @@ type TalkManagerTalk struct {
 	// Id Resource identifier.
 	Id *string `json:"id,omitempty"`
 
+	// MemberCount Number of participants in this chat.
+	MemberCount *int `json:"member_count,omitempty"`
+
 	// Name Talk name (optional).
 	Name *string `json:"name,omitempty"`
 
@@ -4667,6 +4670,15 @@ type PutServiceAgentsMePasswordJSONBody struct {
 type PutServiceAgentsMeStatusJSONBody struct {
 	// Status Agent's status
 	Status AgentManagerAgentStatus `json:"status"`
+}
+
+// GetServiceAgentsTalkChannelsParams defines parameters for GetServiceAgentsTalkChannels.
+type GetServiceAgentsTalkChannelsParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
 // GetServiceAgentsTalkChatsParams defines parameters for GetServiceAgentsTalkChats.

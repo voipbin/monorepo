@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
-	"monorepo/bin-talk-manager/models/participant"
 )
 
 // Type represents the type of chat
@@ -31,51 +30,40 @@ type Chat struct {
 	Name   string `json:"name" db:"name"`
 	Detail string `json:"detail" db:"detail"`
 
+	// Member count (atomically updated on participant join/leave)
+	MemberCount int `json:"member_count" db:"member_count"`
+
 	// Timestamps
 	TMCreate string `json:"tm_create" db:"tm_create"`
 	TMUpdate string `json:"tm_update" db:"tm_update"`
 	TMDelete string `json:"tm_delete" db:"tm_delete"`
-
-	// Participants in this chat (populated for list operations)
-	Participants []*participant.Participant `json:"participants,omitempty" db:"-"`
 }
 
 // WebhookMessage is the webhook payload for chat events
 type WebhookMessage struct {
 	commonidentity.Identity
 
-	Type     Type   `json:"type,omitempty"`
-	Name     string `json:"name,omitempty"`
-	Detail   string `json:"detail,omitempty"`
-	TMCreate string `json:"tm_create,omitempty"`
-	TMUpdate string `json:"tm_update,omitempty"`
-	TMDelete string `json:"tm_delete,omitempty"`
-
-	// Participants in this chat
-	Participants []*participant.WebhookMessage `json:"participants,omitempty"`
+	Type        Type   `json:"type,omitempty"`
+	Name        string `json:"name,omitempty"`
+	Detail      string `json:"detail,omitempty"`
+	MemberCount int    `json:"member_count,omitempty"`
+	TMCreate    string `json:"tm_create,omitempty"`
+	TMUpdate    string `json:"tm_update,omitempty"`
+	TMDelete    string `json:"tm_delete,omitempty"`
 }
 
 // ConvertWebhookMessage converts Chat to WebhookMessage
 func (t *Chat) ConvertWebhookMessage() *WebhookMessage {
-	wm := &WebhookMessage{
-		Identity: t.Identity,
-		Type:     t.Type,
-		Name:     t.Name,
-		Detail:   t.Detail,
-		TMCreate: t.TMCreate,
-		TMUpdate: t.TMUpdate,
-		TMDelete: t.TMDelete,
+	return &WebhookMessage{
+		Identity:    t.Identity,
+		Type:        t.Type,
+		Name:        t.Name,
+		Detail:      t.Detail,
+		MemberCount: t.MemberCount,
+		TMCreate:    t.TMCreate,
+		TMUpdate:    t.TMUpdate,
+		TMDelete:    t.TMDelete,
 	}
-
-	// Convert participants if present
-	if len(t.Participants) > 0 {
-		wm.Participants = make([]*participant.WebhookMessage, 0, len(t.Participants))
-		for _, p := range t.Participants {
-			wm.Participants = append(wm.Participants, p.ConvertWebhookMessage())
-		}
-	}
-
-	return wm
 }
 
 // CreateWebhookEvent generates WebhookEvent JSON

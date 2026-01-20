@@ -9,10 +9,12 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 
+	commondb "monorepo/bin-common-handler/pkg/databasehandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	commonutil "monorepo/bin-common-handler/pkg/utilhandler"
 
+	"monorepo/bin-talk-manager/models/chat"
 	"monorepo/bin-talk-manager/models/participant"
 	"monorepo/bin-talk-manager/pkg/dbhandler"
 )
@@ -87,16 +89,29 @@ func Test_ParticipantAdd(t *testing.T) {
 
 			ctx := context.Background()
 
+			// Mock chat get for validation
+			mockChat := &chat.Chat{
+				Identity: commonidentity.Identity{
+					ID:         tt.chatID,
+					CustomerID: tt.customerID,
+				},
+				TMDelete: commondb.DefaultTimeStamp, // not deleted
+			}
+			mockDB.EXPECT().ChatGet(ctx, tt.chatID).Return(mockChat, nil)
+
 			// Mock UUID generation
 			mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("93d48228-3ed7-11ef-a9ca-070e7ba46a55")).AnyTimes()
 
 			// Mock database create (UPSERT behavior)
 			mockDB.EXPECT().ParticipantCreate(ctx, gomock.Any()).Return(nil)
 
+			// Mock member count increment
+			mockDB.EXPECT().ChatMemberCountIncrement(ctx, tt.chatID).Return(nil)
+
 			// Mock webhook event publishing
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.customerID, participant.EventParticipantAdded, gomock.Any())
 
-			res, err := h.ParticipantAdd(ctx, tt.customerID, tt.chatID, tt.ownerID, tt.ownerType)
+			res, err := h.ParticipantAdd(ctx, tt.chatID, tt.ownerID, tt.ownerType)
 			if tt.expectError && err == nil {
 				t.Errorf("Wrong match. expect: error, got: ok")
 			}
@@ -133,62 +148,84 @@ func Test_ParticipantAdd_error(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customerID uuid.UUID
-		chatID     uuid.UUID
-		ownerID    uuid.UUID
-		ownerType  string
+		chatID    uuid.UUID
+		ownerID   uuid.UUID
+		ownerType string
 
-		createError error
+		// Mock responses
+		chatGetError error
+		chatGetChat  *chat.Chat
+		createError  error
+
 		expectError bool
 	}{
 		{
-			name: "error_nil_customer_id",
-
-			customerID: uuid.Nil,
-			chatID:     uuid.FromStringOrNil("e8427fa8-17b2-4e9e-8855-90e516bcf1d3"),
-			ownerID:    uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
-			ownerType:  "agent",
-
-			expectError: true,
-		},
-		{
 			name: "error_nil_chat_id",
 
-			customerID: uuid.FromStringOrNil("ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4"),
-			chatID:     uuid.Nil,
-			ownerID:    uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
-			ownerType:  "agent",
+			chatID:    uuid.Nil,
+			ownerID:   uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
+			ownerType: "agent",
 
 			expectError: true,
 		},
 		{
 			name: "error_nil_owner_id",
 
-			customerID: uuid.FromStringOrNil("ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4"),
-			chatID:     uuid.FromStringOrNil("e8427fa8-17b2-4e9e-8855-90e516bcf1d3"),
-			ownerID:    uuid.Nil,
-			ownerType:  "agent",
+			chatID:    uuid.FromStringOrNil("e8427fa8-17b2-4e9e-8855-90e516bcf1d3"),
+			ownerID:   uuid.Nil,
+			ownerType: "agent",
 
 			expectError: true,
 		},
 		{
 			name: "error_empty_owner_type",
 
-			customerID: uuid.FromStringOrNil("ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4"),
-			chatID:     uuid.FromStringOrNil("e8427fa8-17b2-4e9e-8855-90e516bcf1d3"),
-			ownerID:    uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
-			ownerType:  "",
+			chatID:    uuid.FromStringOrNil("e8427fa8-17b2-4e9e-8855-90e516bcf1d3"),
+			ownerID:   uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
+			ownerType: "",
 
+			expectError: true,
+		},
+		{
+			name: "error_chat_not_found",
+
+			chatID:    uuid.FromStringOrNil("e8427fa8-17b2-4e9e-8855-90e516bcf1d3"),
+			ownerID:   uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
+			ownerType: "agent",
+
+			chatGetError: fmt.Errorf("chat not found"),
+			expectError:  true,
+		},
+		{
+			name: "error_chat_deleted",
+
+			chatID:    uuid.FromStringOrNil("e8427fa8-17b2-4e9e-8855-90e516bcf1d3"),
+			ownerID:   uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
+			ownerType: "agent",
+
+			chatGetChat: &chat.Chat{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("e8427fa8-17b2-4e9e-8855-90e516bcf1d3"),
+					CustomerID: uuid.FromStringOrNil("ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4"),
+				},
+				TMDelete: "2024-01-15 10:30:00.000000", // Chat is deleted
+			},
 			expectError: true,
 		},
 		{
 			name: "error_database_create_failure",
 
-			customerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
-			chatID:     uuid.FromStringOrNil("ac810dc4-298c-11ee-984c-ebb7811c4114"),
-			ownerID:    uuid.FromStringOrNil("31536998-da36-11ee-976a-b31b049d62c2"),
-			ownerType:  "agent",
+			chatID:    uuid.FromStringOrNil("ac810dc4-298c-11ee-984c-ebb7811c4114"),
+			ownerID:   uuid.FromStringOrNil("31536998-da36-11ee-976a-b31b049d62c2"),
+			ownerType: "agent",
 
+			chatGetChat: &chat.Chat{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("ac810dc4-298c-11ee-984c-ebb7811c4114"),
+					CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
+				},
+				TMDelete: commondb.DefaultTimeStamp, // Not deleted
+			},
 			createError: fmt.Errorf("database error"),
 			expectError: true,
 		},
@@ -211,17 +248,22 @@ func Test_ParticipantAdd_error(t *testing.T) {
 
 			ctx := context.Background()
 
-			// Only mock database call if validation passes
-			if tt.customerID != uuid.Nil &&
-				tt.chatID != uuid.Nil &&
-				tt.ownerID != uuid.Nil &&
-				tt.ownerType != "" {
-				// Mock UUID generation for this case
-				mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("93d48228-3ed7-11ef-a9ca-070e7ba46a55"))
-				mockDB.EXPECT().ParticipantCreate(ctx, gomock.Any()).Return(tt.createError)
+			// Mock ChatGet if chatID is valid
+			if tt.chatID != uuid.Nil && tt.ownerID != uuid.Nil && tt.ownerType != "" {
+				if tt.chatGetError != nil {
+					mockDB.EXPECT().ChatGet(ctx, tt.chatID).Return(nil, tt.chatGetError)
+				} else if tt.chatGetChat != nil {
+					mockDB.EXPECT().ChatGet(ctx, tt.chatID).Return(tt.chatGetChat, nil)
+
+					// Only mock create if chat is not deleted
+					if tt.chatGetChat.TMDelete >= commondb.DefaultTimeStamp {
+						mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("93d48228-3ed7-11ef-a9ca-070e7ba46a55"))
+						mockDB.EXPECT().ParticipantCreate(ctx, gomock.Any()).Return(tt.createError)
+					}
+				}
 			}
 
-			res, err := h.ParticipantAdd(ctx, tt.customerID, tt.chatID, tt.ownerID, tt.ownerType)
+			res, err := h.ParticipantAdd(ctx, tt.chatID, tt.ownerID, tt.ownerType)
 			if err == nil {
 				t.Errorf("Wrong match. expect: error, got: ok")
 			}
@@ -493,6 +535,9 @@ func Test_ParticipantRemove(t *testing.T) {
 
 			// Hard delete from database
 			mockDB.EXPECT().ParticipantDelete(ctx, tt.participantID).Return(nil)
+
+			// Mock member count decrement
+			mockDB.EXPECT().ChatMemberCountDecrement(ctx, tt.responseParticipant.ChatID).Return(nil)
 
 			// Publish webhook event
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.customerID, participant.EventParticipantRemoved, tt.responseParticipant)
