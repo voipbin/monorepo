@@ -145,7 +145,7 @@ func Test_canAccessChat(t *testing.T) {
 			mockReq.EXPECT().TalkV1ChatGet(ctx, tt.chatID).Return(tt.responseChat, nil)
 
 			// Mock TalkV1ParticipantList when not (TypeTalk AND same customer)
-			if !(tt.responseChat.Type == tkchat.TypeTalk && tt.responseChat.CustomerID == tt.customerID) {
+			if tt.responseChat.Type != tkchat.TypeTalk || tt.responseChat.CustomerID != tt.customerID {
 				mockReq.EXPECT().TalkV1ParticipantList(ctx, tt.chatID).Return(tt.responseParticipants, nil)
 			}
 
