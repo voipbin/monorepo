@@ -26,8 +26,9 @@ func Test_canAccessChat(t *testing.T) {
 		customerID uuid.UUID
 		chatID     uuid.UUID
 
-		responseChat *tkchat.Chat
-		expectResult bool
+		responseChat         *tkchat.Chat
+		responseParticipants []*tkparticipant.Participant
+		expectResult         bool
 	}{
 		{
 			name:       "public talk type - same customer - should allow access",
@@ -39,9 +40,10 @@ func Test_canAccessChat(t *testing.T) {
 					ID:         uuid.FromStringOrNil("d1111111-1111-1111-1111-111111111111"),
 					CustomerID: uuid.FromStringOrNil("c1111111-1111-1111-1111-111111111111"),
 				},
-				Type:         tkchat.TypeTalk,
+				Type: tkchat.TypeTalk,
 			},
-			expectResult: true,
+			responseParticipants: nil, // TypeTalk doesn't need participants
+			expectResult:         true,
 		},
 		{
 			name:       "public talk type - different customer - should deny access",
@@ -53,9 +55,10 @@ func Test_canAccessChat(t *testing.T) {
 					ID:         uuid.FromStringOrNil("d2222222-2222-2222-2222-222222222222"),
 					CustomerID: uuid.FromStringOrNil("c9999999-9999-9999-9999-999999999999"), // different customer
 				},
-				Type:         tkchat.TypeTalk,
+				Type: tkchat.TypeTalk,
 			},
-			expectResult: false,
+			responseParticipants: []*tkparticipant.Participant{}, // Different customer requires participant check
+			expectResult:         false,
 		},
 		{
 			name:       "group type - agent is participant - should allow access",
@@ -68,6 +71,14 @@ func Test_canAccessChat(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("c3333333-3333-3333-3333-333333333333"),
 				},
 				Type: tkchat.TypeGroup,
+			},
+			responseParticipants: []*tkparticipant.Participant{
+				{
+					Owner: commonidentity.Owner{
+						OwnerType: "agent",
+						OwnerID:   uuid.FromStringOrNil("a3333333-3333-3333-3333-333333333333"),
+					},
+				},
 			},
 			expectResult: true,
 		},
@@ -83,6 +94,14 @@ func Test_canAccessChat(t *testing.T) {
 				},
 				Type: tkchat.TypeGroup,
 			},
+			responseParticipants: []*tkparticipant.Participant{
+				{
+					Owner: commonidentity.Owner{
+						OwnerType: "agent",
+						OwnerID:   uuid.FromStringOrNil("a9999999-9999-9999-9999-999999999999"), // different agent
+					},
+				},
+			},
 			expectResult: false,
 		},
 		{
@@ -96,6 +115,14 @@ func Test_canAccessChat(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("c5555555-5555-5555-5555-555555555555"),
 				},
 				Type: tkchat.TypeDirect,
+			},
+			responseParticipants: []*tkparticipant.Participant{
+				{
+					Owner: commonidentity.Owner{
+						OwnerType: "agent",
+						OwnerID:   uuid.FromStringOrNil("a5555555-5555-5555-5555-555555555555"),
+					},
+				},
 			},
 			expectResult: true,
 		},
@@ -116,6 +143,11 @@ func Test_canAccessChat(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().TalkV1ChatGet(ctx, tt.chatID).Return(tt.responseChat, nil)
+
+		// Mock TalkV1ParticipantList when not (TypeTalk AND same customer)
+		if !(tt.responseChat.Type == tkchat.TypeTalk && tt.responseChat.CustomerID == tt.customerID) {
+			mockReq.EXPECT().TalkV1ParticipantList(ctx, tt.chatID).Return(tt.responseParticipants, nil)
+		}
 
 			res := h.canAccessChat(ctx, tt.agentID, tt.customerID, tt.chatID)
 			if res != tt.expectResult {
