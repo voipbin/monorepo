@@ -73,6 +73,7 @@ require (
 	github.com/smotes/purse v1.0.1
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/viper v1.21.0
+	github.com/zaf/resample v1.5.0
 	go.uber.org/mock v0.6.0
 	google.golang.org/protobuf v1.36.11
 	monorepo/bin-ai-manager v0.0.0-20240313050825-1c666b883013
