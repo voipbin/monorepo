@@ -138,11 +138,12 @@ func (h *audiosocketHandler) GetDataSamples(inputRate int, data []byte) ([]byte,
 		samples[i] = int16(binary.LittleEndian.Uint16(data[i*2 : i*2+2]))
 	}
 
-	// Apply low-pass anti-aliasing filter if coefficients are available
-	coeffs, hasFilter := lpfCoeffsMap[inputRate]
-	if hasFilter {
-		samples = applyLowPassFilter(samples, coeffs)
-	}
+	// TODO: Re-enable anti-aliasing filter once coefficients are properly calibrated
+	// The current coefficients cause audio distortion. For now, use simple decimation.
+	// coeffs, hasFilter := lpfCoeffsMap[inputRate]
+	// if hasFilter {
+	// 	samples = applyLowPassFilter(samples, coeffs)
+	// }
 
 	// Decimate by selecting every 'factor'-th sample
 	factor := inputRate / defaultAudiosocketConvertSampleRate
