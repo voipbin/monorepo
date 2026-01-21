@@ -1132,7 +1132,7 @@ jobs:
   bin-pipecat-manager-test:
     docker: *go_image
     steps:
-      - go-test:
+      - go-test-pipecat-manager:
           source-directory: bin-pipecat-manager
 
   bin-pipecat-manager-build:
@@ -1520,6 +1520,52 @@ commands:
             cd << parameters.source-directory >>
             gotestsum --junitfile test-results.xml
 
+      - store_test_results:
+          path: << parameters.source-directory >>/test-results.xml
+
+  go-test-pipecat-manager:
+    description: "test and lint the go application with libsoxr support"
+    parameters:
+      source-directory:
+        type: string
+        default: "none"
+    steps:
+      - run: echo working on << parameters.source-directory >>
+      - checkout
+      - run:
+          name: Install dependencies and vendor
+          command: |
+            cd << parameters.source-directory >>
+            go mod download
+            go mod vendor
+      - run:
+          name: Install extra dependencies (libsoxr for audio resampling)
+          command: |
+            sudo apt-get update && sudo apt install -y pkg-config libsoxr-dev
+      - run:
+          name: Install latest golangci-lint
+          command: |
+            curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s latest
+            sudo mv ./bin/golangci-lint /usr/local/bin/
+            golangci-lint version
+      - run:
+          name: Linting and vet
+          command: |
+            cd << parameters.source-directory >>
+            golangci-lint run -v --timeout 5m
+            go vet $(go list ./...)
+      - run:
+          name: Testing
+          command: |
+            cd << parameters.source-directory >>
+            go test -coverprofile cp.out -v $(go list ./...)
+            go tool cover -html=cp.out -o cp.html
+            go tool cover -func=cp.out
+      - run:
+          name: Run gotestsum
+          command: |
+            cd << parameters.source-directory >>
+            gotestsum --junitfile test-results.xml
       - store_test_results:
           path: << parameters.source-directory >>/test-results.xml
 
