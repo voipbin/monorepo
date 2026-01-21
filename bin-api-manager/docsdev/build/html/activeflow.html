@@ -169,76 +169,76 @@
 <section id="flow-vs-activeflow">
 <h3>Flow vs ActiveFlow<a class="headerlink" href="#flow-vs-activeflow" title="Link to this heading"></a></h3>
 <p>Understanding the difference between a Flow and an ActiveFlow is essential for working with VoIPBIN.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────────┐
-│                        Flow vs ActiveFlow                                │
-└─────────────────────────────────────────────────────────────────────────┘
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-------------------------------------------------------------------------+</span>
+<span class="o">|</span>                        <span class="n">Flow</span> <span class="n">vs</span> <span class="n">ActiveFlow</span>                                <span class="o">|</span>
+<span class="o">+-------------------------------------------------------------------------+</span>
 
-Flow (Template)                         ActiveFlow (Running Instance)
-┌─────────────────────────┐            ┌─────────────────────────────────┐
-│ • Static definition     │            │ • Dynamic execution state       │
-│ • Reusable template     │            │ • One-time instance             │
-│ • Stored in database    │            │ • Tracks current position       │
-│ • No execution state    │            │ • Contains variables            │
-│                         │            │ • Linked to call/conversation   │
-└─────────────────────────┘            └─────────────────────────────────┘
-           │                                        ▲
-           │     When triggered                     │
-           └────────────────────────────────────────┘
-                    Creates
+<span class="n">Flow</span> <span class="p">(</span><span class="n">Template</span><span class="p">)</span>                         <span class="n">ActiveFlow</span> <span class="p">(</span><span class="n">Running</span> <span class="n">Instance</span><span class="p">)</span>
+<span class="o">+-------------------------+</span>            <span class="o">+---------------------------------+</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Static</span> <span class="n">definition</span>     <span class="o">|</span>            <span class="o">|</span> <span class="n">o</span> <span class="n">Dynamic</span> <span class="n">execution</span> <span class="n">state</span>       <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Reusable</span> <span class="n">template</span>     <span class="o">|</span>            <span class="o">|</span> <span class="n">o</span> <span class="n">One</span><span class="o">-</span><span class="n">time</span> <span class="n">instance</span>             <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Stored</span> <span class="ow">in</span> <span class="n">database</span>    <span class="o">|</span>            <span class="o">|</span> <span class="n">o</span> <span class="n">Tracks</span> <span class="n">current</span> <span class="n">position</span>       <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">No</span> <span class="n">execution</span> <span class="n">state</span>    <span class="o">|</span>            <span class="o">|</span> <span class="n">o</span> <span class="n">Contains</span> <span class="n">variables</span>            <span class="o">|</span>
+<span class="o">|</span>                         <span class="o">|</span>            <span class="o">|</span> <span class="n">o</span> <span class="n">Linked</span> <span class="n">to</span> <span class="n">call</span><span class="o">/</span><span class="n">conversation</span>   <span class="o">|</span>
+<span class="o">+-------------------------+</span>            <span class="o">+---------------------------------+</span>
+           <span class="o">|</span>                                        <span class="o">^</span>
+           <span class="o">|</span>     <span class="n">When</span> <span class="n">triggered</span>                     <span class="o">|</span>
+           <span class="o">+----------------------------------------+</span>
+                    <span class="n">Creates</span>
 </pre></div>
 </div>
 <p><strong>Analogy</strong>: A Flow is like a recipe book. An ActiveFlow is like actually cooking that recipe - you track which step you’re on, what ingredients you’ve used, and the current state of the dish.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Flow (Recipe Book)                    ActiveFlow (Cooking Session)
-┌────────────────────┐               ┌────────────────────────────────┐
-│ Step 1: Answer     │               │ Step 1: Answer ✓ (done)        │
-│ Step 2: Talk       │   ──────▶     │ Step 2: Talk ◀── current       │
-│ Step 3: Branch     │               │ Step 3: Branch (pending)       │
-│ Step 4: Hangup     │               │ Step 4: Hangup (pending)       │
-└────────────────────┘               │                                │
-                                     │ Variables:                     │
-                                     │   caller_id: &quot;+1234567890&quot;     │
-                                     │   digits: &quot;2&quot;                  │
-                                     └────────────────────────────────┘
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Flow</span> <span class="p">(</span><span class="n">Recipe</span> <span class="n">Book</span><span class="p">)</span>                    <span class="n">ActiveFlow</span> <span class="p">(</span><span class="n">Cooking</span> <span class="n">Session</span><span class="p">)</span>
+<span class="o">+--------------------+</span>               <span class="o">+--------------------------------+</span>
+<span class="o">|</span> <span class="n">Step</span> <span class="mi">1</span><span class="p">:</span> <span class="n">Answer</span>     <span class="o">|</span>               <span class="o">|</span> <span class="n">Step</span> <span class="mi">1</span><span class="p">:</span> <span class="n">Answer</span> <span class="p">(</span><span class="n">done</span><span class="p">)</span>          <span class="o">|</span>
+<span class="o">|</span> <span class="n">Step</span> <span class="mi">2</span><span class="p">:</span> <span class="n">Talk</span>       <span class="o">|</span>   <span class="o">------&gt;</span>     <span class="o">|</span> <span class="n">Step</span> <span class="mi">2</span><span class="p">:</span> <span class="n">Talk</span> <span class="o">&lt;--</span> <span class="n">current</span>       <span class="o">|</span>
+<span class="o">|</span> <span class="n">Step</span> <span class="mi">3</span><span class="p">:</span> <span class="n">Branch</span>     <span class="o">|</span>               <span class="o">|</span> <span class="n">Step</span> <span class="mi">3</span><span class="p">:</span> <span class="n">Branch</span> <span class="p">(</span><span class="n">pending</span><span class="p">)</span>       <span class="o">|</span>
+<span class="o">|</span> <span class="n">Step</span> <span class="mi">4</span><span class="p">:</span> <span class="n">Hangup</span>     <span class="o">|</span>               <span class="o">|</span> <span class="n">Step</span> <span class="mi">4</span><span class="p">:</span> <span class="n">Hangup</span> <span class="p">(</span><span class="n">pending</span><span class="p">)</span>       <span class="o">|</span>
+<span class="o">+--------------------+</span>               <span class="o">|</span>                                <span class="o">|</span>
+                                     <span class="o">|</span> <span class="n">Variables</span><span class="p">:</span>                     <span class="o">|</span>
+                                     <span class="o">|</span>   <span class="n">caller_id</span><span class="p">:</span> <span class="s2">&quot;+1234567890&quot;</span>     <span class="o">|</span>
+                                     <span class="o">|</span>   <span class="n">digits</span><span class="p">:</span> <span class="s2">&quot;2&quot;</span>                  <span class="o">|</span>
+                                     <span class="o">+--------------------------------+</span>
 </pre></div>
 </div>
 </section>
 <section id="activeflow-states">
 <h3>ActiveFlow States<a class="headerlink" href="#activeflow-states" title="Link to this heading"></a></h3>
 <p>An activeflow has two possible states during its lifecycle:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌────────────┐                              ┌────────────┐
-│  running   │─────────────────────────────▶│   ended    │
-└────────────┘                              └────────────┘
-      │                                            │
-      │                                            │
-Actions executing                           Final state
-Cursor moving                               No more changes
-Variables updating                          History preserved
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+------------+</span>                              <span class="o">+------------+</span>
+<span class="o">|</span>  <span class="n">running</span>   <span class="o">|-----------------------------&gt;|</span>   <span class="n">ended</span>    <span class="o">|</span>
+<span class="o">+------------+</span>                              <span class="o">+------------+</span>
+      <span class="o">|</span>                                            <span class="o">|</span>
+      <span class="o">|</span>                                            <span class="o">|</span>
+<span class="n">Actions</span> <span class="n">executing</span>                           <span class="n">Final</span> <span class="n">state</span>
+<span class="n">Cursor</span> <span class="n">moving</span>                               <span class="n">No</span> <span class="n">more</span> <span class="n">changes</span>
+<span class="n">Variables</span> <span class="n">updating</span>                          <span class="n">History</span> <span class="n">preserved</span>
 </pre></div>
 </div>
 </section>
 <section id="execution">
 <h3>Execution<a class="headerlink" href="#execution" title="Link to this heading"></a></h3>
 <p>The activeflow’s significance lies in its ability to manage complex workflows and automate business processes effectively. As the flow progresses through its various stages, the activeflow dynamically represents its current state. This representation provides valuable insights into the flow’s progress and status, enabling efficient and informed management of its execution.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌───────────────────────────────────────────────────────────────────────┐
-│                     ActiveFlow Execution Model                         │
-└───────────────────────────────────────────────────────────────────────┘
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-----------------------------------------------------------------------+</span>
+<span class="o">|</span>                     <span class="n">ActiveFlow</span> <span class="n">Execution</span> <span class="n">Model</span>                         <span class="o">|</span>
+<span class="o">+-----------------------------------------------------------------------+</span>
 
-Incoming Call           ActiveFlow Created            Execution Begins
-     │                        │                            │
-     ▼                        ▼                            ▼
-┌─────────┐              ┌─────────┐                 ┌─────────────┐
-│  CALL   │─────────────▶│  NEW    │────────────────▶│  RUNNING    │
-│ arrives │              │ instance│                 │  actions    │
-└─────────┘              └─────────┘                 └──────┬──────┘
-                              │                            │
-                              │                            ▼
-                              │                      ┌───────────┐
-                              │  Variables set:      │  cursor   │
-                              │  • reference_type    │  moves    │──┐
-                              │  • reference_id      └───────────┘  │
-                              │  • customer_id                      │
-                              │  • flow_id                          │
-                              └─────────────────────────────────────┘
+<span class="n">Incoming</span> <span class="n">Call</span>           <span class="n">ActiveFlow</span> <span class="n">Created</span>            <span class="n">Execution</span> <span class="n">Begins</span>
+     <span class="o">|</span>                        <span class="o">|</span>                            <span class="o">|</span>
+     <span class="n">v</span>                        <span class="n">v</span>                            <span class="n">v</span>
+<span class="o">+---------+</span>              <span class="o">+---------+</span>                 <span class="o">+-------------+</span>
+<span class="o">|</span>  <span class="n">CALL</span>   <span class="o">|-------------&gt;|</span>  <span class="n">NEW</span>    <span class="o">|----------------&gt;|</span>  <span class="n">RUNNING</span>    <span class="o">|</span>
+<span class="o">|</span> <span class="n">arrives</span> <span class="o">|</span>              <span class="o">|</span> <span class="n">instance</span><span class="o">|</span>                 <span class="o">|</span>  <span class="n">actions</span>    <span class="o">|</span>
+<span class="o">+---------+</span>              <span class="o">+---------+</span>                 <span class="o">+------+------+</span>
+                              <span class="o">|</span>                            <span class="o">|</span>
+                              <span class="o">|</span>                            <span class="n">v</span>
+                              <span class="o">|</span>                      <span class="o">+-----------+</span>
+                              <span class="o">|</span>  <span class="n">Variables</span> <span class="nb">set</span><span class="p">:</span>      <span class="o">|</span>  <span class="n">cursor</span>   <span class="o">|</span>
+                              <span class="o">|</span>  <span class="n">o</span> <span class="n">reference_type</span>    <span class="o">|</span>  <span class="n">moves</span>    <span class="o">|--+</span>
+                              <span class="o">|</span>  <span class="n">o</span> <span class="n">reference_id</span>      <span class="o">+-----------+</span>  <span class="o">|</span>
+                              <span class="o">|</span>  <span class="n">o</span> <span class="n">customer_id</span>                      <span class="o">|</span>
+                              <span class="o">|</span>  <span class="n">o</span> <span class="n">flow_id</span>                          <span class="o">|</span>
+                              <span class="o">+-------------------------------------+</span>
 </pre></div>
 </div>
 <img alt="_images/activeflow_overview_execution.png" src="_images/activeflow_overview_execution.png" />
@@ -246,14 +246,14 @@ Incoming Call           ActiveFlow Created            Execution Begins
 <section id="how-the-cursor-works">
 <h3>How the Cursor Works<a class="headerlink" href="#how-the-cursor-works" title="Link to this heading"></a></h3>
 <p>The activeflow maintains a “cursor” that tracks the current position in the flow:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Action Array:
-┌─────────┐   ┌─────────┐   ┌─────────┐   ┌─────────┐   ┌─────────┐
-│ answer  │   │  talk   │   │ digits  │   │ branch  │   │ hangup  │
-│ index:0 │   │ index:1 │   │ index:2 │   │ index:3 │   │ index:4 │
-└─────────┘   └─────────┘   └─────────┘   └─────────┘   └─────────┘
-                   ▲
-                   │
-                current_action (cursor is here)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Action</span> <span class="n">Array</span><span class="p">:</span>
+<span class="o">+---------+</span>   <span class="o">+---------+</span>   <span class="o">+---------+</span>   <span class="o">+---------+</span>   <span class="o">+---------+</span>
+<span class="o">|</span> <span class="n">answer</span>  <span class="o">|</span>   <span class="o">|</span>  <span class="n">talk</span>   <span class="o">|</span>   <span class="o">|</span> <span class="n">digits</span>  <span class="o">|</span>   <span class="o">|</span> <span class="n">branch</span>  <span class="o">|</span>   <span class="o">|</span> <span class="n">hangup</span>  <span class="o">|</span>
+<span class="o">|</span> <span class="n">index</span><span class="p">:</span><span class="mi">0</span> <span class="o">|</span>   <span class="o">|</span> <span class="n">index</span><span class="p">:</span><span class="mi">1</span> <span class="o">|</span>   <span class="o">|</span> <span class="n">index</span><span class="p">:</span><span class="mi">2</span> <span class="o">|</span>   <span class="o">|</span> <span class="n">index</span><span class="p">:</span><span class="mi">3</span> <span class="o">|</span>   <span class="o">|</span> <span class="n">index</span><span class="p">:</span><span class="mi">4</span> <span class="o">|</span>
+<span class="o">+---------+</span>   <span class="o">+---------+</span>   <span class="o">+---------+</span>   <span class="o">+---------+</span>   <span class="o">+---------+</span>
+                   <span class="o">^</span>
+                   <span class="o">|</span>
+                <span class="n">current_action</span> <span class="p">(</span><span class="n">cursor</span> <span class="ow">is</span> <span class="n">here</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><strong>Cursor Movement Rules:</strong></p>
@@ -267,22 +267,22 @@ Incoming Call           ActiveFlow Created            Execution Begins
 <section id="stack-based-execution">
 <h3>Stack-Based Execution<a class="headerlink" href="#stack-based-execution" title="Link to this heading"></a></h3>
 <p>ActiveFlows use a stack-based model to handle nested flows (like queue wait flows or AI conversations):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────┐
-│                       Stack-Based Execution                          │
-└─────────────────────────────────────────────────────────────────────┘
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-----------------------------------------------------------------------+</span>
+<span class="o">|</span>                       <span class="n">Stack</span><span class="o">-</span><span class="n">Based</span> <span class="n">Execution</span>                            <span class="o">|</span>
+<span class="o">+-----------------------------------------------------------------------+</span>
 
-Main Stack                          Nested Stack (from queue_join)
-┌─────────────────────┐            ┌─────────────────────────────────┐
-│ 1. answer           │            │                                 │
-│ 2. queue_join ══════╬═══════════▶│ wait_flow actions:              │
-│ 3. talk &quot;connected&quot; │            │   • talk &quot;Please hold...&quot;       │
-│ 4. hangup           │            │   • play music.mp3              │
-└─────────────────────┘            │   • (loops until agent answers) │
-       ▲                           └─────────────────────────────────┘
-       │                                         │
-       │    When agent answers,                  │
-       └─────────────────────────────────────────┘
-             return to main stack
+<span class="n">Main</span> <span class="n">Stack</span>                          <span class="n">Nested</span> <span class="n">Stack</span> <span class="p">(</span><span class="kn">from</span><span class="w"> </span><span class="nn">queue_join</span><span class="p">)</span>
+<span class="o">+---------------------+</span>            <span class="o">+---------------------------------+</span>
+<span class="o">|</span> <span class="mf">1.</span> <span class="n">answer</span>           <span class="o">|</span>            <span class="o">|</span>                                 <span class="o">|</span>
+<span class="o">|</span> <span class="mf">2.</span> <span class="n">queue_join</span> <span class="o">======+============&gt;</span> <span class="n">wait_flow</span> <span class="n">actions</span><span class="p">:</span>              <span class="o">|</span>
+<span class="o">|</span> <span class="mf">3.</span> <span class="n">talk</span> <span class="s2">&quot;connected&quot;</span> <span class="o">|</span>            <span class="o">|</span>   <span class="n">o</span> <span class="n">talk</span> <span class="s2">&quot;Please hold...&quot;</span>       <span class="o">|</span>
+<span class="o">|</span> <span class="mf">4.</span> <span class="n">hangup</span>           <span class="o">|</span>            <span class="o">|</span>   <span class="n">o</span> <span class="n">play</span> <span class="n">music</span><span class="o">.</span><span class="n">mp3</span>              <span class="o">|</span>
+<span class="o">+---------------------+</span>            <span class="o">|</span>   <span class="n">o</span> <span class="p">(</span><span class="n">loops</span> <span class="n">until</span> <span class="n">agent</span> <span class="n">answers</span><span class="p">)</span> <span class="o">|</span>
+       <span class="o">^</span>                           <span class="o">+---------------------------------+</span>
+       <span class="o">|</span>                                         <span class="o">|</span>
+       <span class="o">|</span>    <span class="n">When</span> <span class="n">agent</span> <span class="n">answers</span><span class="p">,</span>                  <span class="o">|</span>
+       <span class="o">+-----------------------------------------+</span>
+             <span class="k">return</span> <span class="n">to</span> <span class="n">main</span> <span class="n">stack</span>
 </pre></div>
 </div>
 <p><strong>Stack Map Structure:</strong></p>
@@ -307,9 +307,9 @@ Main Stack                          Nested Stack (from queue_join)
 <section id="reference-types">
 <h3>Reference Types<a class="headerlink" href="#reference-types" title="Link to this heading"></a></h3>
 <p>Each activeflow is linked to a reference - the entity that triggered it:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌────────────────────────────────────────────────────────────────────┐
-│                    ActiveFlow Reference Types                       │
-└────────────────────────────────────────────────────────────────────┘
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+--------------------------------------------------------------------+</span>
+<span class="o">|</span>                    <span class="n">ActiveFlow</span> <span class="n">Reference</span> <span class="n">Types</span>                       <span class="o">|</span>
+<span class="o">+--------------------------------------------------------------------+</span>
 </pre></div>
 </div>
 <table class="docutils align-default">
@@ -344,17 +344,17 @@ Main Stack                          Nested Stack (from queue_join)
 </table>
 <p><strong>Reference Impact on Actions:</strong></p>
 <p>The reference type determines which actions are available:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Reference: call                     Reference: api
-┌─────────────────────────┐        ┌─────────────────────────┐
-│ ✓ answer                │        │ ✗ answer (no call)      │
-│ ✓ talk                  │        │ ✗ talk (no media)       │
-│ ✓ digits_receive        │        │ ✗ digits_receive        │
-│ ✓ recording_start       │        │ ✗ recording_start       │
-│ ✓ message_send          │        │ ✓ message_send          │
-│ ✓ email_send            │        │ ✓ email_send            │
-│ ✓ webhook_send          │        │ ✓ webhook_send          │
-│ ✓ variable_set          │        │ ✓ variable_set          │
-└─────────────────────────┘        └─────────────────────────┘
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Reference</span><span class="p">:</span> <span class="n">call</span>                     <span class="n">Reference</span><span class="p">:</span> <span class="n">api</span>
+<span class="o">+-------------------------+</span>        <span class="o">+-------------------------+</span>
+<span class="o">|</span> <span class="p">(</span><span class="n">check</span><span class="p">)</span> <span class="n">answer</span>          <span class="o">|</span>        <span class="o">|</span> <span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="n">answer</span> <span class="p">(</span><span class="n">no</span> <span class="n">call</span><span class="p">)</span>    <span class="o">|</span>
+<span class="o">|</span> <span class="p">(</span><span class="n">check</span><span class="p">)</span> <span class="n">talk</span>            <span class="o">|</span>        <span class="o">|</span> <span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="n">talk</span> <span class="p">(</span><span class="n">no</span> <span class="n">media</span><span class="p">)</span>     <span class="o">|</span>
+<span class="o">|</span> <span class="p">(</span><span class="n">check</span><span class="p">)</span> <span class="n">digits_receive</span>  <span class="o">|</span>        <span class="o">|</span> <span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="n">digits_receive</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="p">(</span><span class="n">check</span><span class="p">)</span> <span class="n">recording_start</span> <span class="o">|</span>        <span class="o">|</span> <span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="n">recording_start</span>     <span class="o">|</span>
+<span class="o">|</span> <span class="p">(</span><span class="n">check</span><span class="p">)</span> <span class="n">message_send</span>    <span class="o">|</span>        <span class="o">|</span> <span class="p">(</span><span class="n">check</span><span class="p">)</span> <span class="n">message_send</span>    <span class="o">|</span>
+<span class="o">|</span> <span class="p">(</span><span class="n">check</span><span class="p">)</span> <span class="n">email_send</span>      <span class="o">|</span>        <span class="o">|</span> <span class="p">(</span><span class="n">check</span><span class="p">)</span> <span class="n">email_send</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="p">(</span><span class="n">check</span><span class="p">)</span> <span class="n">webhook_send</span>    <span class="o">|</span>        <span class="o">|</span> <span class="p">(</span><span class="n">check</span><span class="p">)</span> <span class="n">webhook_send</span>    <span class="o">|</span>
+<span class="o">|</span> <span class="p">(</span><span class="n">check</span><span class="p">)</span> <span class="n">variable_set</span>    <span class="o">|</span>        <span class="o">|</span> <span class="p">(</span><span class="n">check</span><span class="p">)</span> <span class="n">variable_set</span>    <span class="o">|</span>
+<span class="o">+-------------------------+</span>        <span class="o">+-------------------------+</span>
 </pre></div>
 </div>
 <p>When an action is not available for the reference type, it is skipped and execution continues to the next action.</p>
@@ -363,54 +363,54 @@ Main Stack                          Nested Stack (from queue_join)
 <h3>Status and Control interface<a class="headerlink" href="#status-and-control-interface" title="Link to this heading"></a></h3>
 <p>The activeflow includes essential status information that allows users to monitor the flow’s progress closely. This information encompasses details about the activeflow’s current state, including completed and pending actions. Additionally, the activeflow offers a control interface that empowers users to manage the execution process. This interface enables actions such as stopping the activeflow at any point and modifying its configuration or parameters as needed.</p>
 <p><strong>Control API Endpoints:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────┐
-│                    ActiveFlow Control Interface                      │
-└─────────────────────────────────────────────────────────────────────┘
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-----------------------------------------------------------------------+</span>
+<span class="o">|</span>                    <span class="n">ActiveFlow</span> <span class="n">Control</span> <span class="n">Interface</span>                        <span class="o">|</span>
+<span class="o">+-----------------------------------------------------------------------+</span>
 
-GET /v1/activeflows/{id}
-├── View current state
-├── See current_action
-├── Review executed_actions
-└── Check variables
+<span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">activeflows</span><span class="o">/</span><span class="p">{</span><span class="nb">id</span><span class="p">}</span>
+<span class="o">+--</span> <span class="n">View</span> <span class="n">current</span> <span class="n">state</span>
+<span class="o">+--</span> <span class="n">See</span> <span class="n">current_action</span>
+<span class="o">+--</span> <span class="n">Review</span> <span class="n">executed_actions</span>
+<span class="o">+--</span> <span class="n">Check</span> <span class="n">variables</span>
 
-POST /v1/activeflows/{id}/execute
-├── Resume a blocked flow
-├── Push new actions
-└── Continue execution
+<span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">activeflows</span><span class="o">/</span><span class="p">{</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">execute</span>
+<span class="o">+--</span> <span class="n">Resume</span> <span class="n">a</span> <span class="n">blocked</span> <span class="n">flow</span>
+<span class="o">+--</span> <span class="n">Push</span> <span class="n">new</span> <span class="n">actions</span>
+<span class="o">+--</span> <span class="n">Continue</span> <span class="n">execution</span>
 
-POST /v1/activeflows/{id}/stop
-├── Immediately stop execution
-├── Status changes to &quot;ended&quot;
-└── Triggers on_complete_flow if set
+<span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">activeflows</span><span class="o">/</span><span class="p">{</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">stop</span>
+<span class="o">+--</span> <span class="n">Immediately</span> <span class="n">stop</span> <span class="n">execution</span>
+<span class="o">+--</span> <span class="n">Status</span> <span class="n">changes</span> <span class="n">to</span> <span class="s2">&quot;ended&quot;</span>
+<span class="o">+--</span> <span class="n">Triggers</span> <span class="n">on_complete_flow</span> <span class="k">if</span> <span class="nb">set</span>
 </pre></div>
 </div>
 </section>
 <section id="activeflow-lifecycle">
 <h3>Activeflow Lifecycle<a class="headerlink" href="#activeflow-lifecycle" title="Link to this heading"></a></h3>
 <p>The activeflow executes the actions until one of the following conditions is met:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────┐
-│                  ActiveFlow Termination Conditions                   │
-└─────────────────────────────────────────────────────────────────────┘
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-----------------------------------------------------------------------+</span>
+<span class="o">|</span>                  <span class="n">ActiveFlow</span> <span class="n">Termination</span> <span class="n">Conditions</span>                     <span class="o">|</span>
+<span class="o">+-----------------------------------------------------------------------+</span>
 
-Condition 1: End of Actions
-┌───┐   ┌───┐   ┌───┐   ┌─────────┐
-│ 1 │──▶│ 2 │──▶│ 3 │──▶│  DONE   │  → Status: ended
-└───┘   └───┘   └───┘   └─────────┘
+<span class="n">Condition</span> <span class="mi">1</span><span class="p">:</span> <span class="n">End</span> <span class="n">of</span> <span class="n">Actions</span>
+<span class="o">+---+</span>   <span class="o">+---+</span>   <span class="o">+---+</span>   <span class="o">+---------+</span>
+<span class="o">|</span> <span class="mi">1</span> <span class="o">|--&gt;|</span> <span class="mi">2</span> <span class="o">|--&gt;|</span> <span class="mi">3</span> <span class="o">|--&gt;|</span>  <span class="n">DONE</span>   <span class="o">|</span>  <span class="o">-&gt;</span> <span class="n">Status</span><span class="p">:</span> <span class="n">ended</span>
+<span class="o">+---+</span>   <span class="o">+---+</span>   <span class="o">+---+</span>   <span class="o">+---------+</span>
 
-Condition 2: Stop Action
-┌───┐   ┌───┐   ┌──────┐
-│ 1 │──▶│ 2 │──▶│ stop │  → Status: ended
-└───┘   └───┘   └──────┘
+<span class="n">Condition</span> <span class="mi">2</span><span class="p">:</span> <span class="n">Stop</span> <span class="n">Action</span>
+<span class="o">+---+</span>   <span class="o">+---+</span>   <span class="o">+------+</span>
+<span class="o">|</span> <span class="mi">1</span> <span class="o">|--&gt;|</span> <span class="mi">2</span> <span class="o">|--&gt;|</span> <span class="n">stop</span> <span class="o">|</span>  <span class="o">-&gt;</span> <span class="n">Status</span><span class="p">:</span> <span class="n">ended</span>
+<span class="o">+---+</span>   <span class="o">+---+</span>   <span class="o">+------+</span>
 
-Condition 3: Reference Ends (e.g., call hangup)
-┌───┐   ┌───┐   ┌───┐
-│ 1 │──▶│ 2 │──▶│ X │  → Call hangup → Status: ended
-└───┘   └───┘   └───┘
+<span class="n">Condition</span> <span class="mi">3</span><span class="p">:</span> <span class="n">Reference</span> <span class="n">Ends</span> <span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="p">,</span> <span class="n">call</span> <span class="n">hangup</span><span class="p">)</span>
+<span class="o">+---+</span>   <span class="o">+---+</span>   <span class="o">+---+</span>
+<span class="o">|</span> <span class="mi">1</span> <span class="o">|--&gt;|</span> <span class="mi">2</span> <span class="o">|--&gt;|</span> <span class="n">X</span> <span class="o">|</span>  <span class="o">-&gt;</span> <span class="n">Call</span> <span class="n">hangup</span> <span class="o">-&gt;</span> <span class="n">Status</span><span class="p">:</span> <span class="n">ended</span>
+<span class="o">+---+</span>   <span class="o">+---+</span>   <span class="o">+---+</span>
 
-Condition 4: API Stop Request
-┌───┐   ┌───┐   ┌───┐
-│ 1 │──▶│ 2 │──▶│ 3 │  + POST /stop → Status: ended
-└───┘   └───┘   └───┘
+<span class="n">Condition</span> <span class="mi">4</span><span class="p">:</span> <span class="n">API</span> <span class="n">Stop</span> <span class="n">Request</span>
+<span class="o">+---+</span>   <span class="o">+---+</span>   <span class="o">+---+</span>
+<span class="o">|</span> <span class="mi">1</span> <span class="o">|--&gt;|</span> <span class="mi">2</span> <span class="o">|--&gt;|</span> <span class="mi">3</span> <span class="o">|</span>  <span class="o">+</span> <span class="n">POST</span> <span class="o">/</span><span class="n">stop</span> <span class="o">-&gt;</span> <span class="n">Status</span><span class="p">:</span> <span class="n">ended</span>
+<span class="o">+---+</span>   <span class="o">+---+</span>   <span class="o">+---+</span>
 </pre></div>
 </div>
 <ul class="simple">
@@ -422,36 +422,36 @@ Condition 4: API Stop Request
 <section id="variable-management">
 <h3>Variable Management<a class="headerlink" href="#variable-management" title="Link to this heading"></a></h3>
 <p>Each activeflow maintains its own set of variables that persist throughout execution:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────┐
-│                    ActiveFlow Variable Storage                       │
-└─────────────────────────────────────────────────────────────────────┘
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-----------------------------------------------------------------------+</span>
+<span class="o">|</span>                    <span class="n">ActiveFlow</span> <span class="n">Variable</span> <span class="n">Storage</span>                         <span class="o">|</span>
+<span class="o">+-----------------------------------------------------------------------+</span>
 
-ActiveFlow: abc-123-def
-┌─────────────────────────────────────────────────────────────────────┐
-│ Variables Map                                                        │
-├─────────────────────────────────┬───────────────────────────────────┤
-│ voipbin.activeflow.id           │ &quot;abc-123-def&quot;                     │
-│ voipbin.activeflow.reference_id │ &quot;call-456&quot;                        │
-│ voipbin.call.digits             │ &quot;2&quot;                               │
-│ voipbin.call.caller_id          │ &quot;+14155551234&quot;                    │
-│ customer.language               │ &quot;en-US&quot;                           │
-│ customer.tier                   │ &quot;premium&quot;                         │
-└─────────────────────────────────┴───────────────────────────────────┘
+<span class="n">ActiveFlow</span><span class="p">:</span> <span class="n">abc</span><span class="o">-</span><span class="mi">123</span><span class="o">-</span><span class="k">def</span>
+<span class="o">+-----------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Variables</span> <span class="n">Map</span>                                                          <span class="o">|</span>
+<span class="o">+---------------------------------+-------------------------------------+</span>
+<span class="o">|</span> <span class="n">voipbin</span><span class="o">.</span><span class="n">activeflow</span><span class="o">.</span><span class="n">id</span>           <span class="o">|</span> <span class="s2">&quot;abc-123-def&quot;</span>                     <span class="o">|</span>
+<span class="o">|</span> <span class="n">voipbin</span><span class="o">.</span><span class="n">activeflow</span><span class="o">.</span><span class="n">reference_id</span> <span class="o">|</span> <span class="s2">&quot;call-456&quot;</span>                        <span class="o">|</span>
+<span class="o">|</span> <span class="n">voipbin</span><span class="o">.</span><span class="n">call</span><span class="o">.</span><span class="n">digits</span>             <span class="o">|</span> <span class="s2">&quot;2&quot;</span>                               <span class="o">|</span>
+<span class="o">|</span> <span class="n">voipbin</span><span class="o">.</span><span class="n">call</span><span class="o">.</span><span class="n">caller_id</span>          <span class="o">|</span> <span class="s2">&quot;+14155551234&quot;</span>                    <span class="o">|</span>
+<span class="o">|</span> <span class="n">customer</span><span class="o">.</span><span class="n">language</span>               <span class="o">|</span> <span class="s2">&quot;en-US&quot;</span>                           <span class="o">|</span>
+<span class="o">|</span> <span class="n">customer</span><span class="o">.</span><span class="n">tier</span>                   <span class="o">|</span> <span class="s2">&quot;premium&quot;</span>                         <span class="o">|</span>
+<span class="o">+---------------------------------+-------------------------------------+</span>
 </pre></div>
 </div>
 <p><strong>Variable Lifecycle:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1. Created when activeflow starts (built-in variables)
-      │
-      ▼
+      |
+      v
 2. Updated by actions (digits_receive, variable_set, fetch)
-      │
-      ▼
+      |
+      v
 3. Read by actions (branch, condition_variable, talk with ${var})
-      │
-      ▼
+      |
+      v
 4. Inherited by on_complete_flow (if configured)
-      │
-      ▼
+      |
+      v
 5. Preserved in database when activeflow ends
 </pre></div>
 </div>
@@ -461,20 +461,20 @@ ActiveFlow: abc-123-def
 <p>Within the CPaaS environment, flows can be complex, incorporating various service types such as call, SMS, chat, and more. Handling history logs for these diverse services requires a structured approach.</p>
 <p>VoIPBIN simplifies the tracking of executed actions by providing a comprehensive history log within the activeflow. Unlike traditional telephony services with straightforward flows, CPaaS services demand a more flexible approach due to their diverse nature.</p>
 <p>In VoIPBIN, each action in the activeflow defines a distinct step in the service’s behavior. This ensures clarity in tracking the sequence of actions performed.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────┐
-│                    Executed Actions History                          │
-└─────────────────────────────────────────────────────────────────────┘
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-----------------------------------------------------------------------+</span>
+<span class="o">|</span>                    <span class="n">Executed</span> <span class="n">Actions</span> <span class="n">History</span>                            <span class="o">|</span>
+<span class="o">+-----------------------------------------------------------------------+</span>
 
-Time ──────────────────────────────────────────────────────────────▶
+<span class="n">Time</span> <span class="o">----------------------------------------------------------------------&gt;</span>
 
-┌──────────┐   ┌──────────┐   ┌──────────┐   ┌──────────┐
-│ answer   │──▶│ talk     │──▶│ connect  │──▶│ message  │
-│ 10:00:01 │   │ 10:00:02 │   │ 10:00:15 │   │ 10:00:45 │
-└──────────┘   └──────────┘   └──────────┘   └──────────┘
-     ▼              ▼              ▼              ▼
-┌─────────────────────────────────────────────────────────┐
-│              executed_actions array                      │
-└─────────────────────────────────────────────────────────┘
+<span class="o">+----------+</span>   <span class="o">+----------+</span>   <span class="o">+----------+</span>   <span class="o">+----------+</span>
+<span class="o">|</span> <span class="n">answer</span>   <span class="o">|--&gt;|</span> <span class="n">talk</span>     <span class="o">|--&gt;|</span> <span class="n">connect</span>  <span class="o">|--&gt;|</span> <span class="n">message</span>  <span class="o">|</span>
+<span class="o">|</span> <span class="mi">10</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>   <span class="o">|</span> <span class="mi">10</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">02</span> <span class="o">|</span>   <span class="o">|</span> <span class="mi">10</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">15</span> <span class="o">|</span>   <span class="o">|</span> <span class="mi">10</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">45</span> <span class="o">|</span>
+<span class="o">+----------+</span>   <span class="o">+----------+</span>   <span class="o">+----------+</span>   <span class="o">+----------+</span>
+     <span class="n">v</span>              <span class="n">v</span>              <span class="n">v</span>              <span class="n">v</span>
+<span class="o">+---------------------------------------------------------+</span>
+<span class="o">|</span>              <span class="n">executed_actions</span> <span class="n">array</span>                      <span class="o">|</span>
+<span class="o">+---------------------------------------------------------+</span>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
@@ -521,20 +521,20 @@ Time ─────────────────────────
 <section id="on-complete-flow">
 <h3>On Complete Flow<a class="headerlink" href="#on-complete-flow" title="Link to this heading"></a></h3>
 <p>When an activeflow ends, it can trigger another flow automatically:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────┐
-│                    On Complete Flow Chain                            │
-└─────────────────────────────────────────────────────────────────────┘
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-----------------------------------------------------------------------+</span>
+<span class="o">|</span>                    <span class="n">On</span> <span class="n">Complete</span> <span class="n">Flow</span> <span class="n">Chain</span>                              <span class="o">|</span>
+<span class="o">+-----------------------------------------------------------------------+</span>
 
-ActiveFlow A                             ActiveFlow B
-┌─────────────────────────┐             ┌─────────────────────────┐
-│ on_complete_flow_id: B  │             │ Created automatically   │
-│                         │             │                         │
-│ status: &quot;ended&quot;         │────────────▶│ status: &quot;running&quot;       │
-│                         │             │                         │
-│ Variables:              │  inherited  │ Variables:              │
-│   call_id: &quot;123&quot;        │────────────▶│   call_id: &quot;123&quot;        │
-│   recording_id: &quot;456&quot;   │             │   recording_id: &quot;456&quot;   │
-└─────────────────────────┘             └─────────────────────────┘
+<span class="n">ActiveFlow</span> <span class="n">A</span>                             <span class="n">ActiveFlow</span> <span class="n">B</span>
+<span class="o">+-------------------------+</span>             <span class="o">+-------------------------+</span>
+<span class="o">|</span> <span class="n">on_complete_flow_id</span><span class="p">:</span> <span class="n">B</span>  <span class="o">|</span>             <span class="o">|</span> <span class="n">Created</span> <span class="n">automatically</span>   <span class="o">|</span>
+<span class="o">|</span>                         <span class="o">|</span>             <span class="o">|</span>                         <span class="o">|</span>
+<span class="o">|</span> <span class="n">status</span><span class="p">:</span> <span class="s2">&quot;ended&quot;</span>         <span class="o">|------------&gt;|</span> <span class="n">status</span><span class="p">:</span> <span class="s2">&quot;running&quot;</span>       <span class="o">|</span>
+<span class="o">|</span>                         <span class="o">|</span>             <span class="o">|</span>                         <span class="o">|</span>
+<span class="o">|</span> <span class="n">Variables</span><span class="p">:</span>              <span class="o">|</span>  <span class="n">inherited</span>  <span class="o">|</span> <span class="n">Variables</span><span class="p">:</span>              <span class="o">|</span>
+<span class="o">|</span>   <span class="n">call_id</span><span class="p">:</span> <span class="s2">&quot;123&quot;</span>        <span class="o">|------------&gt;|</span>   <span class="n">call_id</span><span class="p">:</span> <span class="s2">&quot;123&quot;</span>        <span class="o">|</span>
+<span class="o">|</span>   <span class="n">recording_id</span><span class="p">:</span> <span class="s2">&quot;456&quot;</span>   <span class="o">|</span>             <span class="o">|</span>   <span class="n">recording_id</span><span class="p">:</span> <span class="s2">&quot;456&quot;</span>   <span class="o">|</span>
+<span class="o">+-------------------------+</span>             <span class="o">+-------------------------+</span>
 </pre></div>
 </div>
 <p><strong>Key Behaviors:</strong></p>
@@ -548,24 +548,24 @@ ActiveFlow A                             ActiveFlow B
 <section id="error-handling">
 <h3>Error Handling<a class="headerlink" href="#error-handling" title="Link to this heading"></a></h3>
 <p>ActiveFlows handle errors gracefully to ensure reliable execution:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────┐
-│                    Error Handling Scenarios                          │
-└─────────────────────────────────────────────────────────────────────┘
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-----------------------------------------------------------------------+</span>
+<span class="o">|</span>                    <span class="n">Error</span> <span class="n">Handling</span> <span class="n">Scenarios</span>                            <span class="o">|</span>
+<span class="o">+-----------------------------------------------------------------------+</span>
 
-Scenario: Action fails
-┌───┐   ┌───┐   ┌─────┐   ┌───┐
-│ 1 │──▶│ 2 │──▶│ ERR │──▶│ 4 │  (skip failed action, continue)
-└───┘   └───┘   └─────┘   └───┘
+<span class="n">Scenario</span><span class="p">:</span> <span class="n">Action</span> <span class="n">fails</span>
+<span class="o">+---+</span>   <span class="o">+---+</span>   <span class="o">+-----+</span>   <span class="o">+---+</span>
+<span class="o">|</span> <span class="mi">1</span> <span class="o">|--&gt;|</span> <span class="mi">2</span> <span class="o">|--&gt;|</span> <span class="n">ERR</span> <span class="o">|--&gt;|</span> <span class="mi">4</span> <span class="o">|</span>  <span class="p">(</span><span class="n">skip</span> <span class="n">failed</span> <span class="n">action</span><span class="p">,</span> <span class="k">continue</span><span class="p">)</span>
+<span class="o">+---+</span>   <span class="o">+---+</span>   <span class="o">+-----+</span>   <span class="o">+---+</span>
 
-Scenario: Critical failure
-┌───┐   ┌───┐   ┌─────┐
-│ 1 │──▶│ 2 │──▶│ ERR │  → Status: ended (flow stops)
-└───┘   └───┘   └─────┘
+<span class="n">Scenario</span><span class="p">:</span> <span class="n">Critical</span> <span class="n">failure</span>
+<span class="o">+---+</span>   <span class="o">+---+</span>   <span class="o">+-----+</span>
+<span class="o">|</span> <span class="mi">1</span> <span class="o">|--&gt;|</span> <span class="mi">2</span> <span class="o">|--&gt;|</span> <span class="n">ERR</span> <span class="o">|</span>  <span class="o">-&gt;</span> <span class="n">Status</span><span class="p">:</span> <span class="n">ended</span> <span class="p">(</span><span class="n">flow</span> <span class="n">stops</span><span class="p">)</span>
+<span class="o">+---+</span>   <span class="o">+---+</span>   <span class="o">+-----+</span>
 
-Scenario: Max iterations exceeded
-┌───┐   ┌───┐   ┌───┐   ┌───┐
-│ 1 │◀─▶│ 2 │◀─▶│ 3 │◀─▶│ X │  → Infinite loop detected, stop
-└───┘   └───┘   └───┘   └───┘
+<span class="n">Scenario</span><span class="p">:</span> <span class="n">Max</span> <span class="n">iterations</span> <span class="n">exceeded</span>
+<span class="o">+---+</span>   <span class="o">+---+</span>   <span class="o">+---+</span>   <span class="o">+---+</span>
+<span class="o">|</span> <span class="mi">1</span> <span class="o">|&lt;-&gt;|</span> <span class="mi">2</span> <span class="o">|&lt;-&gt;|</span> <span class="mi">3</span> <span class="o">|&lt;-&gt;|</span> <span class="n">X</span> <span class="o">|</span>  <span class="o">-&gt;</span> <span class="n">Infinite</span> <span class="n">loop</span> <span class="n">detected</span><span class="p">,</span> <span class="n">stop</span>
+<span class="o">+---+</span>   <span class="o">+---+</span>   <span class="o">+---+</span>   <span class="o">+---+</span>
 </pre></div>
 </div>
 <p><strong>Safety Limits:</strong></p>
@@ -595,47 +595,47 @@ Scenario: Max iterations exceeded
 <section id="common-use-cases">
 <h3>Common Use Cases<a class="headerlink" href="#common-use-cases" title="Link to this heading"></a></h3>
 <p><strong>Use Case 1: IVR Menu with History Tracking</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌────────────────────────────────────────────────────────────────────┐
-│ executed_actions shows the complete journey:                        │
-│                                                                     │
-│ 1. answer ─▶ 2. talk &quot;Welcome&quot; ─▶ 3. digits &quot;2&quot; ─▶ 4. branch       │
-│      ─▶ 5. talk &quot;Support&quot; ─▶ 6. queue_join ─▶ 7. connect agent     │
-└────────────────────────────────────────────────────────────────────┘
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+--------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">executed_actions</span> <span class="n">shows</span> <span class="n">the</span> <span class="n">complete</span> <span class="n">journey</span><span class="p">:</span>                        <span class="o">|</span>
+<span class="o">|</span>                                                                     <span class="o">|</span>
+<span class="o">|</span> <span class="mf">1.</span> <span class="n">answer</span> <span class="o">--&gt;</span> <span class="mf">2.</span> <span class="n">talk</span> <span class="s2">&quot;Welcome&quot;</span> <span class="o">--&gt;</span> <span class="mf">3.</span> <span class="n">digits</span> <span class="s2">&quot;2&quot;</span> <span class="o">--&gt;</span> <span class="mf">4.</span> <span class="n">branch</span>    <span class="o">|</span>
+<span class="o">|</span>      <span class="o">--&gt;</span> <span class="mf">5.</span> <span class="n">talk</span> <span class="s2">&quot;Support&quot;</span> <span class="o">--&gt;</span> <span class="mf">6.</span> <span class="n">queue_join</span> <span class="o">--&gt;</span> <span class="mf">7.</span> <span class="n">connect</span> <span class="n">agent</span>  <span class="o">|</span>
+<span class="o">+--------------------------------------------------------------------+</span>
 </pre></div>
 </div>
 <p><strong>Use Case 2: Post-Call Processing</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Call Flow ActiveFlow                After Call Work ActiveFlow
-┌──────────────────────┐           ┌──────────────────────────────┐
-│ answer               │           │ fetch recording              │
-│ talk                 │           │ ai_summarize                 │
-│ connect to agent     │           │ webhook_send summary         │
-│ (call ends)          │──────────▶│ email_send transcript        │
-│                      │           │                              │
-│ on_complete: &quot;acw&quot;   │           │ Inherits: recording_id,      │
-└──────────────────────┘           │           call_id            │
-                                   └──────────────────────────────┘
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Call</span> <span class="n">Flow</span> <span class="n">ActiveFlow</span>                <span class="n">After</span> <span class="n">Call</span> <span class="n">Work</span> <span class="n">ActiveFlow</span>
+<span class="o">+----------------------+</span>           <span class="o">+------------------------------+</span>
+<span class="o">|</span> <span class="n">answer</span>               <span class="o">|</span>           <span class="o">|</span> <span class="n">fetch</span> <span class="n">recording</span>              <span class="o">|</span>
+<span class="o">|</span> <span class="n">talk</span>                 <span class="o">|</span>           <span class="o">|</span> <span class="n">ai_summarize</span>                 <span class="o">|</span>
+<span class="o">|</span> <span class="n">connect</span> <span class="n">to</span> <span class="n">agent</span>     <span class="o">|</span>           <span class="o">|</span> <span class="n">webhook_send</span> <span class="n">summary</span>         <span class="o">|</span>
+<span class="o">|</span> <span class="p">(</span><span class="n">call</span> <span class="n">ends</span><span class="p">)</span>          <span class="o">|----------&gt;|</span> <span class="n">email_send</span> <span class="n">transcript</span>        <span class="o">|</span>
+<span class="o">|</span>                      <span class="o">|</span>           <span class="o">|</span>                              <span class="o">|</span>
+<span class="o">|</span> <span class="n">on_complete</span><span class="p">:</span> <span class="s2">&quot;acw&quot;</span>   <span class="o">|</span>           <span class="o">|</span> <span class="n">Inherits</span><span class="p">:</span> <span class="n">recording_id</span><span class="p">,</span>      <span class="o">|</span>
+<span class="o">+----------------------+</span>           <span class="o">|</span>           <span class="n">call_id</span>            <span class="o">|</span>
+                                   <span class="o">+------------------------------+</span>
 </pre></div>
 </div>
 <p><strong>Use Case 3: Debugging Flow Execution</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>GET /v1/activeflows/{id}
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">activeflows</span><span class="o">/</span><span class="p">{</span><span class="nb">id</span><span class="p">}</span>
 
-Response shows:
-{
-    &quot;status&quot;: &quot;running&quot;,
-    &quot;current_action&quot;: {
-        &quot;type&quot;: &quot;digits_receive&quot;,
-        &quot;option&quot;: { &quot;duration&quot;: 5000 }
-    },
-    &quot;executed_actions&quot;: [
-        { &quot;type&quot;: &quot;answer&quot;, ... },
-        { &quot;type&quot;: &quot;talk&quot;, &quot;option&quot;: { &quot;text&quot;: &quot;Welcome&quot; } }
-    ],
-    &quot;variables&quot;: {
-        &quot;voipbin.call.caller_id&quot;: &quot;+14155551234&quot;
-    }
-}
+<span class="n">Response</span> <span class="n">shows</span><span class="p">:</span>
+<span class="p">{</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;running&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;current_action&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;digits_receive&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="mi">5000</span> <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;executed_actions&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;answer&quot;</span><span class="p">,</span> <span class="o">...</span> <span class="p">},</span>
+        <span class="p">{</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span> <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Welcome&quot;</span> <span class="p">}</span> <span class="p">}</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;variables&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;voipbin.call.caller_id&quot;</span><span class="p">:</span> <span class="s2">&quot;+14155551234&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
 
-→ You can see exactly where the flow is and what has happened
+<span class="o">-&gt;</span> <span class="n">You</span> <span class="n">can</span> <span class="n">see</span> <span class="n">exactly</span> <span class="n">where</span> <span class="n">the</span> <span class="n">flow</span> <span class="ow">is</span> <span class="ow">and</span> <span class="n">what</span> <span class="n">has</span> <span class="n">happened</span>
 </pre></div>
 </div>
 </section>
@@ -665,7 +665,7 @@ Response shows:
 <li><p>id: Activeflow’s ID.</p></li>
 <li><p>customer_id: Customer’s ID.</p></li>
 <li><p>flow_id: Flow’s ID.</p></li>
-<li><p><em>status</em>: Activeflow’s status. See detail <a class="reference internal" href="activeflow_struct_activeflow.html#activeflow-struct-activeflow-status"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>status</em>: Activeflow’s status. See detail <a class="reference internal" href="#activeflow-struct-activeflow-status"><span class="std std-ref">here</span></a>.</p></li>
 <li><p><em>reference_type</em>: Represent which resource started activeflow.</p></li>
 <li><p>reference_id: Referenced type’s ID.</p></li>
 <li><p>current_action: Currently running actino on this activeflow. See detail <a class="reference internal" href="flow_struct_action.html#flow-struct-action-action"><span class="std std-ref">here</span></a>.</p></li>

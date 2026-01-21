@@ -46,40 +46,40 @@ Every call in VoIPBIN follows a predictable lifecycle from creation to terminati
 
 ::
 
-                                   ┌──────────────┐
-                                   │   dialing    │
-                                   │ (call starts)│
-                                   └──────┬───────┘
-                                          │
-                    ┌─────────────────────┼─────────────────────┐
-                    │                     │                     │
-                    ▼                     ▼                     ▼
-             ┌────────────┐        ┌────────────┐        ┌────────────┐
-             │  ringing   │        │ canceling  │        │  hangup    │
-             │ (dest rang)│        │ (caller    │        │ (failed)   │
-             └─────┬──────┘        │  cancels)  │        └────────────┘
-                   │               └─────┬──────┘
-                   │                     │
-                   ▼                     │
-            ┌─────────────┐              │
-            │ progressing │              │
-            │ (answered)  │              │
-            └──────┬──────┘              │
-                   │                     │
-          ┌────────┴────────┐            │
-          ▼                 ▼            │
-    ┌────────────┐   ┌────────────┐      │
-    │terminating │   │  hangup    │      │
-    │  (ending   │   │  (remote   │      │
-    │   locally) │   │  hangup)   │      │
-    └─────┬──────┘   └────────────┘      │
-          │                              │
-          └──────────────┬───────────────┘
-                         ▼
-                  ┌────────────┐
-                  │   hangup   │
-                  │  (final)   │
-                  └────────────┘
+                                   +--------------+
+                                   |   dialing    |
+                                   | (call starts)|
+                                   +------+-------+
+                                          |
+                    +---------------------+---------------------+
+                    |                     |                     |
+                    v                     v                     v
+             +------------+        +------------+        +------------+
+             |  ringing   |        | canceling  |        |  hangup    |
+             | (dest rang)|        | (caller    |        | (failed)   |
+             +-----+------+        |  cancels)  |        +------------+
+                   |               +-----+------+
+                   |                     |
+                   v                     |
+            +-------------+              |
+            | progressing |              |
+            | (answered)  |              |
+            +------+------+              |
+                   |                     |
+          +--------+--------+            |
+          v                 v            |
+    +------------+   +------------+      |
+    |terminating |   |  hangup    |      |
+    |  (ending   |   |  (remote   |      |
+    |   locally) |   |  hangup)   |      |
+    +-----+------+   +------------+      |
+          |                              |
+          +--------------+---------------+
+                         v
+                  +------------+
+                  |   hangup   |
+                  |  (final)   |
+                  +------------+
 
 **State Descriptions**
 
@@ -122,15 +122,15 @@ When you create an outbound call or receive an inbound call, the call enters the
 ::
 
     Your App                    VoIPBIN                    Destination
-       │                           │                            │
-       │  POST /v1/calls           │                            │
-       │──────────────────────────▶│                            │
-       │                           │  SIP INVITE                │
-       │                           │───────────────────────────▶│
-       │                           │                            │
-       │  Call object              │                            │
-       │  status: "dialing"        │                            │
-       │◀──────────────────────────│                            │
+       |                           |                            |
+       |  POST /v1/calls           |                            |
+       +-------------------------->|                            |
+       |                           |  SIP INVITE                |
+       |                           +--------------------------->|
+       |                           |                            |
+       |  Call object              |                            |
+       |  status: "dialing"        |                            |
+       |<--------------------------+                            |
 
 At this point:
 
@@ -144,12 +144,12 @@ The destination device is ringing. The person can pick up the phone.
 
 ::
 
-       │                           │                            │
-       │                           │  180 Ringing               │
-       │                           │◀───────────────────────────│
-       │  Webhook: call_updated    │                            │
-       │  status: "ringing"        │       ♪ Ring Ring ♪        │
-       │◀──────────────────────────│                            │
+       |                           |                            |
+       |                           |  180 Ringing               |
+       |                           |<---------------------------+
+       |  Webhook: call_updated    |                            |
+       |  status: "ringing"        |       Ring Ring            |
+       |<--------------------------+                            |
 
 At this point:
 
@@ -163,12 +163,12 @@ The call has been answered. This is when real communication begins.
 
 ::
 
-       │                           │                            │
-       │                           │  200 OK                    │
-       │                           │◀───────────────────────────│
-       │  Webhook: call_updated    │                            │
-       │  status: "progressing"    │   ◀═══════════════════▶    │
-       │◀──────────────────────────│        (Audio flows)       │
+       |                           |                            |
+       |                           |  200 OK                    |
+       |                           |<---------------------------+
+       |  Webhook: call_updated    |                            |
+       |  status: "progressing"    |   <=====================>  |
+       |<--------------------------+        (Audio flows)       |
 
 At this point:
 
@@ -183,14 +183,14 @@ The call has ended. Check the hangup_by and hangup_reason fields to understand w
 
 ::
 
-       │                           │                            │
-       │                           │  BYE                       │
-       │                           │◀───────────────────────────│
-       │  Webhook: call_updated    │                            │
-       │  status: "hangup"         │                            │
-       │  hangup_by: "remote"      │                            │
-       │  hangup_reason: "normal"  │                            │
-       │◀──────────────────────────│                            │
+       |                           |                            |
+       |                           |  BYE                       |
+       |                           |<---------------------------+
+       |  Webhook: call_updated    |                            |
+       |  status: "hangup"         |                            |
+       |  hangup_by: "remote"      |                            |
+       |  hangup_reason: "normal"  |                            |
+       |<--------------------------+                            |
 
 
 Understanding Hangup Reasons
@@ -238,28 +238,28 @@ When a call ends, VoIPBIN tells you why it ended. This helps you build appropria
 ::
 
     Scenario: Normal conversation
-    ────────────────────────────
+    ----------------------------
     hangup_by: "remote"
     hangup_reason: "normal"
-    → The other person hung up after talking
+    -> The other person hung up after talking
 
     Scenario: Missed call
-    ────────────────────────────
+    ----------------------------
     hangup_by: "remote"
     hangup_reason: "noanswer"
-    → Phone rang but nobody answered
+    -> Phone rang but nobody answered
 
     Scenario: Your app ended the call
-    ────────────────────────────
+    ----------------------------
     hangup_by: "local"
     hangup_reason: "normal"
-    → Your flow action or API call ended it
+    -> Your flow action or API call ended it
 
     Scenario: Network problem
-    ────────────────────────────
+    ----------------------------
     hangup_by: "remote"
     hangup_reason: "failed"
-    → Call never connected due to network issues
+    -> Call never connected due to network issues
 
 
 Media Control Operations
@@ -273,9 +273,9 @@ Pauses the call. The other party hears silence (or music if MOH is enabled).
 ::
 
     Before Hold                          After Hold
-    ┌─────────┐     audio      ┌─────────┐     ┌─────────┐     silence   ┌─────────┐
-    │ Caller  │ ◀═══════════▶  │ VoIPBIN │     │ Caller  │ ────────────▶ │ VoIPBIN │
-    └─────────┘                └─────────┘     └─────────┘  (or music)   └─────────┘
+    +---------+     audio      +---------+     +---------+     silence   +---------+
+    | Caller  | <============> | VoIPBIN |     | Caller  | ------------> | VoIPBIN |
+    +---------+                +---------+     +---------+  (or music)   +---------+
 
 - Use hold when the caller needs to wait (e.g., while transferring)
 - The caller stays connected but cannot hear ongoing activity
@@ -288,9 +288,9 @@ Silences audio in one or both directions without putting the call on hold.
 ::
 
     Mute "in"                    Mute "out"                   Mute "both"
-    ┌────┐  ───X──▶  ┌────┐     ┌────┐  ◀──X───  ┌────┐      ┌────┐  ──X──  ┌────┐
-    │ A  │  ◀──────  │ B  │     │ A  │  ───────▶ │ B  │      │ A  │  ──X──  │ B  │
-    └────┘           └────┘     └────┘           └────┘      └────┘         └────┘
+    +----+  ---X-->  +----+     +----+  <--X---  +----+      +----+  --X--  +----+
+    | A  |  <------  | B  |     | A  |  -------> | B  |      | A  |  --X--  | B  |
+    +----+           +----+     +----+           +----+      +----+         +----+
     A cannot hear B            A cannot be heard           Complete silence
 
 - "in": The call cannot hear incoming audio
@@ -303,14 +303,14 @@ Captures the call audio for later playback.
 
 ::
 
-    ┌─────────┐         ┌─────────┐         ┌─────────┐
-    │ Caller  │ ◀═════▶ │ VoIPBIN │ ◀═════▶ │  Dest   │
-    └─────────┘         └────┬────┘         └─────────┘
-                             │
-                             ▼ (recording)
-                        ┌─────────┐
-                        │  File   │
-                        └─────────┘
+    +---------+         +---------+         +---------+
+    | Caller  | <=====> | VoIPBIN | <=====> |  Dest   |
+    +---------+         +----+----+         +---------+
+                             |
+                             v (recording)
+                        +---------+
+                        |  File   |
+                        +---------+
 
 - recording_id shows the current recording (if active)
 - recording_ids lists all recordings made during this call's lifetime
@@ -327,11 +327,11 @@ When you make a call from A to B through VoIPBIN, there are actually two separat
 
 ::
 
-    Traditional View:     A ─────────────────────▶ B
+    Traditional View:     A -----------------------> B
 
-    VoIPBIN Reality:      A ◀─── Call 1 ───▶ VoIPBIN ◀─── Call 2 ───▶ B
-                                   │                        │
-                                   └────────────────────────┘
+    VoIPBIN Reality:      A <--- Call 1 ---> VoIPBIN <--- Call 2 ---> B
+                                   |                        |
+                                   +------------------------+
                                           (bridged audio)
 
 **Why Two Calls?**
@@ -349,19 +349,19 @@ When calls are related, they form a chain:
 
 ::
 
-    ┌─────────────────────────────────────────────────────┐
-    │                    Master Call                       │
-    │  master_call_id: 00000000-0000-0000-0000-000000000000 │
-    │  chained_call_ids: [call-2-id, call-3-id]            │
-    └─────────────────────────┬───────────────────────────┘
-                              │
-              ┌───────────────┼───────────────┐
-              ▼               ▼               ▼
-        ┌──────────┐    ┌──────────┐    ┌──────────┐
-        │ Call 2   │    │ Call 3   │    │ Call 4   │
-        │ master:  │    │ master:  │    │ master:  │
-        │ call-1-id│    │ call-1-id│    │ call-1-id│
-        └──────────┘    └──────────┘    └──────────┘
+    +-------------------------------------------------------+
+    |                    Master Call                        |
+    |  master_call_id: 00000000-0000-0000-0000-000000000000 |
+    |  chained_call_ids: [call-2-id, call-3-id]             |
+    +-------------------------+-----------------------------+
+                              |
+              +---------------+---------------+
+              v               v               v
+        +----------+    +----------+    +----------+
+        | Call 2   |    | Call 3   |    | Call 4   |
+        | master:  |    | master:  |    | master:  |
+        | call-1-id|    | call-1-id|    | call-1-id|
+        +----------+    +----------+    +----------+
 
 **Chaining Behaviors**
 
@@ -374,25 +374,25 @@ When calls are related, they form a chain:
 ::
 
     Step 1: Caller and Agent talking
-    ┌────────┐       ┌─────────┐       ┌────────┐
-    │ Caller │◀─────▶│ VoIPBIN │◀─────▶│ Agent  │
-    └────────┘       └────┬────┘       └────────┘
-                          │
+    +--------+       +---------+       +--------+
+    | Caller |<----->| VoIPBIN |<----->| Agent  |
+    +--------+       +----+----+       +--------+
+                          |
                      Master Call
 
     Step 2: Agent initiates transfer to Supervisor
-    ┌────────┐       ┌─────────┐       ┌────────┐
-    │ Caller │◀─────▶│ VoIPBIN │       │ Agent  │ (on hold)
-    └────────┘       └────┬────┘       └────────┘
-                          │
-                          ├──────────▶ ┌────────────┐
-                          │            │ Supervisor │ (ringing)
-                     Chained Call      └────────────┘
+    +--------+       +---------+       +--------+
+    | Caller |<----->| VoIPBIN |       | Agent  | (on hold)
+    +--------+       +----+----+       +--------+
+                          |
+                          +-----------> +------------+
+                          |            | Supervisor | (ringing)
+                     Chained Call      +------------+
 
     Step 3: Supervisor answers, Agent drops
-    ┌────────┐       ┌─────────┐       ┌────────────┐
-    │ Caller │◀─────▶│ VoIPBIN │◀─────▶│ Supervisor │
-    └────────┘       └─────────┘       └────────────┘
+    +--------+       +---------+       +------------+
+    | Caller |<----->| VoIPBIN |<----->| Supervisor |
+    +--------+       +---------+       +------------+
 
 
 Timestamps Explained
@@ -403,13 +403,13 @@ Each call tracks important moments in its lifecycle:
 
     Timeline of a successful call:
 
-    │ tm_create                    tm_ringing          tm_progressing              tm_hangup
-    │     │                            │                    │                          │
-    ▼     ▼                            ▼                    ▼                          ▼
-    ──────●────────────────────────────●────────────────────●──────────────────────────●──────▶
-          │                            │                    │                          │
-          │◀─── dialing ──────────────▶│◀─── ringing ──────▶│◀──── progressing ───────▶│
-          │                            │                    │                          │
+    | tm_create                    tm_ringing          tm_progressing              tm_hangup
+    |     |                            |                    |                          |
+    v     v                            v                    v                          v
+    ------o----------------------------o--------------------o--------------------------o------>
+          |                            |                    |                          |
+          |<--- dialing -------------->|<--- ringing ------>|<---- progressing ------->|
+          |                            |                    |                          |
        Call created              Phone started           Call answered            Call ended
                                    ringing
 
@@ -442,39 +442,39 @@ When an outgoing call fails during dialing or ringing, VoIPBIN can automatically
 
 ::
 
-    ┌─────────────────────────────────────────────────────────────────┐
-    │                       Call Attempt Flow                          │
-    └─────────────────────────────────────────────────────────────────┘
+    +-----------------------------------------------------------------+
+    |                       Call Attempt Flow                         |
+    +-----------------------------------------------------------------+
 
                               Create Call
-                                   │
-                                   ▼
-                           ┌──────────────┐
-                           │   Route 1    │
-                           │  (Primary)   │
-                           └──────┬───────┘
-                                  │
-                          ┌───────┴───────┐
-                          ▼               ▼
+                                   |
+                                   v
+                           +--------------+
+                           |   Route 1    |
+                           |  (Primary)   |
+                           +------+-------+
+                                  |
+                          +-------+-------+
+                          v               v
                      Connected?       Failed?
-                          │               │
-                          ▼               ▼
-                      Success      ┌──────────────┐
-                                   │   Route 2    │
-                                   │  (Backup)    │
-                                   └──────┬───────┘
-                                          │
-                                  ┌───────┴───────┐
-                                  ▼               ▼
+                          |               |
+                          v               v
+                      Success      +--------------+
+                                   |   Route 2    |
+                                   |  (Backup)    |
+                                   +------+-------+
+                                          |
+                                  +-------+-------+
+                                  v               v
                              Connected?       Failed?
-                                  │               │
-                                  ▼               ▼
-                              Success      ┌──────────────┐
-                                           │   Route 3    │
-                                           │  (Last try)  │
-                                           └──────┬───────┘
-                                                  │
-                                                  ▼
+                                  |               |
+                                  v               v
+                              Success      +--------------+
+                                           |   Route 3    |
+                                           |  (Last try)  |
+                                           +------+-------+
+                                                  |
+                                                  v
                                             Final Result
 
 **Failover Rules**
@@ -516,19 +516,19 @@ The execution of the call flow for incoming calls involves a simple yet effectiv
 ::
 
     External Caller                VoIPBIN                    Your Flow
-          │                           │                           │
-          │  INVITE (call request)    │                           │
-          │──────────────────────────▶│                           │
-          │                           │  Lookup destination       │
-          │                           │  Find matching flow       │
-          │                           │                           │
-          │  100 Trying               │                           │
-          │◀──────────────────────────│                           │
-          │                           │  Execute flow actions     │
-          │                           │──────────────────────────▶│
-          │  180 Ringing / 200 OK     │                           │
-          │◀──────────────────────────│◀──────────────────────────│
-          │                           │                           │
+          |                           |                           |
+          |  INVITE (call request)    |                           |
+          +-------------------------->|                           |
+          |                           |  Lookup destination       |
+          |                           |  Find matching flow       |
+          |                           |                           |
+          |  100 Trying               |                           |
+          |<--------------------------+                           |
+          |                           |  Execute flow actions     |
+          |                           +-------------------------->|
+          |  180 Ringing / 200 OK     |                           |
+          |<--------------------------+<--------------------------+
+          |                           |                           |
 
 * **Call Verification**: When an incoming call is received, the VoIPBIN system verifies the call's authenticity and checks for any potential security risks, such as spoofed or fraudulent calls. This verification process ensures that legitimate calls are allowed to proceed.
 * **Determine Call Flow**: After successful verification, the system determines the appropriate call flow based on the destination of the incoming call. The call flow includes a set of predefined actions and configurations tailored to handle calls directed to a specific user, department, or interactive voice response (IVR) system.
@@ -551,22 +551,22 @@ Once the outgoing call request is initiated, the VoIPBIN system starts the proce
 ::
 
     Your Application               VoIPBIN                    Destination
-          │                           │                           │
-          │  POST /v1/calls           │                           │
-          │  (with flow actions)      │                           │
-          │──────────────────────────▶│                           │
-          │                           │  INVITE                   │
-          │                           │──────────────────────────▶│
-          │  Call created             │                           │
-          │  status: "dialing"        │  180 Ringing              │
-          │◀──────────────────────────│◀──────────────────────────│
-          │                           │                           │
-          │  Webhook: "ringing"       │  200 OK (answered)        │
-          │◀──────────────────────────│◀──────────────────────────│
-          │                           │                           │
-          │  Webhook: "progressing"   │  ◀═══════════════════▶    │
-          │◀──────────────────────────│  Execute flow actions     │
-          │                           │                           │
+          |                           |                           |
+          |  POST /v1/calls           |                           |
+          |  (with flow actions)      |                           |
+          +-------------------------->|                           |
+          |                           |  INVITE                   |
+          |                           +-------------------------->|
+          |  Call created             |                           |
+          |  status: "dialing"        |  180 Ringing              |
+          |<--------------------------+<--------------------------+
+          |                           |                           |
+          |  Webhook: "ringing"       |  200 OK (answered)        |
+          |<--------------------------+<--------------------------+
+          |                           |                           |
+          |  Webhook: "progressing"   |  <=====================>  |
+          |<--------------------------+  Execute flow actions     |
+          |                           |                           |
 
 The call flow execution occurs as follows:
 

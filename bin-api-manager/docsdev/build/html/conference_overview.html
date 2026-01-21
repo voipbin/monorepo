@@ -167,33 +167,33 @@
 <h2>How Conferences Work<a class="headerlink" href="#how-conferences-work" title="Link to this heading"></a></h2>
 <p>A conference is a virtual room where multiple participants can communicate. Understanding the architecture helps you build reliable applications.</p>
 <p><strong>Conference Architecture</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────────┐
-│                      Conference Architecture                             │
-└─────────────────────────────────────────────────────────────────────────┘
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>+-------------------------------------------------------------------------+
+|                      Conference Architecture                            |
++-------------------------------------------------------------------------+
 
 Application Layer                         Infrastructure Layer
-┌─────────────────────────┐              ┌─────────────────────────┐
-│      Conference         │              │       Confbridge        │
-│   (conference-manager)  │              │    (call-manager)       │
-│                         │              │                         │
-│  • Participant list     │──────────────│  • Audio mixing         │
-│  • Recording control    │   manages    │  • Voice bridge         │
-│  • Transcription        │              │  • Join/leave events    │
-│  • Metadata &amp; state     │              │  • Media streams        │
-└─────────────────────────┘              └─────────────────────────┘
-          │                                        │
-          │                                        │
-          ▼                                        ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│                         Participants (Calls)                             │
-│                                                                          │
-│  ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐          │
-│  │ Call A   │    │ Call B   │    │ Call C   │    │ Call D   │          │
-│  │ (phone)  │    │ (WebRTC) │    │ (SIP)    │    │ (phone)  │          │
-│  └──────────┘    └──────────┘    └──────────┘    └──────────┘          │
-│                                                                          │
-│                     All audio mixed together                            │
-└─────────────────────────────────────────────────────────────────────────┘
++-------------------------+              +-------------------------+
+|      Conference         |              |       Confbridge        |
+|   (conference-manager)  |              |    (call-manager)       |
+|                         |              |                         |
+|  • Participant list     |--------------|  • Audio mixing         |
+|  • Recording control    |   manages    |  • Voice bridge         |
+|  • Transcription        |              |  • Join/leave events    |
+|  • Metadata &amp; state     |              |  • Media streams        |
++-------------------------+              +-------------------------+
+          |                                        |
+          |                                        |
+          v                                        v
++-------------------------------------------------------------------------+
+|                         Participants (Calls)                            |
+|                                                                         |
+|  +----------+    +----------+    +----------+    +----------+           |
+|  | Call A   |    | Call B   |    | Call C   |    | Call D   |           |
+|  | (phone)  |    | (WebRTC) |    | (SIP)    |    | (phone)  |           |
+|  +----------+    +----------+    +----------+    +----------+           |
+|                                                                         |
+|                     All audio mixed together                            |
++-------------------------------------------------------------------------+
 </pre></div>
 </div>
 <p><strong>Key Concepts</strong></p>
@@ -207,36 +207,36 @@ Application Layer                         Infrastructure Layer
 <h2>Conference Lifecycle<a class="headerlink" href="#conference-lifecycle" title="Link to this heading"></a></h2>
 <p>Every conference moves through a predictable set of states.</p>
 <p><strong>State Diagram</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────────┐
-│                     Conference State Machine                             │
-└─────────────────────────────────────────────────────────────────────────┘
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-------------------------------------------------------------------------+</span>
+<span class="o">|</span>                     <span class="n">Conference</span> <span class="n">State</span> <span class="n">Machine</span>                            <span class="o">|</span>
+<span class="o">+-------------------------------------------------------------------------+</span>
 
-                POST /v1/conferences
-                       │
-                       ▼
-                ┌────────────┐
-                │  starting  │ (brief initialization)
-                └─────┬──────┘
-                      │
-                      ▼
-                ┌────────────┐
-                │progressing │◀────────────────────────────────┐
-                │  (active)  │                                 │
-                └─────┬──────┘                                 │
-                      │                                        │
-                      │ DELETE or timeout                      │
-                      ▼                                        │
-                ┌────────────┐      still has                  │
-                │terminating │──────participants ──────────────┘
-                │ (closing)  │
-                └─────┬──────┘
-                      │
-                      │ all participants left
-                      ▼
-                ┌────────────┐
-                │ terminated │
-                │  (closed)  │
-                └────────────┘
+                <span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">conferences</span>
+                       <span class="o">|</span>
+                       <span class="n">v</span>
+                <span class="o">+------------+</span>
+                <span class="o">|</span>  <span class="n">starting</span>  <span class="o">|</span> <span class="p">(</span><span class="n">brief</span> <span class="n">initialization</span><span class="p">)</span>
+                <span class="o">+-----+------+</span>
+                      <span class="o">|</span>
+                      <span class="n">v</span>
+                <span class="o">+------------+</span>
+                <span class="o">|</span><span class="n">progressing</span> <span class="o">|&lt;--------------------------------+</span>
+                <span class="o">|</span>  <span class="p">(</span><span class="n">active</span><span class="p">)</span>  <span class="o">|</span>                                 <span class="o">|</span>
+                <span class="o">+-----+------+</span>                                 <span class="o">|</span>
+                      <span class="o">|</span>                                        <span class="o">|</span>
+                      <span class="o">|</span> <span class="n">DELETE</span> <span class="ow">or</span> <span class="n">timeout</span>                      <span class="o">|</span>
+                      <span class="n">v</span>                                        <span class="o">|</span>
+                <span class="o">+------------+</span>      <span class="n">still</span> <span class="n">has</span>                  <span class="o">|</span>
+                <span class="o">|</span><span class="n">terminating</span> <span class="o">|------</span><span class="n">participants</span> <span class="o">--------------+</span>
+                <span class="o">|</span> <span class="p">(</span><span class="n">closing</span><span class="p">)</span>  <span class="o">|</span>
+                <span class="o">+-----+------+</span>
+                      <span class="o">|</span>
+                      <span class="o">|</span> <span class="nb">all</span> <span class="n">participants</span> <span class="n">left</span>
+                      <span class="n">v</span>
+                <span class="o">+------------+</span>
+                <span class="o">|</span> <span class="n">terminated</span> <span class="o">|</span>
+                <span class="o">|</span>  <span class="p">(</span><span class="n">closed</span><span class="p">)</span>  <span class="o">|</span>
+                <span class="o">+------------+</span>
 </pre></div>
 </div>
 <p><strong>State Descriptions</strong></p>
@@ -267,34 +267,34 @@ to leave.</p></td>
 <h2>Participant Lifecycle<a class="headerlink" href="#participant-lifecycle" title="Link to this heading"></a></h2>
 <p>Each participant (conferencecall) has their own lifecycle independent of the conference.</p>
 <p><strong>Participant States</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────────┐
-│                   Participant (Conferencecall) States                    │
-└─────────────────────────────────────────────────────────────────────────┘
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-------------------------------------------------------------------------+</span>
+<span class="o">|</span>                   <span class="n">Participant</span> <span class="p">(</span><span class="n">Conferencecall</span><span class="p">)</span> <span class="n">States</span>                   <span class="o">|</span>
+<span class="o">+-------------------------------------------------------------------------+</span>
 
-     Flow triggers join
-            │
-            ▼
-     ┌────────────┐
-     │  joining   │  (pre-flow executing, connecting to bridge)
-     └─────┬──────┘
-           │
-           │ audio connected
-           ▼
-     ┌────────────┐
-     │   joined   │  (actively in conference, can hear/speak)
-     └─────┬──────┘
-           │
-           │ hangup or kicked
-           ▼
-     ┌────────────┐
-     │  leaving   │  (being removed from bridge)
-     └─────┬──────┘
-           │
-           │ fully disconnected
-           ▼
-     ┌────────────┐
-     │   leaved   │  (no longer in conference)
-     └────────────┘
+     <span class="n">Flow</span> <span class="n">triggers</span> <span class="n">join</span>
+            <span class="o">|</span>
+            <span class="n">v</span>
+     <span class="o">+------------+</span>
+     <span class="o">|</span>  <span class="n">joining</span>   <span class="o">|</span>  <span class="p">(</span><span class="n">pre</span><span class="o">-</span><span class="n">flow</span> <span class="n">executing</span><span class="p">,</span> <span class="n">connecting</span> <span class="n">to</span> <span class="n">bridge</span><span class="p">)</span>
+     <span class="o">+-----+------+</span>
+           <span class="o">|</span>
+           <span class="o">|</span> <span class="n">audio</span> <span class="n">connected</span>
+           <span class="n">v</span>
+     <span class="o">+------------+</span>
+     <span class="o">|</span>   <span class="n">joined</span>   <span class="o">|</span>  <span class="p">(</span><span class="n">actively</span> <span class="ow">in</span> <span class="n">conference</span><span class="p">,</span> <span class="n">can</span> <span class="n">hear</span><span class="o">/</span><span class="n">speak</span><span class="p">)</span>
+     <span class="o">+-----+------+</span>
+           <span class="o">|</span>
+           <span class="o">|</span> <span class="n">hangup</span> <span class="ow">or</span> <span class="n">kicked</span>
+           <span class="n">v</span>
+     <span class="o">+------------+</span>
+     <span class="o">|</span>  <span class="n">leaving</span>   <span class="o">|</span>  <span class="p">(</span><span class="n">being</span> <span class="n">removed</span> <span class="kn">from</span><span class="w"> </span><span class="nn">bridge</span><span class="p">)</span>
+     <span class="o">+-----+------+</span>
+           <span class="o">|</span>
+           <span class="o">|</span> <span class="n">fully</span> <span class="n">disconnected</span>
+           <span class="n">v</span>
+     <span class="o">+------------+</span>
+     <span class="o">|</span>   <span class="n">leaved</span>   <span class="o">|</span>  <span class="p">(</span><span class="n">no</span> <span class="n">longer</span> <span class="ow">in</span> <span class="n">conference</span><span class="p">)</span>
+     <span class="o">+------------+</span>
 </pre></div>
 </div>
 <table class="docutils align-default">
@@ -323,36 +323,36 @@ to leave.</p></td>
 <h2>Joining a Conference<a class="headerlink" href="#joining-a-conference" title="Link to this heading"></a></h2>
 <p>When a participant joins a conference, a coordinated sequence occurs.</p>
 <p><strong>Join Sequence</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────────┐
-│                      Participant Join Sequence                           │
-└─────────────────────────────────────────────────────────────────────────┘
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>+-------------------------------------------------------------------------+
+|                      Participant Join Sequence                          |
++-------------------------------------------------------------------------+
 
 Flow                    Conference-Manager              Call-Manager
-  │                            │                             │
-  │ conference_join action     │                             │
-  │───────────────────────────▶│                             │
-  │                            │                             │
-  │                            │ Create conferencecall       │
-  │                            │ status: joining             │
-  │                            │                             │
-  │                            │ Pre-flow? Execute it        │
-  │                            │                             │
-  │                            │ Push confbridge_join        │
-  │                            │────────────────────────────▶│
-  │                            │                             │
-  │                            │                             │ Connect call
-  │                            │                             │ to audio bridge
-  │                            │                             │
-  │                            │   confbridge_joined event   │
-  │                            │◀────────────────────────────│
-  │                            │                             │
-  │                            │ Update conferencecall       │
-  │                            │ status: joined              │
-  │                            │                             │
-  │                            │ Add to participant list     │
-  │                            │                             │
-  │◀───────────────────────────│                             │
-  │    Continue flow           │                             │
+  |                            |                             |
+  | conference_join action     |                             |
+  |---------------------------&gt;|                             |
+  |                            |                             |
+  |                            | Create conferencecall       |
+  |                            | status: joining             |
+  |                            |                             |
+  |                            | Pre-flow? Execute it        |
+  |                            |                             |
+  |                            | Push confbridge_join        |
+  |                            |----------------------------&gt;|
+  |                            |                             |
+  |                            |                             | Connect call
+  |                            |                             | to audio bridge
+  |                            |                             |
+  |                            |   confbridge_joined event   |
+  |                            |&lt;----------------------------|
+  |                            |                             |
+  |                            | Update conferencecall       |
+  |                            | status: joined              |
+  |                            |                             |
+  |                            | Add to participant list     |
+  |                            |                             |
+  |&lt;---------------------------|                             |
+  |    Continue flow           |                             |
 </pre></div>
 </div>
 <p><strong>What Happens at Each Step</strong></p>
@@ -368,46 +368,46 @@ Flow                    Conference-Manager              Call-Manager
 <h2>Leaving a Conference<a class="headerlink" href="#leaving-a-conference" title="Link to this heading"></a></h2>
 <p>Participants can leave naturally (hangup) or be removed via API.</p>
 <p><strong>Natural Leave (Call Ends)</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────────┐
-│                    Natural Leave (Participant Hangup)                    │
-└─────────────────────────────────────────────────────────────────────────┘
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-------------------------------------------------------------------------+</span>
+<span class="o">|</span>                    <span class="n">Natural</span> <span class="n">Leave</span> <span class="p">(</span><span class="n">Participant</span> <span class="n">Hangup</span><span class="p">)</span>                   <span class="o">|</span>
+<span class="o">+-------------------------------------------------------------------------+</span>
 
-Participant              Call-Manager              Conference-Manager
-    │                         │                            │
-    │ Hangs up phone          │                            │
-    │────────────────────────▶│                            │
-    │                         │                            │
-    │                         │ Detects leave from bridge  │
-    │                         │                            │
-    │                         │  confbridge_leaved event   │
-    │                         │───────────────────────────▶│
-    │                         │                            │
-    │                         │                            │ Update status
-    │                         │                            │ to &quot;leaved&quot;
-    │                         │                            │
-    │                         │                            │ Remove from
-    │                         │                            │ participant list
-    │                         │                            │
+<span class="n">Participant</span>              <span class="n">Call</span><span class="o">-</span><span class="n">Manager</span>              <span class="n">Conference</span><span class="o">-</span><span class="n">Manager</span>
+    <span class="o">|</span>                         <span class="o">|</span>                            <span class="o">|</span>
+    <span class="o">|</span> <span class="n">Hangs</span> <span class="n">up</span> <span class="n">phone</span>          <span class="o">|</span>                            <span class="o">|</span>
+    <span class="o">|------------------------&gt;|</span>                            <span class="o">|</span>
+    <span class="o">|</span>                         <span class="o">|</span>                            <span class="o">|</span>
+    <span class="o">|</span>                         <span class="o">|</span> <span class="n">Detects</span> <span class="n">leave</span> <span class="kn">from</span><span class="w"> </span><span class="nn">bridge</span>  <span class="o">|</span>
+    <span class="o">|</span>                         <span class="o">|</span>                            <span class="o">|</span>
+    <span class="o">|</span>                         <span class="o">|</span>  <span class="n">confbridge_leaved</span> <span class="n">event</span>   <span class="o">|</span>
+    <span class="o">|</span>                         <span class="o">|---------------------------&gt;|</span>
+    <span class="o">|</span>                         <span class="o">|</span>                            <span class="o">|</span>
+    <span class="o">|</span>                         <span class="o">|</span>                            <span class="o">|</span> <span class="n">Update</span> <span class="n">status</span>
+    <span class="o">|</span>                         <span class="o">|</span>                            <span class="o">|</span> <span class="n">to</span> <span class="s2">&quot;leaved&quot;</span>
+    <span class="o">|</span>                         <span class="o">|</span>                            <span class="o">|</span>
+    <span class="o">|</span>                         <span class="o">|</span>                            <span class="o">|</span> <span class="n">Remove</span> <span class="kn">from</span>
+<span class="w">    </span><span class="o">|</span>                         <span class="o">|</span>                            <span class="o">|</span> <span class="n">participant</span> <span class="nb">list</span>
+    <span class="o">|</span>                         <span class="o">|</span>                            <span class="o">|</span>
 </pre></div>
 </div>
 <p><strong>Forced Removal (API)</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>DELETE /v1/conferencecalls/{participant-id}
-                 │
-                 ▼
-┌────────────────────────────────────────┐
-│ 1. Validate participant is in          │
-│    &quot;joining&quot; or &quot;joined&quot; status        │
-│                                        │
-│ 2. Update status to &quot;leaving&quot;          │
-│                                        │
-│ 3. Send kick request to confbridge     │
-│                                        │
-│ 4. Confbridge removes participant      │
-│                                        │
-│ 5. confbridge_leaved event fires       │
-│                                        │
-│ 6. Update status to &quot;leaved&quot;           │
-└────────────────────────────────────────┘
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">DELETE</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">conferencecalls</span><span class="o">/</span><span class="p">{</span><span class="n">participant</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>
+                 <span class="o">|</span>
+                 <span class="n">v</span>
+<span class="o">+----------------------------------------+</span>
+<span class="o">|</span> <span class="mf">1.</span> <span class="n">Validate</span> <span class="n">participant</span> <span class="ow">is</span> <span class="ow">in</span>          <span class="o">|</span>
+<span class="o">|</span>    <span class="s2">&quot;joining&quot;</span> <span class="ow">or</span> <span class="s2">&quot;joined&quot;</span> <span class="n">status</span>        <span class="o">|</span>
+<span class="o">|</span>                                        <span class="o">|</span>
+<span class="o">|</span> <span class="mf">2.</span> <span class="n">Update</span> <span class="n">status</span> <span class="n">to</span> <span class="s2">&quot;leaving&quot;</span>          <span class="o">|</span>
+<span class="o">|</span>                                        <span class="o">|</span>
+<span class="o">|</span> <span class="mf">3.</span> <span class="n">Send</span> <span class="n">kick</span> <span class="n">request</span> <span class="n">to</span> <span class="n">confbridge</span>     <span class="o">|</span>
+<span class="o">|</span>                                        <span class="o">|</span>
+<span class="o">|</span> <span class="mf">4.</span> <span class="n">Confbridge</span> <span class="n">removes</span> <span class="n">participant</span>      <span class="o">|</span>
+<span class="o">|</span>                                        <span class="o">|</span>
+<span class="o">|</span> <span class="mf">5.</span> <span class="n">confbridge_leaved</span> <span class="n">event</span> <span class="n">fires</span>       <span class="o">|</span>
+<span class="o">|</span>                                        <span class="o">|</span>
+<span class="o">|</span> <span class="mf">6.</span> <span class="n">Update</span> <span class="n">status</span> <span class="n">to</span> <span class="s2">&quot;leaved&quot;</span>           <span class="o">|</span>
+<span class="o">+----------------------------------------+</span>
 </pre></div>
 </div>
 </section>
@@ -415,51 +415,51 @@ Participant              Call-Manager              Conference-Manager
 <h2>Conference Types<a class="headerlink" href="#conference-types" title="Link to this heading"></a></h2>
 <p>VoIPBIN supports different conference types for different use cases.</p>
 <p><strong>Type: Conference (Standard)</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────────┐
-│                    Type: Conference (Multi-Party)                        │
-└─────────────────────────────────────────────────────────────────────────┘
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>+-------------------------------------------------------------------------+
+|                    Type: Conference (Multi-Party)                       |
++-------------------------------------------------------------------------+
 
-┌─────────────────────────────────────────────────────────────────────────┐
-│                        Conference Room                                   │
-│                                                                          │
-│   ┌──────┐    ┌──────┐    ┌──────┐    ┌──────┐    ┌──────┐            │
-│   │User A│    │User B│    │User C│    │User D│    │User E│            │
-│   └──────┘    └──────┘    └──────┘    └──────┘    └──────┘            │
-│                                                                          │
-│   • Supports 2+ participants                                            │
-│   • Remains active even with 0 or 1 participant                         │
-│   • Only terminates when explicitly deleted                             │
-│   • Recording captures all participants                                 │
-│                                                                          │
-└─────────────────────────────────────────────────────────────────────────┘
++-------------------------------------------------------------------------+
+|                        Conference Room                                  |
+|                                                                         |
+|   +------+    +------+    +------+    +------+    +------+              |
+|   |User A|    |User B|    |User C|    |User D|    |User E|              |
+|   +------+    +------+    +------+    +------+    +------+              |
+|                                                                         |
+|   • Supports 2+ participants                                            |
+|   • Remains active even with 0 or 1 participant                         |
+|   • Only terminates when explicitly deleted                             |
+|   • Recording captures all participants                                 |
+|                                                                         |
++-------------------------------------------------------------------------+
 </pre></div>
 </div>
 <p><strong>Type: Connect (1:1 Bridge)</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────────┐
-│                      Type: Connect (Two-Party)                           │
-└─────────────────────────────────────────────────────────────────────────┘
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>+-------------------------------------------------------------------------+
+|                      Type: Connect (Two-Party)                          |
++-------------------------------------------------------------------------+
 
-┌─────────────────────────────────────────────────────────────────────────┐
-│                        Connect Bridge                                    │
-│                                                                          │
-│         ┌────────────┐              ┌────────────┐                      │
-│         │  Caller    │◀────────────▶│   Agent    │                      │
-│         └────────────┘              └────────────┘                      │
-│                                                                          │
-│   • Designed for exactly 2 participants                                 │
-│   • Auto-ejects remaining participant when one leaves                   │
-│   • Useful for customer-agent calls                                     │
-│   • Conference terminates when empty                                    │
-│                                                                          │
-└─────────────────────────────────────────────────────────────────────────┘
++-------------------------------------------------------------------------+
+|                        Connect Bridge                                   |
+|                                                                         |
+|         +------------+              +------------+                      |
+|         |  Caller    |&lt;------------&gt;|   Agent    |                      |
+|         +------------+              +------------+                      |
+|                                                                         |
+|   • Designed for exactly 2 participants                                 |
+|   • Auto-ejects remaining participant when one leaves                   |
+|   • Useful for customer-agent calls                                     |
+|   • Conference terminates when empty                                    |
+|                                                                         |
++-------------------------------------------------------------------------+
 
 When one participant leaves:
-┌──────────┐           ┌──────────┐
-│  Caller  │           │  Agent   │
-│  leaves  │──────────▶│ AUTO-KICK│
-└──────────┘           └──────────┘
-                             │
-                             ▼
++----------+           +----------+
+|  Caller  |           |  Agent   |
+|  leaves  |----------&gt;| AUTO-KICK|
++----------+           +----------+
+                             |
+                             v
                    Conference terminates
 </pre></div>
 </div>
@@ -468,31 +468,31 @@ When one participant leaves:
 <h2>Recording<a class="headerlink" href="#recording" title="Link to this heading"></a></h2>
 <p>Conferences support recording all participant audio into a single file.</p>
 <p><strong>Starting a Recording</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>POST /v1/conferences/{id}/recording_start
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">conferences</span><span class="o">/</span><span class="p">{</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">recording_start</span>
 
-┌─────────────────────────────────────────────────────────────────────────┐
-│                     Recording Active                                     │
-└─────────────────────────────────────────────────────────────────────────┘
+<span class="o">+-------------------------------------------------------------------------+</span>
+<span class="o">|</span>                     <span class="n">Recording</span> <span class="n">Active</span>                                    <span class="o">|</span>
+<span class="o">+-------------------------------------------------------------------------+</span>
 
-Conference
-┌─────────────────────────────────────────────────────────────────────────┐
-│                                                                          │
-│   ┌──────┐    ┌──────┐    ┌──────┐                                     │
-│   │User A│    │User B│    │User C│                                     │
-│   └──┬───┘    └──┬───┘    └──┬───┘                                     │
-│      │           │           │                                          │
-│      └───────────┴───────────┘                                          │
-│                  │                                                       │
-│                  ▼                                                       │
-│          ┌─────────────┐                                                │
-│          │  Recording  │                                                │
-│          │    File     │                                                │
-│          └─────────────┘                                                │
-│                                                                          │
-│   recording_id: &quot;abc-123&quot;  (current active recording)                   │
-│   recording_ids: [&quot;abc-123&quot;, ...]  (all recordings history)             │
-│                                                                          │
-└─────────────────────────────────────────────────────────────────────────┘
+<span class="n">Conference</span>
+<span class="o">+-------------------------------------------------------------------------+</span>
+<span class="o">|</span>                                                                         <span class="o">|</span>
+<span class="o">|</span>   <span class="o">+------+</span>    <span class="o">+------+</span>    <span class="o">+------+</span>                                      <span class="o">|</span>
+<span class="o">|</span>   <span class="o">|</span><span class="n">User</span> <span class="n">A</span><span class="o">|</span>    <span class="o">|</span><span class="n">User</span> <span class="n">B</span><span class="o">|</span>    <span class="o">|</span><span class="n">User</span> <span class="n">C</span><span class="o">|</span>                                      <span class="o">|</span>
+<span class="o">|</span>   <span class="o">+--+---+</span>    <span class="o">+--+---+</span>    <span class="o">+--+---+</span>                                      <span class="o">|</span>
+<span class="o">|</span>      <span class="o">|</span>           <span class="o">|</span>           <span class="o">|</span>                                          <span class="o">|</span>
+<span class="o">|</span>      <span class="o">+-----------+-----------+</span>                                          <span class="o">|</span>
+<span class="o">|</span>                  <span class="o">|</span>                                                      <span class="o">|</span>
+<span class="o">|</span>                  <span class="n">v</span>                                                      <span class="o">|</span>
+<span class="o">|</span>          <span class="o">+-------------+</span>                                                <span class="o">|</span>
+<span class="o">|</span>          <span class="o">|</span>  <span class="n">Recording</span>  <span class="o">|</span>                                                <span class="o">|</span>
+<span class="o">|</span>          <span class="o">|</span>    <span class="n">File</span>     <span class="o">|</span>                                                <span class="o">|</span>
+<span class="o">|</span>          <span class="o">+-------------+</span>                                                <span class="o">|</span>
+<span class="o">|</span>                                                                         <span class="o">|</span>
+<span class="o">|</span>   <span class="n">recording_id</span><span class="p">:</span> <span class="s2">&quot;abc-123&quot;</span>  <span class="p">(</span><span class="n">current</span> <span class="n">active</span> <span class="n">recording</span><span class="p">)</span>                   <span class="o">|</span>
+<span class="o">|</span>   <span class="n">recording_ids</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;abc-123&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>  <span class="p">(</span><span class="nb">all</span> <span class="n">recordings</span> <span class="n">history</span><span class="p">)</span>             <span class="o">|</span>
+<span class="o">|</span>                                                                         <span class="o">|</span>
+<span class="o">+-------------------------------------------------------------------------+</span>
 </pre></div>
 </div>
 <p><strong>Recording Rules</strong></p>
@@ -516,25 +516,25 @@ Conference
 <h2>Transcription<a class="headerlink" href="#transcription" title="Link to this heading"></a></h2>
 <p>Real-time transcription converts conference audio to text.</p>
 <p><strong>Starting Transcription</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>POST /v1/conferences/{id}/transcribe_start
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">conferences</span><span class="o">/</span><span class="p">{</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">transcribe_start</span>
 
-┌─────────────────────────────────────────────────────────────────────────┐
-│                    Transcription Active                                  │
-└─────────────────────────────────────────────────────────────────────────┘
+<span class="o">+-------------------------------------------------------------------------+</span>
+<span class="o">|</span>                    <span class="n">Transcription</span> <span class="n">Active</span>                                 <span class="o">|</span>
+<span class="o">+-------------------------------------------------------------------------+</span>
 
-Conference Audio                              Transcription Service
-┌─────────────────────┐                      ┌─────────────────────┐
-│ User A: &quot;Hello&quot;     │                      │                     │
-│ User B: &quot;Hi there&quot;  │─────────────────────▶│  Speech-to-Text     │
-│ User C: &quot;Welcome&quot;   │      audio stream    │                     │
-└─────────────────────┘                      └──────────┬──────────┘
-                                                        │
-                                                        ▼
-                                             ┌─────────────────────┐
-                                             │ Transcript Output   │
-                                             │ &quot;Hello. Hi there.   │
-                                             │  Welcome.&quot;          │
-                                             └─────────────────────┘
+<span class="n">Conference</span> <span class="n">Audio</span>                              <span class="n">Transcription</span> <span class="n">Service</span>
+<span class="o">+---------------------+</span>                      <span class="o">+---------------------+</span>
+<span class="o">|</span> <span class="n">User</span> <span class="n">A</span><span class="p">:</span> <span class="s2">&quot;Hello&quot;</span>     <span class="o">|</span>                      <span class="o">|</span>                     <span class="o">|</span>
+<span class="o">|</span> <span class="n">User</span> <span class="n">B</span><span class="p">:</span> <span class="s2">&quot;Hi there&quot;</span>  <span class="o">|---------------------&gt;|</span>  <span class="n">Speech</span><span class="o">-</span><span class="n">to</span><span class="o">-</span><span class="n">Text</span>     <span class="o">|</span>
+<span class="o">|</span> <span class="n">User</span> <span class="n">C</span><span class="p">:</span> <span class="s2">&quot;Welcome&quot;</span>   <span class="o">|</span>      <span class="n">audio</span> <span class="n">stream</span>    <span class="o">|</span>                     <span class="o">|</span>
+<span class="o">+---------------------+</span>                      <span class="o">+----------+----------+</span>
+                                                        <span class="o">|</span>
+                                                        <span class="n">v</span>
+                                             <span class="o">+---------------------+</span>
+                                             <span class="o">|</span> <span class="n">Transcript</span> <span class="n">Output</span>   <span class="o">|</span>
+                                             <span class="o">|</span> <span class="s2">&quot;Hello. Hi there.   |</span>
+                                             <span class="o">|</span>  <span class="n">Welcome</span><span class="o">.</span><span class="s2">&quot;          |</span>
+                                             <span class="o">+---------------------+</span>
 </pre></div>
 </div>
 <p><strong>Transcription Rules</strong></p>
@@ -549,20 +549,20 @@ Conference Audio                              Transcription Service
 <h2>Timeout and Auto-Cleanup<a class="headerlink" href="#timeout-and-auto-cleanup" title="Link to this heading"></a></h2>
 <p>Conferences can be configured to automatically terminate after a period.</p>
 <p><strong>Timeout Behavior</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────────┐
-│                     Conference Timeout                                   │
-└─────────────────────────────────────────────────────────────────────────┘
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-------------------------------------------------------------------------+</span>
+<span class="o">|</span>                     <span class="n">Conference</span> <span class="n">Timeout</span>                                  <span class="o">|</span>
+<span class="o">+-------------------------------------------------------------------------+</span>
 
-Conference created                                      Timeout expires
-with timeout: 3600 (1 hour)                            │
-     │                                                  │
-     ▼                                                  ▼
-─────●──────────────────────────────────────────────────●─────────────▶
-     │◀───────────── 3600 seconds ────────────────────▶│    Time
-     │                                                  │
-     │ Conference is progressing                        │ Auto-terminate
-     │ Participants can join/leave                      │ All participants
-     │                                                  │ kicked
+<span class="n">Conference</span> <span class="n">created</span>                                      <span class="n">Timeout</span> <span class="n">expires</span>
+<span class="k">with</span> <span class="n">timeout</span><span class="p">:</span> <span class="mi">3600</span> <span class="p">(</span><span class="mi">1</span> <span class="n">hour</span><span class="p">)</span>                             <span class="o">|</span>
+     <span class="o">|</span>                                                  <span class="o">|</span>
+     <span class="n">v</span>                                                  <span class="n">v</span>
+<span class="o">-----</span><span class="n">o</span><span class="o">--------------------------------------------------</span><span class="n">o</span><span class="o">-------------&gt;</span>
+     <span class="o">|&lt;-------------</span> <span class="mi">3600</span> <span class="n">seconds</span> <span class="o">---------------------&gt;|</span>    <span class="n">Time</span>
+     <span class="o">|</span>                                                  <span class="o">|</span>
+     <span class="o">|</span> <span class="n">Conference</span> <span class="ow">is</span> <span class="n">progressing</span>                        <span class="o">|</span> <span class="n">Auto</span><span class="o">-</span><span class="n">terminate</span>
+     <span class="o">|</span> <span class="n">Participants</span> <span class="n">can</span> <span class="n">join</span><span class="o">/</span><span class="n">leave</span>                      <span class="o">|</span> <span class="n">All</span> <span class="n">participants</span>
+     <span class="o">|</span>                                                  <span class="o">|</span> <span class="n">kicked</span>
 </pre></div>
 </div>
 <ul class="simple">
@@ -573,17 +573,17 @@ with timeout: 3600 (1 hour)                            │
 </ul>
 <p><strong>Auto-Cleanup When Empty</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Conference in &quot;terminating&quot; status
-            │
-            ▼
-┌────────────────────────┐
-│ Any participants left? │
-└───────────┬────────────┘
-            │
-   ┌────────┴────────┐
-   │                 │
+            |
+            v
++------------------------+
+| Any participants left? |
++-----------+------------+
+            |
+   +--------+--------+
+   |                 |
   Yes               No
-   │                 │
-   ▼                 ▼
+   |                 |
+   v                 v
 Wait for them    Conference destroyed
 to leave         Status: terminated
 </pre></div>
@@ -593,28 +593,28 @@ to leave         Status: terminated
 <h2>Health Checks<a class="headerlink" href="#health-checks" title="Link to this heading"></a></h2>
 <p>The system continuously monitors participant health.</p>
 <p><strong>Health Check Process</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────────┐
-│                    Participant Health Checks                             │
-└─────────────────────────────────────────────────────────────────────────┘
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>+-------------------------------------------------------------------------+
+|                    Participant Health Checks                            |
++-------------------------------------------------------------------------+
 
 Every 5 seconds, for each participant:
 
-┌────────────────────────────────────────┐
-│ 1. Is the participant&#39;s call still     │
-│    in &quot;progressing&quot; status?            │
-│                                        │
-│ 2. Is the conference still in          │
-│    &quot;progressing&quot; status?               │
-│                                        │
-│ 3. Was the participant created less    │
-│    than 24 hours ago?                  │
-└────────────────────────────────────────┘
-                 │
-        ┌────────┴────────┐
-        │                 │
++----------------------------------------+
+| 1. Is the participant&#39;s call still     |
+|    in &quot;progressing&quot; status?            |
+|                                        |
+| 2. Is the conference still in          |
+|    &quot;progressing&quot; status?               |
+|                                        |
+| 3. Was the participant created less    |
+|    than 24 hours ago?                  |
++----------------------------------------+
+                 |
+        +--------+--------+
+        |                 |
      All Yes          Any No
-        │                 │
-        ▼                 ▼
+        |                 |
+        v                 v
    Continue         Remove participant
    monitoring       (after 2 retries)
 </pre></div>
@@ -628,10 +628,10 @@ Every 5 seconds, for each participant:
    → Conference in &quot;progressing&quot; status
 
 2. Participants join through flow
-   ┌──────────┐  ┌──────────┐  ┌──────────┐
-   │ User A   │  │ User B   │  │ User C   │
-   │  joins   │  │  joins   │  │  joins   │
-   └──────────┘  └──────────┘  └──────────┘
+   +----------+  +----------+  +----------+
+   | User A   |  | User B   |  | User C   |
+   |  joins   |  |  joins   |  |  joins   |
+   +----------+  +----------+  +----------+
 
 3. All can hear each other
 
@@ -670,26 +670,26 @@ Every 5 seconds, for each participant:
 <h2>Events and Webhooks<a class="headerlink" href="#events-and-webhooks" title="Link to this heading"></a></h2>
 <p>Conference changes trigger events you can subscribe to.</p>
 <p><strong>Event Types</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────────┐
-│                     Conference Events                                    │
-└─────────────────────────────────────────────────────────────────────────┘
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-------------------------------------------------------------------------+</span>
+<span class="o">|</span>                     <span class="n">Conference</span> <span class="n">Events</span>                                   <span class="o">|</span>
+<span class="o">+-------------------------------------------------------------------------+</span>
 
-Event                    When it fires
-─────────────────────────────────────────────────────────────────────────
-conference_created       Conference is created
-conference_updated       Participant joins/leaves, recording starts/stops
-conference_deleted       Conference is terminated
+<span class="n">Event</span>                    <span class="n">When</span> <span class="n">it</span> <span class="n">fires</span>
+<span class="o">-------------------------------------------------------------------------</span>
+<span class="n">conference_created</span>       <span class="n">Conference</span> <span class="ow">is</span> <span class="n">created</span>
+<span class="n">conference_updated</span>       <span class="n">Participant</span> <span class="n">joins</span><span class="o">/</span><span class="n">leaves</span><span class="p">,</span> <span class="n">recording</span> <span class="n">starts</span><span class="o">/</span><span class="n">stops</span>
+<span class="n">conference_deleted</span>       <span class="n">Conference</span> <span class="ow">is</span> <span class="n">terminated</span>
 </pre></div>
 </div>
 </section>
 <section id="best-practices">
 <h2>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading"></a></h2>
 <p><strong>1. Choose the Right Conference Type</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Use Case                          Type
-────────────────────────────────────────────────────
-Team meeting (3+ people)          conference
-Customer support call             connect
-Webinar/broadcast                 conference
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Use</span> <span class="n">Case</span>                          <span class="n">Type</span>
+<span class="o">----------------------------------------------------</span>
+<span class="n">Team</span> <span class="n">meeting</span> <span class="p">(</span><span class="mi">3</span><span class="o">+</span> <span class="n">people</span><span class="p">)</span>          <span class="n">conference</span>
+<span class="n">Customer</span> <span class="n">support</span> <span class="n">call</span>             <span class="n">connect</span>
+<span class="n">Webinar</span><span class="o">/</span><span class="n">broadcast</span>                 <span class="n">conference</span>
 </pre></div>
 </div>
 <p><strong>2. Set Appropriate Timeouts</strong></p>

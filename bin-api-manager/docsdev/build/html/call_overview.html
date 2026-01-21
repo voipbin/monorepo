@@ -195,40 +195,40 @@
 <h2>Call Lifecycle<a class="headerlink" href="#call-lifecycle" title="Link to this heading"></a></h2>
 <p>Every call in VoIPBIN follows a predictable lifecycle from creation to termination. Understanding this lifecycle helps you build reliable applications that respond correctly to call state changes.</p>
 <p><strong>State Diagram</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>                               ┌──────────────┐
-                               │   dialing    │
-                               │ (call starts)│
-                               └──────┬───────┘
-                                      │
-                ┌─────────────────────┼─────────────────────┐
-                │                     │                     │
-                ▼                     ▼                     ▼
-         ┌────────────┐        ┌────────────┐        ┌────────────┐
-         │  ringing   │        │ canceling  │        │  hangup    │
-         │ (dest rang)│        │ (caller    │        │ (failed)   │
-         └─────┬──────┘        │  cancels)  │        └────────────┘
-               │               └─────┬──────┘
-               │                     │
-               ▼                     │
-        ┌─────────────┐              │
-        │ progressing │              │
-        │ (answered)  │              │
-        └──────┬──────┘              │
-               │                     │
-      ┌────────┴────────┐            │
-      ▼                 ▼            │
-┌────────────┐   ┌────────────┐      │
-│terminating │   │  hangup    │      │
-│  (ending   │   │  (remote   │      │
-│   locally) │   │  hangup)   │      │
-└─────┬──────┘   └────────────┘      │
-      │                              │
-      └──────────────┬───────────────┘
-                     ▼
-              ┌────────────┐
-              │   hangup   │
-              │  (final)   │
-              └────────────┘
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>                               <span class="o">+--------------+</span>
+                               <span class="o">|</span>   <span class="n">dialing</span>    <span class="o">|</span>
+                               <span class="o">|</span> <span class="p">(</span><span class="n">call</span> <span class="n">starts</span><span class="p">)</span><span class="o">|</span>
+                               <span class="o">+------+-------+</span>
+                                      <span class="o">|</span>
+                <span class="o">+---------------------+---------------------+</span>
+                <span class="o">|</span>                     <span class="o">|</span>                     <span class="o">|</span>
+                <span class="n">v</span>                     <span class="n">v</span>                     <span class="n">v</span>
+         <span class="o">+------------+</span>        <span class="o">+------------+</span>        <span class="o">+------------+</span>
+         <span class="o">|</span>  <span class="n">ringing</span>   <span class="o">|</span>        <span class="o">|</span> <span class="n">canceling</span>  <span class="o">|</span>        <span class="o">|</span>  <span class="n">hangup</span>    <span class="o">|</span>
+         <span class="o">|</span> <span class="p">(</span><span class="n">dest</span> <span class="n">rang</span><span class="p">)</span><span class="o">|</span>        <span class="o">|</span> <span class="p">(</span><span class="n">caller</span>    <span class="o">|</span>        <span class="o">|</span> <span class="p">(</span><span class="n">failed</span><span class="p">)</span>   <span class="o">|</span>
+         <span class="o">+-----+------+</span>        <span class="o">|</span>  <span class="n">cancels</span><span class="p">)</span>  <span class="o">|</span>        <span class="o">+------------+</span>
+               <span class="o">|</span>               <span class="o">+-----+------+</span>
+               <span class="o">|</span>                     <span class="o">|</span>
+               <span class="n">v</span>                     <span class="o">|</span>
+        <span class="o">+-------------+</span>              <span class="o">|</span>
+        <span class="o">|</span> <span class="n">progressing</span> <span class="o">|</span>              <span class="o">|</span>
+        <span class="o">|</span> <span class="p">(</span><span class="n">answered</span><span class="p">)</span>  <span class="o">|</span>              <span class="o">|</span>
+        <span class="o">+------+------+</span>              <span class="o">|</span>
+               <span class="o">|</span>                     <span class="o">|</span>
+      <span class="o">+--------+--------+</span>            <span class="o">|</span>
+      <span class="n">v</span>                 <span class="n">v</span>            <span class="o">|</span>
+<span class="o">+------------+</span>   <span class="o">+------------+</span>      <span class="o">|</span>
+<span class="o">|</span><span class="n">terminating</span> <span class="o">|</span>   <span class="o">|</span>  <span class="n">hangup</span>    <span class="o">|</span>      <span class="o">|</span>
+<span class="o">|</span>  <span class="p">(</span><span class="n">ending</span>   <span class="o">|</span>   <span class="o">|</span>  <span class="p">(</span><span class="n">remote</span>   <span class="o">|</span>      <span class="o">|</span>
+<span class="o">|</span>   <span class="n">locally</span><span class="p">)</span> <span class="o">|</span>   <span class="o">|</span>  <span class="n">hangup</span><span class="p">)</span>   <span class="o">|</span>      <span class="o">|</span>
+<span class="o">+-----+------+</span>   <span class="o">+------------+</span>      <span class="o">|</span>
+      <span class="o">|</span>                              <span class="o">|</span>
+      <span class="o">+--------------+---------------+</span>
+                     <span class="n">v</span>
+              <span class="o">+------------+</span>
+              <span class="o">|</span>   <span class="n">hangup</span>   <span class="o">|</span>
+              <span class="o">|</span>  <span class="p">(</span><span class="n">final</span><span class="p">)</span>   <span class="o">|</span>
+              <span class="o">+------------+</span>
 </pre></div>
 </div>
 <p><strong>State Descriptions</strong></p>
@@ -276,16 +276,16 @@ changes are possible.</p></td>
 <h2>What Happens At Each Stage<a class="headerlink" href="#what-happens-at-each-stage" title="Link to this heading"></a></h2>
 <p><strong>During Dialing</strong></p>
 <p>When you create an outbound call or receive an inbound call, the call enters the dialing state.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Your App                    VoIPBIN                    Destination
-   │                           │                            │
-   │  POST /v1/calls           │                            │
-   │──────────────────────────▶│                            │
-   │                           │  SIP INVITE                │
-   │                           │───────────────────────────▶│
-   │                           │                            │
-   │  Call object              │                            │
-   │  status: &quot;dialing&quot;        │                            │
-   │◀──────────────────────────│                            │
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Your</span> <span class="n">App</span>                    <span class="n">VoIPBIN</span>                    <span class="n">Destination</span>
+   <span class="o">|</span>                           <span class="o">|</span>                            <span class="o">|</span>
+   <span class="o">|</span>  <span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span>           <span class="o">|</span>                            <span class="o">|</span>
+   <span class="o">+--------------------------&gt;|</span>                            <span class="o">|</span>
+   <span class="o">|</span>                           <span class="o">|</span>  <span class="n">SIP</span> <span class="n">INVITE</span>                <span class="o">|</span>
+   <span class="o">|</span>                           <span class="o">+---------------------------&gt;|</span>
+   <span class="o">|</span>                           <span class="o">|</span>                            <span class="o">|</span>
+   <span class="o">|</span>  <span class="n">Call</span> <span class="nb">object</span>              <span class="o">|</span>                            <span class="o">|</span>
+   <span class="o">|</span>  <span class="n">status</span><span class="p">:</span> <span class="s2">&quot;dialing&quot;</span>        <span class="o">|</span>                            <span class="o">|</span>
+   <span class="o">|&lt;--------------------------+</span>                            <span class="o">|</span>
 </pre></div>
 </div>
 <p>At this point:</p>
@@ -296,12 +296,12 @@ changes are possible.</p></td>
 </ul>
 <p><strong>During Ringing</strong></p>
 <p>The destination device is ringing. The person can pick up the phone.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>│                           │                            │
-│                           │  180 Ringing               │
-│                           │◀───────────────────────────│
-│  Webhook: call_updated    │                            │
-│  status: &quot;ringing&quot;        │       ♪ Ring Ring ♪        │
-│◀──────────────────────────│                            │
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">|</span>                           <span class="o">|</span>                            <span class="o">|</span>
+<span class="o">|</span>                           <span class="o">|</span>  <span class="mi">180</span> <span class="n">Ringing</span>               <span class="o">|</span>
+<span class="o">|</span>                           <span class="o">|&lt;---------------------------+</span>
+<span class="o">|</span>  <span class="n">Webhook</span><span class="p">:</span> <span class="n">call_updated</span>    <span class="o">|</span>                            <span class="o">|</span>
+<span class="o">|</span>  <span class="n">status</span><span class="p">:</span> <span class="s2">&quot;ringing&quot;</span>        <span class="o">|</span>       <span class="n">Ring</span> <span class="n">Ring</span>            <span class="o">|</span>
+<span class="o">|&lt;--------------------------+</span>                            <span class="o">|</span>
 </pre></div>
 </div>
 <p>At this point:</p>
@@ -312,12 +312,12 @@ changes are possible.</p></td>
 </ul>
 <p><strong>During Progressing (Answered)</strong></p>
 <p>The call has been answered. This is when real communication begins.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>│                           │                            │
-│                           │  200 OK                    │
-│                           │◀───────────────────────────│
-│  Webhook: call_updated    │                            │
-│  status: &quot;progressing&quot;    │   ◀═══════════════════▶    │
-│◀──────────────────────────│        (Audio flows)       │
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">|</span>                           <span class="o">|</span>                            <span class="o">|</span>
+<span class="o">|</span>                           <span class="o">|</span>  <span class="mi">200</span> <span class="n">OK</span>                    <span class="o">|</span>
+<span class="o">|</span>                           <span class="o">|&lt;---------------------------+</span>
+<span class="o">|</span>  <span class="n">Webhook</span><span class="p">:</span> <span class="n">call_updated</span>    <span class="o">|</span>                            <span class="o">|</span>
+<span class="o">|</span>  <span class="n">status</span><span class="p">:</span> <span class="s2">&quot;progressing&quot;</span>    <span class="o">|</span>   <span class="o">&lt;=====================&gt;</span>  <span class="o">|</span>
+<span class="o">|&lt;--------------------------+</span>        <span class="p">(</span><span class="n">Audio</span> <span class="n">flows</span><span class="p">)</span>       <span class="o">|</span>
 </pre></div>
 </div>
 <p>At this point:</p>
@@ -329,14 +329,14 @@ changes are possible.</p></td>
 </ul>
 <p><strong>During Hangup</strong></p>
 <p>The call has ended. Check the hangup_by and hangup_reason fields to understand why.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>│                           │                            │
-│                           │  BYE                       │
-│                           │◀───────────────────────────│
-│  Webhook: call_updated    │                            │
-│  status: &quot;hangup&quot;         │                            │
-│  hangup_by: &quot;remote&quot;      │                            │
-│  hangup_reason: &quot;normal&quot;  │                            │
-│◀──────────────────────────│                            │
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">|</span>                           <span class="o">|</span>                            <span class="o">|</span>
+<span class="o">|</span>                           <span class="o">|</span>  <span class="n">BYE</span>                       <span class="o">|</span>
+<span class="o">|</span>                           <span class="o">|&lt;---------------------------+</span>
+<span class="o">|</span>  <span class="n">Webhook</span><span class="p">:</span> <span class="n">call_updated</span>    <span class="o">|</span>                            <span class="o">|</span>
+<span class="o">|</span>  <span class="n">status</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span>         <span class="o">|</span>                            <span class="o">|</span>
+<span class="o">|</span>  <span class="n">hangup_by</span><span class="p">:</span> <span class="s2">&quot;remote&quot;</span>      <span class="o">|</span>                            <span class="o">|</span>
+<span class="o">|</span>  <span class="n">hangup_reason</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span>  <span class="o">|</span>                            <span class="o">|</span>
+<span class="o">|&lt;--------------------------+</span>                            <span class="o">|</span>
 </pre></div>
 </div>
 </section>
@@ -346,29 +346,29 @@ changes are possible.</p></td>
 <p><strong>Hangup Reason Values</strong></p>
 <p><strong>Hangup By Values</strong></p>
 <p><strong>Common Scenarios</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Scenario: Normal conversation
-────────────────────────────
-hangup_by: &quot;remote&quot;
-hangup_reason: &quot;normal&quot;
-→ The other person hung up after talking
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Scenario</span><span class="p">:</span> <span class="n">Normal</span> <span class="n">conversation</span>
+<span class="o">----------------------------</span>
+<span class="n">hangup_by</span><span class="p">:</span> <span class="s2">&quot;remote&quot;</span>
+<span class="n">hangup_reason</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span>
+<span class="o">-&gt;</span> <span class="n">The</span> <span class="n">other</span> <span class="n">person</span> <span class="n">hung</span> <span class="n">up</span> <span class="n">after</span> <span class="n">talking</span>
 
-Scenario: Missed call
-────────────────────────────
-hangup_by: &quot;remote&quot;
-hangup_reason: &quot;noanswer&quot;
-→ Phone rang but nobody answered
+<span class="n">Scenario</span><span class="p">:</span> <span class="n">Missed</span> <span class="n">call</span>
+<span class="o">----------------------------</span>
+<span class="n">hangup_by</span><span class="p">:</span> <span class="s2">&quot;remote&quot;</span>
+<span class="n">hangup_reason</span><span class="p">:</span> <span class="s2">&quot;noanswer&quot;</span>
+<span class="o">-&gt;</span> <span class="n">Phone</span> <span class="n">rang</span> <span class="n">but</span> <span class="n">nobody</span> <span class="n">answered</span>
 
-Scenario: Your app ended the call
-────────────────────────────
-hangup_by: &quot;local&quot;
-hangup_reason: &quot;normal&quot;
-→ Your flow action or API call ended it
+<span class="n">Scenario</span><span class="p">:</span> <span class="n">Your</span> <span class="n">app</span> <span class="n">ended</span> <span class="n">the</span> <span class="n">call</span>
+<span class="o">----------------------------</span>
+<span class="n">hangup_by</span><span class="p">:</span> <span class="s2">&quot;local&quot;</span>
+<span class="n">hangup_reason</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span>
+<span class="o">-&gt;</span> <span class="n">Your</span> <span class="n">flow</span> <span class="n">action</span> <span class="ow">or</span> <span class="n">API</span> <span class="n">call</span> <span class="n">ended</span> <span class="n">it</span>
 
-Scenario: Network problem
-────────────────────────────
-hangup_by: &quot;remote&quot;
-hangup_reason: &quot;failed&quot;
-→ Call never connected due to network issues
+<span class="n">Scenario</span><span class="p">:</span> <span class="n">Network</span> <span class="n">problem</span>
+<span class="o">----------------------------</span>
+<span class="n">hangup_by</span><span class="p">:</span> <span class="s2">&quot;remote&quot;</span>
+<span class="n">hangup_reason</span><span class="p">:</span> <span class="s2">&quot;failed&quot;</span>
+<span class="o">-&gt;</span> <span class="n">Call</span> <span class="n">never</span> <span class="n">connected</span> <span class="n">due</span> <span class="n">to</span> <span class="n">network</span> <span class="n">issues</span>
 </pre></div>
 </div>
 </section>
@@ -377,10 +377,10 @@ hangup_reason: &quot;failed&quot;
 <p>Once a call is in the “progressing” state (answered), you can control the audio in several ways. Each operation is independent - you can combine them as needed.</p>
 <p><strong>Hold</strong></p>
 <p>Pauses the call. The other party hears silence (or music if MOH is enabled).</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Before Hold                          After Hold
-┌─────────┐     audio      ┌─────────┐     ┌─────────┐     silence   ┌─────────┐
-│ Caller  │ ◀═══════════▶  │ VoIPBIN │     │ Caller  │ ────────────▶ │ VoIPBIN │
-└─────────┘                └─────────┘     └─────────┘  (or music)   └─────────┘
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Before</span> <span class="n">Hold</span>                          <span class="n">After</span> <span class="n">Hold</span>
+<span class="o">+---------+</span>     <span class="n">audio</span>      <span class="o">+---------+</span>     <span class="o">+---------+</span>     <span class="n">silence</span>   <span class="o">+---------+</span>
+<span class="o">|</span> <span class="n">Caller</span>  <span class="o">|</span> <span class="o">&lt;============&gt;</span> <span class="o">|</span> <span class="n">VoIPBIN</span> <span class="o">|</span>     <span class="o">|</span> <span class="n">Caller</span>  <span class="o">|</span> <span class="o">------------&gt;</span> <span class="o">|</span> <span class="n">VoIPBIN</span> <span class="o">|</span>
+<span class="o">+---------+</span>                <span class="o">+---------+</span>     <span class="o">+---------+</span>  <span class="p">(</span><span class="ow">or</span> <span class="n">music</span><span class="p">)</span>   <span class="o">+---------+</span>
 </pre></div>
 </div>
 <ul class="simple">
@@ -390,11 +390,11 @@ hangup_reason: &quot;failed&quot;
 </ul>
 <p><strong>Mute</strong></p>
 <p>Silences audio in one or both directions without putting the call on hold.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Mute &quot;in&quot;                    Mute &quot;out&quot;                   Mute &quot;both&quot;
-┌────┐  ───X──▶  ┌────┐     ┌────┐  ◀──X───  ┌────┐      ┌────┐  ──X──  ┌────┐
-│ A  │  ◀──────  │ B  │     │ A  │  ───────▶ │ B  │      │ A  │  ──X──  │ B  │
-└────┘           └────┘     └────┘           └────┘      └────┘         └────┘
-A cannot hear B            A cannot be heard           Complete silence
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Mute</span> <span class="s2">&quot;in&quot;</span>                    <span class="n">Mute</span> <span class="s2">&quot;out&quot;</span>                   <span class="n">Mute</span> <span class="s2">&quot;both&quot;</span>
+<span class="o">+----+</span>  <span class="o">---</span><span class="n">X</span><span class="o">--&gt;</span>  <span class="o">+----+</span>     <span class="o">+----+</span>  <span class="o">&lt;--</span><span class="n">X</span><span class="o">---</span>  <span class="o">+----+</span>      <span class="o">+----+</span>  <span class="o">--</span><span class="n">X</span><span class="o">--</span>  <span class="o">+----+</span>
+<span class="o">|</span> <span class="n">A</span>  <span class="o">|</span>  <span class="o">&lt;------</span>  <span class="o">|</span> <span class="n">B</span>  <span class="o">|</span>     <span class="o">|</span> <span class="n">A</span>  <span class="o">|</span>  <span class="o">-------&gt;</span> <span class="o">|</span> <span class="n">B</span>  <span class="o">|</span>      <span class="o">|</span> <span class="n">A</span>  <span class="o">|</span>  <span class="o">--</span><span class="n">X</span><span class="o">--</span>  <span class="o">|</span> <span class="n">B</span>  <span class="o">|</span>
+<span class="o">+----+</span>           <span class="o">+----+</span>     <span class="o">+----+</span>           <span class="o">+----+</span>      <span class="o">+----+</span>         <span class="o">+----+</span>
+<span class="n">A</span> <span class="n">cannot</span> <span class="n">hear</span> <span class="n">B</span>            <span class="n">A</span> <span class="n">cannot</span> <span class="n">be</span> <span class="n">heard</span>           <span class="n">Complete</span> <span class="n">silence</span>
 </pre></div>
 </div>
 <ul class="simple">
@@ -404,14 +404,14 @@ A cannot hear B            A cannot be heard           Complete silence
 </ul>
 <p><strong>Recording</strong></p>
 <p>Captures the call audio for later playback.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────┐         ┌─────────┐         ┌─────────┐
-│ Caller  │ ◀═════▶ │ VoIPBIN │ ◀═════▶ │  Dest   │
-└─────────┘         └────┬────┘         └─────────┘
-                         │
-                         ▼ (recording)
-                    ┌─────────┐
-                    │  File   │
-                    └─────────┘
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+---------+</span>         <span class="o">+---------+</span>         <span class="o">+---------+</span>
+<span class="o">|</span> <span class="n">Caller</span>  <span class="o">|</span> <span class="o">&lt;=====&gt;</span> <span class="o">|</span> <span class="n">VoIPBIN</span> <span class="o">|</span> <span class="o">&lt;=====&gt;</span> <span class="o">|</span>  <span class="n">Dest</span>   <span class="o">|</span>
+<span class="o">+---------+</span>         <span class="o">+----+----+</span>         <span class="o">+---------+</span>
+                         <span class="o">|</span>
+                         <span class="n">v</span> <span class="p">(</span><span class="n">recording</span><span class="p">)</span>
+                    <span class="o">+---------+</span>
+                    <span class="o">|</span>  <span class="n">File</span>   <span class="o">|</span>
+                    <span class="o">+---------+</span>
 </pre></div>
 </div>
 <ul class="simple">
@@ -425,12 +425,12 @@ A cannot hear B            A cannot be heard           Complete silence
 <p>VoIPBIN’s call concept differs from traditional 1:1 calls. A single logical conversation may involve multiple call objects linked together.</p>
 <p><strong>The Two-Call Model</strong></p>
 <p>When you make a call from A to B through VoIPBIN, there are actually two separate calls:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Traditional View:     A ─────────────────────▶ B
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Traditional</span> <span class="n">View</span><span class="p">:</span>     <span class="n">A</span> <span class="o">-----------------------&gt;</span> <span class="n">B</span>
 
-VoIPBIN Reality:      A ◀─── Call 1 ───▶ VoIPBIN ◀─── Call 2 ───▶ B
-                               │                        │
-                               └────────────────────────┘
-                                      (bridged audio)
+<span class="n">VoIPBIN</span> <span class="n">Reality</span><span class="p">:</span>      <span class="n">A</span> <span class="o">&lt;---</span> <span class="n">Call</span> <span class="mi">1</span> <span class="o">---&gt;</span> <span class="n">VoIPBIN</span> <span class="o">&lt;---</span> <span class="n">Call</span> <span class="mi">2</span> <span class="o">---&gt;</span> <span class="n">B</span>
+                               <span class="o">|</span>                        <span class="o">|</span>
+                               <span class="o">+------------------------+</span>
+                                      <span class="p">(</span><span class="n">bridged</span> <span class="n">audio</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><strong>Why Two Calls?</strong></p>
@@ -443,19 +443,19 @@ VoIPBIN Reality:      A ◀─── Call 1 ───▶ VoIPBIN ◀─── Ca
 </ul>
 <p><strong>Master and Chained Calls</strong></p>
 <p>When calls are related, they form a chain:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────┐
-│                    Master Call                       │
-│  master_call_id: 00000000-0000-0000-0000-000000000000 │
-│  chained_call_ids: [call-2-id, call-3-id]            │
-└─────────────────────────┬───────────────────────────┘
-                          │
-          ┌───────────────┼───────────────┐
-          ▼               ▼               ▼
-    ┌──────────┐    ┌──────────┐    ┌──────────┐
-    │ Call 2   │    │ Call 3   │    │ Call 4   │
-    │ master:  │    │ master:  │    │ master:  │
-    │ call-1-id│    │ call-1-id│    │ call-1-id│
-    └──────────┘    └──────────┘    └──────────┘
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-------------------------------------------------------+</span>
+<span class="o">|</span>                    <span class="n">Master</span> <span class="n">Call</span>                        <span class="o">|</span>
+<span class="o">|</span>  <span class="n">master_call_id</span><span class="p">:</span> <span class="mi">00000000</span><span class="o">-</span><span class="mi">0000</span><span class="o">-</span><span class="mi">0000</span><span class="o">-</span><span class="mi">0000</span><span class="o">-</span><span class="mi">000000000000</span> <span class="o">|</span>
+<span class="o">|</span>  <span class="n">chained_call_ids</span><span class="p">:</span> <span class="p">[</span><span class="n">call</span><span class="o">-</span><span class="mi">2</span><span class="o">-</span><span class="nb">id</span><span class="p">,</span> <span class="n">call</span><span class="o">-</span><span class="mi">3</span><span class="o">-</span><span class="nb">id</span><span class="p">]</span>             <span class="o">|</span>
+<span class="o">+-------------------------+-----------------------------+</span>
+                          <span class="o">|</span>
+          <span class="o">+---------------+---------------+</span>
+          <span class="n">v</span>               <span class="n">v</span>               <span class="n">v</span>
+    <span class="o">+----------+</span>    <span class="o">+----------+</span>    <span class="o">+----------+</span>
+    <span class="o">|</span> <span class="n">Call</span> <span class="mi">2</span>   <span class="o">|</span>    <span class="o">|</span> <span class="n">Call</span> <span class="mi">3</span>   <span class="o">|</span>    <span class="o">|</span> <span class="n">Call</span> <span class="mi">4</span>   <span class="o">|</span>
+    <span class="o">|</span> <span class="n">master</span><span class="p">:</span>  <span class="o">|</span>    <span class="o">|</span> <span class="n">master</span><span class="p">:</span>  <span class="o">|</span>    <span class="o">|</span> <span class="n">master</span><span class="p">:</span>  <span class="o">|</span>
+    <span class="o">|</span> <span class="n">call</span><span class="o">-</span><span class="mi">1</span><span class="o">-</span><span class="nb">id</span><span class="o">|</span>    <span class="o">|</span> <span class="n">call</span><span class="o">-</span><span class="mi">1</span><span class="o">-</span><span class="nb">id</span><span class="o">|</span>    <span class="o">|</span> <span class="n">call</span><span class="o">-</span><span class="mi">1</span><span class="o">-</span><span class="nb">id</span><span class="o">|</span>
+    <span class="o">+----------+</span>    <span class="o">+----------+</span>    <span class="o">+----------+</span>
 </pre></div>
 </div>
 <p><strong>Chaining Behaviors</strong></p>
@@ -465,43 +465,43 @@ VoIPBIN Reality:      A ◀─── Call 1 ───▶ VoIPBIN ◀─── Ca
 <li><p>Each chained call tracks its master via the master_call_id field</p></li>
 </ul>
 <p><strong>Common Use Case: Transfer</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Step 1: Caller and Agent talking
-┌────────┐       ┌─────────┐       ┌────────┐
-│ Caller │◀─────▶│ VoIPBIN │◀─────▶│ Agent  │
-└────────┘       └────┬────┘       └────────┘
-                      │
-                 Master Call
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Step</span> <span class="mi">1</span><span class="p">:</span> <span class="n">Caller</span> <span class="ow">and</span> <span class="n">Agent</span> <span class="n">talking</span>
+<span class="o">+--------+</span>       <span class="o">+---------+</span>       <span class="o">+--------+</span>
+<span class="o">|</span> <span class="n">Caller</span> <span class="o">|&lt;-----&gt;|</span> <span class="n">VoIPBIN</span> <span class="o">|&lt;-----&gt;|</span> <span class="n">Agent</span>  <span class="o">|</span>
+<span class="o">+--------+</span>       <span class="o">+----+----+</span>       <span class="o">+--------+</span>
+                      <span class="o">|</span>
+                 <span class="n">Master</span> <span class="n">Call</span>
 
-Step 2: Agent initiates transfer to Supervisor
-┌────────┐       ┌─────────┐       ┌────────┐
-│ Caller │◀─────▶│ VoIPBIN │       │ Agent  │ (on hold)
-└────────┘       └────┬────┘       └────────┘
-                      │
-                      ├──────────▶ ┌────────────┐
-                      │            │ Supervisor │ (ringing)
-                 Chained Call      └────────────┘
+<span class="n">Step</span> <span class="mi">2</span><span class="p">:</span> <span class="n">Agent</span> <span class="n">initiates</span> <span class="n">transfer</span> <span class="n">to</span> <span class="n">Supervisor</span>
+<span class="o">+--------+</span>       <span class="o">+---------+</span>       <span class="o">+--------+</span>
+<span class="o">|</span> <span class="n">Caller</span> <span class="o">|&lt;-----&gt;|</span> <span class="n">VoIPBIN</span> <span class="o">|</span>       <span class="o">|</span> <span class="n">Agent</span>  <span class="o">|</span> <span class="p">(</span><span class="n">on</span> <span class="n">hold</span><span class="p">)</span>
+<span class="o">+--------+</span>       <span class="o">+----+----+</span>       <span class="o">+--------+</span>
+                      <span class="o">|</span>
+                      <span class="o">+-----------&gt;</span> <span class="o">+------------+</span>
+                      <span class="o">|</span>            <span class="o">|</span> <span class="n">Supervisor</span> <span class="o">|</span> <span class="p">(</span><span class="n">ringing</span><span class="p">)</span>
+                 <span class="n">Chained</span> <span class="n">Call</span>      <span class="o">+------------+</span>
 
-Step 3: Supervisor answers, Agent drops
-┌────────┐       ┌─────────┐       ┌────────────┐
-│ Caller │◀─────▶│ VoIPBIN │◀─────▶│ Supervisor │
-└────────┘       └─────────┘       └────────────┘
+<span class="n">Step</span> <span class="mi">3</span><span class="p">:</span> <span class="n">Supervisor</span> <span class="n">answers</span><span class="p">,</span> <span class="n">Agent</span> <span class="n">drops</span>
+<span class="o">+--------+</span>       <span class="o">+---------+</span>       <span class="o">+------------+</span>
+<span class="o">|</span> <span class="n">Caller</span> <span class="o">|&lt;-----&gt;|</span> <span class="n">VoIPBIN</span> <span class="o">|&lt;-----&gt;|</span> <span class="n">Supervisor</span> <span class="o">|</span>
+<span class="o">+--------+</span>       <span class="o">+---------+</span>       <span class="o">+------------+</span>
 </pre></div>
 </div>
 </section>
 <section id="timestamps-explained">
 <h2>Timestamps Explained<a class="headerlink" href="#timestamps-explained" title="Link to this heading"></a></h2>
 <p>Each call tracks important moments in its lifecycle:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Timeline of a successful call:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Timeline</span> <span class="n">of</span> <span class="n">a</span> <span class="n">successful</span> <span class="n">call</span><span class="p">:</span>
 
-│ tm_create                    tm_ringing          tm_progressing              tm_hangup
-│     │                            │                    │                          │
-▼     ▼                            ▼                    ▼                          ▼
-──────●────────────────────────────●────────────────────●──────────────────────────●──────▶
-      │                            │                    │                          │
-      │◀─── dialing ──────────────▶│◀─── ringing ──────▶│◀──── progressing ───────▶│
-      │                            │                    │                          │
-   Call created              Phone started           Call answered            Call ended
-                               ringing
+<span class="o">|</span> <span class="n">tm_create</span>                    <span class="n">tm_ringing</span>          <span class="n">tm_progressing</span>              <span class="n">tm_hangup</span>
+<span class="o">|</span>     <span class="o">|</span>                            <span class="o">|</span>                    <span class="o">|</span>                          <span class="o">|</span>
+<span class="n">v</span>     <span class="n">v</span>                            <span class="n">v</span>                    <span class="n">v</span>                          <span class="n">v</span>
+<span class="o">------</span><span class="n">o</span><span class="o">----------------------------</span><span class="n">o</span><span class="o">--------------------</span><span class="n">o</span><span class="o">--------------------------</span><span class="n">o</span><span class="o">------&gt;</span>
+      <span class="o">|</span>                            <span class="o">|</span>                    <span class="o">|</span>                          <span class="o">|</span>
+      <span class="o">|&lt;---</span> <span class="n">dialing</span> <span class="o">--------------&gt;|&lt;---</span> <span class="n">ringing</span> <span class="o">------&gt;|&lt;----</span> <span class="n">progressing</span> <span class="o">-------&gt;|</span>
+      <span class="o">|</span>                            <span class="o">|</span>                    <span class="o">|</span>                          <span class="o">|</span>
+   <span class="n">Call</span> <span class="n">created</span>              <span class="n">Phone</span> <span class="n">started</span>           <span class="n">Call</span> <span class="n">answered</span>            <span class="n">Call</span> <span class="n">ended</span>
+                               <span class="n">ringing</span>
 </pre></div>
 </div>
 <table class="docutils align-default">
@@ -538,39 +538,39 @@ Step 3: Supervisor answers, Agent drops
 <section id="route-failover">
 <h2>Route Failover<a class="headerlink" href="#route-failover" title="Link to this heading"></a></h2>
 <p>When an outgoing call fails during dialing or ringing, VoIPBIN can automatically try alternate routes.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────┐
-│                       Call Attempt Flow                          │
-└─────────────────────────────────────────────────────────────────┘
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>+-----------------------------------------------------------------+
+|                       Call Attempt Flow                         |
++-----------------------------------------------------------------+
 
                           Create Call
-                               │
-                               ▼
-                       ┌──────────────┐
-                       │   Route 1    │
-                       │  (Primary)   │
-                       └──────┬───────┘
-                              │
-                      ┌───────┴───────┐
-                      ▼               ▼
+                               |
+                               v
+                       +--------------+
+                       |   Route 1    |
+                       |  (Primary)   |
+                       +------+-------+
+                              |
+                      +-------+-------+
+                      v               v
                  Connected?       Failed?
-                      │               │
-                      ▼               ▼
-                  Success      ┌──────────────┐
-                               │   Route 2    │
-                               │  (Backup)    │
-                               └──────┬───────┘
-                                      │
-                              ┌───────┴───────┐
-                              ▼               ▼
+                      |               |
+                      v               v
+                  Success      +--------------+
+                               |   Route 2    |
+                               |  (Backup)    |
+                               +------+-------+
+                                      |
+                              +-------+-------+
+                              v               v
                          Connected?       Failed?
-                              │               │
-                              ▼               ▼
-                          Success      ┌──────────────┐
-                                       │   Route 3    │
-                                       │  (Last try)  │
-                                       └──────┬───────┘
-                                              │
-                                              ▼
+                              |               |
+                              v               v
+                          Success      +--------------+
+                                       |   Route 3    |
+                                       |  (Last try)  |
+                                       +------+-------+
+                                              |
+                                              v
                                         Final Result
 </pre></div>
 </div>
@@ -622,20 +622,20 @@ When an incoming call is received, the VoIPBIN system processes the call request
 <section id="execution-of-call-flow-for-incoming-call">
 <h2>Execution of Call Flow for incoming call<a class="headerlink" href="#execution-of-call-flow-for-incoming-call" title="Link to this heading"></a></h2>
 <p>The execution of the call flow for incoming calls involves a simple yet effective sequence of actions:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>External Caller                VoIPBIN                    Your Flow
-      │                           │                           │
-      │  INVITE (call request)    │                           │
-      │──────────────────────────▶│                           │
-      │                           │  Lookup destination       │
-      │                           │  Find matching flow       │
-      │                           │                           │
-      │  100 Trying               │                           │
-      │◀──────────────────────────│                           │
-      │                           │  Execute flow actions     │
-      │                           │──────────────────────────▶│
-      │  180 Ringing / 200 OK     │                           │
-      │◀──────────────────────────│◀──────────────────────────│
-      │                           │                           │
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">External</span> <span class="n">Caller</span>                <span class="n">VoIPBIN</span>                    <span class="n">Your</span> <span class="n">Flow</span>
+      <span class="o">|</span>                           <span class="o">|</span>                           <span class="o">|</span>
+      <span class="o">|</span>  <span class="n">INVITE</span> <span class="p">(</span><span class="n">call</span> <span class="n">request</span><span class="p">)</span>    <span class="o">|</span>                           <span class="o">|</span>
+      <span class="o">+--------------------------&gt;|</span>                           <span class="o">|</span>
+      <span class="o">|</span>                           <span class="o">|</span>  <span class="n">Lookup</span> <span class="n">destination</span>       <span class="o">|</span>
+      <span class="o">|</span>                           <span class="o">|</span>  <span class="n">Find</span> <span class="n">matching</span> <span class="n">flow</span>       <span class="o">|</span>
+      <span class="o">|</span>                           <span class="o">|</span>                           <span class="o">|</span>
+      <span class="o">|</span>  <span class="mi">100</span> <span class="n">Trying</span>               <span class="o">|</span>                           <span class="o">|</span>
+      <span class="o">|&lt;--------------------------+</span>                           <span class="o">|</span>
+      <span class="o">|</span>                           <span class="o">|</span>  <span class="n">Execute</span> <span class="n">flow</span> <span class="n">actions</span>     <span class="o">|</span>
+      <span class="o">|</span>                           <span class="o">+--------------------------&gt;|</span>
+      <span class="o">|</span>  <span class="mi">180</span> <span class="n">Ringing</span> <span class="o">/</span> <span class="mi">200</span> <span class="n">OK</span>     <span class="o">|</span>                           <span class="o">|</span>
+      <span class="o">|&lt;--------------------------+&lt;--------------------------+</span>
+      <span class="o">|</span>                           <span class="o">|</span>                           <span class="o">|</span>
 </pre></div>
 </div>
 <ul class="simple">
@@ -655,23 +655,23 @@ To utilize the outgoing call feature, users need to provide the necessary call p
 <section id="execution-of-call-flow-for-outgoing-call">
 <h2>Execution of Call Flow for outgoing call<a class="headerlink" href="#execution-of-call-flow-for-outgoing-call" title="Link to this heading"></a></h2>
 <p>Once the outgoing call request is initiated, the VoIPBIN system starts the process of connecting to the destination phone number. During this phase, the system waits for the called party to answer the call. The call flow refers to the sequence of actions and events that occur from the moment the call is initiated until it is successfully answered or terminated.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Your Application               VoIPBIN                    Destination
-      │                           │                           │
-      │  POST /v1/calls           │                           │
-      │  (with flow actions)      │                           │
-      │──────────────────────────▶│                           │
-      │                           │  INVITE                   │
-      │                           │──────────────────────────▶│
-      │  Call created             │                           │
-      │  status: &quot;dialing&quot;        │  180 Ringing              │
-      │◀──────────────────────────│◀──────────────────────────│
-      │                           │                           │
-      │  Webhook: &quot;ringing&quot;       │  200 OK (answered)        │
-      │◀──────────────────────────│◀──────────────────────────│
-      │                           │                           │
-      │  Webhook: &quot;progressing&quot;   │  ◀═══════════════════▶    │
-      │◀──────────────────────────│  Execute flow actions     │
-      │                           │                           │
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Your</span> <span class="n">Application</span>               <span class="n">VoIPBIN</span>                    <span class="n">Destination</span>
+      <span class="o">|</span>                           <span class="o">|</span>                           <span class="o">|</span>
+      <span class="o">|</span>  <span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span>           <span class="o">|</span>                           <span class="o">|</span>
+      <span class="o">|</span>  <span class="p">(</span><span class="k">with</span> <span class="n">flow</span> <span class="n">actions</span><span class="p">)</span>      <span class="o">|</span>                           <span class="o">|</span>
+      <span class="o">+--------------------------&gt;|</span>                           <span class="o">|</span>
+      <span class="o">|</span>                           <span class="o">|</span>  <span class="n">INVITE</span>                   <span class="o">|</span>
+      <span class="o">|</span>                           <span class="o">+--------------------------&gt;|</span>
+      <span class="o">|</span>  <span class="n">Call</span> <span class="n">created</span>             <span class="o">|</span>                           <span class="o">|</span>
+      <span class="o">|</span>  <span class="n">status</span><span class="p">:</span> <span class="s2">&quot;dialing&quot;</span>        <span class="o">|</span>  <span class="mi">180</span> <span class="n">Ringing</span>              <span class="o">|</span>
+      <span class="o">|&lt;--------------------------+&lt;--------------------------+</span>
+      <span class="o">|</span>                           <span class="o">|</span>                           <span class="o">|</span>
+      <span class="o">|</span>  <span class="n">Webhook</span><span class="p">:</span> <span class="s2">&quot;ringing&quot;</span>       <span class="o">|</span>  <span class="mi">200</span> <span class="n">OK</span> <span class="p">(</span><span class="n">answered</span><span class="p">)</span>        <span class="o">|</span>
+      <span class="o">|&lt;--------------------------+&lt;--------------------------+</span>
+      <span class="o">|</span>                           <span class="o">|</span>                           <span class="o">|</span>
+      <span class="o">|</span>  <span class="n">Webhook</span><span class="p">:</span> <span class="s2">&quot;progressing&quot;</span>   <span class="o">|</span>  <span class="o">&lt;=====================&gt;</span>  <span class="o">|</span>
+      <span class="o">|&lt;--------------------------+</span>  <span class="n">Execute</span> <span class="n">flow</span> <span class="n">actions</span>     <span class="o">|</span>
+      <span class="o">|</span>                           <span class="o">|</span>                           <span class="o">|</span>
 </pre></div>
 </div>
 <p>The call flow execution occurs as follows:</p>

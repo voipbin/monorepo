@@ -15,39 +15,39 @@ Every agent has a status that reflects their current availability. The status de
 
 ::
 
-    ┌─────────────────────────────────────────────────────────────────────────┐
-    │                         Agent Status States                              │
-    └─────────────────────────────────────────────────────────────────────────┘
+    +-----------------------------------------------------------------------------+
+    |                         Agent Status States                              |
+    +-----------------------------------------------------------------------------+
 
-                      ┌───────────────────────────────────────────┐
-                      │              User Actions                  │
-                      │   (Agent manually changes their status)    │
-                      └───────────────────┬───────────────────────┘
-                                          │
-              ┌───────────────────────────┼───────────────────────────┐
-              │                           │                           │
-              ▼                           ▼                           ▼
-        ┌───────────┐              ┌───────────┐              ┌───────────┐
-        │ available │              │   away    │              │  offline  │
-        │ (ready)   │              │ (break)   │              │(logged out)│
-        └─────┬─────┘              └───────────┘              └───────────┘
-              │
-              │ Call routed to agent
-              ▼
-        ┌───────────┐
-        │  ringing  │
-        │ (incoming)│
-        └─────┬─────┘
-              │
-              │ Agent answers
-              ▼
-        ┌───────────┐
-        │   busy    │
-        │ (on call) │
-        └─────┬─────┘
-              │
-              │ Call ends
-              ▼
+                      +-------------------------------------------+
+                      |              User Actions                  |
+                      |   (Agent manually changes their status)    |
+                      +---------------------+---------------------+
+                                          |
+              +---------------------------+---------------------------+
+              |                           |                           |
+              v                           v                           v
+        +-----------+              +-----------+              +-----------+
+        | available |              |   away    |              |  offline  |
+        | (ready)   |              | (break)   |              |(logged out)|
+        +-----+-----+              +-----------+              +-----------+
+              |
+              | Call routed to agent
+              v
+        +-----------+
+        |  ringing  |
+        | (incoming)|
+        +-----+-----+
+              |
+              | Agent answers
+              v
+        +-----------+
+        |   busy    |
+        | (on call) |
+        +-----+-----+
+              |
+              | Call ends
+              v
         (returns to previous status)
 
 **Status Descriptions**
@@ -72,26 +72,26 @@ Every agent has a status that reflects their current availability. The status de
 ::
 
     Manual transitions (agent controls):
-    ┌───────────┐ ◀────────────────────────────────▶ ┌───────────┐
-    │ available │          User changes status       │   away    │
-    └───────────┘ ◀────────────────────────────────▶ └───────────┘
-          ▲                                                ▲
-          │              User logs in/out                  │
-          ▼                                                ▼
-    ┌───────────┐ ◀────────────────────────────────▶ ┌───────────┐
-    │  offline  │                                    │  offline  │
-    └───────────┘                                    └───────────┘
+    +-----------+ <--------------------------------> +-----------+
+    | available |          User changes status       |   away    |
+    +-----------+ <--------------------------------> +-----------+
+          ^                                                ^
+          |              User logs in/out                  |
+          v                                                v
+    +-----------+ <--------------------------------> +-----------+
+    |  offline  |                                    |  offline  |
+    +-----------+                                    +-----------+
 
     Automatic transitions (system controls):
-    ┌───────────┐        Call routed         ┌───────────┐
-    │ available │───────────────────────────▶│  ringing  │
-    └───────────┘                            └─────┬─────┘
-          ▲                                        │
-          │ Call ends                              │ Agent answers
-          │ (or timeout)                           ▼
-          │                                  ┌───────────┐
-          └──────────────────────────────────│   busy    │
-                                             └───────────┘
+    +-----------+        Call routed         +-----------+
+    | available |--------------------------->|  ringing  |
+    +-----------+                            +-----+-----+
+          ^                                        |
+          | Call ends                              | Agent answers
+          | (or timeout)                           v
+          |                                  +-----------+
+          +----------------------------------|   busy    |
+                                             +-----------+
 
 
 Agent Tags (Skills)
@@ -102,27 +102,27 @@ Tags define what skills or groups an agent belongs to. They're used for skill-ba
 
 ::
 
-    ┌─────────────────────────────────────────────────────────────────────────┐
-    │                         Skill-Based Routing                              │
-    └─────────────────────────────────────────────────────────────────────────┘
+    +-----------------------------------------------------------------------------+
+    |                         Skill-Based Routing                              |
+    +-----------------------------------------------------------------------------+
 
     Agent Tags:                              Queue Requirements:
-    ┌─────────────────────────┐             ┌─────────────────────────┐
-    │ Agent Smith             │             │ Support Queue           │
-    │ Tags:                   │             │ Required Tags:          │
-    │  • english              │             │  • english              │
-    │  • billing              │             │  • billing              │
-    │  • vip_support          │             └─────────────────────────┘
-    └─────────────────────────┘                        │
-              │                                        │
-              └────────────────────┬───────────────────┘
-                                   │
-                                   ▼
-                          ┌───────────────────┐
-                          │ Agent Smith has   │
-                          │ ALL required tags │
-                          │ → Eligible!       │
-                          └───────────────────┘
+    +-------------------------+             +-------------------------+
+    | Agent Smith             |             | Support Queue           |
+    | Tags:                   |             | Required Tags:          |
+    |  o english              |             |  o english              |
+    |  o billing              |             |  o billing              |
+    |  o vip_support          |             +-------------------------+
+    +-------------------------+                        |
+              |                                        |
+              +--------------------+-------------------+
+                                   |
+                                   v
+                          +-------------------+
+                          | Agent Smith has   |
+                          | ALL required tags |
+                          | -> Eligible!       |
+                          +-------------------+
 
 **Tag Matching Rules**
 
@@ -133,17 +133,17 @@ Tags define what skills or groups an agent belongs to. They're used for skill-ba
 ::
 
     Example Tag Structure:
-    ┌─────────────────────────────────────────────────────────────────────────┐
-    │                                                                          │
-    │  Language Tags:     english, spanish, french, german                    │
-    │                                                                          │
-    │  Skill Tags:        billing, tech_support, sales, returns               │
-    │                                                                          │
-    │  Tier Tags:         tier1, tier2, supervisor, manager                   │
-    │                                                                          │
-    │  Department Tags:   customer_service, operations, hr                    │
-    │                                                                          │
-    └─────────────────────────────────────────────────────────────────────────┘
+    +-----------------------------------------------------------------------------+
+    |                                                                          |
+    |  Language Tags:     english, spanish, french, german                    |
+    |                                                                          |
+    |  Skill Tags:        billing, tech_support, sales, returns               |
+    |                                                                          |
+    |  Tier Tags:         tier1, tier2, supervisor, manager                   |
+    |                                                                          |
+    |  Department Tags:   customer_service, operations, hr                    |
+    |                                                                          |
+    +-----------------------------------------------------------------------------+
 
 **Managing Agent Tags**
 
@@ -170,24 +170,24 @@ Each agent can have multiple contact addresses - these are the endpoints where c
 
 ::
 
-    ┌─────────────────────────────────────────────────────────────────────────┐
-    │                        Agent Contact Addresses                           │
-    └─────────────────────────────────────────────────────────────────────────┘
+    +-----------------------------------------------------------------------------+
+    |                        Agent Contact Addresses                           |
+    +-----------------------------------------------------------------------------+
 
     Agent: John Smith
-    ┌─────────────────────────────────────────────────────────────────────────┐
-    │ Addresses:                                                               │
-    │                                                                          │
-    │  1. Extension: 1001                                                     │
-    │     → Rings desk phone registered to extension 1001                     │
-    │                                                                          │
-    │  2. Tel: +14155551234                                                   │
-    │     → Rings mobile phone at this number                                 │
-    │                                                                          │
-    │  3. SIP: john@company.com                                               │
-    │     → Rings SIP softphone client                                        │
-    │                                                                          │
-    └─────────────────────────────────────────────────────────────────────────┘
+    +-----------------------------------------------------------------------------+
+    | Addresses:                                                               |
+    |                                                                          |
+    |  1. Extension: 1001                                                     |
+    |     -> Rings desk phone registered to extension 1001                     |
+    |                                                                          |
+    |  2. Tel: +14155551234                                                   |
+    |     -> Rings mobile phone at this number                                 |
+    |                                                                          |
+    |  3. SIP: john@company.com                                               |
+    |     -> Rings SIP softphone client                                        |
+    |                                                                          |
+    +-----------------------------------------------------------------------------+
 
 +------------+----------------------------------------------------------------+
 | Type       | Description                                                    |
@@ -218,34 +218,34 @@ To reach an agent, VoIPBIN employs a system that allows the agent to have multip
 
 ::
 
-    ┌─────────────────────────────────────────────────────────────────────────┐
-    │                      Agent with Multiple Addresses                       │
-    └─────────────────────────────────────────────────────────────────────────┘
+    +-----------------------------------------------------------------------------+
+    |                      Agent with Multiple Addresses                       |
+    +-----------------------------------------------------------------------------+
 
     Queue finds Agent Smith (available)
-                   │
-                   ▼
-    ┌──────────────────────────────┐
-    │  Ring ALL addresses at once  │
-    └──────────────────────────────┘
-                   │
-         ┌─────────┼─────────┐
-         ▼         ▼         ▼
-    ┌─────────┐ ┌─────────┐ ┌─────────┐
-    │ Ext 1001│ │ Mobile  │ │ SIP App │
-    │  RING!  │ │  RING!  │ │  RING!  │
-    └────┬────┘ └────┬────┘ └────┬────┘
-         │          │          │
-         │          │          │ Agent answers on mobile!
-         │          │          ▼
-         │          │    ┌───────────┐
-         │          │    │ CONNECTED │
-         │          │    └───────────┘
-         │          │
-         ▼          ▼
-    ┌─────────┐ ┌─────────┐
-    │ CANCEL  │ │ CANCEL  │  ← Other calls automatically cancelled
-    └─────────┘ └─────────┘
+                   |
+                   v
+    +------------------------------+
+    |  Ring ALL addresses at once  |
+    +------------------------------+
+                   |
+         +---------+---------+
+         v         v         v
+    +---------+ +---------+ +---------+
+    | Ext 1001| | Mobile  | | SIP App |
+    |  RING!  | |  RING!  | |  RING!  |
+    +----+----+ +----+----+ +----+----+
+         |          |          |
+         |          |          | Agent answers on mobile!
+         |          |          v
+         |          |    +-----------+
+         |          |    | CONNECTED |
+         |          |    +-----------+
+         |          |
+         v          v
+    +---------+ +---------+
+    | CANCEL  | | CANCEL  |  <- Other calls automatically cancelled
+    +---------+ +---------+
 
 .. image:: _static/images/agent_call.png
 
@@ -260,66 +260,66 @@ Understanding the agent lifecycle helps you manage your call center effectively.
 
 ::
 
-    ┌─────────────────────────────────────────────────────────────────────────┐
-    │                         Agent Creation                                   │
-    └─────────────────────────────────────────────────────────────────────────┘
+    +-----------------------------------------------------------------------------+
+    |                         Agent Creation                                   |
+    +-----------------------------------------------------------------------------+
 
     POST /v1/agents
-    ┌───────────────────────────────────────┐
-    │ {                                     │
-    │   "username": "john@company.com",     │
-    │   "password": "secure_password",      │
-    │   "name": "John Smith",               │
-    │   "tag_ids": [...],                   │
-    │   "addresses": [...]                  │
-    │ }                                     │
-    └───────────────────────────────────────┘
-                     │
-                     ▼
-    ┌───────────────────────────────────────┐
-    │ Agent Created                         │
-    │ • Status: offline (default)           │
-    │ • Permission: user (default)          │
-    │ • Ready to be configured              │
-    └───────────────────────────────────────┘
+    +---------------------------------------+
+    | {                                     |
+    |   "username": "john@company.com",     |
+    |   "password": "secure_password",      |
+    |   "name": "John Smith",               |
+    |   "tag_ids": [...],                   |
+    |   "addresses": [...]                  |
+    | }                                     |
+    +---------------------------------------+
+                     |
+                     v
+    +---------------------------------------+
+    | Agent Created                         |
+    | o Status: offline (default)           |
+    | o Permission: user (default)          |
+    | o Ready to be configured              |
+    +---------------------------------------+
 
 **Agent Login Flow**
 
 ::
 
-    ┌─────────────────────────────────────────────────────────────────────────┐
-    │                          Agent Login                                     │
-    └─────────────────────────────────────────────────────────────────────────┘
+    +-----------------------------------------------------------------------------+
+    |                          Agent Login                                     |
+    +-----------------------------------------------------------------------------+
 
     1. Agent calls login API
        POST /v1/login
        { "username": "...", "password": "..." }
-              │
-              ▼
+              |
+              v
     2. System validates credentials
-       ┌────────────────┐
-       │ Check password │
-       │ hash in DB     │
-       └────────────────┘
-              │
-              ▼
+       +----------------+
+       | Check password |
+       | hash in DB     |
+       +----------------+
+              |
+              v
     3. Return agent info
-       ┌────────────────────────────────────┐
-       │ {                                  │
-       │   "id": "agent-uuid",              │
-       │   "name": "John Smith",            │
-       │   "status": "offline",             │
-       │   "permission": "user",            │
-       │   ...                              │
-       │ }                                  │
-       └────────────────────────────────────┘
-              │
-              ▼
+       +------------------------------------+
+       | {                                  |
+       |   "id": "agent-uuid",              |
+       |   "name": "John Smith",            |
+       |   "status": "offline",             |
+       |   "permission": "user",            |
+       |   ...                              |
+       | }                                  |
+       +------------------------------------+
+              |
+              v
     4. Agent sets status to "available"
        PUT /v1/agents/{id}/status
        { "status": "available" }
-              │
-              ▼
+              |
+              v
     5. Agent is now ready to receive calls!
 
 **Guest Agent**
@@ -328,15 +328,15 @@ Every customer account automatically has a guest agent created:
 
 ::
 
-    ┌─────────────────────────────────────────────────────────────────────────┐
-    │                          Guest Agent                                     │
-    └─────────────────────────────────────────────────────────────────────────┘
+    +-----------------------------------------------------------------------------+
+    |                          Guest Agent                                     |
+    +-----------------------------------------------------------------------------+
 
-    • Created automatically when customer account is created
-    • Has admin permissions
-    • Cannot be deleted
-    • Cannot have password changed
-    • Ensures account always has at least one admin
+    o Created automatically when customer account is created
+    o Has admin permissions
+    o Cannot be deleted
+    o Cannot have password changed
+    o Ensures account always has at least one admin
 
 
 How Agents Receive Queue Calls
@@ -345,52 +345,52 @@ The complete flow of how a call is routed from a queue to an agent:
 
 ::
 
-    ┌─────────────────────────────────────────────────────────────────────────┐
-    │                    Queue to Agent Call Flow                              │
-    └─────────────────────────────────────────────────────────────────────────┘
+    +-----------------------------------------------------------------------------+
+    |                    Queue to Agent Call Flow                              |
+    +-----------------------------------------------------------------------------+
 
     Step 1: Call waiting in queue
-    ┌──────────────────────┐
-    │ Queuecall: waiting   │
-    │ Queue: Support       │
-    │ Required tags:       │
-    │  • english           │
-    │  • billing           │
-    └──────────┬───────────┘
-               │
-               ▼
+    +----------------------+
+    | Queuecall: waiting   |
+    | Queue: Support       |
+    | Required tags:       |
+    |  o english           |
+    |  o billing           |
+    +----------+-----------+
+               |
+               v
     Step 2: Queue searches for agents
-    ┌──────────────────────────────────────────────────────────────────────┐
-    │ SELECT agents WHERE:                                                  │
-    │   • customer_id = queue's customer_id                                │
-    │   • status = 'available'                                             │
-    │   • has ALL required tags (english AND billing)                      │
-    └──────────────────────────────────────────────────────────────────────┘
-               │
-               ▼
+    +----------------------------------------------------------------------+
+    | SELECT agents WHERE:                                                  |
+    |   o customer_id = queue's customer_id                                |
+    |   o status = 'available'                                             |
+    |   o has ALL required tags (english AND billing)                      |
+    +----------------------------------------------------------------------+
+               |
+               v
     Step 3: Select one agent (random)
-    ┌──────────────────────────────────────────────────────────────────────┐
-    │ Found: Agent A, Agent C, Agent E                                      │
-    │ Selected: Agent C (random)                                            │
-    └──────────────────────────────────────────────────────────────────────┘
-               │
-               ▼
+    +----------------------------------------------------------------------+
+    | Found: Agent A, Agent C, Agent E                                      |
+    | Selected: Agent C (random)                                            |
+    +----------------------------------------------------------------------+
+               |
+               v
     Step 4: Route call to agent
-    ┌──────────────────────┐
-    │ Agent C status:      │
-    │ available → ringing  │
-    └──────────┬───────────┘
-               │
-               │ Agent's phones ring
-               ▼
+    +----------------------+
+    | Agent C status:      |
+    | available -> ringing  |
+    +----------+-----------+
+               |
+               | Agent's phones ring
+               v
     Step 5: Agent answers
-    ┌──────────────────────┐
-    │ Agent C status:      │
-    │ ringing → busy       │
-    │                      │
-    │ Queuecall status:    │
-    │ waiting → service    │
-    └──────────────────────┘
+    +----------------------+
+    | Agent C status:      |
+    | ringing -> busy       |
+    |                      |
+    | Queuecall status:    |
+    | waiting -> service    |
+    +----------------------+
 
 
 Status Events and Webhooks
@@ -399,25 +399,25 @@ Agent status changes trigger events that you can subscribe to:
 
 ::
 
-    ┌─────────────────────────────────────────────────────────────────────────┐
-    │                      Agent Status Events                                 │
-    └─────────────────────────────────────────────────────────────────────────┘
+    +-----------------------------------------------------------------------------+
+    |                      Agent Status Events                                 |
+    +-----------------------------------------------------------------------------+
 
     Agent changes status
-           │
-           ▼
-    ┌──────────────────────┐
-    │ agent_status_updated │
-    │ event generated      │
-    └──────────┬───────────┘
-               │
-               ├─────────────────────────────────────────┐
-               │                                         │
-               ▼                                         ▼
-    ┌──────────────────────┐              ┌──────────────────────┐
-    │ Webhook notification │              │ Internal event       │
-    │ to your endpoint     │              │ (other services)     │
-    └──────────────────────┘              └──────────────────────┘
+           |
+           v
+    +----------------------+
+    | agent_status_updated |
+    | event generated      |
+    +----------+-----------+
+               |
+               +-----------------------------------------+
+               |                                         |
+               v                                         v
+    +----------------------+              +----------------------+
+    | Webhook notification |              | Internal event       |
+    | to your endpoint     |              | (other services)     |
+    +----------------------+              +----------------------+
 
 **Example Webhook Payload**
 
@@ -443,27 +443,27 @@ In the VoIPBIN ecosystem, permissions play a crucial role in governing the actio
 
 ::
 
-    ┌─────────────────────────────────────────────────────────────────────────┐
-    │                       Permission Hierarchy                               │
-    └─────────────────────────────────────────────────────────────────────────┘
+    +-----------------------------------------------------------------------------+
+    |                       Permission Hierarchy                               |
+    +-----------------------------------------------------------------------------+
 
-    ┌─────────────────────────────────────────────────────────────────────────┐
-    │                           ADMIN                                          │
-    │  • Full access to all APIs                                              │
-    │  • Can manage other agents                                              │
-    │  • Can view billing and account settings                                │
-    │  • Can create/delete resources                                          │
-    └─────────────────────────────────────────────────────────────────────────┘
-                                    │
-                                    │ More restricted
-                                    ▼
-    ┌─────────────────────────────────────────────────────────────────────────┐
-    │                            USER                                          │
-    │  • Can view and use assigned resources                                  │
-    │  • Can update own status                                                │
-    │  • Cannot manage other agents                                           │
-    │  • Limited administrative access                                        │
-    └─────────────────────────────────────────────────────────────────────────┘
+    +-----------------------------------------------------------------------------+
+    |                           ADMIN                                          |
+    |  o Full access to all APIs                                              |
+    |  o Can manage other agents                                              |
+    |  o Can view billing and account settings                                |
+    |  o Can create/delete resources                                          |
+    +-----------------------------------------------------------------------------+
+                                    |
+                                    | More restricted
+                                    v
+    +-----------------------------------------------------------------------------+
+    |                            USER                                          |
+    |  o Can view and use assigned resources                                  |
+    |  o Can update own status                                                |
+    |  o Cannot manage other agents                                           |
+    |  o Limited administrative access                                        |
+    +-----------------------------------------------------------------------------+
 
 VoIPBIN employs a robust permission framework to regulate access to its APIs, enhancing security and preventing unauthorized actions. Agents, representing entities interacting with the system, are assigned permissions that align with their intended functionalities.
 
@@ -482,26 +482,26 @@ Best Practices
 ::
 
     Good tag design:
-    ┌─────────────────────────────────────────┐
-    │ • Use consistent naming                 │
-    │ • Group by category (skill_, lang_)     │
-    │ • Keep tags meaningful and specific     │
-    │ • Document what each tag means          │
-    └─────────────────────────────────────────┘
+    +-----------------------------------------+
+    | o Use consistent naming                 |
+    | o Group by category (skill_, lang_)     |
+    | o Keep tags meaningful and specific     |
+    | o Document what each tag means          |
+    +-----------------------------------------+
 
 **2. Configure Multiple Addresses**
 
 ::
 
     For reliability:
-    ┌─────────────────────────────────────────┐
-    │ Agent Smith:                            │
-    │  • Primary: Extension 1001 (desk)       │
-    │  • Backup: +15551234567 (mobile)        │
-    │                                         │
-    │ → If desk phone is busy/down,           │
-    │   mobile still rings                    │
-    └─────────────────────────────────────────┘
+    +-----------------------------------------+
+    | Agent Smith:                            |
+    |  o Primary: Extension 1001 (desk)       |
+    |  o Backup: +15551234567 (mobile)        |
+    |                                         |
+    | -> If desk phone is busy/down,           |
+    |   mobile still rings                    |
+    +-----------------------------------------+
 
 **3. Monitor Agent Status**
 

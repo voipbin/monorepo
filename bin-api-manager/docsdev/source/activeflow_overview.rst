@@ -15,21 +15,21 @@ Understanding the difference between a Flow and an ActiveFlow is essential for w
 
 ::
 
-    ┌─────────────────────────────────────────────────────────────────────────┐
-    │                        Flow vs ActiveFlow                                │
-    └─────────────────────────────────────────────────────────────────────────┘
+    +-------------------------------------------------------------------------+
+    |                        Flow vs ActiveFlow                                |
+    +-------------------------------------------------------------------------+
 
     Flow (Template)                         ActiveFlow (Running Instance)
-    ┌─────────────────────────┐            ┌─────────────────────────────────┐
-    │ • Static definition     │            │ • Dynamic execution state       │
-    │ • Reusable template     │            │ • One-time instance             │
-    │ • Stored in database    │            │ • Tracks current position       │
-    │ • No execution state    │            │ • Contains variables            │
-    │                         │            │ • Linked to call/conversation   │
-    └─────────────────────────┘            └─────────────────────────────────┘
-               │                                        ▲
-               │     When triggered                     │
-               └────────────────────────────────────────┘
+    +-------------------------+            +---------------------------------+
+    | o Static definition     |            | o Dynamic execution state       |
+    | o Reusable template     |            | o One-time instance             |
+    | o Stored in database    |            | o Tracks current position       |
+    | o No execution state    |            | o Contains variables            |
+    |                         |            | o Linked to call/conversation   |
+    +-------------------------+            +---------------------------------+
+               |                                        ^
+               |     When triggered                     |
+               +----------------------------------------+
                         Creates
 
 **Analogy**: A Flow is like a recipe book. An ActiveFlow is like actually cooking that recipe - you track which step you're on, what ingredients you've used, and the current state of the dish.
@@ -37,16 +37,16 @@ Understanding the difference between a Flow and an ActiveFlow is essential for w
 ::
 
     Flow (Recipe Book)                    ActiveFlow (Cooking Session)
-    ┌────────────────────┐               ┌────────────────────────────────┐
-    │ Step 1: Answer     │               │ Step 1: Answer ✓ (done)        │
-    │ Step 2: Talk       │   ──────▶     │ Step 2: Talk ◀── current       │
-    │ Step 3: Branch     │               │ Step 3: Branch (pending)       │
-    │ Step 4: Hangup     │               │ Step 4: Hangup (pending)       │
-    └────────────────────┘               │                                │
-                                         │ Variables:                     │
-                                         │   caller_id: "+1234567890"     │
-                                         │   digits: "2"                  │
-                                         └────────────────────────────────┘
+    +--------------------+               +--------------------------------+
+    | Step 1: Answer     |               | Step 1: Answer (done)          |
+    | Step 2: Talk       |   ------>     | Step 2: Talk <-- current       |
+    | Step 3: Branch     |               | Step 3: Branch (pending)       |
+    | Step 4: Hangup     |               | Step 4: Hangup (pending)       |
+    +--------------------+               |                                |
+                                         | Variables:                     |
+                                         |   caller_id: "+1234567890"     |
+                                         |   digits: "2"                  |
+                                         +--------------------------------+
 
 
 ActiveFlow States
@@ -55,11 +55,11 @@ An activeflow has two possible states during its lifecycle:
 
 ::
 
-    ┌────────────┐                              ┌────────────┐
-    │  running   │─────────────────────────────▶│   ended    │
-    └────────────┘                              └────────────┘
-          │                                            │
-          │                                            │
+    +------------+                              +------------+
+    |  running   |----------------------------->|   ended    |
+    +------------+                              +------------+
+          |                                            |
+          |                                            |
     Actions executing                           Final state
     Cursor moving                               No more changes
     Variables updating                          History preserved
@@ -81,26 +81,26 @@ The activeflow's significance lies in its ability to manage complex workflows an
 
 ::
 
-    ┌───────────────────────────────────────────────────────────────────────┐
-    │                     ActiveFlow Execution Model                         │
-    └───────────────────────────────────────────────────────────────────────┘
+    +-----------------------------------------------------------------------+
+    |                     ActiveFlow Execution Model                         |
+    +-----------------------------------------------------------------------+
 
     Incoming Call           ActiveFlow Created            Execution Begins
-         │                        │                            │
-         ▼                        ▼                            ▼
-    ┌─────────┐              ┌─────────┐                 ┌─────────────┐
-    │  CALL   │─────────────▶│  NEW    │────────────────▶│  RUNNING    │
-    │ arrives │              │ instance│                 │  actions    │
-    └─────────┘              └─────────┘                 └──────┬──────┘
-                                  │                            │
-                                  │                            ▼
-                                  │                      ┌───────────┐
-                                  │  Variables set:      │  cursor   │
-                                  │  • reference_type    │  moves    │──┐
-                                  │  • reference_id      └───────────┘  │
-                                  │  • customer_id                      │
-                                  │  • flow_id                          │
-                                  └─────────────────────────────────────┘
+         |                        |                            |
+         v                        v                            v
+    +---------+              +---------+                 +-------------+
+    |  CALL   |------------->|  NEW    |---------------->|  RUNNING    |
+    | arrives |              | instance|                 |  actions    |
+    +---------+              +---------+                 +------+------+
+                                  |                            |
+                                  |                            v
+                                  |                      +-----------+
+                                  |  Variables set:      |  cursor   |
+                                  |  o reference_type    |  moves    |--+
+                                  |  o reference_id      +-----------+  |
+                                  |  o customer_id                      |
+                                  |  o flow_id                          |
+                                  +-------------------------------------+
 
 .. image:: _static/images/activeflow_overview_execution.png
 
@@ -112,12 +112,12 @@ The activeflow maintains a "cursor" that tracks the current position in the flow
 ::
 
     Action Array:
-    ┌─────────┐   ┌─────────┐   ┌─────────┐   ┌─────────┐   ┌─────────┐
-    │ answer  │   │  talk   │   │ digits  │   │ branch  │   │ hangup  │
-    │ index:0 │   │ index:1 │   │ index:2 │   │ index:3 │   │ index:4 │
-    └─────────┘   └─────────┘   └─────────┘   └─────────┘   └─────────┘
-                       ▲
-                       │
+    +---------+   +---------+   +---------+   +---------+   +---------+
+    | answer  |   |  talk   |   | digits  |   | branch  |   | hangup  |
+    | index:0 |   | index:1 |   | index:2 |   | index:3 |   | index:4 |
+    +---------+   +---------+   +---------+   +---------+   +---------+
+                       ^
+                       |
                     current_action (cursor is here)
 
 **Cursor Movement Rules:**
@@ -134,21 +134,21 @@ ActiveFlows use a stack-based model to handle nested flows (like queue wait flow
 
 ::
 
-    ┌─────────────────────────────────────────────────────────────────────┐
-    │                       Stack-Based Execution                          │
-    └─────────────────────────────────────────────────────────────────────┘
+    +-----------------------------------------------------------------------+
+    |                       Stack-Based Execution                            |
+    +-----------------------------------------------------------------------+
 
     Main Stack                          Nested Stack (from queue_join)
-    ┌─────────────────────┐            ┌─────────────────────────────────┐
-    │ 1. answer           │            │                                 │
-    │ 2. queue_join ══════╬═══════════▶│ wait_flow actions:              │
-    │ 3. talk "connected" │            │   • talk "Please hold..."       │
-    │ 4. hangup           │            │   • play music.mp3              │
-    └─────────────────────┘            │   • (loops until agent answers) │
-           ▲                           └─────────────────────────────────┘
-           │                                         │
-           │    When agent answers,                  │
-           └─────────────────────────────────────────┘
+    +---------------------+            +---------------------------------+
+    | 1. answer           |            |                                 |
+    | 2. queue_join ======+============> wait_flow actions:              |
+    | 3. talk "connected" |            |   o talk "Please hold..."       |
+    | 4. hangup           |            |   o play music.mp3              |
+    +---------------------+            |   o (loops until agent answers) |
+           ^                           +---------------------------------+
+           |                                         |
+           |    When agent answers,                  |
+           +-----------------------------------------+
                  return to main stack
 
 **Stack Map Structure:**
@@ -179,9 +179,9 @@ Each activeflow is linked to a reference - the entity that triggered it:
 
 ::
 
-    ┌────────────────────────────────────────────────────────────────────┐
-    │                    ActiveFlow Reference Types                       │
-    └────────────────────────────────────────────────────────────────────┘
+    +--------------------------------------------------------------------+
+    |                    ActiveFlow Reference Types                       |
+    +--------------------------------------------------------------------+
 
 +----------------+-----------------------------------------------------------+
 | Reference Type | When it's used                                            |
@@ -208,16 +208,16 @@ The reference type determines which actions are available:
 ::
 
     Reference: call                     Reference: api
-    ┌─────────────────────────┐        ┌─────────────────────────┐
-    │ ✓ answer                │        │ ✗ answer (no call)      │
-    │ ✓ talk                  │        │ ✗ talk (no media)       │
-    │ ✓ digits_receive        │        │ ✗ digits_receive        │
-    │ ✓ recording_start       │        │ ✗ recording_start       │
-    │ ✓ message_send          │        │ ✓ message_send          │
-    │ ✓ email_send            │        │ ✓ email_send            │
-    │ ✓ webhook_send          │        │ ✓ webhook_send          │
-    │ ✓ variable_set          │        │ ✓ variable_set          │
-    └─────────────────────────┘        └─────────────────────────┘
+    +-------------------------+        +-------------------------+
+    | (check) answer          |        | (x) answer (no call)    |
+    | (check) talk            |        | (x) talk (no media)     |
+    | (check) digits_receive  |        | (x) digits_receive      |
+    | (check) recording_start |        | (x) recording_start     |
+    | (check) message_send    |        | (check) message_send    |
+    | (check) email_send      |        | (check) email_send      |
+    | (check) webhook_send    |        | (check) webhook_send    |
+    | (check) variable_set    |        | (check) variable_set    |
+    +-------------------------+        +-------------------------+
 
 When an action is not available for the reference type, it is skipped and execution continues to the next action.
 
@@ -230,25 +230,25 @@ The activeflow includes essential status information that allows users to monito
 
 ::
 
-    ┌─────────────────────────────────────────────────────────────────────┐
-    │                    ActiveFlow Control Interface                      │
-    └─────────────────────────────────────────────────────────────────────┘
+    +-----------------------------------------------------------------------+
+    |                    ActiveFlow Control Interface                        |
+    +-----------------------------------------------------------------------+
 
     GET /v1/activeflows/{id}
-    ├── View current state
-    ├── See current_action
-    ├── Review executed_actions
-    └── Check variables
+    +-- View current state
+    +-- See current_action
+    +-- Review executed_actions
+    +-- Check variables
 
     POST /v1/activeflows/{id}/execute
-    ├── Resume a blocked flow
-    ├── Push new actions
-    └── Continue execution
+    +-- Resume a blocked flow
+    +-- Push new actions
+    +-- Continue execution
 
     POST /v1/activeflows/{id}/stop
-    ├── Immediately stop execution
-    ├── Status changes to "ended"
-    └── Triggers on_complete_flow if set
+    +-- Immediately stop execution
+    +-- Status changes to "ended"
+    +-- Triggers on_complete_flow if set
 
 
 Activeflow Lifecycle
@@ -257,29 +257,29 @@ The activeflow executes the actions until one of the following conditions is met
 
 ::
 
-    ┌─────────────────────────────────────────────────────────────────────┐
-    │                  ActiveFlow Termination Conditions                   │
-    └─────────────────────────────────────────────────────────────────────┘
+    +-----------------------------------------------------------------------+
+    |                  ActiveFlow Termination Conditions                     |
+    +-----------------------------------------------------------------------+
 
     Condition 1: End of Actions
-    ┌───┐   ┌───┐   ┌───┐   ┌─────────┐
-    │ 1 │──▶│ 2 │──▶│ 3 │──▶│  DONE   │  → Status: ended
-    └───┘   └───┘   └───┘   └─────────┘
+    +---+   +---+   +---+   +---------+
+    | 1 |-->| 2 |-->| 3 |-->|  DONE   |  -> Status: ended
+    +---+   +---+   +---+   +---------+
 
     Condition 2: Stop Action
-    ┌───┐   ┌───┐   ┌──────┐
-    │ 1 │──▶│ 2 │──▶│ stop │  → Status: ended
-    └───┘   └───┘   └──────┘
+    +---+   +---+   +------+
+    | 1 |-->| 2 |-->| stop |  -> Status: ended
+    +---+   +---+   +------+
 
     Condition 3: Reference Ends (e.g., call hangup)
-    ┌───┐   ┌───┐   ┌───┐
-    │ 1 │──▶│ 2 │──▶│ X │  → Call hangup → Status: ended
-    └───┘   └───┘   └───┘
+    +---+   +---+   +---+
+    | 1 |-->| 2 |-->| X |  -> Call hangup -> Status: ended
+    +---+   +---+   +---+
 
     Condition 4: API Stop Request
-    ┌───┐   ┌───┐   ┌───┐
-    │ 1 │──▶│ 2 │──▶│ 3 │  + POST /stop → Status: ended
-    └───┘   └───┘   └───┘
+    +---+   +---+   +---+
+    | 1 |-->| 2 |-->| 3 |  + POST /stop -> Status: ended
+    +---+   +---+   +---+
 
 * **Main Service Type Completion:** The activeflow continues executing flow actions until the primary service type is completed. For instance, in the case of a call service, actions will be executed until the call is hung up.
 * **Stop Action Execution:** Execution ceases if an action with the type "stop" is encountered in the flow.
@@ -292,38 +292,38 @@ Each activeflow maintains its own set of variables that persist throughout execu
 
 ::
 
-    ┌─────────────────────────────────────────────────────────────────────┐
-    │                    ActiveFlow Variable Storage                       │
-    └─────────────────────────────────────────────────────────────────────┘
+    +-----------------------------------------------------------------------+
+    |                    ActiveFlow Variable Storage                         |
+    +-----------------------------------------------------------------------+
 
     ActiveFlow: abc-123-def
-    ┌─────────────────────────────────────────────────────────────────────┐
-    │ Variables Map                                                        │
-    ├─────────────────────────────────┬───────────────────────────────────┤
-    │ voipbin.activeflow.id           │ "abc-123-def"                     │
-    │ voipbin.activeflow.reference_id │ "call-456"                        │
-    │ voipbin.call.digits             │ "2"                               │
-    │ voipbin.call.caller_id          │ "+14155551234"                    │
-    │ customer.language               │ "en-US"                           │
-    │ customer.tier                   │ "premium"                         │
-    └─────────────────────────────────┴───────────────────────────────────┘
+    +-----------------------------------------------------------------------+
+    | Variables Map                                                          |
+    +---------------------------------+-------------------------------------+
+    | voipbin.activeflow.id           | "abc-123-def"                     |
+    | voipbin.activeflow.reference_id | "call-456"                        |
+    | voipbin.call.digits             | "2"                               |
+    | voipbin.call.caller_id          | "+14155551234"                    |
+    | customer.language               | "en-US"                           |
+    | customer.tier                   | "premium"                         |
+    +---------------------------------+-------------------------------------+
 
 **Variable Lifecycle:**
 
 ::
 
     1. Created when activeflow starts (built-in variables)
-          │
-          ▼
+          |
+          v
     2. Updated by actions (digits_receive, variable_set, fetch)
-          │
-          ▼
+          |
+          v
     3. Read by actions (branch, condition_variable, talk with ${var})
-          │
-          ▼
+          |
+          v
     4. Inherited by on_complete_flow (if configured)
-          │
-          ▼
+          |
+          v
     5. Preserved in database when activeflow ends
 
 
@@ -337,20 +337,20 @@ In VoIPBIN, each action in the activeflow defines a distinct step in the service
 
 ::
 
-    ┌─────────────────────────────────────────────────────────────────────┐
-    │                    Executed Actions History                          │
-    └─────────────────────────────────────────────────────────────────────┘
+    +-----------------------------------------------------------------------+
+    |                    Executed Actions History                            |
+    +-----------------------------------------------------------------------+
 
-    Time ──────────────────────────────────────────────────────────────▶
+    Time ---------------------------------------------------------------------->
 
-    ┌──────────┐   ┌──────────┐   ┌──────────┐   ┌──────────┐
-    │ answer   │──▶│ talk     │──▶│ connect  │──▶│ message  │
-    │ 10:00:01 │   │ 10:00:02 │   │ 10:00:15 │   │ 10:00:45 │
-    └──────────┘   └──────────┘   └──────────┘   └──────────┘
-         ▼              ▼              ▼              ▼
-    ┌─────────────────────────────────────────────────────────┐
-    │              executed_actions array                      │
-    └─────────────────────────────────────────────────────────┘
+    +----------+   +----------+   +----------+   +----------+
+    | answer   |-->| talk     |-->| connect  |-->| message  |
+    | 10:00:01 |   | 10:00:02 |   | 10:00:15 |   | 10:00:45 |
+    +----------+   +----------+   +----------+   +----------+
+         v              v              v              v
+    +---------------------------------------------------------+
+    |              executed_actions array                      |
+    +---------------------------------------------------------+
 
 .. code::
 
@@ -401,20 +401,20 @@ When an activeflow ends, it can trigger another flow automatically:
 
 ::
 
-    ┌─────────────────────────────────────────────────────────────────────┐
-    │                    On Complete Flow Chain                            │
-    └─────────────────────────────────────────────────────────────────────┘
+    +-----------------------------------------------------------------------+
+    |                    On Complete Flow Chain                              |
+    +-----------------------------------------------------------------------+
 
     ActiveFlow A                             ActiveFlow B
-    ┌─────────────────────────┐             ┌─────────────────────────┐
-    │ on_complete_flow_id: B  │             │ Created automatically   │
-    │                         │             │                         │
-    │ status: "ended"         │────────────▶│ status: "running"       │
-    │                         │             │                         │
-    │ Variables:              │  inherited  │ Variables:              │
-    │   call_id: "123"        │────────────▶│   call_id: "123"        │
-    │   recording_id: "456"   │             │   recording_id: "456"   │
-    └─────────────────────────┘             └─────────────────────────┘
+    +-------------------------+             +-------------------------+
+    | on_complete_flow_id: B  |             | Created automatically   |
+    |                         |             |                         |
+    | status: "ended"         |------------>| status: "running"       |
+    |                         |             |                         |
+    | Variables:              |  inherited  | Variables:              |
+    |   call_id: "123"        |------------>|   call_id: "123"        |
+    |   recording_id: "456"   |             |   recording_id: "456"   |
+    +-------------------------+             +-------------------------+
 
 **Key Behaviors:**
 
@@ -430,24 +430,24 @@ ActiveFlows handle errors gracefully to ensure reliable execution:
 
 ::
 
-    ┌─────────────────────────────────────────────────────────────────────┐
-    │                    Error Handling Scenarios                          │
-    └─────────────────────────────────────────────────────────────────────┘
+    +-----------------------------------------------------------------------+
+    |                    Error Handling Scenarios                            |
+    +-----------------------------------------------------------------------+
 
     Scenario: Action fails
-    ┌───┐   ┌───┐   ┌─────┐   ┌───┐
-    │ 1 │──▶│ 2 │──▶│ ERR │──▶│ 4 │  (skip failed action, continue)
-    └───┘   └───┘   └─────┘   └───┘
+    +---+   +---+   +-----+   +---+
+    | 1 |-->| 2 |-->| ERR |-->| 4 |  (skip failed action, continue)
+    +---+   +---+   +-----+   +---+
 
     Scenario: Critical failure
-    ┌───┐   ┌───┐   ┌─────┐
-    │ 1 │──▶│ 2 │──▶│ ERR │  → Status: ended (flow stops)
-    └───┘   └───┘   └─────┘
+    +---+   +---+   +-----+
+    | 1 |-->| 2 |-->| ERR |  -> Status: ended (flow stops)
+    +---+   +---+   +-----+
 
     Scenario: Max iterations exceeded
-    ┌───┐   ┌───┐   ┌───┐   ┌───┐
-    │ 1 │◀─▶│ 2 │◀─▶│ 3 │◀─▶│ X │  → Infinite loop detected, stop
-    └───┘   └───┘   └───┘   └───┘
+    +---+   +---+   +---+   +---+
+    | 1 |<->| 2 |<->| 3 |<->| X |  -> Infinite loop detected, stop
+    +---+   +---+   +---+   +---+
 
 **Safety Limits:**
 
@@ -469,27 +469,27 @@ Common Use Cases
 
 ::
 
-    ┌────────────────────────────────────────────────────────────────────┐
-    │ executed_actions shows the complete journey:                        │
-    │                                                                     │
-    │ 1. answer ─▶ 2. talk "Welcome" ─▶ 3. digits "2" ─▶ 4. branch       │
-    │      ─▶ 5. talk "Support" ─▶ 6. queue_join ─▶ 7. connect agent     │
-    └────────────────────────────────────────────────────────────────────┘
+    +--------------------------------------------------------------------+
+    | executed_actions shows the complete journey:                        |
+    |                                                                     |
+    | 1. answer --> 2. talk "Welcome" --> 3. digits "2" --> 4. branch    |
+    |      --> 5. talk "Support" --> 6. queue_join --> 7. connect agent  |
+    +--------------------------------------------------------------------+
 
 **Use Case 2: Post-Call Processing**
 
 ::
 
     Call Flow ActiveFlow                After Call Work ActiveFlow
-    ┌──────────────────────┐           ┌──────────────────────────────┐
-    │ answer               │           │ fetch recording              │
-    │ talk                 │           │ ai_summarize                 │
-    │ connect to agent     │           │ webhook_send summary         │
-    │ (call ends)          │──────────▶│ email_send transcript        │
-    │                      │           │                              │
-    │ on_complete: "acw"   │           │ Inherits: recording_id,      │
-    └──────────────────────┘           │           call_id            │
-                                       └──────────────────────────────┘
+    +----------------------+           +------------------------------+
+    | answer               |           | fetch recording              |
+    | talk                 |           | ai_summarize                 |
+    | connect to agent     |           | webhook_send summary         |
+    | (call ends)          |---------->| email_send transcript        |
+    |                      |           |                              |
+    | on_complete: "acw"   |           | Inherits: recording_id,      |
+    +----------------------+           |           call_id            |
+                                       +------------------------------+
 
 **Use Case 3: Debugging Flow Execution**
 
@@ -513,4 +513,4 @@ Common Use Cases
         }
     }
 
-    → You can see exactly where the flow is and what has happened
+    -> You can see exactly where the flow is and what has happened

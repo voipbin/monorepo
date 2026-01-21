@@ -15,29 +15,29 @@ All external requests follow this general pattern:
     Complete Request Flow:
 
     Client App          API Gateway         Message Queue       Backend Service      Data Layer
-        │                   │                    │                     │                  │
-        │  HTTP Request     │                    │                     │                  │
-        ├──────────────────▶│                    │                     │                  │
-        │                   │  1. Authenticate   │                     │                  │
-        │                   │  2. Authorize      │                     │                  │
-        │                   │  3. Validate       │                     │                  │
-        │                   │                    │                     │                  │
-        │                   │  RPC Request       │                     │                  │
-        │                   ├───────────────────▶│                     │                  │
-        │                   │                    │  Dequeue            │                  │
-        │                   │                    ├────────────────────▶│                  │
-        │                   │                    │                     │  Query           │
-        │                   │                    │                     ├─────────────────▶│
-        │                   │                    │                     │                  │
-        │                   │                    │                     │  Result          │
-        │                   │                    │                     │◀─────────────────┤
-        │                   │                    │  Response           │                  │
-        │                   │                    │◀────────────────────┤                  │
-        │                   │  RPC Response      │                     │                  │
-        │                   │◀───────────────────┤                     │                  │
-        │  JSON Response    │                    │                     │                  │
-        │◀──────────────────┤                    │                     │                  │
-        │                   │                    │                     │                  │
+        |                   |                    |                     |                  |
+        |  HTTP Request     |                    |                     |                  |
+        +------------------>|                    |                     |                  |
+        |                   |  1. Authenticate   |                     |                  |
+        |                   |  2. Authorize      |                     |                  |
+        |                   |  3. Validate       |                     |                  |
+        |                   |                    |                     |                  |
+        |                   |  RPC Request       |                     |                  |
+        |                   +------------------->|                     |                  |
+        |                   |                    |  Dequeue            |                  |
+        |                   |                    +-------------------->|                  |
+        |                   |                    |                     |  Query           |
+        |                   |                    |                     +----------------->|
+        |                   |                    |                     |                  |
+        |                   |                    |                     |  Result          |
+        |                   |                    |                     |<-----------------+
+        |                   |                    |  Response           |                  |
+        |                   |                    |<--------------------+                  |
+        |                   |  RPC Response      |                     |                  |
+        |                   |<-------------------+                     |                  |
+        |  JSON Response    |                    |                     |                  |
+        |<------------------+                    |                     |                  |
+        |                   |                    |                     |                  |
 
 Flow 1: Create Call (Simple)
 -----------------------------
@@ -51,129 +51,129 @@ This flow shows how a basic call creation request flows through the system.
     1. Client Request:
 
     Client Application
-        │
-        │  POST /v1.0/calls
-        │  Authorization: Bearer eyJhbGc...
-        │  Content-Type: application/json
-        │
-        │  {
-        │    "source": {"type": "tel", "target": "+15551234567"},
-        │    "destinations": [{"type": "tel", "target": "+15559876543"}]
-        │  }
-        │
-        ▼
+        |
+        |  POST /v1.0/calls
+        |  Authorization: Bearer eyJhbGc...
+        |  Content-Type: application/json
+        |
+        |  {
+        |    "source": {"type": "tel", "target": "+15551234567"},
+        |    "destinations": [{"type": "tel", "target": "+15559876543"}]
+        |  }
+        |
+        v
 
     2. API Gateway (bin-api-manager):
 
-    ┌────────────────────────────────────────────────┐
-    │  a) Extract JWT token                          │
-    │     → token = "eyJhbGc..."                     │
-    │                                                │
-    │  b) Validate JWT signature                     │
-    │     → customer_id = "customer-123"             │
-    │     → agent_id = "agent-456"                   │
-    │                                                │
-    │  c) Check permissions                          │
-    │     → hasPermission(customer-123, "call.create")│
-    │     → ✓ Allowed                                │
-    │                                                │
-    │  d) Validate request body                      │
-    │     → Source phone valid                       │
-    │     → Destination phone valid                  │
-    │     → ✓ Valid                                  │
-    │                                                │
-    │  e) Build RPC message                          │
-    │     {                                          │
-    │       "route": "POST /v1/calls",               │
-    │       "headers": {                             │
-    │         "customer_id": "customer-123",         │
-    │         "agent_id": "agent-456"                │
-    │       },                                       │
-    │       "body": {...}                            │
-    │     }                                          │
-    │                                                │
-    │  f) Send to RabbitMQ                           │
-    │     → Queue: bin-manager.call.request          │
-    └────────────────────────────────────────────────┘
-        │
-        ▼
+    +-------------------------------------------------+
+    |  a) Extract JWT token                           |
+    |     → token = "eyJhbGc..."                      |
+    |                                                 |
+    |  b) Validate JWT signature                      |
+    |     → customer_id = "customer-123"              |
+    |     → agent_id = "agent-456"                    |
+    |                                                 |
+    |  c) Check permissions                           |
+    |     → hasPermission(customer-123, "call.create")|
+    |     → ✓ Allowed                                 |
+    |                                                 |
+    |  d) Validate request body                       |
+    |     → Source phone valid                        |
+    |     → Destination phone valid                   |
+    |     → ✓ Valid                                   |
+    |                                                 |
+    |  e) Build RPC message                           |
+    |     {                                           |
+    |       "route": "POST /v1/calls",                |
+    |       "headers": {                              |
+    |         "customer_id": "customer-123",          |
+    |         "agent_id": "agent-456"                 |
+    |       },                                        |
+    |       "body": {...}                             |
+    |     }                                           |
+    |                                                 |
+    |  f) Send to RabbitMQ                            |
+    |     → Queue: bin-manager.call.request           |
+    +-------------------------------------------------+
+        |
+        v
 
     3. RabbitMQ:
 
-    ┌────────────────────────────────────────────────┐
-    │  a) Receive message                            │
-    │     → Queue: bin-manager.call.request          │
-    │                                                │
-    │  b) Route to available consumer                │
-    │     → bin-call-manager instance 2 (of 3)       │
-    └────────────────────────────────────────────────┘
-        │
-        ▼
+    +------------------------------------------------+
+    |  a) Receive message                            |
+    |     → Queue: bin-manager.call.request          |
+    |                                                |
+    |  b) Route to available consumer                |
+    |     → bin-call-manager instance 2 (of 3)       |
+    +------------------------------------------------+
+        |
+        v
 
     4. Call Manager (bin-call-manager):
 
-    ┌─────────────────────────────────────────────────┐
-    │  a) Receive RPC message                         │
-    │     → Parse route: POST /v1/calls               │
-    │     → Extract customer_id, agent_id             │
-    │                                                 │
-    │  b) Validate business logic                     │
-    │     → Check billing balance                     │
-    │     → ✓ Sufficient funds                        │
-    │                                                 │
-    │  c) Create call record                          │
-    │     → Generate call_id = "call-789"             │
-    │     → INSERT INTO calls (...)                   │
-    │     → Status: "initiating"                      │
-    │                                                 │
-    │  d) Initiate SIP call                           │
-    │     → Send to bin-rtc-manager                   │
-    │     → Request Asterisk channel creation         │
-    │                                                 │
-    │  e) Update call status                          │
-    │     → UPDATE calls SET status='ringing' WHERE...│
-    │                                                 │
-    │  f) Publish event                               │
-    │     → Event: call.created                       │
-    │     → RabbitMQ exchange: call.events            │
-    │                                                 │
-    │  g) Build response                              │
-    │     {                                           │
-    │       "id": "call-789",                         │
-    │       "status": "ringing",                      │
-    │       "source": "+15551234567",                 │
-    │       "destination": "+15559876543",            │
-    │       "tm_create": "2026-01-20T12:00:00.000Z"   │
-    │     }                                           │
-    │                                                 │
-    │  h) Send RPC response                           │
-    │     → Reply to: reply_to queue                  │
-    └─────────────────────────────────────────────────┘
-        │
-        ▼
+    +-------------------------------------------------+
+    |  a) Receive RPC message                         |
+    |     → Parse route: POST /v1/calls               |
+    |     → Extract customer_id, agent_id             |
+    |                                                 |
+    |  b) Validate business logic                     |
+    |     → Check billing balance                     |
+    |     → ✓ Sufficient funds                        |
+    |                                                 |
+    |  c) Create call record                          |
+    |     → Generate call_id = "call-789"             |
+    |     → INSERT INTO calls (...)                   |
+    |     → Status: "initiating"                      |
+    |                                                 |
+    |  d) Initiate SIP call                           |
+    |     → Send to bin-rtc-manager                   |
+    |     → Request Asterisk channel creation         |
+    |                                                 |
+    |  e) Update call status                          |
+    |     → UPDATE calls SET status='ringing' WHERE...|
+    |                                                 |
+    |  f) Publish event                               |
+    |     → Event: call.created                       |
+    |     → RabbitMQ exchange: call.events            |
+    |                                                 |
+    |  g) Build response                              |
+    |     {                                           |
+    |       "id": "call-789",                         |
+    |       "status": "ringing",                      |
+    |       "source": "+15551234567",                 |
+    |       "destination": "+15559876543",            |
+    |       "tm_create": "2026-01-20T12:00:00.000Z"   |
+    |     }                                           |
+    |                                                 |
+    |  h) Send RPC response                           |
+    |     → Reply to: reply_to queue                  |
+    +-------------------------------------------------+
+        |
+        v
 
     5. RabbitMQ (Response):
 
-    ┌────────────────────────────────────────────────┐
-    │  a) Deliver response to API Gateway            │
-    │     → Queue: amq.gen-xyz (reply_to)            │
-    └────────────────────────────────────────────────┘
-        │
-        ▼
+    +------------------------------------------------+
+    |  a) Deliver response to API Gateway            |
+    |     → Queue: amq.gen-xyz (reply_to)            |
+    +------------------------------------------------+
+        |
+        v
 
     6. API Gateway (Response):
 
-    ┌────────────────────────────────────────────────┐
-    │  a) Receive RPC response                       │
-    │     → status_code: 200                         │
-    │     → body: {...}                              │
-    │                                                │
-    │  b) Format HTTP response                       │
-    │     → HTTP 201 Created                         │
-    │     → Content-Type: application/json           │
-    └────────────────────────────────────────────────┘
-        │
-        ▼
+    +------------------------------------------------+
+    |  a) Receive RPC response                       |
+    |     → status_code: 200                         |
+    |     → body: {...}                              |
+    |                                                |
+    |  b) Format HTTP response                       |
+    |     → HTTP 201 Created                         |
+    |     → Content-Type: application/json           |
+    +------------------------------------------------+
+        |
+        v
 
     7. Client Response:
 
@@ -193,14 +193,14 @@ This flow shows how a basic call creation request flows through the system.
 .. code::
 
     Component               Time      Cumulative
-    ─────────────────────────────────────────────
+    ---------------------------------------------
     API Gateway auth        5ms       5ms
     RabbitMQ routing        2ms       7ms
     Call Manager logic      30ms      37ms
     Database insert         8ms       45ms
     RTC Manager SIP setup   50ms      95ms
     Response routing        5ms       100ms
-    ─────────────────────────────────────────────
+    ---------------------------------------------
     Total                   100ms
 
 Flow 2: Get Call with Caching
@@ -215,49 +215,49 @@ This flow demonstrates cache-aside pattern for reading data.
     GET /v1.0/calls/call-789
     Authorization: Bearer eyJhbGc...
 
-        │
-        ▼
+        |
+        v
 
     2. API Gateway:
 
-    ┌────────────────────────────────────────────────┐
-    │  • Authenticate (5ms)                          │
-    │  • Build RPC message                           │
-    │  • Send to bin-manager.call.request            │
-    └────────────────────────────────────────────────┘
-        │
-        ▼
+    +------------------------------------------------+
+    |  • Authenticate (5ms)                          |
+    |  • Build RPC message                           |
+    |  • Send to bin-manager.call.request            |
+    +------------------------------------------------+
+        |
+        v
 
     3. Call Manager:
 
-    ┌────────────────────────────────────────────────┐
-    │  a) Check Redis cache first                    │
-    │     key = "call:call-789"                      │
-    │                                                │
-    │     GET call:call-789                          │
-    │     → Cache HIT! (90% of requests)             │
-    │     → Return cached data (2ms)                 │
-    │                                                │
-    │     OR                                         │
-    │                                                │
-    │     → Cache MISS (10% of requests)             │
-    │                                                │
-    │  b) If cache miss, query MySQL                 │
-    │     SELECT * FROM calls WHERE id='call-789'    │
-    │     → Query time: 10ms                         │
-    │                                                │
-    │  c) Store in Redis for next time               │
-    │     SET call:call-789 {...} EX 300  # 5 min    │
-    │     → Store time: 2ms                          │
-    │                                                │
-    │  d) Check authorization                        │
-    │     if call.customer_id != jwt.customer_id:    │
-    │       return 404 (not 403, for security)       │
-    │                                                │
-    │  e) Return response                            │
-    └────────────────────────────────────────────────┘
-        │
-        ▼
+    +------------------------------------------------+
+    |  a) Check Redis cache first                    |
+    |     key = "call:call-789"                      |
+    |                                                |
+    |     GET call:call-789                          |
+    |     → Cache HIT! (90% of requests)             |
+    |     → Return cached data (2ms)                 |
+    |                                                |
+    |     OR                                         |
+    |                                                |
+    |     → Cache MISS (10% of requests)             |
+    |                                                |
+    |  b) If cache miss, query MySQL                 |
+    |     SELECT * FROM calls WHERE id='call-789'    |
+    |     → Query time: 10ms                         |
+    |                                                |
+    |  c) Store in Redis for next time               |
+    |     SET call:call-789 {...} EX 300  # 5 min    |
+    |     → Store time: 2ms                          |
+    |                                                |
+    |  d) Check authorization                        |
+    |     if call.customer_id != jwt.customer_id:    |
+    |       return 404 (not 403, for security)       |
+    |                                                |
+    |  e) Return response                            |
+    +------------------------------------------------+
+        |
+        v
 
     4. Response Times:
 
@@ -285,58 +285,58 @@ This flow shows asynchronous event publishing to multiple subscribers.
 
     1. Call Answered (in bin-call-manager):
 
-    ┌────────────────────────────────────────────────┐
-    │  a) Receive SIP 200 OK from Asterisk           │
-    │     → Call answered                            │
-    │                                                │
-    │  b) Update database                            │
-    │     UPDATE calls                               │
-    │     SET status='active', tm_answer=NOW()       │
-    │     WHERE id='call-789'                        │
-    │                                                │
-    │  c) Invalidate cache                           │
-    │     DEL call:call-789                          │
-    │                                                │
-    │  d) Publish event to RabbitMQ                  │
-    │     Exchange: call.events                      │
-    │     Event: call.answered                       │
-    │     {                                          │
-    │       "event_type": "call.answered",           │
-    │       "call_id": "call-789",                   │
-    │       "timestamp": "2026-01-20T12:00:05.000Z"  │
-    │     }                                          │
-    │                                                │
-    │  e) Publish to ZeroMQ (fast path)              │
-    │     Topic: "call.state"                        │
-    │     {                                          │
-    │       "call_id": "call-789",                   │
-    │       "status": "active"                       │
-    │     }                                          │
-    └────────────────────────────────────────────────┘
-        │
-        │
-        ├──────────────────────┬──────────────────────┬──────────────────────┐
-        │                      │                      │                      │
-        ▼                      ▼                      ▼                      ▼
+    +------------------------------------------------+
+    |  a) Receive SIP 200 OK from Asterisk           |
+    |     → Call answered                            |
+    |                                                |
+    |  b) Update database                            |
+    |     UPDATE calls                               |
+    |     SET status='active', tm_answer=NOW()       |
+    |     WHERE id='call-789'                        |
+    |                                                |
+    |  c) Invalidate cache                           |
+    |     DEL call:call-789                          |
+    |                                                |
+    |  d) Publish event to RabbitMQ                  |
+    |     Exchange: call.events                      |
+    |     Event: call.answered                       |
+    |     {                                          |
+    |       "event_type": "call.answered",           |
+    |       "call_id": "call-789",                   |
+    |       "timestamp": "2026-01-20T12:00:05.000Z"  |
+    |     }                                          |
+    |                                                |
+    |  e) Publish to ZeroMQ (fast path)              |
+    |     Topic: "call.state"                        |
+    |     {                                          |
+    |       "call_id": "call-789",                   |
+    |       "status": "active"                       |
+    |     }                                          |
+    +------------------------------------------------+
+        |
+        |
+        +----------------------+----------------------+----------------------+
+        |                      |                      |                      |
+        v                      v                      v                      v
 
     2a. Billing Manager    2b. Webhook Manager   2c. Talk Manager      2d. Agent Manager
 
-    ┌────────────────┐    ┌────────────────┐    ┌────────────────┐   ┌────────────────┐
-    │ Start billing  │    │ Send webhook   │    │ Update agent   │   │ Update agent   │
-    │ for call       │    │ to customer    │    │ dashboard      │   │ stats          │
-    │                │    │ endpoint       │    │ via WebSocket  │   │                │
-    │ • Calculate    │    │                │    │                │   │ • Active calls │
-    │   charges      │    │ POST https://  │    │ {              │   │ • Talk time    │
-    │ • Create       │    │ customer.com/  │    │   "event":     │   │ • Status       │
-    │   billing      │    │ webhook        │    │   "call.       │   │                │
-    │   record       │    │                │    │   answered",   │   │                │
-    │                │    │ {              │    │   "call_id":   │   │                │
-    │ INSERT INTO    │    │   "event_type":│    │   "call-789"   │   │                │
-    │ billings       │    │   "call.       │    │ }              │   │                │
-    │ (...)          │    │   answered",   │    │                │   │                │
-    │                │    │   ...          │    │                │   │                │
-    │                │    │ }              │    │                │   │                │
-    └────────────────┘    └────────────────┘    └────────────────┘   └────────────────┘
+    +----------------+    +----------------+    +----------------+   +----------------+
+    | Start billing  |    | Send webhook   |    | Update agent   |   | Update agent   |
+    | for call       |    | to customer    |    | dashboard      |   | stats          |
+    |                |    | endpoint       |    | via WebSocket  |   |                |
+    | • Calculate    |    |                |    |                |   | • Active calls |
+    |   charges      |    | POST https://  |    | {              |   | • Talk time    |
+    | • Create       |    | customer.com/  |    |   "event":     |   | • Status       |
+    |   billing      |    | webhook        |    |   "call.       |   |                |
+    |   record       |    |                |    |   answered",   |   |                |
+    |                |    | {              |    |   "call_id":   |   |                |
+    | INSERT INTO    |    |   "event_type":|    |   "call-789"   |   |                |
+    | billings       |    |   "call.       |    | }              |   |                |
+    | (...)          |    |   answered",   |    |                |   |                |
+    |                |    |   ...          |    |                |   |                |
+    |                |    | }              |    |                |   |                |
+    +----------------+    +----------------+    +----------------+   +----------------+
 
     All subscribers process event independently and concurrently
 
@@ -350,43 +350,43 @@ This flow demonstrates a complex operation involving multiple services.
     Conference Join with Flow Execution:
 
     Client                API Gateway         Flow Manager        Conference Mgr      Call Manager
-      │                       │                    │                    │                  │
-      │  POST /conferences/   │                    │                    │                  │
-      │  conf-123/join        │                    │                    │                  │
-      ├──────────────────────▶│                    │                    │                  │
-      │                       │  Auth + RPC        │                    │                  │
-      │                       ├───────────────────▶│                    │                  │
-      │                       │                    │                    │                  │
-      │                       │                    │  1. Get Conference │                  │
-      │                       │                    ├───────────────────▶│                  │
-      │                       │                    │                    │  [conf data]     │
-      │                       │                    │◀───────────────────┤                  │
-      │                       │                    │                    │                  │
-      │                       │                    │  2. Get Flow       │                  │
-      │                       │                    │  (from conf)       │                  │
-      │                       │                    │                    │                  │
-      │                       │                    │  3. Execute Flow   │                  │
-      │                       │                    │  Actions:          │                  │
-      │                       │                    │                    │                  │
-      │                       │                    │  Action 1: Answer  │                  │
-      │                       │                    ├──────────────────────────────────────▶│
-      │                       │                    │                    │                  │
-      │                       │                    │  Action 2: Talk    │                  │
-      │                       │                    │  "Welcome to conf" │                  │
-      │                       │                    ├──────────────────────────────────────▶│
-      │                       │                    │                    │                  │
-      │                       │                    │  Action 3: Join    │                  │
-      │                       │                    │  Conference        │                  │
-      │                       │                    ├───────────────────▶│                  │
-      │                       │                    │                    │  Add participant │
-      │                       │                    │                    │  to bridge       │
-      │                       │                    │◀───────────────────┤                  │
-      │                       │                    │                    │                  │
-      │                       │  Response          │                    │                  │
-      │                       │◀───────────────────┤                    │                  │
-      │  Success              │                    │                    │                  │
-      │◀──────────────────────┤                    │                    │                  │
-      │                       │                    │                    │                  │
+      |                       |                    |                    |                  |
+      |  POST /conferences/   |                    |                    |                  |
+      |  conf-123/join        |                    |                    |                  |
+      +---------------------->|                    |                    |                  |
+      |                       |  Auth + RPC        |                    |                  |
+      |                       +------------------->|                    |                  |
+      |                       |                    |                    |                  |
+      |                       |                    |  1. Get Conference |                  |
+      |                       |                    +------------------->|                  |
+      |                       |                    |                    |  [conf data]     |
+      |                       |                    |<-------------------+                  |
+      |                       |                    |                    |                  |
+      |                       |                    |  2. Get Flow       |                  |
+      |                       |                    |  (from conf)       |                  |
+      |                       |                    |                    |                  |
+      |                       |                    |  3. Execute Flow   |                  |
+      |                       |                    |  Actions:          |                  |
+      |                       |                    |                    |                  |
+      |                       |                    |  Action 1: Answer  |                  |
+      |                       |                    +-------------------------------------->|
+      |                       |                    |                    |                  |
+      |                       |                    |  Action 2: Talk    |                  |
+      |                       |                    |  "Welcome to conf" |                  |
+      |                       |                    +-------------------------------------->|
+      |                       |                    |                    |                  |
+      |                       |                    |  Action 3: Join    |                  |
+      |                       |                    |  Conference        |                  |
+      |                       |                    +------------------->|                  |
+      |                       |                    |                    |  Add participant |
+      |                       |                    |                    |  to bridge       |
+      |                       |                    |<-------------------+                  |
+      |                       |                    |                    |                  |
+      |                       |  Response          |                    |                  |
+      |                       |<-------------------+                    |                  |
+      |  Success              |                    |                    |                  |
+      |<----------------------+                    |                    |                  |
+      |                       |                    |                    |                  |
 
     Services Involved:
     • API Gateway (authentication, routing)
@@ -414,64 +414,64 @@ This flow shows how real-time events reach clients via WebSocket.
     1. Client Subscribes:
 
     Client (Browser)        API Gateway (WebSocket)    Backend Services
-        │                           │                       │
-        │  WebSocket Connect        │                       │
-        ├──────────────────────────▶│                       │
-        │  wss://api.voipbin.net/ws │                       │
-        │  ?token=eyJhbGc...        │                       │
-        │                           │  Validate JWT         │
-        │                           │  → customer_id: 123   │
-        │                           │                       │
-        │  Subscribe                │                       │
-        │  {                        │                       │
-        │    "type": "subscribe",   │                       │
-        │    "topics": [            │                       │
-        │      "customer_id:123:    │                       │
-        │       call:*"             │                       │
-        │    ]                      │                       │
-        │  }                        │                       │
-        ├──────────────────────────▶│                       │
-        │                           │  Register             │
-        │                           │  subscription         │
-        │                           │                       │
-        │  ACK                      │                       │
-        │◀──────────────────────────┤                       │
-        │                           │                       │
+        |                           |                       |
+        |  WebSocket Connect        |                       |
+        +-------------------------->|                       |
+        |  wss://api.voipbin.net/ws |                       |
+        |  ?token=eyJhbGc...        |                       |
+        |                           |  Validate JWT         |
+        |                           |  → customer_id: 123   |
+        |                           |                       |
+        |  Subscribe                |                       |
+        |  {                        |                       |
+        |    "type": "subscribe",   |                       |
+        |    "topics": [            |                       |
+        |      "customer_id:123:    |                       |
+        |       call:*"             |                       |
+        |    ]                      |                       |
+        |  }                        |                       |
+        +-------------------------->|                       |
+        |                           |  Register             |
+        |                           |  subscription         |
+        |                           |                       |
+        |  ACK                      |                       |
+        |<--------------------------+                       |
+        |                           |                       |
 
     2. Event Occurs:
 
     Call Manager                RabbitMQ/ZMQ          API Gateway (WS)      Client
-        │                           │                       │                  │
-        │  Call status changed      │                       │                  │
-        │  (answered)               │                       │                  │
-        │                           │                       │                  │
-        │  Publish event            │                       │                  │
-        ├──────────────────────────▶│                       │                  │
-        │  {                        │                       │                  │
-        │    "event": "call.        │                       │                  │
-        │     answered",            │                       │                  │
-        │    "customer_id": "123",  │                       │                  │
-        │    "call_id": "call-789"  │                       │                  │
-        │  }                        │                       │                  │
-        │                           │                       │                  │
-        │                           │  Fanout to            │                  │
-        │                           │  subscribers          │                  │
-        │                           ├──────────────────────▶│                  │
-        │                           │                       │  Match topic     │
-        │                           │                       │  filter          │
-        │                           │                       │                  │
-        │                           │                       │  Push to client  │
-        │                           │                       ├─────────────────▶│
-        │                           │                       │                  │
-        │                           │                       │  {               │
-        │                           │                       │    "event_type": │
-        │                           │                       │    "call.        │
-        │                           │                       │    answered",    │
-        │                           │                       │    "call_id":    │
-        │                           │                       │    "call-789",   │
-        │                           │                       │    "timestamp":  │
-        │                           │                       │    "..."         │
-        │                           │                       │  }               │
+        |                           |                       |                  |
+        |  Call status changed      |                       |                  |
+        |  (answered)               |                       |                  |
+        |                           |                       |                  |
+        |  Publish event            |                       |                  |
+        +-------------------------->|                       |                  |
+        |  {                        |                       |                  |
+        |    "event": "call.        |                       |                  |
+        |     answered",            |                       |                  |
+        |    "customer_id": "123",  |                       |                  |
+        |    "call_id": "call-789"  |                       |                  |
+        |  }                        |                       |                  |
+        |                           |                       |                  |
+        |                           |  Fanout to            |                  |
+        |                           |  subscribers          |                  |
+        |                           +---------------------->|                  |
+        |                           |                       |  Match topic     |
+        |                           |                       |  filter          |
+        |                           |                       |                  |
+        |                           |                       |  Push to client  |
+        |                           |                       +----------------->|
+        |                           |                       |                  |
+        |                           |                       |  {               |
+        |                           |                       |    "event_type": |
+        |                           |                       |    "call.        |
+        |                           |                       |    answered",    |
+        |                           |                       |    "call_id":    |
+        |                           |                       |    "call-789",   |
+        |                           |                       |    "timestamp":  |
+        |                           |                       |    "..."         |
+        |                           |                       |  }               |
 
     Latency: < 100ms from event to client notification
 
@@ -487,54 +487,54 @@ This flow demonstrates error handling and retry logic.
     1. Initial Request (Fails):
 
     API Gateway         Call Manager        Database
-        │                   │                   │
-        │  RPC: Create Call │                   │
-        ├──────────────────▶│                   │
-        │                   │  INSERT INTO      │
-        │                   │  calls (...)      │
-        │                   ├──────────────────▶│
-        │                   │                   X  Connection lost
-        │                   │                   │
-        │                   │  ← Error          │
-        │                   │◀──────────────────┤
-        │                   │                   │
-        │                   │  Retry (1s delay) │
-        │                   │                   │
+        |                   |                   |
+        |  RPC: Create Call |                   |
+        +------------------>|                   |
+        |                   |  INSERT INTO      |
+        |                   |  calls (...)      |
+        |                   +------------------>|
+        |                   |                   X  Connection lost
+        |                   |                   |
+        |                   |  ← Error          |
+        |                   |<------------------+
+        |                   |                   |
+        |                   |  Retry (1s delay) |
+        |                   |                   |
 
     2. Automatic Retry (Attempt 2):
 
-        │                   │  Reconnect        │
-        │                   ├──────────────────▶│
-        │                   │                   │
-        │                   │  INSERT INTO      │
-        │                   │  calls (...)      │
-        │                   ├──────────────────▶│
-        │                   │                   ✓  Success
-        │                   │                   │
-        │                   │  Success          │
-        │                   │◀──────────────────┤
-        │                   │                   │
-        │  Success          │                   │
-        │◀──────────────────┤                   │
-        │                   │                   │
+        |                   |  Reconnect        |
+        |                   +------------------>|
+        |                   |                   |
+        |                   |  INSERT INTO      |
+        |                   |  calls (...)      |
+        |                   +------------------>|
+        |                   |                   ✓  Success
+        |                   |                   |
+        |                   |  Success          |
+        |                   |<------------------+
+        |                   |                   |
+        |  Success          |                   |
+        |<------------------+                   |
+        |                   |                   |
 
     3. Permanent Error (No Retry):
 
     API Gateway         Call Manager        Billing Manager
-        │                   │                   │
-        │  RPC: Create Call │                   │
-        ├──────────────────▶│                   │
-        │                   │  Check balance    │
-        │                   ├──────────────────▶│
-        │                   │                   │
-        │                   │  Insufficient     │
-        │                   │  balance          │
-        │                   │◀──────────────────┤
-        │                   │                   │
-        │  Error 402        │  Don't retry      │
-        │  Payment Required │  (permanent error)│
-        │◀──────────────────┤                   │
-        │                   │                   │
+        |                   |                   |
+        |  RPC: Create Call |                   |
+        +------------------>|                   |
+        |                   |  Check balance    |
+        |                   +------------------>|
+        |                   |                   |
+        |                   |  Insufficient     |
+        |                   |  balance          |
+        |                   |<------------------+
+        |                   |                   |
+        |  Error 402        |  Don't retry      |
+        |  Payment Required |  (permanent error)|
+        |<------------------+                   |
+        |                   |                   |
 
     Error Categories:
     • Transient → Retry (network, timeout, connection)
@@ -553,19 +553,19 @@ VoIPBIN optimizes flow performance through several techniques:
     Sequential vs Parallel:
 
     Sequential (Slow):           Parallel (Fast):
-    ┌──────────┐                 ┌──────────┐
-    │ Task A   │ 50ms            │ Task A   │ 50ms
-    └────┬─────┘                 └────┬─────┘
-         │                            │
-         ▼                            │
-    ┌──────────┐                      │
-    │ Task B   │ 50ms                 ├─────────────┐
-    └────┬─────┘                      │             │
-         │                            ▼             ▼
-         ▼                        ┌──────────┐ ┌──────────┐
-    ┌──────────┐                  │ Task B   │ │ Task C   │
-    │ Task C   │ 50ms             │ 50ms     │ │ 50ms     │
-    └──────────┘                  └──────────┘ └──────────┘
+    +----------+                 +----------+
+    | Task A   | 50ms            | Task A   | 50ms
+    +----+-----+                 +----+-----+
+         |                            |
+         v                            |
+    +----------+                      |
+    | Task B   | 50ms                 +-------------+
+    +----+-----+                      |             |
+         |                            v             v
+         v                        +----------+ +----------+
+    +----------+                  | Task B   | | Task C   |
+    | Task C   | 50ms             | 50ms     | | 50ms     |
+    +----------+                  +----------+ +----------+
 
     Total: 150ms                 Total: 50ms (3x faster)
 

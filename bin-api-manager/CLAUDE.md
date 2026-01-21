@@ -124,7 +124,7 @@ docsdev/
 │   ├── *_struct*.rst    # Data structure references
 │   ├── glossary.rst     # Terminology definitions
 │   └── _static/         # Images and static assets
-├── build/               # Generated HTML (gitignored)
+├── build/               # Generated HTML (committed to git)
 ├── conf.py              # Sphinx configuration
 └── Makefile             # Build commands
 ```
@@ -150,7 +150,7 @@ make html
 sphinx-build -M html source build
 ```
 
-**Output:** Generated HTML files in `build/html/` (not committed to git)
+**Output:** Generated HTML files in `build/html/` (committed to git)
 
 **View locally:**
 ```bash
@@ -185,7 +185,7 @@ xdg-open build/html/index.html  # Linux
 1. Edit RST files in `source/`
 2. Rebuild HTML: `make html`
 3. Verify changes locally in `build/html/`
-4. Only commit RST source files, not `build/` directory
+4. Commit both RST source files and `build/` directory
 
 **Recent improvements:**
 - Fixed empty `common_overview.rst` (was only "Common used.")

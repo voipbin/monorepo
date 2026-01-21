@@ -15,48 +15,48 @@ VoIPBIN consists of three major architectural layers:
 
 .. code::
 
-    ┌──────────────────────────────────────────────────────────────────┐
-    │                      Client Applications                         │
-    │  (Web Apps, Mobile Apps, Server-to-Server Integrations)          │
-    └────────────────────────┬─────────────────────────────────────────┘
-                             │ HTTPS/REST API
-                             ▼
-    ┌──────────────────────────────────────────────────────────────────┐
-    │                     API Gateway Layer                            │
-    │                    (bin-api-manager)                             │
-    │  • Authentication & Authorization                                │
-    │  • Rate Limiting & Throttling                                    │
-    │  • Request Routing & Load Balancing                              │
-    └────────────────────────┬─────────────────────────────────────────┘
-                             │ RabbitMQ RPC
-                             ▼
-    ┌──────────────────────────────────────────────────────────────────┐
-    │                  Microservices Layer                             │
-    │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐            │
-    │  │ Call Manager │  │ Flow Manager │  │  AI Manager  │            │
-    │  └──────────────┘  └──────────────┘  └──────────────┘            │
-    │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐            │
-    │  │Chat Manager  │  │ SMS Manager  │  │Queue Manager │            │
-    │  └──────────────┘  └──────────────┘  └──────────────┘            │
-    │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐            │
-    │  │Agent Manager │  │ Billing Mgr  │  │Webhook Mgr   │            │
-    │  └──────────────┘  └──────────────┘  └──────────────┘            │
-    │                    ... 30+ services                              │
-    └────────────────────────┬─────────────────────────────────────────┘
-                             │
-                             ▼
-    ┌──────────────────────────────────────────────────────────────────┐
-    │              Real-Time Communication Layer                       │
-    │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐            │
-    │  │  Kamailio    │  │   Asterisk   │  │  RTPEngine   │            │
-    │  │ (SIP Proxy)  │  │(Media Server)│  │(Media Proxy) │            │
-    │  └──────────────┘  └──────────────┘  └──────────────┘            │
-    └──────────────────────────────────────────────────────────────────┘
+    +----------------------------------------------------------------------+
+    |                      Client Applications                             |
+    |  (Web Apps, Mobile Apps, Server-to-Server Integrations)              |
+    +------------------------+---------------------------------------------+
+                             | HTTPS/REST API
+                             v
+    +----------------------------------------------------------------------+
+    |                     API Gateway Layer                                |
+    |                    (bin-api-manager)                                 |
+    |  o Authentication & Authorization                                    |
+    |  o Rate Limiting & Throttling                                        |
+    |  o Request Routing & Load Balancing                                  |
+    +------------------------+---------------------------------------------+
+                             | RabbitMQ RPC
+                             v
+    +----------------------------------------------------------------------+
+    |                  Microservices Layer                                 |
+    |  +--------------+  +--------------+  +--------------+                |
+    |  | Call Manager |  | Flow Manager |  |  AI Manager  |                |
+    |  +--------------+  +--------------+  +--------------+                |
+    |  +--------------+  +--------------+  +--------------+                |
+    |  |Chat Manager  |  | SMS Manager  |  |Queue Manager |                |
+    |  +--------------+  +--------------+  +--------------+                |
+    |  +--------------+  +--------------+  +--------------+                |
+    |  |Agent Manager |  | Billing Mgr  |  |Webhook Mgr   |                |
+    |  +--------------+  +--------------+  +--------------+                |
+    |                    ... 30+ services                                  |
+    +------------------------+---------------------------------------------+
+                             |
+                             v
+    +----------------------------------------------------------------------+
+    |              Real-Time Communication Layer                           |
+    |  +--------------+  +--------------+  +--------------+                |
+    |  |  Kamailio    |  |   Asterisk   |  |  RTPEngine   |                |
+    |  | (SIP Proxy)  |  |(Media Server)|  |(Media Proxy) |                |
+    |  +--------------+  +--------------+  +--------------+                |
+    +----------------------------------------------------------------------+
 
-    ┌──────────────────────────────────────────────────────────────────┐
-    │                  Shared Infrastructure                           │
-    │  • MySQL Database  • Redis Cache  • RabbitMQ  • Kubernetes       │
-    └──────────────────────────────────────────────────────────────────┘
+    +----------------------------------------------------------------------+
+    |                  Shared Infrastructure                               |
+    |  o MySQL Database  o Redis Cache  o RabbitMQ  o Kubernetes           |
+    +----------------------------------------------------------------------+
 
 Architectural Layers
 --------------------
@@ -111,15 +111,15 @@ VoIPBIN is designed around these key architectural principles:
 .. code::
 
     Service Isolation:
-    ┌────────────┐     ┌────────────┐     ┌────────────┐
-    │  Service A │     │  Service B │     │  Service C │
-    │            │     │            │     │            │
-    │  • Domain  │     │  • Domain  │     │  • Domain  │
-    │  • Logic   │     │  • Logic   │     │  • Logic   │
-    │  • Data    │     │  • Data    │     │  • Data    │
-    └──────┬─────┘     └──────┬─────┘     └──────┬─────┘
-           │                  │                  │
-           └──────────────────┴──────────────────┘
+    +------------+     +------------+     +------------+
+    |  Service A |     |  Service B |     |  Service C |
+    |            |     |            |     |            |
+    |  o Domain  |     |  o Domain  |     |  o Domain  |
+    |  o Logic   |     |  o Logic   |     |  o Logic   |
+    |  o Data    |     |  o Data    |     |  o Data    |
+    +------+-----+     +------+-----+     +------+-----+
+           |                  |                  |
+           +------------------+------------------+
                     Message Queue (RabbitMQ)
 
 * **Domain Isolation**: Each service owns its domain logic and data
@@ -132,18 +132,18 @@ VoIPBIN is designed around these key architectural principles:
 .. code::
 
     Event Flow:
-    ┌──────────────┐     Event        ┌──────────────┐
-    │   Service    │────────────────▶ │   Message    │
-    │  (Publisher) │                  │    Queue     │
-    └──────────────┘                  └───────┬──────┘
-                                              │
-                                              ├────────────────┐
-                                              │                │
-                                              ▼                ▼
-                                     ┌────────────┐   ┌────────────┐
-                                     │ Subscriber │   │ Subscriber │
-                                     │ Service A  │   │ Service B  │
-                                     └────────────┘   └────────────┘
+    +--------------+     Event        +--------------+
+    |   Service    |----------------> |   Message    |
+    |  (Publisher) |                  |    Queue     |
+    +--------------+                  +-------+------+
+                                              |
+                                              +----------------+
+                                              |                |
+                                              v                v
+                                     +------------+   +------------+
+                                     | Subscriber |   | Subscriber |
+                                     | Service A  |   | Service B  |
+                                     +------------+   +------------+
 
 * **Asynchronous Communication**: Services communicate via events
 * **Loose Coupling**: Publishers don't know about subscribers
@@ -157,21 +157,21 @@ VoIPBIN is designed around these key architectural principles:
     External Request Flow:
 
     Client App                  API Gateway              Backend Services
-        │                           │                           │
-        │  HTTPS/REST               │                           │
-        ├──────────────────────────▶│                           │
-        │                           │  1. Authenticate          │
-        │                           │  2. Authorize             │
-        │                           │  3. Route Request         │
-        │                           │                           │
-        │                           │  RabbitMQ RPC             │
-        │                           ├──────────────────────────▶│
-        │                           │                           │
-        │                           │  Response                 │
-        │                           │◀──────────────────────────┤
-        │  JSON Response            │                           │
-        │◀──────────────────────────┤                           │
-        │                           │                           │
+        |                           |                           |
+        |  HTTPS/REST               |                           |
+        +--------------------------->                           |
+        |                           |  1. Authenticate          |
+        |                           |  2. Authorize             |
+        |                           |  3. Route Request         |
+        |                           |                           |
+        |                           |  RabbitMQ RPC             |
+        |                           +--------------------------->
+        |                           |                           |
+        |                           |  Response                 |
+        |                           <---------------------------+
+        |  JSON Response            |                           |
+        <---------------------------+                           |
+        |                           |                           |
 
 * **Single Entry Point**: All external traffic goes through one gateway
 * **Security Layer**: Authentication and authorization at the edge
@@ -184,21 +184,21 @@ VoIPBIN is designed around these key architectural principles:
 
     Data Architecture:
 
-    ┌────────────┐  ┌────────────┐  ┌────────────┐
-    │  Service   │  │  Service   │  │  Service   │
-    │      A     │  │      B     │  │      C     │
-    └──────┬─────┘  └───────┬────┘  └────────┬───┘
-           │                │                │
-           ├────────────────┼────────────────┤
-           │                │                │
-           ▼                ▼                ▼
-    ┌───────────────────────────────────────────┐
-    │           Redis Cache (Hot Data)          │
-    └───────────────────────────────────────────┘
-           ▼                ▼                ▼
-    ┌───────────────────────────────────────────┐
-    │         MySQL Database (Cold Data)        │
-    └───────────────────────────────────────────┘
+    +------------+  +------------+  +------------+
+    |  Service   |  |  Service   |  |  Service   |
+    |      A     |  |      B     |  |      C     |
+    +------+-----+  +-------+----+  +--------+---+
+           |                |                |
+           +----------------+----------------+
+           |                |                |
+           v                v                v
+    +-------------------------------------------+
+    |           Redis Cache (Hot Data)          |
+    +-------------------------------------------+
+           v                v                v
+    +-------------------------------------------+
+    |         MySQL Database (Cold Data)        |
+    +-------------------------------------------+
 
 * **Shared MySQL**: Single source of truth for all data
 * **Redis Cache**: Fast access to frequently used data
@@ -310,27 +310,27 @@ VoIPBIN services have well-defined dependencies for coordinated operations:
 
     Core Service Dependencies:
 
-    ┌─────────────────────────────────────────────────────────────────┐
-    │                     bin-api-manager                             │
-    │                    (API Gateway)                                │
-    │  ─────────────────────────────────────────────────────────────  │
-    │    Depends on: ALL backend services for RPC routing             │
-    └─────────────────────────────────────────────────────────────────┘
-                                 │
-         ┌───────────────────────┼───────────────────────┐
-         │                       │                       │
-         ▼                       ▼                       ▼
-    ┌─────────────┐        ┌─────────────┐        ┌─────────────┐
-    │bin-call-mgr │        │bin-flow-mgr │        │bin-ai-mgr   │
-    └──────┬──────┘        └──────┬──────┘        └──────┬──────┘
-           │                      │                      │
-           │                      │                      │
-           ▼                      ▼                      ▼
-    ┌─────────────┐        ┌─────────────┐        ┌─────────────┐
-    │bin-billing  │        │bin-call-mgr │        │bin-transcribe│
-    │bin-webhook  │        │bin-queue-mgr│        │bin-tts-mgr  │
-    │bin-number   │        │bin-ai-mgr   │        │bin-pipecat  │
-    └─────────────┘        └─────────────┘        └─────────────┘
+    +-----------------------------------------------------------------+
+    |                     bin-api-manager                             |
+    |                    (API Gateway)                                |
+    |  -------------------------------------------------------------  |
+    |    Depends on: ALL backend services for RPC routing             |
+    +-----------------------------------------------------------------+
+                                 |
+         +-----------------------+-----------------------+
+         |                       |                       |
+         v                       v                       v
+    +-------------+        +-------------+        +-------------+
+    |bin-call-mgr |        |bin-flow-mgr |        |bin-ai-mgr   |
+    +------+------+        +------+------+        +------+------+
+           |                      |                      |
+           |                      |                      |
+           v                      v                      v
+    +-------------+        +-------------+        +-------------+
+    |bin-billing  |        |bin-call-mgr |        |bin-transcribe|
+    |bin-webhook  |        |bin-queue-mgr|        |bin-tts-mgr  |
+    |bin-number   |        |bin-ai-mgr   |        |bin-pipecat  |
+    +-------------+        +-------------+        +-------------+
 
 **Key Dependency Patterns:**
 
@@ -338,28 +338,28 @@ VoIPBIN services have well-defined dependencies for coordinated operations:
 
     Call Processing Chain:
     bin-call-manager
-      ├──▶ bin-flow-manager      (IVR and call flows)
-      ├──▶ bin-billing-manager   (usage tracking)
-      ├──▶ bin-webhook-manager   (event notifications)
-      ├──▶ bin-transcribe-manager (call transcription)
-      └──▶ bin-number-manager    (phone number lookup)
+      +--> bin-flow-manager      (IVR and call flows)
+      +--> bin-billing-manager   (usage tracking)
+      +--> bin-webhook-manager   (event notifications)
+      +--> bin-transcribe-manager (call transcription)
+      +--> bin-number-manager    (phone number lookup)
 
     AI Voice Pipeline:
     bin-pipecat-manager
-      ├──▶ bin-ai-manager        (LLM coordination)
-      ├──▶ bin-call-manager      (call control)
-      └──▶ bin-transcribe-manager (STT)
+      +--> bin-ai-manager        (LLM coordination)
+      +--> bin-call-manager      (call control)
+      +--> bin-transcribe-manager (STT)
 
     Flow Orchestration:
     bin-flow-manager
-      ├──▶ bin-call-manager      (call actions)
-      ├──▶ bin-queue-manager     (queue operations)
-      ├──▶ bin-ai-manager        (AI interactions)
-      └──▶ bin-conference-manager (conference bridges)
+      +--> bin-call-manager      (call actions)
+      +--> bin-queue-manager     (queue operations)
+      +--> bin-ai-manager        (AI interactions)
+      +--> bin-conference-manager (conference bridges)
 
     Infrastructure Monitoring:
     bin-sentinel-manager
-      └──▶ bin-call-manager      (SIP session recovery events)
+      +--> bin-call-manager      (SIP session recovery events)
 
 **Circular Dependencies:**
 

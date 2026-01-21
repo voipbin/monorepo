@@ -163,59 +163,59 @@
 <section id="microservices-organization">
 <h2>Microservices Organization<a class="headerlink" href="#microservices-organization" title="Link to this heading"></a></h2>
 <p>Services are organized by functional domain:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>VoIPBIN Microservices Architecture
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">VoIPBIN</span> <span class="n">Microservices</span> <span class="n">Architecture</span>
 
-┌─────────────────────────────────────────────────────────────┐
-│                   Communication Services                    │
-├─────────────────────────────────────────────────────────────┤
-│  bin-call-manager        │  Call lifecycle and routing      │
-│  bin-conference-manager  │  Conference bridge management    │
-│  bin-message-manager     │  SMS messaging (Telnyx/MsgBird)  │
-│  bin-chat-manager        │  Real-time chat                  │
-│  bin-email-manager       │  Email campaigns                 │
-│  bin-transfer-manager    │  Call transfer operations        │
-└─────────────────────────────────────────────────────────────┘
+<span class="o">+-------------------------------------------------------------+</span>
+<span class="o">|</span>                   <span class="n">Communication</span> <span class="n">Services</span>                    <span class="o">|</span>
+<span class="o">+-------------------------------------------------------------+</span>
+<span class="o">|</span>  <span class="nb">bin</span><span class="o">-</span><span class="n">call</span><span class="o">-</span><span class="n">manager</span>        <span class="o">|</span>  <span class="n">Call</span> <span class="n">lifecycle</span> <span class="ow">and</span> <span class="n">routing</span>      <span class="o">|</span>
+<span class="o">|</span>  <span class="nb">bin</span><span class="o">-</span><span class="n">conference</span><span class="o">-</span><span class="n">manager</span>  <span class="o">|</span>  <span class="n">Conference</span> <span class="n">bridge</span> <span class="n">management</span>    <span class="o">|</span>
+<span class="o">|</span>  <span class="nb">bin</span><span class="o">-</span><span class="n">message</span><span class="o">-</span><span class="n">manager</span>     <span class="o">|</span>  <span class="n">SMS</span> <span class="n">messaging</span> <span class="p">(</span><span class="n">Telnyx</span><span class="o">/</span><span class="n">MsgBird</span><span class="p">)</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="nb">bin</span><span class="o">-</span><span class="n">chat</span><span class="o">-</span><span class="n">manager</span>        <span class="o">|</span>  <span class="n">Real</span><span class="o">-</span><span class="n">time</span> <span class="n">chat</span>                  <span class="o">|</span>
+<span class="o">|</span>  <span class="nb">bin</span><span class="o">-</span><span class="n">email</span><span class="o">-</span><span class="n">manager</span>       <span class="o">|</span>  <span class="n">Email</span> <span class="n">campaigns</span>                 <span class="o">|</span>
+<span class="o">|</span>  <span class="nb">bin</span><span class="o">-</span><span class="n">transfer</span><span class="o">-</span><span class="n">manager</span>    <span class="o">|</span>  <span class="n">Call</span> <span class="n">transfer</span> <span class="n">operations</span>        <span class="o">|</span>
+<span class="o">+-------------------------------------------------------------+</span>
 
-┌─────────────────────────────────────────────────────────────┐
-│                      AI Services                            │
-├─────────────────────────────────────────────────────────────┤
-│  bin-ai-manager          │  AI assistants and processing    │
-│  bin-transcribe-manager  │  Speech-to-text transcription    │
-│  bin-tts-manager         │  Text-to-speech synthesis        │
-│  bin-pipecat-manager     │  Real-time AI voice (Go/Python)  │
-└─────────────────────────────────────────────────────────────┘
+<span class="o">+-------------------------------------------------------------+</span>
+<span class="o">|</span>                      <span class="n">AI</span> <span class="n">Services</span>                            <span class="o">|</span>
+<span class="o">+-------------------------------------------------------------+</span>
+<span class="o">|</span>  <span class="nb">bin</span><span class="o">-</span><span class="n">ai</span><span class="o">-</span><span class="n">manager</span>          <span class="o">|</span>  <span class="n">AI</span> <span class="n">assistants</span> <span class="ow">and</span> <span class="n">processing</span>    <span class="o">|</span>
+<span class="o">|</span>  <span class="nb">bin</span><span class="o">-</span><span class="n">transcribe</span><span class="o">-</span><span class="n">manager</span>  <span class="o">|</span>  <span class="n">Speech</span><span class="o">-</span><span class="n">to</span><span class="o">-</span><span class="n">text</span> <span class="n">transcription</span>    <span class="o">|</span>
+<span class="o">|</span>  <span class="nb">bin</span><span class="o">-</span><span class="n">tts</span><span class="o">-</span><span class="n">manager</span>         <span class="o">|</span>  <span class="n">Text</span><span class="o">-</span><span class="n">to</span><span class="o">-</span><span class="n">speech</span> <span class="n">synthesis</span>        <span class="o">|</span>
+<span class="o">|</span>  <span class="nb">bin</span><span class="o">-</span><span class="n">pipecat</span><span class="o">-</span><span class="n">manager</span>     <span class="o">|</span>  <span class="n">Real</span><span class="o">-</span><span class="n">time</span> <span class="n">AI</span> <span class="n">voice</span> <span class="p">(</span><span class="n">Go</span><span class="o">/</span><span class="n">Python</span><span class="p">)</span>  <span class="o">|</span>
+<span class="o">+-------------------------------------------------------------+</span>
 
-┌─────────────────────────────────────────────────────────────┐
-│                    Workflow Services                        │
-├─────────────────────────────────────────────────────────────┤
-│  bin-flow-manager        │  Call flow and IVR orchestration │
-│  bin-queue-manager       │  Call queue management           │
-│  bin-campaign-manager    │  Outbound campaign automation    │
-│  bin-outdial-manager     │  Outbound dialing targets        │
-│  bin-conversation-manager│  Conversation tracking           │
-└─────────────────────────────────────────────────────────────┘
+<span class="o">+-------------------------------------------------------------+</span>
+<span class="o">|</span>                    <span class="n">Workflow</span> <span class="n">Services</span>                        <span class="o">|</span>
+<span class="o">+-------------------------------------------------------------+</span>
+<span class="o">|</span>  <span class="nb">bin</span><span class="o">-</span><span class="n">flow</span><span class="o">-</span><span class="n">manager</span>        <span class="o">|</span>  <span class="n">Call</span> <span class="n">flow</span> <span class="ow">and</span> <span class="n">IVR</span> <span class="n">orchestration</span> <span class="o">|</span>
+<span class="o">|</span>  <span class="nb">bin</span><span class="o">-</span><span class="n">queue</span><span class="o">-</span><span class="n">manager</span>       <span class="o">|</span>  <span class="n">Call</span> <span class="n">queue</span> <span class="n">management</span>           <span class="o">|</span>
+<span class="o">|</span>  <span class="nb">bin</span><span class="o">-</span><span class="n">campaign</span><span class="o">-</span><span class="n">manager</span>    <span class="o">|</span>  <span class="n">Outbound</span> <span class="n">campaign</span> <span class="n">automation</span>    <span class="o">|</span>
+<span class="o">|</span>  <span class="nb">bin</span><span class="o">-</span><span class="n">outdial</span><span class="o">-</span><span class="n">manager</span>     <span class="o">|</span>  <span class="n">Outbound</span> <span class="n">dialing</span> <span class="n">targets</span>        <span class="o">|</span>
+<span class="o">|</span>  <span class="nb">bin</span><span class="o">-</span><span class="n">conversation</span><span class="o">-</span><span class="n">manager</span><span class="o">|</span>  <span class="n">Conversation</span> <span class="n">tracking</span>           <span class="o">|</span>
+<span class="o">+-------------------------------------------------------------+</span>
 
-┌─────────────────────────────────────────────────────────────┐
-│                   Management Services                       │
-├─────────────────────────────────────────────────────────────┤
-│  bin-agent-manager       │  Agent state and presence        │
-│  bin-billing-manager     │  Usage tracking and billing      │
-│  bin-customer-manager    │  Customer and API key management │
-│  bin-webhook-manager     │  Webhook delivery                │
-│  bin-storage-manager     │  File, media, and recordings     │
-│  bin-number-manager      │  Phone number management         │
-│  bin-tag-manager         │  Customer tag management         │
-└─────────────────────────────────────────────────────────────┘
+<span class="o">+-------------------------------------------------------------+</span>
+<span class="o">|</span>                   <span class="n">Management</span> <span class="n">Services</span>                       <span class="o">|</span>
+<span class="o">+-------------------------------------------------------------+</span>
+<span class="o">|</span>  <span class="nb">bin</span><span class="o">-</span><span class="n">agent</span><span class="o">-</span><span class="n">manager</span>       <span class="o">|</span>  <span class="n">Agent</span> <span class="n">state</span> <span class="ow">and</span> <span class="n">presence</span>        <span class="o">|</span>
+<span class="o">|</span>  <span class="nb">bin</span><span class="o">-</span><span class="n">billing</span><span class="o">-</span><span class="n">manager</span>     <span class="o">|</span>  <span class="n">Usage</span> <span class="n">tracking</span> <span class="ow">and</span> <span class="n">billing</span>      <span class="o">|</span>
+<span class="o">|</span>  <span class="nb">bin</span><span class="o">-</span><span class="n">customer</span><span class="o">-</span><span class="n">manager</span>    <span class="o">|</span>  <span class="n">Customer</span> <span class="ow">and</span> <span class="n">API</span> <span class="n">key</span> <span class="n">management</span> <span class="o">|</span>
+<span class="o">|</span>  <span class="nb">bin</span><span class="o">-</span><span class="n">webhook</span><span class="o">-</span><span class="n">manager</span>     <span class="o">|</span>  <span class="n">Webhook</span> <span class="n">delivery</span>                <span class="o">|</span>
+<span class="o">|</span>  <span class="nb">bin</span><span class="o">-</span><span class="n">storage</span><span class="o">-</span><span class="n">manager</span>     <span class="o">|</span>  <span class="n">File</span><span class="p">,</span> <span class="n">media</span><span class="p">,</span> <span class="ow">and</span> <span class="n">recordings</span>     <span class="o">|</span>
+<span class="o">|</span>  <span class="nb">bin</span><span class="o">-</span><span class="n">number</span><span class="o">-</span><span class="n">manager</span>      <span class="o">|</span>  <span class="n">Phone</span> <span class="n">number</span> <span class="n">management</span>         <span class="o">|</span>
+<span class="o">|</span>  <span class="nb">bin</span><span class="o">-</span><span class="n">tag</span><span class="o">-</span><span class="n">manager</span>         <span class="o">|</span>  <span class="n">Customer</span> <span class="n">tag</span> <span class="n">management</span>         <span class="o">|</span>
+<span class="o">+-------------------------------------------------------------+</span>
 
-┌─────────────────────────────────────────────────────────────┐
-│                  Integration Services                       │
-├─────────────────────────────────────────────────────────────┤
-│  bin-talk-manager        │  Agent UI backend                │
-│  bin-hook-manager        │  External webhook gateway        │
-│  bin-sentinel-manager    │  Kubernetes pod monitoring       │
-│  bin-route-manager       │  Call routing and providers      │
-│  bin-registrar-manager   │  SIP registration management     │
-└─────────────────────────────────────────────────────────────┘
+<span class="o">+-------------------------------------------------------------+</span>
+<span class="o">|</span>                  <span class="n">Integration</span> <span class="n">Services</span>                       <span class="o">|</span>
+<span class="o">+-------------------------------------------------------------+</span>
+<span class="o">|</span>  <span class="nb">bin</span><span class="o">-</span><span class="n">talk</span><span class="o">-</span><span class="n">manager</span>        <span class="o">|</span>  <span class="n">Agent</span> <span class="n">UI</span> <span class="n">backend</span>                <span class="o">|</span>
+<span class="o">|</span>  <span class="nb">bin</span><span class="o">-</span><span class="n">hook</span><span class="o">-</span><span class="n">manager</span>        <span class="o">|</span>  <span class="n">External</span> <span class="n">webhook</span> <span class="n">gateway</span>        <span class="o">|</span>
+<span class="o">|</span>  <span class="nb">bin</span><span class="o">-</span><span class="n">sentinel</span><span class="o">-</span><span class="n">manager</span>    <span class="o">|</span>  <span class="n">Kubernetes</span> <span class="n">pod</span> <span class="n">monitoring</span>       <span class="o">|</span>
+<span class="o">|</span>  <span class="nb">bin</span><span class="o">-</span><span class="n">route</span><span class="o">-</span><span class="n">manager</span>       <span class="o">|</span>  <span class="n">Call</span> <span class="n">routing</span> <span class="ow">and</span> <span class="n">providers</span>      <span class="o">|</span>
+<span class="o">|</span>  <span class="nb">bin</span><span class="o">-</span><span class="n">registrar</span><span class="o">-</span><span class="n">manager</span>   <span class="o">|</span>  <span class="n">SIP</span> <span class="n">registration</span> <span class="n">management</span>     <span class="o">|</span>
+<span class="o">+-------------------------------------------------------------+</span>
 </pre></div>
 </div>
 </section>
@@ -223,23 +223,23 @@
 <h2>Service Characteristics<a class="headerlink" href="#service-characteristics" title="Link to this heading"></a></h2>
 <p>Each microservice follows these design principles:</p>
 <p><strong>Domain Isolation</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Service Boundary:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Service</span> <span class="n">Boundary</span><span class="p">:</span>
 
-┌────────────────────────────────────────┐
-│         bin-call-manager               │
-│                                        │
-│  ┌──────────────────────────────────┐  │
-│  │   Domain Logic (Call Handling)   │  │
-│  └──────────────────────────────────┘  │
-│                                        │
-│  ┌──────────────────────────────────┐  │
-│  │   Data Access (Call Records)     │  │
-│  └──────────────────────────────────┘  │
-│                                        │
-│  ┌──────────────────────────────────┐  │
-│  │   RPC Handlers (Message Queue)   │  │
-│  └──────────────────────────────────┘  │
-└────────────────────────────────────────┘
+<span class="o">+----------------------------------------+</span>
+<span class="o">|</span>         <span class="nb">bin</span><span class="o">-</span><span class="n">call</span><span class="o">-</span><span class="n">manager</span>               <span class="o">|</span>
+<span class="o">|</span>                                        <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+----------------------------------+</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span>   <span class="n">Domain</span> <span class="n">Logic</span> <span class="p">(</span><span class="n">Call</span> <span class="n">Handling</span><span class="p">)</span>   <span class="o">|</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+----------------------------------+</span>  <span class="o">|</span>
+<span class="o">|</span>                                        <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+----------------------------------+</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span>   <span class="n">Data</span> <span class="n">Access</span> <span class="p">(</span><span class="n">Call</span> <span class="n">Records</span><span class="p">)</span>     <span class="o">|</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+----------------------------------+</span>  <span class="o">|</span>
+<span class="o">|</span>                                        <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+----------------------------------+</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span>   <span class="n">RPC</span> <span class="n">Handlers</span> <span class="p">(</span><span class="n">Message</span> <span class="n">Queue</span><span class="p">)</span>   <span class="o">|</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+----------------------------------+</span>  <span class="o">|</span>
+<span class="o">+----------------------------------------+</span>
 </pre></div>
 </div>
 <ul class="simple">
@@ -261,18 +261,18 @@
 </ul>
 <p><strong>Common Structure</strong></p>
 <p>All services follow a consistent directory structure:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>bin-&lt;service&gt;-manager/
-├── cmd/
-│   └── &lt;service&gt;-manager/
-│       └── main.go                 # Entry point
-├── pkg/
-│   ├── &lt;domain&gt;handler/            # Business logic
-│   ├── dbhandler/                  # Database operations
-│   ├── cachehandler/               # Redis operations
-│   └── listenhandler/              # RabbitMQ RPC handlers
-├── models/
-│   └── &lt;resource&gt;/                 # Data models
-└── go.mod                          # Dependencies
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">bin</span><span class="o">-&lt;</span><span class="n">service</span><span class="o">&gt;-</span><span class="n">manager</span><span class="o">/</span>
+<span class="o">+--</span> <span class="n">cmd</span><span class="o">/</span>
+<span class="o">|</span>   <span class="o">+--</span> <span class="o">&lt;</span><span class="n">service</span><span class="o">&gt;-</span><span class="n">manager</span><span class="o">/</span>
+<span class="o">|</span>       <span class="o">+--</span> <span class="n">main</span><span class="o">.</span><span class="n">go</span>                 <span class="c1"># Entry point</span>
+<span class="o">+--</span> <span class="n">pkg</span><span class="o">/</span>
+<span class="o">|</span>   <span class="o">+--</span> <span class="o">&lt;</span><span class="n">domain</span><span class="o">&gt;</span><span class="n">handler</span><span class="o">/</span>            <span class="c1"># Business logic</span>
+<span class="o">|</span>   <span class="o">+--</span> <span class="n">dbhandler</span><span class="o">/</span>                  <span class="c1"># Database operations</span>
+<span class="o">|</span>   <span class="o">+--</span> <span class="n">cachehandler</span><span class="o">/</span>               <span class="c1"># Redis operations</span>
+<span class="o">|</span>   <span class="o">+--</span> <span class="n">listenhandler</span><span class="o">/</span>              <span class="c1"># RabbitMQ RPC handlers</span>
+<span class="o">+--</span> <span class="n">models</span><span class="o">/</span>
+<span class="o">|</span>   <span class="o">+--</span> <span class="o">&lt;</span><span class="n">resource</span><span class="o">&gt;/</span>                 <span class="c1"># Data models</span>
+<span class="o">+--</span> <span class="n">go</span><span class="o">.</span><span class="n">mod</span>                          <span class="c1"># Dependencies</span>
 </pre></div>
 </div>
 </section>
@@ -280,72 +280,72 @@
 <h2>API Gateway - bin-api-manager<a class="headerlink" href="#api-gateway-bin-api-manager" title="Link to this heading"></a></h2>
 <p>The API Gateway serves as the single entry point for all external requests, handling authentication, authorization, and request routing to backend services.</p>
 <p><strong>Gateway Responsibilities</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>API Gateway Layer:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">API</span> <span class="n">Gateway</span> <span class="n">Layer</span><span class="p">:</span>
 
-External Clients
-(Web, Mobile, Server)
-     │
-     │ HTTPS
-     ▼
-┌────────────────────────────────────────┐
-│        bin-api-manager                 │
-│                                        │
-│  1. ┌────────────────────────────┐     │
-│     │  Authentication (JWT)      │     │
-│     └────────────────────────────┘     │
-│                                        │
-│  2. ┌─────────────────────────────┐    │
-│     │  Authorization (Permissions)│    │
-│     └─────────────────────────────┘    │
-│                                        │
-│  3. ┌────────────────────────────┐     │
-│     │  Rate Limiting / Throttling│     │
-│     └────────────────────────────┘     │
-│                                        │
-│  4. ┌────────────────────────────┐     │
-│     │  Request Routing (RabbitMQ)│     │
-│     └────────────────────────────┘     │
-│                                        │
-│  5. ┌────────────────────────────┐     │
-│     │  Response Aggregation      │     │
-│     └────────────────────────────┘     │
-└────────────────────────────────────────┘
-     │
-     │ RabbitMQ RPC
-     ▼
-Backend Services
+<span class="n">External</span> <span class="n">Clients</span>
+<span class="p">(</span><span class="n">Web</span><span class="p">,</span> <span class="n">Mobile</span><span class="p">,</span> <span class="n">Server</span><span class="p">)</span>
+     <span class="o">|</span>
+     <span class="o">|</span> <span class="n">HTTPS</span>
+     <span class="n">v</span>
+<span class="o">+----------------------------------------+</span>
+<span class="o">|</span>        <span class="nb">bin</span><span class="o">-</span><span class="n">api</span><span class="o">-</span><span class="n">manager</span>                 <span class="o">|</span>
+<span class="o">|</span>                                        <span class="o">|</span>
+<span class="o">|</span>  <span class="mf">1.</span> <span class="o">+----------------------------+</span>     <span class="o">|</span>
+<span class="o">|</span>     <span class="o">|</span>  <span class="n">Authentication</span> <span class="p">(</span><span class="n">JWT</span><span class="p">)</span>      <span class="o">|</span>     <span class="o">|</span>
+<span class="o">|</span>     <span class="o">+----------------------------+</span>     <span class="o">|</span>
+<span class="o">|</span>                                        <span class="o">|</span>
+<span class="o">|</span>  <span class="mf">2.</span> <span class="o">+-----------------------------+</span>    <span class="o">|</span>
+<span class="o">|</span>     <span class="o">|</span>  <span class="n">Authorization</span> <span class="p">(</span><span class="n">Permissions</span><span class="p">)</span><span class="o">|</span>    <span class="o">|</span>
+<span class="o">|</span>     <span class="o">+-----------------------------+</span>    <span class="o">|</span>
+<span class="o">|</span>                                        <span class="o">|</span>
+<span class="o">|</span>  <span class="mf">3.</span> <span class="o">+----------------------------+</span>     <span class="o">|</span>
+<span class="o">|</span>     <span class="o">|</span>  <span class="n">Rate</span> <span class="n">Limiting</span> <span class="o">/</span> <span class="n">Throttling</span><span class="o">|</span>     <span class="o">|</span>
+<span class="o">|</span>     <span class="o">+----------------------------+</span>     <span class="o">|</span>
+<span class="o">|</span>                                        <span class="o">|</span>
+<span class="o">|</span>  <span class="mf">4.</span> <span class="o">+----------------------------+</span>     <span class="o">|</span>
+<span class="o">|</span>     <span class="o">|</span>  <span class="n">Request</span> <span class="n">Routing</span> <span class="p">(</span><span class="n">RabbitMQ</span><span class="p">)</span><span class="o">|</span>     <span class="o">|</span>
+<span class="o">|</span>     <span class="o">+----------------------------+</span>     <span class="o">|</span>
+<span class="o">|</span>                                        <span class="o">|</span>
+<span class="o">|</span>  <span class="mf">5.</span> <span class="o">+----------------------------+</span>     <span class="o">|</span>
+<span class="o">|</span>     <span class="o">|</span>  <span class="n">Response</span> <span class="n">Aggregation</span>      <span class="o">|</span>     <span class="o">|</span>
+<span class="o">|</span>     <span class="o">+----------------------------+</span>     <span class="o">|</span>
+<span class="o">+----------------------------------------+</span>
+     <span class="o">|</span>
+     <span class="o">|</span> <span class="n">RabbitMQ</span> <span class="n">RPC</span>
+     <span class="n">v</span>
+<span class="n">Backend</span> <span class="n">Services</span>
 </pre></div>
 </div>
 <p><strong>Authentication Flow</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>JWT Authentication:
 
 Client                    API Gateway              Backend Service
-  │                            │                          │
-  │  POST /auth/login          │                          │
-  ├───────────────────────────▶│                          │
-  │  {user, pass}              │                          │
-  │                            │                          │
-  │                            │  Verify credentials      │
-  │                            │                          │
-  │  JWT Token                 │                          │
-  │◀───────────────────────────┤                          │
-  │                            │                          │
-  │                            │                          │
-  │  GET /calls?token=xyz      │                          │
-  ├───────────────────────────▶│                          │
-  │                            │  1. Validate JWT         │
-  │                            │  2. Extract customer_id  │
-  │                            │  3. Check permissions    │
-  │                            │                          │
-  │                            │  RPC: GetCalls(ctx)      │
-  │                            ├─────────────────────────▶│
-  │                            │                          │
-  │                            │  [Call List]             │
-  │                            │◀─────────────────────────┤
-  │                            │                          │
-  │  [Call List]               │  4. Return response      │
-  │◀───────────────────────────┤                          │
-  │                            │                          │
+  |                            |                          |
+  |  POST /auth/login          |                          |
+  +---------------------------&gt;&gt;                          |
+  |  {user, pass}              |                          |
+  |                            |                          |
+  |                            |  Verify credentials      |
+  |                            |                          |
+  |  JWT Token                 |                          |
+  &lt;&lt;---------------------------+                          |
+  |                            |                          |
+  |                            |                          |
+  |  GET /calls?token=xyz      |                          |
+  +---------------------------&gt;&gt;                          |
+  |                            |  1. Validate JWT         |
+  |                            |  2. Extract customer_id  |
+  |                            |  3. Check permissions    |
+  |                            |                          |
+  |                            |  RPC: GetCalls(ctx)      |
+  |                            +-------------------------&gt;&gt;
+  |                            |                          |
+  |                            |  [Call List]             |
+  |                            &lt;&lt;-------------------------+
+  |                            |                          |
+  |  [Call List]               |  4. Return response      |
+  &lt;&lt;---------------------------+                          |
+  |                            |                          |
 </pre></div>
 </div>
 <p><strong>Authentication Components:</strong></p>
@@ -357,32 +357,32 @@ Client                    API Gateway              Backend Service
 </ul>
 <p><strong>Authorization Pattern</strong></p>
 <p>VoIPBIN implements authorization at the API Gateway, NOT in backend services:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Authorization Check:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Authorization</span> <span class="n">Check</span><span class="p">:</span>
 
-┌─────────────────────────────────────────────────────┐
-│              bin-api-manager (Gateway)              │
-│                                                     │
-│  1. Fetch Resource                                  │
-│     ├──────▶ bin-call-manager.GetCall(call_id)      │
-│     │                                               │
-│  2. Check Authorization                             │
-│     │  if call.customer_id != jwt.customer_id:      │
-│     │      return 404 (not 403, for security)       │
-│     │                                               │
-│  3. Return Resource                                 │
-│     └──────▶ return call                            │
-│                                                     │
-└─────────────────────────────────────────────────────┘
+<span class="o">+-----------------------------------------------------+</span>
+<span class="o">|</span>              <span class="nb">bin</span><span class="o">-</span><span class="n">api</span><span class="o">-</span><span class="n">manager</span> <span class="p">(</span><span class="n">Gateway</span><span class="p">)</span>              <span class="o">|</span>
+<span class="o">|</span>                                                     <span class="o">|</span>
+<span class="o">|</span>  <span class="mf">1.</span> <span class="n">Fetch</span> <span class="n">Resource</span>                                  <span class="o">|</span>
+<span class="o">|</span>     <span class="o">+-------&gt;</span> <span class="nb">bin</span><span class="o">-</span><span class="n">call</span><span class="o">-</span><span class="n">manager</span><span class="o">.</span><span class="n">GetCall</span><span class="p">(</span><span class="n">call_id</span><span class="p">)</span>     <span class="o">|</span>
+<span class="o">|</span>     <span class="o">|</span>                                               <span class="o">|</span>
+<span class="o">|</span>  <span class="mf">2.</span> <span class="n">Check</span> <span class="n">Authorization</span>                             <span class="o">|</span>
+<span class="o">|</span>     <span class="o">|</span>  <span class="k">if</span> <span class="n">call</span><span class="o">.</span><span class="n">customer_id</span> <span class="o">!=</span> <span class="n">jwt</span><span class="o">.</span><span class="n">customer_id</span><span class="p">:</span>      <span class="o">|</span>
+<span class="o">|</span>     <span class="o">|</span>      <span class="k">return</span> <span class="mi">404</span> <span class="p">(</span><span class="ow">not</span> <span class="mi">403</span><span class="p">,</span> <span class="k">for</span> <span class="n">security</span><span class="p">)</span>       <span class="o">|</span>
+<span class="o">|</span>     <span class="o">|</span>                                               <span class="o">|</span>
+<span class="o">|</span>  <span class="mf">3.</span> <span class="n">Return</span> <span class="n">Resource</span>                                 <span class="o">|</span>
+<span class="o">|</span>     <span class="o">+-------&gt;</span> <span class="k">return</span> <span class="n">call</span>                           <span class="o">|</span>
+<span class="o">|</span>                                                     <span class="o">|</span>
+<span class="o">+-----------------------------------------------------+</span>
 
-┌─────────────────────────────────────────────────────┐
-│           bin-call-manager (Backend)                │
-│                                                     │
-│  • NO authentication logic                          │
-│  • NO customer_id validation                        │
-│  • Just process RPC requests                        │
-│  • Return requested data                            │
-│                                                     │
-└─────────────────────────────────────────────────────┘
+<span class="o">+-----------------------------------------------------+</span>
+<span class="o">|</span>           <span class="nb">bin</span><span class="o">-</span><span class="n">call</span><span class="o">-</span><span class="n">manager</span> <span class="p">(</span><span class="n">Backend</span><span class="p">)</span>                <span class="o">|</span>
+<span class="o">|</span>                                                     <span class="o">|</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="n">NO</span> <span class="n">authentication</span> <span class="n">logic</span>                          <span class="o">|</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="n">NO</span> <span class="n">customer_id</span> <span class="n">validation</span>                        <span class="o">|</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="n">Just</span> <span class="n">process</span> <span class="n">RPC</span> <span class="n">requests</span>                        <span class="o">|</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="n">Return</span> <span class="n">requested</span> <span class="n">data</span>                            <span class="o">|</span>
+<span class="o">|</span>                                                     <span class="o">|</span>
+<span class="o">+-----------------------------------------------------+</span>
 </pre></div>
 </div>
 <p><strong>Key Authorization Principles:</strong></p>
@@ -394,24 +394,24 @@ Client                    API Gateway              Backend Service
 </ul>
 <p><strong>Request Routing</strong></p>
 <p>The gateway routes requests to appropriate backend services:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Routing Decision:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Routing</span> <span class="n">Decision</span><span class="p">:</span>
 
-HTTP Request          Gateway Router          Backend Service
-    │                      │                        │
-    │  GET /v1.0/calls     │                        │
-    ├─────────────────────▶│                        │
-    │                      │  Parse: &quot;calls&quot;        │
-    │                      │  → bin-call-manager    │
-    │                      │                        │
-    │                      │  RPC Request           │
-    │                      ├───────────────────────▶│
-    │                      │                        │
-    │                      │  RPC Response          │
-    │                      │◀───────────────────────┤
-    │                      │                        │
-    │  JSON Response       │                        │
-    │◀─────────────────────┤                        │
-    │                      │                        │
+<span class="n">HTTP</span> <span class="n">Request</span>          <span class="n">Gateway</span> <span class="n">Router</span>          <span class="n">Backend</span> <span class="n">Service</span>
+    <span class="o">|</span>                      <span class="o">|</span>                        <span class="o">|</span>
+    <span class="o">|</span>  <span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="mf">.0</span><span class="o">/</span><span class="n">calls</span>     <span class="o">|</span>                        <span class="o">|</span>
+    <span class="o">+---------------------&gt;&gt;</span>                        <span class="o">|</span>
+    <span class="o">|</span>                      <span class="o">|</span>  <span class="n">Parse</span><span class="p">:</span> <span class="s2">&quot;calls&quot;</span>        <span class="o">|</span>
+    <span class="o">|</span>                      <span class="o">|</span>  <span class="o">-&gt;</span> <span class="nb">bin</span><span class="o">-</span><span class="n">call</span><span class="o">-</span><span class="n">manager</span>   <span class="o">|</span>
+    <span class="o">|</span>                      <span class="o">|</span>                        <span class="o">|</span>
+    <span class="o">|</span>                      <span class="o">|</span>  <span class="n">RPC</span> <span class="n">Request</span>           <span class="o">|</span>
+    <span class="o">|</span>                      <span class="o">+-----------------------&gt;&gt;</span>
+    <span class="o">|</span>                      <span class="o">|</span>                        <span class="o">|</span>
+    <span class="o">|</span>                      <span class="o">|</span>  <span class="n">RPC</span> <span class="n">Response</span>          <span class="o">|</span>
+    <span class="o">|</span>                      <span class="o">&lt;&lt;-----------------------+</span>
+    <span class="o">|</span>                      <span class="o">|</span>                        <span class="o">|</span>
+    <span class="o">|</span>  <span class="n">JSON</span> <span class="n">Response</span>       <span class="o">|</span>                        <span class="o">|</span>
+    <span class="o">&lt;&lt;---------------------+</span>                        <span class="o">|</span>
+    <span class="o">|</span>                      <span class="o">|</span>                        <span class="o">|</span>
 </pre></div>
 </div>
 <p><strong>Routing Table:</strong></p>
@@ -490,29 +490,29 @@ HTTP Request          Gateway Router          Backend Service
 <p>Some services have unique architectures that differ from the standard microservice pattern:</p>
 <p><strong>bin-pipecat-manager (Hybrid Go/Python)</strong></p>
 <p>This service combines Go and Python for AI-powered voice conversations:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Hybrid Architecture:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Hybrid</span> <span class="n">Architecture</span><span class="p">:</span>
 
-┌───────────────────────────────────────────────────────────┐
-│                  bin-pipecat-manager                       │
-│                                                            │
-│   Go Service (Port 8080)         Python Service (Port 8000)│
-│   ┌─────────────────────┐        ┌─────────────────────┐  │
-│   │ • RabbitMQ RPC      │  HTTP  │ • FastAPI server    │  │
-│   │ • WebSocket server  │◀──────▶│ • Pipecat pipelines │  │
-│   │ • Session lifecycle │        │ • STT/LLM/TTS       │  │
-│   │ • Audiosocket (RTP) │        │ • Tool execution    │  │
-│   └──────────┬──────────┘        └─────────────────────┘  │
-│              │                                             │
-└──────────────┼─────────────────────────────────────────────┘
-               │
-               │ Audiosocket (8kHz PCM)
-               ▼
-          Asterisk PBX
+<span class="o">+------------------------------------------------------------+</span>
+<span class="o">|</span>                  <span class="nb">bin</span><span class="o">-</span><span class="n">pipecat</span><span class="o">-</span><span class="n">manager</span>                       <span class="o">|</span>
+<span class="o">|</span>                                                            <span class="o">|</span>
+<span class="o">|</span>   <span class="n">Go</span> <span class="n">Service</span> <span class="p">(</span><span class="n">Port</span> <span class="mi">8080</span><span class="p">)</span>         <span class="n">Python</span> <span class="n">Service</span> <span class="p">(</span><span class="n">Port</span> <span class="mi">8000</span><span class="p">)</span><span class="o">|</span>
+<span class="o">|</span>   <span class="o">+---------------------+</span>        <span class="o">+---------------------+</span>   <span class="o">|</span>
+<span class="o">|</span>   <span class="o">|</span> <span class="n">o</span> <span class="n">RabbitMQ</span> <span class="n">RPC</span>      <span class="o">|</span>  <span class="n">HTTP</span>  <span class="o">|</span> <span class="n">o</span> <span class="n">FastAPI</span> <span class="n">server</span>    <span class="o">|</span>   <span class="o">|</span>
+<span class="o">|</span>   <span class="o">|</span> <span class="n">o</span> <span class="n">WebSocket</span> <span class="n">server</span>  <span class="o">|&lt;------&gt;|</span> <span class="n">o</span> <span class="n">Pipecat</span> <span class="n">pipelines</span> <span class="o">|</span>   <span class="o">|</span>
+<span class="o">|</span>   <span class="o">|</span> <span class="n">o</span> <span class="n">Session</span> <span class="n">lifecycle</span> <span class="o">|</span>        <span class="o">|</span> <span class="n">o</span> <span class="n">STT</span><span class="o">/</span><span class="n">LLM</span><span class="o">/</span><span class="n">TTS</span>       <span class="o">|</span>   <span class="o">|</span>
+<span class="o">|</span>   <span class="o">|</span> <span class="n">o</span> <span class="n">Audiosocket</span> <span class="p">(</span><span class="n">RTP</span><span class="p">)</span> <span class="o">|</span>        <span class="o">|</span> <span class="n">o</span> <span class="n">Tool</span> <span class="n">execution</span>    <span class="o">|</span>   <span class="o">|</span>
+<span class="o">|</span>   <span class="o">+----------+----------+</span>        <span class="o">+---------------------+</span>   <span class="o">|</span>
+<span class="o">|</span>              <span class="o">|</span>                                             <span class="o">|</span>
+<span class="o">+--------------|---------------------------------------------+</span>
+               <span class="o">|</span>
+               <span class="o">|</span> <span class="n">Audiosocket</span> <span class="p">(</span><span class="mi">8</span><span class="n">kHz</span> <span class="n">PCM</span><span class="p">)</span>
+               <span class="n">v</span>
+          <span class="n">Asterisk</span> <span class="n">PBX</span>
 
-Audio Flow:
-Asterisk (8kHz) ──audiosocket──▶ Go ──websocket/protobuf──▶ Python
-                                    ◀───────────────────────
-STT → LLM → TTS pipeline executed in Python/Pipecat
+<span class="n">Audio</span> <span class="n">Flow</span><span class="p">:</span>
+<span class="n">Asterisk</span> <span class="p">(</span><span class="mi">8</span><span class="n">kHz</span><span class="p">)</span> <span class="o">--</span><span class="n">audiosocket</span><span class="o">--&gt;</span> <span class="n">Go</span> <span class="o">--</span><span class="n">websocket</span><span class="o">/</span><span class="n">protobuf</span><span class="o">--&gt;</span> <span class="n">Python</span>
+                                    <span class="o">&lt;-----------------------</span>
+<span class="n">STT</span> <span class="o">-&gt;</span> <span class="n">LLM</span> <span class="o">-&gt;</span> <span class="n">TTS</span> <span class="n">pipeline</span> <span class="n">executed</span> <span class="ow">in</span> <span class="n">Python</span><span class="o">/</span><span class="n">Pipecat</span>
 </pre></div>
 </div>
 <p><strong>Key Features:</strong></p>
@@ -524,37 +524,37 @@ STT → LLM → TTS pipeline executed in Python/Pipecat
 </ul>
 <p><strong>bin-sentinel-manager (Kubernetes Monitoring)</strong></p>
 <p>This service monitors pod lifecycle events in Kubernetes:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Kubernetes Monitoring:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Kubernetes</span> <span class="n">Monitoring</span><span class="p">:</span>
 
-┌───────────────────────────────────────────────────────────┐
-│              Kubernetes Cluster (voip namespace)          │
-│                                                            │
-│  ┌────────────┐  ┌────────────┐  ┌────────────┐           │
-│  │ asterisk-  │  │ asterisk-  │  │ asterisk-  │           │
-│  │   call     │  │ conference │  │ registrar  │           │
-│  └──────┬─────┘  └──────┬─────┘  └──────┬─────┘           │
-│         │               │               │                  │
-│         └───────────────┴───────────────┘                  │
-│                         │                                  │
-│             Pod Events (Update/Delete)                     │
-│                         │                                  │
-│                         ▼                                  │
-│         ┌───────────────────────────────┐                  │
-│         │     bin-sentinel-manager      │                  │
-│         │                               │                  │
-│         │  • Pod informers (client-go)  │                  │
-│         │  • Label selector filtering   │                  │
-│         │  • Event publishing           │                  │
-│         └───────────────┬───────────────┘                  │
-│                         │                                  │
-└─────────────────────────┼──────────────────────────────────┘
-                          │
-                          │ RabbitMQ Events
-                          ▼
-                ┌───────────────────┐
-                │  bin-call-manager │
-                │  (SIP Recovery)   │
-                └───────────────────┘
+<span class="o">+-----------------------------------------------------------+</span>
+<span class="o">|</span>              <span class="n">Kubernetes</span> <span class="n">Cluster</span> <span class="p">(</span><span class="n">voip</span> <span class="n">namespace</span><span class="p">)</span>          <span class="o">|</span>
+<span class="o">|</span>                                                           <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+------------+</span>  <span class="o">+------------+</span>  <span class="o">+------------+</span>           <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span> <span class="n">asterisk</span><span class="o">-</span>  <span class="o">|</span>  <span class="o">|</span> <span class="n">asterisk</span><span class="o">-</span>  <span class="o">|</span>  <span class="o">|</span> <span class="n">asterisk</span><span class="o">-</span>  <span class="o">|</span>           <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span>   <span class="n">call</span>     <span class="o">|</span>  <span class="o">|</span> <span class="n">conference</span> <span class="o">|</span>  <span class="o">|</span> <span class="n">registrar</span>  <span class="o">|</span>           <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+------+-----+</span>  <span class="o">+------+-----+</span>  <span class="o">+------+-----+</span>           <span class="o">|</span>
+<span class="o">|</span>         <span class="o">|</span>               <span class="o">|</span>               <span class="o">|</span>                 <span class="o">|</span>
+<span class="o">|</span>         <span class="o">+---------------+---------------+</span>                 <span class="o">|</span>
+<span class="o">|</span>                         <span class="o">|</span>                                 <span class="o">|</span>
+<span class="o">|</span>             <span class="n">Pod</span> <span class="n">Events</span> <span class="p">(</span><span class="n">Update</span><span class="o">/</span><span class="n">Delete</span><span class="p">)</span>                    <span class="o">|</span>
+<span class="o">|</span>                         <span class="o">|</span>                                 <span class="o">|</span>
+<span class="o">|</span>                         <span class="n">v</span>                                 <span class="o">|</span>
+<span class="o">|</span>         <span class="o">+-------------------------------+</span>                 <span class="o">|</span>
+<span class="o">|</span>         <span class="o">|</span>     <span class="nb">bin</span><span class="o">-</span><span class="n">sentinel</span><span class="o">-</span><span class="n">manager</span>      <span class="o">|</span>                 <span class="o">|</span>
+<span class="o">|</span>         <span class="o">|</span>                               <span class="o">|</span>                 <span class="o">|</span>
+<span class="o">|</span>         <span class="o">|</span>  <span class="n">o</span> <span class="n">Pod</span> <span class="n">informers</span> <span class="p">(</span><span class="n">client</span><span class="o">-</span><span class="n">go</span><span class="p">)</span>  <span class="o">|</span>                 <span class="o">|</span>
+<span class="o">|</span>         <span class="o">|</span>  <span class="n">o</span> <span class="n">Label</span> <span class="n">selector</span> <span class="n">filtering</span>   <span class="o">|</span>                 <span class="o">|</span>
+<span class="o">|</span>         <span class="o">|</span>  <span class="n">o</span> <span class="n">Event</span> <span class="n">publishing</span>           <span class="o">|</span>                 <span class="o">|</span>
+<span class="o">|</span>         <span class="o">+---------------+---------------+</span>                 <span class="o">|</span>
+<span class="o">|</span>                         <span class="o">|</span>                                 <span class="o">|</span>
+<span class="o">+-------------------------|---------------------------------+</span>
+                          <span class="o">|</span>
+                          <span class="o">|</span> <span class="n">RabbitMQ</span> <span class="n">Events</span>
+                          <span class="n">v</span>
+                <span class="o">+-------------------+</span>
+                <span class="o">|</span>  <span class="nb">bin</span><span class="o">-</span><span class="n">call</span><span class="o">-</span><span class="n">manager</span> <span class="o">|</span>
+                <span class="o">|</span>  <span class="p">(</span><span class="n">SIP</span> <span class="n">Recovery</span><span class="p">)</span>   <span class="o">|</span>
+                <span class="o">+-------------------+</span>
 </pre></div>
 </div>
 <p><strong>Key Features:</strong></p>
@@ -567,21 +567,21 @@ STT → LLM → TTS pipeline executed in Python/Pipecat
 </ul>
 <p><strong>bin-hook-manager (Webhook Gateway)</strong></p>
 <p>This service receives external webhooks and routes them internally:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>External Webhook Flow:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">External</span> <span class="n">Webhook</span> <span class="n">Flow</span><span class="p">:</span>
 
-External Provider                    VoIPBIN Internal
-(Telnyx, MessageBird)                Services
-     │                                    │
-     │ HTTPS POST                         │
-     │ /v1.0/hooks/messages               │
-     ▼                                    │
-┌────────────────┐                        │
-│ bin-hook-manager│                        │
-│                │   RabbitMQ             │
-│ • Validate    ├───────────────────────▶│ bin-message-manager
-│ • Parse       │                         │ bin-email-manager
-│ • Route       │                         │ bin-conversation-manager
-└────────────────┘                        │
+<span class="n">External</span> <span class="n">Provider</span>                       <span class="n">VoIPBIN</span> <span class="n">Internal</span>
+<span class="p">(</span><span class="n">Telnyx</span><span class="p">,</span> <span class="n">MessageBird</span><span class="p">)</span>                   <span class="n">Services</span>
+     <span class="o">|</span>                                      <span class="o">|</span>
+     <span class="o">|</span> <span class="n">HTTPS</span> <span class="n">POST</span>                           <span class="o">|</span>
+     <span class="o">|</span> <span class="o">/</span><span class="n">v1</span><span class="mf">.0</span><span class="o">/</span><span class="n">hooks</span><span class="o">/</span><span class="n">messages</span>                 <span class="o">|</span>
+     <span class="n">v</span>                                      <span class="o">|</span>
+<span class="o">+-----------------+</span>                         <span class="o">|</span>
+<span class="o">|</span> <span class="nb">bin</span><span class="o">-</span><span class="n">hook</span><span class="o">-</span><span class="n">manager</span><span class="o">|</span>                         <span class="o">|</span>
+<span class="o">|</span>                 <span class="o">|</span>   <span class="n">RabbitMQ</span>              <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Validate</span>      <span class="o">+------------------------&gt;|</span> <span class="nb">bin</span><span class="o">-</span><span class="n">message</span><span class="o">-</span><span class="n">manager</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Parse</span>         <span class="o">|</span>                         <span class="o">|</span> <span class="nb">bin</span><span class="o">-</span><span class="n">email</span><span class="o">-</span><span class="n">manager</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Route</span>         <span class="o">|</span>                         <span class="o">|</span> <span class="nb">bin</span><span class="o">-</span><span class="n">conversation</span><span class="o">-</span><span class="n">manager</span>
+<span class="o">+-----------------+</span>                         <span class="o">|</span>
 </pre></div>
 </div>
 <p><strong>Key Features:</strong></p>
@@ -596,23 +596,23 @@ External Provider                    VoIPBIN Internal
 <h2>Service Independence<a class="headerlink" href="#service-independence" title="Link to this heading"></a></h2>
 <p>VoIPBIN’s microservices architecture enables true service independence:</p>
 <p><strong>Independent Deployment</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Service Deployment:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Service</span> <span class="n">Deployment</span><span class="p">:</span>
 
-┌──────────────┐  ┌──────────────┐  ┌──────────────┐
-│  Service A   │  │  Service B   │  │  Service C   │
-│  v1.2.3      │  │  v2.0.1      │  │  v1.5.0      │
-└──────┬───────┘  └──────┬───────┘  └──────┬───────┘
-       │                 │                 │
-       │                 │  Deploy v2.1.0  │
-       │                 │  (no impact)    │
-       │                 ▼                 │
-       │          ┌──────────────┐         │
-       │          │  Service B   │         │
-       │          │  v2.1.0      │         │
-       │          └──────────────┘         │
-       │                 │                 │
-       └─────────────────┴─────────────────┘
-                   Message Queue
+<span class="o">+--------------+</span>  <span class="o">+--------------+</span>  <span class="o">+--------------+</span>
+<span class="o">|</span>  <span class="n">Service</span> <span class="n">A</span>   <span class="o">|</span>  <span class="o">|</span>  <span class="n">Service</span> <span class="n">B</span>   <span class="o">|</span>  <span class="o">|</span>  <span class="n">Service</span> <span class="n">C</span>   <span class="o">|</span>
+<span class="o">|</span>  <span class="n">v1</span><span class="mf">.2.3</span>      <span class="o">|</span>  <span class="o">|</span>  <span class="n">v2</span><span class="mf">.0.1</span>      <span class="o">|</span>  <span class="o">|</span>  <span class="n">v1</span><span class="mf">.5.0</span>      <span class="o">|</span>
+<span class="o">+------+-------+</span>  <span class="o">+------+-------+</span>  <span class="o">+------+-------+</span>
+       <span class="o">|</span>                 <span class="o">|</span>                 <span class="o">|</span>
+       <span class="o">|</span>                 <span class="o">|</span>  <span class="n">Deploy</span> <span class="n">v2</span><span class="mf">.1.0</span>  <span class="o">|</span>
+       <span class="o">|</span>                 <span class="o">|</span>  <span class="p">(</span><span class="n">no</span> <span class="n">impact</span><span class="p">)</span>    <span class="o">|</span>
+       <span class="o">|</span>                 <span class="n">v</span>                 <span class="o">|</span>
+       <span class="o">|</span>          <span class="o">+--------------+</span>         <span class="o">|</span>
+       <span class="o">|</span>          <span class="o">|</span>  <span class="n">Service</span> <span class="n">B</span>   <span class="o">|</span>         <span class="o">|</span>
+       <span class="o">|</span>          <span class="o">|</span>  <span class="n">v2</span><span class="mf">.1.0</span>      <span class="o">|</span>         <span class="o">|</span>
+       <span class="o">|</span>          <span class="o">+--------------+</span>         <span class="o">|</span>
+       <span class="o">|</span>                 <span class="o">|</span>                 <span class="o">|</span>
+       <span class="o">+-----------------+-----------------+</span>
+                   <span class="n">Message</span> <span class="n">Queue</span>
 </pre></div>
 </div>
 <ul class="simple">
@@ -622,21 +622,21 @@ External Provider                    VoIPBIN Internal
 <li><p><strong>Quick Rollback</strong>: Easy to revert problematic deployments</p></li>
 </ul>
 <p><strong>Independent Scaling</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Horizontal Scaling:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Horizontal</span> <span class="n">Scaling</span><span class="p">:</span>
 
-Normal Load:              High Call Load:
-┌──────────┐              ┌──────────┐ ┌──────────┐ ┌──────────┐
-│   Call   │              │   Call   │ │   Call   │ │   Call   │
-│  Manager │              │ Manager  │ │ Manager  │ │ Manager  │
-│   x1     │              │   x1     │ │   x2     │ │   x3     │
-└──────────┘              └──────────┘ └──────────┘ └──────────┘
-┌──────────┐              ┌──────────┐
-│   SMS    │              │   SMS    │
-│  Manager │              │  Manager │
-│   x1     │              │   x1     │
-└──────────┘              └──────────┘
+<span class="n">Normal</span> <span class="n">Load</span><span class="p">:</span>              <span class="n">High</span> <span class="n">Call</span> <span class="n">Load</span><span class="p">:</span>
+<span class="o">+----------+</span>              <span class="o">+----------+</span> <span class="o">+----------+</span> <span class="o">+----------+</span>
+<span class="o">|</span>   <span class="n">Call</span>   <span class="o">|</span>              <span class="o">|</span>   <span class="n">Call</span>   <span class="o">|</span> <span class="o">|</span>   <span class="n">Call</span>   <span class="o">|</span> <span class="o">|</span>   <span class="n">Call</span>   <span class="o">|</span>
+<span class="o">|</span>  <span class="n">Manager</span> <span class="o">|</span>              <span class="o">|</span> <span class="n">Manager</span>  <span class="o">|</span> <span class="o">|</span> <span class="n">Manager</span>  <span class="o">|</span> <span class="o">|</span> <span class="n">Manager</span>  <span class="o">|</span>
+<span class="o">|</span>   <span class="n">x1</span>     <span class="o">|</span>              <span class="o">|</span>   <span class="n">x1</span>     <span class="o">|</span> <span class="o">|</span>   <span class="n">x2</span>     <span class="o">|</span> <span class="o">|</span>   <span class="n">x3</span>     <span class="o">|</span>
+<span class="o">+----------+</span>              <span class="o">+----------+</span> <span class="o">+----------+</span> <span class="o">+----------+</span>
+<span class="o">+----------+</span>              <span class="o">+----------+</span>
+<span class="o">|</span>   <span class="n">SMS</span>    <span class="o">|</span>              <span class="o">|</span>   <span class="n">SMS</span>    <span class="o">|</span>
+<span class="o">|</span>  <span class="n">Manager</span> <span class="o">|</span>              <span class="o">|</span>  <span class="n">Manager</span> <span class="o">|</span>
+<span class="o">|</span>   <span class="n">x1</span>     <span class="o">|</span>              <span class="o">|</span>   <span class="n">x1</span>     <span class="o">|</span>
+<span class="o">+----------+</span>              <span class="o">+----------+</span>
 
-Scale only what needs scaling
+<span class="n">Scale</span> <span class="n">only</span> <span class="n">what</span> <span class="n">needs</span> <span class="n">scaling</span>
 </pre></div>
 </div>
 <ul class="simple">
@@ -646,24 +646,24 @@ Scale only what needs scaling
 <li><p><strong>Resource Efficiency</strong>: Better resource utilization</p></li>
 </ul>
 <p><strong>Independent Development</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Development Isolation:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Development</span> <span class="n">Isolation</span><span class="p">:</span>
 
-Team A              Team B              Team C
-   │                   │                   │
-   │  bin-call-        │  bin-flow-        │  bin-ai-
-   │  manager          │  manager          │  manager
-   │                   │                   │
-   │  • Go codebase    │  • Go codebase    │  • Go codebase
-   │  • Own git        │  • Own git        │  • Own git
-   │    branch         │    branch         │    branch
-   │  • Own CI/CD      │  • Own CI/CD      │  • Own CI/CD
-   │  • Own tests      │  • Own tests      │  • Own tests
-   │                   │                   │
-   └───────────────────┴───────────────────┘
-          Coordinate only via:
-          • Message contracts
-          • Database schema
-          • API contracts
+<span class="n">Team</span> <span class="n">A</span>              <span class="n">Team</span> <span class="n">B</span>              <span class="n">Team</span> <span class="n">C</span>
+   <span class="o">|</span>                   <span class="o">|</span>                   <span class="o">|</span>
+   <span class="o">|</span>  <span class="nb">bin</span><span class="o">-</span><span class="n">call</span><span class="o">-</span>        <span class="o">|</span>  <span class="nb">bin</span><span class="o">-</span><span class="n">flow</span><span class="o">-</span>        <span class="o">|</span>  <span class="nb">bin</span><span class="o">-</span><span class="n">ai</span><span class="o">-</span>
+   <span class="o">|</span>  <span class="n">manager</span>          <span class="o">|</span>  <span class="n">manager</span>          <span class="o">|</span>  <span class="n">manager</span>
+   <span class="o">|</span>                   <span class="o">|</span>                   <span class="o">|</span>
+   <span class="o">|</span>  <span class="n">o</span> <span class="n">Go</span> <span class="n">codebase</span>    <span class="o">|</span>  <span class="n">o</span> <span class="n">Go</span> <span class="n">codebase</span>    <span class="o">|</span>  <span class="n">o</span> <span class="n">Go</span> <span class="n">codebase</span>
+   <span class="o">|</span>  <span class="n">o</span> <span class="n">Own</span> <span class="n">git</span>        <span class="o">|</span>  <span class="n">o</span> <span class="n">Own</span> <span class="n">git</span>        <span class="o">|</span>  <span class="n">o</span> <span class="n">Own</span> <span class="n">git</span>
+   <span class="o">|</span>    <span class="n">branch</span>         <span class="o">|</span>    <span class="n">branch</span>         <span class="o">|</span>    <span class="n">branch</span>
+   <span class="o">|</span>  <span class="n">o</span> <span class="n">Own</span> <span class="n">CI</span><span class="o">/</span><span class="n">CD</span>      <span class="o">|</span>  <span class="n">o</span> <span class="n">Own</span> <span class="n">CI</span><span class="o">/</span><span class="n">CD</span>      <span class="o">|</span>  <span class="n">o</span> <span class="n">Own</span> <span class="n">CI</span><span class="o">/</span><span class="n">CD</span>
+   <span class="o">|</span>  <span class="n">o</span> <span class="n">Own</span> <span class="n">tests</span>      <span class="o">|</span>  <span class="n">o</span> <span class="n">Own</span> <span class="n">tests</span>      <span class="o">|</span>  <span class="n">o</span> <span class="n">Own</span> <span class="n">tests</span>
+   <span class="o">|</span>                   <span class="o">|</span>                   <span class="o">|</span>
+   <span class="o">+-------------------+-------------------+</span>
+          <span class="n">Coordinate</span> <span class="n">only</span> <span class="n">via</span><span class="p">:</span>
+          <span class="n">o</span> <span class="n">Message</span> <span class="n">contracts</span>
+          <span class="n">o</span> <span class="n">Database</span> <span class="n">schema</span>
+          <span class="n">o</span> <span class="n">API</span> <span class="n">contracts</span>
 </pre></div>
 </div>
 <ul class="simple">
@@ -677,48 +677,48 @@ Team A              Team B              Team C
 <h2>Service Communication Patterns<a class="headerlink" href="#service-communication-patterns" title="Link to this heading"></a></h2>
 <p>Services communicate primarily through RabbitMQ RPC:</p>
 <p><strong>Synchronous RPC (Request-Response)</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>RPC Communication:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">RPC</span> <span class="n">Communication</span><span class="p">:</span>
 
-API Gateway                RabbitMQ              Call Manager
-     │                         │                      │
-     │  1. Call Request        │                      │
-     ├────────────────────────▶│                      │
-     │  Queue: bin-manager.    │                      │
-     │         call.request    │                      │
-     │                         │  2. Dequeue Request  │
-     │                         ├─────────────────────▶│
-     │                         │                      │
-     │                         │  3. Process Request  │
-     │                         │      (create call)   │
-     │                         │                      │
-     │                         │  4. Send Response    │
-     │                         │◀─────────────────────┤
-     │  5. Response            │                      │
-     │◀────────────────────────┤                      │
-     │                         │                      │
+<span class="n">API</span> <span class="n">Gateway</span>                <span class="n">RabbitMQ</span>              <span class="n">Call</span> <span class="n">Manager</span>
+     <span class="o">|</span>                         <span class="o">|</span>                      <span class="o">|</span>
+     <span class="o">|</span>  <span class="mf">1.</span> <span class="n">Call</span> <span class="n">Request</span>        <span class="o">|</span>                      <span class="o">|</span>
+     <span class="o">+------------------------&gt;&gt;</span>                      <span class="o">|</span>
+     <span class="o">|</span>  <span class="n">Queue</span><span class="p">:</span> <span class="nb">bin</span><span class="o">-</span><span class="n">manager</span><span class="o">.</span>    <span class="o">|</span>                      <span class="o">|</span>
+     <span class="o">|</span>         <span class="n">call</span><span class="o">.</span><span class="n">request</span>    <span class="o">|</span>                      <span class="o">|</span>
+     <span class="o">|</span>                         <span class="o">|</span>  <span class="mf">2.</span> <span class="n">Dequeue</span> <span class="n">Request</span>  <span class="o">|</span>
+     <span class="o">|</span>                         <span class="o">+---------------------&gt;&gt;</span>
+     <span class="o">|</span>                         <span class="o">|</span>                      <span class="o">|</span>
+     <span class="o">|</span>                         <span class="o">|</span>  <span class="mf">3.</span> <span class="n">Process</span> <span class="n">Request</span>  <span class="o">|</span>
+     <span class="o">|</span>                         <span class="o">|</span>      <span class="p">(</span><span class="n">create</span> <span class="n">call</span><span class="p">)</span>   <span class="o">|</span>
+     <span class="o">|</span>                         <span class="o">|</span>                      <span class="o">|</span>
+     <span class="o">|</span>                         <span class="o">|</span>  <span class="mf">4.</span> <span class="n">Send</span> <span class="n">Response</span>    <span class="o">|</span>
+     <span class="o">|</span>                         <span class="o">&lt;&lt;---------------------+</span>
+     <span class="o">|</span>  <span class="mf">5.</span> <span class="n">Response</span>            <span class="o">|</span>                      <span class="o">|</span>
+     <span class="o">&lt;&lt;------------------------+</span>                      <span class="o">|</span>
+     <span class="o">|</span>                         <span class="o">|</span>                      <span class="o">|</span>
 </pre></div>
 </div>
 <p><strong>Asynchronous Events (Pub/Sub)</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Event Broadcasting:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Event</span> <span class="n">Broadcasting</span><span class="p">:</span>
 
-Call Manager          RabbitMQ Exchange        Subscribers
-     │                      │                       │
-     │  1. Call Created     │                       │
-     │  (publish event)     │                       │
-     ├─────────────────────▶│                       │
-     │                      │                       │
-     │                      │  2. Broadcast         │
-     │                      │      to all           │
-     │                      ├──────────┬────────────┤
-     │                      │          │            │
-     │                      │          ▼            ▼
-     │                      │    ┌──────────┐ ┌──────────┐
-     │                      │    │ Billing  │ │ Webhook  │
-     │                      │    │ Manager  │ │ Manager  │
-     │                      │    └──────────┘ └──────────┘
-     │                      │                       │
-     │                      │    Process event      │
-     │                      │    independently      │
+<span class="n">Call</span> <span class="n">Manager</span>          <span class="n">RabbitMQ</span> <span class="n">Exchange</span>        <span class="n">Subscribers</span>
+     <span class="o">|</span>                      <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">|</span>  <span class="mf">1.</span> <span class="n">Call</span> <span class="n">Created</span>     <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">|</span>  <span class="p">(</span><span class="n">publish</span> <span class="n">event</span><span class="p">)</span>     <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">+---------------------&gt;&gt;</span>                       <span class="o">|</span>
+     <span class="o">|</span>                      <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">|</span>                      <span class="o">|</span>  <span class="mf">2.</span> <span class="n">Broadcast</span>         <span class="o">|</span>
+     <span class="o">|</span>                      <span class="o">|</span>      <span class="n">to</span> <span class="nb">all</span>           <span class="o">|</span>
+     <span class="o">|</span>                      <span class="o">+----------+------------+</span>
+     <span class="o">|</span>                      <span class="o">|</span>          <span class="o">|</span>            <span class="o">|</span>
+     <span class="o">|</span>                      <span class="o">|</span>          <span class="n">v</span>            <span class="n">v</span>
+     <span class="o">|</span>                      <span class="o">|</span>    <span class="o">+----------+</span> <span class="o">+----------+</span>
+     <span class="o">|</span>                      <span class="o">|</span>    <span class="o">|</span> <span class="n">Billing</span>  <span class="o">|</span> <span class="o">|</span> <span class="n">Webhook</span>  <span class="o">|</span>
+     <span class="o">|</span>                      <span class="o">|</span>    <span class="o">|</span> <span class="n">Manager</span>  <span class="o">|</span> <span class="o">|</span> <span class="n">Manager</span>  <span class="o">|</span>
+     <span class="o">|</span>                      <span class="o">|</span>    <span class="o">+----------+</span> <span class="o">+----------+</span>
+     <span class="o">|</span>                      <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">|</span>                      <span class="o">|</span>    <span class="n">Process</span> <span class="n">event</span>      <span class="o">|</span>
+     <span class="o">|</span>                      <span class="o">|</span>    <span class="n">independently</span>      <span class="o">|</span>
 </pre></div>
 </div>
 <p><strong>Communication Patterns Used:</strong></p>
@@ -733,21 +733,21 @@ Call Manager          RabbitMQ Exchange        Subscribers
 <h2>Service Discovery and Configuration<a class="headerlink" href="#service-discovery-and-configuration" title="Link to this heading"></a></h2>
 <p>VoIPBIN uses a hybrid approach for service discovery:</p>
 <p><strong>Queue-Based Discovery</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Service Registration:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Service</span> <span class="n">Registration</span><span class="p">:</span>
 
-┌────────────────────────────────────────────────┐
-│            RabbitMQ Queue Naming               │
-│                                                │
-│  bin-manager.&lt;service&gt;.&lt;operation&gt;             │
-│                                                │
-│  Examples:                                     │
-│  • bin-manager.call.request                    │
-│  • bin-manager.conference.request              │
-│  • bin-manager.sms.request                     │
-│                                                │
-│  Services listen on their named queues         │
-│  Clients send to known queue names             │
-└────────────────────────────────────────────────┘
+<span class="o">+------------------------------------------------+</span>
+<span class="o">|</span>            <span class="n">RabbitMQ</span> <span class="n">Queue</span> <span class="n">Naming</span>               <span class="o">|</span>
+<span class="o">|</span>                                                <span class="o">|</span>
+<span class="o">|</span>  <span class="nb">bin</span><span class="o">-</span><span class="n">manager</span><span class="o">.&lt;</span><span class="n">service</span><span class="o">&gt;.&lt;</span><span class="n">operation</span><span class="o">&gt;</span>             <span class="o">|</span>
+<span class="o">|</span>                                                <span class="o">|</span>
+<span class="o">|</span>  <span class="n">Examples</span><span class="p">:</span>                                     <span class="o">|</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="nb">bin</span><span class="o">-</span><span class="n">manager</span><span class="o">.</span><span class="n">call</span><span class="o">.</span><span class="n">request</span>                    <span class="o">|</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="nb">bin</span><span class="o">-</span><span class="n">manager</span><span class="o">.</span><span class="n">conference</span><span class="o">.</span><span class="n">request</span>              <span class="o">|</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="nb">bin</span><span class="o">-</span><span class="n">manager</span><span class="o">.</span><span class="n">sms</span><span class="o">.</span><span class="n">request</span>                     <span class="o">|</span>
+<span class="o">|</span>                                                <span class="o">|</span>
+<span class="o">|</span>  <span class="n">Services</span> <span class="n">listen</span> <span class="n">on</span> <span class="n">their</span> <span class="n">named</span> <span class="n">queues</span>         <span class="o">|</span>
+<span class="o">|</span>  <span class="n">Clients</span> <span class="n">send</span> <span class="n">to</span> <span class="n">known</span> <span class="n">queue</span> <span class="n">names</span>             <span class="o">|</span>
+<span class="o">+------------------------------------------------+</span>
 </pre></div>
 </div>
 <ul class="simple">
@@ -758,58 +758,58 @@ Call Manager          RabbitMQ Exchange        Subscribers
 </ul>
 <p><strong>Configuration Management</strong></p>
 <p>Services receive configuration through multiple sources:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Configuration Sources:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Configuration</span> <span class="n">Sources</span><span class="p">:</span>
 
-┌────────────────┐
-│   Service      │
-└────┬───────────┘
-     │
-     ├──────▶ Environment Variables
-     │       • Database connection
-     │       • RabbitMQ address
-     │       • Redis address
-     │
-     ├──────▶ Command-Line Flags
-     │       • Port number
-     │       • Log level
-     │
-     ├──────▶ bin-config-manager
-     │       • Feature flags
-     │       • Business logic config
-     │
-     └──────▶ Database
-             • Dynamic configuration
-             • Customer-specific settings
+<span class="o">+----------------+</span>
+<span class="o">|</span>   <span class="n">Service</span>      <span class="o">|</span>
+<span class="o">+----+-----------+</span>
+     <span class="o">|</span>
+     <span class="o">+-------&gt;</span> <span class="n">Environment</span> <span class="n">Variables</span>
+     <span class="o">|</span>       <span class="n">o</span> <span class="n">Database</span> <span class="n">connection</span>
+     <span class="o">|</span>       <span class="n">o</span> <span class="n">RabbitMQ</span> <span class="n">address</span>
+     <span class="o">|</span>       <span class="n">o</span> <span class="n">Redis</span> <span class="n">address</span>
+     <span class="o">|</span>
+     <span class="o">+-------&gt;</span> <span class="n">Command</span><span class="o">-</span><span class="n">Line</span> <span class="n">Flags</span>
+     <span class="o">|</span>       <span class="n">o</span> <span class="n">Port</span> <span class="n">number</span>
+     <span class="o">|</span>       <span class="n">o</span> <span class="n">Log</span> <span class="n">level</span>
+     <span class="o">|</span>
+     <span class="o">+-------&gt;</span> <span class="nb">bin</span><span class="o">-</span><span class="n">config</span><span class="o">-</span><span class="n">manager</span>
+     <span class="o">|</span>       <span class="n">o</span> <span class="n">Feature</span> <span class="n">flags</span>
+     <span class="o">|</span>       <span class="n">o</span> <span class="n">Business</span> <span class="n">logic</span> <span class="n">config</span>
+     <span class="o">|</span>
+     <span class="o">+-------&gt;</span> <span class="n">Database</span>
+             <span class="n">o</span> <span class="n">Dynamic</span> <span class="n">configuration</span>
+             <span class="n">o</span> <span class="n">Customer</span><span class="o">-</span><span class="n">specific</span> <span class="n">settings</span>
 </pre></div>
 </div>
 </section>
 <section id="health-monitoring">
 <h2>Health Monitoring<a class="headerlink" href="#health-monitoring" title="Link to this heading"></a></h2>
 <p>All services expose health check endpoints:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Health Check Architecture:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Health</span> <span class="n">Check</span> <span class="n">Architecture</span><span class="p">:</span>
 
-Kubernetes              Service Health          Dependencies
-     │                       │                       │
-     │  1. Health Check      │                       │
-     ├──────────────────────▶│                       │
-     │  GET /health          │                       │
-     │                       │  2. Check MySQL       │
-     │                       ├──────────────────────▶│
-     │                       │     (ping)            │
-     │                       │                       │
-     │                       │  3. Check Redis       │
-     │                       ├──────────────────────▶│
-     │                       │     (ping)            │
-     │                       │                       │
-     │                       │  4. Check RabbitMQ    │
-     │                       ├──────────────────────▶│
-     │                       │     (connection)      │
-     │                       │                       │
-     │  200 OK / 503 Error   │                       │
-     │◀──────────────────────┤                       │
-     │                       │                       │
-     │  5. Restart if failed │                       │
-     │  (after retries)      │                       │
+<span class="n">Kubernetes</span>              <span class="n">Service</span> <span class="n">Health</span>          <span class="n">Dependencies</span>
+     <span class="o">|</span>                       <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">|</span>  <span class="mf">1.</span> <span class="n">Health</span> <span class="n">Check</span>      <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">+----------------------&gt;&gt;</span>                       <span class="o">|</span>
+     <span class="o">|</span>  <span class="n">GET</span> <span class="o">/</span><span class="n">health</span>          <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">|</span>                       <span class="o">|</span>  <span class="mf">2.</span> <span class="n">Check</span> <span class="n">MySQL</span>       <span class="o">|</span>
+     <span class="o">|</span>                       <span class="o">+----------------------&gt;&gt;</span>
+     <span class="o">|</span>                       <span class="o">|</span>     <span class="p">(</span><span class="n">ping</span><span class="p">)</span>            <span class="o">|</span>
+     <span class="o">|</span>                       <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">|</span>                       <span class="o">|</span>  <span class="mf">3.</span> <span class="n">Check</span> <span class="n">Redis</span>       <span class="o">|</span>
+     <span class="o">|</span>                       <span class="o">+----------------------&gt;&gt;</span>
+     <span class="o">|</span>                       <span class="o">|</span>     <span class="p">(</span><span class="n">ping</span><span class="p">)</span>            <span class="o">|</span>
+     <span class="o">|</span>                       <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">|</span>                       <span class="o">|</span>  <span class="mf">4.</span> <span class="n">Check</span> <span class="n">RabbitMQ</span>    <span class="o">|</span>
+     <span class="o">|</span>                       <span class="o">+----------------------&gt;&gt;</span>
+     <span class="o">|</span>                       <span class="o">|</span>     <span class="p">(</span><span class="n">connection</span><span class="p">)</span>      <span class="o">|</span>
+     <span class="o">|</span>                       <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">|</span>  <span class="mi">200</span> <span class="n">OK</span> <span class="o">/</span> <span class="mi">503</span> <span class="n">Error</span>   <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">&lt;&lt;----------------------+</span>                       <span class="o">|</span>
+     <span class="o">|</span>                       <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">|</span>  <span class="mf">5.</span> <span class="n">Restart</span> <span class="k">if</span> <span class="n">failed</span> <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">|</span>  <span class="p">(</span><span class="n">after</span> <span class="n">retries</span><span class="p">)</span>      <span class="o">|</span>                       <span class="o">|</span>
 </pre></div>
 </div>
 <p><strong>Health Check Components:</strong></p>
@@ -824,25 +824,25 @@ Kubernetes              Service Health          Dependencies
 <h2>Error Handling and Resilience<a class="headerlink" href="#error-handling-and-resilience" title="Link to this heading"></a></h2>
 <p>Services implement multiple resilience patterns:</p>
 <p><strong>Circuit Breaker</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Circuit Breaker States:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Circuit</span> <span class="n">Breaker</span> <span class="n">States</span><span class="p">:</span>
 
-Closed (Normal)         Open (Failed)          Half-Open (Testing)
-     │                       │                       │
-     │  Requests pass        │  Requests rejected    │  Limited requests
-     │  through              │  immediately          │  allowed
-     │                       │                       │
-     │  ───────────▶         │  ────────X            │  ───────────▶
-     │                       │                       │
-     │  If failures          │  After timeout        │  If success
-     │  exceed threshold     │  period               │  threshold met
-     │                       │                       │
-     └──────────────────────▶│                       │
-                             │◀──────────────────────┤
-                             │                       │
-                             └──────────────────────▶│
-                               If still failing      │
-                                                     │
-                                                     └──────▶ Closed
+<span class="n">Closed</span> <span class="p">(</span><span class="n">Normal</span><span class="p">)</span>         <span class="n">Open</span> <span class="p">(</span><span class="n">Failed</span><span class="p">)</span>          <span class="n">Half</span><span class="o">-</span><span class="n">Open</span> <span class="p">(</span><span class="n">Testing</span><span class="p">)</span>
+     <span class="o">|</span>                       <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">|</span>  <span class="n">Requests</span> <span class="k">pass</span>        <span class="o">|</span>  <span class="n">Requests</span> <span class="n">rejected</span>    <span class="o">|</span>  <span class="n">Limited</span> <span class="n">requests</span>
+     <span class="o">|</span>  <span class="n">through</span>              <span class="o">|</span>  <span class="n">immediately</span>          <span class="o">|</span>  <span class="n">allowed</span>
+     <span class="o">|</span>                       <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">|</span>  <span class="o">------------&gt;</span>        <span class="o">|</span>  <span class="o">--------</span><span class="n">X</span>            <span class="o">|</span>  <span class="o">------------&gt;</span>
+     <span class="o">|</span>                       <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">|</span>  <span class="n">If</span> <span class="n">failures</span>          <span class="o">|</span>  <span class="n">After</span> <span class="n">timeout</span>        <span class="o">|</span>  <span class="n">If</span> <span class="n">success</span>
+     <span class="o">|</span>  <span class="n">exceed</span> <span class="n">threshold</span>     <span class="o">|</span>  <span class="n">period</span>               <span class="o">|</span>  <span class="n">threshold</span> <span class="n">met</span>
+     <span class="o">|</span>                       <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">+----------------------&gt;&gt;</span>                       <span class="o">|</span>
+                             <span class="o">&lt;&lt;----------------------+</span>
+                             <span class="o">|</span>                       <span class="o">|</span>
+                             <span class="o">+----------------------&gt;&gt;</span>
+                               <span class="n">If</span> <span class="n">still</span> <span class="n">failing</span>      <span class="o">|</span>
+                                                     <span class="o">|</span>
+                                                     <span class="o">+------&gt;</span> <span class="n">Closed</span>
 </pre></div>
 </div>
 <ul class="simple">
@@ -851,29 +851,29 @@ Closed (Normal)         Open (Failed)          Half-Open (Testing)
 <li><p><strong>Auto-Recovery</strong>: Periodically test if service recovered</p></li>
 </ul>
 <p><strong>Retry with Backoff</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Exponential Backoff:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Exponential</span> <span class="n">Backoff</span><span class="p">:</span>
 
-Attempt 1: Immediate
-     │
-     │ Failed
-     ▼
-Attempt 2: Wait 1s
-     │
-     │ Failed
-     ▼
-Attempt 3: Wait 2s
-     │
-     │ Failed
-     ▼
-Attempt 4: Wait 4s
-     │
-     │ Failed
-     ▼
-Attempt 5: Wait 8s
-     │
-     │ Failed
-     ▼
-Give up, return error
+<span class="n">Attempt</span> <span class="mi">1</span><span class="p">:</span> <span class="n">Immediate</span>
+     <span class="o">|</span>
+     <span class="o">|</span> <span class="n">Failed</span>
+     <span class="n">v</span>
+<span class="n">Attempt</span> <span class="mi">2</span><span class="p">:</span> <span class="n">Wait</span> <span class="mi">1</span><span class="n">s</span>
+     <span class="o">|</span>
+     <span class="o">|</span> <span class="n">Failed</span>
+     <span class="n">v</span>
+<span class="n">Attempt</span> <span class="mi">3</span><span class="p">:</span> <span class="n">Wait</span> <span class="mi">2</span><span class="n">s</span>
+     <span class="o">|</span>
+     <span class="o">|</span> <span class="n">Failed</span>
+     <span class="n">v</span>
+<span class="n">Attempt</span> <span class="mi">4</span><span class="p">:</span> <span class="n">Wait</span> <span class="mi">4</span><span class="n">s</span>
+     <span class="o">|</span>
+     <span class="o">|</span> <span class="n">Failed</span>
+     <span class="n">v</span>
+<span class="n">Attempt</span> <span class="mi">5</span><span class="p">:</span> <span class="n">Wait</span> <span class="mi">8</span><span class="n">s</span>
+     <span class="o">|</span>
+     <span class="o">|</span> <span class="n">Failed</span>
+     <span class="n">v</span>
+<span class="n">Give</span> <span class="n">up</span><span class="p">,</span> <span class="k">return</span> <span class="n">error</span>
 </pre></div>
 </div>
 <ul class="simple">
@@ -894,42 +894,42 @@ Give up, return error
 <section id="deployment-architecture">
 <h2>Deployment Architecture<a class="headerlink" href="#deployment-architecture" title="Link to this heading"></a></h2>
 <p>Services deploy to Kubernetes on Google Cloud Platform:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Kubernetes Deployment:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Kubernetes</span> <span class="n">Deployment</span><span class="p">:</span>
 
-┌─────────────────────────────────────────────────────────┐
-│                      GKE Cluster                        │
-│                                                         │
-│  ┌───────────────────────────────────────────────────┐  │
-│  │              Namespace: production                │  │
-│  │                                                   │  │
-│  │  ┌─────────────────────────────────────────────┐  │  │
-│  │  │  Deployment: bin-call-manager               │  │  │
-│  │  │  ┌─────────┐  ┌─────────┐  ┌─────────┐      │  │  │
-│  │  │  │  Pod 1  │  │  Pod 2  │  │  Pod 3  │      │  │  │
-│  │  │  └─────────┘  └─────────┘  └─────────┘      │  │  │
-│  │  │  Replicas: 3    HPA: 3-10                   │  │  │
-│  │  └─────────────────────────────────────────────┘  │  │
-│  │                                                   │  │
-│  │  ┌─────────────────────────────────────────────┐  │  │
-│  │  │  Deployment: bin-api-manager                │  │  │
-│  │  │  ┌─────────┐  ┌─────────┐  ┌─────────┐      │  │  │
-│  │  │  │  Pod 1  │  │  Pod 2  │  │  Pod 3  │      │  │  │
-│  │  │  └─────────┘  └─────────┘  └─────────┘      │  │  │
-│  │  │  Replicas: 3    HPA: 3-20                   │  │  │
-│  │  └─────────────────────────────────────────────┘  │  │
-│  │                                                   │  │
-│  │  ... 30+ more deployments                         │  │
-│  │                                                   │  │
-│  └───────────────────────────────────────────────────┘  │
-│                                                         │
-│  ┌───────────────────────────────────────────────────┐  │
-│  │         Shared Resources (same cluster)           │  │
-│  │  • MySQL StatefulSet                              │  │
-│  │  • Redis StatefulSet                              │  │
-│  │  • RabbitMQ StatefulSet                           │  │
-│  │  • Prometheus Monitoring                          │  │
-│  └───────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────┘
+<span class="o">+---------------------------------------------------------+</span>
+<span class="o">|</span>                      <span class="n">GKE</span> <span class="n">Cluster</span>                        <span class="o">|</span>
+<span class="o">|</span>                                                         <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+---------------------------------------------------+</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span>              <span class="n">Namespace</span><span class="p">:</span> <span class="n">production</span>                <span class="o">|</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span>                                                   <span class="o">|</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span>  <span class="o">+---------------------------------------------+</span>  <span class="o">|</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span>  <span class="o">|</span>  <span class="n">Deployment</span><span class="p">:</span> <span class="nb">bin</span><span class="o">-</span><span class="n">call</span><span class="o">-</span><span class="n">manager</span>               <span class="o">|</span>  <span class="o">|</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span>  <span class="o">|</span>  <span class="o">+---------+</span>  <span class="o">+---------+</span>  <span class="o">+---------+</span>      <span class="o">|</span>  <span class="o">|</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span>  <span class="o">|</span>  <span class="o">|</span>  <span class="n">Pod</span> <span class="mi">1</span>  <span class="o">|</span>  <span class="o">|</span>  <span class="n">Pod</span> <span class="mi">2</span>  <span class="o">|</span>  <span class="o">|</span>  <span class="n">Pod</span> <span class="mi">3</span>  <span class="o">|</span>      <span class="o">|</span>  <span class="o">|</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span>  <span class="o">|</span>  <span class="o">+---------+</span>  <span class="o">+---------+</span>  <span class="o">+---------+</span>      <span class="o">|</span>  <span class="o">|</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span>  <span class="o">|</span>  <span class="n">Replicas</span><span class="p">:</span> <span class="mi">3</span>    <span class="n">HPA</span><span class="p">:</span> <span class="mi">3</span><span class="o">-</span><span class="mi">10</span>                   <span class="o">|</span>  <span class="o">|</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span>  <span class="o">+---------------------------------------------+</span>  <span class="o">|</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span>                                                   <span class="o">|</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span>  <span class="o">+---------------------------------------------+</span>  <span class="o">|</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span>  <span class="o">|</span>  <span class="n">Deployment</span><span class="p">:</span> <span class="nb">bin</span><span class="o">-</span><span class="n">api</span><span class="o">-</span><span class="n">manager</span>                <span class="o">|</span>  <span class="o">|</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span>  <span class="o">|</span>  <span class="o">+---------+</span>  <span class="o">+---------+</span>  <span class="o">+---------+</span>      <span class="o">|</span>  <span class="o">|</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span>  <span class="o">|</span>  <span class="o">|</span>  <span class="n">Pod</span> <span class="mi">1</span>  <span class="o">|</span>  <span class="o">|</span>  <span class="n">Pod</span> <span class="mi">2</span>  <span class="o">|</span>  <span class="o">|</span>  <span class="n">Pod</span> <span class="mi">3</span>  <span class="o">|</span>      <span class="o">|</span>  <span class="o">|</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span>  <span class="o">|</span>  <span class="o">+---------+</span>  <span class="o">+---------+</span>  <span class="o">+---------+</span>      <span class="o">|</span>  <span class="o">|</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span>  <span class="o">|</span>  <span class="n">Replicas</span><span class="p">:</span> <span class="mi">3</span>    <span class="n">HPA</span><span class="p">:</span> <span class="mi">3</span><span class="o">-</span><span class="mi">20</span>                   <span class="o">|</span>  <span class="o">|</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span>  <span class="o">+---------------------------------------------+</span>  <span class="o">|</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span>                                                   <span class="o">|</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span>  <span class="o">...</span> <span class="mi">30</span><span class="o">+</span> <span class="n">more</span> <span class="n">deployments</span>                         <span class="o">|</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span>                                                   <span class="o">|</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+---------------------------------------------------+</span>  <span class="o">|</span>
+<span class="o">|</span>                                                         <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+---------------------------------------------------+</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span>         <span class="n">Shared</span> <span class="n">Resources</span> <span class="p">(</span><span class="n">same</span> <span class="n">cluster</span><span class="p">)</span>           <span class="o">|</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span>  <span class="n">o</span> <span class="n">MySQL</span> <span class="n">StatefulSet</span>                              <span class="o">|</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span>  <span class="n">o</span> <span class="n">Redis</span> <span class="n">StatefulSet</span>                              <span class="o">|</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span>  <span class="n">o</span> <span class="n">RabbitMQ</span> <span class="n">StatefulSet</span>                           <span class="o">|</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span>  <span class="n">o</span> <span class="n">Prometheus</span> <span class="n">Monitoring</span>                          <span class="o">|</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+---------------------------------------------------+</span>  <span class="o">|</span>
+<span class="o">+---------------------------------------------------------+</span>
 </pre></div>
 </div>
 <p><strong>Deployment Characteristics:</strong></p>
@@ -946,26 +946,26 @@ Give up, return error
 <h2>Monitoring and Observability<a class="headerlink" href="#monitoring-and-observability" title="Link to this heading"></a></h2>
 <p>Comprehensive monitoring across all services:</p>
 <p><strong>Metrics Collection</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Metrics Pipeline:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Metrics</span> <span class="n">Pipeline</span><span class="p">:</span>
 
-Services                Prometheus              Grafana
-(30+ services)              │                      │
-     │                      │                      │
-     │  Expose /metrics     │                      │
-     │  endpoint            │                      │
-     │                      │                      │
-     │  Scrape every 15s    │                      │
-     ├─────────────────────▶│                      │
-     │                      │                      │
-     │                      │  Time-series DB      │
-     │                      │  stores metrics      │
-     │                      │                      │
-     │                      │  Query metrics       │
-     │                      ├─────────────────────▶│
-     │                      │                      │
-     │                      │  Visualize           │
-     │                      │  dashboards          │
-     │                      │                      │
+<span class="n">Services</span>                <span class="n">Prometheus</span>              <span class="n">Grafana</span>
+<span class="p">(</span><span class="mi">30</span><span class="o">+</span> <span class="n">services</span><span class="p">)</span>              <span class="o">|</span>                      <span class="o">|</span>
+     <span class="o">|</span>                      <span class="o">|</span>                      <span class="o">|</span>
+     <span class="o">|</span>  <span class="n">Expose</span> <span class="o">/</span><span class="n">metrics</span>     <span class="o">|</span>                      <span class="o">|</span>
+     <span class="o">|</span>  <span class="n">endpoint</span>            <span class="o">|</span>                      <span class="o">|</span>
+     <span class="o">|</span>                      <span class="o">|</span>                      <span class="o">|</span>
+     <span class="o">|</span>  <span class="n">Scrape</span> <span class="n">every</span> <span class="mi">15</span><span class="n">s</span>    <span class="o">|</span>                      <span class="o">|</span>
+     <span class="o">+---------------------&gt;&gt;</span>                      <span class="o">|</span>
+     <span class="o">|</span>                      <span class="o">|</span>                      <span class="o">|</span>
+     <span class="o">|</span>                      <span class="o">|</span>  <span class="n">Time</span><span class="o">-</span><span class="n">series</span> <span class="n">DB</span>      <span class="o">|</span>
+     <span class="o">|</span>                      <span class="o">|</span>  <span class="n">stores</span> <span class="n">metrics</span>      <span class="o">|</span>
+     <span class="o">|</span>                      <span class="o">|</span>                      <span class="o">|</span>
+     <span class="o">|</span>                      <span class="o">|</span>  <span class="n">Query</span> <span class="n">metrics</span>       <span class="o">|</span>
+     <span class="o">|</span>                      <span class="o">+---------------------&gt;&gt;</span>
+     <span class="o">|</span>                      <span class="o">|</span>                      <span class="o">|</span>
+     <span class="o">|</span>                      <span class="o">|</span>  <span class="n">Visualize</span>           <span class="o">|</span>
+     <span class="o">|</span>                      <span class="o">|</span>  <span class="n">dashboards</span>          <span class="o">|</span>
+     <span class="o">|</span>                      <span class="o">|</span>                      <span class="o">|</span>
 </pre></div>
 </div>
 <p><strong>Key Metrics:</strong></p>
