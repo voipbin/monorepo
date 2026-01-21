@@ -229,6 +229,7 @@ func (h *pipecatcallHandler) RunnerWebsocketHandleOutput(id uuid.UUID, c *gin.Co
 
 			case *pipecatframe.Frame_Audio:
 				audio := x.Audio
+				log.Debugf("Received AudioFrame: SampleRate=%d, NumChannels=%d, DataLen=%d", audio.SampleRate, audio.NumChannels, len(audio.Audio))
 				if errAudio := h.runnerWebsocketHandleAudio(se, int(audio.SampleRate), int(audio.NumChannels), audio.Audio); errAudio != nil {
 					return nil
 				}
