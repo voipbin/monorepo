@@ -1,10 +1,14 @@
 # build
-FROM public.ecr.aws/docker/library/golang:1.25-alpine AS build
+FROM public.ecr.aws/docker/library/golang:1.25-bookworm AS build
 
 LABEL maintainer="Sungtae Kim <pchero21@gmail.com>"
 
 # Install CGO dependencies for libsoxr (audio resampling)
-RUN apk add --no-cache gcc musl-dev pkgconfig libsoxr-dev
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    pkg-config \
+    libsoxr-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 COPY ./ .
