@@ -14,30 +14,30 @@ VoIPBIN uses three primary communication mechanisms:
 
     Communication Architecture:
 
-    ┌─────────────────────────────────────────────────────────┐
-    │                  RabbitMQ (Primary Bus)                 │
-    │                                                         │
-    │  ┌───────────────────────┐  ┌───────────────────────┐   │
-    │  │   RPC (Synchronous)   │  │  Pub/Sub (Async)      │   │
-    │  │   Request-Response    │  │  Event Broadcasting   │   │
-    │  └───────────────────────┘  └───────────────────────┘   │
-    └─────────────────────────────────────────────────────────┘
+    +---------------------------------------------------------+
+    |                  RabbitMQ (Primary Bus)                 |
+    |                                                         |
+    |  +-----------------------+  +-----------------------+   |
+    |  |   RPC (Synchronous)   |  |  Pub/Sub (Async)      |   |
+    |  |   Request-Response    |  |  Event Broadcasting   |   |
+    |  +-----------------------+  +-----------------------+   |
+    +---------------------------------------------------------+
 
-    ┌─────────────────────────────────────────────────────────┐
-    │              ZeroMQ (High-Performance Events)           │
-    │                                                         │
-    │  • Real-time event streaming                            │
-    │  • Agent presence updates                               │
-    │  • Call state changes                                   │
-    └─────────────────────────────────────────────────────────┘
+    +---------------------------------------------------------+
+    |              ZeroMQ (High-Performance Events)           |
+    |                                                         |
+    |  o Real-time event streaming                            |
+    |  o Agent presence updates                               |
+    |  o Call state changes                                   |
+    +---------------------------------------------------------+
 
-    ┌─────────────────────────────────────────────────────────┐
-    │              WebSocket (Client Communication)           │
-    │                                                         │
-    │  • Real-time client notifications                       │
-    │  • Bi-directional media streaming                       │
-    │  • Live transcription feeds                             │
-    └─────────────────────────────────────────────────────────┘
+    +---------------------------------------------------------+
+    |              WebSocket (Client Communication)           |
+    |                                                         |
+    |  o Real-time client notifications                       |
+    |  o Bi-directional media streaming                       |
+    |  o Live transcription feeds                             |
+    +---------------------------------------------------------+
 
 RabbitMQ RPC Pattern
 --------------------
@@ -51,33 +51,33 @@ VoIPBIN uses RabbitMQ for synchronous request-response communication between ser
     RPC Request-Response Pattern:
 
     Client Service          RabbitMQ             Server Service
-         │                     │                       │
-         │  1. Send Request    │                       │
-         │  ┌────────────┐     │                       │
-         │  │ call_id    │     │                       │
-         │  │ action     │     │                       │
-         │  │ reply_to   │     │                       │
-         │  └────────────┘     │                       │
-         ├────────────────────▶│                       │
-         │  Queue: bin-manager.│                       │
-         │         call.request│                       │
-         │                     │  2. Dequeue           │
-         │                     ├──────────────────────▶│
-         │                     │                       │
-         │                     │  3. Process Request   │
-         │                     │     (business logic)  │
-         │                     │                       │
-         │                     │  4. Send Response     │
-         │                     │◀──────────────────────┤
-         │                     │  Queue: reply_to      │
-         │  5. Receive Response│                       │
-         │◀────────────────────┤                       │
-         │  ┌────────────┐     │                       │
-         │  │ status     │     │                       │
-         │  │ data       │     │                       │
-         │  │ error      │     │                       │
-         │  └────────────┘     │                       │
-         │                     │                       │
+         |                     |                       |
+         |  1. Send Request    |                       |
+         |  +------------+     |                       |
+         |  | call_id    |     |                       |
+         |  | action     |     |                       |
+         |  | reply_to   |     |                       |
+         |  +------------+     |                       |
+         +-------------------->>                       |
+         |  Queue: bin-manager.|                       |
+         |         call.request|                       |
+         |                     |  2. Dequeue           |
+         |                     +---------------------->>
+         |                     |                       |
+         |                     |  3. Process Request   |
+         |                     |     (business logic)  |
+         |                     |                       |
+         |                     |  4. Send Response     |
+         |                     <<----------------------+
+         |                     |  Queue: reply_to      |
+         |  5. Receive Response|                       |
+         <<--------------------+                       |
+         |  +------------+     |                       |
+         |  | status     |     |                       |
+         |  | data       |     |                       |
+         |  | error      |     |                       |
+         |  +------------+     |                       |
+         |                     |                       |
 
 **Queue Naming Convention**
 
@@ -89,11 +89,11 @@ All RPC queues follow a consistent naming pattern:
     bin-manager.<service>.<operation>
 
     Examples:
-    • bin-manager.call.request        → bin-call-manager
-    • bin-manager.conference.request  → bin-conference-manager
-    • bin-manager.sms.request         → bin-sms-manager
-    • bin-manager.flow.request        → bin-flow-manager
-    • bin-manager.billing.request     → bin-billing-manager
+    o bin-manager.call.request        -> bin-call-manager
+    o bin-manager.conference.request  -> bin-conference-manager
+    o bin-manager.sms.request         -> bin-sms-manager
+    o bin-manager.flow.request        -> bin-flow-manager
+    o bin-manager.billing.request     -> bin-billing-manager
 
 **Message Structure**
 
@@ -138,30 +138,30 @@ Services implement RPC handlers following this pattern:
 
     Service RPC Handler:
 
-    ┌────────────────────────────────────────────────┐
-    │        bin-call-manager                        │
-    │                                                │
-    │  1. Listen on Queue                            │
-    │     ├─ bin-manager.call.request                │
-    │     │                                          │
-    │  2. Receive Message                            │
-    │     ├─ Deserialize JSON                        │
-    │     ├─ Validate request                        │
-    │     │                                          │
-    │  3. Route to Handler                           │
-    │     ├─ Parse route: POST /v1/calls             │
-    │     ├─ Call: CallCreate(ctx, req)              │
-    │     │                                          │
-    │  4. Execute Business Logic                     │
-    │     ├─ Validate data                           │
-    │     ├─ Create call record                      │
-    │     ├─ Initiate SIP call                       │
-    │     │                                          │
-    │  5. Send Response                              │
-    │     ├─ Serialize result                        │
-    │     └─ Reply to reply_to queue                 │
-    │                                                │
-    └────────────────────────────────────────────────┘
+    +------------------------------------------------+
+    |        bin-call-manager                        |
+    |                                                |
+    |  1. Listen on Queue                            |
+    |     +- bin-manager.call.request                |
+    |     |                                          |
+    |  2. Receive Message                            |
+    |     +- Deserialize JSON                        |
+    |     +- Validate request                        |
+    |     |                                          |
+    |  3. Route to Handler                           |
+    |     +- Parse route: POST /v1/calls             |
+    |     +- Call: CallCreate(ctx, req)              |
+    |     |                                          |
+    |  4. Execute Business Logic                     |
+    |     +- Validate data                           |
+    |     +- Create call record                      |
+    |     +- Initiate SIP call                       |
+    |     |                                          |
+    |  5. Send Response                              |
+    |     +- Serialize result                        |
+    |     +- Reply to reply_to queue                 |
+    |                                                |
+    +------------------------------------------------+
 
 **Load Balancing**
 
@@ -172,22 +172,22 @@ Multiple service instances share the same queue:
     Load Balanced RPC:
 
     API Gateway                Queue              Service Instances
-         │                      │                       │
-         │  Request 1           │                       │
-         ├─────────────────────▶│                       │
-         │                      ├──────────────────────▶│ Instance 1
-         │                      │  (round-robin)        │ (processes req 1)
-         │                      │                       │
-         │  Request 2           │                       │
-         ├─────────────────────▶│                       │
-         │                      ├──────────────────────▶│ Instance 2
-         │                      │  (round-robin)        │ (processes req 2)
-         │                      │                       │
-         │  Request 3           │                       │
-         ├─────────────────────▶│                       │
-         │                      ├──────────────────────▶│ Instance 3
-         │                      │  (round-robin)        │ (processes req 3)
-         │                      │                       │
+         |                      |                       |
+         |  Request 1           |                       |
+         +--------------------->>                       |
+         |                      +---------------------->> Instance 1
+         |                      |  (round-robin)        | (processes req 1)
+         |                      |                       |
+         |  Request 2           |                       |
+         +--------------------->>                       |
+         |                      +---------------------->> Instance 2
+         |                      |  (round-robin)        | (processes req 2)
+         |                      |                       |
+         |  Request 3           |                       |
+         +--------------------->>                       |
+         |                      +---------------------->> Instance 3
+         |                      |  (round-robin)        | (processes req 3)
+         |                      |                       |
 
 * **Fair Distribution**: RabbitMQ distributes messages evenly
 * **No Coordination**: Instances don't need to know about each other
@@ -206,29 +206,29 @@ For asynchronous event notifications, VoIPBIN uses RabbitMQ's pub/sub (fanout ex
     Event Publishing Pattern:
 
     Publisher               Exchange              Subscribers
-         │                      │                       │
-         │  1. Publish Event    │                       │
-         │  ┌────────────┐      │                       │
-         │  │event: call │      │                       │
-         │  │      .created│    │                       │
-         │  │data: {...} │      │                       │
-         │  └────────────┘      │                       │
-         ├─────────────────────▶│                       │
-         │  Exchange:           │                       │
-         │  call.events         │                       │
-         │                      │  2. Fanout to all     │
-         │                      │     subscribers       │
-         │                      ├──────┬────────────────┤
-         │                      │      │                │
-         │                      │      ▼                ▼
-         │                      │  ┌────────┐      ┌────────┐
-         │                      │  │Billing │      │Webhook │
-         │                      │  │Manager │      │Manager │
-         │                      │  └────────┘      └────────┘
-         │                      │      │                │
-         │                      │  3. Process       3. Process
-         │                      │     event             event
-         │                      │     independently     independently
+         |                      |                       |
+         |  1. Publish Event    |                       |
+         |  +------------+      |                       |
+         |  |event: call |      |                       |
+         |  |      .created|    |                       |
+         |  |data: {...} |      |                       |
+         |  +------------+      |                       |
+         +--------------------->>                       |
+         |  Exchange:           |                       |
+         |  call.events         |                       |
+         |                      |  2. Fanout to all     |
+         |                      |     subscribers       |
+         |                      +------+----------------+
+         |                      |      |                |
+         |                      |      v                v
+         |                      |  +--------+      +--------+
+         |                      |  |Billing |      |Webhook |
+         |                      |  |Manager |      |Manager |
+         |                      |  +--------+      +--------+
+         |                      |      |                |
+         |                      |  3. Process       3. Process
+         |                      |     event             event
+         |                      |     independently     independently
 
 **Event Types**
 
@@ -239,31 +239,31 @@ VoIPBIN publishes events for major state changes:
     Event Categories:
 
     Call Events:
-    • call.created       - New call initiated
-    • call.ringing       - Call ringing
-    • call.answered      - Call answered
-    • call.ended         - Call terminated
+    o call.created       - New call initiated
+    o call.ringing       - Call ringing
+    o call.answered      - Call answered
+    o call.ended         - Call terminated
 
     Conference Events:
-    • conference.created       - Conference created
-    • conference.participant_joined
-    • conference.participant_left
-    • conference.ended
+    o conference.created       - Conference created
+    o conference.participant_joined
+    o conference.participant_left
+    o conference.ended
 
     SMS Events:
-    • sms.sent           - SMS sent successfully
-    • sms.delivered      - SMS delivered to recipient
-    • sms.failed         - SMS delivery failed
+    o sms.sent           - SMS sent successfully
+    o sms.delivered      - SMS delivered to recipient
+    o sms.failed         - SMS delivery failed
 
     Agent Events:
-    • agent.login        - Agent logged in
-    • agent.logout       - Agent logged out
-    • agent.status_change - Agent status changed
+    o agent.login        - Agent logged in
+    o agent.logout       - Agent logged out
+    o agent.status_change - Agent status changed
 
     Transcription Events:
-    • transcribe.started - Transcription started
-    • transcribe.completed
-    • transcript.created - New transcript segment
+    o transcribe.started - Transcription started
+    o transcribe.completed
+    o transcript.created - New transcript segment
 
 **Event Message Structure**
 
@@ -294,25 +294,25 @@ Services subscribe to events they're interested in:
 
     Subscriber Implementation:
 
-    ┌────────────────────────────────────────────────┐
-    │         bin-billing-manager                    │
-    │                                                │
-    │  1. Declare Exchange                           │
-    │     └─ call.events (fanout)                    │
-    │                                                │
-    │  2. Create Queue                               │
-    │     └─ billing.call.events (unique)            │
-    │                                                │
-    │  3. Bind Queue to Exchange                     │
-    │     └─ Receive all events from exchange        │
-    │                                                │
-    │  4. Consume Events                             │
-    │     ├─ call.created → Track call start         │
-    │     ├─ call.answered → Start billing           │
-    │     ├─ call.ended → Calculate charges          │
-    │     └─ Other events → Ignore                   │
-    │                                                │
-    └────────────────────────────────────────────────┘
+    +------------------------------------------------+
+    |         bin-billing-manager                    |
+    |                                                |
+    |  1. Declare Exchange                           |
+    |     +- call.events (fanout)                    |
+    |                                                |
+    |  2. Create Queue                               |
+    |     +- billing.call.events (unique)            |
+    |                                                |
+    |  3. Bind Queue to Exchange                     |
+    |     +- Receive all events from exchange        |
+    |                                                |
+    |  4. Consume Events                             |
+    |     +- call.created -> Track call start        |
+    |     +- call.answered -> Start billing          |
+    |     +- call.ended -> Calculate charges         |
+    |     +- Other events -> Ignore                  |
+    |                                                |
+    +------------------------------------------------+
 
 **Event Processing Guarantees**
 
@@ -320,30 +320,30 @@ Services subscribe to events they're interested in:
 
     Event Processing:
 
-    ┌──────────────┐
-    │   Publish    │
-    └──────┬───────┘
-           │
-           │  RabbitMQ persists event
-           │  (survives broker restart)
-           ▼
-    ┌──────────────┐
-    │   Deliver    │
-    └──────┬───────┘
-           │
-           │  Subscriber processes
-           │  (may retry on failure)
-           ▼
-    ┌──────────────┐
-    │     ACK      │
-    └──────────────┘
-           │
-           │  Remove from queue
-           │  (event processed successfully)
-           ▼
-    ┌──────────────┐
-    │   Complete   │
-    └──────────────┘
+    +--------------+
+    |   Publish    |
+    +------+-------+
+           |
+           |  RabbitMQ persists event
+           |  (survives broker restart)
+           v
+    +--------------+
+    |   Deliver    |
+    +------+-------+
+           |
+           |  Subscriber processes
+           |  (may retry on failure)
+           v
+    +--------------+
+    |     ACK      |
+    +--------------+
+           |
+           |  Remove from queue
+           |  (event processed successfully)
+           v
+    +--------------+
+    |   Complete   |
+    +--------------+
 
 * **At-Least-Once Delivery**: Events delivered at least once (may duplicate)
 * **Persistent**: Events survive broker restart
@@ -362,25 +362,25 @@ For high-performance, low-latency event streaming, VoIPBIN uses ZeroMQ pub/sub s
     ZeroMQ Pub/Sub Pattern:
 
     Publishers                               Subscribers
-         │                                        │
-         │  Call Manager                          │
-         │  (publishes call events)               │
-         ├──────────────────────┐                 │
-         │  ZMQ PUB Socket      │                 │
-         │  tcp://*:5555        │                 │
-         └──────────┬───────────┘                 │
-                    │                             │
-                    │  Event Stream               │
-                    │  (no broker)                │
-                    │                             │
-                    ├────────────────────────────▶│ Agent Manager
-                    │                             │ (agent presence)
-                    │                             │
-                    ├────────────────────────────▶│ Webhook Manager
-                    │                             │ (webhook delivery)
-                    │                             │
-                    └────────────────────────────▶│ Talk Manager
-                                                  │ (agent UI updates)
+         |                                        |
+         |  Call Manager                          |
+         |  (publishes call events)               |
+         +----------------------+                 |
+         |  ZMQ PUB Socket      |                 |
+         |  tcp://*:5555        |                 |
+         +----------+-----------+                 |
+                    |                             |
+                    |  Event Stream               |
+                    |  (no broker)                |
+                    |                             |
+                    +---------------------------->> Agent Manager
+                    |                             | (agent presence)
+                    |                             |
+                    +---------------------------->> Webhook Manager
+                    |                             | (webhook delivery)
+                    |                             |
+                    +---------------------------->> Talk Manager
+                                                  | (agent UI updates)
 
 **Key Differences from RabbitMQ**
 
@@ -389,24 +389,24 @@ For high-performance, low-latency event streaming, VoIPBIN uses ZeroMQ pub/sub s
     RabbitMQ vs ZeroMQ:
 
     RabbitMQ:                          ZeroMQ:
-    ┌────────────┐                     ┌────────────┐
-    │ Publisher  │                     │ Publisher  │
-    └──────┬─────┘                     └──────┬─────┘
-           │                                  │
-           │ Reliable                         │ Fast
-           │ Persistent                       │ In-memory
-           │ Broker-based                     │ Direct socket
-           ▼                                  ▼
-    ┌────────────┐                     ┌────────────┐
-    │  RabbitMQ  │                     │ Subscriber │
-    │   Broker   │                     │  (Direct)  │
-    └──────┬─────┘                     └────────────┘
-           │
-           │ At-least-once
-           ▼
-    ┌────────────┐
-    │ Subscriber │
-    └────────────┘
+    +------------+                     +------------+
+    | Publisher  |                     | Publisher  |
+    +------+-----+                     +------+-----+
+           |                                  |
+           | Reliable                         | Fast
+           | Persistent                       | In-memory
+           | Broker-based                     | Direct socket
+           v                                  v
+    +------------+                     +------------+
+    |  RabbitMQ  |                     | Subscriber |
+    |   Broker   |                     |  (Direct)  |
+    +------+-----+                     +------------+
+           |
+           | At-least-once
+           v
+    +------------+
+    | Subscriber |
+    +------------+
 
 **RabbitMQ:**
 * Persistent, reliable
@@ -428,28 +428,28 @@ VoIPBIN uses ZeroMQ for:
 
     ZeroMQ Use Cases:
 
-    ✓ Agent Presence Updates
-      • Agent login/logout
-      • Status changes (available, busy, away)
-      • Real-time UI updates
-      • High frequency, acceptable loss
+    [x] Agent Presence Updates
+      o Agent login/logout
+      o Status changes (available, busy, away)
+      o Real-time UI updates
+      o High frequency, acceptable loss
 
-    ✓ Call State Changes
-      • Call ringing, answered, ended
-      • Conference participant updates
-      • Duplicate with RabbitMQ (redundant)
-      • Speed over reliability
+    [x] Call State Changes
+      o Call ringing, answered, ended
+      o Conference participant updates
+      o Duplicate with RabbitMQ (redundant)
+      o Speed over reliability
 
-    ✓ Real-Time Metrics
-      • Queue statistics
-      • Active call counts
-      • System health metrics
-      • Dashboard updates
+    [x] Real-Time Metrics
+      o Queue statistics
+      o Active call counts
+      o System health metrics
+      o Dashboard updates
 
-    ✗ NOT Used For:
-      • Billing events (use RabbitMQ)
-      • Webhook delivery (use RabbitMQ)
-      • Critical state changes (use RabbitMQ)
+    [ ] NOT Used For:
+      o Billing events (use RabbitMQ)
+      o Webhook delivery (use RabbitMQ)
+      o Critical state changes (use RabbitMQ)
 
 **ZMQ Message Format**
 
@@ -458,22 +458,22 @@ VoIPBIN uses ZeroMQ for:
     ZMQ Message Structure:
 
     Topic (routing key)
-    │
-    ├─ "agent.presence"
-    │  {
-    │    "agent_id": "agent-123",
-    │    "status": "available",
-    │    "timestamp": "2026-01-20T12:00:00.000Z"
-    │  }
-    │
-    ├─ "call.state"
-    │  {
-    │    "call_id": "call-789",
-    │    "status": "answered",
-    │    "timestamp": "2026-01-20T12:00:01.000Z"
-    │  }
-    │
-    └─ "queue.stats"
+    |
+    +- "agent.presence"
+    |  {
+    |    "agent_id": "agent-123",
+    |    "status": "available",
+    |    "timestamp": "2026-01-20T12:00:00.000Z"
+    |  }
+    |
+    +- "call.state"
+    |  {
+    |    "call_id": "call-789",
+    |    "status": "answered",
+    |    "timestamp": "2026-01-20T12:00:01.000Z"
+    |  }
+    |
+    +- "queue.stats"
        {
          "queue_id": "queue-456",
          "waiting": 5,
@@ -489,21 +489,21 @@ Subscribers can filter events by topic:
     Topic-Based Filtering:
 
     Subscriber A:
-    • Subscribe to: "agent.*"
-    • Receives:
+    o Subscribe to: "agent.*"
+    o Receives:
       - agent.presence
       - agent.login
       - agent.logout
 
     Subscriber B:
-    • Subscribe to: "call.*"
-    • Receives:
+    o Subscribe to: "call.*"
+    o Receives:
       - call.state
       - call.metrics
 
     Subscriber C:
-    • Subscribe to: ""  (empty = all)
-    • Receives: everything
+    o Subscribe to: ""  (empty = all)
+    o Receives: everything
 
 WebSocket Communication
 -----------------------
@@ -517,33 +517,33 @@ For real-time client communication, VoIPBIN uses WebSocket connections.
     WebSocket Connection Flow:
 
     Client (Browser/App)    API Gateway         Backend Services
-         │                      │                       │
-         │  1. HTTP Upgrade     │                       │
-         │  (WebSocket)         │                       │
-         ├─────────────────────▶│                       │
-         │                      │  2. Authenticate      │
-         │                      │     (JWT token)       │
-         │                      │                       │
-         │  3. Connection       │                       │
-         │     Established      │                       │
-         │◀─────────────────────┤                       │
-         │                      │                       │
-         │  4. Subscribe        │                       │
-         │  {"type":"subscribe",│                       │
-         │   "topics":["..."]}  │                       │
-         ├─────────────────────▶│                       │
-         │                      │  5. Register          │
-         │                      │     subscription      │
-         │                      │                       │
-         │                      │  6. Backend Event     │
-         │                      │◀──────────────────────┤
-         │                      │  (via RabbitMQ/ZMQ)   │
-         │                      │                       │
-         │  7. Push to Client   │                       │
-         │◀─────────────────────┤                       │
-         │  {"event":"call.     │                       │
-         │   created",...}      │                       │
-         │                      │                       │
+         |                      |                       |
+         |  1. HTTP Upgrade     |                       |
+         |  (WebSocket)         |                       |
+         +--------------------->>                       |
+         |                      |  2. Authenticate      |
+         |                      |     (JWT token)       |
+         |                      |                       |
+         |  3. Connection       |                       |
+         |     Established      |                       |
+         <<---------------------+                       |
+         |                      |                       |
+         |  4. Subscribe        |                       |
+         |  {"type":"subscribe",|                       |
+         |   "topics":["..."]}  |                       |
+         +--------------------->>                       |
+         |                      |  5. Register          |
+         |                      |     subscription      |
+         |                      |                       |
+         |                      |  6. Backend Event     |
+         |                      <<----------------------+
+         |                      |  (via RabbitMQ/ZMQ)   |
+         |                      |                       |
+         |  7. Push to Client   |                       |
+         <<---------------------+                       |
+         |  {"event":"call.     |                       |
+         |   created",...}      |                       |
+         |                      |                       |
 
 **Subscription Topics**
 
@@ -555,20 +555,20 @@ Clients subscribe to specific event topics:
     customer_id:<id>:<resource>:<resource_id>
 
     Examples:
-    • customer_id:123:call:*
-      → All calls for customer 123
+    o customer_id:123:call:*
+      -> All calls for customer 123
 
-    • customer_id:123:call:call-789
-      → Specific call updates
+    o customer_id:123:call:call-789
+      -> Specific call updates
 
-    • customer_id:123:agent:agent-456
-      → Specific agent updates
+    o customer_id:123:agent:agent-456
+      -> Specific agent updates
 
-    • customer_id:123:queue:*
-      → All queues for customer
+    o customer_id:123:queue:*
+      -> All queues for customer
 
-    • customer_id:123:conference:conf-999
-      → Specific conference updates
+    o customer_id:123:conference:conf-999
+      -> Specific conference updates
 
 **WebSocket Use Cases**
 
@@ -577,27 +577,27 @@ Clients subscribe to specific event topics:
     WebSocket Applications:
 
     Agent Dashboard:
-    ┌──────────────────────────────────────┐
-    │ • Real-time call notifications       │
-    │ • Queue status updates               │
-    │ • Agent presence                     │
-    │ • Live chat messages                 │
-    └──────────────────────────────────────┘
+    +--------------------------------------+
+    | o Real-time call notifications       |
+    | o Queue status updates               |
+    | o Agent presence                     |
+    | o Live chat messages                 |
+    +--------------------------------------+
 
     Customer Portal:
-    ┌──────────────────────────────────────┐
-    │ • Call status updates                │
-    │ • Campaign progress                  │
-    │ • Billing updates                    │
-    │ • System notifications               │
-    └──────────────────────────────────────┘
+    +--------------------------------------+
+    | o Call status updates                |
+    | o Campaign progress                  |
+    | o Billing updates                    |
+    | o System notifications               |
+    +--------------------------------------+
 
     Media Streaming:
-    ┌──────────────────────────────────────┐
-    │ • Bi-directional audio (RTP)         │
-    │ • Live transcription feed            │
-    │ • Real-time metrics                  │
-    └──────────────────────────────────────┘
+    +--------------------------------------+
+    | o Bi-directional audio (RTP)         |
+    | o Live transcription feed            |
+    | o Real-time metrics                  |
+    +--------------------------------------+
 
 **Connection Management**
 
@@ -605,34 +605,34 @@ Clients subscribe to specific event topics:
 
     WebSocket Lifecycle:
 
-    ┌────────────┐
-    │  Connect   │  Client establishes WebSocket
-    └──────┬─────┘
-           │
-           ▼
-    ┌────────────┐
-    │ Authenticate│  Validate JWT token
-    └──────┬─────┘
-           │
-           ▼
-    ┌────────────┐
-    │ Subscribe  │  Client subscribes to topics
-    └──────┬─────┘
-           │
-           ▼
-    ┌────────────┐
-    │  Active    │  Bi-directional communication
-    │            │  • Server pushes events
-    │            │  • Client sends commands
-    │            │  • Pinger sends ping frames
-    └──────┬─────┘
-           │
-           │  (Keep-alive ping/pong)
-           │
-           ▼
-    ┌────────────┐
-    │ Disconnect │  Connection closed
-    └────────────┘
+    +------------+
+    |  Connect   |  Client establishes WebSocket
+    +------+-----+
+           |
+           v
+    +------------+
+    | Authenticate|  Validate JWT token
+    +------+-----+
+           |
+           v
+    +------------+
+    | Subscribe  |  Client subscribes to topics
+    +------+-----+
+           |
+           v
+    +------------+
+    |  Active    |  Bi-directional communication
+    |            |  o Server pushes events
+    |            |  o Client sends commands
+    |            |  o Pinger sends ping frames
+    +------+-----+
+           |
+           |  (Keep-alive ping/pong)
+           |
+           v
+    +------------+
+    | Disconnect |  Connection closed
+    +------------+
 
 **Keep-Alive Mechanism (Server-Side Ping/Pong)**
 
@@ -642,31 +642,31 @@ VoIPBIN implements server-side keep-alive to prevent load balancer timeouts:
 
     Keep-Alive Configuration:
 
-    ┌────────────────────────────────────────────────┐
-    │  Ping Interval:  30 seconds                    │
-    │  Pong Wait:      60 seconds                    │
-    │  Write Timeout:  10 seconds                    │
-    └────────────────────────────────────────────────┘
+    +------------------------------------------------+
+    |  Ping Interval:  30 seconds                    |
+    |  Pong Wait:      60 seconds                    |
+    |  Write Timeout:  10 seconds                    |
+    +------------------------------------------------+
 
     Keep-Alive Flow:
 
     Server                                    Client
-       │                                         │
-       │  Every 30s: Send Ping Frame             │
-       ├────────────────────────────────────────▶│
-       │                                         │
-       │  Automatic Pong Response                │
-       │◀────────────────────────────────────────┤
-       │                                         │
-       │  Reset read deadline (60s)              │
-       │                                         │
+       |                                         |
+       |  Every 30s: Send Ping Frame             |
+       +---------------------------------------->>
+       |                                         |
+       |  Automatic Pong Response                |
+       <<----------------------------------------+
+       |                                         |
+       |  Reset read deadline (60s)              |
+       |                                         |
 
     Error Detection:
-    ┌────────────────────────────────────────────────┐
-    │  No pong within 60s → Connection dead          │
-    │  Write failure → Connection broken             │
-    │  Either error → Close and cleanup              │
-    └────────────────────────────────────────────────┘
+    +------------------------------------------------+
+    |  No pong within 60s -> Connection dead         |
+    |  Write failure -> Connection broken            |
+    |  Either error -> Close and cleanup             |
+    +------------------------------------------------+
 
 **Keep-Alive Benefits:**
 
@@ -713,29 +713,29 @@ Different patterns provide different reliability guarantees:
     Ensuring Reliability:
 
     Critical Operations (RabbitMQ RPC):
-    ┌────────────────────────────────────┐
-    │ • Persistent messages              │
-    │ • Manual acknowledgment            │
-    │ • Automatic retry                  │
-    │ • Timeout handling                 │
-    │ • Idempotent operations            │
-    └────────────────────────────────────┘
+    +------------------------------------+
+    | o Persistent messages              |
+    | o Manual acknowledgment            |
+    | o Automatic retry                  |
+    | o Timeout handling                 |
+    | o Idempotent operations            |
+    +------------------------------------+
 
     Important Events (RabbitMQ Pub/Sub):
-    ┌────────────────────────────────────┐
-    │ • Persistent messages              │
-    │ • Multiple subscribers             │
-    │ • Redundant processing OK          │
-    │ • Deduplication in subscriber      │
-    └────────────────────────────────────┘
+    +------------------------------------+
+    | o Persistent messages              |
+    | o Multiple subscribers             |
+    | o Redundant processing OK          |
+    | o Deduplication in subscriber      |
+    +------------------------------------+
 
     Real-Time Updates (ZeroMQ):
-    ┌────────────────────────────────────┐
-    │ • No persistence                   │
-    │ • Fast delivery                    │
-    │ • Acceptable loss                  │
-    │ • Often duplicated in RabbitMQ     │
-    └────────────────────────────────────┘
+    +------------------------------------+
+    | o No persistence                   |
+    | o Fast delivery                    |
+    | o Acceptable loss                  |
+    | o Often duplicated in RabbitMQ     |
+    +------------------------------------+
 
 Message Ordering
 ----------------
@@ -747,25 +747,25 @@ VoIPBIN guarantees ordering within specific boundaries:
     Ordering Guarantees:
 
     Same Queue:              Different Queues:
-    ┌──────────┐             ┌──────────┐  ┌──────────┐
-    │ Message 1│             │ Message 1│  │ Message 2│
-    └─────┬────┘             └─────┬────┘  └─────┬────┘
-          │                        │             │
-          │ Queue A                │ Queue A     │ Queue B
-          │                        │             │
-          ▼                        ▼             ▼
-    ┌──────────┐             ┌──────────┐  ┌──────────┐
-    │ Message 2│             │ Service A│  │ Service B│
-    └─────┬────┘             └──────────┘  └──────────┘
-          │                        │             │
-          │                        │  May arrive in any order
-          ▼                        ▼             ▼
-    ┌──────────┐             ┌──────────┐  ┌──────────┐
-    │ Message 3│             │ Ordered  │  │ No order │
-    └──────────┘             │ delivery │  │ guarantee│
-                             └──────────┘  └──────────┘
+    +----------+             +----------+  +----------+
+    | Message 1|             | Message 1|  | Message 2|
+    +-----+----+             +-----+----+  +-----+----+
+          |                        |             |
+          | Queue A                | Queue A     | Queue B
+          |                        |             |
+          v                        v             v
+    +----------+             +----------+  +----------+
+    | Message 2|             | Service A|  | Service B|
+    +-----+----+             +----------+  +----------+
+          |                        |             |
+          |                        |  May arrive in any order
+          v                        v             v
+    +----------+             +----------+  +----------+
+    | Message 3|             | Ordered  |  | No order |
+    +----------+             | delivery |  | guarantee|
+                             +----------+  +----------+
 
-    Ordered ✓               Unordered ✗
+    Ordered [x]               Unordered [ ]
 
 **Ordering Strategy:**
 
@@ -805,27 +805,27 @@ Failed messages move to dead letter queue for investigation:
     Dead Letter Processing:
 
     Normal Flow:              Failed Flow:
-    ┌──────────┐              ┌──────────┐
-    │ Message  │              │ Message  │
-    └─────┬────┘              └─────┬────┘
-          │                         │
-          │ Process                 │ Process (fails)
-          ▼                         ▼
-    ┌──────────┐              ┌──────────┐
-    │  Success │              │  Retry   │
-    └──────────┘              └─────┬────┘
-                                    │ (max retries exceeded)
-                                    ▼
-                              ┌──────────┐
-                              │   DLQ    │ Dead Letter Queue
-                              └─────┬────┘
-                                    │
-                                    │ Manual investigation
-                                    │ or automated recovery
-                                    ▼
-                              ┌──────────┐
-                              │  Alert   │
-                              └──────────┘
+    +----------+              +----------+
+    | Message  |              | Message  |
+    +-----+----+              +-----+----+
+          |                         |
+          | Process                 | Process (fails)
+          v                         v
+    +----------+              +----------+
+    |  Success |              |  Retry   |
+    +----------+              +-----+----+
+                                    | (max retries exceeded)
+                                    v
+                              +----------+
+                              |   DLQ    | Dead Letter Queue
+                              +-----+----+
+                                    |
+                                    | Manual investigation
+                                    | or automated recovery
+                                    v
+                              +----------+
+                              |  Alert   |
+                              +----------+
 
 **Error Categories**
 
@@ -834,22 +834,22 @@ Failed messages move to dead letter queue for investigation:
     Error Handling by Type:
 
     Transient Errors (Retry):
-    • Network timeout
-    • Database connection lost
-    • Service temporarily unavailable
-    → Retry with exponential backoff
+    o Network timeout
+    o Database connection lost
+    o Service temporarily unavailable
+    -> Retry with exponential backoff
 
     Permanent Errors (Don't Retry):
-    • Invalid data format
-    • Resource not found
-    • Permission denied
-    → Send to DLQ, alert operator
+    o Invalid data format
+    o Resource not found
+    o Permission denied
+    -> Send to DLQ, alert operator
 
     Business Errors (Log and Return):
-    • Insufficient balance
-    • Invalid phone number
-    • Duplicate request
-    → Return error to caller
+    o Insufficient balance
+    o Invalid phone number
+    o Duplicate request
+    -> Return error to caller
 
 Performance Optimization
 ------------------------
@@ -863,22 +863,22 @@ VoIPBIN optimizes messaging performance:
     Connection Management:
 
     Service Instance
-    ┌────────────────────────────────────┐
-    │                                    │
-    │  Connection Pool (5 connections)   │
-    │  ┌────┐ ┌────┐ ┌────┐ ┌────┐ ┌────┐│
-    │  │ 1  │ │ 2  │ │ 3  │ │ 4  │ │ 5  ││
-    │  └─┬──┘ └─┬──┘ └─┬──┘ └─┬──┘ └─┬──┘│
-    │    │      │      │      │      │   │
-    └────┼──────┼──────┼──────┼──────┼───┘
-         │      │      │      │      │
-         └──────┴──────┴──────┴──────┘
-                    │
-                    │ Single TCP connection
-                    ▼
-              ┌──────────┐
-              │ RabbitMQ │
-              └──────────┘
+    +------------------------------------+
+    |                                    |
+    |  Connection Pool (5 connections)   |
+    |  +----+ +----+ +----+ +----+ +----+|
+    |  | 1  | | 2  | | 3  | | 4  | | 5  ||
+    |  +-+--+ +-+--+ +-+--+ +-+--+ +-+--+|
+    |    |      |      |      |      |   |
+    +----+------+------+------+------+---+
+         |      |      |      |      |
+         +------+------+------+------+
+                    |
+                    | Single TCP connection
+                    v
+              +----------+
+              | RabbitMQ |
+              +----------+
 
 * **Reuse Connections**: Don't create per-request
 * **Multiple Channels**: Use channels for concurrency
@@ -894,11 +894,11 @@ For high-volume operations:
     Batch vs Individual:
 
     Individual Messages:     Batch Processing:
-    ┌────┐ ┌────┐ ┌────┐    ┌──────────────┐
-    │ M1 │ │ M2 │ │ M3 │    │ M1, M2, M3   │
-    └─┬──┘ └─┬──┘ └─┬──┘    │ M4, M5, M6   │
-      │      │      │       │ ... (100)    │
-      ▼      ▼      ▼       └──────┬───────┘
+    +----+ +----+ +----+    +--------------+
+    | M1 | | M2 | | M3 |    | M1, M2, M3   |
+    +-+--+ +-+--+ +-+--+    | M4, M5, M6   |
+      |      |      |       | ... (100)    |
+      v      v      v       +------+-------+
     Send 100 times            Send once
     (high overhead)           (low overhead)
 
@@ -919,22 +919,22 @@ VoIPBIN monitors all communication channels:
     Message Queue Metrics:
 
     Queue Depth:
-    ┌─────────────────────────────────┐
-    │     Pending Messages            │
-    │  ┌──┐┌──┐┌──┐┌──┐┌──┐           │
-    │  │M1││M2││M3││M4││M5│...        │
-    │  └──┘└──┘└──┘└──┘└──┘           │
-    └─────────────────────────────────┘
+    +---------------------------------+
+    |     Pending Messages            |
+    |  +--++--++--++--++--+           |
+    |  |M1||M2||M3||M4||M5|...        |
+    |  +--++--++--++--++--+           |
+    +---------------------------------+
     Alert if > 1000 messages
 
     Processing Rate:
-    Messages/sec: ████████ 850/s
-    Target:       ████████ 1000/s
+    Messages/sec: ======== 850/s
+    Target:       ======== 1000/s
     Alert if < 500/s
 
     Error Rate:
-    Failures:     ██ 2%
-    Target:       ██ < 5%
+    Failures:     == 2%
+    Target:       == < 5%
     Alert if > 10%
 
 **Distributed Tracing**
@@ -946,19 +946,19 @@ Track requests across services:
     Trace ID: trace-123
 
     1. API Gateway          [50ms]
-       ├─ Authenticate      [5ms]
-       ├─ Authorize         [10ms]
-       └─ Send RPC          [35ms]
-           │
-           ▼
+       +- Authenticate      [5ms]
+       +- Authorize         [10ms]
+       +- Send RPC          [35ms]
+           |
+           v
     2. Call Manager         [80ms]
-       ├─ Validate          [10ms]
-       ├─ Create Record     [20ms]
-       └─ Initiate Call     [50ms]
-           │
-           ▼
+       +- Validate          [10ms]
+       +- Create Record     [20ms]
+       +- Initiate Call     [50ms]
+           |
+           v
     3. RTC Manager          [120ms]
-       └─ Setup Media       [120ms]
+       +- Setup Media       [120ms]
 
     Total: 250ms
 
