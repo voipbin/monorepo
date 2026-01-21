@@ -20,6 +20,8 @@ Replace the simple decimation logic in `pkg/pipecatcallhandler/audiosocket.go`:
 
 ## Implementation
 
+The `zaf/resample` library uses an `io.WriteCloser` pattern with native PCM format support:
+
 ```go
 import "github.com/zaf/resample"
 
@@ -32,43 +34,42 @@ func (h *audiosocketHandler) GetDataSamples(inputRate int, data []byte) ([]byte,
         return data, nil
     }
 
-    // Convert bytes to float64 samples (libsoxr works with float64)
-    numSamples := len(data) / 2
-    floatSamples := make([]float64, numSamples)
-    for i := 0; i < numSamples; i++ {
-        sample := int16(binary.LittleEndian.Uint16(data[i*2 : i*2+2]))
-        floatSamples[i] = float64(sample) / 32768.0
-    }
+    // Create output buffer
+    var output bytes.Buffer
 
-    // Create resampler: input rate -> 8kHz, mono channel, MediumQ quality
+    // Create resampler: input rate -> 8kHz, mono channel, I16 format, MediumQ quality
     resampler, err := resample.New(
-        floatSamples,
+        &output,
         float64(inputRate),
         float64(defaultAudiosocketConvertSampleRate),
-        1,                    // mono
-        resample.MediumQ,     // balance quality vs CPU
+        1,                // mono
+        resample.I16,     // 16-bit signed linear PCM (native format)
+        resample.MediumQ, // balance quality vs CPU
     )
     if err != nil {
         return nil, fmt.Errorf("failed to create resampler: %w", err)
     }
 
-    // Read all resampled output
-    outputSamples := make([]float64, numSamples*defaultAudiosocketConvertSampleRate/inputRate+10)
-    n, err := resampler.Read(outputSamples)
-    if err != nil && err != io.EOF {
-        return nil, fmt.Errorf("failed to resample: %w", err)
+    // Write input data to the resampler
+    _, err = resampler.Write(data)
+    if err != nil {
+        return nil, fmt.Errorf("failed to write to resampler: %w", err)
     }
 
-    // Convert back to 16-bit PCM bytes
-    result := make([]byte, n*2)
-    for i := 0; i < n; i++ {
-        sample := int16(outputSamples[i] * 32767.0)
-        binary.LittleEndian.PutUint16(result[i*2:], uint16(sample))
+    // Close to flush any remaining output
+    err = resampler.Close()
+    if err != nil {
+        return nil, fmt.Errorf("failed to close resampler: %w", err)
     }
 
-    return result, nil
+    return output.Bytes(), nil
 }
 ```
+
+**API Notes:**
+- `resample.New(writer, inputRate, outputRate, channels, format, quality)`
+- Format options: `I16` (16-bit PCM), `I32` (32-bit), `F32` (float32), `F64` (float64)
+- Using `I16` allows direct pass-through of PCM bytes without conversion
 
 ## Docker Requirements
 

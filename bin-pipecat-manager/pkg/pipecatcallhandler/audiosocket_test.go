@@ -10,37 +10,46 @@ import (
 func Test_audiosocketGetDataSamples(t *testing.T) {
 
 	tests := []struct {
-		name        string
-		inputRate   int
-		inputData   []byte
-		expectData  []byte
-		expectError bool
+		name             string
+		inputRate        int
+		inputSamples     int // number of 16-bit samples
+		expectExactMatch bool
+		expectError      bool
 	}{
 		{
-			name:        "no conversion needed (same sample rate)",
-			inputRate:   defaultAudiosocketConvertSampleRate,
-			inputData:   []byte{0x01, 0x02, 0x03, 0x04},
-			expectData:  []byte{0x01, 0x02, 0x03, 0x04},
-			expectError: false,
+			name:             "no conversion needed (same sample rate)",
+			inputRate:        defaultAudiosocketConvertSampleRate,
+			inputSamples:     100,
+			expectExactMatch: true,
+			expectError:      false,
 		},
 		{
-			name:        "downsample 2x (16000 → 8000)",
-			inputRate:   defaultAudiosocketConvertSampleRate * 2,
-			inputData:   []byte{0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88},
-			expectData:  []byte{0x11, 0x22, 0x55, 0x66},
-			expectError: false,
+			name:             "downsample 2x (16000 → 8000)",
+			inputRate:        defaultAudiosocketConvertSampleRate * 2,
+			inputSamples:     100,
+			expectExactMatch: false,
+			expectError:      false,
 		},
 		{
-			name:      "downsample 4x (32000 → 8000)",
-			inputRate: defaultAudiosocketConvertSampleRate * 4,
-			inputData: []byte{
-				0x01, 0x02, 0x03, 0x04,
-				0x05, 0x06, 0x07, 0x08,
-				0x09, 0x0A, 0x0B, 0x0C,
-				0x0D, 0x0E, 0x0F, 0x10,
-			},
-			expectData:  []byte{0x01, 0x02, 0x09, 0x0A},
-			expectError: false,
+			name:             "downsample 3x (24000 → 8000)",
+			inputRate:        defaultAudiosocketConvertSampleRate * 3,
+			inputSamples:     120,
+			expectExactMatch: false,
+			expectError:      false,
+		},
+		{
+			name:             "downsample 4x (32000 → 8000)",
+			inputRate:        defaultAudiosocketConvertSampleRate * 4,
+			inputSamples:     200,
+			expectExactMatch: false,
+			expectError:      false,
+		},
+		{
+			name:             "empty input",
+			inputRate:        defaultAudiosocketConvertSampleRate * 2,
+			inputSamples:     0,
+			expectExactMatch: true,
+			expectError:      false,
 		},
 	}
 
@@ -48,7 +57,14 @@ func Test_audiosocketGetDataSamples(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			h := &audiosocketHandler{}
 
-			res, err := h.GetDataSamples(tt.inputRate, tt.inputData)
+			// Generate test PCM data (sine wave pattern)
+			inputData := make([]byte, tt.inputSamples*2)
+			for i := 0; i < tt.inputSamples; i++ {
+				sample := int16(1000 * i / (tt.inputSamples + 1)) // Simple ramp
+				binary.LittleEndian.PutUint16(inputData[i*2:], uint16(sample))
+			}
+
+			res, err := h.GetDataSamples(tt.inputRate, inputData)
 			if tt.expectError {
 				if err == nil {
 					t.Fatalf("expected error but got none")
@@ -58,8 +74,30 @@ func Test_audiosocketGetDataSamples(t *testing.T) {
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
-			if !bytes.Equal(res, tt.expectData) {
-				t.Errorf("wrong data\nexpect: %v\ngot: %v", tt.expectData, res)
+
+			if tt.expectExactMatch {
+				if !bytes.Equal(res, inputData) {
+					t.Errorf("expected exact match but got different data")
+				}
+				return
+			}
+
+			// For resampled data, verify approximate output size
+			expectedSamples := tt.inputSamples * defaultAudiosocketConvertSampleRate / tt.inputRate
+			actualSamples := len(res) / 2
+
+			// Allow 10% margin for resampling variations
+			minSamples := expectedSamples * 9 / 10
+			maxSamples := expectedSamples * 11 / 10
+
+			if actualSamples < minSamples || actualSamples > maxSamples {
+				t.Errorf("output sample count out of range: expected ~%d, got %d (range: %d-%d)",
+					expectedSamples, actualSamples, minSamples, maxSamples)
+			}
+
+			// Verify output is valid (even number of bytes)
+			if len(res)%2 != 0 {
+				t.Errorf("output length must be even (16-bit aligned), got %d", len(res))
 			}
 		})
 	}
