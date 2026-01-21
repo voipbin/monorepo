@@ -163,29 +163,29 @@
 <section id="data-layer-overview">
 <h2>Data Layer Overview<a class="headerlink" href="#data-layer-overview" title="Link to this heading"></a></h2>
 <p>VoIPBIN’s data architecture consists of three layers:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Data Architecture:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Data</span> <span class="n">Architecture</span><span class="p">:</span>
 
-┌─────────────────────────────────────────────────────────┐
-│                   Application Layer                     │
-│            (30+ Microservices)                          │
-└────────────────────┬───────────────────┬────────────────┘
-                     │                   │
-                     │                   │
-     ┌───────────────▼──────┐   ┌────────▼───────────┐
-     │                      │   │                    │
-     │   Redis Cache        │   │   MySQL Database   │
-     │   (Hot Data)         │   │   (Persistent)     │
-     │                      │   │                    │
-     │  • Sessions          │   │  • All entities    │
-     │  • Frequently read   │   │  • Relationships   │
-     │  • Temporary data    │   │  • Audit logs      │
-     │                      │   │                    │
-     └──────────────────────┘   └────────────────────┘
+<span class="o">+---------------------------------------------------------+</span>
+<span class="o">|</span>                   <span class="n">Application</span> <span class="n">Layer</span>                     <span class="o">|</span>
+<span class="o">|</span>            <span class="p">(</span><span class="mi">30</span><span class="o">+</span> <span class="n">Microservices</span><span class="p">)</span>                          <span class="o">|</span>
+<span class="o">+--------------------+-------------------+----------------+</span>
+                     <span class="o">|</span>                   <span class="o">|</span>
+                     <span class="o">|</span>                   <span class="o">|</span>
+     <span class="o">+---------------</span><span class="n">v</span><span class="o">------+</span>   <span class="o">+--------</span><span class="n">v</span><span class="o">-----------+</span>
+     <span class="o">|</span>                      <span class="o">|</span>   <span class="o">|</span>                    <span class="o">|</span>
+     <span class="o">|</span>   <span class="n">Redis</span> <span class="n">Cache</span>        <span class="o">|</span>   <span class="o">|</span>   <span class="n">MySQL</span> <span class="n">Database</span>   <span class="o">|</span>
+     <span class="o">|</span>   <span class="p">(</span><span class="n">Hot</span> <span class="n">Data</span><span class="p">)</span>         <span class="o">|</span>   <span class="o">|</span>   <span class="p">(</span><span class="n">Persistent</span><span class="p">)</span>     <span class="o">|</span>
+     <span class="o">|</span>                      <span class="o">|</span>   <span class="o">|</span>                    <span class="o">|</span>
+     <span class="o">|</span>  <span class="n">o</span> <span class="n">Sessions</span>          <span class="o">|</span>   <span class="o">|</span>  <span class="n">o</span> <span class="n">All</span> <span class="n">entities</span>    <span class="o">|</span>
+     <span class="o">|</span>  <span class="n">o</span> <span class="n">Frequently</span> <span class="n">read</span>   <span class="o">|</span>   <span class="o">|</span>  <span class="n">o</span> <span class="n">Relationships</span>   <span class="o">|</span>
+     <span class="o">|</span>  <span class="n">o</span> <span class="n">Temporary</span> <span class="n">data</span>    <span class="o">|</span>   <span class="o">|</span>  <span class="n">o</span> <span class="n">Audit</span> <span class="n">logs</span>      <span class="o">|</span>
+     <span class="o">|</span>                      <span class="o">|</span>   <span class="o">|</span>                    <span class="o">|</span>
+     <span class="o">+----------------------+</span>   <span class="o">+--------------------+</span>
 
-     Cache-Aside Pattern:
-     1. Check cache first
-     2. If miss, query database
-     3. Store in cache for next time
+     <span class="n">Cache</span><span class="o">-</span><span class="n">Aside</span> <span class="n">Pattern</span><span class="p">:</span>
+     <span class="mf">1.</span> <span class="n">Check</span> <span class="n">cache</span> <span class="n">first</span>
+     <span class="mf">2.</span> <span class="n">If</span> <span class="n">miss</span><span class="p">,</span> <span class="n">query</span> <span class="n">database</span>
+     <span class="mf">3.</span> <span class="n">Store</span> <span class="ow">in</span> <span class="n">cache</span> <span class="k">for</span> <span class="nb">next</span> <span class="n">time</span>
 </pre></div>
 </div>
 </section>
@@ -193,31 +193,31 @@
 <h2>MySQL Database<a class="headerlink" href="#mysql-database" title="Link to this heading"></a></h2>
 <p>VoIPBIN uses a single shared MySQL database accessed by all services.</p>
 <p><strong>Database Characteristics</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Shared Database Pattern:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Shared</span> <span class="n">Database</span> <span class="n">Pattern</span><span class="p">:</span>
 
-┌──────────────┐  ┌──────────────┐  ┌──────────────┐
-│   Service A  │  │   Service B  │  │   Service C  │
-│              │  │              │  │              │
-│  call-mgr    │  │  flow-mgr    │  │  agent-mgr   │
-└──────┬───────┘  └──────┬───────┘  └──────┬───────┘
-       │                 │                 │
-       │   Connection    │                 │
-       │   Pooling       │                 │
-       └────────┬────────┴─────────────────┘
-                │
-                ▼
-     ┌────────────────────────────┐
-     │      MySQL Database        │
-     │                            │
-     │  ┌──────────────────────┐  │
-     │  │  calls table         │  │
-     │  │  conferences table   │  │
-     │  │  agents table        │  │
-     │  │  flows table         │  │
-     │  │  customers table     │  │
-     │  │  ... 100+ tables     │  │
-     │  └──────────────────────┘  │
-     └────────────────────────────┘
+<span class="o">+--------------+</span>  <span class="o">+--------------+</span>  <span class="o">+--------------+</span>
+<span class="o">|</span>   <span class="n">Service</span> <span class="n">A</span>  <span class="o">|</span>  <span class="o">|</span>   <span class="n">Service</span> <span class="n">B</span>  <span class="o">|</span>  <span class="o">|</span>   <span class="n">Service</span> <span class="n">C</span>  <span class="o">|</span>
+<span class="o">|</span>              <span class="o">|</span>  <span class="o">|</span>              <span class="o">|</span>  <span class="o">|</span>              <span class="o">|</span>
+<span class="o">|</span>  <span class="n">call</span><span class="o">-</span><span class="n">mgr</span>    <span class="o">|</span>  <span class="o">|</span>  <span class="n">flow</span><span class="o">-</span><span class="n">mgr</span>    <span class="o">|</span>  <span class="o">|</span>  <span class="n">agent</span><span class="o">-</span><span class="n">mgr</span>   <span class="o">|</span>
+<span class="o">+------+-------+</span>  <span class="o">+------+-------+</span>  <span class="o">+------+-------+</span>
+       <span class="o">|</span>                 <span class="o">|</span>                 <span class="o">|</span>
+       <span class="o">|</span>   <span class="n">Connection</span>    <span class="o">|</span>                 <span class="o">|</span>
+       <span class="o">|</span>   <span class="n">Pooling</span>       <span class="o">|</span>                 <span class="o">|</span>
+       <span class="o">+--------+--------+-----------------+</span>
+                <span class="o">|</span>
+                <span class="n">v</span>
+     <span class="o">+----------------------------+</span>
+     <span class="o">|</span>      <span class="n">MySQL</span> <span class="n">Database</span>        <span class="o">|</span>
+     <span class="o">|</span>                            <span class="o">|</span>
+     <span class="o">|</span>  <span class="o">+----------------------+</span>  <span class="o">|</span>
+     <span class="o">|</span>  <span class="o">|</span>  <span class="n">calls</span> <span class="n">table</span>         <span class="o">|</span>  <span class="o">|</span>
+     <span class="o">|</span>  <span class="o">|</span>  <span class="n">conferences</span> <span class="n">table</span>   <span class="o">|</span>  <span class="o">|</span>
+     <span class="o">|</span>  <span class="o">|</span>  <span class="n">agents</span> <span class="n">table</span>        <span class="o">|</span>  <span class="o">|</span>
+     <span class="o">|</span>  <span class="o">|</span>  <span class="n">flows</span> <span class="n">table</span>         <span class="o">|</span>  <span class="o">|</span>
+     <span class="o">|</span>  <span class="o">|</span>  <span class="n">customers</span> <span class="n">table</span>     <span class="o">|</span>  <span class="o">|</span>
+     <span class="o">|</span>  <span class="o">|</span>  <span class="o">...</span> <span class="mi">100</span><span class="o">+</span> <span class="n">tables</span>     <span class="o">|</span>  <span class="o">|</span>
+     <span class="o">|</span>  <span class="o">+----------------------+</span>  <span class="o">|</span>
+     <span class="o">+----------------------------+</span>
 </pre></div>
 </div>
 <ul class="simple">
@@ -228,33 +228,33 @@
 </ul>
 <p><strong>Schema Organization</strong></p>
 <p>Tables are logically grouped by domain:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Table Organization:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Table</span> <span class="n">Organization</span><span class="p">:</span>
 
-Communication Domain:
-• calls                - Call records
-• conferences          - Conference bridges
-• sms                  - SMS messages
-• chats                - Chat messages
-• emails               - Email records
+<span class="n">Communication</span> <span class="n">Domain</span><span class="p">:</span>
+<span class="n">o</span> <span class="n">calls</span>                <span class="o">-</span> <span class="n">Call</span> <span class="n">records</span>
+<span class="n">o</span> <span class="n">conferences</span>          <span class="o">-</span> <span class="n">Conference</span> <span class="n">bridges</span>
+<span class="n">o</span> <span class="n">sms</span>                  <span class="o">-</span> <span class="n">SMS</span> <span class="n">messages</span>
+<span class="n">o</span> <span class="n">chats</span>                <span class="o">-</span> <span class="n">Chat</span> <span class="n">messages</span>
+<span class="n">o</span> <span class="n">emails</span>               <span class="o">-</span> <span class="n">Email</span> <span class="n">records</span>
 
-Workflow Domain:
-• flows                - Call flow definitions
-• flow_actions         - Flow action steps
-• queues               - Call queues
-• campaigns            - Campaign definitions
+<span class="n">Workflow</span> <span class="n">Domain</span><span class="p">:</span>
+<span class="n">o</span> <span class="n">flows</span>                <span class="o">-</span> <span class="n">Call</span> <span class="n">flow</span> <span class="n">definitions</span>
+<span class="n">o</span> <span class="n">flow_actions</span>         <span class="o">-</span> <span class="n">Flow</span> <span class="n">action</span> <span class="n">steps</span>
+<span class="n">o</span> <span class="n">queues</span>               <span class="o">-</span> <span class="n">Call</span> <span class="n">queues</span>
+<span class="n">o</span> <span class="n">campaigns</span>            <span class="o">-</span> <span class="n">Campaign</span> <span class="n">definitions</span>
 
-Management Domain:
-• customers            - Customer accounts
-• agents               - Agent records
-• billings             - Billing records
-• webhooks             - Webhook configurations
-• accesskeys           - API keys
+<span class="n">Management</span> <span class="n">Domain</span><span class="p">:</span>
+<span class="n">o</span> <span class="n">customers</span>            <span class="o">-</span> <span class="n">Customer</span> <span class="n">accounts</span>
+<span class="n">o</span> <span class="n">agents</span>               <span class="o">-</span> <span class="n">Agent</span> <span class="n">records</span>
+<span class="n">o</span> <span class="n">billings</span>             <span class="o">-</span> <span class="n">Billing</span> <span class="n">records</span>
+<span class="n">o</span> <span class="n">webhooks</span>             <span class="o">-</span> <span class="n">Webhook</span> <span class="n">configurations</span>
+<span class="n">o</span> <span class="n">accesskeys</span>           <span class="o">-</span> <span class="n">API</span> <span class="n">keys</span>
 
-Resource Domain:
-• numbers              - Phone numbers
-• recordings           - Call recordings
-• transcribes          - Transcription jobs
-• transcripts          - Transcript segments
+<span class="n">Resource</span> <span class="n">Domain</span><span class="p">:</span>
+<span class="n">o</span> <span class="n">numbers</span>              <span class="o">-</span> <span class="n">Phone</span> <span class="n">numbers</span>
+<span class="n">o</span> <span class="n">recordings</span>           <span class="o">-</span> <span class="n">Call</span> <span class="n">recordings</span>
+<span class="n">o</span> <span class="n">transcribes</span>          <span class="o">-</span> <span class="n">Transcription</span> <span class="n">jobs</span>
+<span class="n">o</span> <span class="n">transcripts</span>          <span class="o">-</span> <span class="n">Transcript</span> <span class="n">segments</span>
 </pre></div>
 </div>
 <p><strong>Common Table Pattern</strong></p>
@@ -293,56 +293,56 @@ Resource Domain:
 </ul>
 <p><strong>Data Access Patterns</strong></p>
 <p>Services access data through consistent patterns:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Data Access Flow:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Data</span> <span class="n">Access</span> <span class="n">Flow</span><span class="p">:</span>
 
-Service Handler
-     │
-     │  1. Validate Input
-     ▼
-┌──────────────────────┐
-│  Business Logic      │
-└──────┬───────────────┘
-       │  2. Check Cache
-       ▼
-┌──────────────────────┐
-│  Cache Handler       │
-│  (Redis)             │
-└──────┬───────────────┘
-       │  Cache Miss
-       │  3. Query DB
-       ▼
-┌──────────────────────┐
-│  DB Handler          │
-│  (MySQL)             │
-└──────┬───────────────┘
-       │  4. Store in Cache
-       ▼
-┌──────────────────────┐
-│  Return Result       │
-└──────────────────────┘
+<span class="n">Service</span> <span class="n">Handler</span>
+     <span class="o">|</span>
+     <span class="o">|</span>  <span class="mf">1.</span> <span class="n">Validate</span> <span class="n">Input</span>
+     <span class="n">v</span>
+<span class="o">+----------------------+</span>
+<span class="o">|</span>  <span class="n">Business</span> <span class="n">Logic</span>      <span class="o">|</span>
+<span class="o">+------+---------------+</span>
+       <span class="o">|</span>  <span class="mf">2.</span> <span class="n">Check</span> <span class="n">Cache</span>
+       <span class="n">v</span>
+<span class="o">+----------------------+</span>
+<span class="o">|</span>  <span class="n">Cache</span> <span class="n">Handler</span>       <span class="o">|</span>
+<span class="o">|</span>  <span class="p">(</span><span class="n">Redis</span><span class="p">)</span>             <span class="o">|</span>
+<span class="o">+------+---------------+</span>
+       <span class="o">|</span>  <span class="n">Cache</span> <span class="n">Miss</span>
+       <span class="o">|</span>  <span class="mf">3.</span> <span class="n">Query</span> <span class="n">DB</span>
+       <span class="n">v</span>
+<span class="o">+----------------------+</span>
+<span class="o">|</span>  <span class="n">DB</span> <span class="n">Handler</span>          <span class="o">|</span>
+<span class="o">|</span>  <span class="p">(</span><span class="n">MySQL</span><span class="p">)</span>             <span class="o">|</span>
+<span class="o">+------+---------------+</span>
+       <span class="o">|</span>  <span class="mf">4.</span> <span class="n">Store</span> <span class="ow">in</span> <span class="n">Cache</span>
+       <span class="n">v</span>
+<span class="o">+----------------------+</span>
+<span class="o">|</span>  <span class="n">Return</span> <span class="n">Result</span>       <span class="o">|</span>
+<span class="o">+----------------------+</span>
 </pre></div>
 </div>
 <p><strong>Transaction Handling</strong></p>
 <p>VoIPBIN uses transactions for consistency:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Transaction Example:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Transaction</span> <span class="n">Example</span><span class="p">:</span>
 
-BEGIN TRANSACTION
-    │
-    │  1. Create Call Record
-    ├──▶ INSERT INTO calls ...
-    │
-    │  2. Update Customer Stats
-    ├──▶ UPDATE customers SET total_calls = total_calls + 1 ...
-    │
-    │  3. Create Billing Entry
-    ├──▶ INSERT INTO billings ...
-    │
-    │  If all succeed:
-    │    COMMIT
-    │  If any fails:
-    │    ROLLBACK
-    │
-END TRANSACTION
+<span class="n">BEGIN</span> <span class="n">TRANSACTION</span>
+    <span class="o">|</span>
+    <span class="o">|</span>  <span class="mf">1.</span> <span class="n">Create</span> <span class="n">Call</span> <span class="n">Record</span>
+    <span class="o">+--&gt;</span> <span class="n">INSERT</span> <span class="n">INTO</span> <span class="n">calls</span> <span class="o">...</span>
+    <span class="o">|</span>
+    <span class="o">|</span>  <span class="mf">2.</span> <span class="n">Update</span> <span class="n">Customer</span> <span class="n">Stats</span>
+    <span class="o">+--&gt;</span> <span class="n">UPDATE</span> <span class="n">customers</span> <span class="n">SET</span> <span class="n">total_calls</span> <span class="o">=</span> <span class="n">total_calls</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">...</span>
+    <span class="o">|</span>
+    <span class="o">|</span>  <span class="mf">3.</span> <span class="n">Create</span> <span class="n">Billing</span> <span class="n">Entry</span>
+    <span class="o">+--&gt;</span> <span class="n">INSERT</span> <span class="n">INTO</span> <span class="n">billings</span> <span class="o">...</span>
+    <span class="o">|</span>
+    <span class="o">|</span>  <span class="n">If</span> <span class="nb">all</span> <span class="n">succeed</span><span class="p">:</span>
+    <span class="o">|</span>    <span class="n">COMMIT</span>
+    <span class="o">|</span>  <span class="n">If</span> <span class="nb">any</span> <span class="n">fails</span><span class="p">:</span>
+    <span class="o">|</span>    <span class="n">ROLLBACK</span>
+    <span class="o">|</span>
+<span class="n">END</span> <span class="n">TRANSACTION</span>
 </pre></div>
 </div>
 <ul class="simple">
@@ -356,78 +356,78 @@ END TRANSACTION
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Query Optimization Strategies:
 
 1. Proper Indexing:
-   ┌─────────────────────────────────┐
-   │ INDEX idx_customer_status       │
-   │ ON calls (customer_id, status)  │
-   └─────────────────────────────────┘
+   +---------------------------------+
+   | INDEX idx_customer_status       |
+   | ON calls (customer_id, status)  |
+   +---------------------------------+
 
    SELECT * FROM calls
    WHERE customer_id = ? AND status = &#39;active&#39;
-   → Uses index, fast lookup
+   -&gt; Uses index, fast lookup
 
 2. Avoid SELECT *:
-   ┌─────────────────────────────────┐
-   │ SELECT id, status, tm_create    │
-   │ FROM calls WHERE ...            │
-   └─────────────────────────────────┘
-   → Only retrieve needed columns
+   +---------------------------------+
+   | SELECT id, status, tm_create    |
+   | FROM calls WHERE ...            |
+   +---------------------------------+
+   -&gt; Only retrieve needed columns
 
 3. Pagination:
-   ┌─────────────────────────────────┐
-   │ SELECT * FROM calls             │
-   │ WHERE customer_id = ?           │
-   │ LIMIT 50 OFFSET 0               │
-   └─────────────────────────────────┘
-   → Limit result size
+   +---------------------------------+
+   | SELECT * FROM calls             |
+   | WHERE customer_id = ?           |
+   | LIMIT 50 OFFSET 0               |
+   +---------------------------------+
+   -&gt; Limit result size
 
 4. Connection Pooling:
-   ┌─────────────────────────────────┐
-   │ Pool Size: 10-50 connections    │
-   │ Max Idle: 5 minutes             │
-   │ Max Lifetime: 1 hour            │
-   └─────────────────────────────────┘
-   → Reuse connections
+   +---------------------------------+
+   | Pool Size: 10-50 connections    |
+   | Max Idle: 5 minutes             |
+   | Max Lifetime: 1 hour            |
+   +---------------------------------+
+   -&gt; Reuse connections
 </pre></div>
 </div>
 </section>
 <section id="database-migrations">
 <h2>Database Migrations<a class="headerlink" href="#database-migrations" title="Link to this heading"></a></h2>
 <p>Schema changes are managed through Alembic migrations:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Migration Workflow:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Migration</span> <span class="n">Workflow</span><span class="p">:</span>
 
-Development                 Migration Script              Production
-     │                            │                           │
-     │  1. Schema Change          │                           │
-     │     Needed                 │                           │
-     ▼                            │                           │
-┌─────────────┐                   │                           │
-│ Create      │                   │                           │
-│ Migration   │──────────────────▶│                           │
-│ Script      │                   │                           │
-└─────────────┘                   │                           │
-     │                            │                           │
-     │  2. Test Locally           │                           │
-     ▼                            │                           │
-┌─────────────┐                   │                           │
-│ Run         │                   │                           │
-│ Migration   │◀──────────────────│                           │
-│ (dev DB)    │                   │                           │
-└─────────────┘                   │                           │
-     │                            │                           │
-     │  3. Commit to Git          │                           │
-     ▼                            │                           │
-┌─────────────┐                   │                           │
-│ Code Review │                   │                           │
-│ &amp; Approval  │                   │                           │
-└─────────────┘                   │                           │
-     │                            │                           │
-     │  4. Deploy                 │                           │
-     │                            │  5. Manual Execution      │
-     │                            │     (by human)            │
-     │                            ├──────────────────────────▶│
-     │                            │                           │
-     │                            │  alembic upgrade head     │
-     │                            │                           │
+<span class="n">Development</span>                 <span class="n">Migration</span> <span class="n">Script</span>              <span class="n">Production</span>
+     <span class="o">|</span>                            <span class="o">|</span>                           <span class="o">|</span>
+     <span class="o">|</span>  <span class="mf">1.</span> <span class="n">Schema</span> <span class="n">Change</span>          <span class="o">|</span>                           <span class="o">|</span>
+     <span class="o">|</span>     <span class="n">Needed</span>                 <span class="o">|</span>                           <span class="o">|</span>
+     <span class="n">v</span>                            <span class="o">|</span>                           <span class="o">|</span>
+<span class="o">+-------------+</span>                   <span class="o">|</span>                           <span class="o">|</span>
+<span class="o">|</span> <span class="n">Create</span>      <span class="o">|</span>                   <span class="o">|</span>                           <span class="o">|</span>
+<span class="o">|</span> <span class="n">Migration</span>   <span class="o">|------------------&gt;|</span>                           <span class="o">|</span>
+<span class="o">|</span> <span class="n">Script</span>      <span class="o">|</span>                   <span class="o">|</span>                           <span class="o">|</span>
+<span class="o">+-------------+</span>                   <span class="o">|</span>                           <span class="o">|</span>
+     <span class="o">|</span>                            <span class="o">|</span>                           <span class="o">|</span>
+     <span class="o">|</span>  <span class="mf">2.</span> <span class="n">Test</span> <span class="n">Locally</span>           <span class="o">|</span>                           <span class="o">|</span>
+     <span class="n">v</span>                            <span class="o">|</span>                           <span class="o">|</span>
+<span class="o">+-------------+</span>                   <span class="o">|</span>                           <span class="o">|</span>
+<span class="o">|</span> <span class="n">Run</span>         <span class="o">|</span>                   <span class="o">|</span>                           <span class="o">|</span>
+<span class="o">|</span> <span class="n">Migration</span>   <span class="o">|&lt;------------------|</span>                           <span class="o">|</span>
+<span class="o">|</span> <span class="p">(</span><span class="n">dev</span> <span class="n">DB</span><span class="p">)</span>    <span class="o">|</span>                   <span class="o">|</span>                           <span class="o">|</span>
+<span class="o">+-------------+</span>                   <span class="o">|</span>                           <span class="o">|</span>
+     <span class="o">|</span>                            <span class="o">|</span>                           <span class="o">|</span>
+     <span class="o">|</span>  <span class="mf">3.</span> <span class="n">Commit</span> <span class="n">to</span> <span class="n">Git</span>          <span class="o">|</span>                           <span class="o">|</span>
+     <span class="n">v</span>                            <span class="o">|</span>                           <span class="o">|</span>
+<span class="o">+-------------+</span>                   <span class="o">|</span>                           <span class="o">|</span>
+<span class="o">|</span> <span class="n">Code</span> <span class="n">Review</span> <span class="o">|</span>                   <span class="o">|</span>                           <span class="o">|</span>
+<span class="o">|</span> <span class="o">&amp;</span> <span class="n">Approval</span>  <span class="o">|</span>                   <span class="o">|</span>                           <span class="o">|</span>
+<span class="o">+-------------+</span>                   <span class="o">|</span>                           <span class="o">|</span>
+     <span class="o">|</span>                            <span class="o">|</span>                           <span class="o">|</span>
+     <span class="o">|</span>  <span class="mf">4.</span> <span class="n">Deploy</span>                 <span class="o">|</span>                           <span class="o">|</span>
+     <span class="o">|</span>                            <span class="o">|</span>  <span class="mf">5.</span> <span class="n">Manual</span> <span class="n">Execution</span>      <span class="o">|</span>
+     <span class="o">|</span>                            <span class="o">|</span>     <span class="p">(</span><span class="n">by</span> <span class="n">human</span><span class="p">)</span>            <span class="o">|</span>
+     <span class="o">|</span>                            <span class="o">+--------------------------&gt;&gt;</span>
+     <span class="o">|</span>                            <span class="o">|</span>                           <span class="o">|</span>
+     <span class="o">|</span>                            <span class="o">|</span>  <span class="n">alembic</span> <span class="n">upgrade</span> <span class="n">head</span>     <span class="o">|</span>
+     <span class="o">|</span>                            <span class="o">|</span>                           <span class="o">|</span>
 </pre></div>
 </div>
 <p><strong>Migration Best Practices:</strong></p>
@@ -443,97 +443,97 @@ Development                 Migration Script              Production
 <h2>Redis Cache<a class="headerlink" href="#redis-cache" title="Link to this heading"></a></h2>
 <p>Redis provides fast access to frequently used data:</p>
 <p><strong>Cache Architecture</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Redis Cache Pattern:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Redis</span> <span class="n">Cache</span> <span class="n">Pattern</span><span class="p">:</span>
 
-Application Request
-     │
-     │  1. Generate Cache Key
-     │     key = &quot;call:123&quot;
-     ▼
-┌────────────────────┐
-│  Check Redis       │
-│  GET call:123      │
-└────┬───────────────┘
-     │
-     ├─ Cache Hit ────────┐
-     │                    │
-     │                    ▼
-     │              ┌────────────────┐
-     │              │ Return Cached  │
-     │              │ Data (fast)    │
-     │              └────────────────┘
-     │
-     ├─ Cache Miss ───────┐
-     │                    │
-     │                    ▼
-     │              ┌────────────────┐
-     │              │ Query MySQL    │
-     │              └────┬───────────┘
-     │                   │
-     │                   ▼
-     │              ┌────────────────┐
-     │              │ Store in Redis │
-     │              │ SET call:123   │
-     │              │ EX 300 (5 min) │
-     │              └────┬───────────┘
-     │                   │
-     │                   ▼
-     │              ┌────────────────┐
-     │              │ Return Data    │
-     │              └────────────────┘
+<span class="n">Application</span> <span class="n">Request</span>
+     <span class="o">|</span>
+     <span class="o">|</span>  <span class="mf">1.</span> <span class="n">Generate</span> <span class="n">Cache</span> <span class="n">Key</span>
+     <span class="o">|</span>     <span class="n">key</span> <span class="o">=</span> <span class="s2">&quot;call:123&quot;</span>
+     <span class="n">v</span>
+<span class="o">+--------------------+</span>
+<span class="o">|</span>  <span class="n">Check</span> <span class="n">Redis</span>       <span class="o">|</span>
+<span class="o">|</span>  <span class="n">GET</span> <span class="n">call</span><span class="p">:</span><span class="mi">123</span>      <span class="o">|</span>
+<span class="o">+----+---------------+</span>
+     <span class="o">|</span>
+     <span class="o">+-</span> <span class="n">Cache</span> <span class="n">Hit</span> <span class="o">--------+</span>
+     <span class="o">|</span>                    <span class="o">|</span>
+     <span class="o">|</span>                    <span class="n">v</span>
+     <span class="o">|</span>              <span class="o">+----------------+</span>
+     <span class="o">|</span>              <span class="o">|</span> <span class="n">Return</span> <span class="n">Cached</span>  <span class="o">|</span>
+     <span class="o">|</span>              <span class="o">|</span> <span class="n">Data</span> <span class="p">(</span><span class="n">fast</span><span class="p">)</span>    <span class="o">|</span>
+     <span class="o">|</span>              <span class="o">+----------------+</span>
+     <span class="o">|</span>
+     <span class="o">+-</span> <span class="n">Cache</span> <span class="n">Miss</span> <span class="o">-------+</span>
+     <span class="o">|</span>                    <span class="o">|</span>
+     <span class="o">|</span>                    <span class="n">v</span>
+     <span class="o">|</span>              <span class="o">+----------------+</span>
+     <span class="o">|</span>              <span class="o">|</span> <span class="n">Query</span> <span class="n">MySQL</span>    <span class="o">|</span>
+     <span class="o">|</span>              <span class="o">+----+-----------+</span>
+     <span class="o">|</span>                   <span class="o">|</span>
+     <span class="o">|</span>                   <span class="n">v</span>
+     <span class="o">|</span>              <span class="o">+----------------+</span>
+     <span class="o">|</span>              <span class="o">|</span> <span class="n">Store</span> <span class="ow">in</span> <span class="n">Redis</span> <span class="o">|</span>
+     <span class="o">|</span>              <span class="o">|</span> <span class="n">SET</span> <span class="n">call</span><span class="p">:</span><span class="mi">123</span>   <span class="o">|</span>
+     <span class="o">|</span>              <span class="o">|</span> <span class="n">EX</span> <span class="mi">300</span> <span class="p">(</span><span class="mi">5</span> <span class="nb">min</span><span class="p">)</span> <span class="o">|</span>
+     <span class="o">|</span>              <span class="o">+----+-----------+</span>
+     <span class="o">|</span>                   <span class="o">|</span>
+     <span class="o">|</span>                   <span class="n">v</span>
+     <span class="o">|</span>              <span class="o">+----------------+</span>
+     <span class="o">|</span>              <span class="o">|</span> <span class="n">Return</span> <span class="n">Data</span>    <span class="o">|</span>
+     <span class="o">|</span>              <span class="o">+----------------+</span>
 </pre></div>
 </div>
 <p><strong>Cache Key Patterns</strong></p>
 <p>VoIPBIN uses structured cache keys:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Key Naming Convention:
-&lt;resource&gt;:&lt;id&gt;[:&lt;field&gt;]
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Key</span> <span class="n">Naming</span> <span class="n">Convention</span><span class="p">:</span>
+<span class="o">&lt;</span><span class="n">resource</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="nb">id</span><span class="o">&gt;</span><span class="p">[:</span><span class="o">&lt;</span><span class="n">field</span><span class="o">&gt;</span><span class="p">]</span>
 
-Examples:
-• call:abc-123              → Full call record
-• agent:xyz-789:status      → Agent status only
-• customer:customer-456     → Customer record
-• queue:queue-999:stats     → Queue statistics
-• flow:flow-111:definition  → Flow definition
+<span class="n">Examples</span><span class="p">:</span>
+<span class="n">o</span> <span class="n">call</span><span class="p">:</span><span class="n">abc</span><span class="o">-</span><span class="mi">123</span>              <span class="o">-&gt;</span> <span class="n">Full</span> <span class="n">call</span> <span class="n">record</span>
+<span class="n">o</span> <span class="n">agent</span><span class="p">:</span><span class="n">xyz</span><span class="o">-</span><span class="mi">789</span><span class="p">:</span><span class="n">status</span>      <span class="o">-&gt;</span> <span class="n">Agent</span> <span class="n">status</span> <span class="n">only</span>
+<span class="n">o</span> <span class="n">customer</span><span class="p">:</span><span class="n">customer</span><span class="o">-</span><span class="mi">456</span>     <span class="o">-&gt;</span> <span class="n">Customer</span> <span class="n">record</span>
+<span class="n">o</span> <span class="n">queue</span><span class="p">:</span><span class="n">queue</span><span class="o">-</span><span class="mi">999</span><span class="p">:</span><span class="n">stats</span>     <span class="o">-&gt;</span> <span class="n">Queue</span> <span class="n">statistics</span>
+<span class="n">o</span> <span class="n">flow</span><span class="p">:</span><span class="n">flow</span><span class="o">-</span><span class="mi">111</span><span class="p">:</span><span class="n">definition</span>  <span class="o">-&gt;</span> <span class="n">Flow</span> <span class="n">definition</span>
 
-Advantages:
-• Predictable keys
-• Easy to invalidate
-• Pattern matching for bulk operations
+<span class="n">Advantages</span><span class="p">:</span>
+<span class="n">o</span> <span class="n">Predictable</span> <span class="n">keys</span>
+<span class="n">o</span> <span class="n">Easy</span> <span class="n">to</span> <span class="n">invalidate</span>
+<span class="n">o</span> <span class="n">Pattern</span> <span class="n">matching</span> <span class="k">for</span> <span class="n">bulk</span> <span class="n">operations</span>
 </pre></div>
 </div>
 <p><strong>Data Structures</strong></p>
 <p>Redis supports multiple data structures:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Redis Data Structures:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Redis</span> <span class="n">Data</span> <span class="n">Structures</span><span class="p">:</span>
 
-1. String (Simple Values):
-   SET call:123:status &quot;active&quot;
-   GET call:123:status
-   → &quot;active&quot;
+<span class="mf">1.</span> <span class="n">String</span> <span class="p">(</span><span class="n">Simple</span> <span class="n">Values</span><span class="p">):</span>
+   <span class="n">SET</span> <span class="n">call</span><span class="p">:</span><span class="mi">123</span><span class="p">:</span><span class="n">status</span> <span class="s2">&quot;active&quot;</span>
+   <span class="n">GET</span> <span class="n">call</span><span class="p">:</span><span class="mi">123</span><span class="p">:</span><span class="n">status</span>
+   <span class="o">-&gt;</span> <span class="s2">&quot;active&quot;</span>
 
-2. Hash (Object Fields):
-   HSET call:123 status &quot;active&quot; duration &quot;120&quot;
-   HGET call:123 status
-   → &quot;active&quot;
-   HGETALL call:123
-   → {&quot;status&quot;: &quot;active&quot;, &quot;duration&quot;: &quot;120&quot;}
+<span class="mf">2.</span> <span class="n">Hash</span> <span class="p">(</span><span class="n">Object</span> <span class="n">Fields</span><span class="p">):</span>
+   <span class="n">HSET</span> <span class="n">call</span><span class="p">:</span><span class="mi">123</span> <span class="n">status</span> <span class="s2">&quot;active&quot;</span> <span class="n">duration</span> <span class="s2">&quot;120&quot;</span>
+   <span class="n">HGET</span> <span class="n">call</span><span class="p">:</span><span class="mi">123</span> <span class="n">status</span>
+   <span class="o">-&gt;</span> <span class="s2">&quot;active&quot;</span>
+   <span class="n">HGETALL</span> <span class="n">call</span><span class="p">:</span><span class="mi">123</span>
+   <span class="o">-&gt;</span> <span class="p">{</span><span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;active&quot;</span><span class="p">,</span> <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="s2">&quot;120&quot;</span><span class="p">}</span>
 
-3. List (Ordered Collection):
-   LPUSH queue:456:waiting call:123
-   LPUSH queue:456:waiting call:789
-   LRANGE queue:456:waiting 0 -1
-   → [call:789, call:123]
+<span class="mf">3.</span> <span class="n">List</span> <span class="p">(</span><span class="n">Ordered</span> <span class="n">Collection</span><span class="p">):</span>
+   <span class="n">LPUSH</span> <span class="n">queue</span><span class="p">:</span><span class="mi">456</span><span class="p">:</span><span class="n">waiting</span> <span class="n">call</span><span class="p">:</span><span class="mi">123</span>
+   <span class="n">LPUSH</span> <span class="n">queue</span><span class="p">:</span><span class="mi">456</span><span class="p">:</span><span class="n">waiting</span> <span class="n">call</span><span class="p">:</span><span class="mi">789</span>
+   <span class="n">LRANGE</span> <span class="n">queue</span><span class="p">:</span><span class="mi">456</span><span class="p">:</span><span class="n">waiting</span> <span class="mi">0</span> <span class="o">-</span><span class="mi">1</span>
+   <span class="o">-&gt;</span> <span class="p">[</span><span class="n">call</span><span class="p">:</span><span class="mi">789</span><span class="p">,</span> <span class="n">call</span><span class="p">:</span><span class="mi">123</span><span class="p">]</span>
 
-4. Set (Unique Collection):
-   SADD conference:999:participants agent:111
-   SADD conference:999:participants agent:222
-   SMEMBERS conference:999:participants
-   → [agent:111, agent:222]
+<span class="mf">4.</span> <span class="n">Set</span> <span class="p">(</span><span class="n">Unique</span> <span class="n">Collection</span><span class="p">):</span>
+   <span class="n">SADD</span> <span class="n">conference</span><span class="p">:</span><span class="mi">999</span><span class="p">:</span><span class="n">participants</span> <span class="n">agent</span><span class="p">:</span><span class="mi">111</span>
+   <span class="n">SADD</span> <span class="n">conference</span><span class="p">:</span><span class="mi">999</span><span class="p">:</span><span class="n">participants</span> <span class="n">agent</span><span class="p">:</span><span class="mi">222</span>
+   <span class="n">SMEMBERS</span> <span class="n">conference</span><span class="p">:</span><span class="mi">999</span><span class="p">:</span><span class="n">participants</span>
+   <span class="o">-&gt;</span> <span class="p">[</span><span class="n">agent</span><span class="p">:</span><span class="mi">111</span><span class="p">,</span> <span class="n">agent</span><span class="p">:</span><span class="mi">222</span><span class="p">]</span>
 
-5. Sorted Set (Scored Collection):
-   ZADD leaderboard 100 agent:111
-   ZADD leaderboard 95 agent:222
-   ZRANGE leaderboard 0 -1 WITHSCORES
-   → [(agent:111, 100), (agent:222, 95)]
+<span class="mf">5.</span> <span class="n">Sorted</span> <span class="n">Set</span> <span class="p">(</span><span class="n">Scored</span> <span class="n">Collection</span><span class="p">):</span>
+   <span class="n">ZADD</span> <span class="n">leaderboard</span> <span class="mi">100</span> <span class="n">agent</span><span class="p">:</span><span class="mi">111</span>
+   <span class="n">ZADD</span> <span class="n">leaderboard</span> <span class="mi">95</span> <span class="n">agent</span><span class="p">:</span><span class="mi">222</span>
+   <span class="n">ZRANGE</span> <span class="n">leaderboard</span> <span class="mi">0</span> <span class="o">-</span><span class="mi">1</span> <span class="n">WITHSCORES</span>
+   <span class="o">-&gt;</span> <span class="p">[(</span><span class="n">agent</span><span class="p">:</span><span class="mi">111</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <span class="p">(</span><span class="n">agent</span><span class="p">:</span><span class="mi">222</span><span class="p">,</span> <span class="mi">95</span><span class="p">)]</span>
 </pre></div>
 </div>
 <p><strong>Cache Expiration</strong></p>
@@ -556,49 +556,49 @@ EXPIRE key 300         # Set TTL on existing key
 </div>
 <p><strong>Cache Invalidation</strong></p>
 <p>VoIPBIN invalidates cache on updates:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Cache Invalidation Flow:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Cache</span> <span class="n">Invalidation</span> <span class="n">Flow</span><span class="p">:</span>
 
-Update Request
-     │
-     │  1. Update Database
-     ▼
-┌────────────────────┐
-│  UPDATE calls      │
-│  SET status=&#39;ended&#39;│
-│  WHERE id=&#39;123&#39;    │
-└────┬───────────────┘
-     │
-     │  2. Invalidate Cache
-     ▼
-┌────────────────────┐
-│  DEL call:123      │
-└────┬───────────────┘
-     │
-     │  3. Return Success
-     ▼
-┌────────────────────┐
-│  Response to Client│
-└────────────────────┘
+<span class="n">Update</span> <span class="n">Request</span>
+     <span class="o">|</span>
+     <span class="o">|</span>  <span class="mf">1.</span> <span class="n">Update</span> <span class="n">Database</span>
+     <span class="n">v</span>
+<span class="o">+--------------------+</span>
+<span class="o">|</span>  <span class="n">UPDATE</span> <span class="n">calls</span>      <span class="o">|</span>
+<span class="o">|</span>  <span class="n">SET</span> <span class="n">status</span><span class="o">=</span><span class="s1">&#39;ended&#39;</span><span class="o">|</span>
+<span class="o">|</span>  <span class="n">WHERE</span> <span class="nb">id</span><span class="o">=</span><span class="s1">&#39;123&#39;</span>    <span class="o">|</span>
+<span class="o">+----+---------------+</span>
+     <span class="o">|</span>
+     <span class="o">|</span>  <span class="mf">2.</span> <span class="n">Invalidate</span> <span class="n">Cache</span>
+     <span class="n">v</span>
+<span class="o">+--------------------+</span>
+<span class="o">|</span>  <span class="n">DEL</span> <span class="n">call</span><span class="p">:</span><span class="mi">123</span>      <span class="o">|</span>
+<span class="o">+----+---------------+</span>
+     <span class="o">|</span>
+     <span class="o">|</span>  <span class="mf">3.</span> <span class="n">Return</span> <span class="n">Success</span>
+     <span class="n">v</span>
+<span class="o">+--------------------+</span>
+<span class="o">|</span>  <span class="n">Response</span> <span class="n">to</span> <span class="n">Client</span><span class="o">|</span>
+<span class="o">+--------------------+</span>
 
-Next Read:
-• Cache miss
-• Fetch from DB
-• Store in cache with new data
+<span class="n">Next</span> <span class="n">Read</span><span class="p">:</span>
+<span class="n">o</span> <span class="n">Cache</span> <span class="n">miss</span>
+<span class="n">o</span> <span class="n">Fetch</span> <span class="kn">from</span><span class="w"> </span><span class="nn">DB</span>
+<span class="n">o</span> <span class="n">Store</span> <span class="ow">in</span> <span class="n">cache</span> <span class="k">with</span> <span class="n">new</span> <span class="n">data</span>
 </pre></div>
 </div>
 <p><strong>Cache Patterns</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Common Cache Patterns:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Common</span> <span class="n">Cache</span> <span class="n">Patterns</span><span class="p">:</span>
 
-1. Cache-Aside (Read Through):
-   App checks cache → Cache miss → Query DB → Store in cache
+<span class="mf">1.</span> <span class="n">Cache</span><span class="o">-</span><span class="n">Aside</span> <span class="p">(</span><span class="n">Read</span> <span class="n">Through</span><span class="p">):</span>
+   <span class="n">App</span> <span class="n">checks</span> <span class="n">cache</span> <span class="o">-&gt;</span> <span class="n">Cache</span> <span class="n">miss</span> <span class="o">-&gt;</span> <span class="n">Query</span> <span class="n">DB</span> <span class="o">-&gt;</span> <span class="n">Store</span> <span class="ow">in</span> <span class="n">cache</span>
 
-2. Write-Through:
-   App writes to cache → Cache writes to DB → Return success
+<span class="mf">2.</span> <span class="n">Write</span><span class="o">-</span><span class="n">Through</span><span class="p">:</span>
+   <span class="n">App</span> <span class="n">writes</span> <span class="n">to</span> <span class="n">cache</span> <span class="o">-&gt;</span> <span class="n">Cache</span> <span class="n">writes</span> <span class="n">to</span> <span class="n">DB</span> <span class="o">-&gt;</span> <span class="n">Return</span> <span class="n">success</span>
 
-3. Write-Behind (Async):
-   App writes to cache → Return success → Cache writes to DB later
+<span class="mf">3.</span> <span class="n">Write</span><span class="o">-</span><span class="n">Behind</span> <span class="p">(</span><span class="n">Async</span><span class="p">):</span>
+   <span class="n">App</span> <span class="n">writes</span> <span class="n">to</span> <span class="n">cache</span> <span class="o">-&gt;</span> <span class="n">Return</span> <span class="n">success</span> <span class="o">-&gt;</span> <span class="n">Cache</span> <span class="n">writes</span> <span class="n">to</span> <span class="n">DB</span> <span class="n">later</span>
 
-VoIPBIN primarily uses Cache-Aside for simplicity and consistency.
+<span class="n">VoIPBIN</span> <span class="n">primarily</span> <span class="n">uses</span> <span class="n">Cache</span><span class="o">-</span><span class="n">Aside</span> <span class="k">for</span> <span class="n">simplicity</span> <span class="ow">and</span> <span class="n">consistency</span><span class="o">.</span>
 </pre></div>
 </div>
 </section>
@@ -606,51 +606,51 @@ VoIPBIN primarily uses Cache-Aside for simplicity and consistency.
 <h2>Session Management<a class="headerlink" href="#session-management" title="Link to this heading"></a></h2>
 <p>Redis stores session data for authenticated users:</p>
 <p><strong>Session Structure</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Session Data in Redis:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Session</span> <span class="n">Data</span> <span class="ow">in</span> <span class="n">Redis</span><span class="p">:</span>
 
-Key: session:&lt;token-hash&gt;
-Type: Hash
-TTL: 1 hour (refreshed on activity)
+<span class="n">Key</span><span class="p">:</span> <span class="n">session</span><span class="p">:</span><span class="o">&lt;</span><span class="n">token</span><span class="o">-</span><span class="nb">hash</span><span class="o">&gt;</span>
+<span class="n">Type</span><span class="p">:</span> <span class="n">Hash</span>
+<span class="n">TTL</span><span class="p">:</span> <span class="mi">1</span> <span class="n">hour</span> <span class="p">(</span><span class="n">refreshed</span> <span class="n">on</span> <span class="n">activity</span><span class="p">)</span>
 
-Data:
-┌─────────────────────────────────────┐
-│ customer_id    : customer-123       │
-│ agent_id       : agent-456          │
-│ permissions    : [&quot;admin&quot;, &quot;call&quot;]  │
-│ login_time     : 2026-01-20 12:00   │
-│ last_activity  : 2026-01-20 12:30   │
-│ ip_address     : 192.168.1.100      │
-│ user_agent     : Mozilla/5.0 ...    │
-└─────────────────────────────────────┘
+<span class="n">Data</span><span class="p">:</span>
+<span class="o">+-------------------------------------+</span>
+<span class="o">|</span> <span class="n">customer_id</span>    <span class="p">:</span> <span class="n">customer</span><span class="o">-</span><span class="mi">123</span>       <span class="o">|</span>
+<span class="o">|</span> <span class="n">agent_id</span>       <span class="p">:</span> <span class="n">agent</span><span class="o">-</span><span class="mi">456</span>          <span class="o">|</span>
+<span class="o">|</span> <span class="n">permissions</span>    <span class="p">:</span> <span class="p">[</span><span class="s2">&quot;admin&quot;</span><span class="p">,</span> <span class="s2">&quot;call&quot;</span><span class="p">]</span>  <span class="o">|</span>
+<span class="o">|</span> <span class="n">login_time</span>     <span class="p">:</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">20</span> <span class="mi">12</span><span class="p">:</span><span class="mi">00</span>   <span class="o">|</span>
+<span class="o">|</span> <span class="n">last_activity</span>  <span class="p">:</span> <span class="mi">2026</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">20</span> <span class="mi">12</span><span class="p">:</span><span class="mi">30</span>   <span class="o">|</span>
+<span class="o">|</span> <span class="n">ip_address</span>     <span class="p">:</span> <span class="mf">192.168.1.100</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="n">user_agent</span>     <span class="p">:</span> <span class="n">Mozilla</span><span class="o">/</span><span class="mf">5.0</span> <span class="o">...</span>    <span class="o">|</span>
+<span class="o">+-------------------------------------+</span>
 </pre></div>
 </div>
 <p><strong>Session Lifecycle</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Session Flow:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Session</span> <span class="n">Flow</span><span class="p">:</span>
 
-1. Login:
-   ┌────────────────────────────┐
-   │ Generate JWT token         │
-   │ Hash token → session_key   │
-   │ Store session in Redis     │
-   │ SET session:xyz {...}      │
-   │ EXPIRE session:xyz 3600    │
-   └────────────────────────────┘
+<span class="mf">1.</span> <span class="n">Login</span><span class="p">:</span>
+   <span class="o">+----------------------------+</span>
+   <span class="o">|</span> <span class="n">Generate</span> <span class="n">JWT</span> <span class="n">token</span>         <span class="o">|</span>
+   <span class="o">|</span> <span class="n">Hash</span> <span class="n">token</span> <span class="o">-&gt;</span> <span class="n">session_key</span>  <span class="o">|</span>
+   <span class="o">|</span> <span class="n">Store</span> <span class="n">session</span> <span class="ow">in</span> <span class="n">Redis</span>     <span class="o">|</span>
+   <span class="o">|</span> <span class="n">SET</span> <span class="n">session</span><span class="p">:</span><span class="n">xyz</span> <span class="p">{</span><span class="o">...</span><span class="p">}</span>      <span class="o">|</span>
+   <span class="o">|</span> <span class="n">EXPIRE</span> <span class="n">session</span><span class="p">:</span><span class="n">xyz</span> <span class="mi">3600</span>    <span class="o">|</span>
+   <span class="o">+----------------------------+</span>
 
-2. Request:
-   ┌────────────────────────────┐
-   │ Extract token from header  │
-   │ Hash token → session_key   │
-   │ GET session:xyz            │
-   │ Validate session data      │
-   │ EXPIRE session:xyz 3600    │  ← Refresh TTL
-   └────────────────────────────┘
+<span class="mf">2.</span> <span class="n">Request</span><span class="p">:</span>
+   <span class="o">+----------------------------+</span>
+   <span class="o">|</span> <span class="n">Extract</span> <span class="n">token</span> <span class="kn">from</span><span class="w"> </span><span class="nn">header</span>  <span class="o">|</span>
+   <span class="o">|</span> <span class="n">Hash</span> <span class="n">token</span> <span class="o">-&gt;</span> <span class="n">session_key</span>  <span class="o">|</span>
+   <span class="o">|</span> <span class="n">GET</span> <span class="n">session</span><span class="p">:</span><span class="n">xyz</span>            <span class="o">|</span>
+   <span class="o">|</span> <span class="n">Validate</span> <span class="n">session</span> <span class="n">data</span>      <span class="o">|</span>
+   <span class="o">|</span> <span class="n">EXPIRE</span> <span class="n">session</span><span class="p">:</span><span class="n">xyz</span> <span class="mi">3600</span>    <span class="o">|</span>  <span class="o">&lt;-</span> <span class="n">Refresh</span> <span class="n">TTL</span>
+   <span class="o">+----------------------------+</span>
 
-3. Logout:
-   ┌────────────────────────────┐
-   │ Extract token from header  │
-   │ Hash token → session_key   │
-   │ DEL session:xyz            │
-   └────────────────────────────┘
+<span class="mf">3.</span> <span class="n">Logout</span><span class="p">:</span>
+   <span class="o">+----------------------------+</span>
+   <span class="o">|</span> <span class="n">Extract</span> <span class="n">token</span> <span class="kn">from</span><span class="w"> </span><span class="nn">header</span>  <span class="o">|</span>
+   <span class="o">|</span> <span class="n">Hash</span> <span class="n">token</span> <span class="o">-&gt;</span> <span class="n">session_key</span>  <span class="o">|</span>
+   <span class="o">|</span> <span class="n">DEL</span> <span class="n">session</span><span class="p">:</span><span class="n">xyz</span>            <span class="o">|</span>
+   <span class="o">+----------------------------+</span>
 </pre></div>
 </div>
 </section>
@@ -658,69 +658,69 @@ Data:
 <h2>Data Consistency<a class="headerlink" href="#data-consistency" title="Link to this heading"></a></h2>
 <p>VoIPBIN ensures consistency across data layers:</p>
 <p><strong>Consistency Model</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Consistency Strategy:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Consistency</span> <span class="n">Strategy</span><span class="p">:</span>
 
-Strong Consistency:        Eventual Consistency:
-┌──────────────┐           ┌──────────────┐
-│   MySQL      │           │   Redis      │
-│  (Source of  │           │  (May be     │
-│   Truth)     │           │   stale)     │
-└──────┬───────┘           └──────┬───────┘
-       │                          │
-       │  Always consistent       │  May lag behind
-       │  ACID transactions       │  Best effort
-       │                          │
-       └──────────┬───────────────┘
-                  │
-            Database is authoritative
+<span class="n">Strong</span> <span class="n">Consistency</span><span class="p">:</span>        <span class="n">Eventual</span> <span class="n">Consistency</span><span class="p">:</span>
+<span class="o">+--------------+</span>           <span class="o">+--------------+</span>
+<span class="o">|</span>   <span class="n">MySQL</span>      <span class="o">|</span>           <span class="o">|</span>   <span class="n">Redis</span>      <span class="o">|</span>
+<span class="o">|</span>  <span class="p">(</span><span class="n">Source</span> <span class="n">of</span>  <span class="o">|</span>           <span class="o">|</span>  <span class="p">(</span><span class="n">May</span> <span class="n">be</span>     <span class="o">|</span>
+<span class="o">|</span>   <span class="n">Truth</span><span class="p">)</span>     <span class="o">|</span>           <span class="o">|</span>   <span class="n">stale</span><span class="p">)</span>     <span class="o">|</span>
+<span class="o">+------+-------+</span>           <span class="o">+------+-------+</span>
+       <span class="o">|</span>                          <span class="o">|</span>
+       <span class="o">|</span>  <span class="n">Always</span> <span class="n">consistent</span>       <span class="o">|</span>  <span class="n">May</span> <span class="n">lag</span> <span class="n">behind</span>
+       <span class="o">|</span>  <span class="n">ACID</span> <span class="n">transactions</span>       <span class="o">|</span>  <span class="n">Best</span> <span class="n">effort</span>
+       <span class="o">|</span>                          <span class="o">|</span>
+       <span class="o">+----------+---------------+</span>
+                  <span class="o">|</span>
+            <span class="n">Database</span> <span class="ow">is</span> <span class="n">authoritative</span>
 </pre></div>
 </div>
 <p><strong>Write Path</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Write Flow (Strong Consistency):
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Write</span> <span class="n">Flow</span> <span class="p">(</span><span class="n">Strong</span> <span class="n">Consistency</span><span class="p">):</span>
 
-1. Write Request
-   │
-   ▼
-2. Update Database First
-   ├─ BEGIN TRANSACTION
-   ├─ UPDATE table ...
-   ├─ COMMIT
-   │
-   ▼
-3. Invalidate Cache
-   ├─ DEL cache_key
-   │
-   ▼
-4. Publish Event
-   ├─ Notify subscribers
-   │
-   ▼
-5. Return Success
+<span class="mf">1.</span> <span class="n">Write</span> <span class="n">Request</span>
+   <span class="o">|</span>
+   <span class="n">v</span>
+<span class="mf">2.</span> <span class="n">Update</span> <span class="n">Database</span> <span class="n">First</span>
+   <span class="o">+-</span> <span class="n">BEGIN</span> <span class="n">TRANSACTION</span>
+   <span class="o">+-</span> <span class="n">UPDATE</span> <span class="n">table</span> <span class="o">...</span>
+   <span class="o">+-</span> <span class="n">COMMIT</span>
+   <span class="o">|</span>
+   <span class="n">v</span>
+<span class="mf">3.</span> <span class="n">Invalidate</span> <span class="n">Cache</span>
+   <span class="o">+-</span> <span class="n">DEL</span> <span class="n">cache_key</span>
+   <span class="o">|</span>
+   <span class="n">v</span>
+<span class="mf">4.</span> <span class="n">Publish</span> <span class="n">Event</span>
+   <span class="o">+-</span> <span class="n">Notify</span> <span class="n">subscribers</span>
+   <span class="o">|</span>
+   <span class="n">v</span>
+<span class="mf">5.</span> <span class="n">Return</span> <span class="n">Success</span>
 
-Database updated before cache invalidation
-ensures consistency.
+<span class="n">Database</span> <span class="n">updated</span> <span class="n">before</span> <span class="n">cache</span> <span class="n">invalidation</span>
+<span class="n">ensures</span> <span class="n">consistency</span><span class="o">.</span>
 </pre></div>
 </div>
 <p><strong>Read Path</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Read Flow (Eventual Consistency Acceptable):
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Read</span> <span class="n">Flow</span> <span class="p">(</span><span class="n">Eventual</span> <span class="n">Consistency</span> <span class="n">Acceptable</span><span class="p">):</span>
 
-1. Read Request
-   │
-   ▼
-2. Check Cache
-   ├─ Cache Hit → Return (may be slightly stale)
-   ├─ Cache Miss → Continue
-   │
-   ▼
-3. Query Database
-   ├─ SELECT * FROM table WHERE ...
-   │
-   ▼
-4. Store in Cache
-   ├─ SET cache_key value EX ttl
-   │
-   ▼
-5. Return Result
+<span class="mf">1.</span> <span class="n">Read</span> <span class="n">Request</span>
+   <span class="o">|</span>
+   <span class="n">v</span>
+<span class="mf">2.</span> <span class="n">Check</span> <span class="n">Cache</span>
+   <span class="o">+-</span> <span class="n">Cache</span> <span class="n">Hit</span> <span class="o">-&gt;</span> <span class="n">Return</span> <span class="p">(</span><span class="n">may</span> <span class="n">be</span> <span class="n">slightly</span> <span class="n">stale</span><span class="p">)</span>
+   <span class="o">+-</span> <span class="n">Cache</span> <span class="n">Miss</span> <span class="o">-&gt;</span> <span class="n">Continue</span>
+   <span class="o">|</span>
+   <span class="n">v</span>
+<span class="mf">3.</span> <span class="n">Query</span> <span class="n">Database</span>
+   <span class="o">+-</span> <span class="n">SELECT</span> <span class="o">*</span> <span class="n">FROM</span> <span class="n">table</span> <span class="n">WHERE</span> <span class="o">...</span>
+   <span class="o">|</span>
+   <span class="n">v</span>
+<span class="mf">4.</span> <span class="n">Store</span> <span class="ow">in</span> <span class="n">Cache</span>
+   <span class="o">+-</span> <span class="n">SET</span> <span class="n">cache_key</span> <span class="n">value</span> <span class="n">EX</span> <span class="n">ttl</span>
+   <span class="o">|</span>
+   <span class="n">v</span>
+<span class="mf">5.</span> <span class="n">Return</span> <span class="n">Result</span>
 </pre></div>
 </div>
 </section>
@@ -728,78 +728,78 @@ ensures consistency.
 <h2>Data Backup and Recovery<a class="headerlink" href="#data-backup-and-recovery" title="Link to this heading"></a></h2>
 <p>VoIPBIN implements comprehensive backup strategy:</p>
 <p><strong>Backup Architecture</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Backup Strategy:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Backup</span> <span class="n">Strategy</span><span class="p">:</span>
 
-Production Database
-     │
-     │  Continuous Replication
-     ▼
-┌────────────────────┐
-│  Read Replica      │  ← Used for backups
-└────┬───────────────┘    (no production impact)
-     │
-     │  Daily Full Backup
-     ▼
-┌────────────────────┐
-│  Backup Storage    │
-│  (Google Cloud)    │
-│                    │
-│  • Daily: 30 days  │
-│  • Weekly: 1 year  │
-│  • Monthly: 7 years│
-└────────────────────┘
+<span class="n">Production</span> <span class="n">Database</span>
+     <span class="o">|</span>
+     <span class="o">|</span>  <span class="n">Continuous</span> <span class="n">Replication</span>
+     <span class="n">v</span>
+<span class="o">+--------------------+</span>
+<span class="o">|</span>  <span class="n">Read</span> <span class="n">Replica</span>      <span class="o">|</span>  <span class="o">&lt;-</span> <span class="n">Used</span> <span class="k">for</span> <span class="n">backups</span>
+<span class="o">+----+---------------+</span>    <span class="p">(</span><span class="n">no</span> <span class="n">production</span> <span class="n">impact</span><span class="p">)</span>
+     <span class="o">|</span>
+     <span class="o">|</span>  <span class="n">Daily</span> <span class="n">Full</span> <span class="n">Backup</span>
+     <span class="n">v</span>
+<span class="o">+--------------------+</span>
+<span class="o">|</span>  <span class="n">Backup</span> <span class="n">Storage</span>    <span class="o">|</span>
+<span class="o">|</span>  <span class="p">(</span><span class="n">Google</span> <span class="n">Cloud</span><span class="p">)</span>    <span class="o">|</span>
+<span class="o">|</span>                    <span class="o">|</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="n">Daily</span><span class="p">:</span> <span class="mi">30</span> <span class="n">days</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="n">Weekly</span><span class="p">:</span> <span class="mi">1</span> <span class="n">year</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="n">Monthly</span><span class="p">:</span> <span class="mi">7</span> <span class="n">years</span><span class="o">|</span>
+<span class="o">+--------------------+</span>
 </pre></div>
 </div>
 <p><strong>Backup Schedule</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Backup Timeline:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Backup</span> <span class="n">Timeline</span><span class="p">:</span>
 
-Daily (3 AM UTC):
-┌──────────────────────────────┐
-│ Full database dump           │
-│ Stored for 30 days           │
-│ ~100 GB compressed           │
-└──────────────────────────────┘
+<span class="n">Daily</span> <span class="p">(</span><span class="mi">3</span> <span class="n">AM</span> <span class="n">UTC</span><span class="p">):</span>
+<span class="o">+------------------------------+</span>
+<span class="o">|</span> <span class="n">Full</span> <span class="n">database</span> <span class="n">dump</span>           <span class="o">|</span>
+<span class="o">|</span> <span class="n">Stored</span> <span class="k">for</span> <span class="mi">30</span> <span class="n">days</span>           <span class="o">|</span>
+<span class="o">|</span> <span class="o">~</span><span class="mi">100</span> <span class="n">GB</span> <span class="n">compressed</span>           <span class="o">|</span>
+<span class="o">+------------------------------+</span>
 
-Weekly (Sunday 3 AM):
-┌──────────────────────────────┐
-│ Full database dump           │
-│ Stored for 1 year            │
-│ Long-term retention          │
-└──────────────────────────────┘
+<span class="n">Weekly</span> <span class="p">(</span><span class="n">Sunday</span> <span class="mi">3</span> <span class="n">AM</span><span class="p">):</span>
+<span class="o">+------------------------------+</span>
+<span class="o">|</span> <span class="n">Full</span> <span class="n">database</span> <span class="n">dump</span>           <span class="o">|</span>
+<span class="o">|</span> <span class="n">Stored</span> <span class="k">for</span> <span class="mi">1</span> <span class="n">year</span>            <span class="o">|</span>
+<span class="o">|</span> <span class="n">Long</span><span class="o">-</span><span class="n">term</span> <span class="n">retention</span>          <span class="o">|</span>
+<span class="o">+------------------------------+</span>
 
-Continuous:
-┌──────────────────────────────┐
-│ Binary logs (point-in-time)  │
-│ Stored for 7 days            │
-│ For recovery between backups │
-└──────────────────────────────┘
+<span class="n">Continuous</span><span class="p">:</span>
+<span class="o">+------------------------------+</span>
+<span class="o">|</span> <span class="n">Binary</span> <span class="n">logs</span> <span class="p">(</span><span class="n">point</span><span class="o">-</span><span class="ow">in</span><span class="o">-</span><span class="n">time</span><span class="p">)</span>  <span class="o">|</span>
+<span class="o">|</span> <span class="n">Stored</span> <span class="k">for</span> <span class="mi">7</span> <span class="n">days</span>            <span class="o">|</span>
+<span class="o">|</span> <span class="n">For</span> <span class="n">recovery</span> <span class="n">between</span> <span class="n">backups</span> <span class="o">|</span>
+<span class="o">+------------------------------+</span>
 </pre></div>
 </div>
 <p><strong>Recovery Procedures</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Recovery Scenarios:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Recovery</span> <span class="n">Scenarios</span><span class="p">:</span>
 
-1. Recent Data Loss (&lt; 7 days):
-   ┌────────────────────────────┐
-   │ Restore latest daily backup│
-   │ Apply binary logs          │
-   │ Point-in-time recovery     │
-   └────────────────────────────┘
-   Recovery time: 1-2 hours
+<span class="mf">1.</span> <span class="n">Recent</span> <span class="n">Data</span> <span class="n">Loss</span> <span class="p">(</span><span class="o">&lt;</span> <span class="mi">7</span> <span class="n">days</span><span class="p">):</span>
+   <span class="o">+----------------------------+</span>
+   <span class="o">|</span> <span class="n">Restore</span> <span class="n">latest</span> <span class="n">daily</span> <span class="n">backup</span><span class="o">|</span>
+   <span class="o">|</span> <span class="n">Apply</span> <span class="n">binary</span> <span class="n">logs</span>          <span class="o">|</span>
+   <span class="o">|</span> <span class="n">Point</span><span class="o">-</span><span class="ow">in</span><span class="o">-</span><span class="n">time</span> <span class="n">recovery</span>     <span class="o">|</span>
+   <span class="o">+----------------------------+</span>
+   <span class="n">Recovery</span> <span class="n">time</span><span class="p">:</span> <span class="mi">1</span><span class="o">-</span><span class="mi">2</span> <span class="n">hours</span>
 
-2. Older Data Loss (&lt; 1 year):
-   ┌────────────────────────────┐
-   │ Restore weekly backup      │
-   │ No binary logs available   │
-   └────────────────────────────┘
-   Recovery time: 2-4 hours
+<span class="mf">2.</span> <span class="n">Older</span> <span class="n">Data</span> <span class="n">Loss</span> <span class="p">(</span><span class="o">&lt;</span> <span class="mi">1</span> <span class="n">year</span><span class="p">):</span>
+   <span class="o">+----------------------------+</span>
+   <span class="o">|</span> <span class="n">Restore</span> <span class="n">weekly</span> <span class="n">backup</span>      <span class="o">|</span>
+   <span class="o">|</span> <span class="n">No</span> <span class="n">binary</span> <span class="n">logs</span> <span class="n">available</span>   <span class="o">|</span>
+   <span class="o">+----------------------------+</span>
+   <span class="n">Recovery</span> <span class="n">time</span><span class="p">:</span> <span class="mi">2</span><span class="o">-</span><span class="mi">4</span> <span class="n">hours</span>
 
-3. Disaster Recovery:
-   ┌────────────────────────────┐
-   │ Failover to replica        │
-   │ Promote to primary         │
-   │ Restore from backup        │
-   └────────────────────────────┘
-   Recovery time: 15 minutes
+<span class="mf">3.</span> <span class="n">Disaster</span> <span class="n">Recovery</span><span class="p">:</span>
+   <span class="o">+----------------------------+</span>
+   <span class="o">|</span> <span class="n">Failover</span> <span class="n">to</span> <span class="n">replica</span>        <span class="o">|</span>
+   <span class="o">|</span> <span class="n">Promote</span> <span class="n">to</span> <span class="n">primary</span>         <span class="o">|</span>
+   <span class="o">|</span> <span class="n">Restore</span> <span class="kn">from</span><span class="w"> </span><span class="nn">backup</span>        <span class="o">|</span>
+   <span class="o">+----------------------------+</span>
+   <span class="n">Recovery</span> <span class="n">time</span><span class="p">:</span> <span class="mi">15</span> <span class="n">minutes</span>
 </pre></div>
 </div>
 </section>
@@ -807,55 +807,55 @@ Continuous:
 <h2>Performance Monitoring<a class="headerlink" href="#performance-monitoring" title="Link to this heading"></a></h2>
 <p>VoIPBIN monitors data layer performance:</p>
 <p><strong>Database Metrics</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Key Database Metrics:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Key</span> <span class="n">Database</span> <span class="n">Metrics</span><span class="p">:</span>
 
-Query Performance:
-┌─────────────────────────────────────┐
-│ Slow queries (&gt; 1 second): 0.1%     │
-│ Average query time: 5ms             │
-│ P95 query time: 50ms                │
-│ P99 query time: 200ms               │
-└─────────────────────────────────────┘
+<span class="n">Query</span> <span class="n">Performance</span><span class="p">:</span>
+<span class="o">+-------------------------------------+</span>
+<span class="o">|</span> <span class="n">Slow</span> <span class="n">queries</span> <span class="p">(</span><span class="o">&gt;</span> <span class="mi">1</span> <span class="n">second</span><span class="p">):</span> <span class="mf">0.1</span><span class="o">%</span>     <span class="o">|</span>
+<span class="o">|</span> <span class="n">Average</span> <span class="n">query</span> <span class="n">time</span><span class="p">:</span> <span class="mi">5</span><span class="n">ms</span>             <span class="o">|</span>
+<span class="o">|</span> <span class="n">P95</span> <span class="n">query</span> <span class="n">time</span><span class="p">:</span> <span class="mi">50</span><span class="n">ms</span>                <span class="o">|</span>
+<span class="o">|</span> <span class="n">P99</span> <span class="n">query</span> <span class="n">time</span><span class="p">:</span> <span class="mi">200</span><span class="n">ms</span>               <span class="o">|</span>
+<span class="o">+-------------------------------------+</span>
 
-Connection Pool:
-┌─────────────────────────────────────┐
-│ Active connections: 45/50           │
-│ Idle connections: 5/50              │
-│ Wait time: &lt; 1ms                    │
-└─────────────────────────────────────┘
+<span class="n">Connection</span> <span class="n">Pool</span><span class="p">:</span>
+<span class="o">+-------------------------------------+</span>
+<span class="o">|</span> <span class="n">Active</span> <span class="n">connections</span><span class="p">:</span> <span class="mi">45</span><span class="o">/</span><span class="mi">50</span>           <span class="o">|</span>
+<span class="o">|</span> <span class="n">Idle</span> <span class="n">connections</span><span class="p">:</span> <span class="mi">5</span><span class="o">/</span><span class="mi">50</span>              <span class="o">|</span>
+<span class="o">|</span> <span class="n">Wait</span> <span class="n">time</span><span class="p">:</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="n">ms</span>                    <span class="o">|</span>
+<span class="o">+-------------------------------------+</span>
 
-Table Size:
-┌─────────────────────────────────────┐
-│ calls:        50 million rows       │
-│ conferences:  5 million rows        │
-│ agents:       10,000 rows           │
-│ Total size:   500 GB                │
-└─────────────────────────────────────┘
+<span class="n">Table</span> <span class="n">Size</span><span class="p">:</span>
+<span class="o">+-------------------------------------+</span>
+<span class="o">|</span> <span class="n">calls</span><span class="p">:</span>        <span class="mi">50</span> <span class="n">million</span> <span class="n">rows</span>       <span class="o">|</span>
+<span class="o">|</span> <span class="n">conferences</span><span class="p">:</span>  <span class="mi">5</span> <span class="n">million</span> <span class="n">rows</span>        <span class="o">|</span>
+<span class="o">|</span> <span class="n">agents</span><span class="p">:</span>       <span class="mi">10</span><span class="p">,</span><span class="mi">000</span> <span class="n">rows</span>           <span class="o">|</span>
+<span class="o">|</span> <span class="n">Total</span> <span class="n">size</span><span class="p">:</span>   <span class="mi">500</span> <span class="n">GB</span>                <span class="o">|</span>
+<span class="o">+-------------------------------------+</span>
 </pre></div>
 </div>
 <p><strong>Cache Metrics</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Redis Performance:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Redis</span> <span class="n">Performance</span><span class="p">:</span>
 
-Hit Rate:
-┌─────────────────────────────────────┐
-│ Cache hits:   95%                   │
-│ Cache misses: 5%                    │
-│ Target:       &gt; 90%                 │
-└─────────────────────────────────────┘
+<span class="n">Hit</span> <span class="n">Rate</span><span class="p">:</span>
+<span class="o">+-------------------------------------+</span>
+<span class="o">|</span> <span class="n">Cache</span> <span class="n">hits</span><span class="p">:</span>   <span class="mi">95</span><span class="o">%</span>                   <span class="o">|</span>
+<span class="o">|</span> <span class="n">Cache</span> <span class="n">misses</span><span class="p">:</span> <span class="mi">5</span><span class="o">%</span>                    <span class="o">|</span>
+<span class="o">|</span> <span class="n">Target</span><span class="p">:</span>       <span class="o">&gt;</span> <span class="mi">90</span><span class="o">%</span>                 <span class="o">|</span>
+<span class="o">+-------------------------------------+</span>
 
-Memory Usage:
-┌─────────────────────────────────────┐
-│ Used memory: 8 GB / 16 GB           │
-│ Peak memory: 12 GB                  │
-│ Eviction:    LRU policy             │
-└─────────────────────────────────────┘
+<span class="n">Memory</span> <span class="n">Usage</span><span class="p">:</span>
+<span class="o">+-------------------------------------+</span>
+<span class="o">|</span> <span class="n">Used</span> <span class="n">memory</span><span class="p">:</span> <span class="mi">8</span> <span class="n">GB</span> <span class="o">/</span> <span class="mi">16</span> <span class="n">GB</span>           <span class="o">|</span>
+<span class="o">|</span> <span class="n">Peak</span> <span class="n">memory</span><span class="p">:</span> <span class="mi">12</span> <span class="n">GB</span>                  <span class="o">|</span>
+<span class="o">|</span> <span class="n">Eviction</span><span class="p">:</span>    <span class="n">LRU</span> <span class="n">policy</span>             <span class="o">|</span>
+<span class="o">+-------------------------------------+</span>
 
-Latency:
-┌─────────────────────────────────────┐
-│ P50: 0.5ms                          │
-│ P95: 2ms                            │
-│ P99: 5ms                            │
-└─────────────────────────────────────┘
+<span class="n">Latency</span><span class="p">:</span>
+<span class="o">+-------------------------------------+</span>
+<span class="o">|</span> <span class="n">P50</span><span class="p">:</span> <span class="mf">0.5</span><span class="n">ms</span>                          <span class="o">|</span>
+<span class="o">|</span> <span class="n">P95</span><span class="p">:</span> <span class="mi">2</span><span class="n">ms</span>                            <span class="o">|</span>
+<span class="o">|</span> <span class="n">P99</span><span class="p">:</span> <span class="mi">5</span><span class="n">ms</span>                            <span class="o">|</span>
+<span class="o">+-------------------------------------+</span>
 </pre></div>
 </div>
 </section>
@@ -863,39 +863,39 @@ Latency:
 <h2>Scalability Considerations<a class="headerlink" href="#scalability-considerations" title="Link to this heading"></a></h2>
 <p>As VoIPBIN scales, data layer adapts:</p>
 <p><strong>Database Scaling</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Scaling Strategy:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Scaling</span> <span class="n">Strategy</span><span class="p">:</span>
 
-Current (&lt; 1M customers):
-┌──────────────────────────┐
-│   Single Primary         │
-│   + Read Replicas (3)    │
-└──────────────────────────┘
+<span class="n">Current</span> <span class="p">(</span><span class="o">&lt;</span> <span class="mi">1</span><span class="n">M</span> <span class="n">customers</span><span class="p">):</span>
+<span class="o">+--------------------------+</span>
+<span class="o">|</span>   <span class="n">Single</span> <span class="n">Primary</span>         <span class="o">|</span>
+<span class="o">|</span>   <span class="o">+</span> <span class="n">Read</span> <span class="n">Replicas</span> <span class="p">(</span><span class="mi">3</span><span class="p">)</span>    <span class="o">|</span>
+<span class="o">+--------------------------+</span>
 
-Future (&gt; 1M customers):
-┌──────────────────────────┐
-│   Sharding by Customer   │
-│                          │
-│   Shard 1: customers A-M │
-│   Shard 2: customers N-Z │
-└──────────────────────────┘
+<span class="n">Future</span> <span class="p">(</span><span class="o">&gt;</span> <span class="mi">1</span><span class="n">M</span> <span class="n">customers</span><span class="p">):</span>
+<span class="o">+--------------------------+</span>
+<span class="o">|</span>   <span class="n">Sharding</span> <span class="n">by</span> <span class="n">Customer</span>   <span class="o">|</span>
+<span class="o">|</span>                          <span class="o">|</span>
+<span class="o">|</span>   <span class="n">Shard</span> <span class="mi">1</span><span class="p">:</span> <span class="n">customers</span> <span class="n">A</span><span class="o">-</span><span class="n">M</span> <span class="o">|</span>
+<span class="o">|</span>   <span class="n">Shard</span> <span class="mi">2</span><span class="p">:</span> <span class="n">customers</span> <span class="n">N</span><span class="o">-</span><span class="n">Z</span> <span class="o">|</span>
+<span class="o">+--------------------------+</span>
 </pre></div>
 </div>
 <p><strong>Cache Scaling</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Redis Scaling:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Redis</span> <span class="n">Scaling</span><span class="p">:</span>
 
-Current:
-┌──────────────────────────┐
-│  Single Redis Instance   │
-│  16 GB Memory            │
-└──────────────────────────┘
+<span class="n">Current</span><span class="p">:</span>
+<span class="o">+--------------------------+</span>
+<span class="o">|</span>  <span class="n">Single</span> <span class="n">Redis</span> <span class="n">Instance</span>   <span class="o">|</span>
+<span class="o">|</span>  <span class="mi">16</span> <span class="n">GB</span> <span class="n">Memory</span>            <span class="o">|</span>
+<span class="o">+--------------------------+</span>
 
-Future:
-┌──────────────────────────┐
-│  Redis Cluster           │
-│  • Multiple nodes        │
-│  • Automatic sharding    │
-│  • High availability     │
-└──────────────────────────┘
+<span class="n">Future</span><span class="p">:</span>
+<span class="o">+--------------------------+</span>
+<span class="o">|</span>  <span class="n">Redis</span> <span class="n">Cluster</span>           <span class="o">|</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="n">Multiple</span> <span class="n">nodes</span>        <span class="o">|</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="n">Automatic</span> <span class="n">sharding</span>    <span class="o">|</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="n">High</span> <span class="n">availability</span>     <span class="o">|</span>
+<span class="o">+--------------------------+</span>
 </pre></div>
 </div>
 </section>

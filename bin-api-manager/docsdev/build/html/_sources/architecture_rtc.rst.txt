@@ -15,23 +15,23 @@ VoIPBIN's VoIP stack consists of three main components working together:
     SIP Traffic Flow:
 
     External Client                                      Internal Services
-         │                                                      │
-         │ SIP (INVITE, etc.)                                   │
-         ▼                                                      ▼
-    ┌──────────┐         ┌──────────┐         ┌──────────────────┐
-    │   Load   │  SIP    │ Kamailio │  SIP    │    Asterisk      │
-    │ Balancer │◀───────▶│   Farm   │◀───────▶│     (Call)       │
-    └──────────┘         └─────┬────┘         └────────┬─────────┘
-                               │                       │
-                               │ RTP Control           │ RTP Control
-                               ▼                       │
-                         ┌──────────┐                  │
-                         │ RTPEngine│                  │
-                         │   Farm   │◀─────────────────┘
-                         └─────┬────┘  Media    
-                               │
-                               │ RTP (Audio/Video)
-                               ▼
+         |                                                      |
+         | SIP (INVITE, etc.)                                   |
+         v                                                      v
+    +----------+         +----------+         +------------------+
+    |   Load   |  SIP    | Kamailio |  SIP    |    Asterisk      |
+    | Balancer |<------->|   Farm   |<------->|     (Call)       |
+    +----------+         +-----+----+         +--------+---------+
+                               |                       |
+                               | RTP Control           | RTP Control
+                               v                       |
+                         +----------+                  |
+                         | RTPEngine|                  |
+                         |   Farm   |<-----------------+
+                         +-----+----+  Media
+                               |
+                               | RTP (Audio/Video)
+                               v
                          External Client
 
 .. image:: _static/images/architecture_rtc_voip.png
@@ -75,21 +75,21 @@ Kamailio acts as the stateless SIP proxy and edge router, responsible for:
     Stateless Operation:
 
     Client          Kamailio-1        Kamailio-2        Asterisk
-      │                 │                 │                 │
-      │ INVITE          │                 │                 │
-      ├────────────────▶│                 │                 │
-      │                 │ Forward         │                 │
-      │                 ├──────────────────────────────────▶│
-      │                 │                 │                 │
-      │                 │                 │                 │
-      │ 200 OK          │                 │                 │
-      │◀────────────────┼───────────────────────────────────│
-      │                 │                 │                 │
-      │ ACK             │                 │                 │
-      ├──────────────────────────────────▶│                 │
-      │                 │                 │ Forward         │
-      │                 │                 ├────────────────▶│
-      │                 │                 │                 │
+      |                 |                 |                 |
+      | INVITE          |                 |                 |
+      +---------------->|                 |                 |
+      |                 | Forward         |                 |
+      |                 +---------------------------------->|
+      |                 |                 |                 |
+      |                 |                 |                 |
+      | 200 OK          |                 |                 |
+      |<----------------+-----------------------------------+
+      |                 |                 |                 |
+      | ACK             |                 |                 |
+      +---------------------------------->|                 |
+      |                 |                 | Forward         |
+      |                 |                 +---------------->|
+      |                 |                 |                 |
 
     Note: Different Kamailio instances handle different messages
           in the same call (stateless operation)
@@ -128,22 +128,22 @@ VoIPBIN employs three specialized Asterisk farms for optimized scalability and f
 
     Asterisk Farm Architecture:
 
-    ┌─────────────────────────────────────────────────────────┐
-    │                  Kamailio Farm                          │
-    └──────┬─────────────────────────────────────┬────────────┘
-           │                                     │
-           │ All Calls                           │ Registrations
-           ▼                 Conferences         ▼
-    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
-    │  Asterisk   │    │  Asterisk   │    │  Asterisk   │
-    │    Call     │    │ Conference  │    │  Registrar  │
-    │   Farm      │    │    Farm     │    │    Farm     │
-    │             │───▶│             │    │             │
-    │ • 1:1 calls │    │ • N-way     │    │ • SIP       │
-    │ • Call      │    │   conference│    │   REGISTER  │
-    │   bridging  │    │ • Mixing    │    │ • Auth      │
-    │ • Transfers │    │ • Recording │    │ • Presence  │
-    └─────────────┘    └─────────────┘    └─────────────┘
+    +---------------------------------------------------------+
+    |                  Kamailio Farm                          |
+    +------+-------------------------------------+------------+
+           |                                     |
+           | All Calls                           | Registrations
+           v                 Conferences         v
+    +-------------+    +-------------+    +-------------+
+    |  Asterisk   |    |  Asterisk   |    |  Asterisk   |
+    |    Call     |    | Conference  |    |  Registrar  |
+    |   Farm      |    |    Farm     |    |    Farm     |
+    |             |--->|             |    |             |
+    | o 1:1 calls |    | o N-way     |    | o SIP       |
+    | o Call      |    |   conference|    |   REGISTER  |
+    |   bridging  |    | o Mixing    |    | o Auth      |
+    | o Transfers |    | o Recording |    | o Presence  |
+    +-------------+    +-------------+    +-------------+
 
 **1. Asterisk-Call Farm**
 
@@ -203,21 +203,21 @@ RTPEngine serves as the codec edge server and media proxy:
 
     External Client                      VoIPBIN Internal
     (Various Codecs)                     (ulaw only)
-         │                                     │
-         │ RTP (G.722, Opus, etc.)             │
-         ▼                                     ▼
-    ┌─────────────────────────────────────────────┐
-    │            RTPEngine Farm                   │
-    │                                             │
-    │  • Transcode external → ulaw (internal)     │
-    │  • Transcode ulaw (internal) → external     │
-    │  • NAT traversal                            │
-    │  • Packet switching                         │
-    │  • SRTP/RTP conversion                      │
-    └──────────────────┬──────────────────────────┘
-                       │
-                       │ RTP (ulaw)
-                       ▼
+         |                                     |
+         | RTP (G.722, Opus, etc.)             |
+         v                                     v
+    +---------------------------------------------+
+    |            RTPEngine Farm                   |
+    |                                             |
+    |  o Transcode external -> ulaw (internal)    |
+    |  o Transcode ulaw (internal) -> external    |
+    |  o NAT traversal                            |
+    |  o Packet switching                         |
+    |  o SRTP/RTP conversion                      |
+    +------------------+--------------------------+
+                       |
+                       | RTP (ulaw)
+                       v
                    Asterisk Farm
 
 **Responsibilities:**
@@ -264,27 +264,27 @@ Conference Flow
     Conference Lifecycle:
 
     Flow Manager       Asterisk-Conf      Conference Bridge
-         │                  │                    │
-         │ 1. Create Conf   │                    │
-         ├─────────────────▶│                    │
-         │                  │ 2. Create Bridge   │
-         │                  ├───────────────────▶│
-         │                  │                    │
-         │ 3. Add Part. 1   │                    │
-         ├─────────────────▶│ 4. Join Bridge     │
-         │                  ├───────────────────▶│
-         │                  │                    │
-         │ 5. Add Part. 2   │                    │
-         ├─────────────────▶│ 6. Join Bridge     │
-         │                  ├───────────────────▶│
-         │                  │                    │
-         │                  │  [Audio Mixing]    │
-         │                  │◀──────────────────▶│
-         │                  │                    │
-         │ 7. End Conf      │                    │
-         ├─────────────────▶│ 8. Destroy Bridge  │
-         │                  ├───────────────────▶│
-         │                  │                    │
+         |                  |                    |
+         | 1. Create Conf   |                    |
+         +----------------->|                    |
+         |                  | 2. Create Bridge   |
+         |                  +------------------->|
+         |                  |                    |
+         | 3. Add Part. 1   |                    |
+         +----------------->| 4. Join Bridge     |
+         |                  +------------------->|
+         |                  |                    |
+         | 5. Add Part. 2   |                    |
+         +----------------->| 6. Join Bridge     |
+         |                  +------------------->|
+         |                  |                    |
+         |                  |  [Audio Mixing]    |
+         |                  |<------------------>|
+         |                  |                    |
+         | 7. End Conf      |                    |
+         +----------------->| 8. Destroy Bridge  |
+         |                  +------------------->|
+         |                  |                    |
 
 **Conference Steps:**
 
@@ -312,14 +312,14 @@ VoIPBIN treats 1:1 calls as special cases of conferencing with only two particip
 
     1:1 Call = Conference with 2 Participants
 
-    ┌──────────────┐         ┌──────────────┐
-    │ Participant A│         │ Participant B│
-    └──────┬───────┘         └──────┬───────┘
-           │                        │
-           │    Conference Bridge   │
-           │    (2 participants)    │
-           └───────────┬────────────┘
-                       │
+    +--------------+         +--------------+
+    | Participant A|         | Participant B|
+    +------+-------+         +------+-------+
+           |                        |
+           |    Conference Bridge   |
+           |    (2 participants)    |
+           +-----------+------------+
+                       |
                   Asterisk-Call
                   (manages bridge)
 
@@ -335,18 +335,18 @@ VoIPBIN treats 1:1 calls as special cases of conferencing with only two particip
 
 .. code::
 
-    1:1 Call → Multi-Party Conference:
+    1:1 Call -> Multi-Party Conference:
 
     Initial State:         Add 3rd Party:          Result:
-    ┌─────┐  ┌─────┐      ┌─────┐  ┌─────┐      ┌─────┐  ┌─────┐
-    │  A  │──│  B  │      │  A  │──│  B  │      │  A  │──│  B  │
-    └─────┘  └─────┘      └─────┘  └─────┘      └─────┘  └─────┘
-                                 │                     │
-                                 │                     │
-                                 ▼                     ▼
-                              ┌─────┐               ┌─────┐
-                              │  C  │               │  C  │
-                              └─────┘               └─────┘
+    +-----+  +-----+      +-----+  +-----+      +-----+  +-----+
+    |  A  |--|  B  |      |  A  |--|  B  |      |  A  |--|  B  |
+    +-----+  +-----+      +-----+  +-----+      +-----+  +-----+
+                                 |                     |
+                                 |                     |
+                                 v                     v
+                              +-----+               +-----+
+                              |  C  |               |  C  |
+                              +-----+               +-----+
 
     2-participant bridge   Add participant      3-participant bridge
     (1:1 call)            without disruption    (conference)
@@ -368,35 +368,35 @@ When an Asterisk instance crashes, all SIP sessions managed by that instance dis
     Session Recovery Flow:
 
     Asterisk-1     Client       Sentinel    Call-manager  HOMER DB    Asterisk-2
-        │             │             │              │         │            │
-        │   Active    │             │              │         │            │
-        │   Session   │             │              │         │            │
-        │◀───────────▶│             │              │         │            │
-        │             │             │              │         │            │
-        X  CRASH      │             │              │         │            │
-                      │             │              │         │            │
-                      │          Detect Crash      │         │            │
-                      │             │              |         │            │
-                      │     Publish Crash event    |         │            │
-                      │             │─────────────▶|         │            │
-                      │                       Query Sessions │            │
-                      │                      Get SIP Headers │            │
-                      │                            |◀────────│            │
-                      │                            |                      │
-                      │                   Create Channels                 │
-                      │                            |─────────────────────▶│
-                      │                                                   │
-                      │                                                   │
-                      │                                                   │
-                      │          Send Recovery INVITE                     │
-                      │◀──────────────────────────────────────────────────│
-                      │                                                   │
-                      │   200 OK (same Call-ID)                           │
-                      ├──────────────────────────────────────────────────▶│
-                      │                                                   │
-            Session   │                                                   │
-           Recovered  │                                                   │
-                      │◀─────────────────────────────────────────────────▶│
+        |             |             |              |         |            |
+        |   Active    |             |              |         |            |
+        |   Session   |             |              |         |            |
+        |<----------->|             |              |         |            |
+        |             |             |              |         |            |
+        X  CRASH      |             |              |         |            |
+                      |             |              |         |            |
+                      |          Detect Crash      |         |            |
+                      |             |              |         |            |
+                      |     Publish Crash event    |         |            |
+                      |             +------------->|         |            |
+                      |                       Query Sessions |            |
+                      |                      Get SIP Headers |            |
+                      |                            |<--------+            |
+                      |                            |                      |
+                      |                   Create Channels                 |
+                      |                            +--------------------->|
+                      |                                                   |
+                      |                                                   |
+                      |                                                   |
+                      |          Send Recovery INVITE                     |
+                      |<--------------------------------------------------+
+                      |                                                   |
+                      |   200 OK (same Call-ID)                           |
+                      +-------------------------------------------------->|
+                      |                                                   |
+            Session   |                                                   |
+           Recovered  |                                                   |
+                      |<------------------------------------------------->|
 
 .. image:: _static/images/architecture_rtc_sip_session_recovery_flow.png
     :alt: SIP Session Recovery Flow

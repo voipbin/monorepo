@@ -14,22 +14,22 @@ VoIPBIN's data architecture consists of three layers:
 
     Data Architecture:
 
-    ┌─────────────────────────────────────────────────────────┐
-    │                   Application Layer                     │
-    │            (30+ Microservices)                          │
-    └────────────────────┬───────────────────┬────────────────┘
-                         │                   │
-                         │                   │
-         ┌───────────────▼──────┐   ┌────────▼───────────┐
-         │                      │   │                    │
-         │   Redis Cache        │   │   MySQL Database   │
-         │   (Hot Data)         │   │   (Persistent)     │
-         │                      │   │                    │
-         │  • Sessions          │   │  • All entities    │
-         │  • Frequently read   │   │  • Relationships   │
-         │  • Temporary data    │   │  • Audit logs      │
-         │                      │   │                    │
-         └──────────────────────┘   └────────────────────┘
+    +---------------------------------------------------------+
+    |                   Application Layer                     |
+    |            (30+ Microservices)                          |
+    +--------------------+-------------------+----------------+
+                         |                   |
+                         |                   |
+         +---------------v------+   +--------v-----------+
+         |                      |   |                    |
+         |   Redis Cache        |   |   MySQL Database   |
+         |   (Hot Data)         |   |   (Persistent)     |
+         |                      |   |                    |
+         |  o Sessions          |   |  o All entities    |
+         |  o Frequently read   |   |  o Relationships   |
+         |  o Temporary data    |   |  o Audit logs      |
+         |                      |   |                    |
+         +----------------------+   +--------------------+
 
          Cache-Aside Pattern:
          1. Check cache first
@@ -47,29 +47,29 @@ VoIPBIN uses a single shared MySQL database accessed by all services.
 
     Shared Database Pattern:
 
-    ┌──────────────┐  ┌──────────────┐  ┌──────────────┐
-    │   Service A  │  │   Service B  │  │   Service C  │
-    │              │  │              │  │              │
-    │  call-mgr    │  │  flow-mgr    │  │  agent-mgr   │
-    └──────┬───────┘  └──────┬───────┘  └──────┬───────┘
-           │                 │                 │
-           │   Connection    │                 │
-           │   Pooling       │                 │
-           └────────┬────────┴─────────────────┘
-                    │
-                    ▼
-         ┌────────────────────────────┐
-         │      MySQL Database        │
-         │                            │
-         │  ┌──────────────────────┐  │
-         │  │  calls table         │  │
-         │  │  conferences table   │  │
-         │  │  agents table        │  │
-         │  │  flows table         │  │
-         │  │  customers table     │  │
-         │  │  ... 100+ tables     │  │
-         │  └──────────────────────┘  │
-         └────────────────────────────┘
+    +--------------+  +--------------+  +--------------+
+    |   Service A  |  |   Service B  |  |   Service C  |
+    |              |  |              |  |              |
+    |  call-mgr    |  |  flow-mgr    |  |  agent-mgr   |
+    +------+-------+  +------+-------+  +------+-------+
+           |                 |                 |
+           |   Connection    |                 |
+           |   Pooling       |                 |
+           +--------+--------+-----------------+
+                    |
+                    v
+         +----------------------------+
+         |      MySQL Database        |
+         |                            |
+         |  +----------------------+  |
+         |  |  calls table         |  |
+         |  |  conferences table   |  |
+         |  |  agents table        |  |
+         |  |  flows table         |  |
+         |  |  customers table     |  |
+         |  |  ... 100+ tables     |  |
+         |  +----------------------+  |
+         +----------------------------+
 
 * **Shared Schema**: All services access same database
 * **Logical Separation**: Services own specific tables
@@ -85,30 +85,30 @@ Tables are logically grouped by domain:
     Table Organization:
 
     Communication Domain:
-    • calls                - Call records
-    • conferences          - Conference bridges
-    • sms                  - SMS messages
-    • chats                - Chat messages
-    • emails               - Email records
+    o calls                - Call records
+    o conferences          - Conference bridges
+    o sms                  - SMS messages
+    o chats                - Chat messages
+    o emails               - Email records
 
     Workflow Domain:
-    • flows                - Call flow definitions
-    • flow_actions         - Flow action steps
-    • queues               - Call queues
-    • campaigns            - Campaign definitions
+    o flows                - Call flow definitions
+    o flow_actions         - Flow action steps
+    o queues               - Call queues
+    o campaigns            - Campaign definitions
 
     Management Domain:
-    • customers            - Customer accounts
-    • agents               - Agent records
-    • billings             - Billing records
-    • webhooks             - Webhook configurations
-    • accesskeys           - API keys
+    o customers            - Customer accounts
+    o agents               - Agent records
+    o billings             - Billing records
+    o webhooks             - Webhook configurations
+    o accesskeys           - API keys
 
     Resource Domain:
-    • numbers              - Phone numbers
-    • recordings           - Call recordings
-    • transcribes          - Transcription jobs
-    • transcripts          - Transcript segments
+    o numbers              - Phone numbers
+    o recordings           - Call recordings
+    o transcribes          - Transcription jobs
+    o transcripts          - Transcript segments
 
 **Common Table Pattern**
 
@@ -156,30 +156,30 @@ Services access data through consistent patterns:
     Data Access Flow:
 
     Service Handler
-         │
-         │  1. Validate Input
-         ▼
-    ┌──────────────────────┐
-    │  Business Logic      │
-    └──────┬───────────────┘
-           │  2. Check Cache
-           ▼
-    ┌──────────────────────┐
-    │  Cache Handler       │
-    │  (Redis)             │
-    └──────┬───────────────┘
-           │  Cache Miss
-           │  3. Query DB
-           ▼
-    ┌──────────────────────┐
-    │  DB Handler          │
-    │  (MySQL)             │
-    └──────┬───────────────┘
-           │  4. Store in Cache
-           ▼
-    ┌──────────────────────┐
-    │  Return Result       │
-    └──────────────────────┘
+         |
+         |  1. Validate Input
+         v
+    +----------------------+
+    |  Business Logic      |
+    +------+---------------+
+           |  2. Check Cache
+           v
+    +----------------------+
+    |  Cache Handler       |
+    |  (Redis)             |
+    +------+---------------+
+           |  Cache Miss
+           |  3. Query DB
+           v
+    +----------------------+
+    |  DB Handler          |
+    |  (MySQL)             |
+    +------+---------------+
+           |  4. Store in Cache
+           v
+    +----------------------+
+    |  Return Result       |
+    +----------------------+
 
 **Transaction Handling**
 
@@ -190,21 +190,21 @@ VoIPBIN uses transactions for consistency:
     Transaction Example:
 
     BEGIN TRANSACTION
-        │
-        │  1. Create Call Record
-        ├──▶ INSERT INTO calls ...
-        │
-        │  2. Update Customer Stats
-        ├──▶ UPDATE customers SET total_calls = total_calls + 1 ...
-        │
-        │  3. Create Billing Entry
-        ├──▶ INSERT INTO billings ...
-        │
-        │  If all succeed:
-        │    COMMIT
-        │  If any fails:
-        │    ROLLBACK
-        │
+        |
+        |  1. Create Call Record
+        +--> INSERT INTO calls ...
+        |
+        |  2. Update Customer Stats
+        +--> UPDATE customers SET total_calls = total_calls + 1 ...
+        |
+        |  3. Create Billing Entry
+        +--> INSERT INTO billings ...
+        |
+        |  If all succeed:
+        |    COMMIT
+        |  If any fails:
+        |    ROLLBACK
+        |
     END TRANSACTION
 
 * **ACID Guarantees**: Atomic, Consistent, Isolated, Durable
@@ -221,37 +221,37 @@ VoIPBIN optimizes queries for performance:
     Query Optimization Strategies:
 
     1. Proper Indexing:
-       ┌─────────────────────────────────┐
-       │ INDEX idx_customer_status       │
-       │ ON calls (customer_id, status)  │
-       └─────────────────────────────────┘
+       +---------------------------------+
+       | INDEX idx_customer_status       |
+       | ON calls (customer_id, status)  |
+       +---------------------------------+
 
        SELECT * FROM calls
        WHERE customer_id = ? AND status = 'active'
-       → Uses index, fast lookup
+       -> Uses index, fast lookup
 
     2. Avoid SELECT *:
-       ┌─────────────────────────────────┐
-       │ SELECT id, status, tm_create    │
-       │ FROM calls WHERE ...            │
-       └─────────────────────────────────┘
-       → Only retrieve needed columns
+       +---------------------------------+
+       | SELECT id, status, tm_create    |
+       | FROM calls WHERE ...            |
+       +---------------------------------+
+       -> Only retrieve needed columns
 
     3. Pagination:
-       ┌─────────────────────────────────┐
-       │ SELECT * FROM calls             │
-       │ WHERE customer_id = ?           │
-       │ LIMIT 50 OFFSET 0               │
-       └─────────────────────────────────┘
-       → Limit result size
+       +---------------------------------+
+       | SELECT * FROM calls             |
+       | WHERE customer_id = ?           |
+       | LIMIT 50 OFFSET 0               |
+       +---------------------------------+
+       -> Limit result size
 
     4. Connection Pooling:
-       ┌─────────────────────────────────┐
-       │ Pool Size: 10-50 connections    │
-       │ Max Idle: 5 minutes             │
-       │ Max Lifetime: 1 hour            │
-       └─────────────────────────────────┘
-       → Reuse connections
+       +---------------------------------+
+       | Pool Size: 10-50 connections    |
+       | Max Idle: 5 minutes             |
+       | Max Lifetime: 1 hour            |
+       +---------------------------------+
+       -> Reuse connections
 
 Database Migrations
 -------------------
@@ -263,38 +263,38 @@ Schema changes are managed through Alembic migrations:
     Migration Workflow:
 
     Development                 Migration Script              Production
-         │                            │                           │
-         │  1. Schema Change          │                           │
-         │     Needed                 │                           │
-         ▼                            │                           │
-    ┌─────────────┐                   │                           │
-    │ Create      │                   │                           │
-    │ Migration   │──────────────────▶│                           │
-    │ Script      │                   │                           │
-    └─────────────┘                   │                           │
-         │                            │                           │
-         │  2. Test Locally           │                           │
-         ▼                            │                           │
-    ┌─────────────┐                   │                           │
-    │ Run         │                   │                           │
-    │ Migration   │◀──────────────────│                           │
-    │ (dev DB)    │                   │                           │
-    └─────────────┘                   │                           │
-         │                            │                           │
-         │  3. Commit to Git          │                           │
-         ▼                            │                           │
-    ┌─────────────┐                   │                           │
-    │ Code Review │                   │                           │
-    │ & Approval  │                   │                           │
-    └─────────────┘                   │                           │
-         │                            │                           │
-         │  4. Deploy                 │                           │
-         │                            │  5. Manual Execution      │
-         │                            │     (by human)            │
-         │                            ├──────────────────────────▶│
-         │                            │                           │
-         │                            │  alembic upgrade head     │
-         │                            │                           │
+         |                            |                           |
+         |  1. Schema Change          |                           |
+         |     Needed                 |                           |
+         v                            |                           |
+    +-------------+                   |                           |
+    | Create      |                   |                           |
+    | Migration   |------------------>|                           |
+    | Script      |                   |                           |
+    +-------------+                   |                           |
+         |                            |                           |
+         |  2. Test Locally           |                           |
+         v                            |                           |
+    +-------------+                   |                           |
+    | Run         |                   |                           |
+    | Migration   |<------------------|                           |
+    | (dev DB)    |                   |                           |
+    +-------------+                   |                           |
+         |                            |                           |
+         |  3. Commit to Git          |                           |
+         v                            |                           |
+    +-------------+                   |                           |
+    | Code Review |                   |                           |
+    | & Approval  |                   |                           |
+    +-------------+                   |                           |
+         |                            |                           |
+         |  4. Deploy                 |                           |
+         |                            |  5. Manual Execution      |
+         |                            |     (by human)            |
+         |                            +-------------------------->>
+         |                            |                           |
+         |                            |  alembic upgrade head     |
+         |                            |                           |
 
 **Migration Best Practices:**
 
@@ -316,41 +316,41 @@ Redis provides fast access to frequently used data:
     Redis Cache Pattern:
 
     Application Request
-         │
-         │  1. Generate Cache Key
-         │     key = "call:123"
-         ▼
-    ┌────────────────────┐
-    │  Check Redis       │
-    │  GET call:123      │
-    └────┬───────────────┘
-         │
-         ├─ Cache Hit ────────┐
-         │                    │
-         │                    ▼
-         │              ┌────────────────┐
-         │              │ Return Cached  │
-         │              │ Data (fast)    │
-         │              └────────────────┘
-         │
-         ├─ Cache Miss ───────┐
-         │                    │
-         │                    ▼
-         │              ┌────────────────┐
-         │              │ Query MySQL    │
-         │              └────┬───────────┘
-         │                   │
-         │                   ▼
-         │              ┌────────────────┐
-         │              │ Store in Redis │
-         │              │ SET call:123   │
-         │              │ EX 300 (5 min) │
-         │              └────┬───────────┘
-         │                   │
-         │                   ▼
-         │              ┌────────────────┐
-         │              │ Return Data    │
-         │              └────────────────┘
+         |
+         |  1. Generate Cache Key
+         |     key = "call:123"
+         v
+    +--------------------+
+    |  Check Redis       |
+    |  GET call:123      |
+    +----+---------------+
+         |
+         +- Cache Hit --------+
+         |                    |
+         |                    v
+         |              +----------------+
+         |              | Return Cached  |
+         |              | Data (fast)    |
+         |              +----------------+
+         |
+         +- Cache Miss -------+
+         |                    |
+         |                    v
+         |              +----------------+
+         |              | Query MySQL    |
+         |              +----+-----------+
+         |                   |
+         |                   v
+         |              +----------------+
+         |              | Store in Redis |
+         |              | SET call:123   |
+         |              | EX 300 (5 min) |
+         |              +----+-----------+
+         |                   |
+         |                   v
+         |              +----------------+
+         |              | Return Data    |
+         |              +----------------+
 
 **Cache Key Patterns**
 
@@ -362,16 +362,16 @@ VoIPBIN uses structured cache keys:
     <resource>:<id>[:<field>]
 
     Examples:
-    • call:abc-123              → Full call record
-    • agent:xyz-789:status      → Agent status only
-    • customer:customer-456     → Customer record
-    • queue:queue-999:stats     → Queue statistics
-    • flow:flow-111:definition  → Flow definition
+    o call:abc-123              -> Full call record
+    o agent:xyz-789:status      -> Agent status only
+    o customer:customer-456     -> Customer record
+    o queue:queue-999:stats     -> Queue statistics
+    o flow:flow-111:definition  -> Flow definition
 
     Advantages:
-    • Predictable keys
-    • Easy to invalidate
-    • Pattern matching for bulk operations
+    o Predictable keys
+    o Easy to invalidate
+    o Pattern matching for bulk operations
 
 **Data Structures**
 
@@ -384,32 +384,32 @@ Redis supports multiple data structures:
     1. String (Simple Values):
        SET call:123:status "active"
        GET call:123:status
-       → "active"
+       -> "active"
 
     2. Hash (Object Fields):
        HSET call:123 status "active" duration "120"
        HGET call:123 status
-       → "active"
+       -> "active"
        HGETALL call:123
-       → {"status": "active", "duration": "120"}
+       -> {"status": "active", "duration": "120"}
 
     3. List (Ordered Collection):
        LPUSH queue:456:waiting call:123
        LPUSH queue:456:waiting call:789
        LRANGE queue:456:waiting 0 -1
-       → [call:789, call:123]
+       -> [call:789, call:123]
 
     4. Set (Unique Collection):
        SADD conference:999:participants agent:111
        SADD conference:999:participants agent:222
        SMEMBERS conference:999:participants
-       → [agent:111, agent:222]
+       -> [agent:111, agent:222]
 
     5. Sorted Set (Scored Collection):
        ZADD leaderboard 100 agent:111
        ZADD leaderboard 95 agent:222
        ZRANGE leaderboard 0 -1 WITHSCORES
-       → [(agent:111, 100), (agent:222, 95)]
+       -> [(agent:111, 100), (agent:222, 95)]
 
 **Cache Expiration**
 
@@ -441,31 +441,31 @@ VoIPBIN invalidates cache on updates:
     Cache Invalidation Flow:
 
     Update Request
-         │
-         │  1. Update Database
-         ▼
-    ┌────────────────────┐
-    │  UPDATE calls      │
-    │  SET status='ended'│
-    │  WHERE id='123'    │
-    └────┬───────────────┘
-         │
-         │  2. Invalidate Cache
-         ▼
-    ┌────────────────────┐
-    │  DEL call:123      │
-    └────┬───────────────┘
-         │
-         │  3. Return Success
-         ▼
-    ┌────────────────────┐
-    │  Response to Client│
-    └────────────────────┘
+         |
+         |  1. Update Database
+         v
+    +--------------------+
+    |  UPDATE calls      |
+    |  SET status='ended'|
+    |  WHERE id='123'    |
+    +----+---------------+
+         |
+         |  2. Invalidate Cache
+         v
+    +--------------------+
+    |  DEL call:123      |
+    +----+---------------+
+         |
+         |  3. Return Success
+         v
+    +--------------------+
+    |  Response to Client|
+    +--------------------+
 
     Next Read:
-    • Cache miss
-    • Fetch from DB
-    • Store in cache with new data
+    o Cache miss
+    o Fetch from DB
+    o Store in cache with new data
 
 **Cache Patterns**
 
@@ -474,13 +474,13 @@ VoIPBIN invalidates cache on updates:
     Common Cache Patterns:
 
     1. Cache-Aside (Read Through):
-       App checks cache → Cache miss → Query DB → Store in cache
+       App checks cache -> Cache miss -> Query DB -> Store in cache
 
     2. Write-Through:
-       App writes to cache → Cache writes to DB → Return success
+       App writes to cache -> Cache writes to DB -> Return success
 
     3. Write-Behind (Async):
-       App writes to cache → Return success → Cache writes to DB later
+       App writes to cache -> Return success -> Cache writes to DB later
 
     VoIPBIN primarily uses Cache-Aside for simplicity and consistency.
 
@@ -500,15 +500,15 @@ Redis stores session data for authenticated users:
     TTL: 1 hour (refreshed on activity)
 
     Data:
-    ┌─────────────────────────────────────┐
-    │ customer_id    : customer-123       │
-    │ agent_id       : agent-456          │
-    │ permissions    : ["admin", "call"]  │
-    │ login_time     : 2026-01-20 12:00   │
-    │ last_activity  : 2026-01-20 12:30   │
-    │ ip_address     : 192.168.1.100      │
-    │ user_agent     : Mozilla/5.0 ...    │
-    └─────────────────────────────────────┘
+    +-------------------------------------+
+    | customer_id    : customer-123       |
+    | agent_id       : agent-456          |
+    | permissions    : ["admin", "call"]  |
+    | login_time     : 2026-01-20 12:00   |
+    | last_activity  : 2026-01-20 12:30   |
+    | ip_address     : 192.168.1.100      |
+    | user_agent     : Mozilla/5.0 ...    |
+    +-------------------------------------+
 
 **Session Lifecycle**
 
@@ -517,29 +517,29 @@ Redis stores session data for authenticated users:
     Session Flow:
 
     1. Login:
-       ┌────────────────────────────┐
-       │ Generate JWT token         │
-       │ Hash token → session_key   │
-       │ Store session in Redis     │
-       │ SET session:xyz {...}      │
-       │ EXPIRE session:xyz 3600    │
-       └────────────────────────────┘
+       +----------------------------+
+       | Generate JWT token         |
+       | Hash token -> session_key  |
+       | Store session in Redis     |
+       | SET session:xyz {...}      |
+       | EXPIRE session:xyz 3600    |
+       +----------------------------+
 
     2. Request:
-       ┌────────────────────────────┐
-       │ Extract token from header  │
-       │ Hash token → session_key   │
-       │ GET session:xyz            │
-       │ Validate session data      │
-       │ EXPIRE session:xyz 3600    │  ← Refresh TTL
-       └────────────────────────────┘
+       +----------------------------+
+       | Extract token from header  |
+       | Hash token -> session_key  |
+       | GET session:xyz            |
+       | Validate session data      |
+       | EXPIRE session:xyz 3600    |  <- Refresh TTL
+       +----------------------------+
 
     3. Logout:
-       ┌────────────────────────────┐
-       │ Extract token from header  │
-       │ Hash token → session_key   │
-       │ DEL session:xyz            │
-       └────────────────────────────┘
+       +----------------------------+
+       | Extract token from header  |
+       | Hash token -> session_key  |
+       | DEL session:xyz            |
+       +----------------------------+
 
 Data Consistency
 ----------------
@@ -553,17 +553,17 @@ VoIPBIN ensures consistency across data layers:
     Consistency Strategy:
 
     Strong Consistency:        Eventual Consistency:
-    ┌──────────────┐           ┌──────────────┐
-    │   MySQL      │           │   Redis      │
-    │  (Source of  │           │  (May be     │
-    │   Truth)     │           │   stale)     │
-    └──────┬───────┘           └──────┬───────┘
-           │                          │
-           │  Always consistent       │  May lag behind
-           │  ACID transactions       │  Best effort
-           │                          │
-           └──────────┬───────────────┘
-                      │
+    +--------------+           +--------------+
+    |   MySQL      |           |   Redis      |
+    |  (Source of  |           |  (May be     |
+    |   Truth)     |           |   stale)     |
+    +------+-------+           +------+-------+
+           |                          |
+           |  Always consistent       |  May lag behind
+           |  ACID transactions       |  Best effort
+           |                          |
+           +----------+---------------+
+                      |
                 Database is authoritative
 
 **Write Path**
@@ -573,22 +573,22 @@ VoIPBIN ensures consistency across data layers:
     Write Flow (Strong Consistency):
 
     1. Write Request
-       │
-       ▼
+       |
+       v
     2. Update Database First
-       ├─ BEGIN TRANSACTION
-       ├─ UPDATE table ...
-       ├─ COMMIT
-       │
-       ▼
+       +- BEGIN TRANSACTION
+       +- UPDATE table ...
+       +- COMMIT
+       |
+       v
     3. Invalidate Cache
-       ├─ DEL cache_key
-       │
-       ▼
+       +- DEL cache_key
+       |
+       v
     4. Publish Event
-       ├─ Notify subscribers
-       │
-       ▼
+       +- Notify subscribers
+       |
+       v
     5. Return Success
 
     Database updated before cache invalidation
@@ -601,21 +601,21 @@ VoIPBIN ensures consistency across data layers:
     Read Flow (Eventual Consistency Acceptable):
 
     1. Read Request
-       │
-       ▼
+       |
+       v
     2. Check Cache
-       ├─ Cache Hit → Return (may be slightly stale)
-       ├─ Cache Miss → Continue
-       │
-       ▼
+       +- Cache Hit -> Return (may be slightly stale)
+       +- Cache Miss -> Continue
+       |
+       v
     3. Query Database
-       ├─ SELECT * FROM table WHERE ...
-       │
-       ▼
+       +- SELECT * FROM table WHERE ...
+       |
+       v
     4. Store in Cache
-       ├─ SET cache_key value EX ttl
-       │
-       ▼
+       +- SET cache_key value EX ttl
+       |
+       v
     5. Return Result
 
 Data Backup and Recovery
@@ -630,23 +630,23 @@ VoIPBIN implements comprehensive backup strategy:
     Backup Strategy:
 
     Production Database
-         │
-         │  Continuous Replication
-         ▼
-    ┌────────────────────┐
-    │  Read Replica      │  ← Used for backups
-    └────┬───────────────┘    (no production impact)
-         │
-         │  Daily Full Backup
-         ▼
-    ┌────────────────────┐
-    │  Backup Storage    │
-    │  (Google Cloud)    │
-    │                    │
-    │  • Daily: 30 days  │
-    │  • Weekly: 1 year  │
-    │  • Monthly: 7 years│
-    └────────────────────┘
+         |
+         |  Continuous Replication
+         v
+    +--------------------+
+    |  Read Replica      |  <- Used for backups
+    +----+---------------+    (no production impact)
+         |
+         |  Daily Full Backup
+         v
+    +--------------------+
+    |  Backup Storage    |
+    |  (Google Cloud)    |
+    |                    |
+    |  o Daily: 30 days  |
+    |  o Weekly: 1 year  |
+    |  o Monthly: 7 years|
+    +--------------------+
 
 **Backup Schedule**
 
@@ -655,25 +655,25 @@ VoIPBIN implements comprehensive backup strategy:
     Backup Timeline:
 
     Daily (3 AM UTC):
-    ┌──────────────────────────────┐
-    │ Full database dump           │
-    │ Stored for 30 days           │
-    │ ~100 GB compressed           │
-    └──────────────────────────────┘
+    +------------------------------+
+    | Full database dump           |
+    | Stored for 30 days           |
+    | ~100 GB compressed           |
+    +------------------------------+
 
     Weekly (Sunday 3 AM):
-    ┌──────────────────────────────┐
-    │ Full database dump           │
-    │ Stored for 1 year            │
-    │ Long-term retention          │
-    └──────────────────────────────┘
+    +------------------------------+
+    | Full database dump           |
+    | Stored for 1 year            |
+    | Long-term retention          |
+    +------------------------------+
 
     Continuous:
-    ┌──────────────────────────────┐
-    │ Binary logs (point-in-time)  │
-    │ Stored for 7 days            │
-    │ For recovery between backups │
-    └──────────────────────────────┘
+    +------------------------------+
+    | Binary logs (point-in-time)  |
+    | Stored for 7 days            |
+    | For recovery between backups |
+    +------------------------------+
 
 **Recovery Procedures**
 
@@ -682,26 +682,26 @@ VoIPBIN implements comprehensive backup strategy:
     Recovery Scenarios:
 
     1. Recent Data Loss (< 7 days):
-       ┌────────────────────────────┐
-       │ Restore latest daily backup│
-       │ Apply binary logs          │
-       │ Point-in-time recovery     │
-       └────────────────────────────┘
+       +----------------------------+
+       | Restore latest daily backup|
+       | Apply binary logs          |
+       | Point-in-time recovery     |
+       +----------------------------+
        Recovery time: 1-2 hours
 
     2. Older Data Loss (< 1 year):
-       ┌────────────────────────────┐
-       │ Restore weekly backup      │
-       │ No binary logs available   │
-       └────────────────────────────┘
+       +----------------------------+
+       | Restore weekly backup      |
+       | No binary logs available   |
+       +----------------------------+
        Recovery time: 2-4 hours
 
     3. Disaster Recovery:
-       ┌────────────────────────────┐
-       │ Failover to replica        │
-       │ Promote to primary         │
-       │ Restore from backup        │
-       └────────────────────────────┘
+       +----------------------------+
+       | Failover to replica        |
+       | Promote to primary         |
+       | Restore from backup        |
+       +----------------------------+
        Recovery time: 15 minutes
 
 Performance Monitoring
@@ -716,27 +716,27 @@ VoIPBIN monitors data layer performance:
     Key Database Metrics:
 
     Query Performance:
-    ┌─────────────────────────────────────┐
-    │ Slow queries (> 1 second): 0.1%     │
-    │ Average query time: 5ms             │
-    │ P95 query time: 50ms                │
-    │ P99 query time: 200ms               │
-    └─────────────────────────────────────┘
+    +-------------------------------------+
+    | Slow queries (> 1 second): 0.1%     |
+    | Average query time: 5ms             |
+    | P95 query time: 50ms                |
+    | P99 query time: 200ms               |
+    +-------------------------------------+
 
     Connection Pool:
-    ┌─────────────────────────────────────┐
-    │ Active connections: 45/50           │
-    │ Idle connections: 5/50              │
-    │ Wait time: < 1ms                    │
-    └─────────────────────────────────────┘
+    +-------------------------------------+
+    | Active connections: 45/50           |
+    | Idle connections: 5/50              |
+    | Wait time: < 1ms                    |
+    +-------------------------------------+
 
     Table Size:
-    ┌─────────────────────────────────────┐
-    │ calls:        50 million rows       │
-    │ conferences:  5 million rows        │
-    │ agents:       10,000 rows           │
-    │ Total size:   500 GB                │
-    └─────────────────────────────────────┘
+    +-------------------------------------+
+    | calls:        50 million rows       |
+    | conferences:  5 million rows        |
+    | agents:       10,000 rows           |
+    | Total size:   500 GB                |
+    +-------------------------------------+
 
 **Cache Metrics**
 
@@ -745,25 +745,25 @@ VoIPBIN monitors data layer performance:
     Redis Performance:
 
     Hit Rate:
-    ┌─────────────────────────────────────┐
-    │ Cache hits:   95%                   │
-    │ Cache misses: 5%                    │
-    │ Target:       > 90%                 │
-    └─────────────────────────────────────┘
+    +-------------------------------------+
+    | Cache hits:   95%                   |
+    | Cache misses: 5%                    |
+    | Target:       > 90%                 |
+    +-------------------------------------+
 
     Memory Usage:
-    ┌─────────────────────────────────────┐
-    │ Used memory: 8 GB / 16 GB           │
-    │ Peak memory: 12 GB                  │
-    │ Eviction:    LRU policy             │
-    └─────────────────────────────────────┘
+    +-------------------------------------+
+    | Used memory: 8 GB / 16 GB           |
+    | Peak memory: 12 GB                  |
+    | Eviction:    LRU policy             |
+    +-------------------------------------+
 
     Latency:
-    ┌─────────────────────────────────────┐
-    │ P50: 0.5ms                          │
-    │ P95: 2ms                            │
-    │ P99: 5ms                            │
-    └─────────────────────────────────────┘
+    +-------------------------------------+
+    | P50: 0.5ms                          |
+    | P95: 2ms                            |
+    | P99: 5ms                            |
+    +-------------------------------------+
 
 Scalability Considerations
 ---------------------------
@@ -777,18 +777,18 @@ As VoIPBIN scales, data layer adapts:
     Scaling Strategy:
 
     Current (< 1M customers):
-    ┌──────────────────────────┐
-    │   Single Primary         │
-    │   + Read Replicas (3)    │
-    └──────────────────────────┘
+    +--------------------------+
+    |   Single Primary         |
+    |   + Read Replicas (3)    |
+    +--------------------------+
 
     Future (> 1M customers):
-    ┌──────────────────────────┐
-    │   Sharding by Customer   │
-    │                          │
-    │   Shard 1: customers A-M │
-    │   Shard 2: customers N-Z │
-    └──────────────────────────┘
+    +--------------------------+
+    |   Sharding by Customer   |
+    |                          |
+    |   Shard 1: customers A-M |
+    |   Shard 2: customers N-Z |
+    +--------------------------+
 
 **Cache Scaling**
 
@@ -797,18 +797,18 @@ As VoIPBIN scales, data layer adapts:
     Redis Scaling:
 
     Current:
-    ┌──────────────────────────┐
-    │  Single Redis Instance   │
-    │  16 GB Memory            │
-    └──────────────────────────┘
+    +--------------------------+
+    |  Single Redis Instance   |
+    |  16 GB Memory            |
+    +--------------------------+
 
     Future:
-    ┌──────────────────────────┐
-    │  Redis Cluster           │
-    │  • Multiple nodes        │
-    │  • Automatic sharding    │
-    │  • High availability     │
-    └──────────────────────────┘
+    +--------------------------+
+    |  Redis Cluster           |
+    |  o Multiple nodes        |
+    |  o Automatic sharding    |
+    |  o High availability     |
+    +--------------------------+
 
 Best Practices
 --------------

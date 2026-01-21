@@ -165,48 +165,48 @@
 <section id="high-level-system-architecture">
 <h2>High-Level System Architecture<a class="headerlink" href="#high-level-system-architecture" title="Link to this heading"></a></h2>
 <p>VoIPBIN consists of three major architectural layers:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌──────────────────────────────────────────────────────────────────┐
-│                      Client Applications                         │
-│  (Web Apps, Mobile Apps, Server-to-Server Integrations)          │
-└────────────────────────┬─────────────────────────────────────────┘
-                         │ HTTPS/REST API
-                         ▼
-┌──────────────────────────────────────────────────────────────────┐
-│                     API Gateway Layer                            │
-│                    (bin-api-manager)                             │
-│  • Authentication &amp; Authorization                                │
-│  • Rate Limiting &amp; Throttling                                    │
-│  • Request Routing &amp; Load Balancing                              │
-└────────────────────────┬─────────────────────────────────────────┘
-                         │ RabbitMQ RPC
-                         ▼
-┌──────────────────────────────────────────────────────────────────┐
-│                  Microservices Layer                             │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐            │
-│  │ Call Manager │  │ Flow Manager │  │  AI Manager  │            │
-│  └──────────────┘  └──────────────┘  └──────────────┘            │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐            │
-│  │Chat Manager  │  │ SMS Manager  │  │Queue Manager │            │
-│  └──────────────┘  └──────────────┘  └──────────────┘            │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐            │
-│  │Agent Manager │  │ Billing Mgr  │  │Webhook Mgr   │            │
-│  └──────────────┘  └──────────────┘  └──────────────┘            │
-│                    ... 30+ services                              │
-└────────────────────────┬─────────────────────────────────────────┘
-                         │
-                         ▼
-┌──────────────────────────────────────────────────────────────────┐
-│              Real-Time Communication Layer                       │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐            │
-│  │  Kamailio    │  │   Asterisk   │  │  RTPEngine   │            │
-│  │ (SIP Proxy)  │  │(Media Server)│  │(Media Proxy) │            │
-│  └──────────────┘  └──────────────┘  └──────────────┘            │
-└──────────────────────────────────────────────────────────────────┘
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+----------------------------------------------------------------------+</span>
+<span class="o">|</span>                      <span class="n">Client</span> <span class="n">Applications</span>                             <span class="o">|</span>
+<span class="o">|</span>  <span class="p">(</span><span class="n">Web</span> <span class="n">Apps</span><span class="p">,</span> <span class="n">Mobile</span> <span class="n">Apps</span><span class="p">,</span> <span class="n">Server</span><span class="o">-</span><span class="n">to</span><span class="o">-</span><span class="n">Server</span> <span class="n">Integrations</span><span class="p">)</span>              <span class="o">|</span>
+<span class="o">+------------------------+---------------------------------------------+</span>
+                         <span class="o">|</span> <span class="n">HTTPS</span><span class="o">/</span><span class="n">REST</span> <span class="n">API</span>
+                         <span class="n">v</span>
+<span class="o">+----------------------------------------------------------------------+</span>
+<span class="o">|</span>                     <span class="n">API</span> <span class="n">Gateway</span> <span class="n">Layer</span>                                <span class="o">|</span>
+<span class="o">|</span>                    <span class="p">(</span><span class="nb">bin</span><span class="o">-</span><span class="n">api</span><span class="o">-</span><span class="n">manager</span><span class="p">)</span>                                 <span class="o">|</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="n">Authentication</span> <span class="o">&amp;</span> <span class="n">Authorization</span>                                    <span class="o">|</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="n">Rate</span> <span class="n">Limiting</span> <span class="o">&amp;</span> <span class="n">Throttling</span>                                        <span class="o">|</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="n">Request</span> <span class="n">Routing</span> <span class="o">&amp;</span> <span class="n">Load</span> <span class="n">Balancing</span>                                  <span class="o">|</span>
+<span class="o">+------------------------+---------------------------------------------+</span>
+                         <span class="o">|</span> <span class="n">RabbitMQ</span> <span class="n">RPC</span>
+                         <span class="n">v</span>
+<span class="o">+----------------------------------------------------------------------+</span>
+<span class="o">|</span>                  <span class="n">Microservices</span> <span class="n">Layer</span>                                 <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+--------------+</span>  <span class="o">+--------------+</span>  <span class="o">+--------------+</span>                <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span> <span class="n">Call</span> <span class="n">Manager</span> <span class="o">|</span>  <span class="o">|</span> <span class="n">Flow</span> <span class="n">Manager</span> <span class="o">|</span>  <span class="o">|</span>  <span class="n">AI</span> <span class="n">Manager</span>  <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+--------------+</span>  <span class="o">+--------------+</span>  <span class="o">+--------------+</span>                <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+--------------+</span>  <span class="o">+--------------+</span>  <span class="o">+--------------+</span>                <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span><span class="n">Chat</span> <span class="n">Manager</span>  <span class="o">|</span>  <span class="o">|</span> <span class="n">SMS</span> <span class="n">Manager</span>  <span class="o">|</span>  <span class="o">|</span><span class="n">Queue</span> <span class="n">Manager</span> <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+--------------+</span>  <span class="o">+--------------+</span>  <span class="o">+--------------+</span>                <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+--------------+</span>  <span class="o">+--------------+</span>  <span class="o">+--------------+</span>                <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span><span class="n">Agent</span> <span class="n">Manager</span> <span class="o">|</span>  <span class="o">|</span> <span class="n">Billing</span> <span class="n">Mgr</span>  <span class="o">|</span>  <span class="o">|</span><span class="n">Webhook</span> <span class="n">Mgr</span>   <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+--------------+</span>  <span class="o">+--------------+</span>  <span class="o">+--------------+</span>                <span class="o">|</span>
+<span class="o">|</span>                    <span class="o">...</span> <span class="mi">30</span><span class="o">+</span> <span class="n">services</span>                                  <span class="o">|</span>
+<span class="o">+------------------------+---------------------------------------------+</span>
+                         <span class="o">|</span>
+                         <span class="n">v</span>
+<span class="o">+----------------------------------------------------------------------+</span>
+<span class="o">|</span>              <span class="n">Real</span><span class="o">-</span><span class="n">Time</span> <span class="n">Communication</span> <span class="n">Layer</span>                           <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+--------------+</span>  <span class="o">+--------------+</span>  <span class="o">+--------------+</span>                <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span>  <span class="n">Kamailio</span>    <span class="o">|</span>  <span class="o">|</span>   <span class="n">Asterisk</span>   <span class="o">|</span>  <span class="o">|</span>  <span class="n">RTPEngine</span>   <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span> <span class="p">(</span><span class="n">SIP</span> <span class="n">Proxy</span><span class="p">)</span>  <span class="o">|</span>  <span class="o">|</span><span class="p">(</span><span class="n">Media</span> <span class="n">Server</span><span class="p">)</span><span class="o">|</span>  <span class="o">|</span><span class="p">(</span><span class="n">Media</span> <span class="n">Proxy</span><span class="p">)</span> <span class="o">|</span>                <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+--------------+</span>  <span class="o">+--------------+</span>  <span class="o">+--------------+</span>                <span class="o">|</span>
+<span class="o">+----------------------------------------------------------------------+</span>
 
-┌──────────────────────────────────────────────────────────────────┐
-│                  Shared Infrastructure                           │
-│  • MySQL Database  • Redis Cache  • RabbitMQ  • Kubernetes       │
-└──────────────────────────────────────────────────────────────────┘
+<span class="o">+----------------------------------------------------------------------+</span>
+<span class="o">|</span>                  <span class="n">Shared</span> <span class="n">Infrastructure</span>                               <span class="o">|</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="n">MySQL</span> <span class="n">Database</span>  <span class="n">o</span> <span class="n">Redis</span> <span class="n">Cache</span>  <span class="n">o</span> <span class="n">RabbitMQ</span>  <span class="n">o</span> <span class="n">Kubernetes</span>           <span class="o">|</span>
+<span class="o">+----------------------------------------------------------------------+</span>
 </pre></div>
 </div>
 </section>
@@ -248,17 +248,17 @@
 <h2>Core Design Principles<a class="headerlink" href="#core-design-principles" title="Link to this heading"></a></h2>
 <p>VoIPBIN is designed around these key architectural principles:</p>
 <p><strong>Microservices Architecture</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Service Isolation:
-┌────────────┐     ┌────────────┐     ┌────────────┐
-│  Service A │     │  Service B │     │  Service C │
-│            │     │            │     │            │
-│  • Domain  │     │  • Domain  │     │  • Domain  │
-│  • Logic   │     │  • Logic   │     │  • Logic   │
-│  • Data    │     │  • Data    │     │  • Data    │
-└──────┬─────┘     └──────┬─────┘     └──────┬─────┘
-       │                  │                  │
-       └──────────────────┴──────────────────┘
-                Message Queue (RabbitMQ)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Service</span> <span class="n">Isolation</span><span class="p">:</span>
+<span class="o">+------------+</span>     <span class="o">+------------+</span>     <span class="o">+------------+</span>
+<span class="o">|</span>  <span class="n">Service</span> <span class="n">A</span> <span class="o">|</span>     <span class="o">|</span>  <span class="n">Service</span> <span class="n">B</span> <span class="o">|</span>     <span class="o">|</span>  <span class="n">Service</span> <span class="n">C</span> <span class="o">|</span>
+<span class="o">|</span>            <span class="o">|</span>     <span class="o">|</span>            <span class="o">|</span>     <span class="o">|</span>            <span class="o">|</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="n">Domain</span>  <span class="o">|</span>     <span class="o">|</span>  <span class="n">o</span> <span class="n">Domain</span>  <span class="o">|</span>     <span class="o">|</span>  <span class="n">o</span> <span class="n">Domain</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="n">Logic</span>   <span class="o">|</span>     <span class="o">|</span>  <span class="n">o</span> <span class="n">Logic</span>   <span class="o">|</span>     <span class="o">|</span>  <span class="n">o</span> <span class="n">Logic</span>   <span class="o">|</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="n">Data</span>    <span class="o">|</span>     <span class="o">|</span>  <span class="n">o</span> <span class="n">Data</span>    <span class="o">|</span>     <span class="o">|</span>  <span class="n">o</span> <span class="n">Data</span>    <span class="o">|</span>
+<span class="o">+------+-----+</span>     <span class="o">+------+-----+</span>     <span class="o">+------+-----+</span>
+       <span class="o">|</span>                  <span class="o">|</span>                  <span class="o">|</span>
+       <span class="o">+------------------+------------------+</span>
+                <span class="n">Message</span> <span class="n">Queue</span> <span class="p">(</span><span class="n">RabbitMQ</span><span class="p">)</span>
 </pre></div>
 </div>
 <ul class="simple">
@@ -268,19 +268,19 @@
 <li><p><strong>Fault Isolation</strong>: Failure in one service doesn’t cascade</p></li>
 </ul>
 <p><strong>Event-Driven Architecture</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Event Flow:
-┌──────────────┐     Event        ┌──────────────┐
-│   Service    │────────────────▶ │   Message    │
-│  (Publisher) │                  │    Queue     │
-└──────────────┘                  └───────┬──────┘
-                                          │
-                                          ├────────────────┐
-                                          │                │
-                                          ▼                ▼
-                                 ┌────────────┐   ┌────────────┐
-                                 │ Subscriber │   │ Subscriber │
-                                 │ Service A  │   │ Service B  │
-                                 └────────────┘   └────────────┘
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Event</span> <span class="n">Flow</span><span class="p">:</span>
+<span class="o">+--------------+</span>     <span class="n">Event</span>        <span class="o">+--------------+</span>
+<span class="o">|</span>   <span class="n">Service</span>    <span class="o">|----------------&gt;</span> <span class="o">|</span>   <span class="n">Message</span>    <span class="o">|</span>
+<span class="o">|</span>  <span class="p">(</span><span class="n">Publisher</span><span class="p">)</span> <span class="o">|</span>                  <span class="o">|</span>    <span class="n">Queue</span>     <span class="o">|</span>
+<span class="o">+--------------+</span>                  <span class="o">+-------+------+</span>
+                                          <span class="o">|</span>
+                                          <span class="o">+----------------+</span>
+                                          <span class="o">|</span>                <span class="o">|</span>
+                                          <span class="n">v</span>                <span class="n">v</span>
+                                 <span class="o">+------------+</span>   <span class="o">+------------+</span>
+                                 <span class="o">|</span> <span class="n">Subscriber</span> <span class="o">|</span>   <span class="o">|</span> <span class="n">Subscriber</span> <span class="o">|</span>
+                                 <span class="o">|</span> <span class="n">Service</span> <span class="n">A</span>  <span class="o">|</span>   <span class="o">|</span> <span class="n">Service</span> <span class="n">B</span>  <span class="o">|</span>
+                                 <span class="o">+------------+</span>   <span class="o">+------------+</span>
 </pre></div>
 </div>
 <ul class="simple">
@@ -290,24 +290,24 @@
 <li><p><strong>Reliability</strong>: Message queues provide guaranteed delivery</p></li>
 </ul>
 <p><strong>API Gateway Pattern</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>External Request Flow:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">External</span> <span class="n">Request</span> <span class="n">Flow</span><span class="p">:</span>
 
-Client App                  API Gateway              Backend Services
-    │                           │                           │
-    │  HTTPS/REST               │                           │
-    ├──────────────────────────▶│                           │
-    │                           │  1. Authenticate          │
-    │                           │  2. Authorize             │
-    │                           │  3. Route Request         │
-    │                           │                           │
-    │                           │  RabbitMQ RPC             │
-    │                           ├──────────────────────────▶│
-    │                           │                           │
-    │                           │  Response                 │
-    │                           │◀──────────────────────────┤
-    │  JSON Response            │                           │
-    │◀──────────────────────────┤                           │
-    │                           │                           │
+<span class="n">Client</span> <span class="n">App</span>                  <span class="n">API</span> <span class="n">Gateway</span>              <span class="n">Backend</span> <span class="n">Services</span>
+    <span class="o">|</span>                           <span class="o">|</span>                           <span class="o">|</span>
+    <span class="o">|</span>  <span class="n">HTTPS</span><span class="o">/</span><span class="n">REST</span>               <span class="o">|</span>                           <span class="o">|</span>
+    <span class="o">+---------------------------&gt;</span>                           <span class="o">|</span>
+    <span class="o">|</span>                           <span class="o">|</span>  <span class="mf">1.</span> <span class="n">Authenticate</span>          <span class="o">|</span>
+    <span class="o">|</span>                           <span class="o">|</span>  <span class="mf">2.</span> <span class="n">Authorize</span>             <span class="o">|</span>
+    <span class="o">|</span>                           <span class="o">|</span>  <span class="mf">3.</span> <span class="n">Route</span> <span class="n">Request</span>         <span class="o">|</span>
+    <span class="o">|</span>                           <span class="o">|</span>                           <span class="o">|</span>
+    <span class="o">|</span>                           <span class="o">|</span>  <span class="n">RabbitMQ</span> <span class="n">RPC</span>             <span class="o">|</span>
+    <span class="o">|</span>                           <span class="o">+---------------------------&gt;</span>
+    <span class="o">|</span>                           <span class="o">|</span>                           <span class="o">|</span>
+    <span class="o">|</span>                           <span class="o">|</span>  <span class="n">Response</span>                 <span class="o">|</span>
+    <span class="o">|</span>                           <span class="o">&lt;---------------------------+</span>
+    <span class="o">|</span>  <span class="n">JSON</span> <span class="n">Response</span>            <span class="o">|</span>                           <span class="o">|</span>
+    <span class="o">&lt;---------------------------+</span>                           <span class="o">|</span>
+    <span class="o">|</span>                           <span class="o">|</span>                           <span class="o">|</span>
 </pre></div>
 </div>
 <ul class="simple">
@@ -317,23 +317,23 @@ Client App                  API Gateway              Backend Services
 <li><p><strong>Service Discovery</strong>: Gateway knows how to reach all services</p></li>
 </ul>
 <p><strong>Shared Data Layer</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Data Architecture:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Data</span> <span class="n">Architecture</span><span class="p">:</span>
 
-┌────────────┐  ┌────────────┐  ┌────────────┐
-│  Service   │  │  Service   │  │  Service   │
-│      A     │  │      B     │  │      C     │
-└──────┬─────┘  └───────┬────┘  └────────┬───┘
-       │                │                │
-       ├────────────────┼────────────────┤
-       │                │                │
-       ▼                ▼                ▼
-┌───────────────────────────────────────────┐
-│           Redis Cache (Hot Data)          │
-└───────────────────────────────────────────┘
-       ▼                ▼                ▼
-┌───────────────────────────────────────────┐
-│         MySQL Database (Cold Data)        │
-└───────────────────────────────────────────┘
+<span class="o">+------------+</span>  <span class="o">+------------+</span>  <span class="o">+------------+</span>
+<span class="o">|</span>  <span class="n">Service</span>   <span class="o">|</span>  <span class="o">|</span>  <span class="n">Service</span>   <span class="o">|</span>  <span class="o">|</span>  <span class="n">Service</span>   <span class="o">|</span>
+<span class="o">|</span>      <span class="n">A</span>     <span class="o">|</span>  <span class="o">|</span>      <span class="n">B</span>     <span class="o">|</span>  <span class="o">|</span>      <span class="n">C</span>     <span class="o">|</span>
+<span class="o">+------+-----+</span>  <span class="o">+-------+----+</span>  <span class="o">+--------+---+</span>
+       <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
+       <span class="o">+----------------+----------------+</span>
+       <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
+       <span class="n">v</span>                <span class="n">v</span>                <span class="n">v</span>
+<span class="o">+-------------------------------------------+</span>
+<span class="o">|</span>           <span class="n">Redis</span> <span class="n">Cache</span> <span class="p">(</span><span class="n">Hot</span> <span class="n">Data</span><span class="p">)</span>          <span class="o">|</span>
+<span class="o">+-------------------------------------------+</span>
+       <span class="n">v</span>                <span class="n">v</span>                <span class="n">v</span>
+<span class="o">+-------------------------------------------+</span>
+<span class="o">|</span>         <span class="n">MySQL</span> <span class="n">Database</span> <span class="p">(</span><span class="n">Cold</span> <span class="n">Data</span><span class="p">)</span>        <span class="o">|</span>
+<span class="o">+-------------------------------------------+</span>
 </pre></div>
 </div>
 <ul class="simple">
@@ -439,56 +439,56 @@ Client App                  API Gateway              Backend Services
 <section id="service-dependencies">
 <h2>Service Dependencies<a class="headerlink" href="#service-dependencies" title="Link to this heading"></a></h2>
 <p>VoIPBIN services have well-defined dependencies for coordinated operations:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Core Service Dependencies:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Core</span> <span class="n">Service</span> <span class="n">Dependencies</span><span class="p">:</span>
 
-┌─────────────────────────────────────────────────────────────────┐
-│                     bin-api-manager                             │
-│                    (API Gateway)                                │
-│  ─────────────────────────────────────────────────────────────  │
-│    Depends on: ALL backend services for RPC routing             │
-└─────────────────────────────────────────────────────────────────┘
-                             │
-     ┌───────────────────────┼───────────────────────┐
-     │                       │                       │
-     ▼                       ▼                       ▼
-┌─────────────┐        ┌─────────────┐        ┌─────────────┐
-│bin-call-mgr │        │bin-flow-mgr │        │bin-ai-mgr   │
-└──────┬──────┘        └──────┬──────┘        └──────┬──────┘
-       │                      │                      │
-       │                      │                      │
-       ▼                      ▼                      ▼
-┌─────────────┐        ┌─────────────┐        ┌─────────────┐
-│bin-billing  │        │bin-call-mgr │        │bin-transcribe│
-│bin-webhook  │        │bin-queue-mgr│        │bin-tts-mgr  │
-│bin-number   │        │bin-ai-mgr   │        │bin-pipecat  │
-└─────────────┘        └─────────────┘        └─────────────┘
+<span class="o">+-----------------------------------------------------------------+</span>
+<span class="o">|</span>                     <span class="nb">bin</span><span class="o">-</span><span class="n">api</span><span class="o">-</span><span class="n">manager</span>                             <span class="o">|</span>
+<span class="o">|</span>                    <span class="p">(</span><span class="n">API</span> <span class="n">Gateway</span><span class="p">)</span>                                <span class="o">|</span>
+<span class="o">|</span>  <span class="o">-------------------------------------------------------------</span>  <span class="o">|</span>
+<span class="o">|</span>    <span class="n">Depends</span> <span class="n">on</span><span class="p">:</span> <span class="n">ALL</span> <span class="n">backend</span> <span class="n">services</span> <span class="k">for</span> <span class="n">RPC</span> <span class="n">routing</span>             <span class="o">|</span>
+<span class="o">+-----------------------------------------------------------------+</span>
+                             <span class="o">|</span>
+     <span class="o">+-----------------------+-----------------------+</span>
+     <span class="o">|</span>                       <span class="o">|</span>                       <span class="o">|</span>
+     <span class="n">v</span>                       <span class="n">v</span>                       <span class="n">v</span>
+<span class="o">+-------------+</span>        <span class="o">+-------------+</span>        <span class="o">+-------------+</span>
+<span class="o">|</span><span class="nb">bin</span><span class="o">-</span><span class="n">call</span><span class="o">-</span><span class="n">mgr</span> <span class="o">|</span>        <span class="o">|</span><span class="nb">bin</span><span class="o">-</span><span class="n">flow</span><span class="o">-</span><span class="n">mgr</span> <span class="o">|</span>        <span class="o">|</span><span class="nb">bin</span><span class="o">-</span><span class="n">ai</span><span class="o">-</span><span class="n">mgr</span>   <span class="o">|</span>
+<span class="o">+------+------+</span>        <span class="o">+------+------+</span>        <span class="o">+------+------+</span>
+       <span class="o">|</span>                      <span class="o">|</span>                      <span class="o">|</span>
+       <span class="o">|</span>                      <span class="o">|</span>                      <span class="o">|</span>
+       <span class="n">v</span>                      <span class="n">v</span>                      <span class="n">v</span>
+<span class="o">+-------------+</span>        <span class="o">+-------------+</span>        <span class="o">+-------------+</span>
+<span class="o">|</span><span class="nb">bin</span><span class="o">-</span><span class="n">billing</span>  <span class="o">|</span>        <span class="o">|</span><span class="nb">bin</span><span class="o">-</span><span class="n">call</span><span class="o">-</span><span class="n">mgr</span> <span class="o">|</span>        <span class="o">|</span><span class="nb">bin</span><span class="o">-</span><span class="n">transcribe</span><span class="o">|</span>
+<span class="o">|</span><span class="nb">bin</span><span class="o">-</span><span class="n">webhook</span>  <span class="o">|</span>        <span class="o">|</span><span class="nb">bin</span><span class="o">-</span><span class="n">queue</span><span class="o">-</span><span class="n">mgr</span><span class="o">|</span>        <span class="o">|</span><span class="nb">bin</span><span class="o">-</span><span class="n">tts</span><span class="o">-</span><span class="n">mgr</span>  <span class="o">|</span>
+<span class="o">|</span><span class="nb">bin</span><span class="o">-</span><span class="n">number</span>   <span class="o">|</span>        <span class="o">|</span><span class="nb">bin</span><span class="o">-</span><span class="n">ai</span><span class="o">-</span><span class="n">mgr</span>   <span class="o">|</span>        <span class="o">|</span><span class="nb">bin</span><span class="o">-</span><span class="n">pipecat</span>  <span class="o">|</span>
+<span class="o">+-------------+</span>        <span class="o">+-------------+</span>        <span class="o">+-------------+</span>
 </pre></div>
 </div>
 <p><strong>Key Dependency Patterns:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Call Processing Chain:
-bin-call-manager
-  ├──▶ bin-flow-manager      (IVR and call flows)
-  ├──▶ bin-billing-manager   (usage tracking)
-  ├──▶ bin-webhook-manager   (event notifications)
-  ├──▶ bin-transcribe-manager (call transcription)
-  └──▶ bin-number-manager    (phone number lookup)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Call</span> <span class="n">Processing</span> <span class="n">Chain</span><span class="p">:</span>
+<span class="nb">bin</span><span class="o">-</span><span class="n">call</span><span class="o">-</span><span class="n">manager</span>
+  <span class="o">+--&gt;</span> <span class="nb">bin</span><span class="o">-</span><span class="n">flow</span><span class="o">-</span><span class="n">manager</span>      <span class="p">(</span><span class="n">IVR</span> <span class="ow">and</span> <span class="n">call</span> <span class="n">flows</span><span class="p">)</span>
+  <span class="o">+--&gt;</span> <span class="nb">bin</span><span class="o">-</span><span class="n">billing</span><span class="o">-</span><span class="n">manager</span>   <span class="p">(</span><span class="n">usage</span> <span class="n">tracking</span><span class="p">)</span>
+  <span class="o">+--&gt;</span> <span class="nb">bin</span><span class="o">-</span><span class="n">webhook</span><span class="o">-</span><span class="n">manager</span>   <span class="p">(</span><span class="n">event</span> <span class="n">notifications</span><span class="p">)</span>
+  <span class="o">+--&gt;</span> <span class="nb">bin</span><span class="o">-</span><span class="n">transcribe</span><span class="o">-</span><span class="n">manager</span> <span class="p">(</span><span class="n">call</span> <span class="n">transcription</span><span class="p">)</span>
+  <span class="o">+--&gt;</span> <span class="nb">bin</span><span class="o">-</span><span class="n">number</span><span class="o">-</span><span class="n">manager</span>    <span class="p">(</span><span class="n">phone</span> <span class="n">number</span> <span class="n">lookup</span><span class="p">)</span>
 
-AI Voice Pipeline:
-bin-pipecat-manager
-  ├──▶ bin-ai-manager        (LLM coordination)
-  ├──▶ bin-call-manager      (call control)
-  └──▶ bin-transcribe-manager (STT)
+<span class="n">AI</span> <span class="n">Voice</span> <span class="n">Pipeline</span><span class="p">:</span>
+<span class="nb">bin</span><span class="o">-</span><span class="n">pipecat</span><span class="o">-</span><span class="n">manager</span>
+  <span class="o">+--&gt;</span> <span class="nb">bin</span><span class="o">-</span><span class="n">ai</span><span class="o">-</span><span class="n">manager</span>        <span class="p">(</span><span class="n">LLM</span> <span class="n">coordination</span><span class="p">)</span>
+  <span class="o">+--&gt;</span> <span class="nb">bin</span><span class="o">-</span><span class="n">call</span><span class="o">-</span><span class="n">manager</span>      <span class="p">(</span><span class="n">call</span> <span class="n">control</span><span class="p">)</span>
+  <span class="o">+--&gt;</span> <span class="nb">bin</span><span class="o">-</span><span class="n">transcribe</span><span class="o">-</span><span class="n">manager</span> <span class="p">(</span><span class="n">STT</span><span class="p">)</span>
 
-Flow Orchestration:
-bin-flow-manager
-  ├──▶ bin-call-manager      (call actions)
-  ├──▶ bin-queue-manager     (queue operations)
-  ├──▶ bin-ai-manager        (AI interactions)
-  └──▶ bin-conference-manager (conference bridges)
+<span class="n">Flow</span> <span class="n">Orchestration</span><span class="p">:</span>
+<span class="nb">bin</span><span class="o">-</span><span class="n">flow</span><span class="o">-</span><span class="n">manager</span>
+  <span class="o">+--&gt;</span> <span class="nb">bin</span><span class="o">-</span><span class="n">call</span><span class="o">-</span><span class="n">manager</span>      <span class="p">(</span><span class="n">call</span> <span class="n">actions</span><span class="p">)</span>
+  <span class="o">+--&gt;</span> <span class="nb">bin</span><span class="o">-</span><span class="n">queue</span><span class="o">-</span><span class="n">manager</span>     <span class="p">(</span><span class="n">queue</span> <span class="n">operations</span><span class="p">)</span>
+  <span class="o">+--&gt;</span> <span class="nb">bin</span><span class="o">-</span><span class="n">ai</span><span class="o">-</span><span class="n">manager</span>        <span class="p">(</span><span class="n">AI</span> <span class="n">interactions</span><span class="p">)</span>
+  <span class="o">+--&gt;</span> <span class="nb">bin</span><span class="o">-</span><span class="n">conference</span><span class="o">-</span><span class="n">manager</span> <span class="p">(</span><span class="n">conference</span> <span class="n">bridges</span><span class="p">)</span>
 
-Infrastructure Monitoring:
-bin-sentinel-manager
-  └──▶ bin-call-manager      (SIP session recovery events)
+<span class="n">Infrastructure</span> <span class="n">Monitoring</span><span class="p">:</span>
+<span class="nb">bin</span><span class="o">-</span><span class="n">sentinel</span><span class="o">-</span><span class="n">manager</span>
+  <span class="o">+--&gt;</span> <span class="nb">bin</span><span class="o">-</span><span class="n">call</span><span class="o">-</span><span class="n">manager</span>      <span class="p">(</span><span class="n">SIP</span> <span class="n">session</span> <span class="n">recovery</span> <span class="n">events</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><strong>Circular Dependencies:</strong></p>

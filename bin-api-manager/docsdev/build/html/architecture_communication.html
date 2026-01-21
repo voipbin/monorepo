@@ -163,32 +163,32 @@
 <section id="communication-patterns-overview">
 <h2>Communication Patterns Overview<a class="headerlink" href="#communication-patterns-overview" title="Link to this heading"></a></h2>
 <p>VoIPBIN uses three primary communication mechanisms:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Communication Architecture:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Communication</span> <span class="n">Architecture</span><span class="p">:</span>
 
-┌─────────────────────────────────────────────────────────┐
-│                  RabbitMQ (Primary Bus)                 │
-│                                                         │
-│  ┌───────────────────────┐  ┌───────────────────────┐   │
-│  │   RPC (Synchronous)   │  │  Pub/Sub (Async)      │   │
-│  │   Request-Response    │  │  Event Broadcasting   │   │
-│  └───────────────────────┘  └───────────────────────┘   │
-└─────────────────────────────────────────────────────────┘
+<span class="o">+---------------------------------------------------------+</span>
+<span class="o">|</span>                  <span class="n">RabbitMQ</span> <span class="p">(</span><span class="n">Primary</span> <span class="n">Bus</span><span class="p">)</span>                 <span class="o">|</span>
+<span class="o">|</span>                                                         <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+-----------------------+</span>  <span class="o">+-----------------------+</span>   <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span>   <span class="n">RPC</span> <span class="p">(</span><span class="n">Synchronous</span><span class="p">)</span>   <span class="o">|</span>  <span class="o">|</span>  <span class="n">Pub</span><span class="o">/</span><span class="n">Sub</span> <span class="p">(</span><span class="n">Async</span><span class="p">)</span>      <span class="o">|</span>   <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span>   <span class="n">Request</span><span class="o">-</span><span class="n">Response</span>    <span class="o">|</span>  <span class="o">|</span>  <span class="n">Event</span> <span class="n">Broadcasting</span>   <span class="o">|</span>   <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+-----------------------+</span>  <span class="o">+-----------------------+</span>   <span class="o">|</span>
+<span class="o">+---------------------------------------------------------+</span>
 
-┌─────────────────────────────────────────────────────────┐
-│              ZeroMQ (High-Performance Events)           │
-│                                                         │
-│  • Real-time event streaming                            │
-│  • Agent presence updates                               │
-│  • Call state changes                                   │
-└─────────────────────────────────────────────────────────┘
+<span class="o">+---------------------------------------------------------+</span>
+<span class="o">|</span>              <span class="n">ZeroMQ</span> <span class="p">(</span><span class="n">High</span><span class="o">-</span><span class="n">Performance</span> <span class="n">Events</span><span class="p">)</span>           <span class="o">|</span>
+<span class="o">|</span>                                                         <span class="o">|</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="n">Real</span><span class="o">-</span><span class="n">time</span> <span class="n">event</span> <span class="n">streaming</span>                            <span class="o">|</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="n">Agent</span> <span class="n">presence</span> <span class="n">updates</span>                               <span class="o">|</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="n">Call</span> <span class="n">state</span> <span class="n">changes</span>                                   <span class="o">|</span>
+<span class="o">+---------------------------------------------------------+</span>
 
-┌─────────────────────────────────────────────────────────┐
-│              WebSocket (Client Communication)           │
-│                                                         │
-│  • Real-time client notifications                       │
-│  • Bi-directional media streaming                       │
-│  • Live transcription feeds                             │
-└─────────────────────────────────────────────────────────┘
+<span class="o">+---------------------------------------------------------+</span>
+<span class="o">|</span>              <span class="n">WebSocket</span> <span class="p">(</span><span class="n">Client</span> <span class="n">Communication</span><span class="p">)</span>           <span class="o">|</span>
+<span class="o">|</span>                                                         <span class="o">|</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="n">Real</span><span class="o">-</span><span class="n">time</span> <span class="n">client</span> <span class="n">notifications</span>                       <span class="o">|</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="n">Bi</span><span class="o">-</span><span class="n">directional</span> <span class="n">media</span> <span class="n">streaming</span>                       <span class="o">|</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="n">Live</span> <span class="n">transcription</span> <span class="n">feeds</span>                             <span class="o">|</span>
+<span class="o">+---------------------------------------------------------+</span>
 </pre></div>
 </div>
 </section>
@@ -196,49 +196,49 @@
 <h2>RabbitMQ RPC Pattern<a class="headerlink" href="#rabbitmq-rpc-pattern" title="Link to this heading"></a></h2>
 <p>VoIPBIN uses RabbitMQ for synchronous request-response communication between services.</p>
 <p><strong>RPC Flow</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>RPC Request-Response Pattern:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">RPC</span> <span class="n">Request</span><span class="o">-</span><span class="n">Response</span> <span class="n">Pattern</span><span class="p">:</span>
 
-Client Service          RabbitMQ             Server Service
-     │                     │                       │
-     │  1. Send Request    │                       │
-     │  ┌────────────┐     │                       │
-     │  │ call_id    │     │                       │
-     │  │ action     │     │                       │
-     │  │ reply_to   │     │                       │
-     │  └────────────┘     │                       │
-     ├────────────────────▶│                       │
-     │  Queue: bin-manager.│                       │
-     │         call.request│                       │
-     │                     │  2. Dequeue           │
-     │                     ├──────────────────────▶│
-     │                     │                       │
-     │                     │  3. Process Request   │
-     │                     │     (business logic)  │
-     │                     │                       │
-     │                     │  4. Send Response     │
-     │                     │◀──────────────────────┤
-     │                     │  Queue: reply_to      │
-     │  5. Receive Response│                       │
-     │◀────────────────────┤                       │
-     │  ┌────────────┐     │                       │
-     │  │ status     │     │                       │
-     │  │ data       │     │                       │
-     │  │ error      │     │                       │
-     │  └────────────┘     │                       │
-     │                     │                       │
+<span class="n">Client</span> <span class="n">Service</span>          <span class="n">RabbitMQ</span>             <span class="n">Server</span> <span class="n">Service</span>
+     <span class="o">|</span>                     <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">|</span>  <span class="mf">1.</span> <span class="n">Send</span> <span class="n">Request</span>    <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">|</span>  <span class="o">+------------+</span>     <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">|</span>  <span class="o">|</span> <span class="n">call_id</span>    <span class="o">|</span>     <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">|</span>  <span class="o">|</span> <span class="n">action</span>     <span class="o">|</span>     <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">|</span>  <span class="o">|</span> <span class="n">reply_to</span>   <span class="o">|</span>     <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">|</span>  <span class="o">+------------+</span>     <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">+--------------------&gt;&gt;</span>                       <span class="o">|</span>
+     <span class="o">|</span>  <span class="n">Queue</span><span class="p">:</span> <span class="nb">bin</span><span class="o">-</span><span class="n">manager</span><span class="o">.|</span>                       <span class="o">|</span>
+     <span class="o">|</span>         <span class="n">call</span><span class="o">.</span><span class="n">request</span><span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">|</span>                     <span class="o">|</span>  <span class="mf">2.</span> <span class="n">Dequeue</span>           <span class="o">|</span>
+     <span class="o">|</span>                     <span class="o">+----------------------&gt;&gt;</span>
+     <span class="o">|</span>                     <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">|</span>                     <span class="o">|</span>  <span class="mf">3.</span> <span class="n">Process</span> <span class="n">Request</span>   <span class="o">|</span>
+     <span class="o">|</span>                     <span class="o">|</span>     <span class="p">(</span><span class="n">business</span> <span class="n">logic</span><span class="p">)</span>  <span class="o">|</span>
+     <span class="o">|</span>                     <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">|</span>                     <span class="o">|</span>  <span class="mf">4.</span> <span class="n">Send</span> <span class="n">Response</span>     <span class="o">|</span>
+     <span class="o">|</span>                     <span class="o">&lt;&lt;----------------------+</span>
+     <span class="o">|</span>                     <span class="o">|</span>  <span class="n">Queue</span><span class="p">:</span> <span class="n">reply_to</span>      <span class="o">|</span>
+     <span class="o">|</span>  <span class="mf">5.</span> <span class="n">Receive</span> <span class="n">Response</span><span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">&lt;&lt;--------------------+</span>                       <span class="o">|</span>
+     <span class="o">|</span>  <span class="o">+------------+</span>     <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">|</span>  <span class="o">|</span> <span class="n">status</span>     <span class="o">|</span>     <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">|</span>  <span class="o">|</span> <span class="n">data</span>       <span class="o">|</span>     <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">|</span>  <span class="o">|</span> <span class="n">error</span>      <span class="o">|</span>     <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">|</span>  <span class="o">+------------+</span>     <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">|</span>                     <span class="o">|</span>                       <span class="o">|</span>
 </pre></div>
 </div>
 <p><strong>Queue Naming Convention</strong></p>
 <p>All RPC queues follow a consistent naming pattern:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Queue Name Format:
-bin-manager.&lt;service&gt;.&lt;operation&gt;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Queue</span> <span class="n">Name</span> <span class="n">Format</span><span class="p">:</span>
+<span class="nb">bin</span><span class="o">-</span><span class="n">manager</span><span class="o">.&lt;</span><span class="n">service</span><span class="o">&gt;.&lt;</span><span class="n">operation</span><span class="o">&gt;</span>
 
-Examples:
-• bin-manager.call.request        → bin-call-manager
-• bin-manager.conference.request  → bin-conference-manager
-• bin-manager.sms.request         → bin-sms-manager
-• bin-manager.flow.request        → bin-flow-manager
-• bin-manager.billing.request     → bin-billing-manager
+<span class="n">Examples</span><span class="p">:</span>
+<span class="n">o</span> <span class="nb">bin</span><span class="o">-</span><span class="n">manager</span><span class="o">.</span><span class="n">call</span><span class="o">.</span><span class="n">request</span>        <span class="o">-&gt;</span> <span class="nb">bin</span><span class="o">-</span><span class="n">call</span><span class="o">-</span><span class="n">manager</span>
+<span class="n">o</span> <span class="nb">bin</span><span class="o">-</span><span class="n">manager</span><span class="o">.</span><span class="n">conference</span><span class="o">.</span><span class="n">request</span>  <span class="o">-&gt;</span> <span class="nb">bin</span><span class="o">-</span><span class="n">conference</span><span class="o">-</span><span class="n">manager</span>
+<span class="n">o</span> <span class="nb">bin</span><span class="o">-</span><span class="n">manager</span><span class="o">.</span><span class="n">sms</span><span class="o">.</span><span class="n">request</span>         <span class="o">-&gt;</span> <span class="nb">bin</span><span class="o">-</span><span class="n">sms</span><span class="o">-</span><span class="n">manager</span>
+<span class="n">o</span> <span class="nb">bin</span><span class="o">-</span><span class="n">manager</span><span class="o">.</span><span class="n">flow</span><span class="o">.</span><span class="n">request</span>        <span class="o">-&gt;</span> <span class="nb">bin</span><span class="o">-</span><span class="n">flow</span><span class="o">-</span><span class="n">manager</span>
+<span class="n">o</span> <span class="nb">bin</span><span class="o">-</span><span class="n">manager</span><span class="o">.</span><span class="n">billing</span><span class="o">.</span><span class="n">request</span>     <span class="o">-&gt;</span> <span class="nb">bin</span><span class="o">-</span><span class="n">billing</span><span class="o">-</span><span class="n">manager</span>
 </pre></div>
 </div>
 <p><strong>Message Structure</strong></p>
@@ -275,55 +275,55 @@ Examples:
 </div>
 <p><strong>RPC Implementation Pattern</strong></p>
 <p>Services implement RPC handlers following this pattern:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Service RPC Handler:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Service</span> <span class="n">RPC</span> <span class="n">Handler</span><span class="p">:</span>
 
-┌────────────────────────────────────────────────┐
-│        bin-call-manager                        │
-│                                                │
-│  1. Listen on Queue                            │
-│     ├─ bin-manager.call.request                │
-│     │                                          │
-│  2. Receive Message                            │
-│     ├─ Deserialize JSON                        │
-│     ├─ Validate request                        │
-│     │                                          │
-│  3. Route to Handler                           │
-│     ├─ Parse route: POST /v1/calls             │
-│     ├─ Call: CallCreate(ctx, req)              │
-│     │                                          │
-│  4. Execute Business Logic                     │
-│     ├─ Validate data                           │
-│     ├─ Create call record                      │
-│     ├─ Initiate SIP call                       │
-│     │                                          │
-│  5. Send Response                              │
-│     ├─ Serialize result                        │
-│     └─ Reply to reply_to queue                 │
-│                                                │
-└────────────────────────────────────────────────┘
+<span class="o">+------------------------------------------------+</span>
+<span class="o">|</span>        <span class="nb">bin</span><span class="o">-</span><span class="n">call</span><span class="o">-</span><span class="n">manager</span>                        <span class="o">|</span>
+<span class="o">|</span>                                                <span class="o">|</span>
+<span class="o">|</span>  <span class="mf">1.</span> <span class="n">Listen</span> <span class="n">on</span> <span class="n">Queue</span>                            <span class="o">|</span>
+<span class="o">|</span>     <span class="o">+-</span> <span class="nb">bin</span><span class="o">-</span><span class="n">manager</span><span class="o">.</span><span class="n">call</span><span class="o">.</span><span class="n">request</span>                <span class="o">|</span>
+<span class="o">|</span>     <span class="o">|</span>                                          <span class="o">|</span>
+<span class="o">|</span>  <span class="mf">2.</span> <span class="n">Receive</span> <span class="n">Message</span>                            <span class="o">|</span>
+<span class="o">|</span>     <span class="o">+-</span> <span class="n">Deserialize</span> <span class="n">JSON</span>                        <span class="o">|</span>
+<span class="o">|</span>     <span class="o">+-</span> <span class="n">Validate</span> <span class="n">request</span>                        <span class="o">|</span>
+<span class="o">|</span>     <span class="o">|</span>                                          <span class="o">|</span>
+<span class="o">|</span>  <span class="mf">3.</span> <span class="n">Route</span> <span class="n">to</span> <span class="n">Handler</span>                           <span class="o">|</span>
+<span class="o">|</span>     <span class="o">+-</span> <span class="n">Parse</span> <span class="n">route</span><span class="p">:</span> <span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span>             <span class="o">|</span>
+<span class="o">|</span>     <span class="o">+-</span> <span class="n">Call</span><span class="p">:</span> <span class="n">CallCreate</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">req</span><span class="p">)</span>              <span class="o">|</span>
+<span class="o">|</span>     <span class="o">|</span>                                          <span class="o">|</span>
+<span class="o">|</span>  <span class="mf">4.</span> <span class="n">Execute</span> <span class="n">Business</span> <span class="n">Logic</span>                     <span class="o">|</span>
+<span class="o">|</span>     <span class="o">+-</span> <span class="n">Validate</span> <span class="n">data</span>                           <span class="o">|</span>
+<span class="o">|</span>     <span class="o">+-</span> <span class="n">Create</span> <span class="n">call</span> <span class="n">record</span>                      <span class="o">|</span>
+<span class="o">|</span>     <span class="o">+-</span> <span class="n">Initiate</span> <span class="n">SIP</span> <span class="n">call</span>                       <span class="o">|</span>
+<span class="o">|</span>     <span class="o">|</span>                                          <span class="o">|</span>
+<span class="o">|</span>  <span class="mf">5.</span> <span class="n">Send</span> <span class="n">Response</span>                              <span class="o">|</span>
+<span class="o">|</span>     <span class="o">+-</span> <span class="n">Serialize</span> <span class="n">result</span>                        <span class="o">|</span>
+<span class="o">|</span>     <span class="o">+-</span> <span class="n">Reply</span> <span class="n">to</span> <span class="n">reply_to</span> <span class="n">queue</span>                 <span class="o">|</span>
+<span class="o">|</span>                                                <span class="o">|</span>
+<span class="o">+------------------------------------------------+</span>
 </pre></div>
 </div>
 <p><strong>Load Balancing</strong></p>
 <p>Multiple service instances share the same queue:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Load Balanced RPC:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Load</span> <span class="n">Balanced</span> <span class="n">RPC</span><span class="p">:</span>
 
-API Gateway                Queue              Service Instances
-     │                      │                       │
-     │  Request 1           │                       │
-     ├─────────────────────▶│                       │
-     │                      ├──────────────────────▶│ Instance 1
-     │                      │  (round-robin)        │ (processes req 1)
-     │                      │                       │
-     │  Request 2           │                       │
-     ├─────────────────────▶│                       │
-     │                      ├──────────────────────▶│ Instance 2
-     │                      │  (round-robin)        │ (processes req 2)
-     │                      │                       │
-     │  Request 3           │                       │
-     ├─────────────────────▶│                       │
-     │                      ├──────────────────────▶│ Instance 3
-     │                      │  (round-robin)        │ (processes req 3)
-     │                      │                       │
+<span class="n">API</span> <span class="n">Gateway</span>                <span class="n">Queue</span>              <span class="n">Service</span> <span class="n">Instances</span>
+     <span class="o">|</span>                      <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">|</span>  <span class="n">Request</span> <span class="mi">1</span>           <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">+---------------------&gt;&gt;</span>                       <span class="o">|</span>
+     <span class="o">|</span>                      <span class="o">+----------------------&gt;&gt;</span> <span class="n">Instance</span> <span class="mi">1</span>
+     <span class="o">|</span>                      <span class="o">|</span>  <span class="p">(</span><span class="nb">round</span><span class="o">-</span><span class="n">robin</span><span class="p">)</span>        <span class="o">|</span> <span class="p">(</span><span class="n">processes</span> <span class="n">req</span> <span class="mi">1</span><span class="p">)</span>
+     <span class="o">|</span>                      <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">|</span>  <span class="n">Request</span> <span class="mi">2</span>           <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">+---------------------&gt;&gt;</span>                       <span class="o">|</span>
+     <span class="o">|</span>                      <span class="o">+----------------------&gt;&gt;</span> <span class="n">Instance</span> <span class="mi">2</span>
+     <span class="o">|</span>                      <span class="o">|</span>  <span class="p">(</span><span class="nb">round</span><span class="o">-</span><span class="n">robin</span><span class="p">)</span>        <span class="o">|</span> <span class="p">(</span><span class="n">processes</span> <span class="n">req</span> <span class="mi">2</span><span class="p">)</span>
+     <span class="o">|</span>                      <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">|</span>  <span class="n">Request</span> <span class="mi">3</span>           <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">+---------------------&gt;&gt;</span>                       <span class="o">|</span>
+     <span class="o">|</span>                      <span class="o">+----------------------&gt;&gt;</span> <span class="n">Instance</span> <span class="mi">3</span>
+     <span class="o">|</span>                      <span class="o">|</span>  <span class="p">(</span><span class="nb">round</span><span class="o">-</span><span class="n">robin</span><span class="p">)</span>        <span class="o">|</span> <span class="p">(</span><span class="n">processes</span> <span class="n">req</span> <span class="mi">3</span><span class="p">)</span>
+     <span class="o">|</span>                      <span class="o">|</span>                       <span class="o">|</span>
 </pre></div>
 </div>
 <ul class="simple">
@@ -337,64 +337,64 @@ API Gateway                Queue              Service Instances
 <h2>RabbitMQ Pub/Sub Pattern<a class="headerlink" href="#rabbitmq-pub-sub-pattern" title="Link to this heading"></a></h2>
 <p>For asynchronous event notifications, VoIPBIN uses RabbitMQ’s pub/sub (fanout exchange) pattern.</p>
 <p><strong>Pub/Sub Flow</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Event Publishing Pattern:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Event</span> <span class="n">Publishing</span> <span class="n">Pattern</span><span class="p">:</span>
 
-Publisher               Exchange              Subscribers
-     │                      │                       │
-     │  1. Publish Event    │                       │
-     │  ┌────────────┐      │                       │
-     │  │event: call │      │                       │
-     │  │      .created│    │                       │
-     │  │data: {...} │      │                       │
-     │  └────────────┘      │                       │
-     ├─────────────────────▶│                       │
-     │  Exchange:           │                       │
-     │  call.events         │                       │
-     │                      │  2. Fanout to all     │
-     │                      │     subscribers       │
-     │                      ├──────┬────────────────┤
-     │                      │      │                │
-     │                      │      ▼                ▼
-     │                      │  ┌────────┐      ┌────────┐
-     │                      │  │Billing │      │Webhook │
-     │                      │  │Manager │      │Manager │
-     │                      │  └────────┘      └────────┘
-     │                      │      │                │
-     │                      │  3. Process       3. Process
-     │                      │     event             event
-     │                      │     independently     independently
+<span class="n">Publisher</span>               <span class="n">Exchange</span>              <span class="n">Subscribers</span>
+     <span class="o">|</span>                      <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">|</span>  <span class="mf">1.</span> <span class="n">Publish</span> <span class="n">Event</span>    <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">|</span>  <span class="o">+------------+</span>      <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">|</span>  <span class="o">|</span><span class="n">event</span><span class="p">:</span> <span class="n">call</span> <span class="o">|</span>      <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">|</span>  <span class="o">|</span>      <span class="o">.</span><span class="n">created</span><span class="o">|</span>    <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">|</span>  <span class="o">|</span><span class="n">data</span><span class="p">:</span> <span class="p">{</span><span class="o">...</span><span class="p">}</span> <span class="o">|</span>      <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">|</span>  <span class="o">+------------+</span>      <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">+---------------------&gt;&gt;</span>                       <span class="o">|</span>
+     <span class="o">|</span>  <span class="n">Exchange</span><span class="p">:</span>           <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">|</span>  <span class="n">call</span><span class="o">.</span><span class="n">events</span>         <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">|</span>                      <span class="o">|</span>  <span class="mf">2.</span> <span class="n">Fanout</span> <span class="n">to</span> <span class="nb">all</span>     <span class="o">|</span>
+     <span class="o">|</span>                      <span class="o">|</span>     <span class="n">subscribers</span>       <span class="o">|</span>
+     <span class="o">|</span>                      <span class="o">+------+----------------+</span>
+     <span class="o">|</span>                      <span class="o">|</span>      <span class="o">|</span>                <span class="o">|</span>
+     <span class="o">|</span>                      <span class="o">|</span>      <span class="n">v</span>                <span class="n">v</span>
+     <span class="o">|</span>                      <span class="o">|</span>  <span class="o">+--------+</span>      <span class="o">+--------+</span>
+     <span class="o">|</span>                      <span class="o">|</span>  <span class="o">|</span><span class="n">Billing</span> <span class="o">|</span>      <span class="o">|</span><span class="n">Webhook</span> <span class="o">|</span>
+     <span class="o">|</span>                      <span class="o">|</span>  <span class="o">|</span><span class="n">Manager</span> <span class="o">|</span>      <span class="o">|</span><span class="n">Manager</span> <span class="o">|</span>
+     <span class="o">|</span>                      <span class="o">|</span>  <span class="o">+--------+</span>      <span class="o">+--------+</span>
+     <span class="o">|</span>                      <span class="o">|</span>      <span class="o">|</span>                <span class="o">|</span>
+     <span class="o">|</span>                      <span class="o">|</span>  <span class="mf">3.</span> <span class="n">Process</span>       <span class="mf">3.</span> <span class="n">Process</span>
+     <span class="o">|</span>                      <span class="o">|</span>     <span class="n">event</span>             <span class="n">event</span>
+     <span class="o">|</span>                      <span class="o">|</span>     <span class="n">independently</span>     <span class="n">independently</span>
 </pre></div>
 </div>
 <p><strong>Event Types</strong></p>
 <p>VoIPBIN publishes events for major state changes:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Event Categories:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Event</span> <span class="n">Categories</span><span class="p">:</span>
 
-Call Events:
-• call.created       - New call initiated
-• call.ringing       - Call ringing
-• call.answered      - Call answered
-• call.ended         - Call terminated
+<span class="n">Call</span> <span class="n">Events</span><span class="p">:</span>
+<span class="n">o</span> <span class="n">call</span><span class="o">.</span><span class="n">created</span>       <span class="o">-</span> <span class="n">New</span> <span class="n">call</span> <span class="n">initiated</span>
+<span class="n">o</span> <span class="n">call</span><span class="o">.</span><span class="n">ringing</span>       <span class="o">-</span> <span class="n">Call</span> <span class="n">ringing</span>
+<span class="n">o</span> <span class="n">call</span><span class="o">.</span><span class="n">answered</span>      <span class="o">-</span> <span class="n">Call</span> <span class="n">answered</span>
+<span class="n">o</span> <span class="n">call</span><span class="o">.</span><span class="n">ended</span>         <span class="o">-</span> <span class="n">Call</span> <span class="n">terminated</span>
 
-Conference Events:
-• conference.created       - Conference created
-• conference.participant_joined
-• conference.participant_left
-• conference.ended
+<span class="n">Conference</span> <span class="n">Events</span><span class="p">:</span>
+<span class="n">o</span> <span class="n">conference</span><span class="o">.</span><span class="n">created</span>       <span class="o">-</span> <span class="n">Conference</span> <span class="n">created</span>
+<span class="n">o</span> <span class="n">conference</span><span class="o">.</span><span class="n">participant_joined</span>
+<span class="n">o</span> <span class="n">conference</span><span class="o">.</span><span class="n">participant_left</span>
+<span class="n">o</span> <span class="n">conference</span><span class="o">.</span><span class="n">ended</span>
 
-SMS Events:
-• sms.sent           - SMS sent successfully
-• sms.delivered      - SMS delivered to recipient
-• sms.failed         - SMS delivery failed
+<span class="n">SMS</span> <span class="n">Events</span><span class="p">:</span>
+<span class="n">o</span> <span class="n">sms</span><span class="o">.</span><span class="n">sent</span>           <span class="o">-</span> <span class="n">SMS</span> <span class="n">sent</span> <span class="n">successfully</span>
+<span class="n">o</span> <span class="n">sms</span><span class="o">.</span><span class="n">delivered</span>      <span class="o">-</span> <span class="n">SMS</span> <span class="n">delivered</span> <span class="n">to</span> <span class="n">recipient</span>
+<span class="n">o</span> <span class="n">sms</span><span class="o">.</span><span class="n">failed</span>         <span class="o">-</span> <span class="n">SMS</span> <span class="n">delivery</span> <span class="n">failed</span>
 
-Agent Events:
-• agent.login        - Agent logged in
-• agent.logout       - Agent logged out
-• agent.status_change - Agent status changed
+<span class="n">Agent</span> <span class="n">Events</span><span class="p">:</span>
+<span class="n">o</span> <span class="n">agent</span><span class="o">.</span><span class="n">login</span>        <span class="o">-</span> <span class="n">Agent</span> <span class="n">logged</span> <span class="ow">in</span>
+<span class="n">o</span> <span class="n">agent</span><span class="o">.</span><span class="n">logout</span>       <span class="o">-</span> <span class="n">Agent</span> <span class="n">logged</span> <span class="n">out</span>
+<span class="n">o</span> <span class="n">agent</span><span class="o">.</span><span class="n">status_change</span> <span class="o">-</span> <span class="n">Agent</span> <span class="n">status</span> <span class="n">changed</span>
 
-Transcription Events:
-• transcribe.started - Transcription started
-• transcribe.completed
-• transcript.created - New transcript segment
+<span class="n">Transcription</span> <span class="n">Events</span><span class="p">:</span>
+<span class="n">o</span> <span class="n">transcribe</span><span class="o">.</span><span class="n">started</span> <span class="o">-</span> <span class="n">Transcription</span> <span class="n">started</span>
+<span class="n">o</span> <span class="n">transcribe</span><span class="o">.</span><span class="n">completed</span>
+<span class="n">o</span> <span class="n">transcript</span><span class="o">.</span><span class="n">created</span> <span class="o">-</span> <span class="n">New</span> <span class="n">transcript</span> <span class="n">segment</span>
 </pre></div>
 </div>
 <p><strong>Event Message Structure</strong></p>
@@ -418,56 +418,56 @@ Transcription Events:
 </div>
 <p><strong>Subscriber Pattern</strong></p>
 <p>Services subscribe to events they’re interested in:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Subscriber Implementation:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Subscriber</span> <span class="n">Implementation</span><span class="p">:</span>
 
-┌────────────────────────────────────────────────┐
-│         bin-billing-manager                    │
-│                                                │
-│  1. Declare Exchange                           │
-│     └─ call.events (fanout)                    │
-│                                                │
-│  2. Create Queue                               │
-│     └─ billing.call.events (unique)            │
-│                                                │
-│  3. Bind Queue to Exchange                     │
-│     └─ Receive all events from exchange        │
-│                                                │
-│  4. Consume Events                             │
-│     ├─ call.created → Track call start         │
-│     ├─ call.answered → Start billing           │
-│     ├─ call.ended → Calculate charges          │
-│     └─ Other events → Ignore                   │
-│                                                │
-└────────────────────────────────────────────────┘
+<span class="o">+------------------------------------------------+</span>
+<span class="o">|</span>         <span class="nb">bin</span><span class="o">-</span><span class="n">billing</span><span class="o">-</span><span class="n">manager</span>                    <span class="o">|</span>
+<span class="o">|</span>                                                <span class="o">|</span>
+<span class="o">|</span>  <span class="mf">1.</span> <span class="n">Declare</span> <span class="n">Exchange</span>                           <span class="o">|</span>
+<span class="o">|</span>     <span class="o">+-</span> <span class="n">call</span><span class="o">.</span><span class="n">events</span> <span class="p">(</span><span class="n">fanout</span><span class="p">)</span>                    <span class="o">|</span>
+<span class="o">|</span>                                                <span class="o">|</span>
+<span class="o">|</span>  <span class="mf">2.</span> <span class="n">Create</span> <span class="n">Queue</span>                               <span class="o">|</span>
+<span class="o">|</span>     <span class="o">+-</span> <span class="n">billing</span><span class="o">.</span><span class="n">call</span><span class="o">.</span><span class="n">events</span> <span class="p">(</span><span class="n">unique</span><span class="p">)</span>            <span class="o">|</span>
+<span class="o">|</span>                                                <span class="o">|</span>
+<span class="o">|</span>  <span class="mf">3.</span> <span class="n">Bind</span> <span class="n">Queue</span> <span class="n">to</span> <span class="n">Exchange</span>                     <span class="o">|</span>
+<span class="o">|</span>     <span class="o">+-</span> <span class="n">Receive</span> <span class="nb">all</span> <span class="n">events</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exchange</span>        <span class="o">|</span>
+<span class="o">|</span>                                                <span class="o">|</span>
+<span class="o">|</span>  <span class="mf">4.</span> <span class="n">Consume</span> <span class="n">Events</span>                             <span class="o">|</span>
+<span class="o">|</span>     <span class="o">+-</span> <span class="n">call</span><span class="o">.</span><span class="n">created</span> <span class="o">-&gt;</span> <span class="n">Track</span> <span class="n">call</span> <span class="n">start</span>        <span class="o">|</span>
+<span class="o">|</span>     <span class="o">+-</span> <span class="n">call</span><span class="o">.</span><span class="n">answered</span> <span class="o">-&gt;</span> <span class="n">Start</span> <span class="n">billing</span>          <span class="o">|</span>
+<span class="o">|</span>     <span class="o">+-</span> <span class="n">call</span><span class="o">.</span><span class="n">ended</span> <span class="o">-&gt;</span> <span class="n">Calculate</span> <span class="n">charges</span>         <span class="o">|</span>
+<span class="o">|</span>     <span class="o">+-</span> <span class="n">Other</span> <span class="n">events</span> <span class="o">-&gt;</span> <span class="n">Ignore</span>                  <span class="o">|</span>
+<span class="o">|</span>                                                <span class="o">|</span>
+<span class="o">+------------------------------------------------+</span>
 </pre></div>
 </div>
 <p><strong>Event Processing Guarantees</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Event Processing:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Event</span> <span class="n">Processing</span><span class="p">:</span>
 
-┌──────────────┐
-│   Publish    │
-└──────┬───────┘
-       │
-       │  RabbitMQ persists event
-       │  (survives broker restart)
-       ▼
-┌──────────────┐
-│   Deliver    │
-└──────┬───────┘
-       │
-       │  Subscriber processes
-       │  (may retry on failure)
-       ▼
-┌──────────────┐
-│     ACK      │
-└──────────────┘
-       │
-       │  Remove from queue
-       │  (event processed successfully)
-       ▼
-┌──────────────┐
-│   Complete   │
-└──────────────┘
+<span class="o">+--------------+</span>
+<span class="o">|</span>   <span class="n">Publish</span>    <span class="o">|</span>
+<span class="o">+------+-------+</span>
+       <span class="o">|</span>
+       <span class="o">|</span>  <span class="n">RabbitMQ</span> <span class="n">persists</span> <span class="n">event</span>
+       <span class="o">|</span>  <span class="p">(</span><span class="n">survives</span> <span class="n">broker</span> <span class="n">restart</span><span class="p">)</span>
+       <span class="n">v</span>
+<span class="o">+--------------+</span>
+<span class="o">|</span>   <span class="n">Deliver</span>    <span class="o">|</span>
+<span class="o">+------+-------+</span>
+       <span class="o">|</span>
+       <span class="o">|</span>  <span class="n">Subscriber</span> <span class="n">processes</span>
+       <span class="o">|</span>  <span class="p">(</span><span class="n">may</span> <span class="n">retry</span> <span class="n">on</span> <span class="n">failure</span><span class="p">)</span>
+       <span class="n">v</span>
+<span class="o">+--------------+</span>
+<span class="o">|</span>     <span class="n">ACK</span>      <span class="o">|</span>
+<span class="o">+--------------+</span>
+       <span class="o">|</span>
+       <span class="o">|</span>  <span class="n">Remove</span> <span class="kn">from</span><span class="w"> </span><span class="nn">queue</span>
+       <span class="o">|</span>  <span class="p">(</span><span class="n">event</span> <span class="n">processed</span> <span class="n">successfully</span><span class="p">)</span>
+       <span class="n">v</span>
+<span class="o">+--------------+</span>
+<span class="o">|</span>   <span class="n">Complete</span>   <span class="o">|</span>
+<span class="o">+--------------+</span>
 </pre></div>
 </div>
 <ul class="simple">
@@ -481,52 +481,52 @@ Transcription Events:
 <h2>ZeroMQ Event Streaming<a class="headerlink" href="#zeromq-event-streaming" title="Link to this heading"></a></h2>
 <p>For high-performance, low-latency event streaming, VoIPBIN uses ZeroMQ pub/sub sockets.</p>
 <p><strong>ZMQ Architecture</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>ZeroMQ Pub/Sub Pattern:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ZeroMQ</span> <span class="n">Pub</span><span class="o">/</span><span class="n">Sub</span> <span class="n">Pattern</span><span class="p">:</span>
 
-Publishers                               Subscribers
-     │                                        │
-     │  Call Manager                          │
-     │  (publishes call events)               │
-     ├──────────────────────┐                 │
-     │  ZMQ PUB Socket      │                 │
-     │  tcp://*:5555        │                 │
-     └──────────┬───────────┘                 │
-                │                             │
-                │  Event Stream               │
-                │  (no broker)                │
-                │                             │
-                ├────────────────────────────▶│ Agent Manager
-                │                             │ (agent presence)
-                │                             │
-                ├────────────────────────────▶│ Webhook Manager
-                │                             │ (webhook delivery)
-                │                             │
-                └────────────────────────────▶│ Talk Manager
-                                              │ (agent UI updates)
+<span class="n">Publishers</span>                               <span class="n">Subscribers</span>
+     <span class="o">|</span>                                        <span class="o">|</span>
+     <span class="o">|</span>  <span class="n">Call</span> <span class="n">Manager</span>                          <span class="o">|</span>
+     <span class="o">|</span>  <span class="p">(</span><span class="n">publishes</span> <span class="n">call</span> <span class="n">events</span><span class="p">)</span>               <span class="o">|</span>
+     <span class="o">+----------------------+</span>                 <span class="o">|</span>
+     <span class="o">|</span>  <span class="n">ZMQ</span> <span class="n">PUB</span> <span class="n">Socket</span>      <span class="o">|</span>                 <span class="o">|</span>
+     <span class="o">|</span>  <span class="n">tcp</span><span class="p">:</span><span class="o">//*</span><span class="p">:</span><span class="mi">5555</span>        <span class="o">|</span>                 <span class="o">|</span>
+     <span class="o">+----------+-----------+</span>                 <span class="o">|</span>
+                <span class="o">|</span>                             <span class="o">|</span>
+                <span class="o">|</span>  <span class="n">Event</span> <span class="n">Stream</span>               <span class="o">|</span>
+                <span class="o">|</span>  <span class="p">(</span><span class="n">no</span> <span class="n">broker</span><span class="p">)</span>                <span class="o">|</span>
+                <span class="o">|</span>                             <span class="o">|</span>
+                <span class="o">+----------------------------&gt;&gt;</span> <span class="n">Agent</span> <span class="n">Manager</span>
+                <span class="o">|</span>                             <span class="o">|</span> <span class="p">(</span><span class="n">agent</span> <span class="n">presence</span><span class="p">)</span>
+                <span class="o">|</span>                             <span class="o">|</span>
+                <span class="o">+----------------------------&gt;&gt;</span> <span class="n">Webhook</span> <span class="n">Manager</span>
+                <span class="o">|</span>                             <span class="o">|</span> <span class="p">(</span><span class="n">webhook</span> <span class="n">delivery</span><span class="p">)</span>
+                <span class="o">|</span>                             <span class="o">|</span>
+                <span class="o">+----------------------------&gt;&gt;</span> <span class="n">Talk</span> <span class="n">Manager</span>
+                                              <span class="o">|</span> <span class="p">(</span><span class="n">agent</span> <span class="n">UI</span> <span class="n">updates</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><strong>Key Differences from RabbitMQ</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>RabbitMQ vs ZeroMQ:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">RabbitMQ</span> <span class="n">vs</span> <span class="n">ZeroMQ</span><span class="p">:</span>
 
-RabbitMQ:                          ZeroMQ:
-┌────────────┐                     ┌────────────┐
-│ Publisher  │                     │ Publisher  │
-└──────┬─────┘                     └──────┬─────┘
-       │                                  │
-       │ Reliable                         │ Fast
-       │ Persistent                       │ In-memory
-       │ Broker-based                     │ Direct socket
-       ▼                                  ▼
-┌────────────┐                     ┌────────────┐
-│  RabbitMQ  │                     │ Subscriber │
-│   Broker   │                     │  (Direct)  │
-└──────┬─────┘                     └────────────┘
-       │
-       │ At-least-once
-       ▼
-┌────────────┐
-│ Subscriber │
-└────────────┘
+<span class="n">RabbitMQ</span><span class="p">:</span>                          <span class="n">ZeroMQ</span><span class="p">:</span>
+<span class="o">+------------+</span>                     <span class="o">+------------+</span>
+<span class="o">|</span> <span class="n">Publisher</span>  <span class="o">|</span>                     <span class="o">|</span> <span class="n">Publisher</span>  <span class="o">|</span>
+<span class="o">+------+-----+</span>                     <span class="o">+------+-----+</span>
+       <span class="o">|</span>                                  <span class="o">|</span>
+       <span class="o">|</span> <span class="n">Reliable</span>                         <span class="o">|</span> <span class="n">Fast</span>
+       <span class="o">|</span> <span class="n">Persistent</span>                       <span class="o">|</span> <span class="n">In</span><span class="o">-</span><span class="n">memory</span>
+       <span class="o">|</span> <span class="n">Broker</span><span class="o">-</span><span class="n">based</span>                     <span class="o">|</span> <span class="n">Direct</span> <span class="n">socket</span>
+       <span class="n">v</span>                                  <span class="n">v</span>
+<span class="o">+------------+</span>                     <span class="o">+------------+</span>
+<span class="o">|</span>  <span class="n">RabbitMQ</span>  <span class="o">|</span>                     <span class="o">|</span> <span class="n">Subscriber</span> <span class="o">|</span>
+<span class="o">|</span>   <span class="n">Broker</span>   <span class="o">|</span>                     <span class="o">|</span>  <span class="p">(</span><span class="n">Direct</span><span class="p">)</span>  <span class="o">|</span>
+<span class="o">+------+-----+</span>                     <span class="o">+------------+</span>
+       <span class="o">|</span>
+       <span class="o">|</span> <span class="n">At</span><span class="o">-</span><span class="n">least</span><span class="o">-</span><span class="n">once</span>
+       <span class="n">v</span>
+<span class="o">+------------+</span>
+<span class="o">|</span> <span class="n">Subscriber</span> <span class="o">|</span>
+<span class="o">+------------+</span>
 </pre></div>
 </div>
 <p><strong>RabbitMQ:</strong>
@@ -541,79 +541,79 @@ RabbitMQ:                          ZeroMQ:
 * Lower latency (&lt;1ms)</p>
 <p><strong>Use Cases</strong></p>
 <p>VoIPBIN uses ZeroMQ for:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>ZeroMQ Use Cases:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ZeroMQ</span> <span class="n">Use</span> <span class="n">Cases</span><span class="p">:</span>
 
-✓ Agent Presence Updates
-  • Agent login/logout
-  • Status changes (available, busy, away)
-  • Real-time UI updates
-  • High frequency, acceptable loss
+<span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="n">Agent</span> <span class="n">Presence</span> <span class="n">Updates</span>
+  <span class="n">o</span> <span class="n">Agent</span> <span class="n">login</span><span class="o">/</span><span class="n">logout</span>
+  <span class="n">o</span> <span class="n">Status</span> <span class="n">changes</span> <span class="p">(</span><span class="n">available</span><span class="p">,</span> <span class="n">busy</span><span class="p">,</span> <span class="n">away</span><span class="p">)</span>
+  <span class="n">o</span> <span class="n">Real</span><span class="o">-</span><span class="n">time</span> <span class="n">UI</span> <span class="n">updates</span>
+  <span class="n">o</span> <span class="n">High</span> <span class="n">frequency</span><span class="p">,</span> <span class="n">acceptable</span> <span class="n">loss</span>
 
-✓ Call State Changes
-  • Call ringing, answered, ended
-  • Conference participant updates
-  • Duplicate with RabbitMQ (redundant)
-  • Speed over reliability
+<span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="n">Call</span> <span class="n">State</span> <span class="n">Changes</span>
+  <span class="n">o</span> <span class="n">Call</span> <span class="n">ringing</span><span class="p">,</span> <span class="n">answered</span><span class="p">,</span> <span class="n">ended</span>
+  <span class="n">o</span> <span class="n">Conference</span> <span class="n">participant</span> <span class="n">updates</span>
+  <span class="n">o</span> <span class="n">Duplicate</span> <span class="k">with</span> <span class="n">RabbitMQ</span> <span class="p">(</span><span class="n">redundant</span><span class="p">)</span>
+  <span class="n">o</span> <span class="n">Speed</span> <span class="n">over</span> <span class="n">reliability</span>
 
-✓ Real-Time Metrics
-  • Queue statistics
-  • Active call counts
-  • System health metrics
-  • Dashboard updates
+<span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="n">Real</span><span class="o">-</span><span class="n">Time</span> <span class="n">Metrics</span>
+  <span class="n">o</span> <span class="n">Queue</span> <span class="n">statistics</span>
+  <span class="n">o</span> <span class="n">Active</span> <span class="n">call</span> <span class="n">counts</span>
+  <span class="n">o</span> <span class="n">System</span> <span class="n">health</span> <span class="n">metrics</span>
+  <span class="n">o</span> <span class="n">Dashboard</span> <span class="n">updates</span>
 
-✗ NOT Used For:
-  • Billing events (use RabbitMQ)
-  • Webhook delivery (use RabbitMQ)
-  • Critical state changes (use RabbitMQ)
+<span class="p">[</span> <span class="p">]</span> <span class="n">NOT</span> <span class="n">Used</span> <span class="n">For</span><span class="p">:</span>
+  <span class="n">o</span> <span class="n">Billing</span> <span class="n">events</span> <span class="p">(</span><span class="n">use</span> <span class="n">RabbitMQ</span><span class="p">)</span>
+  <span class="n">o</span> <span class="n">Webhook</span> <span class="n">delivery</span> <span class="p">(</span><span class="n">use</span> <span class="n">RabbitMQ</span><span class="p">)</span>
+  <span class="n">o</span> <span class="n">Critical</span> <span class="n">state</span> <span class="n">changes</span> <span class="p">(</span><span class="n">use</span> <span class="n">RabbitMQ</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><strong>ZMQ Message Format</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>ZMQ Message Structure:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ZMQ</span> <span class="n">Message</span> <span class="n">Structure</span><span class="p">:</span>
 
-Topic (routing key)
-│
-├─ &quot;agent.presence&quot;
-│  {
-│    &quot;agent_id&quot;: &quot;agent-123&quot;,
-│    &quot;status&quot;: &quot;available&quot;,
-│    &quot;timestamp&quot;: &quot;2026-01-20T12:00:00.000Z&quot;
-│  }
-│
-├─ &quot;call.state&quot;
-│  {
-│    &quot;call_id&quot;: &quot;call-789&quot;,
-│    &quot;status&quot;: &quot;answered&quot;,
-│    &quot;timestamp&quot;: &quot;2026-01-20T12:00:01.000Z&quot;
-│  }
-│
-└─ &quot;queue.stats&quot;
-   {
-     &quot;queue_id&quot;: &quot;queue-456&quot;,
-     &quot;waiting&quot;: 5,
-     &quot;active&quot;: 3
-   }
+<span class="n">Topic</span> <span class="p">(</span><span class="n">routing</span> <span class="n">key</span><span class="p">)</span>
+<span class="o">|</span>
+<span class="o">+-</span> <span class="s2">&quot;agent.presence&quot;</span>
+<span class="o">|</span>  <span class="p">{</span>
+<span class="o">|</span>    <span class="s2">&quot;agent_id&quot;</span><span class="p">:</span> <span class="s2">&quot;agent-123&quot;</span><span class="p">,</span>
+<span class="o">|</span>    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;available&quot;</span><span class="p">,</span>
+<span class="o">|</span>    <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-01-20T12:00:00.000Z&quot;</span>
+<span class="o">|</span>  <span class="p">}</span>
+<span class="o">|</span>
+<span class="o">+-</span> <span class="s2">&quot;call.state&quot;</span>
+<span class="o">|</span>  <span class="p">{</span>
+<span class="o">|</span>    <span class="s2">&quot;call_id&quot;</span><span class="p">:</span> <span class="s2">&quot;call-789&quot;</span><span class="p">,</span>
+<span class="o">|</span>    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;answered&quot;</span><span class="p">,</span>
+<span class="o">|</span>    <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-01-20T12:00:01.000Z&quot;</span>
+<span class="o">|</span>  <span class="p">}</span>
+<span class="o">|</span>
+<span class="o">+-</span> <span class="s2">&quot;queue.stats&quot;</span>
+   <span class="p">{</span>
+     <span class="s2">&quot;queue_id&quot;</span><span class="p">:</span> <span class="s2">&quot;queue-456&quot;</span><span class="p">,</span>
+     <span class="s2">&quot;waiting&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+     <span class="s2">&quot;active&quot;</span><span class="p">:</span> <span class="mi">3</span>
+   <span class="p">}</span>
 </pre></div>
 </div>
 <p><strong>Topic Filtering</strong></p>
 <p>Subscribers can filter events by topic:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Topic-Based Filtering:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Topic</span><span class="o">-</span><span class="n">Based</span> <span class="n">Filtering</span><span class="p">:</span>
 
-Subscriber A:
-• Subscribe to: &quot;agent.*&quot;
-• Receives:
-  - agent.presence
-  - agent.login
-  - agent.logout
+<span class="n">Subscriber</span> <span class="n">A</span><span class="p">:</span>
+<span class="n">o</span> <span class="n">Subscribe</span> <span class="n">to</span><span class="p">:</span> <span class="s2">&quot;agent.*&quot;</span>
+<span class="n">o</span> <span class="n">Receives</span><span class="p">:</span>
+  <span class="o">-</span> <span class="n">agent</span><span class="o">.</span><span class="n">presence</span>
+  <span class="o">-</span> <span class="n">agent</span><span class="o">.</span><span class="n">login</span>
+  <span class="o">-</span> <span class="n">agent</span><span class="o">.</span><span class="n">logout</span>
 
-Subscriber B:
-• Subscribe to: &quot;call.*&quot;
-• Receives:
-  - call.state
-  - call.metrics
+<span class="n">Subscriber</span> <span class="n">B</span><span class="p">:</span>
+<span class="n">o</span> <span class="n">Subscribe</span> <span class="n">to</span><span class="p">:</span> <span class="s2">&quot;call.*&quot;</span>
+<span class="n">o</span> <span class="n">Receives</span><span class="p">:</span>
+  <span class="o">-</span> <span class="n">call</span><span class="o">.</span><span class="n">state</span>
+  <span class="o">-</span> <span class="n">call</span><span class="o">.</span><span class="n">metrics</span>
 
-Subscriber C:
-• Subscribe to: &quot;&quot;  (empty = all)
-• Receives: everything
+<span class="n">Subscriber</span> <span class="n">C</span><span class="p">:</span>
+<span class="n">o</span> <span class="n">Subscribe</span> <span class="n">to</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>  <span class="p">(</span><span class="n">empty</span> <span class="o">=</span> <span class="nb">all</span><span class="p">)</span>
+<span class="n">o</span> <span class="n">Receives</span><span class="p">:</span> <span class="n">everything</span>
 </pre></div>
 </div>
 </section>
@@ -621,149 +621,149 @@ Subscriber C:
 <h2>WebSocket Communication<a class="headerlink" href="#websocket-communication" title="Link to this heading"></a></h2>
 <p>For real-time client communication, VoIPBIN uses WebSocket connections.</p>
 <p><strong>WebSocket Architecture</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>WebSocket Connection Flow:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">WebSocket</span> <span class="n">Connection</span> <span class="n">Flow</span><span class="p">:</span>
 
-Client (Browser/App)    API Gateway         Backend Services
-     │                      │                       │
-     │  1. HTTP Upgrade     │                       │
-     │  (WebSocket)         │                       │
-     ├─────────────────────▶│                       │
-     │                      │  2. Authenticate      │
-     │                      │     (JWT token)       │
-     │                      │                       │
-     │  3. Connection       │                       │
-     │     Established      │                       │
-     │◀─────────────────────┤                       │
-     │                      │                       │
-     │  4. Subscribe        │                       │
-     │  {&quot;type&quot;:&quot;subscribe&quot;,│                       │
-     │   &quot;topics&quot;:[&quot;...&quot;]}  │                       │
-     ├─────────────────────▶│                       │
-     │                      │  5. Register          │
-     │                      │     subscription      │
-     │                      │                       │
-     │                      │  6. Backend Event     │
-     │                      │◀──────────────────────┤
-     │                      │  (via RabbitMQ/ZMQ)   │
-     │                      │                       │
-     │  7. Push to Client   │                       │
-     │◀─────────────────────┤                       │
-     │  {&quot;event&quot;:&quot;call.     │                       │
-     │   created&quot;,...}      │                       │
-     │                      │                       │
+<span class="n">Client</span> <span class="p">(</span><span class="n">Browser</span><span class="o">/</span><span class="n">App</span><span class="p">)</span>    <span class="n">API</span> <span class="n">Gateway</span>         <span class="n">Backend</span> <span class="n">Services</span>
+     <span class="o">|</span>                      <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">|</span>  <span class="mf">1.</span> <span class="n">HTTP</span> <span class="n">Upgrade</span>     <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">|</span>  <span class="p">(</span><span class="n">WebSocket</span><span class="p">)</span>         <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">+---------------------&gt;&gt;</span>                       <span class="o">|</span>
+     <span class="o">|</span>                      <span class="o">|</span>  <span class="mf">2.</span> <span class="n">Authenticate</span>      <span class="o">|</span>
+     <span class="o">|</span>                      <span class="o">|</span>     <span class="p">(</span><span class="n">JWT</span> <span class="n">token</span><span class="p">)</span>       <span class="o">|</span>
+     <span class="o">|</span>                      <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">|</span>  <span class="mf">3.</span> <span class="n">Connection</span>       <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">|</span>     <span class="n">Established</span>      <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">&lt;&lt;---------------------+</span>                       <span class="o">|</span>
+     <span class="o">|</span>                      <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">|</span>  <span class="mf">4.</span> <span class="n">Subscribe</span>        <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">|</span>  <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span><span class="s2">&quot;subscribe&quot;</span><span class="p">,</span><span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">|</span>   <span class="s2">&quot;topics&quot;</span><span class="p">:[</span><span class="s2">&quot;...&quot;</span><span class="p">]}</span>  <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">+---------------------&gt;&gt;</span>                       <span class="o">|</span>
+     <span class="o">|</span>                      <span class="o">|</span>  <span class="mf">5.</span> <span class="n">Register</span>          <span class="o">|</span>
+     <span class="o">|</span>                      <span class="o">|</span>     <span class="n">subscription</span>      <span class="o">|</span>
+     <span class="o">|</span>                      <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">|</span>                      <span class="o">|</span>  <span class="mf">6.</span> <span class="n">Backend</span> <span class="n">Event</span>     <span class="o">|</span>
+     <span class="o">|</span>                      <span class="o">&lt;&lt;----------------------+</span>
+     <span class="o">|</span>                      <span class="o">|</span>  <span class="p">(</span><span class="n">via</span> <span class="n">RabbitMQ</span><span class="o">/</span><span class="n">ZMQ</span><span class="p">)</span>   <span class="o">|</span>
+     <span class="o">|</span>                      <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">|</span>  <span class="mf">7.</span> <span class="n">Push</span> <span class="n">to</span> <span class="n">Client</span>   <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">&lt;&lt;---------------------+</span>                       <span class="o">|</span>
+     <span class="o">|</span>  <span class="p">{</span><span class="s2">&quot;event&quot;</span><span class="p">:</span><span class="s2">&quot;call.     |                       |</span>
+     <span class="o">|</span>   <span class="n">created</span><span class="s2">&quot;,...}      |                       |</span>
+     <span class="o">|</span>                      <span class="o">|</span>                       <span class="o">|</span>
 </pre></div>
 </div>
 <p><strong>Subscription Topics</strong></p>
 <p>Clients subscribe to specific event topics:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Topic Pattern:
-customer_id:&lt;id&gt;:&lt;resource&gt;:&lt;resource_id&gt;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Topic</span> <span class="n">Pattern</span><span class="p">:</span>
+<span class="n">customer_id</span><span class="p">:</span><span class="o">&lt;</span><span class="nb">id</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">resource</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">resource_id</span><span class="o">&gt;</span>
 
-Examples:
-• customer_id:123:call:*
-  → All calls for customer 123
+<span class="n">Examples</span><span class="p">:</span>
+<span class="n">o</span> <span class="n">customer_id</span><span class="p">:</span><span class="mi">123</span><span class="p">:</span><span class="n">call</span><span class="p">:</span><span class="o">*</span>
+  <span class="o">-&gt;</span> <span class="n">All</span> <span class="n">calls</span> <span class="k">for</span> <span class="n">customer</span> <span class="mi">123</span>
 
-• customer_id:123:call:call-789
-  → Specific call updates
+<span class="n">o</span> <span class="n">customer_id</span><span class="p">:</span><span class="mi">123</span><span class="p">:</span><span class="n">call</span><span class="p">:</span><span class="n">call</span><span class="o">-</span><span class="mi">789</span>
+  <span class="o">-&gt;</span> <span class="n">Specific</span> <span class="n">call</span> <span class="n">updates</span>
 
-• customer_id:123:agent:agent-456
-  → Specific agent updates
+<span class="n">o</span> <span class="n">customer_id</span><span class="p">:</span><span class="mi">123</span><span class="p">:</span><span class="n">agent</span><span class="p">:</span><span class="n">agent</span><span class="o">-</span><span class="mi">456</span>
+  <span class="o">-&gt;</span> <span class="n">Specific</span> <span class="n">agent</span> <span class="n">updates</span>
 
-• customer_id:123:queue:*
-  → All queues for customer
+<span class="n">o</span> <span class="n">customer_id</span><span class="p">:</span><span class="mi">123</span><span class="p">:</span><span class="n">queue</span><span class="p">:</span><span class="o">*</span>
+  <span class="o">-&gt;</span> <span class="n">All</span> <span class="n">queues</span> <span class="k">for</span> <span class="n">customer</span>
 
-• customer_id:123:conference:conf-999
-  → Specific conference updates
+<span class="n">o</span> <span class="n">customer_id</span><span class="p">:</span><span class="mi">123</span><span class="p">:</span><span class="n">conference</span><span class="p">:</span><span class="n">conf</span><span class="o">-</span><span class="mi">999</span>
+  <span class="o">-&gt;</span> <span class="n">Specific</span> <span class="n">conference</span> <span class="n">updates</span>
 </pre></div>
 </div>
 <p><strong>WebSocket Use Cases</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>WebSocket Applications:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">WebSocket</span> <span class="n">Applications</span><span class="p">:</span>
 
-Agent Dashboard:
-┌──────────────────────────────────────┐
-│ • Real-time call notifications       │
-│ • Queue status updates               │
-│ • Agent presence                     │
-│ • Live chat messages                 │
-└──────────────────────────────────────┘
+<span class="n">Agent</span> <span class="n">Dashboard</span><span class="p">:</span>
+<span class="o">+--------------------------------------+</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Real</span><span class="o">-</span><span class="n">time</span> <span class="n">call</span> <span class="n">notifications</span>       <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Queue</span> <span class="n">status</span> <span class="n">updates</span>               <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Agent</span> <span class="n">presence</span>                     <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Live</span> <span class="n">chat</span> <span class="n">messages</span>                 <span class="o">|</span>
+<span class="o">+--------------------------------------+</span>
 
-Customer Portal:
-┌──────────────────────────────────────┐
-│ • Call status updates                │
-│ • Campaign progress                  │
-│ • Billing updates                    │
-│ • System notifications               │
-└──────────────────────────────────────┘
+<span class="n">Customer</span> <span class="n">Portal</span><span class="p">:</span>
+<span class="o">+--------------------------------------+</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Call</span> <span class="n">status</span> <span class="n">updates</span>                <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Campaign</span> <span class="n">progress</span>                  <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Billing</span> <span class="n">updates</span>                    <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">System</span> <span class="n">notifications</span>               <span class="o">|</span>
+<span class="o">+--------------------------------------+</span>
 
-Media Streaming:
-┌──────────────────────────────────────┐
-│ • Bi-directional audio (RTP)         │
-│ • Live transcription feed            │
-│ • Real-time metrics                  │
-└──────────────────────────────────────┘
+<span class="n">Media</span> <span class="n">Streaming</span><span class="p">:</span>
+<span class="o">+--------------------------------------+</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Bi</span><span class="o">-</span><span class="n">directional</span> <span class="n">audio</span> <span class="p">(</span><span class="n">RTP</span><span class="p">)</span>         <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Live</span> <span class="n">transcription</span> <span class="n">feed</span>            <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Real</span><span class="o">-</span><span class="n">time</span> <span class="n">metrics</span>                  <span class="o">|</span>
+<span class="o">+--------------------------------------+</span>
 </pre></div>
 </div>
 <p><strong>Connection Management</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>WebSocket Lifecycle:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">WebSocket</span> <span class="n">Lifecycle</span><span class="p">:</span>
 
-┌────────────┐
-│  Connect   │  Client establishes WebSocket
-└──────┬─────┘
-       │
-       ▼
-┌────────────┐
-│ Authenticate│  Validate JWT token
-└──────┬─────┘
-       │
-       ▼
-┌────────────┐
-│ Subscribe  │  Client subscribes to topics
-└──────┬─────┘
-       │
-       ▼
-┌────────────┐
-│  Active    │  Bi-directional communication
-│            │  • Server pushes events
-│            │  • Client sends commands
-│            │  • Pinger sends ping frames
-└──────┬─────┘
-       │
-       │  (Keep-alive ping/pong)
-       │
-       ▼
-┌────────────┐
-│ Disconnect │  Connection closed
-└────────────┘
+<span class="o">+------------+</span>
+<span class="o">|</span>  <span class="n">Connect</span>   <span class="o">|</span>  <span class="n">Client</span> <span class="n">establishes</span> <span class="n">WebSocket</span>
+<span class="o">+------+-----+</span>
+       <span class="o">|</span>
+       <span class="n">v</span>
+<span class="o">+------------+</span>
+<span class="o">|</span> <span class="n">Authenticate</span><span class="o">|</span>  <span class="n">Validate</span> <span class="n">JWT</span> <span class="n">token</span>
+<span class="o">+------+-----+</span>
+       <span class="o">|</span>
+       <span class="n">v</span>
+<span class="o">+------------+</span>
+<span class="o">|</span> <span class="n">Subscribe</span>  <span class="o">|</span>  <span class="n">Client</span> <span class="n">subscribes</span> <span class="n">to</span> <span class="n">topics</span>
+<span class="o">+------+-----+</span>
+       <span class="o">|</span>
+       <span class="n">v</span>
+<span class="o">+------------+</span>
+<span class="o">|</span>  <span class="n">Active</span>    <span class="o">|</span>  <span class="n">Bi</span><span class="o">-</span><span class="n">directional</span> <span class="n">communication</span>
+<span class="o">|</span>            <span class="o">|</span>  <span class="n">o</span> <span class="n">Server</span> <span class="n">pushes</span> <span class="n">events</span>
+<span class="o">|</span>            <span class="o">|</span>  <span class="n">o</span> <span class="n">Client</span> <span class="n">sends</span> <span class="n">commands</span>
+<span class="o">|</span>            <span class="o">|</span>  <span class="n">o</span> <span class="n">Pinger</span> <span class="n">sends</span> <span class="n">ping</span> <span class="n">frames</span>
+<span class="o">+------+-----+</span>
+       <span class="o">|</span>
+       <span class="o">|</span>  <span class="p">(</span><span class="n">Keep</span><span class="o">-</span><span class="n">alive</span> <span class="n">ping</span><span class="o">/</span><span class="n">pong</span><span class="p">)</span>
+       <span class="o">|</span>
+       <span class="n">v</span>
+<span class="o">+------------+</span>
+<span class="o">|</span> <span class="n">Disconnect</span> <span class="o">|</span>  <span class="n">Connection</span> <span class="n">closed</span>
+<span class="o">+------------+</span>
 </pre></div>
 </div>
 <p><strong>Keep-Alive Mechanism (Server-Side Ping/Pong)</strong></p>
 <p>VoIPBIN implements server-side keep-alive to prevent load balancer timeouts:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Keep-Alive Configuration:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Keep</span><span class="o">-</span><span class="n">Alive</span> <span class="n">Configuration</span><span class="p">:</span>
 
-┌────────────────────────────────────────────────┐
-│  Ping Interval:  30 seconds                    │
-│  Pong Wait:      60 seconds                    │
-│  Write Timeout:  10 seconds                    │
-└────────────────────────────────────────────────┘
+<span class="o">+------------------------------------------------+</span>
+<span class="o">|</span>  <span class="n">Ping</span> <span class="n">Interval</span><span class="p">:</span>  <span class="mi">30</span> <span class="n">seconds</span>                    <span class="o">|</span>
+<span class="o">|</span>  <span class="n">Pong</span> <span class="n">Wait</span><span class="p">:</span>      <span class="mi">60</span> <span class="n">seconds</span>                    <span class="o">|</span>
+<span class="o">|</span>  <span class="n">Write</span> <span class="n">Timeout</span><span class="p">:</span>  <span class="mi">10</span> <span class="n">seconds</span>                    <span class="o">|</span>
+<span class="o">+------------------------------------------------+</span>
 
-Keep-Alive Flow:
+<span class="n">Keep</span><span class="o">-</span><span class="n">Alive</span> <span class="n">Flow</span><span class="p">:</span>
 
-Server                                    Client
-   │                                         │
-   │  Every 30s: Send Ping Frame             │
-   ├────────────────────────────────────────▶│
-   │                                         │
-   │  Automatic Pong Response                │
-   │◀────────────────────────────────────────┤
-   │                                         │
-   │  Reset read deadline (60s)              │
-   │                                         │
+<span class="n">Server</span>                                    <span class="n">Client</span>
+   <span class="o">|</span>                                         <span class="o">|</span>
+   <span class="o">|</span>  <span class="n">Every</span> <span class="mi">30</span><span class="n">s</span><span class="p">:</span> <span class="n">Send</span> <span class="n">Ping</span> <span class="n">Frame</span>             <span class="o">|</span>
+   <span class="o">+----------------------------------------&gt;&gt;</span>
+   <span class="o">|</span>                                         <span class="o">|</span>
+   <span class="o">|</span>  <span class="n">Automatic</span> <span class="n">Pong</span> <span class="n">Response</span>                <span class="o">|</span>
+   <span class="o">&lt;&lt;----------------------------------------+</span>
+   <span class="o">|</span>                                         <span class="o">|</span>
+   <span class="o">|</span>  <span class="n">Reset</span> <span class="n">read</span> <span class="n">deadline</span> <span class="p">(</span><span class="mi">60</span><span class="n">s</span><span class="p">)</span>              <span class="o">|</span>
+   <span class="o">|</span>                                         <span class="o">|</span>
 
-Error Detection:
-┌────────────────────────────────────────────────┐
-│  No pong within 60s → Connection dead          │
-│  Write failure → Connection broken             │
-│  Either error → Close and cleanup              │
-└────────────────────────────────────────────────┘
+<span class="n">Error</span> <span class="n">Detection</span><span class="p">:</span>
+<span class="o">+------------------------------------------------+</span>
+<span class="o">|</span>  <span class="n">No</span> <span class="n">pong</span> <span class="n">within</span> <span class="mi">60</span><span class="n">s</span> <span class="o">-&gt;</span> <span class="n">Connection</span> <span class="n">dead</span>         <span class="o">|</span>
+<span class="o">|</span>  <span class="n">Write</span> <span class="n">failure</span> <span class="o">-&gt;</span> <span class="n">Connection</span> <span class="n">broken</span>            <span class="o">|</span>
+<span class="o">|</span>  <span class="n">Either</span> <span class="n">error</span> <span class="o">-&gt;</span> <span class="n">Close</span> <span class="ow">and</span> <span class="n">cleanup</span>             <span class="o">|</span>
+<span class="o">+------------------------------------------------+</span>
 </pre></div>
 </div>
 <p><strong>Keep-Alive Benefits:</strong></p>
@@ -803,60 +803,60 @@ WebSocket        Best-effort      No             Client notifications
 </pre></div>
 </div>
 <p><strong>Reliability Patterns</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Ensuring Reliability:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Ensuring</span> <span class="n">Reliability</span><span class="p">:</span>
 
-Critical Operations (RabbitMQ RPC):
-┌────────────────────────────────────┐
-│ • Persistent messages              │
-│ • Manual acknowledgment            │
-│ • Automatic retry                  │
-│ • Timeout handling                 │
-│ • Idempotent operations            │
-└────────────────────────────────────┘
+<span class="n">Critical</span> <span class="n">Operations</span> <span class="p">(</span><span class="n">RabbitMQ</span> <span class="n">RPC</span><span class="p">):</span>
+<span class="o">+------------------------------------+</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Persistent</span> <span class="n">messages</span>              <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Manual</span> <span class="n">acknowledgment</span>            <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Automatic</span> <span class="n">retry</span>                  <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Timeout</span> <span class="n">handling</span>                 <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Idempotent</span> <span class="n">operations</span>            <span class="o">|</span>
+<span class="o">+------------------------------------+</span>
 
-Important Events (RabbitMQ Pub/Sub):
-┌────────────────────────────────────┐
-│ • Persistent messages              │
-│ • Multiple subscribers             │
-│ • Redundant processing OK          │
-│ • Deduplication in subscriber      │
-└────────────────────────────────────┘
+<span class="n">Important</span> <span class="n">Events</span> <span class="p">(</span><span class="n">RabbitMQ</span> <span class="n">Pub</span><span class="o">/</span><span class="n">Sub</span><span class="p">):</span>
+<span class="o">+------------------------------------+</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Persistent</span> <span class="n">messages</span>              <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Multiple</span> <span class="n">subscribers</span>             <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Redundant</span> <span class="n">processing</span> <span class="n">OK</span>          <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Deduplication</span> <span class="ow">in</span> <span class="n">subscriber</span>      <span class="o">|</span>
+<span class="o">+------------------------------------+</span>
 
-Real-Time Updates (ZeroMQ):
-┌────────────────────────────────────┐
-│ • No persistence                   │
-│ • Fast delivery                    │
-│ • Acceptable loss                  │
-│ • Often duplicated in RabbitMQ     │
-└────────────────────────────────────┘
+<span class="n">Real</span><span class="o">-</span><span class="n">Time</span> <span class="n">Updates</span> <span class="p">(</span><span class="n">ZeroMQ</span><span class="p">):</span>
+<span class="o">+------------------------------------+</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">No</span> <span class="n">persistence</span>                   <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Fast</span> <span class="n">delivery</span>                    <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Acceptable</span> <span class="n">loss</span>                  <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Often</span> <span class="n">duplicated</span> <span class="ow">in</span> <span class="n">RabbitMQ</span>     <span class="o">|</span>
+<span class="o">+------------------------------------+</span>
 </pre></div>
 </div>
 </section>
 <section id="message-ordering">
 <h2>Message Ordering<a class="headerlink" href="#message-ordering" title="Link to this heading"></a></h2>
 <p>VoIPBIN guarantees ordering within specific boundaries:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Ordering Guarantees:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Ordering</span> <span class="n">Guarantees</span><span class="p">:</span>
 
-Same Queue:              Different Queues:
-┌──────────┐             ┌──────────┐  ┌──────────┐
-│ Message 1│             │ Message 1│  │ Message 2│
-└─────┬────┘             └─────┬────┘  └─────┬────┘
-      │                        │             │
-      │ Queue A                │ Queue A     │ Queue B
-      │                        │             │
-      ▼                        ▼             ▼
-┌──────────┐             ┌──────────┐  ┌──────────┐
-│ Message 2│             │ Service A│  │ Service B│
-└─────┬────┘             └──────────┘  └──────────┘
-      │                        │             │
-      │                        │  May arrive in any order
-      ▼                        ▼             ▼
-┌──────────┐             ┌──────────┐  ┌──────────┐
-│ Message 3│             │ Ordered  │  │ No order │
-└──────────┘             │ delivery │  │ guarantee│
-                         └──────────┘  └──────────┘
+<span class="n">Same</span> <span class="n">Queue</span><span class="p">:</span>              <span class="n">Different</span> <span class="n">Queues</span><span class="p">:</span>
+<span class="o">+----------+</span>             <span class="o">+----------+</span>  <span class="o">+----------+</span>
+<span class="o">|</span> <span class="n">Message</span> <span class="mi">1</span><span class="o">|</span>             <span class="o">|</span> <span class="n">Message</span> <span class="mi">1</span><span class="o">|</span>  <span class="o">|</span> <span class="n">Message</span> <span class="mi">2</span><span class="o">|</span>
+<span class="o">+-----+----+</span>             <span class="o">+-----+----+</span>  <span class="o">+-----+----+</span>
+      <span class="o">|</span>                        <span class="o">|</span>             <span class="o">|</span>
+      <span class="o">|</span> <span class="n">Queue</span> <span class="n">A</span>                <span class="o">|</span> <span class="n">Queue</span> <span class="n">A</span>     <span class="o">|</span> <span class="n">Queue</span> <span class="n">B</span>
+      <span class="o">|</span>                        <span class="o">|</span>             <span class="o">|</span>
+      <span class="n">v</span>                        <span class="n">v</span>             <span class="n">v</span>
+<span class="o">+----------+</span>             <span class="o">+----------+</span>  <span class="o">+----------+</span>
+<span class="o">|</span> <span class="n">Message</span> <span class="mi">2</span><span class="o">|</span>             <span class="o">|</span> <span class="n">Service</span> <span class="n">A</span><span class="o">|</span>  <span class="o">|</span> <span class="n">Service</span> <span class="n">B</span><span class="o">|</span>
+<span class="o">+-----+----+</span>             <span class="o">+----------+</span>  <span class="o">+----------+</span>
+      <span class="o">|</span>                        <span class="o">|</span>             <span class="o">|</span>
+      <span class="o">|</span>                        <span class="o">|</span>  <span class="n">May</span> <span class="n">arrive</span> <span class="ow">in</span> <span class="nb">any</span> <span class="n">order</span>
+      <span class="n">v</span>                        <span class="n">v</span>             <span class="n">v</span>
+<span class="o">+----------+</span>             <span class="o">+----------+</span>  <span class="o">+----------+</span>
+<span class="o">|</span> <span class="n">Message</span> <span class="mi">3</span><span class="o">|</span>             <span class="o">|</span> <span class="n">Ordered</span>  <span class="o">|</span>  <span class="o">|</span> <span class="n">No</span> <span class="n">order</span> <span class="o">|</span>
+<span class="o">+----------+</span>             <span class="o">|</span> <span class="n">delivery</span> <span class="o">|</span>  <span class="o">|</span> <span class="n">guarantee</span><span class="o">|</span>
+                         <span class="o">+----------+</span>  <span class="o">+----------+</span>
 
-Ordered ✓               Unordered ✗
+<span class="n">Ordered</span> <span class="p">[</span><span class="n">x</span><span class="p">]</span>               <span class="n">Unordered</span> <span class="p">[</span> <span class="p">]</span>
 </pre></div>
 </div>
 <p><strong>Ordering Strategy:</strong></p>
@@ -887,52 +887,52 @@ Max: 7 attempts, ~1 minute total
 </div>
 <p><strong>Dead Letter Queue</strong></p>
 <p>Failed messages move to dead letter queue for investigation:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Dead Letter Processing:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Dead</span> <span class="n">Letter</span> <span class="n">Processing</span><span class="p">:</span>
 
-Normal Flow:              Failed Flow:
-┌──────────┐              ┌──────────┐
-│ Message  │              │ Message  │
-└─────┬────┘              └─────┬────┘
-      │                         │
-      │ Process                 │ Process (fails)
-      ▼                         ▼
-┌──────────┐              ┌──────────┐
-│  Success │              │  Retry   │
-└──────────┘              └─────┬────┘
-                                │ (max retries exceeded)
-                                ▼
-                          ┌──────────┐
-                          │   DLQ    │ Dead Letter Queue
-                          └─────┬────┘
-                                │
-                                │ Manual investigation
-                                │ or automated recovery
-                                ▼
-                          ┌──────────┐
-                          │  Alert   │
-                          └──────────┘
+<span class="n">Normal</span> <span class="n">Flow</span><span class="p">:</span>              <span class="n">Failed</span> <span class="n">Flow</span><span class="p">:</span>
+<span class="o">+----------+</span>              <span class="o">+----------+</span>
+<span class="o">|</span> <span class="n">Message</span>  <span class="o">|</span>              <span class="o">|</span> <span class="n">Message</span>  <span class="o">|</span>
+<span class="o">+-----+----+</span>              <span class="o">+-----+----+</span>
+      <span class="o">|</span>                         <span class="o">|</span>
+      <span class="o">|</span> <span class="n">Process</span>                 <span class="o">|</span> <span class="n">Process</span> <span class="p">(</span><span class="n">fails</span><span class="p">)</span>
+      <span class="n">v</span>                         <span class="n">v</span>
+<span class="o">+----------+</span>              <span class="o">+----------+</span>
+<span class="o">|</span>  <span class="n">Success</span> <span class="o">|</span>              <span class="o">|</span>  <span class="n">Retry</span>   <span class="o">|</span>
+<span class="o">+----------+</span>              <span class="o">+-----+----+</span>
+                                <span class="o">|</span> <span class="p">(</span><span class="nb">max</span> <span class="n">retries</span> <span class="n">exceeded</span><span class="p">)</span>
+                                <span class="n">v</span>
+                          <span class="o">+----------+</span>
+                          <span class="o">|</span>   <span class="n">DLQ</span>    <span class="o">|</span> <span class="n">Dead</span> <span class="n">Letter</span> <span class="n">Queue</span>
+                          <span class="o">+-----+----+</span>
+                                <span class="o">|</span>
+                                <span class="o">|</span> <span class="n">Manual</span> <span class="n">investigation</span>
+                                <span class="o">|</span> <span class="ow">or</span> <span class="n">automated</span> <span class="n">recovery</span>
+                                <span class="n">v</span>
+                          <span class="o">+----------+</span>
+                          <span class="o">|</span>  <span class="n">Alert</span>   <span class="o">|</span>
+                          <span class="o">+----------+</span>
 </pre></div>
 </div>
 <p><strong>Error Categories</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Error Handling by Type:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Error</span> <span class="n">Handling</span> <span class="n">by</span> <span class="n">Type</span><span class="p">:</span>
 
-Transient Errors (Retry):
-• Network timeout
-• Database connection lost
-• Service temporarily unavailable
-→ Retry with exponential backoff
+<span class="n">Transient</span> <span class="n">Errors</span> <span class="p">(</span><span class="n">Retry</span><span class="p">):</span>
+<span class="n">o</span> <span class="n">Network</span> <span class="n">timeout</span>
+<span class="n">o</span> <span class="n">Database</span> <span class="n">connection</span> <span class="n">lost</span>
+<span class="n">o</span> <span class="n">Service</span> <span class="n">temporarily</span> <span class="n">unavailable</span>
+<span class="o">-&gt;</span> <span class="n">Retry</span> <span class="k">with</span> <span class="n">exponential</span> <span class="n">backoff</span>
 
-Permanent Errors (Don&#39;t Retry):
-• Invalid data format
-• Resource not found
-• Permission denied
-→ Send to DLQ, alert operator
+<span class="n">Permanent</span> <span class="n">Errors</span> <span class="p">(</span><span class="n">Don</span><span class="s1">&#39;t Retry):</span>
+<span class="n">o</span> <span class="n">Invalid</span> <span class="n">data</span> <span class="nb">format</span>
+<span class="n">o</span> <span class="n">Resource</span> <span class="ow">not</span> <span class="n">found</span>
+<span class="n">o</span> <span class="n">Permission</span> <span class="n">denied</span>
+<span class="o">-&gt;</span> <span class="n">Send</span> <span class="n">to</span> <span class="n">DLQ</span><span class="p">,</span> <span class="n">alert</span> <span class="n">operator</span>
 
-Business Errors (Log and Return):
-• Insufficient balance
-• Invalid phone number
-• Duplicate request
-→ Return error to caller
+<span class="n">Business</span> <span class="n">Errors</span> <span class="p">(</span><span class="n">Log</span> <span class="ow">and</span> <span class="n">Return</span><span class="p">):</span>
+<span class="n">o</span> <span class="n">Insufficient</span> <span class="n">balance</span>
+<span class="n">o</span> <span class="n">Invalid</span> <span class="n">phone</span> <span class="n">number</span>
+<span class="n">o</span> <span class="n">Duplicate</span> <span class="n">request</span>
+<span class="o">-&gt;</span> <span class="n">Return</span> <span class="n">error</span> <span class="n">to</span> <span class="n">caller</span>
 </pre></div>
 </div>
 </section>
@@ -940,25 +940,25 @@ Business Errors (Log and Return):
 <h2>Performance Optimization<a class="headerlink" href="#performance-optimization" title="Link to this heading"></a></h2>
 <p>VoIPBIN optimizes messaging performance:</p>
 <p><strong>Connection Pooling</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Connection Management:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Connection</span> <span class="n">Management</span><span class="p">:</span>
 
-Service Instance
-┌────────────────────────────────────┐
-│                                    │
-│  Connection Pool (5 connections)   │
-│  ┌────┐ ┌────┐ ┌────┐ ┌────┐ ┌────┐│
-│  │ 1  │ │ 2  │ │ 3  │ │ 4  │ │ 5  ││
-│  └─┬──┘ └─┬──┘ └─┬──┘ └─┬──┘ └─┬──┘│
-│    │      │      │      │      │   │
-└────┼──────┼──────┼──────┼──────┼───┘
-     │      │      │      │      │
-     └──────┴──────┴──────┴──────┘
-                │
-                │ Single TCP connection
-                ▼
-          ┌──────────┐
-          │ RabbitMQ │
-          └──────────┘
+<span class="n">Service</span> <span class="n">Instance</span>
+<span class="o">+------------------------------------+</span>
+<span class="o">|</span>                                    <span class="o">|</span>
+<span class="o">|</span>  <span class="n">Connection</span> <span class="n">Pool</span> <span class="p">(</span><span class="mi">5</span> <span class="n">connections</span><span class="p">)</span>   <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+----+</span> <span class="o">+----+</span> <span class="o">+----+</span> <span class="o">+----+</span> <span class="o">+----+|</span>
+<span class="o">|</span>  <span class="o">|</span> <span class="mi">1</span>  <span class="o">|</span> <span class="o">|</span> <span class="mi">2</span>  <span class="o">|</span> <span class="o">|</span> <span class="mi">3</span>  <span class="o">|</span> <span class="o">|</span> <span class="mi">4</span>  <span class="o">|</span> <span class="o">|</span> <span class="mi">5</span>  <span class="o">||</span>
+<span class="o">|</span>  <span class="o">+-+--+</span> <span class="o">+-+--+</span> <span class="o">+-+--+</span> <span class="o">+-+--+</span> <span class="o">+-+--+|</span>
+<span class="o">|</span>    <span class="o">|</span>      <span class="o">|</span>      <span class="o">|</span>      <span class="o">|</span>      <span class="o">|</span>   <span class="o">|</span>
+<span class="o">+----+------+------+------+------+---+</span>
+     <span class="o">|</span>      <span class="o">|</span>      <span class="o">|</span>      <span class="o">|</span>      <span class="o">|</span>
+     <span class="o">+------+------+------+------+</span>
+                <span class="o">|</span>
+                <span class="o">|</span> <span class="n">Single</span> <span class="n">TCP</span> <span class="n">connection</span>
+                <span class="n">v</span>
+          <span class="o">+----------+</span>
+          <span class="o">|</span> <span class="n">RabbitMQ</span> <span class="o">|</span>
+          <span class="o">+----------+</span>
 </pre></div>
 </div>
 <ul class="simple">
@@ -969,16 +969,16 @@ Service Instance
 </ul>
 <p><strong>Batch Processing</strong></p>
 <p>For high-volume operations:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Batch vs Individual:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Batch</span> <span class="n">vs</span> <span class="n">Individual</span><span class="p">:</span>
 
-Individual Messages:     Batch Processing:
-┌────┐ ┌────┐ ┌────┐    ┌──────────────┐
-│ M1 │ │ M2 │ │ M3 │    │ M1, M2, M3   │
-└─┬──┘ └─┬──┘ └─┬──┘    │ M4, M5, M6   │
-  │      │      │       │ ... (100)    │
-  ▼      ▼      ▼       └──────┬───────┘
-Send 100 times            Send once
-(high overhead)           (low overhead)
+<span class="n">Individual</span> <span class="n">Messages</span><span class="p">:</span>     <span class="n">Batch</span> <span class="n">Processing</span><span class="p">:</span>
+<span class="o">+----+</span> <span class="o">+----+</span> <span class="o">+----+</span>    <span class="o">+--------------+</span>
+<span class="o">|</span> <span class="n">M1</span> <span class="o">|</span> <span class="o">|</span> <span class="n">M2</span> <span class="o">|</span> <span class="o">|</span> <span class="n">M3</span> <span class="o">|</span>    <span class="o">|</span> <span class="n">M1</span><span class="p">,</span> <span class="n">M2</span><span class="p">,</span> <span class="n">M3</span>   <span class="o">|</span>
+<span class="o">+-+--+</span> <span class="o">+-+--+</span> <span class="o">+-+--+</span>    <span class="o">|</span> <span class="n">M4</span><span class="p">,</span> <span class="n">M5</span><span class="p">,</span> <span class="n">M6</span>   <span class="o">|</span>
+  <span class="o">|</span>      <span class="o">|</span>      <span class="o">|</span>       <span class="o">|</span> <span class="o">...</span> <span class="p">(</span><span class="mi">100</span><span class="p">)</span>    <span class="o">|</span>
+  <span class="n">v</span>      <span class="n">v</span>      <span class="n">v</span>       <span class="o">+------+-------+</span>
+<span class="n">Send</span> <span class="mi">100</span> <span class="n">times</span>            <span class="n">Send</span> <span class="n">once</span>
+<span class="p">(</span><span class="n">high</span> <span class="n">overhead</span><span class="p">)</span>           <span class="p">(</span><span class="n">low</span> <span class="n">overhead</span><span class="p">)</span>
 </pre></div>
 </div>
 <ul class="simple">
@@ -992,48 +992,48 @@ Send 100 times            Send once
 <h2>Monitoring and Debugging<a class="headerlink" href="#monitoring-and-debugging" title="Link to this heading"></a></h2>
 <p>VoIPBIN monitors all communication channels:</p>
 <p><strong>Metrics</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Message Queue Metrics:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Message</span> <span class="n">Queue</span> <span class="n">Metrics</span><span class="p">:</span>
 
-Queue Depth:
-┌─────────────────────────────────┐
-│     Pending Messages            │
-│  ┌──┐┌──┐┌──┐┌──┐┌──┐           │
-│  │M1││M2││M3││M4││M5│...        │
-│  └──┘└──┘└──┘└──┘└──┘           │
-└─────────────────────────────────┘
-Alert if &gt; 1000 messages
+<span class="n">Queue</span> <span class="n">Depth</span><span class="p">:</span>
+<span class="o">+---------------------------------+</span>
+<span class="o">|</span>     <span class="n">Pending</span> <span class="n">Messages</span>            <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+--++--++--++--++--+</span>           <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span><span class="n">M1</span><span class="o">||</span><span class="n">M2</span><span class="o">||</span><span class="n">M3</span><span class="o">||</span><span class="n">M4</span><span class="o">||</span><span class="n">M5</span><span class="o">|...</span>        <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+--++--++--++--++--+</span>           <span class="o">|</span>
+<span class="o">+---------------------------------+</span>
+<span class="n">Alert</span> <span class="k">if</span> <span class="o">&gt;</span> <span class="mi">1000</span> <span class="n">messages</span>
 
-Processing Rate:
-Messages/sec: ████████ 850/s
-Target:       ████████ 1000/s
-Alert if &lt; 500/s
+<span class="n">Processing</span> <span class="n">Rate</span><span class="p">:</span>
+<span class="n">Messages</span><span class="o">/</span><span class="n">sec</span><span class="p">:</span> <span class="o">========</span> <span class="mi">850</span><span class="o">/</span><span class="n">s</span>
+<span class="n">Target</span><span class="p">:</span>       <span class="o">========</span> <span class="mi">1000</span><span class="o">/</span><span class="n">s</span>
+<span class="n">Alert</span> <span class="k">if</span> <span class="o">&lt;</span> <span class="mi">500</span><span class="o">/</span><span class="n">s</span>
 
-Error Rate:
-Failures:     ██ 2%
-Target:       ██ &lt; 5%
-Alert if &gt; 10%
+<span class="n">Error</span> <span class="n">Rate</span><span class="p">:</span>
+<span class="n">Failures</span><span class="p">:</span>     <span class="o">==</span> <span class="mi">2</span><span class="o">%</span>
+<span class="n">Target</span><span class="p">:</span>       <span class="o">==</span> <span class="o">&lt;</span> <span class="mi">5</span><span class="o">%</span>
+<span class="n">Alert</span> <span class="k">if</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="o">%</span>
 </pre></div>
 </div>
 <p><strong>Distributed Tracing</strong></p>
 <p>Track requests across services:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Trace ID: trace-123
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Trace</span> <span class="n">ID</span><span class="p">:</span> <span class="n">trace</span><span class="o">-</span><span class="mi">123</span>
 
-1. API Gateway          [50ms]
-   ├─ Authenticate      [5ms]
-   ├─ Authorize         [10ms]
-   └─ Send RPC          [35ms]
-       │
-       ▼
-2. Call Manager         [80ms]
-   ├─ Validate          [10ms]
-   ├─ Create Record     [20ms]
-   └─ Initiate Call     [50ms]
-       │
-       ▼
-3. RTC Manager          [120ms]
-   └─ Setup Media       [120ms]
+<span class="mf">1.</span> <span class="n">API</span> <span class="n">Gateway</span>          <span class="p">[</span><span class="mi">50</span><span class="n">ms</span><span class="p">]</span>
+   <span class="o">+-</span> <span class="n">Authenticate</span>      <span class="p">[</span><span class="mi">5</span><span class="n">ms</span><span class="p">]</span>
+   <span class="o">+-</span> <span class="n">Authorize</span>         <span class="p">[</span><span class="mi">10</span><span class="n">ms</span><span class="p">]</span>
+   <span class="o">+-</span> <span class="n">Send</span> <span class="n">RPC</span>          <span class="p">[</span><span class="mi">35</span><span class="n">ms</span><span class="p">]</span>
+       <span class="o">|</span>
+       <span class="n">v</span>
+<span class="mf">2.</span> <span class="n">Call</span> <span class="n">Manager</span>         <span class="p">[</span><span class="mi">80</span><span class="n">ms</span><span class="p">]</span>
+   <span class="o">+-</span> <span class="n">Validate</span>          <span class="p">[</span><span class="mi">10</span><span class="n">ms</span><span class="p">]</span>
+   <span class="o">+-</span> <span class="n">Create</span> <span class="n">Record</span>     <span class="p">[</span><span class="mi">20</span><span class="n">ms</span><span class="p">]</span>
+   <span class="o">+-</span> <span class="n">Initiate</span> <span class="n">Call</span>     <span class="p">[</span><span class="mi">50</span><span class="n">ms</span><span class="p">]</span>
+       <span class="o">|</span>
+       <span class="n">v</span>
+<span class="mf">3.</span> <span class="n">RTC</span> <span class="n">Manager</span>          <span class="p">[</span><span class="mi">120</span><span class="n">ms</span><span class="p">]</span>
+   <span class="o">+-</span> <span class="n">Setup</span> <span class="n">Media</span>       <span class="p">[</span><span class="mi">120</span><span class="n">ms</span><span class="p">]</span>
 
-Total: 250ms
+<span class="n">Total</span><span class="p">:</span> <span class="mi">250</span><span class="n">ms</span>
 </pre></div>
 </div>
 <ul class="simple">
