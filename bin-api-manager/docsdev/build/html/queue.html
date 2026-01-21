@@ -173,34 +173,34 @@
 <h3>How Queue Routing Works<a class="headerlink" href="#how-queue-routing-works" title="Link to this heading"></a></h3>
 <p>When a call joins a queue, a coordinated process begins to match the caller with an available agent.</p>
 <p><strong>The Queue Journey</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────────┐
-│                       Call&#39;s Journey Through Queue                       │
-└─────────────────────────────────────────────────────────────────────────┘
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>+-------------------------------------------------------------------------+
+|                       Call&#39;s Journey Through Queue                      |
++-------------------------------------------------------------------------+
 
 1. Call Joins Queue          2. Wait Flow Plays         3. Agent Search
-┌─────────────────┐         ┌─────────────────┐        ┌─────────────────┐
-│                 │         │  ♪ Hold music   │        │  Check for      │
-│  queue_join     │────────▶│  &quot;Please wait&quot;  │───────▶│  available      │
-│  action         │         │  announcements  │        │  agents         │
-└─────────────────┘         └─────────────────┘        └────────┬────────┘
-                                    ▲                          │
-                                    │                    ┌─────┴─────┐
-                                    │                    │           │
-                                    │               No agents    Agent found!
-                                    │                    │           │
-                                    └────────────────────┘           │
-                                      Retry every 1 second           │
-                                                                     ▼
-                                                          ┌─────────────────┐
-                                                          │  4. Connect     │
-                                                          │  agent to call  │
-                                                          └────────┬────────┘
-                                                                   │
-                                                                   ▼
-                                                          ┌─────────────────┐
-                                                          │  5. Caller and  │
-                                                          │  agent talking  │
-                                                          └─────────────────┘
++-----------------+         +-----------------+        +-----------------+
+|                 |         |  # Hold music   |        |  Check for      |
+|  queue_join     |--------&gt;|  &quot;Please wait&quot;  |-------&gt;|  available      |
+|  action         |         |  announcements  |        |  agents         |
++-----------------+         +-----------------+        +--------+--------+
+                                    ^                          |
+                                    |                    +-----+-----+
+                                    |                    |           |
+                                    |               No agents    Agent found!
+                                    |                    |           |
+                                    +--------------------+           |
+                                      Retry every 1 second           |
+                                                                     v
+                                                          +-----------------+
+                                                          |  4. Connect     |
+                                                          |  agent to call  |
+                                                          +--------+--------+
+                                                                   |
+                                                                   v
+                                                          +-----------------+
+                                                          |  5. Caller and  |
+                                                          |  agent talking  |
+                                                          +-----------------+
 </pre></div>
 </div>
 <p><strong>What Happens Step by Step</strong></p>
@@ -217,39 +217,39 @@
 <section id="queuecall-lifecycle">
 <h3>Queuecall Lifecycle<a class="headerlink" href="#queuecall-lifecycle" title="Link to this heading"></a></h3>
 <p>Every call in a queue moves through a series of states:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────────┐
-│                      Queuecall State Machine                             │
-└─────────────────────────────────────────────────────────────────────────┘
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+--------------------------------------------------------------------------+</span>
+<span class="o">|</span>                      <span class="n">Queuecall</span> <span class="n">State</span> <span class="n">Machine</span>                             <span class="o">|</span>
+<span class="o">+--------------------------------------------------------------------------+</span>
 
-                            ┌────────────┐
-                            │ initiating │
-                            │  (brief)   │
-                            └─────┬──────┘
-                                  │
-                                  ▼
-                       ┌──────────────────┐
-       wait_timeout───▶│     waiting      │
-       exceeded        │ (in wait flow)   │
-           │           └────────┬─────────┘
-           │                    │ agent found
-           │                    ▼
-           │           ┌──────────────────┐
-           │           │    connecting    │
-           │           │  (dialing agent) │
-           │           └────────┬─────────┘
-           │                    │ agent joins
-           │                    ▼
-           │           ┌──────────────────┐         service_timeout
-           │           │     service      │◀────────── exceeded
-           │           │ (agent on call)  │                │
-           │           └────────┬─────────┘                │
-           │                    │                          │
-           │           ┌────────┴────────┐                 │
-           │           ▼                 ▼                 ▼
-           │    ┌────────────┐    ┌─────────────┐
-           └───▶│  abandoned │    │    done     │
-                │  (failed)  │    │ (success)   │
-                └────────────┘    └─────────────┘
+                            <span class="o">+------------+</span>
+                            <span class="o">|</span> <span class="n">initiating</span> <span class="o">|</span>
+                            <span class="o">|</span>  <span class="p">(</span><span class="n">brief</span><span class="p">)</span>   <span class="o">|</span>
+                            <span class="o">+-----+------+</span>
+                                  <span class="o">|</span>
+                                  <span class="n">v</span>
+                       <span class="o">+------------------+</span>
+       <span class="n">wait_timeout</span><span class="o">---&gt;|</span>     <span class="n">waiting</span>      <span class="o">|</span>
+       <span class="n">exceeded</span>        <span class="o">|</span> <span class="p">(</span><span class="ow">in</span> <span class="n">wait</span> <span class="n">flow</span><span class="p">)</span>   <span class="o">|</span>
+           <span class="o">|</span>           <span class="o">+--------+---------+</span>
+           <span class="o">|</span>                    <span class="o">|</span> <span class="n">agent</span> <span class="n">found</span>
+           <span class="o">|</span>                    <span class="n">v</span>
+           <span class="o">|</span>           <span class="o">+------------------+</span>
+           <span class="o">|</span>           <span class="o">|</span>    <span class="n">connecting</span>    <span class="o">|</span>
+           <span class="o">|</span>           <span class="o">|</span>  <span class="p">(</span><span class="n">dialing</span> <span class="n">agent</span><span class="p">)</span> <span class="o">|</span>
+           <span class="o">|</span>           <span class="o">+--------+---------+</span>
+           <span class="o">|</span>                    <span class="o">|</span> <span class="n">agent</span> <span class="n">joins</span>
+           <span class="o">|</span>                    <span class="n">v</span>
+           <span class="o">|</span>           <span class="o">+------------------+</span>         <span class="n">service_timeout</span>
+           <span class="o">|</span>           <span class="o">|</span>     <span class="n">service</span>      <span class="o">|&lt;----------</span> <span class="n">exceeded</span>
+           <span class="o">|</span>           <span class="o">|</span> <span class="p">(</span><span class="n">agent</span> <span class="n">on</span> <span class="n">call</span><span class="p">)</span>  <span class="o">|</span>                <span class="o">|</span>
+           <span class="o">|</span>           <span class="o">+--------+---------+</span>                <span class="o">|</span>
+           <span class="o">|</span>                    <span class="o">|</span>                          <span class="o">|</span>
+           <span class="o">|</span>           <span class="o">+--------+--------+</span>                 <span class="o">|</span>
+           <span class="o">|</span>           <span class="n">v</span>                 <span class="n">v</span>                 <span class="n">v</span>
+           <span class="o">|</span>    <span class="o">+------------+</span>    <span class="o">+-------------+</span>
+           <span class="o">+---&gt;|</span>  <span class="n">abandoned</span> <span class="o">|</span>    <span class="o">|</span>    <span class="n">done</span>     <span class="o">|</span>
+                <span class="o">|</span>  <span class="p">(</span><span class="n">failed</span><span class="p">)</span>  <span class="o">|</span>    <span class="o">|</span> <span class="p">(</span><span class="n">success</span><span class="p">)</span>   <span class="o">|</span>
+                <span class="o">+------------+</span>    <span class="o">+-------------+</span>
 </pre></div>
 </div>
 <p><strong>State Descriptions</strong></p>
@@ -258,39 +258,39 @@
 <h3>Agent Searching<a class="headerlink" href="#agent-searching" title="Link to this heading"></a></h3>
 <p>While the call is in the queue, the queue continuously searches for available agents to handle the call. Each queue has tags associated with it that determine which agents can receive calls from that queue.</p>
 <p><strong>How Agent Matching Works</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────────┐
-│                      Agent Matching Process                              │
-└─────────────────────────────────────────────────────────────────────────┘
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>+--------------------------------------------------------------------------+
+|                      Agent Matching Process                              |
++--------------------------------------------------------------------------+
 
 Queue Configuration:                    Agent Pool:
-┌────────────────────────┐             ┌────────────────────────────────┐
-│ Tag IDs:               │             │ Agent A                        │
-│  • &quot;english&quot;           │             │  Tags: english, billing, vip   │
-│  • &quot;billing&quot;           │             │  Status: available             │
-│                        │             │  ──────────────────────────    │
-└────────────────────────┘             │ Agent B                        │
-          │                            │  Tags: english                 │
-          │                            │  Status: available             │
-          │                            │  ──────────────────────────    │
-          ▼                            │ Agent C                        │
-┌────────────────────────┐             │  Tags: english, billing        │
-│ Search for agents with │             │  Status: busy                  │
-│ ALL of these tags:     │             │  ──────────────────────────    │
-│  • english ✓           │             │ Agent D                        │
-│  • billing ✓           │             │  Tags: spanish, billing        │
-└────────────────────────┘             │  Status: available             │
-          │                            └────────────────────────────────┘
-          │
-          ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│ Results:                                                                │
-│  ✓ Agent A - Has english + billing + vip, is available                 │
-│  ✗ Agent B - Missing &quot;billing&quot; tag                                     │
-│  ✗ Agent C - Has tags but is busy                                      │
-│  ✗ Agent D - Missing &quot;english&quot; tag                                     │
-│                                                                         │
-│  → Agent A is selected!                                                 │
-└────────────────────────────────────────────────────────────────────────┘
++------------------------+             +--------------------------------+
+| Tag IDs:               |             | Agent A                        |
+|  * &quot;english&quot;           |             |  Tags: english, billing, vip   |
+|  * &quot;billing&quot;           |             |  Status: available             |
+|                        |             |  --------------------------    |
++------------------------+             | Agent B                        |
+          |                            |  Tags: english                 |
+          |                            |  Status: available             |
+          |                            |  --------------------------    |
+          v                            | Agent C                        |
++------------------------+             |  Tags: english, billing        |
+| Search for agents with |             |  Status: busy                  |
+| ALL of these tags:     |             |  --------------------------    |
+|  * english [x]         |             | Agent D                        |
+|  * billing [x]         |             |  Tags: spanish, billing        |
++------------------------+             |  Status: available             |
+          |                            +--------------------------------+
+          |
+          v
++--------------------------------------------------------------------------+
+| Results:                                                                 |
+|  [x] Agent A - Has english + billing + vip, is available                 |
+|  [ ] Agent B - Missing &quot;billing&quot; tag                                     |
+|  [ ] Agent C - Has tags but is busy                                      |
+|  [ ] Agent D - Missing &quot;english&quot; tag                                     |
+|                                                                          |
+|  -&gt; Agent A is selected!                                                 |
++--------------------------------------------------------------------------+
 </pre></div>
 </div>
 <img alt="_images/queue_overview_agent.png" src="_images/queue_overview_agent.png" />
@@ -305,32 +305,32 @@ Queue Configuration:                    Agent Pool:
 <p><strong>Agent Status</strong></p>
 <p>The agent’s status must be “available” to receive queue calls:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Agent Statuses and Queue Eligibility:
-┌────────────────┬─────────────────────────────────────────────┐
-│ Status         │ Can receive queue calls?                    │
-├────────────────┼─────────────────────────────────────────────┤
-│ available      │ ✓ Yes - Agent is ready to take calls        │
-│ busy           │ ✗ No - Agent is handling another call       │
-│ wrap-up        │ ✗ No - Agent is finishing previous call     │
-│ away           │ ✗ No - Agent is temporarily away            │
-│ offline        │ ✗ No - Agent is not logged in               │
-└────────────────┴─────────────────────────────────────────────┘
++----------------+---------------------------------------------+
+| Status         | Can receive queue calls?                    |
++----------------+---------------------------------------------+
+| available      | [x] Yes - Agent is ready to take calls      |
+| busy           | [ ] No - Agent is handling another call     |
+| wrap-up        | [ ] No - Agent is finishing previous call   |
+| away           | [ ] No - Agent is temporarily away          |
+| offline        | [ ] No - Agent is not logged in             |
++----------------+---------------------------------------------+
 </pre></div>
 </div>
 <p><strong>Selection Method</strong></p>
 <p>When multiple agents match, the system uses random selection:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Multiple agents available:
-┌────────────┐   ┌────────────┐   ┌────────────┐
-│  Agent A   │   │  Agent C   │   │  Agent E   │
-│ (matches)  │   │ (matches)  │   │ (matches)  │
-└────────────┘   └────────────┘   └────────────┘
-      │               │               │
-      └───────────────┼───────────────┘
-                      │
-                      ▼
-                Random Selection
-                      │
-                      ▼
-               One agent picked
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Multiple</span> <span class="n">agents</span> <span class="n">available</span><span class="p">:</span>
+<span class="o">+------------+</span>   <span class="o">+------------+</span>   <span class="o">+------------+</span>
+<span class="o">|</span>  <span class="n">Agent</span> <span class="n">A</span>   <span class="o">|</span>   <span class="o">|</span>  <span class="n">Agent</span> <span class="n">C</span>   <span class="o">|</span>   <span class="o">|</span>  <span class="n">Agent</span> <span class="n">E</span>   <span class="o">|</span>
+<span class="o">|</span> <span class="p">(</span><span class="n">matches</span><span class="p">)</span>  <span class="o">|</span>   <span class="o">|</span> <span class="p">(</span><span class="n">matches</span><span class="p">)</span>  <span class="o">|</span>   <span class="o">|</span> <span class="p">(</span><span class="n">matches</span><span class="p">)</span>  <span class="o">|</span>
+<span class="o">+------------+</span>   <span class="o">+------------+</span>   <span class="o">+------------+</span>
+      <span class="o">|</span>               <span class="o">|</span>               <span class="o">|</span>
+      <span class="o">+---------------+---------------+</span>
+                      <span class="o">|</span>
+                      <span class="n">v</span>
+                <span class="n">Random</span> <span class="n">Selection</span>
+                      <span class="o">|</span>
+                      <span class="n">v</span>
+               <span class="n">One</span> <span class="n">agent</span> <span class="n">picked</span>
 </pre></div>
 </div>
 </section>
@@ -338,33 +338,33 @@ Queue Configuration:                    Agent Pool:
 <h3>Flow Execution<a class="headerlink" href="#flow-execution" title="Link to this heading"></a></h3>
 <p>A call placed in the queue will progress through the queue’s waiting actions, continuing through pre-defined steps until an available agent is located. These waiting actions may involve playing pre-recorded music, messages, or custom actions, enhancing the caller’s experience while awaiting assistance in the queue.</p>
 <p><strong>Wait Flow Structure</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────────┐
-│                          Wait Flow Execution                             │
-└─────────────────────────────────────────────────────────────────────────┘
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>+--------------------------------------------------------------------------+
+|                          Wait Flow Execution                             |
++--------------------------------------------------------------------------+
 
 Caller enters queue
-       │
-       ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│                            Wait Flow Loop                               │
-│                                                                         │
-│    ┌──────────┐     ┌──────────┐     ┌──────────┐     ┌──────────┐    │
-│    │ &quot;Please  │────▶│  ♪ Hold  │────▶│ &quot;Your    │────▶│  ♪ Hold  │    │
-│    │  hold&quot;   │     │  music   │     │ position │     │  music   │    │
-│    │  (talk)  │     │  (play)  │     │  is 3&quot;   │     │  (play)  │    │
-│    └──────────┘     └──────────┘     └──────────┘     └──────────┘    │
-│         ▲                                                    │         │
-│         │                                                    │         │
-│         └────────────────────────────────────────────────────┘         │
-│                        (loops until agent found)                        │
-└────────────────────────────────────────────────────────────────────────┘
-       │
-       │ Agent found!
-       ▼
-┌────────────────┐
-│ Wait flow ends │
-│ Service begins │
-└────────────────┘
+       |
+       v
++-----------------------------------------------------------------------+
+|                            Wait Flow Loop                             |
+|                                                                       |
+|    +----------+     +----------+     +----------+     +----------+    |
+|    | &quot;Please  |----&gt;|  # Hold  |----&gt;| &quot;Your    |----&gt;|  # Hold  |    |
+|    |  hold&quot;   |     |  music   |     | position |     |  music   |    |
+|    |  (talk)  |     |  (play)  |     |  is 3&quot;   |     |  (play)  |    |
+|    +----------+     +----------+     +----------+     +----------+    |
+|         ^                                                    |        |
+|         |                                                    |        |
+|         +----------------------------------------------------+        |
+|                        (loops until agent found)                      |
++-----------------------------------------------------------------------+
+       |
+       | Agent found!
+       v
++----------------+
+| Wait flow ends |
+| Service begins |
++----------------+
 </pre></div>
 </div>
 <img alt="_images/queue_overview_flow.png" src="_images/queue_overview_flow.png" />
@@ -381,19 +381,19 @@ Caller enters queue
 <p>Queues have two distinct timeout mechanisms to prevent calls from being stuck indefinitely:</p>
 <p><strong>Wait Timeout</strong></p>
 <p>Controls how long a caller can wait before being removed from the queue:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────────┐
-│                          Wait Timeout                                    │
-└─────────────────────────────────────────────────────────────────────────┘
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+--------------------------------------------------------------------------+</span>
+<span class="o">|</span>                          <span class="n">Wait</span> <span class="n">Timeout</span>                                    <span class="o">|</span>
+<span class="o">+--------------------------------------------------------------------------+</span>
 
-Call joins queue                                     Wait timeout reached
-     │                                                     │
-     ▼                                                     ▼
-─────●─────────────────────────────────────────────────────●─────────────▶
-     │◀─────────────── wait_timeout (ms) ────────────────▶│    Time
-     │                                                     │
-     │ Caller hears wait flow                              │ Call is kicked
-     │ System searches for agents                          │ Status: abandoned
-     │                                                     │
+<span class="n">Call</span> <span class="n">joins</span> <span class="n">queue</span>                                     <span class="n">Wait</span> <span class="n">timeout</span> <span class="n">reached</span>
+     <span class="o">|</span>                                                     <span class="o">|</span>
+     <span class="n">v</span>                                                     <span class="n">v</span>
+<span class="o">-----</span><span class="n">o</span><span class="o">-----------------------------------------------------</span><span class="n">o</span><span class="o">-------------&gt;</span>
+     <span class="o">|&lt;---------------</span> <span class="n">wait_timeout</span> <span class="p">(</span><span class="n">ms</span><span class="p">)</span> <span class="o">-----------------&gt;|</span>    <span class="n">Time</span>
+     <span class="o">|</span>                                                     <span class="o">|</span>
+     <span class="o">|</span> <span class="n">Caller</span> <span class="n">hears</span> <span class="n">wait</span> <span class="n">flow</span>                              <span class="o">|</span> <span class="n">Call</span> <span class="ow">is</span> <span class="n">kicked</span>
+     <span class="o">|</span> <span class="n">System</span> <span class="n">searches</span> <span class="k">for</span> <span class="n">agents</span>                          <span class="o">|</span> <span class="n">Status</span><span class="p">:</span> <span class="n">abandoned</span>
+     <span class="o">|</span>                                                     <span class="o">|</span>
 </pre></div>
 </div>
 <ul class="simple">
@@ -403,19 +403,19 @@ Call joins queue                                     Wait timeout reached
 </ul>
 <p><strong>Service Timeout</strong></p>
 <p>Controls how long a conversation can last once connected:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────────┐
-│                         Service Timeout                                  │
-└─────────────────────────────────────────────────────────────────────────┘
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+--------------------------------------------------------------------------+</span>
+<span class="o">|</span>                         <span class="n">Service</span> <span class="n">Timeout</span>                                  <span class="o">|</span>
+<span class="o">+--------------------------------------------------------------------------+</span>
 
-Agent connects                                    Service timeout reached
-     │                                                     │
-     ▼                                                     ▼
-─────●─────────────────────────────────────────────────────●─────────────▶
-     │◀───────────── service_timeout (ms) ───────────────▶│    Time
-     │                                                     │
-     │ Agent and caller talking                            │ Call is ended
-     │ (status: service)                                   │ Status: done
-     │                                                     │
+<span class="n">Agent</span> <span class="n">connects</span>                                    <span class="n">Service</span> <span class="n">timeout</span> <span class="n">reached</span>
+     <span class="o">|</span>                                                     <span class="o">|</span>
+     <span class="n">v</span>                                                     <span class="n">v</span>
+<span class="o">-----</span><span class="n">o</span><span class="o">-----------------------------------------------------</span><span class="n">o</span><span class="o">-------------&gt;</span>
+     <span class="o">|&lt;-------------</span> <span class="n">service_timeout</span> <span class="p">(</span><span class="n">ms</span><span class="p">)</span> <span class="o">----------------&gt;|</span>    <span class="n">Time</span>
+     <span class="o">|</span>                                                     <span class="o">|</span>
+     <span class="o">|</span> <span class="n">Agent</span> <span class="ow">and</span> <span class="n">caller</span> <span class="n">talking</span>                            <span class="o">|</span> <span class="n">Call</span> <span class="ow">is</span> <span class="n">ended</span>
+     <span class="o">|</span> <span class="p">(</span><span class="n">status</span><span class="p">:</span> <span class="n">service</span><span class="p">)</span>                                   <span class="o">|</span> <span class="n">Status</span><span class="p">:</span> <span class="n">done</span>
+     <span class="o">|</span>                                                     <span class="o">|</span>
 </pre></div>
 </div>
 <ul class="simple">
@@ -424,20 +424,20 @@ Agent connects                                    Service timeout reached
 <li><p>When exceeded, the call is ended gracefully</p></li>
 </ul>
 <p><strong>Timeout Scenarios</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Scenario 1: Caller waits too long
-┌──────────┐                                        ┌───────────┐
-│ waiting  │───── wait_timeout exceeded ──────────▶│ abandoned │
-└──────────┘                                        └───────────┘
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Scenario</span> <span class="mi">1</span><span class="p">:</span> <span class="n">Caller</span> <span class="n">waits</span> <span class="n">too</span> <span class="n">long</span>
+<span class="o">+----------+</span>                                        <span class="o">+-----------+</span>
+<span class="o">|</span> <span class="n">waiting</span>  <span class="o">|-----</span> <span class="n">wait_timeout</span> <span class="n">exceeded</span> <span class="o">-----------&gt;|</span> <span class="n">abandoned</span> <span class="o">|</span>
+<span class="o">+----------+</span>                                        <span class="o">+-----------+</span>
 
-Scenario 2: Caller hangs up while waiting
-┌──────────┐                                        ┌───────────┐
-│ waiting  │───── caller hangup ──────────────────▶│ abandoned │
-└──────────┘                                        └───────────┘
+<span class="n">Scenario</span> <span class="mi">2</span><span class="p">:</span> <span class="n">Caller</span> <span class="n">hangs</span> <span class="n">up</span> <span class="k">while</span> <span class="n">waiting</span>
+<span class="o">+----------+</span>                                        <span class="o">+-----------+</span>
+<span class="o">|</span> <span class="n">waiting</span>  <span class="o">|-----</span> <span class="n">caller</span> <span class="n">hangup</span> <span class="o">-------------------&gt;|</span> <span class="n">abandoned</span> <span class="o">|</span>
+<span class="o">+----------+</span>                                        <span class="o">+-----------+</span>
 
-Scenario 3: Successful call, normal end
-┌──────────┐   ┌───────────┐   ┌─────────┐         ┌──────┐
-│ waiting  │──▶│ connecting│──▶│ service │──hangup▶│ done │
-└──────────┘   └───────────┘   └─────────┘         └──────┘
+<span class="n">Scenario</span> <span class="mi">3</span><span class="p">:</span> <span class="n">Successful</span> <span class="n">call</span><span class="p">,</span> <span class="n">normal</span> <span class="n">end</span>
+<span class="o">+----------+</span>   <span class="o">+-----------+</span>   <span class="o">+---------+</span>         <span class="o">+------+</span>
+<span class="o">|</span> <span class="n">waiting</span>  <span class="o">|--&gt;|</span> <span class="n">connecting</span><span class="o">|--&gt;|</span> <span class="n">service</span> <span class="o">|--</span><span class="n">hangup</span><span class="o">&gt;|</span> <span class="n">done</span> <span class="o">|</span>
+<span class="o">+----------+</span>   <span class="o">+-----------+</span>   <span class="o">+---------+</span>         <span class="o">+------+</span>
 </pre></div>
 </div>
 </section>
@@ -445,34 +445,34 @@ Scenario 3: Successful call, normal end
 <h3>Queue Metrics and Tracking<a class="headerlink" href="#queue-metrics-and-tracking" title="Link to this heading"></a></h3>
 <p>Queues track detailed metrics for reporting and analysis:</p>
 <p><strong>Per-Queue Statistics</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────────┐
-│                        Queue Statistics                                  │
-└─────────────────────────────────────────────────────────────────────────┘
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+--------------------------------------------------------------------------+</span>
+<span class="o">|</span>                        <span class="n">Queue</span> <span class="n">Statistics</span>                                  <span class="o">|</span>
+<span class="o">+--------------------------------------------------------------------------+</span>
 
-Queue: &quot;Customer Support&quot;
-┌─────────────────────────────────┬───────────────────────────────────────┐
-│ total_incoming_count            │ 1,234 calls entered this queue        │
-├─────────────────────────────────┼───────────────────────────────────────┤
-│ total_serviced_count            │ 1,100 calls reached an agent          │
-├─────────────────────────────────┼───────────────────────────────────────┤
-│ total_abandoned_count           │ 134 calls abandoned (11% abandon rate)│
-└─────────────────────────────────┴───────────────────────────────────────┘
+<span class="n">Queue</span><span class="p">:</span> <span class="s2">&quot;Customer Support&quot;</span>
+<span class="o">+---------------------------------+---------------------------------------+</span>
+<span class="o">|</span> <span class="n">total_incoming_count</span>            <span class="o">|</span> <span class="mi">1</span><span class="p">,</span><span class="mi">234</span> <span class="n">calls</span> <span class="n">entered</span> <span class="n">this</span> <span class="n">queue</span>        <span class="o">|</span>
+<span class="o">+---------------------------------+---------------------------------------+</span>
+<span class="o">|</span> <span class="n">total_serviced_count</span>            <span class="o">|</span> <span class="mi">1</span><span class="p">,</span><span class="mi">100</span> <span class="n">calls</span> <span class="n">reached</span> <span class="n">an</span> <span class="n">agent</span>          <span class="o">|</span>
+<span class="o">+---------------------------------+---------------------------------------+</span>
+<span class="o">|</span> <span class="n">total_abandoned_count</span>           <span class="o">|</span> <span class="mi">134</span> <span class="n">calls</span> <span class="n">abandoned</span> <span class="p">(</span><span class="mi">11</span><span class="o">%</span> <span class="n">abandon</span> <span class="n">rate</span><span class="p">)</span><span class="o">|</span>
+<span class="o">+---------------------------------+---------------------------------------+</span>
 </pre></div>
 </div>
 <p><strong>Per-Queuecall Metrics</strong></p>
 <p>Each call in the queue tracks:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Queuecall: &quot;abc-123-def&quot;
-┌─────────────────────────────────┬───────────────────────────────────────┐
-│ duration_waiting                │ 45,000 ms (45 seconds in wait flow)   │
-├─────────────────────────────────┼───────────────────────────────────────┤
-│ duration_service                │ 180,000 ms (3 minutes with agent)     │
-├─────────────────────────────────┼───────────────────────────────────────┤
-│ tm_create                       │ 2024-01-15 10:30:00 (entered queue)   │
-├─────────────────────────────────┼───────────────────────────────────────┤
-│ tm_service                      │ 2024-01-15 10:30:45 (agent connected) │
-├─────────────────────────────────┼───────────────────────────────────────┤
-│ tm_end                          │ 2024-01-15 10:33:45 (call ended)      │
-└─────────────────────────────────┴───────────────────────────────────────┘
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Queuecall</span><span class="p">:</span> <span class="s2">&quot;abc-123-def&quot;</span>
+<span class="o">+---------------------------------+---------------------------------------+</span>
+<span class="o">|</span> <span class="n">duration_waiting</span>                <span class="o">|</span> <span class="mi">45</span><span class="p">,</span><span class="mi">000</span> <span class="n">ms</span> <span class="p">(</span><span class="mi">45</span> <span class="n">seconds</span> <span class="ow">in</span> <span class="n">wait</span> <span class="n">flow</span><span class="p">)</span>   <span class="o">|</span>
+<span class="o">+---------------------------------+---------------------------------------+</span>
+<span class="o">|</span> <span class="n">duration_service</span>                <span class="o">|</span> <span class="mi">180</span><span class="p">,</span><span class="mi">000</span> <span class="n">ms</span> <span class="p">(</span><span class="mi">3</span> <span class="n">minutes</span> <span class="k">with</span> <span class="n">agent</span><span class="p">)</span>     <span class="o">|</span>
+<span class="o">+---------------------------------+---------------------------------------+</span>
+<span class="o">|</span> <span class="n">tm_create</span>                       <span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">15</span> <span class="mi">10</span><span class="p">:</span><span class="mi">30</span><span class="p">:</span><span class="mi">00</span> <span class="p">(</span><span class="n">entered</span> <span class="n">queue</span><span class="p">)</span>   <span class="o">|</span>
+<span class="o">+---------------------------------+---------------------------------------+</span>
+<span class="o">|</span> <span class="n">tm_service</span>                      <span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">15</span> <span class="mi">10</span><span class="p">:</span><span class="mi">30</span><span class="p">:</span><span class="mi">45</span> <span class="p">(</span><span class="n">agent</span> <span class="n">connected</span><span class="p">)</span> <span class="o">|</span>
+<span class="o">+---------------------------------+---------------------------------------+</span>
+<span class="o">|</span> <span class="n">tm_end</span>                          <span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">15</span> <span class="mi">10</span><span class="p">:</span><span class="mi">33</span><span class="p">:</span><span class="mi">45</span> <span class="p">(</span><span class="n">call</span> <span class="n">ended</span><span class="p">)</span>      <span class="o">|</span>
+<span class="o">+---------------------------------+---------------------------------------+</span>
 </pre></div>
 </div>
 <p><strong>Calculating Service Levels</strong></p>
@@ -490,25 +490,25 @@ Average Wait Time = Sum of all duration_waiting / total_incoming_count
 <section id="when-no-agents-are-available">
 <h3>When No Agents Are Available<a class="headerlink" href="#when-no-agents-are-available" title="Link to this heading"></a></h3>
 <p>If no agents match or all matching agents are busy, the caller waits:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────────┐
-│                    No Agents Available Scenario                          │
-└─────────────────────────────────────────────────────────────────────────┘
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>+--------------------------------------------------------------------------+
+|                    No Agents Available Scenario                          |
++--------------------------------------------------------------------------+
 
 10:00:00 - Call joins queue, no agents available
-     │
-     ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│ System checks for agents every 1 second:                                 │
-│                                                                          │
-│ 10:00:01 - Check agents... none available                               │
-│ 10:00:02 - Check agents... none available                               │
-│ 10:00:03 - Check agents... none available                               │
-│ 10:00:04 - Check agents... Agent A just became available!               │
-│                                                                          │
-│ Caller hears wait flow the entire time                                  │
-└─────────────────────────────────────────────────────────────────────────┘
-     │
-     ▼
+     |
+     v
++-------------------------------------------------------------------------+
+| System checks for agents every 1 second:                                |
+|                                                                         |
+| 10:00:01 - Check agents... none available                               |
+| 10:00:02 - Check agents... none available                               |
+| 10:00:03 - Check agents... none available                               |
+| 10:00:04 - Check agents... Agent A just became available!               |
+|                                                                         |
+| Caller hears wait flow the entire time                                  |
++-------------------------------------------------------------------------+
+     |
+     v
 10:00:04 - Agent A is connected
 </pre></div>
 </div>
@@ -523,18 +523,18 @@ Average Wait Time = Sum of all duration_waiting / total_incoming_count
 <section id="conference-bridge-architecture">
 <h3>Conference Bridge Architecture<a class="headerlink" href="#conference-bridge-architecture" title="Link to this heading"></a></h3>
 <p>Each queuecall gets its own private conference bridge:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────────┐
-│                      Conference Bridge Model                             │
-└─────────────────────────────────────────────────────────────────────────┘
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+--------------------------------------------------------------------------+</span>
+<span class="o">|</span>                      <span class="n">Conference</span> <span class="n">Bridge</span> <span class="n">Model</span>                             <span class="o">|</span>
+<span class="o">+--------------------------------------------------------------------------+</span>
 
-Queuecall for Caller A                    Queuecall for Caller B
-┌─────────────────────────┐              ┌─────────────────────────┐
-│ Conference Bridge #1    │              │ Conference Bridge #2    │
-│ ┌─────────┐ ┌─────────┐ │              │ ┌─────────┐ ┌─────────┐ │
-│ │ Caller  │ │  Agent  │ │              │ │ Caller  │ │  Agent  │ │
-│ │   A     │ │   1     │ │              │ │   B     │ │   2     │ │
-│ └─────────┘ └─────────┘ │              │ └─────────┘ └─────────┘ │
-└─────────────────────────┘              └─────────────────────────┘
+<span class="n">Queuecall</span> <span class="k">for</span> <span class="n">Caller</span> <span class="n">A</span>                    <span class="n">Queuecall</span> <span class="k">for</span> <span class="n">Caller</span> <span class="n">B</span>
+<span class="o">+-------------------------+</span>              <span class="o">+-------------------------+</span>
+<span class="o">|</span> <span class="n">Conference</span> <span class="n">Bridge</span> <span class="c1">#1    |              | Conference Bridge #2    |</span>
+<span class="o">|</span> <span class="o">+---------+</span> <span class="o">+---------+</span> <span class="o">|</span>              <span class="o">|</span> <span class="o">+---------+</span> <span class="o">+---------+</span> <span class="o">|</span>
+<span class="o">|</span> <span class="o">|</span> <span class="n">Caller</span>  <span class="o">|</span> <span class="o">|</span>  <span class="n">Agent</span>  <span class="o">|</span> <span class="o">|</span>              <span class="o">|</span> <span class="o">|</span> <span class="n">Caller</span>  <span class="o">|</span> <span class="o">|</span>  <span class="n">Agent</span>  <span class="o">|</span> <span class="o">|</span>
+<span class="o">|</span> <span class="o">|</span>   <span class="n">A</span>     <span class="o">|</span> <span class="o">|</span>   <span class="mi">1</span>     <span class="o">|</span> <span class="o">|</span>              <span class="o">|</span> <span class="o">|</span>   <span class="n">B</span>     <span class="o">|</span> <span class="o">|</span>   <span class="mi">2</span>     <span class="o">|</span> <span class="o">|</span>
+<span class="o">|</span> <span class="o">+---------+</span> <span class="o">+---------+</span> <span class="o">|</span>              <span class="o">|</span> <span class="o">+---------+</span> <span class="o">+---------+</span> <span class="o">|</span>
+<span class="o">+-------------------------+</span>              <span class="o">+-------------------------+</span>
 </pre></div>
 </div>
 <p><strong>Why This Design?</strong></p>
@@ -548,35 +548,35 @@ Queuecall for Caller A                    Queuecall for Caller B
 <section id="common-queue-scenarios">
 <h3>Common Queue Scenarios<a class="headerlink" href="#common-queue-scenarios" title="Link to this heading"></a></h3>
 <p><strong>Scenario 1: Quick Answer</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Caller dials → Enters queue → Agent available → Connected in 2 seconds
-                                                │
-                                                ▼
-                                        duration_waiting: 2000ms
-                                        status: done
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Caller</span> <span class="n">dials</span> <span class="o">-&gt;</span> <span class="n">Enters</span> <span class="n">queue</span> <span class="o">-&gt;</span> <span class="n">Agent</span> <span class="n">available</span> <span class="o">-&gt;</span> <span class="n">Connected</span> <span class="ow">in</span> <span class="mi">2</span> <span class="n">seconds</span>
+                                                <span class="o">|</span>
+                                                <span class="n">v</span>
+                                        <span class="n">duration_waiting</span><span class="p">:</span> <span class="mi">2000</span><span class="n">ms</span>
+                                        <span class="n">status</span><span class="p">:</span> <span class="n">done</span>
 </pre></div>
 </div>
 <p><strong>Scenario 2: Wait Then Connect</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Caller dials → Enters queue → No agents → Waits 45 seconds → Agent available
-                                 │                                  │
-                                 ▼                                  ▼
-                          ♪ Hold music plays              Connected!
-                          Position announcements          duration_waiting: 45000ms
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Caller</span> <span class="n">dials</span> <span class="o">-&gt;</span> <span class="n">Enters</span> <span class="n">queue</span> <span class="o">-&gt;</span> <span class="n">No</span> <span class="n">agents</span> <span class="o">-&gt;</span> <span class="n">Waits</span> <span class="mi">45</span> <span class="n">seconds</span> <span class="o">-&gt;</span> <span class="n">Agent</span> <span class="n">available</span>
+                                 <span class="o">|</span>                                  <span class="o">|</span>
+                                 <span class="n">v</span>                                  <span class="n">v</span>
+                          <span class="c1"># Hold music plays              Connected!</span>
+                          <span class="n">Position</span> <span class="n">announcements</span>          <span class="n">duration_waiting</span><span class="p">:</span> <span class="mi">45000</span><span class="n">ms</span>
 </pre></div>
 </div>
 <p><strong>Scenario 3: Caller Abandons</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Caller dials → Enters queue → Waits 2 minutes → Caller hangs up
-                                 │                      │
-                                 ▼                      ▼
-                          ♪ Hold music plays      status: abandoned
-                                                  duration_waiting: 120000ms
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Caller</span> <span class="n">dials</span> <span class="o">-&gt;</span> <span class="n">Enters</span> <span class="n">queue</span> <span class="o">-&gt;</span> <span class="n">Waits</span> <span class="mi">2</span> <span class="n">minutes</span> <span class="o">-&gt;</span> <span class="n">Caller</span> <span class="n">hangs</span> <span class="n">up</span>
+                                 <span class="o">|</span>                      <span class="o">|</span>
+                                 <span class="n">v</span>                      <span class="n">v</span>
+                          <span class="c1"># Hold music plays      status: abandoned</span>
+                                                  <span class="n">duration_waiting</span><span class="p">:</span> <span class="mi">120000</span><span class="n">ms</span>
 </pre></div>
 </div>
 <p><strong>Scenario 4: Wait Timeout</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Caller dials → Enters queue → Waits 5 minutes → wait_timeout exceeded
-                                 │                      │
-                                 ▼                      ▼
-                          ♪ Hold music plays      Kicked from queue
-                                                  status: abandoned
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Caller</span> <span class="n">dials</span> <span class="o">-&gt;</span> <span class="n">Enters</span> <span class="n">queue</span> <span class="o">-&gt;</span> <span class="n">Waits</span> <span class="mi">5</span> <span class="n">minutes</span> <span class="o">-&gt;</span> <span class="n">wait_timeout</span> <span class="n">exceeded</span>
+                                 <span class="o">|</span>                      <span class="o">|</span>
+                                 <span class="n">v</span>                      <span class="n">v</span>
+                          <span class="c1"># Hold music plays      Kicked from queue</span>
+                                                  <span class="n">status</span><span class="p">:</span> <span class="n">abandoned</span>
 </pre></div>
 </div>
 </section>
@@ -595,12 +595,12 @@ Queuecall for Caller A                    Queuecall for Caller B
 <li><p>Keep announcements concise</p></li>
 </ul>
 <p><strong>3. Tag Agents Thoughtfully</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Good tag structure:
-┌─────────────────────────────────────────┐
-│ Language tags: english, spanish, french │
-│ Skill tags: billing, tech_support, sales│
-│ Tier tags: tier1, tier2, supervisor     │
-└─────────────────────────────────────────┘
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Good</span> <span class="n">tag</span> <span class="n">structure</span><span class="p">:</span>
+<span class="o">+-----------------------------------------+</span>
+<span class="o">|</span> <span class="n">Language</span> <span class="n">tags</span><span class="p">:</span> <span class="n">english</span><span class="p">,</span> <span class="n">spanish</span><span class="p">,</span> <span class="n">french</span> <span class="o">|</span>
+<span class="o">|</span> <span class="n">Skill</span> <span class="n">tags</span><span class="p">:</span> <span class="n">billing</span><span class="p">,</span> <span class="n">tech_support</span><span class="p">,</span> <span class="n">sales</span><span class="o">|</span>
+<span class="o">|</span> <span class="n">Tier</span> <span class="n">tags</span><span class="p">:</span> <span class="n">tier1</span><span class="p">,</span> <span class="n">tier2</span><span class="p">,</span> <span class="n">supervisor</span>     <span class="o">|</span>
+<span class="o">+-----------------------------------------+</span>
 </pre></div>
 </div>
 <p><strong>4. Monitor Key Metrics</strong></p>
@@ -655,7 +655,7 @@ Queuecall for Caller A                    Queuecall for Caller B
 <li><p><em>id</em>: Queue’s ID.</p></li>
 <li><p><em>name</em>: Queue’s name.</p></li>
 <li><p><em>detail</em>: Queue’s detail description.</p></li>
-<li><p><em>routing_method</em>: Define the queue’s call routing method. See detail <a class="reference internal" href="queue_struct_queue.html#queue-struct-queue-routing-method"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>routing_method</em>: Define the queue’s call routing method. See detail <a class="reference internal" href="#queue-struct-queue-routing-method"><span class="std std-ref">here</span></a>.</p></li>
 <li><p><em>tag_ids</em>: List of tags.</p></li>
 <li><p><em>wait_actions</em>: List of actions for waiting calls.</p></li>
 <li><p><em>wait_timeout</em>: Timeout for waiting(ms). If it sets to 0, no timeout.</p></li>
@@ -706,8 +706,8 @@ Queuecall for Caller A                    Queuecall for Caller B
 </div>
 <ul class="simple">
 <li><p>id: Queuecall’s ID.</p></li>
-<li><p>reference_type: Referenced resource’s type. See detail <a class="reference internal" href="queue_struct_queuecall.html#queue-struct-queuecall-reference-type"><span class="std std-ref">here</span></a>.</p></li>
-<li><p>status: Queuecall’s status. See detail <a class="reference internal" href="queue_struct_queuecall.html#queue-struct-queuecall-type"><span class="std std-ref">here</span></a>.</p></li>
+<li><p>reference_type: Referenced resource’s type. See detail <a class="reference internal" href="#queue-struct-queuecall-reference-type"><span class="std std-ref">here</span></a>.</p></li>
+<li><p>status: Queuecall’s status. See detail <a class="reference internal" href="#queue-struct-queuecall-type"><span class="std std-ref">here</span></a>.</p></li>
 <li><p>service_agent_id: Connected agent_id.</p></li>
 </ul>
 <section id="example">

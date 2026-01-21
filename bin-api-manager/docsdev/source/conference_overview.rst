@@ -19,33 +19,33 @@ A conference is a virtual room where multiple participants can communicate. Unde
 
 ::
 
-    ┌─────────────────────────────────────────────────────────────────────────┐
-    │                      Conference Architecture                             │
-    └─────────────────────────────────────────────────────────────────────────┘
+    +-------------------------------------------------------------------------+
+    |                      Conference Architecture                            |
+    +-------------------------------------------------------------------------+
 
     Application Layer                         Infrastructure Layer
-    ┌─────────────────────────┐              ┌─────────────────────────┐
-    │      Conference         │              │       Confbridge        │
-    │   (conference-manager)  │              │    (call-manager)       │
-    │                         │              │                         │
-    │  • Participant list     │──────────────│  • Audio mixing         │
-    │  • Recording control    │   manages    │  • Voice bridge         │
-    │  • Transcription        │              │  • Join/leave events    │
-    │  • Metadata & state     │              │  • Media streams        │
-    └─────────────────────────┘              └─────────────────────────┘
-              │                                        │
-              │                                        │
-              ▼                                        ▼
-    ┌─────────────────────────────────────────────────────────────────────────┐
-    │                         Participants (Calls)                             │
-    │                                                                          │
-    │  ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐          │
-    │  │ Call A   │    │ Call B   │    │ Call C   │    │ Call D   │          │
-    │  │ (phone)  │    │ (WebRTC) │    │ (SIP)    │    │ (phone)  │          │
-    │  └──────────┘    └──────────┘    └──────────┘    └──────────┘          │
-    │                                                                          │
-    │                     All audio mixed together                            │
-    └─────────────────────────────────────────────────────────────────────────┘
+    +-------------------------+              +-------------------------+
+    |      Conference         |              |       Confbridge        |
+    |   (conference-manager)  |              |    (call-manager)       |
+    |                         |              |                         |
+    |  • Participant list     |--------------|  • Audio mixing         |
+    |  • Recording control    |   manages    |  • Voice bridge         |
+    |  • Transcription        |              |  • Join/leave events    |
+    |  • Metadata & state     |              |  • Media streams        |
+    +-------------------------+              +-------------------------+
+              |                                        |
+              |                                        |
+              v                                        v
+    +-------------------------------------------------------------------------+
+    |                         Participants (Calls)                            |
+    |                                                                         |
+    |  +----------+    +----------+    +----------+    +----------+           |
+    |  | Call A   |    | Call B   |    | Call C   |    | Call D   |           |
+    |  | (phone)  |    | (WebRTC) |    | (SIP)    |    | (phone)  |           |
+    |  +----------+    +----------+    +----------+    +----------+           |
+    |                                                                         |
+    |                     All audio mixed together                            |
+    +-------------------------------------------------------------------------+
 
 **Key Concepts**
 
@@ -62,36 +62,36 @@ Every conference moves through a predictable set of states.
 
 ::
 
-    ┌─────────────────────────────────────────────────────────────────────────┐
-    │                     Conference State Machine                             │
-    └─────────────────────────────────────────────────────────────────────────┘
+    +-------------------------------------------------------------------------+
+    |                     Conference State Machine                            |
+    +-------------------------------------------------------------------------+
 
                     POST /v1/conferences
-                           │
-                           ▼
-                    ┌────────────┐
-                    │  starting  │ (brief initialization)
-                    └─────┬──────┘
-                          │
-                          ▼
-                    ┌────────────┐
-                    │progressing │◀────────────────────────────────┐
-                    │  (active)  │                                 │
-                    └─────┬──────┘                                 │
-                          │                                        │
-                          │ DELETE or timeout                      │
-                          ▼                                        │
-                    ┌────────────┐      still has                  │
-                    │terminating │──────participants ──────────────┘
-                    │ (closing)  │
-                    └─────┬──────┘
-                          │
-                          │ all participants left
-                          ▼
-                    ┌────────────┐
-                    │ terminated │
-                    │  (closed)  │
-                    └────────────┘
+                           |
+                           v
+                    +------------+
+                    |  starting  | (brief initialization)
+                    +-----+------+
+                          |
+                          v
+                    +------------+
+                    |progressing |<--------------------------------+
+                    |  (active)  |                                 |
+                    +-----+------+                                 |
+                          |                                        |
+                          | DELETE or timeout                      |
+                          v                                        |
+                    +------------+      still has                  |
+                    |terminating |------participants --------------+
+                    | (closing)  |
+                    +-----+------+
+                          |
+                          | all participants left
+                          v
+                    +------------+
+                    | terminated |
+                    |  (closed)  |
+                    +------------+
 
 **State Descriptions**
 
@@ -117,34 +117,34 @@ Each participant (conferencecall) has their own lifecycle independent of the con
 
 ::
 
-    ┌─────────────────────────────────────────────────────────────────────────┐
-    │                   Participant (Conferencecall) States                    │
-    └─────────────────────────────────────────────────────────────────────────┘
+    +-------------------------------------------------------------------------+
+    |                   Participant (Conferencecall) States                   |
+    +-------------------------------------------------------------------------+
 
          Flow triggers join
-                │
-                ▼
-         ┌────────────┐
-         │  joining   │  (pre-flow executing, connecting to bridge)
-         └─────┬──────┘
-               │
-               │ audio connected
-               ▼
-         ┌────────────┐
-         │   joined   │  (actively in conference, can hear/speak)
-         └─────┬──────┘
-               │
-               │ hangup or kicked
-               ▼
-         ┌────────────┐
-         │  leaving   │  (being removed from bridge)
-         └─────┬──────┘
-               │
-               │ fully disconnected
-               ▼
-         ┌────────────┐
-         │   leaved   │  (no longer in conference)
-         └────────────┘
+                |
+                v
+         +------------+
+         |  joining   |  (pre-flow executing, connecting to bridge)
+         +-----+------+
+               |
+               | audio connected
+               v
+         +------------+
+         |   joined   |  (actively in conference, can hear/speak)
+         +-----+------+
+               |
+               | hangup or kicked
+               v
+         +------------+
+         |  leaving   |  (being removed from bridge)
+         +-----+------+
+               |
+               | fully disconnected
+               v
+         +------------+
+         |   leaved   |  (no longer in conference)
+         +------------+
 
 +----------+--------------------------------------------------------------------+
 | Status   | What's happening                                                   |
@@ -167,36 +167,36 @@ When a participant joins a conference, a coordinated sequence occurs.
 
 ::
 
-    ┌─────────────────────────────────────────────────────────────────────────┐
-    │                      Participant Join Sequence                           │
-    └─────────────────────────────────────────────────────────────────────────┘
+    +-------------------------------------------------------------------------+
+    |                      Participant Join Sequence                          |
+    +-------------------------------------------------------------------------+
 
     Flow                    Conference-Manager              Call-Manager
-      │                            │                             │
-      │ conference_join action     │                             │
-      │───────────────────────────▶│                             │
-      │                            │                             │
-      │                            │ Create conferencecall       │
-      │                            │ status: joining             │
-      │                            │                             │
-      │                            │ Pre-flow? Execute it        │
-      │                            │                             │
-      │                            │ Push confbridge_join        │
-      │                            │────────────────────────────▶│
-      │                            │                             │
-      │                            │                             │ Connect call
-      │                            │                             │ to audio bridge
-      │                            │                             │
-      │                            │   confbridge_joined event   │
-      │                            │◀────────────────────────────│
-      │                            │                             │
-      │                            │ Update conferencecall       │
-      │                            │ status: joined              │
-      │                            │                             │
-      │                            │ Add to participant list     │
-      │                            │                             │
-      │◀───────────────────────────│                             │
-      │    Continue flow           │                             │
+      |                            |                             |
+      | conference_join action     |                             |
+      |--------------------------->|                             |
+      |                            |                             |
+      |                            | Create conferencecall       |
+      |                            | status: joining             |
+      |                            |                             |
+      |                            | Pre-flow? Execute it        |
+      |                            |                             |
+      |                            | Push confbridge_join        |
+      |                            |---------------------------->|
+      |                            |                             |
+      |                            |                             | Connect call
+      |                            |                             | to audio bridge
+      |                            |                             |
+      |                            |   confbridge_joined event   |
+      |                            |<----------------------------|
+      |                            |                             |
+      |                            | Update conferencecall       |
+      |                            | status: joined              |
+      |                            |                             |
+      |                            | Add to participant list     |
+      |                            |                             |
+      |<---------------------------|                             |
+      |    Continue flow           |                             |
 
 **What Happens at Each Step**
 
@@ -215,48 +215,48 @@ Participants can leave naturally (hangup) or be removed via API.
 
 ::
 
-    ┌─────────────────────────────────────────────────────────────────────────┐
-    │                    Natural Leave (Participant Hangup)                    │
-    └─────────────────────────────────────────────────────────────────────────┘
+    +-------------------------------------------------------------------------+
+    |                    Natural Leave (Participant Hangup)                   |
+    +-------------------------------------------------------------------------+
 
     Participant              Call-Manager              Conference-Manager
-        │                         │                            │
-        │ Hangs up phone          │                            │
-        │────────────────────────▶│                            │
-        │                         │                            │
-        │                         │ Detects leave from bridge  │
-        │                         │                            │
-        │                         │  confbridge_leaved event   │
-        │                         │───────────────────────────▶│
-        │                         │                            │
-        │                         │                            │ Update status
-        │                         │                            │ to "leaved"
-        │                         │                            │
-        │                         │                            │ Remove from
-        │                         │                            │ participant list
-        │                         │                            │
+        |                         |                            |
+        | Hangs up phone          |                            |
+        |------------------------>|                            |
+        |                         |                            |
+        |                         | Detects leave from bridge  |
+        |                         |                            |
+        |                         |  confbridge_leaved event   |
+        |                         |--------------------------->|
+        |                         |                            |
+        |                         |                            | Update status
+        |                         |                            | to "leaved"
+        |                         |                            |
+        |                         |                            | Remove from
+        |                         |                            | participant list
+        |                         |                            |
 
 **Forced Removal (API)**
 
 ::
 
     DELETE /v1/conferencecalls/{participant-id}
-                     │
-                     ▼
-    ┌────────────────────────────────────────┐
-    │ 1. Validate participant is in          │
-    │    "joining" or "joined" status        │
-    │                                        │
-    │ 2. Update status to "leaving"          │
-    │                                        │
-    │ 3. Send kick request to confbridge     │
-    │                                        │
-    │ 4. Confbridge removes participant      │
-    │                                        │
-    │ 5. confbridge_leaved event fires       │
-    │                                        │
-    │ 6. Update status to "leaved"           │
-    └────────────────────────────────────────┘
+                     |
+                     v
+    +----------------------------------------+
+    | 1. Validate participant is in          |
+    |    "joining" or "joined" status        |
+    |                                        |
+    | 2. Update status to "leaving"          |
+    |                                        |
+    | 3. Send kick request to confbridge     |
+    |                                        |
+    | 4. Confbridge removes participant      |
+    |                                        |
+    | 5. confbridge_leaved event fires       |
+    |                                        |
+    | 6. Update status to "leaved"           |
+    +----------------------------------------+
 
 
 Conference Types
@@ -267,53 +267,53 @@ VoIPBIN supports different conference types for different use cases.
 
 ::
 
-    ┌─────────────────────────────────────────────────────────────────────────┐
-    │                    Type: Conference (Multi-Party)                        │
-    └─────────────────────────────────────────────────────────────────────────┘
+    +-------------------------------------------------------------------------+
+    |                    Type: Conference (Multi-Party)                       |
+    +-------------------------------------------------------------------------+
 
-    ┌─────────────────────────────────────────────────────────────────────────┐
-    │                        Conference Room                                   │
-    │                                                                          │
-    │   ┌──────┐    ┌──────┐    ┌──────┐    ┌──────┐    ┌──────┐            │
-    │   │User A│    │User B│    │User C│    │User D│    │User E│            │
-    │   └──────┘    └──────┘    └──────┘    └──────┘    └──────┘            │
-    │                                                                          │
-    │   • Supports 2+ participants                                            │
-    │   • Remains active even with 0 or 1 participant                         │
-    │   • Only terminates when explicitly deleted                             │
-    │   • Recording captures all participants                                 │
-    │                                                                          │
-    └─────────────────────────────────────────────────────────────────────────┘
+    +-------------------------------------------------------------------------+
+    |                        Conference Room                                  |
+    |                                                                         |
+    |   +------+    +------+    +------+    +------+    +------+              |
+    |   |User A|    |User B|    |User C|    |User D|    |User E|              |
+    |   +------+    +------+    +------+    +------+    +------+              |
+    |                                                                         |
+    |   • Supports 2+ participants                                            |
+    |   • Remains active even with 0 or 1 participant                         |
+    |   • Only terminates when explicitly deleted                             |
+    |   • Recording captures all participants                                 |
+    |                                                                         |
+    +-------------------------------------------------------------------------+
 
 **Type: Connect (1:1 Bridge)**
 
 ::
 
-    ┌─────────────────────────────────────────────────────────────────────────┐
-    │                      Type: Connect (Two-Party)                           │
-    └─────────────────────────────────────────────────────────────────────────┘
+    +-------------------------------------------------------------------------+
+    |                      Type: Connect (Two-Party)                          |
+    +-------------------------------------------------------------------------+
 
-    ┌─────────────────────────────────────────────────────────────────────────┐
-    │                        Connect Bridge                                    │
-    │                                                                          │
-    │         ┌────────────┐              ┌────────────┐                      │
-    │         │  Caller    │◀────────────▶│   Agent    │                      │
-    │         └────────────┘              └────────────┘                      │
-    │                                                                          │
-    │   • Designed for exactly 2 participants                                 │
-    │   • Auto-ejects remaining participant when one leaves                   │
-    │   • Useful for customer-agent calls                                     │
-    │   • Conference terminates when empty                                    │
-    │                                                                          │
-    └─────────────────────────────────────────────────────────────────────────┘
+    +-------------------------------------------------------------------------+
+    |                        Connect Bridge                                   |
+    |                                                                         |
+    |         +------------+              +------------+                      |
+    |         |  Caller    |<------------>|   Agent    |                      |
+    |         +------------+              +------------+                      |
+    |                                                                         |
+    |   • Designed for exactly 2 participants                                 |
+    |   • Auto-ejects remaining participant when one leaves                   |
+    |   • Useful for customer-agent calls                                     |
+    |   • Conference terminates when empty                                    |
+    |                                                                         |
+    +-------------------------------------------------------------------------+
 
     When one participant leaves:
-    ┌──────────┐           ┌──────────┐
-    │  Caller  │           │  Agent   │
-    │  leaves  │──────────▶│ AUTO-KICK│
-    └──────────┘           └──────────┘
-                                 │
-                                 ▼
+    +----------+           +----------+
+    |  Caller  |           |  Agent   |
+    |  leaves  |---------->| AUTO-KICK|
+    +----------+           +----------+
+                                 |
+                                 v
                        Conference terminates
 
 
@@ -327,29 +327,29 @@ Conferences support recording all participant audio into a single file.
 
     POST /v1/conferences/{id}/recording_start
 
-    ┌─────────────────────────────────────────────────────────────────────────┐
-    │                     Recording Active                                     │
-    └─────────────────────────────────────────────────────────────────────────┘
+    +-------------------------------------------------------------------------+
+    |                     Recording Active                                    |
+    +-------------------------------------------------------------------------+
 
     Conference
-    ┌─────────────────────────────────────────────────────────────────────────┐
-    │                                                                          │
-    │   ┌──────┐    ┌──────┐    ┌──────┐                                     │
-    │   │User A│    │User B│    │User C│                                     │
-    │   └──┬───┘    └──┬───┘    └──┬───┘                                     │
-    │      │           │           │                                          │
-    │      └───────────┴───────────┘                                          │
-    │                  │                                                       │
-    │                  ▼                                                       │
-    │          ┌─────────────┐                                                │
-    │          │  Recording  │                                                │
-    │          │    File     │                                                │
-    │          └─────────────┘                                                │
-    │                                                                          │
-    │   recording_id: "abc-123"  (current active recording)                   │
-    │   recording_ids: ["abc-123", ...]  (all recordings history)             │
-    │                                                                          │
-    └─────────────────────────────────────────────────────────────────────────┘
+    +-------------------------------------------------------------------------+
+    |                                                                         |
+    |   +------+    +------+    +------+                                      |
+    |   |User A|    |User B|    |User C|                                      |
+    |   +--+---+    +--+---+    +--+---+                                      |
+    |      |           |           |                                          |
+    |      +-----------+-----------+                                          |
+    |                  |                                                      |
+    |                  v                                                      |
+    |          +-------------+                                                |
+    |          |  Recording  |                                                |
+    |          |    File     |                                                |
+    |          +-------------+                                                |
+    |                                                                         |
+    |   recording_id: "abc-123"  (current active recording)                   |
+    |   recording_ids: ["abc-123", ...]  (all recordings history)             |
+    |                                                                         |
+    +-------------------------------------------------------------------------+
 
 **Recording Rules**
 
@@ -380,23 +380,23 @@ Real-time transcription converts conference audio to text.
 
     POST /v1/conferences/{id}/transcribe_start
 
-    ┌─────────────────────────────────────────────────────────────────────────┐
-    │                    Transcription Active                                  │
-    └─────────────────────────────────────────────────────────────────────────┘
+    +-------------------------------------------------------------------------+
+    |                    Transcription Active                                 |
+    +-------------------------------------------------------------------------+
 
     Conference Audio                              Transcription Service
-    ┌─────────────────────┐                      ┌─────────────────────┐
-    │ User A: "Hello"     │                      │                     │
-    │ User B: "Hi there"  │─────────────────────▶│  Speech-to-Text     │
-    │ User C: "Welcome"   │      audio stream    │                     │
-    └─────────────────────┘                      └──────────┬──────────┘
-                                                            │
-                                                            ▼
-                                                 ┌─────────────────────┐
-                                                 │ Transcript Output   │
-                                                 │ "Hello. Hi there.   │
-                                                 │  Welcome."          │
-                                                 └─────────────────────┘
+    +---------------------+                      +---------------------+
+    | User A: "Hello"     |                      |                     |
+    | User B: "Hi there"  |--------------------->|  Speech-to-Text     |
+    | User C: "Welcome"   |      audio stream    |                     |
+    +---------------------+                      +----------+----------+
+                                                            |
+                                                            v
+                                                 +---------------------+
+                                                 | Transcript Output   |
+                                                 | "Hello. Hi there.   |
+                                                 |  Welcome."          |
+                                                 +---------------------+
 
 **Transcription Rules**
 
@@ -414,20 +414,20 @@ Conferences can be configured to automatically terminate after a period.
 
 ::
 
-    ┌─────────────────────────────────────────────────────────────────────────┐
-    │                     Conference Timeout                                   │
-    └─────────────────────────────────────────────────────────────────────────┘
+    +-------------------------------------------------------------------------+
+    |                     Conference Timeout                                  |
+    +-------------------------------------------------------------------------+
 
     Conference created                                      Timeout expires
-    with timeout: 3600 (1 hour)                            │
-         │                                                  │
-         ▼                                                  ▼
-    ─────●──────────────────────────────────────────────────●─────────────▶
-         │◀───────────── 3600 seconds ────────────────────▶│    Time
-         │                                                  │
-         │ Conference is progressing                        │ Auto-terminate
-         │ Participants can join/leave                      │ All participants
-         │                                                  │ kicked
+    with timeout: 3600 (1 hour)                             |
+         |                                                  |
+         v                                                  v
+    -----o--------------------------------------------------o------------->
+         |<------------- 3600 seconds --------------------->|    Time
+         |                                                  |
+         | Conference is progressing                        | Auto-terminate
+         | Participants can join/leave                      | All participants
+         |                                                  | kicked
 
 - Set ``timeout`` when creating the conference (in seconds)
 - When timeout expires, conference moves to "terminating"
@@ -439,17 +439,17 @@ Conferences can be configured to automatically terminate after a period.
 ::
 
     Conference in "terminating" status
-                │
-                ▼
-    ┌────────────────────────┐
-    │ Any participants left? │
-    └───────────┬────────────┘
-                │
-       ┌────────┴────────┐
-       │                 │
+                |
+                v
+    +------------------------+
+    | Any participants left? |
+    +-----------+------------+
+                |
+       +--------+--------+
+       |                 |
       Yes               No
-       │                 │
-       ▼                 ▼
+       |                 |
+       v                 v
     Wait for them    Conference destroyed
     to leave         Status: terminated
 
@@ -462,28 +462,28 @@ The system continuously monitors participant health.
 
 ::
 
-    ┌─────────────────────────────────────────────────────────────────────────┐
-    │                    Participant Health Checks                             │
-    └─────────────────────────────────────────────────────────────────────────┘
+    +-------------------------------------------------------------------------+
+    |                    Participant Health Checks                            |
+    +-------------------------------------------------------------------------+
 
     Every 5 seconds, for each participant:
 
-    ┌────────────────────────────────────────┐
-    │ 1. Is the participant's call still     │
-    │    in "progressing" status?            │
-    │                                        │
-    │ 2. Is the conference still in          │
-    │    "progressing" status?               │
-    │                                        │
-    │ 3. Was the participant created less    │
-    │    than 24 hours ago?                  │
-    └────────────────────────────────────────┘
-                     │
-            ┌────────┴────────┐
-            │                 │
+    +----------------------------------------+
+    | 1. Is the participant's call still     |
+    |    in "progressing" status?            |
+    |                                        |
+    | 2. Is the conference still in          |
+    |    "progressing" status?               |
+    |                                        |
+    | 3. Was the participant created less    |
+    |    than 24 hours ago?                  |
+    +----------------------------------------+
+                     |
+            +--------+--------+
+            |                 |
          All Yes          Any No
-            │                 │
-            ▼                 ▼
+            |                 |
+            v                 v
        Continue         Remove participant
        monitoring       (after 2 retries)
 
@@ -500,10 +500,10 @@ Common Scenarios
        → Conference in "progressing" status
 
     2. Participants join through flow
-       ┌──────────┐  ┌──────────┐  ┌──────────┐
-       │ User A   │  │ User B   │  │ User C   │
-       │  joins   │  │  joins   │  │  joins   │
-       └──────────┘  └──────────┘  └──────────┘
+       +----------+  +----------+  +----------+
+       | User A   |  | User B   |  | User C   |
+       |  joins   |  |  joins   |  |  joins   |
+       +----------+  +----------+  +----------+
 
     3. All can hear each other
 
@@ -549,12 +549,12 @@ Conference changes trigger events you can subscribe to.
 
 ::
 
-    ┌─────────────────────────────────────────────────────────────────────────┐
-    │                     Conference Events                                    │
-    └─────────────────────────────────────────────────────────────────────────┘
+    +-------------------------------------------------------------------------+
+    |                     Conference Events                                   |
+    +-------------------------------------------------------------------------+
 
     Event                    When it fires
-    ─────────────────────────────────────────────────────────────────────────
+    -------------------------------------------------------------------------
     conference_created       Conference is created
     conference_updated       Participant joins/leaves, recording starts/stops
     conference_deleted       Conference is terminated
@@ -568,7 +568,7 @@ Best Practices
 ::
 
     Use Case                          Type
-    ────────────────────────────────────────────────────
+    ----------------------------------------------------
     Team meeting (3+ people)          conference
     Customer support call             connect
     Webinar/broadcast                 conference

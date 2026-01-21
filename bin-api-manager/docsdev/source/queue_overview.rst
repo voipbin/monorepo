@@ -20,34 +20,34 @@ When a call joins a queue, a coordinated process begins to match the caller with
 
 ::
 
-    ┌─────────────────────────────────────────────────────────────────────────┐
-    │                       Call's Journey Through Queue                       │
-    └─────────────────────────────────────────────────────────────────────────┘
+    +-------------------------------------------------------------------------+
+    |                       Call's Journey Through Queue                      |
+    +-------------------------------------------------------------------------+
 
     1. Call Joins Queue          2. Wait Flow Plays         3. Agent Search
-    ┌─────────────────┐         ┌─────────────────┐        ┌─────────────────┐
-    │                 │         │  ♪ Hold music   │        │  Check for      │
-    │  queue_join     │────────▶│  "Please wait"  │───────▶│  available      │
-    │  action         │         │  announcements  │        │  agents         │
-    └─────────────────┘         └─────────────────┘        └────────┬────────┘
-                                        ▲                          │
-                                        │                    ┌─────┴─────┐
-                                        │                    │           │
-                                        │               No agents    Agent found!
-                                        │                    │           │
-                                        └────────────────────┘           │
-                                          Retry every 1 second           │
-                                                                         ▼
-                                                              ┌─────────────────┐
-                                                              │  4. Connect     │
-                                                              │  agent to call  │
-                                                              └────────┬────────┘
-                                                                       │
-                                                                       ▼
-                                                              ┌─────────────────┐
-                                                              │  5. Caller and  │
-                                                              │  agent talking  │
-                                                              └─────────────────┘
+    +-----------------+         +-----------------+        +-----------------+
+    |                 |         |  # Hold music   |        |  Check for      |
+    |  queue_join     |-------->|  "Please wait"  |------->|  available      |
+    |  action         |         |  announcements  |        |  agents         |
+    +-----------------+         +-----------------+        +--------+--------+
+                                        ^                          |
+                                        |                    +-----+-----+
+                                        |                    |           |
+                                        |               No agents    Agent found!
+                                        |                    |           |
+                                        +--------------------+           |
+                                          Retry every 1 second           |
+                                                                         v
+                                                              +-----------------+
+                                                              |  4. Connect     |
+                                                              |  agent to call  |
+                                                              +--------+--------+
+                                                                       |
+                                                                       v
+                                                              +-----------------+
+                                                              |  5. Caller and  |
+                                                              |  agent talking  |
+                                                              +-----------------+
 
 **What Happens Step by Step**
 
@@ -66,39 +66,39 @@ Every call in a queue moves through a series of states:
 
 ::
 
-    ┌─────────────────────────────────────────────────────────────────────────┐
-    │                      Queuecall State Machine                             │
-    └─────────────────────────────────────────────────────────────────────────┘
+    +--------------------------------------------------------------------------+
+    |                      Queuecall State Machine                             |
+    +--------------------------------------------------------------------------+
 
-                                ┌────────────┐
-                                │ initiating │
-                                │  (brief)   │
-                                └─────┬──────┘
-                                      │
-                                      ▼
-                           ┌──────────────────┐
-           wait_timeout───▶│     waiting      │
-           exceeded        │ (in wait flow)   │
-               │           └────────┬─────────┘
-               │                    │ agent found
-               │                    ▼
-               │           ┌──────────────────┐
-               │           │    connecting    │
-               │           │  (dialing agent) │
-               │           └────────┬─────────┘
-               │                    │ agent joins
-               │                    ▼
-               │           ┌──────────────────┐         service_timeout
-               │           │     service      │◀────────── exceeded
-               │           │ (agent on call)  │                │
-               │           └────────┬─────────┘                │
-               │                    │                          │
-               │           ┌────────┴────────┐                 │
-               │           ▼                 ▼                 ▼
-               │    ┌────────────┐    ┌─────────────┐
-               └───▶│  abandoned │    │    done     │
-                    │  (failed)  │    │ (success)   │
-                    └────────────┘    └─────────────┘
+                                +------------+
+                                | initiating |
+                                |  (brief)   |
+                                +-----+------+
+                                      |
+                                      v
+                           +------------------+
+           wait_timeout--->|     waiting      |
+           exceeded        | (in wait flow)   |
+               |           +--------+---------+
+               |                    | agent found
+               |                    v
+               |           +------------------+
+               |           |    connecting    |
+               |           |  (dialing agent) |
+               |           +--------+---------+
+               |                    | agent joins
+               |                    v
+               |           +------------------+         service_timeout
+               |           |     service      |<---------- exceeded
+               |           | (agent on call)  |                |
+               |           +--------+---------+                |
+               |                    |                          |
+               |           +--------+--------+                 |
+               |           v                 v                 v
+               |    +------------+    +-------------+
+               +--->|  abandoned |    |    done     |
+                    |  (failed)  |    | (success)   |
+                    +------------+    +-------------+
 
 **State Descriptions**
 
@@ -127,39 +127,39 @@ While the call is in the queue, the queue continuously searches for available ag
 
 ::
 
-    ┌─────────────────────────────────────────────────────────────────────────┐
-    │                      Agent Matching Process                              │
-    └─────────────────────────────────────────────────────────────────────────┘
+    +--------------------------------------------------------------------------+
+    |                      Agent Matching Process                              |
+    +--------------------------------------------------------------------------+
 
     Queue Configuration:                    Agent Pool:
-    ┌────────────────────────┐             ┌────────────────────────────────┐
-    │ Tag IDs:               │             │ Agent A                        │
-    │  • "english"           │             │  Tags: english, billing, vip   │
-    │  • "billing"           │             │  Status: available             │
-    │                        │             │  ──────────────────────────    │
-    └────────────────────────┘             │ Agent B                        │
-              │                            │  Tags: english                 │
-              │                            │  Status: available             │
-              │                            │  ──────────────────────────    │
-              ▼                            │ Agent C                        │
-    ┌────────────────────────┐             │  Tags: english, billing        │
-    │ Search for agents with │             │  Status: busy                  │
-    │ ALL of these tags:     │             │  ──────────────────────────    │
-    │  • english ✓           │             │ Agent D                        │
-    │  • billing ✓           │             │  Tags: spanish, billing        │
-    └────────────────────────┘             │  Status: available             │
-              │                            └────────────────────────────────┘
-              │
-              ▼
-    ┌────────────────────────────────────────────────────────────────────────┐
-    │ Results:                                                                │
-    │  ✓ Agent A - Has english + billing + vip, is available                 │
-    │  ✗ Agent B - Missing "billing" tag                                     │
-    │  ✗ Agent C - Has tags but is busy                                      │
-    │  ✗ Agent D - Missing "english" tag                                     │
-    │                                                                         │
-    │  → Agent A is selected!                                                 │
-    └────────────────────────────────────────────────────────────────────────┘
+    +------------------------+             +--------------------------------+
+    | Tag IDs:               |             | Agent A                        |
+    |  * "english"           |             |  Tags: english, billing, vip   |
+    |  * "billing"           |             |  Status: available             |
+    |                        |             |  --------------------------    |
+    +------------------------+             | Agent B                        |
+              |                            |  Tags: english                 |
+              |                            |  Status: available             |
+              |                            |  --------------------------    |
+              v                            | Agent C                        |
+    +------------------------+             |  Tags: english, billing        |
+    | Search for agents with |             |  Status: busy                  |
+    | ALL of these tags:     |             |  --------------------------    |
+    |  * english [x]         |             | Agent D                        |
+    |  * billing [x]         |             |  Tags: spanish, billing        |
+    +------------------------+             |  Status: available             |
+              |                            +--------------------------------+
+              |
+              v
+    +--------------------------------------------------------------------------+
+    | Results:                                                                 |
+    |  [x] Agent A - Has english + billing + vip, is available                 |
+    |  [ ] Agent B - Missing "billing" tag                                     |
+    |  [ ] Agent C - Has tags but is busy                                      |
+    |  [ ] Agent D - Missing "english" tag                                     |
+    |                                                                          |
+    |  -> Agent A is selected!                                                 |
+    +--------------------------------------------------------------------------+
 
 .. image:: _static/images/queue_overview_agent.png
 
@@ -179,15 +179,15 @@ The agent's status must be "available" to receive queue calls:
 ::
 
     Agent Statuses and Queue Eligibility:
-    ┌────────────────┬─────────────────────────────────────────────┐
-    │ Status         │ Can receive queue calls?                    │
-    ├────────────────┼─────────────────────────────────────────────┤
-    │ available      │ ✓ Yes - Agent is ready to take calls        │
-    │ busy           │ ✗ No - Agent is handling another call       │
-    │ wrap-up        │ ✗ No - Agent is finishing previous call     │
-    │ away           │ ✗ No - Agent is temporarily away            │
-    │ offline        │ ✗ No - Agent is not logged in               │
-    └────────────────┴─────────────────────────────────────────────┘
+    +----------------+---------------------------------------------+
+    | Status         | Can receive queue calls?                    |
+    +----------------+---------------------------------------------+
+    | available      | [x] Yes - Agent is ready to take calls      |
+    | busy           | [ ] No - Agent is handling another call     |
+    | wrap-up        | [ ] No - Agent is finishing previous call   |
+    | away           | [ ] No - Agent is temporarily away          |
+    | offline        | [ ] No - Agent is not logged in             |
+    +----------------+---------------------------------------------+
 
 **Selection Method**
 
@@ -196,17 +196,17 @@ When multiple agents match, the system uses random selection:
 ::
 
     Multiple agents available:
-    ┌────────────┐   ┌────────────┐   ┌────────────┐
-    │  Agent A   │   │  Agent C   │   │  Agent E   │
-    │ (matches)  │   │ (matches)  │   │ (matches)  │
-    └────────────┘   └────────────┘   └────────────┘
-          │               │               │
-          └───────────────┼───────────────┘
-                          │
-                          ▼
+    +------------+   +------------+   +------------+
+    |  Agent A   |   |  Agent C   |   |  Agent E   |
+    | (matches)  |   | (matches)  |   | (matches)  |
+    +------------+   +------------+   +------------+
+          |               |               |
+          +---------------+---------------+
+                          |
+                          v
                     Random Selection
-                          │
-                          ▼
+                          |
+                          v
                    One agent picked
 
 
@@ -218,33 +218,33 @@ A call placed in the queue will progress through the queue's waiting actions, co
 
 ::
 
-    ┌─────────────────────────────────────────────────────────────────────────┐
-    │                          Wait Flow Execution                             │
-    └─────────────────────────────────────────────────────────────────────────┘
+    +--------------------------------------------------------------------------+
+    |                          Wait Flow Execution                             |
+    +--------------------------------------------------------------------------+
 
     Caller enters queue
-           │
-           ▼
-    ┌────────────────────────────────────────────────────────────────────────┐
-    │                            Wait Flow Loop                               │
-    │                                                                         │
-    │    ┌──────────┐     ┌──────────┐     ┌──────────┐     ┌──────────┐    │
-    │    │ "Please  │────▶│  ♪ Hold  │────▶│ "Your    │────▶│  ♪ Hold  │    │
-    │    │  hold"   │     │  music   │     │ position │     │  music   │    │
-    │    │  (talk)  │     │  (play)  │     │  is 3"   │     │  (play)  │    │
-    │    └──────────┘     └──────────┘     └──────────┘     └──────────┘    │
-    │         ▲                                                    │         │
-    │         │                                                    │         │
-    │         └────────────────────────────────────────────────────┘         │
-    │                        (loops until agent found)                        │
-    └────────────────────────────────────────────────────────────────────────┘
-           │
-           │ Agent found!
-           ▼
-    ┌────────────────┐
-    │ Wait flow ends │
-    │ Service begins │
-    └────────────────┘
+           |
+           v
+    +-----------------------------------------------------------------------+
+    |                            Wait Flow Loop                             |
+    |                                                                       |
+    |    +----------+     +----------+     +----------+     +----------+    |
+    |    | "Please  |---->|  # Hold  |---->| "Your    |---->|  # Hold  |    |
+    |    |  hold"   |     |  music   |     | position |     |  music   |    |
+    |    |  (talk)  |     |  (play)  |     |  is 3"   |     |  (play)  |    |
+    |    +----------+     +----------+     +----------+     +----------+    |
+    |         ^                                                    |        |
+    |         |                                                    |        |
+    |         +----------------------------------------------------+        |
+    |                        (loops until agent found)                      |
+    +-----------------------------------------------------------------------+
+           |
+           | Agent found!
+           v
+    +----------------+
+    | Wait flow ends |
+    | Service begins |
+    +----------------+
 
 .. image:: _static/images/queue_overview_flow.png
 
@@ -266,19 +266,19 @@ Controls how long a caller can wait before being removed from the queue:
 
 ::
 
-    ┌─────────────────────────────────────────────────────────────────────────┐
-    │                          Wait Timeout                                    │
-    └─────────────────────────────────────────────────────────────────────────┘
+    +--------------------------------------------------------------------------+
+    |                          Wait Timeout                                    |
+    +--------------------------------------------------------------------------+
 
     Call joins queue                                     Wait timeout reached
-         │                                                     │
-         ▼                                                     ▼
-    ─────●─────────────────────────────────────────────────────●─────────────▶
-         │◀─────────────── wait_timeout (ms) ────────────────▶│    Time
-         │                                                     │
-         │ Caller hears wait flow                              │ Call is kicked
-         │ System searches for agents                          │ Status: abandoned
-         │                                                     │
+         |                                                     |
+         v                                                     v
+    -----o-----------------------------------------------------o------------->
+         |<--------------- wait_timeout (ms) ----------------->|    Time
+         |                                                     |
+         | Caller hears wait flow                              | Call is kicked
+         | System searches for agents                          | Status: abandoned
+         |                                                     |
 
 - Set via queue's ``wait_timeout`` field (milliseconds)
 - 0 means no timeout (wait forever)
@@ -290,19 +290,19 @@ Controls how long a conversation can last once connected:
 
 ::
 
-    ┌─────────────────────────────────────────────────────────────────────────┐
-    │                         Service Timeout                                  │
-    └─────────────────────────────────────────────────────────────────────────┘
+    +--------------------------------------------------------------------------+
+    |                         Service Timeout                                  |
+    +--------------------------------------------------------------------------+
 
     Agent connects                                    Service timeout reached
-         │                                                     │
-         ▼                                                     ▼
-    ─────●─────────────────────────────────────────────────────●─────────────▶
-         │◀───────────── service_timeout (ms) ───────────────▶│    Time
-         │                                                     │
-         │ Agent and caller talking                            │ Call is ended
-         │ (status: service)                                   │ Status: done
-         │                                                     │
+         |                                                     |
+         v                                                     v
+    -----o-----------------------------------------------------o------------->
+         |<------------- service_timeout (ms) ---------------->|    Time
+         |                                                     |
+         | Agent and caller talking                            | Call is ended
+         | (status: service)                                   | Status: done
+         |                                                     |
 
 - Set via queue's ``service_timeout`` field (milliseconds)
 - 0 means no timeout (talk forever)
@@ -313,19 +313,19 @@ Controls how long a conversation can last once connected:
 ::
 
     Scenario 1: Caller waits too long
-    ┌──────────┐                                        ┌───────────┐
-    │ waiting  │───── wait_timeout exceeded ──────────▶│ abandoned │
-    └──────────┘                                        └───────────┘
+    +----------+                                        +-----------+
+    | waiting  |----- wait_timeout exceeded ----------->| abandoned |
+    +----------+                                        +-----------+
 
     Scenario 2: Caller hangs up while waiting
-    ┌──────────┐                                        ┌───────────┐
-    │ waiting  │───── caller hangup ──────────────────▶│ abandoned │
-    └──────────┘                                        └───────────┘
+    +----------+                                        +-----------+
+    | waiting  |----- caller hangup ------------------->| abandoned |
+    +----------+                                        +-----------+
 
     Scenario 3: Successful call, normal end
-    ┌──────────┐   ┌───────────┐   ┌─────────┐         ┌──────┐
-    │ waiting  │──▶│ connecting│──▶│ service │──hangup▶│ done │
-    └──────────┘   └───────────┘   └─────────┘         └──────┘
+    +----------+   +-----------+   +---------+         +------+
+    | waiting  |-->| connecting|-->| service |--hangup>| done |
+    +----------+   +-----------+   +---------+         +------+
 
 
 Queue Metrics and Tracking
@@ -336,18 +336,18 @@ Queues track detailed metrics for reporting and analysis:
 
 ::
 
-    ┌─────────────────────────────────────────────────────────────────────────┐
-    │                        Queue Statistics                                  │
-    └─────────────────────────────────────────────────────────────────────────┘
+    +--------------------------------------------------------------------------+
+    |                        Queue Statistics                                  |
+    +--------------------------------------------------------------------------+
 
     Queue: "Customer Support"
-    ┌─────────────────────────────────┬───────────────────────────────────────┐
-    │ total_incoming_count            │ 1,234 calls entered this queue        │
-    ├─────────────────────────────────┼───────────────────────────────────────┤
-    │ total_serviced_count            │ 1,100 calls reached an agent          │
-    ├─────────────────────────────────┼───────────────────────────────────────┤
-    │ total_abandoned_count           │ 134 calls abandoned (11% abandon rate)│
-    └─────────────────────────────────┴───────────────────────────────────────┘
+    +---------------------------------+---------------------------------------+
+    | total_incoming_count            | 1,234 calls entered this queue        |
+    +---------------------------------+---------------------------------------+
+    | total_serviced_count            | 1,100 calls reached an agent          |
+    +---------------------------------+---------------------------------------+
+    | total_abandoned_count           | 134 calls abandoned (11% abandon rate)|
+    +---------------------------------+---------------------------------------+
 
 **Per-Queuecall Metrics**
 
@@ -356,17 +356,17 @@ Each call in the queue tracks:
 ::
 
     Queuecall: "abc-123-def"
-    ┌─────────────────────────────────┬───────────────────────────────────────┐
-    │ duration_waiting                │ 45,000 ms (45 seconds in wait flow)   │
-    ├─────────────────────────────────┼───────────────────────────────────────┤
-    │ duration_service                │ 180,000 ms (3 minutes with agent)     │
-    ├─────────────────────────────────┼───────────────────────────────────────┤
-    │ tm_create                       │ 2024-01-15 10:30:00 (entered queue)   │
-    ├─────────────────────────────────┼───────────────────────────────────────┤
-    │ tm_service                      │ 2024-01-15 10:30:45 (agent connected) │
-    ├─────────────────────────────────┼───────────────────────────────────────┤
-    │ tm_end                          │ 2024-01-15 10:33:45 (call ended)      │
-    └─────────────────────────────────┴───────────────────────────────────────┘
+    +---------------------------------+---------------------------------------+
+    | duration_waiting                | 45,000 ms (45 seconds in wait flow)   |
+    +---------------------------------+---------------------------------------+
+    | duration_service                | 180,000 ms (3 minutes with agent)     |
+    +---------------------------------+---------------------------------------+
+    | tm_create                       | 2024-01-15 10:30:00 (entered queue)   |
+    +---------------------------------+---------------------------------------+
+    | tm_service                      | 2024-01-15 10:30:45 (agent connected) |
+    +---------------------------------+---------------------------------------+
+    | tm_end                          | 2024-01-15 10:33:45 (call ended)      |
+    +---------------------------------+---------------------------------------+
 
 **Calculating Service Levels**
 
@@ -389,25 +389,25 @@ If no agents match or all matching agents are busy, the caller waits:
 
 ::
 
-    ┌─────────────────────────────────────────────────────────────────────────┐
-    │                    No Agents Available Scenario                          │
-    └─────────────────────────────────────────────────────────────────────────┘
+    +--------------------------------------------------------------------------+
+    |                    No Agents Available Scenario                          |
+    +--------------------------------------------------------------------------+
 
     10:00:00 - Call joins queue, no agents available
-         │
-         ▼
-    ┌─────────────────────────────────────────────────────────────────────────┐
-    │ System checks for agents every 1 second:                                 │
-    │                                                                          │
-    │ 10:00:01 - Check agents... none available                               │
-    │ 10:00:02 - Check agents... none available                               │
-    │ 10:00:03 - Check agents... none available                               │
-    │ 10:00:04 - Check agents... Agent A just became available!               │
-    │                                                                          │
-    │ Caller hears wait flow the entire time                                  │
-    └─────────────────────────────────────────────────────────────────────────┘
-         │
-         ▼
+         |
+         v
+    +-------------------------------------------------------------------------+
+    | System checks for agents every 1 second:                                |
+    |                                                                         |
+    | 10:00:01 - Check agents... none available                               |
+    | 10:00:02 - Check agents... none available                               |
+    | 10:00:03 - Check agents... none available                               |
+    | 10:00:04 - Check agents... Agent A just became available!               |
+    |                                                                         |
+    | Caller hears wait flow the entire time                                  |
+    +-------------------------------------------------------------------------+
+         |
+         v
     10:00:04 - Agent A is connected
 
 **Retry Behavior**
@@ -424,18 +424,18 @@ Each queuecall gets its own private conference bridge:
 
 ::
 
-    ┌─────────────────────────────────────────────────────────────────────────┐
-    │                      Conference Bridge Model                             │
-    └─────────────────────────────────────────────────────────────────────────┘
+    +--------------------------------------------------------------------------+
+    |                      Conference Bridge Model                             |
+    +--------------------------------------------------------------------------+
 
     Queuecall for Caller A                    Queuecall for Caller B
-    ┌─────────────────────────┐              ┌─────────────────────────┐
-    │ Conference Bridge #1    │              │ Conference Bridge #2    │
-    │ ┌─────────┐ ┌─────────┐ │              │ ┌─────────┐ ┌─────────┐ │
-    │ │ Caller  │ │  Agent  │ │              │ │ Caller  │ │  Agent  │ │
-    │ │   A     │ │   1     │ │              │ │   B     │ │   2     │ │
-    │ └─────────┘ └─────────┘ │              │ └─────────┘ └─────────┘ │
-    └─────────────────────────┘              └─────────────────────────┘
+    +-------------------------+              +-------------------------+
+    | Conference Bridge #1    |              | Conference Bridge #2    |
+    | +---------+ +---------+ |              | +---------+ +---------+ |
+    | | Caller  | |  Agent  | |              | | Caller  | |  Agent  | |
+    | |   A     | |   1     | |              | |   B     | |   2     | |
+    | +---------+ +---------+ |              | +---------+ +---------+ |
+    +-------------------------+              +-------------------------+
 
 **Why This Design?**
 
@@ -452,9 +452,9 @@ Common Queue Scenarios
 
 ::
 
-    Caller dials → Enters queue → Agent available → Connected in 2 seconds
-                                                    │
-                                                    ▼
+    Caller dials -> Enters queue -> Agent available -> Connected in 2 seconds
+                                                    |
+                                                    v
                                             duration_waiting: 2000ms
                                             status: done
 
@@ -462,30 +462,30 @@ Common Queue Scenarios
 
 ::
 
-    Caller dials → Enters queue → No agents → Waits 45 seconds → Agent available
-                                     │                                  │
-                                     ▼                                  ▼
-                              ♪ Hold music plays              Connected!
+    Caller dials -> Enters queue -> No agents -> Waits 45 seconds -> Agent available
+                                     |                                  |
+                                     v                                  v
+                              # Hold music plays              Connected!
                               Position announcements          duration_waiting: 45000ms
 
 **Scenario 3: Caller Abandons**
 
 ::
 
-    Caller dials → Enters queue → Waits 2 minutes → Caller hangs up
-                                     │                      │
-                                     ▼                      ▼
-                              ♪ Hold music plays      status: abandoned
+    Caller dials -> Enters queue -> Waits 2 minutes -> Caller hangs up
+                                     |                      |
+                                     v                      v
+                              # Hold music plays      status: abandoned
                                                       duration_waiting: 120000ms
 
 **Scenario 4: Wait Timeout**
 
 ::
 
-    Caller dials → Enters queue → Waits 5 minutes → wait_timeout exceeded
-                                     │                      │
-                                     ▼                      ▼
-                              ♪ Hold music plays      Kicked from queue
+    Caller dials -> Enters queue -> Waits 5 minutes -> wait_timeout exceeded
+                                     |                      |
+                                     v                      v
+                              # Hold music plays      Kicked from queue
                                                       status: abandoned
 
 
@@ -511,11 +511,11 @@ Best Practices
 ::
 
     Good tag structure:
-    ┌─────────────────────────────────────────┐
-    │ Language tags: english, spanish, french │
-    │ Skill tags: billing, tech_support, sales│
-    │ Tier tags: tier1, tier2, supervisor     │
-    └─────────────────────────────────────────┘
+    +-----------------------------------------+
+    | Language tags: english, spanish, french |
+    | Skill tags: billing, tech_support, sales|
+    | Tier tags: tier1, tier2, supervisor     |
+    +-----------------------------------------+
 
 **4. Monitor Key Metrics**
 
