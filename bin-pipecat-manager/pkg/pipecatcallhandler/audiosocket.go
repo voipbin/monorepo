@@ -12,6 +12,7 @@ import (
 	"github.com/CyCoreSystems/audiosocket"
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
+	"github.com/zaf/resample"
 )
 
 type AudiosocketHandler interface {
@@ -73,28 +74,47 @@ func (h *audiosocketHandler) GetNextMedia(conn net.Conn) (audiosocket.Message, e
 }
 
 // GetDataSamples processes 16-bit PCM data with the given inputRate sample rate.
-// If inputRate equals defaultConvertSampleRate, it returns data as is.
-// If inputRate is an integer multiple of defaultConvertSampleRate, it downsamples accordingly.
-// Otherwise, it returns an error because only integer downsampling is supported.
+// It uses libsoxr (via zaf/resample) for high-quality resampling with proper anti-aliasing.
+// If inputRate equals defaultConvertSampleRate (8kHz), it returns data as is.
 func (h *audiosocketHandler) GetDataSamples(inputRate int, data []byte) ([]byte, error) {
 	if inputRate == defaultAudiosocketConvertSampleRate {
 		// No conversion needed
 		return data, nil
 	}
 
-	if inputRate%defaultAudiosocketConvertSampleRate != 0 {
-		return nil, fmt.Errorf("cannot convert %d Hz to %d Hz: only integer downsampling supported", inputRate, defaultAudiosocketConvertSampleRate)
+	if len(data) == 0 {
+		return data, nil
 	}
 
-	factor := inputRate / defaultAudiosocketConvertSampleRate
-	res := make([]byte, 0, len(data)/factor)
+	// Create output buffer
+	var output bytes.Buffer
 
-	// Downsample by selecting every 'factor'-th sample (2 bytes per sample)
-	for i := 0; i+2*factor-1 < len(data); i += 2 * factor {
-		res = append(res, data[i], data[i+1])
+	// Create resampler: input rate -> 8kHz, mono channel, I16 format, MediumQ quality
+	resampler, err := resample.New(
+		&output,
+		float64(inputRate),
+		float64(defaultAudiosocketConvertSampleRate),
+		1,                // mono
+		resample.I16,     // 16-bit signed linear PCM
+		resample.MediumQ, // balance quality vs CPU
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create resampler: %w", err)
 	}
 
-	return res, nil
+	// Write input data to the resampler
+	_, err = resampler.Write(data)
+	if err != nil {
+		return nil, fmt.Errorf("failed to write to resampler: %w", err)
+	}
+
+	// Close to flush any remaining output
+	err = resampler.Close()
+	if err != nil {
+		return nil, fmt.Errorf("failed to close resampler: %w", err)
+	}
+
+	return output.Bytes(), nil
 }
 
 // Upsample8kTo16k performs a simple 2× upsampling from 8 kHz to 16 kHz.
