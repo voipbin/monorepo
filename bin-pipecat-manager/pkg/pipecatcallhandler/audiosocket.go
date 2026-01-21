@@ -29,45 +29,48 @@ const (
 	defaultAudiosocketConvertSampleRate = 8000 // Default sample rate for conversion to 8kHz. This must not be changed as it is the minimum sample rate for audiosocket.
 )
 
+// TODO: Re-enable anti-aliasing filter once coefficients are properly calibrated.
+// The filter coefficients below caused audio distortion and are disabled for now.
+//
 // Low-pass filter coefficients for anti-aliasing before downsampling.
 // These are 21-tap FIR filters using Hamming-windowed sinc design.
 // Cutoff frequency is set to 3.4kHz (below 4kHz Nyquist for 8kHz output).
-// Coefficients are normalized so they sum to 1.0.
-var (
-	// lpfCoeffs16kTo8k: 16kHz → 8kHz, normalized cutoff = 3400/16000 = 0.2125
-	lpfCoeffs16kTo8k = []float64{
-		-0.0025, -0.0045, 0.0000, 0.0133, 0.0296,
-		0.0362, 0.0181, -0.0305, -0.0973, -0.1532,
-		0.8216,
-		-0.1532, -0.0973, -0.0305, 0.0181, 0.0362,
-		0.0296, 0.0133, 0.0000, -0.0045, -0.0025,
-	}
-
-	// lpfCoeffs24kTo8k: 24kHz → 8kHz, normalized cutoff = 3400/24000 = 0.1417
-	lpfCoeffs24kTo8k = []float64{
-		0.0036, 0.0065, 0.0120, 0.0199, 0.0298,
-		0.0410, 0.0525, 0.0633, 0.0723, 0.0787,
-		0.0816,
-		0.0787, 0.0723, 0.0633, 0.0525, 0.0410,
-		0.0298, 0.0199, 0.0120, 0.0065, 0.0036,
-	}
-
-	// lpfCoeffs32kTo8k: 32kHz → 8kHz, normalized cutoff = 3400/32000 = 0.1063
-	lpfCoeffs32kTo8k = []float64{
-		0.0082, 0.0121, 0.0175, 0.0241, 0.0317,
-		0.0398, 0.0479, 0.0554, 0.0618, 0.0666,
-		0.0690,
-		0.0666, 0.0618, 0.0554, 0.0479, 0.0398,
-		0.0317, 0.0241, 0.0175, 0.0121, 0.0082,
-	}
-
-	// lpfCoeffsMap maps input sample rate to filter coefficients
-	lpfCoeffsMap = map[int][]float64{
-		16000: lpfCoeffs16kTo8k,
-		24000: lpfCoeffs24kTo8k,
-		32000: lpfCoeffs32kTo8k,
-	}
-)
+//
+// var (
+// 	// lpfCoeffs16kTo8k: 16kHz → 8kHz, normalized cutoff = 3400/16000 = 0.2125
+// 	lpfCoeffs16kTo8k = []float64{
+// 		-0.0025, -0.0045, 0.0000, 0.0133, 0.0296,
+// 		0.0362, 0.0181, -0.0305, -0.0973, -0.1532,
+// 		0.8216,
+// 		-0.1532, -0.0973, -0.0305, 0.0181, 0.0362,
+// 		0.0296, 0.0133, 0.0000, -0.0045, -0.0025,
+// 	}
+//
+// 	// lpfCoeffs24kTo8k: 24kHz → 8kHz, normalized cutoff = 3400/24000 = 0.1417
+// 	lpfCoeffs24kTo8k = []float64{
+// 		0.0036, 0.0065, 0.0120, 0.0199, 0.0298,
+// 		0.0410, 0.0525, 0.0633, 0.0723, 0.0787,
+// 		0.0816,
+// 		0.0787, 0.0723, 0.0633, 0.0525, 0.0410,
+// 		0.0298, 0.0199, 0.0120, 0.0065, 0.0036,
+// 	}
+//
+// 	// lpfCoeffs32kTo8k: 32kHz → 8kHz, normalized cutoff = 3400/32000 = 0.1063
+// 	lpfCoeffs32kTo8k = []float64{
+// 		0.0082, 0.0121, 0.0175, 0.0241, 0.0317,
+// 		0.0398, 0.0479, 0.0554, 0.0618, 0.0666,
+// 		0.0690,
+// 		0.0666, 0.0618, 0.0554, 0.0479, 0.0398,
+// 		0.0317, 0.0241, 0.0175, 0.0121, 0.0082,
+// 	}
+//
+// 	// lpfCoeffsMap maps input sample rate to filter coefficients
+// 	lpfCoeffsMap = map[int][]float64{
+// 		16000: lpfCoeffs16kTo8k,
+// 		24000: lpfCoeffs24kTo8k,
+// 		32000: lpfCoeffs32kTo8k,
+// 	}
+// )
 
 type audiosocketHandler struct{}
 
@@ -160,35 +163,36 @@ func (h *audiosocketHandler) GetDataSamples(inputRate int, data []byte) ([]byte,
 	return res, nil
 }
 
+// TODO: Re-enable once coefficients are properly calibrated
 // applyLowPassFilter applies a FIR low-pass filter to the input samples.
 // This removes high frequencies that would cause aliasing when downsampling.
-func applyLowPassFilter(samples []int16, coeffs []float64) []int16 {
-	if len(samples) == 0 || len(coeffs) == 0 {
-		return samples
-	}
-
-	filtered := make([]int16, len(samples))
-	halfLen := len(coeffs) / 2
-
-	for i := range samples {
-		var sum float64
-		for j, coef := range coeffs {
-			idx := i - halfLen + j
-			if idx >= 0 && idx < len(samples) {
-				sum += float64(samples[idx]) * coef
-			}
-		}
-		// Clamp to int16 range to prevent overflow
-		if sum > 32767 {
-			sum = 32767
-		} else if sum < -32768 {
-			sum = -32768
-		}
-		filtered[i] = int16(sum)
-	}
-
-	return filtered
-}
+// func applyLowPassFilter(samples []int16, coeffs []float64) []int16 {
+// 	if len(samples) == 0 || len(coeffs) == 0 {
+// 		return samples
+// 	}
+//
+// 	filtered := make([]int16, len(samples))
+// 	halfLen := len(coeffs) / 2
+//
+// 	for i := range samples {
+// 		var sum float64
+// 		for j, coef := range coeffs {
+// 			idx := i - halfLen + j
+// 			if idx >= 0 && idx < len(samples) {
+// 				sum += float64(samples[idx]) * coef
+// 			}
+// 		}
+// 		// Clamp to int16 range to prevent overflow
+// 		if sum > 32767 {
+// 			sum = 32767
+// 		} else if sum < -32768 {
+// 			sum = -32768
+// 		}
+// 		filtered[i] = int16(sum)
+// 	}
+//
+// 	return filtered
+// }
 
 // Upsample8kTo16k performs a simple 2× upsampling from 8 kHz to 16 kHz.
 //
