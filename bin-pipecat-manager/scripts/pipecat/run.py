@@ -243,7 +243,6 @@ def create_tts_service(name: str, **options):
             api_key=os.getenv("ELEVENLABS_API_KEY"),
             voice_id=voice_id,
             language=language,
-            sample_rate=16000,  # Use 16kHz for cleaner downsampling to 8kHz
         )
     else:
         raise ValueError(f"Unsupported TTS service: {name}")
