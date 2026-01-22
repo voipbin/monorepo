@@ -3,7 +3,6 @@ package pipecatcallhandler
 //go:generate mockgen -package pipecatcallhandler -destination ./mock_audiosocket.go -source audiosocket.go -build_flags=-mod=mod
 
 import (
-	"bytes"
 	"context"
 	"encoding/binary"
 	"fmt"
@@ -86,12 +85,15 @@ func (h *audiosocketHandler) GetDataSamples(inputRate int, data []byte) ([]byte,
 		return data, nil
 	}
 
-	// Create output buffer
-	var output bytes.Buffer
+	// Get buffer from pool and estimate output size
+	inputSamples := len(data) / 2
+	outputSamples := inputSamples * defaultAudiosocketConvertSampleRate / inputRate
+	output := getBuffer()
+	output.Grow(outputSamples * 2)
 
 	// Create resampler: input rate -> 8kHz, mono channel, I16 format, MediumQ quality
 	resampler, err := resample.New(
-		&output,
+		output,
 		float64(inputRate),
 		float64(defaultAudiosocketConvertSampleRate),
 		1,                // mono
@@ -99,22 +101,30 @@ func (h *audiosocketHandler) GetDataSamples(inputRate int, data []byte) ([]byte,
 		resample.MediumQ, // balance quality vs CPU
 	)
 	if err != nil {
+		putBuffer(output)
 		return nil, fmt.Errorf("failed to create resampler: %w", err)
 	}
 
 	// Write input data to the resampler
 	_, err = resampler.Write(data)
 	if err != nil {
+		putBuffer(output)
 		return nil, fmt.Errorf("failed to write to resampler: %w", err)
 	}
 
 	// Close to flush any remaining output
 	err = resampler.Close()
 	if err != nil {
+		putBuffer(output)
 		return nil, fmt.Errorf("failed to close resampler: %w", err)
 	}
 
-	return output.Bytes(), nil
+	// Copy result before returning buffer to pool
+	result := make([]byte, output.Len())
+	copy(result, output.Bytes())
+	putBuffer(output)
+
+	return result, nil
 }
 
 // Upsample8kTo16k performs a simple 2× upsampling from 8 kHz to 16 kHz.
@@ -132,29 +142,36 @@ func (h *audiosocketHandler) Upsample8kTo16k(data []byte) ([]byte, error) {
 		return nil, fmt.Errorf("the PCM data must be 16-bit aligned (even number of bytes). bytes: %d", len(data))
 	}
 
-	inputSamples := make([]int16, len(data)/2)
-	for i := 0; i < len(inputSamples); i++ {
-		inputSamples[i] = int16(binary.LittleEndian.Uint16(data[i*2 : i*2+2]))
-	}
-
-	if len(inputSamples) == 0 {
+	numSamples := len(data) / 2
+	if numSamples == 0 {
 		return []byte{}, nil
 	}
 
-	var out bytes.Buffer
-	for i := 0; i < len(inputSamples)-1; i++ {
-		s1 := inputSamples[i]
-		s2 := inputSamples[i+1]
+	// Pre-allocate output buffer: (n-1)*2 + 1 samples = 2n-1 samples
+	// Each sample is 2 bytes, so output size is (2*numSamples - 1) * 2
+	outputSize := (2*numSamples - 1) * 2
+	out := getBuffer()
+	out.Grow(outputSize)
 
-		_ = binary.Write(&out, binary.LittleEndian, s1)
+	for i := 0; i < numSamples-1; i++ {
+		s1 := int16(binary.LittleEndian.Uint16(data[i*2 : i*2+2]))
+		s2 := int16(binary.LittleEndian.Uint16(data[(i+1)*2 : (i+1)*2+2]))
+
+		_ = binary.Write(out, binary.LittleEndian, s1)
 		mid := int16((int32(s1) + int32(s2)) / 2)
-		_ = binary.Write(&out, binary.LittleEndian, mid)
+		_ = binary.Write(out, binary.LittleEndian, mid)
 	}
 
-	last := inputSamples[len(inputSamples)-1]
-	_ = binary.Write(&out, binary.LittleEndian, last)
+	// Write last sample
+	last := int16(binary.LittleEndian.Uint16(data[(numSamples-1)*2:]))
+	_ = binary.Write(out, binary.LittleEndian, last)
 
-	return out.Bytes(), nil
+	// Copy result before returning buffer to pool
+	result := make([]byte, out.Len())
+	copy(result, out.Bytes())
+	putBuffer(out)
+
+	return result, nil
 }
 
 // WrapDataPCM16Bit wraps raw 16-bit PCM audio data into the Audiosocket transmission format.
@@ -183,26 +200,37 @@ func (h *audiosocketHandler) WrapDataPCM16Bit(data []byte) ([]byte, error) {
 		return nil, fmt.Errorf("the PCM data must be 16-bit aligned (even number of bytes). bytes: %d", len(data))
 	}
 
-	buf := new(bytes.Buffer)
+	// Header: 1 byte format + 2 bytes length + data
+	headerSize := 3
+	buf := getBuffer()
+	buf.Grow(headerSize + len(data))
 
 	// Write audio format (SLIN)
 	if errWrite := buf.WriteByte(defaultAudiosocketFormatSLIN); errWrite != nil {
+		putBuffer(buf)
 		return nil, fmt.Errorf("failed to write data type: %w", errWrite)
 	}
 
-	// Write sample count
+	// Write payload length
 	payloadLength := uint16(len(data))
 	if errWrite := binary.Write(buf, binary.BigEndian, payloadLength); errWrite != nil {
+		putBuffer(buf)
 		return nil, errors.Wrapf(errWrite, "could not write sample count")
 	}
 
 	// Write raw PCM data
 	_, err := buf.Write(data)
 	if err != nil {
+		putBuffer(buf)
 		return nil, errors.Wrapf(err, "could not write raw audio data")
 	}
 
-	return buf.Bytes(), nil
+	// Copy result before returning buffer to pool
+	result := make([]byte, buf.Len())
+	copy(result, buf.Bytes())
+	putBuffer(buf)
+
+	return result, nil
 }
 
 // Write fragments and sends large 16-bit PCM audio data over an Audiosocket connection.
