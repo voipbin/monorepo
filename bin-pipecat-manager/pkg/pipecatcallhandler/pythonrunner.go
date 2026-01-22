@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -17,6 +18,17 @@ import (
 const (
 	defaultPipecatRunnerListenAddress = "http://localhost:8000"
 )
+
+// httpClient is a package-level HTTP client with connection pooling.
+// Reusing connections avoids TCP handshake overhead for each request.
+var httpClient = &http.Client{
+	Timeout: 30 * time.Second,
+	Transport: &http.Transport{
+		MaxIdleConns:        100,
+		MaxIdleConnsPerHost: 10,
+		IdleConnTimeout:     90 * time.Second,
+	},
+}
 
 type pythonRunner struct {
 }
@@ -57,7 +69,7 @@ func (h *pythonRunner) Start(
 		"func": "Start",
 	})
 
-	// // only used to send data to the python runner
+	// Request body structure for Python runner
 	reqBody := struct {
 		ID          uuid.UUID        `json:"id,omitempty"`
 		LLMType     string           `json:"llm_type,omitempty"`
@@ -93,12 +105,13 @@ func (h *pythonRunner) Start(
 	req.Header.Set("Content-Type", "application/json")
 
 	log.WithField("request_body", string(jsonData)).Debugf("Sending request to python runner")
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		return errors.Wrapf(err, "could not send request to python runner")
 	}
 	defer func() {
+		// Drain and close body to enable connection reuse
+		_, _ = io.Copy(io.Discard, resp.Body)
 		_ = resp.Body.Close()
 	}()
 
@@ -127,12 +140,13 @@ func (h *pythonRunner) Stop(ctx context.Context, pipecatcallID uuid.UUID) error 
 	}
 
 	log.Debugf("Sending stop request to python runner")
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		return errors.Wrapf(err, "could not send stop request to python runner")
 	}
 	defer func() {
+		// Drain and close body to enable connection reuse
+		_, _ = io.Copy(io.Discard, resp.Body)
 		_ = resp.Body.Close()
 	}()
 
