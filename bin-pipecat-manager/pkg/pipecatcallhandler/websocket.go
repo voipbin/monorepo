@@ -15,8 +15,8 @@ type WebsocketHandler interface {
 }
 
 var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
+	ReadBufferSize:  64 * 1024, // 64KB - adequate for audio frames + protobuf
+	WriteBufferSize: 64 * 1024, // 64KB - adequate for audio frames + protobuf
 	CheckOrigin: func(r *http.Request) bool {
 		return true
 	},

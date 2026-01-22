@@ -62,9 +62,9 @@ const (
 	defaultKeepAliveInterval = 10 * time.Second // 10 seconds
 	defaultMaxRetryAttempts  = 3
 	defaultInitialBackoff    = 100 * time.Millisecond // 100 milliseconds
-	defaultPushFrameTimeout  = 2 * time.Second        // 2 seconds
+	defaultPushFrameTimeout  = 50 * time.Millisecond  // 50ms for real-time audio
 
-	defaultRunnerWebsocketChanBufferSize = 2000 // Buffer size for runner websocket channel.
+	defaultRunnerWebsocketChanBufferSize = 150 // ~3 seconds at 50fps
 	defaultRunnerWebsocketListenAddress  = "localhost:0"
 )
 
