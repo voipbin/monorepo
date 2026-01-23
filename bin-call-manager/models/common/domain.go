@@ -5,14 +5,16 @@ import (
 	"strings"
 
 	"github.com/gofrs/uuid"
+
+	"monorepo/bin-common-handler/pkg/projectconfig"
 )
 
-// list of domain defines
-const (
-	DomainConference      = "conference.voipbin.net"
-	DomainPSTN            = "pstn.voipbin.net"
-	DomainTrunkSuffix     = ".trunk.voipbin.net"
-	DomainRegistrarSuffix = ".registrar.voipbin.net"
+// Domain variables initialized once from project config
+var (
+	DomainConference      = projectconfig.Get().DomainConference
+	DomainPSTN            = projectconfig.Get().DomainPSTN
+	DomainTrunkSuffix     = projectconfig.Get().DomainTrunkSuffix
+	DomainRegistrarSuffix = projectconfig.Get().DomainRegistrarSuffix
 )
 
 // ParseSIPURI parses the sip uri.
