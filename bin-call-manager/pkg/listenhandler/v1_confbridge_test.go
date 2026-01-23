@@ -895,3 +895,63 @@ func Test_processV1ConfbridgesIDAnswerPost(t *testing.T) {
 		})
 	}
 }
+
+func Test_processV1ConfbridgesIDGet(t *testing.T) {
+	tests := []struct {
+		name string
+
+		request *sock.Request
+
+		expectID           uuid.UUID
+		responseConfbridge *confbridge.Confbridge
+		expectRes          *sock.Response
+	}{
+		{
+			name: "normal",
+			request: &sock.Request{
+				URI:    "/v1/confbridges/68e9edd8-3609-11ec-ad76-b72fa8f57f23",
+				Method: sock.RequestMethodGet,
+			},
+
+			expectID: uuid.FromStringOrNil("68e9edd8-3609-11ec-ad76-b72fa8f57f23"),
+			responseConfbridge: &confbridge.Confbridge{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("68e9edd8-3609-11ec-ad76-b72fa8f57f23"),
+					CustomerID: uuid.FromStringOrNil("a09c9c80-98f5-11ed-a7d4-eb729c335ae0"),
+				},
+				Type:     confbridge.TypeConnect,
+				BridgeID: "73453fa8-3609-11ec-af18-075139856086",
+			},
+			expectRes: &sock.Response{
+				StatusCode: 200,
+				Data:       []byte(`{"id":"68e9edd8-3609-11ec-ad76-b72fa8f57f23","customer_id":"a09c9c80-98f5-11ed-a7d4-eb729c335ae0","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","type":"connect","status":"","bridge_id":"73453fa8-3609-11ec-af18-075139856086","flags":null,"channel_call_ids":null,"recording_id":"00000000-0000-0000-0000-000000000000","recording_ids":null,"external_media_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockConfbridge := confbridgehandler.NewMockConfbridgeHandler(mc)
+
+			h := &listenHandler{
+				sockHandler:       mockSock,
+				confbridgeHandler: mockConfbridge,
+			}
+
+			mockConfbridge.EXPECT().Get(gomock.Any(), tt.expectID).Return(tt.responseConfbridge, nil)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
