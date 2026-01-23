@@ -928,6 +928,15 @@ type AgentManagerAgentRingMethod string
 // AgentManagerAgentStatus Agent's status
 type AgentManagerAgentStatus string
 
+// AuthLoginResponse Authentication response containing JWT token
+type AuthLoginResponse struct {
+	// Token JWT token for API access
+	Token string `json:"token"`
+
+	// Username The authenticated username
+	Username string `json:"username"`
+}
+
 // BillingManagerAccount defines model for BillingManagerAccount.
 type BillingManagerAccount struct {
 	// Balance The balance of the account in USD.
@@ -3460,6 +3469,15 @@ type PostAisummariesJSONBody struct {
 	ReferenceType AIManagerSummaryReferenceType `json:"reference_type"`
 }
 
+// PostAuthLoginJSONBody defines parameters for PostAuthLogin.
+type PostAuthLoginJSONBody struct {
+	// Password The user password
+	Password string `json:"password"`
+
+	// Username The username (agent username or customer email)
+	Username string `json:"username"`
+}
+
 // GetAvailableNumbersParams defines parameters for GetAvailableNumbers.
 type GetAvailableNumbersParams struct {
 	// PageSize The size of results.
@@ -4937,6 +4955,9 @@ type PutAisIdJSONRequestBody PutAisIdJSONBody
 // PostAisummariesJSONRequestBody defines body for PostAisummaries for application/json ContentType.
 type PostAisummariesJSONRequestBody PostAisummariesJSONBody
 
+// PostAuthLoginJSONRequestBody defines body for PostAuthLogin for application/json ContentType.
+type PostAuthLoginJSONRequestBody PostAuthLoginJSONBody
+
 // PostBillingAccountsJSONRequestBody defines body for PostBillingAccounts for application/json ContentType.
 type PostBillingAccountsJSONRequestBody PostBillingAccountsJSONBody
 
@@ -5317,6 +5338,9 @@ type ServerInterface interface {
 	// Get ai summary details.
 	// (GET /aisummaries/{id})
 	GetAisummariesId(c *gin.Context, id string)
+	// Authenticate and generate JWT token
+	// (POST /auth/login)
+	PostAuthLogin(c *gin.Context)
 	// List available numbers
 	// (GET /available_numbers)
 	GetAvailableNumbers(c *gin.Context, params GetAvailableNumbersParams)
@@ -6973,6 +6997,19 @@ func (siw *ServerInterfaceWrapper) GetAisummariesId(c *gin.Context) {
 	}
 
 	siw.Handler.GetAisummariesId(c, id)
+}
+
+// PostAuthLogin operation middleware
+func (siw *ServerInterfaceWrapper) PostAuthLogin(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostAuthLogin(c)
 }
 
 // GetAvailableNumbers operation middleware
@@ -13091,6 +13128,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.POST(options.BaseURL+"/aisummaries", wrapper.PostAisummaries)
 	router.DELETE(options.BaseURL+"/aisummaries/:id", wrapper.DeleteAisummariesId)
 	router.GET(options.BaseURL+"/aisummaries/:id", wrapper.GetAisummariesId)
+	router.POST(options.BaseURL+"/auth/login", wrapper.PostAuthLogin)
 	router.GET(options.BaseURL+"/available_numbers", wrapper.GetAvailableNumbers)
 	router.GET(options.BaseURL+"/billing_accounts", wrapper.GetBillingAccounts)
 	router.POST(options.BaseURL+"/billing_accounts", wrapper.PostBillingAccounts)
@@ -14053,6 +14091,79 @@ type GetAisummariesId200JSONResponse AIManagerSummary
 func (response GetAisummariesId200JSONResponse) VisitGetAisummariesIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAuthLoginRequestObject struct {
+	Body *PostAuthLoginJSONRequestBody
+}
+
+type PostAuthLoginResponseObject interface {
+	VisitPostAuthLoginResponse(w http.ResponseWriter) error
+}
+
+type PostAuthLogin200ResponseHeaders struct {
+	SetCookie string
+}
+
+type PostAuthLogin200JSONResponse struct {
+	Body    AuthLoginResponse
+	Headers PostAuthLogin200ResponseHeaders
+}
+
+func (response PostAuthLogin200JSONResponse) VisitPostAuthLoginResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Set-Cookie", fmt.Sprint(response.Headers.SetCookie))
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type PostAuthLogin400JSONResponse struct {
+	// Message Error description
+	Message *string `json:"message,omitempty"`
+}
+
+func (response PostAuthLogin400JSONResponse) VisitPostAuthLoginResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAuthLogin401JSONResponse struct {
+	// Message Error description
+	Message *string `json:"message,omitempty"`
+}
+
+func (response PostAuthLogin401JSONResponse) VisitPostAuthLoginResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAuthLogin429JSONResponse struct {
+	// Message Error description
+	Message *string `json:"message,omitempty"`
+}
+
+func (response PostAuthLogin429JSONResponse) VisitPostAuthLoginResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(429)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAuthLogin500JSONResponse struct {
+	// Message Error description
+	Message *string `json:"message,omitempty"`
+}
+
+func (response PostAuthLogin500JSONResponse) VisitPostAuthLoginResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -18731,6 +18842,9 @@ type StrictServerInterface interface {
 	// Get ai summary details.
 	// (GET /aisummaries/{id})
 	GetAisummariesId(ctx context.Context, request GetAisummariesIdRequestObject) (GetAisummariesIdResponseObject, error)
+	// Authenticate and generate JWT token
+	// (POST /auth/login)
+	PostAuthLogin(ctx context.Context, request PostAuthLoginRequestObject) (PostAuthLoginResponseObject, error)
 	// List available numbers
 	// (GET /available_numbers)
 	GetAvailableNumbers(ctx context.Context, request GetAvailableNumbersRequestObject) (GetAvailableNumbersResponseObject, error)
@@ -20578,6 +20692,39 @@ func (sh *strictHandler) GetAisummariesId(ctx *gin.Context, id string) {
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(GetAisummariesIdResponseObject); ok {
 		if err := validResponse.VisitGetAisummariesIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostAuthLogin operation middleware
+func (sh *strictHandler) PostAuthLogin(ctx *gin.Context) {
+	var request PostAuthLoginRequestObject
+
+	var body PostAuthLoginJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostAuthLogin(ctx, request.(PostAuthLoginRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostAuthLogin")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostAuthLoginResponseObject); ok {
+		if err := validResponse.VisitPostAuthLoginResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {
