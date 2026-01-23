@@ -2054,3 +2054,66 @@ func Test_processV1CallsIDSilenceDelete(t *testing.T) {
 		})
 	}
 }
+
+func Test_processV1CallsIDConfbridgeIDPut(t *testing.T) {
+	tests := []struct {
+		name string
+
+		request *sock.Request
+
+		expectCallID       uuid.UUID
+		expectConfbridgeID uuid.UUID
+		responseCall       *call.Call
+		expectRes          *sock.Response
+	}{
+		{
+			name: "normal",
+			request: &sock.Request{
+				URI:    "/v1/calls/638769c2-620d-11eb-bd1f-6b576e26b4e6/confbridge_id",
+				Method: sock.RequestMethodPut,
+				Data:   []byte(`{"confbridge_id":"68e9edd8-3609-11ec-ad76-b72fa8f57f23"}`),
+			},
+
+			expectCallID:       uuid.FromStringOrNil("638769c2-620d-11eb-bd1f-6b576e26b4e6"),
+			expectConfbridgeID: uuid.FromStringOrNil("68e9edd8-3609-11ec-ad76-b72fa8f57f23"),
+			responseCall: &call.Call{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("638769c2-620d-11eb-bd1f-6b576e26b4e6"),
+					CustomerID: uuid.FromStringOrNil("ab0fb69e-7f50-11ec-b0d3-2b4311e649e0"),
+				},
+				ConfbridgeID: uuid.FromStringOrNil("68e9edd8-3609-11ec-ad76-b72fa8f57f23"),
+			},
+			expectRes: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"638769c2-620d-11eb-bd1f-6b576e26b4e6","customer_id":"ab0fb69e-7f50-11ec-b0d3-2b4311e649e0","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"68e9edd8-3609-11ec-ad76-b72fa8f57f23","master_call_id":"00000000-0000-0000-0000-000000000000","recording_id":"00000000-0000-0000-0000-000000000000","external_media_id":"00000000-0000-0000-0000-000000000000","groupcall_id":"00000000-0000-0000-0000-000000000000","source":{},"destination":{},"action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000"},"dialroute_id":"00000000-0000-0000-0000-000000000000"}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockCall := callhandler.NewMockCallHandler(mc)
+
+			h := &listenHandler{
+				sockHandler: mockSock,
+				callHandler: mockCall,
+			}
+
+			mockCall.EXPECT().UpdateConfbridgeID(gomock.Any(), tt.expectCallID, tt.expectConfbridgeID).Return(tt.responseCall, nil)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
