@@ -11,6 +11,12 @@ servers:
   - url: https://api.voipbin.net/v1.0
 
 tags:
+  - name: Auth
+    description: Authentication operations
+    externalDocs:
+      description: Find more about authentication
+      url: https://api.voipbin.net/docs/auth.html
+
   - name: Accesskey
     description: Operations related to accesskey
     externalDocs:
@@ -209,6 +215,25 @@ components:
 
 
   schemas:
+
+#########################################
+# Auth
+#########################################
+    AuthLoginResponse:
+      type: object
+      description: Authentication response containing JWT token
+      required:
+        - username
+        - token
+      properties:
+        username:
+          type: string
+          description: The authenticated username
+          example: "user@example.com"
+        token:
+          type: string
+          description: JWT token for API access
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 
 #########################################
 # Agent Manager
@@ -3901,6 +3926,9 @@ components:
 # Path
 ###########################################################################################################################
 paths:
+  /auth/login:
+    $ref: './paths/auth/login.yaml'
+
   /accesskeys:
     $ref: './paths/accesskeys/main.yaml'
   /accesskeys/{id}:

@@ -1,0 +1,87 @@
+post:
+  summary: Authenticate and generate JWT token
+  description: |
+    Authenticates a user with username and password, and returns a JWT token for API access.
+
+    This endpoint does not require authentication.
+
+    **Note:** This endpoint is available at `/auth/login` (not under `/v1.0` prefix).
+  tags:
+    - Auth
+  security: []
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - username
+            - password
+          properties:
+            username:
+              type: string
+              description: The username (agent username or customer email)
+              example: "user@example.com"
+            password:
+              type: string
+              description: The user password
+              format: password
+              example: "********"
+  responses:
+    '200':
+      description: Successfully authenticated
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AuthLoginResponse'
+      headers:
+        Set-Cookie:
+          description: JWT token set as HTTP-only cookie
+          schema:
+            type: string
+            example: "token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...; Path=/; HttpOnly"
+    '400':
+      description: Bad request - invalid credentials or malformed request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: Error description
+                example: "Invalid credentials"
+    '401':
+      description: Unauthorized - authentication failed
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: Error description
+                example: "Authentication failed"
+    '429':
+      description: Too many requests - rate limit exceeded
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: Error description
+                example: "Rate limit exceeded"
+    '500':
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: Error description
+                example: "Internal server error"

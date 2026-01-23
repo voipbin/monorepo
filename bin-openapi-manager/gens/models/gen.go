@@ -919,6 +919,15 @@ type AgentManagerAgentRingMethod string
 // AgentManagerAgentStatus Agent's status
 type AgentManagerAgentStatus string
 
+// AuthLoginResponse Authentication response containing JWT token
+type AuthLoginResponse struct {
+	// Token JWT token for API access
+	Token string `json:"token"`
+
+	// Username The authenticated username
+	Username string `json:"username"`
+}
+
 // BillingManagerAccount defines model for BillingManagerAccount.
 type BillingManagerAccount struct {
 	// Balance The balance of the account in USD.
@@ -3451,6 +3460,15 @@ type PostAisummariesJSONBody struct {
 	ReferenceType AIManagerSummaryReferenceType `json:"reference_type"`
 }
 
+// PostAuthLoginJSONBody defines parameters for PostAuthLogin.
+type PostAuthLoginJSONBody struct {
+	// Password The user password
+	Password string `json:"password"`
+
+	// Username The username (agent username or customer email)
+	Username string `json:"username"`
+}
+
 // GetAvailableNumbersParams defines parameters for GetAvailableNumbers.
 type GetAvailableNumbersParams struct {
 	// PageSize The size of results.
@@ -4927,6 +4945,9 @@ type PutAisIdJSONRequestBody PutAisIdJSONBody
 
 // PostAisummariesJSONRequestBody defines body for PostAisummaries for application/json ContentType.
 type PostAisummariesJSONRequestBody PostAisummariesJSONBody
+
+// PostAuthLoginJSONRequestBody defines body for PostAuthLogin for application/json ContentType.
+type PostAuthLoginJSONRequestBody PostAuthLoginJSONBody
 
 // PostBillingAccountsJSONRequestBody defines body for PostBillingAccounts for application/json ContentType.
 type PostBillingAccountsJSONRequestBody PostBillingAccountsJSONBody
