@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/projectconfig"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -44,9 +45,11 @@ type RecordingHandler interface {
 const (
 	ContextRecording = "call-record"
 
-	defaultDirectory  = "recording"
-	defaultBucketName = "voipbin-voip-media-bucket-europe-west4"
+	defaultDirectory = "recording"
 )
+
+// defaultBucketName initialized once from project config
+var defaultBucketName = projectconfig.Get().ProjectBucketName
 
 // list of variables
 const (

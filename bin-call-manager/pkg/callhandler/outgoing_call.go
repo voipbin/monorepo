@@ -557,7 +557,7 @@ func setChannelVariablesCallerID(variables map[string]string, c *call.Call) {
 	if c.Destination.Type == commonaddress.TypeTel && c.Source.Target == "anonymous" {
 		// we can't verify the caller's id. setting the default anonymous caller id
 		variables["CALLERID(pres)"] = "prohib"
-		variables["PJSIP_HEADER(add,P-Asserted-Identity)"] = "\"Anonymous\" <sip:+821100000001@pstn.voipbin.net>"
+		variables["PJSIP_HEADER(add,P-Asserted-Identity)"] = fmt.Sprintf("\"Anonymous\" <sip:+821100000001@%s>", common.DomainPSTN)
 		variables["PJSIP_HEADER(add,Privacy)"] = "id"
 
 		return

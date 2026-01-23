@@ -52,6 +52,10 @@ spec:
               value: ${HOMER_AUTH_TOKEN}
             - name: HOMER_WHITELIST
               value: ${HOMER_WHITELIST}
+            - name: PROJECT_BASE_DOMAIN
+              value: "voipbin.net"
+            - name: PROJECT_BUCKET_NAME
+              value: "voipbin-voip-media-bucket-europe-west4"
           ports:
             - name: metrics
               protocol: "TCP"
