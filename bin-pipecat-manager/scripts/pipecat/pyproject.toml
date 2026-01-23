@@ -1,0 +1,12 @@
+[project]
+name = "pipecat-runner"
+version = "0.1.0"
+description = "Pipecat AI voice pipeline runner"
+requires-python = ">=3.10"
+dependencies = [
+    "python-dotenv",
+    "uvicorn",
+    "pipecat-ai[silero,deepgram,openai,cartesia,websocket,google]>=0.0.82",
+    "onnxruntime==1.20.1",
+    "loguru",
+]
