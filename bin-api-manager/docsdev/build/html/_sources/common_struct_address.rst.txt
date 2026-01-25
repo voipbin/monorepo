@@ -20,7 +20,7 @@ Defines source/destination address.
     }
 
 * *type*: Address type. See detail :ref:`here <common-struct-address-type>`.
-* target: The address endpoint. Caller's destinatino address.
+* target: The address endpoint. Caller's destination address.
 * target_name: The address's name. Caller's name.
 * name: Name.
 * detail: Detail description.

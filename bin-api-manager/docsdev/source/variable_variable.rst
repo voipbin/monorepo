@@ -34,7 +34,7 @@ Others
 ++++++
 * voipbin.call.direction: Call's direction.
 * voipbin.call.master_call_id: Call's master call id.
-* voipbin.call.digits: Call;s received digits.
+* voipbin.call.digits: Call's received digits.
 
 Message
 -------

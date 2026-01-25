@@ -537,7 +537,7 @@ Notification message for queue create.
     }
 
 * type: The webhook type.
-* data: The detail of call. See detail :ref:`here <queue-struct-queue>`.
+* data: The detail of queue. See detail :ref:`here <queue-struct-queue>`.
 
 .. _webhook-struct-webhook-queue_updated:
 
@@ -555,7 +555,7 @@ The notification message for the queue update.
     }
 
 * type: The webhook type.
-* data: The detail of call. See detail :ref:`here <queue-struct-queue>`.
+* data: The detail of queue. See detail :ref:`here <queue-struct-queue>`.
 
 .. _webhook-struct-webhook-queue_deleted:
 
@@ -573,7 +573,7 @@ The notification message for the queue delete.
     }
 
 * type: The webhook type.
-* data: The detail of call. See detail :ref:`here <queue-struct-queue>`.
+* data: The detail of queue. See detail :ref:`here <queue-struct-queue>`.
 
 .. _webhook-struct-webhook-queuecall_created:
 
@@ -667,7 +667,7 @@ The notification message for the queuecall is being kicked.
     }
 
 * type: The webhook type.
-* *data*: The detail of queuecall. See detail :ref:`here <queue-struct-queuecall>`.
+* data: The detail of queuecall. See detail :ref:`here <queue-struct-queuecall>`.
 
 Example
 +++++++
@@ -706,7 +706,7 @@ The notification message for the queuecall is serviced.
     }
 
 * type: The webhook type.
-* *data*: The detail of queuecall. See detail :ref:`here <queue-struct-queuecall>`.
+* data: The detail of queuecall. See detail :ref:`here <queue-struct-queuecall>`.
 
 Example
 +++++++
@@ -744,7 +744,7 @@ The notification message for the queuecall is done.
     }
 
 * type: The webhook type.
-* *data*: The detail of queuecall. See detail :ref:`here <queue-struct-queuecall>`.
+* data: The detail of queuecall. See detail :ref:`here <queue-struct-queuecall>`.
 
 Example
 +++++++
@@ -782,7 +782,7 @@ The notification message for the queuecall is abandoned.
     }
 
 * type: The webhook type.
-* *data*: The detail of queuecall. See detail :ref:`here <queue-struct-queuecall>`.
+* data: The detail of queuecall. See detail :ref:`here <queue-struct-queuecall>`.
 
 .. _webhook-struct-webhook-agent_created:
 
@@ -800,7 +800,7 @@ The notification message for the agent create.
     }
 
 * type: The webhook type.
-* *data*: The detail of agent. See detail :ref:`here <agent-struct-agent>`.
+* data: The detail of agent. See detail :ref:`here <agent-struct-agent>`.
 
 .. _webhook-struct-webhook-agent_updated:
 
@@ -820,7 +820,7 @@ The notification message for the agent update.
     }
 
 * type: The webhook type.
-* *data*: The detail of agent. See detail :ref:`here <agent-struct-agent>`.
+* data: The detail of agent. See detail :ref:`here <agent-struct-agent>`.
 
 .. _webhook-struct-webhook-agent_deleted:
 
@@ -838,7 +838,7 @@ The notification message for the agent delete.
     }
 
 * type: The webhook type.
-* *data*: The detail of agent. See detail :ref:`here <agent-struct-agent>`.
+* data: The detail of agent. See detail :ref:`here <agent-struct-agent>`.
 
 .. _webhook-struct-webhook-agent_status_updated:
 
@@ -856,7 +856,7 @@ The notification message for the agent's status update.
     }
 
 * type: The webhook type.
-* *data*: The detail of agent. See detail :ref:`here <agent-struct-agent>`.
+* data: The detail of agent. See detail :ref:`here <agent-struct-agent>`.
 
 Example
 +++++++
