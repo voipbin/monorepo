@@ -407,6 +407,87 @@
 <li><p>voipbin.transcribe.direction: Created Transcribe’s direction.</p></li>
 </ul>
 </section>
+<section id="transcript">
+<h3>Transcript<a class="headerlink" href="#transcript" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>voipbin.transcript.id: Created Transcript’s ID.</p></li>
+<li><p>voipbin.transcript.transcribe_id: Parent Transcribe’s ID.</p></li>
+<li><p>voipbin.transcript.direction: Transcript’s direction (in/out).</p></li>
+<li><p>voipbin.transcript.message: Transcript’s text content.</p></li>
+</ul>
+</section>
+<section id="conference">
+<h3>Conference<a class="headerlink" href="#conference" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>voipbin.conference.id: Created Conference’s ID.</p></li>
+<li><p>voipbin.conference.name: Conference’s name.</p></li>
+<li><p>voipbin.conference.type: Conference’s type (connect/confbridge).</p></li>
+<li><p>voipbin.conference.status: Conference’s status.</p></li>
+</ul>
+<section id="confbridge">
+<h4>Confbridge<a class="headerlink" href="#confbridge" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>voipbin.confbridge.id: Created Confbridge’s ID.</p></li>
+<li><p>voipbin.confbridge.type: Confbridge’s type.</p></li>
+<li><p>voipbin.confbridge.status: Confbridge’s status.</p></li>
+</ul>
+</section>
+</section>
+<section id="agent">
+<h3>Agent<a class="headerlink" href="#agent" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>voipbin.agent.id: Agent’s ID.</p></li>
+<li><p>voipbin.agent.name: Agent’s name.</p></li>
+<li><p>voipbin.agent.detail: Agent’s detail.</p></li>
+<li><p>voipbin.agent.status: Agent’s status.</p></li>
+</ul>
+</section>
+<section id="webhook-response">
+<h3>Webhook Response<a class="headerlink" href="#webhook-response" title="Link to this heading"></a></h3>
+<p>Variables available after a webhook_send action with sync=true.</p>
+<ul class="simple">
+<li><p>voipbin.webhook.status_code: HTTP response status code.</p></li>
+<li><p>voipbin.webhook.body: HTTP response body as string.</p></li>
+</ul>
+</section>
+<section id="email">
+<h3>Email<a class="headerlink" href="#email" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>voipbin.email.id: Created Email’s ID.</p></li>
+<li><p>voipbin.email.status: Email’s status.</p></li>
+<li><p>voipbin.email.subject: Email’s subject.</p></li>
+</ul>
+</section>
+<section id="outdial">
+<h3>Outdial<a class="headerlink" href="#outdial" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>voipbin.outdial.id: Created Outdial’s ID.</p></li>
+<li><p>voipbin.outdial.status: Outdial’s status.</p></li>
+</ul>
+<section id="outdialtarget">
+<h4>Outdialtarget<a class="headerlink" href="#outdialtarget" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>voipbin.outdialtarget.id: Created Outdialtarget’s ID.</p></li>
+<li><p>voipbin.outdialtarget.status: Outdialtarget’s status.</p></li>
+<li><p>voipbin.outdialtarget.try_count: Current try count.</p></li>
+</ul>
+</section>
+</section>
+<section id="custom-variables">
+<h3>Custom Variables<a class="headerlink" href="#custom-variables" title="Link to this heading"></a></h3>
+<p>Custom variables can be set using the <code class="docutils literal notranslate"><span class="pre">variable_set</span></code> action. These variables are scoped to the current activeflow and persist until the flow ends.</p>
+<p>Example of setting a custom variable:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;variable_set&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;user.selected_option&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;premium&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The variable can then be referenced as <code class="docutils literal notranslate"><span class="pre">${user.selected_option}</span></code> in subsequent actions.</p>
+</section>
 </section>
 </section>
 
@@ -459,6 +540,19 @@
 <li><a class="reference internal" href="#ai-summary">AI Summary</a></li>
 <li><a class="reference internal" href="#recording">Recording</a></li>
 <li><a class="reference internal" href="#transcribe">Transcribe</a></li>
+<li><a class="reference internal" href="#transcript">Transcript</a></li>
+<li><a class="reference internal" href="#conference">Conference</a><ul>
+<li><a class="reference internal" href="#confbridge">Confbridge</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#agent">Agent</a></li>
+<li><a class="reference internal" href="#webhook-response">Webhook Response</a></li>
+<li><a class="reference internal" href="#email">Email</a></li>
+<li><a class="reference internal" href="#outdial">Outdial</a><ul>
+<li><a class="reference internal" href="#outdialtarget">Outdialtarget</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#custom-variables">Custom Variables</a></li>
 </ul>
 </li>
 </ul>

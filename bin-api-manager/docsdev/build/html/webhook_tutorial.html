@@ -274,30 +274,55 @@
 </section>
 <section id="webhook-event-types">
 <h2>Webhook Event Types<a class="headerlink" href="#webhook-event-types" title="Link to this heading"></a></h2>
-<p>VoIPBIN sends different event types to your webhook endpoint. Common event types include:</p>
-<p><strong>Call Events:</strong>
-- <code class="docutils literal notranslate"><span class="pre">call.status</span></code> - Call status changed (dialing, ringing, answered, hangup)
-- <code class="docutils literal notranslate"><span class="pre">call.completed</span></code> - Call ended
-- <code class="docutils literal notranslate"><span class="pre">call.recording</span></code> - Recording status changed</p>
-<p><strong>Message Events:</strong>
-- <code class="docutils literal notranslate"><span class="pre">message.received</span></code> - Incoming message received
-- <code class="docutils literal notranslate"><span class="pre">message.sent</span></code> - Outgoing message sent
-- <code class="docutils literal notranslate"><span class="pre">message.delivered</span></code> - Message delivery confirmed</p>
-<p><strong>Recording Events:</strong>
-- <code class="docutils literal notranslate"><span class="pre">recording.started</span></code> - Recording started
-- <code class="docutils literal notranslate"><span class="pre">recording.completed</span></code> - Recording finished and available</p>
-<p><strong>Transcription Events:</strong>
-- <code class="docutils literal notranslate"><span class="pre">transcribe.started</span></code> - Transcription started
-- <code class="docutils literal notranslate"><span class="pre">transcribe.completed</span></code> - Transcription finished
-- <code class="docutils literal notranslate"><span class="pre">transcribe.updated</span></code> - Real-time transcription update</p>
-<p><strong>Queue Events:</strong>
-- <code class="docutils literal notranslate"><span class="pre">queue.joined</span></code> - Caller joined queue
-- <code class="docutils literal notranslate"><span class="pre">queue.answered</span></code> - Agent answered queued call
-- <code class="docutils literal notranslate"><span class="pre">queue.abandoned</span></code> - Caller left queue</p>
-<p><strong>Conference Events:</strong>
-- <code class="docutils literal notranslate"><span class="pre">conference.participant.joined</span></code> - Participant joined conference
-- <code class="docutils literal notranslate"><span class="pre">conference.participant.left</span></code> - Participant left conference
-- <code class="docutils literal notranslate"><span class="pre">conference.ended</span></code> - Conference ended</p>
+<p>VoIPBIN sends different event types to your webhook endpoint. For the complete list, see <a class="reference internal" href="webhook_struct_webhook.html#webhook-struct-webhook"><span class="std std-ref">Webhook Structure</span></a>.</p>
+<p><strong>Call Events:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">call_created</span></code> - Call initiated</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">call_ringing</span></code> - Call is ringing</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">call_answered</span></code> - Call was answered</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">call_updated</span></code> - Call status changed</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">call_hungup</span></code> - Call ended</p></li>
+</ul>
+<p><strong>Message Events:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">message_created</span></code> - Message created</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">message_updated</span></code> - Message status changed</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">message_deleted</span></code> - Message deleted</p></li>
+</ul>
+<p><strong>Recording Events:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">recording_created</span></code> - Recording started</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">recording_updated</span></code> - Recording status changed</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">recording_deleted</span></code> - Recording deleted</p></li>
+</ul>
+<p><strong>Transcription Events:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">transcribe_created</span></code> - Transcription started</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">transcribe_updated</span></code> - Transcription progress update</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">transcribe_deleted</span></code> - Transcription deleted</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">transcript_created</span></code> - Transcript segment created</p></li>
+</ul>
+<p><strong>Queue Events:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">queue_created</span></code> - Queue created</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">queue_updated</span></code> - Queue updated</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">queuecall_created</span></code> - Call joined queue</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">queuecall_kicking</span></code> - Agent assigned to queue call</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">queuecall_serviced</span></code> - Queue call being handled</p></li>
+</ul>
+<p><strong>Conference Events:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">conference_created</span></code> - Conference created</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">conference_updated</span></code> - Conference updated</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">confbridge_created</span></code> - Conference bridge created</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">confbridge_updated</span></code> - Participant joined/left</p></li>
+</ul>
+<p><strong>Activeflow Events:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">activeflow_created</span></code> - Flow execution started</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">activeflow_updated</span></code> - Flow execution progressed</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">activeflow_deleted</span></code> - Flow execution ended</p></li>
+</ul>
 </section>
 <section id="receiving-webhook-events">
 <h2>Receiving Webhook Events<a class="headerlink" href="#receiving-webhook-events" title="Link to this heading"></a></h2>
@@ -315,21 +340,20 @@
     <span class="n">payload</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">get_json</span><span class="p">()</span>
 
     <span class="c1"># Process different event types</span>
-    <span class="n">event_type</span> <span class="o">=</span> <span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;event_type&#39;</span><span class="p">)</span>
+    <span class="n">event_type</span> <span class="o">=</span> <span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">&#39;call.completed&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">&#39;call_hungup&#39;</span><span class="p">:</span>
         <span class="n">call_id</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
-        <span class="n">duration</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;duration&#39;</span><span class="p">]</span>
-        <span class="n">status</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;status&#39;</span><span class="p">]</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;hangup_reason&#39;</span><span class="p">]</span>
 
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Call </span><span class="si">{</span><span class="n">call_id</span><span class="si">}</span><span class="s2"> completed: </span><span class="si">{</span><span class="n">duration</span><span class="si">}</span><span class="s2">s, status: </span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Call </span><span class="si">{</span><span class="n">call_id</span><span class="si">}</span><span class="s2"> ended: </span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="c1"># Your business logic here</span>
         <span class="c1"># - Update CRM</span>
         <span class="c1"># - Send notifications</span>
         <span class="c1"># - Trigger workflows</span>
 
-    <span class="k">elif</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">&#39;message.received&#39;</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">&#39;message_created&#39;</span><span class="p">:</span>
         <span class="n">message_id</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
         <span class="n">from_number</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;source&#39;</span><span class="p">][</span><span class="s1">&#39;target&#39;</span><span class="p">]</span>
         <span class="n">text</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;text&#39;</span><span class="p">]</span>
@@ -341,11 +365,11 @@
         <span class="c1"># - Route to agent</span>
         <span class="c1"># - Store in database</span>
 
-    <span class="k">elif</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">&#39;recording.completed&#39;</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">&#39;recording_updated&#39;</span><span class="p">:</span>
         <span class="n">recording_id</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
-        <span class="n">url</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;url&#39;</span><span class="p">]</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;status&#39;</span><span class="p">]</span>
 
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Recording </span><span class="si">{</span><span class="n">recording_id</span><span class="si">}</span><span class="s2"> available at: </span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Recording </span><span class="si">{</span><span class="n">recording_id</span><span class="si">}</span><span class="s2"> status: </span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="c1"># Handle recording</span>
         <span class="c1"># - Download and store</span>
@@ -367,19 +391,19 @@ app.use(express.json());
 
 app.post(&#39;/voipbin/webhook&#39;, (req, res) =&gt; {
     const payload = req.body;
-    const eventType = payload.event_type;
+    const eventType = payload.type;
 
     console.log(`Received event: ${eventType}`);
 
     switch(eventType) {
-        case &#39;call.completed&#39;:
-            handleCallCompleted(payload.data);
+        case &#39;call_hungup&#39;:
+            handleCallHungup(payload.data);
             break;
-        case &#39;message.received&#39;:
-            handleMessageReceived(payload.data);
+        case &#39;message_created&#39;:
+            handleMessageCreated(payload.data);
             break;
-        case &#39;recording.completed&#39;:
-            handleRecordingCompleted(payload.data);
+        case &#39;recording_updated&#39;:
+            handleRecordingUpdated(payload.data);
             break;
         default:
             console.log(`Unknown event type: ${eventType}`);
@@ -389,18 +413,18 @@ app.post(&#39;/voipbin/webhook&#39;, (req, res) =&gt; {
     res.status(200).json({ status: &#39;received&#39; });
 });
 
-function handleCallCompleted(data) {
-    console.log(`Call ${data.id} completed`);
+function handleCallHungup(data) {
+    console.log(`Call ${data.id} ended`);
     // Your logic here
 }
 
-function handleMessageReceived(data) {
+function handleMessageCreated(data) {
     console.log(`Message from ${data.source.target}: ${data.text}`);
     // Your logic here
 }
 
-function handleRecordingCompleted(data) {
-    console.log(`Recording available: ${data.url}`);
+function handleRecordingUpdated(data) {
+    console.log(`Recording ${data.id} status: ${data.status}`);
     // Your logic here
 }
 
@@ -433,12 +457,10 @@ $ ngrok http 5000
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;http://localhost:5000/voipbin/webhook&#39; \
     --header &#39;Content-Type: application/json&#39; \
     --data-raw &#39;{
-        &quot;event_type&quot;: &quot;call.completed&quot;,
-        &quot;timestamp&quot;: &quot;2026-01-20T10:30:00.000000Z&quot;,
+        &quot;type&quot;: &quot;call_hungup&quot;,
         &quot;data&quot;: {
             &quot;id&quot;: &quot;test-call-id&quot;,
-            &quot;status&quot;: &quot;completed&quot;,
-            &quot;duration&quot;: 120,
+            &quot;hangup_reason&quot;: &quot;normal&quot;,
             &quot;source&quot;: {
                 &quot;type&quot;: &quot;tel&quot;,
                 &quot;target&quot;: &quot;+15551234567&quot;
@@ -456,10 +478,7 @@ $ ngrok http 5000
 <h2>Webhook Payload Structure<a class="headerlink" href="#webhook-payload-structure" title="Link to this heading"></a></h2>
 <p>All webhook events follow this structure:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;event_type&quot;</span><span class="p">:</span> <span class="s2">&quot;call.completed&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-01-20T10:30:00.000000Z&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;webhook_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;12345678-1234-1234-1234-123456789012&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;call_hungup&quot;</span><span class="p">,</span>
     <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="o">//</span> <span class="n">Event</span><span class="o">-</span><span class="n">specific</span> <span class="n">data</span>
         <span class="o">//</span> <span class="n">Structure</span> <span class="n">varies</span> <span class="n">by</span> <span class="n">event</span> <span class="nb">type</span>
@@ -467,12 +486,11 @@ $ ngrok http 5000
 <span class="p">}</span>
 </pre></div>
 </div>
-<p><strong>Fields:</strong>
-- <code class="docutils literal notranslate"><span class="pre">event_type</span></code>: Type of event that occurred
-- <code class="docutils literal notranslate"><span class="pre">timestamp</span></code>: When the event occurred (ISO 8601 format in UTC)
-- <code class="docutils literal notranslate"><span class="pre">webhook_id</span></code>: ID of the webhook that triggered this event
-- <code class="docutils literal notranslate"><span class="pre">customer_id</span></code>: Your VoIPBIN customer ID
-- <code class="docutils literal notranslate"><span class="pre">data</span></code>: Event-specific data (varies by event type)</p>
+<p><strong>Fields:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code>: Type of event that occurred (e.g., <code class="docutils literal notranslate"><span class="pre">call_hungup</span></code>, <code class="docutils literal notranslate"><span class="pre">message_created</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code>: Event-specific data (varies by event type). See <a class="reference internal" href="webhook_struct_webhook.html#webhook-struct-webhook"><span class="std std-ref">Webhook Structure</span></a> for details.</p></li>
+</ul>
 </section>
 <section id="best-practices">
 <h2>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading"></a></h2>
@@ -504,22 +522,21 @@ $ ngrok http 5000
 <section id="common-use-cases">
 <h2>Common Use Cases<a class="headerlink" href="#common-use-cases" title="Link to this heading"></a></h2>
 <p><strong>CRM Integration:</strong>
-Automatically update your CRM when calls complete:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">&#39;call.completed&#39;</span><span class="p">:</span>
+Automatically update your CRM when calls end:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">&#39;call_hungup&#39;</span><span class="p">:</span>
     <span class="n">call_data</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
 
     <span class="c1"># Update CRM contact record</span>
     <span class="n">crm</span><span class="o">.</span><span class="n">update_contact</span><span class="p">(</span>
         <span class="n">phone</span><span class="o">=</span><span class="n">call_data</span><span class="p">[</span><span class="s1">&#39;destination&#39;</span><span class="p">][</span><span class="s1">&#39;target&#39;</span><span class="p">],</span>
         <span class="n">last_call_date</span><span class="o">=</span><span class="n">call_data</span><span class="p">[</span><span class="s1">&#39;tm_hangup&#39;</span><span class="p">],</span>
-        <span class="n">call_duration</span><span class="o">=</span><span class="n">call_data</span><span class="p">[</span><span class="s1">&#39;duration&#39;</span><span class="p">],</span>
-        <span class="n">call_status</span><span class="o">=</span><span class="n">call_data</span><span class="p">[</span><span class="s1">&#39;status&#39;</span><span class="p">]</span>
+        <span class="n">hangup_reason</span><span class="o">=</span><span class="n">call_data</span><span class="p">[</span><span class="s1">&#39;hangup_reason&#39;</span><span class="p">]</span>
     <span class="p">)</span>
 </pre></div>
 </div>
 <p><strong>Auto-Reply to Messages:</strong>
 Respond automatically to incoming messages:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">&#39;message.received&#39;</span><span class="p">:</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">&#39;message_created&#39;</span><span class="p">:</span>
     <span class="n">message</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
     <span class="n">from_number</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">][</span><span class="s1">&#39;target&#39;</span><span class="p">]</span>
 
@@ -531,16 +548,17 @@ Respond automatically to incoming messages:</p>
 </pre></div>
 </div>
 <p><strong>Recording Distribution:</strong>
-Email recordings to stakeholders when completed:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">&#39;recording.completed&#39;</span><span class="p">:</span>
+Email recordings to stakeholders when ready:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">&#39;recording_updated&#39;</span><span class="p">:</span>
     <span class="n">recording</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
 
-    <span class="c1"># Send email with recording link</span>
-    <span class="n">email</span><span class="o">.</span><span class="n">send</span><span class="p">(</span>
-        <span class="n">to</span><span class="o">=</span><span class="s1">&#39;team@company.com&#39;</span><span class="p">,</span>
-        <span class="n">subject</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;Call Recording Available&#39;</span><span class="p">,</span>
-        <span class="n">body</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;Recording URL: </span><span class="si">{</span><span class="n">recording</span><span class="p">[</span><span class="s2">&quot;url&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span>
-    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">recording</span><span class="p">[</span><span class="s1">&#39;status&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;done&#39;</span><span class="p">:</span>
+        <span class="c1"># Send email with recording info</span>
+        <span class="n">email</span><span class="o">.</span><span class="n">send</span><span class="p">(</span>
+            <span class="n">to</span><span class="o">=</span><span class="s1">&#39;team@company.com&#39;</span><span class="p">,</span>
+            <span class="n">subject</span><span class="o">=</span><span class="s1">&#39;Call Recording Available&#39;</span><span class="p">,</span>
+            <span class="n">body</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;Recording ID: </span><span class="si">{</span><span class="n">recording</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="p">)</span>
 </pre></div>
 </div>
 <p>For more information about webhook configuration and event types, see <a class="reference internal" href="webhook_overview.html#webhook-overview"><span class="std std-ref">Webhook Overview</span></a>.</p>

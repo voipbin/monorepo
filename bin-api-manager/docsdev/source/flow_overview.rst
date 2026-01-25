@@ -438,7 +438,7 @@ For example, you can register the flow like the below.
 
 In the provided example, the system examines the content of the received message using **voipbin.message.text** and proceeds to compare the message text.
 Should the message text match the specified criterion, such as "call me," the flow execution cursor will be directed to the designated action ID (7a1e8c4c-aaea-11ed-9f0f-bffcc31ca3c3) for subsequent execution.
-See detail about available variables at :ref:`here <variable-main>`.
+See the :ref:`Variable Reference <variable-variable>` for all available variables.
 
 Outbound Campaigns
 ++++++++++++++++++
@@ -450,7 +450,7 @@ API
 
 Users have the flexibility to trigger flows through API calls. This API integration empowers developers to seamlessly incorporate and activate flows within their applications.
 These diverse methods offer users and developers flexibility in integrating and executing flows based on their specific needs and scenarios.
-See detail about API calling at `here <https://api.voipbin.net/redoc/#tag/Activeflow>`_.
+See the `Activeflow API Reference <https://api.voipbin.net/redoc/#tag/Activeflow>`_ for API details.
 And due to the absence of any media-based incoming or outgoing elements in the API, certain actions within the flow—such as answer, talk, transcribe, and others—will be ignored. Instead, the execution cursor will proceed to the next action in the sequence.
 
 

@@ -78,13 +78,17 @@ ended       Activeflow has stopped.
 
 Reference type
 --------------
-Triggered resource.
+The resource type that triggered the activeflow execution.
 
-=========== ============
-Type        Description
-=========== ============
-EMPTY       None
-call        Call resource started the activeflow.
-sms         SMS resource started the activeflow.
-=========== ============
+============ ================================================
+Type         Description
+============ ================================================
+call         Incoming or outgoing call triggered the flow.
+message      Incoming SMS/MMS message triggered the flow.
+api          Flow started via API call.
+campaign     Outbound campaign triggered the flow.
+transcribe   Transcription service triggered the flow.
+recording    Recording completion triggered the flow.
+ai           AI service triggered the flow.
+============ ================================================
 

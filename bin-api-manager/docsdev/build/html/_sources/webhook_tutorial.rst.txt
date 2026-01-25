@@ -106,36 +106,55 @@ Remove a webhook when it's no longer needed.
 Webhook Event Types
 -------------------
 
-VoIPBIN sends different event types to your webhook endpoint. Common event types include:
+VoIPBIN sends different event types to your webhook endpoint. For the complete list, see :ref:`Webhook Structure <webhook-struct-webhook>`.
 
 **Call Events:**
-- ``call.status`` - Call status changed (dialing, ringing, answered, hangup)
-- ``call.completed`` - Call ended
-- ``call.recording`` - Recording status changed
+
+- ``call_created`` - Call initiated
+- ``call_ringing`` - Call is ringing
+- ``call_answered`` - Call was answered
+- ``call_updated`` - Call status changed
+- ``call_hungup`` - Call ended
 
 **Message Events:**
-- ``message.received`` - Incoming message received
-- ``message.sent`` - Outgoing message sent
-- ``message.delivered`` - Message delivery confirmed
+
+- ``message_created`` - Message created
+- ``message_updated`` - Message status changed
+- ``message_deleted`` - Message deleted
 
 **Recording Events:**
-- ``recording.started`` - Recording started
-- ``recording.completed`` - Recording finished and available
+
+- ``recording_created`` - Recording started
+- ``recording_updated`` - Recording status changed
+- ``recording_deleted`` - Recording deleted
 
 **Transcription Events:**
-- ``transcribe.started`` - Transcription started
-- ``transcribe.completed`` - Transcription finished
-- ``transcribe.updated`` - Real-time transcription update
+
+- ``transcribe_created`` - Transcription started
+- ``transcribe_updated`` - Transcription progress update
+- ``transcribe_deleted`` - Transcription deleted
+- ``transcript_created`` - Transcript segment created
 
 **Queue Events:**
-- ``queue.joined`` - Caller joined queue
-- ``queue.answered`` - Agent answered queued call
-- ``queue.abandoned`` - Caller left queue
+
+- ``queue_created`` - Queue created
+- ``queue_updated`` - Queue updated
+- ``queuecall_created`` - Call joined queue
+- ``queuecall_kicking`` - Agent assigned to queue call
+- ``queuecall_serviced`` - Queue call being handled
 
 **Conference Events:**
-- ``conference.participant.joined`` - Participant joined conference
-- ``conference.participant.left`` - Participant left conference
-- ``conference.ended`` - Conference ended
+
+- ``conference_created`` - Conference created
+- ``conference_updated`` - Conference updated
+- ``confbridge_created`` - Conference bridge created
+- ``confbridge_updated`` - Participant joined/left
+
+**Activeflow Events:**
+
+- ``activeflow_created`` - Flow execution started
+- ``activeflow_updated`` - Flow execution progressed
+- ``activeflow_deleted`` - Flow execution ended
 
 Receiving Webhook Events
 -------------------------
@@ -158,21 +177,20 @@ Your webhook endpoint should accept POST requests and process the JSON payload. 
         payload = request.get_json()
 
         # Process different event types
-        event_type = payload.get('event_type')
+        event_type = payload.get('type')
 
-        if event_type == 'call.completed':
+        if event_type == 'call_hungup':
             call_id = payload['data']['id']
-            duration = payload['data']['duration']
-            status = payload['data']['status']
+            status = payload['data']['hangup_reason']
 
-            print(f"Call {call_id} completed: {duration}s, status: {status}")
+            print(f"Call {call_id} ended: {status}")
 
             # Your business logic here
             # - Update CRM
             # - Send notifications
             # - Trigger workflows
 
-        elif event_type == 'message.received':
+        elif event_type == 'message_created':
             message_id = payload['data']['id']
             from_number = payload['data']['source']['target']
             text = payload['data']['text']
@@ -184,11 +202,11 @@ Your webhook endpoint should accept POST requests and process the JSON payload. 
             # - Route to agent
             # - Store in database
 
-        elif event_type == 'recording.completed':
+        elif event_type == 'recording_updated':
             recording_id = payload['data']['id']
-            url = payload['data']['url']
+            status = payload['data']['status']
 
-            print(f"Recording {recording_id} available at: {url}")
+            print(f"Recording {recording_id} status: {status}")
 
             # Handle recording
             # - Download and store
@@ -212,19 +230,19 @@ Your webhook endpoint should accept POST requests and process the JSON payload. 
 
     app.post('/voipbin/webhook', (req, res) => {
         const payload = req.body;
-        const eventType = payload.event_type;
+        const eventType = payload.type;
 
         console.log(`Received event: ${eventType}`);
 
         switch(eventType) {
-            case 'call.completed':
-                handleCallCompleted(payload.data);
+            case 'call_hungup':
+                handleCallHungup(payload.data);
                 break;
-            case 'message.received':
-                handleMessageReceived(payload.data);
+            case 'message_created':
+                handleMessageCreated(payload.data);
                 break;
-            case 'recording.completed':
-                handleRecordingCompleted(payload.data);
+            case 'recording_updated':
+                handleRecordingUpdated(payload.data);
                 break;
             default:
                 console.log(`Unknown event type: ${eventType}`);
@@ -234,18 +252,18 @@ Your webhook endpoint should accept POST requests and process the JSON payload. 
         res.status(200).json({ status: 'received' });
     });
 
-    function handleCallCompleted(data) {
-        console.log(`Call ${data.id} completed`);
+    function handleCallHungup(data) {
+        console.log(`Call ${data.id} ended`);
         // Your logic here
     }
 
-    function handleMessageReceived(data) {
+    function handleMessageCreated(data) {
         console.log(`Message from ${data.source.target}: ${data.text}`);
         // Your logic here
     }
 
-    function handleRecordingCompleted(data) {
-        console.log(`Recording available: ${data.url}`);
+    function handleRecordingUpdated(data) {
+        console.log(`Recording ${data.id} status: ${data.status}`);
         // Your logic here
     }
 
@@ -284,12 +302,10 @@ Simulate a webhook event to test your endpoint:
     $ curl --location --request POST 'http://localhost:5000/voipbin/webhook' \
         --header 'Content-Type: application/json' \
         --data-raw '{
-            "event_type": "call.completed",
-            "timestamp": "2026-01-20T10:30:00.000000Z",
+            "type": "call_hungup",
             "data": {
                 "id": "test-call-id",
-                "status": "completed",
-                "duration": 120,
+                "hangup_reason": "normal",
                 "source": {
                     "type": "tel",
                     "target": "+15551234567"
@@ -309,10 +325,7 @@ All webhook events follow this structure:
 .. code::
 
     {
-        "event_type": "call.completed",
-        "timestamp": "2026-01-20T10:30:00.000000Z",
-        "webhook_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-        "customer_id": "12345678-1234-1234-1234-123456789012",
+        "type": "call_hungup",
         "data": {
             // Event-specific data
             // Structure varies by event type
@@ -320,11 +333,9 @@ All webhook events follow this structure:
     }
 
 **Fields:**
-- ``event_type``: Type of event that occurred
-- ``timestamp``: When the event occurred (ISO 8601 format in UTC)
-- ``webhook_id``: ID of the webhook that triggered this event
-- ``customer_id``: Your VoIPBIN customer ID
-- ``data``: Event-specific data (varies by event type)
+
+- ``type``: Type of event that occurred (e.g., ``call_hungup``, ``message_created``)
+- ``data``: Event-specific data (varies by event type). See :ref:`Webhook Structure <webhook-struct-webhook>` for details.
 
 Best Practices
 --------------
@@ -363,19 +374,18 @@ Common Use Cases
 ----------------
 
 **CRM Integration:**
-Automatically update your CRM when calls complete:
+Automatically update your CRM when calls end:
 
 .. code::
 
-    if event_type == 'call.completed':
+    if event_type == 'call_hungup':
         call_data = payload['data']
 
         # Update CRM contact record
         crm.update_contact(
             phone=call_data['destination']['target'],
             last_call_date=call_data['tm_hangup'],
-            call_duration=call_data['duration'],
-            call_status=call_data['status']
+            hangup_reason=call_data['hangup_reason']
         )
 
 **Auto-Reply to Messages:**
@@ -383,7 +393,7 @@ Respond automatically to incoming messages:
 
 .. code::
 
-    if event_type == 'message.received':
+    if event_type == 'message_created':
         message = payload['data']
         from_number = message['source']['target']
 
@@ -394,18 +404,19 @@ Respond automatically to incoming messages:
         )
 
 **Recording Distribution:**
-Email recordings to stakeholders when completed:
+Email recordings to stakeholders when ready:
 
 .. code::
 
-    if event_type == 'recording.completed':
+    if event_type == 'recording_updated':
         recording = payload['data']
 
-        # Send email with recording link
-        email.send(
-            to='team@company.com',
-            subject=f'Call Recording Available',
-            body=f'Recording URL: {recording["url"]}'
-        )
+        if recording['status'] == 'done':
+            # Send email with recording info
+            email.send(
+                to='team@company.com',
+                subject='Call Recording Available',
+                body=f'Recording ID: {recording["id"]}'
+            )
 
 For more information about webhook configuration and event types, see :ref:`Webhook Overview <webhook-overview>`.
