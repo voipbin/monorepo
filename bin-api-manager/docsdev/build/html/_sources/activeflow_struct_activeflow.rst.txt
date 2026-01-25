@@ -32,7 +32,7 @@ Activeflow
 * *status*: Activeflow's status. See detail :ref:`here <activeflow-struct-activeflow-status>`.
 * *reference_type*: Represent which resource started activeflow.
 * reference_id: Referenced type's ID.
-* current_action: Currently running actino on this activeflow. See detail :ref:`here <flow-struct-action-action>`.
+* current_action: Currently running action on this activeflow. See detail :ref:`here <flow-struct-action-action>`.
 * forward_action_id: Forward action id.
 
 Example
@@ -78,7 +78,7 @@ ended       Activeflow has stopped.
 
 Reference type
 --------------
-Tiggerred resource.
+Triggered resource.
 
 =========== ============
 Type        Description

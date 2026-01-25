@@ -11,13 +11,13 @@ Action
 .. code::
 
     {
-        "id": "<string>>",
-        "next_id": "<string>>",
-        "type": "<string>>",
+        "id": "<string>",
+        "next_id": "<string>",
+        "type": "<string>",
         "option": {
             ...
         },
-        "tm_execute": "<string>>"
+        "tm_execute": "<string>"
     }
 
 * *id*: Action's id.
@@ -513,8 +513,8 @@ Parameters
 * *variable*: Target variable. See detail :ref:`here <variable-variable>`.
 * value_type: Type of value. string/number/length.
 * value_string: Value. Valid only if the value_type is string.
-* value_number: * value_string: Value. Valid only if the value_type is number.
-* value_length: * value_string: Value. Valid only if the value_type is length.
+* value_number: Value. Valid only if the value_type is number.
+* value_length: Value. Valid only if the value_type is length.
 * false_target_id: action id for false condition.
 
 Example
@@ -818,7 +818,7 @@ Example
 .. code::
 
     {
-        "type": "fetch".
+        "type": "fetch",
         "option": {
             "event_method": "POST",
             "event_url": "https://webhook.site/e47c9b40-662c-4d20-a288-6777360fa211"
@@ -849,7 +849,7 @@ Example
 .. code::
 
     {
-        "type": "fetch_flow".
+        "type": "fetch_flow",
         "option": {
             "flow_id": "212a32a8-9529-11ec-8bf0-8b89df407b6e"
         }
@@ -921,7 +921,7 @@ Parameters
 .. code::
 
     {
-        "type": "Hangup_relay"
+        "type": "hangup_relay",
         "option": {
             "reference_id": "<string>"
         }
@@ -1044,7 +1044,7 @@ Parameters
 .. code::
 
     {
-        "type": "recording_start"
+        "type": "recording_start",
         "option": {
             "format": "<string>",
             "end_of_silence": <integer>,
@@ -1136,7 +1136,7 @@ Example
 .. code::
 
     {
-        "type": "stream_echo"
+        "type": "stream_echo",
         "option": {
             "duration": 10000
         }
@@ -1202,7 +1202,7 @@ Parameters
 .. code::
 
     {
-        "type": "transcribe_recording"
+        "type": "transcribe_recording",
         "option": {
             "language": "<string>"
         }
@@ -1215,7 +1215,7 @@ Example
 .. code::
 
     {
-        "type": "transcribe_recording"
+        "type": "transcribe_recording",
         "option": {
             "language": "en-US"
         }
@@ -1277,14 +1277,14 @@ Example
 
 Variable Set
 ---------------
-Stop the transcribe talk in realtime.
+Set a variable value for use in the flow.
 
 Parameters
 ++++++++++
 .. code::
 
     {
-        "type": "variable_set"
+        "type": "variable_set",
         "option": {
             "key": "<string>",
             "value": "<string>"
@@ -1292,14 +1292,14 @@ Parameters
     }
 
 * key: Variable name.
-* value" Varialbe value.
+* value: Variable value.
 
 Example
 +++++++
 .. code::
 
     {
-        "type": "variable_set"
+        "type": "variable_set",
         "option": {
             "key": "Provider name",
             "value": "voipbin"
@@ -1317,7 +1317,7 @@ Parameters
 .. code::
 
     {
-        "type": "webhook_send"
+        "type": "webhook_send",
         "option": {
             "sync": boolean,
             "uri": "<string>",

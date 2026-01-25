@@ -944,13 +944,13 @@ Flow B starts with these variables:
 <section id="flow-struct-action-action">
 <span id="id3"></span><h3>Action<a class="headerlink" href="#flow-struct-action-action" title="Link to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;next_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;next_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="o">...</span>
     <span class="p">},</span>
-    <span class="s2">&quot;tm_execute&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&gt;&quot;</span>
+    <span class="s2">&quot;tm_execute&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -1516,8 +1516,8 @@ It checks the call’s status and if it matched with condition then move to the 
 <li><p><em>variable</em>: Target variable. See detail <a class="reference internal" href="variable_variable.html#variable-variable"><span class="std std-ref">here</span></a>.</p></li>
 <li><p>value_type: Type of value. string/number/length.</p></li>
 <li><p>value_string: Value. Valid only if the value_type is string.</p></li>
-<li><p>value_number: * value_string: Value. Valid only if the value_type is number.</p></li>
-<li><p>value_length: * value_string: Value. Valid only if the value_type is length.</p></li>
+<li><p>value_number: Value. Valid only if the value_type is number.</p></li>
+<li><p>value_length: Value. Valid only if the value_type is length.</p></li>
 <li><p>false_target_id: action id for false condition.</p></li>
 </ul>
 </section>
@@ -1810,7 +1810,7 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id41">
 <h4>Example<a class="headerlink" href="#id41" title="Link to this heading"></a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;fetch&quot;</span><span class="o">.</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;fetch&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;event_method&quot;</span><span class="p">:</span> <span class="s2">&quot;POST&quot;</span><span class="p">,</span>
         <span class="s2">&quot;event_url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://webhook.site/e47c9b40-662c-4d20-a288-6777360fa211&quot;</span>
@@ -1840,7 +1840,7 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id43">
 <h4>Example<a class="headerlink" href="#id43" title="Link to this heading"></a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;fetch_flow&quot;</span><span class="o">.</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;fetch_flow&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;212a32a8-9529-11ec-8bf0-8b89df407b6e&quot;</span>
     <span class="p">}</span>
@@ -1907,7 +1907,7 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id48">
 <h4>Parameters<a class="headerlink" href="#id48" title="Link to this heading"></a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;Hangup_relay&quot;</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup_relay&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
     <span class="p">}</span>
@@ -2025,7 +2025,7 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id55">
 <h4>Parameters<a class="headerlink" href="#id55" title="Link to this heading"></a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;recording_start&quot;</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;recording_start&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
         <span class="s2">&quot;end_of_silence&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">integer</span><span class="o">&gt;</span><span class="p">,</span>
@@ -2114,7 +2114,7 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id61">
 <h4>Example<a class="headerlink" href="#id61" title="Link to this heading"></a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;stream_echo&quot;</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;stream_echo&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="mi">10000</span>
     <span class="p">}</span>
@@ -2181,7 +2181,7 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id64">
 <h4>Parameters<a class="headerlink" href="#id64" title="Link to this heading"></a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcribe_recording&quot;</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcribe_recording&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
     <span class="p">}</span>
@@ -2195,7 +2195,7 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id65">
 <h4>Example<a class="headerlink" href="#id65" title="Link to this heading"></a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcribe_recording&quot;</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcribe_recording&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
     <span class="p">}</span>
@@ -2255,11 +2255,11 @@ It checks the call’s status and if it matched with condition then move to the 
 </section>
 <section id="variable-set">
 <span id="flow-struct-action-variable-set"></span><h3>Variable Set<a class="headerlink" href="#variable-set" title="Link to this heading"></a></h3>
-<p>Stop the transcribe talk in realtime.</p>
+<p>Set a variable value for use in the flow.</p>
 <section id="id70">
 <h4>Parameters<a class="headerlink" href="#id70" title="Link to this heading"></a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;variable_set&quot;</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;variable_set&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
         <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
@@ -2269,13 +2269,13 @@ It checks the call’s status and if it matched with condition then move to the 
 </div>
 <ul class="simple">
 <li><p>key: Variable name.</p></li>
-<li><p>value” Varialbe value.</p></li>
+<li><p>value: Variable value.</p></li>
 </ul>
 </section>
 <section id="id71">
 <h4>Example<a class="headerlink" href="#id71" title="Link to this heading"></a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;variable_set&quot;</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;variable_set&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;Provider name&quot;</span><span class="p">,</span>
         <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;voipbin&quot;</span>
@@ -2291,7 +2291,7 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id72">
 <h4>Parameters<a class="headerlink" href="#id72" title="Link to this heading"></a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;webhook_send&quot;</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;webhook_send&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;sync&quot;</span><span class="p">:</span> <span class="n">boolean</span><span class="p">,</span>
         <span class="s2">&quot;uri&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
@@ -2591,7 +2591,7 @@ This doesn’t affect existing calls.</p>
  <span class="n">Recording</span> <span class="n">start</span>
     <span class="o">|</span>
     <span class="o">|</span>
-  <span class="n">Sleep</span><span class="p">(</span><span class="mi">30</span> <span class="n">sec</span><span class="p">)</span>
+  <span class="n">Sleep</span><span class="p">(</span><span class="mi">10</span> <span class="n">sec</span><span class="p">)</span>
     <span class="o">|</span>
     <span class="o">|</span>
   <span class="n">Hangup</span>
@@ -2772,7 +2772,7 @@ This doesn’t affect existing calls.</p>
             <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;ed9705ca-c524-11ec-a3fb-8feb7731ad45&quot;</span><span class="p">,</span>
             <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
             <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;You didn&#39;t choice correct number. Default selected.&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;You didn&#39;t choose the correct number. Default selected.&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;gender&quot;</span><span class="p">:</span> <span class="s2">&quot;female&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
             <span class="p">}</span>
@@ -3437,7 +3437,7 @@ The executed_actions history is preserved for review.</p></td>
 <li><p><em>status</em>: Activeflow’s status. See detail <a class="reference internal" href="#activeflow-struct-activeflow-status"><span class="std std-ref">here</span></a>.</p></li>
 <li><p><em>reference_type</em>: Represent which resource started activeflow.</p></li>
 <li><p>reference_id: Referenced type’s ID.</p></li>
-<li><p>current_action: Currently running actino on this activeflow. See detail <a class="reference internal" href="flow_struct_action.html#flow-struct-action-action"><span class="std std-ref">here</span></a>.</p></li>
+<li><p>current_action: Currently running action on this activeflow. See detail <a class="reference internal" href="flow_struct_action.html#flow-struct-action-action"><span class="std std-ref">here</span></a>.</p></li>
 <li><p>forward_action_id: Forward action id.</p></li>
 </ul>
 <section id="id77">
@@ -3491,7 +3491,7 @@ The executed_actions history is preserved for review.</p></td>
 </section>
 <section id="reference-type">
 <h3>Reference type<a class="headerlink" href="#reference-type" title="Link to this heading"></a></h3>
-<p>Tiggerred resource.</p>
+<p>Triggered resource.</p>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Type</p></th>
