@@ -47,7 +47,7 @@ Gets the list of created queues.
 
 .. code::
 
-    $ curl --location --request GET 'https://api.voipbin.net/v1.0/queues?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+    $ curl --location --request GET 'https://api.voipbin.net/v1.0/queues?token=<YOUR_AUTH_TOKEN>'
 
     {
         "result": [

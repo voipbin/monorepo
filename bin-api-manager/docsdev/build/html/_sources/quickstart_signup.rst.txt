@@ -4,8 +4,8 @@ Signup
 ======
 In this Quickstart, you'll learn how to sign up and receive your account credentials to start using the VoIPBIN API.
 
-Sign up to VoIPBin
--------------------
+Sign up to VoIPBIN
+------------------
 To begin, send a sign-up request email to:
 
 **pchero21@gmail.com**

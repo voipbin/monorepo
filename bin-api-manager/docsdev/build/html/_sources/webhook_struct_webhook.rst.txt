@@ -287,14 +287,14 @@ Example
             "recording_ids": [],
             "source": {
                 "type": "tel",
-                "target": "+821021656521",
+                "target": "+15559876543",
                 "target_name": "",
                 "name": "",
                 "detail": ""
             },
             "destination": {
                 "type": "tel",
-                "target": "+821021656521",
+                "target": "+15559876543",
                 "target_name": "",
                 "name": "",
                 "detail": ""
@@ -879,7 +879,7 @@ Example
             "addresses": [
                 {
                     "type": "tel",
-                    "target": "+821021656521",
+                    "target": "+15559876543",
                     "target_name": "",
                     "name": "",
                     "detail": ""
