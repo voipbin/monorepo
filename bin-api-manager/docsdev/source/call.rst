@@ -10,3 +10,7 @@ Call
 .. include:: call_struct_call.rst
 .. include:: call_struct_groupcall.rst
 .. include:: call_tutorial.rst
+.. include:: call_sequences.rst
+.. include:: call_scenarios.rst
+.. include:: call_media.rst
+.. include:: call_troubleshooting.rst

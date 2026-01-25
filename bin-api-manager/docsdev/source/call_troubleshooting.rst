@@ -1,0 +1,640 @@
+.. _call-troubleshooting:
+
+Call Troubleshooting
+====================
+
+This guide helps you diagnose and resolve common call issues. Each problem includes symptoms, causes, and solutions.
+
+Debugging Tools
+---------------
+
+Before troubleshooting, understand the tools available:
+
+**API Endpoints for Debugging:**
+
+.. code::
+
+    Get call details:
+    GET /v1/calls/{call-id}
+
+    Get call events (webhooks sent):
+    GET /v1/calls/{call-id}/events
+
+    Get activeflow status:
+    GET /v1/activeflows/{activeflow-id}
+
+    Get recordings:
+    GET /v1/calls/{call-id}/recordings
+
+    Get transcripts:
+    GET /v1/calls/{call-id}/transcripts
+
+**WebSocket for Real-time Monitoring:**
+
+.. code::
+
+    Connect:
+    wss://api.voipbin.net/v1.0/ws?token=<token>
+
+    Subscribe to all call events:
+    {
+        "type": "subscribe",
+        "topics": ["customer_id:<your-id>:call:*"]
+    }
+
+    Events you'll receive:
+    - call_created
+    - call_ringing
+    - call_answered (progressing)
+    - call_hungup
+    - call_recording_started
+    - call_transcribing
+
+Call Never Connects
+-------------------
+
+**Symptoms:**
+
+- Call status goes directly from "dialing" to "hangup"
+- hangup_reason is "failed"
+- No ringing ever occurred
+
+**Common Causes and Solutions:**
+
+.. code::
+
+    Cause 1: Invalid Phone Number Format
+    +------------------------------------------+
+    | Problem:                                 |
+    | "+1 555-123-4567" (has spaces/dashes)    |
+    |                                          |
+    | Solution:                                |
+    | "+15551234567" (E.164 format)            |
+    +------------------------------------------+
+
+    Cause 2: Number Not Provisioned
+    +------------------------------------------+
+    | Problem:                                 |
+    | Source number not in your account        |
+    |                                          |
+    | Solution:                                |
+    | GET /v1/numbers to verify ownership      |
+    | Purchase number if needed                |
+    +------------------------------------------+
+
+    Cause 3: Insufficient Balance
+    +------------------------------------------+
+    | Problem:                                 |
+    | Account balance too low for call         |
+    |                                          |
+    | Solution:                                |
+    | GET /v1/billing-accounts to check balance|
+    | Add funds to account                     |
+    +------------------------------------------+
+
+    Cause 4: Carrier Rejection
+    +------------------------------------------+
+    | Problem:                                 |
+    | Destination carrier rejected the call    |
+    |                                          |
+    | Indicators:                              |
+    | - Works to some numbers, not others      |
+    | - Specific area codes fail               |
+    |                                          |
+    | Solution:                                |
+    | Contact support with call details        |
+    | Try alternate routes if available        |
+    +------------------------------------------+
+
+**Diagnostic Steps:**
+
+.. code::
+
+    1. Check call details:
+       GET /v1/calls/{call-id}
+
+       Look for:
+       {
+         "status": "hangup",
+         "hangup_reason": "failed",  <- Indicates network/routing issue
+         "hangup_by": "remote",
+         "tm_ringing": "9999-01-01..."  <- Never rang
+       }
+
+    2. Verify number format:
+       Source: Must be +E.164 (your VoIPBIN number)
+       Destination: Must be +E.164 or valid extension
+
+    3. Check account status:
+       GET /v1/billing-accounts
+       Verify: balance > 0, status = "active"
+
+Call Rings But No Answer
+------------------------
+
+**Symptoms:**
+
+- Call reaches "ringing" status
+- hangup_reason is "noanswer" or "dialout"
+
+**Understanding the Difference:**
+
+.. code::
+
+    "noanswer" vs "dialout":
+
+    noanswer:
+    +------------------------------------------+
+    | The destination phone rang until the     |
+    | destination's voicemail or timeout       |
+    | kicked in.                               |
+    |                                          |
+    | Duration: Typically 30-60 seconds        |
+    | Cause: Nobody picked up                  |
+    +------------------------------------------+
+
+    dialout:
+    +------------------------------------------+
+    | VoIPBIN's dial timeout expired before    |
+    | the call was answered.                   |
+    |                                          |
+    | Duration: Your configured timeout        |
+    | Cause: Your timeout is shorter than      |
+    |        typical ring time                 |
+    +------------------------------------------+
+
+**Solutions:**
+
+.. code::
+
+    For "noanswer":
+    - This is expected behavior when nobody answers
+    - Consider leaving voicemail (if AMD detects machine)
+    - Implement retry logic in your application
+
+    For "dialout":
+    - Increase dial_timeout in your call request:
+
+      POST /v1/calls
+      {
+        "dial_timeout": 45000,  <- 45 seconds
+        "destinations": [...]
+      }
+
+    - Default timeout is 30 seconds
+    - Recommended: 45-60 seconds for PSTN calls
+
+Call Answers But No Audio
+-------------------------
+
+**Symptoms:**
+
+- Call reaches "progressing" status
+- One or both parties cannot hear each other
+- Call may disconnect after silence
+
+**Common Causes:**
+
+.. code::
+
+    Cause 1: NAT/Firewall Issues (WebRTC)
+    +------------------------------------------+
+    | Problem:                                 |
+    | ICE candidates cannot traverse NAT       |
+    |                                          |
+    | Symptoms:                                |
+    | - WebRTC call connects (signaling OK)    |
+    | - No audio in either direction           |
+    |                                          |
+    | Solution:                                |
+    | - Ensure TURN server is configured       |
+    | - Check client firewall allows UDP       |
+    | - Verify ICE gathering completes         |
+    +------------------------------------------+
+
+    Cause 2: Codec Mismatch
+    +------------------------------------------+
+    | Problem:                                 |
+    | Endpoints don't share a common codec     |
+    |                                          |
+    | Symptoms:                                |
+    | - SIP call connects                      |
+    | - RTP flows but audio is garbled/silent  |
+    |                                          |
+    | Solution:                                |
+    | VoIPBIN auto-transcodes, but check       |
+    | endpoint codec configuration if using    |
+    | SIP trunking                             |
+    +------------------------------------------+
+
+    Cause 3: Hold State Stuck
+    +------------------------------------------+
+    | Problem:                                 |
+    | Call is on hold but wasn't resumed       |
+    |                                          |
+    | Symptoms:                                |
+    | - Call was working, then went silent     |
+    | - One party can hear, other cannot       |
+    |                                          |
+    | Solution:                                |
+    | Check mute/hold status:                  |
+    | GET /v1/calls/{call-id}                  |
+    | {                                        |
+    |   "mute_direction": "both",  <- Problem! |
+    |   "hold": true               <- Problem! |
+    | }                                        |
+    |                                          |
+    | Resume:                                  |
+    | POST /v1/calls/{call-id}/resume          |
+    | POST /v1/calls/{call-id}/unmute          |
+    +------------------------------------------+
+
+**Debug Audio Path:**
+
+.. code::
+
+    Audio Flow Check:
+
+    1. Verify call status:
+       GET /v1/calls/{call-id}
+       Confirm: status = "progressing"
+
+    2. Check media status:
+       Look for:
+       - hold: false
+       - mute_direction: "" (empty = unmuted)
+
+    3. For SIP calls, check RTP:
+       - Verify RTPEngine is receiving packets
+       - Check for one-way audio (NAT issue)
+
+    4. For WebRTC calls:
+       - Check browser console for ICE errors
+       - Verify DTLS handshake completed
+       - Test with different network
+
+Flow Actions Not Executing
+--------------------------
+
+**Symptoms:**
+
+- Call answers but expected TTS/media doesn't play
+- Actions seem to be skipped
+
+**Common Causes:**
+
+.. code::
+
+    Cause 1: early_execution Timing
+    +------------------------------------------+
+    | Problem:                                 |
+    | Actions execute before call answers      |
+    |                                          |
+    | With early_execution: true               |
+    | - Actions start on INVITE                |
+    | - Call may not be ready for audio        |
+    |                                          |
+    | Solution:                                |
+    | Set early_execution: false (default)     |
+    | Actions start after 200 OK (answered)    |
+    +------------------------------------------+
+
+    Cause 2: Action Errors
+    +------------------------------------------+
+    | Problem:                                 |
+    | An action fails and flow stops           |
+    |                                          |
+    | Check activeflow:                        |
+    | GET /v1/activeflows/{flow-id}            |
+    | {                                        |
+    |   "current_action": {                    |
+    |     "type": "talk",                      |
+    |     "error": "TTS service unavailable"   |
+    |   }                                      |
+    | }                                        |
+    |                                          |
+    | Solution:                                |
+    | Check error message                      |
+    | Verify action configuration              |
+    +------------------------------------------+
+
+    Cause 3: Missing Action IDs for Branching
+    +------------------------------------------+
+    | Problem:                                 |
+    | Branch targets action that doesn't exist |
+    |                                          |
+    | Example:                                 |
+    | {                                        |
+    |   "type": "branch",                      |
+    |   "option": {                            |
+    |     "target_ids": {                      |
+    |       "1": "nonexistent-id"  <- Error!   |
+    |     }                                    |
+    |   }                                      |
+    | }                                        |
+    |                                          |
+    | Solution:                                |
+    | Verify all target_ids match action IDs   |
+    +------------------------------------------+
+
+Webhooks Not Received
+---------------------
+
+**Symptoms:**
+
+- No webhooks arrive at your endpoint
+- Some webhooks arrive, others don't
+
+**Diagnostic Steps:**
+
+.. code::
+
+    1. Verify webhook configuration:
+       GET /v1/webhooks
+       {
+         "url": "https://your-server.com/webhook",
+         "events": ["call_hungup", "call_answered"],
+         "status": "active"
+       }
+
+    2. Check webhook delivery history:
+       GET /v1/webhooks/{webhook-id}/deliveries
+       {
+         "deliveries": [
+           {
+             "id": "delivery-uuid",
+             "event_type": "call_hungup",
+             "status": "failed",
+             "http_code": 500,
+             "attempts": 3,
+             "last_attempt": "2026-01-20T12:00:00Z",
+             "error": "Connection timeout"
+           }
+         ]
+       }
+
+    3. Common issues:
+
+       Endpoint not accessible:
+       +------------------------------------------+
+       | - Server firewall blocks VoIPBIN IPs    |
+       | - HTTPS certificate invalid             |
+       | - Endpoint returns 4xx/5xx errors       |
+       |                                         |
+       | Solution:                               |
+       | - Whitelist VoIPBIN IP ranges           |
+       | - Use valid SSL certificate             |
+       | - Ensure endpoint returns 200 OK        |
+       +------------------------------------------+
+
+       Endpoint too slow:
+       +------------------------------------------+
+       | - Webhook times out (> 5 seconds)       |
+       | - VoIPBIN retries, causing duplicates   |
+       |                                         |
+       | Solution:                               |
+       | - Return 200 immediately                |
+       | - Process webhook asynchronously        |
+       +------------------------------------------+
+
+       Wrong event subscription:
+       +------------------------------------------+
+       | - Subscribed to "call_created" but      |
+       |   expecting "call_hungup"               |
+       |                                         |
+       | Solution:                               |
+       | Update webhook events:                  |
+       | PUT /v1/webhooks/{id}                   |
+       | {"events": ["call_hungup"]}             |
+       +------------------------------------------+
+
+Recording Issues
+----------------
+
+**Symptoms:**
+
+- Recording not found
+- Recording is empty or truncated
+- Recording URL doesn't work
+
+**Troubleshooting:**
+
+.. code::
+
+    Recording Not Created:
+    +------------------------------------------+
+    | Check if recording was started:          |
+    |                                          |
+    | GET /v1/calls/{call-id}                  |
+    | {                                        |
+    |   "recording_ids": []  <- Empty!         |
+    | }                                        |
+    |                                          |
+    | Causes:                                  |
+    | - record_start action not in flow        |
+    | - Call hung up before recording started  |
+    | - Error in recording action              |
+    |                                          |
+    | Solution:                                |
+    | Verify flow has record_start action      |
+    | Check activeflow for errors              |
+    +------------------------------------------+
+
+    Recording Empty:
+    +------------------------------------------+
+    | Recording exists but duration is 0       |
+    |                                          |
+    | Causes:                                  |
+    | - Recording started after call ended     |
+    | - Audio not flowing during recording     |
+    |                                          |
+    | Solution:                                |
+    | Place record_start early in flow         |
+    | Verify call had audio (not on mute)      |
+    +------------------------------------------+
+
+    Recording URL Expired:
+    +------------------------------------------+
+    | GET /v1/recordings/{id} returns URL      |
+    | but download fails with 403              |
+    |                                          |
+    | Cause:                                   |
+    | Signed URLs expire after 1 hour          |
+    |                                          |
+    | Solution:                                |
+    | Fetch fresh URL from API                 |
+    | Download immediately after getting URL   |
+    +------------------------------------------+
+
+Transfer Problems
+-----------------
+
+**Symptoms:**
+
+- Transfer fails
+- Caller dropped during transfer
+- Consult call doesn't connect
+
+**Common Issues:**
+
+.. code::
+
+    Blind Transfer Fails:
+    +------------------------------------------+
+    | Caller disconnected during transfer      |
+    |                                          |
+    | Causes:                                  |
+    | - Transfer destination busy/unavailable  |
+    | - No failover configured                 |
+    |                                          |
+    | Solution:                                |
+    | Use attended transfer for important calls|
+    | Configure fallback action on failure     |
+    +------------------------------------------+
+
+    Attended Transfer - Consult Fails:
+    +------------------------------------------+
+    | Agent A can't reach Agent B              |
+    |                                          |
+    | Check transfer status:                   |
+    | GET /v1/transfers/{transfer-id}          |
+    | {                                        |
+    |   "status": "consulting",                |
+    |   "consult_call": {                      |
+    |     "status": "hangup",                  |
+    |     "hangup_reason": "noanswer"          |
+    |   }                                      |
+    | }                                        |
+    |                                          |
+    | Solution:                                |
+    | Cancel transfer and try different agent: |
+    | POST /v1/transfers/{id}/cancel           |
+    +------------------------------------------+
+
+    Caller Hears Dead Air During Transfer:
+    +------------------------------------------+
+    | Hold music not playing                   |
+    |                                          |
+    | Causes:                                  |
+    | - MOH not configured                     |
+    | - Mute applied instead of hold           |
+    |                                          |
+    | Solution:                                |
+    | Ensure transfer uses proper hold:        |
+    | POST /v1/calls/{call-id}/transfer        |
+    | {                                        |
+    |   "hold_caller": true,                   |
+    |   "play_moh": true                       |
+    | }                                        |
+    +------------------------------------------+
+
+Queue Problems
+--------------
+
+**Symptoms:**
+
+- Calls not distributed to agents
+- Long wait times
+- Agents not receiving calls
+
+**Troubleshooting:**
+
+.. code::
+
+    No Agents Receiving Calls:
+    +------------------------------------------+
+    | Check queue status:                      |
+    | GET /v1/queues/{queue-id}                |
+    | {                                        |
+    |   "available_agents": 0,  <- No agents!  |
+    |   "waiting_calls": 5                     |
+    | }                                        |
+    |                                          |
+    | Check agent status:                      |
+    | GET /v1/agents?queue_id={queue-id}       |
+    | Verify agents have status: "available"   |
+    |                                          |
+    | Common causes:                           |
+    | - All agents in "busy" or "offline"      |
+    | - Agents not logged into queue           |
+    | - Agent status not updated after call    |
+    +------------------------------------------+
+
+    Calls Timing Out in Queue:
+    +------------------------------------------+
+    | Check queue configuration:               |
+    | {                                        |
+    |   "timeout": 30000,  <- 30 seconds only  |
+    |   "timeout_action": "hangup"             |
+    | }                                        |
+    |                                          |
+    | Solution:                                |
+    | - Increase timeout                       |
+    | - Add fallback action (voicemail, etc.)  |
+    |                                          |
+    | PUT /v1/queues/{queue-id}                |
+    | {                                        |
+    |   "timeout": 300000,  <- 5 minutes       |
+    |   "timeout_flow_id": "voicemail-flow"    |
+    | }                                        |
+    +------------------------------------------+
+
+Error Reference
+---------------
+
+**Hangup Reason Quick Reference:**
+
+.. code::
+
+    +----------------+----------------------------------+------------------------+
+    | Reason         | Meaning                          | Action                 |
+    +----------------+----------------------------------+------------------------+
+    | normal         | Call completed successfully      | No action needed       |
+    | failed         | Network/routing failure          | Check number, routes   |
+    | busy           | Destination busy                 | Retry later            |
+    | noanswer       | No answer before timeout         | Leave voicemail        |
+    | cancel         | Caller cancelled                 | No action needed       |
+    | dialout        | VoIPBIN timeout                  | Increase dial_timeout  |
+    | timeout        | Max call duration exceeded       | Check timeout settings |
+    | amd            | Answering machine detected       | Expected behavior      |
+    +----------------+----------------------------------+------------------------+
+
+**HTTP Error Codes:**
+
+.. code::
+
+    +------+----------------------------------+------------------------+
+    | Code | Meaning                          | Solution               |
+    +------+----------------------------------+------------------------+
+    | 400  | Invalid request format           | Check request body     |
+    | 401  | Authentication failed            | Check token/accesskey  |
+    | 403  | Permission denied                | Check account perms    |
+    | 404  | Resource not found               | Verify ID exists       |
+    | 409  | Conflict (e.g., call ended)      | Resource state changed |
+    | 429  | Rate limit exceeded              | Slow down requests     |
+    | 500  | Server error                     | Contact support        |
+    +------+----------------------------------+------------------------+
+
+Getting Help
+------------
+
+If issues persist after troubleshooting:
+
+1. **Gather Information:**
+
+   - Call ID(s) involved
+   - Exact timestamps (UTC)
+   - Request/response bodies
+   - Webhook payloads received
+   - Error messages
+
+2. **Check Service Status:**
+
+   - https://status.voipbin.net
+
+3. **Contact Support:**
+
+   - Email: support@voipbin.net
+   - Include all gathered information
+   - Describe expected vs actual behavior
+
