@@ -884,10 +884,10 @@ Flow B starts with these variables:
 </div>
 <ul class="simple">
 <li><p>id: Flow’s ID.</p></li>
-<li><p>type: Flow’s types. See detail <a class="reference internal" href="#flow-struct-flow-type"><span class="std std-ref">here</span></a>.</p></li>
+<li><p>type: Flow’s types. See detail <a class="reference internal" href="flow_struct_flow.html#flow-struct-flow-type"><span class="std std-ref">here</span></a>.</p></li>
 <li><p>name: Flow’s name.</p></li>
 <li><p>detail: Flow’s detail.</p></li>
-<li><p>actions: List of actions. See detail <a class="reference internal" href="#flow-struct-action"><span class="std std-ref">here</span></a>.</p></li>
+<li><p>actions: List of actions. See detail <a class="reference internal" href="flow_struct_action.html#flow-struct-action"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 <p><strong>Example</strong>
 .. code:</p>
@@ -957,7 +957,7 @@ Flow B starts with these variables:
 <ul class="simple">
 <li><p><em>id</em>: Action’s id.</p></li>
 <li><p><em>next_id</em>: Action’s next id. If it sets empty, just move on to the next action in the action array.</p></li>
-<li><p><em>type</em>: Action’s type. See detail <a class="reference internal" href="#flow-struct-action-type"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>type</em>: Action’s type. See detail <a class="reference internal" href="flow_struct_action.html#flow-struct-action-type"><span class="std std-ref">here</span></a>.</p></li>
 <li><p><em>option</em>: Action’s option.</p></li>
 </ul>
 </section>
@@ -1135,7 +1135,7 @@ The agent may have various types of addresses or phone numbers, such as a desk p
 </pre></div>
 </div>
 <ul class="simple">
-<li><p><em>machine_handle</em>: hangup,delay,continue if the machine answered a call. See detail <a class="reference internal" href="#flow-struct-action-amd-machinehandle"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>machine_handle</em>: hangup,delay,continue if the machine answered a call. See detail <a class="reference internal" href="flow_struct_action.html#flow-struct-action-amd-machinehandle"><span class="std std-ref">here</span></a>.</p></li>
 <li><p><em>async</em>: if it’s false, the call flow will be stop until amd done.</p></li>
 </ul>
 </section>
@@ -1420,7 +1420,7 @@ It checks the call’s status and if it matched with condition then move to the 
 </pre></div>
 </div>
 <ul class="simple">
-<li><p><em>status</em>: match call’s status. See detail <a class="reference internal" href="call.html#call-struct-call-status"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>status</em>: match call’s status. See detail <a class="reference internal" href="call_struct_call.html#call-struct-call-status"><span class="std std-ref">here</span></a>.</p></li>
 <li><p>false_target_id: action id for false condition.</p></li>
 </ul>
 </section>
@@ -2143,7 +2143,7 @@ It checks the call’s status and if it matched with condition then move to the 
 <li><p>text: Text to speech. SSML(<a class="reference external" href="https://cloud.google.com/text-to-speech/docs/ssml">https://cloud.google.com/text-to-speech/docs/ssml</a>) supported.</p></li>
 <li><p>gender: male/female/neutral.</p></li>
 <li><p>language: Specifies the language. The value may contain a lowercase, two-letter language code (for example, en), or the language code and uppercase country/region (for example, en-US).</p></li>
-<li><p>digits_handle: See detail <a class="reference internal" href="#flow-struct-action-talk-digits-handle"><span class="std std-ref">here</span></a>.</p></li>
+<li><p>digits_handle: See detail <a class="reference internal" href="flow_struct_action.html#flow-struct-action-talk-digits-handle"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 </section>
 <section id="digits-handle">
@@ -3437,7 +3437,7 @@ The executed_actions history is preserved for review.</p></td>
 <li><p><em>status</em>: Activeflow’s status. See detail <a class="reference internal" href="#activeflow-struct-activeflow-status"><span class="std std-ref">here</span></a>.</p></li>
 <li><p><em>reference_type</em>: Represent which resource started activeflow.</p></li>
 <li><p>reference_id: Referenced type’s ID.</p></li>
-<li><p>current_action: Currently running actino on this activeflow. See detail <a class="reference internal" href="#flow-struct-action-action"><span class="std std-ref">here</span></a>.</p></li>
+<li><p>current_action: Currently running actino on this activeflow. See detail <a class="reference internal" href="flow_struct_action.html#flow-struct-action-action"><span class="std std-ref">here</span></a>.</p></li>
 <li><p>forward_action_id: Forward action id.</p></li>
 </ul>
 <section id="id77">
