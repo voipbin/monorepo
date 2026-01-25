@@ -108,15 +108,15 @@ run         The campaign is running. It will create a new call or flow execution
 
 Service level
 -------------
-The service level control the amount of campaigncalls. It appects to the campaign's campaigncall creation.
+The service level controls the amount of campaigncalls. It affects the campaign's campaigncall creation.
 
-The campaign makes a new campaigncall when...
+The campaign creates a new campaigncall when the following condition is met:
 
 .. code::
 
     Available agent > Current dialing campaign calls * Service level / 100
 
-It valid only if the campaign has a valid queue_id.
+This is valid only if the campaign has a valid queue_id.
 
 .. _campaign-struct-campaign-end_handle:
 

@@ -203,7 +203,7 @@
 <p>Currently, The VoIPBIN’s trunking authentication supports only the Basic authentication.</p>
 <ul class="simple">
 <li><p>Basic authentication</p></li>
-<li><p>IP base authentication(WIP)</p></li>
+<li><p>IP-based authentication (coming soon)</p></li>
 </ul>
 <section id="basic-authentication">
 <h4>Basic authentication<a class="headerlink" href="#basic-authentication" title="Link to this heading"></a></h4>
@@ -249,7 +249,7 @@
 </section>
 <section id="call-handle">
 <h3>Call handle<a class="headerlink" href="#call-handle" title="Link to this heading"></a></h3>
-<p>Unlike the normal VoIPBIN’s normal call handle, the VoIPBIN handles trunking outbound call in a different way. The VoIPBIN executes special flow for the trunking call.
+<p>Unlike VoIPBIN’s normal call handling, the VoIPBIN handles trunking outbound calls in a different way. The VoIPBIN executes special flow for the trunking call.
 It executes the follow features:</p>
 <ul class="simple">
 <li><p>Enable the early media.</p></li>
@@ -257,7 +257,7 @@ It executes the follow features:</p>
 </ul>
 <section id="early-media-handle">
 <h4>Early media handle<a class="headerlink" href="#early-media-handle" title="Link to this heading"></a></h4>
-<p>The VoIPBIN enables the the early-media feature for the trunking outbound call.</p>
+<p>The VoIPBIN enables the early-media feature for the trunking outbound call.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">UA</span>                                   <span class="n">VoIPBIN</span>                                 <span class="n">Destination</span>
 
 <span class="o">|</span>                                        <span class="o">|</span>                                        <span class="o">|</span>
@@ -272,8 +272,8 @@ It executes the follow features:</p>
 </pre></div>
 </div>
 </section>
-<section id="realy-hangup-cause">
-<h4>Realy hangup cause<a class="headerlink" href="#realy-hangup-cause" title="Link to this heading"></a></h4>
+<section id="relay-hangup-cause">
+<h4>Relay hangup cause<a class="headerlink" href="#relay-hangup-cause" title="Link to this heading"></a></h4>
 <p>The VoIPBIN delivers the hangup cause code from the outgoing call.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">UA</span>                                   <span class="n">VoIPBIN</span>                                 <span class="n">Destination</span>
 
@@ -322,7 +322,7 @@ It executes the follow features:</p>
 </li>
 <li><a class="reference internal" href="#call-handle">Call handle</a><ul>
 <li><a class="reference internal" href="#early-media-handle">Early media handle</a></li>
-<li><a class="reference internal" href="#realy-hangup-cause">Realy hangup cause</a></li>
+<li><a class="reference internal" href="#relay-hangup-cause">Relay hangup cause</a></li>
 </ul>
 </li>
 </ul>

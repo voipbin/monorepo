@@ -55,5 +55,5 @@ AI's type.
 Type        Description
 =========== ============
 chatGPT     Openai's Chat AI. https://chat.openai.com/chat
-clova       Naver's Clova AI(WIP). https://clova.ai/
+clova       Naver's Clova AI (coming soon). https://clova.ai/
 =========== ============

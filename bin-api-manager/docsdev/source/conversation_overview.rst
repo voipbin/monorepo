@@ -18,9 +18,9 @@ By leveraging VoIPBIN Conversations, developers can create versatile messaging s
 
 Seperated conversation room
 ----------------------------
-VoIPbin's conversation feature ensures a well-organized messaging experience by creating distinct conversation rooms. When a new message is sent or received, VoIPbin examines the communication method and participants. If the properties (method/participants) match an existing conversation room, the message is added to that room. In cases where there are no matching properties, a new conversation room is created.
+VoIPBIN's conversation feature ensures a well-organized messaging experience by creating distinct conversation rooms. When a new message is sent or received, VoIPBIN examines the communication method and participants. If the properties (method/participants) match an existing conversation room, the message is added to that room. In cases where there are no matching properties, a new conversation room is created.
 
-With VoIPbin's conversation capability, users are liberated from worrying about the communication method. Simply send the message to the conversation room using the Conversation API, and VoIPbin seamlessly translates the message to the appropriate method, streamlining the entire communication process
+With VoIPBIN's conversation capability, users are liberated from worrying about the communication method. Simply send the message to the conversation room using the Conversation API, and VoIPBIN seamlessly translates the message to the appropriate method, streamlining the entire communication process.
 
 .. image:: _static/images/conversation_overview_api.png
 
