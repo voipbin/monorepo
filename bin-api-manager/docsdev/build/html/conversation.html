@@ -196,8 +196,8 @@
 </section>
 <section id="seperated-conversation-room">
 <h3>Seperated conversation room<a class="headerlink" href="#seperated-conversation-room" title="Link to this heading"></a></h3>
-<p>VoIPbin’s conversation feature ensures a well-organized messaging experience by creating distinct conversation rooms. When a new message is sent or received, VoIPbin examines the communication method and participants. If the properties (method/participants) match an existing conversation room, the message is added to that room. In cases where there are no matching properties, a new conversation room is created.</p>
-<p>With VoIPbin’s conversation capability, users are liberated from worrying about the communication method. Simply send the message to the conversation room using the Conversation API, and VoIPbin seamlessly translates the message to the appropriate method, streamlining the entire communication process</p>
+<p>VoIPBIN’s conversation feature ensures a well-organized messaging experience by creating distinct conversation rooms. When a new message is sent or received, VoIPBIN examines the communication method and participants. If the properties (method/participants) match an existing conversation room, the message is added to that room. In cases where there are no matching properties, a new conversation room is created.</p>
+<p>With VoIPBIN’s conversation capability, users are liberated from worrying about the communication method. Simply send the message to the conversation room using the Conversation API, and VoIPBIN seamlessly translates the message to the appropriate method, streamlining the entire communication process.</p>
 <img alt="_images/conversation_overview_api.png" src="_images/conversation_overview_api.png" />
 </section>
 </section>
@@ -466,7 +466,7 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/conversations/a7bc12b7-f95c-43e6-82a1-38f4b7ff9b3f/messages?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
     --data-raw &#39;{
-        &quot;text&quot;: &quot;hi, this is test message. Good to see you. hahaha :)&quot;
+        &quot;text&quot;: &quot;Hello, this is a test message. Thank you for your time.&quot;
     }&#39;
 
 {
@@ -476,7 +476,7 @@
     &quot;reference_type&quot;: &quot;line&quot;,
     &quot;reference_id&quot;: &quot;Ud871bcaf7c3ad13d2a0b0d78a42a287f&quot;,
     &quot;source_target&quot;: &quot;&quot;,
-    &quot;text&quot;: &quot;hi, this is test message. Good to see you. hahaha :)&quot;,
+    &quot;text&quot;: &quot;Hello, this is a test message. Thank you for your time.&quot;,
     &quot;medias&quot;: [],
     &quot;tm_create&quot;: &quot;2022-06-20 03:07:11.372307&quot;,
     &quot;tm_update&quot;: &quot;2022-06-20 03:07:11.372315&quot;,
@@ -501,7 +501,7 @@
             &quot;reference_type&quot;: &quot;line&quot;,
             &quot;reference_id&quot;: &quot;Ud871bcaf7c3ad13d2a0b0d78a42a287f&quot;,
             &quot;source_target&quot;: &quot;&quot;,
-            &quot;text&quot;: &quot;hi, this is test message. Good to see you. hahaha :)&quot;,
+            &quot;text&quot;: &quot;Hello, this is a test message. Thank you for your time.&quot;,
             &quot;medias&quot;: [],
             &quot;tm_create&quot;: &quot;2022-06-20 03:07:11.372307&quot;,
             &quot;tm_update&quot;: &quot;2022-06-20 03:07:11.372315&quot;,

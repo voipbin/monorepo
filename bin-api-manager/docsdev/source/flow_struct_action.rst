@@ -1329,8 +1329,8 @@ Parameters
 
 * sync: If this set to true, waits until this action done.
 * uri: Destination uri.
-* method: Send method. POST/GET/PUST/DELETE/...
-* data_type: Data's type. application/json, ...
+* method: HTTP method. Supported values: POST, GET, PUT, DELETE.
+* data_type: Content type of the data. For example: application/json.
 * data: Data string. Variable can be used.
 
 Example

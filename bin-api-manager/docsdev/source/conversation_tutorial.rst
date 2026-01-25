@@ -105,7 +105,7 @@ Example
     $ curl --location --request POST 'https://api.voipbin.net/v1.0/conversations/a7bc12b7-f95c-43e6-82a1-38f4b7ff9b3f/messages?token=<YOUR_AUTH_TOKEN>' \
         --header 'Content-Type: application/json' \
         --data-raw '{
-            "text": "hi, this is test message. Good to see you. hahaha :)"
+            "text": "Hello, this is a test message. Thank you for your time."
         }'
 
     {
@@ -115,7 +115,7 @@ Example
         "reference_type": "line",
         "reference_id": "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
         "source_target": "",
-        "text": "hi, this is test message. Good to see you. hahaha :)",
+        "text": "Hello, this is a test message. Thank you for your time.",
         "medias": [],
         "tm_create": "2022-06-20 03:07:11.372307",
         "tm_update": "2022-06-20 03:07:11.372315",
@@ -141,7 +141,7 @@ Example
                 "reference_type": "line",
                 "reference_id": "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
                 "source_target": "",
-                "text": "hi, this is test message. Good to see you. hahaha :)",
+                "text": "Hello, this is a test message. Thank you for your time.",
                 "medias": [],
                 "tm_create": "2022-06-20 03:07:11.372307",
                 "tm_update": "2022-06-20 03:07:11.372315",

@@ -15,7 +15,7 @@ Authentication
 Currently, The VoIPBIN's trunking authentication supports only the Basic authentication.
 
 * Basic authentication
-* IP base authentication(WIP)
+* IP-based authentication (coming soon)
 
 Basic authentication
 ++++++++++++++++++++
@@ -62,7 +62,7 @@ By following these steps, you can make a SIP outgoing call through VoIPBIN using
 
 Call handle
 -------------------
-Unlike the normal VoIPBIN's normal call handle, the VoIPBIN handles trunking outbound call in a different way. The VoIPBIN executes special flow for the trunking call.
+Unlike VoIPBIN's normal call handling, the VoIPBIN handles trunking outbound calls in a different way. The VoIPBIN executes special flow for the trunking call.
 It executes the follow features:
 
 * Enable the early media.
@@ -70,7 +70,7 @@ It executes the follow features:
 
 Early media handle
 ++++++++++++++++++
-The VoIPBIN enables the the early-media feature for the trunking outbound call.
+The VoIPBIN enables the early-media feature for the trunking outbound call.
 
 .. code::
 
@@ -87,7 +87,7 @@ The VoIPBIN enables the the early-media feature for the trunking outbound call.
     |<------------- RTP Media ---------------|<---------------- RTP Media ------------|
 
 
-Realy hangup cause
+Relay hangup cause
 ++++++++++++++++++
 The VoIPBIN delivers the hangup cause code from the outgoing call.
 

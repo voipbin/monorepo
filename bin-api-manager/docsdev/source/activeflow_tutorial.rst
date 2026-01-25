@@ -59,7 +59,7 @@ Stop the activeflow.
             "next_id": "00000000-0000-0000-0000-000000000000",
             "type": "talk",
             "option": {
-                "text": "Hello. Welcome to the voipbin service. Please select the service. For simple talk, press 1. For simple transcribe, press 2. For queue join, press 3. For voicemail, press 4. For conference. press 5. For chatbot talk, press 6. For contact to the project developer, press 0",
+                "text": "Hello. Welcome to the VoIPBIN service. Please select a service. For simple talk, press 1. For simple transcribe, press 2. For queue join, press 3. For voicemail, press 4. For conference, press 5. For chatbot talk, press 6. To contact support, press 0.",
                 "gender": "female",
                 "language": "en-US",
                 "digits_handle": "next"

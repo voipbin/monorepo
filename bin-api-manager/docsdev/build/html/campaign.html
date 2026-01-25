@@ -330,12 +330,12 @@
 </section>
 <section id="service-level">
 <span id="campaign-struct-campaign-service-level"></span><h3>Service level<a class="headerlink" href="#service-level" title="Link to this heading"></a></h3>
-<p>The service level control the amount of campaigncalls. It appects to the campaign’s campaigncall creation.</p>
-<p>The campaign makes a new campaigncall when…</p>
+<p>The service level controls the amount of campaigncalls. It affects the campaign’s campaigncall creation.</p>
+<p>The campaign creates a new campaigncall when the following condition is met:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Available</span> <span class="n">agent</span> <span class="o">&gt;</span> <span class="n">Current</span> <span class="n">dialing</span> <span class="n">campaign</span> <span class="n">calls</span> <span class="o">*</span> <span class="n">Service</span> <span class="n">level</span> <span class="o">/</span> <span class="mi">100</span>
 </pre></div>
 </div>
-<p>It valid only if the campaign has a valid queue_id.</p>
+<p>This is valid only if the campaign has a valid queue_id.</p>
 </section>
 <section id="end-handle">
 <span id="campaign-struct-campaign-end-handle"></span><h3>End handle<a class="headerlink" href="#end-handle" title="Link to this heading"></a></h3>

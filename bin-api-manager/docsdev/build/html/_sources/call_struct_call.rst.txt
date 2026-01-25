@@ -92,7 +92,7 @@ Example
             "next_id": "00000000-0000-0000-0000-000000000000",
             "type": "talk",
             "option": {
-                "text": "Hello. This is Sungtae, nice to meet you. hahaha",
+                "text": "Hello. Thank you for calling. How can I help you today?",
                 "gender": "female",
                 "language": "en-US"
             },

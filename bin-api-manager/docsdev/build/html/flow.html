@@ -2305,8 +2305,8 @@ It checks the call’s status and if it matched with condition then move to the 
 <ul class="simple">
 <li><p>sync: If this set to true, waits until this action done.</p></li>
 <li><p>uri: Destination uri.</p></li>
-<li><p>method: Send method. POST/GET/PUST/DELETE/…</p></li>
-<li><p>data_type: Data’s type. application/json, …</p></li>
+<li><p>method: HTTP method. Supported values: POST, GET, PUT, DELETE.</p></li>
+<li><p>data_type: Content type of the data. For example: application/json.</p></li>
 <li><p>data: Data string. Variable can be used.</p></li>
 </ul>
 </section>
@@ -3566,7 +3566,7 @@ The executed_actions history is preserved for review.</p></td>
         &quot;next_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
         &quot;type&quot;: &quot;talk&quot;,
         &quot;option&quot;: {
-            &quot;text&quot;: &quot;Hello. Welcome to the voipbin service. Please select the service. For simple talk, press 1. For simple transcribe, press 2. For queue join, press 3. For voicemail, press 4. For conference. press 5. For chatbot talk, press 6. For contact to the project developer, press 0&quot;,
+            &quot;text&quot;: &quot;Hello. Welcome to the VoIPBIN service. Please select a service. For simple talk, press 1. For simple transcribe, press 2. For queue join, press 3. For voicemail, press 4. For conference, press 5. For chatbot talk, press 6. To contact support, press 0.&quot;,
             &quot;gender&quot;: &quot;female&quot;,
             &quot;language&quot;: &quot;en-US&quot;,
             &quot;digits_handle&quot;: &quot;next&quot;
