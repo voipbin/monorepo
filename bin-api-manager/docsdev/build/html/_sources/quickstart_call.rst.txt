@@ -47,14 +47,14 @@ Use the VoIPBIN API to initiate an outbound telephone call from your VoIPBIN acc
             "recording_ids": [],
             "source": {
                 "type": "tel",
-                "target": "+821028286521",
+                "target": "+15551234567",
                 "target_name": "",
                 "name": "",
                 "detail": ""
             },
             "destination": {
                 "type": "tel",
-                "target": "+821021656521",
+                "target": "+15559876543",
                 "target_name": "",
                 "name": "",
                 "detail": ""
@@ -111,14 +111,14 @@ Use the VoIPBIN API to initiate an outbound telephone call with existing flow.
             "recording_ids": [],
             "source": {
                 "type": "tel",
-                "target": "+821028286521",
+                "target": "+15551234567",
                 "target_name": "",
                 "name": "",
                 "detail": ""
             },
             "destination": {
                 "type": "tel",
-                "target": "+821021656521",
+                "target": "+15559876543",
                 "target_name": "",
                 "name": "",
                 "detail": ""

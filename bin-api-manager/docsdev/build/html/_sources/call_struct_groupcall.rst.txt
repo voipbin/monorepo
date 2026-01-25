@@ -53,7 +53,7 @@ Example
         "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
         "source": {
             "type": "tel",
-            "target": "+821028286521",
+            "target": "+15551234567",
             "target_name": "",
             "name": "",
             "detail": ""

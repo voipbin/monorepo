@@ -655,7 +655,7 @@ Average Wait Time = Sum of all duration_waiting / total_incoming_count
 <li><p><em>id</em>: Queue’s ID.</p></li>
 <li><p><em>name</em>: Queue’s name.</p></li>
 <li><p><em>detail</em>: Queue’s detail description.</p></li>
-<li><p><em>routing_method</em>: Define the queue’s call routing method. See detail <a class="reference internal" href="#queue-struct-queue-routing-method"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>routing_method</em>: Define the queue’s call routing method. See detail <a class="reference internal" href="queue_struct_queue.html#queue-struct-queue-routing-method"><span class="std std-ref">here</span></a>.</p></li>
 <li><p><em>tag_ids</em>: List of tags.</p></li>
 <li><p><em>wait_actions</em>: List of actions for waiting calls.</p></li>
 <li><p><em>wait_timeout</em>: Timeout for waiting(ms). If it sets to 0, no timeout.</p></li>
@@ -706,8 +706,8 @@ Average Wait Time = Sum of all duration_waiting / total_incoming_count
 </div>
 <ul class="simple">
 <li><p>id: Queuecall’s ID.</p></li>
-<li><p>reference_type: Referenced resource’s type. See detail <a class="reference internal" href="#queue-struct-queuecall-reference-type"><span class="std std-ref">here</span></a>.</p></li>
-<li><p>status: Queuecall’s status. See detail <a class="reference internal" href="#queue-struct-queuecall-type"><span class="std std-ref">here</span></a>.</p></li>
+<li><p>reference_type: Referenced resource’s type. See detail <a class="reference internal" href="queue_struct_queuecall.html#queue-struct-queuecall-reference-type"><span class="std std-ref">here</span></a>.</p></li>
+<li><p>status: Queuecall’s status. See detail <a class="reference internal" href="queue_struct_queuecall.html#queue-struct-queuecall-type"><span class="std std-ref">here</span></a>.</p></li>
 <li><p>service_agent_id: Connected agent_id.</p></li>
 </ul>
 <section id="example">
@@ -813,7 +813,7 @@ Average Wait Time = Sum of all duration_waiting / total_incoming_count
 <section id="get-list-of-queues">
 <h3>Get list of queues<a class="headerlink" href="#get-list-of-queues" title="Link to this heading"></a></h3>
 <p>Gets the list of created queues.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/queues?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/queues?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
     &quot;result&quot;: [

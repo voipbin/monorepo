@@ -46,7 +46,7 @@ Flow
                     "text": "hello, this is test message.",
                     "source": {
                         "type": "tel",
-                        "target": "+821021656521"
+                        "target": "+15559876543"
                     },
                     "destinations": [
                         {

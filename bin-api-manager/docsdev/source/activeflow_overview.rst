@@ -64,15 +64,15 @@ An activeflow has two possible states during its lifecycle:
     Cursor moving                               No more changes
     Variables updating                          History preserved
 
-+----------+------------------------------------------------------------------+
-| Status   | What it means                                                    |
-+==========+==================================================================+
-| running  | The activeflow is actively executing actions. The cursor is     |
-|          | moving through the flow, and the state can change at any time.  |
-+----------+------------------------------------------------------------------+
-| ended    | The activeflow has completed. No further execution will occur.  |
-|          | The executed_actions history is preserved for review.           |
-+----------+------------------------------------------------------------------+
++----------+--------------------------------------------------------------------+
+| Status   | What it means                                                      |
++==========+====================================================================+
+| running  | The activeflow is actively executing actions. The cursor is        |
+|          | moving through the flow, and the state can change at any time.     |
++----------+--------------------------------------------------------------------+
+| ended    | The activeflow has completed. No further execution will occur.     |
+|          | The executed_actions history is preserved for review.              |
++----------+--------------------------------------------------------------------+
 
 
 Execution

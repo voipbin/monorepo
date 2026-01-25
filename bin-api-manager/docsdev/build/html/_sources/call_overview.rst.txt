@@ -27,7 +27,7 @@ Key requirements for phone numbers within the VoIPBIN APIs:
 * The phone number must have the '+' symbol at the beginning.
 * The number should not contain any special characters, such as spaces, parentheses, or hyphens.
 
-For example, a US phone number should be represented as +16062067563, and a Korea phone number should be represented as +821021656521.
+For example, a US phone number should be represented as +16062067563, and a UK phone number should be represented as +442071234567.
 
 Extension Number Format
 -----------------------
@@ -606,9 +606,9 @@ Call concept
 -------------
 The concept of a call in VoIPBIN departs from the traditional 1:1 call model. Here's an overview:
 
-In Voipbin, a call includes source, destination, and additional metadata. Moreover, the call can be associated with multiple other calls, creating a dynamic journey that goes beyond the standard 1:1 connection. Envision a call's trajectory as it connects to an agent and then diverges to another destination.
+In VoIPBIN, a call includes source, destination, and additional metadata. Moreover, the call can be associated with multiple other calls, creating a dynamic journey that goes beyond the standard 1:1 connection. Envision a call's trajectory as it connects to an agent and then diverges to another destination.
 
-In Voipbin, the conventional call scenario A -> B is delineated by two distinct calls:
+In VoIPBIN, the conventional call scenario A -> B is delineated by two distinct calls:
 
 .. code::
 

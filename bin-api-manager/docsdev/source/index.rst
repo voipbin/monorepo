@@ -3,49 +3,84 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to voipbin's documentation!
+Welcome to VoIPBIN's documentation!
 ===================================
 
 .. toctree::
    :maxdepth: 5
+   :caption: Getting Started
 
    intro
    quickstart
-   common
-   restful_api
-   sdk
-   architecture
    accesskey
+   sdk
+   restful_api
+
+.. toctree::
+   :maxdepth: 5
+   :caption: Core Concepts
+
    flow
-   activeflow
+   variable
+   webhook
+   common
+
+.. toctree::
+   :maxdepth: 5
+   :caption: Voice & Real-Time
+
    call
-   message
-   email
-   agent
    conference
-   mediastream
-   conversation
-   extension
-   number
    queue
    recording
-   tag
+   transcribe
+   mediastream
+
+.. toctree::
+   :maxdepth: 5
+   :caption: Messaging
+
+   message
+   email
+   chat
+   conversation
+
+.. toctree::
+   :maxdepth: 5
+   :caption: AI & Automation
+
+   ai
    campaign
    outdial
    outplan
-   webhook
+
+.. toctree::
+   :maxdepth: 5
+   :caption: Resources & Management
+
+   number
+   agent
    customer
-   chat
-   talk
-   ai
-   provider
-   route
-   variable
-   websocket
-   trunk
    billing_account
    storage
-   transcribe
+   tag
+   provider
+   route
+   extension
+   trunk
+
+.. toctree::
+   :maxdepth: 5
+   :caption: Architecture (Deep Dive)
+
+   architecture
+   websocket
+   talk
+
+.. toctree::
+   :maxdepth: 5
+   :caption: Reference
+
    glossary
 
 

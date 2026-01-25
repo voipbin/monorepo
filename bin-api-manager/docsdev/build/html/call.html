@@ -185,7 +185,7 @@
 <li><p>The phone number must have the ‘+’ symbol at the beginning.</p></li>
 <li><p>The number should not contain any special characters, such as spaces, parentheses, or hyphens.</p></li>
 </ul>
-<p>For example, a US phone number should be represented as +16062067563, and a Korea phone number should be represented as +821021656521.</p>
+<p>For example, a US phone number should be represented as +16062067563, and a UK phone number should be represented as +442071234567.</p>
 </section>
 <section id="extension-number-format">
 <h3>Extension Number Format<a class="headerlink" href="#extension-number-format" title="Link to this heading"></a></h3>
@@ -698,8 +698,8 @@ The VoIPBIN system have robust error handling mechanisms to gracefully manage su
 <section id="call-concept">
 <h3>Call concept<a class="headerlink" href="#call-concept" title="Link to this heading"></a></h3>
 <p>The concept of a call in VoIPBIN departs from the traditional 1:1 call model. Here’s an overview:</p>
-<p>In Voipbin, a call includes source, destination, and additional metadata. Moreover, the call can be associated with multiple other calls, creating a dynamic journey that goes beyond the standard 1:1 connection. Envision a call’s trajectory as it connects to an agent and then diverges to another destination.</p>
-<p>In Voipbin, the conventional call scenario A -&gt; B is delineated by two distinct calls:</p>
+<p>In VoIPBIN, a call includes source, destination, and additional metadata. Moreover, the call can be associated with multiple other calls, creating a dynamic journey that goes beyond the standard 1:1 connection. Envision a call’s trajectory as it connects to an agent and then diverges to another destination.</p>
+<p>In VoIPBIN, the conventional call scenario A -&gt; B is delineated by two distinct calls:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">A</span>            <span class="n">VoIPBIN</span>            <span class="n">B</span>
 <span class="o">|&lt;--</span> <span class="n">Call</span> <span class="mi">1</span> <span class="o">---&gt;|</span>               <span class="o">|</span>
 <span class="o">|</span>               <span class="o">|&lt;---</span> <span class="n">Call</span> <span class="mi">2</span> <span class="o">--&gt;|</span>
@@ -954,7 +954,7 @@ This process will continue until one of the destinations answers the call, at wh
 <li><p><em>source</em>: Source address info. See detail <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">here</span></a>.</p></li>
 <li><p><em>destination</em>: Destination address info. See detail <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">here</span></a>.</p></li>
 <li><p><em>status</em>: Call’s status. See detail <a class="reference internal" href="#call-struct-call-status"><span class="std std-ref">here</span></a>.</p></li>
-<li><p><em>action</em>: Call’s current action. See detail <a class="reference internal" href="flow_struct_action.html#flow-struct-action"><span class="std std-ref">here</span></a>.</p></li>
+<li><p><em>action</em>: Call’s current action. See detail <a class="reference internal" href="flow.html#flow-struct-action"><span class="std std-ref">here</span></a>.</p></li>
 <li><p><em>direction</em>: Call’s direction. See detail <a class="reference internal" href="#call-struct-call-direction"><span class="std std-ref">here</span></a>.</p></li>
 <li><p><em>hangup_by</em>: Shows call’s hangup end. See detail <a class="reference internal" href="#call-struct-call-hangupby"><span class="std std-ref">here</span></a>.</p></li>
 <li><p><em>hangup_reason</em>: Show call’s hangup reason. See detail <a class="reference internal" href="#call-struct-call-hangupreason"><span class="std std-ref">here</span></a>.</p></li>
@@ -971,14 +971,14 @@ This process will continue until one of the destinations answers the call, at wh
     <span class="s2">&quot;recording_ids&quot;</span><span class="p">:</span> <span class="p">[],</span>
     <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821028286521&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15551234567&quot;</span><span class="p">,</span>
         <span class="s2">&quot;target_name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
         <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
         <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
     <span class="p">},</span>
     <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821021656521&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15559876543&quot;</span><span class="p">,</span>
         <span class="s2">&quot;target_name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
         <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
         <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
@@ -1185,7 +1185,7 @@ This process will continue until one of the destinations answers the call, at wh
     <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
     <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821028286521&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15551234567&quot;</span><span class="p">,</span>
         <span class="s2">&quot;target_name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
         <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
         <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
