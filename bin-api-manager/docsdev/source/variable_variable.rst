@@ -107,3 +107,72 @@ Transcribe
 * voipbin.transcribe.id: Created Transcribe's ID.
 * voipbin.transcribe.language: Created Transcribe's language.
 * voipbin.transcribe.direction: Created Transcribe's direction.
+
+Transcript
+----------
+* voipbin.transcript.id: Created Transcript's ID.
+* voipbin.transcript.transcribe_id: Parent Transcribe's ID.
+* voipbin.transcript.direction: Transcript's direction (in/out).
+* voipbin.transcript.message: Transcript's text content.
+
+Conference
+----------
+* voipbin.conference.id: Created Conference's ID.
+* voipbin.conference.name: Conference's name.
+* voipbin.conference.type: Conference's type (connect/confbridge).
+* voipbin.conference.status: Conference's status.
+
+Confbridge
+++++++++++
+* voipbin.confbridge.id: Created Confbridge's ID.
+* voipbin.confbridge.type: Confbridge's type.
+* voipbin.confbridge.status: Confbridge's status.
+
+Agent
+-----
+* voipbin.agent.id: Agent's ID.
+* voipbin.agent.name: Agent's name.
+* voipbin.agent.detail: Agent's detail.
+* voipbin.agent.status: Agent's status.
+
+Webhook Response
+----------------
+Variables available after a webhook_send action with sync=true.
+
+* voipbin.webhook.status_code: HTTP response status code.
+* voipbin.webhook.body: HTTP response body as string.
+
+Email
+-----
+* voipbin.email.id: Created Email's ID.
+* voipbin.email.status: Email's status.
+* voipbin.email.subject: Email's subject.
+
+Outdial
+-------
+* voipbin.outdial.id: Created Outdial's ID.
+* voipbin.outdial.status: Outdial's status.
+
+Outdialtarget
++++++++++++++
+* voipbin.outdialtarget.id: Created Outdialtarget's ID.
+* voipbin.outdialtarget.status: Outdialtarget's status.
+* voipbin.outdialtarget.try_count: Current try count.
+
+Custom Variables
+----------------
+Custom variables can be set using the ``variable_set`` action. These variables are scoped to the current activeflow and persist until the flow ends.
+
+Example of setting a custom variable:
+
+.. code::
+
+    {
+        "type": "variable_set",
+        "option": {
+            "key": "user.selected_option",
+            "value": "premium"
+        }
+    }
+
+The variable can then be referenced as ``${user.selected_option}`` in subsequent actions.

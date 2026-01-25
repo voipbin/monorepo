@@ -208,15 +208,152 @@
 <section id="pagination">
 <h3>Pagination<a class="headerlink" href="#pagination" title="Link to this heading"></a></h3>
 <p>List endpoints support pagination using the <code class="docutils literal notranslate"><span class="pre">next_page_token</span></code> parameter. When a response includes a <code class="docutils literal notranslate"><span class="pre">next_page_token</span></code> field, pass this value in your next request to retrieve the next page of results.</p>
+<p><strong>Response format:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span> <span class="o">...</span> <span class="p">},</span>
+        <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;next_page_token&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-06-17 06:06:14.948432&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Fetching the next page:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>GET /v1.0/calls?page_token=2022-06-17%2006%3A06%3A14.948432
+</pre></div>
+</div>
+<p>When <code class="docutils literal notranslate"><span class="pre">next_page_token</span></code> is empty or not present, you have reached the last page.</p>
 </section>
 <section id="filtering-and-searching">
 <h3>Filtering and Searching<a class="headerlink" href="#filtering-and-searching" title="Link to this heading"></a></h3>
-<p>Many list endpoints support filtering and searching through query parameters. Check the specific endpoint documentation for available filter options.</p>
+<p>Many list endpoints support filtering and searching through query parameters. Common filter parameters include:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">status</span></code>: Filter by resource status</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code>: Filter by customer</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code>: Filter by creation time range</p></li>
+</ul>
+<p>Check the specific endpoint documentation for available filter options.</p>
 </section>
 <section id="soft-deletion">
 <h3>Soft Deletion<a class="headerlink" href="#soft-deletion" title="Link to this heading"></a></h3>
-<p>VoIPBIN uses soft deletion for most resources. Deleted resources have their <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> timestamp set but remain in the database. This allows for audit trails and potential recovery.</p>
+<p>VoIPBIN uses soft deletion for most resources. Deleted resources have their <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> timestamp set to the deletion time. Non-deleted resources have <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code>.</p>
+<p><strong>Non-deleted resource:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span>
+</pre></div>
+</div>
+<p><strong>Deleted resource:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-03-15 10:30:00.000000&quot;</span>
+</pre></div>
+</div>
 </section>
+</section>
+<section id="http-status-codes">
+<h2>HTTP Status Codes<a class="headerlink" href="#http-status-codes" title="Link to this heading"></a></h2>
+<p>VoIPBIN API uses standard HTTP status codes to indicate success or failure.</p>
+<section id="success-codes">
+<h3>Success Codes<a class="headerlink" href="#success-codes" title="Link to this heading"></a></h3>
+</section>
+<section id="client-error-codes">
+<h3>Client Error Codes<a class="headerlink" href="#client-error-codes" title="Link to this heading"></a></h3>
+</section>
+<section id="server-error-codes">
+<h3>Server Error Codes<a class="headerlink" href="#server-error-codes" title="Link to this heading"></a></h3>
+</section>
+</section>
+<section id="error-response-format">
+<h2>Error Response Format<a class="headerlink" href="#error-response-format" title="Link to this heading"></a></h2>
+<p>When an error occurs, the API returns a JSON response with error details:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;code&quot;</span><span class="p">:</span> <span class="s2">&quot;invalid_parameter&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;The &#39;destination&#39; field is required&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;destination&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Error fields:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">code</span></code>: Machine-readable error code</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">message</span></code>: Human-readable error description</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">field</span></code>: (Optional) Field that caused the error</p></li>
+</ul>
+<section id="common-error-codes">
+<h3>Common Error Codes<a class="headerlink" href="#common-error-codes" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Code</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>invalid_parameter</p></td>
+<td><p>Request parameter is invalid or missing.</p></td>
+</tr>
+<tr class="row-odd"><td><p>resource_not_found</p></td>
+<td><p>Requested resource does not exist.</p></td>
+</tr>
+<tr class="row-even"><td><p>permission_denied</p></td>
+<td><p>Insufficient permissions for this operation.</p></td>
+</tr>
+<tr class="row-odd"><td><p>duplicate_resource</p></td>
+<td><p>Resource with same identifier already exists.</p></td>
+</tr>
+<tr class="row-even"><td><p>invalid_state</p></td>
+<td><p>Operation not allowed in current resource state.</p></td>
+</tr>
+<tr class="row-odd"><td><p>rate_limit_exceeded</p></td>
+<td><p>Too many requests. Wait before retrying.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="request-response-formats">
+<h2>Request/Response Formats<a class="headerlink" href="#request-response-formats" title="Link to this heading"></a></h2>
+<p>All API requests and responses use JSON format.</p>
+<p><strong>Request headers:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Content</span><span class="o">-</span><span class="n">Type</span><span class="p">:</span> <span class="n">application</span><span class="o">/</span><span class="n">json</span>
+<span class="n">Authorization</span><span class="p">:</span> <span class="n">Bearer</span> <span class="o">&lt;</span><span class="n">YOUR_ACCESS_TOKEN</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p><strong>Single resource response:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;d9d32881-12fd-4b19-a6b2-6d5b6b6acf76&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Example Resource&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;active&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-05-01 15:10:38.785510&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-05-01 15:10:38.785510&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>List response:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span> <span class="o">...</span> <span class="p">},</span>
+        <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;next_page_token&quot;</span><span class="p">:</span> <span class="s2">&quot;...&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="rate-limiting">
+<h2>Rate Limiting<a class="headerlink" href="#rate-limiting" title="Link to this heading"></a></h2>
+<p>VoIPBIN applies rate limits to protect service stability. When you exceed the rate limit, the API returns a <code class="docutils literal notranslate"><span class="pre">429</span> <span class="pre">Too</span> <span class="pre">Many</span> <span class="pre">Requests</span></code> response.</p>
+<p><strong>Rate limit headers:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">X</span><span class="o">-</span><span class="n">RateLimit</span><span class="o">-</span><span class="n">Limit</span><span class="p">:</span> <span class="mi">100</span>
+<span class="n">X</span><span class="o">-</span><span class="n">RateLimit</span><span class="o">-</span><span class="n">Remaining</span><span class="p">:</span> <span class="mi">45</span>
+<span class="n">X</span><span class="o">-</span><span class="n">RateLimit</span><span class="o">-</span><span class="n">Reset</span><span class="p">:</span> <span class="mi">1609459200</span>
+</pre></div>
+</div>
+<p><strong>Handling rate limits:</strong></p>
+<ol class="arabic simple">
+<li><p>Check the <code class="docutils literal notranslate"><span class="pre">Retry-After</span></code> header for when to retry</p></li>
+<li><p>Implement exponential backoff for retries</p></li>
+<li><p>Cache responses when possible to reduce API calls</p></li>
+</ol>
 </section>
 </section>
 
@@ -242,6 +379,18 @@
 <li><a class="reference internal" href="#soft-deletion">Soft Deletion</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#http-status-codes">HTTP Status Codes</a><ul>
+<li><a class="reference internal" href="#success-codes">Success Codes</a></li>
+<li><a class="reference internal" href="#client-error-codes">Client Error Codes</a></li>
+<li><a class="reference internal" href="#server-error-codes">Server Error Codes</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#error-response-format">Error Response Format</a><ul>
+<li><a class="reference internal" href="#common-error-codes">Common Error Codes</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#request-response-formats">Request/Response Formats</a></li>
+<li><a class="reference internal" href="#rate-limiting">Rate Limiting</a></li>
 </ul>
 </li>
 </ul>
