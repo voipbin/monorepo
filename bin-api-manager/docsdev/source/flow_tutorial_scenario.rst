@@ -35,7 +35,7 @@ Making a outgoing call for forwarding. If call not answered, leave a voicemail.
     Recording start
        |
        |
-     Sleep(30 sec)
+     Sleep(10 sec)
        |
        |
      Hangup
@@ -222,7 +222,7 @@ It will get the digits from the call and will execute the branch.
                 "id": "ed9705ca-c524-11ec-a3fb-8feb7731ad45",
                 "type": "talk",
                 "option": {
-                    "text": "You didn't choice correct number. Default selected.",
+                    "text": "You didn't choose the correct number. Default selected.",
                     "gender": "female",
                     "language": "en-US"
                 }
