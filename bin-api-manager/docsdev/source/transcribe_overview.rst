@@ -41,7 +41,7 @@ By indicating whether the audio is incoming or outgoing, VoIPBIN's transcription
 .. code::
 
     +--------+                               +-------+
-    |Customer|------ Direction: in --------->|Voipbin|
+    |Customer|------ Direction: in --------->|VoIPBIN|
     |        |                               |       |
     |        |<----- Direction: out ---------|       |
     +--------+                               +-------+

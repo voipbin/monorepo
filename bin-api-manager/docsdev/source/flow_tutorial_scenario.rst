@@ -49,12 +49,12 @@ Making a outgoing call for forwarding. If call not answered, leave a voicemail.
                 "option": {
                     "source": {
                         "type": "tel",
-                        "target": "+821021656521"
+                        "target": "+15559876543"
                     },
                     "destinations": [
                         {
                             "type": "tel",
-                            "target": "+821021546521"
+                            "target": "+15551112222"
                         }
                     ]
                 }
