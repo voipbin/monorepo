@@ -459,8 +459,13 @@ workflows:
             - bin-number-manager-build
             - release-approval
 
+  bin-openapi-manager:
+    when: << pipeline.parameters.run-bin-openapi-manager >>
+    jobs:
+      - bin-openapi-manager-validate
+
   bin-outdial-manager:
-    when: 
+    when:
       or: [<< pipeline.parameters.run-bin-outdial-manager >>, << pipeline.parameters.run-bin-common-handler >>]
     jobs:
       - bin-outdial-manager-test
@@ -1103,6 +1108,33 @@ jobs:
           project-repository: bin-number-manager
           source-directory: bin-number-manager
           image-name: number-manager
+
+  # bin-openapi-manager
+  bin-openapi-manager-validate:
+    docker: *go_image
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            cd bin-openapi-manager
+            go mod download
+            go mod vendor
+      - run:
+          name: Validate OpenAPI spec syntax
+          command: |
+            cd bin-openapi-manager
+            go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@latest
+            oapi-codegen -config configs/config_model/config.generate.yaml openapi/openapi.yaml > /dev/null
+      - run:
+          name: Verify generated models match committed
+          command: |
+            cd bin-openapi-manager
+            go generate ./...
+            if ! git diff --exit-code gens/models/gen.go; then
+              echo "ERROR: Generated models differ from committed. Run 'go generate ./...' and commit changes."
+              exit 1
+            fi
 
   # bin-outdial-manager
   bin-outdial-manager-test:
