@@ -83,7 +83,7 @@ Web applications can seamlessly process these event updates to trigger actions, 
 
 Benefits of WebSocket
 ---------------------
-WebSocket extends various benefits to web applications leveraging VoIPBin:
+WebSocket extends various benefits to web applications leveraging VoIPBIN:
 
 * Real-Time Communication: WebSocket fosters instant updates and event notifications, establishing real-time communication between the web application and the VoIPBIN server.
 * Dynamic Data Updates: WebSocket facilitates the handling of dynamic data changes, enabling the creation of dynamic and interactive user interfaces.

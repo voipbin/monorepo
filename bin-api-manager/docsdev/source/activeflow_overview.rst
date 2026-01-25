@@ -361,12 +361,12 @@ In VoIPBIN, each action in the activeflow defines a distinct step in the service
                 "option": {
                     "source": {
                         "type": "tel",
-                        "target": "+821021656521"
+                        "target": "+15559876543"
                     },
                     "destinations": [
                         {
                             "type": "tel",
-                            "target": "+821021546521"
+                            "target": "+15551112222"
                         }
                     ]
                 }
@@ -379,7 +379,7 @@ In VoIPBIN, each action in the activeflow defines a distinct step in the service
                     "text": "hello, this is a test message.",
                     "source": {
                         "type": "tel",
-                        "target": "+821021656521"
+                        "target": "+15559876543"
                     },
                     "destinations": [
                         {
