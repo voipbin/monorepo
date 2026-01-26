@@ -22,10 +22,8 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
-	"github.com/AlecAivazis/survey/v2"
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -116,18 +114,14 @@ func initCommand() *cobra.Command {
 }
 
 func resolveUUID(flagName string, label string) (uuid.UUID, error) {
-	res := uuid.FromStringOrNil(viper.GetString(flagName))
-	if res == uuid.Nil {
-		tmp := ""
-		prompt := &survey.Input{Message: fmt.Sprintf("%s (Required):", label)}
-		if errAsk := survey.AskOne(prompt, &tmp, survey.WithValidator(survey.Required)); errAsk != nil {
-			return uuid.Nil, errors.Wrap(errAsk, "input canceled")
-		}
+	val := viper.GetString(flagName)
+	if val == "" {
+		return uuid.Nil, fmt.Errorf("%s is required", label)
+	}
 
-		res = uuid.FromStringOrNil(tmp)
-		if res == uuid.Nil {
-			return uuid.Nil, fmt.Errorf("invalid format for %s: '%s' is not a valid UUID", label, tmp)
-		}
+	res := uuid.FromStringOrNil(val)
+	if res == uuid.Nil {
+		return uuid.Nil, fmt.Errorf("invalid format for %s: '%s' is not a valid UUID", label, val)
 	}
 
 	return res, nil
@@ -136,13 +130,19 @@ func resolveUUID(flagName string, label string) (uuid.UUID, error) {
 func resolveString(flagName string, label string, required bool) (string, error) {
 	res := viper.GetString(flagName)
 	if res == "" && required {
-		prompt := &survey.Input{Message: fmt.Sprintf("%s (Required):", label)}
-		if errAsk := survey.AskOne(prompt, &res, survey.WithValidator(survey.Required)); errAsk != nil {
-			return "", errors.Wrap(errAsk, "input canceled")
-		}
+		return "", fmt.Errorf("%s is required", label)
 	}
 
 	return res, nil
+}
+
+func printJSON(v any) error {
+	data, err := json.MarshalIndent(v, "", "  ")
+	if err != nil {
+		return errors.Wrap(err, "failed to marshal JSON")
+	}
+	fmt.Println(string(data))
+	return nil
 }
 
 func cmdCreate() *cobra.Command {
@@ -153,8 +153,8 @@ func cmdCreate() *cobra.Command {
 	}
 
 	flags := cmd.Flags()
-	flags.String("customer_id", "", "Customer ID")
-	flags.String("number", "", "Phone number (e.g., +15551234567)")
+	flags.String("customer_id", "", "Customer ID (required)")
+	flags.String("number", "", "Phone number (e.g., +15551234567) (required)")
 	flags.String("call_flow_id", "", "Call flow ID")
 	flags.String("message_flow_id", "", "Message flow ID")
 	flags.String("name", "", "Number name")
@@ -195,8 +195,7 @@ func runCreate(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to create number")
 	}
 
-	logrus.WithField("res", res).Infof("Created a new number")
-	return nil
+	return printJSON(res)
 }
 
 func cmdRegister() *cobra.Command {
@@ -207,8 +206,8 @@ func cmdRegister() *cobra.Command {
 	}
 
 	flags := cmd.Flags()
-	flags.String("customer_id", "", "Customer ID")
-	flags.String("number", "", "Phone number (e.g., +15551234567)")
+	flags.String("customer_id", "", "Customer ID (required)")
+	flags.String("number", "", "Phone number (e.g., +15551234567) (required)")
 	flags.String("call_flow_id", "", "Call flow ID")
 	flags.String("message_flow_id", "", "Message flow ID")
 	flags.String("name", "", "Number name")
@@ -254,8 +253,7 @@ func runRegister(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to register number")
 	}
 
-	logrus.WithField("res", res).Infof("Registered a new number")
-	return nil
+	return printJSON(res)
 }
 
 func cmdGet() *cobra.Command {
@@ -266,7 +264,7 @@ func cmdGet() *cobra.Command {
 	}
 
 	flags := cmd.Flags()
-	flags.String("id", "", "Number ID")
+	flags.String("id", "", "Number ID (required)")
 
 	return cmd
 }
@@ -282,32 +280,12 @@ func runGet(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to resolve number ID")
 	}
 
-	fmt.Printf("\nRetrieving Number ID: %s...\n", numberID)
 	res, err := handler.Get(context.Background(), numberID)
 	if err != nil {
 		return errors.Wrap(err, "failed to retrieve number")
 	}
 
-	fmt.Println("\n--- Number Information ---")
-	fmt.Printf("ID:             %s\n", res.ID)
-	fmt.Printf("Number:         %s\n", res.Number)
-	fmt.Printf("Customer ID:    %s\n", res.CustomerID)
-	fmt.Printf("Call Flow ID:   %s\n", res.CallFlowID)
-	fmt.Printf("Message Flow ID: %s\n", res.MessageFlowID)
-	fmt.Printf("Name:           %s\n", res.Name)
-	fmt.Printf("Provider:       %s\n", res.ProviderName)
-	fmt.Printf("Status:         %s\n", res.Status)
-	fmt.Println("----------------------------")
-
-	tmp, err := json.MarshalIndent(res, "", "  ")
-	if err != nil {
-		return errors.Wrap(err, "failed to marshal number")
-	}
-	fmt.Println("\n--- Raw Data (JSON) ---")
-	fmt.Println(string(tmp))
-	fmt.Println("-----------------------")
-
-	return nil
+	return printJSON(res)
 }
 
 func cmdList() *cobra.Command {
@@ -320,7 +298,7 @@ func cmdList() *cobra.Command {
 	flags := cmd.Flags()
 	flags.Int("limit", 100, "Limit the number of results to retrieve")
 	flags.String("token", "", "Retrieve results before this token (pagination)")
-	flags.String("customer_id", "", "Customer ID to filter")
+	flags.String("customer_id", "", "Customer ID to filter (required)")
 
 	return cmd
 }
@@ -343,18 +321,12 @@ func runList(cmd *cobra.Command, args []string) error {
 		number.FieldCustomerID: customerID,
 	}
 
-	fmt.Printf("\nRetrieving Numbers... limit: %d, token: %s, filters: %v\n", limit, token, filters)
 	res, err := handler.List(context.Background(), uint64(limit), token, filters)
 	if err != nil {
 		return errors.Wrap(err, "failed to retrieve numbers")
 	}
 
-	fmt.Printf("Success! numbers count: %d\n", len(res))
-	for _, n := range res {
-		fmt.Printf(" - [%s] %s (%s) - %s\n", n.ID, n.Number, n.ProviderName, n.Status)
-	}
-
-	return nil
+	return printJSON(res)
 }
 
 func cmdDelete() *cobra.Command {
@@ -365,7 +337,7 @@ func cmdDelete() *cobra.Command {
 	}
 
 	flags := cmd.Flags()
-	flags.String("id", "", "Number ID")
+	flags.String("id", "", "Number ID (required)")
 
 	return cmd
 }
@@ -381,41 +353,10 @@ func runDelete(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to resolve number ID")
 	}
 
-	n, err := handler.Get(context.Background(), numberID)
-	if err != nil {
-		return errors.Wrap(err, "failed to retrieve number")
-	}
-
-	fmt.Printf("\n--- Number Information ---\n")
-	fmt.Printf("ID:             %s\n", n.ID)
-	fmt.Printf("Number:         %s\n", n.Number)
-	fmt.Printf("Customer ID:    %s\n", n.CustomerID)
-	fmt.Printf("Call Flow ID:   %s\n", n.CallFlowID)
-	fmt.Printf("Message Flow ID: %s\n", n.MessageFlowID)
-	fmt.Printf("Name:           %s\n", n.Name)
-	fmt.Printf("Provider:       %s\n", n.ProviderName)
-	fmt.Printf("Status:         %s\n", n.Status)
-	fmt.Println("----------------------------")
-
-	confirm := false
-	prompt := &survey.Confirm{
-		Message: fmt.Sprintf("Are you sure you want to delete number %s?", numberID),
-	}
-	if err := survey.AskOne(prompt, &confirm); err != nil {
-		return errors.Wrap(err, "confirmation canceled")
-	}
-
-	if !confirm {
-		fmt.Println("Deletion canceled")
-		return nil
-	}
-
-	fmt.Printf("\nDeleting Number ID: %s...\n", numberID)
 	res, err := handler.Delete(context.Background(), numberID)
 	if err != nil {
 		return errors.Wrap(err, "failed to delete number")
 	}
 
-	logrus.WithField("res", res).Infof("Deleted number")
-	return nil
+	return printJSON(res)
 }
