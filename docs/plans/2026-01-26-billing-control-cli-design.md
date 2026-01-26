@@ -7,9 +7,13 @@ A read-only CLI tool for inspecting billing accounts and billing records in bin-
 ## Commands
 
 ```bash
-# Account operations (read-only)
+# Account operations (full CRUD + balance)
+billing-control account create --customer-id <uuid> [--name N] [--detail D] [--payment-type T] [--payment-method M]
 billing-control account get --id <uuid>
 billing-control account list [--limit N] [--token T] [--customer-id <uuid>]
+billing-control account delete --id <uuid>
+billing-control account add-balance --id <uuid> --amount <float>
+billing-control account subtract-balance --id <uuid> --amount <float>
 
 # Billing record operations (read-only)
 billing-control billing get --id <uuid>
@@ -111,8 +115,12 @@ No changes needed to existing handlers - the CLI calls their `Get` and `List` me
 
 | Command | Flags |
 |---------|-------|
+| account create | --customer-id (required), --name, --detail, --payment-type (default: prepaid), --payment-method |
 | account get | --id (required) |
 | account list | --limit (default 100), --token, --customer-id |
+| account delete | --id (required) |
+| account add-balance | --id (required), --amount (required) |
+| account subtract-balance | --id (required), --amount (required) |
 | billing get | --id (required) |
 | billing list | --limit (default 100), --token, --customer-id, --account-id |
 
