@@ -141,13 +141,24 @@ PROMETHEUS_LISTEN_ADDRESS=":2112" \
 ```
 
 ### CLI Tool (customer-control)
+
+A command-line tool for managing customers. **All output is JSON format** (stdout), logs go to stderr.
+
 ```bash
-# Interactive customer management
-./bin/customer-control customer create
-./bin/customer-control customer get <uuid>
-./bin/customer-control customer list
-./bin/customer-control customer delete <uuid>
+# Create customer - returns created customer JSON
+./bin/customer-control customer create --email user@example.com [--name] [--detail] [--phone_number] [--address] [--webhook_method] [--webhook_uri]
+
+# Get customer - returns customer JSON
+./bin/customer-control customer get --id <uuid>
+
+# List customers - returns JSON array
+./bin/customer-control customer list [--limit 100] [--token]
+
+# Delete customer - returns deleted customer JSON
+./bin/customer-control customer delete --id <uuid>
 ```
+
+Uses same environment variables as customer-manager (`DATABASE_DSN`, `RABBITMQ_ADDRESS`, `REDIS_ADDRESS`, etc.).
 
 ### Docker
 ```bash

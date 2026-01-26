@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -18,12 +19,8 @@ import (
 	"monorepo/bin-customer-manager/pkg/customerhandler"
 	"monorepo/bin-customer-manager/pkg/dbhandler"
 
-	"database/sql"
-
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/sirupsen/logrus"
 
-	"github.com/AlecAivazis/survey/v2"
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -98,12 +95,9 @@ func runCreate(cmd *cobra.Command, args []string) error {
 
 	email := viper.GetString("email")
 	if email == "" {
-		if errAsk := survey.AskOne(&survey.Input{Message: "Email (Required):"}, &email, survey.WithValidator(survey.Required)); errAsk != nil {
-			return errors.Wrap(errAsk, "failed to get email")
-		}
+		return fmt.Errorf("email is required")
 	}
 
-	fmt.Printf("\nCreating Customer: %s\n", email)
 	res, err := handler.Create(
 		context.Background(),
 		viper.GetString("name"),
@@ -118,8 +112,7 @@ func runCreate(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to create customer")
 	}
 
-	fmt.Printf("Success! customer: %v\n", res)
-	return nil
+	return printJSON(res)
 }
 
 func cmdGet() *cobra.Command {
@@ -171,19 +164,12 @@ func runList(cmd *cobra.Command, args []string) error {
 	limit := viper.GetInt("limit")
 	token := viper.GetString("token")
 
-	fmt.Printf("\nRetrieving Customers (limit: %d, token: %s)...\n", limit, token)
-
 	res, err := handler.List(context.Background(), uint64(limit), token, nil)
 	if err != nil {
 		return errors.Wrap(err, "failed to retrieve customers")
 	}
 
-	fmt.Printf("Success! customers count: %d\n", len(res))
-	for _, c := range res {
-		fmt.Printf(" - [%s] %s (%s)\n", c.ID, c.Name, c.Email)
-	}
-
-	return nil
+	return printJSON(res)
 }
 
 func runGet(cmd *cobra.Command, args []string) error {
@@ -197,31 +183,12 @@ func runGet(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "invalid customer ID format")
 	}
 
-	fmt.Printf("\nRetrieving Customer ID: %s...\n", targetID)
 	res, err := handler.Get(context.Background(), targetID)
 	if err != nil {
 		return errors.Wrap(err, "failed to retrieve customer")
 	}
 
-	fmt.Println("\n--- Customer Information ---")
-	fmt.Printf("ID:      %s\n", res.ID)
-	fmt.Printf("Name:    %s\n", res.Name)
-	fmt.Printf("Email:   %s\n", res.Email)
-	fmt.Printf("Phone:   %s\n", res.PhoneNumber)
-	fmt.Printf("Address: %s\n", res.Address)
-	fmt.Printf("Webhook: %s [%s]\n", res.WebhookURI, res.WebhookMethod)
-	fmt.Printf("Detail:  %s\n", res.Detail)
-	fmt.Println("----------------------------")
-
-	tmp, err := json.MarshalIndent(res, "", "  ")
-	if err != nil {
-		return errors.Wrap(err, "failed to marshal customer")
-	}
-	fmt.Println("\n--- Raw Data (JSON) ---")
-	fmt.Println(string(tmp))
-	fmt.Println("-----------------------")
-
-	return nil
+	return printJSON(res)
 }
 
 func runDelete(cmd *cobra.Command, args []string) error {
@@ -235,39 +202,12 @@ func runDelete(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "invalid customer ID format")
 	}
 
-	c, err := handler.Get(context.Background(), targetID)
-	if err != nil {
-		return errors.Wrap(err, "failed to retrieve customer")
-	}
-
-	fmt.Printf("\n--- Customer Information ---\n")
-	fmt.Printf("ID:      %s\n", c.ID)
-	fmt.Printf("Name:    %s\n", c.Name)
-	fmt.Printf("Email:   %s\n", c.Email)
-	fmt.Printf("Phone:   %s\n", c.PhoneNumber)
-	fmt.Printf("Address: %s\n", c.Address)
-	fmt.Printf("Webhook: %s [%s]\n", c.WebhookURI, c.WebhookMethod)
-	fmt.Printf("Detail:  %s\n", c.Detail)
-	fmt.Println("----------------------------")
-
-	confirm := false
-	if err := survey.AskOne(&survey.Confirm{Message: fmt.Sprintf("Are you sure you want to delete customer %s?", targetID)}, &confirm); err != nil {
-		return errors.Wrap(err, "failed to get confirmation")
-	}
-
-	if !confirm {
-		fmt.Println("Deletion canceled")
-		return nil
-	}
-
-	fmt.Printf("\nDeleting Customer ID: %s...\n", targetID)
 	res, err := handler.Delete(context.Background(), targetID)
 	if err != nil {
 		return errors.Wrap(err, "failed to delete customer")
 	}
 
-	logrus.WithField("res", res).Infof("Deleted customer")
-	return nil
+	return printJSON(res)
 }
 
 func initHandler() (customerhandler.CustomerHandler, error) {
@@ -304,19 +244,24 @@ func initCustomerHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (custom
 }
 
 func resolveUUID(flagName string, label string) (uuid.UUID, error) {
-	res := uuid.FromStringOrNil(viper.GetString(flagName))
-	if res == uuid.Nil {
-		tmp := ""
-		prompt := &survey.Input{Message: fmt.Sprintf("%s (Required):", label)}
-		if errAsk := survey.AskOne(prompt, &tmp, survey.WithValidator(survey.Required)); errAsk != nil {
-			return uuid.Nil, errors.Wrap(errAsk, "input canceled")
-		}
+	val := viper.GetString(flagName)
+	if val == "" {
+		return uuid.Nil, fmt.Errorf("%s is required", label)
+	}
 
-		res = uuid.FromStringOrNil(tmp)
-		if res == uuid.Nil {
-			return uuid.Nil, fmt.Errorf("invalid format for %s: '%s' is not a valid UUID", label, tmp)
-		}
+	res := uuid.FromStringOrNil(val)
+	if res == uuid.Nil {
+		return uuid.Nil, fmt.Errorf("invalid format for %s: '%s' is not a valid UUID", label, val)
 	}
 
 	return res, nil
+}
+
+func printJSON(v any) error {
+	data, err := json.MarshalIndent(v, "", "  ")
+	if err != nil {
+		return errors.Wrap(err, "failed to marshal JSON")
+	}
+	fmt.Println(string(data))
+	return nil
 }
