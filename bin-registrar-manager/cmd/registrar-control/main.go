@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -23,26 +22,13 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
-	"github.com/AlecAivazis/survey/v2"
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
 const serviceName = "registrar-control"
-
-// Suppress unused import errors - these will be used in later tasks
-var (
-	_ = context.Background
-	_ = sql.Open
-	_ = json.Marshal
-	_ = fmt.Sprintf
-	_ = (*survey.Input)(nil)
-	_ = uuid.NewV4
-	_ = logrus.Info
-)
 
 func main() {
 	cmd := initCommand()
@@ -143,18 +129,14 @@ func initTrunkHandler() (trunkhandler.TrunkHandler, error) {
 }
 
 func resolveUUID(flagName string, label string) (uuid.UUID, error) {
-	res := uuid.FromStringOrNil(viper.GetString(flagName))
-	if res == uuid.Nil {
-		tmp := ""
-		prompt := &survey.Input{Message: fmt.Sprintf("%s (Required):", label)}
-		if err := survey.AskOne(prompt, &tmp, survey.WithValidator(survey.Required)); err != nil {
-			return uuid.Nil, errors.Wrap(err, "input canceled")
-		}
+	val := viper.GetString(flagName)
+	if val == "" {
+		return uuid.Nil, fmt.Errorf("%s is required", label)
+	}
 
-		res = uuid.FromStringOrNil(tmp)
-		if res == uuid.Nil {
-			return uuid.Nil, fmt.Errorf("invalid format for %s: '%s' is not a valid UUID", label, tmp)
-		}
+	res := uuid.FromStringOrNil(val)
+	if res == uuid.Nil {
+		return uuid.Nil, fmt.Errorf("invalid format for %s: '%s' is not a valid UUID", label, val)
 	}
 
 	return res, nil
@@ -163,47 +145,23 @@ func resolveUUID(flagName string, label string) (uuid.UUID, error) {
 func resolveString(flagName string, label string, required bool) (string, error) {
 	res := viper.GetString(flagName)
 	if res == "" && required {
-		prompt := &survey.Input{Message: fmt.Sprintf("%s (Required):", label)}
-		if err := survey.AskOne(prompt, &res, survey.WithValidator(survey.Required)); err != nil {
-			return "", errors.Wrap(err, "input canceled")
-		}
+		return "", fmt.Errorf("%s is required", label)
 	}
 	return res, nil
 }
 
-func formatOutput(data interface{}, format string) error {
-	if format == "json" {
-		jsonData, err := json.MarshalIndent(data, "", "  ")
-		if err != nil {
-			return errors.Wrap(err, "failed to marshal JSON")
-		}
-		fmt.Println(string(jsonData))
-		return nil
+func printJSON(v any) error {
+	data, err := json.MarshalIndent(v, "", "  ")
+	if err != nil {
+		return errors.Wrap(err, "failed to marshal JSON")
 	}
-
-	// Human-readable format (caller provides specific formatting)
+	fmt.Println(string(data))
 	return nil
 }
 
-func confirmDelete(resourceType string, id uuid.UUID, details string) (bool, error) {
-	if viper.GetBool("force") {
-		return true, nil
-	}
-
-	fmt.Printf("\n--- %s Information ---\n", resourceType)
-	fmt.Print(details)
-	fmt.Println("------------------------")
-
-	confirm := false
-	prompt := &survey.Confirm{
-		Message: fmt.Sprintf("Are you sure you want to delete %s %s?", resourceType, id),
-	}
-	if err := survey.AskOne(prompt, &confirm); err != nil {
-		return false, errors.Wrap(err, "confirmation canceled")
-	}
-
-	return confirm, nil
-}
+// ============================================================================
+// Extension Commands
+// ============================================================================
 
 func cmdExtensionCreate() *cobra.Command {
 	cmd := &cobra.Command{
@@ -213,12 +171,11 @@ func cmdExtensionCreate() *cobra.Command {
 	}
 
 	flags := cmd.Flags()
-	flags.String("customer_id", "", "Customer ID")
+	flags.String("customer_id", "", "Customer ID (required)")
 	flags.String("extension_number", "", "Extension number")
-	flags.String("username", "", "Username")
-	flags.String("password", "", "Password")
+	flags.String("username", "", "Username (required)")
+	flags.String("password", "", "Password (required)")
 	flags.String("domain", "", "Domain name")
-	flags.String("format", "", "Output format (json)")
 
 	return cmd
 }
@@ -234,12 +191,9 @@ func runExtensionCreate(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to resolve username")
 	}
 
-	password := viper.GetString("password")
-	if password == "" {
-		prompt := &survey.Password{Message: "Password (Required):"}
-		if err := survey.AskOne(prompt, &password, survey.WithValidator(survey.Required)); err != nil {
-			return errors.Wrap(err, "failed to get password")
-		}
+	password, err := resolveString("password", "Password", true)
+	if err != nil {
+		return errors.Wrap(err, "failed to resolve password")
 	}
 
 	extensionNumber := viper.GetString("extension_number")
@@ -255,31 +209,7 @@ func runExtensionCreate(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to create extension")
 	}
 
-	format := viper.GetString("format")
-	if format == "json" {
-		return formatOutput(res, "json")
-	}
-
-	// Human-readable output
-	fmt.Println("\n--- Extension Created ---")
-	fmt.Printf("ID:                %s\n", res.ID)
-	fmt.Printf("Customer ID:       %s\n", res.CustomerID)
-	fmt.Printf("Extension Number:  %s\n", res.Extension)
-	fmt.Printf("Username:          %s\n", res.Username)
-	fmt.Printf("Domain:            %s\n", res.DomainName)
-	fmt.Println("-------------------------")
-
-	jsonData, _ := json.MarshalIndent(res, "", "  ")
-	fmt.Println("\n--- Raw Data (JSON) ---")
-	fmt.Println(string(jsonData))
-	fmt.Println("-----------------------")
-
-	logrus.WithFields(logrus.Fields{
-		"id":          res.ID,
-		"customer_id": res.CustomerID,
-		"username":    res.Username,
-	}).Infof("Created extension")
-	return nil
+	return printJSON(res)
 }
 
 func cmdExtensionGet() *cobra.Command {
@@ -289,8 +219,7 @@ func cmdExtensionGet() *cobra.Command {
 		RunE:  runExtensionGet,
 	}
 	flags := cmd.Flags()
-	flags.String("id", "", "Extension ID")
-	flags.String("format", "", "Output format (json)")
+	flags.String("id", "", "Extension ID (required)")
 	return cmd
 }
 
@@ -305,32 +234,12 @@ func runExtensionGet(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to initialize handler")
 	}
 
-	fmt.Printf("\nRetrieving Extension ID: %s...\n", id)
 	res, err := handler.Get(context.Background(), id)
 	if err != nil {
 		return errors.Wrap(err, "failed to retrieve extension")
 	}
 
-	format := viper.GetString("format")
-	if format == "json" {
-		return formatOutput(res, "json")
-	}
-
-	// Human-readable output
-	fmt.Println("\n--- Extension Information ---")
-	fmt.Printf("ID:                %s\n", res.ID)
-	fmt.Printf("Customer ID:       %s\n", res.CustomerID)
-	fmt.Printf("Extension Number:  %s\n", res.Extension)
-	fmt.Printf("Username:          %s\n", res.Username)
-	fmt.Printf("Domain:            %s\n", res.DomainName)
-	fmt.Println("-----------------------------")
-
-	jsonData, _ := json.MarshalIndent(res, "", "  ")
-	fmt.Println("\n--- Raw Data (JSON) ---")
-	fmt.Println(string(jsonData))
-	fmt.Println("-----------------------")
-
-	return nil
+	return printJSON(res)
 }
 
 func cmdExtensionList() *cobra.Command {
@@ -340,13 +249,12 @@ func cmdExtensionList() *cobra.Command {
 		RunE:  runExtensionList,
 	}
 	flags := cmd.Flags()
-	flags.String("customer_id", "", "Customer ID filter")
+	flags.String("customer_id", "", "Customer ID filter (required)")
 	flags.String("domain", "", "Domain filter")
 	flags.String("username", "", "Username filter")
 	flags.String("extension_number", "", "Extension number filter")
 	flags.Int("limit", 100, "Limit number of results")
 	flags.String("token", "", "Pagination token")
-	flags.String("format", "", "Output format (json)")
 	return cmd
 }
 
@@ -379,24 +287,12 @@ func runExtensionList(cmd *cobra.Command, args []string) error {
 	limit := uint64(viper.GetInt("limit"))
 	token := viper.GetString("token")
 
-	fmt.Printf("\nRetrieving extensions... limit: %d, token: %s, filters: %v\n", limit, token, filters)
 	res, err := handler.List(context.Background(), token, limit, filters)
 	if err != nil {
 		return errors.Wrap(err, "failed to retrieve extensions")
 	}
 
-	format := viper.GetString("format")
-	if format == "json" {
-		return formatOutput(res, "json")
-	}
-
-	// Human-readable output
-	fmt.Printf("Success! Extensions count: %d\n", len(res))
-	for _, ext := range res {
-		fmt.Printf(" - [%s] %s@%s (number: %s)\n", ext.ID, ext.Username, ext.DomainName, ext.Extension)
-	}
-
-	return nil
+	return printJSON(res)
 }
 
 func cmdExtensionUpdate() *cobra.Command {
@@ -406,12 +302,11 @@ func cmdExtensionUpdate() *cobra.Command {
 		RunE:  runExtensionUpdate,
 	}
 	flags := cmd.Flags()
-	flags.String("id", "", "Extension ID")
+	flags.String("id", "", "Extension ID (required)")
 	flags.String("password", "", "New password")
 	flags.String("username", "", "New username")
 	flags.String("extension_number", "", "New extension number")
 	flags.String("domain", "", "New domain")
-	flags.String("format", "", "Output format (json)")
 	return cmd
 }
 
@@ -456,26 +351,7 @@ func runExtensionUpdate(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to update extension")
 	}
 
-	format := viper.GetString("format")
-	if format == "json" {
-		return formatOutput(res, "json")
-	}
-
-	// Human-readable output
-	fmt.Println("\n--- Extension Updated ---")
-	fmt.Printf("ID:                %s\n", res.ID)
-	fmt.Printf("Customer ID:       %s\n", res.CustomerID)
-	fmt.Printf("Extension Number:  %s\n", res.Extension)
-	fmt.Printf("Username:          %s\n", res.Username)
-	fmt.Printf("Domain:            %s\n", res.DomainName)
-	fmt.Println("-------------------------")
-
-	logrus.WithFields(logrus.Fields{
-		"id":         res.ID,
-		"customer_id": res.CustomerID,
-		"username":   res.Username,
-	}).Infof("Updated extension")
-	return nil
+	return printJSON(res)
 }
 
 func cmdExtensionDelete() *cobra.Command {
@@ -485,8 +361,7 @@ func cmdExtensionDelete() *cobra.Command {
 		RunE:  runExtensionDelete,
 	}
 	flags := cmd.Flags()
-	flags.String("id", "", "Extension ID")
-	flags.Bool("force", false, "Skip confirmation prompt")
+	flags.String("id", "", "Extension ID (required)")
 	return cmd
 }
 
@@ -501,37 +376,12 @@ func runExtensionDelete(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to initialize handler")
 	}
 
-	// Get extension details for confirmation
-	ext, err := handler.Get(context.Background(), id)
-	if err != nil {
-		return errors.Wrap(err, "failed to retrieve extension")
-	}
-
-	details := fmt.Sprintf("ID:                %s\nCustomer ID:       %s\nExtension Number:  %s\nUsername:          %s\nDomain:            %s\n",
-		ext.ID, ext.CustomerID, ext.Extension, ext.Username, ext.DomainName)
-
-	confirmed, err := confirmDelete("Extension", id, details)
-	if err != nil {
-		return err
-	}
-
-	if !confirmed {
-		fmt.Println("Deletion canceled")
-		return nil
-	}
-
-	fmt.Printf("\nDeleting Extension ID: %s...\n", id)
-	_, err = handler.Delete(context.Background(), id)
+	res, err := handler.Delete(context.Background(), id)
 	if err != nil {
 		return errors.Wrap(err, "failed to delete extension")
 	}
 
-	logrus.WithFields(logrus.Fields{
-		"id":         id,
-		"customer_id": ext.CustomerID,
-	}).Infof("Deleted extension")
-	fmt.Println("Extension deleted successfully")
-	return nil
+	return printJSON(res)
 }
 
 // ============================================================================
@@ -546,13 +396,12 @@ func cmdTrunkCreate() *cobra.Command {
 	}
 
 	flags := cmd.Flags()
-	flags.String("customer_id", "", "Customer ID")
-	flags.String("domain", "", "Domain name")
+	flags.String("customer_id", "", "Customer ID (required)")
+	flags.String("domain", "", "Domain name (required)")
 	flags.String("name", "", "Trunk name")
 	flags.String("username", "", "Username")
 	flags.String("password", "", "Password")
 	flags.String("allowed_ips", "", "Allowed IPs (comma-separated)")
-	flags.String("format", "", "Output format (json)")
 
 	return cmd
 }
@@ -570,12 +419,7 @@ func runTrunkCreate(cmd *cobra.Command, args []string) error {
 
 	name := viper.GetString("name")
 	username := viper.GetString("username")
-
 	password := viper.GetString("password")
-	if password == "" && username != "" {
-		prompt := &survey.Password{Message: "Password (Optional):"}
-		_ = survey.AskOne(prompt, &password)
-	}
 
 	// Parse allowed_ips
 	var allowedIPs []string
@@ -607,32 +451,7 @@ func runTrunkCreate(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to create trunk")
 	}
 
-	format := viper.GetString("format")
-	if format == "json" {
-		return formatOutput(res, "json")
-	}
-
-	// Human-readable output
-	fmt.Println("\n--- Trunk Created ---")
-	fmt.Printf("ID:           %s\n", res.ID)
-	fmt.Printf("Customer ID:  %s\n", res.CustomerID)
-	fmt.Printf("Name:         %s\n", res.Name)
-	fmt.Printf("Domain:       %s\n", res.DomainName)
-	fmt.Printf("Username:     %s\n", res.Username)
-	fmt.Printf("Allowed IPs:  %v\n", res.AllowedIPs)
-	fmt.Println("---------------------")
-
-	jsonData, _ := json.MarshalIndent(res, "", "  ")
-	fmt.Println("\n--- Raw Data (JSON) ---")
-	fmt.Println(string(jsonData))
-	fmt.Println("-----------------------")
-
-	logrus.WithFields(logrus.Fields{
-		"id":          res.ID,
-		"customer_id": res.CustomerID,
-		"username":    res.Username,
-	}).Infof("Created trunk")
-	return nil
+	return printJSON(res)
 }
 
 func cmdTrunkGet() *cobra.Command {
@@ -642,8 +461,7 @@ func cmdTrunkGet() *cobra.Command {
 		RunE:  runTrunkGet,
 	}
 	flags := cmd.Flags()
-	flags.String("id", "", "Trunk ID")
-	flags.String("format", "", "Output format (json)")
+	flags.String("id", "", "Trunk ID (required)")
 	return cmd
 }
 
@@ -658,33 +476,12 @@ func runTrunkGet(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to initialize handler")
 	}
 
-	fmt.Printf("\nRetrieving Trunk ID: %s...\n", id)
 	res, err := handler.Get(context.Background(), id)
 	if err != nil {
 		return errors.Wrap(err, "failed to retrieve trunk")
 	}
 
-	format := viper.GetString("format")
-	if format == "json" {
-		return formatOutput(res, "json")
-	}
-
-	// Human-readable output
-	fmt.Println("\n--- Trunk Information ---")
-	fmt.Printf("ID:           %s\n", res.ID)
-	fmt.Printf("Customer ID:  %s\n", res.CustomerID)
-	fmt.Printf("Name:         %s\n", res.Name)
-	fmt.Printf("Domain:       %s\n", res.DomainName)
-	fmt.Printf("Username:     %s\n", res.Username)
-	fmt.Printf("Allowed IPs:  %v\n", res.AllowedIPs)
-	fmt.Println("-------------------------")
-
-	jsonData, _ := json.MarshalIndent(res, "", "  ")
-	fmt.Println("\n--- Raw Data (JSON) ---")
-	fmt.Println(string(jsonData))
-	fmt.Println("-----------------------")
-
-	return nil
+	return printJSON(res)
 }
 
 func cmdTrunkList() *cobra.Command {
@@ -694,13 +491,12 @@ func cmdTrunkList() *cobra.Command {
 		RunE:  runTrunkList,
 	}
 	flags := cmd.Flags()
-	flags.String("customer_id", "", "Customer ID filter")
+	flags.String("customer_id", "", "Customer ID filter (required)")
 	flags.String("domain", "", "Domain filter")
 	flags.String("username", "", "Username filter")
 	flags.String("name", "", "Name filter")
 	flags.Int("limit", 100, "Limit number of results")
 	flags.String("token", "", "Pagination token")
-	flags.String("format", "", "Output format (json)")
 	return cmd
 }
 
@@ -733,24 +529,12 @@ func runTrunkList(cmd *cobra.Command, args []string) error {
 	limit := uint64(viper.GetInt("limit"))
 	token := viper.GetString("token")
 
-	fmt.Printf("\nRetrieving trunks... limit: %d, token: %s, filters: %v\n", limit, token, filters)
 	res, err := handler.List(context.Background(), token, limit, filters)
 	if err != nil {
 		return errors.Wrap(err, "failed to retrieve trunks")
 	}
 
-	format := viper.GetString("format")
-	if format == "json" {
-		return formatOutput(res, "json")
-	}
-
-	// Human-readable output
-	fmt.Printf("Success! Trunks count: %d\n", len(res))
-	for _, t := range res {
-		fmt.Printf(" - [%s] %s (domain: %s, username: %s)\n", t.ID, t.Name, t.DomainName, t.Username)
-	}
-
-	return nil
+	return printJSON(res)
 }
 
 func cmdTrunkUpdate() *cobra.Command {
@@ -760,13 +544,12 @@ func cmdTrunkUpdate() *cobra.Command {
 		RunE:  runTrunkUpdate,
 	}
 	flags := cmd.Flags()
-	flags.String("id", "", "Trunk ID")
+	flags.String("id", "", "Trunk ID (required)")
 	flags.String("password", "", "New password")
 	flags.String("username", "", "New username")
 	flags.String("name", "", "New name")
 	flags.String("domain", "", "New domain")
 	flags.String("allowed_ips", "", "New allowed IPs (comma-separated)")
-	flags.String("format", "", "Output format (json)")
 	return cmd
 }
 
@@ -822,27 +605,7 @@ func runTrunkUpdate(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to update trunk")
 	}
 
-	format := viper.GetString("format")
-	if format == "json" {
-		return formatOutput(res, "json")
-	}
-
-	// Human-readable output
-	fmt.Println("\n--- Trunk Updated ---")
-	fmt.Printf("ID:           %s\n", res.ID)
-	fmt.Printf("Customer ID:  %s\n", res.CustomerID)
-	fmt.Printf("Name:         %s\n", res.Name)
-	fmt.Printf("Domain:       %s\n", res.DomainName)
-	fmt.Printf("Username:     %s\n", res.Username)
-	fmt.Printf("Allowed IPs:  %v\n", res.AllowedIPs)
-	fmt.Println("---------------------")
-
-	logrus.WithFields(logrus.Fields{
-		"id":          res.ID,
-		"customer_id": res.CustomerID,
-		"username":    res.Username,
-	}).Infof("Updated trunk")
-	return nil
+	return printJSON(res)
 }
 
 func cmdTrunkDelete() *cobra.Command {
@@ -852,8 +615,7 @@ func cmdTrunkDelete() *cobra.Command {
 		RunE:  runTrunkDelete,
 	}
 	flags := cmd.Flags()
-	flags.String("id", "", "Trunk ID")
-	flags.Bool("force", false, "Skip confirmation prompt")
+	flags.String("id", "", "Trunk ID (required)")
 	return cmd
 }
 
@@ -868,35 +630,10 @@ func runTrunkDelete(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to initialize handler")
 	}
 
-	// Get trunk details for confirmation
-	t, err := handler.Get(context.Background(), id)
-	if err != nil {
-		return errors.Wrap(err, "failed to retrieve trunk")
-	}
-
-	details := fmt.Sprintf("ID:           %s\nCustomer ID:  %s\nName:         %s\nDomain:       %s\nUsername:     %s\n",
-		t.ID, t.CustomerID, t.Name, t.DomainName, t.Username)
-
-	confirmed, err := confirmDelete("Trunk", id, details)
-	if err != nil {
-		return err
-	}
-
-	if !confirmed {
-		fmt.Println("Deletion canceled")
-		return nil
-	}
-
-	fmt.Printf("\nDeleting Trunk ID: %s...\n", id)
-	_, err = handler.Delete(context.Background(), id)
+	res, err := handler.Delete(context.Background(), id)
 	if err != nil {
 		return errors.Wrap(err, "failed to delete trunk")
 	}
 
-	logrus.WithFields(logrus.Fields{
-		"id":          id,
-		"customer_id": t.CustomerID,
-	}).Infof("Deleted trunk")
-	fmt.Println("Trunk deleted successfully")
-	return nil
+	return printJSON(res)
 }
