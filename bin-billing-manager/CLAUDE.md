@@ -28,12 +28,35 @@ go test -v ./pkg/accounthandler -run Test_IsValidBalance
 
 ### Building
 ```bash
-# Build the binary
+# Build the service binary
 go build -o ./bin/billing-manager ./cmd/billing-manager/
+
+# Build the CLI tool
+go build -o ./bin/billing-control ./cmd/billing-control/
 
 # Build using Docker (from monorepo root)
 docker build -t billing-manager:latest -f bin-billing-manager/Dockerfile .
 ```
+
+### CLI Tool: billing-control
+
+A command-line tool for managing billing accounts and viewing billing records directly via database/cache (bypasses RabbitMQ RPC).
+
+```bash
+# Account operations
+billing-control account create --customer-id <uuid> [--name] [--detail] [--payment-type] [--payment-method]
+billing-control account get --id <uuid>
+billing-control account list [--limit 100] [--token] [--customer-id <uuid>]
+billing-control account delete --id <uuid>
+billing-control account add-balance --id <uuid> --amount <float>
+billing-control account subtract-balance --id <uuid> --amount <float>
+
+# Billing operations (read-only)
+billing-control billing get --id <uuid>
+billing-control billing list [--limit 100] [--token] [--customer-id <uuid>] [--account-id <uuid>]
+```
+
+Uses same environment variables as billing-manager (`DATABASE_DSN`, `RABBITMQ_ADDRESS`, `REDIS_ADDRESS`, etc.).
 
 ### Code Quality
 ```bash
