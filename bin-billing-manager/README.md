@@ -2,6 +2,67 @@
 
 Billing-manager for billing related process and webhook event notification.
 
+## CLI Tool: billing-control
+
+A command-line tool for managing billing accounts and viewing billing records. All output is JSON format for easy parsing and scripting.
+
+### Build
+```bash
+go build -o ./bin/billing-control ./cmd/billing-control/
+```
+
+### Commands
+
+**Account Operations:**
+```bash
+# Create account - returns created account JSON
+billing-control account create --customer-id <uuid> [--name N] [--detail D] [--payment-type T] [--payment-method M]
+
+# Get account by ID - returns account JSON
+billing-control account get --id <uuid>
+
+# List accounts - returns JSON array
+billing-control account list [--limit 100] [--token T] [--customer-id <uuid>]
+
+# Delete account - returns deleted account JSON
+billing-control account delete --id <uuid>
+
+# Add balance - returns updated account JSON
+billing-control account add-balance --id <uuid> --amount <float>
+
+# Subtract balance - returns updated account JSON
+billing-control account subtract-balance --id <uuid> --amount <float>
+```
+
+**Billing Operations:**
+```bash
+# Get billing record by ID - returns billing JSON
+billing-control billing get --id <uuid>
+
+# List billing records - returns JSON array
+billing-control billing list [--limit 100] [--token T] [--customer-id <uuid>] [--account-id <uuid>]
+```
+
+### Output
+
+- **stdout**: JSON formatted results only
+- **stderr**: Log messages (DEBUG, ERROR, etc.)
+
+Example:
+```bash
+# Redirect JSON to file, logs visible in terminal
+./billing-control account list --customer-id <uuid> > accounts.json
+```
+
+### Configuration
+
+Uses the same environment variables as billing-manager:
+- `DATABASE_DSN` - Database connection string
+- `RABBITMQ_ADDRESS` - RabbitMQ server address
+- `REDIS_ADDRESS` - Redis server address
+- `REDIS_PASSWORD` - Redis password (optional)
+- `REDIS_DATABASE` - Redis database index (default: 1)
+
 # RUN
 ```
 Usage of ./billing-manager:
