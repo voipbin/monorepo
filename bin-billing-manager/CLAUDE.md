@@ -40,10 +40,10 @@ docker build -t billing-manager:latest -f bin-billing-manager/Dockerfile .
 
 ### CLI Tool: billing-control
 
-A command-line tool for managing billing accounts and viewing billing records directly via database/cache (bypasses RabbitMQ RPC).
+A command-line tool for managing billing accounts and viewing billing records directly via database/cache (bypasses RabbitMQ RPC). **All output is JSON format** (stdout), logs go to stderr.
 
 ```bash
-# Account operations
+# Account operations (all return JSON)
 billing-control account create --customer-id <uuid> [--name] [--detail] [--payment-type] [--payment-method]
 billing-control account get --id <uuid>
 billing-control account list [--limit 100] [--token] [--customer-id <uuid>]
@@ -51,7 +51,7 @@ billing-control account delete --id <uuid>
 billing-control account add-balance --id <uuid> --amount <float>
 billing-control account subtract-balance --id <uuid> --amount <float>
 
-# Billing operations (read-only)
+# Billing operations (read-only, returns JSON)
 billing-control billing get --id <uuid>
 billing-control billing list [--limit 100] [--token] [--customer-id <uuid>] [--account-id <uuid>]
 ```
