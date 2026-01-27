@@ -6,8 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Building
 ```bash
-# Build the service
-go build -o bin/queue-manager ./cmd/queue-manager
+# Build the service and CLI
+go build -o ./bin/ ./cmd/...
 
 # Build with Docker
 docker build -t queue-manager .
@@ -49,6 +49,38 @@ RABBITMQ_ADDRESS="amqp://guest:guest@localhost:5672" \
 REDIS_ADDRESS="localhost:6379" \
 go run ./cmd/queue-manager
 ```
+
+## queue-control CLI Tool
+
+A command-line tool for managing queues directly via database/cache (bypasses RabbitMQ RPC). **All output is JSON format** (stdout), logs go to stderr.
+
+```bash
+# Create queue - returns created queue JSON
+./bin/queue-control queue create --customer_id <uuid> --name <name> [--detail] [--routing_method random] [--tag_ids '<json>'] [--wait_flow_id <uuid>] [--wait_timeout 300000] [--service_timeout 600000]
+
+# Get queue - returns queue JSON
+./bin/queue-control queue get --id <uuid>
+
+# List queues - returns JSON array
+./bin/queue-control queue list --customer_id <uuid> [--limit 100] [--token]
+
+# Update queue (full) - returns updated queue JSON
+./bin/queue-control queue update --id <uuid> --name <name> [--detail] [--routing_method] [--tag_ids '<json>'] [--wait_flow_id <uuid>] [--wait_timeout] [--service_timeout]
+
+# Update queue tag IDs only - returns updated queue JSON
+./bin/queue-control queue update-tag-ids --id <uuid> --tag_ids '<json_array>'
+
+# Update queue routing method only - returns updated queue JSON
+./bin/queue-control queue update-routing-method --id <uuid> --routing_method <random>
+
+# Update queue execute state - returns updated queue JSON
+./bin/queue-control queue update-execute --id <uuid> --execute <run|stop>
+
+# Delete queue - returns deleted queue JSON
+./bin/queue-control queue delete --id <uuid>
+```
+
+Uses same environment variables as queue-manager (`DATABASE_DSN`, `RABBITMQ_ADDRESS`, `REDIS_ADDRESS`, etc.).
 
 ## Architecture
 

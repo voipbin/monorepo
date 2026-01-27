@@ -13,8 +13,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 # Build the service binary
 go build -o campaign-manager ./cmd/campaign-manager
 
+# Build the control CLI
+go build -o campaign-control ./cmd/campaign-control
+
 # Build with vendor dependencies
 go build -mod=vendor -o campaign-manager ./cmd/campaign-manager
+go build -mod=vendor -o campaign-control ./cmd/campaign-control
 ```
 
 ### Test
@@ -42,6 +46,48 @@ go tool cover -html=coverage.out
 # Generate all mocks (uses go.uber.org/mock)
 go generate ./...
 ```
+
+### campaign-control CLI Tool
+
+A command-line tool for managing campaigns. **All output is JSON format** (stdout), logs go to stderr.
+
+```bash
+# Create campaign - returns created campaign JSON
+./campaign-control campaign create \
+  --customer_id <uuid> \
+  --name <name> \
+  --outplan_id <uuid> \
+  --outdial_id <uuid> \
+  [--type call|flow] \
+  [--detail <description>] \
+  [--service_level 100] \
+  [--end_handle stop|continue] \
+  [--queue_id <uuid>] \
+  [--next_campaign_id <uuid>]
+
+# Get campaign - returns campaign JSON
+./campaign-control campaign get --id <uuid>
+
+# List campaigns - returns JSON array
+./campaign-control campaign list --customer_id <uuid> [--limit 100] [--token]
+
+# Update campaign basic info - returns updated campaign JSON
+./campaign-control campaign update-basic-info \
+  --id <uuid> \
+  --name <name> \
+  [--detail <description>] \
+  [--type call|flow] \
+  [--service_level 100] \
+  [--end_handle stop|continue]
+
+# Update campaign status - returns updated campaign JSON
+./campaign-control campaign update-status --id <uuid> --status run|stop|stopping
+
+# Delete campaign - returns deleted campaign JSON
+./campaign-control campaign delete --id <uuid>
+```
+
+Uses same environment variables as campaign-manager (`DATABASE_DSN`, `RABBITMQ_ADDRESS`, `REDIS_ADDRESS`, etc.).
 
 ### Running Locally
 ```bash

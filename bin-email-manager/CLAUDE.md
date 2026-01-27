@@ -127,6 +127,23 @@ golangci-lint run -v --timeout 5m
 go vet $(go list ./...)
 ```
 
+## email-control CLI Tool
+
+A command-line tool for managing emails directly via database/cache (bypasses RabbitMQ RPC). **All output is JSON format** (stdout), logs go to stderr.
+
+```bash
+# Get email - returns email JSON
+./bin/email-control email get --id <uuid>
+
+# List emails - returns JSON array
+./bin/email-control email list --customer_id <uuid> [--limit 100] [--token]
+
+# Delete email - returns deleted email JSON
+./bin/email-control email delete --id <uuid>
+```
+
+Uses same environment variables as email-manager (`DATABASE_DSN`, `RABBITMQ_ADDRESS`, `REDIS_ADDRESS`, etc.).
+
 ### Run Locally
 ```bash
 # With environment variables

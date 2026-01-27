@@ -1,6 +1,8 @@
 package config
 
 import (
+	"sync"
+
 	joonix "github.com/joonix/log"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -18,7 +20,10 @@ type Config struct {
 	RedisPassword           string
 }
 
-var appConfig Config
+var (
+	appConfig Config
+	once      sync.Once
+)
 
 // Bootstrap initializes configuration with Cobra command and Viper
 func Bootstrap(rootCmd *cobra.Command) error {
@@ -101,4 +106,22 @@ func Bootstrap(rootCmd *cobra.Command) error {
 // Get returns the application configuration
 func Get() Config {
 	return appConfig
+}
+
+// LoadGlobalConfig loads configuration from viper into the global singleton.
+// NOTE: This must be called AFTER Bootstrap has been executed.
+// If called before binding, it will load empty/default values.
+func LoadGlobalConfig() {
+	once.Do(func() {
+		appConfig = Config{
+			DatabaseDSN:             viper.GetString("database_dsn"),
+			PrometheusEndpoint:      viper.GetString("prometheus_endpoint"),
+			PrometheusListenAddress: viper.GetString("prometheus_listen_address"),
+			RabbitMQAddress:         viper.GetString("rabbitmq_address"),
+			RedisAddress:            viper.GetString("redis_address"),
+			RedisDatabase:           viper.GetInt("redis_database"),
+			RedisPassword:           viper.GetString("redis_password"),
+		}
+		logrus.Debug("Configuration has been loaded and locked.")
+	})
 }

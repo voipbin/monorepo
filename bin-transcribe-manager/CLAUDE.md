@@ -73,6 +73,32 @@ golint -set_exit_status $(go list ./...)
 go vet $(go list ./...)
 ```
 
+## transcribe-control CLI Tool
+
+A command-line tool for managing transcription sessions directly via database/cache (bypasses RabbitMQ RPC). **All output is JSON format** (stdout), logs go to stderr.
+
+```bash
+# Start a new transcription session - returns created session JSON
+./bin/transcribe-control transcribe start --reference_type <type> --reference_id <uuid> --language <lang> [--customer_id]
+
+# Stop a transcription session - returns stopped session JSON
+./bin/transcribe-control transcribe stop --id <uuid>
+
+# Get transcription session - returns session JSON
+./bin/transcribe-control transcribe get --id <uuid>
+
+# Get transcription session by reference - returns session JSON
+./bin/transcribe-control transcribe get-by-reference --reference_id <uuid> --language <lang>
+
+# List transcription sessions - returns JSON array
+./bin/transcribe-control transcribe list --customer_id <uuid> [--limit 100] [--token]
+
+# Delete transcription session - returns deleted session JSON
+./bin/transcribe-control transcribe delete --id <uuid>
+```
+
+Uses same environment variables as transcribe-manager (`DATABASE_DSN`, `RABBITMQ_ADDRESS`, `REDIS_ADDRESS`, etc.).
+
 ### Dependencies
 ```bash
 # Download dependencies

@@ -122,6 +122,32 @@ golangci-lint run -v --timeout 5m
 go vet $(go list ./...)
 ```
 
+## customer-control CLI Tool
+
+A command-line tool for managing customers directly via database/cache (bypasses RabbitMQ RPC). **All output is JSON format** (stdout), logs go to stderr.
+
+```bash
+# Create customer - returns created customer JSON
+./bin/customer-control customer create --email <email> [--name] [--detail] [--phone-number] [--address] [--webhook-method POST] [--webhook-uri]
+
+# Get customer - returns customer JSON
+./bin/customer-control customer get --id <uuid>
+
+# List customers - returns JSON array
+./bin/customer-control customer list [--limit 100] [--token]
+
+# Update customer basic info - returns updated customer JSON
+./bin/customer-control customer update --id <uuid> --email <email> [--name] [--detail] [--phone-number] [--address] [--webhook-method] [--webhook-uri]
+
+# Update customer billing account ID - returns updated customer JSON
+./bin/customer-control customer update-billing-account --id <uuid> --billing-account-id <uuid>
+
+# Delete customer - returns deleted customer JSON
+./bin/customer-control customer delete --id <uuid>
+```
+
+Uses same environment variables as customer-manager (`DATABASE_DSN`, `RABBITMQ_ADDRESS`, `REDIS_ADDRESS`, etc.).
+
 ### Run Locally
 ```bash
 # With environment variables

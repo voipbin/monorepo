@@ -69,6 +69,29 @@ go generate ./pkg/aicallhandler/...
 # etc.
 ```
 
+## ai-control CLI Tool
+
+A command-line tool for managing AI configurations directly via database/cache (bypasses RabbitMQ RPC). **All output is JSON format** (stdout), logs go to stderr.
+
+```bash
+# Create AI configuration - returns created AI JSON
+./bin/ai-control ai create --customer_id <uuid> --name <name> --engine_type <type> --engine_model <model> [--engine_data '<json>'] [--init_prompt '<text>']
+
+# Get AI configuration - returns AI JSON
+./bin/ai-control ai get --id <uuid>
+
+# List AI configurations - returns JSON array
+./bin/ai-control ai list --customer_id <uuid> [--limit 100] [--token]
+
+# Update AI configuration - returns updated AI JSON
+./bin/ai-control ai update --id <uuid> [--name <name>] [--engine_type <type>] [--engine_model <model>] [--engine_data '<json>'] [--init_prompt '<text>']
+
+# Delete AI configuration - returns deleted AI JSON
+./bin/ai-control ai delete --id <uuid>
+```
+
+Uses same environment variables as ai-manager (`DATABASE_DSN`, `RABBITMQ_ADDRESS`, `REDIS_ADDRESS`, etc.).
+
 ## Architecture
 
 ### Core Components

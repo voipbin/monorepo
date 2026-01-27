@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -47,15 +46,6 @@ var rootCmd = &cobra.Command{
 }
 
 func init() {
-	// Define flags
-	rootCmd.Flags().String("database_dsn", "testid:testpassword@tcp(127.0.0.1:3306)/test", "Data Source Name for database connection (e.g., user:password@tcp(localhost:3306)/dbname)")
-	rootCmd.Flags().String("prometheus_endpoint", "/metrics", "URL for the Prometheus metrics endpoint")
-	rootCmd.Flags().String("prometheus_listen_address", ":2112", "Address for Prometheus to listen on (e.g., localhost:8080)")
-	rootCmd.Flags().String("rabbitmq_address", "amqp://guest:guest@localhost:5672", "Address of the RabbitMQ server (e.g., amqp://guest:guest@localhost:5672)")
-	rootCmd.Flags().String("redis_address", "127.0.0.1:6379", "Address of the Redis server (e.g., localhost:6379)")
-	rootCmd.Flags().Int("redis_database", 1, "Redis database index to use (default is 1)")
-	rootCmd.Flags().String("redis_password", "", "Password for authenticating with the Redis server (if required)")
-
 	// Initialize logging
 	logrus.SetFormatter(joonix.NewFormatter())
 	logrus.SetLevel(logrus.DebugLevel)
@@ -63,6 +53,11 @@ func init() {
 	// Initialize signal handler
 	signal.Notify(chSigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	go signalHandler()
+
+	// Bootstrap configuration
+	if err := config.Bootstrap(rootCmd); err != nil {
+		logrus.Fatalf("Failed to bootstrap config: %v", err)
+	}
 }
 
 func main() {
@@ -75,10 +70,8 @@ func main() {
 func run(cmd *cobra.Command, args []string) error {
 	log := logrus.WithField("func", "run")
 
-	// Initialize configuration
-	if err := config.InitConfig(cmd); err != nil {
-		return fmt.Errorf("failed to initialize config: %w", err)
-	}
+	// Load global configuration
+	config.LoadGlobalConfig()
 
 	cfg := config.Get()
 

@@ -19,6 +19,9 @@ go mod download
 go mod vendor
 go build ./cmd/...
 
+# Build binaries
+go build -o ./bin/ ./cmd/...
+
 # Run with default configuration
 ./flow-manager
 
@@ -60,6 +63,35 @@ golangci-lint run -v --timeout 5m
 # Generate all mocks (uses go:generate directives)
 go generate ./...
 ```
+
+## flow-control CLI Tool
+
+A command-line tool for managing flows directly via database/cache (bypasses RabbitMQ RPC). **All output is JSON format** (stdout), logs go to stderr.
+
+```bash
+# Create flow - returns created flow JSON
+./bin/flow-control flow create --customer_id <uuid> --name <name> [--type flow] [--detail] [--persist] [--actions '<json>'] [--on_complete_flow_id <uuid>]
+
+# Get flow - returns flow JSON
+./bin/flow-control flow get --id <uuid>
+
+# List flows - returns JSON array
+./bin/flow-control flow list --customer_id <uuid> [--limit 100] [--token] [--type]
+
+# Update flow - returns updated flow JSON
+./bin/flow-control flow update --id <uuid> --name <name> [--detail] [--actions '<json>'] [--on_complete_flow_id <uuid>]
+
+# Update flow actions only - returns updated flow JSON
+./bin/flow-control flow update-actions --id <uuid> --actions '<json>'
+
+# Delete flow - returns deleted flow JSON
+./bin/flow-control flow delete --id <uuid>
+
+# Get specific action from flow - returns action JSON
+./bin/flow-control flow action-get --flow_id <uuid> --action_id <uuid>
+```
+
+Uses same environment variables as flow-manager (`DATABASE_DSN`, `RABBITMQ_ADDRESS`, `REDIS_ADDRESS`, etc.).
 
 ## Configuration
 

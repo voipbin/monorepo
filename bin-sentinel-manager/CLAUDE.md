@@ -29,6 +29,20 @@ go test -v -run TestName ./pkg/packagename/...
 go generate ./pkg/monitoringhandler/...
 ```
 
+## sentinel-control CLI Tool
+
+A command-line tool for querying Kubernetes pod monitoring data. **All output is JSON format** (stdout), logs go to stderr.
+
+```bash
+# List monitored pods in a namespace - returns JSON array
+./bin/sentinel-control pod list --namespace <namespace>
+
+# Get a specific pod by name - returns pod JSON
+./bin/sentinel-control pod get --namespace <namespace> --name <pod-name>
+```
+
+Uses same environment variables as sentinel-manager (`DATABASE_DSN`, `RABBITMQ_ADDRESS`, `REDIS_ADDRESS`, etc.).
+
 ## Architecture
 
 ### Service Layer Structure

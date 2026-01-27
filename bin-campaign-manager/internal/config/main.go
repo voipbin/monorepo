@@ -89,3 +89,14 @@ func Get() *Config {
 	}
 	return cfg
 }
+
+// Bootstrap initializes configuration flags on the given command
+func Bootstrap(cmd *cobra.Command) error {
+	InitFlags(cmd)
+	return nil
+}
+
+// LoadGlobalConfig loads the global configuration from viper
+func LoadGlobalConfig() {
+	Load()
+}

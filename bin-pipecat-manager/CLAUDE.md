@@ -37,6 +37,28 @@ docker build -t pipecat-manager -f Dockerfile ../
 protoc --go_out=. --go_opt=paths=source_relative proto/frames.proto
 ```
 
+## pipecat-control CLI Tool
+
+A command-line tool for managing pipecat calls. **All output is JSON format** (stdout), logs go to stderr.
+
+**Note:** This tool requires the soxr system library for audio processing.
+
+```bash
+# Get a pipecatcall - returns pipecatcall JSON
+./bin/pipecat-control pipecatcall get --id <uuid>
+
+# Start a new pipecatcall - returns created pipecatcall JSON
+./bin/pipecat-control pipecatcall start --reference_type <type> --reference_id <uuid> [--customer_id]
+
+# Terminate a pipecatcall - returns terminated pipecatcall JSON
+./bin/pipecat-control pipecatcall terminate --id <uuid>
+
+# Send a message to a pipecatcall
+./bin/pipecat-control pipecatcall send-message --id <uuid> --message <text>
+```
+
+Uses same environment variables as pipecat-manager (`DATABASE_DSN`, `RABBITMQ_ADDRESS`, `REDIS_ADDRESS`, etc.).
+
 ### Python Component
 
 The Python FastAPI service (`scripts/pipecat/main.py`) runs on port 8000 and must be running for the Go service to function:

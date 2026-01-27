@@ -40,6 +40,31 @@ go generate ./pkg/subscribehandler/...
 go vet $(go list ./...)
 ```
 
+## storage-control CLI Tool
+
+A command-line tool for managing storage files and accounts directly via database/cache (bypasses RabbitMQ RPC). **All output is JSON format** (stdout), logs go to stderr.
+
+```bash
+# File commands
+./bin/storage-control file create --customer_id <uuid> --name <name> [--detail] [--reference_type] [--reference_id]
+./bin/storage-control file get --id <uuid>
+./bin/storage-control file list --customer_id <uuid> [--limit 100] [--token]
+./bin/storage-control file delete --id <uuid>
+
+# Account commands
+./bin/storage-control account create --customer_id <uuid> [--name] [--detail]
+./bin/storage-control account get --id <uuid>
+./bin/storage-control account list --customer_id <uuid> [--limit 100] [--token]
+./bin/storage-control account delete --id <uuid>
+
+# Recording commands
+./bin/storage-control recording get --id <uuid>
+./bin/storage-control recording list --customer_id <uuid> [--limit 100] [--token]
+./bin/storage-control recording delete --id <uuid>
+```
+
+Uses same environment variables as storage-manager (`DATABASE_DSN`, `RABBITMQ_ADDRESS`, `REDIS_ADDRESS`, etc.).
+
 ## Architecture
 
 ### Service Layer Structure

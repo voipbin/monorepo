@@ -10,7 +10,10 @@ bin-webhook-manager is a Go microservice for managing webhook event notification
 
 ```bash
 # Build the webhook-manager daemon
-go build -o ./bin/ ./cmd/...
+go build -o ./bin/webhook-manager ./cmd/webhook-manager
+
+# Build the webhook-control CLI tool
+go build -o ./bin/webhook-control ./cmd/webhook-control
 
 # Run the daemon (requires configuration via flags or env vars)
 ./bin/webhook-manager
@@ -33,6 +36,28 @@ go generate ./pkg/cachehandler/...
 go generate ./pkg/accounthandler/...
 go generate ./pkg/subscribehandler/...
 ```
+
+### webhook-control CLI Tool
+
+A command-line tool for triggering webhook operations. **All output is JSON format** (stdout), logs go to stderr.
+
+```bash
+# Send webhook to customer using their configured webhook settings
+./bin/webhook-control webhook send-to-customer \
+  --customer_id <uuid> \
+  --data '{"type":"event_type","data":{"key":"value"}}' \
+  [--data_type application/json]
+
+# Send webhook to a specific URI with specified method
+./bin/webhook-control webhook send-to-uri \
+  --customer_id <uuid> \
+  --uri https://example.com/webhook \
+  --data '{"type":"event_type","data":{"key":"value"}}' \
+  [--method POST] \
+  [--data_type application/json]
+```
+
+Uses same environment variables as webhook-manager (`DATABASE_DSN`, `RABBITMQ_ADDRESS`, `REDIS_ADDRESS`, etc.).
 
 ## Architecture
 

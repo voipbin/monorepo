@@ -67,6 +67,28 @@ go vet $(go list ./...)
 golangci-lint run -v --timeout 5m
 ```
 
+## billing-control CLI Tool
+
+A command-line tool for managing billing accounts and records directly via database/cache (bypasses RabbitMQ RPC). **All output is JSON format** (stdout), logs go to stderr.
+
+```bash
+# Account commands
+./bin/billing-control account create --customer-id <uuid> [--name] [--detail] [--payment-type prepaid] [--payment-method]
+./bin/billing-control account get --id <uuid>
+./bin/billing-control account list [--customer-id <uuid>] [--limit 100] [--token]
+./bin/billing-control account update --id <uuid> --name <name> [--detail]
+./bin/billing-control account update-payment-info --id <uuid> --payment-type <prepaid> --payment-method <credit card>
+./bin/billing-control account delete --id <uuid>
+./bin/billing-control account add-balance --id <uuid> --amount <float>
+./bin/billing-control account subtract-balance --id <uuid> --amount <float>
+
+# Billing commands
+./bin/billing-control billing get --id <uuid>
+./bin/billing-control billing list [--customer-id <uuid>] [--account-id <uuid>] [--limit 100] [--token]
+```
+
+Uses same environment variables as billing-manager (`DATABASE_DSN`, `RABBITMQ_ADDRESS`, `REDIS_ADDRESS`, etc.).
+
 ### Dependency Management
 ```bash
 # Download dependencies

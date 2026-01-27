@@ -78,7 +78,7 @@ func run(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to initialize config: %w", err)
 	}
 
-	cfg := config.Get()
+	cfg := *config.Get()
 
 	// Initialize Prometheus
 	initProm(cfg.PrometheusEndpoint, cfg.PrometheusListenAddress)
@@ -115,7 +115,7 @@ func signalHandler() {
 
 // runService runs the listen
 func runService(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
-	cfg := config.Get()
+	cfg := *config.Get()
 
 	// rabbitmq sock connect
 	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, cfg.RabbitMQAddress)

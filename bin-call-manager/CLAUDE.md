@@ -192,6 +192,29 @@ go vet $(go list ./...)
 golangci-lint run -v --timeout 5m
 ```
 
+## call-control CLI Tool
+
+A command-line tool for managing calls directly via database/cache (bypasses RabbitMQ RPC). **All output is JSON format** (stdout), logs go to stderr.
+
+```bash
+# Get call - returns call JSON
+./bin/call-control call get --id <uuid>
+
+# List calls - returns JSON array
+./bin/call-control call list --customer_id <uuid> [--limit 100] [--token]
+
+# Delete call - returns deleted call JSON
+./bin/call-control call delete --id <uuid>
+
+# Update call status - returns updated call JSON
+./bin/call-control call update-status --id <uuid> --status <status>
+
+# Hangup call - returns hangup result JSON
+./bin/call-control call hangup --id <uuid>
+```
+
+Uses same environment variables as call-manager (`DATABASE_DSN`, `RABBITMQ_ADDRESS`, `REDIS_ADDRESS`, etc.).
+
 ### Run Locally
 ```bash
 # With environment variables

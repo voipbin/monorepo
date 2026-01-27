@@ -9,11 +9,14 @@ bin-tag-manager is a Go microservice for managing customer tags in a VoIP system
 ## Build and Test Commands
 
 ```bash
-# Build the service
+# Build the service and CLI
 go build -o ./bin/ ./cmd/...
 
 # Run the daemon (requires configuration via flags or env vars)
 ./bin/tag-manager
+
+# Run the CLI tool
+./bin/tag-control
 
 # Run all tests
 go test ./...
@@ -39,6 +42,29 @@ go generate ./pkg/taghandler/...
 go generate ./pkg/dbhandler/...
 go generate ./pkg/cachehandler/...
 ```
+
+## tag-control CLI Tool
+
+A command-line tool for managing tags directly via database/cache (bypasses RabbitMQ RPC). **All output is JSON format** (stdout), logs go to stderr.
+
+```bash
+# Create tag - returns created tag JSON
+./bin/tag-control tag create --customer_id <uuid> --name <name> [--detail <detail>]
+
+# Get tag - returns tag JSON
+./bin/tag-control tag get --id <uuid>
+
+# List tags - returns JSON array
+./bin/tag-control tag list --customer_id <uuid> [--limit 100] [--token]
+
+# Update tag - returns updated tag JSON
+./bin/tag-control tag update --id <uuid> --name <name> [--detail <detail>]
+
+# Delete tag - returns deleted tag JSON
+./bin/tag-control tag delete --id <uuid>
+```
+
+Uses same environment variables as tag-manager (`DATABASE_DSN`, `RABBITMQ_ADDRESS`, `REDIS_ADDRESS`, etc.).
 
 ## Architecture
 

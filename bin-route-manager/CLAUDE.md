@@ -40,6 +40,35 @@ go generate ./pkg/dbhandler/...
 go generate ./pkg/cachehandler/...
 ```
 
+## route-control CLI Tool
+
+A command-line tool for managing routes directly via database/cache (bypasses RabbitMQ RPC). **All output is JSON format** (stdout), logs go to stderr.
+
+```bash
+# Create route - returns created route JSON
+./bin/route-control route create --customer_id <uuid> --target <target> --provider <provider> [--name] [--detail] [--priority]
+
+# Get route - returns route JSON
+./bin/route-control route get --id <uuid>
+
+# List routes - returns JSON array
+./bin/route-control route list --customer_id <uuid> [--limit 100] [--token]
+
+# List routes by target destination - returns JSON array
+./bin/route-control route list-by-target --customer_id <uuid> --target <target>
+
+# Update route - returns updated route JSON
+./bin/route-control route update --id <uuid> [--name] [--detail] [--provider] [--priority]
+
+# Delete route - returns deleted route JSON
+./bin/route-control route delete --id <uuid>
+
+# Get effective dial routes - returns merged routes JSON
+./bin/route-control route dialroute-list --customer_id <uuid> --target <target>
+```
+
+Uses same environment variables as route-manager (`DATABASE_DSN`, `RABBITMQ_ADDRESS`, `REDIS_ADDRESS`, etc.).
+
 ## Architecture
 
 ### Service Layer Structure

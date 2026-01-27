@@ -37,6 +37,17 @@ go generate ./pkg/buckethandler/...
 go generate ./pkg/cachehandler/...
 ```
 
+## tts-control CLI Tool
+
+A command-line tool for TTS operations. **All output is JSON format** (stdout), logs go to stderr.
+
+```bash
+# Create a new TTS audio file - returns created TTS JSON
+./bin/tts-control tts create --text <text> --language <lang> [--voice] [--gender]
+```
+
+Uses same environment variables as tts-manager (`DATABASE_DSN`, `RABBITMQ_ADDRESS`, `REDIS_ADDRESS`, etc.).
+
 ## Architecture
 
 ### Service Layer Structure

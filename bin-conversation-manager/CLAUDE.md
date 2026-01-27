@@ -148,6 +148,29 @@ golangci-lint run -v --timeout 5m
 go vet $(go list ./...)
 ```
 
+## conversation-control CLI Tool
+
+A command-line tool for managing conversations directly via database/cache (bypasses RabbitMQ RPC). **All output is JSON format** (stdout), logs go to stderr.
+
+```bash
+# Conversation commands
+./bin/conversation-control conversation get --id <uuid>
+./bin/conversation-control conversation list --customer_id <uuid> [--limit 100] [--token] [--type]
+
+# Account commands (messaging platform credentials)
+./bin/conversation-control account create --customer_id <uuid> --type <line|sms> --secret <secret> --token <token> [--name] [--detail]
+./bin/conversation-control account get --id <uuid>
+./bin/conversation-control account list --customer_id <uuid> [--limit 100] [--token] [--type]
+./bin/conversation-control account update --id <uuid> [--name] [--detail] [--secret] [--token]
+./bin/conversation-control account delete --id <uuid>
+
+# Message commands
+./bin/conversation-control message get --id <uuid>
+./bin/conversation-control message list --customer_id <uuid> [--limit 100] [--token] [--conversation_id] [--direction] [--status]
+```
+
+Uses same environment variables as conversation-manager (`DATABASE_DSN`, `RABBITMQ_ADDRESS`, `REDIS_ADDRESS`, etc.).
+
 ### Run Locally
 ```bash
 # With environment variables

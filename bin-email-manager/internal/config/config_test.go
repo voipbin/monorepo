@@ -11,13 +11,12 @@ func TestGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		setupConfig *Config
-		expectPanic bool
+		setupConfig Config
 	}{
 		{
 			name: "returns_config_when_initialized",
 
-			setupConfig: &Config{
+			setupConfig: Config{
 				DatabaseDSN:             "user:pass@tcp(127.0.0.1:3306)/db",
 				PrometheusEndpoint:      "/metrics",
 				PrometheusListenAddress: ":2112",
@@ -28,34 +27,14 @@ func TestGet(t *testing.T) {
 				SendgridAPIKey:          "SG.test-key",
 				MailgunAPIKey:           "mailgun-test-key",
 			},
-			expectPanic: false,
-		},
-		{
-			name: "panics_when_not_initialized",
-
-			setupConfig: nil,
-			expectPanic: true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cfg = tt.setupConfig
-
-			if tt.expectPanic {
-				defer func() {
-					if r := recover(); r == nil {
-						t.Errorf("Expected panic but did not get one")
-					}
-				}()
-			}
+			globalConfig = tt.setupConfig
 
 			res := Get()
-
-			if tt.expectPanic {
-				t.Errorf("Should have panicked")
-				return
-			}
 
 			if res.DatabaseDSN != tt.setupConfig.DatabaseDSN {
 				t.Errorf("Wrong DatabaseDSN. expect: %s, got: %s", tt.setupConfig.DatabaseDSN, res.DatabaseDSN)
@@ -99,9 +78,9 @@ func TestInitConfig(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Reset once and cfg for test isolation
+			// Reset once and globalConfig for test isolation
 			once = sync.Once{}
-			cfg = nil
+			globalConfig = Config{}
 
 			rootCmd := &cobra.Command{}
 			rootCmd.Flags().String("database_dsn", "test-dsn", "")
@@ -116,11 +95,6 @@ func TestInitConfig(t *testing.T) {
 
 			// First call should initialize
 			InitConfig(rootCmd)
-
-			// Verify cfg is initialized
-			if cfg == nil {
-				t.Errorf("Expected cfg to be initialized")
-			}
 
 			// Second call should be a no-op due to sync.Once
 			InitConfig(rootCmd)
