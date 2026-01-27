@@ -8,10 +8,8 @@ import (
 
 	"monorepo/bin-api-manager/internal/config"
 	"monorepo/bin-api-manager/pkg/cachehandler"
-	"monorepo/bin-api-manager/pkg/dbhandler"
 	"monorepo/bin-common-handler/models/sock"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
-	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	"github.com/pkg/errors"
@@ -26,35 +24,6 @@ func main() {
 	if errExecute := cmd.Execute(); errExecute != nil {
 		log.Fatalf("Execution failed: %v", errExecute)
 	}
-}
-
-func initHandler() (dbhandler.DBHandler, requesthandler.RequestHandler, error) {
-	db, err := commondatabasehandler.Connect(config.Get().DatabaseDSN)
-	if err != nil {
-		return nil, nil, errors.Wrapf(err, "could not connect to the database")
-	}
-
-	cache, err := initCache()
-	if err != nil {
-		return nil, nil, errors.Wrapf(err, "could not initialize the cache")
-	}
-
-	dbHandler := dbhandler.NewHandler(db, cache)
-
-	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, config.Get().RabbitMQAddress)
-	sockHandler.Connect()
-
-	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-
-	return dbHandler, reqHandler, nil
-}
-
-func initCache() (cachehandler.CacheHandler, error) {
-	res := cachehandler.NewHandler(config.Get().RedisAddress, config.Get().RedisPassword, config.Get().RedisDatabase)
-	if errConnect := res.Connect(); errConnect != nil {
-		return nil, errors.Wrapf(errConnect, "could not connect to the cache")
-	}
-	return res, nil
 }
 
 func initCommand() *cobra.Command {

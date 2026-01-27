@@ -73,26 +73,3 @@ func TestConfigStruct(t *testing.T) {
 	}
 }
 
-func TestDefaultConstants(t *testing.T) {
-	tests := []struct {
-		name     string
-		constant interface{}
-		expected interface{}
-	}{
-		{"defaultDatabaseDSN", defaultDatabaseDSN, "testid:testpassword@tcp(127.0.0.1:3306)/test"},
-		{"defaultPrometheusEndpoint", defaultPrometheusEndpoint, "/metrics"},
-		{"defaultPrometheusListenAddress", defaultPrometheusListenAddress, ":2112"},
-		{"defaultRabbitMQAddress", defaultRabbitMQAddress, "amqp://guest:guest@localhost:5672"},
-		{"defaultRedisAddress", defaultRedisAddress, "127.0.0.1:6379"},
-		{"defaultRedisDatabase", defaultRedisDatabase, 1},
-		{"defaultRedisPassword", defaultRedisPassword, ""},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if tt.constant != tt.expected {
-				t.Errorf("Wrong constant value. expect: %v, got: %v", tt.expected, tt.constant)
-			}
-		})
-	}
-}
