@@ -45,8 +45,8 @@ func bindConfig(cmd *cobra.Command) error {
 	f := cmd.PersistentFlags()
 
 	f.String("database_dsn", "", "Database connection DSN")
-	f.String("prometheus_endpoint", "", "Prometheus metrics endpoint")
-	f.String("prometheus_listen_address", "", "Prometheus listen address")
+	f.String("prometheus_endpoint", "/metrics", "Prometheus metrics endpoint")
+	f.String("prometheus_listen_address", ":2112", "Prometheus listen address")
 	f.String("rabbitmq_address", "", "RabbitMQ server address")
 	f.String("redis_address", "", "Redis server address")
 	f.String("redis_password", "", "Redis password")
