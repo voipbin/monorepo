@@ -54,6 +54,7 @@ func main() {
 }
 
 func runDaemon() error {
+	config.LoadGlobalConfig()
 	initSignal()
 	initProm(config.Get().PrometheusEndpoint, config.Get().PrometheusListenAddress)
 
