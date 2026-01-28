@@ -134,7 +134,7 @@ go run ./cmd/registrar-manager \
 
 ### registrar-control CLI Tool
 
-The `registrar-control` CLI provides command-line management of SIP extensions and trunks. It follows the same patterns as `agent-control` from `bin-agent-manager`.
+The `registrar-control` CLI provides command-line management of SIP extensions and trunks. **All output is JSON format** (stdout), logs go to stderr.
 
 **Build:**
 ```bash
@@ -161,41 +161,34 @@ Required configuration:
 **Extension Commands:**
 
 ```bash
-# Create extension (prompts for password interactively)
+# Create extension - returns created extension JSON
 registrar-control extension create \
   --customer_id "5e4a0680-804e-11ec-8477-2fea5968d85b" \
   --username "user1001" \
+  --password "secret123" \
   --extension_number "1001"
 
-# Get extension details (includes registration status and contacts)
+# Get extension - returns extension JSON
 registrar-control extension get --id "<extension-uuid>"
 
-# List extensions for a customer
+# List extensions - returns JSON array
 registrar-control extension list \
   --customer_id "5e4a0680-804e-11ec-8477-2fea5968d85b" \
   --limit 50
 
-# List with JSON output
-registrar-control extension list \
-  --customer_id "5e4a0680-804e-11ec-8477-2fea5968d85b" \
-  --format json
-
-# Update extension password
+# Update extension - returns updated extension JSON
 registrar-control extension update \
   --id "<extension-uuid>" \
   --password "newpass123"
 
-# Delete extension (prompts for confirmation)
+# Delete extension - returns deleted extension JSON
 registrar-control extension delete --id "<extension-uuid>"
-
-# Delete without confirmation prompt
-registrar-control extension delete --id "<extension-uuid>" --force
 ```
 
 **Trunk Commands:**
 
 ```bash
-# Create trunk with basic authentication
+# Create trunk with basic authentication - returns created trunk JSON
 registrar-control trunk create \
   --customer_id "5e4a0680-804e-11ec-8477-2fea5968d85b" \
   --domain "voip-carrier.example.com" \
@@ -203,14 +196,14 @@ registrar-control trunk create \
   --username "trunk_user" \
   --password "trunk_pass"
 
-# Create trunk with IP-based authentication
+# Create trunk with IP-based authentication - returns created trunk JSON
 registrar-control trunk create \
   --customer_id "5e4a0680-804e-11ec-8477-2fea5968d85b" \
   --domain "voip-carrier2.example.com" \
   --name "Secondary Carrier" \
   --allowed_ips "203.0.113.1,203.0.113.2"
 
-# Create trunk with both authentication types
+# Create trunk with both authentication types - returns created trunk JSON
 registrar-control trunk create \
   --customer_id "5e4a0680-804e-11ec-8477-2fea5968d85b" \
   --domain "voip-carrier3.example.com" \
@@ -219,32 +212,24 @@ registrar-control trunk create \
   --password "trunk_pass" \
   --allowed_ips "203.0.113.1,203.0.113.2"
 
-# Get trunk details (includes auth config and registration status)
+# Get trunk - returns trunk JSON
 registrar-control trunk get --id "<trunk-uuid>"
 
-# List trunks for a customer
+# List trunks - returns JSON array
 registrar-control trunk list \
-  --customer_id "5e4a0680-804e-11ec-8477-2fea5968d85b" \
-  --format json
+  --customer_id "5e4a0680-804e-11ec-8477-2fea5968d85b"
 
-# Update trunk allowed IPs
+# Update trunk - returns updated trunk JSON
 registrar-control trunk update \
   --id "<trunk-uuid>" \
   --allowed_ips "203.0.113.1,203.0.113.2,203.0.113.3"
 
-# Delete trunk (prompts for confirmation)
+# Delete trunk - returns deleted trunk JSON
 registrar-control trunk delete --id "<trunk-uuid>"
 ```
 
-**Interactive Prompts:**
-- Missing required fields trigger interactive prompts
-- Password fields use `survey.Password` (hidden input)
-- Delete operations show resource details and request confirmation
-- Use `--force` flag to skip delete confirmations
-
-**Output Formats:**
-- Default: Human-readable text with formatted tables
-- JSON: Use `--format json` flag for machine-parseable output
+**Required Flags:**
+All required flags must be provided via command line - no interactive prompts.
 
 ## Code Patterns
 

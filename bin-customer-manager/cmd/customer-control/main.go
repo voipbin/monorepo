@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -17,8 +18,6 @@ import (
 	"monorepo/bin-customer-manager/pkg/cachehandler"
 	"monorepo/bin-customer-manager/pkg/customerhandler"
 	"monorepo/bin-customer-manager/pkg/dbhandler"
-
-	"database/sql"
 
 	_ "github.com/go-sql-driver/mysql"
 

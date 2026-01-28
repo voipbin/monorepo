@@ -121,3 +121,26 @@ Environment variables / flags:
 - `TELNYX_CONNECTION_ID`, `TELNYX_PROFILE_ID`, `TELNYX_TOKEN` - Telnyx credentials
 - `TWILIO_SID`, `TWILIO_TOKEN` - Twilio credentials
 - `PROMETHEUS_ENDPOINT`, `PROMETHEUS_LISTEN_ADDRESS` - Metrics endpoint
+
+### number-control CLI Tool
+
+A command-line tool for managing phone numbers. **All output is JSON format** (stdout), logs go to stderr.
+
+```bash
+# Create number - returns created number JSON
+./bin/number-control number create --customer_id <uuid> --number "+15551234567" [--call_flow_id <uuid>] [--message_flow_id <uuid>] [--name] [--detail]
+
+# Register number (manual registration without provider) - returns registered number JSON
+./bin/number-control number register --customer_id <uuid> --number "+15551234567" [--call_flow_id <uuid>] [--message_flow_id <uuid>] [--name] [--detail]
+
+# Get number - returns number JSON
+./bin/number-control number get --id <uuid>
+
+# List numbers - returns JSON array
+./bin/number-control number list --customer_id <uuid> [--limit 100] [--token]
+
+# Delete number - returns deleted number JSON
+./bin/number-control number delete --id <uuid>
+```
+
+Uses same environment variables as number-manager (`DATABASE_DSN`, `RABBITMQ_ADDRESS`, `REDIS_ADDRESS`, etc.).
