@@ -12,6 +12,9 @@ bin-transfer-manager is a Go microservice that handles call transfer operations 
 # Build the transfer-manager daemon
 go build -o ./bin/transfer-manager ./cmd/transfer-manager
 
+# Build the transfer-control CLI tool
+go build -o ./bin/transfer-control ./cmd/transfer-control
+
 # Run the daemon (requires configuration via flags or env vars)
 ./bin/transfer-manager
 
@@ -31,6 +34,23 @@ go generate ./pkg/dbhandler/...
 go generate ./pkg/cachehandler/...
 go generate ./pkg/subscribehandler/...
 ```
+
+### transfer-control CLI Tool
+
+A command-line tool for managing transfer operations. **All output is JSON format** (stdout), logs go to stderr.
+
+```bash
+# Start a transfer service - returns created transfer JSON
+./bin/transfer-control transfer service-start --transfer-type <attended|blind> --transferer-call-id <uuid> --transferee-addresses '<json_array>'
+
+# Get transfer by groupcall ID - returns transfer JSON
+./bin/transfer-control transfer get-by-groupcall --groupcall_id <uuid>
+
+# Get transfer by transferer call ID - returns transfer JSON
+./bin/transfer-control transfer get-by-call --call_id <uuid>
+```
+
+Uses same environment variables as transfer-manager (`DATABASE_DSN`, `RABBITMQ_ADDRESS`, `REDIS_ADDRESS`, etc.).
 
 ## Architecture
 

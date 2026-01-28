@@ -11,13 +11,12 @@ func TestGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		setupConfig *Config
-		expectPanic bool
+		setupConfig Config
 	}{
 		{
 			name: "returns_config_when_initialized",
 
-			setupConfig: &Config{
+			setupConfig: Config{
 				DatabaseDSN:             "user:pass@tcp(127.0.0.1:3306)/db",
 				PrometheusEndpoint:      "/metrics",
 				PrometheusListenAddress: ":2112",
@@ -26,34 +25,14 @@ func TestGet(t *testing.T) {
 				RedisDatabase:           1,
 				RedisPassword:           "secret",
 			},
-			expectPanic: false,
-		},
-		{
-			name: "panics_when_not_initialized",
-
-			setupConfig: nil,
-			expectPanic: true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cfg = tt.setupConfig
-
-			if tt.expectPanic {
-				defer func() {
-					if r := recover(); r == nil {
-						t.Errorf("Expected panic but did not get one")
-					}
-				}()
-			}
+			globalConfig = tt.setupConfig
 
 			res := Get()
-
-			if tt.expectPanic {
-				t.Errorf("Should have panicked")
-				return
-			}
 
 			if res.DatabaseDSN != tt.setupConfig.DatabaseDSN {
 				t.Errorf("Wrong DatabaseDSN. expect: %s, got: %s", tt.setupConfig.DatabaseDSN, res.DatabaseDSN)
@@ -96,25 +75,25 @@ func TestRegisterFlags(t *testing.T) {
 			RegisterFlags(rootCmd)
 
 			// Verify flags were registered
-			if rootCmd.Flags().Lookup("rabbitmq_address") == nil {
+			if rootCmd.PersistentFlags().Lookup("rabbitmq_address") == nil {
 				t.Errorf("Expected rabbitmq_address flag to be registered")
 			}
-			if rootCmd.Flags().Lookup("prometheus_endpoint") == nil {
+			if rootCmd.PersistentFlags().Lookup("prometheus_endpoint") == nil {
 				t.Errorf("Expected prometheus_endpoint flag to be registered")
 			}
-			if rootCmd.Flags().Lookup("prometheus_listen_address") == nil {
+			if rootCmd.PersistentFlags().Lookup("prometheus_listen_address") == nil {
 				t.Errorf("Expected prometheus_listen_address flag to be registered")
 			}
-			if rootCmd.Flags().Lookup("database_dsn") == nil {
+			if rootCmd.PersistentFlags().Lookup("database_dsn") == nil {
 				t.Errorf("Expected database_dsn flag to be registered")
 			}
-			if rootCmd.Flags().Lookup("redis_address") == nil {
+			if rootCmd.PersistentFlags().Lookup("redis_address") == nil {
 				t.Errorf("Expected redis_address flag to be registered")
 			}
-			if rootCmd.Flags().Lookup("redis_password") == nil {
+			if rootCmd.PersistentFlags().Lookup("redis_password") == nil {
 				t.Errorf("Expected redis_password flag to be registered")
 			}
-			if rootCmd.Flags().Lookup("redis_database") == nil {
+			if rootCmd.PersistentFlags().Lookup("redis_database") == nil {
 				t.Errorf("Expected redis_database flag to be registered")
 			}
 		})
@@ -132,20 +111,15 @@ func TestInit(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Reset once and cfg for test isolation
+			// Reset once and globalConfig for test isolation
 			once = sync.Once{}
-			cfg = nil
+			globalConfig = Config{}
 
 			rootCmd := &cobra.Command{}
 			RegisterFlags(rootCmd)
 
 			// First call should initialize
 			Init(rootCmd)
-
-			// Verify cfg is initialized
-			if cfg == nil {
-				t.Errorf("Expected cfg to be initialized")
-			}
 
 			// Second call should be a no-op due to sync.Once
 			Init(rootCmd)

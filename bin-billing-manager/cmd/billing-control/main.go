@@ -62,6 +62,8 @@ func initCommand() *cobra.Command {
 	cmdAccount.AddCommand(cmdAccountCreate())
 	cmdAccount.AddCommand(cmdAccountGet())
 	cmdAccount.AddCommand(cmdAccountList())
+	cmdAccount.AddCommand(cmdAccountUpdate())
+	cmdAccount.AddCommand(cmdAccountUpdatePaymentInfo())
 	cmdAccount.AddCommand(cmdAccountDelete())
 	cmdAccount.AddCommand(cmdAccountAddBalance())
 	cmdAccount.AddCommand(cmdAccountSubtractBalance())
@@ -121,6 +123,94 @@ func cmdAccountList() *cobra.Command {
 	flags.String("customer-id", "", "Filter by customer ID")
 
 	return cmd
+}
+
+func cmdAccountUpdate() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "update",
+		Short: "Update an account basic info",
+		RunE:  runAccountUpdate,
+	}
+
+	flags := cmd.Flags()
+	flags.String("id", "", "Account ID (required)")
+	flags.String("name", "", "Account name (required)")
+	flags.String("detail", "", "Account detail")
+
+	return cmd
+}
+
+func runAccountUpdate(cmd *cobra.Command, args []string) error {
+	accountHandler, _, err := initHandlers()
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize handlers")
+	}
+
+	targetID, err := resolveUUID("id", "Account ID")
+	if err != nil {
+		return errors.Wrap(err, "invalid account ID format")
+	}
+
+	name := viper.GetString("name")
+	if name == "" {
+		return fmt.Errorf("name is required")
+	}
+
+	res, err := accountHandler.UpdateBasicInfo(context.Background(), targetID, name, viper.GetString("detail"))
+	if err != nil {
+		return errors.Wrap(err, "failed to update account")
+	}
+
+	return printJSON(res)
+}
+
+func cmdAccountUpdatePaymentInfo() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "update-payment-info",
+		Short: "Update account payment info",
+		RunE:  runAccountUpdatePaymentInfo,
+	}
+
+	flags := cmd.Flags()
+	flags.String("id", "", "Account ID (required)")
+	flags.String("payment-type", "", "Payment type (prepaid) (required)")
+	flags.String("payment-method", "", "Payment method (credit card) (required)")
+
+	return cmd
+}
+
+func runAccountUpdatePaymentInfo(cmd *cobra.Command, args []string) error {
+	accountHandler, _, err := initHandlers()
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize handlers")
+	}
+
+	targetID, err := resolveUUID("id", "Account ID")
+	if err != nil {
+		return errors.Wrap(err, "invalid account ID format")
+	}
+
+	paymentType := viper.GetString("payment-type")
+	if paymentType == "" {
+		return fmt.Errorf("payment-type is required")
+	}
+
+	paymentMethod := viper.GetString("payment-method")
+	if paymentMethod == "" {
+		return fmt.Errorf("payment-method is required")
+	}
+
+	res, err := accountHandler.UpdatePaymentInfo(
+		context.Background(),
+		targetID,
+		account.PaymentType(paymentType),
+		account.PaymentMethod(paymentMethod),
+	)
+	if err != nil {
+		return errors.Wrap(err, "failed to update account payment info")
+	}
+
+	return printJSON(res)
 }
 
 func cmdAccountDelete() *cobra.Command {

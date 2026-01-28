@@ -90,6 +90,11 @@ func initCommand() *cobra.Command {
 	cmdSub.AddCommand(cmdCreate())
 	cmdSub.AddCommand(cmdGet())
 	cmdSub.AddCommand(cmdList())
+	cmdSub.AddCommand(cmdLogin())
+	cmdSub.AddCommand(cmdUpdateBasicInfo())
+	cmdSub.AddCommand(cmdUpdateAddresses())
+	cmdSub.AddCommand(cmdUpdateStatus())
+	cmdSub.AddCommand(cmdUpdateTagIDs())
 	cmdSub.AddCommand(cmdUpdatePermission())
 	cmdSub.AddCommand(cmdUpdatePassword())
 	cmdSub.AddCommand(cmdDelete())
@@ -112,6 +117,14 @@ func resolveUUID(flagName string, label string) (uuid.UUID, error) {
 	return res, nil
 }
 
+func resolveString(flagName string, label string) (string, error) {
+	val := viper.GetString(flagName)
+	if val == "" {
+		return "", fmt.Errorf("%s is required", label)
+	}
+	return val, nil
+}
+
 func printJSON(v any) error {
 	data, err := json.MarshalIndent(v, "", "  ")
 	if err != nil {
@@ -129,7 +142,7 @@ func cmdCreate() *cobra.Command {
 	}
 
 	flags := cmd.Flags()
-	flags.String("customer_id", "", "Customer ID (required)")
+	flags.String("customer-id", "", "Customer ID (required)")
 	flags.String("username", "", "Username (required)")
 	flags.String("password", "", "Password (required)")
 	flags.Uint64("permission", 0, "Permission")
@@ -140,19 +153,19 @@ func cmdCreate() *cobra.Command {
 }
 
 func runCreate(cmd *cobra.Command, args []string) error {
-	customerID, err := resolveUUID("customer_id", "Customer ID")
+	customerID, err := resolveUUID("customer-id", "Customer ID")
 	if err != nil {
-		return errors.Wrap(err, "failed to resolve customer ID")
+		return errors.Wrap(err, "invalid customer ID")
 	}
 
-	username := viper.GetString("username")
-	if username == "" {
-		return fmt.Errorf("username is required")
+	username, err := resolveString("username", "Username")
+	if err != nil {
+		return errors.Wrap(err, "invalid username")
 	}
 
-	password := viper.GetString("password")
-	if password == "" {
-		return fmt.Errorf("password is required")
+	password, err := resolveString("password", "Password")
+	if err != nil {
+		return errors.Wrap(err, "invalid password")
 	}
 
 	handler, err := initHandler()
@@ -193,14 +206,14 @@ func cmdGet() *cobra.Command {
 }
 
 func runGet(cmd *cobra.Command, args []string) error {
+	agentID, err := resolveUUID("id", "Agent ID")
+	if err != nil {
+		return errors.Wrap(err, "invalid agent ID")
+	}
+
 	handler, err := initHandler()
 	if err != nil {
 		return errors.Wrap(err, "failed to initialize handlers")
-	}
-
-	agentID, err := resolveUUID("id", "Agent ID")
-	if err != nil {
-		return errors.Wrap(err, "failed to resolve agent ID")
 	}
 
 	res, err := handler.Get(context.Background(), agentID)
@@ -221,20 +234,20 @@ func cmdList() *cobra.Command {
 	flags := cmd.Flags()
 	flags.Int("limit", 100, "Limit the number of agents to retrieve")
 	flags.String("token", "", "Retrieve agents before this token (pagination)")
-	flags.String("customer_id", "", "Customer ID to filter (required)")
+	flags.String("customer-id", "", "Customer ID to filter (required)")
 
 	return cmd
 }
 
 func runList(cmd *cobra.Command, args []string) error {
+	customerID, err := resolveUUID("customer-id", "Customer ID")
+	if err != nil {
+		return errors.Wrap(err, "invalid customer ID")
+	}
+
 	handler, err := initHandler()
 	if err != nil {
 		return errors.Wrap(err, "failed to initialize handlers")
-	}
-
-	customerID, err := resolveUUID("customer_id", "Customer ID")
-	if err != nil {
-		return errors.Wrap(err, "failed to resolve customer ID")
 	}
 
 	limit := viper.GetInt("limit")
@@ -262,20 +275,20 @@ func cmdUpdatePermission() *cobra.Command {
 
 	flags := cmd.Flags()
 	flags.String("id", "", "Agent ID (required)")
-	flags.Uint64("permission", uint64(agent.PermissionNone), "New Permission Bitmask")
+	flags.Uint64("permission", uint64(agent.PermissionNone), "New Permission Bitmask (required)")
 
 	return cmd
 }
 
 func runUpdatePermission(cmd *cobra.Command, args []string) error {
+	id, err := resolveUUID("id", "Agent ID")
+	if err != nil {
+		return errors.Wrap(err, "invalid agent ID")
+	}
+
 	handler, err := initHandler()
 	if err != nil {
 		return errors.Wrap(err, "failed to initialize handlers")
-	}
-
-	id, err := resolveUUID("id", "Agent ID")
-	if err != nil {
-		return errors.Wrap(err, "failed to resolve agent ID")
 	}
 
 	res, err := handler.UpdatePermissionRaw(context.Background(), id, agent.Permission(viper.GetUint64("permission")))
@@ -301,19 +314,19 @@ func cmdUpdatePassword() *cobra.Command {
 }
 
 func runUpdatePassword(cmd *cobra.Command, args []string) error {
+	id, err := resolveUUID("id", "Agent ID")
+	if err != nil {
+		return errors.Wrap(err, "invalid agent ID")
+	}
+
+	password, err := resolveString("password", "Password")
+	if err != nil {
+		return errors.Wrap(err, "invalid password")
+	}
+
 	handler, err := initHandler()
 	if err != nil {
 		return errors.Wrap(err, "failed to initialize handlers")
-	}
-
-	id, err := resolveUUID("id", "Agent ID")
-	if err != nil {
-		return errors.Wrap(err, "failed to resolve agent ID")
-	}
-
-	password := viper.GetString("password")
-	if password == "" {
-		return fmt.Errorf("password is required")
 	}
 
 	res, err := handler.UpdatePassword(context.Background(), id, password)
@@ -338,19 +351,227 @@ func cmdDelete() *cobra.Command {
 }
 
 func runDelete(cmd *cobra.Command, args []string) error {
+	targetID, err := resolveUUID("id", "Agent ID")
+	if err != nil {
+		return errors.Wrap(err, "invalid agent ID")
+	}
+
 	handler, err := initHandler()
 	if err != nil {
 		return errors.Wrap(err, "failed to initialize handlers")
 	}
 
-	targetID, err := resolveUUID("id", "Agent ID")
-	if err != nil {
-		return errors.Wrap(err, "failed to resolve agent ID")
-	}
-
 	res, err := handler.Delete(context.Background(), targetID)
 	if err != nil {
 		return errors.Wrap(err, "failed to delete agent")
+	}
+
+	return printJSON(res)
+}
+
+func cmdLogin() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "login",
+		Short: "Authenticate an agent",
+		RunE:  runLogin,
+	}
+
+	flags := cmd.Flags()
+	flags.String("username", "", "Username (required)")
+	flags.String("password", "", "Password (required)")
+
+	return cmd
+}
+
+func runLogin(cmd *cobra.Command, args []string) error {
+	username, err := resolveString("username", "Username")
+	if err != nil {
+		return errors.Wrap(err, "invalid username")
+	}
+
+	password, err := resolveString("password", "Password")
+	if err != nil {
+		return errors.Wrap(err, "invalid password")
+	}
+
+	handler, err := initHandler()
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize handlers")
+	}
+
+	res, err := handler.Login(context.Background(), username, password)
+	if err != nil {
+		return errors.Wrap(err, "failed to authenticate agent")
+	}
+
+	return printJSON(res)
+}
+
+func cmdUpdateBasicInfo() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "update-basic-info",
+		Short: "Update agent basic info",
+		RunE:  runUpdateBasicInfo,
+	}
+
+	flags := cmd.Flags()
+	flags.String("id", "", "Agent ID (required)")
+	flags.String("name", "", "Agent name (required)")
+	flags.String("detail", "", "Description")
+	flags.String("ring-method", "ringall", "Ring method (ringall, linear)")
+
+	return cmd
+}
+
+func runUpdateBasicInfo(cmd *cobra.Command, args []string) error {
+	id, err := resolveUUID("id", "Agent ID")
+	if err != nil {
+		return errors.Wrap(err, "invalid agent ID")
+	}
+
+	name, err := resolveString("name", "Name")
+	if err != nil {
+		return errors.Wrap(err, "invalid name")
+	}
+
+	handler, err := initHandler()
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize handlers")
+	}
+
+	res, err := handler.UpdateBasicInfo(
+		context.Background(),
+		id,
+		name,
+		viper.GetString("detail"),
+		agent.RingMethod(viper.GetString("ring-method")),
+	)
+	if err != nil {
+		return errors.Wrap(err, "failed to update agent basic info")
+	}
+
+	return printJSON(res)
+}
+
+func cmdUpdateAddresses() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "update-addresses",
+		Short: "Update agent addresses",
+		RunE:  runUpdateAddresses,
+	}
+
+	flags := cmd.Flags()
+	flags.String("id", "", "Agent ID (required)")
+	flags.String("addresses", "", "Addresses JSON array (required)")
+
+	return cmd
+}
+
+func runUpdateAddresses(cmd *cobra.Command, args []string) error {
+	id, err := resolveUUID("id", "Agent ID")
+	if err != nil {
+		return errors.Wrap(err, "invalid agent ID")
+	}
+
+	addressesStr, err := resolveString("addresses", "Addresses")
+	if err != nil {
+		return errors.Wrap(err, "invalid addresses")
+	}
+
+	var addresses []commonaddress.Address
+	if err := json.Unmarshal([]byte(addressesStr), &addresses); err != nil {
+		return errors.Wrap(err, "failed to parse addresses JSON")
+	}
+
+	handler, err := initHandler()
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize handlers")
+	}
+
+	res, err := handler.UpdateAddresses(context.Background(), id, addresses)
+	if err != nil {
+		return errors.Wrap(err, "failed to update agent addresses")
+	}
+
+	return printJSON(res)
+}
+
+func cmdUpdateStatus() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "update-status",
+		Short: "Update agent status",
+		RunE:  runUpdateStatus,
+	}
+
+	flags := cmd.Flags()
+	flags.String("id", "", "Agent ID (required)")
+	flags.String("status", "", "Status (available, away, busy, offline) (required)")
+
+	return cmd
+}
+
+func runUpdateStatus(cmd *cobra.Command, args []string) error {
+	id, err := resolveUUID("id", "Agent ID")
+	if err != nil {
+		return errors.Wrap(err, "invalid agent ID")
+	}
+
+	statusStr, err := resolveString("status", "Status")
+	if err != nil {
+		return errors.Wrap(err, "invalid status")
+	}
+
+	handler, err := initHandler()
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize handlers")
+	}
+
+	res, err := handler.UpdateStatus(context.Background(), id, agent.Status(statusStr))
+	if err != nil {
+		return errors.Wrap(err, "failed to update agent status")
+	}
+
+	return printJSON(res)
+}
+
+func cmdUpdateTagIDs() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "update-tag-ids",
+		Short: "Update agent tag IDs",
+		RunE:  runUpdateTagIDs,
+	}
+
+	flags := cmd.Flags()
+	flags.String("id", "", "Agent ID (required)")
+	flags.String("tag-ids", "", "Tag IDs JSON array (required)")
+
+	return cmd
+}
+
+func runUpdateTagIDs(cmd *cobra.Command, args []string) error {
+	id, err := resolveUUID("id", "Agent ID")
+	if err != nil {
+		return errors.Wrap(err, "invalid agent ID")
+	}
+
+	tagIDsStr, err := resolveString("tag-ids", "Tag IDs")
+	if err != nil {
+		return errors.Wrap(err, "invalid tag IDs")
+	}
+
+	var tagIDs []uuid.UUID
+	if err := json.Unmarshal([]byte(tagIDsStr), &tagIDs); err != nil {
+		return errors.Wrap(err, "failed to parse tag IDs JSON")
+	}
+
+	handler, err := initHandler()
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize handlers")
+	}
+
+	res, err := handler.UpdateTagIDs(context.Background(), id, tagIDs)
+	if err != nil {
+		return errors.Wrap(err, "failed to update agent tag IDs")
 	}
 
 	return printJSON(res)

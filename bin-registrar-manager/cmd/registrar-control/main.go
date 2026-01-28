@@ -142,12 +142,12 @@ func resolveUUID(flagName string, label string) (uuid.UUID, error) {
 	return res, nil
 }
 
-func resolveString(flagName string, label string, required bool) (string, error) {
-	res := viper.GetString(flagName)
-	if res == "" && required {
+func resolveString(flagName string, label string) (string, error) {
+	val := viper.GetString(flagName)
+	if val == "" {
 		return "", fmt.Errorf("%s is required", label)
 	}
-	return res, nil
+	return val, nil
 }
 
 func printJSON(v any) error {
@@ -171,8 +171,8 @@ func cmdExtensionCreate() *cobra.Command {
 	}
 
 	flags := cmd.Flags()
-	flags.String("customer_id", "", "Customer ID (required)")
-	flags.String("extension_number", "", "Extension number")
+	flags.String("customer-id", "", "Customer ID (required)")
+	flags.String("extension-number", "", "Extension number")
 	flags.String("username", "", "Username (required)")
 	flags.String("password", "", "Password (required)")
 	flags.String("domain", "", "Domain name")
@@ -181,22 +181,22 @@ func cmdExtensionCreate() *cobra.Command {
 }
 
 func runExtensionCreate(cmd *cobra.Command, args []string) error {
-	customerID, err := resolveUUID("customer_id", "Customer ID")
+	customerID, err := resolveUUID("customer-id", "Customer ID")
 	if err != nil {
-		return errors.Wrap(err, "failed to resolve customer ID")
+		return errors.Wrap(err, "invalid customer ID")
 	}
 
-	username, err := resolveString("username", "Username", true)
+	username, err := resolveString("username", "Username")
 	if err != nil {
-		return errors.Wrap(err, "failed to resolve username")
+		return errors.Wrap(err, "invalid username")
 	}
 
-	password, err := resolveString("password", "Password", true)
+	password, err := resolveString("password", "Password")
 	if err != nil {
-		return errors.Wrap(err, "failed to resolve password")
+		return errors.Wrap(err, "invalid password")
 	}
 
-	extensionNumber := viper.GetString("extension_number")
+	extensionNumber := viper.GetString("extension-number")
 	domain := viper.GetString("domain")
 
 	handler, err := initExtensionHandler()
@@ -226,7 +226,7 @@ func cmdExtensionGet() *cobra.Command {
 func runExtensionGet(cmd *cobra.Command, args []string) error {
 	id, err := resolveUUID("id", "Extension ID")
 	if err != nil {
-		return errors.Wrap(err, "failed to resolve extension ID")
+		return errors.Wrap(err, "invalid extension ID")
 	}
 
 	handler, err := initExtensionHandler()
@@ -249,19 +249,19 @@ func cmdExtensionList() *cobra.Command {
 		RunE:  runExtensionList,
 	}
 	flags := cmd.Flags()
-	flags.String("customer_id", "", "Customer ID filter (required)")
+	flags.String("customer-id", "", "Customer ID filter (required)")
 	flags.String("domain", "", "Domain filter")
 	flags.String("username", "", "Username filter")
-	flags.String("extension_number", "", "Extension number filter")
+	flags.String("extension-number", "", "Extension number filter")
 	flags.Int("limit", 100, "Limit number of results")
 	flags.String("token", "", "Pagination token")
 	return cmd
 }
 
 func runExtensionList(cmd *cobra.Command, args []string) error {
-	customerID, err := resolveUUID("customer_id", "Customer ID")
+	customerID, err := resolveUUID("customer-id", "Customer ID")
 	if err != nil {
-		return errors.Wrap(err, "failed to resolve customer ID")
+		return errors.Wrap(err, "invalid customer ID")
 	}
 
 	handler, err := initExtensionHandler()
@@ -280,7 +280,7 @@ func runExtensionList(cmd *cobra.Command, args []string) error {
 	if username := viper.GetString("username"); username != "" {
 		filters[extension.FieldUsername] = username
 	}
-	if extNum := viper.GetString("extension_number"); extNum != "" {
+	if extNum := viper.GetString("extension-number"); extNum != "" {
 		filters[extension.FieldExtension] = extNum
 	}
 
@@ -305,7 +305,7 @@ func cmdExtensionUpdate() *cobra.Command {
 	flags.String("id", "", "Extension ID (required)")
 	flags.String("password", "", "New password")
 	flags.String("username", "", "New username")
-	flags.String("extension_number", "", "New extension number")
+	flags.String("extension-number", "", "New extension number")
 	flags.String("domain", "", "New domain")
 	return cmd
 }
@@ -313,7 +313,7 @@ func cmdExtensionUpdate() *cobra.Command {
 func runExtensionUpdate(cmd *cobra.Command, args []string) error {
 	id, err := resolveUUID("id", "Extension ID")
 	if err != nil {
-		return errors.Wrap(err, "failed to resolve extension ID")
+		return errors.Wrap(err, "invalid extension ID")
 	}
 
 	// Check at least one update field is provided
@@ -328,7 +328,7 @@ func runExtensionUpdate(cmd *cobra.Command, args []string) error {
 		updates[extension.FieldUsername] = username
 		hasUpdate = true
 	}
-	if extNum := viper.GetString("extension_number"); extNum != "" {
+	if extNum := viper.GetString("extension-number"); extNum != "" {
 		updates[extension.FieldExtension] = extNum
 		hasUpdate = true
 	}
@@ -338,7 +338,7 @@ func runExtensionUpdate(cmd *cobra.Command, args []string) error {
 	}
 
 	if !hasUpdate {
-		return fmt.Errorf("at least one field must be provided for update: --password, --username, --extension_number, or --domain")
+		return fmt.Errorf("at least one field must be provided for update: --password, --username, --extension-number, or --domain")
 	}
 
 	handler, err := initExtensionHandler()
@@ -368,7 +368,7 @@ func cmdExtensionDelete() *cobra.Command {
 func runExtensionDelete(cmd *cobra.Command, args []string) error {
 	id, err := resolveUUID("id", "Extension ID")
 	if err != nil {
-		return errors.Wrap(err, "failed to resolve extension ID")
+		return errors.Wrap(err, "invalid extension ID")
 	}
 
 	handler, err := initExtensionHandler()
@@ -396,25 +396,25 @@ func cmdTrunkCreate() *cobra.Command {
 	}
 
 	flags := cmd.Flags()
-	flags.String("customer_id", "", "Customer ID (required)")
+	flags.String("customer-id", "", "Customer ID (required)")
 	flags.String("domain", "", "Domain name (required)")
 	flags.String("name", "", "Trunk name")
 	flags.String("username", "", "Username")
 	flags.String("password", "", "Password")
-	flags.String("allowed_ips", "", "Allowed IPs (comma-separated)")
+	flags.String("allowed-ips", "", "Allowed IPs (comma-separated)")
 
 	return cmd
 }
 
 func runTrunkCreate(cmd *cobra.Command, args []string) error {
-	customerID, err := resolveUUID("customer_id", "Customer ID")
+	customerID, err := resolveUUID("customer-id", "Customer ID")
 	if err != nil {
-		return errors.Wrap(err, "failed to resolve customer ID")
+		return errors.Wrap(err, "invalid customer ID")
 	}
 
-	domain, err := resolveString("domain", "Domain", true)
+	domain, err := resolveString("domain", "Domain")
 	if err != nil {
-		return errors.Wrap(err, "failed to resolve domain")
+		return errors.Wrap(err, "invalid domain")
 	}
 
 	name := viper.GetString("name")
@@ -423,7 +423,7 @@ func runTrunkCreate(cmd *cobra.Command, args []string) error {
 
 	// Parse allowed_ips
 	var allowedIPs []string
-	if allowedIPsStr := viper.GetString("allowed_ips"); allowedIPsStr != "" {
+	if allowedIPsStr := viper.GetString("allowed-ips"); allowedIPsStr != "" {
 		for _, ip := range strings.Split(allowedIPsStr, ",") {
 			trimmed := strings.TrimSpace(ip)
 			if trimmed != "" {
@@ -468,7 +468,7 @@ func cmdTrunkGet() *cobra.Command {
 func runTrunkGet(cmd *cobra.Command, args []string) error {
 	id, err := resolveUUID("id", "Trunk ID")
 	if err != nil {
-		return errors.Wrap(err, "failed to resolve trunk ID")
+		return errors.Wrap(err, "invalid trunk ID")
 	}
 
 	handler, err := initTrunkHandler()
@@ -491,7 +491,7 @@ func cmdTrunkList() *cobra.Command {
 		RunE:  runTrunkList,
 	}
 	flags := cmd.Flags()
-	flags.String("customer_id", "", "Customer ID filter (required)")
+	flags.String("customer-id", "", "Customer ID filter (required)")
 	flags.String("domain", "", "Domain filter")
 	flags.String("username", "", "Username filter")
 	flags.String("name", "", "Name filter")
@@ -501,9 +501,9 @@ func cmdTrunkList() *cobra.Command {
 }
 
 func runTrunkList(cmd *cobra.Command, args []string) error {
-	customerID, err := resolveUUID("customer_id", "Customer ID")
+	customerID, err := resolveUUID("customer-id", "Customer ID")
 	if err != nil {
-		return errors.Wrap(err, "failed to resolve customer ID")
+		return errors.Wrap(err, "invalid customer ID")
 	}
 
 	handler, err := initTrunkHandler()
@@ -549,14 +549,14 @@ func cmdTrunkUpdate() *cobra.Command {
 	flags.String("username", "", "New username")
 	flags.String("name", "", "New name")
 	flags.String("domain", "", "New domain")
-	flags.String("allowed_ips", "", "New allowed IPs (comma-separated)")
+	flags.String("allowed-ips", "", "New allowed IPs (comma-separated)")
 	return cmd
 }
 
 func runTrunkUpdate(cmd *cobra.Command, args []string) error {
 	id, err := resolveUUID("id", "Trunk ID")
 	if err != nil {
-		return errors.Wrap(err, "failed to resolve trunk ID")
+		return errors.Wrap(err, "invalid trunk ID")
 	}
 
 	// Check at least one update field is provided
@@ -579,7 +579,7 @@ func runTrunkUpdate(cmd *cobra.Command, args []string) error {
 		updates[trunk.FieldDomainName] = domain
 		hasUpdate = true
 	}
-	if allowedIPsStr := viper.GetString("allowed_ips"); allowedIPsStr != "" {
+	if allowedIPsStr := viper.GetString("allowed-ips"); allowedIPsStr != "" {
 		var allowedIPs []string
 		for _, ip := range strings.Split(allowedIPsStr, ",") {
 			trimmed := strings.TrimSpace(ip)
@@ -592,7 +592,7 @@ func runTrunkUpdate(cmd *cobra.Command, args []string) error {
 	}
 
 	if !hasUpdate {
-		return fmt.Errorf("at least one field must be provided for update: --password, --username, --name, --domain, or --allowed_ips")
+		return fmt.Errorf("at least one field must be provided for update: --password, --username, --name, --domain, or --allowed-ips")
 	}
 
 	handler, err := initTrunkHandler()
@@ -622,7 +622,7 @@ func cmdTrunkDelete() *cobra.Command {
 func runTrunkDelete(cmd *cobra.Command, args []string) error {
 	id, err := resolveUUID("id", "Trunk ID")
 	if err != nil {
-		return errors.Wrap(err, "failed to resolve trunk ID")
+		return errors.Wrap(err, "invalid trunk ID")
 	}
 
 	handler, err := initTrunkHandler()

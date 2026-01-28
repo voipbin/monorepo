@@ -1,104 +1,103 @@
 package config
 
 import (
+	"sync"
+
 	joonix "github.com/joonix/log"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
-// Config holds the application configuration
+var (
+	globalConfig Config
+	once         sync.Once
+)
+
+// Config holds process-wide configuration values loaded from command-line
+// flags and environment variables for the service.
 type Config struct {
-	DatabaseDSN             string
-	PrometheusEndpoint      string
-	PrometheusListenAddress string
-	RabbitMQAddress         string
-	RedisAddress            string
-	RedisDatabase           int
-	RedisPassword           string
+	DatabaseDSN             string // DatabaseDSN is the data source name used to connect to the primary database.
+	PrometheusEndpoint      string // PrometheusEndpoint is the HTTP path at which Prometheus metrics are exposed.
+	PrometheusListenAddress string // PrometheusListenAddress is the network address on which the Prometheus metrics HTTP server listens (for example, ":8080").
+	RabbitMQAddress         string // RabbitMQAddress is the address (including host and port) of the RabbitMQ server.
+	RedisAddress            string // RedisAddress is the address (including host and port) of the Redis server.
+	RedisDatabase           int    // RedisDatabase is the numeric Redis logical database index to select, not a name.
+	RedisPassword           string // RedisPassword is the password used for authenticating to the Redis server.
 }
 
-var appConfig Config
-
 // Bootstrap initializes configuration with Cobra command and Viper
-func Bootstrap(rootCmd *cobra.Command) error {
-	// Set up logging format
-	logrus.SetFormatter(joonix.NewFormatter())
-	logrus.SetLevel(logrus.DebugLevel)
+func Bootstrap(cmd *cobra.Command) error {
+	initLog()
+	if errBind := bindConfig(cmd); errBind != nil {
+		return errors.Wrapf(errBind, "could not bind config")
+	}
 
-	// Enable automatic environment variable reading
+	return nil
+}
+
+// bindConfig binds CLI flags and environment variables for configuration.
+// It maps command-line flags to environment variables using Viper.
+func bindConfig(cmd *cobra.Command) error {
 	viper.AutomaticEnv()
+	f := cmd.PersistentFlags()
 
-	// Define flags
-	rootCmd.PersistentFlags().String("database_dsn", "testid:testpassword@tcp(127.0.0.1:3306)/test", "Data Source Name for database connection")
-	rootCmd.PersistentFlags().String("prometheus_endpoint", "/metrics", "URL for the Prometheus metrics endpoint")
-	rootCmd.PersistentFlags().String("prometheus_listen_address", ":2112", "Address for Prometheus to listen on")
-	rootCmd.PersistentFlags().String("rabbitmq_address", "amqp://guest:guest@localhost:5672", "Address of the RabbitMQ server")
-	rootCmd.PersistentFlags().String("redis_address", "127.0.0.1:6379", "Address of the Redis server")
-	rootCmd.PersistentFlags().String("redis_password", "", "Password for authenticating with the Redis server")
-	rootCmd.PersistentFlags().Int("redis_database", 1, "Redis database index to use")
+	f.String("database_dsn", "", "Database connection DSN")
+	f.String("prometheus_endpoint", "/metrics", "Prometheus metrics endpoint")
+	f.String("prometheus_listen_address", ":2112", "Prometheus listen address")
+	f.String("rabbitmq_address", "", "RabbitMQ server address")
+	f.String("redis_address", "", "Redis server address")
+	f.String("redis_password", "", "Redis password")
+	f.Int("redis_database", 0, "Redis database index")
 
-	// Bind flags to viper
-	if err := viper.BindPFlag("database_dsn", rootCmd.PersistentFlags().Lookup("database_dsn")); err != nil {
-		return err
-	}
-	if err := viper.BindPFlag("prometheus_endpoint", rootCmd.PersistentFlags().Lookup("prometheus_endpoint")); err != nil {
-		return err
-	}
-	if err := viper.BindPFlag("prometheus_listen_address", rootCmd.PersistentFlags().Lookup("prometheus_listen_address")); err != nil {
-		return err
-	}
-	if err := viper.BindPFlag("rabbitmq_address", rootCmd.PersistentFlags().Lookup("rabbitmq_address")); err != nil {
-		return err
-	}
-	if err := viper.BindPFlag("redis_address", rootCmd.PersistentFlags().Lookup("redis_address")); err != nil {
-		return err
-	}
-	if err := viper.BindPFlag("redis_password", rootCmd.PersistentFlags().Lookup("redis_password")); err != nil {
-		return err
-	}
-	if err := viper.BindPFlag("redis_database", rootCmd.PersistentFlags().Lookup("redis_database")); err != nil {
-		return err
+	bindings := map[string]string{
+		"database_dsn":              "DATABASE_DSN",
+		"prometheus_endpoint":       "PROMETHEUS_ENDPOINT",
+		"prometheus_listen_address": "PROMETHEUS_LISTEN_ADDRESS",
+		"rabbitmq_address":          "RABBITMQ_ADDRESS",
+		"redis_address":             "REDIS_ADDRESS",
+		"redis_password":            "REDIS_PASSWORD",
+		"redis_database":            "REDIS_DATABASE",
 	}
 
-	// Bind environment variables
-	if err := viper.BindEnv("database_dsn", "DATABASE_DSN"); err != nil {
-		return err
-	}
-	if err := viper.BindEnv("prometheus_endpoint", "PROMETHEUS_ENDPOINT"); err != nil {
-		return err
-	}
-	if err := viper.BindEnv("prometheus_listen_address", "PROMETHEUS_LISTEN_ADDRESS"); err != nil {
-		return err
-	}
-	if err := viper.BindEnv("rabbitmq_address", "RABBITMQ_ADDRESS"); err != nil {
-		return err
-	}
-	if err := viper.BindEnv("redis_address", "REDIS_ADDRESS"); err != nil {
-		return err
-	}
-	if err := viper.BindEnv("redis_password", "REDIS_PASSWORD"); err != nil {
-		return err
-	}
-	if err := viper.BindEnv("redis_database", "REDIS_DATABASE"); err != nil {
-		return err
-	}
+	for flagKey, envKey := range bindings {
+		if errBind := viper.BindPFlag(flagKey, f.Lookup(flagKey)); errBind != nil {
+			return errors.Wrapf(errBind, "could not bind flag. key: %s", flagKey)
+		}
 
-	// Load configuration into struct
-	appConfig = Config{
-		DatabaseDSN:             viper.GetString("database_dsn"),
-		PrometheusEndpoint:      viper.GetString("prometheus_endpoint"),
-		PrometheusListenAddress: viper.GetString("prometheus_listen_address"),
-		RabbitMQAddress:         viper.GetString("rabbitmq_address"),
-		RedisAddress:            viper.GetString("redis_address"),
-		RedisDatabase:           viper.GetInt("redis_database"),
-		RedisPassword:           viper.GetString("redis_password"),
+		if errBind := viper.BindEnv(flagKey, envKey); errBind != nil {
+			return errors.Wrapf(errBind, "could not bind the env. key: %s", envKey)
+		}
 	}
 
 	return nil
 }
 
 // Get returns the application configuration
-func Get() Config {
-	return appConfig
+func Get() *Config {
+	return &globalConfig
+}
+
+// LoadGlobalConfig loads configuration from viper into the global singleton.
+// NOTE: This must be called AFTER Bootstrap (which calls bindConfig) has been executed.
+// If called before binding, it will load empty/default values.
+func LoadGlobalConfig() {
+	once.Do(func() {
+		globalConfig = Config{
+			DatabaseDSN:             viper.GetString("database_dsn"),
+			PrometheusEndpoint:      viper.GetString("prometheus_endpoint"),
+			PrometheusListenAddress: viper.GetString("prometheus_listen_address"),
+			RabbitMQAddress:         viper.GetString("rabbitmq_address"),
+			RedisAddress:            viper.GetString("redis_address"),
+			RedisDatabase:           viper.GetInt("redis_database"),
+			RedisPassword:           viper.GetString("redis_password"),
+		}
+		logrus.Debug("Configuration has been loaded and locked.")
+	})
+}
+
+func initLog() {
+	logrus.SetFormatter(joonix.NewFormatter())
+	logrus.SetLevel(logrus.DebugLevel)
 }

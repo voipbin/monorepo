@@ -49,6 +49,20 @@ go vet $(go list ./...)
 golangci-lint run -v --timeout 5m
 ```
 
+## api-control CLI Tool
+
+A command-line tool for API Manager operations. **All output is JSON format** (stdout), logs go to stderr.
+
+```bash
+# Display version information
+./bin/api-control version
+
+# Check health status of API Manager dependencies (database, cache, RabbitMQ)
+./bin/api-control health
+```
+
+Uses same environment variables as api-manager (`DATABASE_DSN`, `RABBITMQ_ADDRESS`, `REDIS_ADDRESS`, etc.).
+
 ### API Documentation
 
 #### Swagger/OpenAPI Generation

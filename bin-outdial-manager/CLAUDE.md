@@ -42,6 +42,35 @@ go vet $(go list ./...)
 docker build -t outdial-manager -f bin-outdial-manager/Dockerfile .
 ```
 
+## outdial-control CLI Tool
+
+A command-line tool for managing outdials directly via database/cache (bypasses RabbitMQ RPC). **All output is JSON format** (stdout), logs go to stderr.
+
+```bash
+# Create outdial - returns created outdial JSON
+./bin/outdial-control outdial create --customer_id <uuid> [--name] [--detail] [--data '<json>'] [--campaign_id]
+
+# Get outdial - returns outdial JSON
+./bin/outdial-control outdial get --id <uuid>
+
+# List outdials - returns JSON array
+./bin/outdial-control outdial list --customer_id <uuid> [--limit 100] [--token]
+
+# Update outdial basic info - returns updated outdial JSON
+./bin/outdial-control outdial update-basic-info --id <uuid> [--name] [--detail]
+
+# Update outdial campaign ID - returns updated outdial JSON
+./bin/outdial-control outdial update-campaign-id --id <uuid> --campaign_id <uuid>
+
+# Update outdial custom data - returns updated outdial JSON
+./bin/outdial-control outdial update-data --id <uuid> --data '<json>'
+
+# Delete outdial - returns deleted outdial JSON
+./bin/outdial-control outdial delete --id <uuid>
+```
+
+Uses same environment variables as outdial-manager (`DATABASE_DSN`, `RABBITMQ_ADDRESS`, `REDIS_ADDRESS`, etc.).
+
 ## Architecture
 
 ### Service Layer Structure

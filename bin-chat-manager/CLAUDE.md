@@ -55,6 +55,38 @@ go mod vendor
 go generate ./...
 ```
 
+## chat-control CLI Tool
+
+A command-line tool for managing chats directly via database/cache (bypasses RabbitMQ RPC). **All output is JSON format** (stdout), logs go to stderr.
+
+```bash
+# Create chat - returns created chat JSON
+./bin/chat-control chat create --customer_id <uuid> [--type normal] [--name <name>] [--detail]
+
+# Get chat - returns chat JSON
+./bin/chat-control chat get --id <uuid>
+
+# List chats - returns JSON array
+./bin/chat-control chat list --customer_id <uuid> [--limit 100] [--token]
+
+# Update chat basic info - returns updated chat JSON
+./bin/chat-control chat update-basic-info --id <uuid> [--name <name>] [--detail]
+
+# Update chat room owner - returns updated chat JSON
+./bin/chat-control chat update-room-owner --id <uuid> --room_owner_id <uuid>
+
+# Add participant - returns updated chat JSON
+./bin/chat-control chat add-participant --id <uuid> --participant_id <uuid>
+
+# Remove participant - returns updated chat JSON
+./bin/chat-control chat remove-participant --id <uuid> --participant_id <uuid>
+
+# Delete chat - returns deleted chat JSON
+./bin/chat-control chat delete --id <uuid>
+```
+
+Uses same environment variables as chat-manager (`DATABASE_DSN`, `RABBITMQ_ADDRESS`, `REDIS_ADDRESS`, etc.).
+
 ## Architecture
 
 ### Service Communication Pattern

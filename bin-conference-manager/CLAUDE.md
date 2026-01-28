@@ -159,6 +159,46 @@ go vet $(go list ./...)
 golangci-lint run -v --timeout 5m
 ```
 
+## conference-control CLI Tool
+
+A command-line tool for managing conferences directly via database/cache (bypasses RabbitMQ RPC). **All output is JSON format** (stdout), logs go to stderr.
+
+```bash
+# Create conference - returns created conference JSON
+./bin/conference-control conference create --customer_id <uuid> [--type conference] [--name] [--detail] [--data '<json>'] [--timeout] [--pre_flow_id] [--post_flow_id]
+
+# Get conference - returns conference JSON
+./bin/conference-control conference get --id <uuid>
+
+# Get conference by confbridge ID - returns conference JSON
+./bin/conference-control conference get-by-confbridge --confbridge_id <uuid>
+
+# List conferences - returns JSON array
+./bin/conference-control conference list --customer_id <uuid> [--limit 100] [--token]
+
+# Update conference - returns updated conference JSON
+./bin/conference-control conference update --id <uuid> [--name] [--detail] [--data '<json>']
+
+# Delete conference - returns deleted conference JSON
+./bin/conference-control conference delete --id <uuid>
+
+# Update recording ID - returns updated conference JSON
+./bin/conference-control conference update-recording-id --id <uuid> --recording_id <uuid>
+
+# Start/stop recording
+./bin/conference-control conference recording-start --id <uuid> [--format wav] [--reference_type] [--reference_id]
+./bin/conference-control conference recording-stop --id <uuid>
+
+# Terminate conference
+./bin/conference-control conference terminating --id <uuid>
+
+# Start/stop transcription
+./bin/conference-control conference transcribe-start --id <uuid>
+./bin/conference-control conference transcribe-stop --id <uuid>
+```
+
+Uses same environment variables as conference-manager (`DATABASE_DSN`, `RABBITMQ_ADDRESS`, `REDIS_ADDRESS`, etc.).
+
 ### Run Locally
 ```bash
 # With environment variables

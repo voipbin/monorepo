@@ -125,6 +125,23 @@ golangci-lint run -v --timeout 5m
 go vet $(go list ./...)
 ```
 
+## message-control CLI Tool
+
+A command-line tool for managing SMS messages directly via database/cache (bypasses RabbitMQ RPC). **All output is JSON format** (stdout), logs go to stderr.
+
+```bash
+# Get message - returns message JSON
+./bin/message-control message get --id <uuid>
+
+# List messages - returns JSON array
+./bin/message-control message list --customer_id <uuid> [--limit 100] [--token]
+
+# Delete message - returns deleted message JSON
+./bin/message-control message delete --id <uuid>
+```
+
+Uses same environment variables as message-manager (`DATABASE_DSN`, `RABBITMQ_ADDRESS`, `REDIS_ADDRESS`, etc.).
+
 ### Run Locally
 ```bash
 # With environment variables

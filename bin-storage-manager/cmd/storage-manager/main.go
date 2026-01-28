@@ -82,10 +82,11 @@ func run(cmd *cobra.Command, args []string) error {
 	})
 
 	// Initialize configuration
-	if err := config.InitConfig(cmd); err != nil {
+	if err := config.Bootstrap(cmd); err != nil {
 		return fmt.Errorf("failed to initialize config: %w", err)
 	}
 
+	config.LoadGlobalConfig()
 	cfg := config.Get()
 
 	// Initialize Prometheus

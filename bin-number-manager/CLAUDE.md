@@ -41,6 +41,35 @@ go generate ./pkg/numberhandlertelnyx/...
 go generate ./pkg/numberhandlertwilio/...
 ```
 
+## number-control CLI Tool
+
+A command-line tool for managing phone numbers directly via database/cache (bypasses RabbitMQ RPC). **All output is JSON format** (stdout), logs go to stderr.
+
+```bash
+# Create a number - returns created number JSON
+./bin/number-control number create --customer-id <uuid> --number <phone_number> [--call-flow-id <uuid>] [--message-flow-id <uuid>] [--name] [--detail]
+
+# Register a number (internal use) - returns registered number JSON
+./bin/number-control number register --customer-id <uuid> --number <phone_number> [--call-flow-id <uuid>] [--message-flow-id <uuid>] [--name] [--detail]
+
+# Get a number - returns number JSON
+./bin/number-control number get --id <uuid>
+
+# Get available numbers for purchase - returns available numbers JSON array
+./bin/number-control number get-available --country-code <US|GB|...> [--limit 10]
+
+# List numbers - returns JSON array
+./bin/number-control number list --customer-id <uuid> [--limit 100] [--token]
+
+# Update a number - returns updated number JSON
+./bin/number-control number update --id <uuid> [--name] [--detail] [--call-flow-id <uuid>] [--message-flow-id <uuid>] [--status active|inactive]
+
+# Delete a number - returns deleted number JSON
+./bin/number-control number delete --id <uuid>
+```
+
+Uses same environment variables as number-manager (`DATABASE_DSN`, `RABBITMQ_ADDRESS`, `REDIS_ADDRESS`, `TELNYX_*`, `TWILIO_*`, etc.).
+
 ## Architecture
 
 ### Service Layer Structure

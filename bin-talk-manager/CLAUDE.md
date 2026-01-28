@@ -62,6 +62,26 @@ go mod vendor
 go generate ./...
 ```
 
+## talk-control CLI Tool
+
+A command-line tool for managing talks and messages directly via database/cache (bypasses RabbitMQ RPC). **All output is JSON format** (stdout), logs go to stderr.
+
+```bash
+# Chat (Talk) commands
+./bin/talk-control chat create --customer_id <uuid> [--type normal] [--name] [--detail]
+./bin/talk-control chat get --id <uuid>
+./bin/talk-control chat list --customer_id <uuid> [--limit 100] [--token]
+./bin/talk-control chat update --id <uuid> [--name] [--detail]
+./bin/talk-control chat delete --id <uuid>
+
+# Message commands
+./bin/talk-control message create --talk_id <uuid> --text <text> [--sender_id] [--reply_to]
+./bin/talk-control message get --id <uuid>
+./bin/talk-control message list --talk_id <uuid> [--limit 100] [--token]
+```
+
+Uses same environment variables as talk-manager (`DATABASE_DSN`, `RABBITMQ_ADDRESS`, `REDIS_ADDRESS`, etc.).
+
 ## Architecture
 
 ### Service Communication Pattern

@@ -3,6 +3,9 @@ package config
 import (
 	"sync"
 
+	joonix "github.com/joonix/log"
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -33,7 +36,77 @@ const (
 	defaultRedisPassword           = ""
 )
 
-// Init initializes the configuration with Cobra command
+// Bootstrap initializes logging and binds configuration flags
+func Bootstrap(cmd *cobra.Command) error {
+	initLog()
+	if errBind := bindConfig(cmd); errBind != nil {
+		return errors.Wrapf(errBind, "could not bind config")
+	}
+
+	return nil
+}
+
+// bindConfig binds CLI flags and environment variables for configuration
+func bindConfig(cmd *cobra.Command) error {
+	viper.AutomaticEnv()
+	f := cmd.PersistentFlags()
+
+	f.String("rabbitmq_address", "", "RabbitMQ server address")
+	f.String("prometheus_endpoint", "/metrics", "Prometheus metrics endpoint")
+	f.String("prometheus_listen_address", ":2112", "Prometheus listen address")
+	f.String("database_dsn", "", "Database connection DSN")
+	f.String("redis_address", "", "Redis server address")
+	f.String("redis_password", "", "Redis password")
+	f.Int("redis_database", 0, "Redis database index")
+
+	bindings := map[string]string{
+		"rabbitmq_address":          "RABBITMQ_ADDRESS",
+		"prometheus_endpoint":       "PROMETHEUS_ENDPOINT",
+		"prometheus_listen_address": "PROMETHEUS_LISTEN_ADDRESS",
+		"database_dsn":              "DATABASE_DSN",
+		"redis_address":             "REDIS_ADDRESS",
+		"redis_password":            "REDIS_PASSWORD",
+		"redis_database":            "REDIS_DATABASE",
+	}
+
+	for flagKey, envKey := range bindings {
+		if errBind := viper.BindPFlag(flagKey, f.Lookup(flagKey)); errBind != nil {
+			return errors.Wrapf(errBind, "could not bind flag. key: %s", flagKey)
+		}
+
+		if errBind := viper.BindEnv(flagKey, envKey); errBind != nil {
+			return errors.Wrapf(errBind, "could not bind the env. key: %s", envKey)
+		}
+	}
+
+	return nil
+}
+
+// LoadGlobalConfig loads configuration from viper into the global singleton
+func LoadGlobalConfig() {
+	once.Do(func() {
+		cfg = &Config{
+			RabbitMQAddress:         viper.GetString("rabbitmq_address"),
+			PrometheusEndpoint:      viper.GetString("prometheus_endpoint"),
+			PrometheusListenAddress: viper.GetString("prometheus_listen_address"),
+			DatabaseDSN:             viper.GetString("database_dsn"),
+			RedisAddress:            viper.GetString("redis_address"),
+			RedisPassword:           viper.GetString("redis_password"),
+			RedisDatabase:           viper.GetInt("redis_database"),
+		}
+		logrus.Debug("Configuration has been loaded and locked.")
+	})
+}
+
+// Get returns the global configuration instance
+func Get() *Config {
+	if cfg == nil {
+		panic("config not initialized - call LoadGlobalConfig() first")
+	}
+	return cfg
+}
+
+// Init initializes the configuration with Cobra command (legacy, use Bootstrap + LoadGlobalConfig)
 func Init(cmd *cobra.Command) {
 	once.Do(func() {
 		viper.AutomaticEnv()
@@ -69,14 +142,6 @@ func Init(cmd *cobra.Command) {
 	})
 }
 
-// Get returns the global configuration instance
-func Get() *Config {
-	if cfg == nil {
-		panic("config not initialized - call Init() first")
-	}
-	return cfg
-}
-
 // RegisterFlags registers all configuration flags with the cobra command
 func RegisterFlags(cmd *cobra.Command) {
 	cmd.Flags().String("rabbitmq_address", defaultRabbitMQAddress, "Address of the RabbitMQ server (e.g., amqp://guest:guest@localhost:5672)")
@@ -86,4 +151,9 @@ func RegisterFlags(cmd *cobra.Command) {
 	cmd.Flags().String("redis_address", defaultRedisAddress, "Address of the Redis server (e.g., localhost:6379)")
 	cmd.Flags().String("redis_password", defaultRedisPassword, "Password for authenticating with the Redis server (if required)")
 	cmd.Flags().Int("redis_database", defaultRedisDatabase, "Redis database index to use (default is 1)")
+}
+
+func initLog() {
+	logrus.SetFormatter(joonix.NewFormatter())
+	logrus.SetLevel(logrus.DebugLevel)
 }

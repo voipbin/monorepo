@@ -84,6 +84,23 @@ go generate ./...
 cd pkg/servicehandler && go generate
 ```
 
+## hook-control CLI Tool
+
+A command-line tool for testing webhook functionality. **All output is JSON format** (stdout), logs go to stderr.
+
+```bash
+# Send a test email webhook
+./bin/hook-control send-email --customer_id <uuid> --email_id <uuid>
+
+# Send a test message webhook
+./bin/hook-control send-message --customer_id <uuid> --message_id <uuid>
+
+# Send a test conversation webhook
+./bin/hook-control send-conversation --customer_id <uuid> --conversation_id <uuid>
+```
+
+Uses same environment variables as hook-manager (`DATABASE_DSN`, `RABBITMQ_ADDRESS`, `REDIS_ADDRESS`, etc.).
+
 ## Running the Service
 
 ### Required Configuration

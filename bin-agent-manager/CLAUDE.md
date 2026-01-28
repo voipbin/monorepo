@@ -138,6 +138,47 @@ golangci-lint run -v --timeout 5m
 go vet $(go list ./...)
 ```
 
+## agent-control CLI Tool
+
+A command-line tool for managing agents directly via database/cache (bypasses RabbitMQ RPC). **All output is JSON format** (stdout), logs go to stderr.
+
+```bash
+# Create agent - returns created agent JSON
+./bin/agent-control agent create --customer-id <uuid> --username <username> --password <password> [--name] [--detail] [--permission <bitmask>]
+
+# Get agent - returns agent JSON
+./bin/agent-control agent get --id <uuid>
+
+# List agents - returns JSON array
+./bin/agent-control agent list --customer-id <uuid> [--limit 100] [--token]
+
+# Login (authenticate agent) - returns agent JSON
+./bin/agent-control agent login --username <username> --password <password>
+
+# Update agent basic info - returns updated agent JSON
+./bin/agent-control agent update-basic-info --id <uuid> --name <name> [--detail] [--ring-method ringall|linear]
+
+# Update agent addresses - returns updated agent JSON
+./bin/agent-control agent update-addresses --id <uuid> --addresses '<json_array>'
+
+# Update agent status - returns updated agent JSON
+./bin/agent-control agent update-status --id <uuid> --status <available|away|busy|offline>
+
+# Update agent tag IDs - returns updated agent JSON
+./bin/agent-control agent update-tag-ids --id <uuid> --tag-ids '<json_array>'
+
+# Update agent permission - returns updated agent JSON
+./bin/agent-control agent update-permission --id <uuid> --permission <permission_bitmask>
+
+# Update agent password - returns updated agent JSON
+./bin/agent-control agent update-password --id <uuid> --password <password>
+
+# Delete agent - returns deleted agent JSON
+./bin/agent-control agent delete --id <uuid>
+```
+
+Uses same environment variables as agent-manager (`DATABASE_DSN`, `RABBITMQ_ADDRESS`, `REDIS_ADDRESS`, etc.).
+
 ### Run Locally
 ```bash
 # With environment variables

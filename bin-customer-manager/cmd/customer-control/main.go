@@ -58,6 +58,8 @@ func initCommand() *cobra.Command {
 	cmdSub.AddCommand(cmdCreate())
 	cmdSub.AddCommand(cmdGet())
 	cmdSub.AddCommand(cmdList())
+	cmdSub.AddCommand(cmdUpdate())
+	cmdSub.AddCommand(cmdUpdateBillingAccount())
 	cmdSub.AddCommand(cmdDelete())
 
 	cmdRoot.AddCommand(cmdSub)
@@ -75,27 +77,23 @@ func cmdCreate() *cobra.Command {
 	flags.String("name", "", "Customer name")
 	flags.String("detail", "", "Description")
 	flags.String("email", "", "Customer email (required)")
-	flags.String("phone_number", "", "Phone number")
+	flags.String("phone-number", "", "Phone number")
 	flags.String("address", "", "Physical address")
-	flags.String("webhook_method", "POST", "Webhook HTTP method")
-	flags.String("webhook_uri", "", "Webhook URI")
-
-	if errBind := viper.BindPFlags(flags); errBind != nil {
-		cobra.CheckErr(errors.Wrap(errBind, "failed to bind flags"))
-	}
+	flags.String("webhook-method", "POST", "Webhook HTTP method")
+	flags.String("webhook-uri", "", "Webhook URI")
 
 	return cmd
 }
 
 func runCreate(cmd *cobra.Command, args []string) error {
+	email, err := resolveString("email", "Email")
+	if err != nil {
+		return errors.Wrap(err, "invalid email")
+	}
+
 	handler, err := initHandler()
 	if err != nil {
 		return errors.Wrap(err, "failed to initialize handlers")
-	}
-
-	email := viper.GetString("email")
-	if email == "" {
-		return fmt.Errorf("email is required")
 	}
 
 	res, err := handler.Create(
@@ -103,10 +101,10 @@ func runCreate(cmd *cobra.Command, args []string) error {
 		viper.GetString("name"),
 		viper.GetString("detail"),
 		email,
-		viper.GetString("phone_number"),
+		viper.GetString("phone-number"),
 		viper.GetString("address"),
-		customer.WebhookMethod(viper.GetString("webhook_method")),
-		viper.GetString("webhook_uri"),
+		customer.WebhookMethod(viper.GetString("webhook-method")),
+		viper.GetString("webhook-uri"),
 	)
 	if err != nil {
 		return errors.Wrap(err, "failed to create customer")
@@ -142,6 +140,98 @@ func cmdList() *cobra.Command {
 	return cmd
 }
 
+func cmdUpdate() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "update",
+		Short: "Update customer basic info",
+		RunE:  runUpdate,
+	}
+
+	flags := cmd.Flags()
+	flags.String("id", "", "Customer ID (required)")
+	flags.String("name", "", "Customer name")
+	flags.String("detail", "", "Description")
+	flags.String("email", "", "Customer email (required)")
+	flags.String("phone-number", "", "Phone number")
+	flags.String("address", "", "Physical address")
+	flags.String("webhook-method", "POST", "Webhook HTTP method")
+	flags.String("webhook-uri", "", "Webhook URI")
+
+	return cmd
+}
+
+func runUpdate(cmd *cobra.Command, args []string) error {
+	targetID, err := resolveUUID("id", "Customer ID")
+	if err != nil {
+		return errors.Wrap(err, "invalid customer ID")
+	}
+
+	email, err := resolveString("email", "Email")
+	if err != nil {
+		return errors.Wrap(err, "invalid email")
+	}
+
+	handler, err := initHandler()
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize handlers")
+	}
+
+	res, err := handler.UpdateBasicInfo(
+		context.Background(),
+		targetID,
+		viper.GetString("name"),
+		viper.GetString("detail"),
+		email,
+		viper.GetString("phone-number"),
+		viper.GetString("address"),
+		customer.WebhookMethod(viper.GetString("webhook-method")),
+		viper.GetString("webhook-uri"),
+	)
+	if err != nil {
+		return errors.Wrap(err, "failed to update customer")
+	}
+
+	return printJSON(res)
+}
+
+func cmdUpdateBillingAccount() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "update-billing-account",
+		Short: "Update customer billing account ID",
+		RunE:  runUpdateBillingAccount,
+	}
+
+	flags := cmd.Flags()
+	flags.String("id", "", "Customer ID (required)")
+	flags.String("billing-account-id", "", "Billing Account ID (required)")
+
+	return cmd
+}
+
+func runUpdateBillingAccount(cmd *cobra.Command, args []string) error {
+	targetID, err := resolveUUID("id", "Customer ID")
+	if err != nil {
+		return errors.Wrap(err, "invalid customer ID")
+	}
+
+	billingAccountID, err := resolveUUID("billing-account-id", "Billing Account ID")
+	if err != nil {
+		return errors.Wrap(err, "invalid billing account ID")
+	}
+
+	handler, err := initHandler()
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize handlers")
+	}
+
+	res, err := handler.UpdateBillingAccountID(context.Background(), targetID, billingAccountID)
+	if err != nil {
+		return errors.Wrap(err, "failed to update customer billing account")
+	}
+
+	return printJSON(res)
+}
+
 func cmdDelete() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "delete",
@@ -150,7 +240,7 @@ func cmdDelete() *cobra.Command {
 	}
 
 	flags := cmd.Flags()
-	flags.String("id", "", "Customer ID")
+	flags.String("id", "", "Customer ID (required)")
 
 	return cmd
 }
@@ -173,14 +263,14 @@ func runList(cmd *cobra.Command, args []string) error {
 }
 
 func runGet(cmd *cobra.Command, args []string) error {
+	targetID, err := resolveUUID("id", "Customer ID")
+	if err != nil {
+		return errors.Wrap(err, "invalid customer ID")
+	}
+
 	handler, err := initHandler()
 	if err != nil {
 		return errors.Wrap(err, "failed to initialize handlers")
-	}
-
-	targetID, err := resolveUUID("id", "Customer ID")
-	if err != nil {
-		return errors.Wrap(err, "invalid customer ID format")
 	}
 
 	res, err := handler.Get(context.Background(), targetID)
@@ -192,14 +282,14 @@ func runGet(cmd *cobra.Command, args []string) error {
 }
 
 func runDelete(cmd *cobra.Command, args []string) error {
+	targetID, err := resolveUUID("id", "Customer ID")
+	if err != nil {
+		return errors.Wrap(err, "invalid customer ID")
+	}
+
 	handler, err := initHandler()
 	if err != nil {
 		return errors.Wrap(err, "failed to initialize handlers")
-	}
-
-	targetID, err := resolveUUID("id", "Customer ID")
-	if err != nil {
-		return errors.Wrap(err, "invalid customer ID format")
 	}
 
 	res, err := handler.Delete(context.Background(), targetID)
@@ -255,6 +345,14 @@ func resolveUUID(flagName string, label string) (uuid.UUID, error) {
 	}
 
 	return res, nil
+}
+
+func resolveString(flagName string, label string) (string, error) {
+	val := viper.GetString(flagName)
+	if val == "" {
+		return "", fmt.Errorf("%s is required", label)
+	}
+	return val, nil
 }
 
 func printJSON(v any) error {

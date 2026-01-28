@@ -106,7 +106,9 @@ func initCommand() *cobra.Command {
 	cmdSub.AddCommand(cmdCreate())
 	cmdSub.AddCommand(cmdRegister())
 	cmdSub.AddCommand(cmdGet())
+	cmdSub.AddCommand(cmdGetAvailable())
 	cmdSub.AddCommand(cmdList())
+	cmdSub.AddCommand(cmdUpdate())
 	cmdSub.AddCommand(cmdDelete())
 
 	cmdRoot.AddCommand(cmdSub)
@@ -127,13 +129,12 @@ func resolveUUID(flagName string, label string) (uuid.UUID, error) {
 	return res, nil
 }
 
-func resolveString(flagName string, label string, required bool) (string, error) {
-	res := viper.GetString(flagName)
-	if res == "" && required {
+func resolveString(flagName string, label string) (string, error) {
+	val := viper.GetString(flagName)
+	if val == "" {
 		return "", fmt.Errorf("%s is required", label)
 	}
-
-	return res, nil
+	return val, nil
 }
 
 func printJSON(v any) error {
@@ -153,10 +154,10 @@ func cmdCreate() *cobra.Command {
 	}
 
 	flags := cmd.Flags()
-	flags.String("customer_id", "", "Customer ID (required)")
+	flags.String("customer-id", "", "Customer ID (required)")
 	flags.String("number", "", "Phone number (e.g., +15551234567) (required)")
-	flags.String("call_flow_id", "", "Call flow ID")
-	flags.String("message_flow_id", "", "Message flow ID")
+	flags.String("call-flow-id", "", "Call flow ID")
+	flags.String("message-flow-id", "", "Message flow ID")
 	flags.String("name", "", "Number name")
 	flags.String("detail", "", "Description")
 
@@ -164,18 +165,18 @@ func cmdCreate() *cobra.Command {
 }
 
 func runCreate(cmd *cobra.Command, args []string) error {
-	customerID, err := resolveUUID("customer_id", "Customer ID")
+	customerID, err := resolveUUID("customer-id", "Customer ID")
 	if err != nil {
-		return errors.Wrap(err, "failed to resolve customer ID")
+		return errors.Wrap(err, "invalid customer ID")
 	}
 
-	number, err := resolveString("number", "Phone number", true)
+	num, err := resolveString("number", "Phone number")
 	if err != nil {
-		return errors.Wrap(err, "failed to resolve phone number")
+		return errors.Wrap(err, "invalid phone number")
 	}
 
-	callFlowID := uuid.FromStringOrNil(viper.GetString("call_flow_id"))
-	messageFlowID := uuid.FromStringOrNil(viper.GetString("message_flow_id"))
+	callFlowID := uuid.FromStringOrNil(viper.GetString("call-flow-id"))
+	messageFlowID := uuid.FromStringOrNil(viper.GetString("message-flow-id"))
 
 	handler, err := initHandler()
 	if err != nil {
@@ -185,7 +186,7 @@ func runCreate(cmd *cobra.Command, args []string) error {
 	res, err := handler.Create(
 		context.Background(),
 		customerID,
-		number,
+		num,
 		callFlowID,
 		messageFlowID,
 		viper.GetString("name"),
@@ -206,10 +207,10 @@ func cmdRegister() *cobra.Command {
 	}
 
 	flags := cmd.Flags()
-	flags.String("customer_id", "", "Customer ID (required)")
+	flags.String("customer-id", "", "Customer ID (required)")
 	flags.String("number", "", "Phone number (e.g., +15551234567) (required)")
-	flags.String("call_flow_id", "", "Call flow ID")
-	flags.String("message_flow_id", "", "Message flow ID")
+	flags.String("call-flow-id", "", "Call flow ID")
+	flags.String("message-flow-id", "", "Message flow ID")
 	flags.String("name", "", "Number name")
 	flags.String("detail", "", "Description")
 
@@ -217,18 +218,18 @@ func cmdRegister() *cobra.Command {
 }
 
 func runRegister(cmd *cobra.Command, args []string) error {
-	customerID, err := resolveUUID("customer_id", "Customer ID")
+	customerID, err := resolveUUID("customer-id", "Customer ID")
 	if err != nil {
-		return errors.Wrap(err, "failed to resolve customer ID")
+		return errors.Wrap(err, "invalid customer ID")
 	}
 
-	num, err := resolveString("number", "Phone number", true)
+	num, err := resolveString("number", "Phone number")
 	if err != nil {
-		return errors.Wrap(err, "failed to resolve phone number")
+		return errors.Wrap(err, "invalid phone number")
 	}
 
-	callFlowID := uuid.FromStringOrNil(viper.GetString("call_flow_id"))
-	messageFlowID := uuid.FromStringOrNil(viper.GetString("message_flow_id"))
+	callFlowID := uuid.FromStringOrNil(viper.GetString("call-flow-id"))
+	messageFlowID := uuid.FromStringOrNil(viper.GetString("message-flow-id"))
 
 	handler, err := initHandler()
 	if err != nil {
@@ -270,14 +271,14 @@ func cmdGet() *cobra.Command {
 }
 
 func runGet(cmd *cobra.Command, args []string) error {
+	numberID, err := resolveUUID("id", "Number ID")
+	if err != nil {
+		return errors.Wrap(err, "invalid number ID")
+	}
+
 	handler, err := initHandler()
 	if err != nil {
 		return errors.Wrap(err, "failed to initialize handlers")
-	}
-
-	numberID, err := resolveUUID("id", "Number ID")
-	if err != nil {
-		return errors.Wrap(err, "failed to resolve number ID")
 	}
 
 	res, err := handler.Get(context.Background(), numberID)
@@ -298,20 +299,20 @@ func cmdList() *cobra.Command {
 	flags := cmd.Flags()
 	flags.Int("limit", 100, "Limit the number of results to retrieve")
 	flags.String("token", "", "Retrieve results before this token (pagination)")
-	flags.String("customer_id", "", "Customer ID to filter (required)")
+	flags.String("customer-id", "", "Customer ID to filter (required)")
 
 	return cmd
 }
 
 func runList(cmd *cobra.Command, args []string) error {
+	customerID, err := resolveUUID("customer-id", "Customer ID")
+	if err != nil {
+		return errors.Wrap(err, "invalid customer ID")
+	}
+
 	handler, err := initHandler()
 	if err != nil {
 		return errors.Wrap(err, "failed to initialize handlers")
-	}
-
-	customerID, err := resolveUUID("customer_id", "Customer ID")
-	if err != nil {
-		return errors.Wrap(err, "failed to resolve customer ID")
 	}
 
 	limit := viper.GetInt("limit")
@@ -324,6 +325,99 @@ func runList(cmd *cobra.Command, args []string) error {
 	res, err := handler.List(context.Background(), uint64(limit), token, filters)
 	if err != nil {
 		return errors.Wrap(err, "failed to retrieve numbers")
+	}
+
+	return printJSON(res)
+}
+
+func cmdGetAvailable() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "get-available",
+		Short: "Get available numbers for purchase",
+		RunE:  runGetAvailable,
+	}
+
+	flags := cmd.Flags()
+	flags.String("country-code", "", "Country code (e.g., US, GB) (required)")
+	flags.Uint("limit", 10, "Number of results to return")
+
+	return cmd
+}
+
+func runGetAvailable(cmd *cobra.Command, args []string) error {
+	countryCode, err := resolveString("country-code", "Country code")
+	if err != nil {
+		return errors.Wrap(err, "invalid country code")
+	}
+
+	handler, err := initHandler()
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize handlers")
+	}
+
+	limit := viper.GetUint("limit")
+	res, err := handler.GetAvailableNumbers(countryCode, limit)
+	if err != nil {
+		return errors.Wrap(err, "failed to get available numbers")
+	}
+
+	return printJSON(res)
+}
+
+func cmdUpdate() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "update",
+		Short: "Update a number",
+		RunE:  runUpdate,
+	}
+
+	flags := cmd.Flags()
+	flags.String("id", "", "Number ID (required)")
+	flags.String("name", "", "Number name")
+	flags.String("detail", "", "Description")
+	flags.String("call-flow-id", "", "Call flow ID")
+	flags.String("message-flow-id", "", "Message flow ID")
+	flags.String("status", "", "Status (active, inactive)")
+
+	return cmd
+}
+
+func runUpdate(cmd *cobra.Command, args []string) error {
+	numberID, err := resolveUUID("id", "Number ID")
+	if err != nil {
+		return errors.Wrap(err, "invalid number ID")
+	}
+
+	handler, err := initHandler()
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize handlers")
+	}
+
+	fields := make(map[number.Field]any)
+
+	if viper.IsSet("name") {
+		fields[number.FieldName] = viper.GetString("name")
+	}
+	if viper.IsSet("detail") {
+		fields[number.FieldDetail] = viper.GetString("detail")
+	}
+	if viper.GetString("call-flow-id") != "" {
+		fields[number.FieldCallFlowID] = uuid.FromStringOrNil(viper.GetString("call-flow-id"))
+	}
+	if viper.GetString("message-flow-id") != "" {
+		fields[number.FieldMessageFlowID] = uuid.FromStringOrNil(viper.GetString("message-flow-id"))
+	}
+	if viper.GetString("status") != "" {
+		fields[number.FieldStatus] = number.Status(viper.GetString("status"))
+	}
+
+	if len(fields) == 0 {
+		return fmt.Errorf("at least one field to update is required")
+	}
+
+	res, err := handler.Update(context.Background(), numberID, fields)
+	if err != nil {
+		return errors.Wrap(err, "failed to update number")
 	}
 
 	return printJSON(res)
@@ -343,14 +437,14 @@ func cmdDelete() *cobra.Command {
 }
 
 func runDelete(cmd *cobra.Command, args []string) error {
+	numberID, err := resolveUUID("id", "Number ID")
+	if err != nil {
+		return errors.Wrap(err, "invalid number ID")
+	}
+
 	handler, err := initHandler()
 	if err != nil {
 		return errors.Wrap(err, "failed to initialize handlers")
-	}
-
-	numberID, err := resolveUUID("id", "Number ID")
-	if err != nil {
-		return errors.Wrap(err, "failed to resolve number ID")
 	}
 
 	res, err := handler.Delete(context.Background(), numberID)
