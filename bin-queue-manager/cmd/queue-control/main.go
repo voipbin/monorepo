@@ -98,8 +98,8 @@ func initCommand() *cobra.Command {
 	cmdSub.AddCommand(cmdUpdateExecute())
 	cmdSub.AddCommand(cmdDelete())
 
-	// Queuecall subcommands (read-only operations for debugging/monitoring)
-	cmdQueuecall := &cobra.Command{Use: "queuecall", Short: "Queuecall operations (read-only)"}
+	// Queuecall subcommands
+	cmdQueuecall := &cobra.Command{Use: "queuecall", Short: "Queuecall operations"}
 	cmdQueuecall.AddCommand(cmdQueuecallGet())
 	cmdQueuecall.AddCommand(cmdQueuecallGetByReferenceID())
 	cmdQueuecall.AddCommand(cmdQueuecallList())
@@ -492,7 +492,7 @@ func runDelete(cmd *cobra.Command, args []string) error {
 	return printJSON(res)
 }
 
-// Queuecall commands (read-only operations for debugging/monitoring)
+// Queuecall commands
 
 func initQueuecallHandler() (queuecallhandler.QueuecallHandler, error) {
 	db, err := commondatabasehandler.Connect(config.Get().DatabaseDSN)
@@ -512,7 +512,7 @@ func initQueuecallHandler() (queuecallhandler.QueuecallHandler, error) {
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameQueueEvent, serviceName)
 
-	// For read-only operations, we pass nil for queueHandler since it's not used by Get/List/Delete
+	// For these operations, we pass nil for queueHandler since it's not used by Get/List/Delete
 	return queuecallhandler.NewQueuecallHandler(reqHandler, dbHandler, notifyHandler, nil), nil
 }
 

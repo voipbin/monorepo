@@ -65,8 +65,8 @@ func initCommand() *cobra.Command {
 	cmdAI.AddCommand(cmdUpdate())
 	cmdAI.AddCommand(cmdDelete())
 
-	// AIcall subcommands (read-only operations for debugging/monitoring)
-	cmdAIcall := &cobra.Command{Use: "aicall", Short: "AIcall operations (read-only)"}
+	// AIcall subcommands
+	cmdAIcall := &cobra.Command{Use: "aicall", Short: "AIcall operations"}
 	cmdAIcall.AddCommand(cmdAIcallGet())
 	cmdAIcall.AddCommand(cmdAIcallGetByReferenceID())
 	cmdAIcall.AddCommand(cmdAIcallList())
@@ -381,7 +381,7 @@ func printJSON(v any) error {
 	return nil
 }
 
-// AIcall commands (read-only operations)
+// AIcall commands
 
 func initAIcallHandler() (aicallhandler.AIcallHandler, error) {
 	db, err := commondatabasehandler.Connect(config.Get().DatabaseDSN)
@@ -401,7 +401,7 @@ func initAIcallHandler() (aicallhandler.AIcallHandler, error) {
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameAIEvent, serviceName)
 
-	// For read-only operations, we don't need aiHandler and messageHandler
+	// For these operations, we don't need aiHandler and messageHandler
 	return aicallhandler.NewAIcallHandler(reqHandler, notifyHandler, dbHandler, nil, nil), nil
 }
 
