@@ -16,6 +16,8 @@ import (
 
 	"monorepo/bin-ai-manager/internal/config"
 	"monorepo/bin-ai-manager/models/ai"
+	"monorepo/bin-ai-manager/models/aicall"
+	"monorepo/bin-ai-manager/pkg/aicallhandler"
 	"monorepo/bin-ai-manager/pkg/aihandler"
 	"monorepo/bin-ai-manager/pkg/cachehandler"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
@@ -63,7 +65,15 @@ func initCommand() *cobra.Command {
 	cmdAI.AddCommand(cmdUpdate())
 	cmdAI.AddCommand(cmdDelete())
 
+	// AIcall subcommands (read-only operations for debugging/monitoring)
+	cmdAIcall := &cobra.Command{Use: "aicall", Short: "AIcall operations (read-only)"}
+	cmdAIcall.AddCommand(cmdAIcallGet())
+	cmdAIcall.AddCommand(cmdAIcallGetByReferenceID())
+	cmdAIcall.AddCommand(cmdAIcallList())
+	cmdAIcall.AddCommand(cmdAIcallDelete())
+
 	cmdRoot.AddCommand(cmdAI)
+	cmdRoot.AddCommand(cmdAIcall)
 	return cmdRoot
 }
 
@@ -369,4 +379,181 @@ func printJSON(v any) error {
 	}
 	fmt.Println(string(data))
 	return nil
+}
+
+// AIcall commands (read-only operations)
+
+func initAIcallHandler() (aicallhandler.AIcallHandler, error) {
+	db, err := commondatabasehandler.Connect(config.Get().DatabaseDSN)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not connect to the database")
+	}
+
+	cache, err := initCache()
+	if err != nil {
+		return nil, err
+	}
+
+	dbHandler := dbhandler.NewHandler(db, cache)
+	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, config.Get().RabbitMQAddress)
+	sockHandler.Connect()
+
+	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameAIEvent, serviceName)
+
+	// For read-only operations, we don't need aiHandler and messageHandler
+	return aicallhandler.NewAIcallHandler(reqHandler, notifyHandler, dbHandler, nil, nil), nil
+}
+
+func cmdAIcallGet() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "get",
+		Short: "Get an AIcall by ID",
+		RunE:  runAIcallGet,
+	}
+
+	flags := cmd.Flags()
+	flags.String("id", "", "AIcall ID (required)")
+
+	return cmd
+}
+
+func cmdAIcallGetByReferenceID() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "get-by-reference",
+		Short: "Get an AIcall by reference ID (call_id, conversation_id, etc.)",
+		RunE:  runAIcallGetByReferenceID,
+	}
+
+	flags := cmd.Flags()
+	flags.String("reference-id", "", "Reference ID (required)")
+
+	return cmd
+}
+
+func cmdAIcallList() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "list",
+		Short: "List AIcalls",
+		RunE:  runAIcallList,
+	}
+
+	flags := cmd.Flags()
+	flags.Int("limit", 100, "Limit the number of AIcalls to retrieve")
+	flags.String("token", "", "Retrieve AIcalls before this token (pagination)")
+	flags.String("customer-id", "", "Filter by customer ID (required)")
+	flags.String("ai-id", "", "Filter by AI ID")
+	flags.String("reference-type", "", "Filter by reference type (call, conversation, task)")
+	flags.String("status", "", "Filter by status (initiating, progressing, terminating, terminated)")
+
+	return cmd
+}
+
+func cmdAIcallDelete() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "delete",
+		Short: "Delete an AIcall",
+		RunE:  runAIcallDelete,
+	}
+
+	flags := cmd.Flags()
+	flags.String("id", "", "AIcall ID (required)")
+
+	return cmd
+}
+
+func runAIcallGet(cmd *cobra.Command, args []string) error {
+	handler, err := initAIcallHandler()
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize handlers")
+	}
+
+	targetID, err := resolveUUID("id", "AIcall ID")
+	if err != nil {
+		return errors.Wrap(err, "invalid AIcall ID format")
+	}
+
+	res, err := handler.Get(context.Background(), targetID)
+	if err != nil {
+		return errors.Wrap(err, "failed to retrieve AIcall")
+	}
+
+	return printJSON(res)
+}
+
+func runAIcallGetByReferenceID(cmd *cobra.Command, args []string) error {
+	handler, err := initAIcallHandler()
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize handlers")
+	}
+
+	referenceID, err := resolveUUID("reference-id", "Reference ID")
+	if err != nil {
+		return errors.Wrap(err, "invalid reference ID format")
+	}
+
+	res, err := handler.GetByReferenceID(context.Background(), referenceID)
+	if err != nil {
+		return errors.Wrap(err, "failed to retrieve AIcall by reference ID")
+	}
+
+	return printJSON(res)
+}
+
+func runAIcallList(cmd *cobra.Command, args []string) error {
+	handler, err := initAIcallHandler()
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize handlers")
+	}
+
+	customerID, err := resolveUUID("customer-id", "Customer ID")
+	if err != nil {
+		return errors.Wrap(err, "invalid customer ID format")
+	}
+
+	limit := viper.GetInt("limit")
+	token := viper.GetString("token")
+
+	filters := map[aicall.Field]any{
+		aicall.FieldCustomerID: customerID,
+	}
+
+	// Optional filters
+	if aiID := viper.GetString("ai-id"); aiID != "" {
+		if id := uuid.FromStringOrNil(aiID); id != uuid.Nil {
+			filters[aicall.FieldAIID] = id
+		}
+	}
+	if refType := viper.GetString("reference-type"); refType != "" {
+		filters[aicall.FieldReferenceType] = aicall.ReferenceType(refType)
+	}
+	if status := viper.GetString("status"); status != "" {
+		filters[aicall.FieldStatus] = aicall.Status(status)
+	}
+
+	res, err := handler.List(context.Background(), uint64(limit), token, filters)
+	if err != nil {
+		return errors.Wrap(err, "failed to retrieve AIcalls")
+	}
+
+	return printJSON(res)
+}
+
+func runAIcallDelete(cmd *cobra.Command, args []string) error {
+	handler, err := initAIcallHandler()
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize handlers")
+	}
+
+	targetID, err := resolveUUID("id", "AIcall ID")
+	if err != nil {
+		return errors.Wrap(err, "invalid AIcall ID format")
+	}
+
+	res, err := handler.Delete(context.Background(), targetID)
+	if err != nil {
+		return errors.Wrap(err, "failed to delete AIcall")
+	}
+
+	return printJSON(res)
 }

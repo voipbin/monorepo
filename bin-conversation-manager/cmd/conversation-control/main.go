@@ -111,6 +111,7 @@ func initCommand() *cobra.Command {
 	cmdMessage := &cobra.Command{Use: "message", Short: "Message operations"}
 	cmdMessage.AddCommand(cmdMessageGet())
 	cmdMessage.AddCommand(cmdMessageList())
+	cmdMessage.AddCommand(cmdMessageDelete())
 
 	cmdRoot.AddCommand(cmdConversation)
 	cmdRoot.AddCommand(cmdAccount)
@@ -546,6 +547,38 @@ func runMessageList(cmd *cobra.Command, args []string) error {
 	res, err := messageHandler.List(context.Background(), token, uint64(limit), filters)
 	if err != nil {
 		return errors.Wrap(err, "failed to retrieve messages")
+	}
+
+	return printJSON(res)
+}
+
+func cmdMessageDelete() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "delete",
+		Short: "Delete a message",
+		RunE:  runMessageDelete,
+	}
+
+	flags := cmd.Flags()
+	flags.String("id", "", "Message ID (required)")
+
+	return cmd
+}
+
+func runMessageDelete(cmd *cobra.Command, args []string) error {
+	_, _, messageHandler, err := initHandlers()
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize handlers")
+	}
+
+	id, err := resolveUUID("id", "Message ID")
+	if err != nil {
+		return errors.Wrap(err, "failed to resolve message ID")
+	}
+
+	res, err := messageHandler.Delete(context.Background(), id)
+	if err != nil {
+		return errors.Wrap(err, "failed to delete message")
 	}
 
 	return printJSON(res)

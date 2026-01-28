@@ -109,7 +109,7 @@ func cmdCreate() *cobra.Command {
 	}
 
 	flags := cmd.Flags()
-	flags.String("call_id", "", "Call ID (required)")
+	flags.String("call-id", "", "Call ID (required)")
 	flags.String("text", "", "Text to synthesize (required)")
 	flags.String("lang", "en-US", "Language code (default: en-US)")
 	flags.String("gender", string(tts.GenderFemale), "Voice gender: male, female, neutral (default: female)")
@@ -118,7 +118,7 @@ func cmdCreate() *cobra.Command {
 }
 
 func runCreate(cmd *cobra.Command, args []string) error {
-	callID, err := resolveUUID("call_id", "Call ID")
+	callID, err := resolveUUID("call-id", "Call ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve call ID")
 	}

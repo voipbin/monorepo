@@ -9,8 +9,10 @@ import (
 
 	"monorepo/bin-queue-manager/internal/config"
 	"monorepo/bin-queue-manager/models/queue"
+	"monorepo/bin-queue-manager/models/queuecall"
 	"monorepo/bin-queue-manager/pkg/cachehandler"
 	"monorepo/bin-queue-manager/pkg/dbhandler"
+	"monorepo/bin-queue-manager/pkg/queuecallhandler"
 	"monorepo/bin-queue-manager/pkg/queuehandler"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
@@ -96,7 +98,15 @@ func initCommand() *cobra.Command {
 	cmdSub.AddCommand(cmdUpdateExecute())
 	cmdSub.AddCommand(cmdDelete())
 
+	// Queuecall subcommands (read-only operations for debugging/monitoring)
+	cmdQueuecall := &cobra.Command{Use: "queuecall", Short: "Queuecall operations (read-only)"}
+	cmdQueuecall.AddCommand(cmdQueuecallGet())
+	cmdQueuecall.AddCommand(cmdQueuecallGetByReferenceID())
+	cmdQueuecall.AddCommand(cmdQueuecallList())
+	cmdQueuecall.AddCommand(cmdQueuecallDelete())
+
 	cmdRoot.AddCommand(cmdSub)
+	cmdRoot.AddCommand(cmdQueuecall)
 	return cmdRoot
 }
 
@@ -477,6 +487,179 @@ func runDelete(cmd *cobra.Command, args []string) error {
 	res, err := handler.Delete(context.Background(), targetID)
 	if err != nil {
 		return errors.Wrap(err, "failed to delete queue")
+	}
+
+	return printJSON(res)
+}
+
+// Queuecall commands (read-only operations for debugging/monitoring)
+
+func initQueuecallHandler() (queuecallhandler.QueuecallHandler, error) {
+	db, err := commondatabasehandler.Connect(config.Get().DatabaseDSN)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not connect to the database")
+	}
+
+	cache, err := initCache()
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not initialize the cache")
+	}
+
+	dbHandler := dbhandler.NewHandler(db, cache)
+	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, config.Get().RabbitMQAddress)
+	sockHandler.Connect()
+
+	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameQueueEvent, serviceName)
+
+	// For read-only operations, we pass nil for queueHandler since it's not used by Get/List/Delete
+	return queuecallhandler.NewQueuecallHandler(reqHandler, dbHandler, notifyHandler, nil), nil
+}
+
+func cmdQueuecallGet() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "get",
+		Short: "Get a queuecall by ID",
+		RunE:  runQueuecallGet,
+	}
+
+	flags := cmd.Flags()
+	flags.String("id", "", "Queuecall ID (required)")
+
+	return cmd
+}
+
+func cmdQueuecallGetByReferenceID() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "get-by-reference",
+		Short: "Get a queuecall by reference ID (call_id, etc.)",
+		RunE:  runQueuecallGetByReferenceID,
+	}
+
+	flags := cmd.Flags()
+	flags.String("reference-id", "", "Reference ID (required)")
+
+	return cmd
+}
+
+func cmdQueuecallList() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "list",
+		Short: "List queuecalls",
+		RunE:  runQueuecallList,
+	}
+
+	flags := cmd.Flags()
+	flags.Int("limit", 100, "Limit the number of queuecalls to retrieve")
+	flags.String("token", "", "Retrieve queuecalls before this token (pagination)")
+	flags.String("customer-id", "", "Filter by customer ID (required)")
+	flags.String("queue-id", "", "Filter by queue ID")
+	flags.String("status", "", "Filter by status (initiating, waiting, connecting, service, done, abandoned)")
+
+	return cmd
+}
+
+func cmdQueuecallDelete() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "delete",
+		Short: "Delete a queuecall",
+		RunE:  runQueuecallDelete,
+	}
+
+	flags := cmd.Flags()
+	flags.String("id", "", "Queuecall ID (required)")
+
+	return cmd
+}
+
+func runQueuecallGet(cmd *cobra.Command, args []string) error {
+	handler, err := initQueuecallHandler()
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize handlers")
+	}
+
+	targetID, err := resolveUUID("id", "Queuecall ID")
+	if err != nil {
+		return errors.Wrap(err, "invalid Queuecall ID format")
+	}
+
+	res, err := handler.Get(context.Background(), targetID)
+	if err != nil {
+		return errors.Wrap(err, "failed to retrieve queuecall")
+	}
+
+	return printJSON(res)
+}
+
+func runQueuecallGetByReferenceID(cmd *cobra.Command, args []string) error {
+	handler, err := initQueuecallHandler()
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize handlers")
+	}
+
+	referenceID, err := resolveUUID("reference-id", "Reference ID")
+	if err != nil {
+		return errors.Wrap(err, "invalid reference ID format")
+	}
+
+	res, err := handler.GetByReferenceID(context.Background(), referenceID)
+	if err != nil {
+		return errors.Wrap(err, "failed to retrieve queuecall by reference ID")
+	}
+
+	return printJSON(res)
+}
+
+func runQueuecallList(cmd *cobra.Command, args []string) error {
+	handler, err := initQueuecallHandler()
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize handlers")
+	}
+
+	customerID, err := resolveUUID("customer-id", "Customer ID")
+	if err != nil {
+		return errors.Wrap(err, "invalid customer ID format")
+	}
+
+	limit := viper.GetInt("limit")
+	token := viper.GetString("token")
+
+	filters := map[queuecall.Field]any{
+		queuecall.FieldCustomerID: customerID,
+	}
+
+	// Optional filters
+	if queueID := viper.GetString("queue-id"); queueID != "" {
+		if id := uuid.FromStringOrNil(queueID); id != uuid.Nil {
+			filters[queuecall.FieldQueueID] = id
+		}
+	}
+	if status := viper.GetString("status"); status != "" {
+		filters[queuecall.FieldStatus] = queuecall.Status(status)
+	}
+
+	res, err := handler.List(context.Background(), uint64(limit), token, filters)
+	if err != nil {
+		return errors.Wrap(err, "failed to retrieve queuecalls")
+	}
+
+	return printJSON(res)
+}
+
+func runQueuecallDelete(cmd *cobra.Command, args []string) error {
+	handler, err := initQueuecallHandler()
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize handlers")
+	}
+
+	targetID, err := resolveUUID("id", "Queuecall ID")
+	if err != nil {
+		return errors.Wrap(err, "invalid Queuecall ID format")
+	}
+
+	res, err := handler.Delete(context.Background(), targetID)
+	if err != nil {
+		return errors.Wrap(err, "failed to delete queuecall")
 	}
 
 	return printJSON(res)

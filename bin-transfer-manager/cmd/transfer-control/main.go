@@ -183,7 +183,7 @@ func cmdGetByGroupcall() *cobra.Command {
 	}
 
 	flags := cmd.Flags()
-	flags.String("groupcall_id", "", "Groupcall ID (required)")
+	flags.String("groupcall-id", "", "Groupcall ID (required)")
 
 	return cmd
 }
@@ -194,7 +194,7 @@ func runGetByGroupcall(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to initialize handlers")
 	}
 
-	groupcallID, err := resolveUUID("groupcall_id", "Groupcall ID")
+	groupcallID, err := resolveUUID("groupcall-id", "Groupcall ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve groupcall ID")
 	}
@@ -215,7 +215,7 @@ func cmdGetByCall() *cobra.Command {
 	}
 
 	flags := cmd.Flags()
-	flags.String("call_id", "", "Transferer Call ID (required)")
+	flags.String("call-id", "", "Transferer Call ID (required)")
 
 	return cmd
 }
@@ -226,7 +226,7 @@ func runGetByCall(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to initialize handlers")
 	}
 
-	callID, err := resolveUUID("call_id", "Transferer Call ID")
+	callID, err := resolveUUID("call-id", "Transferer Call ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve call ID")
 	}

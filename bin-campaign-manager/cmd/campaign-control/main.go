@@ -138,8 +138,8 @@ func cmdCreate() *cobra.Command {
 	flags.String("type", string(campaign.TypeCall), "Campaign type: call or flow")
 	flags.String("name", "", "Campaign name (required)")
 	flags.String("detail", "", "Description")
-	flags.Int("service_level", 100, "Service level percentage (0-100)")
-	flags.String("end_handle", string(campaign.EndHandleStop), "End handle: stop or continue")
+	flags.Int("service-level", 100, "Service level percentage (0-100)")
+	flags.String("end-handle", string(campaign.EndHandleStop), "End handle: stop or continue")
 	flags.String("outplan-id", "", "Outplan ID (required)")
 	flags.String("outdial-id", "", "Outdial ID (required)")
 	flags.String("queue-id", "", "Queue ID")
@@ -191,8 +191,8 @@ func runCreate(cmd *cobra.Command, args []string) error {
 		name,
 		viper.GetString("detail"),
 		[]fmaction.Action{},
-		viper.GetInt("service_level"),
-		campaign.EndHandle(viper.GetString("end_handle")),
+		viper.GetInt("service-level"),
+		campaign.EndHandle(viper.GetString("end-handle")),
 		outplanID,
 		outdialID,
 		queueID,
@@ -291,8 +291,8 @@ func cmdUpdateBasicInfo() *cobra.Command {
 	flags.String("name", "", "Campaign name (required)")
 	flags.String("detail", "", "Description")
 	flags.String("type", string(campaign.TypeCall), "Campaign type: call or flow")
-	flags.Int("service_level", 100, "Service level percentage (0-100)")
-	flags.String("end_handle", string(campaign.EndHandleStop), "End handle: stop or continue")
+	flags.Int("service-level", 100, "Service level percentage (0-100)")
+	flags.String("end-handle", string(campaign.EndHandleStop), "End handle: stop or continue")
 
 	return cmd
 }
@@ -319,8 +319,8 @@ func runUpdateBasicInfo(cmd *cobra.Command, args []string) error {
 		name,
 		viper.GetString("detail"),
 		campaign.Type(viper.GetString("type")),
-		viper.GetInt("service_level"),
-		campaign.EndHandle(viper.GetString("end_handle")),
+		viper.GetInt("service-level"),
+		campaign.EndHandle(viper.GetString("end-handle")),
 	)
 	if err != nil {
 		return errors.Wrap(err, "failed to update campaign basic info")
