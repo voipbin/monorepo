@@ -8,6 +8,7 @@ import (
 	"log"
 
 	"monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/models/sock"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -57,7 +58,7 @@ func initCache() (cachehandler.CacheHandler, error) {
 
 func initPipecatcallHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (pipecatcallhandler.PipecatcallHandler, error) {
 	db := dbhandler.NewHandler(sqlDB, cache)
-	sockHandler := sockhandler.NewSockHandler(outline.SockTypeRabbitMQ, config.Get().RabbitMQAddress)
+	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, config.Get().RabbitMQAddress)
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
