@@ -150,19 +150,19 @@ func cmdCreate() *cobra.Command {
 	}
 
 	flags := cmd.Flags()
-	flags.String("customer_id", "", "Customer ID (required)")
+	flags.String("customer-id", "", "Customer ID (required)")
 	flags.String("type", "flow", "Flow type (flow, conference, queue, campaign, transfer)")
 	flags.String("name", "", "Flow name (required)")
 	flags.String("detail", "", "Flow detail")
 	flags.Bool("persist", false, "Persist flow")
 	flags.String("actions", "", "Actions JSON array")
-	flags.String("on_complete_flow_id", "", "On complete flow ID")
+	flags.String("on-complete-flow-id", "", "On complete flow ID")
 
 	return cmd
 }
 
 func runCreate(cmd *cobra.Command, args []string) error {
-	customerID, err := resolveUUID("customer_id", "Customer ID")
+	customerID, err := resolveUUID("customer-id", "Customer ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve customer ID")
 	}
@@ -177,7 +177,7 @@ func runCreate(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to parse actions")
 	}
 
-	onCompleteFlowID := uuid.FromStringOrNil(viper.GetString("on_complete_flow_id"))
+	onCompleteFlowID := uuid.FromStringOrNil(viper.GetString("on-complete-flow-id"))
 
 	handler, err := initHandler()
 	if err != nil {
@@ -243,7 +243,7 @@ func cmdList() *cobra.Command {
 	flags := cmd.Flags()
 	flags.Int("limit", 100, "Limit the number of flows to retrieve")
 	flags.String("token", "", "Retrieve flows before this token (pagination)")
-	flags.String("customer_id", "", "Customer ID to filter (required)")
+	flags.String("customer-id", "", "Customer ID to filter (required)")
 	flags.String("type", "", "Flow type to filter")
 
 	return cmd
@@ -255,7 +255,7 @@ func runList(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to initialize handlers")
 	}
 
-	customerID, err := resolveUUID("customer_id", "Customer ID")
+	customerID, err := resolveUUID("customer-id", "Customer ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve customer ID")
 	}
@@ -293,7 +293,7 @@ func cmdUpdate() *cobra.Command {
 	flags.String("name", "", "New flow name (required)")
 	flags.String("detail", "", "New flow detail")
 	flags.String("actions", "", "Actions JSON array")
-	flags.String("on_complete_flow_id", "", "On complete flow ID")
+	flags.String("on-complete-flow-id", "", "On complete flow ID")
 
 	return cmd
 }
@@ -319,7 +319,7 @@ func runUpdate(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to parse actions")
 	}
 
-	onCompleteFlowID := uuid.FromStringOrNil(viper.GetString("on_complete_flow_id"))
+	onCompleteFlowID := uuid.FromStringOrNil(viper.GetString("on-complete-flow-id"))
 
 	res, err := handler.Update(context.Background(), flowID, name, viper.GetString("detail"), actions, onCompleteFlowID)
 	if err != nil {
@@ -412,8 +412,8 @@ func cmdActionGet() *cobra.Command {
 	}
 
 	flags := cmd.Flags()
-	flags.String("flow_id", "", "Flow ID (required)")
-	flags.String("action_id", "", "Action ID (required)")
+	flags.String("flow-id", "", "Flow ID (required)")
+	flags.String("action-id", "", "Action ID (required)")
 
 	return cmd
 }
@@ -424,12 +424,12 @@ func runActionGet(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to initialize handlers")
 	}
 
-	flowID, err := resolveUUID("flow_id", "Flow ID")
+	flowID, err := resolveUUID("flow-id", "Flow ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve flow ID")
 	}
 
-	actionID, err := resolveUUID("action_id", "Action ID")
+	actionID, err := resolveUUID("action-id", "Action ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve action ID")
 	}

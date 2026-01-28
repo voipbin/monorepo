@@ -173,38 +173,38 @@ func cmdFileCreate() *cobra.Command {
 	}
 
 	flags := cmd.Flags()
-	flags.String("customer_id", "", "Customer ID (required)")
-	flags.String("owner_id", "", "Owner ID (required)")
-	flags.String("reference_type", "", "Reference type: normal, recording (required)")
-	flags.String("reference_id", "", "Reference ID (required)")
+	flags.String("customer-id", "", "Customer ID (required)")
+	flags.String("owner-id", "", "Owner ID (required)")
+	flags.String("reference-type", "", "Reference type: normal, recording (required)")
+	flags.String("reference-id", "", "Reference ID (required)")
 	flags.String("name", "", "File name (required)")
 	flags.String("detail", "", "File detail/description")
 	flags.String("filename", "", "Original filename (required)")
-	flags.String("bucket_name", "", "GCS bucket name (required)")
+	flags.String("bucket-name", "", "GCS bucket name (required)")
 	flags.String("filepath", "", "File path in bucket (required)")
 
 	return cmd
 }
 
 func runFileCreate(cmd *cobra.Command, args []string) error {
-	customerID, err := resolveUUID("customer_id", "Customer ID")
+	customerID, err := resolveUUID("customer-id", "Customer ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve customer ID")
 	}
 
-	ownerID, err := resolveUUID("owner_id", "Owner ID")
+	ownerID, err := resolveUUID("owner-id", "Owner ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve owner ID")
 	}
 
-	referenceID, err := resolveUUID("reference_id", "Reference ID")
+	referenceID, err := resolveUUID("reference-id", "Reference ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve reference ID")
 	}
 
-	referenceType := viper.GetString("reference_type")
+	referenceType := viper.GetString("reference-type")
 	if referenceType == "" {
-		return fmt.Errorf("reference_type is required")
+		return fmt.Errorf("reference-type is required")
 	}
 
 	name := viper.GetString("name")
@@ -217,9 +217,9 @@ func runFileCreate(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("filename is required")
 	}
 
-	bucketName := viper.GetString("bucket_name")
+	bucketName := viper.GetString("bucket-name")
 	if bucketName == "" {
-		return fmt.Errorf("bucket_name is required")
+		return fmt.Errorf("bucket-name is required")
 	}
 
 	filepath := viper.GetString("filepath")
@@ -293,9 +293,9 @@ func cmdFileList() *cobra.Command {
 	flags := cmd.Flags()
 	flags.Uint64("limit", 100, "Limit the number of files to retrieve")
 	flags.String("token", "", "Retrieve files before this token (pagination)")
-	flags.String("customer_id", "", "Customer ID to filter (required)")
-	flags.String("reference_id", "", "Reference ID to filter")
-	flags.String("reference_type", "", "Reference type to filter (normal, recording)")
+	flags.String("customer-id", "", "Customer ID to filter (required)")
+	flags.String("reference-id", "", "Reference ID to filter")
+	flags.String("reference-type", "", "Reference type to filter (normal, recording)")
 
 	return cmd
 }
@@ -306,7 +306,7 @@ func runFileList(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to initialize handlers")
 	}
 
-	customerID, err := resolveUUID("customer_id", "Customer ID")
+	customerID, err := resolveUUID("customer-id", "Customer ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve customer ID")
 	}
@@ -319,14 +319,14 @@ func runFileList(cmd *cobra.Command, args []string) error {
 		file.FieldDeleted:    false,
 	}
 
-	if referenceID := viper.GetString("reference_id"); referenceID != "" {
+	if referenceID := viper.GetString("reference-id"); referenceID != "" {
 		refID := uuid.FromStringOrNil(referenceID)
 		if refID != uuid.Nil {
 			filters[file.FieldReferenceID] = refID
 		}
 	}
 
-	if referenceType := viper.GetString("reference_type"); referenceType != "" {
+	if referenceType := viper.GetString("reference-type"); referenceType != "" {
 		filters[file.FieldReferenceType] = file.ReferenceType(referenceType)
 	}
 
@@ -380,13 +380,13 @@ func cmdAccountCreate() *cobra.Command {
 	}
 
 	flags := cmd.Flags()
-	flags.String("customer_id", "", "Customer ID (required)")
+	flags.String("customer-id", "", "Customer ID (required)")
 
 	return cmd
 }
 
 func runAccountCreate(cmd *cobra.Command, args []string) error {
-	customerID, err := resolveUUID("customer_id", "Customer ID")
+	customerID, err := resolveUUID("customer-id", "Customer ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve customer ID")
 	}
@@ -446,7 +446,7 @@ func cmdAccountList() *cobra.Command {
 	flags := cmd.Flags()
 	flags.Uint64("limit", 100, "Limit the number of accounts to retrieve")
 	flags.String("token", "", "Retrieve accounts before this token (pagination)")
-	flags.String("customer_id", "", "Customer ID to filter (required)")
+	flags.String("customer-id", "", "Customer ID to filter (required)")
 
 	return cmd
 }
@@ -457,7 +457,7 @@ func runAccountList(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to initialize handlers")
 	}
 
-	customerID, err := resolveUUID("customer_id", "Customer ID")
+	customerID, err := resolveUUID("customer-id", "Customer ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve customer ID")
 	}
@@ -520,7 +520,7 @@ func cmdRecordingGet() *cobra.Command {
 	}
 
 	flags := cmd.Flags()
-	flags.String("reference_id", "", "Reference ID (required)")
+	flags.String("reference-id", "", "Reference ID (required)")
 
 	return cmd
 }
@@ -531,7 +531,7 @@ func runRecordingGet(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to initialize handlers")
 	}
 
-	referenceID, err := resolveUUID("reference_id", "Reference ID")
+	referenceID, err := resolveUUID("reference-id", "Reference ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve reference ID")
 	}
@@ -552,7 +552,7 @@ func cmdRecordingDelete() *cobra.Command {
 	}
 
 	flags := cmd.Flags()
-	flags.String("reference_id", "", "Reference ID (required)")
+	flags.String("reference-id", "", "Reference ID (required)")
 
 	return cmd
 }
@@ -563,7 +563,7 @@ func runRecordingDelete(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to initialize handlers")
 	}
 
-	referenceID, err := resolveUUID("reference_id", "Reference ID")
+	referenceID, err := resolveUUID("reference-id", "Reference ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve reference ID")
 	}

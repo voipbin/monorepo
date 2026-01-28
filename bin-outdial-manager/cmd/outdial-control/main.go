@@ -129,8 +129,8 @@ func cmdCreate() *cobra.Command {
 	}
 
 	flags := cmd.Flags()
-	flags.String("customer_id", "", "Customer ID (required)")
-	flags.String("campaign_id", "", "Campaign ID (required)")
+	flags.String("customer-id", "", "Customer ID (required)")
+	flags.String("campaign-id", "", "Campaign ID (required)")
 	flags.String("name", "", "Outdial name (required)")
 	flags.String("detail", "", "Description")
 	flags.String("data", "", "Custom JSON data")
@@ -139,12 +139,12 @@ func cmdCreate() *cobra.Command {
 }
 
 func runCreate(cmd *cobra.Command, args []string) error {
-	customerID, err := resolveUUID("customer_id", "Customer ID")
+	customerID, err := resolveUUID("customer-id", "Customer ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve customer ID")
 	}
 
-	campaignID, err := resolveUUID("campaign_id", "Campaign ID")
+	campaignID, err := resolveUUID("campaign-id", "Campaign ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve campaign ID")
 	}
@@ -216,7 +216,7 @@ func cmdList() *cobra.Command {
 	flags := cmd.Flags()
 	flags.Int("limit", 100, "Limit the number of outdials to retrieve")
 	flags.String("token", "", "Retrieve outdials before this token (pagination)")
-	flags.String("customer_id", "", "Customer ID to filter (required)")
+	flags.String("customer-id", "", "Customer ID to filter (required)")
 
 	return cmd
 }
@@ -227,7 +227,7 @@ func runList(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to initialize handlers")
 	}
 
-	customerID, err := resolveUUID("customer_id", "Customer ID")
+	customerID, err := resolveUUID("customer-id", "Customer ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve customer ID")
 	}
@@ -296,7 +296,7 @@ func cmdUpdateCampaignID() *cobra.Command {
 
 	flags := cmd.Flags()
 	flags.String("id", "", "Outdial ID (required)")
-	flags.String("campaign_id", "", "New campaign ID (required)")
+	flags.String("campaign-id", "", "New campaign ID (required)")
 
 	return cmd
 }
@@ -312,7 +312,7 @@ func runUpdateCampaignID(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to resolve outdial ID")
 	}
 
-	campaignID, err := resolveUUID("campaign_id", "Campaign ID")
+	campaignID, err := resolveUUID("campaign-id", "Campaign ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve campaign ID")
 	}

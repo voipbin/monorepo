@@ -159,16 +159,16 @@ func cmdStart() *cobra.Command {
 
 	flags := cmd.Flags()
 	flags.String("id", "", "Pipecatcall ID (required)")
-	flags.String("customer_id", "", "Customer ID (required)")
-	flags.String("activeflow_id", "", "Activeflow ID (required)")
-	flags.String("reference_type", "", "Reference type: 'call' or 'ai_call' (required)")
-	flags.String("reference_id", "", "Reference ID (required)")
-	flags.String("llm_type", "", "LLM type (e.g., 'openai.gpt-4') (required)")
-	flags.String("stt_type", "", "STT type: 'deepgram' or empty")
-	flags.String("stt_language", "", "STT language code (e.g., 'en')")
-	flags.String("tts_type", "", "TTS type: 'cartesia', 'elevenlabs', or empty")
-	flags.String("tts_language", "", "TTS language code (e.g., 'en')")
-	flags.String("tts_voice_id", "", "TTS voice ID")
+	flags.String("customer-id", "", "Customer ID (required)")
+	flags.String("activeflow-id", "", "Activeflow ID (required)")
+	flags.String("reference-type", "", "Reference type: 'call' or 'ai_call' (required)")
+	flags.String("reference-id", "", "Reference ID (required)")
+	flags.String("llm-type", "", "LLM type (e.g., 'openai.gpt-4') (required)")
+	flags.String("stt-type", "", "STT type: 'deepgram' or empty")
+	flags.String("stt-language", "", "STT language code (e.g., 'en')")
+	flags.String("tts-type", "", "TTS type: 'cartesia', 'elevenlabs', or empty")
+	flags.String("tts-language", "", "TTS language code (e.g., 'en')")
+	flags.String("tts-voice-id", "", "TTS voice ID")
 
 	return cmd
 }
@@ -184,38 +184,38 @@ func runStart(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to resolve pipecatcall ID")
 	}
 
-	customerID, err := resolveUUID("customer_id", "Customer ID")
+	customerID, err := resolveUUID("customer-id", "Customer ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve customer ID")
 	}
 
-	activeflowID, err := resolveUUID("activeflow_id", "Activeflow ID")
+	activeflowID, err := resolveUUID("activeflow-id", "Activeflow ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve activeflow ID")
 	}
 
-	referenceTypeStr := viper.GetString("reference_type")
+	referenceTypeStr := viper.GetString("reference-type")
 	if referenceTypeStr == "" {
-		return fmt.Errorf("reference_type is required")
+		return fmt.Errorf("reference-type is required")
 	}
 	referenceType := pipecatcall.ReferenceType(referenceTypeStr)
 
-	referenceID, err := resolveUUID("reference_id", "Reference ID")
+	referenceID, err := resolveUUID("reference-id", "Reference ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve reference ID")
 	}
 
-	llmTypeStr := viper.GetString("llm_type")
+	llmTypeStr := viper.GetString("llm-type")
 	if llmTypeStr == "" {
-		return fmt.Errorf("llm_type is required")
+		return fmt.Errorf("llm-type is required")
 	}
 	llmType := pipecatcall.LLMType(llmTypeStr)
 
-	sttType := pipecatcall.STTType(viper.GetString("stt_type"))
-	sttLanguage := viper.GetString("stt_language")
-	ttsType := pipecatcall.TTSType(viper.GetString("tts_type"))
-	ttsLanguage := viper.GetString("tts_language")
-	ttsVoiceID := viper.GetString("tts_voice_id")
+	sttType := pipecatcall.STTType(viper.GetString("stt-type"))
+	sttLanguage := viper.GetString("stt-language")
+	ttsType := pipecatcall.TTSType(viper.GetString("tts-type"))
+	ttsLanguage := viper.GetString("tts-language")
+	ttsVoiceID := viper.GetString("tts-voice-id")
 
 	res, err := handler.Start(
 		context.Background(),
@@ -280,10 +280,10 @@ func cmdSendMessage() *cobra.Command {
 
 	flags := cmd.Flags()
 	flags.String("id", "", "Pipecatcall ID (required)")
-	flags.String("message_id", "", "Message ID (required)")
-	flags.String("message_text", "", "Message text (required)")
-	flags.Bool("run_immediately", false, "Run message immediately")
-	flags.Bool("audio_response", false, "Request audio response")
+	flags.String("message-id", "", "Message ID (required)")
+	flags.String("message-text", "", "Message text (required)")
+	flags.Bool("run-immediately", false, "Run message immediately")
+	flags.Bool("audio-response", false, "Request audio response")
 
 	return cmd
 }
@@ -299,18 +299,18 @@ func runSendMessage(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to resolve pipecatcall ID")
 	}
 
-	messageID := viper.GetString("message_id")
+	messageID := viper.GetString("message-id")
 	if messageID == "" {
-		return fmt.Errorf("message_id is required")
+		return fmt.Errorf("message-id is required")
 	}
 
-	messageText := viper.GetString("message_text")
+	messageText := viper.GetString("message-text")
 	if messageText == "" {
-		return fmt.Errorf("message_text is required")
+		return fmt.Errorf("message-text is required")
 	}
 
-	runImmediately := viper.GetBool("run_immediately")
-	audioResponse := viper.GetBool("audio_response")
+	runImmediately := viper.GetBool("run-immediately")
+	audioResponse := viper.GetBool("audio-response")
 
 	res, err := handler.SendMessage(context.Background(), id, messageID, messageText, runImmediately, audioResponse)
 	if err != nil {

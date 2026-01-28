@@ -133,18 +133,18 @@ func cmdChatCreate() *cobra.Command {
 	}
 
 	flags := cmd.Flags()
-	flags.String("customer_id", "", "Customer ID (required)")
+	flags.String("customer-id", "", "Customer ID (required)")
 	flags.String("type", "", "Chat type: direct, group, talk (required)")
 	flags.String("name", "", "Chat name")
 	flags.String("detail", "", "Chat description")
-	flags.String("creator_type", "", "Creator type (required)")
-	flags.String("creator_id", "", "Creator ID (required)")
+	flags.String("creator-type", "", "Creator type (required)")
+	flags.String("creator-id", "", "Creator ID (required)")
 
 	return cmd
 }
 
 func runChatCreate(cmd *cobra.Command, args []string) error {
-	customerID, err := resolveUUID("customer_id", "Customer ID")
+	customerID, err := resolveUUID("customer-id", "Customer ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve customer ID")
 	}
@@ -154,12 +154,12 @@ func runChatCreate(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("chat type is required")
 	}
 
-	creatorType := viper.GetString("creator_type")
+	creatorType := viper.GetString("creator-type")
 	if creatorType == "" {
 		return fmt.Errorf("creator type is required")
 	}
 
-	creatorID, err := resolveUUID("creator_id", "Creator ID")
+	creatorID, err := resolveUUID("creator-id", "Creator ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve creator ID")
 	}
@@ -226,7 +226,7 @@ func cmdChatList() *cobra.Command {
 	}
 
 	flags := cmd.Flags()
-	flags.String("customer_id", "", "Customer ID to filter (required)")
+	flags.String("customer-id", "", "Customer ID to filter (required)")
 	flags.Uint64("size", 100, "Number of chats to retrieve")
 	flags.String("token", "", "Pagination token")
 
@@ -239,7 +239,7 @@ func runChatList(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to initialize handlers")
 	}
 
-	customerID, err := resolveUUID("customer_id", "Customer ID")
+	customerID, err := resolveUUID("customer-id", "Customer ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve customer ID")
 	}
@@ -357,10 +357,10 @@ func cmdMessageCreate() *cobra.Command {
 	}
 
 	flags := cmd.Flags()
-	flags.String("chat_id", "", "Chat ID (required)")
-	flags.String("parent_id", "", "Parent message ID (optional, for threaded replies)")
-	flags.String("owner_type", "", "Owner type (required)")
-	flags.String("owner_id", "", "Owner ID (required)")
+	flags.String("chat-id", "", "Chat ID (required)")
+	flags.String("parent-id", "", "Parent message ID (optional, for threaded replies)")
+	flags.String("owner-type", "", "Owner type (required)")
+	flags.String("owner-id", "", "Owner ID (required)")
 	flags.String("type", "", "Message type (required)")
 	flags.String("text", "", "Message text (required)")
 
@@ -373,17 +373,17 @@ func runMessageCreate(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to initialize handlers")
 	}
 
-	chatID, err := resolveUUID("chat_id", "Chat ID")
+	chatID, err := resolveUUID("chat-id", "Chat ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve chat ID")
 	}
 
-	ownerType := viper.GetString("owner_type")
+	ownerType := viper.GetString("owner-type")
 	if ownerType == "" {
 		return fmt.Errorf("owner type is required")
 	}
 
-	ownerID, err := resolveUUID("owner_id", "Owner ID")
+	ownerID, err := resolveUUID("owner-id", "Owner ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve owner ID")
 	}
@@ -399,8 +399,8 @@ func runMessageCreate(cmd *cobra.Command, args []string) error {
 	}
 
 	var parentID *uuid.UUID
-	if viper.IsSet("parent_id") {
-		pid, err := resolveUUID("parent_id", "Parent ID")
+	if viper.IsSet("parent-id") {
+		pid, err := resolveUUID("parent-id", "Parent ID")
 		if err != nil {
 			return errors.Wrap(err, "failed to resolve parent ID")
 		}
@@ -465,7 +465,7 @@ func cmdMessageList() *cobra.Command {
 	}
 
 	flags := cmd.Flags()
-	flags.String("chat_id", "", "Chat ID to filter (required)")
+	flags.String("chat-id", "", "Chat ID to filter (required)")
 	flags.Uint64("size", 100, "Number of messages to retrieve")
 	flags.String("token", "", "Pagination token")
 
@@ -478,7 +478,7 @@ func runMessageList(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to initialize handlers")
 	}
 
-	chatID, err := resolveUUID("chat_id", "Chat ID")
+	chatID, err := resolveUUID("chat-id", "Chat ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve chat ID")
 	}
@@ -548,9 +548,9 @@ func cmdParticipantAdd() *cobra.Command {
 	}
 
 	flags := cmd.Flags()
-	flags.String("chat_id", "", "Chat ID (required)")
-	flags.String("owner_type", "", "Owner type (required)")
-	flags.String("owner_id", "", "Owner ID (required)")
+	flags.String("chat-id", "", "Chat ID (required)")
+	flags.String("owner-type", "", "Owner type (required)")
+	flags.String("owner-id", "", "Owner ID (required)")
 
 	return cmd
 }
@@ -561,17 +561,17 @@ func runParticipantAdd(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to initialize handlers")
 	}
 
-	chatID, err := resolveUUID("chat_id", "Chat ID")
+	chatID, err := resolveUUID("chat-id", "Chat ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve chat ID")
 	}
 
-	ownerType := viper.GetString("owner_type")
+	ownerType := viper.GetString("owner-type")
 	if ownerType == "" {
 		return fmt.Errorf("owner type is required")
 	}
 
-	ownerID, err := resolveUUID("owner_id", "Owner ID")
+	ownerID, err := resolveUUID("owner-id", "Owner ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve owner ID")
 	}
@@ -592,8 +592,8 @@ func cmdParticipantList() *cobra.Command {
 	}
 
 	flags := cmd.Flags()
-	flags.String("customer_id", "", "Customer ID (required)")
-	flags.String("chat_id", "", "Chat ID (required)")
+	flags.String("customer-id", "", "Customer ID (required)")
+	flags.String("chat-id", "", "Chat ID (required)")
 
 	return cmd
 }
@@ -604,12 +604,12 @@ func runParticipantList(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to initialize handlers")
 	}
 
-	customerID, err := resolveUUID("customer_id", "Customer ID")
+	customerID, err := resolveUUID("customer-id", "Customer ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve customer ID")
 	}
 
-	chatID, err := resolveUUID("chat_id", "Chat ID")
+	chatID, err := resolveUUID("chat-id", "Chat ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve chat ID")
 	}
@@ -630,8 +630,8 @@ func cmdParticipantRemove() *cobra.Command {
 	}
 
 	flags := cmd.Flags()
-	flags.String("customer_id", "", "Customer ID (required)")
-	flags.String("participant_id", "", "Participant ID (required)")
+	flags.String("customer-id", "", "Customer ID (required)")
+	flags.String("participant-id", "", "Participant ID (required)")
 
 	return cmd
 }
@@ -642,12 +642,12 @@ func runParticipantRemove(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to initialize handlers")
 	}
 
-	customerID, err := resolveUUID("customer_id", "Customer ID")
+	customerID, err := resolveUUID("customer-id", "Customer ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve customer ID")
 	}
 
-	participantID, err := resolveUUID("participant_id", "Participant ID")
+	participantID, err := resolveUUID("participant-id", "Participant ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve participant ID")
 	}
@@ -678,10 +678,10 @@ func cmdReactionAdd() *cobra.Command {
 	}
 
 	flags := cmd.Flags()
-	flags.String("message_id", "", "Message ID (required)")
+	flags.String("message-id", "", "Message ID (required)")
 	flags.String("emoji", "", "Emoji (required)")
-	flags.String("owner_type", "", "Owner type (required)")
-	flags.String("owner_id", "", "Owner ID (required)")
+	flags.String("owner-type", "", "Owner type (required)")
+	flags.String("owner-id", "", "Owner ID (required)")
 
 	return cmd
 }
@@ -692,7 +692,7 @@ func runReactionAdd(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to initialize handlers")
 	}
 
-	messageID, err := resolveUUID("message_id", "Message ID")
+	messageID, err := resolveUUID("message-id", "Message ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve message ID")
 	}
@@ -702,12 +702,12 @@ func runReactionAdd(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("emoji is required")
 	}
 
-	ownerType := viper.GetString("owner_type")
+	ownerType := viper.GetString("owner-type")
 	if ownerType == "" {
 		return fmt.Errorf("owner type is required")
 	}
 
-	ownerID, err := resolveUUID("owner_id", "Owner ID")
+	ownerID, err := resolveUUID("owner-id", "Owner ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve owner ID")
 	}
@@ -728,10 +728,10 @@ func cmdReactionRemove() *cobra.Command {
 	}
 
 	flags := cmd.Flags()
-	flags.String("message_id", "", "Message ID (required)")
+	flags.String("message-id", "", "Message ID (required)")
 	flags.String("emoji", "", "Emoji (required)")
-	flags.String("owner_type", "", "Owner type (required)")
-	flags.String("owner_id", "", "Owner ID (required)")
+	flags.String("owner-type", "", "Owner type (required)")
+	flags.String("owner-id", "", "Owner ID (required)")
 
 	return cmd
 }
@@ -742,7 +742,7 @@ func runReactionRemove(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to initialize handlers")
 	}
 
-	messageID, err := resolveUUID("message_id", "Message ID")
+	messageID, err := resolveUUID("message-id", "Message ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve message ID")
 	}
@@ -752,12 +752,12 @@ func runReactionRemove(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("emoji is required")
 	}
 
-	ownerType := viper.GetString("owner_type")
+	ownerType := viper.GetString("owner-type")
 	if ownerType == "" {
 		return fmt.Errorf("owner type is required")
 	}
 
-	ownerID, err := resolveUUID("owner_id", "Owner ID")
+	ownerID, err := resolveUUID("owner-id", "Owner ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve owner ID")
 	}

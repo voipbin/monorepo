@@ -137,19 +137,19 @@ func cmdCreate() *cobra.Command {
 
 	flags := cmd.Flags()
 	flags.String("id", "", "Conference ID (optional, auto-generated if not provided)")
-	flags.String("customer_id", "", "Customer ID (required)")
+	flags.String("customer-id", "", "Customer ID (required)")
 	flags.String("type", "conference", "Conference type: conference, connect, queue (default: conference)")
 	flags.String("name", "", "Conference name")
 	flags.String("detail", "", "Conference description")
 	flags.Int("timeout", 0, "Timeout in seconds")
-	flags.String("pre_flow_id", "", "Pre-flow ID (optional)")
-	flags.String("post_flow_id", "", "Post-flow ID (optional)")
+	flags.String("pre-flow-id", "", "Pre-flow ID (optional)")
+	flags.String("post-flow-id", "", "Post-flow ID (optional)")
 
 	return cmd
 }
 
 func runCreate(cmd *cobra.Command, args []string) error {
-	customerID, err := resolveUUID("customer_id", "Customer ID")
+	customerID, err := resolveUUID("customer-id", "Customer ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve customer ID")
 	}
@@ -171,7 +171,7 @@ func runCreate(cmd *cobra.Command, args []string) error {
 	}
 
 	var preFlowID uuid.UUID
-	preFlowIDStr := viper.GetString("pre_flow_id")
+	preFlowIDStr := viper.GetString("pre-flow-id")
 	if preFlowIDStr != "" {
 		preFlowID = uuid.FromStringOrNil(preFlowIDStr)
 		if preFlowID == uuid.Nil {
@@ -180,7 +180,7 @@ func runCreate(cmd *cobra.Command, args []string) error {
 	}
 
 	var postFlowID uuid.UUID
-	postFlowIDStr := viper.GetString("post_flow_id")
+	postFlowIDStr := viper.GetString("post-flow-id")
 	if postFlowIDStr != "" {
 		postFlowID = uuid.FromStringOrNil(postFlowIDStr)
 		if postFlowID == uuid.Nil {
@@ -252,7 +252,7 @@ func cmdGetByConfbridge() *cobra.Command {
 	}
 
 	flags := cmd.Flags()
-	flags.String("confbridge_id", "", "Confbridge ID (required)")
+	flags.String("confbridge-id", "", "Confbridge ID (required)")
 
 	return cmd
 }
@@ -263,7 +263,7 @@ func runGetByConfbridge(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to initialize handlers")
 	}
 
-	confbridgeID, err := resolveUUID("confbridge_id", "Confbridge ID")
+	confbridgeID, err := resolveUUID("confbridge-id", "Confbridge ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve confbridge ID")
 	}
@@ -286,7 +286,7 @@ func cmdList() *cobra.Command {
 	flags := cmd.Flags()
 	flags.Int("limit", 100, "Limit the number of conferences to retrieve")
 	flags.String("token", "", "Retrieve conferences before this token (pagination)")
-	flags.String("customer_id", "", "Customer ID to filter (required)")
+	flags.String("customer-id", "", "Customer ID to filter (required)")
 
 	return cmd
 }
@@ -297,7 +297,7 @@ func runList(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to initialize handlers")
 	}
 
-	customerID, err := resolveUUID("customer_id", "Customer ID")
+	customerID, err := resolveUUID("customer-id", "Customer ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve customer ID")
 	}
@@ -329,8 +329,8 @@ func cmdUpdate() *cobra.Command {
 	flags.String("name", "", "Conference name")
 	flags.String("detail", "", "Conference description")
 	flags.Int("timeout", 0, "Timeout in seconds")
-	flags.String("pre_flow_id", "", "Pre-flow ID (optional)")
-	flags.String("post_flow_id", "", "Post-flow ID (optional)")
+	flags.String("pre-flow-id", "", "Pre-flow ID (optional)")
+	flags.String("post-flow-id", "", "Post-flow ID (optional)")
 
 	return cmd
 }
@@ -347,7 +347,7 @@ func runUpdate(cmd *cobra.Command, args []string) error {
 	}
 
 	var preFlowID uuid.UUID
-	preFlowIDStr := viper.GetString("pre_flow_id")
+	preFlowIDStr := viper.GetString("pre-flow-id")
 	if preFlowIDStr != "" {
 		preFlowID = uuid.FromStringOrNil(preFlowIDStr)
 		if preFlowID == uuid.Nil {
@@ -356,7 +356,7 @@ func runUpdate(cmd *cobra.Command, args []string) error {
 	}
 
 	var postFlowID uuid.UUID
-	postFlowIDStr := viper.GetString("post_flow_id")
+	postFlowIDStr := viper.GetString("post-flow-id")
 	if postFlowIDStr != "" {
 		postFlowID = uuid.FromStringOrNil(postFlowIDStr)
 		if postFlowID == uuid.Nil {
@@ -422,7 +422,7 @@ func cmdUpdateRecordingID() *cobra.Command {
 
 	flags := cmd.Flags()
 	flags.String("id", "", "Conference ID (required)")
-	flags.String("recording_id", "", "Recording ID (required)")
+	flags.String("recording-id", "", "Recording ID (required)")
 
 	return cmd
 }
@@ -438,7 +438,7 @@ func runUpdateRecordingID(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to resolve conference ID")
 	}
 
-	recordingID, err := resolveUUID("recording_id", "Recording ID")
+	recordingID, err := resolveUUID("recording-id", "Recording ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve recording ID")
 	}
@@ -460,10 +460,10 @@ func cmdRecordingStart() *cobra.Command {
 
 	flags := cmd.Flags()
 	flags.String("id", "", "Conference ID (required)")
-	flags.String("activeflow_id", "", "Active flow ID (optional)")
+	flags.String("activeflow-id", "", "Active flow ID (optional)")
 	flags.String("format", "wav", "Recording format: wav, mp3 (default: wav)")
 	flags.Int("duration", 0, "Recording duration in seconds (0 for unlimited)")
-	flags.String("on_end_flow_id", "", "On-end flow ID (optional)")
+	flags.String("on-end-flow-id", "", "On-end flow ID (optional)")
 
 	return cmd
 }
@@ -480,7 +480,7 @@ func runRecordingStart(cmd *cobra.Command, args []string) error {
 	}
 
 	var activeflowID uuid.UUID
-	activeflowIDStr := viper.GetString("activeflow_id")
+	activeflowIDStr := viper.GetString("activeflow-id")
 	if activeflowIDStr != "" {
 		activeflowID = uuid.FromStringOrNil(activeflowIDStr)
 		if activeflowID == uuid.Nil {
@@ -489,7 +489,7 @@ func runRecordingStart(cmd *cobra.Command, args []string) error {
 	}
 
 	var onEndFlowID uuid.UUID
-	onEndFlowIDStr := viper.GetString("on_end_flow_id")
+	onEndFlowIDStr := viper.GetString("on-end-flow-id")
 	if onEndFlowIDStr != "" {
 		onEndFlowID = uuid.FromStringOrNil(onEndFlowIDStr)
 		if onEndFlowID == uuid.Nil {

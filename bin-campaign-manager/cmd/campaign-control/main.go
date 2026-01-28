@@ -134,22 +134,22 @@ func cmdCreate() *cobra.Command {
 	}
 
 	flags := cmd.Flags()
-	flags.String("customer_id", "", "Customer ID (required)")
+	flags.String("customer-id", "", "Customer ID (required)")
 	flags.String("type", string(campaign.TypeCall), "Campaign type: call or flow")
 	flags.String("name", "", "Campaign name (required)")
 	flags.String("detail", "", "Description")
 	flags.Int("service_level", 100, "Service level percentage (0-100)")
 	flags.String("end_handle", string(campaign.EndHandleStop), "End handle: stop or continue")
-	flags.String("outplan_id", "", "Outplan ID (required)")
-	flags.String("outdial_id", "", "Outdial ID (required)")
-	flags.String("queue_id", "", "Queue ID")
-	flags.String("next_campaign_id", "", "Next campaign ID")
+	flags.String("outplan-id", "", "Outplan ID (required)")
+	flags.String("outdial-id", "", "Outdial ID (required)")
+	flags.String("queue-id", "", "Queue ID")
+	flags.String("next-campaign-id", "", "Next campaign ID")
 
 	return cmd
 }
 
 func runCreate(cmd *cobra.Command, args []string) error {
-	customerID, err := resolveUUID("customer_id", "Customer ID")
+	customerID, err := resolveUUID("customer-id", "Customer ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve customer ID")
 	}
@@ -159,19 +159,19 @@ func runCreate(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("name is required")
 	}
 
-	outplanID, err := resolveUUID("outplan_id", "Outplan ID")
+	outplanID, err := resolveUUID("outplan-id", "Outplan ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve outplan ID")
 	}
 
-	outdialID, err := resolveUUID("outdial_id", "Outdial ID")
+	outdialID, err := resolveUUID("outdial-id", "Outdial ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve outdial ID")
 	}
 
 	// Optional UUIDs
-	queueID := uuid.FromStringOrNil(viper.GetString("queue_id"))
-	nextCampaignID := uuid.FromStringOrNil(viper.GetString("next_campaign_id"))
+	queueID := uuid.FromStringOrNil(viper.GetString("queue-id"))
+	nextCampaignID := uuid.FromStringOrNil(viper.GetString("next-campaign-id"))
 
 	handler, err := initHandler()
 	if err != nil {
@@ -247,7 +247,7 @@ func cmdList() *cobra.Command {
 	flags := cmd.Flags()
 	flags.Int("limit", 100, "Limit the number of campaigns to retrieve")
 	flags.String("token", "", "Retrieve campaigns before this token (pagination)")
-	flags.String("customer_id", "", "Customer ID to filter (required)")
+	flags.String("customer-id", "", "Customer ID to filter (required)")
 
 	return cmd
 }
@@ -258,7 +258,7 @@ func runList(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to initialize handlers")
 	}
 
-	customerID, err := resolveUUID("customer_id", "Customer ID")
+	customerID, err := resolveUUID("customer-id", "Customer ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve customer ID")
 	}

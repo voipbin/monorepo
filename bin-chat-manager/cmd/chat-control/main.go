@@ -159,10 +159,10 @@ func cmdCreate() *cobra.Command {
 	}
 
 	flags := cmd.Flags()
-	flags.String("customer_id", "", "Customer ID (required)")
+	flags.String("customer-id", "", "Customer ID (required)")
 	flags.String("type", "normal", "Chat type: normal (1:1) or group")
-	flags.String("owner_id", "", "Room owner ID (required)")
-	flags.String("participant_ids", "", "Comma-separated list of participant IDs (required)")
+	flags.String("owner-id", "", "Room owner ID (required)")
+	flags.String("participant-ids", "", "Comma-separated list of participant IDs (required)")
 	flags.String("name", "", "Chat name")
 	flags.String("detail", "", "Chat description")
 
@@ -170,17 +170,17 @@ func cmdCreate() *cobra.Command {
 }
 
 func runCreate(cmd *cobra.Command, args []string) error {
-	customerID, err := resolveUUID("customer_id", "Customer ID")
+	customerID, err := resolveUUID("customer-id", "Customer ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve customer ID")
 	}
 
-	ownerID, err := resolveUUID("owner_id", "Room Owner ID")
+	ownerID, err := resolveUUID("owner-id", "Room Owner ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve room owner ID")
 	}
 
-	participantIDs, err := resolveUUIDs("participant_ids", "Participant IDs")
+	participantIDs, err := resolveUUIDs("participant-ids", "Participant IDs")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve participant IDs")
 	}
@@ -257,7 +257,7 @@ func cmdList() *cobra.Command {
 	flags := cmd.Flags()
 	flags.Uint64("limit", 100, "Limit the number of chats to retrieve")
 	flags.String("token", "", "Retrieve chats before this token (pagination)")
-	flags.String("customer_id", "", "Customer ID to filter (required)")
+	flags.String("customer-id", "", "Customer ID to filter (required)")
 
 	return cmd
 }
@@ -268,7 +268,7 @@ func runList(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to initialize handlers")
 	}
 
-	customerID, err := resolveUUID("customer_id", "Customer ID")
+	customerID, err := resolveUUID("customer-id", "Customer ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve customer ID")
 	}
@@ -337,7 +337,7 @@ func cmdUpdateRoomOwner() *cobra.Command {
 
 	flags := cmd.Flags()
 	flags.String("id", "", "Chat ID (required)")
-	flags.String("owner_id", "", "New room owner ID (required)")
+	flags.String("owner-id", "", "New room owner ID (required)")
 
 	return cmd
 }
@@ -353,7 +353,7 @@ func runUpdateRoomOwner(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to resolve chat ID")
 	}
 
-	ownerID, err := resolveUUID("owner_id", "Room Owner ID")
+	ownerID, err := resolveUUID("owner-id", "Room Owner ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve room owner ID")
 	}
@@ -375,7 +375,7 @@ func cmdAddParticipant() *cobra.Command {
 
 	flags := cmd.Flags()
 	flags.String("id", "", "Chat ID (required)")
-	flags.String("participant_id", "", "Participant ID to add (required)")
+	flags.String("participant-id", "", "Participant ID to add (required)")
 
 	return cmd
 }
@@ -391,7 +391,7 @@ func runAddParticipant(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to resolve chat ID")
 	}
 
-	participantID, err := resolveUUID("participant_id", "Participant ID")
+	participantID, err := resolveUUID("participant-id", "Participant ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve participant ID")
 	}
@@ -413,7 +413,7 @@ func cmdRemoveParticipant() *cobra.Command {
 
 	flags := cmd.Flags()
 	flags.String("id", "", "Chat ID (required)")
-	flags.String("participant_id", "", "Participant ID to remove (required)")
+	flags.String("participant-id", "", "Participant ID to remove (required)")
 
 	return cmd
 }
@@ -429,7 +429,7 @@ func runRemoveParticipant(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to resolve chat ID")
 	}
 
-	participantID, err := resolveUUID("participant_id", "Participant ID")
+	participantID, err := resolveUUID("participant-id", "Participant ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve participant ID")
 	}

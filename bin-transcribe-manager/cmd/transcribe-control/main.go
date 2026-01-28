@@ -141,11 +141,11 @@ func cmdStart() *cobra.Command {
 	}
 
 	flags := cmd.Flags()
-	flags.String("customer_id", "", "Customer ID (required)")
-	flags.String("activeflow_id", "", "Active flow ID (required)")
-	flags.String("on_end_flow_id", "", "On end flow ID (required)")
-	flags.String("reference_type", "", "Reference type: call, confbridge, recording (required)")
-	flags.String("reference_id", "", "Reference ID (required)")
+	flags.String("customer-id", "", "Customer ID (required)")
+	flags.String("activeflow-id", "", "Active flow ID (required)")
+	flags.String("on-end-flow-id", "", "On end flow ID (required)")
+	flags.String("reference-type", "", "Reference type: call, confbridge, recording (required)")
+	flags.String("reference-id", "", "Reference ID (required)")
 	flags.String("language", "en-US", "Language code in BCP47 format")
 	flags.String("direction", "both", "Direction: in, out, both")
 
@@ -153,29 +153,29 @@ func cmdStart() *cobra.Command {
 }
 
 func runStart(cmd *cobra.Command, args []string) error {
-	customerID, err := resolveUUID("customer_id", "Customer ID")
+	customerID, err := resolveUUID("customer-id", "Customer ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve customer ID")
 	}
 
-	activeflowID, err := resolveUUID("activeflow_id", "Active Flow ID")
+	activeflowID, err := resolveUUID("activeflow-id", "Active Flow ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve active flow ID")
 	}
 
-	onEndFlowID, err := resolveUUID("on_end_flow_id", "On End Flow ID")
+	onEndFlowID, err := resolveUUID("on-end-flow-id", "On End Flow ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve on end flow ID")
 	}
 
-	referenceID, err := resolveUUID("reference_id", "Reference ID")
+	referenceID, err := resolveUUID("reference-id", "Reference ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve reference ID")
 	}
 
-	referenceTypeStr := viper.GetString("reference_type")
+	referenceTypeStr := viper.GetString("reference-type")
 	if referenceTypeStr == "" {
-		return fmt.Errorf("reference_type is required")
+		return fmt.Errorf("reference-type is required")
 	}
 
 	handler, err := initHandler()
@@ -272,7 +272,7 @@ func cmdGetByReferenceIDAndLanguage() *cobra.Command {
 	}
 
 	flags := cmd.Flags()
-	flags.String("reference_id", "", "Reference ID (required)")
+	flags.String("reference-id", "", "Reference ID (required)")
 	flags.String("language", "", "Language code in BCP47 format (required)")
 
 	return cmd
@@ -284,7 +284,7 @@ func runGetByReferenceIDAndLanguage(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to initialize handlers")
 	}
 
-	referenceID, err := resolveUUID("reference_id", "Reference ID")
+	referenceID, err := resolveUUID("reference-id", "Reference ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve reference ID")
 	}
@@ -312,9 +312,9 @@ func cmdList() *cobra.Command {
 	flags := cmd.Flags()
 	flags.Int("limit", 100, "Limit the number of transcriptions to retrieve")
 	flags.String("token", "", "Retrieve transcriptions before this token (pagination)")
-	flags.String("customer_id", "", "Customer ID to filter (required)")
-	flags.String("reference_type", "", "Reference type to filter: call, confbridge, recording")
-	flags.String("reference_id", "", "Reference ID to filter")
+	flags.String("customer-id", "", "Customer ID to filter (required)")
+	flags.String("reference-type", "", "Reference type to filter: call, confbridge, recording")
+	flags.String("reference-id", "", "Reference ID to filter")
 	flags.String("status", "", "Status to filter: progressing, done")
 
 	return cmd
@@ -326,7 +326,7 @@ func runList(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to initialize handlers")
 	}
 
-	customerID, err := resolveUUID("customer_id", "Customer ID")
+	customerID, err := resolveUUID("customer-id", "Customer ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve customer ID")
 	}
@@ -339,11 +339,11 @@ func runList(cmd *cobra.Command, args []string) error {
 		transcribe.FieldDeleted:    false,
 	}
 
-	if referenceTypeStr := viper.GetString("reference_type"); referenceTypeStr != "" {
+	if referenceTypeStr := viper.GetString("reference-type"); referenceTypeStr != "" {
 		filters[transcribe.FieldReferenceType] = transcribe.ReferenceType(referenceTypeStr)
 	}
 
-	if referenceIDStr := viper.GetString("reference_id"); referenceIDStr != "" {
+	if referenceIDStr := viper.GetString("reference-id"); referenceIDStr != "" {
 		referenceID := uuid.FromStringOrNil(referenceIDStr)
 		if referenceID != uuid.Nil {
 			filters[transcribe.FieldReferenceID] = referenceID

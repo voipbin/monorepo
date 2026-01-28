@@ -126,15 +126,15 @@ func cmdSendToCustomer() *cobra.Command {
 	}
 
 	flags := cmd.Flags()
-	flags.String("customer_id", "", "Customer ID (required)")
-	flags.String("data_type", string(webhook.DataTypeJSON), "Data type (default: application/json)")
+	flags.String("customer-id", "", "Customer ID (required)")
+	flags.String("data-type", string(webhook.DataTypeJSON), "Data type (default: application/json)")
 	flags.String("data", "", "JSON data to send (required)")
 
 	return cmd
 }
 
 func runSendToCustomer(cmd *cobra.Command, args []string) error {
-	customerID, err := resolveUUID("customer_id", "Customer ID")
+	customerID, err := resolveUUID("customer-id", "Customer ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve customer ID")
 	}
@@ -150,7 +150,7 @@ func runSendToCustomer(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "invalid JSON data")
 	}
 
-	dataType := webhook.DataType(viper.GetString("data_type"))
+	dataType := webhook.DataType(viper.GetString("data-type"))
 
 	handler, err := initHandler()
 	if err != nil {
@@ -164,8 +164,8 @@ func runSendToCustomer(cmd *cobra.Command, args []string) error {
 
 	response := map[string]any{
 		"status":      "success",
-		"customer_id": customerID.String(),
-		"data_type":   dataType,
+		"customer-id": customerID.String(),
+		"data-type":   dataType,
 		"message":     "Webhook sent to customer successfully",
 	}
 
@@ -180,17 +180,17 @@ func cmdSendToURI() *cobra.Command {
 	}
 
 	flags := cmd.Flags()
-	flags.String("customer_id", "", "Customer ID (required)")
+	flags.String("customer-id", "", "Customer ID (required)")
 	flags.String("uri", "", "Webhook URI (required)")
 	flags.String("method", string(webhook.MethodTypePOST), "HTTP method (POST, PUT, GET, DELETE)")
-	flags.String("data_type", string(webhook.DataTypeJSON), "Data type (default: application/json)")
+	flags.String("data-type", string(webhook.DataTypeJSON), "Data type (default: application/json)")
 	flags.String("data", "", "JSON data to send (required)")
 
 	return cmd
 }
 
 func runSendToURI(cmd *cobra.Command, args []string) error {
-	customerID, err := resolveUUID("customer_id", "Customer ID")
+	customerID, err := resolveUUID("customer-id", "Customer ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve customer ID")
 	}
@@ -212,7 +212,7 @@ func runSendToURI(cmd *cobra.Command, args []string) error {
 	}
 
 	method := webhook.MethodType(viper.GetString("method"))
-	dataType := webhook.DataType(viper.GetString("data_type"))
+	dataType := webhook.DataType(viper.GetString("data-type"))
 
 	handler, err := initHandler()
 	if err != nil {
@@ -226,10 +226,10 @@ func runSendToURI(cmd *cobra.Command, args []string) error {
 
 	response := map[string]any{
 		"status":      "success",
-		"customer_id": customerID.String(),
+		"customer-id": customerID.String(),
 		"uri":         uri,
 		"method":      method,
-		"data_type":   dataType,
+		"data-type":   dataType,
 		"message":     "Webhook sent to URI successfully",
 	}
 

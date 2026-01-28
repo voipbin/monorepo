@@ -143,20 +143,20 @@ func cmdCreate() *cobra.Command {
 	}
 
 	flags := cmd.Flags()
-	flags.String("customer_id", "", "Customer ID (required)")
+	flags.String("customer-id", "", "Customer ID (required)")
 	flags.String("name", "", "Queue name (required)")
 	flags.String("detail", "", "Queue detail")
-	flags.String("routing_method", "random", "Routing method (random)")
-	flags.String("tag_ids", "", "Tag IDs JSON array")
-	flags.String("wait_flow_id", "", "Wait flow ID")
-	flags.Int("wait_timeout", 300000, "Wait timeout in ms")
-	flags.Int("service_timeout", 600000, "Service timeout in ms")
+	flags.String("routing-method", "random", "Routing method (random)")
+	flags.String("tag-ids", "", "Tag IDs JSON array")
+	flags.String("wait-flow-id", "", "Wait flow ID")
+	flags.Int("wait-timeout", 300000, "Wait timeout in ms")
+	flags.Int("service-timeout", 600000, "Service timeout in ms")
 
 	return cmd
 }
 
 func runCreate(cmd *cobra.Command, args []string) error {
-	customerID, err := resolveUUID("customer_id", "Customer ID")
+	customerID, err := resolveUUID("customer-id", "Customer ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve customer ID")
 	}
@@ -166,12 +166,12 @@ func runCreate(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("name is required")
 	}
 
-	tagIDs, err := parseUUIDs(viper.GetString("tag_ids"))
+	tagIDs, err := parseUUIDs(viper.GetString("tag-ids"))
 	if err != nil {
 		return errors.Wrap(err, "failed to parse tag IDs")
 	}
 
-	waitFlowID := uuid.FromStringOrNil(viper.GetString("wait_flow_id"))
+	waitFlowID := uuid.FromStringOrNil(viper.GetString("wait-flow-id"))
 
 	handler, err := initHandler()
 	if err != nil {
@@ -183,11 +183,11 @@ func runCreate(cmd *cobra.Command, args []string) error {
 		customerID,
 		name,
 		viper.GetString("detail"),
-		queue.RoutingMethod(viper.GetString("routing_method")),
+		queue.RoutingMethod(viper.GetString("routing-method")),
 		tagIDs,
 		waitFlowID,
-		viper.GetInt("wait_timeout"),
-		viper.GetInt("service_timeout"),
+		viper.GetInt("wait-timeout"),
+		viper.GetInt("service-timeout"),
 	)
 	if err != nil {
 		return errors.Wrap(err, "failed to create queue")
@@ -238,7 +238,7 @@ func cmdList() *cobra.Command {
 	flags := cmd.Flags()
 	flags.Int("limit", 100, "Limit the number of queues to retrieve")
 	flags.String("token", "", "Retrieve queues before this token (pagination)")
-	flags.String("customer_id", "", "Customer ID to filter (required)")
+	flags.String("customer-id", "", "Customer ID to filter (required)")
 
 	return cmd
 }
@@ -249,7 +249,7 @@ func runList(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to initialize handlers")
 	}
 
-	customerID, err := resolveUUID("customer_id", "Customer ID")
+	customerID, err := resolveUUID("customer-id", "Customer ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve customer ID")
 	}
@@ -281,11 +281,11 @@ func cmdUpdate() *cobra.Command {
 	flags.String("id", "", "Queue ID (required)")
 	flags.String("name", "", "Queue name (required)")
 	flags.String("detail", "", "Queue detail")
-	flags.String("routing_method", "random", "Routing method")
-	flags.String("tag_ids", "", "Tag IDs JSON array")
-	flags.String("wait_flow_id", "", "Wait flow ID")
-	flags.Int("wait_timeout", 300000, "Wait timeout in ms")
-	flags.Int("service_timeout", 600000, "Service timeout in ms")
+	flags.String("routing-method", "random", "Routing method")
+	flags.String("tag-ids", "", "Tag IDs JSON array")
+	flags.String("wait-flow-id", "", "Wait flow ID")
+	flags.Int("wait-timeout", 300000, "Wait timeout in ms")
+	flags.Int("service-timeout", 600000, "Service timeout in ms")
 
 	return cmd
 }
@@ -306,23 +306,23 @@ func runUpdate(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("name is required")
 	}
 
-	tagIDs, err := parseUUIDs(viper.GetString("tag_ids"))
+	tagIDs, err := parseUUIDs(viper.GetString("tag-ids"))
 	if err != nil {
 		return errors.Wrap(err, "failed to parse tag IDs")
 	}
 
-	waitFlowID := uuid.FromStringOrNil(viper.GetString("wait_flow_id"))
+	waitFlowID := uuid.FromStringOrNil(viper.GetString("wait-flow-id"))
 
 	res, err := handler.UpdateBasicInfo(
 		context.Background(),
 		queueID,
 		name,
 		viper.GetString("detail"),
-		queue.RoutingMethod(viper.GetString("routing_method")),
+		queue.RoutingMethod(viper.GetString("routing-method")),
 		tagIDs,
 		waitFlowID,
-		viper.GetInt("wait_timeout"),
-		viper.GetInt("service_timeout"),
+		viper.GetInt("wait-timeout"),
+		viper.GetInt("service-timeout"),
 	)
 	if err != nil {
 		return errors.Wrap(err, "failed to update queue")
@@ -340,7 +340,7 @@ func cmdUpdateTagIDs() *cobra.Command {
 
 	flags := cmd.Flags()
 	flags.String("id", "", "Queue ID (required)")
-	flags.String("tag_ids", "", "Tag IDs JSON array (required)")
+	flags.String("tag-ids", "", "Tag IDs JSON array (required)")
 
 	return cmd
 }
@@ -356,9 +356,9 @@ func runUpdateTagIDs(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to resolve queue ID")
 	}
 
-	tagIDsStr := viper.GetString("tag_ids")
+	tagIDsStr := viper.GetString("tag-ids")
 	if tagIDsStr == "" {
-		return fmt.Errorf("tag_ids is required")
+		return fmt.Errorf("tag-ids is required")
 	}
 
 	tagIDs, err := parseUUIDs(tagIDsStr)
@@ -383,7 +383,7 @@ func cmdUpdateRoutingMethod() *cobra.Command {
 
 	flags := cmd.Flags()
 	flags.String("id", "", "Queue ID (required)")
-	flags.String("routing_method", "", "Routing method (random) (required)")
+	flags.String("routing-method", "", "Routing method (random) (required)")
 
 	return cmd
 }
@@ -399,9 +399,9 @@ func runUpdateRoutingMethod(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to resolve queue ID")
 	}
 
-	routingMethod := viper.GetString("routing_method")
+	routingMethod := viper.GetString("routing-method")
 	if routingMethod == "" {
-		return fmt.Errorf("routing_method is required")
+		return fmt.Errorf("routing-method is required")
 	}
 
 	res, err := handler.UpdateRoutingMethod(context.Background(), queueID, queue.RoutingMethod(routingMethod))

@@ -186,7 +186,7 @@ func cmdConversationList() *cobra.Command {
 	flags := cmd.Flags()
 	flags.Int("limit", 100, "Limit the number of conversations to retrieve")
 	flags.String("token", "", "Retrieve conversations before this token (pagination)")
-	flags.String("customer_id", "", "Customer ID to filter (required)")
+	flags.String("customer-id", "", "Customer ID to filter (required)")
 	flags.String("type", "", "Conversation type to filter (message, line)")
 
 	return cmd
@@ -198,7 +198,7 @@ func runConversationList(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to initialize handlers")
 	}
 
-	customerID, err := resolveUUID("customer_id", "Customer ID")
+	customerID, err := resolveUUID("customer-id", "Customer ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve customer ID")
 	}
@@ -234,7 +234,7 @@ func cmdAccountCreate() *cobra.Command {
 	}
 
 	flags := cmd.Flags()
-	flags.String("customer_id", "", "Customer ID (required)")
+	flags.String("customer-id", "", "Customer ID (required)")
 	flags.String("type", "", "Account type: line, sms (required)")
 	flags.String("name", "", "Account name")
 	flags.String("detail", "", "Account description")
@@ -250,7 +250,7 @@ func runAccountCreate(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to initialize handlers")
 	}
 
-	customerID, err := resolveUUID("customer_id", "Customer ID")
+	customerID, err := resolveUUID("customer-id", "Customer ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve customer ID")
 	}
@@ -328,7 +328,7 @@ func cmdAccountList() *cobra.Command {
 	flags := cmd.Flags()
 	flags.Int("limit", 100, "Limit the number of accounts to retrieve")
 	flags.String("token", "", "Retrieve accounts before this token (pagination)")
-	flags.String("customer_id", "", "Customer ID to filter (required)")
+	flags.String("customer-id", "", "Customer ID to filter (required)")
 	flags.String("type", "", "Account type to filter (line, sms)")
 
 	return cmd
@@ -340,7 +340,7 @@ func runAccountList(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to initialize handlers")
 	}
 
-	customerID, err := resolveUUID("customer_id", "Customer ID")
+	customerID, err := resolveUUID("customer-id", "Customer ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve customer ID")
 	}
@@ -497,8 +497,8 @@ func cmdMessageList() *cobra.Command {
 	flags := cmd.Flags()
 	flags.Int("limit", 100, "Limit the number of messages to retrieve")
 	flags.String("token", "", "Retrieve messages before this token (pagination)")
-	flags.String("customer_id", "", "Customer ID to filter (required)")
-	flags.String("conversation_id", "", "Conversation ID to filter")
+	flags.String("customer-id", "", "Customer ID to filter (required)")
+	flags.String("conversation-id", "", "Conversation ID to filter")
 	flags.String("direction", "", "Message direction to filter (incoming, outgoing)")
 	flags.String("status", "", "Message status to filter (failed, progressing, done)")
 
@@ -511,14 +511,14 @@ func runMessageList(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to initialize handlers")
 	}
 
-	customerID, err := resolveUUID("customer_id", "Customer ID")
+	customerID, err := resolveUUID("customer-id", "Customer ID")
 	if err != nil {
 		return errors.Wrap(err, "failed to resolve customer ID")
 	}
 
 	limit := viper.GetInt("limit")
 	token := viper.GetString("token")
-	conversationIDStr := viper.GetString("conversation_id")
+	conversationIDStr := viper.GetString("conversation-id")
 	direction := viper.GetString("direction")
 	status := viper.GetString("status")
 
@@ -530,7 +530,7 @@ func runMessageList(cmd *cobra.Command, args []string) error {
 	if conversationIDStr != "" {
 		conversationID := uuid.FromStringOrNil(conversationIDStr)
 		if conversationID == uuid.Nil {
-			return fmt.Errorf("invalid conversation_id format")
+			return fmt.Errorf("invalid conversation-id format")
 		}
 		filters[message.FieldConversationID] = conversationID
 	}
