@@ -1,0 +1,1618 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en" data-content_root="./">
+<head>
+    <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+        <title>Advanced Flow Patterns &mdash; voipbin  documentation</title>
+    
+    <link rel="stylesheet" type="text/css" href="_static/dist/fontawesome.css" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8e8a900e" />
+      <link rel="stylesheet" type="text/css" href="_static/dist/theme.css?v=310cf088" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+            <link rel="index" title="Index" href="genindex.html" />
+            <link rel="search" title="Search" href="search.html" />
+            <link rel="top" title="voipbin  documentation" href="#" />
+    </head>
+<body>
+    <script type="text/javascript" src="_static/dist/blocking.js"></script>
+    <header class="container-fluid bg-primary">
+        <a class="btn btn-sm btn-light skip-to-content-link" href="#main">Skip to content</a>
+        <div class="container-fluid">
+            <div class="navbar navbar-expand-lg navbar-dark font-weight-bold">
+                    <a href="intro.html"
+                        title="voipbin"
+                        class="logo navbar-brand"
+                    >
+                        <img src="_static/images/voipbin-high-resolution-logo-white-transparent.png" width="45" height="80" alt="voipbin"
+                            class="logo-img"
+                        />
+                        VoIPBin Documentation
+                    </a>
+                
+                
+                    <div class="collapse navbar-collapse justify-content-end">
+                        <ul class="navbar-nav">
+                            
+                                
+                                
+                                <li class="nav-item"><a class="nav-link"  href="http://voipbin.net">Project</a></li>
+                            
+                                
+                                
+                                <li class="nav-item"><a class="nav-link"  href="https://admin.voipbin.net">Admin</a></li>
+                            
+                        </ul>
+                    </div>
+                
+                <button class="navbar-toggler btn btn-primary d-lg-none" type="button" data-toggle="collapse" data-target="#collapseSidebar" aria-expanded="false" aria-controls="collapseExample">
+                    <span class="navbar-toggler-icon"></span>
+                    <span class="sr-only">menu</span>
+                </button>
+            </div>
+        </div>
+    </header>
+    <div class="container-fluid">
+        <div class="row">
+            <aside class="col-12 col-lg-3 sidebar-container">
+                <div id="collapseSidebar" class="collapse sticky-top d-lg-block pt-5 pr-lg-4">
+<div id="searchbox" class="searchbox mb-6 px-1" role="search">
+    <form id="search-form" action="search.html" autocomplete="off" method="get" role="search">
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <div class="input-group-text border-right-0 bg-white py-3 pl-3 pr-2"><span class="fas fa-search"></span></div>
+            </div>
+            <input class="form-control py-3 pr-3 pl-1 h-100 border-left-0" type="search" name="q" placeholder="Search documentation" aria-label="Search documentation" id="searchinput" />
+        </div>
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+    </form>
+</div><div class="site-toc">
+    <nav class="toc mt-3" aria-label="Main menu">
+        <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="accesskey.html">Accesskey</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sdk.html">SDK(Software Development Kit)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="restful_api.html">RESTful API(Application Programming Interface)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Core Concepts</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flow.html#activeflow">Activeflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="variable.html">Variable</a></li>
+<li class="toctree-l1"><a class="reference internal" href="webhook.html">Webhook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="common.html">Common</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Voice &amp; Real-Time</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="call.html">Call</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conference.html">Conference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="queue.html">Queue</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recording.html">Recording</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transcribe.html">Transcribe</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mediastream.html">Mediastream</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Messaging</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="message.html">Message</a></li>
+<li class="toctree-l1"><a class="reference internal" href="email.html">Email</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chat.html">Chat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conversation.html">Conversation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">AI &amp; Automation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="ai.html">AI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="campaign.html">Campaign</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outdial.html">Outdial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outplan.html">Outplan</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Resources &amp; Management</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="number.html">Number</a></li>
+<li class="toctree-l1"><a class="reference internal" href="agent.html">Agent</a></li>
+<li class="toctree-l1"><a class="reference internal" href="customer.html">Customer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="billing_account.html">Billing Account</a></li>
+<li class="toctree-l1"><a class="reference internal" href="storage.html">Storage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a></li>
+<li class="toctree-l1"><a class="reference internal" href="provider.html">Provider</a></li>
+<li class="toctree-l1"><a class="reference internal" href="route.html">Route</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extension.html">Extension</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trunk.html">Trunk</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Architecture (Deep Dive)</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="websocket.html">Websocket</a></li>
+<li class="toctree-l1"><a class="reference internal" href="talk.html">Talk</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Help &amp; Support</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="support.html">Support</a></li>
+</ul>
+
+    </nav>
+    <template data-toggle-item-template>
+        <button class="btn btn-sm btn-link toctree-expand" type="button">
+            <span class="sr-only">Toggle menu contents</span>
+        </button>
+    </template>
+</div>
+                    <div class="d-lg-none border-bottom">
+                        
+                    </div>
+                </div>
+            </aside>
+            <div class="col-12 col-lg-9 pt-5">
+                <header class="row align-items-baseline">
+                    <div class="col">
+                        <nav aria-label="breadcrumb">
+    <ol class="breadcrumb m-0 p-0 bg-transparent">
+        <li class="breadcrumb-item"><a href="index.html">Docs</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Advanced Flow Patterns</li>
+    </ol>
+</nav>
+                    </div>
+                    <div class="col-sm-12 col-lg-auto mt-3 mt-lg-3">
+                        <noscript>
+                            <p>JavaScript is required to toggle light/dark mode..</p>
+                        </noscript>
+                        <button id="wagtail-theme" class="btn btn-sm btn-light text-decoration-none" type="button">
+                            <span class="dark-only"><i class="fas fa-sun"></i> Light mode</span>
+                            <span class="light-only"><i class="fas fa-moon"></i> Dark mode</span>
+                        </button>
+    <a class="btn btn-sm btn-light text-decoration-none" href="_sources/flow_advanced_patterns.rst.txt" rel="nofollow">
+        <span class="btn-icon"><span class="fas fa-code"></span></span>
+        <span class="btn-text">View source</span>
+    </a>
+                        
+                    </div>
+                </header>
+                <div class="row" >
+                    <div class="col-12">
+                        <hr class="w-100 my-4">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 col-lg-9 order-last order-lg-first rst-content">
+                        <main role="main" id="main">
+    <section id="advanced-flow-patterns">
+<span id="flow-advanced-patterns"></span><h1>Advanced Flow Patterns<a class="headerlink" href="#advanced-flow-patterns" title="Link to this heading"></a></h1>
+<p>This section covers advanced flow design patterns for building sophisticated communication applications.</p>
+<section id="multi-level-ivr-with-sub-menus">
+<h2>Multi-Level IVR with Sub-Menus<a class="headerlink" href="#multi-level-ivr-with-sub-menus" title="Link to this heading"></a></h2>
+<p>Building complex IVR systems with nested menus:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Multi</span><span class="o">-</span><span class="n">Level</span> <span class="n">IVR</span> <span class="n">Structure</span><span class="p">:</span>
+
+                          <span class="n">Main</span> <span class="n">Menu</span>
+                              <span class="o">|</span>
+        <span class="o">+---------------------+---------------------+</span>
+        <span class="o">|</span>                     <span class="o">|</span>                     <span class="o">|</span>
+     <span class="n">Press</span> <span class="mi">1</span>              <span class="n">Press</span> <span class="mi">2</span>              <span class="n">Press</span> <span class="mi">3</span>
+     <span class="n">Sales</span>                <span class="n">Support</span>              <span class="n">Billing</span>
+        <span class="o">|</span>                     <span class="o">|</span>                     <span class="o">|</span>
+    <span class="o">+---+---+</span>             <span class="o">+---+---+</span>             <span class="o">+---+---+</span>
+    <span class="o">|</span>       <span class="o">|</span>             <span class="o">|</span>       <span class="o">|</span>             <span class="o">|</span>       <span class="o">|</span>
+  <span class="n">Press</span> <span class="mi">1</span> <span class="n">Press</span> <span class="mi">2</span>      <span class="n">Press</span> <span class="mi">1</span> <span class="n">Press</span> <span class="mi">2</span>      <span class="n">Press</span> <span class="mi">1</span> <span class="n">Press</span> <span class="mi">2</span>
+  <span class="n">New</span>     <span class="n">Existing</span>     <span class="n">Tech</span>    <span class="n">Account</span>     <span class="n">Payment</span>  <span class="n">Disputes</span>
+  <span class="n">Customer</span> <span class="n">Customer</span>    <span class="n">Support</span> <span class="n">Support</span>     <span class="n">Info</span>
+
+<span class="n">Implementation</span> <span class="n">Strategy</span><span class="p">:</span>
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Use</span> <span class="n">fetch_flow</span> <span class="n">to</span> <span class="n">load</span> <span class="n">sub</span><span class="o">-</span><span class="n">menus</span> <span class="n">dynamically</span>                     <span class="o">|</span>
+<span class="o">|</span> <span class="n">This</span> <span class="n">keeps</span> <span class="n">each</span> <span class="n">flow</span> <span class="n">focused</span> <span class="ow">and</span> <span class="n">maintainable</span>                    <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Main</span> <span class="n">Menu</span> <span class="n">Flow</span><span class="p">:</span>
+
+<span class="p">{</span>
+  <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Main IVR Menu&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;main-answer&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;answer&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;main-greeting&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Welcome to Acme Corp. Press 1 for Sales, 2 for Support, 3 for Billing.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;main-input&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;digits_receive&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="mi">5000</span><span class="p">,</span>
+        <span class="s2">&quot;length&quot;</span><span class="p">:</span> <span class="mi">1</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;main-branch&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;branch&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;variable&quot;</span><span class="p">:</span> <span class="s2">&quot;voipbin.call.digits&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;default_target_id&quot;</span><span class="p">:</span> <span class="s2">&quot;invalid-input&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;target_ids&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="s2">&quot;1&quot;</span><span class="p">:</span> <span class="s2">&quot;goto-sales&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;2&quot;</span><span class="p">:</span> <span class="s2">&quot;goto-support&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;3&quot;</span><span class="p">:</span> <span class="s2">&quot;goto-billing&quot;</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;goto-sales&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;fetch_flow&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;sales-submenu-flow-id&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;goto-support&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;fetch_flow&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;support-submenu-flow-id&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;goto-billing&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;fetch_flow&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;billing-submenu-flow-id&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;invalid-input&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Invalid selection.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;retry-goto&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;goto&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;target_id&quot;</span><span class="p">:</span> <span class="s2">&quot;main-greeting&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;loop_count&quot;</span><span class="p">:</span> <span class="mi">3</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Goodbye.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="business-hours-routing">
+<h2>Business Hours Routing<a class="headerlink" href="#business-hours-routing" title="Link to this heading"></a></h2>
+<p>Route calls differently based on time of day:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Business</span> <span class="n">Hours</span> <span class="n">Flow</span><span class="p">:</span>
+
+                       <span class="n">Incoming</span> <span class="n">Call</span>
+                            <span class="o">|</span>
+                            <span class="n">v</span>
+                <span class="o">+---------------------+</span>
+                <span class="o">|</span> <span class="n">condition_datetime</span>  <span class="o">|</span>
+                <span class="o">|</span> <span class="p">(</span><span class="mi">9</span> <span class="n">AM</span> <span class="o">-</span> <span class="mi">5</span> <span class="n">PM</span><span class="p">,</span>       <span class="o">|</span>
+                <span class="o">|</span>  <span class="n">Mon</span><span class="o">-</span><span class="n">Fri</span><span class="p">)</span>           <span class="o">|</span>
+                <span class="o">+----------+----------+</span>
+                           <span class="o">|</span>
+          <span class="o">+----------------+----------------+</span>
+          <span class="o">|</span>                                 <span class="o">|</span>
+     <span class="n">During</span> <span class="n">Hours</span>                    <span class="n">After</span> <span class="n">Hours</span>
+          <span class="o">|</span>                                 <span class="o">|</span>
+          <span class="n">v</span>                                 <span class="n">v</span>
+<span class="o">+------------------+</span>              <span class="o">+------------------+</span>
+<span class="o">|</span> <span class="n">queue_join</span>       <span class="o">|</span>              <span class="o">|</span> <span class="n">Voicemail</span> <span class="n">Flow</span>   <span class="o">|</span>
+<span class="o">|</span> <span class="p">(</span><span class="n">live</span> <span class="n">agents</span><span class="p">)</span>    <span class="o">|</span>              <span class="o">|</span> <span class="p">(</span><span class="n">leave</span> <span class="n">message</span><span class="p">)</span>  <span class="o">|</span>
+<span class="o">+------------------+</span>              <span class="o">+------------------+</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Business Hours Router&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;answer&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;check-hours&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;condition_datetime&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;condition&quot;</span><span class="p">:</span> <span class="s2">&quot;&gt;=&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;hour&quot;</span><span class="p">:</span> <span class="mi">9</span><span class="p">,</span>
+        <span class="s2">&quot;minute&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">&quot;day&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+        <span class="s2">&quot;month&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">&quot;weekdays&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span>
+        <span class="s2">&quot;false_target_id&quot;</span><span class="p">:</span> <span class="s2">&quot;after-hours&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;check-closing&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;condition_datetime&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;condition&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;hour&quot;</span><span class="p">:</span> <span class="mi">17</span><span class="p">,</span>
+        <span class="s2">&quot;minute&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">&quot;day&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+        <span class="s2">&quot;month&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">&quot;weekdays&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span>
+        <span class="s2">&quot;false_target_id&quot;</span><span class="p">:</span> <span class="s2">&quot;after-hours&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;during-hours&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Thank you for calling. Connecting you to an agent.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;queue_join&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;queue_id&quot;</span><span class="p">:</span> <span class="s2">&quot;support-queue-id&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;after-hours&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Our office is currently closed. Our hours are Monday through Friday, 9 AM to 5 PM. Please leave a message after the tone.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;beep&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;recording_start&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;mp3&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;end_of_silence&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+        <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="mi">120</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Thank you for your message. Goodbye.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="dynamic-flow-with-external-data">
+<h2>Dynamic Flow with External Data<a class="headerlink" href="#dynamic-flow-with-external-data" title="Link to this heading"></a></h2>
+<p>Fetch customer data from your API to personalize the experience:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>External Data Integration:
+
++------------------------------------------------------------------+
+|                     Dynamic Flow Pattern                         |
++------------------------------------------------------------------+
+
+1. Call arrives
++----------------+
+| answer         |
++----------------+
+       |
+       v
+2. Fetch customer data from your API
++----------------+     +---------------------------+
+| fetch          |----&gt;| Your API:                 |
+| (sync: true)   |     | GET /customers?phone=...  |
++----------------+     +---------------------------+
+       |                          |
+       |     Response: {&quot;name&quot;: &quot;John&quot;, &quot;tier&quot;: &quot;premium&quot;}
+       |                          |
+       v                          v
+3. Variables are set from response
++------------------------------------------+
+| customer.name = &quot;John&quot;                   |
+| customer.tier = &quot;premium&quot;                |
++------------------------------------------+
+       |
+       v
+4. Personalize the flow
++------------------------------------------+
+| talk: &quot;Hello ${customer.name}...&quot;        |
+| branch on ${customer.tier}               |
++------------------------------------------+
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Implementation</span> <span class="k">with</span> <span class="n">webhook_send</span><span class="p">:</span>
+
+<span class="p">{</span>
+  <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Personalized Greeting&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;answer&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;fetch-customer&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;webhook_send&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;sync&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+        <span class="s2">&quot;uri&quot;</span><span class="p">:</span> <span class="s2">&quot;https://your-api.com/customer-lookup&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;POST&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;data_type&quot;</span><span class="p">:</span> <span class="s2">&quot;application/json&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="s2">&quot;{</span><span class="se">\&quot;</span><span class="s2">phone</span><span class="se">\&quot;</span><span class="s2">: </span><span class="se">\&quot;</span><span class="s2">$</span><span class="si">{voipbin.call.source.target}</span><span class="se">\&quot;</span><span class="s2">}&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello $</span><span class="si">{customer.name}</span><span class="s2">. Welcome back to our service.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;tier-check&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;branch&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;variable&quot;</span><span class="p">:</span> <span class="s2">&quot;customer.tier&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;default_target_id&quot;</span><span class="p">:</span> <span class="s2">&quot;standard-service&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;target_ids&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="s2">&quot;premium&quot;</span><span class="p">:</span> <span class="s2">&quot;premium-service&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;vip&quot;</span><span class="p">:</span> <span class="s2">&quot;vip-service&quot;</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;premium-service&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;As a premium member, you&#39;re being connected to our priority support line.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;queue_join&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;queue_id&quot;</span><span class="p">:</span> <span class="s2">&quot;premium-queue-id&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;vip-service&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;connect&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;$</span><span class="si">{voipbin.call.destination.target}</span><span class="s2">&quot;</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span>
+          <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15551234567&quot;</span>
+          <span class="p">}</span>
+        <span class="p">]</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;standard-service&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Please hold while we connect you.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;queue_join&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;queue_id&quot;</span><span class="p">:</span> <span class="s2">&quot;standard-queue-id&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="ai-powered-conversational-flow">
+<h2>AI-Powered Conversational Flow<a class="headerlink" href="#ai-powered-conversational-flow" title="Link to this heading"></a></h2>
+<p>Integrate AI for natural language interactions:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">AI</span> <span class="n">Voice</span> <span class="n">Assistant</span> <span class="n">Pattern</span><span class="p">:</span>
+
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span>                     <span class="n">AI</span> <span class="n">Talk</span> <span class="n">Integration</span>                          <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+
+<span class="n">Traditional</span> <span class="n">IVR</span><span class="p">:</span>
+<span class="o">+-------+</span>     <span class="o">+----------+</span>     <span class="o">+--------+</span>     <span class="o">+---------+</span>
+<span class="o">|</span> <span class="n">talk</span>  <span class="o">|----&gt;|</span> <span class="n">digits</span>   <span class="o">|----&gt;|</span> <span class="n">branch</span> <span class="o">|----&gt;|</span> <span class="n">action</span>  <span class="o">|</span>
+<span class="o">|</span> <span class="n">menu</span>  <span class="o">|</span>     <span class="o">|</span> <span class="n">receive</span>  <span class="o">|</span>     <span class="o">|</span> <span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span>  <span class="o">|</span>     <span class="o">|</span>         <span class="o">|</span>
+<span class="o">+-------+</span>     <span class="o">+----------+</span>     <span class="o">+--------+</span>     <span class="o">+---------+</span>
+
+<span class="n">AI</span><span class="o">-</span><span class="n">Powered</span><span class="p">:</span>
+<span class="o">+-------+</span>     <span class="o">+----------+</span>     <span class="o">+----------+</span>     <span class="o">+---------+</span>
+<span class="o">|</span> <span class="n">ai</span>    <span class="o">|----&gt;|</span> <span class="n">AI</span>       <span class="o">|----&gt;|</span> <span class="n">Intent</span>   <span class="o">|----&gt;|</span> <span class="n">action</span>  <span class="o">|</span>
+<span class="o">|</span> <span class="n">talk</span>  <span class="o">|</span>     <span class="o">|</span> <span class="n">processes</span><span class="o">|</span>     <span class="o">|</span> <span class="n">detected</span> <span class="o">|</span>     <span class="o">|</span>         <span class="o">|</span>
+<span class="o">+-------+</span>     <span class="o">|</span> <span class="n">speech</span>   <span class="o">|</span>     <span class="o">|</span> <span class="n">routing</span>  <span class="o">|</span>     <span class="o">+---------+</span>
+              <span class="o">+----------+</span>     <span class="o">+----------+</span>
+
+<span class="n">AI</span> <span class="n">Talk</span> <span class="n">handles</span><span class="p">:</span>
+<span class="o">-</span> <span class="n">Speech</span> <span class="n">recognition</span> <span class="p">(</span><span class="n">STT</span><span class="p">)</span>
+<span class="o">-</span> <span class="n">Natural</span> <span class="n">language</span> <span class="n">understanding</span>
+<span class="o">-</span> <span class="n">Response</span> <span class="n">generation</span>
+<span class="o">-</span> <span class="n">Text</span><span class="o">-</span><span class="n">to</span><span class="o">-</span><span class="n">speech</span> <span class="p">(</span><span class="n">TTS</span><span class="p">)</span>
+<span class="o">-</span> <span class="n">Context</span> <span class="n">maintenance</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">AI</span> <span class="n">Talk</span> <span class="n">Flow</span> <span class="n">Example</span><span class="p">:</span>
+
+<span class="p">{</span>
+  <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;AI Customer Service&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;answer&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;ai-greeting&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;ai_talk&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;ai_id&quot;</span><span class="p">:</span> <span class="s2">&quot;your-ai-agent-id&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;gender&quot;</span><span class="p">:</span> <span class="s2">&quot;female&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="mi">300</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;post-ai-branch&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;branch&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;variable&quot;</span><span class="p">:</span> <span class="s2">&quot;voipbin.ai.intent&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;default_target_id&quot;</span><span class="p">:</span> <span class="s2">&quot;transfer-support&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;target_ids&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="s2">&quot;billing&quot;</span><span class="p">:</span> <span class="s2">&quot;transfer-billing&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;technical&quot;</span><span class="p">:</span> <span class="s2">&quot;transfer-technical&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;cancel&quot;</span><span class="p">:</span> <span class="s2">&quot;transfer-retention&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;resolved&quot;</span><span class="p">:</span> <span class="s2">&quot;goodbye&quot;</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;transfer-billing&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;I&#39;ll transfer you to our billing department.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;queue_join&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;queue_id&quot;</span><span class="p">:</span> <span class="s2">&quot;billing-queue-id&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;transfer-technical&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;queue_join&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;queue_id&quot;</span><span class="p">:</span> <span class="s2">&quot;tech-support-queue-id&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;transfer-retention&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;queue_join&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;queue_id&quot;</span><span class="p">:</span> <span class="s2">&quot;retention-queue-id&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;transfer-support&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;queue_join&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;queue_id&quot;</span><span class="p">:</span> <span class="s2">&quot;general-support-queue-id&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;goodbye&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Thank you for calling. Have a great day!&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="call-recording-with-consent">
+<h2>Call Recording with Consent<a class="headerlink" href="#call-recording-with-consent" title="Link to this heading"></a></h2>
+<p>Legal compliance pattern for recording calls:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Recording</span> <span class="n">Consent</span> <span class="n">Flow</span><span class="p">:</span>
+
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span>                     <span class="n">Recording</span> <span class="k">with</span> <span class="n">Consent</span>                       <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+
+                <span class="n">Incoming</span> <span class="n">Call</span>
+                      <span class="o">|</span>
+                      <span class="n">v</span>
+                <span class="o">+-----------+</span>
+                <span class="o">|</span>  <span class="n">Answer</span>   <span class="o">|</span>
+                <span class="o">+-----------+</span>
+                      <span class="o">|</span>
+                      <span class="n">v</span>
+<span class="o">+---------------------------------------------------+</span>
+<span class="o">|</span> <span class="s2">&quot;This call may be recorded for quality assurance. |</span>
+<span class="o">|</span>  <span class="n">Press</span> <span class="mi">1</span> <span class="n">to</span> <span class="k">continue</span><span class="p">,</span> <span class="ow">or</span> <span class="mi">2</span> <span class="n">to</span> <span class="n">opt</span> <span class="n">out</span><span class="o">.</span><span class="s2">&quot;           |</span>
+<span class="o">+---------------------------------------------------+</span>
+                      <span class="o">|</span>
+                      <span class="n">v</span>
+                <span class="o">+------------+</span>
+                <span class="o">|</span>   <span class="n">Branch</span>   <span class="o">|</span>
+                <span class="o">+-----+------+</span>
+                      <span class="o">|</span>
+        <span class="o">+-------------+-------------+</span>
+        <span class="o">|</span>                           <span class="o">|</span>
+     <span class="n">Press</span> <span class="mi">1</span>                     <span class="n">Press</span> <span class="mi">2</span>
+     <span class="p">(</span><span class="n">consent</span><span class="p">)</span>                   <span class="p">(</span><span class="n">opt</span><span class="o">-</span><span class="n">out</span><span class="p">)</span>
+        <span class="o">|</span>                           <span class="o">|</span>
+        <span class="n">v</span>                           <span class="n">v</span>
+<span class="o">+---------------+</span>           <span class="o">+---------------+</span>
+<span class="o">|</span> <span class="n">recording_</span>    <span class="o">|</span>           <span class="o">|</span> <span class="n">Continue</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="n">start</span>         <span class="o">|</span>           <span class="o">|</span> <span class="n">without</span>       <span class="o">|</span>
+<span class="o">+---------------+</span>           <span class="o">|</span> <span class="n">recording</span>     <span class="o">|</span>
+        <span class="o">|</span>                   <span class="o">+---------------+</span>
+        <span class="n">v</span>                           <span class="o">|</span>
+<span class="o">+---------------+</span>                   <span class="o">|</span>
+<span class="o">|</span> <span class="n">Continue</span>      <span class="o">|</span>                   <span class="o">|</span>
+<span class="o">|</span> <span class="n">call</span> <span class="n">flow</span>     <span class="o">|&lt;------------------+</span>
+<span class="o">+---------------+</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Recording Consent Flow&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;answer&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;consent-prompt&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;This call may be recorded for quality assurance and training purposes. Press 1 to continue with recording, or press 2 to continue without recording.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;digits_receive&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="mi">10000</span><span class="p">,</span>
+        <span class="s2">&quot;length&quot;</span><span class="p">:</span> <span class="mi">1</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;branch&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;variable&quot;</span><span class="p">:</span> <span class="s2">&quot;voipbin.call.digits&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;default_target_id&quot;</span><span class="p">:</span> <span class="s2">&quot;consent-prompt&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;target_ids&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="s2">&quot;1&quot;</span><span class="p">:</span> <span class="s2">&quot;start-recording&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;2&quot;</span><span class="p">:</span> <span class="s2">&quot;no-recording&quot;</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;start-recording&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;recording_start&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;mp3&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;variable_set&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;recording.consent&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;yes&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;continue-call&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Thank you. How may I help you today?&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;queue_join&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;queue_id&quot;</span><span class="p">:</span> <span class="s2">&quot;support-queue-id&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;no-recording&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;variable_set&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;recording.consent&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;no&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;goto&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;target_id&quot;</span><span class="p">:</span> <span class="s2">&quot;continue-call&quot;</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="callback-request-pattern">
+<h2>Callback Request Pattern<a class="headerlink" href="#callback-request-pattern" title="Link to this heading"></a></h2>
+<p>Allow customers to request a callback instead of waiting:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Callback</span> <span class="n">Flow</span> <span class="n">Pattern</span><span class="p">:</span>
+
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span>                     <span class="n">Callback</span> <span class="n">Request</span>                             <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+
+                <span class="n">Incoming</span> <span class="n">Call</span>
+                      <span class="o">|</span>
+                      <span class="n">v</span>
+<span class="o">+---------------------------------------------------+</span>
+<span class="o">|</span> <span class="s2">&quot;All agents are busy. Press 1 to wait on hold,    |</span>
+<span class="o">|</span>  <span class="ow">or</span> <span class="n">press</span> <span class="mi">2</span> <span class="n">to</span> <span class="n">receive</span> <span class="n">a</span> <span class="n">callback</span><span class="o">.</span><span class="s2">&quot;               |</span>
+<span class="o">+---------------------------------------------------+</span>
+                      <span class="o">|</span>
+        <span class="o">+-------------+-------------+</span>
+        <span class="o">|</span>                           <span class="o">|</span>
+     <span class="n">Press</span> <span class="mi">1</span>                     <span class="n">Press</span> <span class="mi">2</span>
+     <span class="p">(</span><span class="n">wait</span><span class="p">)</span>                      <span class="p">(</span><span class="n">callback</span><span class="p">)</span>
+        <span class="o">|</span>                           <span class="o">|</span>
+        <span class="n">v</span>                           <span class="n">v</span>
+<span class="o">+--------------+</span>            <span class="o">+---------------+</span>
+<span class="o">|</span> <span class="n">queue_join</span>   <span class="o">|</span>            <span class="o">|</span> <span class="n">Confirm</span> <span class="n">phone</span> <span class="o">|</span>
+<span class="o">+--------------+</span>            <span class="o">+---------------+</span>
+                                    <span class="o">|</span>
+                                    <span class="n">v</span>
+                            <span class="o">+---------------+</span>
+                            <span class="o">|</span> <span class="n">webhook_send</span>  <span class="o">|</span>
+                            <span class="o">|</span> <span class="p">(</span><span class="n">create</span> <span class="n">task</span><span class="p">)</span> <span class="o">|</span>
+                            <span class="o">+---------------+</span>
+                                    <span class="o">|</span>
+                                    <span class="n">v</span>
+                            <span class="o">+---------------+</span>
+                            <span class="o">|</span> <span class="s2">&quot;We will call |</span>
+                            <span class="o">|</span>  <span class="n">you</span> <span class="n">back</span><span class="s2">&quot;    |</span>
+                            <span class="o">+---------------+</span>
+                                    <span class="o">|</span>
+                                    <span class="n">v</span>
+                                <span class="n">hangup</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Callback Option Flow&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;answer&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;callback-offer&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;All of our agents are currently busy. Your estimated wait time is 10 minutes. Press 1 to wait on hold, or press 2 to receive a callback when an agent is available.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;digits_receive&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="mi">10000</span><span class="p">,</span>
+        <span class="s2">&quot;length&quot;</span><span class="p">:</span> <span class="mi">1</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;branch&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;variable&quot;</span><span class="p">:</span> <span class="s2">&quot;voipbin.call.digits&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;default_target_id&quot;</span><span class="p">:</span> <span class="s2">&quot;callback-offer&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;target_ids&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="s2">&quot;1&quot;</span><span class="p">:</span> <span class="s2">&quot;wait-queue&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;2&quot;</span><span class="p">:</span> <span class="s2">&quot;request-callback&quot;</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;wait-queue&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Please hold. An agent will be with you shortly.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;queue_join&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;queue_id&quot;</span><span class="p">:</span> <span class="s2">&quot;support-queue-id&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;request-callback&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;We will call you back at the number you called from. If you&#39;d like to be called at a different number, please enter it now followed by the pound key. Otherwise, press pound to confirm.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;digits_receive&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="mi">15000</span><span class="p">,</span>
+        <span class="s2">&quot;length&quot;</span><span class="p">:</span> <span class="mi">15</span><span class="p">,</span>
+        <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;#&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;check-digits&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;condition_variable&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;condition&quot;</span><span class="p">:</span> <span class="s2">&quot;==&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;variable&quot;</span><span class="p">:</span> <span class="s2">&quot;voipbin.call.digits&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;value_type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;value_string&quot;</span><span class="p">:</span> <span class="s2">&quot;#&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;false_target_id&quot;</span><span class="p">:</span> <span class="s2">&quot;custom-number&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;variable_set&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;callback.number&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;$</span><span class="si">{voipbin.call.source.target}</span><span class="s2">&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;schedule-callback&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;webhook_send&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;sync&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+        <span class="s2">&quot;uri&quot;</span><span class="p">:</span> <span class="s2">&quot;https://your-api.com/schedule-callback&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;POST&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;data_type&quot;</span><span class="p">:</span> <span class="s2">&quot;application/json&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="s2">&quot;{</span><span class="se">\&quot;</span><span class="s2">phone</span><span class="se">\&quot;</span><span class="s2">: </span><span class="se">\&quot;</span><span class="s2">$</span><span class="si">{callback.number}</span><span class="se">\&quot;</span><span class="s2">, </span><span class="se">\&quot;</span><span class="s2">call_id</span><span class="se">\&quot;</span><span class="s2">: </span><span class="se">\&quot;</span><span class="s2">$</span><span class="si">{voipbin.call.id}</span><span class="se">\&quot;</span><span class="s2">}&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Thank you. You will receive a callback at $</span><span class="si">{callback.number}</span><span class="s2"> within the next 30 minutes. Goodbye.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;custom-number&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;variable_set&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;callback.number&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;$</span><span class="si">{voipbin.call.digits}</span><span class="s2">&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;goto&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;target_id&quot;</span><span class="p">:</span> <span class="s2">&quot;schedule-callback&quot;</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="survey-after-call">
+<h2>Survey After Call<a class="headerlink" href="#survey-after-call" title="Link to this heading"></a></h2>
+<p>Using on_complete_flow_id for post-call surveys:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Post</span><span class="o">-</span><span class="n">Call</span> <span class="n">Survey</span> <span class="n">Pattern</span><span class="p">:</span>
+
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span>                     <span class="n">Main</span> <span class="n">Call</span> <span class="n">Flow</span>                               <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">answer</span> <span class="o">-&gt;</span> <span class="n">talk</span> <span class="o">-&gt;</span> <span class="n">queue_join</span> <span class="o">-&gt;</span> <span class="n">hangup</span>                           <span class="o">|</span>
+<span class="o">|</span>                                                                  <span class="o">|</span>
+<span class="o">|</span> <span class="n">on_complete_flow_id</span><span class="p">:</span> <span class="s2">&quot;survey-flow-id&quot;</span>                           <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+                      <span class="o">|</span>
+                      <span class="o">|</span> <span class="p">(</span><span class="n">call</span> <span class="n">ends</span><span class="p">)</span>
+                      <span class="n">v</span>
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span>                     <span class="n">Survey</span> <span class="n">Flow</span>                                  <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="p">(</span><span class="n">New</span> <span class="n">session</span><span class="p">,</span> <span class="n">inherits</span> <span class="n">variables</span><span class="p">)</span>                                <span class="o">|</span>
+<span class="o">|</span>                                                                  <span class="o">|</span>
+<span class="o">|</span> <span class="n">Create</span> <span class="n">outbound</span> <span class="n">call</span> <span class="n">to</span> <span class="n">customer</span>                                 <span class="o">|</span>
+<span class="o">|</span> <span class="o">-&gt;</span> <span class="n">Play</span> <span class="n">survey</span> <span class="n">questions</span>                                         <span class="o">|</span>
+<span class="o">|</span> <span class="o">-&gt;</span> <span class="n">Collect</span> <span class="n">responses</span>                                             <span class="o">|</span>
+<span class="o">|</span> <span class="o">-&gt;</span> <span class="n">Send</span> <span class="n">results</span> <span class="n">to</span> <span class="n">webhook</span>                                       <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Main</span> <span class="n">Call</span> <span class="n">Flow</span> <span class="p">(</span><span class="k">with</span> <span class="n">on_complete_flow_id</span><span class="p">):</span>
+
+<span class="p">{</span>
+  <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Support Call&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;on_complete_flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;post-call-survey-flow-id&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;answer&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;recording_start&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;mp3&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;queue_join&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;queue_id&quot;</span><span class="p">:</span> <span class="s2">&quot;support-queue-id&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+
+<span class="n">Survey</span> <span class="n">Flow</span> <span class="p">(</span><span class="n">executed</span> <span class="n">after</span> <span class="n">call</span> <span class="n">ends</span><span class="p">):</span>
+
+<span class="p">{</span>
+  <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Post-Call Survey&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;call&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15551234567&quot;</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span>
+          <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;$</span><span class="si">{voipbin.call.source.target}</span><span class="s2">&quot;</span>
+          <span class="p">}</span>
+        <span class="p">],</span>
+        <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
+          <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+              <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Thank you for contacting us. Please help us improve by answering a brief survey. On a scale of 1 to 5, how satisfied were you with your support experience? Press 1 for very unsatisfied, 5 for very satisfied.&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+            <span class="p">}</span>
+          <span class="p">},</span>
+          <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;digits_receive&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+              <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="mi">10000</span><span class="p">,</span>
+              <span class="s2">&quot;length&quot;</span><span class="p">:</span> <span class="mi">1</span>
+            <span class="p">}</span>
+          <span class="p">},</span>
+          <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;variable_set&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+              <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;survey.satisfaction&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;$</span><span class="si">{voipbin.call.digits}</span><span class="s2">&quot;</span>
+            <span class="p">}</span>
+          <span class="p">},</span>
+          <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+              <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Was your issue resolved? Press 1 for yes, 2 for no.&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+            <span class="p">}</span>
+          <span class="p">},</span>
+          <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;digits_receive&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+              <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="mi">10000</span><span class="p">,</span>
+              <span class="s2">&quot;length&quot;</span><span class="p">:</span> <span class="mi">1</span>
+            <span class="p">}</span>
+          <span class="p">},</span>
+          <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;variable_set&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+              <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;survey.resolved&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;$</span><span class="si">{voipbin.call.digits}</span><span class="s2">&quot;</span>
+            <span class="p">}</span>
+          <span class="p">},</span>
+          <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;webhook_send&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+              <span class="s2">&quot;uri&quot;</span><span class="p">:</span> <span class="s2">&quot;https://your-api.com/survey-results&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;POST&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;data_type&quot;</span><span class="p">:</span> <span class="s2">&quot;application/json&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="s2">&quot;{</span><span class="se">\&quot;</span><span class="s2">call_id</span><span class="se">\&quot;</span><span class="s2">: </span><span class="se">\&quot;</span><span class="s2">$</span><span class="si">{voipbin.call.id}</span><span class="se">\&quot;</span><span class="s2">, </span><span class="se">\&quot;</span><span class="s2">satisfaction</span><span class="se">\&quot;</span><span class="s2">: </span><span class="se">\&quot;</span><span class="s2">$</span><span class="si">{survey.satisfaction}</span><span class="se">\&quot;</span><span class="s2">, </span><span class="se">\&quot;</span><span class="s2">resolved</span><span class="se">\&quot;</span><span class="s2">: </span><span class="se">\&quot;</span><span class="s2">$</span><span class="si">{survey.resolved}</span><span class="se">\&quot;</span><span class="s2">}&quot;</span>
+            <span class="p">}</span>
+          <span class="p">},</span>
+          <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+              <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Thank you for your feedback. Goodbye.&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+            <span class="p">}</span>
+          <span class="p">},</span>
+          <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span>
+          <span class="p">}</span>
+        <span class="p">]</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="failover-and-redundancy">
+<h2>Failover and Redundancy<a class="headerlink" href="#failover-and-redundancy" title="Link to this heading"></a></h2>
+<p>Handle failures gracefully with fallback options:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Failover Pattern:
+
++------------------------------------------------------------------+
+|                     Multi-Destination Failover                   |
++------------------------------------------------------------------+
+
+Primary:     connect to Agent 1
+                   |
+             +-----------+
+             | answered? |
+             +-----+-----+
+                   |
+        +----------+----------+
+        |                     |
+       Yes                   No
+        |                     |
+        v                     v
++-------------+       Secondary: connect to Agent 2
+| Continue    |               |
++-------------+         +-----------+
+                        | answered? |
+                        +-----+-----+
+                              |
+                   +----------+----------+
+                   |                     |
+                  Yes                   No
+                   |                     |
+                   v                     v
+           +-------------+       Tertiary: connect to Queue
+           | Continue    |               |
+           +-------------+               v
+                                 +-------------+
+                                 | queue_join  |
+                                 +-------------+
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Failover Flow&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;answer&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Please hold while we connect you.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;try-primary&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;connect&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15551234567&quot;</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span>
+          <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15559876543&quot;</span>
+          <span class="p">}</span>
+        <span class="p">]</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;condition_variable&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;condition&quot;</span><span class="p">:</span> <span class="s2">&quot;==&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;variable&quot;</span><span class="p">:</span> <span class="s2">&quot;voipbin.call.status&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;value_type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;value_string&quot;</span><span class="p">:</span> <span class="s2">&quot;progressing&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;false_target_id&quot;</span><span class="p">:</span> <span class="s2">&quot;try-secondary&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;try-secondary&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Agent unavailable. Trying alternate contact.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;connect&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15551234567&quot;</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span>
+          <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15551112222&quot;</span>
+          <span class="p">}</span>
+        <span class="p">]</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;condition_variable&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;condition&quot;</span><span class="p">:</span> <span class="s2">&quot;==&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;variable&quot;</span><span class="p">:</span> <span class="s2">&quot;voipbin.call.status&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;value_type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;value_string&quot;</span><span class="p">:</span> <span class="s2">&quot;progressing&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;false_target_id&quot;</span><span class="p">:</span> <span class="s2">&quot;try-queue&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;try-queue&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;All direct contacts unavailable. Placing you in the support queue.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;queue_join&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;queue_id&quot;</span><span class="p">:</span> <span class="s2">&quot;support-queue-id&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="language-selection">
+<h2>Language Selection<a class="headerlink" href="#language-selection" title="Link to this heading"></a></h2>
+<p>Multi-language IVR with persistent language preference:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Language Selection Pattern:
+
++------------------------------------------------------------------+
+|                     Language Router                              |
++------------------------------------------------------------------+
+
+                Incoming Call
+                      |
+                      v
++---------------------------------------------------+
+| &quot;For English, press 1. Para Espanol, marque 2.    |
+|  Pour Francais, appuyez 3.&quot;                       |
++---------------------------------------------------+
+                      |
+        +-------------+-------------+
+        |             |             |
+     Press 1       Press 2       Press 3
+     English       Spanish       French
+        |             |             |
+        v             v             v
++------------+ +------------+ +------------+
+| Set lang:  | | Set lang:  | | Set lang:  |
+| en-US      | | es-ES      | | fr-FR      |
++------------+ +------------+ +------------+
+        |             |             |
+        +-------------+-------------+
+                      |
+                      v
+              Main Flow (uses
+              ${language} variable)
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Multi-Language IVR&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;answer&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;lang-prompt&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;speak&gt;&lt;lang xml:lang=&#39;en-US&#39;&gt;For English, press 1.&lt;/lang&gt; &lt;lang xml:lang=&#39;es-ES&#39;&gt;Para Espanol, marque 2.&lt;/lang&gt; &lt;lang xml:lang=&#39;fr-FR&#39;&gt;Pour Francais, appuyez 3.&lt;/lang&gt;&lt;/speak&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;digits_receive&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="mi">5000</span><span class="p">,</span>
+        <span class="s2">&quot;length&quot;</span><span class="p">:</span> <span class="mi">1</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;branch&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;variable&quot;</span><span class="p">:</span> <span class="s2">&quot;voipbin.call.digits&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;default_target_id&quot;</span><span class="p">:</span> <span class="s2">&quot;set-english&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;target_ids&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="s2">&quot;1&quot;</span><span class="p">:</span> <span class="s2">&quot;set-english&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;2&quot;</span><span class="p">:</span> <span class="s2">&quot;set-spanish&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;3&quot;</span><span class="p">:</span> <span class="s2">&quot;set-french&quot;</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;set-english&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;variable_set&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;language&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;goto&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;target_id&quot;</span><span class="p">:</span> <span class="s2">&quot;main-menu&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;set-spanish&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;variable_set&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;language&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;es-ES&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;goto&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;target_id&quot;</span><span class="p">:</span> <span class="s2">&quot;main-menu&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;set-french&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;variable_set&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;language&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;fr-FR&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;goto&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;target_id&quot;</span><span class="p">:</span> <span class="s2">&quot;main-menu&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;main-menu&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;fetch_flow&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;main-menu-flow-id&quot;</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+
+
+<span class="n">Main</span> <span class="n">Menu</span> <span class="n">Flow</span> <span class="p">(</span><span class="n">uses</span> <span class="n">language</span> <span class="n">variable</span><span class="p">):</span>
+
+<span class="p">{</span>
+  <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Main Menu&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Welcome to our service. Press 1 for sales, 2 for support.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;$</span><span class="si">{language}</span><span class="s2">&quot;</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="parallel-call-attempts-ring-all">
+<h2>Parallel Call Attempts (Ring All)<a class="headerlink" href="#parallel-call-attempts-ring-all" title="Link to this heading"></a></h2>
+<p>Ring multiple destinations simultaneously:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Ring</span> <span class="n">All</span> <span class="n">Pattern</span><span class="p">:</span>
+
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span>                     <span class="n">Parallel</span> <span class="n">Ring</span>                                <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+
+                <span class="n">Incoming</span> <span class="n">Call</span>
+                      <span class="o">|</span>
+                      <span class="n">v</span>
+                <span class="o">+-----------+</span>
+                <span class="o">|</span>  <span class="n">Connect</span>  <span class="o">|</span>
+                <span class="o">|</span> <span class="p">(</span><span class="n">multiple</span> <span class="o">|</span>
+                <span class="o">|</span>  <span class="n">dests</span><span class="p">)</span>   <span class="o">|</span>
+                <span class="o">+-----------+</span>
+                      <span class="o">|</span>
+        <span class="o">+-------------+-------------+</span>
+        <span class="o">|</span>             <span class="o">|</span>             <span class="o">|</span>
+     <span class="n">Agent</span> <span class="mi">1</span>       <span class="n">Agent</span> <span class="mi">2</span>       <span class="n">Agent</span> <span class="mi">3</span>
+     <span class="n">ringing</span>       <span class="n">ringing</span>       <span class="n">ringing</span>
+        <span class="o">|</span>             <span class="o">|</span>             <span class="o">|</span>
+        <span class="o">+------+------+</span>             <span class="o">|</span>
+               <span class="o">|</span>                    <span class="o">|</span>
+               <span class="o">|</span> <span class="n">First</span> <span class="n">to</span> <span class="n">answer</span>    <span class="o">|</span>
+               <span class="o">|</span> <span class="n">wins</span>               <span class="o">|</span>
+               <span class="n">v</span>                    <span class="n">v</span>
+        <span class="o">+-----------+</span>         <span class="o">+-----------+</span>
+        <span class="o">|</span> <span class="n">Connected</span> <span class="o">|</span>         <span class="o">|</span> <span class="n">Cancelled</span> <span class="o">|</span>
+        <span class="o">+-----------+</span>         <span class="o">+-----------+</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Ring All Flow&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;answer&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Please hold while we connect you to the next available agent.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;connect&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15551234567&quot;</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span>
+          <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15559876543&quot;</span>
+          <span class="p">},</span>
+          <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15551112222&quot;</span>
+          <span class="p">},</span>
+          <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15553334444&quot;</span>
+          <span class="p">}</span>
+        <span class="p">],</span>
+        <span class="s2">&quot;early_media&quot;</span><span class="p">:</span> <span class="n">true</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="real-time-transcription-with-keyword-detection">
+<h2>Real-Time Transcription with Keyword Detection<a class="headerlink" href="#real-time-transcription-with-keyword-detection" title="Link to this heading"></a></h2>
+<p>Monitor calls for specific keywords:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Transcription</span> <span class="n">Pattern</span><span class="p">:</span>
+
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span>                     <span class="n">Keyword</span> <span class="n">Monitoring</span>                           <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+
+                <span class="n">Incoming</span> <span class="n">Call</span>
+                      <span class="o">|</span>
+                      <span class="n">v</span>
+                <span class="o">+-----------+</span>
+                <span class="o">|</span> <span class="n">Start</span>     <span class="o">|</span>
+                <span class="o">|</span> <span class="n">transcribe</span><span class="o">|</span>
+                <span class="o">+-----------+</span>
+                      <span class="o">|</span>
+                      <span class="n">v</span>
+                <span class="o">+-----------+</span>
+                <span class="o">|</span> <span class="n">Connect</span>   <span class="o">|</span>
+                <span class="o">|</span> <span class="n">to</span> <span class="n">agent</span>  <span class="o">|</span>
+                <span class="o">+-----------+</span>
+                      <span class="o">|</span>
+                      <span class="o">|</span>  <span class="n">Transcripts</span> <span class="n">sent</span> <span class="n">to</span> <span class="n">webhook</span>
+                      <span class="o">|</span>  <span class="ow">in</span> <span class="n">real</span><span class="o">-</span><span class="n">time</span>
+                      <span class="n">v</span>
+<span class="o">+---------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Your</span> <span class="n">API</span> <span class="n">monitors</span> <span class="k">for</span> <span class="n">keywords</span><span class="p">:</span>                   <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="s2">&quot;cancel subscription&quot;</span> <span class="o">-&gt;</span> <span class="n">Alert</span> <span class="n">retention</span> <span class="n">team</span>   <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="s2">&quot;legal action&quot;</span> <span class="o">-&gt;</span> <span class="n">Alert</span> <span class="n">legal</span> <span class="n">team</span>              <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="s2">&quot;supervisor&quot;</span> <span class="o">-&gt;</span> <span class="n">Trigger</span> <span class="n">escalation</span>              <span class="o">|</span>
+<span class="o">+---------------------------------------------------+</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Transcribed Call Flow&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;answer&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcribe_start&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;This call is being transcribed for quality assurance. Connecting you now.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;queue_join&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;queue_id&quot;</span><span class="p">:</span> <span class="s2">&quot;support-queue-id&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcribe_stop&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+</main>
+                        
+                    </div>
+                    
+                    <nav class="col-12 col-lg-3 pb-4">
+                        <div class="sticky-top toc page-toc" aria-labelledby="page-toc-heading">
+                            <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
+                            <ul>
+<li><a class="reference internal" href="#">Advanced Flow Patterns</a><ul>
+<li><a class="reference internal" href="#multi-level-ivr-with-sub-menus">Multi-Level IVR with Sub-Menus</a></li>
+<li><a class="reference internal" href="#business-hours-routing">Business Hours Routing</a></li>
+<li><a class="reference internal" href="#dynamic-flow-with-external-data">Dynamic Flow with External Data</a></li>
+<li><a class="reference internal" href="#ai-powered-conversational-flow">AI-Powered Conversational Flow</a></li>
+<li><a class="reference internal" href="#call-recording-with-consent">Call Recording with Consent</a></li>
+<li><a class="reference internal" href="#callback-request-pattern">Callback Request Pattern</a></li>
+<li><a class="reference internal" href="#survey-after-call">Survey After Call</a></li>
+<li><a class="reference internal" href="#failover-and-redundancy">Failover and Redundancy</a></li>
+<li><a class="reference internal" href="#language-selection">Language Selection</a></li>
+<li><a class="reference internal" href="#parallel-call-attempts-ring-all">Parallel Call Attempts (Ring All)</a></li>
+<li><a class="reference internal" href="#real-time-transcription-with-keyword-detection">Real-Time Transcription with Keyword Detection</a></li>
+</ul>
+</li>
+</ul>
+
+                        </div>
+                    </nav>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer class="container-fluid bg-primary text-light">
+        <div class="container">
+            <div class="row">
+        <div class="col p-4">
+            
+                <nav aria-label="Footer">
+                    <ul class="nav justify-content-center mb-2">
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="http://voipbin.net">About Us</a></li>
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="http://voipbin.net">Contact</a></li>
+                        
+                    </ul>
+                </nav>
+            
+            <div class="text-center">
+                    &copy; Copyright 2026, VoIPBIN
+            </div>
+            <div class="text-center text-white-50 font-italic mt-3">
+                <small>
+                    Created using
+                    <a class="text-white" href="https://github.com/wagtail/sphinx_wagtail_theme" rel="nofollow" target="_blank">
+                        Sphinx Wagtail Theme 6.5.0
+                    </a>
+                    and
+                    <a class="text-white" href="https://www.sphinx-doc.org/" rel="nofollow" target="_blank">
+                        Sphinx 9.1.0
+                    </a>
+                </small>
+            </div>
+        </div>
+    </div>
+        </div>
+    </footer>
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=fd6eb6e6"></script>
+        <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+        <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="_static/copybutton.js?v=f281be69"></script>
+        <script type="text/javascript" src="_static/dist/theme.js"></script>
+        <script type="text/javascript" src="_static/dist/vendor.js"></script>
+        <script type="text/javascript" src="_static/searchtools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script type="text/javascript">
+            document.addEventListener('DOMContentLoaded', function() { Search.loadIndex("searchindex.js"); });
+        </script>
+        <script type="text/javascript" id="searchindexloader"></script>
+    </body>
+</html>

@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en" data-content_root="./">
+<head>
+    <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+        <title>Flow Debugging and Troubleshooting &mdash; voipbin  documentation</title>
+    
+    <link rel="stylesheet" type="text/css" href="_static/dist/fontawesome.css" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8e8a900e" />
+      <link rel="stylesheet" type="text/css" href="_static/dist/theme.css?v=310cf088" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+            <link rel="index" title="Index" href="genindex.html" />
+            <link rel="search" title="Search" href="search.html" />
+            <link rel="top" title="voipbin  documentation" href="#" />
+    </head>
+<body>
+    <script type="text/javascript" src="_static/dist/blocking.js"></script>
+    <header class="container-fluid bg-primary">
+        <a class="btn btn-sm btn-light skip-to-content-link" href="#main">Skip to content</a>
+        <div class="container-fluid">
+            <div class="navbar navbar-expand-lg navbar-dark font-weight-bold">
+                    <a href="intro.html"
+                        title="voipbin"
+                        class="logo navbar-brand"
+                    >
+                        <img src="_static/images/voipbin-high-resolution-logo-white-transparent.png" width="45" height="80" alt="voipbin"
+                            class="logo-img"
+                        />
+                        VoIPBin Documentation
+                    </a>
+                
+                
+                    <div class="collapse navbar-collapse justify-content-end">
+                        <ul class="navbar-nav">
+                            
+                                
+                                
+                                <li class="nav-item"><a class="nav-link"  href="http://voipbin.net">Project</a></li>
+                            
+                                
+                                
+                                <li class="nav-item"><a class="nav-link"  href="https://admin.voipbin.net">Admin</a></li>
+                            
+                        </ul>
+                    </div>
+                
+                <button class="navbar-toggler btn btn-primary d-lg-none" type="button" data-toggle="collapse" data-target="#collapseSidebar" aria-expanded="false" aria-controls="collapseExample">
+                    <span class="navbar-toggler-icon"></span>
+                    <span class="sr-only">menu</span>
+                </button>
+            </div>
+        </div>
+    </header>
+    <div class="container-fluid">
+        <div class="row">
+            <aside class="col-12 col-lg-3 sidebar-container">
+                <div id="collapseSidebar" class="collapse sticky-top d-lg-block pt-5 pr-lg-4">
+<div id="searchbox" class="searchbox mb-6 px-1" role="search">
+    <form id="search-form" action="search.html" autocomplete="off" method="get" role="search">
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <div class="input-group-text border-right-0 bg-white py-3 pl-3 pr-2"><span class="fas fa-search"></span></div>
+            </div>
+            <input class="form-control py-3 pr-3 pl-1 h-100 border-left-0" type="search" name="q" placeholder="Search documentation" aria-label="Search documentation" id="searchinput" />
+        </div>
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+    </form>
+</div><div class="site-toc">
+    <nav class="toc mt-3" aria-label="Main menu">
+        <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="accesskey.html">Accesskey</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sdk.html">SDK(Software Development Kit)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="restful_api.html">RESTful API(Application Programming Interface)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Core Concepts</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flow.html#activeflow">Activeflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="variable.html">Variable</a></li>
+<li class="toctree-l1"><a class="reference internal" href="webhook.html">Webhook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="common.html">Common</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Voice &amp; Real-Time</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="call.html">Call</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conference.html">Conference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="queue.html">Queue</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recording.html">Recording</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transcribe.html">Transcribe</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mediastream.html">Mediastream</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Messaging</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="message.html">Message</a></li>
+<li class="toctree-l1"><a class="reference internal" href="email.html">Email</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chat.html">Chat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conversation.html">Conversation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">AI &amp; Automation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="ai.html">AI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="campaign.html">Campaign</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outdial.html">Outdial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outplan.html">Outplan</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Resources &amp; Management</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="number.html">Number</a></li>
+<li class="toctree-l1"><a class="reference internal" href="agent.html">Agent</a></li>
+<li class="toctree-l1"><a class="reference internal" href="customer.html">Customer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="billing_account.html">Billing Account</a></li>
+<li class="toctree-l1"><a class="reference internal" href="storage.html">Storage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a></li>
+<li class="toctree-l1"><a class="reference internal" href="provider.html">Provider</a></li>
+<li class="toctree-l1"><a class="reference internal" href="route.html">Route</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extension.html">Extension</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trunk.html">Trunk</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Architecture (Deep Dive)</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="websocket.html">Websocket</a></li>
+<li class="toctree-l1"><a class="reference internal" href="talk.html">Talk</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Help &amp; Support</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="support.html">Support</a></li>
+</ul>
+
+    </nav>
+    <template data-toggle-item-template>
+        <button class="btn btn-sm btn-link toctree-expand" type="button">
+            <span class="sr-only">Toggle menu contents</span>
+        </button>
+    </template>
+</div>
+                    <div class="d-lg-none border-bottom">
+                        
+                    </div>
+                </div>
+            </aside>
+            <div class="col-12 col-lg-9 pt-5">
+                <header class="row align-items-baseline">
+                    <div class="col">
+                        <nav aria-label="breadcrumb">
+    <ol class="breadcrumb m-0 p-0 bg-transparent">
+        <li class="breadcrumb-item"><a href="index.html">Docs</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Flow Debugging and Troubleshooting</li>
+    </ol>
+</nav>
+                    </div>
+                    <div class="col-sm-12 col-lg-auto mt-3 mt-lg-3">
+                        <noscript>
+                            <p>JavaScript is required to toggle light/dark mode..</p>
+                        </noscript>
+                        <button id="wagtail-theme" class="btn btn-sm btn-light text-decoration-none" type="button">
+                            <span class="dark-only"><i class="fas fa-sun"></i> Light mode</span>
+                            <span class="light-only"><i class="fas fa-moon"></i> Dark mode</span>
+                        </button>
+    <a class="btn btn-sm btn-light text-decoration-none" href="_sources/flow_debugging.rst.txt" rel="nofollow">
+        <span class="btn-icon"><span class="fas fa-code"></span></span>
+        <span class="btn-text">View source</span>
+    </a>
+                        
+                    </div>
+                </header>
+                <div class="row" >
+                    <div class="col-12">
+                        <hr class="w-100 my-4">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 col-lg-9 order-last order-lg-first rst-content">
+                        <main role="main" id="main">
+    <section id="flow-debugging-and-troubleshooting">
+<span id="flow-debugging"></span><h1>Flow Debugging and Troubleshooting<a class="headerlink" href="#flow-debugging-and-troubleshooting" title="Link to this heading"></a></h1>
+<p>This section provides tools and techniques for debugging flow execution issues.</p>
+<section id="debugging-tools">
+<h2>Debugging Tools<a class="headerlink" href="#debugging-tools" title="Link to this heading"></a></h2>
+<p>VoIPBIN provides several tools for debugging flows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Available</span> <span class="n">Debugging</span> <span class="n">Resources</span><span class="p">:</span>
+
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span>                     <span class="n">API</span> <span class="n">Endpoints</span>                                <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">activeflows</span>                                              <span class="o">|</span>
+<span class="o">|</span>   <span class="n">List</span> <span class="nb">all</span> <span class="n">activeflow</span> <span class="n">instances</span> <span class="k">for</span> <span class="n">your</span> <span class="n">account</span>                 <span class="o">|</span>
+<span class="o">|</span>                                                                  <span class="o">|</span>
+<span class="o">|</span> <span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">activeflows</span><span class="o">/</span><span class="p">{</span><span class="nb">id</span><span class="p">}</span>                                         <span class="o">|</span>
+<span class="o">|</span>   <span class="n">Get</span> <span class="n">detailed</span> <span class="n">state</span> <span class="n">of</span> <span class="n">a</span> <span class="n">specific</span> <span class="n">activeflow</span>                    <span class="o">|</span>
+<span class="o">|</span>                                                                  <span class="o">|</span>
+<span class="o">|</span> <span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">activeflows</span><span class="o">/</span><span class="p">{</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">variables</span>                               <span class="o">|</span>
+<span class="o">|</span>   <span class="n">Get</span> <span class="n">current</span> <span class="n">variables</span> <span class="k">for</span> <span class="n">an</span> <span class="n">activeflow</span>                        <span class="o">|</span>
+<span class="o">|</span>                                                                  <span class="o">|</span>
+<span class="o">|</span> <span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span><span class="o">/</span><span class="p">{</span><span class="nb">id</span><span class="p">}</span>                                               <span class="o">|</span>
+<span class="o">|</span>   <span class="n">Get</span> <span class="n">call</span> <span class="n">details</span> <span class="n">including</span> <span class="n">flow</span> <span class="n">execution</span> <span class="n">status</span>               <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span>                     <span class="n">Webhooks</span>                                     <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">activeflow</span><span class="o">.</span><span class="n">created</span>     <span class="o">|</span> <span class="n">When</span> <span class="n">a</span> <span class="n">new</span> <span class="n">activeflow</span> <span class="n">starts</span>            <span class="o">|</span>
+<span class="o">|</span> <span class="n">activeflow</span><span class="o">.</span><span class="n">updated</span>     <span class="o">|</span> <span class="n">When</span> <span class="n">activeflow</span> <span class="n">state</span> <span class="n">changes</span>           <span class="o">|</span>
+<span class="o">|</span> <span class="n">activeflow</span><span class="o">.</span><span class="n">deleted</span>     <span class="o">|</span> <span class="n">When</span> <span class="n">activeflow</span> <span class="n">ends</span>                    <span class="o">|</span>
+<span class="o">|</span> <span class="n">call</span><span class="o">.</span><span class="n">progressing</span>       <span class="o">|</span> <span class="n">Call</span> <span class="n">state</span> <span class="n">updates</span> <span class="n">during</span> <span class="n">flow</span>          <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+</pre></div>
+</div>
+</section>
+<section id="examining-activeflow-state">
+<h2>Examining Activeflow State<a class="headerlink" href="#examining-activeflow-state" title="Link to this heading"></a></h2>
+<p>Use the API to inspect activeflow execution:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Get Activeflow Details:
+
+Request:
+GET /v1/activeflows/abc-123-def
+
+Response:
+{
+  &quot;id&quot;: &quot;abc-123-def&quot;,
+  &quot;customer_id&quot;: &quot;cust-456&quot;,
+  &quot;flow_id&quot;: &quot;flow-789&quot;,
+  &quot;reference_type&quot;: &quot;call&quot;,
+  &quot;reference_id&quot;: &quot;call-xyz&quot;,
+  &quot;status&quot;: &quot;executing&quot;,
+  &quot;current_action_id&quot;: &quot;action-456&quot;,
+  &quot;execute_count&quot;: 5,
+  &quot;variables&quot;: {
+    &quot;voipbin.call.digits&quot;: &quot;2&quot;,
+    &quot;voipbin.call.source.target&quot;: &quot;+15551234567&quot;,
+    &quot;customer.name&quot;: &quot;John&quot;
+  },
+  &quot;tm_create&quot;: &quot;2024-01-15T10:30:00Z&quot;,
+  &quot;tm_update&quot;: &quot;2024-01-15T10:30:45Z&quot;
+}
+
+Key fields to examine:
++------------------------------------------------------------------+
+| status             | Is the flow executing, waiting, or ended?  |
+| current_action_id  | Which action is the cursor pointing to?    |
+| execute_count      | How many times has the flow executed?      |
+| variables          | What variables have been set?              |
++------------------------------------------------------------------+
+</pre></div>
+</div>
+</section>
+<section id="common-issues-and-solutions">
+<h2>Common Issues and Solutions<a class="headerlink" href="#common-issues-and-solutions" title="Link to this heading"></a></h2>
+<section id="flow-never-starts">
+<h3>Flow Never Starts<a class="headerlink" href="#flow-never-starts" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Problem: Call connects but no flow actions execute
+
+Diagnostic Steps:
++------------------------------------------------------------------+
+| 1. Check if flow is attached to the number                       |
+|    GET /v1/numbers/{number-id}                                   |
+|    Look for: flow_id field                                       |
++------------------------------------------------------------------+
+| 2. Check if activeflow was created                               |
+|    GET /v1/activeflows?reference_id={call-id}                    |
+|    If empty: flow failed to start                                |
++------------------------------------------------------------------+
+| 3. Check flow definition exists                                  |
+|    GET /v1/flows/{flow-id}                                       |
+|    If 404: flow was deleted                                      |
++------------------------------------------------------------------+
+
+Common Causes:
++------------------------------------------------------------------+
+| - Number not linked to a flow                                    |
+| - Flow ID is invalid or deleted                                  |
+| - Flow actions array is empty                                    |
+| - Customer billing issue blocking execution                      |
++------------------------------------------------------------------+
+</pre></div>
+</div>
+</section>
+<section id="flow-stops-unexpectedly">
+<h3>Flow Stops Unexpectedly<a class="headerlink" href="#flow-stops-unexpectedly" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Problem</span><span class="p">:</span> <span class="n">Flow</span> <span class="n">stops</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">middle</span> <span class="n">without</span> <span class="n">completing</span>
+
+<span class="n">Diagnostic</span> <span class="n">Steps</span><span class="p">:</span>
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="mf">1.</span> <span class="n">Check</span> <span class="n">activeflow</span> <span class="n">status</span>                                       <span class="o">|</span>
+<span class="o">|</span>    <span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">activeflows</span><span class="o">/</span><span class="p">{</span><span class="nb">id</span><span class="p">}</span>                                      <span class="o">|</span>
+<span class="o">|</span>    <span class="n">Look</span> <span class="n">at</span><span class="p">:</span> <span class="n">status</span> <span class="ow">and</span> <span class="n">current_action_id</span>                         <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="mf">2.</span> <span class="n">Check</span> <span class="n">call</span> <span class="n">status</span>                                             <span class="o">|</span>
+<span class="o">|</span>    <span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span><span class="o">/</span><span class="p">{</span><span class="n">call</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>                                       <span class="o">|</span>
+<span class="o">|</span>    <span class="n">If</span> <span class="n">hangup_reason</span> <span class="n">present</span><span class="p">:</span> <span class="n">call</span> <span class="n">ended</span>                          <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="mf">3.</span> <span class="n">Check</span> <span class="n">execute_count</span>                                           <span class="o">|</span>
+<span class="o">|</span>    <span class="n">If</span> <span class="n">near</span> <span class="mi">100</span><span class="p">:</span> <span class="n">hit</span> <span class="n">execution</span> <span class="n">limit</span>                              <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+
+<span class="n">Common</span> <span class="n">Causes</span><span class="p">:</span>
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Caller</span> <span class="n">hung</span> <span class="n">up</span> <span class="p">(</span><span class="n">check</span> <span class="n">call</span><span class="o">.</span><span class="n">hangup_reason</span><span class="p">)</span>                      <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Hit</span> <span class="n">execution</span> <span class="n">limit</span> <span class="p">(</span><span class="n">check</span> <span class="n">execute_count</span><span class="p">)</span>                      <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Invalid</span> <span class="n">action</span> <span class="ow">in</span> <span class="n">flow</span> <span class="p">(</span><span class="n">skipped</span><span class="p">,</span> <span class="n">flow</span> <span class="n">ended</span><span class="p">)</span>                   <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Infinite</span> <span class="n">loop</span> <span class="n">triggered</span> <span class="n">safety</span> <span class="n">stop</span>                            <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+</pre></div>
+</div>
+</section>
+<section id="branch-not-working">
+<h3>Branch Not Working<a class="headerlink" href="#branch-not-working" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Problem</span><span class="p">:</span> <span class="n">Branch</span> <span class="n">always</span> <span class="n">goes</span> <span class="n">to</span> <span class="n">default</span> <span class="ow">or</span> <span class="n">wrong</span> <span class="n">target</span>
+
+<span class="n">Diagnostic</span> <span class="n">Steps</span><span class="p">:</span>
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="mf">1.</span> <span class="n">Check</span> <span class="n">the</span> <span class="n">variable</span> <span class="n">value</span>                                      <span class="o">|</span>
+<span class="o">|</span>    <span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">activeflows</span><span class="o">/</span><span class="p">{</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">variables</span>                            <span class="o">|</span>
+<span class="o">|</span>    <span class="n">Look</span> <span class="n">at</span><span class="p">:</span> <span class="n">the</span> <span class="n">variable</span> <span class="n">used</span> <span class="ow">in</span> <span class="n">branch</span>                          <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="mf">2.</span> <span class="n">Compare</span> <span class="k">with</span> <span class="n">branch</span> <span class="n">targets</span>                                   <span class="o">|</span>
+<span class="o">|</span>    <span class="n">The</span> <span class="n">value</span> <span class="n">must</span> <span class="n">EXACTLY</span> <span class="n">match</span> <span class="n">a</span> <span class="n">target_ids</span> <span class="n">key</span>                 <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+
+<span class="n">Example</span> <span class="n">Debug</span><span class="p">:</span>
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Branch</span> <span class="n">action</span><span class="p">:</span>                                                   <span class="o">|</span>
+<span class="o">|</span> <span class="p">{</span>                                                                <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;branch&quot;</span><span class="p">,</span>                                              <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>                                                    <span class="o">|</span>
+<span class="o">|</span>     <span class="s2">&quot;variable&quot;</span><span class="p">:</span> <span class="s2">&quot;voipbin.call.digits&quot;</span><span class="p">,</span>                           <span class="o">|</span>
+<span class="o">|</span>     <span class="s2">&quot;target_ids&quot;</span><span class="p">:</span> <span class="p">{</span>                                              <span class="o">|</span>
+<span class="o">|</span>       <span class="s2">&quot;1&quot;</span><span class="p">:</span> <span class="s2">&quot;action-a&quot;</span><span class="p">,</span>                                           <span class="o">|</span>
+<span class="o">|</span>       <span class="s2">&quot;2&quot;</span><span class="p">:</span> <span class="s2">&quot;action-b&quot;</span>                                            <span class="o">|</span>
+<span class="o">|</span>     <span class="p">}</span>                                                            <span class="o">|</span>
+<span class="o">|</span>   <span class="p">}</span>                                                              <span class="o">|</span>
+<span class="o">|</span> <span class="p">}</span>                                                                <span class="o">|</span>
+<span class="o">|</span>                                                                  <span class="o">|</span>
+<span class="o">|</span> <span class="n">Variable</span> <span class="n">value</span><span class="p">:</span> <span class="s2">&quot;1#&quot;</span>                                             <span class="o">|</span>
+<span class="o">|</span>                                                                  <span class="o">|</span>
+<span class="o">|</span> <span class="n">Problem</span><span class="p">:</span> <span class="s2">&quot;1#&quot;</span> <span class="o">!=</span> <span class="s2">&quot;1&quot;</span>                                             <span class="o">|</span>
+<span class="o">|</span> <span class="n">The</span> <span class="c1"># terminator was included in the digit string                |</span>
+<span class="o">+------------------------------------------------------------------+</span>
+
+<span class="n">Common</span> <span class="n">Causes</span><span class="p">:</span>
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Variable</span> <span class="n">contains</span> <span class="n">extra</span> <span class="n">characters</span> <span class="p">(</span><span class="n">whitespace</span><span class="p">,</span> <span class="n">terminators</span><span class="p">)</span>   <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Variable</span> <span class="n">name</span> <span class="ow">is</span> <span class="n">misspelled</span>                                    <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Variable</span> <span class="n">was</span> <span class="n">never</span> <span class="nb">set</span> <span class="p">(</span><span class="n">action</span> <span class="n">didn</span><span class="s1">&#39;t execute)                 |</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Case</span> <span class="n">sensitivity</span> <span class="p">(</span><span class="n">variable</span> <span class="n">values</span> <span class="n">are</span> <span class="n">case</span><span class="o">-</span><span class="n">sensitive</span><span class="p">)</span>          <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+</pre></div>
+</div>
+</section>
+<section id="talk-action-not-playing">
+<h3>Talk Action Not Playing<a class="headerlink" href="#talk-action-not-playing" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Problem</span><span class="p">:</span> <span class="n">Talk</span> <span class="n">action</span> <span class="n">executes</span> <span class="n">but</span> <span class="n">no</span> <span class="n">audio</span> <span class="n">heard</span>
+
+<span class="n">Diagnostic</span> <span class="n">Steps</span><span class="p">:</span>
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="mf">1.</span> <span class="n">Check</span> <span class="n">call</span> <span class="n">state</span> <span class="n">when</span> <span class="n">talk</span> <span class="n">executes</span>                           <span class="o">|</span>
+<span class="o">|</span>    <span class="n">Call</span> <span class="n">must</span> <span class="n">be</span> <span class="s2">&quot;progressing&quot;</span> <span class="p">(</span><span class="n">answered</span><span class="p">)</span>                         <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="mf">2.</span> <span class="n">Check</span> <span class="k">if</span> <span class="n">answer</span> <span class="n">action</span> <span class="n">came</span> <span class="n">before</span> <span class="n">talk</span>                       <span class="o">|</span>
+<span class="o">|</span>    <span class="n">For</span> <span class="n">inbound</span> <span class="n">calls</span><span class="p">,</span> <span class="n">must</span> <span class="n">answer</span> <span class="n">first</span>                          <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="mf">3.</span> <span class="n">Check</span> <span class="n">language</span> <span class="n">parameter</span>                                      <span class="o">|</span>
+<span class="o">|</span>    <span class="n">Must</span> <span class="n">be</span> <span class="n">valid</span> <span class="n">BCP47</span> <span class="n">code</span> <span class="p">(</span><span class="n">en</span><span class="o">-</span><span class="n">US</span><span class="p">,</span> <span class="ow">not</span> <span class="n">english</span><span class="p">)</span>                 <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+
+<span class="n">Common</span> <span class="n">Causes</span><span class="p">:</span>
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Missing</span> <span class="s2">&quot;answer&quot;</span> <span class="n">action</span> <span class="n">before</span> <span class="s2">&quot;talk&quot;</span>                          <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Invalid</span> <span class="n">language</span> <span class="n">code</span>                                          <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Call</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">answered</span> <span class="n">state</span>                                     <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Empty</span> <span class="n">text</span> <span class="n">string</span>                                              <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Invalid</span> <span class="n">SSML</span> <span class="n">syntax</span>                                            <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+</pre></div>
+</div>
+</section>
+<section id="digits-not-received">
+<h3>Digits Not Received<a class="headerlink" href="#digits-not-received" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Problem: digits_receive action never captures input
+
+Diagnostic Steps:
++------------------------------------------------------------------+
+| 1. Check if any digits were captured                             |
+|    GET /v1/activeflows/{id}/variables                            |
+|    Look at: voipbin.call.digits                                  |
++------------------------------------------------------------------+
+| 2. Check duration parameter                                      |
+|    Is it long enough for user to respond?                        |
++------------------------------------------------------------------+
+| 3. Check if previous audio completed                             |
+|    digits_receive starts after previous action                   |
++------------------------------------------------------------------+
+
+Configuration Check:
++------------------------------------------------------------------+
+| {                                                                |
+|   &quot;type&quot;: &quot;digits_receive&quot;,                                      |
+|   &quot;option&quot;: {                                                    |
+|     &quot;duration&quot;: 5000,    &lt;- 5 seconds, is this enough?           |
+|     &quot;length&quot;: 1,         &lt;- Expecting 1 digit                    |
+|     &quot;key&quot;: &quot;#&quot;           &lt;- Terminate on # key                   |
+|   }                                                              |
+| }                                                                |
++------------------------------------------------------------------+
+
+Common Causes:
++------------------------------------------------------------------+
+| - Duration too short for user to respond                         |
+| - Caller pressed wrong key (DTMF vs voice input)                 |
+| - Phone doesn&#39;t support DTMF tones                               |
+| - Audio codec incompatibility stripping DTMF                     |
++------------------------------------------------------------------+
+</pre></div>
+</div>
+</section>
+<section id="connect-action-failing">
+<h3>Connect Action Failing<a class="headerlink" href="#connect-action-failing" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Problem: Connect action doesn&#39;t reach destination
+
+Diagnostic Steps:
++------------------------------------------------------------------+
+| 1. Check the outbound call status                                |
+|    GET /v1/calls?reference_id={activeflow-id}                    |
+|    Look for child calls created by connect                       |
++------------------------------------------------------------------+
+| 2. Check destination format                                      |
+|    Must be E.164 format (+15551234567)                           |
++------------------------------------------------------------------+
+| 3. Check source number                                           |
+|    Must be a number you own or have permissions to use           |
++------------------------------------------------------------------+
+
+Common Causes:
++------------------------------------------------------------------+
+| - Invalid destination phone number format                        |
+| - Source number not in your account                              |
+| - Destination is blocking calls                                  |
+| - Carrier routing issue                                          |
+| - Account doesn&#39;t have outbound calling enabled                  |
++------------------------------------------------------------------+
+</pre></div>
+</div>
+</section>
+<section id="variables-not-substituting">
+<h3>Variables Not Substituting<a class="headerlink" href="#variables-not-substituting" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Problem: ${variable} appears literally in output instead of value
+
+Diagnostic Steps:
++------------------------------------------------------------------+
+| 1. Check variable exists                                         |
+|    GET /v1/activeflows/{id}/variables                            |
++------------------------------------------------------------------+
+| 2. Check variable name spelling                                  |
+|    Variable names are case-sensitive                             |
++------------------------------------------------------------------+
+| 3. Check syntax                                                  |
+|    Must be ${name} not $name or {name}                           |
++------------------------------------------------------------------+
+
+Example:
++------------------------------------------------------------------+
+| Correct:   &quot;${customer.name}&quot;     -&gt; &quot;John Smith&quot;                |
+| Wrong:     &quot;$customer.name&quot;       -&gt; &quot;$customer.name&quot;            |
+| Wrong:     &quot;{customer.name}&quot;      -&gt; &quot;{customer.name}&quot;           |
+| Wrong:     &quot;${Customer.Name}&quot;     -&gt; &quot;&quot; (wrong case)             |
++------------------------------------------------------------------+
+</pre></div>
+</div>
+</section>
+<section id="queue-join-not-working">
+<h3>Queue Join Not Working<a class="headerlink" href="#queue-join-not-working" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Problem: Caller joins queue but never gets connected to agent
+
+Diagnostic Steps:
++------------------------------------------------------------------+
+| 1. Check queue status                                            |
+|    GET /v1/queues/{queue-id}                                     |
+|    Look at: agent count, online agents                           |
++------------------------------------------------------------------+
+| 2. Check agent status                                            |
+|    GET /v1/agents?queue_id={queue-id}                            |
+|    Are agents online and available?                              |
++------------------------------------------------------------------+
+| 3. Check queue configuration                                     |
+|    Is timeout configured? Ring strategy?                         |
++------------------------------------------------------------------+
+
+Common Causes:
++------------------------------------------------------------------+
+| - No agents logged into queue                                    |
+| - All agents are busy                                            |
+| - Queue timeout expired                                          |
+| - Agent ring timeout too short                                   |
+| - Queue strategy misconfigured                                   |
++------------------------------------------------------------------+
+</pre></div>
+</div>
+</section>
+</section>
+<section id="using-webhooks-for-debugging">
+<h2>Using Webhooks for Debugging<a class="headerlink" href="#using-webhooks-for-debugging" title="Link to this heading"></a></h2>
+<p>Set up webhooks to monitor flow execution in real-time:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Webhook</span> <span class="n">Event</span> <span class="n">Flow</span><span class="p">:</span>
+
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span>                     <span class="n">Debug</span> <span class="n">Webhook</span> <span class="n">Setup</span>                          <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+
+<span class="mf">1.</span> <span class="n">Create</span> <span class="n">a</span> <span class="n">webhook</span> <span class="n">endpoint</span> <span class="n">to</span> <span class="n">receive</span> <span class="n">events</span>
+<span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">webhooks</span>
+<span class="p">{</span>
+  <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Debug Webhook&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://your-server.com/debug&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&quot;activeflow.created&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;activeflow.updated&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;activeflow.deleted&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;call.progressing&quot;</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+
+<span class="mf">2.</span> <span class="n">Events</span> <span class="n">you</span><span class="s1">&#39;ll receive during flow execution:</span>
+
+<span class="n">Flow</span> <span class="n">starts</span><span class="p">:</span>
+<span class="p">{</span>
+  <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;activeflow.created&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;activeflow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;abc-123&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;flow-456&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;call-789&quot;</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">Each</span> <span class="n">action</span> <span class="n">execution</span><span class="p">:</span>
+<span class="p">{</span>
+  <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;activeflow.updated&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;activeflow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;abc-123&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;current_action_id&quot;</span><span class="p">:</span> <span class="s2">&quot;action-xyz&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;executing&quot;</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">Flow</span> <span class="n">ends</span><span class="p">:</span>
+<span class="p">{</span>
+  <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;activeflow.deleted&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;activeflow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;abc-123&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;reason&quot;</span><span class="p">:</span> <span class="s2">&quot;completed&quot;</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="testing-flows">
+<h2>Testing Flows<a class="headerlink" href="#testing-flows" title="Link to this heading"></a></h2>
+<p>Best practices for testing flows before production:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Testing</span> <span class="n">Strategy</span><span class="p">:</span>
+
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span>                     <span class="n">Development</span> <span class="n">Testing</span>                          <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+
+<span class="mf">1.</span> <span class="n">API</span><span class="o">-</span><span class="n">Triggered</span> <span class="n">Testing</span>
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Create</span> <span class="n">activeflow</span> <span class="n">directly</span> <span class="n">via</span> <span class="n">API</span> <span class="n">without</span> <span class="n">a</span> <span class="n">call</span><span class="p">:</span>               <span class="o">|</span>
+<span class="o">|</span>                                                                  <span class="o">|</span>
+<span class="o">|</span> <span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">activeflows</span>                                             <span class="o">|</span>
+<span class="o">|</span> <span class="p">{</span>                                                                <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;your-flow-id&quot;</span><span class="p">,</span>                                     <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">&quot;reference_type&quot;</span><span class="p">:</span> <span class="s2">&quot;api&quot;</span>                                        <span class="o">|</span>
+<span class="o">|</span> <span class="p">}</span>                                                                <span class="o">|</span>
+<span class="o">|</span>                                                                  <span class="o">|</span>
+<span class="o">|</span> <span class="n">This</span> <span class="n">runs</span> <span class="n">the</span> <span class="n">flow</span> <span class="n">without</span> <span class="n">media</span> <span class="n">actions</span> <span class="p">(</span><span class="n">talk</span><span class="p">,</span> <span class="n">play</span> <span class="n">ignored</span><span class="p">)</span>    <span class="o">|</span>
+<span class="o">|</span> <span class="n">Useful</span> <span class="k">for</span> <span class="n">testing</span> <span class="n">branching</span> <span class="n">logic</span> <span class="ow">and</span> <span class="n">webhooks</span>                  <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+
+<span class="mf">2.</span> <span class="n">Test</span> <span class="n">Phone</span> <span class="n">Number</span>
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Reserve</span> <span class="n">a</span> <span class="n">dedicated</span> <span class="n">test</span> <span class="n">number</span> <span class="k">for</span> <span class="n">development</span>                  <span class="o">|</span>
+<span class="o">|</span> <span class="n">Attach</span> <span class="n">test</span> <span class="n">flows</span> <span class="n">to</span> <span class="n">this</span> <span class="n">number</span>                                 <span class="o">|</span>
+<span class="o">|</span> <span class="n">Call</span> <span class="n">it</span> <span class="n">manually</span> <span class="n">to</span> <span class="n">verify</span> <span class="n">behavior</span>                              <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+
+<span class="mf">3.</span> <span class="n">Webhook</span> <span class="n">Logging</span>
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Use</span> <span class="n">webhook</span><span class="o">.</span><span class="n">site</span> <span class="ow">or</span> <span class="n">similar</span> <span class="n">service</span> <span class="n">to</span> <span class="n">capture</span> <span class="n">webhooks</span>          <span class="o">|</span>
+<span class="o">|</span> <span class="n">Verify</span> <span class="nb">all</span> <span class="n">expected</span> <span class="n">events</span> <span class="n">are</span> <span class="n">fired</span>                             <span class="o">|</span>
+<span class="o">|</span> <span class="n">Check</span> <span class="n">variable</span> <span class="n">values</span> <span class="ow">in</span> <span class="n">webhook</span> <span class="n">payloads</span>                        <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Test</span> <span class="n">Checklist</span><span class="p">:</span>
+
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span>                     <span class="n">Flow</span> <span class="n">Test</span> <span class="n">Checklist</span>                          <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+
+<span class="n">Basic</span> <span class="n">Functionality</span><span class="p">:</span>
+<span class="p">[</span> <span class="p">]</span> <span class="n">Flow</span> <span class="n">starts</span> <span class="n">when</span> <span class="n">call</span> <span class="n">arrives</span>
+<span class="p">[</span> <span class="p">]</span> <span class="n">Answer</span> <span class="n">action</span> <span class="n">picks</span> <span class="n">up</span> <span class="n">call</span>
+<span class="p">[</span> <span class="p">]</span> <span class="n">Talk</span> <span class="n">actions</span> <span class="n">play</span> <span class="n">audio</span>
+<span class="p">[</span> <span class="p">]</span> <span class="n">Flow</span> <span class="n">completes</span> <span class="n">without</span> <span class="n">errors</span>
+
+<span class="n">Branching</span><span class="p">:</span>
+<span class="p">[</span> <span class="p">]</span> <span class="n">Each</span> <span class="n">branch</span> <span class="n">option</span> <span class="n">routes</span> <span class="n">correctly</span>
+<span class="p">[</span> <span class="p">]</span> <span class="n">Default</span> <span class="n">branch</span> <span class="n">catches</span> <span class="n">invalid</span> <span class="nb">input</span>
+<span class="p">[</span> <span class="p">]</span> <span class="n">Retry</span> <span class="n">loop</span> <span class="n">works</span> <span class="p">(</span><span class="n">goto</span> <span class="k">with</span> <span class="n">loop_count</span><span class="p">)</span>
+
+<span class="n">Variables</span><span class="p">:</span>
+<span class="p">[</span> <span class="p">]</span> <span class="n">Variables</span> <span class="n">are</span> <span class="nb">set</span> <span class="n">correctly</span>
+<span class="p">[</span> <span class="p">]</span> <span class="n">Variables</span> <span class="n">substitute</span> <span class="ow">in</span> <span class="n">talk</span> <span class="n">text</span>
+<span class="p">[</span> <span class="p">]</span> <span class="n">Variables</span> <span class="k">pass</span> <span class="n">to</span> <span class="n">webhooks</span>
+
+<span class="n">Error</span> <span class="n">Cases</span><span class="p">:</span>
+<span class="p">[</span> <span class="p">]</span> <span class="n">Caller</span> <span class="n">hangup</span> <span class="ow">is</span> <span class="n">handled</span> <span class="n">gracefully</span>
+<span class="p">[</span> <span class="p">]</span> <span class="n">Timeout</span> <span class="n">on</span> <span class="n">digits_receive</span> <span class="n">works</span>
+<span class="p">[</span> <span class="p">]</span> <span class="n">Invalid</span> <span class="nb">input</span> <span class="n">routes</span> <span class="n">to</span> <span class="n">default</span>
+
+<span class="n">Integrations</span><span class="p">:</span>
+<span class="p">[</span> <span class="p">]</span> <span class="n">Webhooks</span> <span class="n">receive</span> <span class="n">expected</span> <span class="n">data</span>
+<span class="p">[</span> <span class="p">]</span> <span class="n">External</span> <span class="n">APIs</span> <span class="n">respond</span> <span class="n">correctly</span>
+<span class="p">[</span> <span class="p">]</span> <span class="n">Queue</span> <span class="n">routing</span> <span class="n">works</span>
+<span class="p">[</span> <span class="p">]</span> <span class="n">Recording</span> <span class="n">starts</span><span class="o">/</span><span class="n">stops</span> <span class="n">properly</span>
+</pre></div>
+</div>
+</section>
+<section id="debugging-webhook-integration">
+<h2>Debugging Webhook Integration<a class="headerlink" href="#debugging-webhook-integration" title="Link to this heading"></a></h2>
+<p>Common issues with webhook_send:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Webhook Send Debugging:
+
++------------------------------------------------------------------+
+| Problem: Webhook not received                                    |
++------------------------------------------------------------------+
+
+Check in your flow:
+{
+  &quot;type&quot;: &quot;webhook_send&quot;,
+  &quot;option&quot;: {
+    &quot;sync&quot;: false,           &lt;- Async won&#39;t block flow
+    &quot;uri&quot;: &quot;https://...&quot;,    &lt;- Is URL accessible?
+    &quot;method&quot;: &quot;POST&quot;,
+    &quot;data_type&quot;: &quot;application/json&quot;,
+    &quot;data&quot;: &quot;{...}&quot;          &lt;- Valid JSON?
+  }
+}
+
+Common Issues:
++------------------------------------------------------------------+
+| - URL not reachable from VoIPBIN servers                         |
+| - Firewall blocking incoming requests                            |
+| - SSL certificate issues (use valid cert)                        |
+| - Invalid JSON in data field                                     |
+| - Server returning error status code                             |
++------------------------------------------------------------------+
+
+Debug Tips:
++------------------------------------------------------------------+
+| 1. Test URL accessibility:                                       |
+|    Can you curl the URL from a public server?                    |
+|                                                                  |
+| 2. Check SSL certificate:                                        |
+|    Use valid, non-self-signed certificate                        |
+|                                                                  |
+| 3. Verify JSON syntax:                                           |
+|    Run data through JSON validator                               |
+|                                                                  |
+| 4. Check server logs:                                            |
+|    Is request arriving? What response code?                      |
++------------------------------------------------------------------+
+</pre></div>
+</div>
+</section>
+<section id="flow-execution-limits">
+<h2>Flow Execution Limits<a class="headerlink" href="#flow-execution-limits" title="Link to this heading"></a></h2>
+<p>Understanding and avoiding execution limits:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Execution</span> <span class="n">Limits</span><span class="p">:</span>
+
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span>                     <span class="n">Per</span><span class="o">-</span><span class="n">Cycle</span> <span class="n">Limit</span><span class="p">:</span> <span class="mi">1000</span>                        <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">What</span> <span class="n">counts</span><span class="p">:</span> <span class="n">Each</span> <span class="n">action</span> <span class="n">executed</span> <span class="ow">in</span> <span class="n">one</span> <span class="n">cycle</span>                   <span class="o">|</span>
+<span class="o">|</span> <span class="n">Reset</span><span class="p">:</span> <span class="n">When</span> <span class="n">flow</span> <span class="n">waits</span> <span class="k">for</span> <span class="k">async</span> <span class="n">event</span> <span class="p">(</span><span class="n">talk</span><span class="p">,</span> <span class="n">connect</span><span class="p">,</span> <span class="n">etc</span><span class="o">.</span><span class="p">)</span>     <span class="o">|</span>
+<span class="o">|</span>                                                                  <span class="o">|</span>
+<span class="o">|</span> <span class="n">Trigger</span> <span class="n">scenario</span><span class="p">:</span>                                                <span class="o">|</span>
+<span class="o">|</span> <span class="n">goto</span> <span class="o">-&gt;</span> <span class="n">goto</span> <span class="o">-&gt;</span> <span class="n">goto</span> <span class="o">-&gt;</span> <span class="o">...</span> <span class="p">(</span><span class="mi">1000</span> <span class="n">times</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">STOPPED</span>              <span class="o">|</span>
+<span class="o">|</span>                                                                  <span class="o">|</span>
+<span class="o">|</span> <span class="n">Prevention</span><span class="p">:</span>                                                      <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Always</span> <span class="n">use</span> <span class="n">loop_count</span> <span class="n">on</span> <span class="n">goto</span> <span class="n">actions</span>                          <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Add</span> <span class="k">async</span> <span class="n">actions</span> <span class="p">(</span><span class="n">talk</span><span class="p">,</span> <span class="n">sleep</span><span class="p">)</span> <span class="ow">in</span> <span class="n">loops</span>                       <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span>                     <span class="n">Total</span> <span class="n">Execution</span> <span class="n">Limit</span><span class="p">:</span> <span class="mi">100</span>                   <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">What</span> <span class="n">counts</span><span class="p">:</span> <span class="n">Each</span> <span class="n">time</span> <span class="n">flow</span> <span class="n">resumes</span> <span class="kn">from</span><span class="w"> </span><span class="nn">async</span> <span class="n">event</span>             <span class="o">|</span>
+<span class="o">|</span> <span class="n">Reset</span><span class="p">:</span> <span class="n">Never</span> <span class="p">(</span><span class="n">lifetime</span> <span class="n">of</span> <span class="n">activeflow</span><span class="p">)</span>                            <span class="o">|</span>
+<span class="o">|</span>                                                                  <span class="o">|</span>
+<span class="o">|</span> <span class="n">Trigger</span> <span class="n">scenario</span><span class="p">:</span>                                                <span class="o">|</span>
+<span class="o">|</span> <span class="n">A</span> <span class="n">very</span> <span class="n">long</span> <span class="n">call</span> <span class="k">with</span> <span class="n">many</span> <span class="n">interactions</span>                          <span class="o">|</span>
+<span class="o">|</span>                                                                  <span class="o">|</span>
+<span class="o">|</span> <span class="n">Prevention</span><span class="p">:</span>                                                      <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Design</span> <span class="n">efficient</span> <span class="n">flows</span>                                         <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Avoid</span> <span class="n">unnecessary</span> <span class="n">action</span> <span class="n">loops</span>                                 <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Consider</span> <span class="n">breaking</span> <span class="n">into</span> <span class="n">sub</span><span class="o">-</span><span class="n">flows</span>                               <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span>                     <span class="n">On</span><span class="o">-</span><span class="n">Complete</span> <span class="n">Chain</span> <span class="n">Limit</span><span class="p">:</span> <span class="mi">5</span>                   <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">What</span> <span class="n">counts</span><span class="p">:</span> <span class="n">on_complete_flow_id</span> <span class="n">triggers</span>                        <span class="o">|</span>
+<span class="o">|</span>                                                                  <span class="o">|</span>
+<span class="o">|</span> <span class="n">Flow</span> <span class="n">A</span> <span class="o">-&gt;</span> <span class="n">Flow</span> <span class="n">B</span> <span class="o">-&gt;</span> <span class="n">Flow</span> <span class="n">C</span> <span class="o">-&gt;</span> <span class="n">Flow</span> <span class="n">D</span> <span class="o">-&gt;</span> <span class="n">Flow</span> <span class="n">E</span> <span class="o">-&gt;</span> <span class="n">STOPPED</span>        <span class="o">|</span>
+<span class="o">|</span>   <span class="mi">0</span>         <span class="mi">1</span>         <span class="mi">2</span>         <span class="mi">3</span>         <span class="mi">4</span>        <span class="mi">5</span><span class="p">(</span><span class="n">blocked</span><span class="p">)</span>    <span class="o">|</span>
+<span class="o">|</span>                                                                  <span class="o">|</span>
+<span class="o">|</span> <span class="n">Prevention</span><span class="p">:</span>                                                      <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Limit</span> <span class="n">on</span><span class="o">-</span><span class="n">complete</span> <span class="n">chains</span>                                       <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Use</span> <span class="n">webhooks</span> <span class="k">for</span> <span class="n">post</span><span class="o">-</span><span class="n">call</span> <span class="n">work</span> <span class="n">instead</span>                        <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+</pre></div>
+</div>
+</section>
+<section id="error-messages-reference">
+<h2>Error Messages Reference<a class="headerlink" href="#error-messages-reference" title="Link to this heading"></a></h2>
+<p>Common error messages and their meanings:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Error</span> <span class="n">Reference</span><span class="p">:</span>
+
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Error</span><span class="p">:</span> <span class="s2">&quot;activeflow not found&quot;</span>                                    <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Cause</span><span class="p">:</span> <span class="n">Activeflow</span> <span class="n">ID</span> <span class="n">doesn</span><span class="s1">&#39;t exist or was deleted                |</span>
+<span class="o">|</span> <span class="n">Solution</span><span class="p">:</span> <span class="n">Check</span> <span class="n">ID</span><span class="p">,</span> <span class="n">verify</span> <span class="n">flow</span> <span class="n">started</span> <span class="n">successfully</span>             <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Error</span><span class="p">:</span> <span class="s2">&quot;flow not found&quot;</span>                                          <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Cause</span><span class="p">:</span> <span class="n">Flow</span> <span class="n">definition</span> <span class="n">ID</span> <span class="n">doesn</span><span class="s1">&#39;t exist                          |</span>
+<span class="o">|</span> <span class="n">Solution</span><span class="p">:</span> <span class="n">Verify</span> <span class="n">flow_id</span><span class="p">,</span> <span class="n">check</span> <span class="k">if</span> <span class="n">flow</span> <span class="n">was</span> <span class="n">deleted</span>              <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Error</span><span class="p">:</span> <span class="s2">&quot;action not found in flow&quot;</span>                                <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Cause</span><span class="p">:</span> <span class="n">goto</span><span class="o">/</span><span class="n">branch</span> <span class="n">target_id</span> <span class="n">doesn</span><span class="s1">&#39;t exist in actions array      |</span>
+<span class="o">|</span> <span class="n">Solution</span><span class="p">:</span> <span class="n">Verify</span> <span class="n">action</span> <span class="n">IDs</span> <span class="n">match</span> <span class="n">between</span> <span class="n">targets</span> <span class="ow">and</span> <span class="n">actions</span>    <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Error</span><span class="p">:</span> <span class="s2">&quot;execution limit exceeded&quot;</span>                                <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Cause</span><span class="p">:</span> <span class="n">Hit</span> <span class="mi">1000</span> <span class="n">per</span><span class="o">-</span><span class="n">cycle</span> <span class="ow">or</span> <span class="mi">100</span> <span class="n">total</span> <span class="n">execution</span> <span class="n">limit</span>           <span class="o">|</span>
+<span class="o">|</span> <span class="n">Solution</span><span class="p">:</span> <span class="n">Add</span> <span class="n">loop_count</span> <span class="n">to</span> <span class="n">gotos</span><span class="p">,</span> <span class="k">break</span> <span class="n">up</span> <span class="nb">complex</span> <span class="n">flows</span>        <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Error</span><span class="p">:</span> <span class="s2">&quot;invalid action type&quot;</span>                                     <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Cause</span><span class="p">:</span> <span class="n">Action</span> <span class="nb">type</span> <span class="n">field</span> <span class="n">has</span> <span class="n">unknown</span> <span class="n">value</span>                       <span class="o">|</span>
+<span class="o">|</span> <span class="n">Solution</span><span class="p">:</span> <span class="n">Check</span> <span class="n">spelling</span><span class="p">,</span> <span class="n">use</span> <span class="n">documented</span> <span class="n">action</span> <span class="n">types</span>            <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Error</span><span class="p">:</span> <span class="s2">&quot;variable not found&quot;</span>                                      <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Cause</span><span class="p">:</span> <span class="n">Referenced</span> <span class="n">variable</span> <span class="n">doesn</span><span class="s1">&#39;t exist                         |</span>
+<span class="o">|</span> <span class="n">Solution</span><span class="p">:</span> <span class="n">Ensure</span> <span class="n">variable</span> <span class="ow">is</span> <span class="nb">set</span> <span class="n">before</span> <span class="n">use</span><span class="p">,</span> <span class="n">check</span> <span class="n">spelling</span>      <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Error</span><span class="p">:</span> <span class="s2">&quot;call not in valid state for action&quot;</span>                      <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Cause</span><span class="p">:</span> <span class="n">Trying</span> <span class="n">media</span> <span class="n">action</span> <span class="n">on</span> <span class="n">non</span><span class="o">-</span><span class="n">answered</span> <span class="n">call</span>                  <span class="o">|</span>
+<span class="o">|</span> <span class="n">Solution</span><span class="p">:</span> <span class="n">Add</span> <span class="n">answer</span> <span class="n">action</span><span class="p">,</span> <span class="n">verify</span> <span class="n">call</span> <span class="n">state</span>                   <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+</pre></div>
+</div>
+</section>
+<section id="logging-best-practices">
+<h2>Logging Best Practices<a class="headerlink" href="#logging-best-practices" title="Link to this heading"></a></h2>
+<p>Add strategic webhooks for debugging:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Strategic</span> <span class="n">Logging</span> <span class="n">Points</span><span class="p">:</span>
+
+<span class="p">{</span>
+  <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Flow with Debug Logging&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;webhook_send&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;uri&quot;</span><span class="p">:</span> <span class="s2">&quot;https://your-api.com/debug&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;POST&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;data_type&quot;</span><span class="p">:</span> <span class="s2">&quot;application/json&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="s2">&quot;{</span><span class="se">\&quot;</span><span class="s2">event</span><span class="se">\&quot;</span><span class="s2">: </span><span class="se">\&quot;</span><span class="s2">flow_started</span><span class="se">\&quot;</span><span class="s2">, </span><span class="se">\&quot;</span><span class="s2">call_id</span><span class="se">\&quot;</span><span class="s2">: </span><span class="se">\&quot;</span><span class="s2">$</span><span class="si">{voipbin.call.id}</span><span class="se">\&quot;</span><span class="s2">}&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;answer&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Welcome. Press 1 or 2.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;digits_receive&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="mi">5000</span><span class="p">,</span>
+        <span class="s2">&quot;length&quot;</span><span class="p">:</span> <span class="mi">1</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;webhook_send&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;uri&quot;</span><span class="p">:</span> <span class="s2">&quot;https://your-api.com/debug&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;POST&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;data_type&quot;</span><span class="p">:</span> <span class="s2">&quot;application/json&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="s2">&quot;{</span><span class="se">\&quot;</span><span class="s2">event</span><span class="se">\&quot;</span><span class="s2">: </span><span class="se">\&quot;</span><span class="s2">digits_received</span><span class="se">\&quot;</span><span class="s2">, </span><span class="se">\&quot;</span><span class="s2">digits</span><span class="se">\&quot;</span><span class="s2">: </span><span class="se">\&quot;</span><span class="s2">$</span><span class="si">{voipbin.call.digits}</span><span class="se">\&quot;</span><span class="s2">}&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;branch&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;variable&quot;</span><span class="p">:</span> <span class="s2">&quot;voipbin.call.digits&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;target_ids&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="s2">&quot;1&quot;</span><span class="p">:</span> <span class="s2">&quot;option-1&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;2&quot;</span><span class="p">:</span> <span class="s2">&quot;option-2&quot;</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;option-1&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;webhook_send&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;uri&quot;</span><span class="p">:</span> <span class="s2">&quot;https://your-api.com/debug&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;POST&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;data_type&quot;</span><span class="p">:</span> <span class="s2">&quot;application/json&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="s2">&quot;{</span><span class="se">\&quot;</span><span class="s2">event</span><span class="se">\&quot;</span><span class="s2">: </span><span class="se">\&quot;</span><span class="s2">branch_selected</span><span class="se">\&quot;</span><span class="s2">, </span><span class="se">\&quot;</span><span class="s2">branch</span><span class="se">\&quot;</span><span class="s2">: </span><span class="se">\&quot;</span><span class="s2">option-1</span><span class="se">\&quot;</span><span class="s2">}&quot;</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="quick-diagnostic-commands">
+<h2>Quick Diagnostic Commands<a class="headerlink" href="#quick-diagnostic-commands" title="Link to this heading"></a></h2>
+<p>Common API calls for troubleshooting:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Diagnostic</span> <span class="n">API</span> <span class="n">Calls</span><span class="p">:</span>
+
+<span class="c1"># List recent activeflows</span>
+<span class="n">curl</span> <span class="o">-</span><span class="n">H</span> <span class="s2">&quot;Authorization: Bearer $TOKEN&quot;</span> \
+  <span class="s2">&quot;https://api.voipbin.net/v1/activeflows?limit=10&quot;</span>
+
+<span class="c1"># Get specific activeflow</span>
+<span class="n">curl</span> <span class="o">-</span><span class="n">H</span> <span class="s2">&quot;Authorization: Bearer $TOKEN&quot;</span> \
+  <span class="s2">&quot;https://api.voipbin.net/v1/activeflows/</span><span class="si">{id}</span><span class="s2">&quot;</span>
+
+<span class="c1"># Get activeflow variables</span>
+<span class="n">curl</span> <span class="o">-</span><span class="n">H</span> <span class="s2">&quot;Authorization: Bearer $TOKEN&quot;</span> \
+  <span class="s2">&quot;https://api.voipbin.net/v1/activeflows/</span><span class="si">{id}</span><span class="s2">/variables&quot;</span>
+
+<span class="c1"># Find activeflow by call</span>
+<span class="n">curl</span> <span class="o">-</span><span class="n">H</span> <span class="s2">&quot;Authorization: Bearer $TOKEN&quot;</span> \
+  <span class="s2">&quot;https://api.voipbin.net/v1/activeflows?reference_id={call-id}&quot;</span>
+
+<span class="c1"># Get flow definition</span>
+<span class="n">curl</span> <span class="o">-</span><span class="n">H</span> <span class="s2">&quot;Authorization: Bearer $TOKEN&quot;</span> \
+  <span class="s2">&quot;https://api.voipbin.net/v1/flows/{flow-id}&quot;</span>
+
+<span class="c1"># Get call details</span>
+<span class="n">curl</span> <span class="o">-</span><span class="n">H</span> <span class="s2">&quot;Authorization: Bearer $TOKEN&quot;</span> \
+  <span class="s2">&quot;https://api.voipbin.net/v1/calls/{call-id}&quot;</span>
+
+<span class="c1"># List calls for a flow</span>
+<span class="n">curl</span> <span class="o">-</span><span class="n">H</span> <span class="s2">&quot;Authorization: Bearer $TOKEN&quot;</span> \
+  <span class="s2">&quot;https://api.voipbin.net/v1/calls?flow_id={flow-id}&quot;</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+</main>
+                        
+                    </div>
+                    
+                    <nav class="col-12 col-lg-3 pb-4">
+                        <div class="sticky-top toc page-toc" aria-labelledby="page-toc-heading">
+                            <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
+                            <ul>
+<li><a class="reference internal" href="#">Flow Debugging and Troubleshooting</a><ul>
+<li><a class="reference internal" href="#debugging-tools">Debugging Tools</a></li>
+<li><a class="reference internal" href="#examining-activeflow-state">Examining Activeflow State</a></li>
+<li><a class="reference internal" href="#common-issues-and-solutions">Common Issues and Solutions</a><ul>
+<li><a class="reference internal" href="#flow-never-starts">Flow Never Starts</a></li>
+<li><a class="reference internal" href="#flow-stops-unexpectedly">Flow Stops Unexpectedly</a></li>
+<li><a class="reference internal" href="#branch-not-working">Branch Not Working</a></li>
+<li><a class="reference internal" href="#talk-action-not-playing">Talk Action Not Playing</a></li>
+<li><a class="reference internal" href="#digits-not-received">Digits Not Received</a></li>
+<li><a class="reference internal" href="#connect-action-failing">Connect Action Failing</a></li>
+<li><a class="reference internal" href="#variables-not-substituting">Variables Not Substituting</a></li>
+<li><a class="reference internal" href="#queue-join-not-working">Queue Join Not Working</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#using-webhooks-for-debugging">Using Webhooks for Debugging</a></li>
+<li><a class="reference internal" href="#testing-flows">Testing Flows</a></li>
+<li><a class="reference internal" href="#debugging-webhook-integration">Debugging Webhook Integration</a></li>
+<li><a class="reference internal" href="#flow-execution-limits">Flow Execution Limits</a></li>
+<li><a class="reference internal" href="#error-messages-reference">Error Messages Reference</a></li>
+<li><a class="reference internal" href="#logging-best-practices">Logging Best Practices</a></li>
+<li><a class="reference internal" href="#quick-diagnostic-commands">Quick Diagnostic Commands</a></li>
+</ul>
+</li>
+</ul>
+
+                        </div>
+                    </nav>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer class="container-fluid bg-primary text-light">
+        <div class="container">
+            <div class="row">
+        <div class="col p-4">
+            
+                <nav aria-label="Footer">
+                    <ul class="nav justify-content-center mb-2">
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="http://voipbin.net">About Us</a></li>
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="http://voipbin.net">Contact</a></li>
+                        
+                    </ul>
+                </nav>
+            
+            <div class="text-center">
+                    &copy; Copyright 2026, VoIPBIN
+            </div>
+            <div class="text-center text-white-50 font-italic mt-3">
+                <small>
+                    Created using
+                    <a class="text-white" href="https://github.com/wagtail/sphinx_wagtail_theme" rel="nofollow" target="_blank">
+                        Sphinx Wagtail Theme 6.5.0
+                    </a>
+                    and
+                    <a class="text-white" href="https://www.sphinx-doc.org/" rel="nofollow" target="_blank">
+                        Sphinx 9.1.0
+                    </a>
+                </small>
+            </div>
+        </div>
+    </div>
+        </div>
+    </footer>
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=fd6eb6e6"></script>
+        <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+        <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="_static/copybutton.js?v=f281be69"></script>
+        <script type="text/javascript" src="_static/dist/theme.js"></script>
+        <script type="text/javascript" src="_static/dist/vendor.js"></script>
+        <script type="text/javascript" src="_static/searchtools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script type="text/javascript">
+            document.addEventListener('DOMContentLoaded', function() { Search.loadIndex("searchindex.js"); });
+        </script>
+        <script type="text/javascript" id="searchindexloader"></script>
+    </body>
+</html>

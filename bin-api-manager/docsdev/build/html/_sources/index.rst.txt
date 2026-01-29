@@ -83,6 +83,12 @@ Welcome to VoIPBIN's documentation!
 
    glossary
 
+.. toctree::
+   :maxdepth: 5
+   :caption: Help & Support
+
+   support
+
 
 Indices and tables
 ==================
