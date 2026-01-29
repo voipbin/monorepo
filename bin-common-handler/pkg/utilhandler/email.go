@@ -5,6 +5,12 @@ import (
 	"strings"
 )
 
+// Pre-compiled regex patterns for email validation (performance optimization)
+var (
+	consecutiveDotsRegex = regexp.MustCompile(`\.\.`)
+	emailFormatRegex     = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+)
+
 // EmailIsValid returns true if the email is valid
 func (h *utilHandler) EmailIsValid(e string) bool {
 	return EmailIsValid(e)
@@ -17,7 +23,7 @@ func EmailIsValid(e string) bool {
 	}
 
 	// Check for consecutive dots
-	if regexp.MustCompile(`\.\.`).MatchString(e) {
+	if consecutiveDotsRegex.MatchString(e) {
 		return false
 	}
 
@@ -48,6 +54,5 @@ func EmailIsValid(e string) bool {
 		return false
 	}
 
-	emailRegex := regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
-	return emailRegex.MatchString(e)
+	return emailFormatRegex.MatchString(e)
 }

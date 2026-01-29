@@ -30,6 +30,11 @@ func URLParseFilters(u *url.URL) map[string]string {
 			continue
 		}
 
+		// Safety check: ensure slice is not empty before accessing
+		if len(v) == 0 {
+			continue
+		}
+
 		filter := strings.TrimPrefix(k, "filter_")
 		res[filter] = v[0]
 	}
@@ -37,9 +42,15 @@ func URLParseFilters(u *url.URL) map[string]string {
 	return res
 }
 
-// URLMergeFilters merges the given urii with the given filters
-// the filters items will be have the "filter_" prefix
+// URLMergeFilters merges the given uri with the given filters.
+// The filters items will have the "filter_" prefix.
+// Note: This function always uses "&" as separator because it's designed to append
+// to URIs that already have query parameters from the caller.
 func URLMergeFilters(uri string, filters map[string]string) string {
+	if len(filters) == 0 {
+		return uri
+	}
+
 	res := uri
 
 	keys := maps.Keys(filters)
