@@ -5,6 +5,7 @@ package rabbitmqhandler
 import (
 	"context"
 	"monorepo/bin-common-handler/models/sock"
+	"sync"
 	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -61,6 +62,9 @@ type rabbit struct {
 	connection   amqpConnection
 	closed       bool
 
+	// mu protects concurrent access to queues, exchanges, and queueBinds maps.
+	// Use RLock for reads and Lock for writes.
+	mu         sync.RWMutex
 	queues     map[string]*queue
 	exchanges  map[string]*exchange
 	queueBinds map[string]*queueBind
@@ -124,6 +128,7 @@ func (r *rabbit) Close() {
 
 	r.closed = true
 
+	r.mu.RLock()
 	// close all queue channels
 	for _, q := range r.queues {
 		if q.channel != nil {
@@ -137,6 +142,7 @@ func (r *rabbit) Close() {
 			_ = e.channel.Close()
 		}
 	}
+	r.mu.RUnlock()
 
 	_ = r.connection.Close()
 
@@ -197,8 +203,25 @@ func (r *rabbit) connect() {
 func (r *rabbit) redeclareAll() {
 	log := logrus.WithField("func", "redeclareAll")
 
+	// Take a snapshot of declarations to avoid holding lock during network operations.
+	// QueueDeclare/ExchangeDeclare will acquire the lock when updating maps.
+	r.mu.RLock()
+	queuesCopy := make([]*queue, 0, len(r.queues))
+	for _, q := range r.queues {
+		queuesCopy = append(queuesCopy, q)
+	}
+	exchangesCopy := make([]*exchange, 0, len(r.exchanges))
+	for _, e := range r.exchanges {
+		exchangesCopy = append(exchangesCopy, e)
+	}
+	bindsCopy := make([]*queueBind, 0, len(r.queueBinds))
+	for _, b := range r.queueBinds {
+		bindsCopy = append(bindsCopy, b)
+	}
+	r.mu.RUnlock()
+
 	// redeclare the queues
-	for _, queue := range r.queues {
+	for _, queue := range queuesCopy {
 		log.Debugf("Redeclaring the queue. queue: %s", queue.name)
 		if err := r.QueueDeclare(queue.name, queue.durable, queue.autoDelete, queue.exclusive, queue.noWait); err != nil {
 			log.Errorf("Could not declare the queue. err: %v", err)
@@ -206,7 +229,7 @@ func (r *rabbit) redeclareAll() {
 	}
 
 	// redeclare the exchanges
-	for _, exchange := range r.exchanges {
+	for _, exchange := range exchangesCopy {
 		log.Debugf("Redeclaring the exchange. exchage: %s", exchange.name)
 		if err := r.ExchangeDeclare(exchange.name, exchange.kind, exchange.durable, exchange.autoDelete, exchange.internal, exchange.noWait, exchange.args); err != nil {
 			log.Errorf("Could not declare the exchange. err: %v", err)
@@ -214,7 +237,7 @@ func (r *rabbit) redeclareAll() {
 	}
 
 	// redeclare the binds
-	for _, queueBind := range r.queueBinds {
+	for _, queueBind := range bindsCopy {
 		logrus.Debugf("Redeclaring the bind. bind: %s", queueBind.name)
 		if err := r.QueueBind(queueBind.name, queueBind.key, queueBind.exchange, queueBind.noWait, queueBind.args); err != nil {
 			log.Errorf("Could not bind the queue. err: %v", err)

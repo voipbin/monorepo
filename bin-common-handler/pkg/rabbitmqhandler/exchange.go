@@ -18,6 +18,7 @@ func (r *rabbit) ExchangeDeclare(name, kind string, durable, autoDelete, interna
 		return err
 	}
 
+	r.mu.Lock()
 	// close existing channel if re-declaring (e.g., during reconnection)
 	if existing := r.exchanges[name]; existing != nil && existing.channel != nil {
 		_ = existing.channel.Close()
@@ -34,6 +35,7 @@ func (r *rabbit) ExchangeDeclare(name, kind string, durable, autoDelete, interna
 
 		channel: channel,
 	}
+	r.mu.Unlock()
 
 	return nil
 }
