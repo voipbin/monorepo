@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en" data-content_root="./">
+<head>
+    <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+        <title>Flow Best Practices &mdash; voipbin  documentation</title>
+    
+    <link rel="stylesheet" type="text/css" href="_static/dist/fontawesome.css" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8e8a900e" />
+      <link rel="stylesheet" type="text/css" href="_static/dist/theme.css?v=310cf088" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+            <link rel="index" title="Index" href="genindex.html" />
+            <link rel="search" title="Search" href="search.html" />
+            <link rel="top" title="voipbin  documentation" href="#" />
+    </head>
+<body>
+    <script type="text/javascript" src="_static/dist/blocking.js"></script>
+    <header class="container-fluid bg-primary">
+        <a class="btn btn-sm btn-light skip-to-content-link" href="#main">Skip to content</a>
+        <div class="container-fluid">
+            <div class="navbar navbar-expand-lg navbar-dark font-weight-bold">
+                    <a href="intro.html"
+                        title="voipbin"
+                        class="logo navbar-brand"
+                    >
+                        <img src="_static/images/voipbin-high-resolution-logo-white-transparent.png" width="45" height="80" alt="voipbin"
+                            class="logo-img"
+                        />
+                        VoIPBin Documentation
+                    </a>
+                
+                
+                    <div class="collapse navbar-collapse justify-content-end">
+                        <ul class="navbar-nav">
+                            
+                                
+                                
+                                <li class="nav-item"><a class="nav-link"  href="http://voipbin.net">Project</a></li>
+                            
+                                
+                                
+                                <li class="nav-item"><a class="nav-link"  href="https://admin.voipbin.net">Admin</a></li>
+                            
+                        </ul>
+                    </div>
+                
+                <button class="navbar-toggler btn btn-primary d-lg-none" type="button" data-toggle="collapse" data-target="#collapseSidebar" aria-expanded="false" aria-controls="collapseExample">
+                    <span class="navbar-toggler-icon"></span>
+                    <span class="sr-only">menu</span>
+                </button>
+            </div>
+        </div>
+    </header>
+    <div class="container-fluid">
+        <div class="row">
+            <aside class="col-12 col-lg-3 sidebar-container">
+                <div id="collapseSidebar" class="collapse sticky-top d-lg-block pt-5 pr-lg-4">
+<div id="searchbox" class="searchbox mb-6 px-1" role="search">
+    <form id="search-form" action="search.html" autocomplete="off" method="get" role="search">
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <div class="input-group-text border-right-0 bg-white py-3 pl-3 pr-2"><span class="fas fa-search"></span></div>
+            </div>
+            <input class="form-control py-3 pr-3 pl-1 h-100 border-left-0" type="search" name="q" placeholder="Search documentation" aria-label="Search documentation" id="searchinput" />
+        </div>
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+    </form>
+</div><div class="site-toc">
+    <nav class="toc mt-3" aria-label="Main menu">
+        <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="accesskey.html">Accesskey</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sdk.html">SDK(Software Development Kit)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="restful_api.html">RESTful API(Application Programming Interface)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Core Concepts</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flow.html#activeflow">Activeflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="variable.html">Variable</a></li>
+<li class="toctree-l1"><a class="reference internal" href="webhook.html">Webhook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="common.html">Common</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Voice &amp; Real-Time</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="call.html">Call</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conference.html">Conference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="queue.html">Queue</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recording.html">Recording</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transcribe.html">Transcribe</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mediastream.html">Mediastream</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Messaging</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="message.html">Message</a></li>
+<li class="toctree-l1"><a class="reference internal" href="email.html">Email</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chat.html">Chat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conversation.html">Conversation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">AI &amp; Automation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="ai.html">AI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="campaign.html">Campaign</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outdial.html">Outdial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outplan.html">Outplan</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Resources &amp; Management</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="number.html">Number</a></li>
+<li class="toctree-l1"><a class="reference internal" href="agent.html">Agent</a></li>
+<li class="toctree-l1"><a class="reference internal" href="customer.html">Customer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="billing_account.html">Billing Account</a></li>
+<li class="toctree-l1"><a class="reference internal" href="storage.html">Storage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a></li>
+<li class="toctree-l1"><a class="reference internal" href="provider.html">Provider</a></li>
+<li class="toctree-l1"><a class="reference internal" href="route.html">Route</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extension.html">Extension</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trunk.html">Trunk</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Architecture (Deep Dive)</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="websocket.html">Websocket</a></li>
+<li class="toctree-l1"><a class="reference internal" href="talk.html">Talk</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Help &amp; Support</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="support.html">Support</a></li>
+</ul>
+
+    </nav>
+    <template data-toggle-item-template>
+        <button class="btn btn-sm btn-link toctree-expand" type="button">
+            <span class="sr-only">Toggle menu contents</span>
+        </button>
+    </template>
+</div>
+                    <div class="d-lg-none border-bottom">
+                        
+                    </div>
+                </div>
+            </aside>
+            <div class="col-12 col-lg-9 pt-5">
+                <header class="row align-items-baseline">
+                    <div class="col">
+                        <nav aria-label="breadcrumb">
+    <ol class="breadcrumb m-0 p-0 bg-transparent">
+        <li class="breadcrumb-item"><a href="index.html">Docs</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Flow Best Practices</li>
+    </ol>
+</nav>
+                    </div>
+                    <div class="col-sm-12 col-lg-auto mt-3 mt-lg-3">
+                        <noscript>
+                            <p>JavaScript is required to toggle light/dark mode..</p>
+                        </noscript>
+                        <button id="wagtail-theme" class="btn btn-sm btn-light text-decoration-none" type="button">
+                            <span class="dark-only"><i class="fas fa-sun"></i> Light mode</span>
+                            <span class="light-only"><i class="fas fa-moon"></i> Dark mode</span>
+                        </button>
+    <a class="btn btn-sm btn-light text-decoration-none" href="_sources/flow_best_practices.rst.txt" rel="nofollow">
+        <span class="btn-icon"><span class="fas fa-code"></span></span>
+        <span class="btn-text">View source</span>
+    </a>
+                        
+                    </div>
+                </header>
+                <div class="row" >
+                    <div class="col-12">
+                        <hr class="w-100 my-4">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 col-lg-9 order-last order-lg-first rst-content">
+                        <main role="main" id="main">
+    <section id="flow-best-practices">
+<span id="id1"></span><h1>Flow Best Practices<a class="headerlink" href="#flow-best-practices" title="Link to this heading"></a></h1>
+<p>This section covers design patterns, optimization techniques, and best practices for building maintainable and efficient flows.</p>
+<section id="flow-design-principles">
+<h2>Flow Design Principles<a class="headerlink" href="#flow-design-principles" title="Link to this heading"></a></h2>
+<section id="keep-flows-focused">
+<h3>Keep Flows Focused<a class="headerlink" href="#keep-flows-focused" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Principle: Single Responsibility
+
++------------------------------------------------------------------+
+|                         BAD: Monolithic Flow                     |
++------------------------------------------------------------------+
+| One giant flow that handles:                                     |
+| - Language selection                                             |
+| - Main menu                                                      |
+| - Sales sub-menu                                                 |
+| - Support sub-menu                                               |
+| - Billing sub-menu                                               |
+| - Queue logic                                                    |
+| - Voicemail                                                      |
+| - Survey                                                         |
+|                                                                  |
+| Problems:                                                        |
+| - Hard to maintain                                               |
+| - Hard to test                                                   |
+| - Hard to reuse components                                       |
+| - Changes affect everything                                      |
++------------------------------------------------------------------+
+
++------------------------------------------------------------------+
+|                        GOOD: Modular Flows                       |
++------------------------------------------------------------------+
+|                                                                  |
+| Main Router Flow                                                 |
+|   └── fetch_flow: Language Selection                             |
+|         └── fetch_flow: Main Menu                                |
+|               ├── fetch_flow: Sales Menu                         |
+|               ├── fetch_flow: Support Menu                       |
+|               └── fetch_flow: Billing Menu                       |
+|                                                                  |
+| Shared Flows:                                                    |
+|   - Queue Wait Flow (reused by all menus)                        |
+|   - Voicemail Flow (reused for after-hours)                      |
+|   - Survey Flow (attached via on_complete_flow_id)               |
+|                                                                  |
+| Benefits:                                                        |
+| - Each flow has one job                                          |
+| - Easy to test individually                                      |
+| - Reusable components                                            |
+| - Changes are localized                                          |
++------------------------------------------------------------------+
+</pre></div>
+</div>
+</section>
+<section id="use-meaningful-action-ids">
+<h3>Use Meaningful Action IDs<a class="headerlink" href="#use-meaningful-action-ids" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Action ID Best Practices:
+
++------------------------------------------------------------------+
+|                            BAD                                   |
++------------------------------------------------------------------+
+| {                                                                |
+|   &quot;id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,                  |
+|   &quot;type&quot;: &quot;talk&quot;,                                                |
+|   ...                                                            |
+| }                                                                |
+|                                                                  |
+| Debugging nightmare:                                             |
+| &quot;Flow stopped at action a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;    |
+| What does this action do?                                        |
++------------------------------------------------------------------+
+
++------------------------------------------------------------------+
+|                           GOOD                                   |
++------------------------------------------------------------------+
+| {                                                                |
+|   &quot;id&quot;: &quot;welcome-greeting&quot;,                                      |
+|   &quot;type&quot;: &quot;talk&quot;,                                                |
+|   ...                                                            |
+| }                                                                |
+|                                                                  |
+| {                                                                |
+|   &quot;id&quot;: &quot;main-menu-branch&quot;,                                      |
+|   &quot;type&quot;: &quot;branch&quot;,                                              |
+|   ...                                                            |
+| }                                                                |
+|                                                                  |
+| {                                                                |
+|   &quot;id&quot;: &quot;invalid-input-retry&quot;,                                   |
+|   &quot;type&quot;: &quot;goto&quot;,                                                |
+|   ...                                                            |
+| }                                                                |
+|                                                                  |
+| Debugging is clear:                                              |
+| &quot;Flow stopped at action main-menu-branch&quot;                        |
+| Immediately know where and what                                  |
++------------------------------------------------------------------+
+
+Naming Convention:
++------------------------------------------------------------------+
+| Format: {context}-{purpose}                                      |
+|                                                                  |
+| Examples:                                                        |
+| - welcome-greeting                                               |
+| - menu-input-receive                                             |
+| - sales-branch                                                   |
+| - invalid-retry-loop                                             |
+| - after-hours-voicemail                                          |
++------------------------------------------------------------------+
+</pre></div>
+</div>
+</section>
+<section id="always-include-default-branches">
+<h3>Always Include Default Branches<a class="headerlink" href="#always-include-default-branches" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Branch Best Practice:
+
++------------------------------------------------------------------+
+|                            BAD                                   |
++------------------------------------------------------------------+
+| {                                                                |
+|   &quot;type&quot;: &quot;branch&quot;,                                              |
+|   &quot;option&quot;: {                                                    |
+|     &quot;variable&quot;: &quot;voipbin.call.digits&quot;,                           |
+|     &quot;target_ids&quot;: {                                              |
+|       &quot;1&quot;: &quot;option-1&quot;,                                           |
+|       &quot;2&quot;: &quot;option-2&quot;                                            |
+|     }                                                            |
+|   }                                                              |
+| }                                                                |
+|                                                                  |
+| Problem: What happens if user presses 3, 4, 5, etc.?             |
+| Flow falls through to next action unexpectedly                   |
++------------------------------------------------------------------+
+
++------------------------------------------------------------------+
+|                           GOOD                                   |
++------------------------------------------------------------------+
+| {                                                                |
+|   &quot;type&quot;: &quot;branch&quot;,                                              |
+|   &quot;option&quot;: {                                                    |
+|     &quot;variable&quot;: &quot;voipbin.call.digits&quot;,                           |
+|     &quot;default_target_id&quot;: &quot;invalid-input-handler&quot;,                |
+|     &quot;target_ids&quot;: {                                              |
+|       &quot;1&quot;: &quot;option-1&quot;,                                           |
+|       &quot;2&quot;: &quot;option-2&quot;                                            |
+|     }                                                            |
+|   }                                                              |
+| }                                                                |
+|                                                                  |
+| All unexpected inputs are caught and handled                     |
++------------------------------------------------------------------+
+</pre></div>
+</div>
+</section>
+<section id="use-loop-counts">
+<h3>Use Loop Counts<a class="headerlink" href="#use-loop-counts" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Goto</span> <span class="n">Best</span> <span class="n">Practice</span><span class="p">:</span>
+
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span>                            <span class="n">BAD</span>                                   <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="p">{</span>                                                                <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;goto&quot;</span><span class="p">,</span>                                                <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>                                                    <span class="o">|</span>
+<span class="o">|</span>     <span class="s2">&quot;target_id&quot;</span><span class="p">:</span> <span class="s2">&quot;menu-start&quot;</span>                                    <span class="o">|</span>
+<span class="o">|</span>   <span class="p">}</span>                                                              <span class="o">|</span>
+<span class="o">|</span> <span class="p">}</span>                                                                <span class="o">|</span>
+<span class="o">|</span>                                                                  <span class="o">|</span>
+<span class="o">|</span> <span class="n">Problem</span><span class="p">:</span> <span class="n">Infinite</span> <span class="n">loop</span> <span class="n">possible</span>                                  <span class="o">|</span>
+<span class="o">|</span> <span class="n">User</span> <span class="n">keeps</span> <span class="n">entering</span> <span class="n">invalid</span> <span class="nb">input</span> <span class="n">forever</span>                        <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span>                           <span class="n">GOOD</span>                                   <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="p">{</span>                                                                <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;goto&quot;</span><span class="p">,</span>                                                <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>                                                    <span class="o">|</span>
+<span class="o">|</span>     <span class="s2">&quot;target_id&quot;</span><span class="p">:</span> <span class="s2">&quot;menu-start&quot;</span><span class="p">,</span>                                   <span class="o">|</span>
+<span class="o">|</span>     <span class="s2">&quot;loop_count&quot;</span><span class="p">:</span> <span class="mi">3</span>                                              <span class="o">|</span>
+<span class="o">|</span>   <span class="p">}</span>                                                              <span class="o">|</span>
+<span class="o">|</span> <span class="p">}</span>                                                                <span class="o">|</span>
+<span class="o">|</span>                                                                  <span class="o">|</span>
+<span class="o">|</span> <span class="n">After</span> <span class="mi">3</span> <span class="n">attempts</span><span class="p">,</span> <span class="n">flow</span> <span class="n">continues</span> <span class="n">past</span> <span class="n">goto</span>                       <span class="o">|</span>
+<span class="o">|</span> <span class="n">Add</span> <span class="n">a</span> <span class="s2">&quot;too many attempts&quot;</span> <span class="n">handler</span> <span class="n">after</span> <span class="n">the</span> <span class="n">goto</span>                 <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="performance-optimization">
+<h2>Performance Optimization<a class="headerlink" href="#performance-optimization" title="Link to this heading"></a></h2>
+<section id="minimize-webhook-calls">
+<h3>Minimize Webhook Calls<a class="headerlink" href="#minimize-webhook-calls" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Webhook</span> <span class="n">Optimization</span><span class="p">:</span>
+
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span>                            <span class="n">BAD</span>                                   <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Every</span> <span class="n">action</span> <span class="n">sends</span> <span class="n">a</span> <span class="n">webhook</span><span class="p">:</span>                                    <span class="o">|</span>
+<span class="o">|</span>                                                                  <span class="o">|</span>
+<span class="o">|</span> <span class="n">answer</span> <span class="o">-&gt;</span> <span class="n">webhook</span> <span class="o">-&gt;</span> <span class="n">talk</span> <span class="o">-&gt;</span> <span class="n">webhook</span> <span class="o">-&gt;</span> <span class="n">digits</span> <span class="o">-&gt;</span> <span class="n">webhook</span>        <span class="o">|</span>
+<span class="o">|</span>                                                                  <span class="o">|</span>
+<span class="o">|</span> <span class="n">Problems</span><span class="p">:</span>                                                        <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Slows</span> <span class="n">down</span> <span class="n">flow</span> <span class="n">execution</span>                                      <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">High</span> <span class="n">load</span> <span class="n">on</span> <span class="n">your</span> <span class="n">server</span>                                       <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Increased</span> <span class="n">latency</span> <span class="k">for</span> <span class="n">caller</span>                                   <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span>                           <span class="n">GOOD</span>                                   <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Strategic</span> <span class="n">webhooks</span> <span class="n">at</span> <span class="n">key</span> <span class="n">points</span><span class="p">:</span>                                <span class="o">|</span>
+<span class="o">|</span>                                                                  <span class="o">|</span>
+<span class="o">|</span> <span class="n">answer</span> <span class="o">-&gt;</span> <span class="n">talk</span> <span class="o">-&gt;</span> <span class="n">digits</span> <span class="o">-&gt;</span> <span class="n">branch</span> <span class="o">-&gt;</span> <span class="n">webhook</span> <span class="p">(</span><span class="k">with</span> <span class="nb">all</span> <span class="n">data</span><span class="p">)</span>    <span class="o">|</span>
+<span class="o">|</span>                                                                  <span class="o">|</span>
+<span class="o">|</span> <span class="n">Batch</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">a</span> <span class="n">single</span> <span class="n">webhook</span><span class="p">:</span>                                  <span class="o">|</span>
+<span class="o">|</span> <span class="p">{</span>                                                                <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">&quot;call_id&quot;</span><span class="p">:</span> <span class="s2">&quot;$</span><span class="si">{voipbin.call.id}</span><span class="s2">&quot;</span><span class="p">,</span>                               <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">&quot;caller&quot;</span><span class="p">:</span> <span class="s2">&quot;$</span><span class="si">{voipbin.call.source.target}</span><span class="s2">&quot;</span><span class="p">,</span>                     <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">&quot;selection&quot;</span><span class="p">:</span> <span class="s2">&quot;$</span><span class="si">{voipbin.call.digits}</span><span class="s2">&quot;</span><span class="p">,</span>                         <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;$</span><span class="si">{voipbin.activeflow.tm_create}</span><span class="s2">&quot;</span>                 <span class="o">|</span>
+<span class="o">|</span> <span class="p">}</span>                                                                <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+</pre></div>
+</div>
+</section>
+<section id="use-async-webhooks-when-possible">
+<h3>Use Async Webhooks When Possible<a class="headerlink" href="#use-async-webhooks-when-possible" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Sync</span> <span class="n">vs</span> <span class="n">Async</span> <span class="n">Webhooks</span><span class="p">:</span>
+
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span>                     <span class="n">Sync</span> <span class="p">(</span><span class="n">sync</span><span class="p">:</span> <span class="n">true</span><span class="p">)</span>                            <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Flow</span> <span class="n">waits</span> <span class="k">for</span> <span class="n">response</span> <span class="n">before</span> <span class="n">continuing</span>                        <span class="o">|</span>
+<span class="o">|</span>                                                                  <span class="o">|</span>
+<span class="o">|</span> <span class="n">Use</span> <span class="n">when</span><span class="p">:</span>                                                        <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">You</span> <span class="n">need</span> <span class="n">data</span> <span class="kn">from</span><span class="w"> </span><span class="nn">the</span> <span class="n">response</span>                                <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Response</span> <span class="n">sets</span> <span class="n">variables</span> <span class="k">for</span> <span class="n">branching</span>                          <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Order</span> <span class="n">of</span> <span class="n">operations</span> <span class="n">matters</span>                                    <span class="o">|</span>
+<span class="o">|</span>                                                                  <span class="o">|</span>
+<span class="o">|</span> <span class="n">Example</span><span class="p">:</span> <span class="n">Customer</span> <span class="n">lookup</span> <span class="n">before</span> <span class="n">greeting</span>                         <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span>                    <span class="n">Async</span> <span class="p">(</span><span class="n">sync</span><span class="p">:</span> <span class="n">false</span><span class="p">)</span>                           <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Flow</span> <span class="n">continues</span> <span class="n">immediately</span><span class="p">,</span> <span class="n">doesn</span><span class="s1">&#39;t wait                         |</span>
+<span class="o">|</span>                                                                  <span class="o">|</span>
+<span class="o">|</span> <span class="n">Use</span> <span class="n">when</span><span class="p">:</span>                                                        <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Just</span> <span class="n">logging</span><span class="o">/</span><span class="n">notification</span>                                      <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Response</span> <span class="n">data</span> <span class="ow">not</span> <span class="n">needed</span>                                       <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Background</span> <span class="n">processing</span> <span class="p">(</span><span class="n">analytics</span><span class="p">,</span> <span class="n">etc</span><span class="o">.</span><span class="p">)</span>                        <span class="o">|</span>
+<span class="o">|</span>                                                                  <span class="o">|</span>
+<span class="o">|</span> <span class="n">Example</span><span class="p">:</span> <span class="n">Logging</span> <span class="n">call</span> <span class="n">events</span> <span class="k">for</span> <span class="n">analytics</span>                       <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+</pre></div>
+</div>
+</section>
+<section id="optimize-audio-prompts">
+<h3>Optimize Audio Prompts<a class="headerlink" href="#optimize-audio-prompts" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Audio</span> <span class="n">Optimization</span><span class="p">:</span>
+
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span>                     <span class="n">TTS</span> <span class="n">vs</span> <span class="n">Pre</span><span class="o">-</span><span class="n">recorded</span>                          <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+
+<span class="n">Use</span> <span class="n">TTS</span> <span class="p">(</span><span class="n">talk</span> <span class="n">action</span><span class="p">)</span> <span class="n">when</span><span class="p">:</span>
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Content</span> <span class="ow">is</span> <span class="n">dynamic</span> <span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">numbers</span><span class="p">,</span> <span class="n">dates</span><span class="p">)</span>                     <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Frequent</span> <span class="n">text</span> <span class="n">changes</span>                                          <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Multiple</span> <span class="n">languages</span> <span class="n">needed</span>                                      <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Prototyping</span><span class="o">/</span><span class="n">development</span>                                        <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+
+<span class="n">Use</span> <span class="n">Pre</span><span class="o">-</span><span class="n">recorded</span> <span class="p">(</span><span class="n">play</span> <span class="n">action</span><span class="p">)</span> <span class="n">when</span><span class="p">:</span>
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Content</span> <span class="ow">is</span> <span class="n">static</span>                                              <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Professional</span> <span class="n">voice</span> <span class="n">quality</span> <span class="n">needed</span>                              <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Brand</span> <span class="n">voice</span> <span class="n">consistency</span> <span class="n">important</span>                              <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">High</span><span class="o">-</span><span class="n">volume</span> <span class="n">production</span> <span class="n">traffic</span>                                 <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+
+<span class="n">Performance</span> <span class="n">Comparison</span><span class="p">:</span>
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">TTS</span><span class="p">:</span> <span class="o">~</span><span class="mi">100</span><span class="o">-</span><span class="mi">300</span><span class="n">ms</span> <span class="n">generation</span> <span class="n">time</span> <span class="n">per</span> <span class="n">phrase</span>                       <span class="o">|</span>
+<span class="o">|</span> <span class="n">Pre</span><span class="o">-</span><span class="n">recorded</span><span class="p">:</span> <span class="o">~</span><span class="mi">50</span><span class="n">ms</span> <span class="n">to</span> <span class="n">start</span> <span class="n">playback</span>                            <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+</pre></div>
+</div>
+</section>
+<section id="keep-variable-names-short">
+<h3>Keep Variable Names Short<a class="headerlink" href="#keep-variable-names-short" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Variable Naming:
+
++------------------------------------------------------------------+
+|                            BAD                                   |
++------------------------------------------------------------------+
+| ${customer_information.primary_contact.phone_number.country_code}|
+|                                                                  |
+| Problems:                                                        |
+| - Hard to read in JSON                                           |
+| - More data in database                                          |
+| - Prone to typos                                                 |
++------------------------------------------------------------------+
+
++------------------------------------------------------------------+
+|                           GOOD                                   |
++------------------------------------------------------------------+
+| ${customer.phone}                                                |
+| ${customer.country}                                              |
+|                                                                  |
+| Or use namespaces:                                               |
+| ${cust.phone}                                                    |
+| ${cust.tier}                                                     |
++------------------------------------------------------------------+
+</pre></div>
+</div>
+</section>
+</section>
+<section id="error-handling-patterns">
+<h2>Error Handling Patterns<a class="headerlink" href="#error-handling-patterns" title="Link to this heading"></a></h2>
+<section id="graceful-degradation">
+<h3>Graceful Degradation<a class="headerlink" href="#graceful-degradation" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Fallback</span> <span class="n">Pattern</span><span class="p">:</span>
+
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span>                     <span class="n">Handle</span> <span class="n">Service</span> <span class="n">Failures</span>                      <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+
+<span class="p">{</span>
+  <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Resilient Flow&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;answer&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;try-personalization&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;webhook_send&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;sync&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+        <span class="s2">&quot;uri&quot;</span><span class="p">:</span> <span class="s2">&quot;https://your-api.com/customer&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;POST&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;data_type&quot;</span><span class="p">:</span> <span class="s2">&quot;application/json&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="s2">&quot;{</span><span class="se">\&quot;</span><span class="s2">phone</span><span class="se">\&quot;</span><span class="s2">: </span><span class="se">\&quot;</span><span class="s2">$</span><span class="si">{voipbin.call.source.target}</span><span class="se">\&quot;</span><span class="s2">}&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;condition_variable&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;condition&quot;</span><span class="p">:</span> <span class="s2">&quot;!=&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;variable&quot;</span><span class="p">:</span> <span class="s2">&quot;customer.name&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;value_type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;value_string&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;false_target_id&quot;</span><span class="p">:</span> <span class="s2">&quot;generic-greeting&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;personalized-greeting&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello $</span><span class="si">{customer.name}</span><span class="s2">, welcome back.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;goto&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;target_id&quot;</span><span class="p">:</span> <span class="s2">&quot;main-menu&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;generic-greeting&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello, welcome to our service.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;main-menu&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Press 1 for sales, 2 for support.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="timeout-handling">
+<h3>Timeout Handling<a class="headerlink" href="#timeout-handling" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Input</span> <span class="n">Timeout</span> <span class="n">Pattern</span><span class="p">:</span>
+
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span>                     <span class="n">Handle</span> <span class="n">No</span> <span class="n">Response</span>                           <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+
+<span class="p">{</span>
+  <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;prompt&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Press 1 or 2.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;digits_receive&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="mi">5000</span><span class="p">,</span>
+        <span class="s2">&quot;length&quot;</span><span class="p">:</span> <span class="mi">1</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;condition_variable&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;condition&quot;</span><span class="p">:</span> <span class="s2">&quot;!=&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;variable&quot;</span><span class="p">:</span> <span class="s2">&quot;voipbin.call.digits&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;value_type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;value_string&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;false_target_id&quot;</span><span class="p">:</span> <span class="s2">&quot;no-input&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;branch&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;variable&quot;</span><span class="p">:</span> <span class="s2">&quot;voipbin.call.digits&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;default_target_id&quot;</span><span class="p">:</span> <span class="s2">&quot;invalid-input&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;target_ids&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="s2">&quot;1&quot;</span><span class="p">:</span> <span class="s2">&quot;option-1&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;2&quot;</span><span class="p">:</span> <span class="s2">&quot;option-2&quot;</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;no-input&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;I didn&#39;t receive any input.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;goto&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;target_id&quot;</span><span class="p">:</span> <span class="s2">&quot;prompt&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;loop_count&quot;</span><span class="p">:</span> <span class="mi">2</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Goodbye.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;invalid-input&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Invalid selection.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;goto&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;target_id&quot;</span><span class="p">:</span> <span class="s2">&quot;prompt&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;loop_count&quot;</span><span class="p">:</span> <span class="mi">2</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="maintainability">
+<h2>Maintainability<a class="headerlink" href="#maintainability" title="Link to this heading"></a></h2>
+<section id="document-your-flows">
+<h3>Document Your Flows<a class="headerlink" href="#document-your-flows" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Flow</span> <span class="n">Documentation</span><span class="p">:</span>
+
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span>                     <span class="n">Use</span> <span class="n">Name</span> <span class="ow">and</span> <span class="n">Detail</span> <span class="n">Fields</span>                   <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+
+<span class="p">{</span>
+  <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Main IVR Menu - English&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;Primary entry point for English callers. Routes to Sales, Support, or Billing queues. Uses business hours check. Last updated: 2024-01-15&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">]</span>
+<span class="p">}</span>
+
+<span class="n">Naming</span> <span class="n">Convention</span><span class="p">:</span>
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Format</span><span class="p">:</span> <span class="p">{</span><span class="n">Function</span><span class="p">}</span> <span class="o">-</span> <span class="p">{</span><span class="n">Context</span><span class="p">}</span>                                   <span class="o">|</span>
+<span class="o">|</span>                                                                  <span class="o">|</span>
+<span class="o">|</span> <span class="n">Examples</span><span class="p">:</span>                                                        <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="s2">&quot;Main IVR Menu - English&quot;</span>                                      <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="s2">&quot;Support Queue Wait Flow&quot;</span>                                      <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="s2">&quot;After Hours Voicemail&quot;</span>                                        <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="s2">&quot;Post-Call Survey - Premium Customers&quot;</span>                         <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+</pre></div>
+</div>
+</section>
+<section id="version-your-flows">
+<h3>Version Your Flows<a class="headerlink" href="#version-your-flows" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Versioning</span> <span class="n">Strategy</span><span class="p">:</span>
+
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span>                     <span class="n">Flow</span> <span class="n">Versioning</span>                              <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+
+<span class="n">Option</span> <span class="mi">1</span><span class="p">:</span> <span class="n">Include</span> <span class="n">version</span> <span class="ow">in</span> <span class="n">name</span>
+<span class="p">{</span>
+  <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Main IVR v2.1&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;Version 2.1 - Added Spanish language option&quot;</span>
+<span class="p">}</span>
+
+<span class="n">Option</span> <span class="mi">2</span><span class="p">:</span> <span class="n">Keep</span> <span class="n">multiple</span> <span class="n">flow</span> <span class="n">versions</span>
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Production</span><span class="p">:</span> <span class="s2">&quot;main-ivr-prod&quot;</span>     <span class="o">&lt;-</span> <span class="n">Stable</span><span class="p">,</span> <span class="n">live</span> <span class="n">traffic</span>          <span class="o">|</span>
+<span class="o">|</span> <span class="n">Staging</span><span class="p">:</span>    <span class="s2">&quot;main-ivr-staging&quot;</span>  <span class="o">&lt;-</span> <span class="n">Testing</span> <span class="n">new</span> <span class="n">features</span>          <span class="o">|</span>
+<span class="o">|</span> <span class="n">Dev</span><span class="p">:</span>        <span class="s2">&quot;main-ivr-dev&quot;</span>      <span class="o">&lt;-</span> <span class="n">Development</span><span class="o">/</span><span class="n">experiments</span>       <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+
+<span class="n">Promotion</span> <span class="n">workflow</span><span class="p">:</span>
+<span class="mf">1.</span> <span class="n">Develop</span> <span class="ow">in</span> <span class="n">dev</span> <span class="n">flow</span>
+<span class="mf">2.</span> <span class="n">Test</span> <span class="ow">in</span> <span class="n">staging</span> <span class="n">flow</span>
+<span class="mf">3.</span> <span class="n">Copy</span> <span class="n">to</span> <span class="n">production</span> <span class="n">flow</span> <span class="n">when</span> <span class="n">ready</span>
+</pre></div>
+</div>
+</section>
+<section id="test-in-isolation">
+<h3>Test in Isolation<a class="headerlink" href="#test-in-isolation" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Testing</span> <span class="n">Approach</span><span class="p">:</span>
+
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span>                     <span class="n">Modular</span> <span class="n">Testing</span>                              <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+
+<span class="n">Each</span> <span class="n">sub</span><span class="o">-</span><span class="n">flow</span> <span class="n">can</span> <span class="n">be</span> <span class="n">tested</span> <span class="n">independently</span><span class="p">:</span>
+
+<span class="mf">1.</span> <span class="n">Language</span> <span class="n">Selection</span> <span class="n">Flow</span>
+   <span class="o">-</span> <span class="n">Test</span><span class="p">:</span> <span class="n">All</span> <span class="n">language</span> <span class="n">options</span> <span class="n">work</span>
+   <span class="o">-</span> <span class="n">Test</span><span class="p">:</span> <span class="n">Default</span> <span class="n">fallback</span> <span class="n">works</span>
+
+<span class="mf">2.</span> <span class="n">Main</span> <span class="n">Menu</span> <span class="n">Flow</span>
+   <span class="o">-</span> <span class="n">Test</span><span class="p">:</span> <span class="n">All</span> <span class="n">branch</span> <span class="n">options</span> <span class="n">route</span> <span class="n">correctly</span>
+   <span class="o">-</span> <span class="n">Test</span><span class="p">:</span> <span class="n">Invalid</span> <span class="nb">input</span> <span class="n">handling</span>
+   <span class="o">-</span> <span class="n">Test</span><span class="p">:</span> <span class="n">Timeout</span> <span class="n">handling</span>
+
+<span class="mf">3.</span> <span class="n">Support</span> <span class="n">Queue</span> <span class="n">Flow</span>
+   <span class="o">-</span> <span class="n">Test</span><span class="p">:</span> <span class="n">Queue</span> <span class="n">join</span> <span class="n">works</span>
+   <span class="o">-</span> <span class="n">Test</span><span class="p">:</span> <span class="n">Wait</span> <span class="n">music</span> <span class="n">plays</span>
+   <span class="o">-</span> <span class="n">Test</span><span class="p">:</span> <span class="n">Timeout</span> <span class="n">routes</span> <span class="n">to</span> <span class="n">voicemail</span>
+
+<span class="mf">4.</span> <span class="n">Voicemail</span> <span class="n">Flow</span>
+   <span class="o">-</span> <span class="n">Test</span><span class="p">:</span> <span class="n">Recording</span> <span class="n">starts</span>
+   <span class="o">-</span> <span class="n">Test</span><span class="p">:</span> <span class="n">Recording</span> <span class="n">stops</span> <span class="n">on</span> <span class="n">timeout</span>
+   <span class="o">-</span> <span class="n">Test</span><span class="p">:</span> <span class="n">Recording</span> <span class="n">stops</span> <span class="n">on</span> <span class="n">key</span> <span class="n">press</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="security-best-practices">
+<h2>Security Best Practices<a class="headerlink" href="#security-best-practices" title="Link to this heading"></a></h2>
+<section id="validate-external-data">
+<h3>Validate External Data<a class="headerlink" href="#validate-external-data" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Input Validation:
+
++------------------------------------------------------------------+
+|                     Validate Webhook Responses                   |
++------------------------------------------------------------------+
+
+When using data from webhook_send responses:
+
+BAD:
+{
+  &quot;type&quot;: &quot;talk&quot;,
+  &quot;option&quot;: {
+    &quot;text&quot;: &quot;Calling ${customer.phone}&quot;,   &lt;- Could be anything!
+    &quot;language&quot;: &quot;en-US&quot;
+  }
+}
+
+GOOD:
+{
+  &quot;type&quot;: &quot;condition_variable&quot;,
+  &quot;option&quot;: {
+    &quot;condition&quot;: &quot;!=&quot;,
+    &quot;variable&quot;: &quot;customer.phone&quot;,
+    &quot;value_type&quot;: &quot;string&quot;,
+    &quot;value_string&quot;: &quot;&quot;,
+    &quot;false_target_id&quot;: &quot;no-phone-error&quot;
+  }
+}
+... then use customer.phone
+</pre></div>
+</div>
+</section>
+<section id="protect-sensitive-data">
+<h3>Protect Sensitive Data<a class="headerlink" href="#protect-sensitive-data" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Data</span> <span class="n">Protection</span><span class="p">:</span>
+
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span>                     <span class="n">Sensitive</span> <span class="n">Information</span>                        <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+
+<span class="n">Don</span><span class="s1">&#39;t log sensitive data in webhooks:</span>
+
+<span class="n">BAD</span><span class="p">:</span>
+<span class="p">{</span>
+  <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;webhook_send&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="s2">&quot;{</span><span class="se">\&quot;</span><span class="s2">credit_card</span><span class="se">\&quot;</span><span class="s2">: </span><span class="se">\&quot;</span><span class="s2">$</span><span class="si">{customer.card}</span><span class="se">\&quot;</span><span class="s2">}&quot;</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">GOOD</span><span class="p">:</span>
+<span class="p">{</span>
+  <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;webhook_send&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="s2">&quot;{</span><span class="se">\&quot;</span><span class="s2">customer_id</span><span class="se">\&quot;</span><span class="s2">: </span><span class="se">\&quot;</span><span class="s2">$</span><span class="si">{customer.id}</span><span class="se">\&quot;</span><span class="s2">, </span><span class="se">\&quot;</span><span class="s2">action</span><span class="se">\&quot;</span><span class="s2">: </span><span class="se">\&quot;</span><span class="s2">payment_attempt</span><span class="se">\&quot;</span><span class="s2">}&quot;</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">Look</span> <span class="n">up</span> <span class="n">sensitive</span> <span class="n">data</span> <span class="n">server</span><span class="o">-</span><span class="n">side</span> <span class="n">using</span> <span class="n">customer_id</span>
+</pre></div>
+</div>
+</section>
+<section id="rate-limiting-awareness">
+<h3>Rate Limiting Awareness<a class="headerlink" href="#rate-limiting-awareness" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Rate</span> <span class="n">Limiting</span><span class="p">:</span>
+
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span>                     <span class="n">API</span> <span class="n">Rate</span> <span class="n">Limits</span>                              <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+
+<span class="n">Be</span> <span class="n">aware</span> <span class="n">of</span> <span class="n">limits</span> <span class="n">on</span><span class="p">:</span>
+<span class="o">-</span> <span class="n">Webhook</span> <span class="n">requests</span> <span class="n">to</span> <span class="n">your</span> <span class="n">server</span>
+<span class="o">-</span> <span class="n">VoIPBIN</span> <span class="n">API</span> <span class="n">calls</span>
+<span class="o">-</span> <span class="n">TTS</span> <span class="n">generation</span> <span class="n">requests</span>
+
+<span class="n">Design</span> <span class="n">flows</span> <span class="n">to</span> <span class="n">minimize</span> <span class="n">API</span> <span class="n">calls</span><span class="p">:</span>
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Batch</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">single</span> <span class="n">webhooks</span>                                  <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Cache</span> <span class="n">customer</span> <span class="n">data</span> <span class="k">for</span> <span class="n">session</span> <span class="n">duration</span>                       <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Use</span> <span class="n">variables</span> <span class="n">instead</span> <span class="n">of</span> <span class="n">repeated</span> <span class="n">lookups</span>                      <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="checklist-flow-review">
+<h2>Checklist: Flow Review<a class="headerlink" href="#checklist-flow-review" title="Link to this heading"></a></h2>
+<p>Before deploying a new flow, verify:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Pre</span><span class="o">-</span><span class="n">Deployment</span> <span class="n">Checklist</span><span class="p">:</span>
+
+<span class="n">Structure</span><span class="p">:</span>
+<span class="p">[</span> <span class="p">]</span> <span class="n">All</span> <span class="n">action</span> <span class="n">IDs</span> <span class="n">are</span> <span class="n">meaningful</span> <span class="ow">and</span> <span class="n">unique</span>
+<span class="p">[</span> <span class="p">]</span> <span class="n">All</span> <span class="n">branch</span> <span class="n">actions</span> <span class="n">have</span> <span class="n">default_target_id</span>
+<span class="p">[</span> <span class="p">]</span> <span class="n">All</span> <span class="n">goto</span> <span class="n">actions</span> <span class="n">have</span> <span class="n">loop_count</span>
+<span class="p">[</span> <span class="p">]</span> <span class="n">Flow</span> <span class="n">name</span> <span class="ow">and</span> <span class="n">detail</span> <span class="n">are</span> <span class="n">descriptive</span>
+<span class="p">[</span> <span class="p">]</span> <span class="n">Modular</span> <span class="n">design</span> <span class="p">(</span><span class="n">sub</span><span class="o">-</span><span class="n">flows</span> <span class="n">where</span> <span class="n">appropriate</span><span class="p">)</span>
+
+<span class="n">Error</span> <span class="n">Handling</span><span class="p">:</span>
+<span class="p">[</span> <span class="p">]</span> <span class="n">Invalid</span> <span class="nb">input</span> <span class="ow">is</span> <span class="n">handled</span>
+<span class="p">[</span> <span class="p">]</span> <span class="n">Timeouts</span> <span class="n">are</span> <span class="n">handled</span>
+<span class="p">[</span> <span class="p">]</span> <span class="n">Service</span> <span class="n">failures</span> <span class="n">have</span> <span class="n">fallbacks</span>
+<span class="p">[</span> <span class="p">]</span> <span class="n">Caller</span> <span class="n">hangup</span> <span class="ow">is</span> <span class="n">considered</span>
+
+<span class="n">Performance</span><span class="p">:</span>
+<span class="p">[</span> <span class="p">]</span> <span class="n">Webhook</span> <span class="n">calls</span> <span class="n">are</span> <span class="n">minimized</span>
+<span class="p">[</span> <span class="p">]</span> <span class="n">Async</span> <span class="n">webhooks</span> <span class="n">used</span> <span class="n">where</span> <span class="n">possible</span>
+<span class="p">[</span> <span class="p">]</span> <span class="n">No</span> <span class="n">unnecessary</span> <span class="n">loops</span>
+<span class="p">[</span> <span class="p">]</span> <span class="n">Variables</span> <span class="n">are</span> <span class="n">concise</span>
+
+<span class="n">Security</span><span class="p">:</span>
+<span class="p">[</span> <span class="p">]</span> <span class="n">No</span> <span class="n">sensitive</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">webhooks</span>
+<span class="p">[</span> <span class="p">]</span> <span class="n">External</span> <span class="n">data</span> <span class="ow">is</span> <span class="n">validated</span>
+<span class="p">[</span> <span class="p">]</span> <span class="n">Recording</span> <span class="n">consent</span> <span class="ow">is</span> <span class="n">obtained</span> <span class="p">(</span><span class="k">if</span> <span class="n">required</span><span class="p">)</span>
+
+<span class="n">Testing</span><span class="p">:</span>
+<span class="p">[</span> <span class="p">]</span> <span class="n">All</span> <span class="n">branches</span> <span class="n">tested</span>
+<span class="p">[</span> <span class="p">]</span> <span class="n">Timeout</span> <span class="n">scenarios</span> <span class="n">tested</span>
+<span class="p">[</span> <span class="p">]</span> <span class="n">Error</span> <span class="n">scenarios</span> <span class="n">tested</span>
+<span class="p">[</span> <span class="p">]</span> <span class="n">End</span><span class="o">-</span><span class="n">to</span><span class="o">-</span><span class="n">end</span> <span class="n">call</span> <span class="n">tested</span>
+
+<span class="n">Documentation</span><span class="p">:</span>
+<span class="p">[</span> <span class="p">]</span> <span class="n">Flow</span> <span class="n">name</span> <span class="n">describes</span> <span class="n">purpose</span>
+<span class="p">[</span> <span class="p">]</span> <span class="n">Flow</span> <span class="n">detail</span> <span class="n">includes</span> <span class="n">version</span><span class="o">/</span><span class="n">date</span>
+<span class="p">[</span> <span class="p">]</span> <span class="n">Complex</span> <span class="n">logic</span> <span class="ow">is</span> <span class="n">commented</span> <span class="p">(</span><span class="ow">in</span> <span class="n">detail</span> <span class="n">field</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+</main>
+                        
+                    </div>
+                    
+                    <nav class="col-12 col-lg-3 pb-4">
+                        <div class="sticky-top toc page-toc" aria-labelledby="page-toc-heading">
+                            <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
+                            <ul>
+<li><a class="reference internal" href="#">Flow Best Practices</a><ul>
+<li><a class="reference internal" href="#flow-design-principles">Flow Design Principles</a><ul>
+<li><a class="reference internal" href="#keep-flows-focused">Keep Flows Focused</a></li>
+<li><a class="reference internal" href="#use-meaningful-action-ids">Use Meaningful Action IDs</a></li>
+<li><a class="reference internal" href="#always-include-default-branches">Always Include Default Branches</a></li>
+<li><a class="reference internal" href="#use-loop-counts">Use Loop Counts</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#performance-optimization">Performance Optimization</a><ul>
+<li><a class="reference internal" href="#minimize-webhook-calls">Minimize Webhook Calls</a></li>
+<li><a class="reference internal" href="#use-async-webhooks-when-possible">Use Async Webhooks When Possible</a></li>
+<li><a class="reference internal" href="#optimize-audio-prompts">Optimize Audio Prompts</a></li>
+<li><a class="reference internal" href="#keep-variable-names-short">Keep Variable Names Short</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#error-handling-patterns">Error Handling Patterns</a><ul>
+<li><a class="reference internal" href="#graceful-degradation">Graceful Degradation</a></li>
+<li><a class="reference internal" href="#timeout-handling">Timeout Handling</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#maintainability">Maintainability</a><ul>
+<li><a class="reference internal" href="#document-your-flows">Document Your Flows</a></li>
+<li><a class="reference internal" href="#version-your-flows">Version Your Flows</a></li>
+<li><a class="reference internal" href="#test-in-isolation">Test in Isolation</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#security-best-practices">Security Best Practices</a><ul>
+<li><a class="reference internal" href="#validate-external-data">Validate External Data</a></li>
+<li><a class="reference internal" href="#protect-sensitive-data">Protect Sensitive Data</a></li>
+<li><a class="reference internal" href="#rate-limiting-awareness">Rate Limiting Awareness</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#checklist-flow-review">Checklist: Flow Review</a></li>
+</ul>
+</li>
+</ul>
+
+                        </div>
+                    </nav>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer class="container-fluid bg-primary text-light">
+        <div class="container">
+            <div class="row">
+        <div class="col p-4">
+            
+                <nav aria-label="Footer">
+                    <ul class="nav justify-content-center mb-2">
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="http://voipbin.net">About Us</a></li>
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="http://voipbin.net">Contact</a></li>
+                        
+                    </ul>
+                </nav>
+            
+            <div class="text-center">
+                    &copy; Copyright 2026, VoIPBIN
+            </div>
+            <div class="text-center text-white-50 font-italic mt-3">
+                <small>
+                    Created using
+                    <a class="text-white" href="https://github.com/wagtail/sphinx_wagtail_theme" rel="nofollow" target="_blank">
+                        Sphinx Wagtail Theme 6.5.0
+                    </a>
+                    and
+                    <a class="text-white" href="https://www.sphinx-doc.org/" rel="nofollow" target="_blank">
+                        Sphinx 9.1.0
+                    </a>
+                </small>
+            </div>
+        </div>
+    </div>
+        </div>
+    </footer>
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=fd6eb6e6"></script>
+        <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+        <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="_static/copybutton.js?v=f281be69"></script>
+        <script type="text/javascript" src="_static/dist/theme.js"></script>
+        <script type="text/javascript" src="_static/dist/vendor.js"></script>
+        <script type="text/javascript" src="_static/searchtools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script type="text/javascript">
+            document.addEventListener('DOMContentLoaded', function() { Search.loadIndex("searchindex.js"); });
+        </script>
+        <script type="text/javascript" id="searchindexloader"></script>
+    </body>
+</html>

@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en" data-content_root="./">
+<head>
+    <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+        <title>Call Media and Codecs &mdash; voipbin  documentation</title>
+    
+    <link rel="stylesheet" type="text/css" href="_static/dist/fontawesome.css" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8e8a900e" />
+      <link rel="stylesheet" type="text/css" href="_static/dist/theme.css?v=310cf088" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+            <link rel="index" title="Index" href="genindex.html" />
+            <link rel="search" title="Search" href="search.html" />
+            <link rel="top" title="voipbin  documentation" href="#" />
+    </head>
+<body>
+    <script type="text/javascript" src="_static/dist/blocking.js"></script>
+    <header class="container-fluid bg-primary">
+        <a class="btn btn-sm btn-light skip-to-content-link" href="#main">Skip to content</a>
+        <div class="container-fluid">
+            <div class="navbar navbar-expand-lg navbar-dark font-weight-bold">
+                    <a href="intro.html"
+                        title="voipbin"
+                        class="logo navbar-brand"
+                    >
+                        <img src="_static/images/voipbin-high-resolution-logo-white-transparent.png" width="45" height="80" alt="voipbin"
+                            class="logo-img"
+                        />
+                        VoIPBin Documentation
+                    </a>
+                
+                
+                    <div class="collapse navbar-collapse justify-content-end">
+                        <ul class="navbar-nav">
+                            
+                                
+                                
+                                <li class="nav-item"><a class="nav-link"  href="http://voipbin.net">Project</a></li>
+                            
+                                
+                                
+                                <li class="nav-item"><a class="nav-link"  href="https://admin.voipbin.net">Admin</a></li>
+                            
+                        </ul>
+                    </div>
+                
+                <button class="navbar-toggler btn btn-primary d-lg-none" type="button" data-toggle="collapse" data-target="#collapseSidebar" aria-expanded="false" aria-controls="collapseExample">
+                    <span class="navbar-toggler-icon"></span>
+                    <span class="sr-only">menu</span>
+                </button>
+            </div>
+        </div>
+    </header>
+    <div class="container-fluid">
+        <div class="row">
+            <aside class="col-12 col-lg-3 sidebar-container">
+                <div id="collapseSidebar" class="collapse sticky-top d-lg-block pt-5 pr-lg-4">
+<div id="searchbox" class="searchbox mb-6 px-1" role="search">
+    <form id="search-form" action="search.html" autocomplete="off" method="get" role="search">
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <div class="input-group-text border-right-0 bg-white py-3 pl-3 pr-2"><span class="fas fa-search"></span></div>
+            </div>
+            <input class="form-control py-3 pr-3 pl-1 h-100 border-left-0" type="search" name="q" placeholder="Search documentation" aria-label="Search documentation" id="searchinput" />
+        </div>
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+    </form>
+</div><div class="site-toc">
+    <nav class="toc mt-3" aria-label="Main menu">
+        <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="accesskey.html">Accesskey</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sdk.html">SDK(Software Development Kit)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="restful_api.html">RESTful API(Application Programming Interface)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Core Concepts</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flow.html#activeflow">Activeflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="variable.html">Variable</a></li>
+<li class="toctree-l1"><a class="reference internal" href="webhook.html">Webhook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="common.html">Common</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Voice &amp; Real-Time</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="call.html">Call</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conference.html">Conference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="queue.html">Queue</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recording.html">Recording</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transcribe.html">Transcribe</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mediastream.html">Mediastream</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Messaging</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="message.html">Message</a></li>
+<li class="toctree-l1"><a class="reference internal" href="email.html">Email</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chat.html">Chat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conversation.html">Conversation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">AI &amp; Automation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="ai.html">AI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="campaign.html">Campaign</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outdial.html">Outdial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outplan.html">Outplan</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Resources &amp; Management</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="number.html">Number</a></li>
+<li class="toctree-l1"><a class="reference internal" href="agent.html">Agent</a></li>
+<li class="toctree-l1"><a class="reference internal" href="customer.html">Customer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="billing_account.html">Billing Account</a></li>
+<li class="toctree-l1"><a class="reference internal" href="storage.html">Storage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a></li>
+<li class="toctree-l1"><a class="reference internal" href="provider.html">Provider</a></li>
+<li class="toctree-l1"><a class="reference internal" href="route.html">Route</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extension.html">Extension</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trunk.html">Trunk</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Architecture (Deep Dive)</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="websocket.html">Websocket</a></li>
+<li class="toctree-l1"><a class="reference internal" href="talk.html">Talk</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Help &amp; Support</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="support.html">Support</a></li>
+</ul>
+
+    </nav>
+    <template data-toggle-item-template>
+        <button class="btn btn-sm btn-link toctree-expand" type="button">
+            <span class="sr-only">Toggle menu contents</span>
+        </button>
+    </template>
+</div>
+                    <div class="d-lg-none border-bottom">
+                        
+                    </div>
+                </div>
+            </aside>
+            <div class="col-12 col-lg-9 pt-5">
+                <header class="row align-items-baseline">
+                    <div class="col">
+                        <nav aria-label="breadcrumb">
+    <ol class="breadcrumb m-0 p-0 bg-transparent">
+        <li class="breadcrumb-item"><a href="index.html">Docs</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Call Media and Codecs</li>
+    </ol>
+</nav>
+                    </div>
+                    <div class="col-sm-12 col-lg-auto mt-3 mt-lg-3">
+                        <noscript>
+                            <p>JavaScript is required to toggle light/dark mode..</p>
+                        </noscript>
+                        <button id="wagtail-theme" class="btn btn-sm btn-light text-decoration-none" type="button">
+                            <span class="dark-only"><i class="fas fa-sun"></i> Light mode</span>
+                            <span class="light-only"><i class="fas fa-moon"></i> Dark mode</span>
+                        </button>
+    <a class="btn btn-sm btn-light text-decoration-none" href="_sources/call_media.rst.txt" rel="nofollow">
+        <span class="btn-icon"><span class="fas fa-code"></span></span>
+        <span class="btn-text">View source</span>
+    </a>
+                        
+                    </div>
+                </header>
+                <div class="row" >
+                    <div class="col-12">
+                        <hr class="w-100 my-4">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 col-lg-9 order-last order-lg-first rst-content">
+                        <main role="main" id="main">
+    <section id="call-media-and-codecs">
+<span id="call-media"></span><h1>Call Media and Codecs<a class="headerlink" href="#call-media-and-codecs" title="Link to this heading"></a></h1>
+<p>This section covers audio and video media handling in VoIPBIN, including codec support, quality considerations, and encryption.</p>
+<section id="audio-codec-support">
+<h2>Audio Codec Support<a class="headerlink" href="#audio-codec-support" title="Link to this heading"></a></h2>
+<p>VoIPBIN supports multiple audio codecs for different use cases:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Supported</span> <span class="n">Audio</span> <span class="n">Codecs</span><span class="p">:</span>
+
+<span class="o">+----------+------------+-----------+------------------+------------------------+</span>
+<span class="o">|</span> <span class="n">Codec</span>    <span class="o">|</span> <span class="n">Bitrate</span>    <span class="o">|</span> <span class="n">Sample</span>    <span class="o">|</span> <span class="n">Quality</span>          <span class="o">|</span> <span class="n">Use</span> <span class="n">Case</span>               <span class="o">|</span>
+<span class="o">|</span>          <span class="o">|</span>            <span class="o">|</span> <span class="n">Rate</span>      <span class="o">|</span>                  <span class="o">|</span>                        <span class="o">|</span>
+<span class="o">+----------+------------+-----------+------------------+------------------------+</span>
+<span class="o">|</span> <span class="n">G</span><span class="mf">.711</span>    <span class="o">|</span> <span class="mi">64</span> <span class="n">kbps</span>    <span class="o">|</span> <span class="mi">8</span> <span class="n">kHz</span>     <span class="o">|</span> <span class="n">Good</span> <span class="p">(</span><span class="n">PSTN</span><span class="p">)</span>      <span class="o">|</span> <span class="n">PSTN</span> <span class="n">calls</span><span class="p">,</span> <span class="n">SIP</span> <span class="n">trunks</span> <span class="o">|</span>
+<span class="o">|</span> <span class="p">(</span><span class="n">ulaw</span><span class="o">/</span>   <span class="o">|</span>            <span class="o">|</span>           <span class="o">|</span>                  <span class="o">|</span>                        <span class="o">|</span>
+<span class="o">|</span>  <span class="n">alaw</span><span class="p">)</span>   <span class="o">|</span>            <span class="o">|</span>           <span class="o">|</span>                  <span class="o">|</span>                        <span class="o">|</span>
+<span class="o">+----------+------------+-----------+------------------+------------------------+</span>
+<span class="o">|</span> <span class="n">G</span><span class="mf">.722</span>    <span class="o">|</span> <span class="mi">64</span> <span class="n">kbps</span>    <span class="o">|</span> <span class="mi">16</span> <span class="n">kHz</span>    <span class="o">|</span> <span class="n">Excellent</span> <span class="p">(</span><span class="n">HD</span><span class="p">)</span>   <span class="o">|</span> <span class="n">HD</span> <span class="n">voice</span> <span class="n">SIP</span> <span class="n">calls</span>     <span class="o">|</span>
+<span class="o">+----------+------------+-----------+------------------+------------------------+</span>
+<span class="o">|</span> <span class="n">G</span><span class="mf">.729</span>    <span class="o">|</span> <span class="mi">8</span> <span class="n">kbps</span>     <span class="o">|</span> <span class="mi">8</span> <span class="n">kHz</span>     <span class="o">|</span> <span class="n">Acceptable</span>       <span class="o">|</span> <span class="n">Low</span> <span class="n">bandwidth</span> <span class="n">links</span>    <span class="o">|</span>
+<span class="o">+----------+------------+-----------+------------------+------------------------+</span>
+<span class="o">|</span> <span class="n">Opus</span>     <span class="o">|</span> <span class="mi">6</span><span class="o">-</span><span class="mi">510</span> <span class="n">kbps</span> <span class="o">|</span> <span class="mi">8</span><span class="o">-</span><span class="mi">48</span> <span class="n">kHz</span>  <span class="o">|</span> <span class="n">Excellent</span>        <span class="o">|</span> <span class="n">WebRTC</span><span class="p">,</span> <span class="n">adaptive</span>       <span class="o">|</span>
+<span class="o">|</span>          <span class="o">|</span> <span class="p">(</span><span class="n">adaptive</span><span class="p">)</span> <span class="o">|</span>           <span class="o">|</span>                  <span class="o">|</span>                        <span class="o">|</span>
+<span class="o">+----------+------------+-----------+------------------+------------------------+</span>
+<span class="o">|</span> <span class="n">PCMU</span>     <span class="o">|</span> <span class="mi">64</span> <span class="n">kbps</span>    <span class="o">|</span> <span class="mi">8</span> <span class="n">kHz</span>     <span class="o">|</span> <span class="n">Good</span>             <span class="o">|</span> <span class="n">Same</span> <span class="k">as</span> <span class="n">G</span><span class="mf">.711</span> <span class="n">ulaw</span>     <span class="o">|</span>
+<span class="o">+----------+------------+-----------+------------------+------------------------+</span>
+<span class="o">|</span> <span class="n">PCMA</span>     <span class="o">|</span> <span class="mi">64</span> <span class="n">kbps</span>    <span class="o">|</span> <span class="mi">8</span> <span class="n">kHz</span>     <span class="o">|</span> <span class="n">Good</span>             <span class="o">|</span> <span class="n">Same</span> <span class="k">as</span> <span class="n">G</span><span class="mf">.711</span> <span class="n">alaw</span>     <span class="o">|</span>
+<span class="o">+----------+------------+-----------+------------------+------------------------+</span>
+</pre></div>
+</div>
+<p><strong>Codec Selection:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Codec</span> <span class="n">Selection</span> <span class="n">by</span> <span class="n">Call</span> <span class="n">Type</span><span class="p">:</span>
+
+<span class="n">PSTN</span> <span class="n">Calls</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Codec</span><span class="p">:</span> <span class="n">G</span><span class="mf">.711</span> <span class="p">(</span><span class="n">ulaw</span> <span class="k">for</span> <span class="n">US</span><span class="p">,</span> <span class="n">alaw</span> <span class="k">for</span> <span class="n">EU</span><span class="p">)</span>  <span class="o">|</span>
+<span class="o">|</span> <span class="n">Reason</span><span class="p">:</span> <span class="n">Universal</span> <span class="n">PSTN</span> <span class="n">compatibility</span>     <span class="o">|</span>
+<span class="o">|</span> <span class="n">Quality</span><span class="p">:</span> <span class="n">Standard</span> <span class="n">telephone</span> <span class="n">quality</span>      <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">WebRTC</span> <span class="n">Calls</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Codec</span><span class="p">:</span> <span class="n">Opus</span> <span class="p">(</span><span class="n">primary</span><span class="p">)</span>                    <span class="o">|</span>
+<span class="o">|</span> <span class="n">Reason</span><span class="p">:</span> <span class="n">Adaptive</span> <span class="n">bitrate</span><span class="p">,</span> <span class="n">loss</span> <span class="n">resilient</span> <span class="o">|</span>
+<span class="o">|</span> <span class="n">Quality</span><span class="p">:</span> <span class="n">HD</span> <span class="n">voice</span> <span class="n">up</span> <span class="n">to</span> <span class="mi">48</span> <span class="n">kHz</span>           <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">SIP</span> <span class="n">Trunk</span> <span class="p">(</span><span class="n">HD</span><span class="p">):</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Codec</span><span class="p">:</span> <span class="n">G</span><span class="mf">.722</span> <span class="p">(</span><span class="k">if</span> <span class="n">supported</span><span class="p">)</span>              <span class="o">|</span>
+<span class="o">|</span> <span class="n">Fallback</span><span class="p">:</span> <span class="n">G</span><span class="mf">.711</span>                          <span class="o">|</span>
+<span class="o">|</span> <span class="n">Quality</span><span class="p">:</span> <span class="n">Wideband</span> <span class="n">audio</span> <span class="p">(</span><span class="mi">16</span> <span class="n">kHz</span><span class="p">)</span>         <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">Low</span> <span class="n">Bandwidth</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Codec</span><span class="p">:</span> <span class="n">G</span><span class="mf">.729</span>                             <span class="o">|</span>
+<span class="o">|</span> <span class="n">Reason</span><span class="p">:</span> <span class="n">Only</span> <span class="mi">8</span> <span class="n">kbps</span> <span class="n">required</span>             <span class="o">|</span>
+<span class="o">|</span> <span class="n">Quality</span><span class="p">:</span> <span class="n">Acceptable</span> <span class="k">for</span> <span class="n">voice</span>            <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+</pre></div>
+</div>
+</section>
+<section id="audio-quality-factors">
+<h2>Audio Quality Factors<a class="headerlink" href="#audio-quality-factors" title="Link to this heading"></a></h2>
+<p>Several factors affect call audio quality:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Quality</span> <span class="n">Factor</span><span class="p">:</span> <span class="n">Network</span> <span class="n">Latency</span>
+
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="o">&lt;</span> <span class="mi">150</span><span class="n">ms</span><span class="p">:</span>  <span class="n">Excellent</span> <span class="o">-</span> <span class="n">natural</span> <span class="n">conversation</span>
+<span class="o">|</span> <span class="mi">150</span><span class="o">-</span><span class="mi">300</span><span class="n">ms</span><span class="p">:</span> <span class="n">Good</span> <span class="o">-</span> <span class="n">slight</span> <span class="n">delay</span> <span class="n">noticeable</span>
+<span class="o">|</span> <span class="mi">300</span><span class="o">-</span><span class="mi">500</span><span class="n">ms</span><span class="p">:</span> <span class="n">Fair</span> <span class="o">-</span> <span class="n">conversation</span> <span class="n">difficult</span>
+<span class="o">|</span> <span class="o">&gt;</span> <span class="mi">500</span><span class="n">ms</span><span class="p">:</span>  <span class="n">Poor</span> <span class="o">-</span> <span class="n">echo</span><span class="p">,</span> <span class="n">overlap</span> <span class="n">issues</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">VoIPBIN</span> <span class="n">Infrastructure</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Global</span> <span class="n">edge</span> <span class="n">locations</span> <span class="n">minimize</span> <span class="n">latency</span>   <span class="o">|</span>
+<span class="o">|</span> <span class="n">Typical</span> <span class="n">added</span> <span class="n">latency</span><span class="p">:</span> <span class="o">&lt;</span> <span class="mi">30</span><span class="n">ms</span>            <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Quality</span> <span class="n">Factor</span><span class="p">:</span> <span class="n">Packet</span> <span class="n">Loss</span>
+
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="mi">0</span><span class="o">%</span><span class="p">:</span>    <span class="n">Perfect</span> <span class="n">audio</span>
+<span class="o">|</span> <span class="mi">1</span><span class="o">-</span><span class="mi">2</span><span class="o">%</span><span class="p">:</span>  <span class="n">Minor</span> <span class="n">artifacts</span><span class="p">,</span> <span class="n">acceptable</span>
+<span class="o">|</span> <span class="mi">3</span><span class="o">-</span><span class="mi">5</span><span class="o">%</span><span class="p">:</span>  <span class="n">Noticeable</span> <span class="n">degradation</span>
+<span class="o">|</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="o">%</span><span class="p">:</span>  <span class="n">Significant</span> <span class="n">quality</span> <span class="n">loss</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">VoIPBIN</span> <span class="n">Mitigation</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Opus</span> <span class="n">codec</span><span class="p">:</span> <span class="n">Built</span><span class="o">-</span><span class="ow">in</span> <span class="n">packet</span> <span class="n">loss</span>       <span class="o">|</span>
+<span class="o">|</span>   <span class="n">concealment</span> <span class="n">up</span> <span class="n">to</span> <span class="mi">15</span><span class="o">%</span>                  <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Jitter</span> <span class="n">buffer</span><span class="p">:</span> <span class="n">Smooths</span> <span class="n">packet</span> <span class="n">timing</span>   <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">FEC</span><span class="p">:</span> <span class="n">Forward</span> <span class="n">Error</span> <span class="n">Correction</span> <span class="p">(</span><span class="n">Opus</span><span class="p">)</span>   <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Quality</span> <span class="n">Factor</span><span class="p">:</span> <span class="n">Jitter</span>
+
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Definition</span><span class="p">:</span> <span class="n">Variation</span> <span class="ow">in</span> <span class="n">packet</span> <span class="n">arrival</span>  <span class="o">|</span>
+<span class="o">|</span>                                          <span class="o">|</span>
+<span class="o">|</span> <span class="o">&lt;</span> <span class="mi">20</span><span class="n">ms</span><span class="p">:</span>  <span class="n">Excellent</span>                       <span class="o">|</span>
+<span class="o">|</span> <span class="mi">20</span><span class="o">-</span><span class="mi">50</span><span class="n">ms</span><span class="p">:</span> <span class="n">Good</span> <span class="p">(</span><span class="n">jitter</span> <span class="n">buffer</span> <span class="n">handles</span><span class="p">)</span>    <span class="o">|</span>
+<span class="o">|</span> <span class="o">&gt;</span> <span class="mi">50</span><span class="n">ms</span><span class="p">:</span>  <span class="n">Poor</span> <span class="o">-</span> <span class="n">buffer</span> <span class="n">underruns</span>         <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">VoIPBIN</span> <span class="n">Jitter</span> <span class="n">Buffer</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Type</span><span class="p">:</span> <span class="n">Adaptive</span>                           <span class="o">|</span>
+<span class="o">|</span> <span class="n">Range</span><span class="p">:</span> <span class="mi">20</span><span class="o">-</span><span class="mi">200</span><span class="n">ms</span>                          <span class="o">|</span>
+<span class="o">|</span> <span class="n">Adapts</span> <span class="n">to</span> <span class="n">network</span> <span class="n">conditions</span>             <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+</pre></div>
+</div>
+</section>
+<section id="rtp-and-media-transport">
+<h2>RTP and Media Transport<a class="headerlink" href="#rtp-and-media-transport" title="Link to this heading"></a></h2>
+<p>Real-time Transport Protocol (RTP) carries audio:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">RTP</span> <span class="n">Packet</span> <span class="n">Structure</span><span class="p">:</span>
+
+<span class="o">+-----------------------------------+</span>
+<span class="o">|</span> <span class="n">V</span><span class="o">=</span><span class="mi">2</span><span class="o">|</span><span class="n">P</span><span class="o">|</span><span class="n">X</span><span class="o">|</span><span class="n">CC</span> <span class="o">|</span><span class="n">M</span><span class="o">|</span> <span class="n">PT</span> <span class="o">|</span>  <span class="n">Sequence</span> <span class="c1">#  |   12 bytes</span>
+<span class="o">|</span>           <span class="n">Timestamp</span>              <span class="o">|</span>   <span class="n">header</span>
+<span class="o">|</span>             <span class="n">SSRC</span>                 <span class="o">|</span>
+<span class="o">+-----------------------------------+</span>
+<span class="o">|</span>            <span class="n">Payload</span>               <span class="o">|</span>   <span class="n">Audio</span>
+<span class="o">|</span>        <span class="p">(</span><span class="n">codec</span><span class="o">-</span><span class="n">encoded</span> <span class="n">audio</span><span class="p">)</span>     <span class="o">|</span>   <span class="n">data</span>
+<span class="o">+-----------------------------------+</span>
+
+<span class="n">Header</span> <span class="n">Fields</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">V</span><span class="p">:</span>  <span class="n">Version</span> <span class="p">(</span><span class="n">always</span> <span class="mi">2</span><span class="p">)</span>                   <span class="o">|</span>
+<span class="o">|</span> <span class="n">P</span><span class="p">:</span>  <span class="n">Padding</span> <span class="n">flag</span>                         <span class="o">|</span>
+<span class="o">|</span> <span class="n">X</span><span class="p">:</span>  <span class="n">Extension</span> <span class="n">flag</span>                       <span class="o">|</span>
+<span class="o">|</span> <span class="n">CC</span><span class="p">:</span> <span class="n">CSRC</span> <span class="n">count</span>                           <span class="o">|</span>
+<span class="o">|</span> <span class="n">M</span><span class="p">:</span>  <span class="n">Marker</span> <span class="n">bit</span> <span class="p">(</span><span class="n">frame</span> <span class="n">boundary</span><span class="p">)</span>          <span class="o">|</span>
+<span class="o">|</span> <span class="n">PT</span><span class="p">:</span> <span class="n">Payload</span> <span class="nb">type</span> <span class="p">(</span><span class="n">codec</span> <span class="n">identifier</span><span class="p">)</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="n">Sequence</span><span class="p">:</span> <span class="n">Packet</span> <span class="n">ordering</span>                <span class="o">|</span>
+<span class="o">|</span> <span class="n">Timestamp</span><span class="p">:</span> <span class="n">Sampling</span> <span class="n">instant</span>              <span class="o">|</span>
+<span class="o">|</span> <span class="n">SSRC</span><span class="p">:</span> <span class="n">Synchronization</span> <span class="n">source</span> <span class="n">ID</span>          <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+</pre></div>
+</div>
+<p><strong>RTP Port Ranges:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">VoIPBIN</span> <span class="n">RTP</span> <span class="n">Ports</span><span class="p">:</span>
+
+<span class="n">Media</span> <span class="n">Servers</span> <span class="p">(</span><span class="n">Asterisk</span><span class="p">):</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Range</span><span class="p">:</span> <span class="mi">10000</span><span class="o">-</span><span class="mi">20000</span> <span class="n">UDP</span>                   <span class="o">|</span>
+<span class="o">|</span> <span class="n">Per</span> <span class="n">call</span><span class="p">:</span> <span class="mi">2</span> <span class="n">ports</span> <span class="p">(</span><span class="n">RTP</span> <span class="o">+</span> <span class="n">RTCP</span><span class="p">)</span>           <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">RTPEngine</span> <span class="p">(</span><span class="n">Media</span> <span class="n">Proxy</span><span class="p">):</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Range</span><span class="p">:</span> <span class="mi">20000</span><span class="o">-</span><span class="mi">60000</span> <span class="n">UDP</span>                   <span class="o">|</span>
+<span class="o">|</span> <span class="n">Handles</span> <span class="n">NAT</span> <span class="n">traversal</span>                    <span class="o">|</span>
+<span class="o">|</span> <span class="n">Provides</span> <span class="n">encryption</span> <span class="n">bridging</span>             <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">Client</span> <span class="n">Requirements</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Outbound</span> <span class="n">UDP</span> <span class="n">to</span> <span class="n">VoIPBIN</span> <span class="n">ports</span> <span class="n">required</span>   <span class="o">|</span>
+<span class="o">|</span> <span class="n">If</span> <span class="n">blocked</span><span class="p">:</span> <span class="n">WebRTC</span> <span class="k">with</span> <span class="n">TURN</span> <span class="k">as</span> <span class="n">fallback</span> <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+</pre></div>
+</div>
+</section>
+<section id="media-encryption">
+<h2>Media Encryption<a class="headerlink" href="#media-encryption" title="Link to this heading"></a></h2>
+<p>VoIPBIN supports encrypted media for security:</p>
+<p><strong>SRTP (Secure RTP):</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">SRTP</span> <span class="n">Encryption</span><span class="p">:</span>
+
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Algorithm</span><span class="p">:</span> <span class="n">AES</span><span class="o">-</span><span class="mi">128</span><span class="o">-</span><span class="n">CM</span>                    <span class="o">|</span>
+<span class="o">|</span> <span class="n">Authentication</span><span class="p">:</span> <span class="n">HMAC</span><span class="o">-</span><span class="n">SHA1</span><span class="o">-</span><span class="mi">80</span>             <span class="o">|</span>
+<span class="o">|</span> <span class="n">Key</span> <span class="n">exchange</span><span class="p">:</span> <span class="n">DTLS</span><span class="o">-</span><span class="n">SRTP</span> <span class="ow">or</span> <span class="n">SDES</span>          <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">SRTP</span> <span class="n">Packet</span><span class="p">:</span>
+<span class="o">+-----------------------------------+</span>
+<span class="o">|</span> <span class="n">RTP</span> <span class="n">Header</span> <span class="p">(</span><span class="ow">not</span> <span class="n">encrypted</span><span class="p">)</span>        <span class="o">|</span>
+<span class="o">+-----------------------------------+</span>
+<span class="o">|</span> <span class="n">Encrypted</span> <span class="n">Payload</span>                 <span class="o">|</span>
+<span class="o">|</span> <span class="p">(</span><span class="n">AES</span><span class="o">-</span><span class="mi">128</span> <span class="n">Counter</span> <span class="n">Mode</span><span class="p">)</span>            <span class="o">|</span>
+<span class="o">+-----------------------------------+</span>
+<span class="o">|</span> <span class="n">Authentication</span> <span class="n">Tag</span> <span class="p">(</span><span class="mi">10</span> <span class="nb">bytes</span><span class="p">)</span>     <span class="o">|</span>
+<span class="o">+-----------------------------------+</span>
+</pre></div>
+</div>
+<p><strong>Encryption by Call Type:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Encryption</span> <span class="n">Matrix</span><span class="p">:</span>
+
+<span class="o">+------------------+-------------+-----------+</span>
+<span class="o">|</span> <span class="n">Call</span> <span class="n">Type</span>        <span class="o">|</span> <span class="n">Signaling</span>   <span class="o">|</span> <span class="n">Media</span>     <span class="o">|</span>
+<span class="o">+------------------+-------------+-----------+</span>
+<span class="o">|</span> <span class="n">WebRTC</span>           <span class="o">|</span> <span class="n">WSS</span> <span class="p">(</span><span class="n">TLS</span><span class="p">)</span>   <span class="o">|</span> <span class="n">SRTP</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="n">SIP</span> <span class="n">over</span> <span class="n">TLS</span>     <span class="o">|</span> <span class="n">TLS</span>         <span class="o">|</span> <span class="n">SRTP</span><span class="o">*</span>     <span class="o">|</span>
+<span class="o">|</span> <span class="n">SIP</span> <span class="n">over</span> <span class="n">UDP</span>     <span class="o">|</span> <span class="kc">None</span>        <span class="o">|</span> <span class="n">RTP</span>       <span class="o">|</span>
+<span class="o">|</span> <span class="n">PSTN</span>             <span class="o">|</span> <span class="n">N</span><span class="o">/</span><span class="n">A</span>         <span class="o">|</span> <span class="n">RTP</span><span class="o">**</span>     <span class="o">|</span>
+<span class="o">+------------------+-------------+-----------+</span>
+
+<span class="o">*</span> <span class="n">SRTP</span> <span class="k">if</span> <span class="n">negotiated</span> <span class="n">via</span> <span class="n">SDES</span> <span class="ow">or</span> <span class="n">DTLS</span>
+<span class="o">**</span> <span class="n">PSTN</span> <span class="n">segment</span> <span class="ow">is</span> <span class="n">unencrypted</span> <span class="p">(</span><span class="n">carrier</span> <span class="n">network</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>End-to-End Encryption:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">E2E</span> <span class="n">Encryption</span> <span class="n">Consideration</span><span class="p">:</span>
+
+<span class="n">WebRTC</span> <span class="n">to</span> <span class="n">WebRTC</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Full</span> <span class="n">SRTP</span> <span class="n">encryption</span> <span class="n">possible</span>            <span class="o">|</span>
+<span class="o">|</span> <span class="n">Keys</span> <span class="n">never</span> <span class="n">leave</span> <span class="n">endpoints</span>               <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">WebRTC</span> <span class="n">to</span> <span class="n">PSTN</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">WebRTC</span> <span class="n">leg</span><span class="p">:</span> <span class="n">SRTP</span> <span class="n">encrypted</span>               <span class="o">|</span>
+<span class="o">|</span> <span class="n">VoIPBIN</span><span class="p">:</span> <span class="n">Decrypts</span> <span class="n">to</span> <span class="n">mix</span><span class="o">/</span><span class="n">process</span>         <span class="o">|</span>
+<span class="o">|</span> <span class="n">PSTN</span> <span class="n">leg</span><span class="p">:</span> <span class="n">Unencrypted</span> <span class="p">(</span><span class="n">carrier</span> <span class="n">limit</span><span class="p">)</span>    <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">Note</span><span class="p">:</span> <span class="n">VoIPBIN</span> <span class="n">must</span> <span class="n">decrypt</span> <span class="n">media</span> <span class="k">for</span><span class="p">:</span>
+<span class="o">-</span> <span class="n">Transcoding</span> <span class="n">between</span> <span class="n">codecs</span>
+<span class="o">-</span> <span class="n">Recording</span>
+<span class="o">-</span> <span class="n">Transcription</span>
+<span class="o">-</span> <span class="n">Conferencing</span> <span class="p">(</span><span class="n">mixing</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="dtmf-handling">
+<h2>DTMF Handling<a class="headerlink" href="#dtmf-handling" title="Link to this heading"></a></h2>
+<p>Dual-Tone Multi-Frequency (DTMF) for IVR input:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">DTMF</span> <span class="n">Methods</span><span class="p">:</span>
+
+<span class="n">RFC</span> <span class="mi">2833</span> <span class="p">(</span><span class="n">RTP</span> <span class="n">Events</span><span class="p">):</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">DTMF</span> <span class="n">sent</span> <span class="k">as</span> <span class="n">special</span> <span class="n">RTP</span> <span class="n">packets</span>         <span class="o">|</span>
+<span class="o">|</span> <span class="n">Payload</span> <span class="nb">type</span><span class="p">:</span> <span class="mi">101</span> <span class="p">(</span><span class="n">commonly</span><span class="p">)</span>             <span class="o">|</span>
+<span class="o">|</span> <span class="n">Most</span> <span class="n">reliable</span> <span class="k">for</span> <span class="n">VoIP</span>                   <span class="o">|</span>
+<span class="o">|</span> <span class="n">VoIPBIN</span> <span class="n">default</span> <span class="n">method</span>                   <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">In</span><span class="o">-</span><span class="n">band</span> <span class="p">(</span><span class="n">Audio</span><span class="p">):</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">DTMF</span> <span class="n">tones</span> <span class="ow">in</span> <span class="n">audio</span> <span class="n">stream</span>               <span class="o">|</span>
+<span class="o">|</span> <span class="n">Can</span> <span class="n">be</span> <span class="n">compressed</span><span class="o">/</span><span class="n">distorted</span>              <span class="o">|</span>
+<span class="o">|</span> <span class="n">Fallback</span> <span class="k">for</span> <span class="n">legacy</span> <span class="n">systems</span>              <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">SIP</span> <span class="n">INFO</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">DTMF</span> <span class="ow">in</span> <span class="n">SIP</span> <span class="n">signaling</span> <span class="n">messages</span>           <span class="o">|</span>
+<span class="o">|</span> <span class="n">Not</span> <span class="n">affected</span> <span class="n">by</span> <span class="n">audio</span> <span class="n">path</span>               <span class="o">|</span>
+<span class="o">|</span> <span class="n">Less</span> <span class="n">common</span>                              <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+</pre></div>
+</div>
+<p><strong>DTMF in API:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Sending</span> <span class="n">DTMF</span><span class="p">:</span>
+<span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span><span class="o">/</span><span class="p">{</span><span class="n">call</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">dtmf</span>
+<span class="p">{</span>
+    <span class="s2">&quot;digits&quot;</span><span class="p">:</span> <span class="s2">&quot;1234#&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="mi">250</span><span class="p">,</span>      <span class="o">//</span> <span class="n">ms</span> <span class="n">per</span> <span class="n">digit</span>
+    <span class="s2">&quot;interval&quot;</span><span class="p">:</span> <span class="mi">100</span>       <span class="o">//</span> <span class="n">ms</span> <span class="n">between</span> <span class="n">digits</span>
+<span class="p">}</span>
+
+<span class="n">Receiving</span> <span class="n">DTMF</span> <span class="p">(</span><span class="ow">in</span> <span class="n">flow</span><span class="p">):</span>
+<span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;digits_receive&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;length&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>          <span class="o">//</span> <span class="n">Expected</span> <span class="n">digits</span>
+        <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="mi">10000</span><span class="p">,</span>    <span class="o">//</span> <span class="n">Timeout</span> <span class="n">ms</span>
+        <span class="s2">&quot;terminator&quot;</span><span class="p">:</span> <span class="s2">&quot;#&quot;</span>     <span class="o">//</span> <span class="n">Optional</span> <span class="n">end</span> <span class="n">char</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="recording-formats">
+<h2>Recording Formats<a class="headerlink" href="#recording-formats" title="Link to this heading"></a></h2>
+<p>VoIPBIN supports multiple recording formats:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Recording</span> <span class="n">Format</span> <span class="n">Options</span><span class="p">:</span>
+
+<span class="o">+--------+------------+-----------+------------------+</span>
+<span class="o">|</span> <span class="n">Format</span> <span class="o">|</span> <span class="n">Codec</span>      <span class="o">|</span> <span class="n">Quality</span>   <span class="o">|</span> <span class="n">File</span> <span class="n">Size</span>        <span class="o">|</span>
+<span class="o">+--------+------------+-----------+------------------+</span>
+<span class="o">|</span> <span class="n">WAV</span>    <span class="o">|</span> <span class="n">PCM</span>        <span class="o">|</span> <span class="n">Lossless</span>  <span class="o">|</span> <span class="o">~</span><span class="mi">960</span> <span class="n">KB</span><span class="o">/</span><span class="nb">min</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="n">MP3</span>    <span class="o">|</span> <span class="n">MP3</span>        <span class="o">|</span> <span class="n">Good</span>      <span class="o">|</span> <span class="o">~</span><span class="mi">128</span> <span class="n">KB</span><span class="o">/</span><span class="nb">min</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="n">OGG</span>    <span class="o">|</span> <span class="n">Opus</span>       <span class="o">|</span> <span class="n">Excellent</span> <span class="o">|</span> <span class="o">~</span><span class="mi">96</span> <span class="n">KB</span><span class="o">/</span><span class="nb">min</span>       <span class="o">|</span>
+<span class="o">+--------+------------+-----------+------------------+</span>
+
+<span class="n">Default</span><span class="p">:</span> <span class="n">MP3</span> <span class="p">(</span><span class="n">balance</span> <span class="n">of</span> <span class="n">quality</span> <span class="ow">and</span> <span class="n">size</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Recording Configuration:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Recording</span> <span class="n">Options</span><span class="p">:</span>
+
+<span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;record_start&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;both&quot;</span><span class="p">,</span>    <span class="o">//</span> <span class="s2">&quot;in&quot;</span><span class="p">,</span> <span class="s2">&quot;out&quot;</span><span class="p">,</span> <span class="s2">&quot;both&quot;</span>
+        <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;mp3&quot;</span><span class="p">,</span>        <span class="o">//</span> <span class="s2">&quot;wav&quot;</span><span class="p">,</span> <span class="s2">&quot;mp3&quot;</span><span class="p">,</span> <span class="s2">&quot;ogg&quot;</span>
+        <span class="s2">&quot;channels&quot;</span><span class="p">:</span> <span class="s2">&quot;mixed&quot;</span><span class="p">,</span>    <span class="o">//</span> <span class="s2">&quot;mixed&quot;</span><span class="p">,</span> <span class="s2">&quot;stereo&quot;</span>
+        <span class="s2">&quot;sample_rate&quot;</span><span class="p">:</span> <span class="mi">16000</span>    <span class="o">//</span> <span class="n">Hz</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">Direction</span> <span class="n">Explained</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="s2">&quot;in&quot;</span><span class="p">:</span>   <span class="n">Record</span> <span class="n">only</span> <span class="n">incoming</span> <span class="n">audio</span>       <span class="o">|</span>
+<span class="o">|</span>         <span class="p">(</span><span class="n">what</span> <span class="n">caller</span> <span class="n">says</span><span class="p">)</span>               <span class="o">|</span>
+<span class="o">|</span>                                          <span class="o">|</span>
+<span class="o">|</span> <span class="s2">&quot;out&quot;</span><span class="p">:</span>  <span class="n">Record</span> <span class="n">only</span> <span class="n">outgoing</span> <span class="n">audio</span>       <span class="o">|</span>
+<span class="o">|</span>         <span class="p">(</span><span class="n">what</span> <span class="n">system</span><span class="o">/</span><span class="n">agent</span> <span class="n">says</span><span class="p">)</span>         <span class="o">|</span>
+<span class="o">|</span>                                          <span class="o">|</span>
+<span class="o">|</span> <span class="s2">&quot;both&quot;</span><span class="p">:</span> <span class="n">Record</span> <span class="n">entire</span> <span class="n">conversation</span>       <span class="o">|</span>
+<span class="o">|</span>         <span class="p">(</span><span class="n">default</span><span class="p">,</span> <span class="n">recommended</span><span class="p">)</span>           <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">Channels</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="s2">&quot;mixed&quot;</span><span class="p">:</span>  <span class="n">Single</span> <span class="n">track</span><span class="p">,</span> <span class="n">both</span> <span class="n">parties</span>     <span class="o">|</span>
+<span class="o">|</span>           <span class="n">combined</span><span class="o">.</span> <span class="n">Smaller</span> <span class="n">file</span><span class="o">.</span>        <span class="o">|</span>
+<span class="o">|</span>                                          <span class="o">|</span>
+<span class="o">|</span> <span class="s2">&quot;stereo&quot;</span><span class="p">:</span> <span class="n">Two</span> <span class="n">tracks</span><span class="p">,</span> <span class="n">parties</span> <span class="n">separated</span>  <span class="o">|</span>
+<span class="o">|</span>           <span class="n">Left</span> <span class="o">=</span> <span class="n">inbound</span><span class="p">,</span> <span class="n">Right</span> <span class="o">=</span> <span class="n">outbound</span><span class="o">|</span>
+<span class="o">|</span>           <span class="n">Better</span> <span class="k">for</span> <span class="n">analysis</span><span class="o">/</span><span class="n">transcription</span><span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+</pre></div>
+</div>
+</section>
+<section id="text-to-speech-tts">
+<h2>Text-to-Speech (TTS)<a class="headerlink" href="#text-to-speech-tts" title="Link to this heading"></a></h2>
+<p>TTS converts text to spoken audio:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">TTS</span> <span class="n">Providers</span><span class="p">:</span>
+
+<span class="n">Google</span> <span class="n">Cloud</span> <span class="n">TTS</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Voices</span><span class="p">:</span> <span class="mi">200</span><span class="o">+</span> <span class="ow">in</span> <span class="mi">40</span><span class="o">+</span> <span class="n">languages</span>            <span class="o">|</span>
+<span class="o">|</span> <span class="n">Quality</span><span class="p">:</span> <span class="n">Neural</span> <span class="ow">and</span> <span class="n">Standard</span>             <span class="o">|</span>
+<span class="o">|</span> <span class="n">SSML</span><span class="p">:</span> <span class="n">Supported</span>                          <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">TTS</span> <span class="n">Action</span> <span class="n">Example</span><span class="p">:</span>
+<span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello, welcome to our service.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;gender&quot;</span><span class="p">:</span> <span class="s2">&quot;female&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;voice&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US-Neural2-C&quot;</span>   <span class="o">//</span> <span class="n">Optional</span> <span class="n">specific</span> <span class="n">voice</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>SSML Support:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">SSML</span> <span class="p">(</span><span class="n">Speech</span> <span class="n">Synthesis</span> <span class="n">Markup</span> <span class="n">Language</span><span class="p">):</span>
+
+<span class="n">Basic</span> <span class="n">Example</span><span class="p">:</span>
+<span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;speak&gt;Your balance is &lt;say-as interpret-as=&#39;currency&#39;&gt;$123.45&lt;/say-as&gt;&lt;/speak&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">Common</span> <span class="n">SSML</span> <span class="n">Tags</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="o">&lt;</span><span class="k">break</span> <span class="n">time</span><span class="o">=</span><span class="s1">&#39;500ms&#39;</span><span class="o">/&gt;</span>  <span class="o">-</span> <span class="n">Pause</span>           <span class="o">|</span>
+<span class="o">|</span> <span class="o">&lt;</span><span class="n">emphasis</span><span class="o">&gt;</span>            <span class="o">-</span> <span class="n">Stress</span> <span class="n">word</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="o">&lt;</span><span class="n">prosody</span> <span class="n">rate</span><span class="o">=</span><span class="s1">&#39;slow&#39;</span><span class="o">&gt;</span> <span class="o">-</span> <span class="n">Speed</span> <span class="n">control</span>    <span class="o">|</span>
+<span class="o">|</span> <span class="o">&lt;</span><span class="n">say</span><span class="o">-</span><span class="k">as</span><span class="o">&gt;</span>              <span class="o">-</span> <span class="n">Format</span> <span class="n">numbers</span>   <span class="o">|</span>
+<span class="o">|</span> <span class="o">&lt;</span><span class="n">phoneme</span><span class="o">&gt;</span>             <span class="o">-</span> <span class="n">Pronunciation</span>    <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+</pre></div>
+</div>
+</section>
+<section id="speech-to-text-stt">
+<h2>Speech-to-Text (STT)<a class="headerlink" href="#speech-to-text-stt" title="Link to this heading"></a></h2>
+<p>Real-time transcription of audio:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">STT</span> <span class="n">Configuration</span><span class="p">:</span>
+
+<span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcribe_start&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;both&quot;</span><span class="p">,</span>      <span class="o">//</span> <span class="s2">&quot;in&quot;</span><span class="p">,</span> <span class="s2">&quot;out&quot;</span><span class="p">,</span> <span class="s2">&quot;both&quot;</span>
+        <span class="s2">&quot;interim_results&quot;</span><span class="p">:</span> <span class="n">false</span>  <span class="o">//</span> <span class="n">Real</span><span class="o">-</span><span class="n">time</span> <span class="n">partials</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">Supported</span> <span class="n">Languages</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="mi">70</span><span class="o">+</span> <span class="n">languages</span> <span class="ow">and</span> <span class="n">regional</span> <span class="n">variants</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="n">See</span><span class="p">:</span> <span class="n">transcribe_overview</span> <span class="k">for</span> <span class="n">full</span> <span class="nb">list</span>   <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+</pre></div>
+</div>
+<p><strong>STT Accuracy Tips:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Improve</span> <span class="n">Transcription</span> <span class="n">Accuracy</span><span class="p">:</span>
+
+<span class="mf">1.</span> <span class="n">Correct</span> <span class="n">Language</span><span class="p">:</span>
+   <span class="o">+------------------------------------------+</span>
+   <span class="o">|</span> <span class="n">Specify</span> <span class="n">exact</span> <span class="n">locale</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span> <span class="n">vs</span> <span class="s2">&quot;en-GB&quot;</span> <span class="o">|</span>
+   <span class="o">|</span> <span class="n">Affects</span> <span class="n">vocabulary</span> <span class="ow">and</span> <span class="n">accent</span> <span class="n">models</span>     <span class="o">|</span>
+   <span class="o">+------------------------------------------+</span>
+
+<span class="mf">2.</span> <span class="n">Audio</span> <span class="n">Quality</span><span class="p">:</span>
+   <span class="o">+------------------------------------------+</span>
+   <span class="o">|</span> <span class="n">Clear</span> <span class="n">audio</span> <span class="o">=</span> <span class="n">better</span> <span class="n">transcription</span>       <span class="o">|</span>
+   <span class="o">|</span> <span class="n">Minimize</span> <span class="n">background</span> <span class="n">noise</span>                <span class="o">|</span>
+   <span class="o">|</span> <span class="n">Use</span> <span class="n">headsets</span> <span class="k">for</span> <span class="n">agents</span>                  <span class="o">|</span>
+   <span class="o">+------------------------------------------+</span>
+
+<span class="mf">3.</span> <span class="n">Sample</span> <span class="n">Rate</span><span class="p">:</span>
+   <span class="o">+------------------------------------------+</span>
+   <span class="o">|</span> <span class="n">Higher</span> <span class="n">sample</span> <span class="n">rate</span> <span class="p">(</span><span class="mi">16</span><span class="n">kHz</span><span class="o">+</span><span class="p">)</span> <span class="n">helps</span>        <span class="o">|</span>
+   <span class="o">|</span> <span class="n">VoIPBIN</span> <span class="n">resamples</span> <span class="n">automatically</span>          <span class="o">|</span>
+   <span class="o">+------------------------------------------+</span>
+</pre></div>
+</div>
+</section>
+<section id="video-calls-webrtc">
+<h2>Video Calls (WebRTC)<a class="headerlink" href="#video-calls-webrtc" title="Link to this heading"></a></h2>
+<p>VoIPBIN supports video via WebRTC:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Video</span> <span class="n">Codec</span> <span class="n">Support</span><span class="p">:</span>
+
+<span class="o">+--------+------------+-----------------+</span>
+<span class="o">|</span> <span class="n">Codec</span>  <span class="o">|</span> <span class="n">Resolution</span> <span class="o">|</span> <span class="n">Use</span> <span class="n">Case</span>        <span class="o">|</span>
+<span class="o">+--------+------------+-----------------+</span>
+<span class="o">|</span> <span class="n">VP8</span>    <span class="o">|</span> <span class="n">Up</span> <span class="n">to</span> <span class="mi">720</span><span class="n">p</span> <span class="o">|</span> <span class="n">Default</span> <span class="n">WebRTC</span>  <span class="o">|</span>
+<span class="o">|</span> <span class="n">VP9</span>    <span class="o">|</span> <span class="n">Up</span> <span class="n">to</span> <span class="mi">1080</span><span class="n">p</span><span class="o">|</span> <span class="n">Higher</span> <span class="n">quality</span>  <span class="o">|</span>
+<span class="o">|</span> <span class="n">H</span><span class="mf">.264</span>  <span class="o">|</span> <span class="n">Up</span> <span class="n">to</span> <span class="mi">1080</span><span class="n">p</span><span class="o">|</span> <span class="n">Hardware</span> <span class="n">accel</span>  <span class="o">|</span>
+<span class="o">+--------+------------+-----------------+</span>
+
+<span class="n">Video</span> <span class="n">Constraints</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Max</span> <span class="n">resolution</span><span class="p">:</span> <span class="mi">1280</span><span class="n">x720</span> <span class="p">(</span><span class="mi">720</span><span class="n">p</span><span class="p">)</span>          <span class="o">|</span>
+<span class="o">|</span> <span class="n">Max</span> <span class="n">framerate</span><span class="p">:</span> <span class="mi">30</span> <span class="n">fps</span>                    <span class="o">|</span>
+<span class="o">|</span> <span class="n">Max</span> <span class="n">bitrate</span><span class="p">:</span> <span class="mi">2</span> <span class="n">Mbps</span>                      <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+</pre></div>
+</div>
+<p><strong>Video Conferencing:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Video</span> <span class="n">Conference</span> <span class="n">Layout</span><span class="p">:</span>
+
+<span class="mi">2</span> <span class="n">Participants</span><span class="p">:</span>
+<span class="o">+-------------+-------------+</span>
+<span class="o">|</span>             <span class="o">|</span>             <span class="o">|</span>
+<span class="o">|</span>     <span class="n">A</span>       <span class="o">|</span>      <span class="n">B</span>      <span class="o">|</span>
+<span class="o">|</span>             <span class="o">|</span>             <span class="o">|</span>
+<span class="o">+-------------+-------------+</span>
+
+<span class="mi">4</span> <span class="n">Participants</span><span class="p">:</span>
+<span class="o">+------+------+------+------+</span>
+<span class="o">|</span>  <span class="n">A</span>   <span class="o">|</span>  <span class="n">B</span>   <span class="o">|</span>  <span class="n">C</span>   <span class="o">|</span>  <span class="n">D</span>   <span class="o">|</span>
+<span class="o">+------+------+------+------+</span>
+
+<span class="n">Active</span> <span class="n">Speaker</span><span class="p">:</span>
+<span class="o">+---------------------------+</span>
+<span class="o">|</span>                           <span class="o">|</span>
+<span class="o">|</span>     <span class="n">Active</span> <span class="n">Speaker</span>        <span class="o">|</span>
+<span class="o">|</span>                           <span class="o">|</span>
+<span class="o">+-------+-------+-------+---+</span>
+<span class="o">|</span> <span class="n">P1</span>    <span class="o">|</span> <span class="n">P2</span>    <span class="o">|</span> <span class="n">P3</span>    <span class="o">|</span> <span class="o">...|</span>
+<span class="o">+-------+-------+-------+---+</span>
+</pre></div>
+</div>
+</section>
+<section id="bandwidth-requirements">
+<h2>Bandwidth Requirements<a class="headerlink" href="#bandwidth-requirements" title="Link to this heading"></a></h2>
+<p>Plan network capacity based on call types:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Bandwidth</span> <span class="n">per</span> <span class="n">Call</span><span class="p">:</span>
+
+<span class="n">Audio</span> <span class="n">Only</span> <span class="p">(</span><span class="n">G</span><span class="mf">.711</span><span class="p">):</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">RTP</span> <span class="n">payload</span><span class="p">:</span> <span class="mi">64</span> <span class="n">kbps</span>                     <span class="o">|</span>
+<span class="o">|</span> <span class="o">+</span> <span class="n">Headers</span><span class="p">:</span> <span class="o">~</span><span class="mi">15</span> <span class="n">kbps</span>                      <span class="o">|</span>
+<span class="o">|</span> <span class="o">=</span> <span class="n">Total</span><span class="p">:</span> <span class="o">~</span><span class="mi">80</span> <span class="n">kbps</span> <span class="n">per</span> <span class="n">direction</span>          <span class="o">|</span>
+<span class="o">|</span> <span class="n">Bidirectional</span><span class="p">:</span> <span class="o">~</span><span class="mi">160</span> <span class="n">kbps</span> <span class="n">per</span> <span class="n">call</span>        <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">Audio</span> <span class="n">Only</span> <span class="p">(</span><span class="n">Opus</span><span class="p">):</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Adaptive</span><span class="p">:</span> <span class="mi">6</span><span class="o">-</span><span class="mi">128</span> <span class="n">kbps</span>                     <span class="o">|</span>
+<span class="o">|</span> <span class="n">Typical</span><span class="p">:</span> <span class="mi">24</span><span class="o">-</span><span class="mi">32</span> <span class="n">kbps</span>                      <span class="o">|</span>
+<span class="o">|</span> <span class="o">+</span> <span class="n">Headers</span><span class="p">:</span> <span class="o">~</span><span class="mi">15</span> <span class="n">kbps</span>                      <span class="o">|</span>
+<span class="o">|</span> <span class="n">Bidirectional</span><span class="p">:</span> <span class="o">~</span><span class="mi">100</span> <span class="n">kbps</span> <span class="n">per</span> <span class="n">call</span>        <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">Video</span> <span class="p">(</span><span class="mi">720</span><span class="n">p</span><span class="p">):</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Video</span><span class="p">:</span> <span class="mi">1</span><span class="o">-</span><span class="mi">2</span> <span class="n">Mbps</span>                          <span class="o">|</span>
+<span class="o">|</span> <span class="n">Audio</span><span class="p">:</span> <span class="o">~</span><span class="mi">100</span> <span class="n">kbps</span> <span class="p">(</span><span class="n">Opus</span><span class="p">)</span>                  <span class="o">|</span>
+<span class="o">|</span> <span class="n">Bidirectional</span><span class="p">:</span> <span class="o">~</span><span class="mi">4</span> <span class="n">Mbps</span> <span class="n">per</span> <span class="n">call</span>          <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+</pre></div>
+</div>
+<p><strong>Capacity Planning:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Example: 100 Concurrent Calls
+
+Audio Only (G.711):
++------------------------------------------+
+| 100 calls × 160 kbps = 16 Mbps           |
+| Recommended: 20 Mbps (headroom)          |
++------------------------------------------+
+
+Audio Only (Opus):
++------------------------------------------+
+| 100 calls × 100 kbps = 10 Mbps           |
+| Recommended: 15 Mbps (headroom)          |
++------------------------------------------+
+
+Video (720p):
++------------------------------------------+
+| 100 calls × 4 Mbps = 400 Mbps            |
+| Recommended: 500 Mbps (headroom)         |
++------------------------------------------+
+</pre></div>
+</div>
+</section>
+<section id="quality-monitoring">
+<h2>Quality Monitoring<a class="headerlink" href="#quality-monitoring" title="Link to this heading"></a></h2>
+<p>Monitor call quality with metrics:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Available</span> <span class="n">Metrics</span> <span class="p">(</span><span class="n">via</span> <span class="n">API</span><span class="o">/</span><span class="n">Webhooks</span><span class="p">):</span>
+
+<span class="n">Call</span> <span class="n">Level</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">duration</span>         <span class="o">-</span> <span class="n">Total</span> <span class="n">call</span> <span class="n">time</span>       <span class="o">|</span>
+<span class="o">|</span> <span class="n">ringing_duration</span> <span class="o">-</span> <span class="n">Time</span> <span class="n">ringing</span>          <span class="o">|</span>
+<span class="o">|</span> <span class="n">talk_duration</span>    <span class="o">-</span> <span class="n">Connected</span> <span class="n">time</span>        <span class="o">|</span>
+<span class="o">|</span> <span class="n">hangup_reason</span>    <span class="o">-</span> <span class="n">Why</span> <span class="n">call</span> <span class="n">ended</span>        <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">Media</span> <span class="n">Level</span> <span class="p">(</span><span class="n">when</span> <span class="n">available</span><span class="p">):</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">jitter</span>           <span class="o">-</span> <span class="n">Packet</span> <span class="n">timing</span> <span class="n">variance</span><span class="o">|</span>
+<span class="o">|</span> <span class="n">packet_loss</span>      <span class="o">-</span> <span class="o">%</span> <span class="n">packets</span> <span class="n">lost</span>        <span class="o">|</span>
+<span class="o">|</span> <span class="n">rtt</span>              <span class="o">-</span> <span class="n">Round</span><span class="o">-</span><span class="n">trip</span> <span class="n">time</span>       <span class="o">|</span>
+<span class="o">|</span> <span class="n">mos</span>              <span class="o">-</span> <span class="n">Mean</span> <span class="n">Opinion</span> <span class="n">Score</span>    <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">MOS</span> <span class="n">Score</span> <span class="n">Reference</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="mf">4.3</span><span class="o">-</span><span class="mf">5.0</span><span class="p">:</span> <span class="n">Excellent</span> <span class="p">(</span><span class="n">HD</span> <span class="n">quality</span><span class="p">)</span>          <span class="o">|</span>
+<span class="o">|</span> <span class="mf">4.0</span><span class="o">-</span><span class="mf">4.3</span><span class="p">:</span> <span class="n">Good</span> <span class="p">(</span><span class="n">toll</span> <span class="n">quality</span><span class="p">)</span>             <span class="o">|</span>
+<span class="o">|</span> <span class="mf">3.6</span><span class="o">-</span><span class="mf">4.0</span><span class="p">:</span> <span class="n">Fair</span> <span class="p">(</span><span class="n">acceptable</span><span class="p">)</span>               <span class="o">|</span>
+<span class="o">|</span> <span class="mf">3.1</span><span class="o">-</span><span class="mf">3.6</span><span class="p">:</span> <span class="n">Poor</span> <span class="p">(</span><span class="n">degraded</span><span class="p">)</span>                 <span class="o">|</span>
+<span class="o">|</span> <span class="o">&lt;</span> <span class="mf">3.1</span><span class="p">:</span>   <span class="n">Bad</span> <span class="p">(</span><span class="n">unacceptable</span><span class="p">)</span>              <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+</main>
+                        
+                    </div>
+                    
+                    <nav class="col-12 col-lg-3 pb-4">
+                        <div class="sticky-top toc page-toc" aria-labelledby="page-toc-heading">
+                            <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
+                            <ul>
+<li><a class="reference internal" href="#">Call Media and Codecs</a><ul>
+<li><a class="reference internal" href="#audio-codec-support">Audio Codec Support</a></li>
+<li><a class="reference internal" href="#audio-quality-factors">Audio Quality Factors</a></li>
+<li><a class="reference internal" href="#rtp-and-media-transport">RTP and Media Transport</a></li>
+<li><a class="reference internal" href="#media-encryption">Media Encryption</a></li>
+<li><a class="reference internal" href="#dtmf-handling">DTMF Handling</a></li>
+<li><a class="reference internal" href="#recording-formats">Recording Formats</a></li>
+<li><a class="reference internal" href="#text-to-speech-tts">Text-to-Speech (TTS)</a></li>
+<li><a class="reference internal" href="#speech-to-text-stt">Speech-to-Text (STT)</a></li>
+<li><a class="reference internal" href="#video-calls-webrtc">Video Calls (WebRTC)</a></li>
+<li><a class="reference internal" href="#bandwidth-requirements">Bandwidth Requirements</a></li>
+<li><a class="reference internal" href="#quality-monitoring">Quality Monitoring</a></li>
+</ul>
+</li>
+</ul>
+
+                        </div>
+                    </nav>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer class="container-fluid bg-primary text-light">
+        <div class="container">
+            <div class="row">
+        <div class="col p-4">
+            
+                <nav aria-label="Footer">
+                    <ul class="nav justify-content-center mb-2">
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="http://voipbin.net">About Us</a></li>
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="http://voipbin.net">Contact</a></li>
+                        
+                    </ul>
+                </nav>
+            
+            <div class="text-center">
+                    &copy; Copyright 2026, VoIPBIN
+            </div>
+            <div class="text-center text-white-50 font-italic mt-3">
+                <small>
+                    Created using
+                    <a class="text-white" href="https://github.com/wagtail/sphinx_wagtail_theme" rel="nofollow" target="_blank">
+                        Sphinx Wagtail Theme 6.5.0
+                    </a>
+                    and
+                    <a class="text-white" href="https://www.sphinx-doc.org/" rel="nofollow" target="_blank">
+                        Sphinx 9.1.0
+                    </a>
+                </small>
+            </div>
+        </div>
+    </div>
+        </div>
+    </footer>
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=fd6eb6e6"></script>
+        <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+        <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="_static/copybutton.js?v=f281be69"></script>
+        <script type="text/javascript" src="_static/dist/theme.js"></script>
+        <script type="text/javascript" src="_static/dist/vendor.js"></script>
+        <script type="text/javascript" src="_static/searchtools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script type="text/javascript">
+            document.addEventListener('DOMContentLoaded', function() { Search.loadIndex("searchindex.js"); });
+        </script>
+        <script type="text/javascript" id="searchindexloader"></script>
+    </body>
+</html>

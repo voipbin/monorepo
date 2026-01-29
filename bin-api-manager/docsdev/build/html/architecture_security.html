@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en" data-content_root="./">
+<head>
+    <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+        <title>Security Architecture &mdash; voipbin  documentation</title>
+    
+    <link rel="stylesheet" type="text/css" href="_static/dist/fontawesome.css" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8e8a900e" />
+      <link rel="stylesheet" type="text/css" href="_static/dist/theme.css?v=310cf088" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+            <link rel="index" title="Index" href="genindex.html" />
+            <link rel="search" title="Search" href="search.html" />
+            <link rel="top" title="voipbin  documentation" href="#" />
+    </head>
+<body>
+    <script type="text/javascript" src="_static/dist/blocking.js"></script>
+    <header class="container-fluid bg-primary">
+        <a class="btn btn-sm btn-light skip-to-content-link" href="#main">Skip to content</a>
+        <div class="container-fluid">
+            <div class="navbar navbar-expand-lg navbar-dark font-weight-bold">
+                    <a href="intro.html"
+                        title="voipbin"
+                        class="logo navbar-brand"
+                    >
+                        <img src="_static/images/voipbin-high-resolution-logo-white-transparent.png" width="45" height="80" alt="voipbin"
+                            class="logo-img"
+                        />
+                        VoIPBin Documentation
+                    </a>
+                
+                
+                    <div class="collapse navbar-collapse justify-content-end">
+                        <ul class="navbar-nav">
+                            
+                                
+                                
+                                <li class="nav-item"><a class="nav-link"  href="http://voipbin.net">Project</a></li>
+                            
+                                
+                                
+                                <li class="nav-item"><a class="nav-link"  href="https://admin.voipbin.net">Admin</a></li>
+                            
+                        </ul>
+                    </div>
+                
+                <button class="navbar-toggler btn btn-primary d-lg-none" type="button" data-toggle="collapse" data-target="#collapseSidebar" aria-expanded="false" aria-controls="collapseExample">
+                    <span class="navbar-toggler-icon"></span>
+                    <span class="sr-only">menu</span>
+                </button>
+            </div>
+        </div>
+    </header>
+    <div class="container-fluid">
+        <div class="row">
+            <aside class="col-12 col-lg-3 sidebar-container">
+                <div id="collapseSidebar" class="collapse sticky-top d-lg-block pt-5 pr-lg-4">
+<div id="searchbox" class="searchbox mb-6 px-1" role="search">
+    <form id="search-form" action="search.html" autocomplete="off" method="get" role="search">
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <div class="input-group-text border-right-0 bg-white py-3 pl-3 pr-2"><span class="fas fa-search"></span></div>
+            </div>
+            <input class="form-control py-3 pr-3 pl-1 h-100 border-left-0" type="search" name="q" placeholder="Search documentation" aria-label="Search documentation" id="searchinput" />
+        </div>
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+    </form>
+</div><div class="site-toc">
+    <nav class="toc mt-3" aria-label="Main menu">
+        <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="accesskey.html">Accesskey</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sdk.html">SDK(Software Development Kit)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="restful_api.html">RESTful API(Application Programming Interface)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Core Concepts</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flow.html#activeflow">Activeflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="variable.html">Variable</a></li>
+<li class="toctree-l1"><a class="reference internal" href="webhook.html">Webhook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="common.html">Common</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Voice &amp; Real-Time</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="call.html">Call</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conference.html">Conference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="queue.html">Queue</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recording.html">Recording</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transcribe.html">Transcribe</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mediastream.html">Mediastream</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Messaging</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="message.html">Message</a></li>
+<li class="toctree-l1"><a class="reference internal" href="email.html">Email</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chat.html">Chat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conversation.html">Conversation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">AI &amp; Automation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="ai.html">AI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="campaign.html">Campaign</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outdial.html">Outdial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outplan.html">Outplan</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Resources &amp; Management</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="number.html">Number</a></li>
+<li class="toctree-l1"><a class="reference internal" href="agent.html">Agent</a></li>
+<li class="toctree-l1"><a class="reference internal" href="customer.html">Customer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="billing_account.html">Billing Account</a></li>
+<li class="toctree-l1"><a class="reference internal" href="storage.html">Storage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a></li>
+<li class="toctree-l1"><a class="reference internal" href="provider.html">Provider</a></li>
+<li class="toctree-l1"><a class="reference internal" href="route.html">Route</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extension.html">Extension</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trunk.html">Trunk</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Architecture (Deep Dive)</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="websocket.html">Websocket</a></li>
+<li class="toctree-l1"><a class="reference internal" href="talk.html">Talk</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Help &amp; Support</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="support.html">Support</a></li>
+</ul>
+
+    </nav>
+    <template data-toggle-item-template>
+        <button class="btn btn-sm btn-link toctree-expand" type="button">
+            <span class="sr-only">Toggle menu contents</span>
+        </button>
+    </template>
+</div>
+                    <div class="d-lg-none border-bottom">
+                        
+                    </div>
+                </div>
+            </aside>
+            <div class="col-12 col-lg-9 pt-5">
+                <header class="row align-items-baseline">
+                    <div class="col">
+                        <nav aria-label="breadcrumb">
+    <ol class="breadcrumb m-0 p-0 bg-transparent">
+        <li class="breadcrumb-item"><a href="index.html">Docs</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Security Architecture</li>
+    </ol>
+</nav>
+                    </div>
+                    <div class="col-sm-12 col-lg-auto mt-3 mt-lg-3">
+                        <noscript>
+                            <p>JavaScript is required to toggle light/dark mode..</p>
+                        </noscript>
+                        <button id="wagtail-theme" class="btn btn-sm btn-light text-decoration-none" type="button">
+                            <span class="dark-only"><i class="fas fa-sun"></i> Light mode</span>
+                            <span class="light-only"><i class="fas fa-moon"></i> Dark mode</span>
+                        </button>
+    <a class="btn btn-sm btn-light text-decoration-none" href="_sources/architecture_security.rst.txt" rel="nofollow">
+        <span class="btn-icon"><span class="fas fa-code"></span></span>
+        <span class="btn-text">View source</span>
+    </a>
+                        
+                    </div>
+                </header>
+                <div class="row" >
+                    <div class="col-12">
+                        <hr class="w-100 my-4">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 col-lg-9 order-last order-lg-first rst-content">
+                        <main role="main" id="main">
+    <section id="security-architecture">
+<span id="architecture-security"></span><h1>Security Architecture<a class="headerlink" href="#security-architecture" title="Link to this heading"></a></h1>
+<p>VoIPBIN implements defense-in-depth security across all layers, from API authentication to data encryption. This section details the security architecture, authentication flows, and protection mechanisms.</p>
+<section id="security-overview">
+<h2>Security Overview<a class="headerlink" href="#security-overview" title="Link to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Security</span> <span class="n">Layers</span><span class="p">:</span>
+
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span>                      <span class="n">External</span> <span class="n">Clients</span>                            <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+                            <span class="o">|</span>
+                            <span class="n">v</span>
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Layer</span> <span class="mi">1</span><span class="p">:</span> <span class="n">Edge</span> <span class="n">Security</span>                                           <span class="o">|</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="n">TLS</span> <span class="mf">1.3</span> <span class="n">encryption</span>                                            <span class="o">|</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="n">DDoS</span> <span class="n">protection</span> <span class="p">(</span><span class="n">Cloud</span> <span class="n">Armor</span><span class="p">)</span>                                 <span class="o">|</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="n">WAF</span> <span class="n">rules</span>                                                     <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+                            <span class="o">|</span>
+                            <span class="n">v</span>
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Layer</span> <span class="mi">2</span><span class="p">:</span> <span class="n">API</span> <span class="n">Gateway</span> <span class="p">(</span><span class="nb">bin</span><span class="o">-</span><span class="n">api</span><span class="o">-</span><span class="n">manager</span><span class="p">)</span>                           <span class="o">|</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="n">JWT</span><span class="o">/</span><span class="n">AccessKey</span> <span class="n">authentication</span>                                  <span class="o">|</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="n">Authorization</span> <span class="n">checks</span>                                          <span class="o">|</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="n">Rate</span> <span class="n">limiting</span>                                                 <span class="o">|</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="n">Input</span> <span class="n">validation</span>                                              <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+                            <span class="o">|</span>
+                            <span class="n">v</span>
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Layer</span> <span class="mi">3</span><span class="p">:</span> <span class="n">Internal</span> <span class="n">Services</span>                                       <span class="o">|</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="n">Network</span> <span class="n">isolation</span> <span class="p">(</span><span class="n">VPC</span><span class="p">)</span>                                       <span class="o">|</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="n">Service</span><span class="o">-</span><span class="n">to</span><span class="o">-</span><span class="n">service</span> <span class="n">trust</span>                                      <span class="o">|</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="n">No</span> <span class="n">external</span> <span class="n">exposure</span>                                          <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+                            <span class="o">|</span>
+                            <span class="n">v</span>
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Layer</span> <span class="mi">4</span><span class="p">:</span> <span class="n">Data</span> <span class="n">Layer</span>                                              <span class="o">|</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="n">Encryption</span> <span class="n">at</span> <span class="n">rest</span>                                            <span class="o">|</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="n">Encrypted</span> <span class="n">connections</span>                                         <span class="o">|</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="n">Access</span> <span class="n">controls</span>                                               <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+</pre></div>
+</div>
+</section>
+<section id="authentication-architecture">
+<h2>Authentication Architecture<a class="headerlink" href="#authentication-architecture" title="Link to this heading"></a></h2>
+<p>VoIPBIN supports two authentication methods: JWT tokens and Access Keys.</p>
+<p><strong>Authentication Flow:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">JWT</span> <span class="n">Authentication</span> <span class="n">Flow</span><span class="p">:</span>
+
+<span class="n">Client</span>                  <span class="n">API</span> <span class="n">Gateway</span>              <span class="n">Auth</span> <span class="n">Service</span>
+   <span class="o">|</span>                        <span class="o">|</span>                         <span class="o">|</span>
+   <span class="o">|</span> <span class="n">POST</span> <span class="o">/</span><span class="n">auth</span><span class="o">/</span><span class="n">login</span>       <span class="o">|</span>                         <span class="o">|</span>
+   <span class="o">|</span> <span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="p">)</span>   <span class="o">|</span>                         <span class="o">|</span>
+   <span class="o">+-----------------------&gt;|</span>                         <span class="o">|</span>
+   <span class="o">|</span>                        <span class="o">|</span>                         <span class="o">|</span>
+   <span class="o">|</span>                        <span class="o">|</span> <span class="n">Validate</span> <span class="n">Credentials</span>    <span class="o">|</span>
+   <span class="o">|</span>                        <span class="o">+------------------------&gt;|</span>
+   <span class="o">|</span>                        <span class="o">|</span>                         <span class="o">|</span>
+   <span class="o">|</span>                        <span class="o">|&lt;------------------------+</span>
+   <span class="o">|</span>                        <span class="o">|</span> <span class="n">User</span> <span class="n">Valid</span> <span class="o">+</span> <span class="n">Permissions</span><span class="o">|</span>
+   <span class="o">|</span>                        <span class="o">|</span>                         <span class="o">|</span>
+   <span class="o">|</span>                        <span class="o">|</span> <span class="n">Generate</span> <span class="n">JWT</span> <span class="n">Token</span>      <span class="o">|</span>
+   <span class="o">|</span>                        <span class="o">|</span> <span class="p">(</span><span class="n">HS256</span> <span class="n">signed</span><span class="p">)</span>          <span class="o">|</span>
+   <span class="o">|</span>                        <span class="o">|</span>                         <span class="o">|</span>
+   <span class="o">|&lt;-----------------------+</span>                         <span class="o">|</span>
+   <span class="o">|</span> <span class="p">{</span> <span class="s2">&quot;token&quot;</span><span class="p">:</span> <span class="s2">&quot;eyJ...&quot;</span> <span class="p">}</span>  <span class="o">|</span>                         <span class="o">|</span>
+   <span class="o">|</span>                        <span class="o">|</span>                         <span class="o">|</span>
+   <span class="o">|</span>                        <span class="o">|</span>                         <span class="o">|</span>
+   <span class="o">|</span> <span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span>          <span class="o">|</span>                         <span class="o">|</span>
+   <span class="o">|</span> <span class="n">Authorization</span><span class="p">:</span> <span class="n">Bearer</span> <span class="n">eyJ</span><span class="o">...</span>                     <span class="o">|</span>
+   <span class="o">+-----------------------&gt;|</span>                         <span class="o">|</span>
+   <span class="o">|</span>                        <span class="o">|</span>                         <span class="o">|</span>
+   <span class="o">|</span>                        <span class="o">|</span> <span class="n">Validate</span> <span class="n">JWT</span><span class="p">:</span>           <span class="o">|</span>
+   <span class="o">|</span>                        <span class="o">|</span> <span class="mf">1.</span> <span class="n">Verify</span> <span class="n">signature</span>     <span class="o">|</span>
+   <span class="o">|</span>                        <span class="o">|</span> <span class="mf">2.</span> <span class="n">Check</span> <span class="n">expiration</span>     <span class="o">|</span>
+   <span class="o">|</span>                        <span class="o">|</span> <span class="mf">3.</span> <span class="n">Extract</span> <span class="n">claims</span>       <span class="o">|</span>
+   <span class="o">|</span>                        <span class="o">|</span>                         <span class="o">|</span>
+   <span class="o">|</span>                        <span class="o">|</span> <span class="n">Route</span> <span class="n">to</span> <span class="n">call</span><span class="o">-</span><span class="n">manager</span>   <span class="o">|</span>
+   <span class="o">|</span>                        <span class="o">|</span> <span class="p">(</span><span class="k">with</span> <span class="n">customer_id</span><span class="p">)</span>      <span class="o">|</span>
+   <span class="o">|</span>                        <span class="o">|</span>                         <span class="o">|</span>
+   <span class="o">|&lt;-----------------------+</span>                         <span class="o">|</span>
+   <span class="o">|</span> <span class="p">{</span> <span class="n">calls</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">]</span> <span class="p">}</span>       <span class="o">|</span>                         <span class="o">|</span>
+   <span class="o">|</span>                        <span class="o">|</span>                         <span class="o">|</span>
+</pre></div>
+</div>
+<p><strong>JWT Token Structure:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">JWT</span> <span class="n">Token</span> <span class="n">Claims</span><span class="p">:</span>
+
+<span class="n">Header</span><span class="p">:</span>
+<span class="p">{</span>
+  <span class="s2">&quot;alg&quot;</span><span class="p">:</span> <span class="s2">&quot;HS256&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;typ&quot;</span><span class="p">:</span> <span class="s2">&quot;JWT&quot;</span>
+<span class="p">}</span>
+
+<span class="n">Payload</span><span class="p">:</span>
+<span class="p">{</span>
+  <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;uuid&quot;</span><span class="p">,</span>      <span class="o">//</span> <span class="n">Customer</span> <span class="n">UUID</span>
+  <span class="s2">&quot;agent_id&quot;</span><span class="p">:</span> <span class="s2">&quot;uuid&quot;</span><span class="p">,</span>         <span class="o">//</span> <span class="n">Agent</span> <span class="n">UUID</span> <span class="p">(</span><span class="n">optional</span><span class="p">)</span>
+  <span class="s2">&quot;permissions&quot;</span><span class="p">:</span> <span class="p">[</span>            <span class="o">//</span> <span class="n">Permission</span> <span class="nb">list</span>
+    <span class="s2">&quot;customer_admin&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;call_create&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;call_read&quot;</span>
+  <span class="p">],</span>
+  <span class="s2">&quot;iat&quot;</span><span class="p">:</span> <span class="mi">1706000000</span><span class="p">,</span>          <span class="o">//</span> <span class="n">Issued</span> <span class="n">at</span>
+  <span class="s2">&quot;exp&quot;</span><span class="p">:</span> <span class="mi">1706003600</span>           <span class="o">//</span> <span class="n">Expires</span> <span class="p">(</span><span class="mi">1</span> <span class="n">hour</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="n">Signature</span><span class="p">:</span>
+<span class="n">HMACSHA256</span><span class="p">(</span>
+  <span class="n">base64UrlEncode</span><span class="p">(</span><span class="n">header</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span> <span class="o">+</span>
+  <span class="n">base64UrlEncode</span><span class="p">(</span><span class="n">payload</span><span class="p">),</span>
+  <span class="n">secret</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Access Key Authentication:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Access</span> <span class="n">Key</span> <span class="n">Flow</span><span class="p">:</span>
+
+<span class="n">Client</span>                  <span class="n">API</span> <span class="n">Gateway</span>
+   <span class="o">|</span>                        <span class="o">|</span>
+   <span class="o">|</span> <span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span>          <span class="o">|</span>
+   <span class="o">|</span> <span class="n">Authorization</span><span class="p">:</span> <span class="n">AccessKey</span> <span class="n">ak_xxxxx</span>
+   <span class="o">+-----------------------&gt;|</span>
+   <span class="o">|</span>                        <span class="o">|</span>
+   <span class="o">|</span>                        <span class="o">|</span> <span class="n">Lookup</span> <span class="n">Access</span> <span class="n">Key</span><span class="p">:</span>
+   <span class="o">|</span>                        <span class="o">|</span> <span class="mf">1.</span> <span class="n">Find</span> <span class="ow">in</span> <span class="n">database</span>
+   <span class="o">|</span>                        <span class="o">|</span> <span class="mf">2.</span> <span class="n">Verify</span> <span class="ow">not</span> <span class="n">expired</span>
+   <span class="o">|</span>                        <span class="o">|</span> <span class="mf">3.</span> <span class="n">Check</span> <span class="n">permissions</span>
+   <span class="o">|</span>                        <span class="o">|</span> <span class="mf">4.</span> <span class="n">Get</span> <span class="n">customer_id</span>
+   <span class="o">|</span>                        <span class="o">|</span>
+   <span class="o">|</span>                        <span class="o">|</span> <span class="n">Route</span> <span class="n">to</span> <span class="n">call</span><span class="o">-</span><span class="n">manager</span>
+   <span class="o">|</span>                        <span class="o">|</span> <span class="p">(</span><span class="k">with</span> <span class="n">customer_id</span><span class="p">)</span>
+   <span class="o">|</span>                        <span class="o">|</span>
+   <span class="o">|&lt;-----------------------+</span>
+   <span class="o">|</span> <span class="p">{</span> <span class="n">calls</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">]</span> <span class="p">}</span>       <span class="o">|</span>
+   <span class="o">|</span>                        <span class="o">|</span>
+</pre></div>
+</div>
+<p><strong>Access Key Structure:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Access</span> <span class="n">Key</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Format</span><span class="p">:</span> <span class="n">ak_</span><span class="o">&lt;</span><span class="mi">32</span><span class="o">-</span><span class="n">character</span><span class="o">-</span><span class="n">random</span><span class="o">-</span><span class="n">string</span><span class="o">&gt;</span>  <span class="o">|</span>
+<span class="o">|</span> <span class="n">Example</span><span class="p">:</span> <span class="n">ak_a1b2c3d4e5f6g7h8i9j0k1l2m3n4</span><span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">Database</span> <span class="n">Record</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="nb">id</span><span class="p">:</span>           <span class="n">UUID</span>                       <span class="o">|</span>
+<span class="o">|</span> <span class="n">customer_id</span><span class="p">:</span>  <span class="n">UUID</span>                       <span class="o">|</span>
+<span class="o">|</span> <span class="n">key_hash</span><span class="p">:</span>     <span class="n">SHA256</span> <span class="nb">hash</span> <span class="n">of</span> <span class="n">key</span>         <span class="o">|</span>
+<span class="o">|</span> <span class="n">permissions</span><span class="p">:</span>  <span class="n">JSON</span> <span class="n">array</span>                 <span class="o">|</span>
+<span class="o">|</span> <span class="n">tm_expire</span><span class="p">:</span>    <span class="n">Expiration</span> <span class="n">timestamp</span>       <span class="o">|</span>
+<span class="o">|</span> <span class="n">tm_create</span><span class="p">:</span>    <span class="n">Creation</span> <span class="n">timestamp</span>         <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+</pre></div>
+</div>
+</section>
+<section id="authorization-model">
+<h2>Authorization Model<a class="headerlink" href="#authorization-model" title="Link to this heading"></a></h2>
+<p>VoIPBIN uses role-based access control (RBAC):</p>
+<p><strong>Permission Hierarchy:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Permission</span> <span class="n">Structure</span><span class="p">:</span>
+
+<span class="n">Customer</span> <span class="n">Level</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">customer_admin</span>                           <span class="o">|</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="n">Full</span> <span class="n">access</span> <span class="n">to</span> <span class="nb">all</span> <span class="n">customer</span> <span class="n">resources</span><span class="o">|</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="n">Can</span> <span class="n">manage</span> <span class="n">agents</span> <span class="ow">and</span> <span class="n">access</span> <span class="n">keys</span>    <span class="o">|</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="n">Can</span> <span class="n">view</span> <span class="n">billing</span>                     <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">Manager</span> <span class="n">Level</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">customer_manager</span>                         <span class="o">|</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="n">Most</span> <span class="n">customer</span> <span class="n">operations</span>             <span class="o">|</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="n">Cannot</span> <span class="n">access</span> <span class="n">billing</span>                <span class="o">|</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="n">Cannot</span> <span class="n">delete</span> <span class="n">customer</span>               <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">Agent</span> <span class="n">Level</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">agent_user</span>                               <span class="o">|</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="n">Access</span> <span class="n">own</span> <span class="n">resources</span> <span class="n">only</span>            <span class="o">|</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="n">Can</span> <span class="n">handle</span> <span class="n">calls</span><span class="o">/</span><span class="n">chats</span>               <span class="o">|</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="n">Limited</span> <span class="n">to</span> <span class="n">assigned</span> <span class="n">queues</span>           <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+</pre></div>
+</div>
+<p><strong>Authorization Check Flow:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Authorization in API Gateway:
+
+Request Arrives
+     |
+     v
++------------------+
+| Parse Auth Header|
+| (JWT or AccessKey)|
++--------+---------+
+         |
+         v
++------------------+
+| Validate Token   |
+| Extract Claims   |
++--------+---------+
+         |
+         v
++------------------+
+| Get Resource     |
+| from Backend     |
++--------+---------+
+         |
+         v
++------------------+
+| Check Permission:|
+| resource.customer_id
+| == token.customer_id?
++--------+---------+
+         |
+    +----+----+
+    |         |
+    v         v
+ Allowed   Forbidden
+ (200 OK)  (403)
+</pre></div>
+</div>
+<p><strong>CRITICAL: Auth at Gateway Only</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Authentication</span> <span class="n">Boundary</span><span class="p">:</span>
+
+<span class="n">External</span>                 <span class="n">API</span> <span class="n">Gateway</span>            <span class="n">Internal</span> <span class="n">Services</span>
+   <span class="o">|</span>                         <span class="o">|</span>                        <span class="o">|</span>
+   <span class="o">|</span>  <span class="n">With</span> <span class="n">Auth</span> <span class="n">Token</span>        <span class="o">|</span>                        <span class="o">|</span>
+   <span class="o">+------------------------&gt;|</span>                        <span class="o">|</span>
+   <span class="o">|</span>                         <span class="o">|</span> <span class="n">Validate</span>               <span class="o">|</span>
+   <span class="o">|</span>                         <span class="o">|</span> <span class="n">Token</span>                  <span class="o">|</span>
+   <span class="o">|</span>                         <span class="o">|</span>                        <span class="o">|</span>
+   <span class="o">|</span>                         <span class="o">|</span> <span class="n">RPC</span> <span class="p">(</span><span class="n">no</span> <span class="n">token</span><span class="p">)</span>         <span class="o">|</span>
+   <span class="o">|</span>                         <span class="o">+-----------------------&gt;|</span>
+   <span class="o">|</span>                         <span class="o">|</span>                        <span class="o">|</span>
+   <span class="o">|</span>                         <span class="o">|</span> <span class="n">Internal</span> <span class="n">services</span>      <span class="o">|</span>
+   <span class="o">|</span>                         <span class="o">|</span> <span class="n">TRUST</span> <span class="n">API</span> <span class="n">Gateway</span>      <span class="o">|</span>
+   <span class="o">|</span>                         <span class="o">|</span>                        <span class="o">|</span>
+   <span class="o">|</span>                         <span class="o">|&lt;-----------------------+</span>
+   <span class="o">|</span>                         <span class="o">|</span> <span class="n">Response</span>               <span class="o">|</span>
+   <span class="o">|&lt;------------------------+</span>                        <span class="o">|</span>
+   <span class="o">|</span>                         <span class="o">|</span>                        <span class="o">|</span>
+
+<span class="n">IMPORTANT</span><span class="p">:</span>
+<span class="o">+------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">JWT</span> <span class="n">validation</span> <span class="n">happens</span> <span class="n">ONLY</span> <span class="ow">in</span> <span class="n">api</span><span class="o">-</span><span class="n">manager</span>   <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Internal</span> <span class="n">services</span> <span class="n">DO</span> <span class="n">NOT</span> <span class="n">validate</span> <span class="n">tokens</span>     <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Internal</span> <span class="n">services</span> <span class="n">TRUST</span> <span class="n">customer_id</span> <span class="kn">from</span><span class="w"> </span><span class="nn">RPC</span> <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">This</span> <span class="n">simplifies</span> <span class="n">internal</span> <span class="n">service</span> <span class="n">logic</span>       <span class="o">|</span>
+<span class="o">+------------------------------------------------+</span>
+</pre></div>
+</div>
+</section>
+<section id="transport-security">
+<h2>Transport Security<a class="headerlink" href="#transport-security" title="Link to this heading"></a></h2>
+<p>All communication encrypted:</p>
+<p><strong>External TLS:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">TLS</span> <span class="n">Configuration</span><span class="p">:</span>
+
+<span class="n">api</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Protocol</span><span class="p">:</span>     <span class="n">TLS</span> <span class="mf">1.3</span> <span class="p">(</span><span class="n">minimum</span> <span class="n">TLS</span> <span class="mf">1.2</span><span class="p">)</span>  <span class="o">|</span>
+<span class="o">|</span> <span class="n">Cipher</span><span class="p">:</span>       <span class="n">ECDHE</span><span class="o">-</span><span class="n">RSA</span><span class="o">-</span><span class="n">AES256</span><span class="o">-</span><span class="n">GCM</span><span class="o">-</span><span class="n">SHA384</span><span class="o">|</span>
+<span class="o">|</span> <span class="n">Certificate</span><span class="p">:</span>  <span class="n">Let</span><span class="s1">&#39;s Encrypt (auto-renew)|</span>
+<span class="o">|</span> <span class="n">HSTS</span><span class="p">:</span>         <span class="n">Enabled</span> <span class="p">(</span><span class="nb">max</span><span class="o">-</span><span class="n">age</span><span class="o">=</span><span class="mi">31536000</span><span class="p">)</span> <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">SIP</span> <span class="n">TLS</span> <span class="p">(</span><span class="n">sip</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span><span class="p">:</span><span class="mi">5061</span><span class="p">):</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Protocol</span><span class="p">:</span>     <span class="n">TLS</span> <span class="mf">1.2</span><span class="o">+</span>                   <span class="o">|</span>
+<span class="o">|</span> <span class="n">Certificate</span><span class="p">:</span>  <span class="n">Let</span><span class="s1">&#39;s Encrypt              |</span>
+<span class="o">|</span> <span class="n">Client</span> <span class="n">Auth</span><span class="p">:</span>  <span class="n">Optional</span>                   <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+</pre></div>
+</div>
+<p><strong>Internal Encryption:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Internal</span> <span class="n">Communications</span><span class="p">:</span>
+
+<span class="n">Kubernetes</span> <span class="n">Pod</span><span class="o">-</span><span class="n">to</span><span class="o">-</span><span class="n">Pod</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Network</span> <span class="n">Policies</span> <span class="n">enforce</span> <span class="n">isolation</span>       <span class="o">|</span>
+<span class="o">|</span> <span class="n">Internal</span> <span class="n">traffic</span> <span class="n">within</span> <span class="n">VPC</span> <span class="n">only</span>         <span class="o">|</span>
+<span class="o">|</span> <span class="n">No</span> <span class="n">TLS</span> <span class="n">required</span> <span class="p">(</span><span class="n">trusted</span> <span class="n">network</span><span class="p">)</span>        <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">Database</span> <span class="n">Connections</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Cloud</span> <span class="n">SQL</span><span class="p">:</span>    <span class="n">SSL</span> <span class="n">required</span>               <span class="o">|</span>
+<span class="o">|</span> <span class="n">Redis</span><span class="p">:</span>        <span class="n">In</span><span class="o">-</span><span class="n">transit</span> <span class="n">encryption</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="n">RabbitMQ</span><span class="p">:</span>     <span class="n">TLS</span> <span class="n">between</span> <span class="n">nodes</span>          <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+</pre></div>
+</div>
+<p><strong>SRTP for Media:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Media</span> <span class="n">Encryption</span><span class="p">:</span>
+
+<span class="n">WebRTC</span> <span class="n">Calls</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Protocol</span><span class="p">:</span>     <span class="n">SRTP</span> <span class="p">(</span><span class="n">DTLS</span><span class="o">-</span><span class="n">SRTP</span><span class="p">)</span>           <span class="o">|</span>
+<span class="o">|</span> <span class="n">Key</span> <span class="n">Exchange</span><span class="p">:</span> <span class="n">DTLS</span> <span class="mf">1.2</span>                   <span class="o">|</span>
+<span class="o">|</span> <span class="n">Cipher</span><span class="p">:</span>       <span class="n">AES_CM_128_HMAC_SHA1_80</span>    <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">SIP</span> <span class="n">TLS</span> <span class="n">Calls</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Signaling</span><span class="p">:</span>    <span class="n">SIP</span> <span class="n">over</span> <span class="n">TLS</span>               <span class="o">|</span>
+<span class="o">|</span> <span class="n">Media</span><span class="p">:</span>        <span class="n">SRTP</span> <span class="p">(</span><span class="n">negotiated</span> <span class="n">via</span> <span class="n">SDP</span><span class="p">)</span>  <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">PSTN</span> <span class="n">Calls</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Internal</span><span class="p">:</span>     <span class="n">SRTP</span> <span class="n">within</span> <span class="n">VoIPBIN</span>        <span class="o">|</span>
+<span class="o">|</span> <span class="n">To</span> <span class="n">Carrier</span><span class="p">:</span>   <span class="n">Depends</span> <span class="n">on</span> <span class="n">carrier</span> <span class="n">support</span> <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+</pre></div>
+</div>
+</section>
+<section id="secrets-management">
+<h2>Secrets Management<a class="headerlink" href="#secrets-management" title="Link to this heading"></a></h2>
+<p>Kubernetes secrets store sensitive data:</p>
+<p><strong>Secret Types:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Kubernetes</span> <span class="n">Secrets</span><span class="p">:</span>
+
+<span class="n">Database</span> <span class="n">Credentials</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Secret</span><span class="p">:</span> <span class="n">db</span><span class="o">-</span><span class="n">credentials</span>                   <span class="o">|</span>
+<span class="o">|</span> <span class="n">Keys</span><span class="p">:</span>                                    <span class="o">|</span>
+<span class="o">|</span>   <span class="o">-</span> <span class="n">dsn</span><span class="p">:</span> <span class="n">mysql</span><span class="p">:</span><span class="o">//</span><span class="n">user</span><span class="p">:</span><span class="k">pass</span><span class="nd">@host</span><span class="o">/</span><span class="n">db</span>       <span class="o">|</span>
+<span class="o">|</span>   <span class="o">-</span> <span class="n">username</span><span class="p">:</span> <span class="n">voipbin_app</span>                <span class="o">|</span>
+<span class="o">|</span>   <span class="o">-</span> <span class="n">password</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">encrypted</span><span class="o">&gt;</span>                <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">JWT</span> <span class="n">Signing</span> <span class="n">Key</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Secret</span><span class="p">:</span> <span class="n">jwt</span><span class="o">-</span><span class="n">secret</span>                       <span class="o">|</span>
+<span class="o">|</span> <span class="n">Keys</span><span class="p">:</span>                                    <span class="o">|</span>
+<span class="o">|</span>   <span class="o">-</span> <span class="n">key</span><span class="p">:</span> <span class="o">&lt;</span><span class="mi">256</span><span class="o">-</span><span class="n">bit</span> <span class="n">random</span> <span class="n">key</span><span class="o">&gt;</span>            <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">API</span> <span class="n">Keys</span> <span class="p">(</span><span class="n">External</span> <span class="n">Services</span><span class="p">):</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Secret</span><span class="p">:</span> <span class="n">external</span><span class="o">-</span><span class="n">api</span><span class="o">-</span><span class="n">keys</span>                <span class="o">|</span>
+<span class="o">|</span> <span class="n">Keys</span><span class="p">:</span>                                    <span class="o">|</span>
+<span class="o">|</span>   <span class="o">-</span> <span class="n">deepgram_api_key</span>                     <span class="o">|</span>
+<span class="o">|</span>   <span class="o">-</span> <span class="n">openai_api_key</span>                       <span class="o">|</span>
+<span class="o">|</span>   <span class="o">-</span> <span class="n">twilio_api_key</span>                       <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">SSL</span> <span class="n">Certificates</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Secret</span><span class="p">:</span> <span class="n">ssl</span><span class="o">-</span><span class="n">certs</span>                        <span class="o">|</span>
+<span class="o">|</span> <span class="n">Keys</span><span class="p">:</span>                                    <span class="o">|</span>
+<span class="o">|</span>   <span class="o">-</span> <span class="n">tls</span><span class="o">.</span><span class="n">crt</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">certificate</span><span class="o">&gt;</span>               <span class="o">|</span>
+<span class="o">|</span>   <span class="o">-</span> <span class="n">tls</span><span class="o">.</span><span class="n">key</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">private</span> <span class="n">key</span><span class="o">&gt;</span>               <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+</pre></div>
+</div>
+<p><strong>Secret Injection:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Pod</span> <span class="n">Secret</span> <span class="n">Configuration</span><span class="p">:</span>
+
+<span class="n">spec</span><span class="p">:</span>
+  <span class="n">containers</span><span class="p">:</span>
+  <span class="o">-</span> <span class="n">name</span><span class="p">:</span> <span class="nb">bin</span><span class="o">-</span><span class="n">api</span><span class="o">-</span><span class="n">manager</span>
+    <span class="n">env</span><span class="p">:</span>
+    <span class="o">-</span> <span class="n">name</span><span class="p">:</span> <span class="n">DSN</span>
+      <span class="n">valueFrom</span><span class="p">:</span>
+        <span class="n">secretKeyRef</span><span class="p">:</span>
+          <span class="n">name</span><span class="p">:</span> <span class="n">db</span><span class="o">-</span><span class="n">credentials</span>
+          <span class="n">key</span><span class="p">:</span> <span class="n">dsn</span>
+    <span class="o">-</span> <span class="n">name</span><span class="p">:</span> <span class="n">JWT_KEY</span>
+      <span class="n">valueFrom</span><span class="p">:</span>
+        <span class="n">secretKeyRef</span><span class="p">:</span>
+          <span class="n">name</span><span class="p">:</span> <span class="n">jwt</span><span class="o">-</span><span class="n">secret</span>
+          <span class="n">key</span><span class="p">:</span> <span class="n">key</span>
+    <span class="n">volumeMounts</span><span class="p">:</span>
+    <span class="o">-</span> <span class="n">name</span><span class="p">:</span> <span class="n">ssl</span><span class="o">-</span><span class="n">certs</span>
+      <span class="n">mountPath</span><span class="p">:</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">ssl</span><span class="o">/</span><span class="n">voipbin</span>
+      <span class="n">readOnly</span><span class="p">:</span> <span class="n">true</span>
+  <span class="n">volumes</span><span class="p">:</span>
+  <span class="o">-</span> <span class="n">name</span><span class="p">:</span> <span class="n">ssl</span><span class="o">-</span><span class="n">certs</span>
+    <span class="n">secret</span><span class="p">:</span>
+      <span class="n">secretName</span><span class="p">:</span> <span class="n">ssl</span><span class="o">-</span><span class="n">certs</span>
+</pre></div>
+</div>
+<p><strong>Base64 Encoding:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">CLI</span> <span class="n">Flag</span> <span class="n">Pattern</span><span class="p">:</span>
+
+<span class="n">Some</span> <span class="n">services</span> <span class="n">accept</span> <span class="n">base64</span><span class="o">-</span><span class="n">encoded</span> <span class="n">secrets</span> <span class="n">via</span> <span class="n">CLI</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="o">-</span><span class="n">ssl_cert_base64</span><span class="o">=&lt;</span><span class="n">base64</span><span class="o">-</span><span class="n">encoded</span><span class="o">-</span><span class="n">cert</span><span class="o">&gt;</span>   <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span><span class="n">ssl_private_base64</span><span class="o">=&lt;</span><span class="n">base64</span><span class="o">-</span><span class="n">encoded</span><span class="o">-</span><span class="n">key</span><span class="o">&gt;</span> <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">Why</span> <span class="n">Base64</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Allows</span> <span class="n">passing</span> <span class="n">binary</span> <span class="n">data</span> <span class="n">via</span> <span class="n">env</span> <span class="nb">vars</span><span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Avoids</span> <span class="n">special</span> <span class="n">character</span> <span class="n">issues</span>        <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Decoded</span> <span class="n">at</span> <span class="n">runtime</span> <span class="ow">in</span> <span class="n">application</span>      <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+</pre></div>
+</div>
+</section>
+<section id="network-security">
+<h2>Network Security<a class="headerlink" href="#network-security" title="Link to this heading"></a></h2>
+<p>VPC and firewall protection:</p>
+<p><strong>Network Isolation:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Network</span> <span class="n">Segmentation</span><span class="p">:</span>
+
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span>                     <span class="n">VPC</span><span class="p">:</span> <span class="n">voipbin</span><span class="o">-</span><span class="n">prod</span>                            <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+<span class="o">|</span>                                                                   <span class="o">|</span>
+<span class="o">|</span>  <span class="n">DMZ</span> <span class="p">(</span><span class="n">Public</span> <span class="n">Subnet</span><span class="p">):</span>                                             <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+-------------------------------------------------------------+</span> <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span>  <span class="n">Cloud</span> <span class="n">Load</span> <span class="n">Balancer</span> <span class="p">(</span><span class="n">External</span> <span class="n">IP</span><span class="p">)</span>                          <span class="o">|</span> <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span>  <span class="o">-</span> <span class="n">Only</span> <span class="n">port</span> <span class="mi">443</span> <span class="p">(</span><span class="n">HTTPS</span><span class="p">)</span>                                    <span class="o">|</span> <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span>  <span class="o">-</span> <span class="n">Only</span> <span class="n">port</span> <span class="mi">5060</span><span class="o">/</span><span class="mi">5061</span> <span class="p">(</span><span class="n">SIP</span><span class="p">)</span>                                <span class="o">|</span> <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+-------------------------------------------------------------+</span> <span class="o">|</span>
+<span class="o">|</span>                              <span class="o">|</span>                                    <span class="o">|</span>
+<span class="o">|</span>                              <span class="o">|</span> <span class="n">Internal</span> <span class="n">Only</span>                      <span class="o">|</span>
+<span class="o">|</span>                              <span class="n">v</span>                                    <span class="o">|</span>
+<span class="o">|</span>  <span class="n">Application</span> <span class="n">Subnet</span><span class="p">:</span>                                              <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+-------------------------------------------------------------+</span> <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span>  <span class="n">GKE</span> <span class="n">Pods</span> <span class="p">(</span><span class="n">No</span> <span class="n">external</span> <span class="n">IPs</span><span class="p">)</span>                                 <span class="o">|</span> <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span>  <span class="n">VoIP</span> <span class="n">VMs</span> <span class="p">(</span><span class="n">Internal</span> <span class="n">IPs</span><span class="p">)</span>                                    <span class="o">|</span> <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span>  <span class="o">-</span> <span class="n">Outbound</span> <span class="n">via</span> <span class="n">NAT</span> <span class="n">Gateway</span> <span class="n">only</span>                            <span class="o">|</span> <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+-------------------------------------------------------------+</span> <span class="o">|</span>
+<span class="o">|</span>                              <span class="o">|</span>                                    <span class="o">|</span>
+<span class="o">|</span>                              <span class="n">v</span>                                    <span class="o">|</span>
+<span class="o">|</span>  <span class="n">Data</span> <span class="n">Subnet</span><span class="p">:</span>                                                     <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+-------------------------------------------------------------+</span> <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span>  <span class="n">Cloud</span> <span class="n">SQL</span> <span class="p">(</span><span class="n">Private</span> <span class="n">IP</span> <span class="n">only</span><span class="p">)</span>                                <span class="o">|</span> <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span>  <span class="n">Memorystore</span> <span class="p">(</span><span class="n">Private</span> <span class="n">IP</span> <span class="n">only</span><span class="p">)</span>                              <span class="o">|</span> <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span>  <span class="n">RabbitMQ</span> <span class="p">(</span><span class="n">Private</span> <span class="n">IP</span> <span class="n">only</span><span class="p">)</span>                                 <span class="o">|</span> <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+-------------------------------------------------------------+</span> <span class="o">|</span>
+<span class="o">|</span>                                                                   <span class="o">|</span>
+<span class="o">+------------------------------------------------------------------+</span>
+</pre></div>
+</div>
+<p><strong>Firewall Rules:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Cloud</span> <span class="n">Firewall</span><span class="p">:</span>
+
+<span class="n">Ingress</span> <span class="p">(</span><span class="n">Allow</span><span class="p">):</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Rule</span><span class="p">:</span> <span class="n">allow</span><span class="o">-</span><span class="n">https</span>                        <span class="o">|</span>
+<span class="o">|</span> <span class="n">Source</span><span class="p">:</span> <span class="mf">0.0.0.0</span><span class="o">/</span><span class="mi">0</span>                        <span class="o">|</span>
+<span class="o">|</span> <span class="n">Target</span><span class="p">:</span> <span class="n">Load</span> <span class="n">Balancer</span>                    <span class="o">|</span>
+<span class="o">|</span> <span class="n">Ports</span><span class="p">:</span> <span class="n">TCP</span> <span class="mi">443</span>                           <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Rule</span><span class="p">:</span> <span class="n">allow</span><span class="o">-</span><span class="n">sip</span>                          <span class="o">|</span>
+<span class="o">|</span> <span class="n">Source</span><span class="p">:</span> <span class="n">Carrier</span> <span class="n">IPs</span> <span class="p">(</span><span class="n">whitelist</span><span class="p">)</span>          <span class="o">|</span>
+<span class="o">|</span> <span class="n">Target</span><span class="p">:</span> <span class="n">Kamailio</span> <span class="n">VMs</span>                     <span class="o">|</span>
+<span class="o">|</span> <span class="n">Ports</span><span class="p">:</span> <span class="n">UDP</span><span class="o">/</span><span class="n">TCP</span> <span class="mi">5060</span><span class="p">,</span> <span class="n">TCP</span> <span class="mi">5061</span>            <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Rule</span><span class="p">:</span> <span class="n">allow</span><span class="o">-</span><span class="n">rtp</span>                          <span class="o">|</span>
+<span class="o">|</span> <span class="n">Source</span><span class="p">:</span> <span class="mf">0.0.0.0</span><span class="o">/</span><span class="mi">0</span>                        <span class="o">|</span>
+<span class="o">|</span> <span class="n">Target</span><span class="p">:</span> <span class="n">RTPEngine</span> <span class="n">VMs</span>                    <span class="o">|</span>
+<span class="o">|</span> <span class="n">Ports</span><span class="p">:</span> <span class="n">UDP</span> <span class="mi">10000</span><span class="o">-</span><span class="mi">60000</span>                   <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">Egress</span> <span class="p">(</span><span class="n">Default</span> <span class="n">Allow</span><span class="p">):</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">All</span> <span class="n">outbound</span> <span class="n">traffic</span> <span class="n">allowed</span>             <span class="o">|</span>
+<span class="o">|</span> <span class="n">NAT</span> <span class="n">Gateway</span> <span class="k">for</span> <span class="n">external</span> <span class="n">access</span>          <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">Deny</span> <span class="p">(</span><span class="n">Default</span><span class="p">):</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">All</span> <span class="n">other</span> <span class="n">ingress</span> <span class="n">denied</span> <span class="n">by</span> <span class="n">default</span>      <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+</pre></div>
+</div>
+<p><strong>Kubernetes Network Policies:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Pod</span> <span class="n">Network</span> <span class="n">Policy</span><span class="p">:</span>
+
+<span class="n">apiVersion</span><span class="p">:</span> <span class="n">networking</span><span class="o">.</span><span class="n">k8s</span><span class="o">.</span><span class="n">io</span><span class="o">/</span><span class="n">v1</span>
+<span class="n">kind</span><span class="p">:</span> <span class="n">NetworkPolicy</span>
+<span class="n">metadata</span><span class="p">:</span>
+  <span class="n">name</span><span class="p">:</span> <span class="n">api</span><span class="o">-</span><span class="n">manager</span><span class="o">-</span><span class="n">policy</span>
+<span class="n">spec</span><span class="p">:</span>
+  <span class="n">podSelector</span><span class="p">:</span>
+    <span class="n">matchLabels</span><span class="p">:</span>
+      <span class="n">app</span><span class="p">:</span> <span class="nb">bin</span><span class="o">-</span><span class="n">api</span><span class="o">-</span><span class="n">manager</span>
+  <span class="n">policyTypes</span><span class="p">:</span>
+  <span class="o">-</span> <span class="n">Ingress</span>
+  <span class="o">-</span> <span class="n">Egress</span>
+  <span class="n">ingress</span><span class="p">:</span>
+  <span class="o">-</span> <span class="n">from</span><span class="p">:</span>
+    <span class="o">-</span> <span class="n">ipBlock</span><span class="p">:</span>
+        <span class="n">cidr</span><span class="p">:</span> <span class="mf">10.0.0.0</span><span class="o">/</span><span class="mi">16</span>    <span class="c1"># Internal VPC only</span>
+    <span class="n">ports</span><span class="p">:</span>
+    <span class="o">-</span> <span class="n">port</span><span class="p">:</span> <span class="mi">443</span>
+    <span class="o">-</span> <span class="n">port</span><span class="p">:</span> <span class="mi">9000</span>
+    <span class="o">-</span> <span class="n">port</span><span class="p">:</span> <span class="mi">2112</span>
+  <span class="n">egress</span><span class="p">:</span>
+  <span class="o">-</span> <span class="n">to</span><span class="p">:</span>
+    <span class="o">-</span> <span class="n">ipBlock</span><span class="p">:</span>
+        <span class="n">cidr</span><span class="p">:</span> <span class="mf">10.0.0.0</span><span class="o">/</span><span class="mi">16</span>    <span class="c1"># Internal VPC</span>
+  <span class="o">-</span> <span class="n">to</span><span class="p">:</span>
+    <span class="o">-</span> <span class="n">ipBlock</span><span class="p">:</span>
+        <span class="n">cidr</span><span class="p">:</span> <span class="mf">0.0.0.0</span><span class="o">/</span><span class="mi">0</span>      <span class="c1"># External (for webhooks)</span>
+    <span class="n">ports</span><span class="p">:</span>
+    <span class="o">-</span> <span class="n">port</span><span class="p">:</span> <span class="mi">443</span>
+</pre></div>
+</div>
+</section>
+<section id="input-validation">
+<h2>Input Validation<a class="headerlink" href="#input-validation" title="Link to this heading"></a></h2>
+<p>All inputs validated at API boundary:</p>
+<p><strong>Validation Layers:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Input</span> <span class="n">Validation</span> <span class="n">Stack</span><span class="p">:</span>
+
+<span class="mf">1.</span> <span class="n">OpenAPI</span> <span class="n">Schema</span> <span class="n">Validation</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Required</span> <span class="n">fields</span> <span class="n">present</span>                <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Field</span> <span class="n">types</span> <span class="n">correct</span> <span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="n">etc</span><span class="p">)</span><span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Enum</span> <span class="n">values</span> <span class="n">valid</span>                      <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">String</span> <span class="n">length</span> <span class="n">limits</span>                   <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="mf">2.</span> <span class="n">Business</span> <span class="n">Logic</span> <span class="n">Validation</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Phone</span> <span class="n">number</span> <span class="nb">format</span> <span class="p">(</span><span class="o">+</span><span class="n">E</span><span class="mf">.164</span><span class="p">)</span>           <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">UUID</span> <span class="nb">format</span>                            <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Resource</span> <span class="n">exists</span>                        <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Sufficient</span> <span class="n">balance</span>                     <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="mf">3.</span> <span class="n">SQL</span> <span class="n">Injection</span> <span class="n">Prevention</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Parameterized</span> <span class="n">queries</span> <span class="n">only</span>             <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">No</span> <span class="n">string</span> <span class="n">concatenation</span> <span class="k">for</span> <span class="n">SQL</span>        <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">ORM</span> <span class="k">with</span> <span class="n">escaping</span> <span class="p">(</span><span class="n">Squirrel</span><span class="p">)</span>           <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+</pre></div>
+</div>
+<p><strong>Parameterized Query Example:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Safe Query Pattern:
+
+// CORRECT - Parameterized
+query := sq.Select(&quot;*&quot;).
+    From(&quot;calls&quot;).
+    Where(sq.Eq{&quot;customer_id&quot;: customerID}).
+    Where(sq.Eq{&quot;id&quot;: callID})
+
+// Generated SQL:
+// SELECT * FROM calls
+// WHERE customer_id = ? AND id = ?
+// Parameters: [customerID, callID]
+
+// WRONG - String concatenation (NEVER DO THIS)
+// query := &quot;SELECT * FROM calls WHERE id = &#39;&quot; + callID + &quot;&#39;&quot;
+</pre></div>
+</div>
+</section>
+<section id="rate-limiting">
+<h2>Rate Limiting<a class="headerlink" href="#rate-limiting" title="Link to this heading"></a></h2>
+<p>Protect against abuse:</p>
+<p><strong>Rate Limit Configuration:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Rate</span> <span class="n">Limiting</span> <span class="n">Strategy</span><span class="p">:</span>
+
+<span class="n">Global</span> <span class="n">Limits</span> <span class="p">(</span><span class="n">per</span> <span class="n">customer</span><span class="p">):</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Endpoint</span>              <span class="o">|</span> <span class="n">Limit</span>            <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">API</span> <span class="n">requests</span>          <span class="o">|</span> <span class="mi">1000</span><span class="o">/</span><span class="n">minute</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="n">Call</span> <span class="n">creation</span>         <span class="o">|</span> <span class="mi">100</span><span class="o">/</span><span class="n">minute</span>       <span class="o">|</span>
+<span class="o">|</span> <span class="n">SMS</span> <span class="n">sending</span>           <span class="o">|</span> <span class="mi">100</span><span class="o">/</span><span class="n">minute</span>       <span class="o">|</span>
+<span class="o">|</span> <span class="n">Login</span> <span class="n">attempts</span>        <span class="o">|</span> <span class="mi">10</span><span class="o">/</span><span class="n">minute</span>        <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">Burst</span> <span class="n">Handling</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Token</span> <span class="n">bucket</span> <span class="n">algorithm</span>                   <span class="o">|</span>
+<span class="o">|</span> <span class="n">Bucket</span> <span class="n">size</span><span class="p">:</span> <span class="mi">2</span><span class="n">x</span> <span class="n">rate</span> <span class="n">limit</span>               <span class="o">|</span>
+<span class="o">|</span> <span class="n">Refill</span> <span class="n">rate</span><span class="p">:</span> <span class="n">Rate</span> <span class="n">limit</span> <span class="n">per</span> <span class="n">second</span>       <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">Response</span> <span class="n">on</span> <span class="n">Limit</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Status</span><span class="p">:</span> <span class="mi">429</span> <span class="n">Too</span> <span class="n">Many</span> <span class="n">Requests</span>            <span class="o">|</span>
+<span class="o">|</span> <span class="n">Header</span><span class="p">:</span> <span class="n">Retry</span><span class="o">-</span><span class="n">After</span><span class="p">:</span> <span class="mi">60</span>                  <span class="o">|</span>
+<span class="o">|</span> <span class="n">Body</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;rate_limit_exceeded&quot;</span><span class="p">}</span>   <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+</pre></div>
+</div>
+<p><strong>DDoS Protection:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Cloud</span> <span class="n">Armor</span> <span class="n">Configuration</span><span class="p">:</span>
+
+<span class="n">WAF</span> <span class="n">Rules</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Rule</span><span class="p">:</span> <span class="n">block</span><span class="o">-</span><span class="n">known</span><span class="o">-</span><span class="n">attackers</span>              <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Block</span> <span class="n">IPs</span> <span class="kn">from</span><span class="w"> </span><span class="nn">threat</span> <span class="n">intelligence</span>     <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Rule</span><span class="p">:</span> <span class="n">rate</span><span class="o">-</span><span class="n">limit</span><span class="o">-</span><span class="n">by</span><span class="o">-</span><span class="n">ip</span>                   <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="mi">10</span><span class="p">,</span><span class="mi">000</span> <span class="n">requests</span><span class="o">/</span><span class="n">minute</span> <span class="n">per</span> <span class="n">IP</span>          <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Rule</span><span class="p">:</span> <span class="n">geo</span><span class="o">-</span><span class="n">restrict</span> <span class="p">(</span><span class="n">optional</span><span class="p">)</span>            <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Allow</span> <span class="n">specific</span> <span class="n">countries</span> <span class="n">only</span>          <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">Adaptive</span> <span class="n">Protection</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">ML</span><span class="o">-</span><span class="n">based</span> <span class="n">attack</span> <span class="n">detection</span>              <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Automatic</span> <span class="n">rule</span> <span class="n">suggestions</span>             <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Alert</span> <span class="n">on</span> <span class="n">anomalies</span>                     <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+</pre></div>
+</div>
+</section>
+<section id="audit-logging">
+<h2>Audit Logging<a class="headerlink" href="#audit-logging" title="Link to this heading"></a></h2>
+<p>Complete audit trail:</p>
+<p><strong>Logged Events:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Audit</span> <span class="n">Log</span> <span class="n">Events</span><span class="p">:</span>
+
+<span class="n">Authentication</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Login</span> <span class="n">success</span><span class="o">/</span><span class="n">failure</span>                  <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Logout</span>                                 <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Token</span> <span class="n">refresh</span>                          <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Access</span> <span class="n">key</span> <span class="n">creation</span><span class="o">/</span><span class="n">revocation</span>         <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">Resource</span> <span class="n">Operations</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Create</span> <span class="p">(</span><span class="n">who</span><span class="p">,</span> <span class="n">what</span><span class="p">,</span> <span class="n">when</span><span class="p">)</span>               <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Update</span> <span class="p">(</span><span class="n">who</span><span class="p">,</span> <span class="n">what</span><span class="p">,</span> <span class="n">old</span><span class="p">,</span> <span class="n">new</span><span class="p">,</span> <span class="n">when</span><span class="p">)</span>     <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Delete</span> <span class="p">(</span><span class="n">who</span><span class="p">,</span> <span class="n">what</span><span class="p">,</span> <span class="n">when</span><span class="p">)</span>               <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">Security</span> <span class="n">Events</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Permission</span> <span class="n">denied</span> <span class="n">attempts</span>             <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Rate</span> <span class="n">limit</span> <span class="n">exceeded</span>                    <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Invalid</span> <span class="n">token</span> <span class="n">attempts</span>                 <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Suspicious</span> <span class="n">activity</span> <span class="n">patterns</span>           <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+</pre></div>
+</div>
+<p><strong>Log Format:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Audit</span> <span class="n">Log</span> <span class="n">Entry</span><span class="p">:</span>
+
+<span class="p">{</span>
+  <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-01-20T12:00:00.000Z&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;event_type&quot;</span><span class="p">:</span> <span class="s2">&quot;resource_created&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;uuid&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;agent_id&quot;</span><span class="p">:</span> <span class="s2">&quot;uuid&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;resource_type&quot;</span><span class="p">:</span> <span class="s2">&quot;call&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;resource_id&quot;</span><span class="p">:</span> <span class="s2">&quot;uuid&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;action&quot;</span><span class="p">:</span> <span class="s2">&quot;create&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;source_ip&quot;</span><span class="p">:</span> <span class="s2">&quot;192.168.1.100&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;user_agent&quot;</span><span class="p">:</span> <span class="s2">&quot;VoIPBIN-SDK/1.0&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;request_id&quot;</span><span class="p">:</span> <span class="s2">&quot;uuid&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;details&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="s2">&quot;+15551234567&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="s2">&quot;+15559876543&quot;</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="data-protection">
+<h2>Data Protection<a class="headerlink" href="#data-protection" title="Link to this heading"></a></h2>
+<p>Protecting sensitive data:</p>
+<p><strong>Data Classification:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Data</span> <span class="n">Sensitivity</span> <span class="n">Levels</span><span class="p">:</span>
+
+<span class="n">Public</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">API</span> <span class="n">documentation</span>                      <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Service</span> <span class="n">status</span>                         <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">Internal</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Call</span> <span class="n">metadata</span> <span class="p">(</span><span class="n">IDs</span><span class="p">,</span> <span class="n">timestamps</span><span class="p">)</span>        <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Flow</span> <span class="n">definitions</span>                       <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Configuration</span>                          <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">Confidential</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Customer</span> <span class="n">PII</span> <span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">emails</span><span class="p">)</span>           <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Phone</span> <span class="n">numbers</span>                          <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Call</span> <span class="n">recordings</span>                        <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Chat</span> <span class="n">transcripts</span>                       <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">Restricted</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Passwords</span> <span class="p">(</span><span class="n">hashed</span><span class="p">,</span> <span class="n">never</span> <span class="n">stored</span> <span class="n">plain</span><span class="p">)</span> <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">API</span> <span class="n">keys</span>                               <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">JWT</span> <span class="n">signing</span> <span class="n">keys</span>                       <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Database</span> <span class="n">credentials</span>                   <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+</pre></div>
+</div>
+<p><strong>Encryption at Rest:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Data</span> <span class="n">Encryption</span><span class="p">:</span>
+
+<span class="n">Cloud</span> <span class="n">SQL</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Encryption</span><span class="p">:</span> <span class="n">AES</span><span class="o">-</span><span class="mi">256</span>                      <span class="o">|</span>
+<span class="o">|</span> <span class="n">Key</span> <span class="n">Management</span><span class="p">:</span> <span class="n">Google</span><span class="o">-</span><span class="n">managed</span>           <span class="o">|</span>
+<span class="o">|</span> <span class="n">Automatic</span> <span class="n">encryption</span> <span class="n">of</span> <span class="nb">all</span> <span class="n">data</span>         <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">Cloud</span> <span class="n">Storage</span> <span class="p">(</span><span class="n">Recordings</span><span class="p">):</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Encryption</span><span class="p">:</span> <span class="n">AES</span><span class="o">-</span><span class="mi">256</span>                      <span class="o">|</span>
+<span class="o">|</span> <span class="n">Key</span> <span class="n">Management</span><span class="p">:</span> <span class="n">Customer</span><span class="o">-</span><span class="n">managed</span> <span class="p">(</span><span class="n">CMEK</span><span class="p">)</span>  <span class="o">|</span>
+<span class="o">|</span> <span class="n">Per</span><span class="o">-</span><span class="nb">object</span> <span class="n">encryption</span>                    <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">Redis</span> <span class="p">(</span><span class="n">Memorystore</span><span class="p">):</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Encryption</span><span class="p">:</span> <span class="n">AES</span><span class="o">-</span><span class="mi">256</span>                      <span class="o">|</span>
+<span class="o">|</span> <span class="n">In</span><span class="o">-</span><span class="n">transit</span> <span class="n">encryption</span> <span class="n">enabled</span>            <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+</pre></div>
+</div>
+<p><strong>Data Retention:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Retention</span> <span class="n">Policies</span><span class="p">:</span>
+
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Data</span> <span class="n">Type</span>        <span class="o">|</span> <span class="n">Retention</span> <span class="o">|</span> <span class="n">Deletion</span>  <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Call</span> <span class="n">records</span>     <span class="o">|</span> <span class="mi">2</span> <span class="n">years</span>   <span class="o">|</span> <span class="n">Soft</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="n">Call</span> <span class="n">recordings</span>  <span class="o">|</span> <span class="mi">90</span> <span class="n">days</span>   <span class="o">|</span> <span class="n">Hard</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="n">Chat</span> <span class="n">messages</span>    <span class="o">|</span> <span class="mi">1</span> <span class="n">year</span>    <span class="o">|</span> <span class="n">Soft</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="n">Audit</span> <span class="n">logs</span>       <span class="o">|</span> <span class="mi">7</span> <span class="n">years</span>   <span class="o">|</span> <span class="n">Hard</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="n">Session</span> <span class="n">tokens</span>   <span class="o">|</span> <span class="mi">1</span> <span class="n">hour</span>    <span class="o">|</span> <span class="n">Automatic</span> <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">Soft</span> <span class="n">Delete</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">tm_delete</span> <span class="nb">set</span> <span class="n">to</span> <span class="n">deletion</span> <span class="n">time</span>           <span class="o">|</span>
+<span class="o">|</span> <span class="n">Data</span> <span class="n">remains</span> <span class="ow">in</span> <span class="n">DB</span> <span class="n">but</span> <span class="ow">not</span> <span class="n">returned</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="n">Can</span> <span class="n">be</span> <span class="n">restored</span> <span class="k">if</span> <span class="n">needed</span>                <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+</pre></div>
+</div>
+</section>
+<section id="compliance">
+<h2>Compliance<a class="headerlink" href="#compliance" title="Link to this heading"></a></h2>
+<p>Security standards adherence:</p>
+<p><strong>Security Standards:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Compliance</span> <span class="n">Framework</span><span class="p">:</span>
+
+<span class="n">SOC</span> <span class="mi">2</span> <span class="n">Type</span> <span class="n">II</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Security</span> <span class="n">controls</span> <span class="n">documented</span>           <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Annual</span> <span class="n">audit</span>                           <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Continuous</span> <span class="n">monitoring</span>                  <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">GDPR</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Data</span> <span class="n">subject</span> <span class="n">rights</span> <span class="n">supported</span>          <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Data</span> <span class="n">portability</span> <span class="n">APIs</span>                  <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Right</span> <span class="n">to</span> <span class="n">deletion</span> <span class="n">implemented</span>          <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">EU</span> <span class="n">data</span> <span class="n">residency</span> <span class="n">option</span>               <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">HIPAA</span> <span class="p">(</span><span class="n">Optional</span><span class="p">):</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">BAA</span> <span class="n">available</span> <span class="k">for</span> <span class="n">healthcare</span> <span class="n">customers</span> <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">PHI</span> <span class="n">handling</span> <span class="n">procedures</span>                <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Audit</span> <span class="n">controls</span>                         <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">PCI</span> <span class="n">DSS</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">No</span> <span class="n">credit</span> <span class="n">card</span> <span class="n">data</span> <span class="n">stored</span>             <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Payment</span> <span class="n">via</span> <span class="n">Stripe</span> <span class="p">(</span><span class="n">PCI</span> <span class="n">compliant</span><span class="p">)</span>     <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+</pre></div>
+</div>
+</section>
+<section id="security-best-practices">
+<h2>Security Best Practices<a class="headerlink" href="#security-best-practices" title="Link to this heading"></a></h2>
+<p>Development and operations security:</p>
+<p><strong>Development:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Secure</span> <span class="n">Development</span><span class="p">:</span>
+
+<span class="n">Code</span> <span class="n">Review</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">All</span> <span class="n">changes</span> <span class="n">peer</span><span class="o">-</span><span class="n">reviewed</span>              <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Security</span> <span class="n">checklist</span> <span class="k">for</span> <span class="n">PRs</span>             <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Automated</span> <span class="n">security</span> <span class="n">scanning</span> <span class="p">(</span><span class="n">SAST</span><span class="p">)</span>     <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">Dependency</span> <span class="n">Management</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Regular</span> <span class="n">dependency</span> <span class="n">updates</span>             <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Vulnerability</span> <span class="n">scanning</span> <span class="p">(</span><span class="n">Snyk</span><span class="o">/</span><span class="n">Dependabot</span><span class="p">)</span><span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">No</span> <span class="n">known</span> <span class="n">vulnerable</span> <span class="n">dependencies</span>       <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">Secret</span> <span class="n">Handling</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">No</span> <span class="n">secrets</span> <span class="ow">in</span> <span class="n">code</span> <span class="ow">or</span> <span class="n">git</span>              <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Environment</span> <span class="n">variables</span> <span class="k">for</span> <span class="n">config</span>       <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Secret</span> <span class="n">rotation</span> <span class="n">procedures</span>             <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+</pre></div>
+</div>
+<p><strong>Operations:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Security</span> <span class="n">Operations</span><span class="p">:</span>
+
+<span class="n">Access</span> <span class="n">Control</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Least</span> <span class="n">privilege</span> <span class="n">principle</span>              <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">MFA</span> <span class="k">for</span> <span class="nb">all</span> <span class="n">admin</span> <span class="n">access</span>               <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Regular</span> <span class="n">access</span> <span class="n">reviews</span>                 <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">Incident</span> <span class="n">Response</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Documented</span> <span class="n">incident</span> <span class="n">procedures</span>         <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">On</span><span class="o">-</span><span class="n">call</span> <span class="n">rotation</span>                       <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Post</span><span class="o">-</span><span class="n">incident</span> <span class="n">reviews</span>                  <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+
+<span class="n">Monitoring</span><span class="p">:</span>
+<span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Real</span><span class="o">-</span><span class="n">time</span> <span class="n">security</span> <span class="n">alerts</span>              <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Failed</span> <span class="n">login</span> <span class="n">monitoring</span>                <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Anomaly</span> <span class="n">detection</span>                      <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+</main>
+                        
+                    </div>
+                    
+                    <nav class="col-12 col-lg-3 pb-4">
+                        <div class="sticky-top toc page-toc" aria-labelledby="page-toc-heading">
+                            <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
+                            <ul>
+<li><a class="reference internal" href="#">Security Architecture</a><ul>
+<li><a class="reference internal" href="#security-overview">Security Overview</a></li>
+<li><a class="reference internal" href="#authentication-architecture">Authentication Architecture</a></li>
+<li><a class="reference internal" href="#authorization-model">Authorization Model</a></li>
+<li><a class="reference internal" href="#transport-security">Transport Security</a></li>
+<li><a class="reference internal" href="#secrets-management">Secrets Management</a></li>
+<li><a class="reference internal" href="#network-security">Network Security</a></li>
+<li><a class="reference internal" href="#input-validation">Input Validation</a></li>
+<li><a class="reference internal" href="#rate-limiting">Rate Limiting</a></li>
+<li><a class="reference internal" href="#audit-logging">Audit Logging</a></li>
+<li><a class="reference internal" href="#data-protection">Data Protection</a></li>
+<li><a class="reference internal" href="#compliance">Compliance</a></li>
+<li><a class="reference internal" href="#security-best-practices">Security Best Practices</a></li>
+</ul>
+</li>
+</ul>
+
+                        </div>
+                    </nav>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer class="container-fluid bg-primary text-light">
+        <div class="container">
+            <div class="row">
+        <div class="col p-4">
+            
+                <nav aria-label="Footer">
+                    <ul class="nav justify-content-center mb-2">
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="http://voipbin.net">About Us</a></li>
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="http://voipbin.net">Contact</a></li>
+                        
+                    </ul>
+                </nav>
+            
+            <div class="text-center">
+                    &copy; Copyright 2026, VoIPBIN
+            </div>
+            <div class="text-center text-white-50 font-italic mt-3">
+                <small>
+                    Created using
+                    <a class="text-white" href="https://github.com/wagtail/sphinx_wagtail_theme" rel="nofollow" target="_blank">
+                        Sphinx Wagtail Theme 6.5.0
+                    </a>
+                    and
+                    <a class="text-white" href="https://www.sphinx-doc.org/" rel="nofollow" target="_blank">
+                        Sphinx 9.1.0
+                    </a>
+                </small>
+            </div>
+        </div>
+    </div>
+        </div>
+    </footer>
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=fd6eb6e6"></script>
+        <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+        <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="_static/copybutton.js?v=f281be69"></script>
+        <script type="text/javascript" src="_static/dist/theme.js"></script>
+        <script type="text/javascript" src="_static/dist/vendor.js"></script>
+        <script type="text/javascript" src="_static/searchtools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script type="text/javascript">
+            document.addEventListener('DOMContentLoaded', function() { Search.loadIndex("searchindex.js"); });
+        </script>
+        <script type="text/javascript" id="searchindexloader"></script>
+    </body>
+</html>
