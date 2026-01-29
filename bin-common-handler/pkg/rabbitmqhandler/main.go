@@ -31,12 +31,34 @@ type Rabbit interface {
 	QueueSubscribe(name string, topic string) error
 }
 
+// amqpChannel is an interface for amqp.Channel operations used by queue and exchange.
+// This interface enables testing by allowing mock implementations.
+// *amqp.Channel implicitly satisfies this interface.
+type amqpChannel interface {
+	Close() error
+	Consume(queue, consumer string, autoAck, exclusive, noLocal, noWait bool, args amqp.Table) (<-chan amqp.Delivery, error)
+	Qos(prefetchCount, prefetchSize int, global bool) error
+	QueueBind(name, key, exchange string, noWait bool, args amqp.Table) error
+	QueueDelete(name string, ifUnused, ifEmpty, noWait bool) (int, error)
+	ExchangeDeclare(name, kind string, durable, autoDelete, internal, noWait bool, args amqp.Table) error
+	QueueDeclare(name string, durable, autoDelete, exclusive, noWait bool, args amqp.Table) (amqp.Queue, error)
+}
+
+// amqpConnection is an interface for amqp.Connection operations.
+// This interface enables testing by allowing mock implementations.
+// *amqp.Connection implicitly satisfies this interface.
+type amqpConnection interface {
+	Channel() (*amqp.Channel, error)
+	Close() error
+	NotifyClose(receiver chan *amqp.Error) chan *amqp.Error
+}
+
 // rabbit struct for rabbitmq
 type rabbit struct {
 	uri string
 
 	errorChannel chan *amqp.Error
-	connection   *amqp.Connection
+	connection   amqpConnection
 	closed       bool
 
 	queues     map[string]*queue
@@ -51,8 +73,8 @@ type queue struct {
 	exclusive  bool
 	noWait     bool
 
-	channel *amqp.Channel
-	qeueue  *amqp.Queue
+	channel amqpChannel
+	queue   *amqp.Queue
 }
 
 type queueBind struct {
@@ -73,7 +95,7 @@ type exchange struct {
 	noWait     bool
 	args       amqp.Table
 
-	channel *amqp.Channel
+	channel amqpChannel
 }
 
 // NewRabbit creates queue for Rabbitmq
@@ -101,6 +123,21 @@ func (r *rabbit) Close() {
 	}).Info("Close the rabbitmq connection.")
 
 	r.closed = true
+
+	// close all queue channels
+	for _, q := range r.queues {
+		if q.channel != nil {
+			_ = q.channel.Close()
+		}
+	}
+
+	// close all exchange channels
+	for _, e := range r.exchanges {
+		if e.channel != nil {
+			_ = e.channel.Close()
+		}
+	}
+
 	_ = r.connection.Close()
 }
 

@@ -14,6 +14,7 @@ import (
 	sock "monorepo/bin-common-handler/models/sock"
 	reflect "reflect"
 
+	amqp091 "github.com/rabbitmq/amqp091-go"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -190,4 +191,196 @@ func (m *MockRabbit) TopicCreate(name string) error {
 func (mr *MockRabbitMockRecorder) TopicCreate(name any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TopicCreate", reflect.TypeOf((*MockRabbit)(nil).TopicCreate), name)
+}
+
+// MockamqpChannel is a mock of amqpChannel interface.
+type MockamqpChannel struct {
+	ctrl     *gomock.Controller
+	recorder *MockamqpChannelMockRecorder
+	isgomock struct{}
+}
+
+// MockamqpChannelMockRecorder is the mock recorder for MockamqpChannel.
+type MockamqpChannelMockRecorder struct {
+	mock *MockamqpChannel
+}
+
+// NewMockamqpChannel creates a new mock instance.
+func NewMockamqpChannel(ctrl *gomock.Controller) *MockamqpChannel {
+	mock := &MockamqpChannel{ctrl: ctrl}
+	mock.recorder = &MockamqpChannelMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockamqpChannel) EXPECT() *MockamqpChannelMockRecorder {
+	return m.recorder
+}
+
+// Close mocks base method.
+func (m *MockamqpChannel) Close() error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Close")
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Close indicates an expected call of Close.
+func (mr *MockamqpChannelMockRecorder) Close() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Close", reflect.TypeOf((*MockamqpChannel)(nil).Close))
+}
+
+// Consume mocks base method.
+func (m *MockamqpChannel) Consume(queue, consumer string, autoAck, exclusive, noLocal, noWait bool, args amqp091.Table) (<-chan amqp091.Delivery, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Consume", queue, consumer, autoAck, exclusive, noLocal, noWait, args)
+	ret0, _ := ret[0].(<-chan amqp091.Delivery)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Consume indicates an expected call of Consume.
+func (mr *MockamqpChannelMockRecorder) Consume(queue, consumer, autoAck, exclusive, noLocal, noWait, args any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Consume", reflect.TypeOf((*MockamqpChannel)(nil).Consume), queue, consumer, autoAck, exclusive, noLocal, noWait, args)
+}
+
+// ExchangeDeclare mocks base method.
+func (m *MockamqpChannel) ExchangeDeclare(name, kind string, durable, autoDelete, internal, noWait bool, args amqp091.Table) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExchangeDeclare", name, kind, durable, autoDelete, internal, noWait, args)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ExchangeDeclare indicates an expected call of ExchangeDeclare.
+func (mr *MockamqpChannelMockRecorder) ExchangeDeclare(name, kind, durable, autoDelete, internal, noWait, args any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExchangeDeclare", reflect.TypeOf((*MockamqpChannel)(nil).ExchangeDeclare), name, kind, durable, autoDelete, internal, noWait, args)
+}
+
+// Qos mocks base method.
+func (m *MockamqpChannel) Qos(prefetchCount, prefetchSize int, global bool) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Qos", prefetchCount, prefetchSize, global)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Qos indicates an expected call of Qos.
+func (mr *MockamqpChannelMockRecorder) Qos(prefetchCount, prefetchSize, global any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Qos", reflect.TypeOf((*MockamqpChannel)(nil).Qos), prefetchCount, prefetchSize, global)
+}
+
+// QueueBind mocks base method.
+func (m *MockamqpChannel) QueueBind(name, key, exchange string, noWait bool, args amqp091.Table) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QueueBind", name, key, exchange, noWait, args)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// QueueBind indicates an expected call of QueueBind.
+func (mr *MockamqpChannelMockRecorder) QueueBind(name, key, exchange, noWait, args any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueBind", reflect.TypeOf((*MockamqpChannel)(nil).QueueBind), name, key, exchange, noWait, args)
+}
+
+// QueueDeclare mocks base method.
+func (m *MockamqpChannel) QueueDeclare(name string, durable, autoDelete, exclusive, noWait bool, args amqp091.Table) (amqp091.Queue, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QueueDeclare", name, durable, autoDelete, exclusive, noWait, args)
+	ret0, _ := ret[0].(amqp091.Queue)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// QueueDeclare indicates an expected call of QueueDeclare.
+func (mr *MockamqpChannelMockRecorder) QueueDeclare(name, durable, autoDelete, exclusive, noWait, args any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueDeclare", reflect.TypeOf((*MockamqpChannel)(nil).QueueDeclare), name, durable, autoDelete, exclusive, noWait, args)
+}
+
+// QueueDelete mocks base method.
+func (m *MockamqpChannel) QueueDelete(name string, ifUnused, ifEmpty, noWait bool) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QueueDelete", name, ifUnused, ifEmpty, noWait)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// QueueDelete indicates an expected call of QueueDelete.
+func (mr *MockamqpChannelMockRecorder) QueueDelete(name, ifUnused, ifEmpty, noWait any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueDelete", reflect.TypeOf((*MockamqpChannel)(nil).QueueDelete), name, ifUnused, ifEmpty, noWait)
+}
+
+// MockamqpConnection is a mock of amqpConnection interface.
+type MockamqpConnection struct {
+	ctrl     *gomock.Controller
+	recorder *MockamqpConnectionMockRecorder
+	isgomock struct{}
+}
+
+// MockamqpConnectionMockRecorder is the mock recorder for MockamqpConnection.
+type MockamqpConnectionMockRecorder struct {
+	mock *MockamqpConnection
+}
+
+// NewMockamqpConnection creates a new mock instance.
+func NewMockamqpConnection(ctrl *gomock.Controller) *MockamqpConnection {
+	mock := &MockamqpConnection{ctrl: ctrl}
+	mock.recorder = &MockamqpConnectionMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockamqpConnection) EXPECT() *MockamqpConnectionMockRecorder {
+	return m.recorder
+}
+
+// Channel mocks base method.
+func (m *MockamqpConnection) Channel() (*amqp091.Channel, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Channel")
+	ret0, _ := ret[0].(*amqp091.Channel)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Channel indicates an expected call of Channel.
+func (mr *MockamqpConnectionMockRecorder) Channel() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Channel", reflect.TypeOf((*MockamqpConnection)(nil).Channel))
+}
+
+// Close mocks base method.
+func (m *MockamqpConnection) Close() error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Close")
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Close indicates an expected call of Close.
+func (mr *MockamqpConnectionMockRecorder) Close() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Close", reflect.TypeOf((*MockamqpConnection)(nil).Close))
+}
+
+// NotifyClose mocks base method.
+func (m *MockamqpConnection) NotifyClose(receiver chan *amqp091.Error) chan *amqp091.Error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NotifyClose", receiver)
+	ret0, _ := ret[0].(chan *amqp091.Error)
+	return ret0
+}
+
+// NotifyClose indicates an expected call of NotifyClose.
+func (mr *MockamqpConnectionMockRecorder) NotifyClose(receiver any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NotifyClose", reflect.TypeOf((*MockamqpConnection)(nil).NotifyClose), receiver)
 }

@@ -109,7 +109,13 @@ func (r *rabbit) QueueDeclare(name string, durable, autoDelete, exclusive, noWai
 		nil,        // arguments
 	)
 	if err != nil {
+		_ = channel.Close() // close channel on error to prevent leak
 		return err
+	}
+
+	// close existing channel if re-declaring (e.g., during reconnection)
+	if existing := r.queues[name]; existing != nil && existing.channel != nil {
+		_ = existing.channel.Close()
 	}
 
 	r.queues[name] = &queue{
@@ -120,7 +126,7 @@ func (r *rabbit) QueueDeclare(name string, durable, autoDelete, exclusive, noWai
 		noWait:     noWait,
 
 		channel: channel,
-		qeueue:  &q,
+		queue:   &q,
 	}
 
 	return nil
