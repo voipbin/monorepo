@@ -118,10 +118,14 @@ func convertValue(val any, targetType reflect.Type) (any, error) {
 func convertToUUID(val any) (uuid.UUID, error) {
 	switch v := val.(type) {
 	case string:
+		// Empty string is allowed for nullable UUID fields
+		if v == "" {
+			return uuid.Nil, nil
+		}
 		id, err := uuid.FromString(v)
 		if err != nil {
-			// Return Nil UUID for invalid strings (similar to FromStringOrNil behavior)
-			return uuid.Nil, nil
+			// Return error for invalid non-empty UUID strings to detect data corruption
+			return uuid.Nil, fmt.Errorf("invalid UUID string %q: %w", v, err)
 		}
 		return id, nil
 	case uuid.UUID:
