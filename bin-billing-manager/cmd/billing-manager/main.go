@@ -67,6 +67,9 @@ func runDaemon() error {
 	signal.Notify(chSigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	go signalHandler()
 
+	// init prometheus
+	config.InitPrometheus()
+
 	// connect to database
 	sqlDB, err := commondatabasehandler.Connect(config.Get().DatabaseDSN)
 	if err != nil {

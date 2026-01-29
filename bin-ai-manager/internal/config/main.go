@@ -3,7 +3,6 @@ package config
 import (
 	"net/http"
 	"sync"
-	"time"
 
 	joonix "github.com/joonix/log"
 	"github.com/pkg/errors"
@@ -46,13 +45,13 @@ func bindConfig(cmd *cobra.Command) error {
 	viper.AutomaticEnv()
 	f := cmd.PersistentFlags()
 
-	f.String("rabbitmq_address", "amqp://guest:guest@localhost:5672", "RabbitMQ server address")
-	f.String("prometheus_endpoint", "/metrics", "Prometheus metrics endpoint")
-	f.String("prometheus_listen_address", ":2112", "Prometheus listen address")
-	f.String("database_dsn", "testid:testpassword@tcp(127.0.0.1:3306)/test", "Database connection DSN")
-	f.String("redis_address", "127.0.0.1:6379", "Redis server address")
+	f.String("rabbitmq_address", "", "RabbitMQ server address")
+	f.String("prometheus_endpoint", "", "Prometheus metrics endpoint")
+	f.String("prometheus_listen_address", "", "Prometheus listen address")
+	f.String("database_dsn", "", "Database connection DSN")
+	f.String("redis_address", "", "Redis server address")
 	f.String("redis_password", "", "Redis password")
-	f.Int("redis_database", 1, "Redis database index")
+	f.Int("redis_database", 0, "Redis database index")
 	f.String("engine_key_chatgpt", "", "Engine key for chatgpt")
 
 	bindings := map[string]string{
@@ -111,16 +110,18 @@ func initLog() {
 // Must be called AFTER LoadGlobalConfig().
 func InitPrometheus() {
 	cfg := Get()
+
+	// Skip Prometheus initialization if endpoint or listen address is not configured
+	if cfg.PrometheusEndpoint == "" || cfg.PrometheusListenAddress == "" {
+		logrus.Debug("Prometheus metrics server disabled (endpoint or listen address not configured)")
+		return
+	}
+
 	http.Handle(cfg.PrometheusEndpoint, promhttp.Handler())
 	go func() {
-		for {
-			err := http.ListenAndServe(cfg.PrometheusListenAddress, nil)
-			if err != nil {
-				logrus.Errorf("Could not start prometheus listener")
-				time.Sleep(time.Second * 1)
-				continue
-			}
-			break
+		logrus.Infof("Prometheus metrics server starting on %s%s", cfg.PrometheusListenAddress, cfg.PrometheusEndpoint)
+		if err := http.ListenAndServe(cfg.PrometheusListenAddress, nil); err != nil {
+			logrus.Errorf("Prometheus server error: %v", err)
 		}
 	}()
 }
