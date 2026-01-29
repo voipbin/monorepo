@@ -26,6 +26,26 @@ func Test_EmailIsValid(t *testing.T) {
 			expectRes: false,
 		},
 		{
+			name:      "empty string",
+			email:     "",
+			expectRes: false,
+		},
+		{
+			name:      "only at symbol",
+			email:     "@",
+			expectRes: false,
+		},
+		{
+			name:      "missing local part",
+			email:     "@example.com",
+			expectRes: false,
+		},
+		{
+			name:      "missing domain part",
+			email:     "user@",
+			expectRes: false,
+		},
+		{
 			name:      "email with subdomain",
 			email:     "test@sub.example.com",
 			expectRes: true,

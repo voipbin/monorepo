@@ -16,6 +16,9 @@ import (
 )
 
 // PublishWebhookEvent publishs the given event type of notification to the webhook and event queue.
+// Note: These goroutines are intentionally fire-and-forget. The passed context is used for
+// request handlers but cancellation is not propagated since notifications should complete
+// independently of the caller's lifecycle.
 func (h *notifyHandler) PublishWebhookEvent(ctx context.Context, customerID uuid.UUID, eventType string, data WebhookMessage) {
 	go h.PublishEvent(ctx, eventType, data)
 	go h.PublishWebhook(ctx, customerID, eventType, data)
@@ -93,6 +96,9 @@ func (h *notifyHandler) publishEvent(eventType string, dataType string, data jso
 		Data:      data,
 	}
 
+	// Note: Using context.Background() intentionally. Events are fire-and-forget notifications
+	// that should complete independently of the caller's context lifecycle. The timeout provides
+	// its own cancellation mechanism.
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(timeout))
 	defer cancel()
 

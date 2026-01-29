@@ -139,17 +139,30 @@ func (r *rabbit) Close() {
 	}
 
 	_ = r.connection.Close()
+
+	// Close error channel to signal reconnector goroutine to exit.
+	// This must be done after connection.Close() to avoid race conditions.
+	if r.errorChannel != nil {
+		close(r.errorChannel)
+	}
 }
 
-// receonnector reconnects the rabbitmq
+// reconnector monitors the connection and reconnects when the connection is lost.
+// It exits when the rabbit is closed via Close().
 func (r *rabbit) reconnector() {
 	for {
-		err := <-r.errorChannel
-		if !r.closed {
-			logrus.Errorf("Reconnecting after connection closed. err: %v", err)
-			r.connect()
-			r.redeclareAll()
+		err, ok := <-r.errorChannel
+		if !ok {
+			// Channel closed, exit the goroutine
+			return
 		}
+		if r.closed {
+			// Rabbit is being closed, exit the goroutine
+			return
+		}
+		logrus.Errorf("Reconnecting after connection closed. err: %v", err)
+		r.connect()
+		r.redeclareAll()
 	}
 }
 
