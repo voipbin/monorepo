@@ -1,6 +1,9 @@
 package utilhandler
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 func Test_HashGeneratePassword(t *testing.T) {
 
@@ -52,6 +55,38 @@ func Test_HashGeneratePassword(t *testing.T) {
 
 			if !HashCheckPassword(tt.password, res) {
 				t.Errorf("Wrong match. expected: ok, got: false")
+			}
+		})
+	}
+}
+
+func Test_HashGenerateInvalidCost(t *testing.T) {
+	tests := []struct {
+		name string
+		cost int
+	}{
+		{
+			name: "cost too low",
+			cost: 3,
+		},
+		{
+			name: "cost too high",
+			cost: 32,
+		},
+		{
+			name: "negative cost",
+			cost: -1,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := HashGenerate("password", tt.cost)
+			if err == nil {
+				t.Errorf("Expected error for cost %d, got nil", tt.cost)
+			}
+			if !strings.Contains(err.Error(), "bcrypt cost must be between") {
+				t.Errorf("Expected bcrypt cost error, got: %v", err)
 			}
 		})
 	}

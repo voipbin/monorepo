@@ -76,6 +76,15 @@ func ConvertFilters[FS any, F ~string](fieldStruct FS, filters map[string]any) (
 	return result, nil
 }
 
+// uuidType is cached for efficient type comparison
+var uuidType = reflect.TypeOf(uuid.UUID{})
+
+// Platform-independent int64 bounds for overflow checking
+const (
+	maxInt64 = int64(^uint64(0) >> 1)
+	minInt64 = -maxInt64 - 1
+)
+
 // convertValueToType converts filter value to match struct field type
 func convertValueToType(value any, targetType reflect.Type) (any, error) {
 	// Handle nil
@@ -89,8 +98,8 @@ func convertValueToType(value any, targetType reflect.Type) (any, error) {
 		return value, nil
 	}
 
-	// Handle uuid.UUID conversion
-	if targetType.String() == "uuid.UUID" {
+	// Handle uuid.UUID conversion (use type comparison, not string)
+	if targetType == uuidType {
 		if str, ok := value.(string); ok {
 			id, err := uuid.FromString(str)
 			if err != nil {
@@ -110,6 +119,10 @@ func convertValueToType(value any, targetType reflect.Type) (any, error) {
 	// Handle integers (JSON unmarshals numbers as float64)
 	if targetType.Kind() >= reflect.Int && targetType.Kind() <= reflect.Uint64 {
 		if f, ok := value.(float64); ok {
+			// Check for overflow before conversion
+			if f > float64(maxInt64) || f < float64(minInt64) {
+				return nil, errors.Errorf("float64 value %v overflows int64", f)
+			}
 			return int64(f), nil
 		}
 	}

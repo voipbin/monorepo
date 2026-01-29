@@ -20,9 +20,15 @@ func (h *utilHandler) TimeGetCurTimeRFC3339() string {
 	return TimeGetCurTimeRFC3339()
 }
 
-// TimeParse parses the given time string
+// TimeParse parses the given time string.
+// Returns zero time on parse failure. Use TimeParseWithError for error details.
 func (h *utilHandler) TimeParse(timeString string) time.Time {
 	return TimeParse(timeString)
+}
+
+// TimeParseWithError parses the given time string and returns any parsing error.
+func (h *utilHandler) TimeParseWithError(timeString string) (time.Time, error) {
+	return TimeParseWithError(timeString)
 }
 
 // TimeGetCurTime return current utc time string
@@ -46,14 +52,16 @@ func TimeGetCurTimeRFC3339() string {
 	return time.Now().UTC().Format(time.RFC3339)
 }
 
-// TimeParse parse time string to the time.Time
+// TimeParse parses time string to time.Time.
+// Returns zero time on parse failure. Use TimeParseWithError for error details.
 func TimeParse(timeString string) time.Time {
-
-	layout := "2006-01-02 15:04:05.000000"
-	res, err := time.Parse(layout, timeString)
-	if err != nil {
-		return time.Time{}
-	}
-
+	res, _ := TimeParseWithError(timeString)
 	return res
+}
+
+// TimeParseWithError parses time string to time.Time and returns any parsing error.
+// This allows callers to detect and handle invalid time strings appropriately.
+func TimeParseWithError(timeString string) (time.Time, error) {
+	layout := "2006-01-02 15:04:05.000000"
+	return time.Parse(layout, timeString)
 }

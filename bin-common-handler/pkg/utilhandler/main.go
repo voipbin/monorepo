@@ -29,6 +29,7 @@ type UtilHandler interface {
 	TimeGetCurTimeAdd(duration time.Duration) string
 	TimeGetCurTimeRFC3339() string
 	TimeParse(timeString string) time.Time
+	TimeParseWithError(timeString string) (time.Time, error)
 
 	// url helpers
 	URLParseFilters(u *url.URL) map[string]string
