@@ -67,11 +67,11 @@ QueueNameCampaignRequest   = "bin-manager.campaign-manager.request"
 QueueNameCampaignSubscribe = "bin-manager.campaign-manager.subscribe"
 ```
 
-### Chat Manager
+### Talk Manager
 ```go
-QueueNameChatEvent     = "bin-manager.chat-manager.event"
-QueueNameChatRequest   = "bin-manager.chat-manager.request"
-QueueNameChatSubscribe = "bin-manager.chat-manager.subscribe"
+QueueNameTalkEvent     = "bin-manager.talk-manager.event"
+QueueNameTalkRequest   = "bin-manager.talk-manager.request"
+QueueNameTalkSubscribe = "bin-manager.talk-manager.subscribe"
 ```
 
 ### Conference Manager

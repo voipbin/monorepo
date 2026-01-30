@@ -29,7 +29,7 @@ import (
 const (
 	bucketDirectoryRecording = "recording"
 	bucketDirectoryTmp       = "tmp"
-	bucketDirectoryBin       = "bin" // bin project services directory. mostly chat-manager.
+	bucketDirectoryBin       = "bin" // bin project services directory.
 )
 
 // FileHandler intreface for GCP bucket handler

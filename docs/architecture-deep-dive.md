@@ -48,7 +48,7 @@ This document provides detailed architectural information about the VoIPbin mono
 
 - `bin-message-manager` - SMS and messaging
 - `bin-email-manager` - Email sending and inbox parsing
-- `bin-chat-manager` - Web chat and live chat integration
+- `bin-talk-manager` - Web chat and live chat integration
 - `bin-conversation-manager` - Conversation thread management
 
 ### Infrastructure & Utilities

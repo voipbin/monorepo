@@ -703,8 +703,7 @@ All critical code paths (validation, threading, atomic operations) are covered.
 
 This is one service in a larger VoIP platform monorepo. Related services include:
 - `bin-agent-manager`: Agent/user management
-- `bin-message-manager`: Generic messaging (deprecated, replaced by bin-talk-manager)
-- `bin-chat-manager`: Web chat (legacy, functionality merged into bin-talk-manager)
+- `bin-message-manager`: Generic messaging
 - `bin-customer-manager`: Customer/tenant management
 - `bin-common-handler`: Shared utilities and models
 

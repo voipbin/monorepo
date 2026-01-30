@@ -26,12 +26,6 @@ import (
 	csaccesskey "monorepo/bin-customer-manager/models/accesskey"
 	cscustomer "monorepo/bin-customer-manager/models/customer"
 
-	chatchat "monorepo/bin-chat-manager/models/chat"
-	chatchatroom "monorepo/bin-chat-manager/models/chatroom"
-	chatmedia "monorepo/bin-chat-manager/models/media"
-	chatmessagechat "monorepo/bin-chat-manager/models/messagechat"
-	chatmessagechatroom "monorepo/bin-chat-manager/models/messagechatroom"
-
 	amai "monorepo/bin-ai-manager/models/ai"
 	amaicall "monorepo/bin-ai-manager/models/aicall"
 	ammessage "monorepo/bin-ai-manager/models/message"
@@ -225,24 +219,6 @@ type ServiceHandler interface {
 	CampaigncallGet(ctx context.Context, a *amagent.Agent, campaigncallID uuid.UUID) (*cacampaigncall.WebhookMessage, error)
 	CampaigncallDelete(ctx context.Context, a *amagent.Agent, campaigncallID uuid.UUID) (*cacampaigncall.WebhookMessage, error)
 
-	// chat handlers
-	ChatCreate(
-		ctx context.Context,
-		a *amagent.Agent,
-		chatType chatchat.Type,
-		roomOwnerID uuid.UUID,
-		participantIDs []uuid.UUID,
-		name string,
-		detail string,
-	) (*chatchat.WebhookMessage, error)
-	ChatGetsByCustomerID(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*chatchat.WebhookMessage, error)
-	ChatGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*chatchat.WebhookMessage, error)
-	ChatDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*chatchat.WebhookMessage, error)
-	ChatUpdateBasicInfo(ctx context.Context, a *amagent.Agent, id uuid.UUID, name, detail string) (*chatchat.WebhookMessage, error)
-	ChatUpdateRoomOwnerID(ctx context.Context, a *amagent.Agent, id uuid.UUID, roomOwnerID uuid.UUID) (*chatchat.WebhookMessage, error)
-	ChatAddParticipantID(ctx context.Context, a *amagent.Agent, id uuid.UUID, participantID uuid.UUID) (*chatchat.WebhookMessage, error)
-	ChatRemoveParticipantID(ctx context.Context, a *amagent.Agent, id uuid.UUID, participantID uuid.UUID) (*chatchat.WebhookMessage, error)
-
 	// ai handlers
 	AICreate(
 		ctx context.Context,
@@ -315,33 +291,6 @@ type ServiceHandler interface {
 	AISummaryGetsByCustomerID(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*amsummary.WebhookMessage, error)
 	AISummaryGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*amsummary.WebhookMessage, error)
 	AISummaryDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*amsummary.WebhookMessage, error)
-
-	// chatmessage handlers
-	ChatmessageCreate(
-		ctx context.Context,
-		a *amagent.Agent,
-		chatID uuid.UUID,
-		source commonaddress.Address,
-		messageType chatmessagechat.Type,
-		text string,
-		medias []chatmedia.Media,
-	) (*chatmessagechat.WebhookMessage, error)
-	ChatmessageGetsByChatID(ctx context.Context, a *amagent.Agent, chatID uuid.UUID, size uint64, token string) ([]*chatmessagechat.WebhookMessage, error)
-	ChatmessageGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*chatmessagechat.WebhookMessage, error)
-	ChatmessageDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*chatmessagechat.WebhookMessage, error)
-
-	// chatroom handlers
-	ChatroomCreate(ctx context.Context, a *amagent.Agent, participantIDs []uuid.UUID, name string, detail string) (*chatchatroom.WebhookMessage, error)
-	ChatroomGetsByOwnerID(ctx context.Context, a *amagent.Agent, ownerID uuid.UUID, size uint64, token string) ([]*chatchatroom.WebhookMessage, error)
-	ChatroomGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*chatchatroom.WebhookMessage, error)
-	ChatroomDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*chatchatroom.WebhookMessage, error)
-	ChatroomUpdateBasicInfo(ctx context.Context, a *amagent.Agent, id uuid.UUID, name, detail string) (*chatchatroom.WebhookMessage, error)
-
-	// chatroommessage handlers
-	ChatroommessageCreate(ctx context.Context, a *amagent.Agent, chatroomID uuid.UUID, message string, medias []chatmedia.Media) (*chatmessagechatroom.WebhookMessage, error)
-	ChatroommessageGetsByChatroomID(ctx context.Context, a *amagent.Agent, chatroomID uuid.UUID, size uint64, token string) ([]*chatmessagechatroom.WebhookMessage, error)
-	ChatroommessageGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*chatmessagechatroom.WebhookMessage, error)
-	ChatroommessageDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*chatmessagechatroom.WebhookMessage, error)
 
 	// conference handlers
 	ConferenceCreate(
@@ -681,19 +630,6 @@ type ServiceHandler interface {
 	ServiceAgentCallList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*cmcall.WebhookMessage, error)
 	ServiceAgentCallGet(ctx context.Context, a *amagent.Agent, callID uuid.UUID) (*cmcall.WebhookMessage, error)
 	ServiceAgentCallDelete(ctx context.Context, a *amagent.Agent, callID uuid.UUID) (*cmcall.WebhookMessage, error)
-
-	// service_agent chatroom
-	ServiceAgentChatroomList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*chatchatroom.WebhookMessage, error)
-	ServiceAgentChatroomGet(ctx context.Context, a *amagent.Agent, chatroomID uuid.UUID) (*chatchatroom.WebhookMessage, error)
-	ServiceAgentChatroomDelete(ctx context.Context, a *amagent.Agent, chatroomID uuid.UUID) (*chatchatroom.WebhookMessage, error)
-	ServiceAgentChatroomCreate(ctx context.Context, a *amagent.Agent, participantIDs []uuid.UUID, name string, detail string) (*chatchatroom.WebhookMessage, error)
-	ServiceAgentChatroomUpdateBasicInfo(ctx context.Context, a *amagent.Agent, id uuid.UUID, name, detail string) (*chatchatroom.WebhookMessage, error)
-
-	// service_agent chatroom message
-	ServiceAgentChatroommessageGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*chatmessagechatroom.WebhookMessage, error)
-	ServiceAgentChatroommessageList(ctx context.Context, a *amagent.Agent, chatroomID uuid.UUID, size uint64, token string) ([]*chatmessagechatroom.WebhookMessage, error)
-	ServiceAgentChatroommessageCreate(ctx context.Context, a *amagent.Agent, chatroomID uuid.UUID, message string, medias []chatmedia.Media) (*chatmessagechatroom.WebhookMessage, error)
-	ServiceAgentChatroommessageDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*chatmessagechatroom.WebhookMessage, error)
 
 	// service_agent conversation
 	ServiceAgentConversationGet(ctx context.Context, a *amagent.Agent, conversationID uuid.UUID) (*cvconversation.WebhookMessage, error)

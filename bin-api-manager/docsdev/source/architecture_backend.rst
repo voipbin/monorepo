@@ -20,7 +20,7 @@ Services are organized by functional domain:
     |  bin-call-manager        |  Call lifecycle and routing      |
     |  bin-conference-manager  |  Conference bridge management    |
     |  bin-message-manager     |  SMS messaging (Telnyx/MsgBird)  |
-    |  bin-chat-manager        |  Real-time chat                  |
+    |  bin-talk-manager        |  Real-time chat                  |
     |  bin-email-manager       |  Email campaigns                 |
     |  bin-transfer-manager    |  Call transfer operations        |
     +-------------------------------------------------------------+
@@ -287,7 +287,7 @@ HTTP Endpoint                    Backend Service
 /v1.0/calls                      bin-call-manager
 /v1.0/conferences                bin-conference-manager
 /v1.0/messages                   bin-message-manager
-/v1.0/chats                      bin-chat-manager
+/v1.0/talks                      bin-talk-manager
 /v1.0/emails                     bin-email-manager
 /v1.0/agents                     bin-agent-manager
 /v1.0/queues                     bin-queue-manager

@@ -43,10 +43,6 @@ parameters:
     type: boolean
     default: false
 
-  run-bin-chat-manager:
-    type: boolean
-    default: false
-
   run-bin-common-handler:
     type: boolean
     default: false
@@ -252,25 +248,6 @@ workflows:
           <<: *context_production
           requires:
             - bin-campaign-manager-build
-            - release-approval
-
-  bin-chat-manager:
-    when: 
-      or: [<< pipeline.parameters.run-bin-chat-manager >>, << pipeline.parameters.run-bin-common-handler >>]
-    jobs:
-      - bin-chat-manager-test
-      - bin-chat-manager-build:
-          <<: *context_production
-          requires:
-            - bin-chat-manager-test
-      - release-approval:
-          type: approval
-          requires:
-            - bin-chat-manager-build
-      - bin-chat-manager-release:
-          <<: *context_production
-          requires:
-            - bin-chat-manager-build
             - release-approval
 
   bin-ai-manager:
@@ -852,30 +829,6 @@ jobs:
           image-name: campaign-manager
           project-id: voipbin
           project-repository: bin-campaign-manager
-
-  # bin-chat-manager
-  bin-chat-manager-test:
-    docker: *go_image
-    steps:
-      - go-test:
-          source-directory: bin-chat-manager
-
-  bin-chat-manager-build:
-    docker: *gcp_image
-    steps:
-      - docker-build:
-          source-directory: bin-chat-manager
-          project-id: voipbin
-          project-repository: bin-chat-manager
-
-  bin-chat-manager-release:
-    docker: *gcloud_image
-    steps:
-      - docker-release:
-          source-directory: bin-chat-manager
-          image-name: chat-manager
-          project-id: voipbin
-          project-repository: bin-chat-manager
 
   # bin-ai-manager
   bin-ai-manager-test:

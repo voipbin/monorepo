@@ -12,8 +12,6 @@ replace monorepo/bin-billing-manager => ../bin-billing-manager
 
 replace monorepo/bin-campaign-manager => ../bin-campaign-manager
 
-replace monorepo/bin-chat-manager => ../bin-chat-manager
-
 replace monorepo/bin-ai-manager => ../bin-ai-manager
 
 replace monorepo/bin-conference-manager => ../bin-conference-manager
@@ -98,7 +96,6 @@ require (
 	monorepo/bin-billing-manager v0.0.0-20240408051040-600f0028fbab
 	monorepo/bin-call-manager v0.0.0-20240403030948-51eb7c33cf9a
 	monorepo/bin-campaign-manager v0.0.0-20240313031908-f098e3fb6f12
-	monorepo/bin-chat-manager v0.0.0-20240313050741-a2ced5030a06
 	monorepo/bin-common-handler v0.0.0-20240408033155-50f0cd082334
 	monorepo/bin-conference-manager v0.0.0-20240329045829-45dc5f4e4e76
 	monorepo/bin-conversation-manager v0.0.0-20231117134833-7918f76572d4
