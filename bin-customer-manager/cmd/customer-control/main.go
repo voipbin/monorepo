@@ -57,13 +57,13 @@ func initCommand() *cobra.Command {
 		cobra.CheckErr(errors.Wrap(err, "failed to bootstrap config"))
 	}
 
-	cmdSub := &cobra.Command{Use: "customer", Short: "Customer operation"}
-	cmdSub.AddCommand(cmdCreate())
-	cmdSub.AddCommand(cmdGet())
-	cmdSub.AddCommand(cmdList())
-	cmdSub.AddCommand(cmdUpdate())
-	cmdSub.AddCommand(cmdUpdateBillingAccount())
-	cmdSub.AddCommand(cmdDelete())
+	cmdCustomer := &cobra.Command{Use: "customer", Short: "Customer operation"}
+	cmdCustomer.AddCommand(cmdCreate())
+	cmdCustomer.AddCommand(cmdGet())
+	cmdCustomer.AddCommand(cmdList())
+	cmdCustomer.AddCommand(cmdUpdate())
+	cmdCustomer.AddCommand(cmdUpdateBillingAccount())
+	cmdCustomer.AddCommand(cmdDelete())
 
 	cmdAccesskey := &cobra.Command{Use: "accesskey", Short: "Accesskey operation"}
 	cmdAccesskey.AddCommand(cmdAccesskeyCreate())
@@ -72,7 +72,7 @@ func initCommand() *cobra.Command {
 	cmdAccesskey.AddCommand(cmdAccesskeyUpdate())
 	cmdAccesskey.AddCommand(cmdAccesskeyDelete())
 
-	cmdRoot.AddCommand(cmdSub)
+	cmdRoot.AddCommand(cmdCustomer)
 	cmdRoot.AddCommand(cmdAccesskey)
 	return cmdRoot
 }
