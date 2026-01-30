@@ -124,7 +124,9 @@ go vet $(go list ./...)
 
 ## customer-control CLI Tool
 
-A command-line tool for managing customers directly via database/cache (bypasses RabbitMQ RPC). **All output is JSON format** (stdout), logs go to stderr.
+A command-line tool for managing customers and accesskeys directly via database/cache (bypasses RabbitMQ RPC). **All output is JSON format** (stdout), logs go to stderr.
+
+### Customer Commands
 
 ```bash
 # Create customer - returns created customer JSON
@@ -146,6 +148,25 @@ A command-line tool for managing customers directly via database/cache (bypasses
 ./bin/customer-control customer delete --id <uuid>
 ```
 
+### Accesskey Commands
+
+```bash
+# Create accesskey - returns created accesskey JSON
+./bin/customer-control accesskey create --customer-id <uuid> --name <name> [--detail] [--expire 720h]
+
+# Get accesskey - returns accesskey JSON
+./bin/customer-control accesskey get --id <uuid>
+
+# List accesskeys - returns JSON array
+./bin/customer-control accesskey list [--customer-id <uuid>] [--size 10] [--token]
+
+# Update accesskey basic info - returns updated accesskey JSON
+./bin/customer-control accesskey update --id <uuid> [--name] [--detail]
+
+# Delete accesskey - returns deleted accesskey JSON
+./bin/customer-control accesskey delete --id <uuid>
+```
+
 Uses same environment variables as customer-manager (`DATABASE_DSN`, `RABBITMQ_ADDRESS`, `REDIS_ADDRESS`, etc.).
 
 ### Run Locally
@@ -165,26 +186,6 @@ PROMETHEUS_LISTEN_ADDRESS=":2112" \
   --rabbitmq_address "amqp://guest:guest@localhost:5672" \
   --redis_address "127.0.0.1:6379"
 ```
-
-### CLI Tool (customer-control)
-
-A command-line tool for managing customers. **All output is JSON format** (stdout), logs go to stderr.
-
-```bash
-# Create customer - returns created customer JSON
-./bin/customer-control customer create --email user@example.com [--name] [--detail] [--phone_number] [--address] [--webhook_method] [--webhook_uri]
-
-# Get customer - returns customer JSON
-./bin/customer-control customer get --id <uuid>
-
-# List customers - returns JSON array
-./bin/customer-control customer list [--limit 100] [--token]
-
-# Delete customer - returns deleted customer JSON
-./bin/customer-control customer delete --id <uuid>
-```
-
-Uses same environment variables as customer-manager (`DATABASE_DSN`, `RABBITMQ_ADDRESS`, `REDIS_ADDRESS`, etc.).
 
 ### Docker
 ```bash
