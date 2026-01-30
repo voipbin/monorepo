@@ -60,8 +60,7 @@ Successfully completed database handler refactoring across **22 services** in th
 ### Phase 3: Parallel Agent Refactoring (14 services)
 11. bin-call-manager ✅
 12. bin-campaign-manager ✅
-13. bin-chat-manager ✅
-14. bin-conference-manager ✅
+13. bin-conference-manager ✅
 15. bin-conversation-manager ✅
 16. bin-customer-manager ✅
 17. bin-number-manager ✅

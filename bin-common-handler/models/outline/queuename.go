@@ -45,11 +45,6 @@ const (
 	QueueNameCampaignRequest   QueueName = "bin-manager.campaign-manager.request"
 	QueueNameCampaignSubscribe QueueName = "bin-manager.campaign-manager.subscribe"
 
-	// chat-manager
-	QueueNameChatEvent     QueueName = "bin-manager.chat-manager.event"
-	QueueNameChatRequest   QueueName = "bin-manager.chat-manager.request"
-	QueueNameChatSubscribe QueueName = "bin-manager.chat-manager.subscribe"
-
 	// conference-manager
 	QueueNameConferenceEvent     QueueName = "bin-manager.conference-manager.event"
 	QueueNameConferenceRequest   QueueName = "bin-manager.conference-manager.request"

@@ -220,14 +220,6 @@ func (r *requestHandler) sendRequestConversation(ctx context.Context, uri string
 	return r.sendRequest(ctx, commonoutline.QueueNameConversationRequest, uri, method, resource, timeout, delayed, dataType, data)
 }
 
-// sendRequestChat send a request to the chat-manager and return the response
-// timeout millisecond
-// delayed millisecond
-func (r *requestHandler) sendRequestChat(ctx context.Context, uri string, method sock.RequestMethod, resource string, timeout, delayed int, dataType string, data json.RawMessage) (*sock.Response, error) {
-
-	return r.sendRequest(ctx, commonoutline.QueueNameChatRequest, uri, method, resource, timeout, delayed, dataType, data)
-}
-
 // sendRequestRoute send a request to the route-manager and return the response
 func (r *requestHandler) sendRequestRoute(ctx context.Context, uri string, method sock.RequestMethod, resource string, timeout int, delayed int, dataType string, data []byte) (*sock.Response, error) {
 

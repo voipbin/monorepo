@@ -12,8 +12,8 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-// ConferenceV1ServiceTypeConferencecallStart sends a request to chat-manager
-// to starts a conferencecall service.
+// ConferenceV1ServiceTypeConferencecallStart sends a request to conference-manager
+// to start a conferencecall service.
 // it returns created service if it succeed.
 func (r *requestHandler) ConferenceV1ServiceTypeConferencecallStart(
 	ctx context.Context,

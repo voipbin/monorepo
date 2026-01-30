@@ -20,7 +20,6 @@ workflows:
             bin-billing-manager/.*      run-bin-billing-manager true
             bin-call-manager/.*         run-bin-call-manager true
             bin-campaign-manager/.*     run-bin-campaign-manager true
-            bin-chat-manager/.*         run-bin-chat-manager true
             bin-common-handler/.*       run-bin-common-handler true
             bin-conference-manager/.*   run-bin-conference-manager true
             bin-conversation-manager/.* run-bin-conversation-manager true

@@ -28,11 +28,6 @@ import (
 	amaicall "monorepo/bin-ai-manager/models/aicall"
 	ammessage "monorepo/bin-ai-manager/models/message"
 	amsummary "monorepo/bin-ai-manager/models/summary"
-	chatchat "monorepo/bin-chat-manager/models/chat"
-	chatchatroom "monorepo/bin-chat-manager/models/chatroom"
-	chatmedia "monorepo/bin-chat-manager/models/media"
-	chatmessagechat "monorepo/bin-chat-manager/models/messagechat"
-	chatmessagechatroom "monorepo/bin-chat-manager/models/messagechatroom"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	"monorepo/bin-common-handler/models/service"
 
@@ -629,49 +624,6 @@ type RequestHandler interface {
 		maxTryCount3 int,
 		maxTryCount4 int,
 	) (*caoutplan.Outplan, error)
-
-	// chat-manager chatrooms
-	ChatV1ChatroomGet(ctx context.Context, chatroomID uuid.UUID) (*chatchatroom.Chatroom, error)
-	ChatV1ChatroomList(ctx context.Context, pageToken string, pageSize uint64, filters map[chatchatroom.Field]any) ([]chatchatroom.Chatroom, error)
-	ChatV1ChatroomDelete(ctx context.Context, chatroomID uuid.UUID) (*chatchatroom.Chatroom, error)
-	ChatV1ChatroomUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*chatchatroom.Chatroom, error)
-
-	// chat-manager chats
-	ChatV1ChatCreate(
-		ctx context.Context,
-		customerID uuid.UUID,
-		chatType chatchat.Type,
-		roomOwnerID uuid.UUID,
-		participantIDs []uuid.UUID,
-		name string,
-		detail string,
-	) (*chatchat.Chat, error)
-	ChatV1ChatGet(ctx context.Context, chatID uuid.UUID) (*chatchat.Chat, error)
-	ChatV1ChatList(ctx context.Context, pageToken string, pageSize uint64, filters map[chatchat.Field]any) ([]chatchat.Chat, error)
-	ChatV1ChatDelete(ctx context.Context, chatID uuid.UUID) (*chatchat.Chat, error)
-	ChatV1ChatUpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*chatchat.Chat, error)
-	ChatV1ChatUpdateRoomOwnerID(ctx context.Context, id uuid.UUID, roomOwnerID uuid.UUID) (*chatchat.Chat, error)
-	ChatV1ChatAddParticipantID(ctx context.Context, id uuid.UUID, participantID uuid.UUID) (*chatchat.Chat, error)
-	ChatV1ChatRemoveParticipantID(ctx context.Context, id uuid.UUID, participantID uuid.UUID) (*chatchat.Chat, error)
-
-	// chat-manager messagerooms
-	ChatV1MessagechatroomList(ctx context.Context, pageToken string, pageSize uint64, filters map[chatmessagechatroom.Field]any) ([]chatmessagechatroom.Messagechatroom, error)
-	ChatV1MessagechatroomGet(ctx context.Context, messagechatroomID uuid.UUID) (*chatmessagechatroom.Messagechatroom, error)
-	ChatV1MessagechatroomDelete(ctx context.Context, messagechatroomID uuid.UUID) (*chatmessagechatroom.Messagechatroom, error)
-
-	// chat-manager messagechats
-	ChatV1MessagechatCreate(
-		ctx context.Context,
-		customerID uuid.UUID,
-		chatID uuid.UUID,
-		source commonaddress.Address,
-		messageType chatmessagechat.Type,
-		text string,
-		medias []chatmedia.Media,
-	) (*chatmessagechat.Messagechat, error)
-	ChatV1MessagechatGet(ctx context.Context, messagechatID uuid.UUID) (*chatmessagechat.Messagechat, error)
-	ChatV1MessagechatList(ctx context.Context, pageToken string, pageSize uint64, filters map[chatmessagechat.Field]any) ([]chatmessagechat.Messagechat, error)
-	ChatV1MessagechatDelete(ctx context.Context, chatID uuid.UUID) (*chatmessagechat.Messagechat, error)
 
 	// customer-manager accesskeys
 	CustomerV1AccesskeyCreate(ctx context.Context, customerID uuid.UUID, name string, detail string, expire int32) (*csaccesskey.Accesskey, error)

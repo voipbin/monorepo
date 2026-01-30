@@ -40,7 +40,7 @@ graph TD
     subgraph Messaging["Messaging Layer"]
         MSG[bin-message-manager]
         EMAIL[bin-email-manager]
-        CHAT[bin-chat-manager]
+        TALK[bin-talk-manager]
         CONV[bin-conversation-manager]
     end
 

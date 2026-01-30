@@ -70,7 +70,6 @@ The monorepo includes many backend services under separate directories:
 | `bin-billing-manager`    | Billing and subscription tracking         |
 | `bin-call-manager`       | Inbound/outbound call routing and control |
 | `bin-campaign-manager`   | Outbound dialing campaigns                |
-| `bin-chat-manager`       | Web chat and live chat integration        |
 | `bin-conference-manager` | Audio conferencing features               |
 | `bin-customer-manager`   | Customer accounts and relationships       |
 | `bin-dbscheme-bin-manager` | Database schemas and migrations        |

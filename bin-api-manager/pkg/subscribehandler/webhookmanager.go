@@ -23,7 +23,6 @@ type commonWebhookData struct {
 func (h *subscribeHandler) getServiceNamespace(publisher string) string {
 	namespaces := map[string]string{
 		"talk-manager":         "talk",
-		"chat-manager":         "chat",
 		"message-manager":      "message",
 		"call-manager":         "call",
 		"conference-manager":   "conference",
