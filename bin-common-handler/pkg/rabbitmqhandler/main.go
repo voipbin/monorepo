@@ -5,6 +5,7 @@ package rabbitmqhandler
 import (
 	"context"
 	"monorepo/bin-common-handler/models/sock"
+	"sync"
 	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -31,14 +32,39 @@ type Rabbit interface {
 	QueueSubscribe(name string, topic string) error
 }
 
+// amqpChannel is an interface for amqp.Channel operations used by queue and exchange.
+// This interface enables testing by allowing mock implementations.
+// *amqp.Channel implicitly satisfies this interface.
+type amqpChannel interface {
+	Close() error
+	Consume(queue, consumer string, autoAck, exclusive, noLocal, noWait bool, args amqp.Table) (<-chan amqp.Delivery, error)
+	Qos(prefetchCount, prefetchSize int, global bool) error
+	QueueBind(name, key, exchange string, noWait bool, args amqp.Table) error
+	QueueDelete(name string, ifUnused, ifEmpty, noWait bool) (int, error)
+	ExchangeDeclare(name, kind string, durable, autoDelete, internal, noWait bool, args amqp.Table) error
+	QueueDeclare(name string, durable, autoDelete, exclusive, noWait bool, args amqp.Table) (amqp.Queue, error)
+}
+
+// amqpConnection is an interface for amqp.Connection operations.
+// This interface enables testing by allowing mock implementations.
+// *amqp.Connection implicitly satisfies this interface.
+type amqpConnection interface {
+	Channel() (*amqp.Channel, error)
+	Close() error
+	NotifyClose(receiver chan *amqp.Error) chan *amqp.Error
+}
+
 // rabbit struct for rabbitmq
 type rabbit struct {
 	uri string
 
 	errorChannel chan *amqp.Error
-	connection   *amqp.Connection
+	connection   amqpConnection
 	closed       bool
 
+	// mu protects concurrent access to queues, exchanges, and queueBinds maps.
+	// Use RLock for reads and Lock for writes.
+	mu         sync.RWMutex
 	queues     map[string]*queue
 	exchanges  map[string]*exchange
 	queueBinds map[string]*queueBind
@@ -51,8 +77,8 @@ type queue struct {
 	exclusive  bool
 	noWait     bool
 
-	channel *amqp.Channel
-	qeueue  *amqp.Queue
+	channel amqpChannel
+	queue   *amqp.Queue
 }
 
 type queueBind struct {
@@ -73,7 +99,7 @@ type exchange struct {
 	noWait     bool
 	args       amqp.Table
 
-	channel *amqp.Channel
+	channel amqpChannel
 }
 
 // NewRabbit creates queue for Rabbitmq
@@ -101,18 +127,48 @@ func (r *rabbit) Close() {
 	}).Info("Close the rabbitmq connection.")
 
 	r.closed = true
+
+	r.mu.RLock()
+	// close all queue channels
+	for _, q := range r.queues {
+		if q.channel != nil {
+			_ = q.channel.Close()
+		}
+	}
+
+	// close all exchange channels
+	for _, e := range r.exchanges {
+		if e.channel != nil {
+			_ = e.channel.Close()
+		}
+	}
+	r.mu.RUnlock()
+
 	_ = r.connection.Close()
+
+	// Close error channel to signal reconnector goroutine to exit.
+	// This must be done after connection.Close() to avoid race conditions.
+	if r.errorChannel != nil {
+		close(r.errorChannel)
+	}
 }
 
-// receonnector reconnects the rabbitmq
+// reconnector monitors the connection and reconnects when the connection is lost.
+// It exits when the rabbit is closed via Close().
 func (r *rabbit) reconnector() {
 	for {
-		err := <-r.errorChannel
-		if !r.closed {
-			logrus.Errorf("Reconnecting after connection closed. err: %v", err)
-			r.connect()
-			r.redeclareAll()
+		err, ok := <-r.errorChannel
+		if !ok {
+			// Channel closed, exit the goroutine
+			return
 		}
+		if r.closed {
+			// Rabbit is being closed, exit the goroutine
+			return
+		}
+		logrus.Errorf("Reconnecting after connection closed. err: %v", err)
+		r.connect()
+		r.redeclareAll()
 	}
 }
 
@@ -147,8 +203,25 @@ func (r *rabbit) connect() {
 func (r *rabbit) redeclareAll() {
 	log := logrus.WithField("func", "redeclareAll")
 
+	// Take a snapshot of declarations to avoid holding lock during network operations.
+	// QueueDeclare/ExchangeDeclare will acquire the lock when updating maps.
+	r.mu.RLock()
+	queuesCopy := make([]*queue, 0, len(r.queues))
+	for _, q := range r.queues {
+		queuesCopy = append(queuesCopy, q)
+	}
+	exchangesCopy := make([]*exchange, 0, len(r.exchanges))
+	for _, e := range r.exchanges {
+		exchangesCopy = append(exchangesCopy, e)
+	}
+	bindsCopy := make([]*queueBind, 0, len(r.queueBinds))
+	for _, b := range r.queueBinds {
+		bindsCopy = append(bindsCopy, b)
+	}
+	r.mu.RUnlock()
+
 	// redeclare the queues
-	for _, queue := range r.queues {
+	for _, queue := range queuesCopy {
 		log.Debugf("Redeclaring the queue. queue: %s", queue.name)
 		if err := r.QueueDeclare(queue.name, queue.durable, queue.autoDelete, queue.exclusive, queue.noWait); err != nil {
 			log.Errorf("Could not declare the queue. err: %v", err)
@@ -156,7 +229,7 @@ func (r *rabbit) redeclareAll() {
 	}
 
 	// redeclare the exchanges
-	for _, exchange := range r.exchanges {
+	for _, exchange := range exchangesCopy {
 		log.Debugf("Redeclaring the exchange. exchage: %s", exchange.name)
 		if err := r.ExchangeDeclare(exchange.name, exchange.kind, exchange.durable, exchange.autoDelete, exchange.internal, exchange.noWait, exchange.args); err != nil {
 			log.Errorf("Could not declare the exchange. err: %v", err)
@@ -164,7 +237,7 @@ func (r *rabbit) redeclareAll() {
 	}
 
 	// redeclare the binds
-	for _, queueBind := range r.queueBinds {
+	for _, queueBind := range bindsCopy {
 		logrus.Debugf("Redeclaring the bind. bind: %s", queueBind.name)
 		if err := r.QueueBind(queueBind.name, queueBind.key, queueBind.exchange, queueBind.noWait, queueBind.args); err != nil {
 			log.Errorf("Could not bind the queue. err: %v", err)

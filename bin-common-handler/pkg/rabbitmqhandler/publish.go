@@ -21,6 +21,9 @@ func (r *rabbit) publishExchange(exchange, key string, message []byte, headers a
 		_ = channel.Close()
 	}()
 
+	// Note: Using context.Background() intentionally. This is a low-level publish operation
+	// where the channel lifecycle (via defer Close) handles cleanup. The RabbitMQ publish
+	// itself is synchronous and doesn't benefit from context cancellation.
 	err = channel.PublishWithContext(
 		context.Background(),
 		exchange, // exchange
@@ -84,6 +87,9 @@ func (r *rabbit) RequestPublish(ctx context.Context, queueName string, req *sock
 	}
 
 	// publish the message
+	// Note: Using context.Background() for publish. The passed ctx is used for the response
+	// wait (select case below), not for the publish operation itself. RabbitMQ publish is
+	// synchronous and completes immediately.
 	err = channel.PublishWithContext(
 		context.Background(),
 		"",

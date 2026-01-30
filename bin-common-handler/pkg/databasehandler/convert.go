@@ -9,6 +9,12 @@ import (
 	"github.com/gofrs/uuid"
 )
 
+// Platform-independent int bounds for overflow checking
+const (
+	maxInt = int(^uint(0) >> 1)
+	minInt = -maxInt - 1
+)
+
 var (
 	// fieldTypeCache caches reflection results for performance
 	// map[reflect.Type]map[string]reflect.Type (struct type -> field name -> field type)
@@ -118,10 +124,14 @@ func convertValue(val any, targetType reflect.Type) (any, error) {
 func convertToUUID(val any) (uuid.UUID, error) {
 	switch v := val.(type) {
 	case string:
+		// Empty string is allowed for nullable UUID fields
+		if v == "" {
+			return uuid.Nil, nil
+		}
 		id, err := uuid.FromString(v)
 		if err != nil {
-			// Return Nil UUID for invalid strings (similar to FromStringOrNil behavior)
-			return uuid.Nil, nil
+			// Return error for invalid non-empty UUID strings to detect data corruption
+			return uuid.Nil, fmt.Errorf("invalid UUID string %q: %w", v, err)
 		}
 		return id, nil
 	case uuid.UUID:
@@ -163,8 +173,16 @@ func convertToInt(val any) (int, error) {
 		return v, nil
 	case float64:
 		// JSON numbers come as float64
+		// Check for overflow on 32-bit systems
+		if v > float64(maxInt) || v < float64(minInt) {
+			return 0, fmt.Errorf("float64 value %v overflows int", v)
+		}
 		return int(v), nil
 	case int64:
+		// Check for overflow on 32-bit systems
+		if v > int64(maxInt) || v < int64(minInt) {
+			return 0, fmt.Errorf("int64 value %v overflows int", v)
+		}
 		return int(v), nil
 	default:
 		return 0, fmt.Errorf("cannot convert %T to int", val)

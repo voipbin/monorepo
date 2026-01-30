@@ -11,7 +11,9 @@ import (
 // queueGet returns amqp.Queue.
 // If it was not defined, defined new queue with default options.
 func (r *rabbit) queueGet(name string) *queue {
+	r.mu.RLock()
 	q := r.queues[name]
+	r.mu.RUnlock()
 	return q
 }
 
@@ -109,7 +111,14 @@ func (r *rabbit) QueueDeclare(name string, durable, autoDelete, exclusive, noWai
 		nil,        // arguments
 	)
 	if err != nil {
+		_ = channel.Close() // close channel on error to prevent leak
 		return err
+	}
+
+	r.mu.Lock()
+	// close existing channel if re-declaring (e.g., during reconnection)
+	if existing := r.queues[name]; existing != nil && existing.channel != nil {
+		_ = existing.channel.Close()
 	}
 
 	r.queues[name] = &queue{
@@ -120,8 +129,9 @@ func (r *rabbit) QueueDeclare(name string, durable, autoDelete, exclusive, noWai
 		noWait:     noWait,
 
 		channel: channel,
-		qeueue:  &q,
+		queue:   &q,
 	}
+	r.mu.Unlock()
 
 	return nil
 }
@@ -155,6 +165,7 @@ func (r *rabbit) QueueBind(name, key, exchange string, noWait bool, args amqp.Ta
 		return err
 	}
 
+	r.mu.Lock()
 	r.queueBinds[name] = &queueBind{
 		name:     name,
 		key:      key,
@@ -162,5 +173,6 @@ func (r *rabbit) QueueBind(name, key, exchange string, noWait bool, args amqp.Ta
 		noWait:   noWait,
 		args:     args,
 	}
+	r.mu.Unlock()
 	return nil
 }

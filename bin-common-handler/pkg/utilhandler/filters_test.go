@@ -327,6 +327,20 @@ func Test_convertValueToType(t *testing.T) {
 			int64(42),
 			false,
 		},
+		{
+			"float64 overflow to int64",
+			float64(1e20), // Exceeds int64 max
+			"int64",
+			nil,
+			true,
+		},
+		{
+			"negative float64 overflow to int64",
+			float64(-1e20), // Exceeds int64 min
+			"int64",
+			nil,
+			true,
+		},
 	}
 
 	for _, tt := range tests {

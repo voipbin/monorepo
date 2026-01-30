@@ -171,6 +171,21 @@ func (mr *MockUtilHandlerMockRecorder) TimeParse(timeString any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TimeParse", reflect.TypeOf((*MockUtilHandler)(nil).TimeParse), timeString)
 }
 
+// TimeParseWithError mocks base method.
+func (m *MockUtilHandler) TimeParseWithError(timeString string) (time.Time, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TimeParseWithError", timeString)
+	ret0, _ := ret[0].(time.Time)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TimeParseWithError indicates an expected call of TimeParseWithError.
+func (mr *MockUtilHandlerMockRecorder) TimeParseWithError(timeString any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TimeParseWithError", reflect.TypeOf((*MockUtilHandler)(nil).TimeParseWithError), timeString)
+}
+
 // URLMergeFilters mocks base method.
 func (m *MockUtilHandler) URLMergeFilters(uri string, filters map[string]string) string {
 	m.ctrl.T.Helper()

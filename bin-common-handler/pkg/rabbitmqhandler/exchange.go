@@ -14,7 +14,14 @@ func (r *rabbit) ExchangeDeclare(name, kind string, durable, autoDelete, interna
 	}
 
 	if err := channel.ExchangeDeclare(name, kind, durable, autoDelete, internal, noWait, args); err != nil {
+		_ = channel.Close() // close channel on error to prevent leak
 		return err
+	}
+
+	r.mu.Lock()
+	// close existing channel if re-declaring (e.g., during reconnection)
+	if existing := r.exchanges[name]; existing != nil && existing.channel != nil {
+		_ = existing.channel.Close()
 	}
 
 	r.exchanges[name] = &exchange{
@@ -28,6 +35,7 @@ func (r *rabbit) ExchangeDeclare(name, kind string, durable, autoDelete, interna
 
 		channel: channel,
 	}
+	r.mu.Unlock()
 
 	return nil
 }
