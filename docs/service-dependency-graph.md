@@ -4,7 +4,7 @@
 
 ## Overview
 
-The monorepo contains 31+ services organized into layers:
+The monorepo contains 30+ services organized into layers:
 - **Core Services** - Depended on by many services
 - **Utility Services** - Medium dependency count
 - **Leaf Services** - Consume but aren't consumed
@@ -117,7 +117,7 @@ graph TD
 
 | Service | Dependents | Description |
 |---------|-----------|-------------|
-| `bin-common-handler` | 31 (all) | Shared library - handlers, models, utilities |
+| `bin-common-handler` | 30 (all) | Shared library - handlers, models, utilities |
 | `bin-call-manager` | 12 | Telephony core - call lifecycle, recordings |
 | `bin-flow-manager` | 9 | Workflow orchestration - IVR flows, actions |
 | `bin-customer-manager` | 8 | Tenant management - accounts, access keys |
@@ -193,7 +193,7 @@ asterisk-proxy                call-manager              flow-manager
 **Impact: ALL SERVICES**
 
 ```bash
-# Must update and test all 31 services
+# Must update and test all 30 services
 ls -d bin-*/ | xargs -I {} bash -c "cd '{}' && go mod tidy && go mod vendor && go test ./..."
 ```
 

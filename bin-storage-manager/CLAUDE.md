@@ -121,7 +121,7 @@ RabbitMQ Request → listenhandler (regex routing) → storagehandler → fileha
 
 2. **Bucket Directory Structure**:
    - `recording/` - Call recordings
-   - `bin/` - Service-uploaded files (e.g., from chat-manager)
+   - `bin/` - Service-uploaded files
    - `tmp/` - Temporary compressed files with SHA-1 hash naming
 
 3. **File Reference Types**:
