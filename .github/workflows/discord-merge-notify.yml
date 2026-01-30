@@ -17,6 +17,7 @@ jobs:
           PR_BODY: ${{ github.event.pull_request.body }}
           PR_AUTHOR: ${{ github.event.pull_request.user.login }}
           PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_REPO: ${{ github.repository }}
         run: |
           # Truncate body if too long (Discord embed field limit is 1024 chars)
           TRUNCATED_BODY="${PR_BODY:0:1000}"
@@ -30,11 +31,13 @@ jobs:
             --arg body "$TRUNCATED_BODY" \
             --arg author "$PR_AUTHOR" \
             --arg url "$PR_URL" \
+            --arg repo "$PR_REPO" \
             '{
               embeds: [{
                 title: "🔀 PR Merged to main",
                 color: 5763719,
                 fields: [
+                  { name: "Repository", value: $repo, inline: false },
                   { name: "Title", value: $title, inline: false },
                   { name: "Author", value: $author, inline: true },
                   { name: "Description", value: ($body // "No description"), inline: false },
