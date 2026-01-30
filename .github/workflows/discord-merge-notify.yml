@@ -13,30 +13,37 @@ jobs:
       - name: Send Discord Notification
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
         run: |
-          curl -H "Content-Type: application/json" \
-            -X POST \
-            -d "{
-              \"embeds\": [{
-                \"title\": \"🔀 PR Merged to main\",
-                \"color\": 5763719,
-                \"fields\": [
-                  {
-                    \"name\": \"Title\",
-                    \"value\": \"${{ github.event.pull_request.title }}\",
-                    \"inline\": false
-                  },
-                  {
-                    \"name\": \"Author\",
-                    \"value\": \"${{ github.event.pull_request.user.login }}\",
-                    \"inline\": true
-                  },
-                  {
-                    \"name\": \"Link\",
-                    \"value\": \"${{ github.event.pull_request.html_url }}\",
-                    \"inline\": false
-                  }
+          # Truncate body if too long (Discord embed field limit is 1024 chars)
+          TRUNCATED_BODY="${PR_BODY:0:1000}"
+          if [ ${#PR_BODY} -gt 1000 ]; then
+            TRUNCATED_BODY="${TRUNCATED_BODY}..."
+          fi
+
+          # Build JSON payload with jq for proper escaping
+          PAYLOAD=$(jq -n \
+            --arg title "$PR_TITLE" \
+            --arg body "$TRUNCATED_BODY" \
+            --arg author "$PR_AUTHOR" \
+            --arg url "$PR_URL" \
+            '{
+              embeds: [{
+                title: "🔀 PR Merged to main",
+                color: 5763719,
+                fields: [
+                  { name: "Title", value: $title, inline: false },
+                  { name: "Author", value: $author, inline: true },
+                  { name: "Description", value: ($body // "No description"), inline: false },
+                  { name: "Link", value: $url, inline: false }
                 ]
               }]
-            }" \
+            }')
+
+          curl -H "Content-Type: application/json" \
+            -X POST \
+            -d "$PAYLOAD" \
             "$DISCORD_WEBHOOK_URL"
