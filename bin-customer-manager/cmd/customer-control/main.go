@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"time"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
@@ -14,7 +15,9 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-customer-manager/internal/config"
+	"monorepo/bin-customer-manager/models/accesskey"
 	"monorepo/bin-customer-manager/models/customer"
+	"monorepo/bin-customer-manager/pkg/accesskeyhandler"
 	"monorepo/bin-customer-manager/pkg/cachehandler"
 	"monorepo/bin-customer-manager/pkg/customerhandler"
 	"monorepo/bin-customer-manager/pkg/dbhandler"
@@ -62,7 +65,15 @@ func initCommand() *cobra.Command {
 	cmdSub.AddCommand(cmdUpdateBillingAccount())
 	cmdSub.AddCommand(cmdDelete())
 
+	cmdAccesskey := &cobra.Command{Use: "accesskey", Short: "Accesskey operation"}
+	cmdAccesskey.AddCommand(cmdAccesskeyCreate())
+	cmdAccesskey.AddCommand(cmdAccesskeyGet())
+	cmdAccesskey.AddCommand(cmdAccesskeyList())
+	cmdAccesskey.AddCommand(cmdAccesskeyUpdate())
+	cmdAccesskey.AddCommand(cmdAccesskeyDelete())
+
 	cmdRoot.AddCommand(cmdSub)
+	cmdRoot.AddCommand(cmdAccesskey)
 	return cmdRoot
 }
 
@@ -362,4 +373,231 @@ func printJSON(v any) error {
 	}
 	fmt.Println(string(data))
 	return nil
+}
+
+// Accesskey commands
+
+func initAccesskeyHandler() (accesskeyhandler.AccesskeyHandler, error) {
+	db, err := commondatabasehandler.Connect(config.Get().DatabaseDSN)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not connect to the database")
+	}
+
+	cache, err := initCache()
+	if err != nil {
+		return nil, err
+	}
+
+	return initAccesskeyHandlerWithDeps(db, cache)
+}
+
+func initAccesskeyHandlerWithDeps(sqlDB *sql.DB, cache cachehandler.CacheHandler) (accesskeyhandler.AccesskeyHandler, error) {
+	db := dbhandler.NewHandler(sqlDB, cache)
+	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, config.Get().RabbitMQAddress)
+	sockHandler.Connect()
+
+	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameCustomerEvent, serviceName)
+
+	return accesskeyhandler.NewAccesskeyHandler(reqHandler, db, notifyHandler), nil
+}
+
+func cmdAccesskeyCreate() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "create",
+		Short: "Create a new accesskey",
+		RunE:  runAccesskeyCreate,
+	}
+
+	flags := cmd.Flags()
+	flags.String("customer-id", "", "Customer ID (required)")
+	flags.String("name", "", "Accesskey name (required)")
+	flags.String("detail", "", "Description")
+	flags.String("expire", "", "Expiration duration (e.g., 720h for 30 days)")
+
+	return cmd
+}
+
+func runAccesskeyCreate(cmd *cobra.Command, args []string) error {
+	customerID, err := resolveUUID("customer-id", "Customer ID")
+	if err != nil {
+		return errors.Wrap(err, "invalid customer ID")
+	}
+
+	name, err := resolveString("name", "Name")
+	if err != nil {
+		return errors.Wrap(err, "invalid name")
+	}
+
+	detail := viper.GetString("detail")
+
+	var expire time.Duration
+	expireStr := viper.GetString("expire")
+	if expireStr != "" {
+		expire, err = time.ParseDuration(expireStr)
+		if err != nil {
+			return errors.Wrap(err, "invalid expire duration format")
+		}
+	}
+
+	handler, err := initAccesskeyHandler()
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize handlers")
+	}
+
+	res, err := handler.Create(context.Background(), customerID, name, detail, expire)
+	if err != nil {
+		return errors.Wrap(err, "failed to create accesskey")
+	}
+
+	return printJSON(res)
+}
+
+func cmdAccesskeyGet() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "get",
+		Short: "Get an accesskey by ID",
+		RunE:  runAccesskeyGet,
+	}
+
+	flags := cmd.Flags()
+	flags.String("id", "", "Accesskey ID (required)")
+
+	return cmd
+}
+
+func runAccesskeyGet(cmd *cobra.Command, args []string) error {
+	targetID, err := resolveUUID("id", "Accesskey ID")
+	if err != nil {
+		return errors.Wrap(err, "invalid accesskey ID")
+	}
+
+	handler, err := initAccesskeyHandler()
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize handlers")
+	}
+
+	res, err := handler.Get(context.Background(), targetID)
+	if err != nil {
+		return errors.Wrap(err, "failed to retrieve accesskey")
+	}
+
+	return printJSON(res)
+}
+
+func cmdAccesskeyList() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "list",
+		Short: "Get accesskey list",
+		RunE:  runAccesskeyList,
+	}
+
+	flags := cmd.Flags()
+	flags.String("customer-id", "", "Filter by customer ID")
+	flags.Int("size", 10, "Number of results to retrieve")
+	flags.String("token", "", "Pagination token")
+
+	return cmd
+}
+
+func runAccesskeyList(cmd *cobra.Command, args []string) error {
+	handler, err := initAccesskeyHandler()
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize handlers")
+	}
+
+	size := viper.GetInt("size")
+	token := viper.GetString("token")
+
+	customerIDStr := viper.GetString("customer-id")
+	if customerIDStr != "" {
+		customerID := uuid.FromStringOrNil(customerIDStr)
+		if customerID == uuid.Nil {
+			return errors.New("invalid customer ID format")
+		}
+		res, err := handler.GetsByCustomerID(context.Background(), uint64(size), token, customerID)
+		if err != nil {
+			return errors.Wrap(err, "failed to retrieve accesskeys")
+		}
+		return printJSON(res)
+	}
+
+	filters := map[accesskey.Field]any{}
+	res, err := handler.List(context.Background(), uint64(size), token, filters)
+	if err != nil {
+		return errors.Wrap(err, "failed to retrieve accesskeys")
+	}
+
+	return printJSON(res)
+}
+
+func cmdAccesskeyUpdate() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "update",
+		Short: "Update accesskey basic info",
+		RunE:  runAccesskeyUpdate,
+	}
+
+	flags := cmd.Flags()
+	flags.String("id", "", "Accesskey ID (required)")
+	flags.String("name", "", "Accesskey name")
+	flags.String("detail", "", "Description")
+
+	return cmd
+}
+
+func runAccesskeyUpdate(cmd *cobra.Command, args []string) error {
+	targetID, err := resolveUUID("id", "Accesskey ID")
+	if err != nil {
+		return errors.Wrap(err, "invalid accesskey ID")
+	}
+
+	handler, err := initAccesskeyHandler()
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize handlers")
+	}
+
+	res, err := handler.UpdateBasicInfo(
+		context.Background(),
+		targetID,
+		viper.GetString("name"),
+		viper.GetString("detail"),
+	)
+	if err != nil {
+		return errors.Wrap(err, "failed to update accesskey")
+	}
+
+	return printJSON(res)
+}
+
+func cmdAccesskeyDelete() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "delete",
+		Short: "Delete an accesskey",
+		RunE:  runAccesskeyDelete,
+	}
+
+	flags := cmd.Flags()
+	flags.String("id", "", "Accesskey ID (required)")
+
+	return cmd
+}
+
+func runAccesskeyDelete(cmd *cobra.Command, args []string) error {
+	targetID, err := resolveUUID("id", "Accesskey ID")
+	if err != nil {
+		return errors.Wrap(err, "invalid accesskey ID")
+	}
+
+	handler, err := initAccesskeyHandler()
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize handlers")
+	}
+
+	res, err := handler.Delete(context.Background(), targetID)
+	if err != nil {
+		return errors.Wrap(err, "failed to delete accesskey")
+	}
+
+	return printJSON(res)
 }
