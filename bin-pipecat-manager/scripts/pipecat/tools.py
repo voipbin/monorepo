@@ -190,35 +190,34 @@ run_llm: Set true to confirm ("I've sent that to your email"), false for silent 
         "type": "function",
         "function": {
             "name": ToolName.STOP_MEDIA.value,
-            "description": """Stops any audio/media currently playing.
+            "description": """Stops media from a previous action that is currently playing on the call (internal tool).
 
 WHEN TO USE:
-- User asks to stop audio: "stop", "quiet", "be quiet", "shut up", "enough"
-- User interrupts during long playback or hold music
-- User wants immediate silence during media
+- When AI/pipecat has finished loading and needs to stop hold music or greeting that was playing
+- When a previous flow action's media playback should be stopped before AI starts speaking
+- When transitioning from pre-recorded media to live AI conversation
 
 WHEN NOT TO USE:
+- To stop the AI's own speech (this is handled by the framework)
 - User wants to end the conversation (use stop_service instead)
 - User wants to hang up the call (use stop_flow instead)
-- No media is currently playing
 
 DIFFERS FROM OTHER STOP TOOLS:
-- stop_media = Stop audio playback only, conversation continues
+- stop_media = Stop previous action's media playback, AI conversation continues
 - stop_service = End AI conversation, flow continues to next action
 - stop_flow = Terminate everything, call ends
 
 EXAMPLES:
-- "Stop talking" (during long TTS) -> stop_media
-- "Be quiet" -> stop_media
-- "OK I get it" (interrupting explanation) -> stop_media
+- AI loaded and ready to speak -> stop_media to stop hold music, then greet user
+- Previous action played announcement -> stop_media before AI takes over
 
-run_llm: Set true to respond after stopping ("OK, how can I help?"), false for silence.""",
+run_llm: Set true to speak immediately after stopping media, false to stop silently.""",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "run_llm": {
                         "type": "boolean",
-                        "description": "Set true to respond after stopping media. Set false to just be silent.",
+                        "description": "Set true to speak after stopping media. Set false to stop silently.",
                         "default": False
                     },
                 },

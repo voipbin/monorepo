@@ -268,7 +268,7 @@ Only ask for clarification if genuinely missing required information.
 | Send email | send_email | "email me", "send to my email", "email that to me" |
 | End AI, continue flow | stop_service | "bye", "goodbye", "thanks that's all", "I'm done", "that's everything" |
 | End entire call | stop_flow | "hang up", "end the call", "disconnect", "terminate" |
-| Stop audio playing | stop_media | "stop", "be quiet", "shut up", "enough" |
+| Stop previous media (internal) | stop_media | When AI loads and needs to stop hold music/greeting |
 | Save data (internal) | set_variables | When user provides info to save for later use |
 | Get saved data (internal) | get_variables | When you need previously saved context |
 | Get message history (internal) | get_aicall_messages | When referencing past conversation by ID |
@@ -311,7 +311,7 @@ Action: invoke stop_flow (no verbal response needed)
    Right: Just send it if user clearly requested it
 
 3. CONFUSING STOP TOOLS
-   - stop_media = Stop audio playback only, conversation continues
+   - stop_media = Stop previous action's media (internal use when AI loads)
    - stop_service = End AI, flow continues to next action (use for "bye", "thanks")
    - stop_flow = End everything, call terminates (use for "hang up", "disconnect")
 
