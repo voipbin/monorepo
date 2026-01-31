@@ -15,6 +15,7 @@ import (
 	"monorepo/bin-ai-manager/pkg/aihandler"
 	"monorepo/bin-ai-manager/pkg/messagehandler"
 	"monorepo/bin-ai-manager/pkg/summaryhandler"
+	"monorepo/bin-ai-manager/pkg/toolhandler"
 	"monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
@@ -44,6 +45,7 @@ type listenHandler struct {
 	aicallHandler  aicallhandler.AIcallHandler
 	messageHandler messagehandler.MessageHandler
 	summaryHandler summaryhandler.SummaryHandler
+	toolHandler    toolhandler.ToolHandler
 }
 
 var (
@@ -77,6 +79,9 @@ var (
 	regV1SummariesGet = regexp.MustCompile(`/v1/summaries\?`)
 	regV1Summaries    = regexp.MustCompile("/v1/summaries$")
 	regV1SummariesID  = regexp.MustCompile("/v1/summaries/" + regUUID + "$")
+
+	// tools
+	regV1Tools = regexp.MustCompile("/v1/tools$")
 )
 
 var (
@@ -120,6 +125,7 @@ func NewListenHandler(
 	aicallHandler aicallhandler.AIcallHandler,
 	messageHandler messagehandler.MessageHandler,
 	summaryHandler summaryhandler.SummaryHandler,
+	toolHandler toolhandler.ToolHandler,
 ) ListenHandler {
 	h := &listenHandler{
 		sockHandler:   sockHandler,
@@ -132,6 +138,7 @@ func NewListenHandler(
 		aicallHandler:  aicallHandler,
 		messageHandler: messageHandler,
 		summaryHandler: summaryHandler,
+		toolHandler:    toolHandler,
 	}
 
 	return h
@@ -294,6 +301,14 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1SummariesID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
 		response, err = h.processV1SummariesIDDelete(ctx, m)
 		requestType = "/v1/summaries/<summary-id>"
+
+	/////////////////
+	// tools
+	/////////////////
+	// GET /tools
+	case regV1Tools.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1ToolsGet(ctx, m)
+		requestType = "/v1/tools"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found

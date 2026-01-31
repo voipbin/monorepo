@@ -30,6 +30,7 @@ import (
 	"monorepo/bin-ai-manager/pkg/messagehandler"
 	"monorepo/bin-ai-manager/pkg/subscribehandler"
 	"monorepo/bin-ai-manager/pkg/summaryhandler"
+	"monorepo/bin-ai-manager/pkg/toolhandler"
 )
 
 const (
@@ -175,6 +176,7 @@ func runListen(
 	summaryHandler summaryhandler.SummaryHandler,
 ) error {
 	utilHandler := utilhandler.NewUtilHandler()
+	toolHandler := toolhandler.NewToolHandler()
 
 	listenHandler := listenhandler.NewListenHandler(
 		sockHandler,
@@ -185,6 +187,7 @@ func runListen(
 		aicallhandler,
 		messageHandler,
 		summaryHandler,
+		toolHandler,
 	)
 
 	// run

@@ -19,6 +19,8 @@ create table ai_ais(
 
   stt_type    varchar(255),
 
+  tool_names  json,           -- enabled tools for this AI
+
   -- timestamps
   tm_create datetime(6),  --
   tm_update datetime(6),  --
