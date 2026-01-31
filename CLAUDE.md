@@ -117,6 +117,7 @@ across the monorepo.
 4. Use present tense
 5. Use dashes (`-`) for bullet points
 6. Add narrative summary for significant changes
+7. Do NOT include "Co-Authored-By" lines in commit messages or PR descriptions
 
 **For extended examples, branch management, and merge rules, see [git-workflow-guide.md](docs/git-workflow-guide.md)**
 
