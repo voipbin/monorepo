@@ -34,6 +34,7 @@ func (h *server) PostAis(c *gin.Context) {
 		return
 	}
 
+	// TODO: Pass toolNames when OpenAPI schema is updated to include tool_names field
 	res, err := h.serviceHandler.AICreate(
 		c.Request.Context(),
 		&a,
@@ -47,6 +48,7 @@ func (h *server) PostAis(c *gin.Context) {
 		amai.TTSType(req.TtsType),
 		req.TtsVoiceId,
 		amai.STTType(req.SttType),
+		nil, // toolNames - not yet exposed in OpenAPI
 	)
 	if err != nil {
 		log.Errorf("Could not create a AI. err: %v", err)
@@ -206,6 +208,7 @@ func (h *server) PutAisId(c *gin.Context, id string) {
 		return
 	}
 
+	// TODO: Pass toolNames when OpenAPI schema is updated to include tool_names field
 	res, err := h.serviceHandler.AIUpdate(
 		c.Request.Context(),
 		&a,
@@ -220,6 +223,7 @@ func (h *server) PutAisId(c *gin.Context, id string) {
 		amai.TTSType(req.TtsType),
 		req.TtsVoiceId,
 		amai.STTType(req.SttType),
+		nil, // toolNames - not yet exposed in OpenAPI
 	)
 	if err != nil {
 		log.Errorf("Could not update the ai. err: %v", err)

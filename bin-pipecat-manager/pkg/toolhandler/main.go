@@ -47,7 +47,7 @@ func (h *toolHandler) FetchTools(ctx context.Context) error {
 	log := logrus.WithField("func", "FetchTools")
 	log.Info("Fetching tools from ai-manager...")
 
-	tools, err := h.requestHandler.AIV1ToolsGet(ctx)
+	tools, err := h.requestHandler.AIV1ToolList(ctx)
 	if err != nil {
 		return errors.Wrap(err, "could not fetch tools from ai-manager")
 	}

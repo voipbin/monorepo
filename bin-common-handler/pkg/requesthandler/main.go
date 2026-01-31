@@ -182,6 +182,7 @@ type RequestHandler interface {
 		ttsType amai.TTSType,
 		ttsVoiceID string,
 		sttType amai.STTType,
+		toolNames []amtool.ToolName,
 	) (*amai.AI, error)
 	AIV1AIDelete(ctx context.Context, aiID uuid.UUID) (*amai.AI, error)
 	AIV1AIUpdate(
@@ -197,10 +198,11 @@ type RequestHandler interface {
 		ttsType amai.TTSType,
 		ttsVoiceID string,
 		sttType amai.STTType,
+		toolNames []amtool.ToolName,
 	) (*amai.AI, error)
 
 	// ai-manager tools
-	AIV1ToolsGet(ctx context.Context) ([]amtool.Tool, error)
+	AIV1ToolList(ctx context.Context) ([]amtool.Tool, error)
 
 	// ai-manager aicall
 	AIV1AIcallStart(ctx context.Context, activeflowID uuid.UUID, aiID uuid.UUID, referenceType amaicall.ReferenceType, referenceID uuid.UUID, gender amaicall.Gender, language string) (*amaicall.AIcall, error)

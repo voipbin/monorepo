@@ -107,6 +107,7 @@ func Test_PostAis(t *testing.T) {
 				tt.expectedTTSType,
 				tt.expectedTTSVoiceID,
 				tt.expectedSTTType,
+				nil, // toolNames - not yet exposed in OpenAPI
 			).Return(tt.responseAI, nil)
 
 			r.ServeHTTP(w, req)
@@ -459,6 +460,7 @@ func Test_PutAisId(t *testing.T) {
 				tt.expectedTTSType,
 				tt.expectedTTSVoiceID,
 				tt.expectedSTTType,
+				nil, // toolNames - not yet exposed in OpenAPI
 			).Return(tt.responseAI, nil)
 
 			r.ServeHTTP(w, req)

@@ -16,9 +16,9 @@ type V1ToolsGetResponse struct {
 	Tools []amtool.Tool `json:"tools"`
 }
 
-// AIV1ToolsGet retrieves all tools from ai-manager
-func (r *requestHandler) AIV1ToolsGet(ctx context.Context) ([]amtool.Tool, error) {
-	log := logrus.WithField("func", "AIV1ToolsGet")
+// AIV1ToolList retrieves all tools from ai-manager
+func (r *requestHandler) AIV1ToolList(ctx context.Context) ([]amtool.Tool, error) {
+	log := logrus.WithField("func", "AIV1ToolList")
 
 	// Send request
 	res, err := r.SendRequest(

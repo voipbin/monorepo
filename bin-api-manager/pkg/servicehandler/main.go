@@ -30,6 +30,7 @@ import (
 	amaicall "monorepo/bin-ai-manager/models/aicall"
 	ammessage "monorepo/bin-ai-manager/models/message"
 	amsummary "monorepo/bin-ai-manager/models/summary"
+	amtool "monorepo/bin-ai-manager/models/tool"
 
 	cfconference "monorepo/bin-conference-manager/models/conference"
 	cfconferencecall "monorepo/bin-conference-manager/models/conferencecall"
@@ -233,6 +234,7 @@ type ServiceHandler interface {
 		ttsType amai.TTSType,
 		ttsVoiceID string,
 		sttType amai.STTType,
+		toolNames []amtool.ToolName,
 	) (*amai.WebhookMessage, error)
 	AIGetsByCustomerID(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*amai.WebhookMessage, error)
 	AIGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*amai.WebhookMessage, error)
@@ -251,6 +253,7 @@ type ServiceHandler interface {
 		ttsType amai.TTSType,
 		ttsVoiceID string,
 		sttType amai.STTType,
+		toolNames []amtool.ToolName,
 	) (*amai.WebhookMessage, error)
 
 	// aicall handlers

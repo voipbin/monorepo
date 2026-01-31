@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	amai "monorepo/bin-ai-manager/models/ai"
+	amtool "monorepo/bin-ai-manager/models/tool"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
@@ -44,6 +45,7 @@ func (h *serviceHandler) AICreate(
 	ttsType amai.TTSType,
 	ttsVoiceID string,
 	sttType amai.STTType,
+	toolNames []amtool.ToolName,
 ) (*amai.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "AICreate",
@@ -58,6 +60,7 @@ func (h *serviceHandler) AICreate(
 		"tts_type":     ttsType,
 		"tts_voice_id": ttsVoiceID,
 		"stt_type":     sttType,
+		"tool_names":   toolNames,
 	})
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
@@ -78,6 +81,7 @@ func (h *serviceHandler) AICreate(
 		ttsType,
 		ttsVoiceID,
 		sttType,
+		toolNames,
 	)
 	if err != nil {
 		log.Errorf("Could not create a new ai. err: %v", err)
@@ -233,6 +237,7 @@ func (h *serviceHandler) AIUpdate(
 	ttsType amai.TTSType,
 	ttsVoiceID string,
 	sttType amai.STTType,
+	toolNames []amtool.ToolName,
 ) (*amai.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "AIUpdate",
@@ -248,6 +253,7 @@ func (h *serviceHandler) AIUpdate(
 		"tts_type":     ttsType,
 		"tts_voice_id": ttsVoiceID,
 		"stt_type":     sttType,
+		"tool_names":   toolNames,
 	})
 
 	// get chat
@@ -275,6 +281,7 @@ func (h *serviceHandler) AIUpdate(
 		ttsType,
 		ttsVoiceID,
 		sttType,
+		toolNames,
 	)
 	if err != nil {
 		log.Errorf("Could not update the ai. err: %v", err)
