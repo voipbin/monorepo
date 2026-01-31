@@ -2,15 +2,16 @@ package server
 
 import (
 	"bytes"
-	amagent "monorepo/bin-agent-manager/models/agent"
-	amai "monorepo/bin-ai-manager/models/ai"
-	"monorepo/bin-api-manager/gens/openapi_server"
-	"monorepo/bin-api-manager/pkg/servicehandler"
-	commonidentity "monorepo/bin-common-handler/models/identity"
-
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+	amai "monorepo/bin-ai-manager/models/ai"
+	amtool "monorepo/bin-ai-manager/models/tool"
+	"monorepo/bin-api-manager/gens/openapi_server"
+	"monorepo/bin-api-manager/pkg/servicehandler"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -38,10 +39,11 @@ func Test_PostAis(t *testing.T) {
 		expectedTTSType     amai.TTSType
 		expectedTTSVoiceID  string
 		expectedSTTType     amai.STTType
+		expectedToolNames   []amtool.ToolName
 		expectedRes         string
 	}{
 		{
-			name: "normal",
+			name: "normal without tool_names",
 			agent: amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
@@ -64,12 +66,77 @@ func Test_PostAis(t *testing.T) {
 			expectedEngineData: map[string]any{
 				"key1": "val1",
 			},
-			expectedEngineKey:  "test engine key",
-			expectedInitPrompt: "test init prompt",
-			expectedTTSType:    amai.TTSTypeElevenLabs,
-			expectedTTSVoiceID: "test voice id",
-			expectedSTTType:    amai.STTTypeCartesia,
-			expectedRes:        `{"id":"dbceb866-4506-4e86-9851-a82d4d3ced88","customer_id":"00000000-0000-0000-0000-000000000000"}`,
+			expectedEngineKey:   "test engine key",
+			expectedInitPrompt:  "test init prompt",
+			expectedTTSType:     amai.TTSTypeElevenLabs,
+			expectedTTSVoiceID:  "test voice id",
+			expectedSTTType:     amai.STTTypeCartesia,
+			expectedToolNames:   nil,
+			expectedRes:         `{"id":"dbceb866-4506-4e86-9851-a82d4d3ced88","customer_id":"00000000-0000-0000-0000-000000000000"}`,
+		},
+		{
+			name: "with tool_names",
+			agent: amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			},
+
+			reqQuery: "/ais",
+			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_type":"","engine_model":"openai.gpt-4","engine_data":{"key1":"val1"},"engine_key":"test engine key","init_prompt":"test init prompt","tts_type":"elevenlabs","tts_voice_id":"test voice id","stt_type":"cartesia","tool_names":["connect_call","send_email"]}`),
+
+			responseAI: &amai.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("dbceb866-4506-4e86-9851-a82d4d3ced88"),
+				},
+			},
+
+			expectedName:        "test name",
+			expectedDetail:      "test detail",
+			expectedEngineType:  amai.EngineTypeNone,
+			expectedEngineModel: amai.EngineModelOpenaiGPT4,
+			expectedEngineData: map[string]any{
+				"key1": "val1",
+			},
+			expectedEngineKey:   "test engine key",
+			expectedInitPrompt:  "test init prompt",
+			expectedTTSType:     amai.TTSTypeElevenLabs,
+			expectedTTSVoiceID:  "test voice id",
+			expectedSTTType:     amai.STTTypeCartesia,
+			expectedToolNames:   []amtool.ToolName{amtool.ToolNameConnectCall, amtool.ToolNameSendEmail},
+			expectedRes:         `{"id":"dbceb866-4506-4e86-9851-a82d4d3ced88","customer_id":"00000000-0000-0000-0000-000000000000"}`,
+		},
+		{
+			name: "with all tools enabled",
+			agent: amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			},
+
+			reqQuery: "/ais",
+			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_type":"","engine_model":"openai.gpt-4","engine_data":{"key1":"val1"},"engine_key":"test engine key","init_prompt":"test init prompt","tts_type":"elevenlabs","tts_voice_id":"test voice id","stt_type":"cartesia","tool_names":["all"]}`),
+
+			responseAI: &amai.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("dbceb866-4506-4e86-9851-a82d4d3ced88"),
+				},
+			},
+
+			expectedName:        "test name",
+			expectedDetail:      "test detail",
+			expectedEngineType:  amai.EngineTypeNone,
+			expectedEngineModel: amai.EngineModelOpenaiGPT4,
+			expectedEngineData: map[string]any{
+				"key1": "val1",
+			},
+			expectedEngineKey:   "test engine key",
+			expectedInitPrompt:  "test init prompt",
+			expectedTTSType:     amai.TTSTypeElevenLabs,
+			expectedTTSVoiceID:  "test voice id",
+			expectedSTTType:     amai.STTTypeCartesia,
+			expectedToolNames:   []amtool.ToolName{amtool.ToolNameAll},
+			expectedRes:         `{"id":"dbceb866-4506-4e86-9851-a82d4d3ced88","customer_id":"00000000-0000-0000-0000-000000000000"}`,
 		},
 	}
 
@@ -107,7 +174,7 @@ func Test_PostAis(t *testing.T) {
 				tt.expectedTTSType,
 				tt.expectedTTSVoiceID,
 				tt.expectedSTTType,
-				nil, // toolNames - not yet exposed in OpenAPI
+				tt.expectedToolNames,
 			).Return(tt.responseAI, nil)
 
 			r.ServeHTTP(w, req)
@@ -389,10 +456,11 @@ func Test_PutAisId(t *testing.T) {
 		expectedTTSType     amai.TTSType
 		expectedTTSVoiceID  string
 		expectedSTTType     amai.STTType
+		expectedToolNames   []amtool.ToolName
 		expectedRes         string
 	}{
 		{
-			name: "normal",
+			name: "normal without tool_names",
 			agent: amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
@@ -416,12 +484,46 @@ func Test_PutAisId(t *testing.T) {
 			expectedEngineData: map[string]any{
 				"key1": "val1",
 			},
-			expectedEngineKey:  "test engine key",
-			expectedInitPrompt: "test init prompt",
-			expectedTTSType:    amai.TTSTypeElevenLabs,
-			expectedTTSVoiceID: "test voice id",
-			expectedSTTType:    amai.STTTypeCartesia,
-			expectedRes:        `{"id":"2a2ec0ba-8004-11ec-aea5-439829c92a7c","customer_id":"00000000-0000-0000-0000-000000000000"}`,
+			expectedEngineKey:   "test engine key",
+			expectedInitPrompt:  "test init prompt",
+			expectedTTSType:     amai.TTSTypeElevenLabs,
+			expectedTTSVoiceID:  "test voice id",
+			expectedSTTType:     amai.STTTypeCartesia,
+			expectedToolNames:   nil,
+			expectedRes:         `{"id":"2a2ec0ba-8004-11ec-aea5-439829c92a7c","customer_id":"00000000-0000-0000-0000-000000000000"}`,
+		},
+		{
+			name: "with tool_names",
+			agent: amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			},
+
+			reqQuery: "/ais/2a2ec0ba-8004-11ec-aea5-439829c92a7c",
+			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_type":"","engine_model":"openai.gpt-4","engine_data":{"key1":"val1"},"engine_key":"test engine key","init_prompt":"test init prompt","tts_type":"elevenlabs","tts_voice_id":"test voice id","stt_type":"cartesia","tool_names":["connect_call","send_email"]}`),
+
+			responseAI: &amai.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			},
+
+			expectedAIID:        uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+			expectedName:        "test name",
+			expectedDetail:      "test detail",
+			expectedEngineType:  amai.EngineTypeNone,
+			epxectedEngineModel: amai.EngineModelOpenaiGPT4,
+			expectedEngineData: map[string]any{
+				"key1": "val1",
+			},
+			expectedEngineKey:   "test engine key",
+			expectedInitPrompt:  "test init prompt",
+			expectedTTSType:     amai.TTSTypeElevenLabs,
+			expectedTTSVoiceID:  "test voice id",
+			expectedSTTType:     amai.STTTypeCartesia,
+			expectedToolNames:   []amtool.ToolName{amtool.ToolNameConnectCall, amtool.ToolNameSendEmail},
+			expectedRes:         `{"id":"2a2ec0ba-8004-11ec-aea5-439829c92a7c","customer_id":"00000000-0000-0000-0000-000000000000"}`,
 		},
 	}
 
@@ -460,7 +562,7 @@ func Test_PutAisId(t *testing.T) {
 				tt.expectedTTSType,
 				tt.expectedTTSVoiceID,
 				tt.expectedSTTType,
-				nil, // toolNames - not yet exposed in OpenAPI
+				tt.expectedToolNames,
 			).Return(tt.responseAI, nil)
 
 			r.ServeHTTP(w, req)

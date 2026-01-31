@@ -3,6 +3,7 @@ package server
 import (
 	amagent "monorepo/bin-agent-manager/models/agent"
 	amai "monorepo/bin-ai-manager/models/ai"
+	amtool "monorepo/bin-ai-manager/models/tool"
 	"monorepo/bin-api-manager/gens/openapi_server"
 
 	"github.com/gin-gonic/gin"
@@ -34,7 +35,15 @@ func (h *server) PostAis(c *gin.Context) {
 		return
 	}
 
-	// TODO: Pass toolNames when OpenAPI schema is updated to include tool_names field
+	// Convert tool names if provided
+	var toolNames []amtool.ToolName
+	if req.ToolNames != nil {
+		toolNames = make([]amtool.ToolName, len(*req.ToolNames))
+		for i, name := range *req.ToolNames {
+			toolNames[i] = amtool.ToolName(name)
+		}
+	}
+
 	res, err := h.serviceHandler.AICreate(
 		c.Request.Context(),
 		&a,
@@ -48,7 +57,7 @@ func (h *server) PostAis(c *gin.Context) {
 		amai.TTSType(req.TtsType),
 		req.TtsVoiceId,
 		amai.STTType(req.SttType),
-		nil, // toolNames - not yet exposed in OpenAPI
+		toolNames,
 	)
 	if err != nil {
 		log.Errorf("Could not create a AI. err: %v", err)
@@ -208,7 +217,15 @@ func (h *server) PutAisId(c *gin.Context, id string) {
 		return
 	}
 
-	// TODO: Pass toolNames when OpenAPI schema is updated to include tool_names field
+	// Convert tool names if provided
+	var toolNames []amtool.ToolName
+	if req.ToolNames != nil {
+		toolNames = make([]amtool.ToolName, len(*req.ToolNames))
+		for i, name := range *req.ToolNames {
+			toolNames[i] = amtool.ToolName(name)
+		}
+	}
+
 	res, err := h.serviceHandler.AIUpdate(
 		c.Request.Context(),
 		&a,
@@ -223,7 +240,7 @@ func (h *server) PutAisId(c *gin.Context, id string) {
 		amai.TTSType(req.TtsType),
 		req.TtsVoiceId,
 		amai.STTType(req.SttType),
-		nil, // toolNames - not yet exposed in OpenAPI
+		toolNames,
 	)
 	if err != nil {
 		log.Errorf("Could not update the ai. err: %v", err)
