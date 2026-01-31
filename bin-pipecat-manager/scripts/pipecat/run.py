@@ -37,20 +37,21 @@ from pipecat.transports.websocket.client import (
     WebsocketClientTransport,
 )
 
-from tools import tool_register, tool_unregister, tools
+from tools import tool_register, tool_unregister, convert_to_openai_format, get_tool_names
 from task import task_manager
 
 
 async def run_pipeline(
-    id: str, 
-    llm_type: str, 
-    llm_key: str, 
-    llm_messages: list = None, 
-    stt_type: str = None, 
+    id: str,
+    llm_type: str,
+    llm_key: str,
+    llm_messages: list = None,
+    stt_type: str = None,
     stt_language: str = None,
-    tts_type: str = None, 
+    tts_type: str = None,
     tts_language: str = None,
     tts_voice_id: str = None,
+    tools_data: list = None,
 ):
     total_start = time.monotonic()
     logger.info(f"[INIT] Starting Pipecat client pipeline id={id}")
@@ -61,6 +62,13 @@ async def run_pipeline(
 
     if llm_messages is None:
         llm_messages = []
+
+    # Convert tools from ai-manager format to OpenAI format
+    if tools_data is None:
+        tools_data = []
+    openai_tools = convert_to_openai_format(tools_data)
+    tool_names = get_tool_names(tools_data)
+    logger.info(f"[INIT] Received {len(tool_names)} tools: {tool_names}")
 
     init_tasks = {}
 
@@ -92,7 +100,7 @@ async def run_pipeline(
 
     async def init_llm():
         start = time.monotonic()
-        llm_service, aggregator = create_llm_service(llm_type, llm_key, llm_messages)
+        llm_service, aggregator = create_llm_service(llm_type, llm_key, llm_messages, openai_tools)
         logger.info(f"[INIT][llm] done in {time.monotonic() - start:.3f} sec. pipeline id={id}")
         return {
             "llm_service": llm_service,
@@ -164,8 +172,8 @@ async def run_pipeline(
 
     pipeline = Pipeline(pipeline_stages)
 
-    # Register tool
-    tool_register(llm_service, id)
+    # Register tools
+    tool_register(llm_service, id, tool_names)
 
     # Create Pipeline Task
     task_start = time.monotonic()
@@ -221,7 +229,7 @@ async def run_pipeline(
             await transport_output.cleanup()
 
         if llm_service:
-            tool_unregister(llm_service)
+            tool_unregister(llm_service, tool_names)
 
         await task_manager.remove(id)
         logger.info(f"[CLEANUP] Pipeline cleaned. pipeline id={id}")
@@ -265,7 +273,7 @@ def create_stt_service(name: str, **options):
         raise ValueError(f"Unsupported STT service: {name}")
 
 
-def create_llm_service(type: str, key: str, messages: list[dict], **options):
+def create_llm_service(type: str, key: str, messages: list[dict], tools: list[dict], **options):
     valid_messages = [m for m in messages if m.get("role") and m.get("content")]
 
     if "." in type:

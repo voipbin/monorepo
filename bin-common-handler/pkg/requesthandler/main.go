@@ -28,6 +28,7 @@ import (
 	amaicall "monorepo/bin-ai-manager/models/aicall"
 	ammessage "monorepo/bin-ai-manager/models/message"
 	amsummary "monorepo/bin-ai-manager/models/summary"
+	amtool "monorepo/bin-ai-manager/models/tool"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	"monorepo/bin-common-handler/models/service"
 
@@ -197,6 +198,9 @@ type RequestHandler interface {
 		ttsVoiceID string,
 		sttType amai.STTType,
 	) (*amai.AI, error)
+
+	// ai-manager tools
+	AIV1ToolsGet(ctx context.Context) ([]amtool.Tool, error)
 
 	// ai-manager aicall
 	AIV1AIcallStart(ctx context.Context, activeflowID uuid.UUID, aiID uuid.UUID, referenceType amaicall.ReferenceType, referenceID uuid.UUID, gender amaicall.Gender, language string) (*amaicall.AIcall, error)

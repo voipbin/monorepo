@@ -17,6 +17,7 @@ import (
 	aicall "monorepo/bin-ai-manager/models/aicall"
 	message "monorepo/bin-ai-manager/models/message"
 	summary "monorepo/bin-ai-manager/models/summary"
+	tool "monorepo/bin-ai-manager/models/tool"
 	account "monorepo/bin-billing-manager/models/account"
 	billing "monorepo/bin-billing-manager/models/billing"
 	ari "monorepo/bin-call-manager/models/ari"
@@ -449,6 +450,21 @@ func (m *MockRequestHandler) AIV1SummaryList(ctx context.Context, pageToken stri
 func (mr *MockRequestHandlerMockRecorder) AIV1SummaryList(ctx, pageToken, pageSize, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1SummaryList", reflect.TypeOf((*MockRequestHandler)(nil).AIV1SummaryList), ctx, pageToken, pageSize, filters)
+}
+
+// AIV1ToolsGet mocks base method.
+func (m *MockRequestHandler) AIV1ToolsGet(ctx context.Context) ([]tool.Tool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIV1ToolsGet", ctx)
+	ret0, _ := ret[0].([]tool.Tool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIV1ToolsGet indicates an expected call of AIV1ToolsGet.
+func (mr *MockRequestHandlerMockRecorder) AIV1ToolsGet(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1ToolsGet", reflect.TypeOf((*MockRequestHandler)(nil).AIV1ToolsGet), ctx)
 }
 
 // AgentV1AgentCreate mocks base method.

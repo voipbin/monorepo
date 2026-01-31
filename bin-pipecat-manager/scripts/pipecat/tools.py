@@ -3,24 +3,56 @@ import json
 from loguru import logger
 import aiohttp
 import asyncio
-from enum import Enum
+from typing import List, Dict, Any
 
 from pipecat.services.llm_service import FunctionCallParams
 from pipecat.frames.frames import FunctionCallResultProperties
 
-class ToolName(str, Enum):
-    # NOTICE: The following tool names must match those defined in the ai-manager.
-    CONNECT_CALL = "connect_call"                   # Connects to endpoints
-    GET_VARIABLES = "get_variables"                 # Gets flow variables
-    GET_AICALL_MESSAGES = "get_aicall_messages"     # Gets AI call messages
-    SEND_EMAIL = "send_email"                       # Sends emails
-    SEND_MESSAGE = "send_message"                   # Sends SMS messages
-    SET_VARIABLES = "set_variables"                 # Sets flow variables
-    STOP_FLOW = "stop_flow"                         # Stops current flow execution
-    STOP_MEDIA = "stop_media"                       # Stops current media playback
-    STOP_SERVICE = "stop_service"                   # Stops current AI talk and proceeds to next Action
 
-TOOLNAMES = [tool.value for tool in ToolName]
+def convert_to_openai_format(tools_data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """
+    Convert tools from ai-manager format to OpenAI function calling format.
+
+    ai-manager format:
+    {
+        "name": "connect_call",
+        "description": "...",
+        "parameters": {...}
+    }
+
+    OpenAI format:
+    {
+        "type": "function",
+        "function": {
+            "name": "connect_call",
+            "description": "...",
+            "parameters": {...}
+        }
+    }
+    """
+    if not tools_data:
+        return []
+
+    openai_tools = []
+    for tool in tools_data:
+        openai_tool = {
+            "type": "function",
+            "function": {
+                "name": tool.get("name", ""),
+                "description": tool.get("description", ""),
+                "parameters": tool.get("parameters", {"type": "object", "properties": {}, "required": []}),
+            }
+        }
+        openai_tools.append(openai_tool)
+
+    return openai_tools
+
+
+def get_tool_names(tools_data: List[Dict[str, Any]]) -> List[str]:
+    """Extract tool names from tools data."""
+    if not tools_data:
+        return []
+    return [tool.get("name", "") for tool in tools_data if tool.get("name")]
 
 tools = [
     {
@@ -492,20 +524,22 @@ run_llm: Set true to respond based on retrieved messages, false for silent retri
     },
 ]
 
-def tool_register(llm_service, pipecatcall_id):
+def tool_register(llm_service, pipecatcall_id: str, tool_names: List[str]):
+    """Register tool functions with the LLM service."""
     def create_wrapper(tool_name, pipecatcall_id):
         async def wrapper(params: FunctionCallParams):
             return await tool_execute(tool_name, params, pipecatcall_id)
         return wrapper
 
-    for tool_name in TOOLNAMES:
+    for tool_name in tool_names:
         wrapper = create_wrapper(tool_name, pipecatcall_id)
         llm_service.register_function(tool_name, wrapper)
+    logger.info(f"Registered {len(tool_names)} tools for pipecatcall {pipecatcall_id}")
 
 
-def tool_unregister(llm_service):
+def tool_unregister(llm_service, tool_names: List[str]):
     """Unregisters tools from the LLM service."""
-    for tool_name in TOOLNAMES:
+    for tool_name in tool_names:
         try:
             llm_service.unregister_function(tool_name)
         except KeyError:

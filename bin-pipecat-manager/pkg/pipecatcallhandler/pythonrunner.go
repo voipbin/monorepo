@@ -10,6 +10,8 @@ import (
 	"net/http"
 	"time"
 
+	aitool "monorepo/bin-ai-manager/models/tool"
+
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -45,6 +47,7 @@ type PythonRunner interface {
 		ttsType string,
 		ttsLanguage string,
 		ttsVoiceID string,
+		tools []aitool.Tool,
 	) error
 	Stop(ctx context.Context, pipecatcallID uuid.UUID) error
 }
@@ -64,6 +67,7 @@ func (h *pythonRunner) Start(
 	ttsType string,
 	ttsLanguage string,
 	ttsVoiceID string,
+	tools []aitool.Tool,
 ) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "Start",
@@ -80,6 +84,7 @@ func (h *pythonRunner) Start(
 		TTSType     string           `json:"tts_type,omitempty"`
 		TTSLanguage string           `json:"tts_language,omitempty"`
 		TTSVoiceID  string           `json:"tts_voice_id,omitempty"`
+		Tools       []aitool.Tool    `json:"tools,omitempty"`
 	}{
 		ID:          pipecatcallID,
 		LLMType:     llmType,
@@ -90,6 +95,7 @@ func (h *pythonRunner) Start(
 		TTSType:     ttsType,
 		TTSLanguage: ttsLanguage,
 		TTSVoiceID:  ttsVoiceID,
+		Tools:       tools,
 	}
 
 	jsonData, err := json.Marshal(reqBody)
