@@ -10,7 +10,7 @@ from pipecat.frames.frames import FunctionCallResultProperties
 
 class ToolName(str, Enum):
     # NOTICE: The following tool names must match those defined in the ai-manager.
-    CONNECT_CALL = "connect_call"                   # Connects caller to endpoints
+    CONNECT_CALL = "connect_call"                   # Connects to endpoints
     GET_VARIABLES = "get_variables"                 # Gets flow variables
     GET_AICALL_MESSAGES = "get_aicall_messages"     # Gets AI call messages
     SEND_EMAIL = "send_email"                       # Sends emails
@@ -27,7 +27,7 @@ tools = [
         "type": "function",
         "function": {
             "name": ToolName.CONNECT_CALL.value,
-            "description": """Connects the caller to another endpoint (person, department, or phone number).
+            "description": """Connects to another endpoint (person, department, or phone number).
 
 WHEN TO USE:
 - User asks to be transferred: "transfer me to...", "connect me to...", "put me through to..."
@@ -435,7 +435,7 @@ EXAMPLES:
 - Need customer name collected earlier -> get_variables
 - Previous action saved confirmation number -> get_variables to retrieve it
 - User asks "what was my confirmation?" -> get_variables
-- Need caller's phone number for SMS -> get_variables
+- Need user's phone number for SMS -> get_variables
 
 run_llm: Set true to respond using retrieved data, false for silent retrieval before another action.""",
             "parameters": {
