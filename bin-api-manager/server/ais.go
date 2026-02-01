@@ -3,6 +3,7 @@ package server
 import (
 	amagent "monorepo/bin-agent-manager/models/agent"
 	amai "monorepo/bin-ai-manager/models/ai"
+	amtool "monorepo/bin-ai-manager/models/tool"
 	"monorepo/bin-api-manager/gens/openapi_server"
 
 	"github.com/gin-gonic/gin"
@@ -34,6 +35,15 @@ func (h *server) PostAis(c *gin.Context) {
 		return
 	}
 
+	// Convert tool names if provided
+	var toolNames []amtool.ToolName
+	if req.ToolNames != nil {
+		toolNames = make([]amtool.ToolName, len(*req.ToolNames))
+		for i, name := range *req.ToolNames {
+			toolNames[i] = amtool.ToolName(name)
+		}
+	}
+
 	res, err := h.serviceHandler.AICreate(
 		c.Request.Context(),
 		&a,
@@ -47,6 +57,7 @@ func (h *server) PostAis(c *gin.Context) {
 		amai.TTSType(req.TtsType),
 		req.TtsVoiceId,
 		amai.STTType(req.SttType),
+		toolNames,
 	)
 	if err != nil {
 		log.Errorf("Could not create a AI. err: %v", err)
@@ -206,6 +217,15 @@ func (h *server) PutAisId(c *gin.Context, id string) {
 		return
 	}
 
+	// Convert tool names if provided
+	var toolNames []amtool.ToolName
+	if req.ToolNames != nil {
+		toolNames = make([]amtool.ToolName, len(*req.ToolNames))
+		for i, name := range *req.ToolNames {
+			toolNames[i] = amtool.ToolName(name)
+		}
+	}
+
 	res, err := h.serviceHandler.AIUpdate(
 		c.Request.Context(),
 		&a,
@@ -220,6 +240,7 @@ func (h *server) PutAisId(c *gin.Context, id string) {
 		amai.TTSType(req.TtsType),
 		req.TtsVoiceId,
 		amai.STTType(req.SttType),
+		toolNames,
 	)
 	if err != nil {
 		log.Errorf("Could not update the ai. err: %v", err)

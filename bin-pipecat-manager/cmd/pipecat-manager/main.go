@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
@@ -14,6 +15,7 @@ import (
 	"monorepo/bin-pipecat-manager/pkg/httphandler"
 	"monorepo/bin-pipecat-manager/pkg/listenhandler"
 	"monorepo/bin-pipecat-manager/pkg/pipecatcallhandler"
+	"monorepo/bin-pipecat-manager/pkg/toolhandler"
 
 	_ "github.com/go-sql-driver/mysql"
 
@@ -119,7 +121,13 @@ func run() error {
 	requestHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, requestHandler, commonoutline.QueueNamePipecatEvent, serviceName)
 
-	pipecatcallHandler := pipecatcallhandler.NewPipecatcallHandler(requestHandler, notifyHandler, dbHandler, listenAddress, listenIP)
+	// Create tool handler and fetch tools from ai-manager
+	toolHandler := toolhandler.NewToolHandler(requestHandler)
+	if err := toolHandler.FetchTools(context.Background()); err != nil {
+		log.Warnf("Could not fetch tools from ai-manager: %v. Continuing with empty tool set.", err)
+	}
+
+	pipecatcallHandler := pipecatcallhandler.NewPipecatcallHandler(requestHandler, notifyHandler, dbHandler, toolHandler, listenAddress, listenIP)
 	httpHandler := httphandler.NewHttpHandler(requestHandler, pipecatcallHandler)
 
 	// run listen

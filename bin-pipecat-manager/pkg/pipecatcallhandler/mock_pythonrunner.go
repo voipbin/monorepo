@@ -11,6 +11,7 @@ package pipecatcallhandler
 
 import (
 	context "context"
+	tool "monorepo/bin-ai-manager/models/tool"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -42,17 +43,17 @@ func (m *MockPythonRunner) EXPECT() *MockPythonRunnerMockRecorder {
 }
 
 // Start mocks base method.
-func (m *MockPythonRunner) Start(ctx context.Context, pipecatcallID uuid.UUID, llmType, llmKey string, llmMessages []map[string]any, sttType, sttLanguage, ttsType, ttsLanguage, ttsVoiceID string) error {
+func (m *MockPythonRunner) Start(ctx context.Context, pipecatcallID uuid.UUID, llmType, llmKey string, llmMessages []map[string]any, sttType, sttLanguage, ttsType, ttsLanguage, ttsVoiceID string, tools []tool.Tool) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Start", ctx, pipecatcallID, llmType, llmKey, llmMessages, sttType, sttLanguage, ttsType, ttsLanguage, ttsVoiceID)
+	ret := m.ctrl.Call(m, "Start", ctx, pipecatcallID, llmType, llmKey, llmMessages, sttType, sttLanguage, ttsType, ttsLanguage, ttsVoiceID, tools)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Start indicates an expected call of Start.
-func (mr *MockPythonRunnerMockRecorder) Start(ctx, pipecatcallID, llmType, llmKey, llmMessages, sttType, sttLanguage, ttsType, ttsLanguage, ttsVoiceID any) *gomock.Call {
+func (mr *MockPythonRunnerMockRecorder) Start(ctx, pipecatcallID, llmType, llmKey, llmMessages, sttType, sttLanguage, ttsType, ttsLanguage, ttsVoiceID, tools any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockPythonRunner)(nil).Start), ctx, pipecatcallID, llmType, llmKey, llmMessages, sttType, sttLanguage, ttsType, ttsLanguage, ttsVoiceID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockPythonRunner)(nil).Start), ctx, pipecatcallID, llmType, llmKey, llmMessages, sttType, sttLanguage, ttsType, ttsLanguage, ttsVoiceID, tools)
 }
 
 // Stop mocks base method.

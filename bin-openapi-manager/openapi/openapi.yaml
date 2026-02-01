@@ -1113,6 +1113,11 @@ components:
         stt_type:
           type: string
           description: Speech-to-text type used by the ai.
+        tool_names:
+          type: array
+          items:
+            type: string
+          description: List of tool names enabled for this AI. Use ["all"] to enable all available tools.
         tm_create:
           type: string
           description: Timestamp when the ai was created.

@@ -7,6 +7,7 @@ import (
 	"net/url"
 
 	amai "monorepo/bin-ai-manager/models/ai"
+	amtool "monorepo/bin-ai-manager/models/tool"
 	amrequest "monorepo/bin-ai-manager/pkg/listenhandler/models/request"
 	"monorepo/bin-common-handler/models/sock"
 
@@ -72,6 +73,7 @@ func (r *requestHandler) AIV1AICreate(
 	ttsType amai.TTSType,
 	ttsVoiceID string,
 	sttType amai.STTType,
+	toolNames []amtool.ToolName,
 ) (*amai.AI, error) {
 	uri := "/v1/ais"
 
@@ -91,6 +93,8 @@ func (r *requestHandler) AIV1AICreate(
 		TTSVoiceID: ttsVoiceID,
 
 		STTType: sttType,
+
+		ToolNames: toolNames,
 	}
 
 	m, err := json.Marshal(data)
@@ -146,6 +150,7 @@ func (r *requestHandler) AIV1AIUpdate(
 	ttsType amai.TTSType,
 	ttsVoiceID string,
 	sttType amai.STTType,
+	toolNames []amtool.ToolName,
 ) (*amai.AI, error) {
 	uri := fmt.Sprintf("/v1/ais/%s", aiID)
 
@@ -164,6 +169,8 @@ func (r *requestHandler) AIV1AIUpdate(
 		TTSVoiceID: ttsVoiceID,
 
 		STTType: sttType,
+
+		ToolNames: toolNames,
 	}
 
 	m, err := json.Marshal(data)

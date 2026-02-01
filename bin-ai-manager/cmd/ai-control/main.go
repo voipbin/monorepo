@@ -203,6 +203,7 @@ func runCreate(cmd *cobra.Command, args []string) error {
 		ttsType,
 		ttsVoiceID,
 		sttType,
+		nil, // toolNames - nil means default (all tools)
 	)
 	if err != nil {
 		return errors.Wrap(err, "failed to create AI")
@@ -296,6 +297,7 @@ func runUpdate(cmd *cobra.Command, args []string) error {
 		ttsType,
 		ttsVoiceID,
 		sttType,
+		nil, // toolNames - nil keeps existing value
 	)
 	if err != nil {
 		return errors.Wrap(err, "failed to update AI")

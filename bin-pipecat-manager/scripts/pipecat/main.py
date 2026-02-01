@@ -28,6 +28,14 @@ class Message(BaseModel):
     class Config:
         extra = "ignore"
 
+class Tool(BaseModel):
+    name: str
+    description: str
+    parameters: Optional[dict] = None
+
+    class Config:
+        extra = "ignore"
+
 class PipelineRequest(BaseModel):
     id: Optional[str] = None
     llm_type: Optional[str] = None
@@ -38,10 +46,13 @@ class PipelineRequest(BaseModel):
     tts_type: Optional[str] = None
     tts_language: Optional[str] = None
     tts_voice_id: Optional[str] = None
+    tools: Optional[List[Tool]] = Field(default_factory=list)
 
 async def run_pipeline_wrapper(req: PipelineRequest):
     try:
         logger.info(f"Pipeline started: id={req.id}")
+        # Convert Tool objects to dict format for LLM
+        tools_data = [t.model_dump() for t in req.tools] if req.tools else []
         await run_pipeline(
             req.id,
             req.llm_type,
@@ -52,6 +63,7 @@ async def run_pipeline_wrapper(req: PipelineRequest):
             req.tts_type,
             req.tts_language,
             req.tts_voice_id,
+            tools_data,
         )
         logger.info(f"Pipeline finished successfully: id={req.id}")
     except Exception as e:

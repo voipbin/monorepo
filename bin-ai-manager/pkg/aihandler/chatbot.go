@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"monorepo/bin-ai-manager/models/ai"
+	"monorepo/bin-ai-manager/models/tool"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -22,13 +23,14 @@ func (h *aiHandler) Create(
 	ttsType ai.TTSType,
 	ttsVoiceID string,
 	sttType ai.STTType,
+	toolNames []tool.ToolName,
 ) (*ai.AI, error) {
 
 	if !ai.IsValidEngineModel(engineModel) {
 		return nil, fmt.Errorf("invalid engine model: %s", engineModel)
 	}
 
-	res, err := h.dbCreate(ctx, customerID, name, detail, engineType, engineModel, engineData, engineKey, initPrompt, ttsType, ttsVoiceID, sttType)
+	res, err := h.dbCreate(ctx, customerID, name, detail, engineType, engineModel, engineData, engineKey, initPrompt, ttsType, ttsVoiceID, sttType, toolNames)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create ai")
 	}
@@ -50,13 +52,14 @@ func (h *aiHandler) Update(
 	ttsType ai.TTSType,
 	ttsVoiceID string,
 	sttType ai.STTType,
+	toolNames []tool.ToolName,
 ) (*ai.AI, error) {
 
 	if !ai.IsValidEngineModel(engineModel) {
 		return nil, fmt.Errorf("invalid engine model: %s", engineModel)
 	}
 
-	res, err := h.dbUpdate(ctx, id, name, detail, engineType, engineModel, engineData, engineKey, initPrompt, ttsType, ttsVoiceID, sttType)
+	res, err := h.dbUpdate(ctx, id, name, detail, engineType, engineModel, engineData, engineKey, initPrompt, ttsType, ttsVoiceID, sttType, toolNames)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not update ai")
 	}

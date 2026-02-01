@@ -7,6 +7,7 @@ import (
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
+	"monorepo/bin-pipecat-manager/pkg/toolhandler"
 	"time"
 
 	cmexternalmedia "monorepo/bin-call-manager/models/externalmedia"
@@ -73,6 +74,7 @@ type pipecatcallHandler struct {
 	requestHandler requesthandler.RequestHandler
 	notifyHandler  notifyhandler.NotifyHandler
 	db             dbhandler.DBHandler
+	toolHandler    toolhandler.ToolHandler
 
 	pythonRunner        PythonRunner
 	audiosocketHandler  AudiosocketHandler
@@ -90,6 +92,7 @@ func NewPipecatcallHandler(
 	reqHandler requesthandler.RequestHandler,
 	notifyHandler notifyhandler.NotifyHandler,
 	dbHandler dbhandler.DBHandler,
+	toolHandler toolhandler.ToolHandler,
 
 	listenAddress string,
 	hostID string,
@@ -99,6 +102,7 @@ func NewPipecatcallHandler(
 		requestHandler: reqHandler,
 		notifyHandler:  notifyHandler,
 		db:             dbHandler,
+		toolHandler:    toolHandler,
 
 		pythonRunner:        NewPythonRunner(),
 		audiosocketHandler:  NewAudiosocketHandler(),

@@ -1,6 +1,7 @@
 package ai
 
 import (
+	"monorepo/bin-ai-manager/models/tool"
 	"monorepo/bin-common-handler/models/identity"
 	"strings"
 )
@@ -23,6 +24,10 @@ type AI struct {
 	TTSVoiceID string  `json:"tts_voice_id,omitempty" db:"tts_voice_id"`
 
 	STTType STTType `json:"stt_type,omitempty" db:"stt_type"`
+
+	// ToolNames defines which tools are enabled for this AI
+	// ["all"] = all tools, ["connect_call", "send_email"] = specific tools, [] or nil = no tools
+	ToolNames []tool.ToolName `json:"tool_names,omitempty" db:"tool_names,json"`
 
 	// timestamp
 	TMCreate string `json:"tm_create,omitempty" db:"tm_create"`

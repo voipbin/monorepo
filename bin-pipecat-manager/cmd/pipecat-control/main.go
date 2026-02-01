@@ -18,6 +18,7 @@ import (
 	"monorepo/bin-pipecat-manager/pkg/cachehandler"
 	"monorepo/bin-pipecat-manager/pkg/dbhandler"
 	"monorepo/bin-pipecat-manager/pkg/pipecatcallhandler"
+	"monorepo/bin-pipecat-manager/pkg/toolhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -63,8 +64,9 @@ func initPipecatcallHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (pip
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, outline.QueueNamePipecatEvent, serviceName)
+	toolHandler := toolhandler.NewToolHandler(reqHandler)
 
-	return pipecatcallhandler.NewPipecatcallHandler(reqHandler, notifyHandler, db, "localhost:0", "cli-host"), nil
+	return pipecatcallhandler.NewPipecatcallHandler(reqHandler, notifyHandler, db, toolHandler, "localhost:0", "cli-host"), nil
 }
 
 func initCommand() *cobra.Command {

@@ -83,6 +83,11 @@ put:
             stt_type:
               type: string
               description: Speech-to-text engine type.
+            tool_names:
+              type: array
+              items:
+                type: string
+              description: List of tool names to enable for this AI. Use ["all"] to enable all available tools.
           required:
             - name
             - detail

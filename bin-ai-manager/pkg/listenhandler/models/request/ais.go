@@ -4,6 +4,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	"monorepo/bin-ai-manager/models/ai"
+	"monorepo/bin-ai-manager/models/tool"
 )
 
 // V1DataAIsPost is
@@ -25,6 +26,8 @@ type V1DataAIsPost struct {
 	TTSVoiceID string     `json:"tts_voice_id,omitempty"`
 
 	STTType ai.STTType `json:"stt_type,omitempty"`
+
+	ToolNames []tool.ToolName `json:"tool_names,omitempty"`
 }
 
 // V1DataAIsIDPut is
@@ -45,4 +48,6 @@ type V1DataAIsIDPut struct {
 	TTSVoiceID string     `json:"tts_voice_id,omitempty"`
 
 	STTType ai.STTType `json:"stt_type,omitempty"`
+
+	ToolNames []tool.ToolName `json:"tool_names,omitempty"`
 }

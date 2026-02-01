@@ -689,6 +689,9 @@ type AIManagerAI struct {
 	// TmUpdate Timestamp when the ai was last updated.
 	TmUpdate *string `json:"tm_update,omitempty"`
 
+	// ToolNames List of tool names enabled for this AI. Use ["all"] to enable all available tools.
+	ToolNames *[]string `json:"tool_names,omitempty"`
+
 	// TtsType Text-to-speech type used by the ai.
 	TtsType *string `json:"tts_type,omitempty"`
 
@@ -3193,6 +3196,9 @@ type PostAisJSONBody struct {
 	// SttType Speech-to-text engine type.
 	SttType string `json:"stt_type"`
 
+	// ToolNames List of tool names to enable for this AI. Use ["all"] to enable all available tools.
+	ToolNames *[]string `json:"tool_names,omitempty"`
+
 	// TtsType Text-to-speech engine type.
 	TtsType string `json:"tts_type"`
 
@@ -3220,6 +3226,9 @@ type PutAisIdJSONBody struct {
 
 	// SttType Speech-to-text engine type.
 	SttType string `json:"stt_type"`
+
+	// ToolNames List of tool names to enable for this AI. Use ["all"] to enable all available tools.
+	ToolNames *[]string `json:"tool_names,omitempty"`
 
 	// TtsType Text-to-speech engine type.
 	TtsType string `json:"tts_type"`

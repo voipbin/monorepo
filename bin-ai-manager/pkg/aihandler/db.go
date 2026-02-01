@@ -7,6 +7,7 @@ import (
 	"github.com/pkg/errors"
 
 	"monorepo/bin-ai-manager/models/ai"
+	"monorepo/bin-ai-manager/models/tool"
 	"monorepo/bin-common-handler/models/identity"
 )
 
@@ -24,6 +25,7 @@ func (h *aiHandler) dbCreate(
 	ttsType ai.TTSType,
 	ttsVoiceID string,
 	sttType ai.STTType,
+	toolNames []tool.ToolName,
 ) (*ai.AI, error) {
 	id := h.utilHandler.UUIDCreate()
 	c := &ai.AI{
@@ -46,6 +48,8 @@ func (h *aiHandler) dbCreate(
 		TTSVoiceID: ttsVoiceID,
 
 		STTType: sttType,
+
+		ToolNames: toolNames,
 	}
 
 	if err := h.db.AICreate(ctx, c); err != nil {
@@ -110,6 +114,7 @@ func (h *aiHandler) dbUpdate(
 	ttsType ai.TTSType,
 	ttsVoice string,
 	sttType ai.STTType,
+	toolNames []tool.ToolName,
 ) (*ai.AI, error) {
 	fields := map[ai.Field]any{
 		ai.FieldName:        name,
@@ -122,6 +127,7 @@ func (h *aiHandler) dbUpdate(
 		ai.FieldTTSType:     ttsType,
 		ai.FieldTTSVoiceID:  ttsVoice,
 		ai.FieldSTTType:     sttType,
+		ai.FieldToolNames:   toolNames,
 	}
 
 	if err := h.db.AIUpdate(ctx, id, fields); err != nil {

@@ -101,6 +101,7 @@ func Test_AICreate(t *testing.T) {
 				tt.ttsType,
 				tt.ttsVoiceID,
 				tt.sttType,
+				nil, // toolNames
 			).Return(tt.response, nil)
 
 			res, err := h.AICreate(
@@ -116,6 +117,7 @@ func Test_AICreate(t *testing.T) {
 				tt.ttsType,
 				tt.ttsVoiceID,
 				tt.sttType,
+				nil, // toolNames
 			)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

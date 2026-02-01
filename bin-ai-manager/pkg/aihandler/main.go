@@ -13,6 +13,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 
 	"monorepo/bin-ai-manager/models/ai"
+	"monorepo/bin-ai-manager/models/tool"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 )
 
@@ -31,6 +32,7 @@ type AIHandler interface {
 		ttsType ai.TTSType,
 		ttsVoiceID string,
 		sttType ai.STTType,
+		toolNames []tool.ToolName,
 	) (*ai.AI, error)
 	Get(ctx context.Context, id uuid.UUID) (*ai.AI, error)
 	List(ctx context.Context, size uint64, token string, filters map[ai.Field]any) ([]*ai.AI, error)
@@ -48,6 +50,7 @@ type AIHandler interface {
 		ttsType ai.TTSType,
 		ttsVoice string,
 		sttType ai.STTType,
+		toolNames []tool.ToolName,
 	) (*ai.AI, error)
 }
 

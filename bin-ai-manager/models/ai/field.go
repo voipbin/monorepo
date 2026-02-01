@@ -23,6 +23,8 @@ const (
 
 	FieldSTTType Field = "stt_type"
 
+	FieldToolNames Field = "tool_names"
+
 	FieldTMCreate Field = "tm_create"
 	FieldTMUpdate Field = "tm_update"
 	FieldTMDelete Field = "tm_delete"
