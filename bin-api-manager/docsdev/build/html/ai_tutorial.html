@@ -187,7 +187,7 @@
 <span id="ai-tutorial"></span><h1>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h1>
 <section id="simple-ai-voice-assistant">
 <h2>Simple AI Voice Assistant<a class="headerlink" href="#simple-ai-voice-assistant" title="Link to this heading"></a></h2>
-<p>Create a basic AI voice assistant that answers questions during a call. The AI will listen to the caller’s speech, process it, and respond using text-to-speech.</p>
+<p>Create a basic AI voice assistant that answers questions during a call. The AI will listen to the user’s speech, process it, and respond using text-to-speech.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
     --data-raw &#39;{
@@ -219,13 +219,13 @@
 </div>
 <p>This creates a call with an AI assistant that will:
 1. Answer the incoming call
-2. Listen to the caller’s speech using STT (Speech-to-Text)
+2. Listen to the user’s speech using STT (Speech-to-Text)
 3. Process the input through the AI engine with the given prompt
 4. Respond using TTS (Text-to-Speech)</p>
 </section>
 <section id="ai-talk-with-real-time-conversation">
 <h2>AI Talk with Real-Time Conversation<a class="headerlink" href="#ai-talk-with-real-time-conversation" title="Link to this heading"></a></h2>
-<p>Use AI Talk for more natural, low-latency conversations powered by ElevenLabs. This enables interruption detection where the AI stops speaking when the caller starts talking.</p>
+<p>Use AI Talk for more natural, low-latency conversations powered by ElevenLabs. This enables interruption detection where the AI stops speaking when the user starts talking.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
     --data-raw &#39;{
@@ -256,7 +256,7 @@
 </pre></div>
 </div>
 <p>AI Talk provides:
-- <strong>Interruption Detection</strong>: Stops speaking when caller talks
+- <strong>Interruption Detection</strong>: Stops speaking when user talks
 - <strong>Low Latency</strong>: Streams responses in chunks for faster perceived response time
 - <strong>Natural Voice</strong>: Uses ElevenLabs for high-quality voice output
 - <strong>Context Retention</strong>: Remembers previous conversation exchanges</p>
@@ -299,7 +299,7 @@
     }&#39;
 </pre></div>
 </div>
-<p>See <span class="xref std std-ref">Built-in ElevenLabs Voice IDs</span> for available voice options.</p>
+<p>See <a class="reference internal" href="ai_overview.html#ai-overview"><span class="std std-ref">Built-in ElevenLabs Voice IDs</span></a> for available voice options.</p>
 </section>
 <section id="ai-summary-for-call-transcription">
 <h2>AI Summary for Call Transcription<a class="headerlink" href="#ai-summary-for-call-transcription" title="Link to this heading"></a></h2>
@@ -431,7 +431,7 @@
 - Define the tone (professional, friendly, technical, etc.)</p>
 <p><strong>Language Support:</strong>
 - AI supports multiple languages (see <a class="reference internal" href="transcribe_overview.html#transcribe-overview-supported-languages"><span class="std std-ref">supported languages</span></a>)
-- Match the <code class="docutils literal notranslate"><span class="pre">language</span></code> parameter with caller’s expected language
+- Match the <code class="docutils literal notranslate"><span class="pre">language</span></code> parameter with the user’s expected language
 - AI can detect and respond in multiple languages if not constrained</p>
 <p><strong>Context Retention:</strong>
 - AI remembers conversation history within the same call
@@ -440,8 +440,8 @@
 <p><strong>Error Handling:</strong>
 - Always include fallback actions after AI actions
 - Handle cases where AI may not understand the input
-- Provide clear instructions to callers about what they can ask</p>
-<p>For more details on AI features and configuration, see <span class="xref std std-ref">AI Overview</span>.</p>
+- Provide clear instructions to users about what they can ask</p>
+<p>For more details on AI features and configuration, see <a class="reference internal" href="ai_overview.html#ai-overview"><span class="std std-ref">AI Overview</span></a>.</p>
 </section>
 </section>
 
