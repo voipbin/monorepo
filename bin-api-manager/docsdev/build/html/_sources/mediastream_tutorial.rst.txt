@@ -511,4 +511,4 @@ Troubleshooting
 - Verify audio format is correct
 - Check audio chunk size (typically 20ms)
 
-For more information about media stream configuration, see :ref:`Media Stream Overview <extension-overview>`.
+For more information about media stream configuration, see :ref:`Media Stream Overview <mediastream-overview>`.

@@ -1,73 +1,511 @@
-.. _extension-overview: mediastream_overview
+.. _mediastream-overview:
 
 Overview
 ========
-In VoipBin, the media stream feature empowers users to directly control media transmission without relying on SIP (Session Initiation Protocol) signaling. Traditionally, SIP signaling is used to establish, modify, and terminate communication sessions in VoIP systems. However, the media stream feature in VoipBin introduces an alternative method for managing media streams independently of SIP signaling.
+VoIPBIN's Media Stream API provides direct access to call and conference audio via WebSocket connections. Instead of relying on SIP signaling for media control, you can stream audio bidirectionally with your applications for real-time processing, AI integration, custom IVR, and more.
 
-With the media stream feature, users can initiate, manipulate, and terminate media streams directly through the VoipBin platform, bypassing the need for SIP signaling. This capability offers several advantages:
+With the Media Stream API you can:
 
-Flexibility: Users have greater flexibility in controlling media streams, as they can manage them independently of SIP signaling. This flexibility allows for more dynamic and customizable communication experiences.
-
-Efficiency: By eliminating the dependency on SIP signaling for media control, the media stream feature can streamline the process of initiating and managing media streams. This can lead to more efficient use of resources and reduced latency in media transmission.
-
-Scalability: The media stream feature can enhance the scalability of VoipBin by reducing the overhead associated with SIP signaling for media control. This can support a larger number of concurrent media streams and accommodate higher traffic volumes.
-
-Enhanced User Experience: By enabling direct control over media streams, VoipBin can offer users a more seamless and responsive communication experience. Users can adjust media settings in real-time without the constraints imposed by SIP signaling.
-
-Overall, the media stream feature in VoipBin empowers users with greater control and flexibility in managing media transmission, enhancing the efficiency, scalability, and user experience of the platform. This capability enables a wide range of applications, from real-time communication to multimedia streaming, with minimal reliance on traditional SIP signaling mechanisms.
-
-Available resources
--------------------
-Currently, support the below types of resources.
-* Call: See detail `here <call-overview>`.
-* Conference: See detail `here <conference-overview>`.
-
-Bi-directional streaming
-------------------------
-Bi-directional streaming allows for simultaneous transmission and reception of media. To establish bi-directional streaming, an additional API call is necessary:
-
-Media stream for call
-
-.. code::
-
-    GET https://api.voipbin.net/v1.0/calls/<call-id>/media_stream?encapsulation=<encapsulation-type>&token=<token>
-
-    https://api.voipbin.net/v1.0/calls/652af662-eb45-11ee-b1a5-6fde165f9226/media_stream?encapsulation=rtp&token=some_token
+- Stream live call audio to your application in real-time
+- Inject audio into calls and conferences
+- Build AI voice assistants with direct audio access
+- Create custom speech recognition pipelines
+- Implement real-time audio analysis and monitoring
 
 
-Media stream for conference
-
-.. code::
-
-    GET https://api.voipbin.net/v1.0/conferences/<conference-id>/media_stream?encapsulation=<encapsulation-type>&token=<token>
-
-    https://api.voipbin.net/v1.0/conferences/1ed12456-eb4b-11ee-bba8-1bfb2838807a/media_stream?encapsulation=rtp&token=some_token
-
-
-By making this API call, a WebSocket connection is created, facilitating both the reception and transmission of media data. This means that both the server (VoipBin) and the client can send and receive media through the WebSocket connection.
-
-.. code::
-
-    +-----------------+        Websocket         +-----------------+
-    |                 |--------------------------|                 |
-    |     voipbin     |<----  Media In/Out  ---->|     Client      |
-    |                 |--------------------------|                 |
-    +-----------------+                          +-----------------+
-
-Uni-directional streaming
+How Media Streaming Works
 -------------------------
-Uni-directional streaming involves the transmission of media in one direction only. This can be achieved through the use of a flow action known as "external media start". This flow action initiates the transmission of media from the server to the client, without the need for the client to send media back.
+When you connect to a media stream, VoIPBIN establishes a WebSocket connection that carries audio data directly between the call/conference and your application.
+
+**Media Stream Architecture**
+
+::
+
+    Traditional VoIP:                   VoIPBIN Media Stream:
+    +-------+   SIP   +-------+         +-------+   WebSocket  +----------+
+    | Phone |<------->|VoIPBIN|         | Call  |<============>| Your App |
+    +-------+         +-------+         +-------+              +----------+
+         (signaling only)                    (direct audio access)
+
+**Key Differences from Traditional VoIP**
+
++------------------------+----------------------------------+----------------------------------+
+| Aspect                 | Traditional SIP                  | Media Streaming                  |
++========================+==================================+==================================+
+| Audio Access           | Via RTP to SIP endpoints         | Direct WebSocket to your app     |
++------------------------+----------------------------------+----------------------------------+
+| Control                | SIP signaling                    | API and WebSocket                |
++------------------------+----------------------------------+----------------------------------+
+| Integration            | Requires SIP stack               | Simple WebSocket client          |
++------------------------+----------------------------------+----------------------------------+
+| Use Cases              | Phone-to-phone calls             | AI, custom IVR, analysis         |
++------------------------+----------------------------------+----------------------------------+
+
+**System Components**
+
+::
+
+    +--------+                                              +-----------+
+    |  Call  |<------- RTP ------->+                        |           |
+    +--------+                     |                        |  Your     |
+                              +----+-----+                  |  App      |
+                              | VoIPBIN  |<== WebSocket ===>|           |
+                              | Media    |                  | - AI/ML   |
+                              | Bridge   |                  | - STT/TTS |
+    +------------+            +----+-----+                  | - IVR     |
+    | Conference |<-- RTP --->+                             |           |
+    +------------+                                          +-----------+
+
+The Media Bridge handles protocol conversion between RTP (VoIP standard) and WebSocket (web standard), enabling any WebSocket-capable application to process call audio.
+
+
+Streaming Modes
+---------------
+VoIPBIN supports two streaming modes based on your application's needs.
+
+**Bi-Directional Streaming**
+
+Your application both receives and sends audio through the same WebSocket connection.
+
+::
+
+    +----------+                              +----------+
+    |          |======= audio IN ============>|          |
+    | VoIPBIN  |                              | Your App |
+    |          |<====== audio OUT ============|          |
+    +----------+                              +----------+
+
+**Initiate via API:**
+
+.. code::
+
+    GET https://api.voipbin.net/v1.0/calls/<call-id>/media_stream?encapsulation=rtp&token=<token>
+
+**Use cases:**
+- AI voice assistants (listen and respond)
+- Interactive IVR systems
+- Real-time audio processing with feedback
+- Call bridging to custom systems
+
+**Uni-Directional Streaming**
+
+VoIPBIN receives audio from your server and plays it to the call. Your app sends audio but doesn't receive call audio.
+
+::
+
+    +----------+                              +----------+
+    |          |                              |          |
+    | VoIPBIN  |<====== audio only ===========| Your App |
+    |          |                              |          |
+    +----------+                              +----------+
+
+**Initiate via Flow Action:**
+
+.. code::
+
+    {
+        "type": "external_media_start",
+        "option": {
+            "url": "wss://your-server.com/audio",
+            "encapsulation": "audiosocket"
+        }
+    }
+
 See detail :ref:`here <flow-struct-action-external_media_start>`.
+
+**Use cases:**
+- Custom music on hold
+- Pre-recorded message playback
+- Text-to-speech from external service
+- Audio announcements
+
+**Mode Comparison**
+
++---------------------+----------------------------------+----------------------------------+
+| Aspect              | Bi-Directional                   | Uni-Directional                  |
++=====================+==================================+==================================+
+| Audio Direction     | Both send and receive            | Send only (to call)              |
++---------------------+----------------------------------+----------------------------------+
+| Initiation          | API call (GET /media_stream)     | Flow action (external_media_start)|
++---------------------+----------------------------------+----------------------------------+
+| Connection          | Your app connects to VoIPBIN     | VoIPBIN connects to your server  |
++---------------------+----------------------------------+----------------------------------+
+| Best for            | Interactive applications         | Playback applications            |
++---------------------+----------------------------------+----------------------------------+
+
 
 Encapsulation Types
 -------------------
-There are two encapsulation types supported for media streaming:
+VoIPBIN supports three encapsulation types for different integration scenarios.
 
-* rtp: RTP (Real-time Transport Protocol). This is the standard protocol for transmitting audio and video over IP networks. It provides a means for transporting media streams (e.g., voice) from one endpoint to another.
-* sln: Signed Linear Mono. This media stream format does not include headers or padding. ulaw allowed.
-* audiosocket: AudioSocket. This is a protocol specific to Asterisk, known as Asterisk's AudioSocket type. It is designed to facilitate simple audio streaming with minimal overhead. More details about AudioSocket can be found in the Asterisk AudioSocket Documentation(https://docs.asterisk.org/Configuration/Channel-Drivers/AudioSocket/).
+**Decision Guide**
 
-Codec
-------
-* VoipBin currently supports the ulaw codec. always 16-bit, 8kHz signed linear mono.
-* For AudioSocket, it uses 16-bit, 8kHz, mono PCM (little-endian).
+::
+
+                    What's your use case?
+                           |
+          +----------------+----------------+
+          |                                 |
+    Standard VoIP                      Simple audio
+    integration?                       processing?
+          |                                 |
+    +-----+-----+                     +-----+-----+
+    |           |                     |           |
+   Yes         No                    Yes         No
+    |           |                     |           |
+    v           |                     v           |
+  [RTP]         |                   [SLN]         |
+                |                                 |
+           Asterisk                               |
+           integration?                           |
+                |                                 |
+          +-----+-----+                           |
+          |           |                           |
+         Yes         No                           |
+          |           |                           |
+          v           +---------------------------+
+    [AudioSocket]                 |
+                                  v
+                            [RTP default]
+
+**RTP (Real-time Transport Protocol)**
+
+The standard protocol for audio/video over IP networks.
+
+::
+
+    +------------------+------------------+
+    |   RTP Header     |   Audio Payload  |
+    |   (12 bytes)     |   (160 bytes)    |
+    +------------------+------------------+
+
++-------------------+------------------------------------------------+
+| Specification     | Value                                          |
++===================+================================================+
+| Protocol          | RTP over WebSocket                             |
++-------------------+------------------------------------------------+
+| Codec             | G.711 μ-law (ulaw)                             |
++-------------------+------------------------------------------------+
+| Sample Rate       | 8 kHz                                          |
++-------------------+------------------------------------------------+
+| Bit Depth         | 16-bit                                         |
++-------------------+------------------------------------------------+
+| Channels          | Mono                                           |
++-------------------+------------------------------------------------+
+| Packet Size       | 172 bytes (12 header + 160 payload = 20ms)     |
++-------------------+------------------------------------------------+
+
+**Best for:** Standard VoIP tools, industry compatibility, existing RTP processing pipelines.
+
+**SLN (Signed Linear)**
+
+Raw audio without protocol overhead.
+
+::
+
+    +----------------------------------+
+    |   Raw PCM Audio Data             |
+    |   (no headers, no padding)       |
+    +----------------------------------+
+
++-------------------+------------------------------------------------+
+| Specification     | Value                                          |
++===================+================================================+
+| Format            | Raw PCM, signed linear                         |
++-------------------+------------------------------------------------+
+| Sample Rate       | 8 kHz                                          |
++-------------------+------------------------------------------------+
+| Bit Depth         | 16-bit signed                                  |
++-------------------+------------------------------------------------+
+| Channels          | Mono                                           |
++-------------------+------------------------------------------------+
+| Byte Order        | Native                                         |
++-------------------+------------------------------------------------+
+
+**Best for:** Minimal overhead, simple audio processing, direct PCM access without parsing.
+
+**AudioSocket**
+
+Asterisk-specific protocol designed for simple audio streaming.
+
+::
+
+    +------------------+------------------+
+    | AudioSocket Hdr  |   PCM Audio      |
+    +------------------+------------------+
+
++-------------------+------------------------------------------------+
+| Specification     | Value                                          |
++===================+================================================+
+| Protocol          | Asterisk AudioSocket                           |
++-------------------+------------------------------------------------+
+| Format            | PCM little-endian                              |
++-------------------+------------------------------------------------+
+| Sample Rate       | 8 kHz                                          |
++-------------------+------------------------------------------------+
+| Bit Depth         | 16-bit                                         |
++-------------------+------------------------------------------------+
+| Channels          | Mono                                           |
++-------------------+------------------------------------------------+
+| Chunk Size        | 320 bytes (20ms of audio)                      |
++-------------------+------------------------------------------------+
+
+**Best for:** Asterisk integration, simple streaming with minimal overhead.
+
+See `Asterisk AudioSocket Documentation <https://docs.asterisk.org/Configuration/Channel-Drivers/AudioSocket/>`_ for protocol details.
+
+**Encapsulation Comparison**
+
++-------------------+------------------+------------------+------------------+
+| Aspect            | RTP              | SLN              | AudioSocket      |
++===================+==================+==================+==================+
+| Headers           | 12 bytes         | None             | Protocol header  |
++-------------------+------------------+------------------+------------------+
+| Compatibility     | Industry standard| Simple           | Asterisk         |
++-------------------+------------------+------------------+------------------+
+| Overhead          | Low              | Minimal          | Low              |
++-------------------+------------------+------------------+------------------+
+| Parsing Required  | Yes (RTP)        | No               | Yes (AudioSocket)|
++-------------------+------------------+------------------+------------------+
+
+
+Supported Resources
+-------------------
+Media streaming is available for both calls and conferences.
+
+**Call Media Streaming**
+
+Stream audio from a single call.
+
+.. code::
+
+    GET https://api.voipbin.net/v1.0/calls/<call-id>/media_stream?encapsulation=<type>&token=<token>
+
+**Audio contains:** Both parties' audio mixed together.
+
+**Conference Media Streaming**
+
+Stream audio from a conference with multiple participants.
+
+.. code::
+
+    GET https://api.voipbin.net/v1.0/conferences/<conference-id>/media_stream?encapsulation=<type>&token=<token>
+
+**Audio contains:** All participants' audio mixed together.
+
+**Resource Comparison**
+
++-------------------+----------------------------------+----------------------------------+
+| Aspect            | Call                             | Conference                       |
++===================+==================================+==================================+
+| Audio Source      | Two-party conversation           | Multi-party conversation         |
++-------------------+----------------------------------+----------------------------------+
+| Audio Mix         | Caller + callee                  | All participants                 |
++-------------------+----------------------------------+----------------------------------+
+| Audio Injection   | Heard by both parties            | Heard by all participants        |
++-------------------+----------------------------------+----------------------------------+
+| Use Case          | 1:1 AI assistant                 | Conference monitoring/recording  |
++-------------------+----------------------------------+----------------------------------+
+
+
+Connection Lifecycle
+--------------------
+Understanding the WebSocket connection lifecycle helps build robust streaming applications.
+
+**Connection Flow**
+
+::
+
+    Your App                         VoIPBIN
+        |                               |
+        | GET /calls/{id}/media_stream  |
+        +------------------------------>|
+        |                               |
+        | 101 Switching Protocols       |
+        |<------------------------------+
+        |                               |
+        |<======= audio frames ========>|  (bi-directional)
+        |<======= audio frames ========>|
+        |<======= audio frames ========>|
+        |                               |
+        | close() or call ends          |
+        +------------------------------>|
+        |                               |
+
+**Connection States**
+
+::
+
+    connecting ---> open ---> streaming ---> closing ---> closed
+                                   |
+                                   v
+                              (call ends)
+                                   |
+                                   v
+                                closed
+
+**State Descriptions**
+
++---------------+------------------------------------------------------------------+
+| State         | What's happening                                                 |
++===============+==================================================================+
+| connecting    | WebSocket handshake in progress                                  |
++---------------+------------------------------------------------------------------+
+| open          | Connection established, ready for audio                          |
++---------------+------------------------------------------------------------------+
+| streaming     | Audio frames being sent/received                                 |
++---------------+------------------------------------------------------------------+
+| closing       | Graceful shutdown initiated                                      |
++---------------+------------------------------------------------------------------+
+| closed        | Connection terminated                                            |
++---------------+------------------------------------------------------------------+
+
+**Connection Termination**
+
+The WebSocket connection closes when:
+
+- Your application closes the connection
+- The call or conference ends
+- Network failure occurs
+- Authentication token expires
+
+
+Integration Patterns
+--------------------
+Common patterns for integrating media streaming with your applications.
+
+**Pattern 1: AI Voice Assistant**
+
+::
+
+    Call Audio         Your App           AI Service
+        |                  |                   |
+        |====audio====>    |                   |
+        |                  | STT               |
+        |                  +------------------>|
+        |                  |                   |
+        |                  | AI response       |
+        |                  |<------------------+
+        |                  |                   |
+        |                  | TTS               |
+        |    <====audio====+                   |
+        |                  |                   |
+
+**Pattern 2: Real-Time Monitoring**
+
+::
+
+    Call Audio         Your App           Dashboard
+        |                  |                   |
+        |====audio====>    |                   |
+        |                  | analyze           |
+        |                  +------------------>|
+        |                  |    sentiment,     |
+        |                  |    keywords,      |
+        |                  |    quality        |
+        |                  |                   |
+
+**Pattern 3: Custom IVR**
+
+::
+
+    Call Audio         Your App           Logic Engine
+        |                  |                   |
+        |====audio====>    |                   |
+        |                  | detect DTMF/speech|
+        |                  +------------------>|
+        |                  |                   |
+        |                  | next action       |
+        |                  |<------------------+
+        |                  |                   |
+        |    <====prompt===+                   |
+        |                  |                   |
+
+**Pattern 4: Recording with Processing**
+
+::
+
+    Call Audio         Your App           Storage
+        |                  |                   |
+        |====audio====>    |                   |
+        |                  | process           |
+        |                  | (filter, enhance) |
+        |                  |                   |
+        |                  | store             |
+        |                  +------------------>|
+        |                  |                   |
+
+For working code examples of these patterns, see the :ref:`Media Stream Tutorial <mediastream-tutorial>`.
+
+
+Best Practices
+--------------
+
+**1. Audio Timing**
+
+- Send audio in consistent 20ms chunks
+- Maintain proper timing to avoid audio gaps or overlaps
+- Buffer incoming audio to handle network jitter
+
+**2. Connection Management**
+
+- Implement automatic reconnection for dropped connections
+- Handle the ``onclose`` event gracefully
+- Close connections when no longer needed
+
+**3. Resource Efficiency**
+
+- Process audio asynchronously to avoid blocking
+- Use appropriate buffer sizes (typically 320 bytes for 20ms)
+- Monitor memory usage for long-running streams
+
+**4. Error Handling**
+
+- Log connection errors for debugging
+- Implement exponential backoff for reconnection attempts
+- Handle authentication failures gracefully
+
+
+Troubleshooting
+---------------
+
+**Connection Issues**
+
++---------------------------+------------------------------------------------+
+| Symptom                   | Solution                                       |
++===========================+================================================+
+| Connection refused        | Verify call/conference is active and           |
+|                           | in "progressing" status                        |
++---------------------------+------------------------------------------------+
+| 401 Unauthorized          | Check API token is valid and has permissions   |
++---------------------------+------------------------------------------------+
+| Connection drops          | Implement reconnection logic; check network    |
+|                           | stability                                      |
++---------------------------+------------------------------------------------+
+
+**Audio Issues**
+
++---------------------------+------------------------------------------------+
+| Symptom                   | Solution                                       |
++===========================+================================================+
+| No audio received         | Verify call is answered and audio is flowing;  |
+|                           | check encapsulation type                       |
++---------------------------+------------------------------------------------+
+| Audio quality poor        | Check network latency; verify correct audio    |
+|                           | format; monitor packet loss                    |
++---------------------------+------------------------------------------------+
+| Audio choppy              | Implement jitter buffer; send in consistent    |
+|                           | 20ms chunks; check CPU usage                   |
++---------------------------+------------------------------------------------+
+| Can't send audio          | Use binary WebSocket frames; verify audio      |
+|                           | format matches encapsulation type              |
++---------------------------+------------------------------------------------+
+
+
+Related Documentation
+---------------------
+
+- :ref:`Media Stream Tutorial <mediastream-tutorial>` - Code examples and use cases
+- :ref:`Call Overview <call-overview>` - Call lifecycle and states
+- :ref:`Conference Overview <conference-overview>` - Conference management
+- :ref:`Flow Actions <flow-struct-action-external_media_start>` - External media flow action

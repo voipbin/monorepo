@@ -102,7 +102,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="message.html">Message</a></li>
 <li class="toctree-l1"><a class="reference internal" href="email.html">Email</a></li>
-<li class="toctree-l1"><a class="reference internal" href="chat.html">Chat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="talk.html">Talk</a></li>
 <li class="toctree-l1"><a class="reference internal" href="conversation.html">Conversation</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">AI &amp; Automation</span></p>
@@ -129,7 +129,6 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
 <li class="toctree-l1"><a class="reference internal" href="websocket.html">Websocket</a></li>
-<li class="toctree-l1"><a class="reference internal" href="talk.html">Talk</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul>
@@ -517,6 +516,76 @@ changes are possible.</p></td>
 <span class="o">+--------+</span>       <span class="o">+---------+</span>       <span class="o">+------------+</span>
 </pre></div>
 </div>
+<p><strong>Multi-Party Chaining (3+ Parties)</strong></p>
+<p>Call chaining supports more than two parties. Each chained call connects to the master:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+--------+</span>       <span class="o">+---------+</span>       <span class="o">+---------+</span>
+<span class="o">|</span> <span class="n">Caller</span> <span class="o">|&lt;-----&gt;|</span> <span class="n">VoIPBIN</span> <span class="o">|&lt;-----&gt;|</span> <span class="n">Agent</span> <span class="mi">1</span> <span class="o">|</span>
+<span class="o">+--------+</span>       <span class="o">+----+----+</span>       <span class="o">+---------+</span>
+                      <span class="o">|</span>
+                      <span class="o">+------------&gt;+---------+</span>
+                      <span class="o">|</span>             <span class="o">|</span> <span class="n">Agent</span> <span class="mi">2</span> <span class="o">|</span>
+                      <span class="o">|</span>             <span class="o">+---------+</span>
+                      <span class="o">|</span>
+                      <span class="o">+------------&gt;+------------+</span>
+                                    <span class="o">|</span> <span class="n">Supervisor</span> <span class="o">|</span>
+                                    <span class="o">+------------+</span>
+
+<span class="n">Master</span><span class="p">:</span> <span class="n">Caller</span><span class="s1">&#39;s call</span>
+<span class="n">Chained</span><span class="p">:</span> <span class="n">Agent</span> <span class="mi">1</span><span class="p">,</span> <span class="n">Agent</span> <span class="mi">2</span><span class="p">,</span> <span class="n">Supervisor</span> <span class="p">(</span><span class="nb">all</span> <span class="n">linked</span> <span class="n">to</span> <span class="n">master</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Chaining vs Conference Decision Guide</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>                Need multiple parties?
+                       |
+          +------------+------------+
+          |                         |
+     Sequential?               Simultaneous?
+     (one at a time)          (all at once)
+          |                         |
+    +-----+-----+             +-----+-----+
+    |           |             |           |
+   Yes         No            Yes         No
+    |           |             |           |
+    v           |             v           |
+[Chaining]      |       [Conference]      |
+                |                         |
+           Need transfers?                |
+                |                         |
+          +-----+-----+                   |
+          |           |                   |
+         Yes         No                   |
+          |           +-------------------+
+          v                   |
+      [Chaining]              v
+                        [Conference]
+</pre></div>
+</div>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Aspect</p></th>
+<th class="head"><p>Call Chaining</p></th>
+<th class="head"><p>Conference</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Parties</p></td>
+<td><p>Sequential (transfer model)</p></td>
+<td><p>Simultaneous (meeting model)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Audio</p></td>
+<td><p>Bridged between pairs</p></td>
+<td><p>Mixed for all participants</p></td>
+</tr>
+<tr class="row-even"><td><p>Master Control</p></td>
+<td><p>Master hangup ends all</p></td>
+<td><p>Host controls conference</p></td>
+</tr>
+<tr class="row-odd"><td><p>Best For</p></td>
+<td><p>Transfers, escalation, queues</p></td>
+<td><p>Meetings, group calls</p></td>
+</tr>
+</tbody>
+</table>
 </section>
 <section id="timestamps-explained">
 <h3>Timestamps Explained<a class="headerlink" href="#timestamps-explained" title="Link to this heading"></a></h3>
@@ -749,6 +818,64 @@ The VoIPBIN system have robust error handling mechanisms to gracefully manage su
 </ul>
 <p>In summary, while the traditional call concept adheres to a simple point-to-point model, the VoIPBIN call concept introduces a more flexible and multifaceted approach, accommodating diverse call scenarios and interactions.</p>
 </section>
+</section>
+<section id="related-documentation">
+<h3>Related Documentation<a class="headerlink" href="#related-documentation" title="Link to this heading"></a></h3>
+<p>Calls integrate with many VoIPBIN features. Use these links for detailed information:</p>
+<p><strong>Recording a Call</strong></p>
+<p>Capture call audio for compliance, training, or analysis.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Call</span>                              <span class="n">Recording</span>
+<span class="o">+------------+</span>                    <span class="o">+------------+</span>
+<span class="o">|</span> <span class="n">progressing</span><span class="o">|---</span><span class="n">recording_start</span><span class="o">-&gt;|</span> <span class="n">recording</span>  <span class="o">|</span>
+<span class="o">|</span>            <span class="o">|</span>                    <span class="o">|</span>            <span class="o">|</span>
+<span class="o">|</span>            <span class="o">|&lt;--</span><span class="n">recording_id</span><span class="o">-----|</span> <span class="n">available</span>  <span class="o">|</span>
+<span class="o">+------------+</span>                    <span class="o">+------------+</span>
+</pre></div>
+</div>
+<p>See <a class="reference internal" href="recording_overview.html#recording-overview"><span class="std std-ref">Recording Overview</span></a> for recording lifecycle, storage, and best practices.</p>
+<p><strong>Transcribing a Call</strong></p>
+<p>Convert call audio to text in real-time.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Call</span>                              <span class="n">Transcription</span>
+<span class="o">+------------+</span>                    <span class="o">+---------------+</span>
+<span class="o">|</span> <span class="n">progressing</span><span class="o">|--</span><span class="n">transcribe_start</span><span class="o">-&gt;|</span> <span class="n">transcribing</span>  <span class="o">|</span>
+<span class="o">|</span>            <span class="o">|</span>                    <span class="o">|</span>               <span class="o">|</span>
+<span class="o">|</span>            <span class="o">|&lt;--</span><span class="n">transcript</span> <span class="n">events</span><span class="o">|</span> <span class="p">(</span><span class="n">streaming</span><span class="p">)</span>   <span class="o">|</span>
+<span class="o">+------------+</span>                    <span class="o">+---------------+</span>
+</pre></div>
+</div>
+<p>See <a class="reference internal" href="transcribe_overview.html#transcribe-overview"><span class="std std-ref">Transcribe Overview</span></a> for transcription delivery and language support.</p>
+<p><strong>Streaming Call Audio</strong></p>
+<p>Access raw call audio via WebSocket for AI, analysis, or custom processing.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Call</span>                              <span class="n">Your</span> <span class="n">App</span>
+<span class="o">+------------+</span>                    <span class="o">+---------------+</span>
+<span class="o">|</span> <span class="n">progressing</span><span class="o">|&lt;==</span> <span class="n">WebSocket</span> <span class="o">====&gt;|</span>  <span class="n">AI</span> <span class="o">/</span> <span class="n">STT</span>     <span class="o">|</span>
+<span class="o">|</span>            <span class="o">|</span>   <span class="p">(</span><span class="n">audio</span> <span class="n">stream</span><span class="p">)</span>  <span class="o">|</span>  <span class="n">Processing</span>   <span class="o">|</span>
+<span class="o">+------------+</span>                    <span class="o">+---------------+</span>
+</pre></div>
+</div>
+<p>See <a class="reference internal" href="mediastream_overview.html#mediastream-overview"><span class="std std-ref">Media Stream Overview</span></a> for encapsulation types and integration patterns.</p>
+<p><strong>Queuing a Call</strong></p>
+<p>Route calls through agent queues for call center scenarios.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Call</span>                              <span class="n">Queue</span>
+<span class="o">+------------+</span>                    <span class="o">+---------------+</span>
+<span class="o">|</span>  <span class="n">incoming</span>  <span class="o">|---</span><span class="n">queue</span> <span class="n">action</span><span class="o">----&gt;|</span> <span class="n">waiting</span>       <span class="o">|</span>
+<span class="o">|</span>            <span class="o">|</span>                    <span class="o">|</span>               <span class="o">|</span>
+<span class="o">|</span>            <span class="o">|&lt;--</span><span class="n">agent</span> <span class="n">connected</span><span class="o">--|</span> <span class="n">service</span>       <span class="o">|</span>
+<span class="o">+------------+</span>                    <span class="o">+---------------+</span>
+</pre></div>
+</div>
+<p>See <a class="reference internal" href="queue_overview.html#queue-overview"><span class="std std-ref">Queue Overview</span></a> for queue management and agent matching.</p>
+<p><strong>Adding to Conference</strong></p>
+<p>Join a call to a multi-party conference.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Call</span>                              <span class="n">Conference</span>
+<span class="o">+------------+</span>                    <span class="o">+---------------+</span>
+<span class="o">|</span> <span class="n">progressing</span><span class="o">|--</span><span class="n">join</span> <span class="n">action</span><span class="o">------&gt;|</span> <span class="n">progressing</span>   <span class="o">|</span>
+<span class="o">|</span>            <span class="o">|</span>                    <span class="o">|</span>               <span class="o">|</span>
+<span class="o">|</span>            <span class="o">|&lt;--</span><span class="n">audio</span> <span class="n">mixed</span><span class="o">------|</span> <span class="p">(</span><span class="nb">all</span> <span class="n">parties</span><span class="p">)</span> <span class="o">|</span>
+<span class="o">+------------+</span>                    <span class="o">+---------------+</span>
+</pre></div>
+</div>
+<p>See <a class="reference internal" href="conference_overview.html#conference-overview"><span class="std std-ref">Conference Overview</span></a> for conference types and participant management.</p>
 </section>
 </section>
 <section id="transfer">
@@ -4501,6 +4628,7 @@ Calls Timing Out in Queue:
 <li><a class="reference internal" href="#comparison-traditional-call-concept-vs-voipbin-call-concept">Comparison: Traditional Call Concept vs VoIPBIN Call Concept</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#related-documentation">Related Documentation</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#transfer">Transfer</a><ul>

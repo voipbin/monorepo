@@ -210,6 +210,112 @@ When multiple agents match, the system uses random selection:
                    One agent picked
 
 
+Agent Status Transitions
+------------------------
+Agents move through a lifecycle as they handle queue calls.
+
+**Status Transition Diagram**
+
+::
+
+    +----------+                        +----------+
+    |  offline |-------- login -------->| available|
+    +----------+                        +-----+----+
+         ^                                    |
+         |                              receive call
+         |                                    |
+         |                                    v
+         |                              +----------+
+         +--------- logout -------------|   busy   |
+         |                              +-----+----+
+         |                                    |
+         |                               call ends
+         |                                    |
+         |                                    v
+         |                              +----------+
+         +--------- logout -------------|  wrap-up |
+                                        +-----+----+
+                                              |
+                                         wrap-up done
+                                              |
+                                              v
+                                        +----------+
+                                        | available|
+                                        +----------+
+
+**Status Behaviors**
+
++---------------+------------------------------------------------------------------+
+| Transition    | What happens                                                     |
++===============+==================================================================+
+| login         | Agent becomes available to receive queue calls                   |
++---------------+------------------------------------------------------------------+
+| receive call  | Queue connects agent to caller; status becomes busy              |
++---------------+------------------------------------------------------------------+
+| call ends     | Conversation finished; agent enters wrap-up for post-call work   |
++---------------+------------------------------------------------------------------+
+| wrap-up done  | Agent returns to available; ready for next call                  |
++---------------+------------------------------------------------------------------+
+| logout        | Agent goes offline; removed from queue matching                  |
++---------------+------------------------------------------------------------------+
+
+
+Multi-Queue Agent Scenarios
+---------------------------
+Agents can belong to multiple queues simultaneously based on their tags.
+
+**Single Agent, Multiple Queues**
+
+::
+
+    Agent A's Tags: [english, billing, tech_support]
+
+    +------------------------+     +------------------------+
+    | Queue: English Billing |     | Queue: Tech Support    |
+    | Required: english,     |     | Required: tech_support |
+    |           billing      |     |                        |
+    +------------------------+     +------------------------+
+              |                              |
+              +--------- Agent A ------------+
+              |     (matches both)           |
+              v                              v
+    Agent A can receive calls from EITHER queue
+
+**Priority Handling**
+
+When an agent matches multiple queues, the system picks the longest-waiting caller across all matching queues:
+
+::
+
+    Queue A: 3 callers waiting (oldest: 2 min)
+    Queue B: 1 caller waiting (oldest: 5 min)   <-- This caller gets Agent A
+    Queue C: 5 callers waiting (oldest: 30 sec)
+
+**Tag Strategy for Multi-Queue**
+
+::
+
+    +-------------------------------------------------------------------------+
+    |                     Multi-Queue Tag Strategy                            |
+    +-------------------------------------------------------------------------+
+
+    Tier 1 Agent (handles simple issues):
+    Tags: [english, tier1, billing_basic, tech_basic]
+         |
+         +---> Matches: Basic Billing Queue, Basic Tech Queue
+
+    Tier 2 Agent (handles complex issues):
+    Tags: [english, tier2, billing_advanced, tech_advanced]
+         |
+         +---> Matches: Advanced Billing Queue, Advanced Tech Queue
+
+    Supervisor (handles escalations):
+    Tags: [english, supervisor, billing_basic, billing_advanced,
+           tech_basic, tech_advanced]
+         |
+         +---> Matches: ALL queues (can help anywhere)
+
+
 Flow Execution
 ---------------
 A call placed in the queue will progress through the queue's waiting actions, continuing through pre-defined steps until an available agent is located. These waiting actions may involve playing pre-recorded music, messages, or custom actions, enhancing the caller's experience while awaiting assistance in the queue.
@@ -522,3 +628,102 @@ Best Practices
 - Track abandonment rates - high rates indicate understaffing or long waits
 - Monitor average wait times - aim for your service level target
 - Review service durations - identify training opportunities
+
+
+Related Documentation
+---------------------
+Queues integrate with many VoIPBIN features. Use these links for detailed information:
+
+**Queue Conference Bridge**
+
+Each queuecall uses a conference bridge to connect caller and agent.
+
+::
+
+    Queuecall                         Conference (connect type)
+    +-------------+                   +---------------+
+    |  service    |--uses------------>| progressing   |
+    |             |                   | (caller +     |
+    |             |                   |  agent)       |
+    +-------------+                   +---------------+
+
+See :ref:`Conference Overview <conference-overview>` for conference types and participant management.
+
+**Recording Queue Calls**
+
+Record conversations between callers and agents for quality assurance.
+
+::
+
+    Queuecall                         Recording
+    +-------------+                   +------------+
+    |  service    |--recording_start->| recording  |
+    | (call obj)  |                   |            |
+    |             |<--recording_id----| available  |
+    +-------------+                   +------------+
+
+See :ref:`Recording Overview <recording-overview>` for recording lifecycle and storage.
+
+**Transcribing Queue Calls**
+
+Convert agent-caller conversations to text in real-time.
+
+::
+
+    Queuecall                         Transcription
+    +-------------+                   +---------------+
+    |  service    |--transcribe_start>| transcribing  |
+    | (call obj)  |                   |               |
+    |             |<--transcript events| (streaming)  |
+    +-------------+                   +---------------+
+
+See :ref:`Transcribe Overview <transcribe-overview>` for transcript delivery and language support.
+
+**Queue Flow Actions**
+
+Use flow actions to place calls in queues and control queue behavior.
+
+::
+
+    Flow Action                       Queue
+    +-------------+                   +---------------+
+    | queue_join  |--places call in-->| waiting       |
+    |             |                   |               |
+    |             |<--continues when--| service/done  |
+    +-------------+   call exits      +---------------+
+
+See :ref:`Flow Actions <flow-struct-action-queue_join>` for queue-related flow actions.
+
+**Agent Management**
+
+Configure agents with tags to control which queues they serve.
+
+::
+
+    Agent                             Queues
+    +-------------+                   +---------------+
+    | tags:       |--matches--------->| Queue A       |
+    | [english,   |                   | (english,     |
+    |  billing]   |                   |  billing)     |
+    +-------------+                   +---------------+
+                                      | Queue B       |
+                  --does not match--->| (spanish,     |
+                                      |  billing)     |
+                                      +---------------+
+
+See :ref:`Agent Overview <agent_overview>` for agent configuration and status management.
+
+**Call Integration**
+
+Queue calls are built on top of the Call API - each queuecall references a call.
+
+::
+
+    Queuecall                         Call
+    +-------------+                   +---------------+
+    |  call_id:   |--references------>| progressing   |
+    |  "abc-123"  |                   | (the actual   |
+    |             |                   |  call object) |
+    +-------------+                   +---------------+
+
+See :ref:`Call Overview <call-overview>` for call lifecycle and states.

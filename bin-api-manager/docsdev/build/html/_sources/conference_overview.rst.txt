@@ -406,6 +406,76 @@ Real-time transcription converts conference audio to text.
 - History preserved in ``transcribe_ids`` array
 
 
+Recording and Transcription Together
+------------------------------------
+For complete conference documentation, you can run recording and transcription simultaneously.
+
+**Combined Setup**
+
+::
+
+    +---------------------------------------------------------------+
+    |                    Conference                                 |
+    |  +------+    +------+    +------+                             |
+    |  |User A|    |User B|    |User C|                             |
+    |  +--+---+    +--+---+    +--+---+                             |
+    |     |           |           |                                 |
+    |     +-----+-----+-----+-----+                                 |
+    |           |           |                                       |
+    |           v           v                                       |
+    |     +----------+  +-------------+                             |
+    |     |Recording |  |Transcription|                             |
+    |     |  File    |  |   Stream    |                             |
+    |     +----------+  +------+------+                             |
+    +---------------------------------------------------------------+
+                               |
+                               v
+                        +-----------+
+                        | Your App  |
+                        | (webhook) |
+                        +-----------+
+
+**Sequence**
+
+::
+
+    1. Create conference
+       POST /v1.0/conferences
+
+    2. Start recording
+       POST /v1.0/conferences/{id}/recording_start
+
+    3. Start transcription
+       POST /v1.0/conferences/{id}/transcribe_start
+       { "language": "en-US" }
+
+    4. Participants join and talk
+       → Recording captures all audio
+       → Transcripts stream to webhook
+
+    5. Stop transcription
+       POST /v1.0/conferences/{id}/transcribe_stop
+
+    6. Stop recording
+       POST /v1.0/conferences/{id}/recording_stop
+
+    7. Result: Audio file + searchable text transcripts
+
+**Use Cases for Combined Recording + Transcription**
+
++---------------------------+------------------------------------------------+
+| Use Case                  | Benefit                                        |
++===========================+================================================+
+| Compliance                | Full audio archive + searchable text records   |
++---------------------------+------------------------------------------------+
+| Meeting minutes           | Auto-generated text from recording             |
++---------------------------+------------------------------------------------+
+| Quality assurance         | Review both audio and transcript               |
++---------------------------+------------------------------------------------+
+| Legal documentation       | Verifiable audio + readable transcript         |
++---------------------------+------------------------------------------------+
+
+
 Timeout and Auto-Cleanup
 ------------------------
 Conferences can be configured to automatically terminate after a period.
@@ -593,3 +663,82 @@ Best Practices
 - Notify participants that recording is active (legal requirement)
 - Set reasonable duration limits
 - Download and store recordings promptly
+
+
+Related Documentation
+---------------------
+Conferences integrate with many VoIPBIN features. Use these links for detailed information:
+
+**Recording a Conference**
+
+Capture all participant audio into a single file.
+
+::
+
+    Conference                        Recording
+    +-------------+                   +------------+
+    | progressing |--recording_start->| recording  |
+    |             |                   |            |
+    |             |<--recording_id----| available  |
+    +-------------+                   +------------+
+
+See :ref:`Recording Overview <recording-overview>` for recording lifecycle, storage, and download.
+
+**Transcribing a Conference**
+
+Convert conference audio to text in real-time.
+
+::
+
+    Conference                        Transcription
+    +-------------+                   +---------------+
+    | progressing |--transcribe_start>| transcribing  |
+    |             |                   |               |
+    |             |<--transcript events| (streaming)  |
+    +-------------+                   +---------------+
+
+See :ref:`Transcribe Overview <transcribe-overview>` for transcript delivery and language support.
+
+**Streaming Conference Audio**
+
+Access raw conference audio via WebSocket for AI or custom processing.
+
+::
+
+    Conference                        Your App
+    +-------------+                   +---------------+
+    | progressing |<== WebSocket ====>|  AI / STT     |
+    |             |   (audio stream)  |  Processing   |
+    +-------------+                   +---------------+
+
+See :ref:`Media Stream Overview <mediastream-overview>` for encapsulation types and integration patterns.
+
+**Joining a Call to Conference**
+
+Connect an existing call to a conference.
+
+::
+
+    Call                              Conference
+    +-------------+                   +---------------+
+    | progressing |--join action----->| progressing   |
+    |             |                   |               |
+    |             |<--audio mixed-----| (all parties) |
+    +-------------+                   +---------------+
+
+See :ref:`Call Overview <call-overview>` for call lifecycle and chaining.
+
+**Queue Integration**
+
+Route queued calls to conference-based agent connections.
+
+::
+
+    Queue                             Conference (connect type)
+    +-------------+                   +---------------+
+    |  service    |--agent connected->| progressing   |
+    |             |                   | (customer +   |
+    |             |                   |  agent)       |
+    +-------------+                   +---------------+
+
+See :ref:`Queue Overview <queue-overview>` for queue management and agent matching.

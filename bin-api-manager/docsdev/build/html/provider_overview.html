@@ -100,7 +100,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="message.html">Message</a></li>
 <li class="toctree-l1"><a class="reference internal" href="email.html">Email</a></li>
-<li class="toctree-l1"><a class="reference internal" href="chat.html">Chat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="talk.html">Talk</a></li>
 <li class="toctree-l1"><a class="reference internal" href="conversation.html">Conversation</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">AI &amp; Automation</span></p>
@@ -127,7 +127,6 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
 <li class="toctree-l1"><a class="reference internal" href="websocket.html">Websocket</a></li>
-<li class="toctree-l1"><a class="reference internal" href="talk.html">Talk</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul>
@@ -185,16 +184,293 @@
                         <main role="main" id="main">
     <section id="overview">
 <span id="provider-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h1>
-<p>The Provider resource in VoIPBIN represents a telecommunication service provider that offers communication services using the Session Initiation Protocol (SIP) technology. A provider is a crucial component that allows VoIPBIN to connect and communicate with external networks, enabling users to make calls, send messages, and engage in various forms of communication.</p>
-<p>Each Provider entry in VoIPBIN contains specific information related to the telecommunication service it offers. This includes the provider’s unique ID, type (e.g., SIP), hostname (e.g., sip.telnyx.com), and other technical details such as tech_prefix, tech_postfix, and tech_headers. These technical parameters define how VoIPBIN interacts with the provider’s infrastructure to establish and manage communication channels.</p>
-<p>Furthermore, the Provider resource includes metadata such as the provider’s name, detailed description, and timestamps for creation, update, and deletion. These timestamps help track the history of the provider’s details, ensuring accurate and up-to-date information for administration and auditing purposes.</p>
-<p>VoIPBIN’s Provider resource plays a fundamental role in enabling communication services for users. By leveraging different providers, VoIPBIN can connect with multiple external networks, expand its reach, and offer versatile communication capabilities to its users. Each provider may have unique features, pricing structures, and geographic coverage, allowing users to select the most suitable provider for their communication needs.</p>
-<p>In summary, the Provider resource is a vital component of VoIPBIN’s communication infrastructure, facilitating seamless connectivity to external networks and empowering users to engage in effective and reliable communication with individuals and businesses across various platforms and locations.</p>
+<p>VoIPBIN’s Provider API enables management of telecommunication service providers that handle external call routing. Providers are SIP trunking services that connect VoIPBIN to the PSTN (Public Switched Telephone Network) and other external networks.</p>
+<p>With the Provider API you can:</p>
+<ul class="simple">
+<li><p>Configure SIP trunk providers</p></li>
+<li><p>Set technical parameters for call routing</p></li>
+<li><p>Manage provider credentials</p></li>
+<li><p>Define routing preferences</p></li>
+<li><p>Monitor provider status</p></li>
+</ul>
+<section id="how-providers-work">
+<h2>How Providers Work<a class="headerlink" href="#how-providers-work" title="Link to this heading"></a></h2>
+<p>Providers connect VoIPBIN to external telephone networks.</p>
+<p><strong>Provider Architecture</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-----------------------------------------------------------------------+</span>
+<span class="o">|</span>                         <span class="n">Provider</span> <span class="n">System</span>                               <span class="o">|</span>
+<span class="o">+-----------------------------------------------------------------------+</span>
+
+<span class="n">VoIPBIN</span>                         <span class="n">Provider</span>                    <span class="n">External</span>
+   <span class="o">|</span>                               <span class="o">|</span>                           <span class="o">|</span>
+   <span class="o">|</span> <span class="n">Outbound</span> <span class="n">call</span>                 <span class="o">|</span>                           <span class="o">|</span>
+   <span class="o">+------------------------------&gt;|</span>                           <span class="o">|</span>
+   <span class="o">|</span>                               <span class="o">|</span> <span class="n">Route</span> <span class="n">to</span> <span class="n">PSTN</span>             <span class="o">|</span>
+   <span class="o">|</span>                               <span class="o">+--------------------------&gt;|</span>
+   <span class="o">|</span>                               <span class="o">|</span>                           <span class="o">|</span>
+   <span class="o">|</span>                               <span class="o">|</span>        <span class="n">Call</span> <span class="n">connects</span>      <span class="o">|</span>
+   <span class="o">|&lt;------------------------------|&lt;--------------------------+</span>
+   <span class="o">|</span>                               <span class="o">|</span>                           <span class="o">|</span>
+
+<span class="o">+-------------------+</span>        <span class="o">+-------------------+</span>        <span class="o">+-----------+</span>
+<span class="o">|</span>    <span class="n">VoIPBIN</span>        <span class="o">|</span>        <span class="o">|</span>     <span class="n">Provider</span>      <span class="o">|</span>        <span class="o">|</span>   <span class="n">PSTN</span>    <span class="o">|</span>
+<span class="o">|</span>    <span class="n">Platform</span>       <span class="o">|&lt;------&gt;|</span>   <span class="p">(</span><span class="n">SIP</span> <span class="n">Trunk</span><span class="p">)</span>     <span class="o">|&lt;------&gt;|</span>  <span class="n">Network</span>  <span class="o">|</span>
+<span class="o">+-------------------+</span>        <span class="o">+-------------------+</span>        <span class="o">+-----------+</span>
+                                    <span class="o">|</span>
+                          <span class="o">+---------+---------+</span>
+                          <span class="o">|</span>                   <span class="o">|</span>
+                          <span class="n">v</span>                   <span class="n">v</span>
+                    <span class="o">+---------+</span>         <span class="o">+---------+</span>
+                    <span class="o">|</span> <span class="n">Telnyx</span>  <span class="o">|</span>         <span class="o">|</span> <span class="n">Twilio</span>  <span class="o">|</span>
+                    <span class="o">+---------+</span>         <span class="o">+---------+</span>
+</pre></div>
+</div>
+<p><strong>Key Components</strong></p>
+<ul class="simple">
+<li><p><strong>Provider</strong>: A SIP trunk service for external call routing</p></li>
+<li><p><strong>Hostname</strong>: The SIP server address</p></li>
+<li><p><strong>Tech Prefix/Postfix</strong>: Number formatting rules</p></li>
+<li><p><strong>Tech Headers</strong>: Custom SIP headers for authentication</p></li>
+</ul>
+</section>
+<section id="provider-configuration">
+<h2>Provider Configuration<a class="headerlink" href="#provider-configuration" title="Link to this heading"></a></h2>
+<p>Configure providers with technical parameters.</p>
+<p><strong>Provider Properties</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Property</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>id</p></td>
+<td><p>Unique identifier for the provider</p></td>
+</tr>
+<tr class="row-odd"><td><p>name</p></td>
+<td><p>Display name of the provider</p></td>
+</tr>
+<tr class="row-even"><td><p>type</p></td>
+<td><p>Protocol type (e.g., “sip”)</p></td>
+</tr>
+<tr class="row-odd"><td><p>hostname</p></td>
+<td><p>SIP server address (e.g., sip.telnyx.com)</p></td>
+</tr>
+<tr class="row-even"><td><p>tech_prefix</p></td>
+<td><p>Prefix to add to dialed numbers</p></td>
+</tr>
+<tr class="row-odd"><td><p>tech_postfix</p></td>
+<td><p>Suffix to add to dialed numbers</p></td>
+</tr>
+<tr class="row-even"><td><p>tech_headers</p></td>
+<td><p>Custom SIP headers for the provider</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example Provider Configuration</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;provider-uuid-123&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Telnyx Production&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;sip&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;hostname&quot;</span><span class="p">:</span> <span class="s2">&quot;sip.telnyx.com&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tech_prefix&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tech_postfix&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tech_headers&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;X-Custom-Header&quot;</span><span class="p">:</span> <span class="s2">&quot;value&quot;</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-01T00:00:00Z&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="provider-types">
+<h2>Provider Types<a class="headerlink" href="#provider-types" title="Link to this heading"></a></h2>
+<p>VoIPBIN supports various provider configurations.</p>
+<p><strong>SIP Provider</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">SIP</span> <span class="n">Provider</span>                               <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Protocol</span><span class="p">:</span> <span class="n">SIP</span> <span class="p">(</span><span class="n">Session</span> <span class="n">Initiation</span> <span class="n">Protocol</span><span class="p">)</span><span class="o">|</span>
+<span class="o">|</span> <span class="n">Used</span> <span class="k">for</span><span class="p">:</span> <span class="n">Voice</span> <span class="n">calls</span>                      <span class="o">|</span>
+<span class="o">|</span> <span class="n">Example</span><span class="p">:</span> <span class="n">Telnyx</span><span class="p">,</span> <span class="n">Twilio</span><span class="p">,</span> <span class="n">Bandwidth</span>         <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+
+<span class="n">Outbound</span> <span class="n">Call</span> <span class="n">Flow</span><span class="p">:</span>
+<span class="n">VoIPBIN</span> <span class="o">-&gt;</span> <span class="n">SIP</span> <span class="n">INVITE</span> <span class="o">-&gt;</span> <span class="n">Provider</span> <span class="o">-&gt;</span> <span class="n">PSTN</span>
+</pre></div>
+</div>
+</section>
+<section id="number-formatting">
+<h2>Number Formatting<a class="headerlink" href="#number-formatting" title="Link to this heading"></a></h2>
+<p>Providers may require specific number formats.</p>
+<p><strong>Tech Prefix/Postfix Usage</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Original</span> <span class="n">Number</span><span class="p">:</span> <span class="o">+</span><span class="mi">15551234567</span>
+
+<span class="n">With</span> <span class="n">Prefix</span> <span class="s2">&quot;1&quot;</span><span class="p">:</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Dialed</span><span class="p">:</span> <span class="mi">1</span><span class="o">+</span><span class="mi">15551234567</span>                      <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+
+<span class="n">With</span> <span class="n">Postfix</span> <span class="s2">&quot;@provider.com&quot;</span><span class="p">:</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Dialed</span><span class="p">:</span> <span class="o">+</span><span class="mi">15551234567</span><span class="nd">@provider</span><span class="o">.</span><span class="n">com</span>          <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+
+<span class="n">With</span> <span class="n">Both</span><span class="p">:</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Dialed</span><span class="p">:</span> <span class="mi">1</span><span class="o">+</span><span class="mi">15551234567</span><span class="nd">@provider</span><span class="o">.</span><span class="n">com</span>         <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+</pre></div>
+</div>
+</section>
+<section id="common-scenarios">
+<h2>Common Scenarios<a class="headerlink" href="#common-scenarios" title="Link to this heading"></a></h2>
+<p><strong>Scenario 1: Primary Provider Setup</strong></p>
+<p>Configure main outbound provider.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Provider</span><span class="p">:</span> <span class="s2">&quot;Main Carrier&quot;</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">name</span><span class="p">:</span> <span class="s2">&quot;Telnyx Production&quot;</span>                  <span class="o">|</span>
+<span class="o">|</span> <span class="n">hostname</span><span class="p">:</span> <span class="s2">&quot;sip.telnyx.com&quot;</span>                 <span class="o">|</span>
+<span class="o">|</span> <span class="nb">type</span><span class="p">:</span> <span class="s2">&quot;sip&quot;</span>                                <span class="o">|</span>
+<span class="o">|</span>                                            <span class="o">|</span>
+<span class="o">|</span> <span class="n">Used</span> <span class="k">for</span><span class="p">:</span> <span class="n">All</span> <span class="n">outbound</span> <span class="n">calls</span>               <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+</pre></div>
+</div>
+<p><strong>Scenario 2: Multi-Provider Configuration</strong></p>
+<p>Configure multiple providers for failover.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Primary</span> <span class="n">Provider</span><span class="p">:</span> <span class="s2">&quot;Telnyx&quot;</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">hostname</span><span class="p">:</span> <span class="s2">&quot;sip.telnyx.com&quot;</span>                 <span class="o">|</span>
+<span class="o">|</span> <span class="n">Priority</span><span class="p">:</span> <span class="mi">1</span> <span class="p">(</span><span class="n">first</span> <span class="n">choice</span><span class="p">)</span>                 <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+
+<span class="n">Secondary</span> <span class="n">Provider</span><span class="p">:</span> <span class="s2">&quot;Twilio&quot;</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">hostname</span><span class="p">:</span> <span class="s2">&quot;sip.twilio.com&quot;</span>                 <span class="o">|</span>
+<span class="o">|</span> <span class="n">Priority</span><span class="p">:</span> <span class="mi">2</span> <span class="p">(</span><span class="n">failover</span><span class="p">)</span>                     <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+
+<span class="n">Routing</span> <span class="n">Logic</span><span class="p">:</span>
+<span class="mf">1.</span> <span class="n">Try</span> <span class="n">primary</span> <span class="n">provider</span>
+<span class="mf">2.</span> <span class="n">If</span> <span class="n">failed</span> <span class="o">-&gt;</span> <span class="k">try</span> <span class="n">secondary</span>
+</pre></div>
+</div>
+<p><strong>Scenario 3: Regional Providers</strong></p>
+<p>Use different providers for different regions.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">US</span> <span class="n">Provider</span><span class="p">:</span> <span class="s2">&quot;Telnyx US&quot;</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">For</span> <span class="n">numbers</span><span class="p">:</span> <span class="o">+</span><span class="mi">1</span><span class="n">xxx</span>                         <span class="o">|</span>
+<span class="o">|</span> <span class="n">Optimal</span> <span class="n">routing</span> <span class="k">for</span> <span class="n">US</span> <span class="n">calls</span>               <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+
+<span class="n">EU</span> <span class="n">Provider</span><span class="p">:</span> <span class="s2">&quot;Telnyx EU&quot;</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">For</span> <span class="n">numbers</span><span class="p">:</span> <span class="o">+</span><span class="mi">44</span><span class="p">,</span> <span class="o">+</span><span class="mi">49</span><span class="p">,</span> <span class="o">+</span><span class="mf">33.</span><span class="o">..</span>             <span class="o">|</span>
+<span class="o">|</span> <span class="n">Optimal</span> <span class="n">routing</span> <span class="k">for</span> <span class="n">EU</span> <span class="n">calls</span>               <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+</pre></div>
+</div>
+</section>
+<section id="best-practices">
+<h2>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading"></a></h2>
+<p><strong>1. Provider Selection</strong></p>
+<ul class="simple">
+<li><p>Choose providers with good coverage for your regions</p></li>
+<li><p>Consider pricing, quality, and reliability</p></li>
+<li><p>Test providers before production use</p></li>
+</ul>
+<p><strong>2. Configuration</strong></p>
+<ul class="simple">
+<li><p>Keep provider credentials secure</p></li>
+<li><p>Document provider-specific requirements</p></li>
+<li><p>Test number formatting thoroughly</p></li>
+</ul>
+<p><strong>3. Failover</strong></p>
+<ul class="simple">
+<li><p>Configure multiple providers</p></li>
+<li><p>Set up proper failover routing</p></li>
+<li><p>Monitor provider health</p></li>
+</ul>
+<p><strong>4. Monitoring</strong></p>
+<ul class="simple">
+<li><p>Track call success rates per provider</p></li>
+<li><p>Monitor latency and quality</p></li>
+<li><p>Set up alerts for provider issues</p></li>
+</ul>
+</section>
+<section id="troubleshooting">
+<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h2>
+<p><strong>Connection Issues</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Symptom</p></th>
+<th class="head"><p>Solution</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Calls not connecting</p></td>
+<td><p>Verify hostname is correct; check provider
+credentials; test network connectivity</p></td>
+</tr>
+<tr class="row-odd"><td><p>Authentication failures</p></td>
+<td><p>Check tech_headers for auth info; verify
+credentials with provider</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Routing Issues</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Symptom</p></th>
+<th class="head"><p>Solution</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Wrong number format</p></td>
+<td><p>Check tech_prefix and tech_postfix; verify
+provider requirements</p></td>
+</tr>
+<tr class="row-odd"><td><p>Provider rejecting calls</p></td>
+<td><p>Check account status with provider; verify
+number is allowed</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="related-documentation">
+<h2>Related Documentation<a class="headerlink" href="#related-documentation" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="route_overview.html#route-overview"><span class="std std-ref">Route Overview</span></a> - Call routing configuration</p></li>
+<li><p><a class="reference internal" href="trunk_overview.html#trunk-overview"><span class="std std-ref">Trunk Overview</span></a> - SIP trunking</p></li>
+<li><p><a class="reference internal" href="call_overview.html#call-overview"><span class="std std-ref">Call Overview</span></a> - Making calls</p></li>
+</ul>
+</section>
 </section>
 
 </main>
                         
                     </div>
+                    
+                    <nav class="col-12 col-lg-3 pb-4">
+                        <div class="sticky-top toc page-toc" aria-labelledby="page-toc-heading">
+                            <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
+                            <ul>
+<li><a class="reference internal" href="#">Overview</a><ul>
+<li><a class="reference internal" href="#how-providers-work">How Providers Work</a></li>
+<li><a class="reference internal" href="#provider-configuration">Provider Configuration</a></li>
+<li><a class="reference internal" href="#provider-types">Provider Types</a></li>
+<li><a class="reference internal" href="#number-formatting">Number Formatting</a></li>
+<li><a class="reference internal" href="#common-scenarios">Common Scenarios</a></li>
+<li><a class="reference internal" href="#best-practices">Best Practices</a></li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
+<li><a class="reference internal" href="#related-documentation">Related Documentation</a></li>
+</ul>
+</li>
+</ul>
+
+                        </div>
+                    </nav>
                     
                 </div>
             </div>

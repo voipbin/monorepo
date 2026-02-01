@@ -102,7 +102,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="message.html">Message</a></li>
 <li class="toctree-l1"><a class="reference internal" href="email.html">Email</a></li>
-<li class="toctree-l1"><a class="reference internal" href="chat.html">Chat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="talk.html">Talk</a></li>
 <li class="toctree-l1"><a class="reference internal" href="conversation.html">Conversation</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">AI &amp; Automation</span></p>
@@ -129,7 +129,6 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
 <li class="toctree-l1"><a class="reference internal" href="websocket.html">Websocket</a></li>
-<li class="toctree-l1"><a class="reference internal" href="talk.html">Talk</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul>
@@ -189,10 +188,456 @@
 <h1>Trunk<a class="headerlink" href="#trunk" title="Link to this heading"></a></h1>
 <section id="overview">
 <span id="trunk-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
-<p>The VoIPBIN’s Trunk service could be divided into trunking and registration.</p>
-<p>Trunking is a voice-over internet protocol (VoIP) technology that allows businesses to make and receive phone calls over the internet using a SIP (session initiation protocol) provider. Rather than relying on traditional phone lines, SIP trunking enables voice communication through the internet, making it a more flexible, scalable, and cost-effective solution for businesses of all sizes. With SIP trunking, businesses can connect their existing phone systems to a SIP provider, which routes calls to the public switched telephone network (PSTN) and other SIP-enabled devices, such as IP phones, softphones, and mobile devices. This technology can help businesses reduce their communication costs, improve call quality, and enhance their overall communication capabilities.</p>
-<p>Registration is a process by which a user or device identifies itself to a server or service to gain access to its features or resources. In telephony and VoIP systems, registration is typically used to establish a connection between a user’s device and a service provider, such as a SIP trunking provider or a PBX (private branch exchange) system. During the registration process, the user’s device sends its identification information, such as a username, password, and IP address, to the service provider. The service provider then verifies the information and grants access to the user’s device, allowing it to make and receive calls over the network. Registration is an essential step in establishing secure and reliable communication between devices and service providers, and it is a key aspect of many telephony and VoIP systems.</p>
-<p>In short, trunking is needed for the making a call, and the registration is needed for the a receiving a call.</p>
+<p>VoIPBIN’s Trunk system provides the infrastructure for SIP-based voice communication, supporting both outbound calls (trunking) and inbound calls (registration). Trunks connect VoIPBIN to the PSTN and enable SIP endpoints to communicate with external networks.</p>
+<p>The Trunk system provides:</p>
+<ul class="simple">
+<li><p>SIP trunking for outbound call routing</p></li>
+<li><p>Registration services for inbound call delivery</p></li>
+<li><p>Connection between VoIPBIN and external providers</p></li>
+<li><p>Integration with on-premise PBX systems</p></li>
+<li><p>Flexible routing through providers</p></li>
+</ul>
+<section id="how-trunks-work">
+<h3>How Trunks Work<a class="headerlink" href="#how-trunks-work" title="Link to this heading"></a></h3>
+<p>The trunk system handles bidirectional call flow between VoIPBIN and external networks.</p>
+<p><strong>Trunk Architecture</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-----------------------------------------------------------------------+</span>
+<span class="o">|</span>                          <span class="n">Trunk</span> <span class="n">System</span>                                 <span class="o">|</span>
+<span class="o">+-----------------------------------------------------------------------+</span>
+
+                     <span class="o">+-------------------+</span>
+                     <span class="o">|</span>     <span class="n">VoIPBIN</span>       <span class="o">|</span>
+                     <span class="o">|</span>     <span class="n">Platform</span>      <span class="o">|</span>
+                     <span class="o">+--------+----------+</span>
+                              <span class="o">|</span>
+          <span class="o">+-------------------+-------------------+</span>
+          <span class="o">|</span>                                       <span class="o">|</span>
+          <span class="n">v</span>                                       <span class="n">v</span>
+<span class="o">+-------------------+</span>                   <span class="o">+-------------------+</span>
+<span class="o">|</span>    <span class="n">Trunking</span>       <span class="o">|</span>                   <span class="o">|</span>   <span class="n">Registration</span>    <span class="o">|</span>
+<span class="o">|</span> <span class="p">(</span><span class="n">Outbound</span> <span class="n">Calls</span><span class="p">)</span>  <span class="o">|</span>                   <span class="o">|</span> <span class="p">(</span><span class="n">Inbound</span> <span class="n">Calls</span><span class="p">)</span>   <span class="o">|</span>
+<span class="o">+--------+----------+</span>                   <span class="o">+--------+----------+</span>
+         <span class="o">|</span>                                       <span class="o">|</span>
+         <span class="n">v</span>                                       <span class="n">v</span>
+<span class="o">+-------------------+</span>                   <span class="o">+-------------------+</span>
+<span class="o">|</span>     <span class="n">Providers</span>     <span class="o">|</span>                   <span class="o">|</span>   <span class="n">SIP</span> <span class="n">Endpoints</span>   <span class="o">|</span>
+<span class="o">|</span> <span class="p">(</span><span class="n">Telnyx</span><span class="p">,</span> <span class="n">Twilio</span><span class="p">)</span>  <span class="o">|</span>                   <span class="o">|</span> <span class="p">(</span><span class="n">Phones</span><span class="p">,</span> <span class="n">PBX</span><span class="p">)</span>     <span class="o">|</span>
+<span class="o">+--------+----------+</span>                   <span class="o">+--------+----------+</span>
+         <span class="o">|</span>                                       <span class="o">|</span>
+         <span class="n">v</span>                                       <span class="n">v</span>
+<span class="o">+-------------------+</span>                   <span class="o">+-------------------+</span>
+<span class="o">|</span>       <span class="n">PSTN</span>        <span class="o">|</span>                   <span class="o">|</span>  <span class="n">Registered</span>       <span class="o">|</span>
+<span class="o">|</span>   <span class="p">(</span><span class="n">Phone</span> <span class="n">Network</span><span class="p">)</span> <span class="o">|</span>                   <span class="o">|</span>  <span class="n">Devices</span>          <span class="o">|</span>
+<span class="o">+-------------------+</span>                   <span class="o">+-------------------+</span>
+</pre></div>
+</div>
+<p><strong>Key Components</strong></p>
+<ul class="simple">
+<li><p><strong>Trunk</strong>: Connection to external SIP provider for outbound calls</p></li>
+<li><p><strong>Registration</strong>: Service for SIP endpoints to receive inbound calls</p></li>
+<li><p><strong>Provider</strong>: External SIP service (Telnyx, Twilio, etc.)</p></li>
+<li><p><strong>PSTN</strong>: Public Switched Telephone Network</p></li>
+</ul>
+</section>
+<section id="trunking-vs-registration">
+<h3>Trunking vs Registration<a class="headerlink" href="#trunking-vs-registration" title="Link to this heading"></a></h3>
+<p>Understanding the difference between these two services is essential.</p>
+<p><strong>Comparison</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-----------------------------------------------------------------------+</span>
+<span class="o">|</span>                    <span class="n">Trunking</span> <span class="n">vs</span> <span class="n">Registration</span>                           <span class="o">|</span>
+<span class="o">+-----------------------------------------------------------------------+</span>
+
+<span class="n">TRUNKING</span> <span class="p">(</span><span class="n">Outbound</span><span class="p">):</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Purpose</span><span class="p">:</span> <span class="n">Make</span> <span class="n">calls</span> <span class="n">to</span> <span class="n">external</span> <span class="n">numbers</span>    <span class="o">|</span>
+<span class="o">|</span> <span class="n">Direction</span><span class="p">:</span> <span class="n">VoIPBIN</span> <span class="o">-&gt;</span> <span class="n">Provider</span> <span class="o">-&gt;</span> <span class="n">PSTN</span>     <span class="o">|</span>
+<span class="o">|</span> <span class="n">Uses</span><span class="p">:</span> <span class="n">Provider</span> <span class="n">configuration</span>               <span class="o">|</span>
+<span class="o">|</span> <span class="n">Example</span><span class="p">:</span> <span class="n">Call</span> <span class="o">+</span><span class="mi">1</span><span class="o">-</span><span class="mi">555</span><span class="o">-</span><span class="mi">123</span><span class="o">-</span><span class="mi">4567</span>              <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+
+<span class="n">REGISTRATION</span> <span class="p">(</span><span class="n">Inbound</span><span class="p">):</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Purpose</span><span class="p">:</span> <span class="n">Receive</span> <span class="n">calls</span> <span class="n">on</span> <span class="n">SIP</span> <span class="n">devices</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="n">Direction</span><span class="p">:</span> <span class="n">PSTN</span> <span class="o">-&gt;</span> <span class="n">VoIPBIN</span> <span class="o">-&gt;</span> <span class="n">Device</span>       <span class="o">|</span>
+<span class="o">|</span> <span class="n">Uses</span><span class="p">:</span> <span class="n">Extension</span> <span class="n">configuration</span>              <span class="o">|</span>
+<span class="o">|</span> <span class="n">Example</span><span class="p">:</span> <span class="n">IP</span> <span class="n">phone</span> <span class="n">receives</span> <span class="n">incoming</span> <span class="n">call</span>   <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+</pre></div>
+</div>
+<p><strong>When to Use Each</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Capability</p></th>
+<th class="head"><p>Trunking</p></th>
+<th class="head"><p>Registration</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Direction</p></td>
+<td><p>Outbound calls</p></td>
+<td><p>Inbound calls</p></td>
+</tr>
+<tr class="row-odd"><td><p>Configuration</p></td>
+<td><p>Provider + Route</p></td>
+<td><p>Extension</p></td>
+</tr>
+<tr class="row-even"><td><p>Endpoint</p></td>
+<td><p>External phone number</p></td>
+<td><p>SIP device/softphone</p></td>
+</tr>
+<tr class="row-odd"><td><p>Authentication</p></td>
+<td><p>Provider credentials</p></td>
+<td><p>Extension credentials</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="outbound-call-flow-trunking">
+<h3>Outbound Call Flow (Trunking)<a class="headerlink" href="#outbound-call-flow-trunking" title="Link to this heading"></a></h3>
+<p>Outbound calls route through providers to reach external numbers.</p>
+<p><strong>Trunking Flow</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">VoIPBIN</span>                    <span class="n">Provider</span>                      <span class="n">PSTN</span>
+
+<span class="o">|</span>                             <span class="o">|</span>                             <span class="o">|</span>
+<span class="o">|</span> <span class="mf">1.</span> <span class="n">Initiate</span> <span class="n">call</span>            <span class="o">|</span>                             <span class="o">|</span>
+<span class="o">|</span>    <span class="n">to</span> <span class="o">+</span><span class="mi">1</span><span class="o">-</span><span class="mi">555</span><span class="o">-</span><span class="mi">1234</span>           <span class="o">|</span>                             <span class="o">|</span>
+<span class="o">+---+</span>                         <span class="o">|</span>                             <span class="o">|</span>
+    <span class="o">|</span>                         <span class="o">|</span>                             <span class="o">|</span>
+    <span class="n">v</span>                         <span class="o">|</span>                             <span class="o">|</span>
+<span class="o">+-------+</span>                     <span class="o">|</span>                             <span class="o">|</span>
+<span class="o">|</span> <span class="n">Route</span> <span class="o">|</span>                     <span class="o">|</span>                             <span class="o">|</span>
+<span class="o">|</span> <span class="n">Engine</span><span class="o">|</span>                     <span class="o">|</span>                             <span class="o">|</span>
+<span class="o">+---+---+</span>                     <span class="o">|</span>                             <span class="o">|</span>
+    <span class="o">|</span>                         <span class="o">|</span>                             <span class="o">|</span>
+    <span class="o">|</span> <span class="mf">2.</span> <span class="n">Select</span> <span class="n">provider</span>      <span class="o">|</span>                             <span class="o">|</span>
+    <span class="o">|</span>    <span class="n">based</span> <span class="n">on</span> <span class="n">route</span>       <span class="o">|</span>                             <span class="o">|</span>
+    <span class="o">|</span>                         <span class="o">|</span>                             <span class="o">|</span>
+    <span class="o">|</span> <span class="mf">3.</span> <span class="n">INVITE</span>               <span class="o">|</span>                             <span class="o">|</span>
+    <span class="o">+------------------------&gt;|</span>                             <span class="o">|</span>
+    <span class="o">|</span>                         <span class="o">|</span>                             <span class="o">|</span>
+    <span class="o">|</span>                         <span class="o">|</span> <span class="mf">4.</span> <span class="n">Route</span> <span class="n">to</span> <span class="n">PSTN</span>            <span class="o">|</span>
+    <span class="o">|</span>                         <span class="o">+-----------------------------&gt;|</span>
+    <span class="o">|</span>                         <span class="o">|</span>                             <span class="o">|</span>
+    <span class="o">|</span>                         <span class="o">|</span>     <span class="mf">5.</span> <span class="mi">180</span> <span class="n">Ringing</span>          <span class="o">|</span>
+    <span class="o">|</span>                         <span class="o">|&lt;----------------------------+</span>
+    <span class="o">|</span>     <span class="mf">6.</span> <span class="n">Ringing</span>          <span class="o">|</span>                             <span class="o">|</span>
+    <span class="o">|&lt;------------------------+</span>                             <span class="o">|</span>
+    <span class="o">|</span>                         <span class="o">|</span>                             <span class="o">|</span>
+    <span class="o">|</span>                         <span class="o">|</span>     <span class="mf">7.</span> <span class="mi">200</span> <span class="n">OK</span> <span class="p">(</span><span class="n">Answer</span><span class="p">)</span>      <span class="o">|</span>
+    <span class="o">|</span>                         <span class="o">|&lt;----------------------------+</span>
+    <span class="o">|</span>     <span class="mf">8.</span> <span class="n">Connected</span>        <span class="o">|</span>                             <span class="o">|</span>
+    <span class="o">|&lt;------------------------+</span>                             <span class="o">|</span>
+    <span class="o">|</span>                         <span class="o">|</span>                             <span class="o">|</span>
+    <span class="o">|</span>         <span class="n">Media</span> <span class="p">(</span><span class="n">RTP</span><span class="p">)</span> <span class="o">&lt;-------------------------------&gt;</span> <span class="o">|</span>
+</pre></div>
+</div>
+</section>
+<section id="inbound-call-flow-registration">
+<h3>Inbound Call Flow (Registration)<a class="headerlink" href="#inbound-call-flow-registration" title="Link to this heading"></a></h3>
+<p>Inbound calls reach registered SIP devices.</p>
+<p><strong>Registration Flow</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">PSTN</span>                       <span class="n">VoIPBIN</span>                    <span class="n">SIP</span> <span class="n">Device</span>
+
+<span class="o">|</span>                             <span class="o">|</span>                             <span class="o">|</span>
+<span class="o">|</span> <span class="mf">1.</span> <span class="n">Call</span> <span class="n">to</span> <span class="n">VoIPBIN</span> <span class="n">number</span>   <span class="o">|</span>                             <span class="o">|</span>
+<span class="o">+-----------------------------&gt;|</span>                             <span class="o">|</span>
+<span class="o">|</span>                             <span class="o">|</span>                             <span class="o">|</span>
+<span class="o">|</span>                             <span class="o">|</span> <span class="mf">2.</span> <span class="n">Flow</span> <span class="n">execution</span>           <span class="o">|</span>
+<span class="o">|</span>                             <span class="o">|</span>    <span class="p">(</span><span class="n">dial</span> <span class="n">extension</span><span class="p">)</span>         <span class="o">|</span>
+<span class="o">|</span>                             <span class="o">+---+</span>                         <span class="o">|</span>
+<span class="o">|</span>                             <span class="o">|</span>   <span class="o">|</span>                         <span class="o">|</span>
+<span class="o">|</span>                             <span class="o">|</span>   <span class="n">v</span>                         <span class="o">|</span>
+<span class="o">|</span>                             <span class="o">|</span> <span class="o">+-------+</span>                   <span class="o">|</span>
+<span class="o">|</span>                             <span class="o">|</span> <span class="o">|</span><span class="n">Lookup</span> <span class="o">|</span>                   <span class="o">|</span>
+<span class="o">|</span>                             <span class="o">|</span> <span class="o">|</span><span class="n">Reg</span><span class="o">.</span>   <span class="o">|</span>                   <span class="o">|</span>
+<span class="o">|</span>                             <span class="o">|</span> <span class="o">+---+---+</span>                   <span class="o">|</span>
+<span class="o">|</span>                             <span class="o">|</span>     <span class="o">|</span>                       <span class="o">|</span>
+<span class="o">|</span>                             <span class="o">|</span> <span class="mf">3.</span> <span class="n">INVITE</span> <span class="n">to</span> <span class="n">registered</span> <span class="n">IP</span>  <span class="o">|</span>
+<span class="o">|</span>                             <span class="o">+-----------------------------&gt;|</span>
+<span class="o">|</span>                             <span class="o">|</span>                             <span class="o">|</span>
+<span class="o">|</span>                             <span class="o">|</span>     <span class="mf">4.</span> <span class="mi">180</span> <span class="n">Ringing</span>          <span class="o">|</span>
+<span class="o">|</span>                             <span class="o">|&lt;----------------------------+</span>
+<span class="o">|</span>     <span class="mf">5.</span> <span class="n">Ringback</span>             <span class="o">|</span>                             <span class="o">|</span>
+<span class="o">|&lt;----------------------------+</span>                             <span class="o">|</span>
+<span class="o">|</span>                             <span class="o">|</span>                             <span class="o">|</span>
+<span class="o">|</span>                             <span class="o">|</span>     <span class="mf">6.</span> <span class="mi">200</span> <span class="n">OK</span>               <span class="o">|</span>
+<span class="o">|</span>                             <span class="o">|&lt;----------------------------+</span>
+<span class="o">|</span>     <span class="mf">7.</span> <span class="n">Connected</span>            <span class="o">|</span>                             <span class="o">|</span>
+<span class="o">|&lt;----------------------------+</span>                             <span class="o">|</span>
+<span class="o">|</span>                             <span class="o">|</span>                             <span class="o">|</span>
+<span class="o">|</span>         <span class="n">Media</span> <span class="p">(</span><span class="n">RTP</span><span class="p">)</span> <span class="o">&lt;-------------------------------------&gt;</span> <span class="o">|</span>
+</pre></div>
+</div>
+</section>
+<section id="trunk-configuration">
+<h3>Trunk Configuration<a class="headerlink" href="#trunk-configuration" title="Link to this heading"></a></h3>
+<p>Configure the trunk system through providers, routes, and extensions.</p>
+<p><strong>Provider Configuration (for Trunking)</strong></p>
+<p>See <a class="reference internal" href="provider_overview.html#provider-overview"><span class="std std-ref">Provider Overview</span></a> for detailed configuration.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/providers?token=&lt;token&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data &#39;{
+        &quot;name&quot;: &quot;Primary SIP Provider&quot;,
+        &quot;type&quot;: &quot;sip&quot;,
+        &quot;hostname&quot;: &quot;sip.provider.com&quot;
+    }&#39;
+</pre></div>
+</div>
+<p><strong>Route Configuration (for Trunking)</strong></p>
+<p>See <a class="reference internal" href="route_overview.html#route-overview"><span class="std std-ref">Route Overview</span></a> for detailed configuration.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/routes?token=&lt;token&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data &#39;{
+        &quot;name&quot;: &quot;Default Outbound Route&quot;,
+        &quot;provider_id&quot;: &quot;provider-uuid-123&quot;,
+        &quot;priority&quot;: 1
+    }&#39;
+</pre></div>
+</div>
+<p><strong>Extension Configuration (for Registration)</strong></p>
+<p>See <a class="reference internal" href="extension_overview.html#extension-overview"><span class="std std-ref">Extension Overview</span></a> for detailed configuration.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/extensions?token=&lt;token&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data &#39;{
+        &quot;name&quot;: &quot;office-phone&quot;,
+        &quot;username&quot;: &quot;office1&quot;,
+        &quot;password&quot;: &quot;secure-password&quot;
+    }&#39;
+</pre></div>
+</div>
+</section>
+<section id="complete-setup-example">
+<h3>Complete Setup Example<a class="headerlink" href="#complete-setup-example" title="Link to this heading"></a></h3>
+<p>Set up a complete trunk system for bidirectional calling.</p>
+<p><strong>Setup Steps</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Step</span> <span class="mi">1</span><span class="p">:</span> <span class="n">Configure</span> <span class="n">Provider</span> <span class="p">(</span><span class="n">Outbound</span><span class="p">)</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Provider</span><span class="p">:</span> <span class="s2">&quot;Telnyx Production&quot;</span>              <span class="o">|</span>
+<span class="o">|</span> <span class="n">Hostname</span><span class="p">:</span> <span class="n">sip</span><span class="o">.</span><span class="n">telnyx</span><span class="o">.</span><span class="n">com</span>                   <span class="o">|</span>
+<span class="o">|</span> <span class="n">Type</span><span class="p">:</span> <span class="n">sip</span>                                  <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+          <span class="o">|</span>
+          <span class="n">v</span>
+<span class="n">Step</span> <span class="mi">2</span><span class="p">:</span> <span class="n">Configure</span> <span class="n">Route</span> <span class="p">(</span><span class="n">Outbound</span><span class="p">)</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Route</span><span class="p">:</span> <span class="s2">&quot;Default Route&quot;</span>                     <span class="o">|</span>
+<span class="o">|</span> <span class="n">Provider</span><span class="p">:</span> <span class="n">Telnyx</span> <span class="n">Production</span>                <span class="o">|</span>
+<span class="o">|</span> <span class="n">Priority</span><span class="p">:</span> <span class="mi">1</span>                                <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+          <span class="o">|</span>
+          <span class="n">v</span>
+<span class="n">Step</span> <span class="mi">3</span><span class="p">:</span> <span class="n">Create</span> <span class="n">Extensions</span> <span class="p">(</span><span class="n">Inbound</span><span class="p">)</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Extension</span><span class="p">:</span> <span class="s2">&quot;office-main&quot;</span>                   <span class="o">|</span>
+<span class="o">|</span> <span class="n">Username</span><span class="p">:</span> <span class="n">office</span><span class="o">-</span><span class="n">main</span>                      <span class="o">|</span>
+<span class="o">|</span> <span class="n">Password</span><span class="p">:</span> <span class="o">********</span>                         <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+          <span class="o">|</span>
+          <span class="n">v</span>
+<span class="n">Step</span> <span class="mi">4</span><span class="p">:</span> <span class="n">Register</span> <span class="n">SIP</span> <span class="n">Devices</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Device</span> <span class="n">registers</span> <span class="n">to</span><span class="p">:</span>                       <span class="o">|</span>
+<span class="o">|</span> <span class="n">office</span><span class="o">-</span><span class="n">main</span><span class="o">@</span><span class="p">{</span><span class="nb">id</span><span class="p">}</span><span class="o">.</span><span class="n">registrar</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span>    <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+          <span class="o">|</span>
+          <span class="n">v</span>
+<span class="n">Step</span> <span class="mi">5</span><span class="p">:</span> <span class="n">Configure</span> <span class="n">Number</span> <span class="n">Flow</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Number</span><span class="p">:</span> <span class="o">+</span><span class="mi">1</span><span class="o">-</span><span class="mi">555</span><span class="o">-</span><span class="mi">123</span><span class="o">-</span><span class="mi">4567</span>                    <span class="o">|</span>
+<span class="o">|</span> <span class="n">Flow</span><span class="p">:</span> <span class="n">Dial</span> <span class="n">extension</span> <span class="s2">&quot;office-main&quot;</span>         <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+
+<span class="n">Result</span><span class="p">:</span>
+<span class="o">-</span> <span class="n">Outbound</span><span class="p">:</span> <span class="n">Make</span> <span class="n">calls</span> <span class="n">via</span> <span class="n">Telnyx</span>
+<span class="o">-</span> <span class="n">Inbound</span><span class="p">:</span> <span class="n">Calls</span> <span class="n">to</span> <span class="o">+</span><span class="mi">1</span><span class="o">-</span><span class="mi">555</span><span class="o">-</span><span class="mi">123</span><span class="o">-</span><span class="mi">4567</span> <span class="n">ring</span> <span class="n">office</span> <span class="n">phone</span>
+</pre></div>
+</div>
+</section>
+<section id="common-scenarios">
+<h3>Common Scenarios<a class="headerlink" href="#common-scenarios" title="Link to this heading"></a></h3>
+<p><strong>Scenario 1: Basic Office Phone System</strong></p>
+<p>Set up a simple office with outbound and inbound calling.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Configuration</span><span class="p">:</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Provider</span><span class="p">:</span> <span class="n">Telnyx</span> <span class="p">(</span><span class="k">for</span> <span class="n">outbound</span><span class="p">)</span>            <span class="o">|</span>
+<span class="o">|</span> <span class="n">Route</span><span class="p">:</span> <span class="n">Default</span> <span class="o">-&gt;</span> <span class="n">Telnyx</span>                   <span class="o">|</span>
+<span class="o">|</span> <span class="n">Extensions</span><span class="p">:</span> <span class="n">office</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">office</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="n">office</span><span class="o">-</span><span class="mi">3</span>   <span class="o">|</span>
+<span class="o">|</span> <span class="n">Number</span><span class="p">:</span> <span class="o">+</span><span class="mi">1</span><span class="o">-</span><span class="mi">555</span><span class="o">-</span><span class="n">OFFICE</span>                      <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+
+<span class="n">Call</span> <span class="n">Flows</span><span class="p">:</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Outbound</span><span class="p">:</span> <span class="n">Any</span> <span class="n">extension</span> <span class="n">can</span> <span class="n">dial</span> <span class="n">out</span>       <span class="o">|</span>
+<span class="o">|</span>   <span class="o">-&gt;</span> <span class="n">Routes</span> <span class="n">through</span> <span class="n">Telnyx</span> <span class="n">to</span> <span class="n">PSTN</span>         <span class="o">|</span>
+<span class="o">|</span>                                            <span class="o">|</span>
+<span class="o">|</span> <span class="n">Inbound</span><span class="p">:</span> <span class="n">Calls</span> <span class="n">to</span> <span class="o">+</span><span class="mi">1</span><span class="o">-</span><span class="mi">555</span><span class="o">-</span><span class="n">OFFICE</span>            <span class="o">|</span>
+<span class="o">|</span>   <span class="o">-&gt;</span> <span class="n">IVR</span><span class="p">:</span> <span class="s2">&quot;Press 1 for Sales...&quot;</span>          <span class="o">|</span>
+<span class="o">|</span>   <span class="o">-&gt;</span> <span class="n">Routes</span> <span class="n">to</span> <span class="n">appropriate</span> <span class="n">extension</span>       <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+</pre></div>
+</div>
+<p><strong>Scenario 2: Multi-Provider Failover</strong></p>
+<p>Configure redundant providers for reliability.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Provider</span> <span class="n">Configuration</span><span class="p">:</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Primary</span><span class="p">:</span> <span class="n">Telnyx</span>                            <span class="o">|</span>
+<span class="o">|</span>   <span class="n">Route</span> <span class="n">Priority</span><span class="p">:</span> <span class="mi">1</span>                        <span class="o">|</span>
+<span class="o">|</span>                                            <span class="o">|</span>
+<span class="o">|</span> <span class="n">Secondary</span><span class="p">:</span> <span class="n">Twilio</span>                          <span class="o">|</span>
+<span class="o">|</span>   <span class="n">Route</span> <span class="n">Priority</span><span class="p">:</span> <span class="mi">2</span>                        <span class="o">|</span>
+<span class="o">|</span>                                            <span class="o">|</span>
+<span class="o">|</span> <span class="n">Tertiary</span><span class="p">:</span> <span class="n">Bandwidth</span>                        <span class="o">|</span>
+<span class="o">|</span>   <span class="n">Route</span> <span class="n">Priority</span><span class="p">:</span> <span class="mi">3</span>                        <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+
+<span class="n">Failover</span> <span class="n">Behavior</span><span class="p">:</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="mf">1.</span> <span class="n">Try</span> <span class="n">Telnyx</span> <span class="n">first</span>                        <span class="o">|</span>
+<span class="o">|</span> <span class="mf">2.</span> <span class="n">If</span> <span class="n">Telnyx</span> <span class="n">fails</span> <span class="p">(</span><span class="mi">5</span><span class="n">xx</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="k">try</span> <span class="n">Twilio</span>    <span class="o">|</span>
+<span class="o">|</span> <span class="mf">3.</span> <span class="n">If</span> <span class="n">Twilio</span> <span class="n">fails</span> <span class="o">-&gt;</span> <span class="k">try</span> <span class="n">Bandwidth</span>        <span class="o">|</span>
+<span class="o">|</span> <span class="mf">4.</span> <span class="n">All</span> <span class="n">fail</span> <span class="o">-&gt;</span> <span class="k">return</span> <span class="n">error</span> <span class="n">to</span> <span class="n">caller</span>      <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+</pre></div>
+</div>
+<p><strong>Scenario 3: Remote Worker Setup</strong></p>
+<p>Enable remote workers with softphones.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Setup</span><span class="p">:</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Extension</span> <span class="n">per</span> <span class="n">worker</span><span class="p">:</span>                      <span class="o">|</span>
+<span class="o">|</span>   <span class="o">-</span> <span class="n">remote</span><span class="o">-</span><span class="n">john</span>                            <span class="o">|</span>
+<span class="o">|</span>   <span class="o">-</span> <span class="n">remote</span><span class="o">-</span><span class="n">jane</span>                            <span class="o">|</span>
+<span class="o">|</span>   <span class="o">-</span> <span class="n">remote</span><span class="o">-</span><span class="n">bob</span>                             <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+
+<span class="n">Worker</span> <span class="n">Configuration</span><span class="p">:</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Softphone</span> <span class="n">App</span><span class="p">:</span> <span class="n">Zoiper</span><span class="p">,</span> <span class="n">Linphone</span><span class="p">,</span> <span class="n">etc</span><span class="o">.</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="n">Server</span><span class="p">:</span> <span class="n">registrar</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span>              <span class="o">|</span>
+<span class="o">|</span> <span class="n">Username</span><span class="p">:</span> <span class="n">remote</span><span class="o">-</span><span class="n">john</span>                      <span class="o">|</span>
+<span class="o">|</span> <span class="n">Domain</span><span class="p">:</span> <span class="p">{</span><span class="n">customer</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span><span class="o">.</span><span class="n">registrar</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span><span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+
+<span class="n">Benefits</span><span class="p">:</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Work</span> <span class="kn">from</span><span class="w"> </span><span class="nn">anywhere</span> <span class="k">with</span> <span class="n">internet</span>         <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Same</span> <span class="n">extension</span> <span class="n">travels</span> <span class="k">with</span> <span class="n">worker</span>       <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Company</span> <span class="n">number</span> <span class="k">for</span> <span class="n">outbound</span> <span class="n">caller</span> <span class="n">ID</span>    <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Inbound</span> <span class="n">calls</span> <span class="n">reach</span> <span class="n">worker</span> <span class="n">globally</span>      <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+</pre></div>
+</div>
+</section>
+<section id="best-practices">
+<h3>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading"></a></h3>
+<p><strong>1. Provider Management</strong></p>
+<ul class="simple">
+<li><p>Configure at least two providers for failover</p></li>
+<li><p>Test provider connectivity regularly</p></li>
+<li><p>Monitor call success rates per provider</p></li>
+<li><p>Choose providers with coverage in your regions</p></li>
+</ul>
+<p><strong>2. Route Configuration</strong></p>
+<ul class="simple">
+<li><p>Set up priority-based routing</p></li>
+<li><p>Configure failover for all routes</p></li>
+<li><p>Test failover scenarios periodically</p></li>
+<li><p>Document routing logic</p></li>
+</ul>
+<p><strong>3. Extension Security</strong></p>
+<ul class="simple">
+<li><p>Use strong, unique passwords</p></li>
+<li><p>Rotate credentials periodically</p></li>
+<li><p>Monitor for unauthorized registrations</p></li>
+<li><p>Enable TLS when possible</p></li>
+</ul>
+<p><strong>4. Monitoring</strong></p>
+<ul class="simple">
+<li><p>Track call success/failure rates</p></li>
+<li><p>Monitor provider latency and quality</p></li>
+<li><p>Set up alerts for registration failures</p></li>
+<li><p>Review call logs regularly</p></li>
+</ul>
+</section>
+<section id="troubleshooting">
+<h3>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h3>
+<p><strong>Outbound (Trunking) Issues</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Symptom</p></th>
+<th class="head"><p>Solution</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Calls not connecting</p></td>
+<td><p>Check provider is configured; verify route
+exists; confirm provider credentials</p></td>
+</tr>
+<tr class="row-odd"><td><p>Wrong provider used</p></td>
+<td><p>Review route priorities; check for
+destination-specific routes</p></td>
+</tr>
+<tr class="row-even"><td><p>All providers failing</p></td>
+<td><p>Check provider status; verify network
+connectivity; test each provider independently</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Inbound (Registration) Issues</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Symptom</p></th>
+<th class="head"><p>Solution</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Device not receiving
+calls</p></td>
+<td><p>Verify registration is active; check
+extension in flow; confirm device is online</p></td>
+</tr>
+<tr class="row-odd"><td><p>Registration failing</p></td>
+<td><p>Check credentials; verify registrar address;
+confirm firewall allows SIP traffic</p></td>
+</tr>
+<tr class="row-even"><td><p>Intermittent registration</p></td>
+<td><p>Check NAT settings; enable keep-alives;
+increase registration expiry</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Audio Issues</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Symptom</p></th>
+<th class="head"><p>Solution</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>No audio</p></td>
+<td><p>Check RTP ports; verify NAT traversal;
+confirm media IP is reachable</p></td>
+</tr>
+<tr class="row-odd"><td><p>One-way audio</p></td>
+<td><p>Enable STUN/TURN; check symmetric RTP;
+verify both endpoints can send/receive</p></td>
+</tr>
+<tr class="row-even"><td><p>Poor audio quality</p></td>
+<td><p>Check network bandwidth; reduce jitter;
+consider QoS configuration</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="related-documentation">
+<h3>Related Documentation<a class="headerlink" href="#related-documentation" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><a class="reference internal" href="provider_overview.html#provider-overview"><span class="std std-ref">Provider Overview</span></a> - Provider configuration for trunking</p></li>
+<li><p><a class="reference internal" href="route_overview.html#route-overview"><span class="std std-ref">Route Overview</span></a> - Call routing and failover</p></li>
+<li><p><a class="reference internal" href="extension_overview.html#extension-overview"><span class="std std-ref">Extension Overview</span></a> - SIP endpoint registration</p></li>
+<li><p><a class="reference internal" href="call_overview.html#call-overview"><span class="std std-ref">Call Overview</span></a> - Making and receiving calls</p></li>
+<li><p><a class="reference internal" href="flow_overview.html#flow-overview"><span class="std std-ref">Flow Overview</span></a> - Call flow configuration</p></li>
+</ul>
+</section>
 </section>
 <section id="trunking">
 <h2>Trunking<a class="headerlink" href="#trunking" title="Link to this heading"></a></h2>
@@ -317,7 +762,19 @@ It executes the follow features:</p>
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
 <li><a class="reference internal" href="#">Trunk</a><ul>
-<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#overview">Overview</a><ul>
+<li><a class="reference internal" href="#how-trunks-work">How Trunks Work</a></li>
+<li><a class="reference internal" href="#trunking-vs-registration">Trunking vs Registration</a></li>
+<li><a class="reference internal" href="#outbound-call-flow-trunking">Outbound Call Flow (Trunking)</a></li>
+<li><a class="reference internal" href="#inbound-call-flow-registration">Inbound Call Flow (Registration)</a></li>
+<li><a class="reference internal" href="#trunk-configuration">Trunk Configuration</a></li>
+<li><a class="reference internal" href="#complete-setup-example">Complete Setup Example</a></li>
+<li><a class="reference internal" href="#common-scenarios">Common Scenarios</a></li>
+<li><a class="reference internal" href="#best-practices">Best Practices</a></li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
+<li><a class="reference internal" href="#related-documentation">Related Documentation</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#trunking">Trunking</a><ul>
 <li><a class="reference internal" href="#server-address">Server address</a></li>
 <li><a class="reference internal" href="#authentication">Authentication</a><ul>

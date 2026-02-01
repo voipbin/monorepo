@@ -102,7 +102,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="message.html">Message</a></li>
 <li class="toctree-l1"><a class="reference internal" href="email.html">Email</a></li>
-<li class="toctree-l1"><a class="reference internal" href="chat.html">Chat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="talk.html">Talk</a></li>
 <li class="toctree-l1"><a class="reference internal" href="conversation.html">Conversation</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">AI &amp; Automation</span></p>
@@ -129,7 +129,6 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
 <li class="toctree-l1"><a class="reference internal" href="websocket.html">Websocket</a></li>
-<li class="toctree-l1"><a class="reference internal" href="talk.html">Talk</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul>
@@ -188,63 +187,536 @@
     <section id="mediastream">
 <h1>Mediastream<a class="headerlink" href="#mediastream" title="Link to this heading"></a></h1>
 <section id="overview">
-<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
-<p>In VoipBin, the media stream feature empowers users to directly control media transmission without relying on SIP (Session Initiation Protocol) signaling. Traditionally, SIP signaling is used to establish, modify, and terminate communication sessions in VoIP systems. However, the media stream feature in VoipBin introduces an alternative method for managing media streams independently of SIP signaling.</p>
-<p>With the media stream feature, users can initiate, manipulate, and terminate media streams directly through the VoipBin platform, bypassing the need for SIP signaling. This capability offers several advantages:</p>
-<p>Flexibility: Users have greater flexibility in controlling media streams, as they can manage them independently of SIP signaling. This flexibility allows for more dynamic and customizable communication experiences.</p>
-<p>Efficiency: By eliminating the dependency on SIP signaling for media control, the media stream feature can streamline the process of initiating and managing media streams. This can lead to more efficient use of resources and reduced latency in media transmission.</p>
-<p>Scalability: The media stream feature can enhance the scalability of VoipBin by reducing the overhead associated with SIP signaling for media control. This can support a larger number of concurrent media streams and accommodate higher traffic volumes.</p>
-<p>Enhanced User Experience: By enabling direct control over media streams, VoipBin can offer users a more seamless and responsive communication experience. Users can adjust media settings in real-time without the constraints imposed by SIP signaling.</p>
-<p>Overall, the media stream feature in VoipBin empowers users with greater control and flexibility in managing media transmission, enhancing the efficiency, scalability, and user experience of the platform. This capability enables a wide range of applications, from real-time communication to multimedia streaming, with minimal reliance on traditional SIP signaling mechanisms.</p>
-<section id="available-resources">
-<h3>Available resources<a class="headerlink" href="#available-resources" title="Link to this heading"></a></h3>
-<p>Currently, support the below types of resources.
-* Call: See detail <cite>here &lt;call-overview&gt;</cite>.
-* Conference: See detail <cite>here &lt;conference-overview&gt;</cite>.</p>
+<span id="mediastream-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<p>VoIPBIN’s Media Stream API provides direct access to call and conference audio via WebSocket connections. Instead of relying on SIP signaling for media control, you can stream audio bidirectionally with your applications for real-time processing, AI integration, custom IVR, and more.</p>
+<p>With the Media Stream API you can:</p>
+<ul class="simple">
+<li><p>Stream live call audio to your application in real-time</p></li>
+<li><p>Inject audio into calls and conferences</p></li>
+<li><p>Build AI voice assistants with direct audio access</p></li>
+<li><p>Create custom speech recognition pipelines</p></li>
+<li><p>Implement real-time audio analysis and monitoring</p></li>
+</ul>
+<section id="how-media-streaming-works">
+<h3>How Media Streaming Works<a class="headerlink" href="#how-media-streaming-works" title="Link to this heading"></a></h3>
+<p>When you connect to a media stream, VoIPBIN establishes a WebSocket connection that carries audio data directly between the call/conference and your application.</p>
+<p><strong>Media Stream Architecture</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Traditional</span> <span class="n">VoIP</span><span class="p">:</span>                   <span class="n">VoIPBIN</span> <span class="n">Media</span> <span class="n">Stream</span><span class="p">:</span>
+<span class="o">+-------+</span>   <span class="n">SIP</span>   <span class="o">+-------+</span>         <span class="o">+-------+</span>   <span class="n">WebSocket</span>  <span class="o">+----------+</span>
+<span class="o">|</span> <span class="n">Phone</span> <span class="o">|&lt;-------&gt;|</span><span class="n">VoIPBIN</span><span class="o">|</span>         <span class="o">|</span> <span class="n">Call</span>  <span class="o">|&lt;============&gt;|</span> <span class="n">Your</span> <span class="n">App</span> <span class="o">|</span>
+<span class="o">+-------+</span>         <span class="o">+-------+</span>         <span class="o">+-------+</span>              <span class="o">+----------+</span>
+     <span class="p">(</span><span class="n">signaling</span> <span class="n">only</span><span class="p">)</span>                    <span class="p">(</span><span class="n">direct</span> <span class="n">audio</span> <span class="n">access</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Key Differences from Traditional VoIP</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Aspect</p></th>
+<th class="head"><p>Traditional SIP</p></th>
+<th class="head"><p>Media Streaming</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Audio Access</p></td>
+<td><p>Via RTP to SIP endpoints</p></td>
+<td><p>Direct WebSocket to your app</p></td>
+</tr>
+<tr class="row-odd"><td><p>Control</p></td>
+<td><p>SIP signaling</p></td>
+<td><p>API and WebSocket</p></td>
+</tr>
+<tr class="row-even"><td><p>Integration</p></td>
+<td><p>Requires SIP stack</p></td>
+<td><p>Simple WebSocket client</p></td>
+</tr>
+<tr class="row-odd"><td><p>Use Cases</p></td>
+<td><p>Phone-to-phone calls</p></td>
+<td><p>AI, custom IVR, analysis</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>System Components</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+--------+</span>                                              <span class="o">+-----------+</span>
+<span class="o">|</span>  <span class="n">Call</span>  <span class="o">|&lt;-------</span> <span class="n">RTP</span> <span class="o">-------&gt;+</span>                        <span class="o">|</span>           <span class="o">|</span>
+<span class="o">+--------+</span>                     <span class="o">|</span>                        <span class="o">|</span>  <span class="n">Your</span>     <span class="o">|</span>
+                          <span class="o">+----+-----+</span>                  <span class="o">|</span>  <span class="n">App</span>      <span class="o">|</span>
+                          <span class="o">|</span> <span class="n">VoIPBIN</span>  <span class="o">|&lt;==</span> <span class="n">WebSocket</span> <span class="o">===&gt;|</span>           <span class="o">|</span>
+                          <span class="o">|</span> <span class="n">Media</span>    <span class="o">|</span>                  <span class="o">|</span> <span class="o">-</span> <span class="n">AI</span><span class="o">/</span><span class="n">ML</span>   <span class="o">|</span>
+                          <span class="o">|</span> <span class="n">Bridge</span>   <span class="o">|</span>                  <span class="o">|</span> <span class="o">-</span> <span class="n">STT</span><span class="o">/</span><span class="n">TTS</span> <span class="o">|</span>
+<span class="o">+------------+</span>            <span class="o">+----+-----+</span>                  <span class="o">|</span> <span class="o">-</span> <span class="n">IVR</span>     <span class="o">|</span>
+<span class="o">|</span> <span class="n">Conference</span> <span class="o">|&lt;--</span> <span class="n">RTP</span> <span class="o">---&gt;+</span>                             <span class="o">|</span>           <span class="o">|</span>
+<span class="o">+------------+</span>                                          <span class="o">+-----------+</span>
+</pre></div>
+</div>
+<p>The Media Bridge handles protocol conversion between RTP (VoIP standard) and WebSocket (web standard), enabling any WebSocket-capable application to process call audio.</p>
 </section>
-<section id="bi-directional-streaming">
-<h3>Bi-directional streaming<a class="headerlink" href="#bi-directional-streaming" title="Link to this heading"></a></h3>
-<p>Bi-directional streaming allows for simultaneous transmission and reception of media. To establish bi-directional streaming, an additional API call is necessary:</p>
-<p>Media stream for call</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>GET https://api.voipbin.net/v1.0/calls/&lt;call-id&gt;/media_stream?encapsulation=&lt;encapsulation-type&gt;&amp;token=&lt;token&gt;
-
-https://api.voipbin.net/v1.0/calls/652af662-eb45-11ee-b1a5-6fde165f9226/media_stream?encapsulation=rtp&amp;token=some_token
+<section id="streaming-modes">
+<h3>Streaming Modes<a class="headerlink" href="#streaming-modes" title="Link to this heading"></a></h3>
+<p>VoIPBIN supports two streaming modes based on your application’s needs.</p>
+<p><strong>Bi-Directional Streaming</strong></p>
+<p>Your application both receives and sends audio through the same WebSocket connection.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+----------+</span>                              <span class="o">+----------+</span>
+<span class="o">|</span>          <span class="o">|=======</span> <span class="n">audio</span> <span class="n">IN</span> <span class="o">============&gt;|</span>          <span class="o">|</span>
+<span class="o">|</span> <span class="n">VoIPBIN</span>  <span class="o">|</span>                              <span class="o">|</span> <span class="n">Your</span> <span class="n">App</span> <span class="o">|</span>
+<span class="o">|</span>          <span class="o">|&lt;======</span> <span class="n">audio</span> <span class="n">OUT</span> <span class="o">============|</span>          <span class="o">|</span>
+<span class="o">+----------+</span>                              <span class="o">+----------+</span>
 </pre></div>
 </div>
-<p>Media stream for conference</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>GET https://api.voipbin.net/v1.0/conferences/&lt;conference-id&gt;/media_stream?encapsulation=&lt;encapsulation-type&gt;&amp;token=&lt;token&gt;
-
-https://api.voipbin.net/v1.0/conferences/1ed12456-eb4b-11ee-bba8-1bfb2838807a/media_stream?encapsulation=rtp&amp;token=some_token
+<p><strong>Initiate via API:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>GET https://api.voipbin.net/v1.0/calls/&lt;call-id&gt;/media_stream?encapsulation=rtp&amp;token=&lt;token&gt;
 </pre></div>
 </div>
-<p>By making this API call, a WebSocket connection is created, facilitating both the reception and transmission of media data. This means that both the server (VoipBin) and the client can send and receive media through the WebSocket connection.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-----------------+</span>        <span class="n">Websocket</span>         <span class="o">+-----------------+</span>
-<span class="o">|</span>                 <span class="o">|--------------------------|</span>                 <span class="o">|</span>
-<span class="o">|</span>     <span class="n">voipbin</span>     <span class="o">|&lt;----</span>  <span class="n">Media</span> <span class="n">In</span><span class="o">/</span><span class="n">Out</span>  <span class="o">----&gt;|</span>     <span class="n">Client</span>      <span class="o">|</span>
-<span class="o">|</span>                 <span class="o">|--------------------------|</span>                 <span class="o">|</span>
-<span class="o">+-----------------+</span>                          <span class="o">+-----------------+</span>
+<p><strong>Use cases:</strong>
+- AI voice assistants (listen and respond)
+- Interactive IVR systems
+- Real-time audio processing with feedback
+- Call bridging to custom systems</p>
+<p><strong>Uni-Directional Streaming</strong></p>
+<p>VoIPBIN receives audio from your server and plays it to the call. Your app sends audio but doesn’t receive call audio.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+----------+</span>                              <span class="o">+----------+</span>
+<span class="o">|</span>          <span class="o">|</span>                              <span class="o">|</span>          <span class="o">|</span>
+<span class="o">|</span> <span class="n">VoIPBIN</span>  <span class="o">|&lt;======</span> <span class="n">audio</span> <span class="n">only</span> <span class="o">===========|</span> <span class="n">Your</span> <span class="n">App</span> <span class="o">|</span>
+<span class="o">|</span>          <span class="o">|</span>                              <span class="o">|</span>          <span class="o">|</span>
+<span class="o">+----------+</span>                              <span class="o">+----------+</span>
 </pre></div>
 </div>
-</section>
-<section id="uni-directional-streaming">
-<h3>Uni-directional streaming<a class="headerlink" href="#uni-directional-streaming" title="Link to this heading"></a></h3>
-<p>Uni-directional streaming involves the transmission of media in one direction only. This can be achieved through the use of a flow action known as “external media start”. This flow action initiates the transmission of media from the server to the client, without the need for the client to send media back.
-See detail <a class="reference internal" href="flow_struct_action.html#flow-struct-action-external-media-start"><span class="std std-ref">here</span></a>.</p>
+<p><strong>Initiate via Flow Action:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;external_media_start&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;wss://your-server.com/audio&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;encapsulation&quot;</span><span class="p">:</span> <span class="s2">&quot;audiosocket&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>See detail <a class="reference internal" href="flow_struct_action.html#flow-struct-action-external-media-start"><span class="std std-ref">here</span></a>.</p>
+<p><strong>Use cases:</strong>
+- Custom music on hold
+- Pre-recorded message playback
+- Text-to-speech from external service
+- Audio announcements</p>
+<p><strong>Mode Comparison</strong></p>
 </section>
 <section id="encapsulation-types">
 <h3>Encapsulation Types<a class="headerlink" href="#encapsulation-types" title="Link to this heading"></a></h3>
-<p>There are two encapsulation types supported for media streaming:</p>
+<p>VoIPBIN supports three encapsulation types for different integration scenarios.</p>
+<p><strong>Decision Guide</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>                  What&#39;s your use case?
+                         |
+        +----------------+----------------+
+        |                                 |
+  Standard VoIP                      Simple audio
+  integration?                       processing?
+        |                                 |
+  +-----+-----+                     +-----+-----+
+  |           |                     |           |
+ Yes         No                    Yes         No
+  |           |                     |           |
+  v           |                     v           |
+[RTP]         |                   [SLN]         |
+              |                                 |
+         Asterisk                               |
+         integration?                           |
+              |                                 |
+        +-----+-----+                           |
+        |           |                           |
+       Yes         No                           |
+        |           |                           |
+        v           +---------------------------+
+  [AudioSocket]                 |
+                                v
+                          [RTP default]
+</pre></div>
+</div>
+<p><strong>RTP (Real-time Transport Protocol)</strong></p>
+<p>The standard protocol for audio/video over IP networks.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+------------------+------------------+</span>
+<span class="o">|</span>   <span class="n">RTP</span> <span class="n">Header</span>     <span class="o">|</span>   <span class="n">Audio</span> <span class="n">Payload</span>  <span class="o">|</span>
+<span class="o">|</span>   <span class="p">(</span><span class="mi">12</span> <span class="nb">bytes</span><span class="p">)</span>     <span class="o">|</span>   <span class="p">(</span><span class="mi">160</span> <span class="nb">bytes</span><span class="p">)</span>    <span class="o">|</span>
+<span class="o">+------------------+------------------+</span>
+</pre></div>
+</div>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Specification</p></th>
+<th class="head"><p>Value</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Protocol</p></td>
+<td><p>RTP over WebSocket</p></td>
+</tr>
+<tr class="row-odd"><td><p>Codec</p></td>
+<td><p>G.711 μ-law (ulaw)</p></td>
+</tr>
+<tr class="row-even"><td><p>Sample Rate</p></td>
+<td><p>8 kHz</p></td>
+</tr>
+<tr class="row-odd"><td><p>Bit Depth</p></td>
+<td><p>16-bit</p></td>
+</tr>
+<tr class="row-even"><td><p>Channels</p></td>
+<td><p>Mono</p></td>
+</tr>
+<tr class="row-odd"><td><p>Packet Size</p></td>
+<td><p>172 bytes (12 header + 160 payload = 20ms)</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Best for:</strong> Standard VoIP tools, industry compatibility, existing RTP processing pipelines.</p>
+<p><strong>SLN (Signed Linear)</strong></p>
+<p>Raw audio without protocol overhead.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+----------------------------------+</span>
+<span class="o">|</span>   <span class="n">Raw</span> <span class="n">PCM</span> <span class="n">Audio</span> <span class="n">Data</span>             <span class="o">|</span>
+<span class="o">|</span>   <span class="p">(</span><span class="n">no</span> <span class="n">headers</span><span class="p">,</span> <span class="n">no</span> <span class="n">padding</span><span class="p">)</span>       <span class="o">|</span>
+<span class="o">+----------------------------------+</span>
+</pre></div>
+</div>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Specification</p></th>
+<th class="head"><p>Value</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Format</p></td>
+<td><p>Raw PCM, signed linear</p></td>
+</tr>
+<tr class="row-odd"><td><p>Sample Rate</p></td>
+<td><p>8 kHz</p></td>
+</tr>
+<tr class="row-even"><td><p>Bit Depth</p></td>
+<td><p>16-bit signed</p></td>
+</tr>
+<tr class="row-odd"><td><p>Channels</p></td>
+<td><p>Mono</p></td>
+</tr>
+<tr class="row-even"><td><p>Byte Order</p></td>
+<td><p>Native</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Best for:</strong> Minimal overhead, simple audio processing, direct PCM access without parsing.</p>
+<p><strong>AudioSocket</strong></p>
+<p>Asterisk-specific protocol designed for simple audio streaming.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+------------------+------------------+</span>
+<span class="o">|</span> <span class="n">AudioSocket</span> <span class="n">Hdr</span>  <span class="o">|</span>   <span class="n">PCM</span> <span class="n">Audio</span>      <span class="o">|</span>
+<span class="o">+------------------+------------------+</span>
+</pre></div>
+</div>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Specification</p></th>
+<th class="head"><p>Value</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Protocol</p></td>
+<td><p>Asterisk AudioSocket</p></td>
+</tr>
+<tr class="row-odd"><td><p>Format</p></td>
+<td><p>PCM little-endian</p></td>
+</tr>
+<tr class="row-even"><td><p>Sample Rate</p></td>
+<td><p>8 kHz</p></td>
+</tr>
+<tr class="row-odd"><td><p>Bit Depth</p></td>
+<td><p>16-bit</p></td>
+</tr>
+<tr class="row-even"><td><p>Channels</p></td>
+<td><p>Mono</p></td>
+</tr>
+<tr class="row-odd"><td><p>Chunk Size</p></td>
+<td><p>320 bytes (20ms of audio)</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Best for:</strong> Asterisk integration, simple streaming with minimal overhead.</p>
+<p>See <a class="reference external" href="https://docs.asterisk.org/Configuration/Channel-Drivers/AudioSocket/">Asterisk AudioSocket Documentation</a> for protocol details.</p>
+<p><strong>Encapsulation Comparison</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Aspect</p></th>
+<th class="head"><p>RTP</p></th>
+<th class="head"><p>SLN</p></th>
+<th class="head"><p>AudioSocket</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Headers</p></td>
+<td><p>12 bytes</p></td>
+<td><p>None</p></td>
+<td><p>Protocol header</p></td>
+</tr>
+<tr class="row-odd"><td><p>Compatibility</p></td>
+<td><p>Industry standard</p></td>
+<td><p>Simple</p></td>
+<td><p>Asterisk</p></td>
+</tr>
+<tr class="row-even"><td><p>Overhead</p></td>
+<td><p>Low</p></td>
+<td><p>Minimal</p></td>
+<td><p>Low</p></td>
+</tr>
+<tr class="row-odd"><td><p>Parsing Required</p></td>
+<td><p>Yes (RTP)</p></td>
+<td><p>No</p></td>
+<td><p>Yes (AudioSocket)</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="supported-resources">
+<h3>Supported Resources<a class="headerlink" href="#supported-resources" title="Link to this heading"></a></h3>
+<p>Media streaming is available for both calls and conferences.</p>
+<p><strong>Call Media Streaming</strong></p>
+<p>Stream audio from a single call.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>GET https://api.voipbin.net/v1.0/calls/&lt;call-id&gt;/media_stream?encapsulation=&lt;type&gt;&amp;token=&lt;token&gt;
+</pre></div>
+</div>
+<p><strong>Audio contains:</strong> Both parties’ audio mixed together.</p>
+<p><strong>Conference Media Streaming</strong></p>
+<p>Stream audio from a conference with multiple participants.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>GET https://api.voipbin.net/v1.0/conferences/&lt;conference-id&gt;/media_stream?encapsulation=&lt;type&gt;&amp;token=&lt;token&gt;
+</pre></div>
+</div>
+<p><strong>Audio contains:</strong> All participants’ audio mixed together.</p>
+<p><strong>Resource Comparison</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Aspect</p></th>
+<th class="head"><p>Call</p></th>
+<th class="head"><p>Conference</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Audio Source</p></td>
+<td><p>Two-party conversation</p></td>
+<td><p>Multi-party conversation</p></td>
+</tr>
+<tr class="row-odd"><td><p>Audio Mix</p></td>
+<td><p>Caller + callee</p></td>
+<td><p>All participants</p></td>
+</tr>
+<tr class="row-even"><td><p>Audio Injection</p></td>
+<td><p>Heard by both parties</p></td>
+<td><p>Heard by all participants</p></td>
+</tr>
+<tr class="row-odd"><td><p>Use Case</p></td>
+<td><p>1:1 AI assistant</p></td>
+<td><p>Conference monitoring/recording</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="connection-lifecycle">
+<h3>Connection Lifecycle<a class="headerlink" href="#connection-lifecycle" title="Link to this heading"></a></h3>
+<p>Understanding the WebSocket connection lifecycle helps build robust streaming applications.</p>
+<p><strong>Connection Flow</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Your</span> <span class="n">App</span>                         <span class="n">VoIPBIN</span>
+    <span class="o">|</span>                               <span class="o">|</span>
+    <span class="o">|</span> <span class="n">GET</span> <span class="o">/</span><span class="n">calls</span><span class="o">/</span><span class="p">{</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">media_stream</span>  <span class="o">|</span>
+    <span class="o">+------------------------------&gt;|</span>
+    <span class="o">|</span>                               <span class="o">|</span>
+    <span class="o">|</span> <span class="mi">101</span> <span class="n">Switching</span> <span class="n">Protocols</span>       <span class="o">|</span>
+    <span class="o">|&lt;------------------------------+</span>
+    <span class="o">|</span>                               <span class="o">|</span>
+    <span class="o">|&lt;=======</span> <span class="n">audio</span> <span class="n">frames</span> <span class="o">========&gt;|</span>  <span class="p">(</span><span class="n">bi</span><span class="o">-</span><span class="n">directional</span><span class="p">)</span>
+    <span class="o">|&lt;=======</span> <span class="n">audio</span> <span class="n">frames</span> <span class="o">========&gt;|</span>
+    <span class="o">|&lt;=======</span> <span class="n">audio</span> <span class="n">frames</span> <span class="o">========&gt;|</span>
+    <span class="o">|</span>                               <span class="o">|</span>
+    <span class="o">|</span> <span class="n">close</span><span class="p">()</span> <span class="ow">or</span> <span class="n">call</span> <span class="n">ends</span>          <span class="o">|</span>
+    <span class="o">+------------------------------&gt;|</span>
+    <span class="o">|</span>                               <span class="o">|</span>
+</pre></div>
+</div>
+<p><strong>Connection States</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">connecting</span> <span class="o">---&gt;</span> <span class="nb">open</span> <span class="o">---&gt;</span> <span class="n">streaming</span> <span class="o">---&gt;</span> <span class="n">closing</span> <span class="o">---&gt;</span> <span class="n">closed</span>
+                               <span class="o">|</span>
+                               <span class="n">v</span>
+                          <span class="p">(</span><span class="n">call</span> <span class="n">ends</span><span class="p">)</span>
+                               <span class="o">|</span>
+                               <span class="n">v</span>
+                            <span class="n">closed</span>
+</pre></div>
+</div>
+<p><strong>State Descriptions</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>State</p></th>
+<th class="head"><p>What’s happening</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>connecting</p></td>
+<td><p>WebSocket handshake in progress</p></td>
+</tr>
+<tr class="row-odd"><td><p>open</p></td>
+<td><p>Connection established, ready for audio</p></td>
+</tr>
+<tr class="row-even"><td><p>streaming</p></td>
+<td><p>Audio frames being sent/received</p></td>
+</tr>
+<tr class="row-odd"><td><p>closing</p></td>
+<td><p>Graceful shutdown initiated</p></td>
+</tr>
+<tr class="row-even"><td><p>closed</p></td>
+<td><p>Connection terminated</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Connection Termination</strong></p>
+<p>The WebSocket connection closes when:</p>
 <ul class="simple">
-<li><p>rtp: RTP (Real-time Transport Protocol). This is the standard protocol for transmitting audio and video over IP networks. It provides a means for transporting media streams (e.g., voice) from one endpoint to another.</p></li>
-<li><p>sln: Signed Linear Mono. This media stream format does not include headers or padding. ulaw allowed.</p></li>
-<li><p>audiosocket: AudioSocket. This is a protocol specific to Asterisk, known as Asterisk’s AudioSocket type. It is designed to facilitate simple audio streaming with minimal overhead. More details about AudioSocket can be found in the Asterisk AudioSocket Documentation(<a class="reference external" href="https://docs.asterisk.org/Configuration/Channel-Drivers/AudioSocket/">https://docs.asterisk.org/Configuration/Channel-Drivers/AudioSocket/</a>).</p></li>
+<li><p>Your application closes the connection</p></li>
+<li><p>The call or conference ends</p></li>
+<li><p>Network failure occurs</p></li>
+<li><p>Authentication token expires</p></li>
 </ul>
 </section>
-<section id="codec">
-<h3>Codec<a class="headerlink" href="#codec" title="Link to this heading"></a></h3>
+<section id="integration-patterns">
+<h3>Integration Patterns<a class="headerlink" href="#integration-patterns" title="Link to this heading"></a></h3>
+<p>Common patterns for integrating media streaming with your applications.</p>
+<p><strong>Pattern 1: AI Voice Assistant</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Call</span> <span class="n">Audio</span>         <span class="n">Your</span> <span class="n">App</span>           <span class="n">AI</span> <span class="n">Service</span>
+    <span class="o">|</span>                  <span class="o">|</span>                   <span class="o">|</span>
+    <span class="o">|====</span><span class="n">audio</span><span class="o">====&gt;</span>    <span class="o">|</span>                   <span class="o">|</span>
+    <span class="o">|</span>                  <span class="o">|</span> <span class="n">STT</span>               <span class="o">|</span>
+    <span class="o">|</span>                  <span class="o">+------------------&gt;|</span>
+    <span class="o">|</span>                  <span class="o">|</span>                   <span class="o">|</span>
+    <span class="o">|</span>                  <span class="o">|</span> <span class="n">AI</span> <span class="n">response</span>       <span class="o">|</span>
+    <span class="o">|</span>                  <span class="o">|&lt;------------------+</span>
+    <span class="o">|</span>                  <span class="o">|</span>                   <span class="o">|</span>
+    <span class="o">|</span>                  <span class="o">|</span> <span class="n">TTS</span>               <span class="o">|</span>
+    <span class="o">|</span>    <span class="o">&lt;====</span><span class="n">audio</span><span class="o">====+</span>                   <span class="o">|</span>
+    <span class="o">|</span>                  <span class="o">|</span>                   <span class="o">|</span>
+</pre></div>
+</div>
+<p><strong>Pattern 2: Real-Time Monitoring</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Call</span> <span class="n">Audio</span>         <span class="n">Your</span> <span class="n">App</span>           <span class="n">Dashboard</span>
+    <span class="o">|</span>                  <span class="o">|</span>                   <span class="o">|</span>
+    <span class="o">|====</span><span class="n">audio</span><span class="o">====&gt;</span>    <span class="o">|</span>                   <span class="o">|</span>
+    <span class="o">|</span>                  <span class="o">|</span> <span class="n">analyze</span>           <span class="o">|</span>
+    <span class="o">|</span>                  <span class="o">+------------------&gt;|</span>
+    <span class="o">|</span>                  <span class="o">|</span>    <span class="n">sentiment</span><span class="p">,</span>     <span class="o">|</span>
+    <span class="o">|</span>                  <span class="o">|</span>    <span class="n">keywords</span><span class="p">,</span>      <span class="o">|</span>
+    <span class="o">|</span>                  <span class="o">|</span>    <span class="n">quality</span>        <span class="o">|</span>
+    <span class="o">|</span>                  <span class="o">|</span>                   <span class="o">|</span>
+</pre></div>
+</div>
+<p><strong>Pattern 3: Custom IVR</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Call</span> <span class="n">Audio</span>         <span class="n">Your</span> <span class="n">App</span>           <span class="n">Logic</span> <span class="n">Engine</span>
+    <span class="o">|</span>                  <span class="o">|</span>                   <span class="o">|</span>
+    <span class="o">|====</span><span class="n">audio</span><span class="o">====&gt;</span>    <span class="o">|</span>                   <span class="o">|</span>
+    <span class="o">|</span>                  <span class="o">|</span> <span class="n">detect</span> <span class="n">DTMF</span><span class="o">/</span><span class="n">speech</span><span class="o">|</span>
+    <span class="o">|</span>                  <span class="o">+------------------&gt;|</span>
+    <span class="o">|</span>                  <span class="o">|</span>                   <span class="o">|</span>
+    <span class="o">|</span>                  <span class="o">|</span> <span class="nb">next</span> <span class="n">action</span>       <span class="o">|</span>
+    <span class="o">|</span>                  <span class="o">|&lt;------------------+</span>
+    <span class="o">|</span>                  <span class="o">|</span>                   <span class="o">|</span>
+    <span class="o">|</span>    <span class="o">&lt;====</span><span class="n">prompt</span><span class="o">===+</span>                   <span class="o">|</span>
+    <span class="o">|</span>                  <span class="o">|</span>                   <span class="o">|</span>
+</pre></div>
+</div>
+<p><strong>Pattern 4: Recording with Processing</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Call</span> <span class="n">Audio</span>         <span class="n">Your</span> <span class="n">App</span>           <span class="n">Storage</span>
+    <span class="o">|</span>                  <span class="o">|</span>                   <span class="o">|</span>
+    <span class="o">|====</span><span class="n">audio</span><span class="o">====&gt;</span>    <span class="o">|</span>                   <span class="o">|</span>
+    <span class="o">|</span>                  <span class="o">|</span> <span class="n">process</span>           <span class="o">|</span>
+    <span class="o">|</span>                  <span class="o">|</span> <span class="p">(</span><span class="nb">filter</span><span class="p">,</span> <span class="n">enhance</span><span class="p">)</span> <span class="o">|</span>
+    <span class="o">|</span>                  <span class="o">|</span>                   <span class="o">|</span>
+    <span class="o">|</span>                  <span class="o">|</span> <span class="n">store</span>             <span class="o">|</span>
+    <span class="o">|</span>                  <span class="o">+------------------&gt;|</span>
+    <span class="o">|</span>                  <span class="o">|</span>                   <span class="o">|</span>
+</pre></div>
+</div>
+<p>For working code examples of these patterns, see the <a class="reference internal" href="mediastream_tutorial.html#mediastream-tutorial"><span class="std std-ref">Media Stream Tutorial</span></a>.</p>
+</section>
+<section id="best-practices">
+<h3>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading"></a></h3>
+<p><strong>1. Audio Timing</strong></p>
 <ul class="simple">
-<li><p>VoipBin currently supports the ulaw codec. always 16-bit, 8kHz signed linear mono.</p></li>
-<li><p>For AudioSocket, it uses 16-bit, 8kHz, mono PCM (little-endian).</p></li>
+<li><p>Send audio in consistent 20ms chunks</p></li>
+<li><p>Maintain proper timing to avoid audio gaps or overlaps</p></li>
+<li><p>Buffer incoming audio to handle network jitter</p></li>
+</ul>
+<p><strong>2. Connection Management</strong></p>
+<ul class="simple">
+<li><p>Implement automatic reconnection for dropped connections</p></li>
+<li><p>Handle the <code class="docutils literal notranslate"><span class="pre">onclose</span></code> event gracefully</p></li>
+<li><p>Close connections when no longer needed</p></li>
+</ul>
+<p><strong>3. Resource Efficiency</strong></p>
+<ul class="simple">
+<li><p>Process audio asynchronously to avoid blocking</p></li>
+<li><p>Use appropriate buffer sizes (typically 320 bytes for 20ms)</p></li>
+<li><p>Monitor memory usage for long-running streams</p></li>
+</ul>
+<p><strong>4. Error Handling</strong></p>
+<ul class="simple">
+<li><p>Log connection errors for debugging</p></li>
+<li><p>Implement exponential backoff for reconnection attempts</p></li>
+<li><p>Handle authentication failures gracefully</p></li>
+</ul>
+</section>
+<section id="troubleshooting">
+<h3>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h3>
+<p><strong>Connection Issues</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Symptom</p></th>
+<th class="head"><p>Solution</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Connection refused</p></td>
+<td><p>Verify call/conference is active and
+in “progressing” status</p></td>
+</tr>
+<tr class="row-odd"><td><p>401 Unauthorized</p></td>
+<td><p>Check API token is valid and has permissions</p></td>
+</tr>
+<tr class="row-even"><td><p>Connection drops</p></td>
+<td><p>Implement reconnection logic; check network
+stability</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Audio Issues</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Symptom</p></th>
+<th class="head"><p>Solution</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>No audio received</p></td>
+<td><p>Verify call is answered and audio is flowing;
+check encapsulation type</p></td>
+</tr>
+<tr class="row-odd"><td><p>Audio quality poor</p></td>
+<td><p>Check network latency; verify correct audio
+format; monitor packet loss</p></td>
+</tr>
+<tr class="row-even"><td><p>Audio choppy</p></td>
+<td><p>Implement jitter buffer; send in consistent
+20ms chunks; check CPU usage</p></td>
+</tr>
+<tr class="row-odd"><td><p>Can’t send audio</p></td>
+<td><p>Use binary WebSocket frames; verify audio
+format matches encapsulation type</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="related-documentation">
+<h3>Related Documentation<a class="headerlink" href="#related-documentation" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><a class="reference internal" href="mediastream_tutorial.html#mediastream-tutorial"><span class="std std-ref">Media Stream Tutorial</span></a> - Code examples and use cases</p></li>
+<li><p><a class="reference internal" href="call_overview.html#call-overview"><span class="std std-ref">Call Overview</span></a> - Call lifecycle and states</p></li>
+<li><p><a class="reference internal" href="conference_overview.html#conference-overview"><span class="std std-ref">Conference Overview</span></a> - Conference management</p></li>
+<li><p><a class="reference internal" href="flow_struct_action.html#flow-struct-action-external-media-start"><span class="std std-ref">Flow Actions</span></a> - External media flow action</p></li>
 </ul>
 </section>
 </section>
@@ -617,8 +1089,8 @@ ws.on(&#39;close&#39;, function() {
 - Channels: Mono
 - Chunk size: 320 bytes (20ms of audio)</p>
 </section>
-<section id="best-practices">
-<h3>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading"></a></h3>
+<section id="id2">
+<h3>Best Practices<a class="headerlink" href="#id2" title="Link to this heading"></a></h3>
 <p><strong>1. Buffer Management:</strong>
 - Maintain audio buffers to handle jitter
 - Send audio in consistent 20ms chunks
@@ -644,8 +1116,8 @@ ws.on(&#39;close&#39;, function() {
 - Validate authentication tokens
 - Encrypt sensitive audio data</p>
 </section>
-<section id="connection-lifecycle">
-<h3>Connection Lifecycle<a class="headerlink" href="#connection-lifecycle" title="Link to this heading"></a></h3>
+<section id="id3">
+<h3>Connection Lifecycle<a class="headerlink" href="#id3" title="Link to this heading"></a></h3>
 <p><strong>1. Establish Connection:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>GET /v1.0/calls/&lt;call-id&gt;/media_stream?encapsulation=rtp&amp;token=&lt;token&gt;
 </pre></div>
@@ -667,8 +1139,8 @@ ws.on(&#39;close&#39;, function() {
 </pre></div>
 </div>
 </section>
-<section id="troubleshooting">
-<h3>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h3>
+<section id="id4">
+<h3>Troubleshooting<a class="headerlink" href="#id4" title="Link to this heading"></a></h3>
 <p><strong>Common Issues:</strong></p>
 <p><strong>No audio received:</strong>
 - Check WebSocket connection is established
@@ -686,7 +1158,7 @@ ws.on(&#39;close&#39;, function() {
 - Ensure binary frames are used (not text)
 - Verify audio format is correct
 - Check audio chunk size (typically 20ms)</p>
-<p>For more information about media stream configuration, see <span class="xref std std-ref">Media Stream Overview</span>.</p>
+<p>For more information about media stream configuration, see <a class="reference internal" href="mediastream_overview.html#mediastream-overview"><span class="std std-ref">Media Stream Overview</span></a>.</p>
 </section>
 </section>
 </section>
@@ -708,11 +1180,15 @@ ws.on(&#39;close&#39;, function() {
                             <ul>
 <li><a class="reference internal" href="#">Mediastream</a><ul>
 <li><a class="reference internal" href="#overview">Overview</a><ul>
-<li><a class="reference internal" href="#available-resources">Available resources</a></li>
-<li><a class="reference internal" href="#bi-directional-streaming">Bi-directional streaming</a></li>
-<li><a class="reference internal" href="#uni-directional-streaming">Uni-directional streaming</a></li>
+<li><a class="reference internal" href="#how-media-streaming-works">How Media Streaming Works</a></li>
+<li><a class="reference internal" href="#streaming-modes">Streaming Modes</a></li>
 <li><a class="reference internal" href="#encapsulation-types">Encapsulation Types</a></li>
-<li><a class="reference internal" href="#codec">Codec</a></li>
+<li><a class="reference internal" href="#supported-resources">Supported Resources</a></li>
+<li><a class="reference internal" href="#connection-lifecycle">Connection Lifecycle</a></li>
+<li><a class="reference internal" href="#integration-patterns">Integration Patterns</a></li>
+<li><a class="reference internal" href="#best-practices">Best Practices</a></li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
+<li><a class="reference internal" href="#related-documentation">Related Documentation</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#tutorial">Tutorial</a><ul>
@@ -723,9 +1199,9 @@ ws.on(&#39;close&#39;, function() {
 <li><a class="reference internal" href="#uni-directional-streaming-with-flow-action">Uni-Directional Streaming with Flow Action</a></li>
 <li><a class="reference internal" href="#common-use-cases">Common Use Cases</a></li>
 <li><a class="reference internal" href="#audio-format-details">Audio Format Details</a></li>
-<li><a class="reference internal" href="#best-practices">Best Practices</a></li>
-<li><a class="reference internal" href="#connection-lifecycle">Connection Lifecycle</a></li>
-<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
+<li><a class="reference internal" href="#id2">Best Practices</a></li>
+<li><a class="reference internal" href="#id3">Connection Lifecycle</a></li>
+<li><a class="reference internal" href="#id4">Troubleshooting</a></li>
 </ul>
 </li>
 </ul>

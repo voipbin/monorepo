@@ -102,7 +102,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="message.html">Message</a></li>
 <li class="toctree-l1"><a class="reference internal" href="email.html">Email</a></li>
-<li class="toctree-l1"><a class="reference internal" href="chat.html">Chat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="talk.html">Talk</a></li>
 <li class="toctree-l1"><a class="reference internal" href="conversation.html">Conversation</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">AI &amp; Automation</span></p>
@@ -129,7 +129,6 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
 <li class="toctree-l1"><a class="reference internal" href="websocket.html">Websocket</a></li>
-<li class="toctree-l1"><a class="reference internal" href="talk.html">Talk</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul>
@@ -189,20 +188,315 @@
 <span id="route-main"></span><h1>Route<a class="headerlink" href="#route" title="Link to this heading"></a></h1>
 <section id="overview">
 <span id="route-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
-<p>The Route API in VoIPBIN provides a powerful mechanism for defining SIP routing strategies, ensuring reliable call delivery, and enabling failover to different service providers in case of call failures. By configuring routes, users can make dynamic decisions on which service provider to use for outbound calls, optimizing call success rates and ensuring robust call delivery.</p>
+<p>VoIPBIN’s Route API provides intelligent SIP routing with automatic failover capabilities. Routes determine which provider handles outbound calls and define fallback strategies when primary routes fail.</p>
+<p>With the Route API you can:</p>
+<ul class="simple">
+<li><p>Define routing rules for outbound calls</p></li>
+<li><p>Configure provider failover sequences</p></li>
+<li><p>Set conditions for route selection</p></li>
+<li><p>Customize routing per customer</p></li>
+<li><p>Optimize call delivery success rates</p></li>
+</ul>
+<section id="how-routes-work">
+<h3>How Routes Work<a class="headerlink" href="#how-routes-work" title="Link to this heading"></a></h3>
+<p>Routes determine which provider handles each outbound call.</p>
+<p><strong>Route Architecture</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-----------------------------------------------------------------------+</span>
+<span class="o">|</span>                         <span class="n">Routing</span> <span class="n">System</span>                                <span class="o">|</span>
+<span class="o">+-----------------------------------------------------------------------+</span>
+
+<span class="n">Outbound</span> <span class="n">Call</span> <span class="n">Request</span>
+      <span class="o">|</span>
+      <span class="n">v</span>
+<span class="o">+-------------------+</span>
+<span class="o">|</span>   <span class="n">Route</span> <span class="n">Engine</span>    <span class="o">|</span>
+<span class="o">+--------+----------+</span>
+         <span class="o">|</span>
+         <span class="o">|</span> <span class="n">Evaluate</span> <span class="n">routes</span>
+         <span class="n">v</span>
+<span class="o">+--------+----------+--------+----------+</span>
+<span class="o">|</span>                   <span class="o">|</span>                   <span class="o">|</span>
+<span class="n">v</span>                   <span class="n">v</span>                   <span class="n">v</span>
+<span class="o">+----------+</span>   <span class="o">+----------+</span>   <span class="o">+----------+</span>
+<span class="o">|</span> <span class="n">Route</span> <span class="mi">1</span>  <span class="o">|</span>   <span class="o">|</span> <span class="n">Route</span> <span class="mi">2</span>  <span class="o">|</span>   <span class="o">|</span> <span class="n">Route</span> <span class="mi">3</span>  <span class="o">|</span>
+<span class="o">|</span> <span class="n">Priority</span> <span class="o">|</span>   <span class="o">|</span> <span class="n">Priority</span> <span class="o">|</span>   <span class="o">|</span> <span class="n">Priority</span> <span class="o">|</span>
+<span class="o">|</span>    <span class="mi">1</span>     <span class="o">|</span>   <span class="o">|</span>    <span class="mi">2</span>     <span class="o">|</span>   <span class="o">|</span>    <span class="mi">3</span>     <span class="o">|</span>
+<span class="o">+----+-----+</span>   <span class="o">+----+-----+</span>   <span class="o">+----+-----+</span>
+     <span class="o">|</span>              <span class="o">|</span>              <span class="o">|</span>
+     <span class="n">v</span>              <span class="n">v</span>              <span class="n">v</span>
+<span class="o">+---------+</span>    <span class="o">+---------+</span>    <span class="o">+---------+</span>
+<span class="o">|</span><span class="n">Provider</span> <span class="o">|</span>    <span class="o">|</span><span class="n">Provider</span> <span class="o">|</span>    <span class="o">|</span><span class="n">Provider</span> <span class="o">|</span>
+<span class="o">|</span>    <span class="n">A</span>    <span class="o">|</span>    <span class="o">|</span>    <span class="n">B</span>    <span class="o">|</span>    <span class="o">|</span>    <span class="n">C</span>    <span class="o">|</span>
+<span class="o">+---------+</span>    <span class="o">+---------+</span>    <span class="o">+---------+</span>
+</pre></div>
+</div>
+<p><strong>Key Components</strong></p>
+<ul class="simple">
+<li><p><strong>Route</strong>: A rule that maps calls to providers</p></li>
+<li><p><strong>Priority</strong>: Order in which routes are attempted</p></li>
+<li><p><strong>Failover</strong>: Automatic retry with different provider on failure</p></li>
+<li><p><strong>Conditions</strong>: Criteria for route selection</p></li>
+</ul>
+</section>
 <section id="route-failover">
 <span id="route-overview-route-failover"></span><h3>Route Failover<a class="headerlink" href="#route-failover" title="Link to this heading"></a></h3>
-<p>Route failover is a crucial feature of the Route API that allows the system to handle call failures gracefully. When a call request encounters a failure, such as encountering a 404, 5XX, or 6XX SIP fail code, the system can automatically trigger a retry with a different service provider.</p>
-<p>By specifying the conditions under which the system should attempt a retry with an alternative provider, users can implement an effective failover strategy to ensure call continuity and minimize disruptions in communication. This failover mechanism enhances call reliability and mitigates potential issues that may arise from service provider outages or temporary connectivity problems.</p>
+<p>Routes support automatic failover when providers fail.</p>
+<p><strong>Failover Flow</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Outbound Call
+      |
+      v
++-------------------+
+| Try Route 1       |
+| (Provider A)      |
++--------+----------+
+         |
+         +--------&gt; Success? --&gt; Call connected
+         |
+         v Failure (4xx, 5xx, 6xx)
++-------------------+
+| Try Route 2       |
+| (Provider B)      |
++--------+----------+
+         |
+         +--------&gt; Success? --&gt; Call connected
+         |
+         v Failure
++-------------------+
+| Try Route 3       |
+| (Provider C)      |
++--------+----------+
+         |
+         +--------&gt; Success? --&gt; Call connected
+         |
+         v All failed
++-------------------+
+| Return error      |
+| to caller         |
++-------------------+
+</pre></div>
+</div>
+<p><strong>Failover Triggers</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>SIP Response</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>404</p></td>
+<td><p>Number not found - try alternate provider</p></td>
+</tr>
+<tr class="row-odd"><td><p>5xx</p></td>
+<td><p>Server error - provider issue, try backup</p></td>
+</tr>
+<tr class="row-even"><td><p>6xx</p></td>
+<td><p>Global failure - try different route</p></td>
+</tr>
+</tbody>
+</table>
 </section>
 <section id="dynamic-routing-decisions">
 <span id="route-overview-dynamic-routing-decisions"></span><h3>Dynamic Routing Decisions<a class="headerlink" href="#dynamic-routing-decisions" title="Link to this heading"></a></h3>
-<p>One of the primary advantages of the Route API is its ability to make dynamic routing decisions based on various factors. Users can define routing rules and conditions to determine which service provider should be used for specific outbound calls. These routing decisions can be based on factors such as call destination, customer preferences, time of day, cost considerations, or the quality of service offered by different providers.</p>
-<p>Additionally, users can configure default routes for all customers or set specific routes per customer, tailoring the routing strategy to suit their unique requirements. This flexibility allows businesses to optimize call routing and choose the most appropriate service provider for each call, resulting in improved call success rates and enhanced call quality.</p>
-<p>Seamless Integration with Service Providers
-The Route API seamlessly integrates with multiple service providers, enabling users to take advantage of a diverse range of network resources. Users can easily configure the API to interact with different service providers and leverage their capabilities to deliver reliable and high-quality call connections.</p>
-<p>By leveraging the dynamic routing capabilities of the Route API and its integration with various service providers, businesses can ensure efficient call delivery, minimize call failures, and enhance the overall communication experience for their customers and users.</p>
-<p>In summary, the Route API in VoIPBIN plays a critical role in SIP routing strategy, ensuring effective call delivery, and providing a robust failover mechanism. By making dynamic routing decisions and seamlessly integrating with service providers, the Route API empowers businesses with the tools they need to optimize call routing and provide reliable and seamless communication services.</p>
+<p>Routes can be selected based on various criteria.</p>
+<p><strong>Routing Criteria</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-------------------+</span>
+<span class="o">|</span> <span class="n">Incoming</span> <span class="n">Call</span>     <span class="o">|</span>
+<span class="o">|</span> <span class="n">Destination</span><span class="p">:</span> <span class="o">+</span><span class="mf">1.</span><span class="o">..|</span>
+<span class="o">+--------+----------+</span>
+         <span class="o">|</span>
+         <span class="n">v</span>
+<span class="o">+-------------------+</span>
+<span class="o">|</span> <span class="n">Check</span> <span class="n">criteria</span><span class="p">:</span>   <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Destination</span>     <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Customer</span>        <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Time</span> <span class="n">of</span> <span class="n">day</span>     <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Cost</span>            <span class="o">|</span>
+<span class="o">+--------+----------+</span>
+         <span class="o">|</span>
+         <span class="n">v</span>
+<span class="o">+-------------------+</span>
+<span class="o">|</span> <span class="n">Select</span> <span class="n">best</span> <span class="n">route</span> <span class="o">|</span>
+<span class="o">+-------------------+</span>
+</pre></div>
+</div>
+<p><strong>Routing Options</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Criteria</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Default Route</p></td>
+<td><p>Applied to all calls unless overridden</p></td>
+</tr>
+<tr class="row-odd"><td><p>Customer Route</p></td>
+<td><p>Specific routes for individual customers</p></td>
+</tr>
+<tr class="row-even"><td><p>Destination Route</p></td>
+<td><p>Routes based on called number prefix</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="route-configuration">
+<h3>Route Configuration<a class="headerlink" href="#route-configuration" title="Link to this heading"></a></h3>
+<p>Configure routes with priorities and providers.</p>
+<p><strong>Create a Route</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/routes?token=&lt;token&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data &#39;{
+        &quot;name&quot;: &quot;US Primary Route&quot;,
+        &quot;provider_id&quot;: &quot;provider-uuid-123&quot;,
+        &quot;priority&quot;: 1,
+        &quot;detail&quot;: &quot;Primary route for US outbound calls&quot;
+    }&#39;
+</pre></div>
+</div>
+<p><strong>Route Configuration Example</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Route</span><span class="p">:</span> <span class="s2">&quot;US Outbound&quot;</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">name</span><span class="p">:</span> <span class="s2">&quot;US Primary Route&quot;</span>                   <span class="o">|</span>
+<span class="o">|</span> <span class="n">provider_id</span><span class="p">:</span> <span class="n">provider</span><span class="o">-</span><span class="n">uuid</span><span class="o">-</span><span class="n">telnyx</span>          <span class="o">|</span>
+<span class="o">|</span> <span class="n">priority</span><span class="p">:</span> <span class="mi">1</span>                                <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+
+<span class="n">Route</span><span class="p">:</span> <span class="s2">&quot;US Backup&quot;</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">name</span><span class="p">:</span> <span class="s2">&quot;US Backup Route&quot;</span>                    <span class="o">|</span>
+<span class="o">|</span> <span class="n">provider_id</span><span class="p">:</span> <span class="n">provider</span><span class="o">-</span><span class="n">uuid</span><span class="o">-</span><span class="n">twilio</span>          <span class="o">|</span>
+<span class="o">|</span> <span class="n">priority</span><span class="p">:</span> <span class="mi">2</span>                                <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+</pre></div>
+</div>
+</section>
+<section id="common-scenarios">
+<h3>Common Scenarios<a class="headerlink" href="#common-scenarios" title="Link to this heading"></a></h3>
+<p><strong>Scenario 1: Simple Failover</strong></p>
+<p>Two providers with automatic failover.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Route</span> <span class="n">Configuration</span><span class="p">:</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Route</span> <span class="mi">1</span><span class="p">:</span> <span class="n">Telnyx</span> <span class="p">(</span><span class="n">priority</span> <span class="mi">1</span><span class="p">)</span>               <span class="o">|</span>
+<span class="o">|</span>   <span class="o">-&gt;</span> <span class="n">Primary</span> <span class="k">for</span> <span class="nb">all</span> <span class="n">calls</span>                 <span class="o">|</span>
+<span class="o">|</span>                                            <span class="o">|</span>
+<span class="o">|</span> <span class="n">Route</span> <span class="mi">2</span><span class="p">:</span> <span class="n">Twilio</span> <span class="p">(</span><span class="n">priority</span> <span class="mi">2</span><span class="p">)</span>               <span class="o">|</span>
+<span class="o">|</span>   <span class="o">-&gt;</span> <span class="n">Used</span> <span class="k">if</span> <span class="n">Telnyx</span> <span class="n">fails</span>                  <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+
+<span class="n">Call</span> <span class="n">Flow</span><span class="p">:</span>
+<span class="mf">1.</span> <span class="n">Call</span> <span class="n">attempt</span> <span class="n">via</span> <span class="n">Telnyx</span>
+<span class="mf">2.</span> <span class="n">If</span> <span class="n">Telnyx</span> <span class="n">returns</span> <span class="mi">503</span> <span class="o">-&gt;</span> <span class="k">try</span> <span class="n">Twilio</span>
+<span class="mf">3.</span> <span class="n">If</span> <span class="n">Twilio</span> <span class="n">succeeds</span> <span class="o">-&gt;</span> <span class="n">call</span> <span class="n">connected</span>
+</pre></div>
+</div>
+<p><strong>Scenario 2: Cost-Based Routing</strong></p>
+<p>Route based on destination for cost optimization.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Route</span> <span class="n">Configuration</span><span class="p">:</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">US</span> <span class="n">Calls</span> <span class="p">(</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>                             <span class="o">|</span>
+<span class="o">|</span>   <span class="n">Provider</span> <span class="n">A</span> <span class="p">(</span><span class="n">lowest</span> <span class="n">US</span> <span class="n">rates</span><span class="p">)</span>             <span class="o">|</span>
+<span class="o">|</span>                                            <span class="o">|</span>
+<span class="o">|</span> <span class="n">EU</span> <span class="n">Calls</span> <span class="p">(</span><span class="o">+</span><span class="mi">44</span><span class="p">,</span> <span class="o">+</span><span class="mi">49</span><span class="p">,</span> <span class="o">+</span><span class="mi">33</span><span class="p">):</span>                  <span class="o">|</span>
+<span class="o">|</span>   <span class="n">Provider</span> <span class="n">B</span> <span class="p">(</span><span class="n">best</span> <span class="n">EU</span> <span class="n">coverage</span><span class="p">)</span>            <span class="o">|</span>
+<span class="o">|</span>                                            <span class="o">|</span>
+<span class="o">|</span> <span class="n">Default</span><span class="p">:</span>                                   <span class="o">|</span>
+<span class="o">|</span>   <span class="n">Provider</span> <span class="n">C</span> <span class="p">(</span><span class="k">global</span> <span class="n">coverage</span><span class="p">)</span>             <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+</pre></div>
+</div>
+<p><strong>Scenario 3: Customer-Specific Routes</strong></p>
+<p>Different routes for different customers.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Customer</span> <span class="n">A</span><span class="p">:</span> <span class="n">Enterprise</span> <span class="p">(</span><span class="n">priority</span> <span class="n">routing</span><span class="p">)</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Primary</span><span class="p">:</span> <span class="n">Premium</span> <span class="n">Provider</span> <span class="p">(</span><span class="n">quality</span> <span class="n">focus</span><span class="p">)</span>  <span class="o">|</span>
+<span class="o">|</span> <span class="n">Backup</span><span class="p">:</span> <span class="n">Standard</span> <span class="n">Provider</span>                  <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+
+<span class="n">Customer</span> <span class="n">B</span><span class="p">:</span> <span class="n">Startup</span> <span class="p">(</span><span class="n">cost</span><span class="o">-</span><span class="n">focused</span><span class="p">)</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Primary</span><span class="p">:</span> <span class="n">Budget</span> <span class="n">Provider</span> <span class="p">(</span><span class="n">cost</span> <span class="n">focus</span><span class="p">)</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="n">Backup</span><span class="p">:</span> <span class="n">Standard</span> <span class="n">Provider</span>                  <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+</pre></div>
+</div>
+</section>
+<section id="best-practices">
+<h3>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading"></a></h3>
+<p><strong>1. Failover Configuration</strong></p>
+<ul class="simple">
+<li><p>Always configure at least 2 routes</p></li>
+<li><p>Order routes by reliability, then cost</p></li>
+<li><p>Test failover regularly</p></li>
+</ul>
+<p><strong>2. Provider Selection</strong></p>
+<ul class="simple">
+<li><p>Choose providers with complementary coverage</p></li>
+<li><p>Consider quality vs. cost tradeoffs</p></li>
+<li><p>Monitor success rates per provider</p></li>
+</ul>
+<p><strong>3. Route Organization</strong></p>
+<ul class="simple">
+<li><p>Use descriptive route names</p></li>
+<li><p>Document routing logic</p></li>
+<li><p>Review and optimize periodically</p></li>
+</ul>
+<p><strong>4. Monitoring</strong></p>
+<ul class="simple">
+<li><p>Track route usage and success rates</p></li>
+<li><p>Set up alerts for high failure rates</p></li>
+<li><p>Analyze failover patterns</p></li>
+</ul>
+</section>
+<section id="troubleshooting">
+<h3>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h3>
+<p><strong>Routing Issues</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Symptom</p></th>
+<th class="head"><p>Solution</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Calls not routing</p></td>
+<td><p>Check route exists; verify provider is
+configured; check priority order</p></td>
+</tr>
+<tr class="row-odd"><td><p>Wrong provider selected</p></td>
+<td><p>Review route priorities; check for customer-
+specific overrides</p></td>
+</tr>
+<tr class="row-even"><td><p>Failover not working</p></td>
+<td><p>Verify backup routes exist; check failover
+conditions are met</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Provider Issues</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Symptom</p></th>
+<th class="head"><p>Solution</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>All routes failing</p></td>
+<td><p>Check provider status; verify credentials;
+test network connectivity</p></td>
+</tr>
+<tr class="row-odd"><td><p>High failover rate</p></td>
+<td><p>Check primary provider health; consider
+changing route priorities</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="related-documentation">
+<h3>Related Documentation<a class="headerlink" href="#related-documentation" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><a class="reference internal" href="provider_overview.html#provider-overview"><span class="std std-ref">Provider Overview</span></a> - Provider configuration</p></li>
+<li><p><a class="reference internal" href="call_overview.html#call-overview"><span class="std std-ref">Call Overview</span></a> - Making outbound calls</p></li>
+<li><p><a class="reference internal" href="trunk_overview.html#trunk-overview"><span class="std std-ref">Trunk Overview</span></a> - SIP trunking setup</p></li>
+</ul>
 </section>
 </section>
 <section id="route-struct-route">
@@ -380,8 +674,14 @@ The Route API seamlessly integrates with multiple service providers, enabling us
                             <ul>
 <li><a class="reference internal" href="#">Route</a><ul>
 <li><a class="reference internal" href="#overview">Overview</a><ul>
+<li><a class="reference internal" href="#how-routes-work">How Routes Work</a></li>
 <li><a class="reference internal" href="#route-failover">Route Failover</a></li>
 <li><a class="reference internal" href="#dynamic-routing-decisions">Dynamic Routing Decisions</a></li>
+<li><a class="reference internal" href="#route-configuration">Route Configuration</a></li>
+<li><a class="reference internal" href="#common-scenarios">Common Scenarios</a></li>
+<li><a class="reference internal" href="#best-practices">Best Practices</a></li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
+<li><a class="reference internal" href="#related-documentation">Related Documentation</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#route-struct-route">Route</a><ul>

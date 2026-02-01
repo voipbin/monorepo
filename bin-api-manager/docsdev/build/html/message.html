@@ -102,7 +102,7 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Message</a></li>
 <li class="toctree-l1"><a class="reference internal" href="email.html">Email</a></li>
-<li class="toctree-l1"><a class="reference internal" href="chat.html">Chat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="talk.html">Talk</a></li>
 <li class="toctree-l1"><a class="reference internal" href="conversation.html">Conversation</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">AI &amp; Automation</span></p>
@@ -129,7 +129,6 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
 <li class="toctree-l1"><a class="reference internal" href="websocket.html">Websocket</a></li>
-<li class="toctree-l1"><a class="reference internal" href="talk.html">Talk</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul>
@@ -189,11 +188,462 @@
 <span id="message-main"></span><h1>Message<a class="headerlink" href="#message" title="Link to this heading"></a></h1>
 <section id="overview">
 <span id="message-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
-<p>VoIPBIN’s Message feature empowers users to send SMS (Short Message Service) and MMS (Multimedia Messaging Service) to various destinations. With this capability, users can efficiently reach out to their customers, clients, or users through text messages, delivering important information, alerts, promotions, and more.</p>
-<p>SMS is a widely used communication method that allows for the exchange of short text messages between mobile devices. It is a convenient and effective way to deliver concise information instantly. MMS, on the other hand, extends this capability by enabling the transmission of multimedia content, such as images, videos, and audio, in addition to text.</p>
-<p>VoIPBIN’s Message feature is a valuable tool for businesses and developers looking to engage with their audience in real-time. It provides a simple and reliable solution for sending time-sensitive messages, notifications, or marketing campaigns directly to recipients’ mobile devices.</p>
-<p>By leveraging the Message feature, users can establish effective communication channels, offer personalized services, and enhance customer engagement. Whether it’s delivering appointment reminders, order confirmations, or promotional offers, VoIPBIN’s Message feature streamlines the process of sending messages and facilitates effective communication with target audiences.</p>
-<p>The Message feature in VoIPBIN is a versatile and efficient tool that empowers businesses to build strong and meaningful connections with their customers, fostering better relationships and driving business growth. It ensures that important information reaches recipients promptly and reliably, making it an indispensable tool in modern communication strategies.</p>
+<p>VoIPBIN’s Message API enables you to send and receive SMS (Short Message Service) and MMS (Multimedia Messaging Service) globally. Whether you need to send notifications, alerts, verification codes, or marketing messages, the Message API provides a reliable solution for text-based communication.</p>
+<p>With the Message API you can:</p>
+<ul class="simple">
+<li><p>Send SMS messages to phone numbers worldwide</p></li>
+<li><p>Send MMS messages with images, videos, and other media</p></li>
+<li><p>Receive inbound messages via webhooks</p></li>
+<li><p>Track message delivery status</p></li>
+<li><p>Integrate messaging into automated workflows</p></li>
+</ul>
+<section id="how-messaging-works">
+<h3>How Messaging Works<a class="headerlink" href="#how-messaging-works" title="Link to this heading"></a></h3>
+<p>When you send a message, VoIPBIN routes it through carrier networks to reach the recipient’s mobile device.</p>
+<p><strong>Message Architecture</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+----------+</span>        <span class="o">+----------------+</span>        <span class="o">+-----------+</span>
+<span class="o">|</span> <span class="n">Your</span> <span class="n">App</span> <span class="o">|--</span><span class="n">API</span><span class="o">--&gt;|</span>    <span class="n">VoIPBIN</span>     <span class="o">|--</span><span class="n">SMPP</span><span class="o">-&gt;|</span>  <span class="n">Carrier</span>  <span class="o">|</span>
+<span class="o">+----------+</span>        <span class="o">|</span>  <span class="n">Message</span> <span class="n">Hub</span>   <span class="o">|</span>        <span class="o">|</span>  <span class="n">Network</span>  <span class="o">|</span>
+                    <span class="o">+----------------+</span>        <span class="o">+-----+-----+</span>
+                           <span class="o">|</span>                        <span class="o">|</span>
+                           <span class="o">|</span>                        <span class="n">v</span>
+                    <span class="o">+------+------+</span>           <span class="o">+-----------+</span>
+                    <span class="o">|</span>   <span class="n">Webhook</span>   <span class="o">|</span>           <span class="o">|</span> <span class="n">Recipient</span> <span class="o">|</span>
+                    <span class="o">|</span>  <span class="p">(</span><span class="n">status</span><span class="p">)</span>   <span class="o">|</span>           <span class="o">|</span>  <span class="n">Device</span>   <span class="o">|</span>
+                    <span class="o">+-------------+</span>           <span class="o">+-----------+</span>
+</pre></div>
+</div>
+<p><strong>Key Components</strong></p>
+<ul class="simple">
+<li><p><strong>Message Hub</strong>: Routes messages to appropriate carriers based on destination</p></li>
+<li><p><strong>Carrier Network</strong>: Delivers messages to recipient devices (SMS/MMS)</p></li>
+<li><p><strong>Webhooks</strong>: Notify your application of delivery status and inbound messages</p></li>
+</ul>
+<p><strong>Message Types</strong></p>
+</section>
+<section id="message-lifecycle">
+<h3>Message Lifecycle<a class="headerlink" href="#message-lifecycle" title="Link to this heading"></a></h3>
+<p>Every message moves through a predictable set of states from sending to delivery.</p>
+<p><strong>Outbound Message States</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">POST</span> <span class="o">/</span><span class="n">messages</span>
+       <span class="o">|</span>
+       <span class="n">v</span>
+<span class="o">+------------+</span>
+<span class="o">|</span>  <span class="n">sending</span>   <span class="o">|</span>
+<span class="o">+-----+------+</span>
+      <span class="o">|</span>
+      <span class="n">v</span>
+<span class="o">+------------+</span>     <span class="n">delivery</span> <span class="n">failed</span>     <span class="o">+------------+</span>
+<span class="o">|</span>   <span class="n">sent</span>     <span class="o">|------------------------&gt;|</span>   <span class="n">failed</span>   <span class="o">|</span>
+<span class="o">+-----+------+</span>                         <span class="o">+------------+</span>
+      <span class="o">|</span>
+      <span class="o">|</span> <span class="n">carrier</span> <span class="n">accepted</span>
+      <span class="n">v</span>
+<span class="o">+------------+</span>     <span class="n">delivery</span> <span class="n">failed</span>     <span class="o">+------------+</span>
+<span class="o">|</span> <span class="n">delivered</span>  <span class="o">|------------------------&gt;|</span>   <span class="n">failed</span>   <span class="o">|</span>
+<span class="o">+------------+</span>                         <span class="o">+------------+</span>
+</pre></div>
+</div>
+<p><strong>State Descriptions</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>State</p></th>
+<th class="head"><p>What’s happening</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>sending</p></td>
+<td><p>Message is being processed and routed to carrier</p></td>
+</tr>
+<tr class="row-odd"><td><p>sent</p></td>
+<td><p>Message has been sent to carrier network</p></td>
+</tr>
+<tr class="row-even"><td><p>delivered</p></td>
+<td><p>Carrier confirmed delivery to recipient device</p></td>
+</tr>
+<tr class="row-odd"><td><p>failed</p></td>
+<td><p>Message could not be delivered (invalid number, carrier error)</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Inbound Message Flow</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Sender</span> <span class="n">Device</span>        <span class="n">Carrier</span> <span class="n">Network</span>           <span class="n">VoIPBIN</span>              <span class="n">Your</span> <span class="n">App</span>
+     <span class="o">|</span>                     <span class="o">|</span>                      <span class="o">|</span>                    <span class="o">|</span>
+     <span class="o">|</span> <span class="n">SMS</span><span class="o">/</span><span class="n">MMS</span>             <span class="o">|</span>                      <span class="o">|</span>                    <span class="o">|</span>
+     <span class="o">+-------------------&gt;|</span>                      <span class="o">|</span>                    <span class="o">|</span>
+     <span class="o">|</span>                     <span class="o">|</span> <span class="n">Forward</span> <span class="n">message</span>      <span class="o">|</span>                    <span class="o">|</span>
+     <span class="o">|</span>                     <span class="o">+--------------------&gt;|</span>                    <span class="o">|</span>
+     <span class="o">|</span>                     <span class="o">|</span>                      <span class="o">|</span>                    <span class="o">|</span>
+     <span class="o">|</span>                     <span class="o">|</span>                      <span class="o">|</span> <span class="n">message_received</span>   <span class="o">|</span>
+     <span class="o">|</span>                     <span class="o">|</span>                      <span class="o">|</span> <span class="n">webhook</span>            <span class="o">|</span>
+     <span class="o">|</span>                     <span class="o">|</span>                      <span class="o">+-------------------&gt;|</span>
+     <span class="o">|</span>                     <span class="o">|</span>                      <span class="o">|</span>                    <span class="o">|</span>
+</pre></div>
+</div>
+</section>
+<section id="sending-messages">
+<h3>Sending Messages<a class="headerlink" href="#sending-messages" title="Link to this heading"></a></h3>
+<p>VoIPBIN provides multiple ways to send messages based on your use case.</p>
+<p><strong>Method 1: Via API</strong></p>
+<p>Send messages directly using the REST API.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Your</span> <span class="n">App</span>                    <span class="n">VoIPBIN</span>                    <span class="n">Recipient</span>
+   <span class="o">|</span>                           <span class="o">|</span>                           <span class="o">|</span>
+   <span class="o">|</span> <span class="n">POST</span> <span class="o">/</span><span class="n">messages</span>            <span class="o">|</span>                           <span class="o">|</span>
+   <span class="o">+--------------------------&gt;|</span>                           <span class="o">|</span>
+   <span class="o">|</span>                           <span class="o">|</span> <span class="n">Route</span> <span class="n">to</span> <span class="n">carrier</span>          <span class="o">|</span>
+   <span class="o">|</span>                           <span class="o">+--------------------------&gt;|</span>
+   <span class="o">|</span>  <span class="n">message_id</span>               <span class="o">|</span>                           <span class="o">|</span>
+   <span class="o">|</span>  <span class="n">status</span><span class="p">:</span> <span class="s2">&quot;sending&quot;</span>        <span class="o">|</span>                           <span class="o">|</span>
+   <span class="o">|&lt;--------------------------+</span>                           <span class="o">|</span>
+   <span class="o">|</span>                           <span class="o">|</span>                           <span class="o">|</span>
+   <span class="o">|</span> <span class="n">Webhook</span><span class="p">:</span> <span class="n">status</span> <span class="n">update</span>    <span class="o">|</span>   <span class="n">SMS</span> <span class="n">delivered</span>           <span class="o">|</span>
+   <span class="o">|&lt;--------------------------+--------------------------&gt;|</span>
+   <span class="o">|</span>                           <span class="o">|</span>                           <span class="o">|</span>
+</pre></div>
+</div>
+<p><strong>Send SMS Example:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/messages?token=&lt;token&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data &#39;{
+        &quot;source&quot;: &quot;+15551234567&quot;,
+        &quot;destinations&quot;: [
+            {
+                &quot;type&quot;: &quot;tel&quot;,
+                &quot;target&quot;: &quot;+15559876543&quot;
+            }
+        ],
+        &quot;text&quot;: &quot;Your verification code is 123456&quot;
+    }&#39;
+</pre></div>
+</div>
+<p><strong>Send MMS Example:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/messages?token=&lt;token&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data &#39;{
+        &quot;source&quot;: &quot;+15551234567&quot;,
+        &quot;destinations&quot;: [
+            {
+                &quot;type&quot;: &quot;tel&quot;,
+                &quot;target&quot;: &quot;+15559876543&quot;
+            }
+        ],
+        &quot;text&quot;: &quot;Check out this image!&quot;,
+        &quot;medias&quot;: [
+            {
+                &quot;type&quot;: &quot;image/jpeg&quot;,
+                &quot;url&quot;: &quot;https://example.com/image.jpg&quot;
+            }
+        ]
+    }&#39;
+</pre></div>
+</div>
+<p><strong>Method 2: Via Flow Action</strong></p>
+<p>Send messages as part of an automated flow.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;message_send&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="s2">&quot;+15551234567&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Your appointment is confirmed for tomorrow at 2pm.&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>When to Use Each Method</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Method</p></th>
+<th class="head"><p>Best for</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>API</p></td>
+<td><p>Direct integration, transactional messages, custom logic</p></td>
+</tr>
+<tr class="row-odd"><td><p>Flow Action</p></td>
+<td><p>Automated responses, call-triggered SMS, workflow integration</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="receiving-messages">
+<h3>Receiving Messages<a class="headerlink" href="#receiving-messages" title="Link to this heading"></a></h3>
+<p>VoIPBIN delivers inbound messages to your application via webhooks.</p>
+<p><strong>Webhook Delivery</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">VoIPBIN</span>                           <span class="n">Your</span> <span class="n">App</span>
+    <span class="o">|</span>                                 <span class="o">|</span>
+    <span class="o">|</span> <span class="n">POST</span> <span class="o">/</span><span class="n">your</span><span class="o">-</span><span class="n">webhook</span><span class="o">-</span><span class="n">endpoint</span>     <span class="o">|</span>
+    <span class="o">|</span> <span class="p">{</span><span class="n">message_received</span> <span class="n">event</span><span class="p">}</span>        <span class="o">|</span>
+    <span class="o">+--------------------------------&gt;|</span>
+    <span class="o">|</span>                                 <span class="o">|</span>
+    <span class="o">|</span>            <span class="mi">200</span> <span class="n">OK</span>               <span class="o">|</span>
+    <span class="o">|&lt;--------------------------------+</span>
+    <span class="o">|</span>                                 <span class="o">|</span>
+</pre></div>
+</div>
+<p><strong>Inbound Message Webhook Payload:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;message_received&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;msg-abc-123&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15559876543&quot;</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15551234567&quot;</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello, I need help with my order&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;inbound&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:30:00Z&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Status Update Webhook:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;message_updated&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;msg-abc-123&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;delivered&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:30:05Z&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="message-formatting">
+<h3>Message Formatting<a class="headerlink" href="#message-formatting" title="Link to this heading"></a></h3>
+<p>Understanding message limits and encoding helps optimize delivery.</p>
+<p><strong>SMS Character Limits</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Encoding</p></th>
+<th class="head"><p>Single Message</p></th>
+<th class="head"><p>Concatenated (per segment)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>GSM-7 (standard)</p></td>
+<td><p>160 characters</p></td>
+<td><p>153 characters</p></td>
+</tr>
+<tr class="row-odd"><td><p>Unicode (emoji,
+non-Latin)</p></td>
+<td><p>70 characters</p></td>
+<td><p>67 characters</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Long Message Handling</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Your</span> <span class="n">message</span><span class="p">:</span> <span class="s2">&quot;This is a longer message that exceeds 160 characters...&quot;</span>
+                                    <span class="o">|</span>
+                                    <span class="n">v</span>
+<span class="o">+-------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">VoIPBIN</span> <span class="n">automatically</span> <span class="n">splits</span> <span class="n">into</span> <span class="n">segments</span><span class="p">:</span>                       <span class="o">|</span>
+<span class="o">|</span>                                                                   <span class="o">|</span>
+<span class="o">|</span> <span class="n">Segment</span> <span class="mi">1</span><span class="p">:</span> <span class="s2">&quot;This is a longer message that exceeds 160 char...&quot;</span>   <span class="o">|</span>
+<span class="o">|</span> <span class="n">Segment</span> <span class="mi">2</span><span class="p">:</span> <span class="s2">&quot;...acters and continues here with more content...&quot;</span>   <span class="o">|</span>
+<span class="o">|</span> <span class="n">Segment</span> <span class="mi">3</span><span class="p">:</span> <span class="s2">&quot;...and finally ends here.&quot;</span>                           <span class="o">|</span>
+<span class="o">|</span>                                                                   <span class="o">|</span>
+<span class="o">|</span> <span class="n">Recipient</span><span class="s1">&#39;s phone reassembles into single message                 |</span>
+<span class="o">+-------------------------------------------------------------------+</span>
+</pre></div>
+</div>
+<p><strong>MMS Media Types</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Media Type</p></th>
+<th class="head"><p>Supported Formats</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Images</p></td>
+<td><p>JPEG, PNG, GIF</p></td>
+</tr>
+<tr class="row-odd"><td><p>Video</p></td>
+<td><p>MP4, 3GP</p></td>
+</tr>
+<tr class="row-even"><td><p>Audio</p></td>
+<td><p>MP3, WAV</p></td>
+</tr>
+<tr class="row-odd"><td><p>Documents</p></td>
+<td><p>PDF, vCard</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="common-scenarios">
+<h3>Common Scenarios<a class="headerlink" href="#common-scenarios" title="Link to this heading"></a></h3>
+<p><strong>Scenario 1: Verification Code</strong></p>
+<p>Send a one-time password for user verification.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">User</span> <span class="n">requests</span> <span class="n">login</span>
+     <span class="o">|</span>
+     <span class="n">v</span>
+<span class="o">+--------------------+</span>
+<span class="o">|</span> <span class="n">Generate</span> <span class="n">OTP</span><span class="p">:</span> <span class="mi">1234</span> <span class="o">|</span>
+<span class="o">+--------+-----------+</span>
+         <span class="o">|</span>
+         <span class="n">v</span>
+<span class="n">POST</span> <span class="o">/</span><span class="n">messages</span>
+<span class="s2">&quot;Your code is 1234&quot;</span>
+         <span class="o">|</span>
+         <span class="n">v</span>
+<span class="n">User</span> <span class="n">receives</span> <span class="n">SMS</span>
+<span class="n">Enters</span> <span class="n">code</span> <span class="n">to</span> <span class="n">verify</span>
+</pre></div>
+</div>
+<p><strong>Scenario 2: Appointment Reminder</strong></p>
+<p>Send automated reminders before appointments.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">24</span> <span class="n">hours</span> <span class="n">before</span> <span class="n">appointment</span>
+          <span class="o">|</span>
+          <span class="n">v</span>
+<span class="o">+--------------------------+</span>
+<span class="o">|</span> <span class="n">Trigger</span><span class="p">:</span> <span class="n">scheduled</span> <span class="n">job</span>   <span class="o">|</span>
+<span class="o">+------------+-------------+</span>
+             <span class="o">|</span>
+             <span class="n">v</span>
+<span class="n">POST</span> <span class="o">/</span><span class="n">messages</span>
+<span class="s2">&quot;Reminder: Appointment tomorrow at 2pm&quot;</span>
+             <span class="o">|</span>
+             <span class="n">v</span>
+<span class="n">Customer</span> <span class="n">receives</span> <span class="n">SMS</span>
+</pre></div>
+</div>
+<p><strong>Scenario 3: Two-Way Conversation</strong></p>
+<p>Enable customers to reply to messages.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Your</span> <span class="n">App</span>                <span class="n">VoIPBIN</span>                  <span class="n">Customer</span>
+    <span class="o">|</span>                      <span class="o">|</span>                        <span class="o">|</span>
+    <span class="o">|</span> <span class="s2">&quot;Order shipped!&quot;</span>     <span class="o">|</span>                        <span class="o">|</span>
+    <span class="o">+---------------------&gt;+-----------------------&gt;|</span>
+    <span class="o">|</span>                      <span class="o">|</span>                        <span class="o">|</span>
+    <span class="o">|</span>                      <span class="o">|</span>    <span class="s2">&quot;When arrives?&quot;</span>     <span class="o">|</span>
+    <span class="o">|&lt;---------------------+&lt;-----------------------+</span>
+    <span class="o">|</span>  <span class="n">message_received</span>    <span class="o">|</span>                        <span class="o">|</span>
+    <span class="o">|</span>                      <span class="o">|</span>                        <span class="o">|</span>
+    <span class="o">|</span> <span class="s2">&quot;Expected Friday&quot;</span>    <span class="o">|</span>                        <span class="o">|</span>
+    <span class="o">+---------------------&gt;+-----------------------&gt;|</span>
+    <span class="o">|</span>                      <span class="o">|</span>                        <span class="o">|</span>
+</pre></div>
+</div>
+<p><strong>Scenario 4: MMS Marketing</strong></p>
+<p>Send promotional messages with images.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">POST</span> <span class="o">/</span><span class="n">messages</span>                           <span class="o">|</span>
+<span class="o">|</span> <span class="p">{</span>                                        <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Summer sale! 50</span><span class="si">% o</span><span class="s2">ff!&quot;</span><span class="p">,</span>       <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">&quot;medias&quot;</span><span class="p">:</span> <span class="p">[</span>                            <span class="o">|</span>
+<span class="o">|</span>     <span class="p">{</span><span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://.../promo.jpg&quot;</span><span class="p">}</span>     <span class="o">|</span>
+<span class="o">|</span>   <span class="p">]</span>                                      <span class="o">|</span>
+<span class="o">|</span> <span class="p">}</span>                                        <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+                  <span class="o">|</span>
+                  <span class="n">v</span>
+<span class="n">Customer</span> <span class="n">receives</span> <span class="n">image</span> <span class="o">+</span> <span class="n">text</span> <span class="n">message</span>
+</pre></div>
+</div>
+</section>
+<section id="best-practices">
+<h3>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading"></a></h3>
+<p><strong>1. Sender ID Selection</strong></p>
+<ul class="simple">
+<li><p>Use a phone number your customers recognize</p></li>
+<li><p>For transactional messages, use a consistent sender</p></li>
+<li><p>Check country-specific sender ID regulations</p></li>
+</ul>
+<p><strong>2. Message Content</strong></p>
+<ul class="simple">
+<li><p>Keep messages concise and actionable</p></li>
+<li><p>Include opt-out instructions for marketing messages</p></li>
+<li><p>Avoid URL shorteners that may trigger spam filters</p></li>
+</ul>
+<p><strong>3. Rate Limiting</strong></p>
+<ul class="simple">
+<li><p>Respect carrier rate limits to avoid throttling</p></li>
+<li><p>Spread bulk messages over time</p></li>
+<li><p>Monitor for carrier feedback signals</p></li>
+</ul>
+<p><strong>4. Compliance</strong></p>
+<ul class="simple">
+<li><p>Obtain consent before sending marketing messages</p></li>
+<li><p>Honor opt-out requests promptly</p></li>
+<li><p>Follow local regulations (TCPA, GDPR, etc.)</p></li>
+</ul>
+</section>
+<section id="troubleshooting">
+<h3>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h3>
+<p><strong>Message Not Delivered</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Symptom</p></th>
+<th class="head"><p>Solution</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Status stays “sending”</p></td>
+<td><p>Check carrier connectivity; verify destination
+number format (+E.164)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Status “failed”</p></td>
+<td><p>Check error code; common issues: invalid
+number, carrier rejection, insufficient credit</p></td>
+</tr>
+<tr class="row-even"><td><p>Delivered but not
+received</p></td>
+<td><p>Recipient’s phone may be off or out of range;
+carrier may delay delivery</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Inbound Messages Not Received</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Symptom</p></th>
+<th class="head"><p>Solution</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>No webhook calls</p></td>
+<td><p>Verify webhook URL is configured and publicly
+accessible</p></td>
+</tr>
+<tr class="row-odd"><td><p>Webhook returns error</p></td>
+<td><p>Ensure endpoint returns 200 OK within 5
+seconds</p></td>
+</tr>
+<tr class="row-even"><td><p>Missing messages</p></td>
+<td><p>Check webhook logs; implement idempotency
+using message ID</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Character Encoding Issues</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Symptom</p></th>
+<th class="head"><p>Solution</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Message truncated</p></td>
+<td><p>Check for Unicode characters; they reduce
+character limit to 70</p></td>
+</tr>
+<tr class="row-odd"><td><p>Strange characters</p></td>
+<td><p>Ensure UTF-8 encoding in API requests</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="related-documentation">
+<h3>Related Documentation<a class="headerlink" href="#related-documentation" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><a class="reference internal" href="conversation_overview.html#conversation-overview"><span class="std std-ref">Conversation Overview</span></a> - Unified multi-channel messaging</p></li>
+<li><p><a class="reference internal" href="email_overview.html#email-overview"><span class="std std-ref">Email Overview</span></a> - Email integration</p></li>
+<li><p><a class="reference internal" href="flow_struct_action.html#flow-struct-action-message-send"><span class="std std-ref">Flow Actions</span></a> - Message flow actions</p></li>
+<li><p><a class="reference internal" href="webhook_overview.html#webhook-overview"><span class="std std-ref">Webhook Overview</span></a> - Webhook configuration</p></li>
+</ul>
+</section>
 </section>
 <section id="message-struct-message">
 <span id="id1"></span><h2>Message<a class="headerlink" href="#message-struct-message" title="Link to this heading"></a></h2>
@@ -384,7 +834,18 @@
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
 <li><a class="reference internal" href="#">Message</a><ul>
-<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#overview">Overview</a><ul>
+<li><a class="reference internal" href="#how-messaging-works">How Messaging Works</a></li>
+<li><a class="reference internal" href="#message-lifecycle">Message Lifecycle</a></li>
+<li><a class="reference internal" href="#sending-messages">Sending Messages</a></li>
+<li><a class="reference internal" href="#receiving-messages">Receiving Messages</a></li>
+<li><a class="reference internal" href="#message-formatting">Message Formatting</a></li>
+<li><a class="reference internal" href="#common-scenarios">Common Scenarios</a></li>
+<li><a class="reference internal" href="#best-practices">Best Practices</a></li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
+<li><a class="reference internal" href="#related-documentation">Related Documentation</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#message-struct-message">Message</a><ul>
 <li><a class="reference internal" href="#message-struct-message-message">Message</a></li>
 <li><a class="reference internal" href="#target">Target</a></li>

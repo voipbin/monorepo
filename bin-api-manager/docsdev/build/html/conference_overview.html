@@ -100,7 +100,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="message.html">Message</a></li>
 <li class="toctree-l1"><a class="reference internal" href="email.html">Email</a></li>
-<li class="toctree-l1"><a class="reference internal" href="chat.html">Chat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="talk.html">Talk</a></li>
 <li class="toctree-l1"><a class="reference internal" href="conversation.html">Conversation</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">AI &amp; Automation</span></p>
@@ -127,7 +127,6 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
 <li class="toctree-l1"><a class="reference internal" href="websocket.html">Websocket</a></li>
-<li class="toctree-l1"><a class="reference internal" href="talk.html">Talk</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul>
@@ -571,6 +570,79 @@ When one participant leaves:
 <li><p>History preserved in <code class="docutils literal notranslate"><span class="pre">transcribe_ids</span></code> array</p></li>
 </ul>
 </section>
+<section id="recording-and-transcription-together">
+<h2>Recording and Transcription Together<a class="headerlink" href="#recording-and-transcription-together" title="Link to this heading"></a></h2>
+<p>For complete conference documentation, you can run recording and transcription simultaneously.</p>
+<p><strong>Combined Setup</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+---------------------------------------------------------------+</span>
+<span class="o">|</span>                    <span class="n">Conference</span>                                 <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+------+</span>    <span class="o">+------+</span>    <span class="o">+------+</span>                             <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span><span class="n">User</span> <span class="n">A</span><span class="o">|</span>    <span class="o">|</span><span class="n">User</span> <span class="n">B</span><span class="o">|</span>    <span class="o">|</span><span class="n">User</span> <span class="n">C</span><span class="o">|</span>                             <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+--+---+</span>    <span class="o">+--+---+</span>    <span class="o">+--+---+</span>                             <span class="o">|</span>
+<span class="o">|</span>     <span class="o">|</span>           <span class="o">|</span>           <span class="o">|</span>                                 <span class="o">|</span>
+<span class="o">|</span>     <span class="o">+-----+-----+-----+-----+</span>                                 <span class="o">|</span>
+<span class="o">|</span>           <span class="o">|</span>           <span class="o">|</span>                                       <span class="o">|</span>
+<span class="o">|</span>           <span class="n">v</span>           <span class="n">v</span>                                       <span class="o">|</span>
+<span class="o">|</span>     <span class="o">+----------+</span>  <span class="o">+-------------+</span>                             <span class="o">|</span>
+<span class="o">|</span>     <span class="o">|</span><span class="n">Recording</span> <span class="o">|</span>  <span class="o">|</span><span class="n">Transcription</span><span class="o">|</span>                             <span class="o">|</span>
+<span class="o">|</span>     <span class="o">|</span>  <span class="n">File</span>    <span class="o">|</span>  <span class="o">|</span>   <span class="n">Stream</span>    <span class="o">|</span>                             <span class="o">|</span>
+<span class="o">|</span>     <span class="o">+----------+</span>  <span class="o">+------+------+</span>                             <span class="o">|</span>
+<span class="o">+---------------------------------------------------------------+</span>
+                           <span class="o">|</span>
+                           <span class="n">v</span>
+                    <span class="o">+-----------+</span>
+                    <span class="o">|</span> <span class="n">Your</span> <span class="n">App</span>  <span class="o">|</span>
+                    <span class="o">|</span> <span class="p">(</span><span class="n">webhook</span><span class="p">)</span> <span class="o">|</span>
+                    <span class="o">+-----------+</span>
+</pre></div>
+</div>
+<p><strong>Sequence</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1. Create conference
+   POST /v1.0/conferences
+
+2. Start recording
+   POST /v1.0/conferences/{id}/recording_start
+
+3. Start transcription
+   POST /v1.0/conferences/{id}/transcribe_start
+   { &quot;language&quot;: &quot;en-US&quot; }
+
+4. Participants join and talk
+   → Recording captures all audio
+   → Transcripts stream to webhook
+
+5. Stop transcription
+   POST /v1.0/conferences/{id}/transcribe_stop
+
+6. Stop recording
+   POST /v1.0/conferences/{id}/recording_stop
+
+7. Result: Audio file + searchable text transcripts
+</pre></div>
+</div>
+<p><strong>Use Cases for Combined Recording + Transcription</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Use Case</p></th>
+<th class="head"><p>Benefit</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Compliance</p></td>
+<td><p>Full audio archive + searchable text records</p></td>
+</tr>
+<tr class="row-odd"><td><p>Meeting minutes</p></td>
+<td><p>Auto-generated text from recording</p></td>
+</tr>
+<tr class="row-even"><td><p>Quality assurance</p></td>
+<td><p>Review both audio and transcript</p></td>
+</tr>
+<tr class="row-odd"><td><p>Legal documentation</p></td>
+<td><p>Verifiable audio + readable transcript</p></td>
+</tr>
+</tbody>
+</table>
+</section>
 <section id="timeout-and-auto-cleanup">
 <h2>Timeout and Auto-Cleanup<a class="headerlink" href="#timeout-and-auto-cleanup" title="Link to this heading"></a></h2>
 <p>Conferences can be configured to automatically terminate after a period.</p>
@@ -737,6 +809,64 @@ Every 5 seconds, for each participant:
 <li><p>Download and store recordings promptly</p></li>
 </ul>
 </section>
+<section id="related-documentation">
+<h2>Related Documentation<a class="headerlink" href="#related-documentation" title="Link to this heading"></a></h2>
+<p>Conferences integrate with many VoIPBIN features. Use these links for detailed information:</p>
+<p><strong>Recording a Conference</strong></p>
+<p>Capture all participant audio into a single file.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Conference</span>                        <span class="n">Recording</span>
+<span class="o">+-------------+</span>                   <span class="o">+------------+</span>
+<span class="o">|</span> <span class="n">progressing</span> <span class="o">|--</span><span class="n">recording_start</span><span class="o">-&gt;|</span> <span class="n">recording</span>  <span class="o">|</span>
+<span class="o">|</span>             <span class="o">|</span>                   <span class="o">|</span>            <span class="o">|</span>
+<span class="o">|</span>             <span class="o">|&lt;--</span><span class="n">recording_id</span><span class="o">----|</span> <span class="n">available</span>  <span class="o">|</span>
+<span class="o">+-------------+</span>                   <span class="o">+------------+</span>
+</pre></div>
+</div>
+<p>See <a class="reference internal" href="recording_overview.html#recording-overview"><span class="std std-ref">Recording Overview</span></a> for recording lifecycle, storage, and download.</p>
+<p><strong>Transcribing a Conference</strong></p>
+<p>Convert conference audio to text in real-time.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Conference</span>                        <span class="n">Transcription</span>
+<span class="o">+-------------+</span>                   <span class="o">+---------------+</span>
+<span class="o">|</span> <span class="n">progressing</span> <span class="o">|--</span><span class="n">transcribe_start</span><span class="o">&gt;|</span> <span class="n">transcribing</span>  <span class="o">|</span>
+<span class="o">|</span>             <span class="o">|</span>                   <span class="o">|</span>               <span class="o">|</span>
+<span class="o">|</span>             <span class="o">|&lt;--</span><span class="n">transcript</span> <span class="n">events</span><span class="o">|</span> <span class="p">(</span><span class="n">streaming</span><span class="p">)</span>  <span class="o">|</span>
+<span class="o">+-------------+</span>                   <span class="o">+---------------+</span>
+</pre></div>
+</div>
+<p>See <a class="reference internal" href="transcribe_overview.html#transcribe-overview"><span class="std std-ref">Transcribe Overview</span></a> for transcript delivery and language support.</p>
+<p><strong>Streaming Conference Audio</strong></p>
+<p>Access raw conference audio via WebSocket for AI or custom processing.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Conference</span>                        <span class="n">Your</span> <span class="n">App</span>
+<span class="o">+-------------+</span>                   <span class="o">+---------------+</span>
+<span class="o">|</span> <span class="n">progressing</span> <span class="o">|&lt;==</span> <span class="n">WebSocket</span> <span class="o">====&gt;|</span>  <span class="n">AI</span> <span class="o">/</span> <span class="n">STT</span>     <span class="o">|</span>
+<span class="o">|</span>             <span class="o">|</span>   <span class="p">(</span><span class="n">audio</span> <span class="n">stream</span><span class="p">)</span>  <span class="o">|</span>  <span class="n">Processing</span>   <span class="o">|</span>
+<span class="o">+-------------+</span>                   <span class="o">+---------------+</span>
+</pre></div>
+</div>
+<p>See <a class="reference internal" href="mediastream_overview.html#mediastream-overview"><span class="std std-ref">Media Stream Overview</span></a> for encapsulation types and integration patterns.</p>
+<p><strong>Joining a Call to Conference</strong></p>
+<p>Connect an existing call to a conference.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Call</span>                              <span class="n">Conference</span>
+<span class="o">+-------------+</span>                   <span class="o">+---------------+</span>
+<span class="o">|</span> <span class="n">progressing</span> <span class="o">|--</span><span class="n">join</span> <span class="n">action</span><span class="o">-----&gt;|</span> <span class="n">progressing</span>   <span class="o">|</span>
+<span class="o">|</span>             <span class="o">|</span>                   <span class="o">|</span>               <span class="o">|</span>
+<span class="o">|</span>             <span class="o">|&lt;--</span><span class="n">audio</span> <span class="n">mixed</span><span class="o">-----|</span> <span class="p">(</span><span class="nb">all</span> <span class="n">parties</span><span class="p">)</span> <span class="o">|</span>
+<span class="o">+-------------+</span>                   <span class="o">+---------------+</span>
+</pre></div>
+</div>
+<p>See <a class="reference internal" href="call_overview.html#call-overview"><span class="std std-ref">Call Overview</span></a> for call lifecycle and chaining.</p>
+<p><strong>Queue Integration</strong></p>
+<p>Route queued calls to conference-based agent connections.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Queue</span>                             <span class="n">Conference</span> <span class="p">(</span><span class="n">connect</span> <span class="nb">type</span><span class="p">)</span>
+<span class="o">+-------------+</span>                   <span class="o">+---------------+</span>
+<span class="o">|</span>  <span class="n">service</span>    <span class="o">|--</span><span class="n">agent</span> <span class="n">connected</span><span class="o">-&gt;|</span> <span class="n">progressing</span>   <span class="o">|</span>
+<span class="o">|</span>             <span class="o">|</span>                   <span class="o">|</span> <span class="p">(</span><span class="n">customer</span> <span class="o">+</span>   <span class="o">|</span>
+<span class="o">|</span>             <span class="o">|</span>                   <span class="o">|</span>  <span class="n">agent</span><span class="p">)</span>       <span class="o">|</span>
+<span class="o">+-------------+</span>                   <span class="o">+---------------+</span>
+</pre></div>
+</div>
+<p>See <a class="reference internal" href="queue_overview.html#queue-overview"><span class="std std-ref">Queue Overview</span></a> for queue management and agent matching.</p>
+</section>
 </section>
 
 </main>
@@ -756,11 +886,13 @@ Every 5 seconds, for each participant:
 <li><a class="reference internal" href="#conference-types">Conference Types</a></li>
 <li><a class="reference internal" href="#recording">Recording</a></li>
 <li><a class="reference internal" href="#transcription">Transcription</a></li>
+<li><a class="reference internal" href="#recording-and-transcription-together">Recording and Transcription Together</a></li>
 <li><a class="reference internal" href="#timeout-and-auto-cleanup">Timeout and Auto-Cleanup</a></li>
 <li><a class="reference internal" href="#health-checks">Health Checks</a></li>
 <li><a class="reference internal" href="#common-scenarios">Common Scenarios</a></li>
 <li><a class="reference internal" href="#events-and-webhooks">Events and Webhooks</a></li>
 <li><a class="reference internal" href="#best-practices">Best Practices</a></li>
+<li><a class="reference internal" href="#related-documentation">Related Documentation</a></li>
 </ul>
 </li>
 </ul>

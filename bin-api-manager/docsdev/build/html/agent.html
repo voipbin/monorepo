@@ -102,7 +102,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="message.html">Message</a></li>
 <li class="toctree-l1"><a class="reference internal" href="email.html">Email</a></li>
-<li class="toctree-l1"><a class="reference internal" href="chat.html">Chat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="talk.html">Talk</a></li>
 <li class="toctree-l1"><a class="reference internal" href="conversation.html">Conversation</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">AI &amp; Automation</span></p>
@@ -129,7 +129,6 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
 <li class="toctree-l1"><a class="reference internal" href="websocket.html">Websocket</a></li>
-<li class="toctree-l1"><a class="reference internal" href="talk.html">Talk</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul>
@@ -718,6 +717,82 @@ Agent logs out for the day
 </pre></div>
 </div>
 </section>
+<section id="troubleshooting">
+<h3>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h3>
+<p><strong>Status Issues</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Symptom</p></th>
+<th class="head"><p>Solution</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Agent not receiving calls</p></td>
+<td><p>Check status is “available”; verify agent has
+required tags for queue; check addresses</p></td>
+</tr>
+<tr class="row-odd"><td><p>Stuck in “ringing” status</p></td>
+<td><p>Check if call was properly terminated; may
+need to manually reset status</p></td>
+</tr>
+<tr class="row-even"><td><p>Status changes not
+triggering webhooks</p></td>
+<td><p>Verify webhook endpoint is configured; check
+webhook URL is accessible</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Address Issues</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Symptom</p></th>
+<th class="head"><p>Solution</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Address conflict error</p></td>
+<td><p>Each address can only belong to one agent per
+customer; remove from other agent first</p></td>
+</tr>
+<tr class="row-odd"><td><p>Calls not reaching agent</p></td>
+<td><p>Verify address format (E.164 for tel); check
+extension is registered</p></td>
+</tr>
+<tr class="row-even"><td><p>Some addresses not
+ringing</p></td>
+<td><p>Verify all addresses are valid and reachable;
+check network connectivity</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Tag Issues</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Symptom</p></th>
+<th class="head"><p>Solution</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Agent not matched to
+queue</p></td>
+<td><p>Verify agent has ALL required tags for queue;
+tags must match exactly</p></td>
+</tr>
+<tr class="row-odd"><td><p>Tag assignment failed</p></td>
+<td><p>Verify tag IDs exist; check API permissions</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="related-documentation">
+<h3>Related Documentation<a class="headerlink" href="#related-documentation" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><a class="reference internal" href="queue_overview.html#queue-overview"><span class="std std-ref">Queue Overview</span></a> - Queue configuration and routing</p></li>
+<li><p><a class="reference internal" href="tag_overview.html#tag-overview"><span class="std std-ref">Tag Overview</span></a> - Creating and managing tags</p></li>
+<li><p><a class="reference internal" href="extension_overview.html#extension-overview"><span class="std std-ref">Extension Overview</span></a> - SIP extension configuration</p></li>
+<li><p><a class="reference internal" href="webhook_overview.html#webhook-overview"><span class="std std-ref">Webhook Overview</span></a> - Status event notifications</p></li>
+</ul>
+</section>
 </section>
 <section id="struct">
 <span id="agent-struct-agent"></span><h2>Struct<a class="headerlink" href="#struct" title="Link to this heading"></a></h2>
@@ -916,6 +991,8 @@ Agent logs out for the day
 <li><a class="reference internal" href="#permission">Permission</a></li>
 <li><a class="reference internal" href="#best-practices">Best Practices</a></li>
 <li><a class="reference internal" href="#common-scenarios">Common Scenarios</a></li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
+<li><a class="reference internal" href="#related-documentation">Related Documentation</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#struct">Struct</a><ul>
