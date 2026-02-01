@@ -171,6 +171,101 @@ This service depends on several sibling services in the monorepo:
 
 All monorepo dependencies use `replace` directives in `go.mod` pointing to `../<service-name>`
 
+### AI Manager and Pipecat Manager Relationship
+
+The AI Manager (Go) and Pipecat Manager (Python) work together to provide real-time AI voice conversations:
+
+```
+                              +-------------------+
+                              |   Flow Manager    |
+                              |  (ai_talk action) |
+                              +--------+----------+
+                                       |
+                                       | Start AI session
+                                       v
++-------------------+        +-------------------+        +-------------------+
+|                   |        |                   |        |                   |
+|    Asterisk       |<------>|   AI Manager      |<------>|  Pipecat Manager  |
+|  (8kHz audio)     |  HTTP  |     (Go)          | RMQ/WS |    (Python)       |
+|                   |        |                   |        |                   |
++-------------------+        +--------+----------+        +--------+----------+
+       ^                              |                            |
+       |                              |                            |
+       | RTP audio                    | Tool                       | Real-time
+       |                              | execution                  | processing
+       v                              v                            v
++-------------------+        +-------------------+        +-------------------+
+|      Caller       |        | call-manager      |        |    STT / LLM      |
+|    (Phone)        |        | message-manager   |        |      / TTS        |
+|                   |        | email-manager     |        |   Providers       |
++-------------------+        +-------------------+        +-------------------+
+```
+
+**Responsibilities:**
+
+| Component | Responsibility |
+|-----------|----------------|
+| AI Manager (Go) | Orchestration, session management, tool execution, database persistence |
+| Pipecat Manager (Python) | Real-time audio processing, STT/LLM/TTS pipeline, WebSocket streaming |
+
+**Audio Flow with Sample Rate Conversion:**
+
+```
+Caller (Phone)     Asterisk        Pipecat         STT/LLM/TTS
+     |                |               |                |
+     | RTP 8kHz PCM   |               |                |
+     +--------------->|               |                |
+     |                | WebSocket     |                |
+     |                | 8kHz audio    |                |
+     |                +-------------->|                |
+     |                |               | Resample to    |
+     |                |               | 16kHz          |
+     |                |               +--------------->| STT
+     |                |               |                |
+     |                |               |<---------------+ LLM Response
+     |                |               | Resample to    |
+     |                |               | 8kHz           |
+     |                |<--------------+                |
+     |<---------------| RTP playback  |                |
+```
+
+**Tool Execution Flow:**
+
+When the LLM detects a function call (e.g., "transfer me to sales"):
+
+1. Python Pipecat detects `function_call` in LLM response
+2. Pipecat sends HTTP POST to Go AI Manager (`/tool/execute`)
+3. AI Manager's `AIcallHandler.ToolHandle()` processes the request
+4. Tool executed via appropriate service (call-manager, message-manager, etc.)
+5. Result returned to Pipecat
+6. LLM generates verbal response based on result
+7. TTS converts response to audio
+
+**Tool Definitions:**
+
+Tool definitions are centralized in `pkg/toolhandler/definitions.go`. The Pipecat Manager requests these definitions when starting a session and only receives tools enabled via the AI's `tool_names` field.
+
+Available tools:
+- `connect_call`: Transfer/connect calls
+- `send_email`: Send email messages
+- `send_message`: Send SMS messages
+- `stop_media`: Stop current media playback
+- `stop_service`: End AI conversation (soft stop)
+- `stop_flow`: Terminate entire flow (hard stop)
+- `set_variables`: Save data to flow context
+- `get_variables`: Retrieve data from flow context
+- `get_aicall_messages`: Get message history
+
+**Communication Patterns:**
+
+| Direction | Protocol | Purpose |
+|-----------|----------|---------|
+| Flow → AI Manager | RabbitMQ RPC | Start/stop AI sessions |
+| AI Manager → Pipecat | RabbitMQ + HTTP | Session management, tool results |
+| Pipecat → AI Manager | HTTP | Tool execution requests |
+| Asterisk ↔ Pipecat | WebSocket | Real-time audio streaming |
+| Pipecat → STT/LLM/TTS | HTTP/WebSocket | External AI provider APIs |
+
 **External Dependencies**
 - MySQL database for persistent storage
 - Redis for caching
