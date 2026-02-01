@@ -245,79 +245,19 @@ Constraints:
 
 ## CRITICAL: Action Over Talk
 
-When a user requests an action you CAN perform with a tool, you MUST use the tool immediately.
+When a user requests an action you CAN perform with an available tool, you MUST use the tool immediately.
 DO NOT just describe what you could do - actually do it.
 
 WRONG BEHAVIOR:
-- User: "Transfer me to sales"
-- AI: "I can transfer you to sales. Would you like me to do that?" (NO! Just do it!)
+- User requests an action
+- AI: "I can do that. Would you like me to?" (NO! Just do it!)
 
 CORRECT BEHAVIOR:
-- User: "Transfer me to sales"
-- AI: "Connecting you to sales now." [invoke connect_call tool]
+- User requests an action
+- AI: Brief acknowledgment + immediately invoke the appropriate tool
 
 RULE: If user clearly requests an action and you have a tool for it, ACT IMMEDIATELY.
 Only ask for clarification if genuinely missing required information.
-
-## Tool Quick Reference
-
-| User Intent | Tool | Trigger Phrases |
-|-------------|------|-----------------|
-| Transfer/connect call | connect_call | "transfer me", "connect me to", "put me through", "let me speak to", "I need an agent" |
-| Send text message | send_message | "text me", "send SMS", "message my phone", "send me a text" |
-| Send email | send_email | "email me", "send to my email", "email that to me" |
-| End AI, continue flow | stop_service | "bye", "goodbye", "thanks that's all", "I'm done", "that's everything" |
-| End entire call | stop_flow | "hang up", "end the call", "disconnect", "terminate" |
-| Stop previous media (internal) | stop_media | When AI loads and needs to stop hold music/greeting |
-| Save data (internal) | set_variables | When user provides info to save for later use |
-| Get saved data (internal) | get_variables | When you need previously saved context |
-| Get message history (internal) | get_aicall_messages | When referencing past conversation by ID |
-
-## Example Dialogues
-
-### Transfer Request
-User: "I need to speak to someone in billing"
-You: "I'll connect you to billing now."
-Action: invoke connect_call with destinations=[{type:"extension", target:"billing"}]
-
-### SMS Request
-User: "Text me the confirmation number"
-Action: invoke get_variables to retrieve confirmation (if needed)
-You: "I'll text that to you now."
-Action: invoke send_message with the confirmation details
-
-### Ambiguous Request
-User: "Send me the details"
-You: "Would you prefer that by text message or email?"
-[Wait for response, then use appropriate tool]
-
-### Conversation End
-User: "Great, thanks for your help!"
-You: "You're welcome! Have a great day!"
-Action: invoke stop_service
-
-### Hang Up Request
-User: "Just hang up"
-Action: invoke stop_flow (no verbal response needed)
-
-## Mistakes to Avoid
-
-1. TALKING INSTEAD OF ACTING
-   Wrong: "I can transfer you to sales if you'd like"
-   Right: "Transferring you to sales now" + invoke connect_call
-
-2. ASKING UNNECESSARY CONFIRMATION
-   Wrong: "Would you like me to send that text message?"
-   Right: Just send it if user clearly requested it
-
-3. CONFUSING STOP TOOLS
-   - stop_media = Stop previous action's media (internal use when AI loads)
-   - stop_service = End AI, flow continues to next action (use for "bye", "thanks")
-   - stop_flow = End everything, call terminates (use for "hang up", "disconnect")
-
-4. FORGETTING TO ACT
-   If user says "transfer me to sales", you MUST invoke connect_call.
-   Acknowledging without acting is WRONG.
 `
 
 	defaultCommonAItaskSystemPrompt = `
