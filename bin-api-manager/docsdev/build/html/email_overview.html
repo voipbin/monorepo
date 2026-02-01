@@ -100,7 +100,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="message.html">Message</a></li>
 <li class="toctree-l1"><a class="reference internal" href="email.html">Email</a></li>
-<li class="toctree-l1"><a class="reference internal" href="chat.html">Chat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="talk.html">Talk</a></li>
 <li class="toctree-l1"><a class="reference internal" href="conversation.html">Conversation</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">AI &amp; Automation</span></p>
@@ -127,7 +127,6 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
 <li class="toctree-l1"><a class="reference internal" href="websocket.html">Websocket</a></li>
-<li class="toctree-l1"><a class="reference internal" href="talk.html">Talk</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul>
@@ -185,28 +184,408 @@
                         <main role="main" id="main">
     <section id="overview">
 <span id="email-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h1>
-<p>The VoIPBIN’s email API delivers a powerful, flexible email service designed to simplify the integration of email communication into your applications.
-Whether you need to send transactional notifications, marketing emails, or alerts, this feature provides a reliable and scalable solution to meet your needs.</p>
+<p>VoIPBIN’s Email API provides a reliable and scalable email delivery service for your applications. Whether you need to send transactional emails, notifications, or marketing communications, the Email API handles delivery while you focus on your content.</p>
+<p>With the Email API you can:</p>
+<ul class="simple">
+<li><p>Send emails with HTML and plain text content</p></li>
+<li><p>Attach files to your emails</p></li>
+<li><p>Track email delivery status</p></li>
+<li><p>Manage mailboxes for receiving emails</p></li>
+<li><p>Integrate email into automated workflows</p></li>
+</ul>
+<section id="how-email-works">
+<h2>How Email Works<a class="headerlink" href="#how-email-works" title="Link to this heading"></a></h2>
+<p>When you send an email, VoIPBIN processes and delivers it through email infrastructure optimized for deliverability.</p>
+<p><strong>Email Architecture</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+----------+</span>        <span class="o">+----------------+</span>        <span class="o">+-------------+</span>
+<span class="o">|</span> <span class="n">Your</span> <span class="n">App</span> <span class="o">|--</span><span class="n">API</span><span class="o">--&gt;|</span>    <span class="n">VoIPBIN</span>     <span class="o">|--</span><span class="n">SMTP</span><span class="o">-&gt;|</span>   <span class="n">Email</span>     <span class="o">|</span>
+<span class="o">+----------+</span>        <span class="o">|</span>   <span class="n">Email</span> <span class="n">Hub</span>    <span class="o">|</span>        <span class="o">|</span>   <span class="n">Provider</span>  <span class="o">|</span>
+                    <span class="o">+----------------+</span>        <span class="o">+------+------+</span>
+                           <span class="o">|</span>                         <span class="o">|</span>
+                           <span class="o">|</span>                         <span class="n">v</span>
+                    <span class="o">+------+------+</span>           <span class="o">+-------------+</span>
+                    <span class="o">|</span>   <span class="n">Webhook</span>   <span class="o">|</span>           <span class="o">|</span>  <span class="n">Recipient</span>  <span class="o">|</span>
+                    <span class="o">|</span>  <span class="p">(</span><span class="n">status</span><span class="p">)</span>   <span class="o">|</span>           <span class="o">|</span>   <span class="n">Inbox</span>     <span class="o">|</span>
+                    <span class="o">+-------------+</span>           <span class="o">+-------------+</span>
+</pre></div>
+</div>
+<p><strong>Key Components</strong></p>
+<ul class="simple">
+<li><p><strong>Email Hub</strong>: Processes emails, manages delivery queue, handles retries</p></li>
+<li><p><strong>Email Provider</strong>: Routes emails through established email infrastructure</p></li>
+<li><p><strong>Webhooks</strong>: Notify your application of delivery events</p></li>
+</ul>
 </section>
-<section id="email-and-mailbox">
-<h1>Email and Mailbox<a class="headerlink" href="#email-and-mailbox" title="Link to this heading"></a></h1>
-<p>The email functionality enables applications to both send and manage emails with ease.</p>
-<p>Developers can leverage this service to automate communication flows, ensuring timely delivery of critical messages.
-The API supports a variety of email-related operations including composing new messages, managing attachments, and scheduling email dispatches.
-This flexibility is key for maintaining effective user engagement and operational efficiency.</p>
+<section id="email-lifecycle">
+<h2>Email Lifecycle<a class="headerlink" href="#email-lifecycle" title="Link to this heading"></a></h2>
+<p>Every email moves through states from composition to delivery.</p>
+<p><strong>Email States</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">POST</span> <span class="o">/</span><span class="n">emails</span>
+      <span class="o">|</span>
+      <span class="n">v</span>
+<span class="o">+------------+</span>
+<span class="o">|</span>  <span class="n">queued</span>    <span class="o">|</span>
+<span class="o">+-----+------+</span>
+      <span class="o">|</span>
+      <span class="n">v</span>
+<span class="o">+------------+</span>     <span class="n">delivery</span> <span class="n">issue</span>      <span class="o">+------------+</span>
+<span class="o">|</span>  <span class="n">sending</span>   <span class="o">|------------------------&gt;|</span>  <span class="n">bounced</span>   <span class="o">|</span>
+<span class="o">+-----+------+</span>                         <span class="o">+------------+</span>
+      <span class="o">|</span>
+      <span class="o">|</span> <span class="n">accepted</span> <span class="n">by</span> <span class="n">server</span>
+      <span class="n">v</span>
+<span class="o">+------------+</span>     <span class="n">recipient</span> <span class="n">issue</span>     <span class="o">+------------+</span>
+<span class="o">|</span> <span class="n">delivered</span>  <span class="o">|------------------------&gt;|</span>  <span class="n">bounced</span>   <span class="o">|</span>
+<span class="o">+------------+</span>                         <span class="o">+------------+</span>
+</pre></div>
+</div>
+<p><strong>State Descriptions</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>State</p></th>
+<th class="head"><p>What’s happening</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>queued</p></td>
+<td><p>Email is in the delivery queue, waiting to be sent</p></td>
+</tr>
+<tr class="row-odd"><td><p>sending</p></td>
+<td><p>Email is being transmitted to the recipient’s mail server</p></td>
+</tr>
+<tr class="row-even"><td><p>delivered</p></td>
+<td><p>Email was accepted by the recipient’s mail server</p></td>
+</tr>
+<tr class="row-odd"><td><p>bounced</p></td>
+<td><p>Email could not be delivered (invalid address, mailbox full)</p></td>
+</tr>
+</tbody>
+</table>
 </section>
-<section id="email-message">
-<h1>Email Message<a class="headerlink" href="#email-message" title="Link to this heading"></a></h1>
-<p>The Email Message object encapsulates all components of an email, ensuring each message is constructed accurately for successful delivery.</p>
-<p>Key elements include:
-* From: The sender’s email address.
-* To: One or multiple recipient email addresses.
-* Subject: The email’s subject line, summarizing the content.
-* Content: The main content of the email, supporting both plain text and HTML formats.
-* Attachments: Optional files to be sent along with the email.</p>
-<p>These attributes ensure that every email sent through the API is complete and conforms to modern email standards.</p>
-<p>By integrating the Email API, organizations can streamline communication processes, automate notifications, and significantly enhance user interaction.
-This feature aligns with VoIPBIN’s commitment to providing a comprehensive suite of communication tools that improve connectivity and collaboration across platforms.</p>
+<section id="sending-emails">
+<h2>Sending Emails<a class="headerlink" href="#sending-emails" title="Link to this heading"></a></h2>
+<p>Send emails through the VoIPBIN API with full control over content and formatting.</p>
+<p><strong>Send Email via API</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Your</span> <span class="n">App</span>                    <span class="n">VoIPBIN</span>                    <span class="n">Recipient</span>
+   <span class="o">|</span>                           <span class="o">|</span>                           <span class="o">|</span>
+   <span class="o">|</span> <span class="n">POST</span> <span class="o">/</span><span class="n">emails</span>              <span class="o">|</span>                           <span class="o">|</span>
+   <span class="o">+--------------------------&gt;|</span>                           <span class="o">|</span>
+   <span class="o">|</span>                           <span class="o">|</span> <span class="n">Queue</span> <span class="ow">and</span> <span class="n">send</span>            <span class="o">|</span>
+   <span class="o">|</span>                           <span class="o">+--------------------------&gt;|</span>
+   <span class="o">|</span>  <span class="n">email_id</span>                 <span class="o">|</span>                           <span class="o">|</span>
+   <span class="o">|</span>  <span class="n">status</span><span class="p">:</span> <span class="s2">&quot;queued&quot;</span>         <span class="o">|</span>                           <span class="o">|</span>
+   <span class="o">|&lt;--------------------------+</span>                           <span class="o">|</span>
+   <span class="o">|</span>                           <span class="o">|</span>                           <span class="o">|</span>
+   <span class="o">|</span> <span class="n">Webhook</span><span class="p">:</span> <span class="n">delivered</span>        <span class="o">|</span>   <span class="n">Email</span> <span class="ow">in</span> <span class="n">inbox</span>          <span class="o">|</span>
+   <span class="o">|&lt;--------------------------+--------------------------&gt;|</span>
+   <span class="o">|</span>                           <span class="o">|</span>                           <span class="o">|</span>
+</pre></div>
+</div>
+<p><strong>Basic Email Example:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/emails?token=&lt;token&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data &#39;{
+        &quot;from&quot;: {
+            &quot;email&quot;: &quot;noreply@yourcompany.com&quot;,
+            &quot;name&quot;: &quot;Your Company&quot;
+        },
+        &quot;to&quot;: [
+            {
+                &quot;email&quot;: &quot;customer@example.com&quot;,
+                &quot;name&quot;: &quot;John Doe&quot;
+            }
+        ],
+        &quot;subject&quot;: &quot;Your Order Confirmation&quot;,
+        &quot;content&quot;: {
+            &quot;text&quot;: &quot;Thank you for your order #12345.&quot;,
+            &quot;html&quot;: &quot;&lt;h1&gt;Thank you!&lt;/h1&gt;&lt;p&gt;Your order #12345 has been confirmed.&lt;/p&gt;&quot;
+        }
+    }&#39;
+</pre></div>
+</div>
+<p><strong>Email with Attachment:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/emails?token=&lt;token&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data &#39;{
+        &quot;from&quot;: {
+            &quot;email&quot;: &quot;billing@yourcompany.com&quot;,
+            &quot;name&quot;: &quot;Billing Department&quot;
+        },
+        &quot;to&quot;: [
+            {
+                &quot;email&quot;: &quot;customer@example.com&quot;
+            }
+        ],
+        &quot;subject&quot;: &quot;Your Invoice&quot;,
+        &quot;content&quot;: {
+            &quot;text&quot;: &quot;Please find your invoice attached.&quot;,
+            &quot;html&quot;: &quot;&lt;p&gt;Please find your invoice attached.&lt;/p&gt;&quot;
+        },
+        &quot;attachments&quot;: [
+            {
+                &quot;filename&quot;: &quot;invoice-12345.pdf&quot;,
+                &quot;content&quot;: &quot;&lt;base64-encoded-content&gt;&quot;,
+                &quot;type&quot;: &quot;application/pdf&quot;
+            }
+        ]
+    }&#39;
+</pre></div>
+</div>
+</section>
+<section id="email-components">
+<h2>Email Components<a class="headerlink" href="#email-components" title="Link to this heading"></a></h2>
+<p>Understanding email structure helps you create effective messages.</p>
+<p><strong>Email Object Structure</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+---------------------------------------------------------------+</span>
+<span class="o">|</span>                         <span class="n">Email</span>                                 <span class="o">|</span>
+<span class="o">+---------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">From</span><span class="p">:</span> <span class="n">sender</span><span class="nd">@company</span><span class="o">.</span><span class="n">com</span> <span class="p">(</span><span class="n">Sender</span> <span class="n">Name</span><span class="p">)</span>                        <span class="o">|</span>
+<span class="o">+---------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">To</span><span class="p">:</span> <span class="n">recipient</span><span class="nd">@example</span><span class="o">.</span><span class="n">com</span>                                     <span class="o">|</span>
+<span class="o">|</span> <span class="n">CC</span><span class="p">:</span> <span class="n">copy</span><span class="nd">@example</span><span class="o">.</span><span class="n">com</span>                                          <span class="o">|</span>
+<span class="o">|</span> <span class="n">BCC</span><span class="p">:</span> <span class="n">hidden</span><span class="nd">@example</span><span class="o">.</span><span class="n">com</span>                                       <span class="o">|</span>
+<span class="o">+---------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Subject</span><span class="p">:</span> <span class="n">Your</span> <span class="n">Order</span> <span class="n">Confirmation</span>                              <span class="o">|</span>
+<span class="o">+---------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Content</span><span class="p">:</span>                                                      <span class="o">|</span>
+<span class="o">|</span>   <span class="o">-</span> <span class="n">Plain</span> <span class="n">text</span> <span class="n">version</span> <span class="p">(</span><span class="k">for</span> <span class="n">simple</span> <span class="n">clients</span><span class="p">)</span>                   <span class="o">|</span>
+<span class="o">|</span>   <span class="o">-</span> <span class="n">HTML</span> <span class="n">version</span> <span class="p">(</span><span class="k">for</span> <span class="n">rich</span> <span class="n">formatting</span><span class="p">)</span>                        <span class="o">|</span>
+<span class="o">+---------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Attachments</span><span class="p">:</span>                                                  <span class="o">|</span>
+<span class="o">|</span>   <span class="o">-</span> <span class="n">invoice</span><span class="o">.</span><span class="n">pdf</span>                                               <span class="o">|</span>
+<span class="o">|</span>   <span class="o">-</span> <span class="n">receipt</span><span class="o">.</span><span class="n">png</span>                                               <span class="o">|</span>
+<span class="o">+---------------------------------------------------------------+</span>
+</pre></div>
+</div>
+<p><strong>Email Fields</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Field</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>from</p></td>
+<td><p>Sender email address and optional display name</p></td>
+</tr>
+<tr class="row-odd"><td><p>to</p></td>
+<td><p>List of recipient email addresses</p></td>
+</tr>
+<tr class="row-even"><td><p>cc</p></td>
+<td><p>Carbon copy recipients (visible to all)</p></td>
+</tr>
+<tr class="row-odd"><td><p>bcc</p></td>
+<td><p>Blind carbon copy recipients (hidden from others)</p></td>
+</tr>
+<tr class="row-even"><td><p>subject</p></td>
+<td><p>Email subject line</p></td>
+</tr>
+<tr class="row-odd"><td><p>content.text</p></td>
+<td><p>Plain text version of the email body</p></td>
+</tr>
+<tr class="row-even"><td><p>content.html</p></td>
+<td><p>HTML version of the email body</p></td>
+</tr>
+<tr class="row-odd"><td><p>attachments</p></td>
+<td><p>List of file attachments</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="content-best-practices">
+<h2>Content Best Practices<a class="headerlink" href="#content-best-practices" title="Link to this heading"></a></h2>
+<p>Create emails that render well and avoid spam filters.</p>
+<p><strong>HTML Email Structure</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;meta charset=&quot;UTF-8&quot;&gt;
+    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+&lt;/head&gt;
+&lt;body style=&quot;font-family: Arial, sans-serif; margin: 0; padding: 20px;&quot;&gt;
+    &lt;table width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot;&gt;
+        &lt;tr&gt;
+            &lt;td align=&quot;center&quot;&gt;
+                &lt;h1 style=&quot;color: #333;&quot;&gt;Welcome!&lt;/h1&gt;
+                &lt;p&gt;Your email content here.&lt;/p&gt;
+            &lt;/td&gt;
+        &lt;/tr&gt;
+    &lt;/table&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</pre></div>
+</div>
+<p><strong>Content Guidelines</strong></p>
+</section>
+<section id="common-scenarios">
+<h2>Common Scenarios<a class="headerlink" href="#common-scenarios" title="Link to this heading"></a></h2>
+<p><strong>Scenario 1: Order Confirmation</strong></p>
+<p>Send transactional emails for e-commerce.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Order</span> <span class="n">placed</span>
+     <span class="o">|</span>
+     <span class="n">v</span>
+<span class="o">+--------------------------+</span>
+<span class="o">|</span> <span class="n">Generate</span> <span class="n">confirmation</span>    <span class="o">|</span>
+<span class="o">|</span> <span class="n">email</span> <span class="k">with</span> <span class="n">order</span> <span class="n">details</span> <span class="o">|</span>
+<span class="o">+------------+-------------+</span>
+             <span class="o">|</span>
+             <span class="n">v</span>
+<span class="n">POST</span> <span class="o">/</span><span class="n">emails</span>
+<span class="n">Subject</span><span class="p">:</span> <span class="s2">&quot;Order #12345 Confirmed&quot;</span>
+             <span class="o">|</span>
+             <span class="n">v</span>
+<span class="n">Customer</span> <span class="n">receives</span> <span class="n">confirmation</span>
+</pre></div>
+</div>
+<p><strong>Scenario 2: Password Reset</strong></p>
+<p>Send security-related emails.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">User</span> <span class="n">requests</span> <span class="n">reset</span>
+     <span class="o">|</span>
+     <span class="n">v</span>
+<span class="o">+------------------------+</span>
+<span class="o">|</span> <span class="n">Generate</span> <span class="n">reset</span> <span class="n">token</span>   <span class="o">|</span>
+<span class="o">|</span> <span class="n">Create</span> <span class="n">reset</span> <span class="n">link</span>      <span class="o">|</span>
+<span class="o">+------------+-----------+</span>
+             <span class="o">|</span>
+             <span class="n">v</span>
+<span class="n">POST</span> <span class="o">/</span><span class="n">emails</span>
+<span class="n">Subject</span><span class="p">:</span> <span class="s2">&quot;Reset Your Password&quot;</span>
+<span class="n">Content</span><span class="p">:</span> <span class="n">Link</span> <span class="k">with</span> <span class="n">token</span>
+             <span class="o">|</span>
+             <span class="n">v</span>
+<span class="n">User</span> <span class="n">receives</span> <span class="n">reset</span> <span class="n">email</span>
+</pre></div>
+</div>
+<p><strong>Scenario 3: Invoice Delivery</strong></p>
+<p>Send emails with attachments.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Invoice</span> <span class="n">generated</span>
+     <span class="o">|</span>
+     <span class="n">v</span>
+<span class="o">+------------------------+</span>
+<span class="o">|</span> <span class="n">Create</span> <span class="n">PDF</span> <span class="n">invoice</span>     <span class="o">|</span>
+<span class="o">|</span> <span class="n">Base64</span> <span class="n">encode</span> <span class="n">content</span>  <span class="o">|</span>
+<span class="o">+------------+-----------+</span>
+             <span class="o">|</span>
+             <span class="n">v</span>
+<span class="n">POST</span> <span class="o">/</span><span class="n">emails</span>
+<span class="n">Attachment</span><span class="p">:</span> <span class="n">invoice</span><span class="o">.</span><span class="n">pdf</span>
+             <span class="o">|</span>
+             <span class="n">v</span>
+<span class="n">Customer</span> <span class="n">receives</span> <span class="n">invoice</span>
+</pre></div>
+</div>
+<p><strong>Scenario 4: Marketing Newsletter</strong></p>
+<p>Send bulk marketing emails.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+------------------------------------------+</span>
+<span class="o">|</span> <span class="n">For</span> <span class="n">each</span> <span class="n">subscriber</span><span class="p">:</span>                     <span class="o">|</span>
+<span class="o">|</span>                                          <span class="o">|</span>
+<span class="o">|</span> <span class="n">POST</span> <span class="o">/</span><span class="n">emails</span>                             <span class="o">|</span>
+<span class="o">|</span> <span class="p">{</span>                                        <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">&quot;to&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;email&quot;</span><span class="p">:</span> <span class="n">subscriber</span><span class="p">}],</span>         <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">&quot;subject&quot;</span><span class="p">:</span> <span class="s2">&quot;Weekly Newsletter&quot;</span><span class="p">,</span>        <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="p">{</span><span class="o">...</span><span class="p">}</span>                       <span class="o">|</span>
+<span class="o">|</span> <span class="p">}</span>                                        <span class="o">|</span>
+<span class="o">+------------------------------------------+</span>
+                  <span class="o">|</span>
+                  <span class="n">v</span>
+<span class="n">Monitor</span> <span class="n">delivery</span> <span class="n">status</span> <span class="n">via</span> <span class="n">webhooks</span>
+</pre></div>
+</div>
+</section>
+<section id="best-practices">
+<h2>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading"></a></h2>
+<p><strong>1. Sender Reputation</strong></p>
+<ul class="simple">
+<li><p>Use a consistent “from” address for each email type</p></li>
+<li><p>Authenticate your domain (SPF, DKIM, DMARC)</p></li>
+<li><p>Maintain low bounce and complaint rates</p></li>
+</ul>
+<p><strong>2. Content Quality</strong></p>
+<ul class="simple">
+<li><p>Always include both HTML and plain text versions</p></li>
+<li><p>Keep subject lines concise and relevant</p></li>
+<li><p>Avoid spam trigger words and excessive punctuation</p></li>
+</ul>
+<p><strong>3. List Management</strong></p>
+<ul class="simple">
+<li><p>Honor unsubscribe requests immediately</p></li>
+<li><p>Remove bounced addresses from your lists</p></li>
+<li><p>Segment your audience for relevant content</p></li>
+</ul>
+<p><strong>4. Deliverability</strong></p>
+<ul class="simple">
+<li><p>Warm up new sending domains gradually</p></li>
+<li><p>Monitor delivery metrics and adjust as needed</p></li>
+<li><p>Use dedicated IP addresses for high-volume sending</p></li>
+</ul>
+</section>
+<section id="troubleshooting">
+<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h2>
+<p><strong>Delivery Issues</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Symptom</p></th>
+<th class="head"><p>Solution</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Email bounced</p></td>
+<td><p>Check recipient address validity; verify
+mailbox exists</p></td>
+</tr>
+<tr class="row-odd"><td><p>Marked as spam</p></td>
+<td><p>Review content for spam triggers; check
+sender reputation</p></td>
+</tr>
+<tr class="row-even"><td><p>Delayed delivery</p></td>
+<td><p>Check sending rate; verify no throttling</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Rendering Issues</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Symptom</p></th>
+<th class="head"><p>Solution</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>HTML not displaying</p></td>
+<td><p>Use inline CSS; avoid external resources</p></td>
+</tr>
+<tr class="row-odd"><td><p>Images not showing</p></td>
+<td><p>Use absolute URLs; include alt text</p></td>
+</tr>
+<tr class="row-even"><td><p>Layout broken</p></td>
+<td><p>Use table-based layouts; test across clients</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Attachment Issues</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Symptom</p></th>
+<th class="head"><p>Solution</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Attachment blocked</p></td>
+<td><p>Avoid executable files; use common formats</p></td>
+</tr>
+<tr class="row-odd"><td><p>File too large</p></td>
+<td><p>Compress files; use file hosting links</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="related-documentation">
+<h2>Related Documentation<a class="headerlink" href="#related-documentation" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="message_overview.html#message-overview"><span class="std std-ref">Message Overview</span></a> - SMS/MMS messaging</p></li>
+<li><p><a class="reference internal" href="conversation_overview.html#conversation-overview"><span class="std std-ref">Conversation Overview</span></a> - Unified multi-channel messaging</p></li>
+<li><p><a class="reference internal" href="webhook_overview.html#webhook-overview"><span class="std std-ref">Webhook Overview</span></a> - Webhook configuration</p></li>
+</ul>
+</section>
 </section>
 
 </main>
@@ -217,9 +596,18 @@ This feature aligns with VoIPBIN’s commitment to providing a comprehensive sui
                         <div class="sticky-top toc page-toc" aria-labelledby="page-toc-heading">
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
-<li><a class="reference internal" href="#">Overview</a></li>
-<li><a class="reference internal" href="#email-and-mailbox">Email and Mailbox</a></li>
-<li><a class="reference internal" href="#email-message">Email Message</a></li>
+<li><a class="reference internal" href="#">Overview</a><ul>
+<li><a class="reference internal" href="#how-email-works">How Email Works</a></li>
+<li><a class="reference internal" href="#email-lifecycle">Email Lifecycle</a></li>
+<li><a class="reference internal" href="#sending-emails">Sending Emails</a></li>
+<li><a class="reference internal" href="#email-components">Email Components</a></li>
+<li><a class="reference internal" href="#content-best-practices">Content Best Practices</a></li>
+<li><a class="reference internal" href="#common-scenarios">Common Scenarios</a></li>
+<li><a class="reference internal" href="#best-practices">Best Practices</a></li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
+<li><a class="reference internal" href="#related-documentation">Related Documentation</a></li>
+</ul>
+</li>
 </ul>
 
                         </div>

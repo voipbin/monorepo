@@ -102,7 +102,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="message.html">Message</a></li>
 <li class="toctree-l1"><a class="reference internal" href="email.html">Email</a></li>
-<li class="toctree-l1"><a class="reference internal" href="chat.html">Chat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="talk.html">Talk</a></li>
 <li class="toctree-l1"><a class="reference internal" href="conversation.html">Conversation</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">AI &amp; Automation</span></p>
@@ -129,7 +129,6 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
 <li class="toctree-l1"><a class="reference internal" href="websocket.html">Websocket</a></li>
-<li class="toctree-l1"><a class="reference internal" href="talk.html">Talk</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul>
@@ -189,10 +188,341 @@
 <span id="cusotomer-main"></span><h1>Customer<a class="headerlink" href="#customer" title="Link to this heading"></a></h1>
 <section id="overview">
 <span id="customer-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
-<p>The Customer API is a powerful low-level API that provides developers with the capability to manage customers within their applications or systems. This API serves as a foundational tool for handling various customer-related operations and data management.</p>
-<p>With the Customer API, developers can perform a range of essential tasks, such as creating new customer profiles, updating existing customer information, retrieving customer data, and managing customer interactions. The API streamlines the process of handling customer-related operations, making it easier for developers to build and maintain customer-centric applications and services.</p>
-<p>By leveraging the Customer API, businesses can efficiently manage their customer base, tailor personalized experiences, and enhance customer engagement. The API’s low-level functionality allows for seamless integration into existing systems and applications, enabling developers to build sophisticated and customer-centric solutions tailored to their specific needs.</p>
-<p>Whether for customer relationship management (CRM), user authentication, or personalized interactions, the Customer API provides a versatile and robust toolset to manage customer data and interactions effectively. Businesses can utilize this API to gain valuable insights into their customer base and deliver tailored services, ultimately improving customer satisfaction and driving business growth.</p>
+<p>VoIPBIN’s Customer API provides account-level management for your organization within the platform. A customer represents a tenant account that owns resources like agents, numbers, flows, and billing. The Customer API enables you to manage account settings, view usage, and configure organization-wide preferences.</p>
+<p>With the Customer API you can:</p>
+<ul class="simple">
+<li><p>View and update customer account information</p></li>
+<li><p>Manage account-level settings and preferences</p></li>
+<li><p>Monitor resource usage and limits</p></li>
+<li><p>Configure default behaviors for the account</p></li>
+<li><p>Access account metadata and timestamps</p></li>
+</ul>
+<section id="how-customers-work">
+<h3>How Customers Work<a class="headerlink" href="#how-customers-work" title="Link to this heading"></a></h3>
+<p>A customer is the top-level organizational unit in VoIPBIN that owns all other resources.</p>
+<p><strong>Customer Architecture</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-----------------------------------------------------------------------+</span>
+<span class="o">|</span>                         <span class="n">Customer</span> <span class="n">Account</span>                              <span class="o">|</span>
+<span class="o">+-----------------------------------------------------------------------+</span>
+
+<span class="o">+-------------------+</span>
+<span class="o">|</span>     <span class="n">Customer</span>      <span class="o">|</span>
+<span class="o">|</span>  <span class="p">(</span><span class="n">organization</span><span class="p">)</span>   <span class="o">|</span>
+<span class="o">+--------+----------+</span>
+         <span class="o">|</span>
+         <span class="o">|</span> <span class="n">owns</span>
+         <span class="n">v</span>
+<span class="o">+--------+----------+--------+----------+--------+----------+</span>
+<span class="o">|</span>                   <span class="o">|</span>                   <span class="o">|</span>                   <span class="o">|</span>
+<span class="n">v</span>                   <span class="n">v</span>                   <span class="n">v</span>                   <span class="n">v</span>
+<span class="o">+----------+</span>   <span class="o">+----------+</span>   <span class="o">+----------+</span>   <span class="o">+----------+</span>
+<span class="o">|</span>  <span class="n">Agents</span>  <span class="o">|</span>   <span class="o">|</span> <span class="n">Numbers</span>  <span class="o">|</span>   <span class="o">|</span>  <span class="n">Flows</span>   <span class="o">|</span>   <span class="o">|</span> <span class="n">Billing</span>  <span class="o">|</span>
+<span class="o">+----------+</span>   <span class="o">+----------+</span>   <span class="o">+----------+</span>   <span class="o">+----------+</span>
+     <span class="o">|</span>              <span class="o">|</span>              <span class="o">|</span>              <span class="o">|</span>
+     <span class="n">v</span>              <span class="n">v</span>              <span class="n">v</span>              <span class="n">v</span>
+<span class="o">+---------+</span>    <span class="o">+---------+</span>    <span class="o">+---------+</span>    <span class="o">+---------+</span>
+<span class="o">|</span> <span class="n">Users</span>   <span class="o">|</span>    <span class="o">|</span> <span class="n">Phone</span>   <span class="o">|</span>    <span class="o">|</span> <span class="n">Call</span>    <span class="o">|</span>    <span class="o">|</span> <span class="n">Account</span> <span class="o">|</span>
+<span class="o">|</span> <span class="n">Skills</span>  <span class="o">|</span>    <span class="o">|</span> <span class="n">Lines</span>   <span class="o">|</span>    <span class="o">|</span> <span class="n">Logic</span>   <span class="o">|</span>    <span class="o">|</span> <span class="n">Balance</span> <span class="o">|</span>
+<span class="o">+---------+</span>    <span class="o">+---------+</span>    <span class="o">+---------+</span>    <span class="o">+---------+</span>
+</pre></div>
+</div>
+<p><strong>Key Components</strong></p>
+<ul class="simple">
+<li><p><strong>Customer</strong>: The tenant account that owns all resources</p></li>
+<li><p><strong>Agents</strong>: Users who handle calls and messages</p></li>
+<li><p><strong>Numbers</strong>: Phone numbers provisioned for the account</p></li>
+<li><p><strong>Flows</strong>: Call and message handling logic</p></li>
+<li><p><strong>Billing</strong>: Account balance and payment information</p></li>
+</ul>
+</section>
+<section id="customer-properties">
+<h3>Customer Properties<a class="headerlink" href="#customer-properties" title="Link to this heading"></a></h3>
+<p>Key properties of a customer account.</p>
+<p><strong>Core Properties</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Property</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>id</p></td>
+<td><p>Unique identifier for the customer account</p></td>
+</tr>
+<tr class="row-odd"><td><p>name</p></td>
+<td><p>Display name of the organization</p></td>
+</tr>
+<tr class="row-even"><td><p>detail</p></td>
+<td><p>Additional description or notes</p></td>
+</tr>
+<tr class="row-odd"><td><p>status</p></td>
+<td><p>Account status (active, suspended, etc.)</p></td>
+</tr>
+<tr class="row-even"><td><p>permission_ids</p></td>
+<td><p>Default permissions for new agents</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Timestamps</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Property</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>tm_create</p></td>
+<td><p>When the account was created</p></td>
+</tr>
+<tr class="row-odd"><td><p>tm_update</p></td>
+<td><p>When the account was last modified</p></td>
+</tr>
+<tr class="row-even"><td><p>tm_delete</p></td>
+<td><p>When the account was deleted (if applicable)</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="managing-customers">
+<h3>Managing Customers<a class="headerlink" href="#managing-customers" title="Link to this heading"></a></h3>
+<p>Access and update customer account information.</p>
+<p><strong>Get Customer Information</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/customers/&lt;customer-id&gt;?token=&lt;token&gt;&#39;
+</pre></div>
+</div>
+<p><strong>Response:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;customer-uuid-123&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Acme Corporation&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;Enterprise customer account&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;active&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;permission_ids&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">],</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-01T00:00:00Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:30:00Z&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Update Customer Information</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X PUT &#39;https://api.voipbin.net/v1.0/customers/&lt;customer-id&gt;?token=&lt;token&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data &#39;{
+        &quot;name&quot;: &quot;Acme Corporation Inc.&quot;,
+        &quot;detail&quot;: &quot;Updated enterprise account&quot;
+    }&#39;
+</pre></div>
+</div>
+</section>
+<section id="resource-ownership">
+<h3>Resource Ownership<a class="headerlink" href="#resource-ownership" title="Link to this heading"></a></h3>
+<p>All resources in VoIPBIN are scoped to a customer.</p>
+<p><strong>Resource Hierarchy</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Customer</span><span class="p">:</span> <span class="s2">&quot;Acme Corp&quot;</span>
+<span class="o">+-----------------------------------------------------------------------+</span>
+<span class="o">|</span>                                                                       <span class="o">|</span>
+<span class="o">|</span>  <span class="n">Agents</span> <span class="p">(</span><span class="mi">10</span><span class="p">)</span>                                                          <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+--</span> <span class="n">John</span> <span class="n">Smith</span> <span class="p">(</span><span class="n">agent</span><span class="o">-</span><span class="mi">001</span><span class="p">)</span>                                          <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+--</span> <span class="n">Jane</span> <span class="n">Doe</span> <span class="p">(</span><span class="n">agent</span><span class="o">-</span><span class="mi">002</span><span class="p">)</span>                                            <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+--</span> <span class="o">...</span> <span class="p">(</span><span class="mi">8</span> <span class="n">more</span><span class="p">)</span>                                                    <span class="o">|</span>
+<span class="o">|</span>                                                                       <span class="o">|</span>
+<span class="o">|</span>  <span class="n">Numbers</span> <span class="p">(</span><span class="mi">5</span><span class="p">)</span>                                                          <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+--</span> <span class="o">+</span><span class="mi">15551234567</span> <span class="p">(</span><span class="n">main</span> <span class="n">line</span><span class="p">)</span>                                        <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+--</span> <span class="o">+</span><span class="mi">15559876543</span> <span class="p">(</span><span class="n">support</span><span class="p">)</span>                                          <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+--</span> <span class="o">...</span> <span class="p">(</span><span class="mi">3</span> <span class="n">more</span><span class="p">)</span>                                                    <span class="o">|</span>
+<span class="o">|</span>                                                                       <span class="o">|</span>
+<span class="o">|</span>  <span class="n">Flows</span> <span class="p">(</span><span class="mi">8</span><span class="p">)</span>                                                            <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+--</span> <span class="n">IVR</span> <span class="n">Main</span> <span class="n">Menu</span>                                                   <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+--</span> <span class="n">Support</span> <span class="n">Queue</span> <span class="n">Router</span>                                            <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+--</span> <span class="o">...</span> <span class="p">(</span><span class="mi">6</span> <span class="n">more</span><span class="p">)</span>                                                    <span class="o">|</span>
+<span class="o">|</span>                                                                       <span class="o">|</span>
+<span class="o">|</span>  <span class="n">Queues</span> <span class="p">(</span><span class="mi">3</span><span class="p">)</span>                                                           <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+--</span> <span class="n">Sales</span> <span class="n">Queue</span>                                                     <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+--</span> <span class="n">Support</span> <span class="n">Queue</span>                                                   <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+--</span> <span class="n">Billing</span> <span class="n">Queue</span>                                                   <span class="o">|</span>
+<span class="o">|</span>                                                                       <span class="o">|</span>
+<span class="o">+-----------------------------------------------------------------------+</span>
+</pre></div>
+</div>
+<p><strong>Resource Isolation</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-------------------+</span>        <span class="o">+-------------------+</span>
+<span class="o">|</span>   <span class="n">Customer</span> <span class="n">A</span>      <span class="o">|</span>        <span class="o">|</span>   <span class="n">Customer</span> <span class="n">B</span>      <span class="o">|</span>
+<span class="o">+-------------------+</span>        <span class="o">+-------------------+</span>
+<span class="o">|</span> <span class="n">Agents</span><span class="p">:</span> <span class="n">A1</span><span class="p">,</span> <span class="n">A2</span>    <span class="o">|</span>        <span class="o">|</span> <span class="n">Agents</span><span class="p">:</span> <span class="n">B1</span><span class="p">,</span> <span class="n">B2</span>    <span class="o">|</span>
+<span class="o">|</span> <span class="n">Numbers</span><span class="p">:</span> <span class="o">+</span><span class="mf">1555.</span><span class="o">..</span> <span class="o">|</span>        <span class="o">|</span> <span class="n">Numbers</span><span class="p">:</span> <span class="o">+</span><span class="mf">1666.</span><span class="o">..</span> <span class="o">|</span>
+<span class="o">|</span> <span class="n">Flows</span><span class="p">:</span> <span class="n">Flow</span><span class="o">-</span><span class="n">A</span>     <span class="o">|</span>        <span class="o">|</span> <span class="n">Flows</span><span class="p">:</span> <span class="n">Flow</span><span class="o">-</span><span class="n">B</span>     <span class="o">|</span>
+<span class="o">+-------------------+</span>        <span class="o">+-------------------+</span>
+       <span class="o">|</span>                            <span class="o">|</span>
+       <span class="o">|</span>  <span class="n">ISOLATED</span>                  <span class="o">|</span>
+       <span class="o">|</span>  <span class="p">(</span><span class="n">cannot</span> <span class="n">access</span>            <span class="o">|</span>
+       <span class="o">|</span>   <span class="n">each</span> <span class="n">other</span><span class="s1">&#39;s resources)  |</span>
+       <span class="o">+----------------------------+</span>
+</pre></div>
+</div>
+</section>
+<section id="guest-agent">
+<h3>Guest Agent<a class="headerlink" href="#guest-agent" title="Link to this heading"></a></h3>
+<p>Every customer account automatically has a guest agent created for administrative access.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Customer</span> <span class="n">Created</span>
+       <span class="o">|</span>
+       <span class="n">v</span>
+<span class="o">+-------------------+</span>
+<span class="o">|</span> <span class="n">Auto</span><span class="o">-</span><span class="n">create</span>       <span class="o">|</span>
+<span class="o">|</span> <span class="n">Guest</span> <span class="n">Agent</span>       <span class="o">|</span>
+<span class="o">+--------+----------+</span>
+         <span class="o">|</span>
+         <span class="n">v</span>
+<span class="o">+-------------------+</span>
+<span class="o">|</span> <span class="n">Properties</span><span class="p">:</span>       <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Admin</span> <span class="n">permission</span><span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Cannot</span> <span class="n">delete</span>   <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Cannot</span> <span class="n">change</span>   <span class="o">|</span>
+<span class="o">|</span>   <span class="n">password</span>        <span class="o">|</span>
+<span class="o">+-------------------+</span>
+</pre></div>
+</div>
+<p>The guest agent ensures every account has at least one administrator for recovery purposes.</p>
+</section>
+<section id="common-scenarios">
+<h3>Common Scenarios<a class="headerlink" href="#common-scenarios" title="Link to this heading"></a></h3>
+<p><strong>Scenario 1: Account Setup</strong></p>
+<p>Initial configuration of a new customer account.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mf">1.</span> <span class="n">Customer</span> <span class="n">account</span> <span class="n">created</span>
+   <span class="o">+--------------------------------------------+</span>
+   <span class="o">|</span> <span class="n">Customer</span><span class="p">:</span> <span class="s2">&quot;New Company LLC&quot;</span>               <span class="o">|</span>
+   <span class="o">|</span> <span class="n">Status</span><span class="p">:</span> <span class="n">active</span>                            <span class="o">|</span>
+   <span class="o">|</span> <span class="n">Guest</span> <span class="n">agent</span><span class="p">:</span> <span class="n">auto</span><span class="o">-</span><span class="n">created</span>                 <span class="o">|</span>
+   <span class="o">+--------------------------------------------+</span>
+
+<span class="mf">2.</span> <span class="n">Create</span> <span class="n">additional</span> <span class="n">agents</span>
+   <span class="n">POST</span> <span class="o">/</span><span class="n">agents</span> <span class="p">{</span> <span class="s2">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;admin@...&quot;</span> <span class="p">}</span>
+
+<span class="mf">3.</span> <span class="n">Provision</span> <span class="n">numbers</span>
+   <span class="n">POST</span> <span class="o">/</span><span class="n">numbers</span> <span class="p">{</span> <span class="s2">&quot;number&quot;</span><span class="p">:</span> <span class="s2">&quot;+1555...&quot;</span> <span class="p">}</span>
+
+<span class="mf">4.</span> <span class="n">Create</span> <span class="n">flows</span>
+   <span class="n">POST</span> <span class="o">/</span><span class="n">flows</span> <span class="p">{</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Main IVR&quot;</span> <span class="p">}</span>
+
+<span class="mf">5.</span> <span class="n">Configure</span> <span class="n">resources</span>
+   <span class="n">Link</span> <span class="n">numbers</span> <span class="n">to</span> <span class="n">flows</span><span class="p">,</span> <span class="n">agents</span> <span class="n">to</span> <span class="n">queues</span>
+</pre></div>
+</div>
+<p><strong>Scenario 2: Multi-Department Setup</strong></p>
+<p>Organize resources by department.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Customer</span><span class="p">:</span> <span class="s2">&quot;Enterprise Corp&quot;</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span>                                            <span class="o">|</span>
+<span class="o">|</span> <span class="n">Sales</span> <span class="n">Department</span><span class="p">:</span>                          <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Agents</span><span class="p">:</span> <span class="n">sales</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">sales</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="n">sales</span><span class="o">-</span><span class="mi">3</span>       <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Queue</span><span class="p">:</span> <span class="n">Sales</span> <span class="n">Queue</span> <span class="p">(</span><span class="n">tags</span><span class="p">:</span> <span class="n">sales</span><span class="p">)</span>        <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Number</span><span class="p">:</span> <span class="o">+</span><span class="mi">18005551111</span>                    <span class="o">|</span>
+<span class="o">|</span>                                            <span class="o">|</span>
+<span class="o">|</span> <span class="n">Support</span> <span class="n">Department</span><span class="p">:</span>                        <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Agents</span><span class="p">:</span> <span class="n">support</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">support</span><span class="o">-</span><span class="mi">2</span>            <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Queue</span><span class="p">:</span> <span class="n">Support</span> <span class="n">Queue</span> <span class="p">(</span><span class="n">tags</span><span class="p">:</span> <span class="n">support</span><span class="p">)</span>    <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Number</span><span class="p">:</span> <span class="o">+</span><span class="mi">18005552222</span>                    <span class="o">|</span>
+<span class="o">|</span>                                            <span class="o">|</span>
+<span class="o">|</span> <span class="n">Billing</span> <span class="n">Department</span><span class="p">:</span>                        <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Agents</span><span class="p">:</span> <span class="n">billing</span><span class="o">-</span><span class="mi">1</span>                       <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Queue</span><span class="p">:</span> <span class="n">Billing</span> <span class="n">Queue</span> <span class="p">(</span><span class="n">tags</span><span class="p">:</span> <span class="n">billing</span><span class="p">)</span>    <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Number</span><span class="p">:</span> <span class="o">+</span><span class="mi">18005553333</span>                    <span class="o">|</span>
+<span class="o">|</span>                                            <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+</pre></div>
+</div>
+<p><strong>Scenario 3: Account Review</strong></p>
+<p>Periodic review of account resources.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Review</span> <span class="n">Checklist</span><span class="p">:</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="mf">1.</span> <span class="n">Check</span> <span class="n">active</span> <span class="n">agents</span>                     <span class="o">|</span>
+<span class="o">|</span>    <span class="n">GET</span> <span class="o">/</span><span class="n">agents</span> <span class="o">-&gt;</span> <span class="n">count</span><span class="p">,</span> <span class="n">statuses</span>          <span class="o">|</span>
+<span class="o">|</span>                                            <span class="o">|</span>
+<span class="o">|</span> <span class="mf">2.</span> <span class="n">Review</span> <span class="n">provisioned</span> <span class="n">numbers</span>              <span class="o">|</span>
+<span class="o">|</span>    <span class="n">GET</span> <span class="o">/</span><span class="n">numbers</span> <span class="o">-&gt;</span> <span class="n">count</span><span class="p">,</span> <span class="n">usage</span>            <span class="o">|</span>
+<span class="o">|</span>                                            <span class="o">|</span>
+<span class="o">|</span> <span class="mf">3.</span> <span class="n">Audit</span> <span class="n">flows</span>                             <span class="o">|</span>
+<span class="o">|</span>    <span class="n">GET</span> <span class="o">/</span><span class="n">flows</span> <span class="o">-&gt;</span> <span class="n">active</span><span class="p">,</span> <span class="n">last</span> <span class="n">updated</span>      <span class="o">|</span>
+<span class="o">|</span>                                            <span class="o">|</span>
+<span class="o">|</span> <span class="mf">4.</span> <span class="n">Check</span> <span class="n">billing</span> <span class="n">status</span>                    <span class="o">|</span>
+<span class="o">|</span>    <span class="n">GET</span> <span class="o">/</span><span class="n">billing_accounts</span> <span class="o">-&gt;</span> <span class="n">balance</span>        <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+</pre></div>
+</div>
+</section>
+<section id="best-practices">
+<h3>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading"></a></h3>
+<p><strong>1. Account Organization</strong></p>
+<ul class="simple">
+<li><p>Use descriptive customer names</p></li>
+<li><p>Document account purpose in detail field</p></li>
+<li><p>Keep resource naming consistent</p></li>
+</ul>
+<p><strong>2. Security</strong></p>
+<ul class="simple">
+<li><p>Limit admin permissions to necessary agents</p></li>
+<li><p>Regularly audit agent access</p></li>
+<li><p>Use strong passwords for all agents</p></li>
+</ul>
+<p><strong>3. Resource Management</strong></p>
+<ul class="simple">
+<li><p>Clean up unused numbers and flows</p></li>
+<li><p>Monitor agent activity</p></li>
+<li><p>Archive inactive resources</p></li>
+</ul>
+<p><strong>4. Monitoring</strong></p>
+<ul class="simple">
+<li><p>Track account usage metrics</p></li>
+<li><p>Set up alerts for unusual activity</p></li>
+<li><p>Review billing regularly</p></li>
+</ul>
+</section>
+<section id="troubleshooting">
+<h3>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h3>
+<p><strong>Access Issues</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Symptom</p></th>
+<th class="head"><p>Solution</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Cannot access customer
+data</p></td>
+<td><p>Verify API token is valid; check agent has
+admin permission</p></td>
+</tr>
+<tr class="row-odd"><td><p>Resources not visible</p></td>
+<td><p>Ensure accessing correct customer ID; verify
+resource exists</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Account Issues</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Symptom</p></th>
+<th class="head"><p>Solution</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Account suspended</p></td>
+<td><p>Check billing status; contact support for
+reactivation</p></td>
+</tr>
+<tr class="row-odd"><td><p>Cannot update account</p></td>
+<td><p>Verify admin permissions; check for locked
+fields</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="related-documentation">
+<h3>Related Documentation<a class="headerlink" href="#related-documentation" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><a class="reference internal" href="agent_overview.html#agent-overview"><span class="std std-ref">Agent Overview</span></a> - Managing agents</p></li>
+<li><p><a class="reference internal" href="billing_account_overview.html#billing-account-overview"><span class="std std-ref">Billing Account Overview</span></a> - Account billing</p></li>
+<li><p><a class="reference internal" href="number_overview.html#number-overview"><span class="std std-ref">Number Overview</span></a> - Phone number management</p></li>
+<li><p><a class="reference internal" href="flow_overview.html#flow-overview"><span class="std std-ref">Flow Overview</span></a> - Call flow configuration</p></li>
+</ul>
+</section>
 </section>
 <section id="customer-struct-customer">
 <span id="id1"></span><h2>Customer<a class="headerlink" href="#customer-struct-customer" title="Link to this heading"></a></h2>
@@ -380,7 +710,18 @@
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
 <li><a class="reference internal" href="#">Customer</a><ul>
-<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#overview">Overview</a><ul>
+<li><a class="reference internal" href="#how-customers-work">How Customers Work</a></li>
+<li><a class="reference internal" href="#customer-properties">Customer Properties</a></li>
+<li><a class="reference internal" href="#managing-customers">Managing Customers</a></li>
+<li><a class="reference internal" href="#resource-ownership">Resource Ownership</a></li>
+<li><a class="reference internal" href="#guest-agent">Guest Agent</a></li>
+<li><a class="reference internal" href="#common-scenarios">Common Scenarios</a></li>
+<li><a class="reference internal" href="#best-practices">Best Practices</a></li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
+<li><a class="reference internal" href="#related-documentation">Related Documentation</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#customer-struct-customer">Customer</a><ul>
 <li><a class="reference internal" href="#customer-struct-customer-customer">Customer</a><ul>
 <li><a class="reference internal" href="#example">Example</a></li>

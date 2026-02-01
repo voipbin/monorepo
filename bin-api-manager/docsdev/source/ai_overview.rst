@@ -464,3 +464,175 @@ MCP Server
 A recommended open-source implementation is available here:
 
 * https://github.com/nrjchnd/voipbin-mcp
+
+
+Common Scenarios
+================
+
+**Scenario 1: Customer Service Agent**
+
+AI handles routine customer inquiries with tool actions.
+
+::
+
+    Caller: "I want to check my order status"
+         |
+         v
+    +---------------------------+
+    | AI: "I'd be happy to help.|
+    | What's your order number?"|
+    +---------------------------+
+         |
+         v
+    Caller: "Order 12345"
+         |
+         v
+    +---------------------------+
+    | AI triggers tool:         |
+    | get_variables(order_id)   |
+    | -> Retrieves order data   |
+    +---------------------------+
+         |
+         v
+    +---------------------------+
+    | AI: "Your order shipped   |
+    | yesterday and will arrive |
+    | by Friday."               |
+    +---------------------------+
+
+**Scenario 2: Appointment Scheduling**
+
+AI collects information and transfers to agent.
+
+::
+
+    +------------------------------------------------+
+    | AI Interaction                                 |
+    +------------------------------------------------+
+    |                                                |
+    | AI: "Welcome! How can I help you today?"       |
+    |                                                |
+    | Caller: "I need to schedule an appointment"    |
+    |                                                |
+    | AI: "What day works best for you?"             |
+    |                                                |
+    | Caller: "Next Tuesday afternoon"               |
+    |                                                |
+    | AI: "Let me transfer you to our scheduling     |
+    |      team with this information."              |
+    |                                                |
+    | [Tool: set_variables(preferred_date, time)]    |
+    | [Tool: connect_call(scheduling_queue)]         |
+    |                                                |
+    +------------------------------------------------+
+
+**Scenario 3: Interactive Voice Survey**
+
+AI collects survey responses with natural conversation.
+
+::
+
+    AI Flow:
+
+    1. Greeting + consent
+       "This is a brief satisfaction survey. May I continue?"
+
+    2. Question 1 (scale)
+       "On a scale of 1-10, how satisfied are you?"
+       [Tool: set_variables(q1_score)]
+
+    3. Question 2 (open-ended)
+       "What could we improve?"
+       [Tool: set_variables(q2_feedback)]
+
+    4. Thank you + end
+       "Thank you for your feedback!"
+       [Tool: stop_service]
+
+
+Best Practices
+==============
+
+**1. Prompt Design**
+
+- Keep prompts clear and focused on specific tasks
+- Include examples of expected responses
+- Define the AI's persona and tone
+- Specify what tools the AI should use and when
+
+**2. Tool Configuration**
+
+- Enable only tools the AI needs for its task
+- Use ``["all"]`` cautiously - prefer specific tool lists
+- Test tool interactions thoroughly before deployment
+- Handle tool failures gracefully in prompts
+
+**3. Conversation Flow**
+
+- Set appropriate timeouts for user responses
+- Use voice detection settings that match your use case
+- Enable context retention for multi-turn conversations
+- Plan exit paths (transfer, end call, escalation)
+
+**4. Audio Quality**
+
+- Choose TTS voices appropriate for your language/region
+- Test audio quality across different phone networks
+- Consider latency when selecting STT/TTS providers
+- Use 16kHz providers for better quality when possible
+
+
+Troubleshooting
+===============
+
+**Audio Issues**
+
++---------------------------+------------------------------------------------+
+| Symptom                   | Solution                                       |
++===========================+================================================+
+| No audio from AI          | Check Pipecat connection; verify TTS provider  |
+|                           | credentials; check audio routing               |
++---------------------------+------------------------------------------------+
+| Choppy or delayed audio   | Check network latency; try different TTS       |
+|                           | provider; verify sample rate conversion        |
++---------------------------+------------------------------------------------+
+| User not heard            | Check STT configuration; verify microphone     |
+|                           | audio is reaching the system                   |
++---------------------------+------------------------------------------------+
+
+**AI Response Issues**
+
++---------------------------+------------------------------------------------+
+| Symptom                   | Solution                                       |
++===========================+================================================+
+| AI gives wrong answers    | Review and refine prompt; add examples;        |
+|                           | check context length limits                    |
++---------------------------+------------------------------------------------+
+| AI doesn't use tools      | Verify tool_names configuration; check tool    |
+|                           | descriptions in prompt; review LLM response    |
++---------------------------+------------------------------------------------+
+| Tool execution fails      | Check tool handler logs; verify target service |
+|                           | (call-manager, etc.) is available              |
++---------------------------+------------------------------------------------+
+
+**Connection Issues**
+
++---------------------------+------------------------------------------------+
+| Symptom                   | Solution                                       |
++===========================+================================================+
+| AI session won't start    | Check AI Manager connectivity; verify Pipecat  |
+|                           | is running; check database connection          |
++---------------------------+------------------------------------------------+
+| Session drops unexpectedly| Check timeout settings; review AI Manager logs |
+|                           | for errors; verify WebSocket stability         |
++---------------------------+------------------------------------------------+
+
+
+Related Documentation
+=====================
+
+- :ref:`AI Structure <ai-struct-ai>` - AI configuration options
+- :ref:`Tool Functions <ai-struct-tool>` - Available tool documentation
+- :ref:`Transcribe Overview <transcribe-overview>` - Speech-to-text languages
+- :ref:`Flow Actions <flow-struct-action>` - ai_talk action configuration
+- :ref:`Variable Overview <variable_overview>` - Using variables with AI

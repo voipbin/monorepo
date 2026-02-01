@@ -2,34 +2,375 @@
 
 Overview
 ========
-The Storage API on VoIPBIN is designed to help users manage their stored files and monitor their storage usage. This feature allows users to efficiently oversee their data within their allocated storage quota.
+VoIPBIN's Storage API provides file management capabilities for storing and retrieving files associated with your communications. From call recordings to media attachments, the Storage API enables secure file operations within your allocated quota.
 
-The API provides endpoints for various file operations, such as uploading, retrieving, and deleting files, as well as monitoring overall storage usage. These functionalities enable users to manage their data effectively.
+With the Storage API you can:
 
-File Management
+- Upload files to cloud storage
+- Retrieve and download stored files
+- Delete files to manage quota
+- Monitor storage usage
+- Access file metadata and URLs
+
+
+How Storage Works
+-----------------
+VoIPBIN storage provides cloud-based file management with quota limits.
+
+**Storage Architecture**
+
+::
+
+    +-----------------------------------------------------------------------+
+    |                         Storage System                                |
+    +-----------------------------------------------------------------------+
+
+    +-------------------+
+    |  Storage Account  |
+    |   (quota: 10GB)   |
+    +--------+----------+
+             |
+             | contains
+             v
+    +--------+----------+--------+----------+--------+----------+
+    |                   |                   |                   |
+    v                   v                   v                   v
+    +----------+   +----------+   +----------+   +----------+
+    | Recording|   |   Media  |   |  Export  |   |  Other   |
+    |  files   |   |   files  |   |  files   |   |  files   |
+    +----------+   +----------+   +----------+   +----------+
+         |              |              |              |
+         v              v              v              v
+    +---------+    +---------+    +---------+    +---------+
+    | .wav    |    | .jpg    |    | .csv    |    | .pdf    |
+    | .mp3    |    | .png    |    | .json   |    | .txt    |
+    +---------+    +---------+    +---------+    +---------+
+
+**Key Components**
+
+- **Storage Account**: Your allocated storage space with quota
+- **Files**: Individual stored items with metadata
+- **Quota**: Maximum storage limit (currently 10GB)
+- **Download URL**: Secure link to access file content
+
+
+File Operations
 ---------------
-The Files API enables comprehensive file management on the platform. It includes the following features:
+Core file management operations.
 
-* **Retrieve All Files:** Fetch a list of all files stored by the authenticated user. This helps users view and organize their stored files efficiently.
+**Upload a File**
 
-* **Upload a File:** Allows users to upload new files to the platform. This endpoint is essential for adding new data to the storage.
+.. code::
 
-* **Retrieve a Single File:** Get detailed information about a specific file using its unique identifier. This is useful for accessing file metadata and content, including the download URL.
+    $ curl -X POST 'https://api.voipbin.net/v1.0/files?token=<token>' \
+        --header 'Content-Type: multipart/form-data' \
+        --form 'file=@/path/to/file.pdf' \
+        --form 'name=document.pdf'
 
-* **Download a File:** Download a file using the download URL.
+**Response:**
 
-* **Delete a File:** Enables users to delete a specific file from the storage by its unique identifier. This helps manage storage space by removing unnecessary files.
+.. code::
+
+    {
+        "id": "file-uuid-123",
+        "name": "document.pdf",
+        "size": 102400,
+        "mime_type": "application/pdf",
+        "download_url": "https://storage.voipbin.net/...",
+        "tm_create": "2024-01-15T10:30:00Z"
+    }
+
+**List All Files**
+
+.. code::
+
+    $ curl -X GET 'https://api.voipbin.net/v1.0/files?token=<token>'
+
+**Get File Details**
+
+.. code::
+
+    $ curl -X GET 'https://api.voipbin.net/v1.0/files/<file-id>?token=<token>'
+
+**Delete a File**
+
+.. code::
+
+    $ curl -X DELETE 'https://api.voipbin.net/v1.0/files/<file-id>?token=<token>'
+
 
 Storage Account Management
 --------------------------
-The Storage Account API provides insights into the user's storage usage. Users can retrieve current storage usage details, including:
+Monitor and manage your storage usage.
 
-* Total amount of stored file size.
-* Count of stored files.
-* Storage quota.
+**Get Storage Usage**
 
-Quota
-----------
-Each user has a storage quota, currently set at 10GB, to ensure fair usage and efficient resource allocation. The Storage API helps users keep track of their stored files and make informed decisions about their storage needs.
+.. code::
 
-By utilizing the Storage API, users can seamlessly manage their data and ensure optimal use of their allocated storage space.
+    $ curl -X GET 'https://api.voipbin.net/v1.0/storage_accounts?token=<token>'
+
+**Response:**
+
+.. code::
+
+    {
+        "id": "storage-uuid-123",
+        "customer_id": "customer-uuid-456",
+        "total_size": 524288000,
+        "file_count": 150,
+        "quota": 10737418240,
+        "tm_create": "2024-01-01T00:00:00Z"
+    }
+
+**Usage Breakdown**
+
+::
+
+    Storage Account:
+    +-----------------------------------------------------------------------+
+    |                                                                       |
+    |  Quota:      10 GB (10,737,418,240 bytes)                            |
+    |  Used:       500 MB (524,288,000 bytes)                              |
+    |  Available:  9.5 GB                                                  |
+    |  File Count: 150 files                                               |
+    |                                                                       |
+    |  Usage:      [#####------------------------------] 4.9%              |
+    |                                                                       |
+    +-----------------------------------------------------------------------+
+
+
+File Types and Sources
+----------------------
+Storage holds various file types from different sources.
+
+**Common File Types**
+
++-------------------+------------------+----------------------------------------+
+| Category          | Extensions       | Source                                 |
++===================+==================+========================================+
+| Call Recordings   | .wav, .mp3       | Automatic recording feature            |
++-------------------+------------------+----------------------------------------+
+| Voicemail         | .wav, .mp3       | Voicemail recordings                   |
++-------------------+------------------+----------------------------------------+
+| Media Attachments | .jpg, .png, .gif | MMS and email attachments              |
++-------------------+------------------+----------------------------------------+
+| Transcripts       | .txt, .json      | Call transcription exports             |
++-------------------+------------------+----------------------------------------+
+| Reports           | .csv, .pdf       | Generated reports and exports          |
++-------------------+------------------+----------------------------------------+
+
+**File Sources**
+
+::
+
+    +-------------------+
+    |  Call Recording   |---------------+
+    +-------------------+               |
+                                        |
+    +-------------------+               v
+    |  Transcription    |-------> +----------+
+    +-------------------+         | Storage  |
+                                  | Account  |
+    +-------------------+         +----------+
+    |  MMS Attachment   |-------->      |
+    +-------------------+               |
+                                        v
+    +-------------------+         +----------+
+    |  Manual Upload    |-------->| Files    |
+    +-------------------+         +----------+
+
+
+Quota Management
+----------------
+Manage storage within your allocated quota.
+
+**Quota Check Flow**
+
+::
+
+    Upload Request
+          |
+          v
+    +-------------------+
+    | Check quota       |
+    | Used + New file   |
+    +--------+----------+
+             |
+             v
+    +-------------------+     Within limit
+    | Under quota?      |----------------------> Upload succeeds
+    +--------+----------+
+             |
+             | Exceeds quota
+             v
+    +-------------------+
+    | Upload rejected   |
+    | Error: quota      |
+    | exceeded          |
+    +-------------------+
+
+**Managing Quota**
+
+- Delete unnecessary files to free space
+- Export and archive old recordings
+- Monitor usage regularly
+- Request quota increase if needed
+
+
+Common Scenarios
+----------------
+
+**Scenario 1: Managing Call Recordings**
+
+Store and access call recordings.
+
+::
+
+    1. Call with recording enabled
+       +--------------------------------------------+
+       | Call completed                             |
+       | Recording saved to storage                 |
+       | File: call-2024-01-15-abc123.wav          |
+       +--------------------------------------------+
+
+    2. Access recording
+       GET /files?type=recording
+       -> List of recording files
+
+    3. Download recording
+       GET /files/{id}
+       -> download_url in response
+
+    4. Clean up old recordings
+       DELETE /files/{id}
+       -> Free storage space
+
+**Scenario 2: Storage Cleanup**
+
+Free up space when approaching quota.
+
+::
+
+    1. Check current usage
+       GET /storage_accounts
+       +--------------------------------------------+
+       | Used: 9.2 GB / 10 GB (92%)                |
+       | Status: Near quota limit                  |
+       +--------------------------------------------+
+
+    2. Identify large/old files
+       GET /files?sort=size&order=desc
+       -> Find largest files
+
+       GET /files?sort=tm_create&order=asc
+       -> Find oldest files
+
+    3. Delete unnecessary files
+       DELETE /files/{id}
+       (repeat for multiple files)
+
+    4. Verify freed space
+       GET /storage_accounts
+       +--------------------------------------------+
+       | Used: 5.8 GB / 10 GB (58%)                |
+       | Status: OK                                |
+       +--------------------------------------------+
+
+**Scenario 3: Media File Management**
+
+Handle media attachments from messages.
+
+::
+
+    Inbound MMS with image
+         |
+         v
+    +--------------------------------------------+
+    | Image saved to storage                     |
+    | File: mms-attachment-xyz.jpg               |
+    | Size: 2.5 MB                               |
+    +--------------------------------------------+
+         |
+         v
+    Access via API or webhook
+    +--------------------------------------------+
+    | download_url in message webhook            |
+    | GET file for processing                    |
+    +--------------------------------------------+
+
+
+Best Practices
+--------------
+
+**1. Quota Management**
+
+- Monitor usage regularly
+- Set up alerts for high usage
+- Clean up old files periodically
+- Archive important files externally
+
+**2. File Organization**
+
+- Use descriptive file names
+- Track file purpose via metadata
+- Group related files logically
+
+**3. Security**
+
+- Download URLs are time-limited
+- Don't share URLs publicly
+- Delete sensitive files when no longer needed
+
+**4. Performance**
+
+- Delete files you no longer need
+- Don't upload unnecessarily large files
+- Use appropriate file formats
+
+
+Troubleshooting
+---------------
+
+**Upload Issues**
+
++---------------------------+------------------------------------------------+
+| Symptom                   | Solution                                       |
++===========================+================================================+
+| Upload fails              | Check file size; verify quota not exceeded;    |
+|                           | ensure file format is supported                |
++---------------------------+------------------------------------------------+
+| Quota exceeded error      | Delete old files; check storage usage;         |
+|                           | request quota increase                         |
++---------------------------+------------------------------------------------+
+
+**Download Issues**
+
++---------------------------+------------------------------------------------+
+| Symptom                   | Solution                                       |
++===========================+================================================+
+| Download URL expired      | Get fresh file details; URLs are time-limited  |
++---------------------------+------------------------------------------------+
+| File not found            | Verify file ID; file may have been deleted     |
++---------------------------+------------------------------------------------+
+
+**Management Issues**
+
++---------------------------+------------------------------------------------+
+| Symptom                   | Solution                                       |
++===========================+================================================+
+| File count mismatch       | Allow time for sync; some operations are       |
+|                           | eventually consistent                          |
++---------------------------+------------------------------------------------+
+| Cannot delete file        | Check file ID; verify permissions; file may    |
+|                           | be in use                                      |
++---------------------------+------------------------------------------------+
+
+
+Related Documentation
+---------------------
+
+- :ref:`Recording Overview <recording-overview>` - Call recordings
+- :ref:`Transcribe Overview <transcribe-overview>` - Transcription files
+- :ref:`Message Overview <message-overview>` - Media attachments
+- :ref:`Customer Overview <customer-overview>` - Account management
+

@@ -565,3 +565,57 @@ Common Scenarios
     Agent logs out for the day
            Status: available → offline
            → Not eligible for calls
+
+
+Troubleshooting
+---------------
+
+**Status Issues**
+
++---------------------------+------------------------------------------------+
+| Symptom                   | Solution                                       |
++===========================+================================================+
+| Agent not receiving calls | Check status is "available"; verify agent has  |
+|                           | required tags for queue; check addresses       |
++---------------------------+------------------------------------------------+
+| Stuck in "ringing" status | Check if call was properly terminated; may     |
+|                           | need to manually reset status                  |
++---------------------------+------------------------------------------------+
+| Status changes not        | Verify webhook endpoint is configured; check   |
+| triggering webhooks       | webhook URL is accessible                      |
++---------------------------+------------------------------------------------+
+
+**Address Issues**
+
++---------------------------+------------------------------------------------+
+| Symptom                   | Solution                                       |
++===========================+================================================+
+| Address conflict error    | Each address can only belong to one agent per  |
+|                           | customer; remove from other agent first        |
++---------------------------+------------------------------------------------+
+| Calls not reaching agent  | Verify address format (E.164 for tel); check   |
+|                           | extension is registered                        |
++---------------------------+------------------------------------------------+
+| Some addresses not        | Verify all addresses are valid and reachable;  |
+| ringing                   | check network connectivity                     |
++---------------------------+------------------------------------------------+
+
+**Tag Issues**
+
++---------------------------+------------------------------------------------+
+| Symptom                   | Solution                                       |
++===========================+================================================+
+| Agent not matched to      | Verify agent has ALL required tags for queue;  |
+| queue                     | tags must match exactly                        |
++---------------------------+------------------------------------------------+
+| Tag assignment failed     | Verify tag IDs exist; check API permissions    |
++---------------------------+------------------------------------------------+
+
+
+Related Documentation
+---------------------
+
+- :ref:`Queue Overview <queue-overview>` - Queue configuration and routing
+- :ref:`Tag Overview <tag-overview>` - Creating and managing tags
+- :ref:`Extension Overview <extension-overview>` - SIP extension configuration
+- :ref:`Webhook Overview <webhook-overview>` - Status event notifications

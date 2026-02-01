@@ -100,7 +100,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="message.html">Message</a></li>
 <li class="toctree-l1"><a class="reference internal" href="email.html">Email</a></li>
-<li class="toctree-l1"><a class="reference internal" href="chat.html">Chat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="talk.html">Talk</a></li>
 <li class="toctree-l1"><a class="reference internal" href="conversation.html">Conversation</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">AI &amp; Automation</span></p>
@@ -127,7 +127,6 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
 <li class="toctree-l1"><a class="reference internal" href="websocket.html">Websocket</a></li>
-<li class="toctree-l1"><a class="reference internal" href="talk.html">Talk</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul>
@@ -184,28 +183,493 @@
                     <div class="col-12 col-lg-9 order-last order-lg-first rst-content">
                         <main role="main" id="main">
     <section id="overview">
-<h1>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h1>
-<p>The VoIPBIN recording API furnishes a versatile suite of functionalities, empowering users to seamlessly oversee call recordings. This comprehensive toolset facilitates the creation of automation workflows, ensuring efficient management of call recording metadata and associated audio files.</p>
-<p>Equipped with a robust set of tools, the VoIPBIN recording API simplifies the handling of call data for businesses. This allows users to harness call recording metadata and audio recordings for diverse purposes such as compliance, training, customer insights, and performance evaluation. Integration with the recording API not only streamlines call recording management processes but also enhances productivity and provides valuable business intelligence.</p>
-<section id="list-call-recording-metadata">
-<h2>List Call Recording Metadata<a class="headerlink" href="#list-call-recording-metadata" title="Link to this heading"></a></h2>
-<p>The List Call Recording Metadata API empowers users to fetch a comprehensive array of call recording metadata. This information encompasses crucial details for each recording, including the call ID, start and end times, recording duration, and associated call specifics. This functionality facilitates efficient organization and tracking of call recordings, simplifying the management and analysis of call data for users.</p>
+<span id="recording-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h1>
+<p>VoIPBIN’s Recording API enables you to capture, store, and manage audio from calls and conferences. Whether you need recordings for compliance, quality assurance, training, or analytics, the Recording API provides a complete solution for managing call audio throughout its lifecycle.</p>
+<p>With the Recording API you can:</p>
+<ul class="simple">
+<li><p>Record calls and conferences in real-time</p></li>
+<li><p>Start and stop recordings programmatically or via flow actions</p></li>
+<li><p>Download recordings as audio files</p></li>
+<li><p>Export recordings in bulk for archival</p></li>
+<li><p>Manage recording lifecycle and storage</p></li>
+</ul>
+<section id="how-recording-works">
+<h2>How Recording Works<a class="headerlink" href="#how-recording-works" title="Link to this heading"></a></h2>
+<p>When you start a recording, VoIPBIN captures the audio stream and writes it to cloud storage. The recording continues until you stop it, the call ends, or the maximum duration is reached.</p>
+<p><strong>Recording Architecture</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+--------+</span>        <span class="o">+----------------+</span>        <span class="o">+-----------+</span>
+<span class="o">|</span>  <span class="n">Call</span>  <span class="o">|--</span><span class="n">audio</span><span class="o">--&gt;|</span>   <span class="n">Recording</span>  <span class="o">|--</span><span class="n">file</span><span class="o">--&gt;|</span>  <span class="n">Storage</span>  <span class="o">|</span>
+<span class="o">+--------+</span>        <span class="o">|</span>    <span class="n">Engine</span>      <span class="o">|</span>        <span class="o">|</span>   <span class="p">(</span><span class="n">GCS</span><span class="p">)</span>   <span class="o">|</span>
+                  <span class="o">+----------------+</span>        <span class="o">+-----------+</span>
+<span class="o">+------------+</span>           <span class="o">|</span>
+<span class="o">|</span> <span class="n">Conference</span> <span class="o">|--</span><span class="n">audio</span><span class="o">----+</span>
+<span class="o">+------------+</span>
+</pre></div>
+</div>
+<p><strong>Key Components</strong></p>
+<ul class="simple">
+<li><p><strong>Audio Source</strong>: The call or conference being recorded</p></li>
+<li><p><strong>Recording Engine</strong>: Captures audio in real-time, handles encoding</p></li>
+<li><p><strong>Storage</strong>: Google Cloud Storage for reliable, scalable file storage</p></li>
+</ul>
+<p><strong>Recording Types</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Call Recording</p></td>
+<td><p>Records a single call’s audio (both directions mixed)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Conference
+Recording</p></td>
+<td><p>Records all participant audio mixed together</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>File Format</strong></p>
+<ul class="simple">
+<li><p>Format: WAV (PCM)</p></li>
+<li><p>Sample Rate: 8 kHz</p></li>
+<li><p>Channels: Mono (all audio mixed)</p></li>
+<li><p>Bit Depth: 16-bit</p></li>
+</ul>
 </section>
-<section id="retrieve-detailed-information-with-the-single-call-recording-metadata-api">
-<h2>Retrieve Detailed Information with the Single Call Recording Metadata API<a class="headerlink" href="#retrieve-detailed-information-with-the-single-call-recording-metadata-api" title="Link to this heading"></a></h2>
-<p>The Single Call Recording Metadata API enables users to access in-depth information about a specific call recording. By supplying the call ID or unique identifier, users can obtain specific details such as the call’s duration, participants, timestamp, and other pertinent data. This API call proves invaluable when users require precise information about a particular call recording.</p>
+<section id="recording-lifecycle">
+<h2>Recording Lifecycle<a class="headerlink" href="#recording-lifecycle" title="Link to this heading"></a></h2>
+<p>Every recording moves through a predictable set of states from creation to availability.</p>
+<p><strong>State Diagram</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">POST</span> <span class="o">/</span><span class="n">recording_start</span> <span class="ow">or</span> <span class="n">flow</span> <span class="n">action</span>
+       <span class="o">|</span>
+       <span class="n">v</span>
+<span class="o">+------------+</span>                        <span class="o">+------------+</span>
+<span class="o">|</span>  <span class="n">starting</span>  <span class="o">|------</span><span class="n">recording</span><span class="o">--------&gt;|</span>  <span class="n">recording</span> <span class="o">|</span>
+<span class="o">+------------+</span>                        <span class="o">+-----+------+</span>
+                                            <span class="o">|</span>
+                       <span class="n">POST</span> <span class="o">/</span><span class="n">recording_stop</span><span class="p">,</span> <span class="n">hangup</span><span class="p">,</span> <span class="ow">or</span> <span class="nb">max</span> <span class="n">duration</span>
+                                            <span class="o">|</span>
+                                            <span class="n">v</span>
+                                     <span class="o">+------------+</span>
+                                     <span class="o">|</span>  <span class="n">stopping</span>  <span class="o">|</span>
+                                     <span class="o">+-----+------+</span>
+                                           <span class="o">|</span>
+                                           <span class="n">v</span> <span class="p">(</span><span class="n">file</span> <span class="n">processing</span><span class="p">)</span>
+                                     <span class="o">+------------+</span>
+                                     <span class="o">|</span> <span class="n">available</span>  <span class="o">|</span>
+                                     <span class="o">+------------+</span>
+</pre></div>
+</div>
+<p><strong>State Descriptions</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>State</p></th>
+<th class="head"><p>What’s happening</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>starting</p></td>
+<td><p>Recording initialization. Audio capture is being set up.</p></td>
+</tr>
+<tr class="row-odd"><td><p>recording</p></td>
+<td><p>Actively capturing audio. File is being written to storage.</p></td>
+</tr>
+<tr class="row-even"><td><p>stopping</p></td>
+<td><p>Recording is ending. Final audio is being flushed to storage.</p></td>
+</tr>
+<tr class="row-odd"><td><p>available</p></td>
+<td><p>Recording is complete. File is ready for download or streaming.</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Key Behaviors</strong></p>
+<ul class="simple">
+<li><p>States only move forward, never backward</p></li>
+<li><p>A recording in “available” state cannot be modified</p></li>
+<li><p>If the call/conference ends, active recordings automatically stop</p></li>
+<li><p>Maximum recording duration is 24 hours</p></li>
+</ul>
 </section>
-<section id="delete-call-recordings">
-<h2>Delete Call Recordings<a class="headerlink" href="#delete-call-recordings" title="Link to this heading"></a></h2>
-<p>The Delete Call Recordings API empowers users to selectively remove call recordings based on the provided call ID or unique identifier. This streamlined process allows users to efficiently eliminate unwanted or outdated call recordings, aiding in effective call recording storage management and promoting a well-organized repository.</p>
+<section id="starting-and-stopping-recordings">
+<h2>Starting and Stopping Recordings<a class="headerlink" href="#starting-and-stopping-recordings" title="Link to this heading"></a></h2>
+<p>VoIPBIN provides multiple ways to control recordings based on your use case.</p>
+<p><strong>Method 1: Via Flow Action</strong></p>
+<p>Use <code class="docutils literal notranslate"><span class="pre">recording_start</span></code> and <code class="docutils literal notranslate"><span class="pre">recording_stop</span></code> actions in your call flow for automatic recording control.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Your</span> <span class="n">Flow</span>                    <span class="n">VoIPBIN</span>                     <span class="n">Storage</span>
+    <span class="o">|</span>                           <span class="o">|</span>                           <span class="o">|</span>
+    <span class="o">|</span> <span class="n">recording_start</span> <span class="n">action</span>    <span class="o">|</span>                           <span class="o">|</span>
+    <span class="o">+--------------------------&gt;|</span>                           <span class="o">|</span>
+    <span class="o">|</span>                           <span class="o">|</span> <span class="n">Initialize</span> <span class="n">recording</span>      <span class="o">|</span>
+    <span class="o">|</span>                           <span class="o">+--------------------------&gt;|</span>
+    <span class="o">|</span>                           <span class="o">|</span>                           <span class="o">|</span>
+    <span class="o">|</span>                           <span class="o">|&lt;=====</span><span class="n">audio</span> <span class="n">stream</span><span class="o">=======&gt;|</span>
+    <span class="o">|</span>                           <span class="o">|</span>                           <span class="o">|</span>
+    <span class="o">|</span> <span class="n">recording_stop</span> <span class="n">action</span>     <span class="o">|</span>                           <span class="o">|</span>
+    <span class="o">+--------------------------&gt;|</span>                           <span class="o">|</span>
+    <span class="o">|</span>                           <span class="o">|</span> <span class="n">Finalize</span> <span class="n">recording</span>        <span class="o">|</span>
+    <span class="o">|</span>                           <span class="o">+--------------------------&gt;|</span>
+    <span class="o">|</span>                           <span class="o">|</span>                           <span class="o">|</span>
+</pre></div>
+</div>
+<p><strong>Example flow with recording:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;answer&quot;</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;recording_start&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;wav&quot;</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;This call is being recorded for quality purposes.&quot;</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;connect&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span> <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15551234567&quot;</span><span class="p">}]</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;recording_stop&quot;</span>
+        <span class="p">}</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Method 2: Via API (Interrupt Method)</strong></p>
+<p>Start or stop recording on an active call or conference programmatically.</p>
+<p><strong>Start recording on a call:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/calls/&lt;call-id&gt;/recording_start?token=&lt;token&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data &#39;{
+        &quot;format&quot;: &quot;wav&quot;
+    }&#39;
+</pre></div>
+</div>
+<p><strong>Stop recording on a call:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/calls/&lt;call-id&gt;/recording_stop?token=&lt;token&gt;&#39;
+</pre></div>
+</div>
+<p><strong>Start recording on a conference:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/conferences/&lt;conference-id&gt;/recording_start?token=&lt;token&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data &#39;{
+        &quot;format&quot;: &quot;wav&quot;
+    }&#39;
+</pre></div>
+</div>
+<p><strong>When to Use Each Method</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Method</p></th>
+<th class="head"><p>Best for</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Flow Action</p></td>
+<td><p>Automated recording based on call flow logic</p></td>
+</tr>
+<tr class="row-odd"><td><p>API (Interrupt)</p></td>
+<td><p>Dynamic control - start/stop based on external events</p></td>
+</tr>
+</tbody>
+</table>
 </section>
-<section id="download-call-recording-audio-files">
-<h2>Download Call Recording Audio Files<a class="headerlink" href="#download-call-recording-audio-files" title="Link to this heading"></a></h2>
-<p>With the Download Call Recording Audio Files API, users can retrieve the audio files associated with specific call recordings by supplying the call ID or unique identifier. This functionality proves essential for users engaged in quality assurance, compliance, or analysis, providing a convenient means to listen to call recordings.</p>
+<section id="recording-storage">
+<h2>Recording Storage<a class="headerlink" href="#recording-storage" title="Link to this heading"></a></h2>
+<p>Recordings are stored securely in Google Cloud Storage and accessible via the VoIPBIN API.</p>
+<p><strong>Storage Architecture</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Download</span><span class="p">:</span>                               <span class="n">Stream</span><span class="p">:</span>
+<span class="o">+------+</span>   <span class="n">GET</span> <span class="o">/</span><span class="n">recordings</span><span class="o">/</span><span class="p">{</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">file</span>    <span class="o">+------+</span>   <span class="n">GET</span> <span class="p">(</span><span class="n">Range</span> <span class="n">header</span><span class="p">)</span>
+<span class="o">|</span> <span class="n">Your</span> <span class="o">|-------------------------------&gt;|</span> <span class="n">Your</span> <span class="o">|&lt;-</span> <span class="o">-</span> <span class="o">-</span> <span class="o">-</span> <span class="o">-</span> <span class="o">-</span> <span class="o">-</span> <span class="o">-</span> <span class="o">-</span> <span class="o">-</span> <span class="o">-&gt;</span>
+<span class="o">|</span> <span class="n">App</span>  <span class="o">|&lt;--------</span><span class="n">full</span> <span class="n">file</span><span class="o">--------------|</span> <span class="n">App</span>  <span class="o">|</span>       <span class="n">chunks</span>
+<span class="o">+------+</span>              <span class="o">|</span>                 <span class="o">+------+</span>           <span class="o">|</span>
+                      <span class="n">v</span>                                    <span class="n">v</span>
+               <span class="o">+-------------+</span>                      <span class="o">+-------------+</span>
+               <span class="o">|</span>  <span class="n">Recording</span>  <span class="o">|</span>                      <span class="o">|</span>  <span class="n">Recording</span>  <span class="o">|</span>
+               <span class="o">|</span>    <span class="n">File</span>     <span class="o">|</span>                      <span class="o">|</span>    <span class="n">File</span>     <span class="o">|</span>
+               <span class="o">+-------------+</span>                      <span class="o">+-------------+</span>
+</pre></div>
+</div>
+<p><strong>Accessing Recordings</strong></p>
+<p><em>List all recordings:</em></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/recordings?token=&lt;token&gt;&#39;
+</pre></div>
+</div>
+<p><em>Get recording metadata:</em></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/recordings/&lt;recording-id&gt;?token=&lt;token&gt;&#39;
+</pre></div>
+</div>
+<p><em>Download recording file:</em></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/recordings/&lt;recording-id&gt;/file?token=&lt;token&gt;&#39; \
+    --output recording.wav
+</pre></div>
+</div>
+<p><strong>Storage Details</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Aspect</p></th>
+<th class="head"><p>Details</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Storage Location</p></td>
+<td><p>Google Cloud Storage (GCS)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Retention Period</p></td>
+<td><p>Configurable per customer (default: 30 days)</p></td>
+</tr>
+<tr class="row-even"><td><p>Maximum Duration</p></td>
+<td><p>24 hours per recording</p></td>
+</tr>
+<tr class="row-odd"><td><p>File Size</p></td>
+<td><p>~1 MB per minute (8 kHz mono WAV)</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Bulk Export</strong></p>
+<p>For exporting large numbers of recordings, use the asynchronous bulk export API:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/recordings/export?token=&lt;token&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data &#39;{
+        &quot;recording_ids&quot;: [
+            &quot;recording-id-1&quot;,
+            &quot;recording-id-2&quot;,
+            &quot;recording-id-3&quot;
+        ]
+    }&#39;
+</pre></div>
+</div>
+<p>The export runs asynchronously and you’ll receive a webhook when complete.</p>
 </section>
-<section id="asynchronously-export-call-recordings-in-bulk">
-<h2>Asynchronously Export Call Recordings in Bulk<a class="headerlink" href="#asynchronously-export-call-recordings-in-bulk" title="Link to this heading"></a></h2>
-<p>The Asynchronously Export Call Recordings in Bulk API is a robust feature facilitating the simultaneous export of multiple call recordings. Users can specify multiple call IDs or date ranges, streamlining the export process for large volumes of call recordings. This asynchronous export mechanism ensures efficient handling of substantial data loads without overwhelming the API, offering a seamless approach to retrieving call recording data in bulk.</p>
+<section id="recording-and-calls-conferences">
+<h2>Recording and Calls/Conferences<a class="headerlink" href="#recording-and-calls-conferences" title="Link to this heading"></a></h2>
+<p>Understanding how recordings relate to calls and conferences helps you track and manage them effectively.</p>
+<p><strong>Call Recording Relationship</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-------------------------------------------------------------------+</span>
+<span class="o">|</span>                           <span class="n">Call</span>                                    <span class="o">|</span>
+<span class="o">|</span>                                                                   <span class="o">|</span>
+<span class="o">|</span>   <span class="n">recording_id</span><span class="p">:</span> <span class="s2">&quot;abc-123&quot;</span>     <span class="o">&lt;-</span> <span class="n">Currently</span> <span class="n">active</span> <span class="n">recording</span>       <span class="o">|</span>
+<span class="o">|</span>                                                                   <span class="o">|</span>
+<span class="o">|</span>   <span class="n">recording_ids</span><span class="p">:</span> <span class="p">[</span>            <span class="o">&lt;-</span> <span class="n">All</span> <span class="n">recordings</span> <span class="kn">from</span><span class="w"> </span><span class="nn">this</span> <span class="n">call</span>    <span class="o">|</span>
+<span class="o">|</span>       <span class="s2">&quot;abc-123&quot;</span><span class="p">,</span>                                                  <span class="o">|</span>
+<span class="o">|</span>       <span class="s2">&quot;def-456&quot;</span><span class="p">,</span>                                                  <span class="o">|</span>
+<span class="o">|</span>       <span class="s2">&quot;ghi-789&quot;</span>                                                   <span class="o">|</span>
+<span class="o">|</span>   <span class="p">]</span>                                                               <span class="o">|</span>
+<span class="o">|</span>                                                                   <span class="o">|</span>
+<span class="o">+-------------------------------------------------------------------+</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">recording_id</span></code>: The currently active recording (empty if not recording)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">recording_ids</span></code>: History of all recordings made during this call</p></li>
+</ul>
+<p><strong>Multiple Recordings Per Call</strong></p>
+<p>You can start and stop recording multiple times during a single call:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Call</span> <span class="n">Timeline</span><span class="p">:</span>
+
+<span class="o">|-----|=========|-----|=========|-----|=========|-----&gt;</span>
+   <span class="o">^</span>       <span class="o">^</span>       <span class="o">^</span>       <span class="o">^</span>       <span class="o">^</span>       <span class="o">^</span>
+   <span class="o">|</span>       <span class="o">|</span>       <span class="o">|</span>       <span class="o">|</span>       <span class="o">|</span>       <span class="o">|</span>
+<span class="n">start</span>   <span class="n">stop</span>    <span class="n">start</span>   <span class="n">stop</span>    <span class="n">start</span>   <span class="n">stop</span>
+<span class="n">rec</span> <span class="mi">1</span>   <span class="n">rec</span> <span class="mi">1</span>   <span class="n">rec</span> <span class="mi">2</span>   <span class="n">rec</span> <span class="mi">2</span>   <span class="n">rec</span> <span class="mi">3</span>   <span class="n">rec</span> <span class="mi">3</span>
+
+<span class="n">Result</span><span class="p">:</span> <span class="mi">3</span> <span class="n">separate</span> <span class="n">recording</span> <span class="n">files</span>
+</pre></div>
+</div>
+</section>
+<section id="common-scenarios">
+<h2>Common Scenarios<a class="headerlink" href="#common-scenarios" title="Link to this heading"></a></h2>
+<p><strong>Scenario 1: Record Entire Call</strong></p>
+<p>Start recording immediately when the call is answered.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;answer&quot;</span><span class="p">},</span>
+        <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;recording_start&quot;</span><span class="p">},</span>
+        <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;connect&quot;</span><span class="p">,</span> <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">]}},</span>
+        <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;recording_stop&quot;</span><span class="p">}</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Scenario 2: Record Only After Consent</strong></p>
+<p>Play a consent message, then start recording.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Call</span> <span class="n">answered</span>
+     <span class="o">|</span>
+     <span class="n">v</span>
+<span class="o">+------------------+</span>
+<span class="o">|</span> <span class="s2">&quot;Press 1 to      |</span>
+<span class="o">|</span>  <span class="n">consent</span> <span class="n">to</span>      <span class="o">|</span>
+<span class="o">|</span>  <span class="n">recording</span><span class="s2">&quot;      |</span>
+<span class="o">+--------+---------+</span>
+         <span class="o">|</span>
+    <span class="o">+----+----+</span>
+    <span class="o">|</span>         <span class="o">|</span>
+ <span class="n">Pressed</span> <span class="mi">1</span>   <span class="n">Other</span>
+    <span class="o">|</span>         <span class="o">|</span>
+    <span class="n">v</span>         <span class="n">v</span>
+<span class="n">Start</span>       <span class="n">Continue</span>
+<span class="n">Recording</span>   <span class="n">without</span>
+    <span class="o">|</span>       <span class="n">recording</span>
+    <span class="n">v</span>
+<span class="n">Continue</span>
+<span class="n">call</span>
+</pre></div>
+</div>
+<p><strong>Scenario 3: Conference Recording</strong></p>
+<p>Record all participants in a conference.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Conference</span>
+<span class="o">+-------------------------------------------------------+</span>
+<span class="o">|</span>  <span class="o">+------+</span>    <span class="o">+------+</span>    <span class="o">+------+</span>                     <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span><span class="n">User</span> <span class="n">A</span><span class="o">|</span>    <span class="o">|</span><span class="n">User</span> <span class="n">B</span><span class="o">|</span>    <span class="o">|</span><span class="n">User</span> <span class="n">C</span><span class="o">|</span>                     <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+--+---+</span>    <span class="o">+--+---+</span>    <span class="o">+--+---+</span>                     <span class="o">|</span>
+<span class="o">|</span>     <span class="o">|</span>           <span class="o">|</span>           <span class="o">|</span>                         <span class="o">|</span>
+<span class="o">|</span>     <span class="o">+-----+-----+-----+-----+</span>                         <span class="o">|</span>
+<span class="o">|</span>           <span class="o">|</span>                                           <span class="o">|</span>
+<span class="o">|</span>           <span class="n">v</span>                                           <span class="o">|</span>
+<span class="o">|</span>     <span class="o">+----------+</span>                                      <span class="o">|</span>
+<span class="o">|</span>     <span class="o">|</span><span class="n">Recording</span> <span class="o">|</span>  <span class="o">&lt;-</span> <span class="n">All</span> <span class="n">audio</span> <span class="n">mixed</span> <span class="n">together</span>         <span class="o">|</span>
+<span class="o">|</span>     <span class="o">|</span>  <span class="n">File</span>    <span class="o">|</span>                                      <span class="o">|</span>
+<span class="o">|</span>     <span class="o">+----------+</span>                                      <span class="o">|</span>
+<span class="o">+-------------------------------------------------------+</span>
+</pre></div>
+</div>
+<p><strong>Scenario 4: Pause and Resume Recording</strong></p>
+<p>Stop and start recording to skip sensitive information.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Recording</span> <span class="n">active</span>
+     <span class="o">|</span>
+     <span class="n">v</span>
+<span class="s2">&quot;Please provide your credit card number&quot;</span>
+     <span class="o">|</span>
+     <span class="n">v</span>
+<span class="n">STOP</span> <span class="n">recording</span>
+     <span class="o">|</span>
+     <span class="n">v</span>
+<span class="n">Customer</span> <span class="n">provides</span> <span class="n">card</span> <span class="n">number</span> <span class="p">(</span><span class="ow">not</span> <span class="n">recorded</span><span class="p">)</span>
+     <span class="o">|</span>
+     <span class="n">v</span>
+<span class="n">START</span> <span class="n">recording</span> <span class="p">(</span><span class="n">new</span> <span class="n">recording</span> <span class="n">file</span><span class="p">)</span>
+     <span class="o">|</span>
+     <span class="n">v</span>
+<span class="n">Continue</span> <span class="n">call</span>
+</pre></div>
+</div>
+</section>
+<section id="best-practices">
+<h2>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading"></a></h2>
+<p><strong>1. Legal Compliance</strong></p>
+<ul class="simple">
+<li><p><strong>Consent</strong>: Many jurisdictions require consent before recording. Always announce recordings.</p></li>
+<li><p><strong>Retention</strong>: Define clear retention policies. Delete recordings when no longer needed.</p></li>
+<li><p><strong>Access Control</strong>: Limit who can access recordings. Use VoIPBIN’s permission system.</p></li>
+</ul>
+<p><strong>2. Announcement Examples</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;This call may be recorded for quality and training purposes.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>3. Storage Management</strong></p>
+<ul class="simple">
+<li><p>Set appropriate retention periods for your use case</p></li>
+<li><p>Use bulk export for long-term archival</p></li>
+<li><p>Monitor storage usage to manage costs</p></li>
+<li><p>Delete recordings that are no longer needed</p></li>
+</ul>
+<p><strong>4. Recording Quality</strong></p>
+<ul class="simple">
+<li><p>Ensure good network connectivity for clear audio</p></li>
+<li><p>Monitor for recording failures via webhooks</p></li>
+<li><p>Test recording playback regularly</p></li>
+</ul>
+</section>
+<section id="troubleshooting">
+<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h2>
+<p><strong>Recording Not Starting</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Symptom</p></th>
+<th class="head"><p>Solution</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>No recording_id returned</p></td>
+<td><p>Verify call/conference is in “progressing”
+status before starting recording</p></td>
+</tr>
+<tr class="row-odd"><td><p>Permission denied</p></td>
+<td><p>Check API token has recording permissions</p></td>
+</tr>
+<tr class="row-even"><td><p>Recording starts but
+immediately stops</p></td>
+<td><p>Check if another recording is already active
+(only one active recording per call)</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Empty or Corrupted Files</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Symptom</p></th>
+<th class="head"><p>Solution</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>File size is 0 bytes</p></td>
+<td><p>Recording may have been stopped immediately
+after starting. Ensure audio is flowing.</p></td>
+</tr>
+<tr class="row-odd"><td><p>File won’t play</p></td>
+<td><p>Verify file format. VoIPBIN uses WAV format.
+Some players may not support 8kHz mono.</p></td>
+</tr>
+<tr class="row-even"><td><p>Audio is silent</p></td>
+<td><p>Check that audio was flowing during recording.
+Muted calls produce silent recordings.</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Download Failures</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Symptom</p></th>
+<th class="head"><p>Solution</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>404 Not Found</p></td>
+<td><p>Recording may still be processing. Wait for
+“available” status before downloading.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Timeout on large files</p></td>
+<td><p>Use streaming download with Range headers
+for large recordings.</p></td>
+</tr>
+<tr class="row-even"><td><p>Recording expired</p></td>
+<td><p>Recording exceeded retention period. Check
+your retention settings.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="related-documentation">
+<h2>Related Documentation<a class="headerlink" href="#related-documentation" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="call_overview.html#call-overview"><span class="std std-ref">Call Overview</span></a> - Recording calls</p></li>
+<li><p><a class="reference internal" href="conference_overview.html#conference-overview"><span class="std std-ref">Conference Overview</span></a> - Recording conferences</p></li>
+<li><p><a class="reference internal" href="transcribe_overview.html#transcribe-overview"><span class="std std-ref">Transcribe Overview</span></a> - Transcribing recordings</p></li>
+</ul>
 </section>
 </section>
 
@@ -218,11 +682,15 @@
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
 <li><a class="reference internal" href="#">Overview</a><ul>
-<li><a class="reference internal" href="#list-call-recording-metadata">List Call Recording Metadata</a></li>
-<li><a class="reference internal" href="#retrieve-detailed-information-with-the-single-call-recording-metadata-api">Retrieve Detailed Information with the Single Call Recording Metadata API</a></li>
-<li><a class="reference internal" href="#delete-call-recordings">Delete Call Recordings</a></li>
-<li><a class="reference internal" href="#download-call-recording-audio-files">Download Call Recording Audio Files</a></li>
-<li><a class="reference internal" href="#asynchronously-export-call-recordings-in-bulk">Asynchronously Export Call Recordings in Bulk</a></li>
+<li><a class="reference internal" href="#how-recording-works">How Recording Works</a></li>
+<li><a class="reference internal" href="#recording-lifecycle">Recording Lifecycle</a></li>
+<li><a class="reference internal" href="#starting-and-stopping-recordings">Starting and Stopping Recordings</a></li>
+<li><a class="reference internal" href="#recording-storage">Recording Storage</a></li>
+<li><a class="reference internal" href="#recording-and-calls-conferences">Recording and Calls/Conferences</a></li>
+<li><a class="reference internal" href="#common-scenarios">Common Scenarios</a></li>
+<li><a class="reference internal" href="#best-practices">Best Practices</a></li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
+<li><a class="reference internal" href="#related-documentation">Related Documentation</a></li>
 </ul>
 </li>
 </ul>

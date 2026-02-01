@@ -102,7 +102,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="message.html">Message</a></li>
 <li class="toctree-l1"><a class="reference internal" href="email.html">Email</a></li>
-<li class="toctree-l1"><a class="reference internal" href="chat.html">Chat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="talk.html">Talk</a></li>
 <li class="toctree-l1"><a class="reference internal" href="conversation.html">Conversation</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">AI &amp; Automation</span></p>
@@ -129,7 +129,6 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
 <li class="toctree-l1"><a class="reference internal" href="websocket.html">Websocket</a></li>
-<li class="toctree-l1"><a class="reference internal" href="talk.html">Talk</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul>
@@ -189,17 +188,416 @@
 <span id="outplan-main"></span><h1>Outplan<a class="headerlink" href="#outplan" title="Link to this heading"></a></h1>
 <section id="overview">
 <span id="outplan-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
-<p>The VoIPBIN’s outplan API provides a powerful tool for managing and customizing dialing strategies for outdial operations. The outplan defines how the system should handle dialing attempts and retries when making outbound calls to various destinations.</p>
-<p>With the outplan API, users can create and configure multiple outplans, each with its own unique dialing strategy. The outplan allows users to set parameters such as dial timeout, try interval, and maximum try counts for different dialing attempts.</p>
-<p>The outplan API is commonly used in conjunction with the outdial API to manage the dialing behavior of outbound calling campaigns. Users can apply specific outplans to different outdials, allowing for targeted and customized dialing strategies for different destinations or scenarios.</p>
-<p>By utilizing the outplan API, businesses and developers can optimize their outbound calling operations, increase the success rate of dialing attempts, and effectively manage retries and timeouts. This flexibility and customization provided by the outplan API make it a valuable tool for organizations looking to streamline their outbound communication processes and enhance their customer engagement efforts.</p>
-<section id="key-features">
-<h3>Key features<a class="headerlink" href="#key-features" title="Link to this heading"></a></h3>
-<p>The outplan API offers several key features that allow users to finely tune the dialing behavior of their outbound calling campaigns:</p>
+<p>VoIPBIN’s Outplan API provides fine-grained control over dialing strategies for outbound campaigns. An outplan defines how the system should handle dial attempts, including timeouts, retry intervals, and maximum attempt counts. By configuring outplans, you can optimize contact rates while respecting recipient preferences and regulatory requirements.</p>
+<p>With the Outplan API you can:</p>
 <ul class="simple">
-<li><p>Dial Timeout: Users can specify the maximum duration that the system will wait for a call to be answered before considering it a timeout and marking it as such.</p></li>
-<li><p>Try Interval: The outplan API allows users to define the interval between consecutive dialing attempts. This feature gives users control over how often the system should retry dialing a destination if the call is not successful on the first attempt.</p></li>
-<li><p>Maximum Try Counts: Users can set the maximum number of times the system should try to connect to a destination. This parameter enables users to customize the level of persistence in attempting to establish a successful call.</p></li>
+<li><p>Configure dial timeout durations</p></li>
+<li><p>Set retry intervals between attempts</p></li>
+<li><p>Define maximum retry counts</p></li>
+<li><p>Create different strategies for various campaign types</p></li>
+<li><p>Optimize contact rates and efficiency</p></li>
+</ul>
+<section id="how-outplans-work">
+<h3>How Outplans Work<a class="headerlink" href="#how-outplans-work" title="Link to this heading"></a></h3>
+<p>Outplans define the “when and how” of dialing in campaign operations.</p>
+<p><strong>Outplan Architecture</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-----------------------------------------------------------------------+</span>
+<span class="o">|</span>                         <span class="n">Outplan</span> <span class="n">System</span>                                <span class="o">|</span>
+<span class="o">+-----------------------------------------------------------------------+</span>
+
+<span class="o">+-------------------+</span>
+<span class="o">|</span>      <span class="n">Outplan</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="p">(</span><span class="n">dialing</span> <span class="n">strategy</span><span class="p">)</span><span class="o">|</span>
+<span class="o">+--------+----------+</span>
+         <span class="o">|</span>
+         <span class="o">|</span> <span class="n">defines</span>
+         <span class="n">v</span>
+<span class="o">+--------+----------+--------+----------+--------+----------+</span>
+<span class="o">|</span>                   <span class="o">|</span>                   <span class="o">|</span>                   <span class="o">|</span>
+<span class="n">v</span>                   <span class="n">v</span>                   <span class="n">v</span>                   <span class="n">v</span>
+<span class="o">+----------+</span>   <span class="o">+----------+</span>   <span class="o">+----------+</span>   <span class="o">+----------+</span>
+<span class="o">|</span>  <span class="n">Dial</span>    <span class="o">|</span>   <span class="o">|</span>  <span class="n">Retry</span>   <span class="o">|</span>   <span class="o">|</span>  <span class="n">Max</span>     <span class="o">|</span>   <span class="o">|</span>  <span class="n">Timing</span>  <span class="o">|</span>
+<span class="o">|</span> <span class="n">Timeout</span>  <span class="o">|</span>   <span class="o">|</span> <span class="n">Interval</span> <span class="o">|</span>   <span class="o">|</span> <span class="n">Attempts</span> <span class="o">|</span>   <span class="o">|</span> <span class="n">Windows</span>  <span class="o">|</span>
+<span class="o">+----------+</span>   <span class="o">+----------+</span>   <span class="o">+----------+</span>   <span class="o">+----------+</span>
+     <span class="o">|</span>              <span class="o">|</span>              <span class="o">|</span>              <span class="o">|</span>
+     <span class="n">v</span>              <span class="n">v</span>              <span class="n">v</span>              <span class="n">v</span>
+<span class="o">+---------+</span>    <span class="o">+---------+</span>    <span class="o">+---------+</span>    <span class="o">+---------+</span>
+<span class="o">|</span> <span class="mi">30</span> <span class="n">sec</span>  <span class="o">|</span>    <span class="o">|</span> <span class="mi">1</span> <span class="n">hour</span>  <span class="o">|</span>    <span class="o">|</span> <span class="mi">3</span> <span class="n">tries</span> <span class="o">|</span>    <span class="o">|</span> <span class="mi">9</span><span class="n">am</span><span class="o">-</span><span class="mi">6</span><span class="n">pm</span> <span class="o">|</span>
+<span class="o">+---------+</span>    <span class="o">+---------+</span>    <span class="o">+---------+</span>    <span class="o">+---------+</span>
+</pre></div>
+</div>
+<p><strong>Key Components</strong></p>
+<ul class="simple">
+<li><p><strong>Dial Timeout</strong>: How long to wait for an answer before giving up</p></li>
+<li><p><strong>Try Interval</strong>: Time between retry attempts</p></li>
+<li><p><strong>Max Try Count</strong>: Maximum number of dial attempts per target</p></li>
+<li><p><strong>Timing Windows</strong>: When dialing is permitted (optional)</p></li>
+</ul>
+</section>
+<section id="outplan-configuration">
+<h3>Outplan Configuration<a class="headerlink" href="#outplan-configuration" title="Link to this heading"></a></h3>
+<p>Configure outplan parameters based on your campaign needs.</p>
+<p><strong>Dial Timeout</strong></p>
+<p>The dial timeout specifies how long the system waits for the target to answer before marking the attempt as failed.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Dial initiated
+     |
+     v
++-------------------+
+| Ring...           |
+| (counting time)   |
++--------+----------+
+         |
+         +-----&gt; Answered within timeout? --&gt; Success
+         |
+         +-----&gt; Timeout reached? --&gt; Mark as no_answer
+</pre></div>
+</div>
+<p><strong>Recommended Timeouts</strong></p>
+<p><strong>Try Interval</strong></p>
+<p>The try interval defines the wait time between consecutive dial attempts to the same target.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Attempt</span> <span class="mi">1</span><span class="p">:</span> <span class="n">No</span> <span class="n">answer</span>
+     <span class="o">|</span>
+     <span class="n">v</span>
+<span class="o">+-------------------+</span>
+<span class="o">|</span> <span class="n">Wait</span><span class="p">:</span> <span class="n">try_interval</span><span class="o">|</span>
+<span class="o">|</span> <span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="p">,</span> <span class="mi">1</span> <span class="n">hour</span><span class="p">)</span>    <span class="o">|</span>
+<span class="o">+--------+----------+</span>
+         <span class="o">|</span>
+         <span class="n">v</span>
+<span class="n">Attempt</span> <span class="mi">2</span><span class="p">:</span> <span class="n">Try</span> <span class="n">again</span>
+     <span class="o">|</span>
+     <span class="n">v</span>
+<span class="o">+-------------------+</span>
+<span class="o">|</span> <span class="n">Wait</span><span class="p">:</span> <span class="n">try_interval</span><span class="o">|</span>
+<span class="o">+--------+----------+</span>
+         <span class="o">|</span>
+         <span class="n">v</span>
+<span class="n">Attempt</span> <span class="mi">3</span><span class="p">:</span> <span class="n">Final</span> <span class="n">attempt</span>
+</pre></div>
+</div>
+<p><strong>Recommended Intervals</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Campaign Type</p></th>
+<th class="head"><p>Recommended</p></th>
+<th class="head"><p>Reasoning</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Sales calls</p></td>
+<td><p>2-4 hours</p></td>
+<td><p>Try different times of day</p></td>
+</tr>
+<tr class="row-odd"><td><p>Reminders</p></td>
+<td><p>30-60 minutes</p></td>
+<td><p>Moderate urgency</p></td>
+</tr>
+<tr class="row-even"><td><p>Emergency</p></td>
+<td><p>5-15 minutes</p></td>
+<td><p>High urgency, frequent retries</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Max Try Count</strong></p>
+<p>The maximum try count limits how many times the system will attempt to reach a target.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-------------------+</span>
+<span class="o">|</span> <span class="n">max_try_count</span><span class="p">:</span> <span class="mi">3</span>  <span class="o">|</span>
+<span class="o">+-------------------+</span>
+         <span class="o">|</span>
+         <span class="n">v</span>
+<span class="n">Attempt</span> <span class="mi">1</span> <span class="o">--&gt;</span> <span class="n">No</span> <span class="n">answer</span>
+<span class="n">Attempt</span> <span class="mi">2</span> <span class="o">--&gt;</span> <span class="n">Busy</span>
+<span class="n">Attempt</span> <span class="mi">3</span> <span class="o">--&gt;</span> <span class="n">No</span> <span class="n">answer</span>
+<span class="o">--&gt;</span> <span class="n">Mark</span> <span class="k">as</span> <span class="n">FAILED</span> <span class="p">(</span><span class="nb">max</span> <span class="n">reached</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="creating-an-outplan">
+<h3>Creating an Outplan<a class="headerlink" href="#creating-an-outplan" title="Link to this heading"></a></h3>
+<p>Create outplans via the API.</p>
+<p><strong>Create Outplan Example</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/outplans?token=&lt;token&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data &#39;{
+        &quot;name&quot;: &quot;Sales Standard&quot;,
+        &quot;detail&quot;: &quot;Standard sales campaign strategy&quot;,
+        &quot;dial_timeout&quot;: 30000,
+        &quot;try_interval&quot;: 7200000,
+        &quot;max_try_count_0&quot;: 3,
+        &quot;max_try_count_1&quot;: 2,
+        &quot;max_try_count_2&quot;: 1,
+        &quot;max_try_count_3&quot;: 0,
+        &quot;max_try_count_4&quot;: 0
+    }&#39;
+</pre></div>
+</div>
+<p><strong>Field Descriptions</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Field</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>dial_timeout</p></td>
+<td><p>Ring timeout in milliseconds (30000 = 30 seconds)</p></td>
+</tr>
+<tr class="row-odd"><td><p>try_interval</p></td>
+<td><p>Wait between retries in milliseconds (7200000 = 2 hours)</p></td>
+</tr>
+<tr class="row-even"><td><p>max_try_count_0</p></td>
+<td><p>Max retries for result type 0 (machine/voicemail)</p></td>
+</tr>
+<tr class="row-odd"><td><p>max_try_count_1</p></td>
+<td><p>Max retries for result type 1 (busy)</p></td>
+</tr>
+<tr class="row-even"><td><p>max_try_count_2</p></td>
+<td><p>Max retries for result type 2 (no answer)</p></td>
+</tr>
+<tr class="row-odd"><td><p>max_try_count_3</p></td>
+<td><p>Max retries for result type 3 (failed/error)</p></td>
+</tr>
+<tr class="row-even"><td><p>max_try_count_4</p></td>
+<td><p>Max retries for result type 4 (other)</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="outplan-strategies">
+<h3>Outplan Strategies<a class="headerlink" href="#outplan-strategies" title="Link to this heading"></a></h3>
+<p>Different campaign types require different dialing strategies.</p>
+<p><strong>Aggressive Strategy (Emergency)</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Emergency</span> <span class="n">Outplan</span>                          <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">dial_timeout</span><span class="p">:</span>    <span class="mi">45</span> <span class="n">seconds</span>                <span class="o">|</span>
+<span class="o">|</span> <span class="n">try_interval</span><span class="p">:</span>    <span class="mi">10</span> <span class="n">minutes</span>                <span class="o">|</span>
+<span class="o">|</span> <span class="n">max_try_count</span><span class="p">:</span>   <span class="mi">5</span> <span class="p">(</span><span class="nb">all</span> <span class="n">types</span><span class="p">)</span>             <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+
+<span class="n">Timeline</span><span class="p">:</span>
+<span class="o">|--</span><span class="mi">0</span><span class="n">m</span><span class="o">--|--</span><span class="mi">10</span><span class="n">m</span><span class="o">--|--</span><span class="mi">20</span><span class="n">m</span><span class="o">--|--</span><span class="mi">30</span><span class="n">m</span><span class="o">--|--</span><span class="mi">40</span><span class="n">m</span><span class="o">--|</span>
+   <span class="mi">1</span>      <span class="mi">2</span>       <span class="mi">3</span>       <span class="mi">4</span>       <span class="mi">5</span>
+<span class="p">(</span><span class="n">attempts</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Standard Strategy (Sales)</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Sales</span> <span class="n">Outplan</span>                              <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">dial_timeout</span><span class="p">:</span>    <span class="mi">30</span> <span class="n">seconds</span>                <span class="o">|</span>
+<span class="o">|</span> <span class="n">try_interval</span><span class="p">:</span>    <span class="mi">2</span> <span class="n">hours</span>                   <span class="o">|</span>
+<span class="o">|</span> <span class="n">max_try_count</span><span class="p">:</span>   <span class="mi">3</span> <span class="p">(</span><span class="n">no</span> <span class="n">answer</span><span class="o">/</span><span class="n">busy</span><span class="p">)</span>        <span class="o">|</span>
+<span class="o">|</span>                  <span class="mi">1</span> <span class="p">(</span><span class="n">machine</span><span class="p">)</span>               <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+
+<span class="n">Timeline</span><span class="p">:</span>
+<span class="o">|--</span><span class="mi">0</span><span class="n">h</span><span class="o">--|--</span><span class="mi">2</span><span class="n">h</span><span class="o">--|--</span><span class="mi">4</span><span class="n">h</span><span class="o">--|</span>
+   <span class="mi">1</span>      <span class="mi">2</span>      <span class="mi">3</span>
+<span class="p">(</span><span class="n">attempts</span> <span class="n">spread</span> <span class="n">across</span> <span class="n">day</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Conservative Strategy (Reminders)</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Reminder</span> <span class="n">Outplan</span>                           <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">dial_timeout</span><span class="p">:</span>    <span class="mi">25</span> <span class="n">seconds</span>                <span class="o">|</span>
+<span class="o">|</span> <span class="n">try_interval</span><span class="p">:</span>    <span class="mi">1</span> <span class="n">hour</span>                    <span class="o">|</span>
+<span class="o">|</span> <span class="n">max_try_count</span><span class="p">:</span>   <span class="mi">2</span> <span class="p">(</span><span class="nb">all</span> <span class="n">types</span><span class="p">)</span>             <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+
+<span class="n">Timeline</span><span class="p">:</span>
+<span class="o">|--</span><span class="mi">0</span><span class="n">h</span><span class="o">--|--</span><span class="mi">1</span><span class="n">h</span><span class="o">--|</span>
+   <span class="mi">1</span>      <span class="mi">2</span>
+<span class="p">(</span><span class="n">minimal</span> <span class="n">disruption</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="result-based-retry-counts">
+<h3>Result-Based Retry Counts<a class="headerlink" href="#result-based-retry-counts" title="Link to this heading"></a></h3>
+<p>Configure different retry counts based on the outcome of each attempt.</p>
+<p><strong>Result Types</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Type</p></th>
+<th class="head"><p>Result</p></th>
+<th class="head"><p>Typical Retry Strategy</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>0</p></td>
+<td><p>Machine/VM</p></td>
+<td><p>Low retries (1-2); person may not check voicemail</p></td>
+</tr>
+<tr class="row-odd"><td><p>1</p></td>
+<td><p>Busy</p></td>
+<td><p>Medium retries (2-3); likely to be free later</p></td>
+</tr>
+<tr class="row-even"><td><p>2</p></td>
+<td><p>No answer</p></td>
+<td><p>High retries (3-5); try different times</p></td>
+</tr>
+<tr class="row-odd"><td><p>3</p></td>
+<td><p>Failed/Error</p></td>
+<td><p>Low retries (0-1); may be invalid number</p></td>
+</tr>
+<tr class="row-even"><td><p>4</p></td>
+<td><p>Other</p></td>
+<td><p>Configurable based on use case</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example Configuration</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;max_try_count_0&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>  <span class="o">//</span> <span class="n">Machine</span><span class="p">:</span> <span class="k">try</span> <span class="n">once</span> <span class="n">more</span>
+    <span class="s2">&quot;max_try_count_1&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>  <span class="o">//</span> <span class="n">Busy</span><span class="p">:</span> <span class="n">retry</span> <span class="mi">3</span> <span class="n">times</span>
+    <span class="s2">&quot;max_try_count_2&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>  <span class="o">//</span> <span class="n">No</span> <span class="n">answer</span><span class="p">:</span> <span class="n">retry</span> <span class="mi">4</span> <span class="n">times</span>
+    <span class="s2">&quot;max_try_count_3&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>  <span class="o">//</span> <span class="n">Failed</span><span class="p">:</span> <span class="n">don</span><span class="s1">&#39;t retry</span>
+    <span class="s2">&quot;max_try_count_4&quot;</span><span class="p">:</span> <span class="mi">1</span>   <span class="o">//</span> <span class="n">Other</span><span class="p">:</span> <span class="k">try</span> <span class="n">once</span> <span class="n">more</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="common-scenarios">
+<h3>Common Scenarios<a class="headerlink" href="#common-scenarios" title="Link to this heading"></a></h3>
+<p><strong>Scenario 1: B2B Sales Campaign</strong></p>
+<p>Reaching business contacts during work hours.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Outplan</span><span class="p">:</span> <span class="s2">&quot;B2B Sales&quot;</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">dial_timeout</span><span class="p">:</span>    <span class="mi">30</span> <span class="n">seconds</span>                <span class="o">|</span>
+<span class="o">|</span> <span class="n">try_interval</span><span class="p">:</span>    <span class="mi">4</span> <span class="n">hours</span>                   <span class="o">|</span>
+<span class="o">|</span> <span class="n">max_try_count_1</span><span class="p">:</span> <span class="mi">3</span> <span class="p">(</span><span class="n">busy</span><span class="p">)</span>                  <span class="o">|</span>
+<span class="o">|</span> <span class="n">max_try_count_2</span><span class="p">:</span> <span class="mi">4</span> <span class="p">(</span><span class="n">no</span> <span class="n">answer</span><span class="p">)</span>             <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+
+<span class="n">Strategy</span><span class="p">:</span>
+<span class="o">-</span> <span class="n">Long</span> <span class="n">intervals</span> <span class="n">to</span> <span class="k">try</span> <span class="n">morning</span><span class="p">,</span> <span class="n">midday</span><span class="p">,</span> <span class="n">afternoon</span>
+<span class="o">-</span> <span class="n">More</span> <span class="n">retries</span> <span class="k">for</span> <span class="n">no</span> <span class="n">answer</span> <span class="p">(</span><span class="n">might</span> <span class="n">be</span> <span class="ow">in</span> <span class="n">meetings</span><span class="p">)</span>
+<span class="o">-</span> <span class="n">Fewer</span> <span class="n">retries</span> <span class="k">for</span> <span class="n">busy</span> <span class="p">(</span><span class="n">clearly</span> <span class="n">occupied</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Scenario 2: Appointment Confirmation</strong></p>
+<p>Confirming next-day appointments.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Outplan</span><span class="p">:</span> <span class="s2">&quot;Appointment Reminder&quot;</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">dial_timeout</span><span class="p">:</span>    <span class="mi">25</span> <span class="n">seconds</span>                <span class="o">|</span>
+<span class="o">|</span> <span class="n">try_interval</span><span class="p">:</span>    <span class="mi">2</span> <span class="n">hours</span>                   <span class="o">|</span>
+<span class="o">|</span> <span class="n">max_try_count_1</span><span class="p">:</span> <span class="mi">2</span> <span class="p">(</span><span class="n">busy</span><span class="p">)</span>                  <span class="o">|</span>
+<span class="o">|</span> <span class="n">max_try_count_2</span><span class="p">:</span> <span class="mi">2</span> <span class="p">(</span><span class="n">no</span> <span class="n">answer</span><span class="p">)</span>             <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+
+<span class="n">Strategy</span><span class="p">:</span>
+<span class="o">-</span> <span class="n">Short</span> <span class="n">timeout</span> <span class="p">(</span><span class="n">quick</span> <span class="n">notification</span><span class="p">)</span>
+<span class="o">-</span> <span class="n">Limited</span> <span class="n">retries</span> <span class="p">(</span><span class="ow">not</span> <span class="n">critical</span><span class="p">)</span>
+<span class="o">-</span> <span class="n">Spread</span> <span class="n">across</span> <span class="n">afternoon</span><span class="o">/</span><span class="n">evening</span>
+</pre></div>
+</div>
+<p><strong>Scenario 3: Critical Alert</strong></p>
+<p>Emergency notifications requiring high delivery.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Outplan</span><span class="p">:</span> <span class="s2">&quot;Emergency Alert&quot;</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">dial_timeout</span><span class="p">:</span>    <span class="mi">45</span> <span class="n">seconds</span>                <span class="o">|</span>
+<span class="o">|</span> <span class="n">try_interval</span><span class="p">:</span>    <span class="mi">5</span> <span class="n">minutes</span>                 <span class="o">|</span>
+<span class="o">|</span> <span class="n">max_try_count_0</span><span class="p">:</span> <span class="mi">5</span> <span class="p">(</span><span class="nb">all</span> <span class="n">types</span><span class="p">)</span>             <span class="o">|</span>
+<span class="o">|</span> <span class="n">max_try_count_1</span><span class="p">:</span> <span class="mi">5</span>                         <span class="o">|</span>
+<span class="o">|</span> <span class="n">max_try_count_2</span><span class="p">:</span> <span class="mi">5</span>                         <span class="o">|</span>
+<span class="o">|</span> <span class="n">max_try_count_3</span><span class="p">:</span> <span class="mi">3</span>                         <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+
+<span class="n">Strategy</span><span class="p">:</span>
+<span class="o">-</span> <span class="n">Long</span> <span class="n">timeout</span> <span class="p">(</span><span class="n">maximize</span> <span class="n">answer</span> <span class="n">chance</span><span class="p">)</span>
+<span class="o">-</span> <span class="n">Frequent</span> <span class="n">retries</span> <span class="p">(</span><span class="n">urgent</span> <span class="n">delivery</span><span class="p">)</span>
+<span class="o">-</span> <span class="n">Retry</span> <span class="n">even</span> <span class="n">failures</span> <span class="p">(</span><span class="n">might</span> <span class="n">be</span> <span class="n">temporary</span> <span class="n">issue</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="best-practices">
+<h3>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading"></a></h3>
+<p><strong>1. Timeout Configuration</strong></p>
+<ul class="simple">
+<li><p>Set realistic timeouts (25-45 seconds)</p></li>
+<li><p>Account for call setup time</p></li>
+<li><p>Consider mobile vs. landline behavior</p></li>
+<li><p>Test across different carriers</p></li>
+</ul>
+<p><strong>2. Retry Intervals</strong></p>
+<ul class="simple">
+<li><p>Space retries to try different times of day</p></li>
+<li><p>Avoid too-frequent retries (annoys recipients)</p></li>
+<li><p>Match urgency level of campaign</p></li>
+<li><p>Consider time zone differences</p></li>
+</ul>
+<p><strong>3. Max Try Counts</strong></p>
+<ul class="simple">
+<li><p>Balance persistence with respect for recipients</p></li>
+<li><p>Use result-based retry counts for efficiency</p></li>
+<li><p>Higher counts for critical campaigns</p></li>
+<li><p>Lower counts for promotional calls</p></li>
+</ul>
+<p><strong>4. Compliance</strong></p>
+<ul class="simple">
+<li><p>Follow local regulations on retry limits</p></li>
+<li><p>Respect quiet hours (no early morning/late night)</p></li>
+<li><p>Document retry policies for auditing</p></li>
+<li><p>Honor do-not-call after failed attempts</p></li>
+</ul>
+</section>
+<section id="troubleshooting">
+<h3>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h3>
+<p><strong>Timing Issues</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Symptom</p></th>
+<th class="head"><p>Solution</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Calls timing out too
+quickly</p></td>
+<td><p>Increase dial_timeout; check network latency;
+verify carrier routing</p></td>
+</tr>
+<tr class="row-odd"><td><p>Retries happening too
+fast</p></td>
+<td><p>Increase try_interval; verify millisecond
+values are correct</p></td>
+</tr>
+<tr class="row-even"><td><p>Not enough retries</p></td>
+<td><p>Increase max_try_count values; check result
+type configuration</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Configuration Issues</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Symptom</p></th>
+<th class="head"><p>Solution</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Outplan not applied</p></td>
+<td><p>Verify outplan_id in campaign; check outplan
+exists and is active</p></td>
+</tr>
+<tr class="row-odd"><td><p>Wrong retry behavior</p></td>
+<td><p>Review result-type specific max_try_count
+values; check which result type is being set</p></td>
+</tr>
+<tr class="row-even"><td><p>Values seem wrong</p></td>
+<td><p>Confirm millisecond format; 30 seconds =
+30000ms, 1 hour = 3600000ms</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="related-documentation">
+<h3>Related Documentation<a class="headerlink" href="#related-documentation" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><a class="reference internal" href="campaign_overview.html#campaign-overview"><span class="std std-ref">Campaign Overview</span></a> - Using outplans in campaigns</p></li>
+<li><p><a class="reference internal" href="outdial_overview.html#outdial-overview"><span class="std std-ref">Outdial Overview</span></a> - Target management</p></li>
+<li><p><a class="reference internal" href="queue_overview.html#queue-overview"><span class="std std-ref">Queue Overview</span></a> - Agent routing</p></li>
+<li><p><a class="reference internal" href="call_overview.html#call-overview"><span class="std std-ref">Call Overview</span></a> - Call handling details</p></li>
 </ul>
 </section>
 </section>
@@ -453,7 +851,15 @@
                             <ul>
 <li><a class="reference internal" href="#">Outplan</a><ul>
 <li><a class="reference internal" href="#overview">Overview</a><ul>
-<li><a class="reference internal" href="#key-features">Key features</a></li>
+<li><a class="reference internal" href="#how-outplans-work">How Outplans Work</a></li>
+<li><a class="reference internal" href="#outplan-configuration">Outplan Configuration</a></li>
+<li><a class="reference internal" href="#creating-an-outplan">Creating an Outplan</a></li>
+<li><a class="reference internal" href="#outplan-strategies">Outplan Strategies</a></li>
+<li><a class="reference internal" href="#result-based-retry-counts">Result-Based Retry Counts</a></li>
+<li><a class="reference internal" href="#common-scenarios">Common Scenarios</a></li>
+<li><a class="reference internal" href="#best-practices">Best Practices</a></li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
+<li><a class="reference internal" href="#related-documentation">Related Documentation</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#outplan-struct-outplan">Outplan</a><ul>

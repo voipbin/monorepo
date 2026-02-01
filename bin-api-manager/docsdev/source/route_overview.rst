@@ -2,27 +2,317 @@
 
 Overview
 ========
-The Route API in VoIPBIN provides a powerful mechanism for defining SIP routing strategies, ensuring reliable call delivery, and enabling failover to different service providers in case of call failures. By configuring routes, users can make dynamic decisions on which service provider to use for outbound calls, optimizing call success rates and ensuring robust call delivery.
+VoIPBIN's Route API provides intelligent SIP routing with automatic failover capabilities. Routes determine which provider handles outbound calls and define fallback strategies when primary routes fail.
+
+With the Route API you can:
+
+- Define routing rules for outbound calls
+- Configure provider failover sequences
+- Set conditions for route selection
+- Customize routing per customer
+- Optimize call delivery success rates
+
+
+How Routes Work
+---------------
+Routes determine which provider handles each outbound call.
+
+**Route Architecture**
+
+::
+
+    +-----------------------------------------------------------------------+
+    |                         Routing System                                |
+    +-----------------------------------------------------------------------+
+
+    Outbound Call Request
+          |
+          v
+    +-------------------+
+    |   Route Engine    |
+    +--------+----------+
+             |
+             | Evaluate routes
+             v
+    +--------+----------+--------+----------+
+    |                   |                   |
+    v                   v                   v
+    +----------+   +----------+   +----------+
+    | Route 1  |   | Route 2  |   | Route 3  |
+    | Priority |   | Priority |   | Priority |
+    |    1     |   |    2     |   |    3     |
+    +----+-----+   +----+-----+   +----+-----+
+         |              |              |
+         v              v              v
+    +---------+    +---------+    +---------+
+    |Provider |    |Provider |    |Provider |
+    |    A    |    |    B    |    |    C    |
+    +---------+    +---------+    +---------+
+
+**Key Components**
+
+- **Route**: A rule that maps calls to providers
+- **Priority**: Order in which routes are attempted
+- **Failover**: Automatic retry with different provider on failure
+- **Conditions**: Criteria for route selection
+
 
 .. _route-overview-route_failover:
 
 Route Failover
 --------------
-Route failover is a crucial feature of the Route API that allows the system to handle call failures gracefully. When a call request encounters a failure, such as encountering a 404, 5XX, or 6XX SIP fail code, the system can automatically trigger a retry with a different service provider.
+Routes support automatic failover when providers fail.
 
-By specifying the conditions under which the system should attempt a retry with an alternative provider, users can implement an effective failover strategy to ensure call continuity and minimize disruptions in communication. This failover mechanism enhances call reliability and mitigates potential issues that may arise from service provider outages or temporary connectivity problems.
+**Failover Flow**
+
+::
+
+    Outbound Call
+          |
+          v
+    +-------------------+
+    | Try Route 1       |
+    | (Provider A)      |
+    +--------+----------+
+             |
+             +--------> Success? --> Call connected
+             |
+             v Failure (4xx, 5xx, 6xx)
+    +-------------------+
+    | Try Route 2       |
+    | (Provider B)      |
+    +--------+----------+
+             |
+             +--------> Success? --> Call connected
+             |
+             v Failure
+    +-------------------+
+    | Try Route 3       |
+    | (Provider C)      |
+    +--------+----------+
+             |
+             +--------> Success? --> Call connected
+             |
+             v All failed
+    +-------------------+
+    | Return error      |
+    | to caller         |
+    +-------------------+
+
+**Failover Triggers**
+
++-------------------+------------------------------------------------------------------+
+| SIP Response      | Description                                                      |
++===================+==================================================================+
+| 404               | Number not found - try alternate provider                        |
++-------------------+------------------------------------------------------------------+
+| 5xx               | Server error - provider issue, try backup                        |
++-------------------+------------------------------------------------------------------+
+| 6xx               | Global failure - try different route                             |
++-------------------+------------------------------------------------------------------+
+
 
 .. _route-overview-dynamic_routing_decisions:
 
 Dynamic Routing Decisions
 -------------------------
-One of the primary advantages of the Route API is its ability to make dynamic routing decisions based on various factors. Users can define routing rules and conditions to determine which service provider should be used for specific outbound calls. These routing decisions can be based on factors such as call destination, customer preferences, time of day, cost considerations, or the quality of service offered by different providers.
+Routes can be selected based on various criteria.
 
-Additionally, users can configure default routes for all customers or set specific routes per customer, tailoring the routing strategy to suit their unique requirements. This flexibility allows businesses to optimize call routing and choose the most appropriate service provider for each call, resulting in improved call success rates and enhanced call quality.
+**Routing Criteria**
 
-Seamless Integration with Service Providers
-The Route API seamlessly integrates with multiple service providers, enabling users to take advantage of a diverse range of network resources. Users can easily configure the API to interact with different service providers and leverage their capabilities to deliver reliable and high-quality call connections.
+::
 
-By leveraging the dynamic routing capabilities of the Route API and its integration with various service providers, businesses can ensure efficient call delivery, minimize call failures, and enhance the overall communication experience for their customers and users.
+    +-------------------+
+    | Incoming Call     |
+    | Destination: +1...|
+    +--------+----------+
+             |
+             v
+    +-------------------+
+    | Check criteria:   |
+    | o Destination     |
+    | o Customer        |
+    | o Time of day     |
+    | o Cost            |
+    +--------+----------+
+             |
+             v
+    +-------------------+
+    | Select best route |
+    +-------------------+
 
-In summary, the Route API in VoIPBIN plays a critical role in SIP routing strategy, ensuring effective call delivery, and providing a robust failover mechanism. By making dynamic routing decisions and seamlessly integrating with service providers, the Route API empowers businesses with the tools they need to optimize call routing and provide reliable and seamless communication services.
+**Routing Options**
+
++---------------------+----------------------------------------------------------------+
+| Criteria            | Description                                                    |
++=====================+================================================================+
+| Default Route       | Applied to all calls unless overridden                         |
++---------------------+----------------------------------------------------------------+
+| Customer Route      | Specific routes for individual customers                       |
++---------------------+----------------------------------------------------------------+
+| Destination Route   | Routes based on called number prefix                           |
++---------------------+----------------------------------------------------------------+
+
+
+Route Configuration
+-------------------
+Configure routes with priorities and providers.
+
+**Create a Route**
+
+.. code::
+
+    $ curl -X POST 'https://api.voipbin.net/v1.0/routes?token=<token>' \
+        --header 'Content-Type: application/json' \
+        --data '{
+            "name": "US Primary Route",
+            "provider_id": "provider-uuid-123",
+            "priority": 1,
+            "detail": "Primary route for US outbound calls"
+        }'
+
+**Route Configuration Example**
+
+::
+
+    Route: "US Outbound"
+    +--------------------------------------------+
+    | name: "US Primary Route"                   |
+    | provider_id: provider-uuid-telnyx          |
+    | priority: 1                                |
+    +--------------------------------------------+
+
+    Route: "US Backup"
+    +--------------------------------------------+
+    | name: "US Backup Route"                    |
+    | provider_id: provider-uuid-twilio          |
+    | priority: 2                                |
+    +--------------------------------------------+
+
+
+Common Scenarios
+----------------
+
+**Scenario 1: Simple Failover**
+
+Two providers with automatic failover.
+
+::
+
+    Route Configuration:
+    +--------------------------------------------+
+    | Route 1: Telnyx (priority 1)               |
+    |   -> Primary for all calls                 |
+    |                                            |
+    | Route 2: Twilio (priority 2)               |
+    |   -> Used if Telnyx fails                  |
+    +--------------------------------------------+
+
+    Call Flow:
+    1. Call attempt via Telnyx
+    2. If Telnyx returns 503 -> try Twilio
+    3. If Twilio succeeds -> call connected
+
+**Scenario 2: Cost-Based Routing**
+
+Route based on destination for cost optimization.
+
+::
+
+    Route Configuration:
+    +--------------------------------------------+
+    | US Calls (+1):                             |
+    |   Provider A (lowest US rates)             |
+    |                                            |
+    | EU Calls (+44, +49, +33):                  |
+    |   Provider B (best EU coverage)            |
+    |                                            |
+    | Default:                                   |
+    |   Provider C (global coverage)             |
+    +--------------------------------------------+
+
+**Scenario 3: Customer-Specific Routes**
+
+Different routes for different customers.
+
+::
+
+    Customer A: Enterprise (priority routing)
+    +--------------------------------------------+
+    | Primary: Premium Provider (quality focus)  |
+    | Backup: Standard Provider                  |
+    +--------------------------------------------+
+
+    Customer B: Startup (cost-focused)
+    +--------------------------------------------+
+    | Primary: Budget Provider (cost focus)      |
+    | Backup: Standard Provider                  |
+    +--------------------------------------------+
+
+
+Best Practices
+--------------
+
+**1. Failover Configuration**
+
+- Always configure at least 2 routes
+- Order routes by reliability, then cost
+- Test failover regularly
+
+**2. Provider Selection**
+
+- Choose providers with complementary coverage
+- Consider quality vs. cost tradeoffs
+- Monitor success rates per provider
+
+**3. Route Organization**
+
+- Use descriptive route names
+- Document routing logic
+- Review and optimize periodically
+
+**4. Monitoring**
+
+- Track route usage and success rates
+- Set up alerts for high failure rates
+- Analyze failover patterns
+
+
+Troubleshooting
+---------------
+
+**Routing Issues**
+
++---------------------------+------------------------------------------------+
+| Symptom                   | Solution                                       |
++===========================+================================================+
+| Calls not routing         | Check route exists; verify provider is         |
+|                           | configured; check priority order               |
++---------------------------+------------------------------------------------+
+| Wrong provider selected   | Review route priorities; check for customer-   |
+|                           | specific overrides                             |
++---------------------------+------------------------------------------------+
+| Failover not working      | Verify backup routes exist; check failover     |
+|                           | conditions are met                             |
++---------------------------+------------------------------------------------+
+
+**Provider Issues**
+
++---------------------------+------------------------------------------------+
+| Symptom                   | Solution                                       |
++===========================+================================================+
+| All routes failing        | Check provider status; verify credentials;     |
+|                           | test network connectivity                      |
++---------------------------+------------------------------------------------+
+| High failover rate        | Check primary provider health; consider        |
+|                           | changing route priorities                      |
++---------------------------+------------------------------------------------+
+
+
+Related Documentation
+---------------------
+
+- :ref:`Provider Overview <provider-overview>` - Provider configuration
+- :ref:`Call Overview <call-overview>` - Making outbound calls
+- :ref:`Trunk Overview <trunk-overview>` - SIP trunking setup
+

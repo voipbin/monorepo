@@ -100,7 +100,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="message.html">Message</a></li>
 <li class="toctree-l1"><a class="reference internal" href="email.html">Email</a></li>
-<li class="toctree-l1"><a class="reference internal" href="chat.html">Chat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="talk.html">Talk</a></li>
 <li class="toctree-l1"><a class="reference internal" href="conversation.html">Conversation</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">AI &amp; Automation</span></p>
@@ -127,7 +127,6 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
 <li class="toctree-l1"><a class="reference internal" href="websocket.html">Websocket</a></li>
-<li class="toctree-l1"><a class="reference internal" href="talk.html">Talk</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul>
@@ -185,78 +184,472 @@
                         <main role="main" id="main">
     <section id="overview">
 <span id="websocket-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h1>
-<p>WebSocket, a powerful feature within VoIPBIN, revolutionizes web applications by enabling them to subscribe to specific event topics. This capability facilitates real-time updates, ensuring dynamic data changes are seamlessly communicated during runtime.</p>
-<p>WebSocket establishes a persistent and bi-directional connection with the VoIPBIN server, providing web applications with real-time capabilities for constructing dynamic and interactive communication applications.</p>
-<section id="websocket-endpoint">
-<h2>Websocket endpoint<a class="headerlink" href="#websocket-endpoint" title="Link to this heading"></a></h2>
-<p>To leverage WebSocket in VoIPBIN, connect to the following endpoint:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>GET wss://api.voipbin.net/v1.0/ws?token=&lt;your authtoken here&gt;
+<p>VoIPBIN’s WebSocket API enables real-time, bi-directional communication for receiving instant event notifications. WebSockets maintain persistent connections, allowing immediate delivery of call status changes, message arrivals, flow updates, and other platform events without polling.</p>
+<p>The WebSocket API provides:</p>
+<ul class="simple">
+<li><p>Real-time event streaming for calls, messages, and flows</p></li>
+<li><p>Topic-based subscription filtering</p></li>
+<li><p>Bi-directional communication channel</p></li>
+<li><p>Low-latency event delivery</p></li>
+<li><p>Wildcard pattern matching for subscriptions</p></li>
+</ul>
+<section id="how-websocket-works">
+<h2>How WebSocket Works<a class="headerlink" href="#how-websocket-works" title="Link to this heading"></a></h2>
+<p>WebSocket maintains a persistent connection for instant event delivery.</p>
+<p><strong>WebSocket Architecture</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-----------------------------------------------------------------------+</span>
+<span class="o">|</span>                       <span class="n">WebSocket</span> <span class="n">System</span>                                <span class="o">|</span>
+<span class="o">+-----------------------------------------------------------------------+</span>
+
+<span class="n">Client</span>                          <span class="n">VoIPBIN</span>                        <span class="n">Services</span>
+   <span class="o">|</span>                               <span class="o">|</span>                               <span class="o">|</span>
+   <span class="o">|</span> <span class="mf">1.</span> <span class="n">WSS</span> <span class="n">Connection</span>             <span class="o">|</span>                               <span class="o">|</span>
+   <span class="o">+------------------------------&gt;|</span>                               <span class="o">|</span>
+   <span class="o">|</span>                               <span class="o">|</span>                               <span class="o">|</span>
+   <span class="o">|</span>   <span class="mf">2.</span> <span class="n">Connection</span> <span class="n">Accepted</span>      <span class="o">|</span>                               <span class="o">|</span>
+   <span class="o">|&lt;------------------------------+</span>                               <span class="o">|</span>
+   <span class="o">|</span>                               <span class="o">|</span>                               <span class="o">|</span>
+   <span class="o">|</span> <span class="mf">3.</span> <span class="n">Subscribe</span> <span class="n">to</span> <span class="n">topics</span>        <span class="o">|</span>                               <span class="o">|</span>
+   <span class="o">+------------------------------&gt;|</span>                               <span class="o">|</span>
+   <span class="o">|</span>                               <span class="o">|</span>                               <span class="o">|</span>
+   <span class="o">|</span>   <span class="mf">4.</span> <span class="n">Subscription</span> <span class="n">confirmed</span>   <span class="o">|</span>                               <span class="o">|</span>
+   <span class="o">|&lt;------------------------------+</span>                               <span class="o">|</span>
+   <span class="o">|</span>                               <span class="o">|</span>                               <span class="o">|</span>
+   <span class="o">|</span>                               <span class="o">|</span>        <span class="mf">5.</span> <span class="n">Event</span> <span class="n">occurs</span>        <span class="o">|</span>
+   <span class="o">|</span>                               <span class="o">|&lt;------------------------------+</span>
+   <span class="o">|</span>                               <span class="o">|</span>                               <span class="o">|</span>
+   <span class="o">|</span>   <span class="mf">6.</span> <span class="n">Event</span> <span class="n">delivered</span>          <span class="o">|</span>                               <span class="o">|</span>
+   <span class="o">|&lt;------------------------------+</span>                               <span class="o">|</span>
+   <span class="o">|</span>                               <span class="o">|</span>                               <span class="o">|</span>
+
+<span class="n">Continuous</span> <span class="n">Connection</span><span class="p">:</span>
+<span class="o">+-----------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Unlike</span> <span class="n">HTTP</span> <span class="p">(</span><span class="n">request</span><span class="o">-</span><span class="n">response</span><span class="p">),</span> <span class="n">WebSocket</span> <span class="n">maintains</span> <span class="n">an</span> <span class="nb">open</span> <span class="n">channel</span>   <span class="o">|</span>
+<span class="o">|</span> <span class="n">Events</span> <span class="n">are</span> <span class="n">pushed</span> <span class="n">instantly</span> <span class="k">as</span> <span class="n">they</span> <span class="n">occur</span> <span class="o">-</span> <span class="n">no</span> <span class="n">polling</span> <span class="n">needed</span>         <span class="o">|</span>
+<span class="o">+-----------------------------------------------------------------------+</span>
+</pre></div>
+</div>
+<p><strong>Key Components</strong></p>
+<ul class="simple">
+<li><p><strong>WebSocket Connection</strong>: Persistent bi-directional channel</p></li>
+<li><p><strong>Topics</strong>: Event filters for specific resources</p></li>
+<li><p><strong>Subscriptions</strong>: Active topic registrations</p></li>
+<li><p><strong>Events</strong>: Real-time notifications pushed to clients</p></li>
+</ul>
+</section>
+<section id="connection-architecture">
+<h2>Connection Architecture<a class="headerlink" href="#connection-architecture" title="Link to this heading"></a></h2>
+<p>WebSocket connections integrate with VoIPBIN’s event system.</p>
+<p><strong>Event Flow Architecture</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-----------------------------------------------------------------------+</span>
+<span class="o">|</span>                    <span class="n">WebSocket</span> <span class="n">Event</span> <span class="n">Pipeline</span>                           <span class="o">|</span>
+<span class="o">+-----------------------------------------------------------------------+</span>
+
+<span class="o">+-------------------+</span>     <span class="o">+-------------------+</span>     <span class="o">+-------------------+</span>
+<span class="o">|</span>   <span class="n">VoIPBIN</span>         <span class="o">|</span>     <span class="o">|</span>   <span class="n">Event</span>           <span class="o">|</span>     <span class="o">|</span>   <span class="n">WebSocket</span>       <span class="o">|</span>
+<span class="o">|</span>   <span class="n">Services</span>        <span class="o">|----&gt;|</span>   <span class="n">Router</span>          <span class="o">|----&gt;|</span>   <span class="n">Handler</span>         <span class="o">|</span>
+<span class="o">+-------------------+</span>     <span class="o">+-------------------+</span>     <span class="o">+-------------------+</span>
+                                  <span class="o">|</span>
+                                  <span class="o">|</span> <span class="n">Route</span> <span class="n">by</span> <span class="n">topic</span>
+                                  <span class="n">v</span>
+                          <span class="o">+-------+-------+</span>
+                          <span class="o">|</span>               <span class="o">|</span>
+                          <span class="n">v</span>               <span class="n">v</span>
+                <span class="o">+-------------+</span>   <span class="o">+-------------+</span>
+                <span class="o">|</span> <span class="n">Client</span> <span class="n">A</span>    <span class="o">|</span>   <span class="o">|</span> <span class="n">Client</span> <span class="n">B</span>    <span class="o">|</span>
+                <span class="o">|</span> <span class="n">Topics</span><span class="p">:</span>     <span class="o">|</span>   <span class="o">|</span> <span class="n">Topics</span><span class="p">:</span>     <span class="o">|</span>
+                <span class="o">|</span> <span class="o">-</span> <span class="n">call</span><span class="p">:</span><span class="o">*</span>    <span class="o">|</span>   <span class="o">|</span> <span class="o">-</span> <span class="n">msg</span><span class="p">:</span><span class="o">*</span>     <span class="o">|</span>
+                <span class="o">|</span> <span class="o">-</span> <span class="n">queue</span><span class="p">:</span><span class="o">*</span>   <span class="o">|</span>   <span class="o">|</span> <span class="o">-</span> <span class="n">flow</span><span class="p">:</span><span class="o">*</span>    <span class="o">|</span>
+                <span class="o">+-------------+</span>   <span class="o">+-------------+</span>
+
+<span class="n">Event</span> <span class="n">Publishing</span><span class="p">:</span>
+<span class="o">+-----------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="mf">1.</span> <span class="n">Service</span> <span class="n">generates</span> <span class="n">event</span> <span class="p">(</span><span class="n">call</span> <span class="n">answered</span><span class="p">,</span> <span class="n">message</span> <span class="n">received</span><span class="p">,</span> <span class="n">etc</span><span class="o">.</span><span class="p">)</span>    <span class="o">|</span>
+<span class="o">|</span> <span class="mf">2.</span> <span class="n">Event</span> <span class="n">router</span> <span class="n">matches</span> <span class="n">topic</span> <span class="n">patterns</span>                                 <span class="o">|</span>
+<span class="o">|</span> <span class="mf">3.</span> <span class="n">Event</span> <span class="n">pushed</span> <span class="n">to</span> <span class="nb">all</span> <span class="n">subscribed</span> <span class="n">clients</span>                             <span class="o">|</span>
+<span class="o">+-----------------------------------------------------------------------+</span>
 </pre></div>
 </div>
 </section>
-<section id="topic-subscription-unsubscription">
-<h2>Topic Subscription/Unsubscription<a class="headerlink" href="#topic-subscription-unsubscription" title="Link to this heading"></a></h2>
-<p>WebSocket functionality empowers users to finely tune their event subscriptions in the VoIPBIN system, tailoring updates to match their application’s specific resource needs. This section outlines the process for subscribing or unsubscribing from event topics.</p>
-<p>To initiate a subscription or unsubscription, send the following JSON message through the established WebSocket:</p>
+<section id="topic-system">
+<h2>Topic System<a class="headerlink" href="#topic-system" title="Link to this heading"></a></h2>
+<p>Topics define which events a client receives.</p>
+<p><strong>Topic Format</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-----------------------------------------------------------------------+</span>
+<span class="o">|</span>                         <span class="n">Topic</span> <span class="n">Structure</span>                               <span class="o">|</span>
+<span class="o">+-----------------------------------------------------------------------+</span>
+
+<span class="n">Format</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">scope</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">scope_id</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">resource</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">resource_id</span><span class="o">&gt;</span>
+
+<span class="n">Examples</span><span class="p">:</span>
+<span class="o">+-----------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">customer_id</span><span class="p">:</span><span class="n">abc123</span><span class="p">:</span><span class="n">call</span><span class="p">:</span><span class="o">*</span>           <span class="o">|</span> <span class="n">All</span> <span class="n">calls</span> <span class="k">for</span> <span class="n">customer</span>          <span class="o">|</span>
+<span class="o">|</span> <span class="n">customer_id</span><span class="p">:</span><span class="n">abc123</span><span class="p">:</span><span class="n">call</span><span class="p">:</span><span class="n">xyz789</span>      <span class="o">|</span> <span class="n">Specific</span> <span class="n">call</span>                   <span class="o">|</span>
+<span class="o">|</span> <span class="n">customer_id</span><span class="p">:</span><span class="n">abc123</span><span class="p">:</span><span class="n">message</span><span class="p">:</span><span class="o">*</span>        <span class="o">|</span> <span class="n">All</span> <span class="n">messages</span> <span class="k">for</span> <span class="n">customer</span>       <span class="o">|</span>
+<span class="o">|</span> <span class="n">agent_id</span><span class="p">:</span><span class="n">agent123</span><span class="p">:</span><span class="n">queue</span><span class="p">:</span><span class="o">*</span>           <span class="o">|</span> <span class="n">All</span> <span class="n">queues</span> <span class="k">for</span> <span class="n">agent</span>            <span class="o">|</span>
+<span class="o">+-----------------------------------------------------------------------+</span>
+
+<span class="n">Wildcard</span> <span class="p">(</span><span class="o">*</span><span class="p">):</span>
+<span class="o">+-----------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Use</span> <span class="o">*</span> <span class="n">to</span> <span class="n">match</span> <span class="nb">all</span> <span class="n">resources</span> <span class="n">of</span> <span class="n">a</span> <span class="nb">type</span>                                <span class="o">|</span>
+<span class="o">|</span> <span class="n">customer_id</span><span class="p">:</span><span class="n">abc123</span><span class="p">:</span><span class="n">call</span><span class="p">:</span><span class="o">*</span>  <span class="o">-&gt;</span> <span class="n">All</span> <span class="n">call</span> <span class="n">events</span>                        <span class="o">|</span>
+<span class="o">|</span> <span class="n">customer_id</span><span class="p">:</span><span class="n">abc123</span><span class="p">:</span><span class="o">*</span><span class="p">:</span><span class="o">*</span>     <span class="o">-&gt;</span> <span class="n">All</span> <span class="n">events</span> <span class="p">(</span><span class="ow">not</span> <span class="n">recommended</span><span class="p">)</span>           <span class="o">|</span>
+<span class="o">+-----------------------------------------------------------------------+</span>
+</pre></div>
+</div>
+<p><strong>Available Resource Types</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Resource</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>call</p></td>
+<td><p>Call status changes, connection, hangup</p></td>
+</tr>
+<tr class="row-odd"><td><p>message</p></td>
+<td><p>SMS/MMS received, sent, delivery status</p></td>
+</tr>
+<tr class="row-even"><td><p>activeflow</p></td>
+<td><p>Flow execution updates, action changes</p></td>
+</tr>
+<tr class="row-odd"><td><p>conference</p></td>
+<td><p>Conference events, participant join/leave</p></td>
+</tr>
+<tr class="row-even"><td><p>queue</p></td>
+<td><p>Queue entry, exit, agent assignment</p></td>
+</tr>
+<tr class="row-odd"><td><p>agent</p></td>
+<td><p>Agent status changes</p></td>
+</tr>
+<tr class="row-even"><td><p>recording</p></td>
+<td><p>Recording start, stop, completion</p></td>
+</tr>
+<tr class="row-odd"><td><p>transcription</p></td>
+<td><p>Transcription results</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="connection-lifecycle">
+<h2>Connection Lifecycle<a class="headerlink" href="#connection-lifecycle" title="Link to this heading"></a></h2>
+<p>WebSocket connections follow a defined lifecycle.</p>
+<p><strong>Connection States</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-------------------+</span>
+<span class="o">|</span>   <span class="n">Disconnected</span>    <span class="o">|</span>
+<span class="o">+--------+----------+</span>
+         <span class="o">|</span>
+         <span class="o">|</span> <span class="n">WSS</span> <span class="n">Connect</span> <span class="k">with</span> <span class="n">token</span>
+         <span class="n">v</span>
+<span class="o">+-------------------+</span>
+<span class="o">|</span>   <span class="n">Connecting</span>      <span class="o">|</span>
+<span class="o">+--------+----------+</span>
+         <span class="o">|</span>
+         <span class="o">|</span> <span class="n">Token</span> <span class="n">validated</span>
+         <span class="n">v</span>
+<span class="o">+-------------------+</span>     <span class="n">Subscribe</span>
+<span class="o">|</span>   <span class="n">Connected</span>       <span class="o">|&lt;-------------------+</span>
+<span class="o">+--------+----------+</span>                    <span class="o">|</span>
+         <span class="o">|</span>                               <span class="o">|</span>
+         <span class="o">|</span> <span class="n">Send</span> <span class="n">subscription</span>             <span class="o">|</span>
+         <span class="n">v</span>                               <span class="o">|</span>
+<span class="o">+-------------------+</span>     <span class="n">Unsubscribe</span>    <span class="o">|</span>
+<span class="o">|</span>   <span class="n">Subscribed</span>      <span class="o">+--------------------+</span>
+<span class="o">+--------+----------+</span>
+         <span class="o">|</span>
+         <span class="o">|</span> <span class="n">Connection</span> <span class="n">lost</span> <span class="o">/</span> <span class="n">Close</span>
+         <span class="n">v</span>
+<span class="o">+-------------------+</span>
+<span class="o">|</span>   <span class="n">Disconnected</span>    <span class="o">|</span>
+<span class="o">+-------------------+</span>
+         <span class="o">|</span>
+         <span class="o">|</span> <span class="n">Reconnect</span> <span class="k">with</span> <span class="n">backoff</span>
+         <span class="n">v</span>
+<span class="o">+-------------------+</span>
+<span class="o">|</span>   <span class="n">Reconnecting</span>    <span class="o">|</span>
+<span class="o">+-------------------+</span>
+</pre></div>
+</div>
+<p><strong>Connection Endpoint</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>WebSocket URL:
++-----------------------------------------------------------------------+
+| wss://api.voipbin.net/v1.0/ws?token=&lt;YOUR_AUTH_TOKEN&gt;                |
++-----------------------------------------------------------------------+
+
+Authentication:
++-----------------------------------------------------------------------+
+| Token passed as query parameter                                       |
+| Same JWT or AccessKey token used for REST API                        |
++-----------------------------------------------------------------------+
+</pre></div>
+</div>
+</section>
+<section id="event-message-format">
+<h2>Event Message Format<a class="headerlink" href="#event-message-format" title="Link to this heading"></a></h2>
+<p>All events follow a consistent structure.</p>
+<p><strong>Event Structure</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;subscribe|unsubscribe&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;&lt;topic&gt;&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+    <span class="s2">&quot;event_type&quot;</span><span class="p">:</span> <span class="s2">&quot;call.status&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:30:00.000000Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;topic&quot;</span><span class="p">:</span> <span class="s2">&quot;customer_id:abc123:call:xyz789&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="o">//</span> <span class="n">Resource</span><span class="o">-</span><span class="n">specific</span> <span class="n">payload</span>
+    <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>The topic format is as follows:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">agent_id</span><span class="p">:</span><span class="o">&lt;</span><span class="n">agent_id</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">resource</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">resource</span><span class="o">-</span><span class="nb">id</span><span class="o">&gt;</span>
-<span class="n">customer_id</span><span class="p">:</span><span class="o">&lt;</span><span class="n">customer_id</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">resource</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">resource</span><span class="o">-</span><span class="nb">id</span><span class="o">&gt;</span>
+<p><strong>Common Event Types</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Event Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>call.status</p></td>
+<td><p>Call state changed (ringing, answered, hangup)</p></td>
+</tr>
+<tr class="row-odd"><td><p>call.created</p></td>
+<td><p>New call initiated</p></td>
+</tr>
+<tr class="row-even"><td><p>message.received</p></td>
+<td><p>Incoming SMS/MMS received</p></td>
+</tr>
+<tr class="row-odd"><td><p>message.sent</p></td>
+<td><p>Outgoing message sent</p></td>
+</tr>
+<tr class="row-even"><td><p>message.delivery</p></td>
+<td><p>Message delivery status update</p></td>
+</tr>
+<tr class="row-odd"><td><p>activeflow.updated</p></td>
+<td><p>Flow action executed</p></td>
+</tr>
+<tr class="row-even"><td><p>activeflow.completed</p></td>
+<td><p>Flow execution completed</p></td>
+</tr>
+<tr class="row-odd"><td><p>conference.joined</p></td>
+<td><p>Participant joined conference</p></td>
+</tr>
+<tr class="row-even"><td><p>conference.left</p></td>
+<td><p>Participant left conference</p></td>
+</tr>
+<tr class="row-odd"><td><p>queue.joined</p></td>
+<td><p>Call entered queue</p></td>
+</tr>
+<tr class="row-even"><td><p>queue.connected</p></td>
+<td><p>Call connected to agent</p></td>
+</tr>
+<tr class="row-odd"><td><p>agent.status</p></td>
+<td><p>Agent availability changed</p></td>
+</tr>
+<tr class="row-even"><td><p>recording.completed</p></td>
+<td><p>Recording finished and available</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="common-scenarios">
+<h2>Common Scenarios<a class="headerlink" href="#common-scenarios" title="Link to this heading"></a></h2>
+<p><strong>Scenario 1: Real-Time Call Dashboard</strong></p>
+<p>Build a live dashboard showing all active calls.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Setup</span><span class="p">:</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Subscribe</span> <span class="n">to</span><span class="p">:</span> <span class="n">customer_id</span><span class="p">:</span><span class="o">&lt;</span><span class="nb">id</span><span class="o">&gt;</span><span class="p">:</span><span class="n">call</span><span class="p">:</span><span class="o">*</span>      <span class="o">|</span>
+<span class="o">|</span>                                            <span class="o">|</span>
+<span class="o">|</span> <span class="n">Events</span> <span class="n">received</span><span class="p">:</span>                           <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">call</span><span class="o">.</span><span class="n">created</span>  <span class="o">-&gt;</span> <span class="n">Add</span> <span class="n">to</span> <span class="n">active</span> <span class="nb">list</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">call</span><span class="o">.</span><span class="n">status</span>   <span class="o">-&gt;</span> <span class="n">Update</span> <span class="n">call</span> <span class="n">state</span>       <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">call</span><span class="o">.</span><span class="n">ended</span>    <span class="o">-&gt;</span> <span class="n">Remove</span> <span class="kn">from</span><span class="w"> </span><span class="nn">list</span>        <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+
+<span class="n">Dashboard</span> <span class="n">Updates</span><span class="p">:</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Incoming</span> <span class="n">Call</span>  <span class="o">|</span>  <span class="o">+</span><span class="mi">1</span><span class="o">-</span><span class="mi">555</span><span class="o">-</span><span class="mi">1234</span>  <span class="o">|</span>  <span class="n">Ringing</span>  <span class="o">|</span>
+<span class="o">|</span> <span class="n">Active</span> <span class="n">Call</span>    <span class="o">|</span>  <span class="o">+</span><span class="mi">1</span><span class="o">-</span><span class="mi">555</span><span class="o">-</span><span class="mi">5678</span>  <span class="o">|</span>  <span class="n">Answered</span> <span class="o">|</span>
+<span class="o">|</span> <span class="n">In</span> <span class="n">Queue</span>       <span class="o">|</span>  <span class="o">+</span><span class="mi">1</span><span class="o">-</span><span class="mi">555</span><span class="o">-</span><span class="mi">9012</span>  <span class="o">|</span>  <span class="n">Waiting</span>  <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+
+<span class="n">Benefits</span><span class="p">:</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Instant</span> <span class="n">visibility</span> <span class="n">into</span> <span class="n">call</span> <span class="n">status</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">No</span> <span class="n">polling</span> <span class="n">required</span>                      <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Real</span><span class="o">-</span><span class="n">time</span> <span class="n">metrics</span> <span class="ow">and</span> <span class="n">KPIs</span>               <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
 </pre></div>
 </div>
-<p>Here’s an example of a subscribe message:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s2">&quot;customer_id:5013bc52-da9a-11ee-844f-2fa34248de28:activeflow:74ac5405-7c70-4184-9388-1c9f8f8ce25f&quot;</span>
-    <span class="p">]</span>
-<span class="p">}</span>
+<p><strong>Scenario 2: Agent Desktop Application</strong></p>
+<p>Power a contact center agent interface.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Subscriptions:
++--------------------------------------------+
+| agent_id:&lt;agent-id&gt;:queue:*                |
+| agent_id:&lt;agent-id&gt;:call:*                 |
+| customer_id:&lt;cust-id&gt;:message:*            |
++--------------------------------------------+
+
+Event Handling:
++--------------------------------------------+
+| queue.joined     -&gt; Show notification       |
+|                    &quot;New caller waiting&quot;     |
+|                                            |
+| call.assigned    -&gt; Pop customer info      |
+|                    Show call controls       |
+|                                            |
+| message.received -&gt; Display in chat panel  |
+|                    Enable quick reply       |
++--------------------------------------------+
+
+Agent Interface:
++--------------------------------------------+
+| [New Call Alert]      [Customer: John D.]  |
+| Queue: Sales          Previous: 3 calls    |
+| Wait time: 45s        Last purchase: $299  |
+|                                            |
+| [Accept Call] [Transfer] [Send to VM]     |
++--------------------------------------------+
 </pre></div>
 </div>
-<p>Subscribing to the topic activeflow:74ac5405-7c70-4184-9388-1c9f8f8ce25f ensures reception of events related to the specified activeflow resource with the provided ID.</p>
-<p>It is crucial to adhere to the correct topic structure, including the following prefixes:</p>
+<p><strong>Scenario 3: Message Auto-Response System</strong></p>
+<p>Automatically respond to incoming messages.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Subscription</span><span class="p">:</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">customer_id</span><span class="p">:</span><span class="o">&lt;</span><span class="nb">id</span><span class="o">&gt;</span><span class="p">:</span><span class="n">message</span><span class="p">:</span><span class="o">*</span>                 <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+
+<span class="n">Event</span> <span class="n">Processing</span><span class="p">:</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="mf">1.</span> <span class="n">Receive</span> <span class="n">message</span><span class="o">.</span><span class="n">received</span> <span class="n">event</span>          <span class="o">|</span>
+<span class="o">|</span> <span class="mf">2.</span> <span class="n">Analyze</span> <span class="n">message</span> <span class="n">content</span>                 <span class="o">|</span>
+<span class="o">|</span> <span class="mf">3.</span> <span class="n">Match</span> <span class="n">against</span> <span class="n">response</span> <span class="n">rules</span>            <span class="o">|</span>
+<span class="o">|</span> <span class="mf">4.</span> <span class="n">Send</span> <span class="n">appropriate</span> <span class="n">auto</span><span class="o">-</span><span class="n">reply</span>             <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+
+<span class="n">Example</span> <span class="n">Flow</span><span class="p">:</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Incoming</span><span class="p">:</span> <span class="s2">&quot;What are your hours?&quot;</span>           <span class="o">|</span>
+<span class="o">|</span>                                            <span class="o">|</span>
+<span class="o">|</span> <span class="o">-&gt;</span> <span class="n">Match</span> <span class="n">keyword</span><span class="p">:</span> <span class="s2">&quot;hours&quot;</span>                  <span class="o">|</span>
+<span class="o">|</span> <span class="o">-&gt;</span> <span class="n">Auto</span><span class="o">-</span><span class="n">reply</span><span class="p">:</span> <span class="s2">&quot;We&#39;re open Mon-Fri 9-5!&quot;</span>  <span class="o">|</span>
+<span class="o">|</span>                                            <span class="o">|</span>
+<span class="o">|</span> <span class="n">Incoming</span><span class="p">:</span> <span class="s2">&quot;STOP&quot;</span>                           <span class="o">|</span>
+<span class="o">|</span>                                            <span class="o">|</span>
+<span class="o">|</span> <span class="o">-&gt;</span> <span class="n">Match</span> <span class="n">keyword</span><span class="p">:</span> <span class="s2">&quot;STOP&quot;</span>                   <span class="o">|</span>
+<span class="o">|</span> <span class="o">-&gt;</span> <span class="n">Unsubscribe</span> <span class="n">user</span> <span class="kn">from</span><span class="w"> </span><span class="nn">messages</span>          <span class="o">|</span>
+<span class="o">|</span> <span class="o">-&gt;</span> <span class="n">Confirm</span><span class="p">:</span> <span class="s2">&quot;You&#39;ve been unsubscribed&quot;</span>    <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+</pre></div>
+</div>
+</section>
+<section id="best-practices">
+<h2>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading"></a></h2>
+<p><strong>1. Connection Management</strong></p>
 <ul class="simple">
-<li><p>agent_id:&lt;agent-id&gt;</p></li>
-<li><p>customer_id:&lt;customer-id&gt;</p></li>
+<li><p>Implement automatic reconnection with exponential backoff</p></li>
+<li><p>Start with 1 second delay, double on each failure (max 30 seconds)</p></li>
+<li><p>Monitor connection health with ping/pong messages</p></li>
+<li><p>Handle network transitions gracefully (WiFi to cellular)</p></li>
 </ul>
-<p>Additionally, specific permissions are required for different levels of topics:</p>
-<section id="customer-level-topics">
-<h3>Customer Level Topics<a class="headerlink" href="#customer-level-topics" title="Link to this heading"></a></h3>
-<p>To subscribe to topics at the customer level, the following permissions are required:</p>
+<p><strong>2. Subscription Strategy</strong></p>
 <ul class="simple">
-<li><p>Admin permission</p></li>
-<li><p>Manager permission</p></li>
+<li><p>Subscribe only to events your application needs</p></li>
+<li><p>Use specific resource IDs when possible (not just wildcards)</p></li>
+<li><p>Unsubscribe when events are no longer needed</p></li>
+<li><p>Resubscribe after reconnection</p></li>
+</ul>
+<p><strong>3. Error Handling</strong></p>
+<ul class="simple">
+<li><p>Handle connection errors gracefully</p></li>
+<li><p>Parse messages safely with try/catch</p></li>
+<li><p>Log all errors for debugging</p></li>
+<li><p>Implement timeout handling for stale connections</p></li>
+</ul>
+<p><strong>4. Performance Optimization</strong></p>
+<ul class="simple">
+<li><p>Process events asynchronously for heavy operations</p></li>
+<li><p>Batch UI updates to avoid excessive re-rendering</p></li>
+<li><p>Use message queues for high-volume scenarios</p></li>
+<li><p>Avoid blocking operations in event handlers</p></li>
 </ul>
 </section>
-<section id="agent-level-topics">
-<h3>Agent Level Topics<a class="headerlink" href="#agent-level-topics" title="Link to this heading"></a></h3>
-<p>For agent-level topics, only the owner of the agent can subscribe to the topic.</p>
-<p>Ensure the accuracy of your topic definition to successfully subscribe to the desired events.</p>
+<section id="troubleshooting">
+<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h2>
+<p><strong>Connection Issues</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Symptom</p></th>
+<th class="head"><p>Solution</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Connection refused</p></td>
+<td><p>Verify token is valid; check endpoint URL;
+ensure WSS (not WS) for production</p></td>
+</tr>
+<tr class="row-odd"><td><p>Connection drops</p></td>
+<td><p>Implement reconnection logic; check network;
+verify token hasn’t expired</p></td>
+</tr>
+<tr class="row-even"><td><p>Authentication failure</p></td>
+<td><p>Token may be expired; regenerate token;
+verify token has WebSocket permissions</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Subscription Issues</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Symptom</p></th>
+<th class="head"><p>Solution</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Not receiving events</p></td>
+<td><p>Verify topic format is correct; check
+subscription was acknowledged; confirm events
+are actually occurring</p></td>
+</tr>
+<tr class="row-odd"><td><p>Receiving wrong events</p></td>
+<td><p>Review topic patterns; avoid overly broad
+wildcards; check customer_id is correct</p></td>
+</tr>
+<tr class="row-even"><td><p>Permission denied</p></td>
+<td><p>Verify user has access to the resource;
+check agent_id matches token owner</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Message Issues</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Symptom</p></th>
+<th class="head"><p>Solution</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Malformed messages</p></td>
+<td><p>Validate JSON parsing; handle unexpected
+fields gracefully; log raw messages</p></td>
+</tr>
+<tr class="row-odd"><td><p>Missing event data</p></td>
+<td><p>Check event_type for proper handling;
+verify data field exists before access</p></td>
+</tr>
+<tr class="row-even"><td><p>Delayed events</p></td>
+<td><p>Check client processing time; verify
+network latency; monitor server health</p></td>
+</tr>
+</tbody>
+</table>
 </section>
-</section>
-<section id="pattern-matching-subscription">
-<h2>Pattern Matching Subscription<a class="headerlink" href="#pattern-matching-subscription" title="Link to this heading"></a></h2>
-<p>WebSocket supports pattern matching subscriptions, allowing users to subscribe to multiple topics based on a pattern. For example, subscribing to the &lt;resource&gt; topic encompasses all events related to a specific resource type.</p>
-<p>This pattern matching approach streamlines and enhances topic subscriptions, enabling users to receive updates for multiple resources without the need for individual subscriptions.</p>
-</section>
-<section id="real-time-event-updates">
-<h2>Real-Time Event Updates<a class="headerlink" href="#real-time-event-updates" title="Link to this heading"></a></h2>
-<p>When an event transpires for a subscribed topic, VoIPBIN dispatches the corresponding event data to the WebSocket connection. Web applications receive this data in real-time, facilitating immediate updates and dynamic data changes within the application.</p>
-<p>Web applications can seamlessly process these event updates to trigger actions, update UI elements, or reflect changes in the user interface without resorting to manual page refreshes. WebSocket ensures a seamless and interactive user experience, keeping users consistently informed with the latest information.</p>
-</section>
-<section id="benefits-of-websocket">
-<h2>Benefits of WebSocket<a class="headerlink" href="#benefits-of-websocket" title="Link to this heading"></a></h2>
-<p>WebSocket extends various benefits to web applications leveraging VoIPBIN:</p>
+<section id="related-documentation">
+<h2>Related Documentation<a class="headerlink" href="#related-documentation" title="Link to this heading"></a></h2>
 <ul class="simple">
-<li><p>Real-Time Communication: WebSocket fosters instant updates and event notifications, establishing real-time communication between the web application and the VoIPBIN server.</p></li>
-<li><p>Dynamic Data Updates: WebSocket facilitates the handling of dynamic data changes, enabling the creation of dynamic and interactive user interfaces.</p></li>
-<li><p>Efficient Subscription: Pattern matching subscription efficiency allows users to subscribe to multiple resources without the need for individual subscriptions.</p></li>
-<li><p>Reduced Latency: By eliminating the need for repeated HTTP requests, WebSocket reduces latency, enhancing the overall responsiveness of the application.</p></li>
+<li><p><a class="reference internal" href="websocket_tutorial.html#websocket-tutorial"><span class="std std-ref">WebSocket Tutorial</span></a> - Implementation examples and code</p></li>
+<li><p><a class="reference internal" href="websocket_struct.html#websocket-struct"><span class="std std-ref">WebSocket Structures</span></a> - Message format specifications</p></li>
+<li><p><a class="reference internal" href="quickstart_authentication.html#quickstart-authentication"><span class="std std-ref">Authentication Quickstart</span></a> - Token generation</p></li>
+<li><p><a class="reference internal" href="call_overview.html#call-overview"><span class="std std-ref">Call Overview</span></a> - Call event details</p></li>
+<li><p><a class="reference internal" href="message_overview.html#message-overview"><span class="std std-ref">Message Overview</span></a> - Message event details</p></li>
+<li><p><a class="reference internal" href="flow_overview.html#flow-overview"><span class="std std-ref">Flow Overview</span></a> - Activeflow event details</p></li>
 </ul>
 </section>
 </section>
@@ -270,15 +663,15 @@
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
 <li><a class="reference internal" href="#">Overview</a><ul>
-<li><a class="reference internal" href="#websocket-endpoint">Websocket endpoint</a></li>
-<li><a class="reference internal" href="#topic-subscription-unsubscription">Topic Subscription/Unsubscription</a><ul>
-<li><a class="reference internal" href="#customer-level-topics">Customer Level Topics</a></li>
-<li><a class="reference internal" href="#agent-level-topics">Agent Level Topics</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#pattern-matching-subscription">Pattern Matching Subscription</a></li>
-<li><a class="reference internal" href="#real-time-event-updates">Real-Time Event Updates</a></li>
-<li><a class="reference internal" href="#benefits-of-websocket">Benefits of WebSocket</a></li>
+<li><a class="reference internal" href="#how-websocket-works">How WebSocket Works</a></li>
+<li><a class="reference internal" href="#connection-architecture">Connection Architecture</a></li>
+<li><a class="reference internal" href="#topic-system">Topic System</a></li>
+<li><a class="reference internal" href="#connection-lifecycle">Connection Lifecycle</a></li>
+<li><a class="reference internal" href="#event-message-format">Event Message Format</a></li>
+<li><a class="reference internal" href="#common-scenarios">Common Scenarios</a></li>
+<li><a class="reference internal" href="#best-practices">Best Practices</a></li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
+<li><a class="reference internal" href="#related-documentation">Related Documentation</a></li>
 </ul>
 </li>
 </ul>

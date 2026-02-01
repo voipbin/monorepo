@@ -42,7 +42,7 @@ Welcome to VoIPBIN's documentation!
 
    message
    email
-   chat
+   talk
    conversation
 
 .. toctree::
@@ -75,7 +75,6 @@ Welcome to VoIPBIN's documentation!
 
    architecture
    websocket
-   talk
 
 .. toctree::
    :maxdepth: 5

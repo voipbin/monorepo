@@ -6,7 +6,7 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
-        <title>Struct &mdash; voipbin  documentation</title>
+        <title>Structures &mdash; voipbin  documentation</title>
     
     <link rel="stylesheet" type="text/css" href="_static/dist/fontawesome.css" />
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8e8a900e" />
@@ -100,7 +100,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="message.html">Message</a></li>
 <li class="toctree-l1"><a class="reference internal" href="email.html">Email</a></li>
-<li class="toctree-l1"><a class="reference internal" href="chat.html">Chat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="talk.html">Talk</a></li>
 <li class="toctree-l1"><a class="reference internal" href="conversation.html">Conversation</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">AI &amp; Automation</span></p>
@@ -127,7 +127,6 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
 <li class="toctree-l1"><a class="reference internal" href="websocket.html">Websocket</a></li>
-<li class="toctree-l1"><a class="reference internal" href="talk.html">Talk</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul>
@@ -156,7 +155,7 @@
                         <nav aria-label="breadcrumb">
     <ol class="breadcrumb m-0 p-0 bg-transparent">
         <li class="breadcrumb-item"><a href="index.html">Docs</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Struct</li>
+        <li class="breadcrumb-item active" aria-current="page">Structures</li>
     </ol>
 </nav>
                     </div>
@@ -183,49 +182,612 @@
                 <div class="row">
                     <div class="col-12 col-lg-9 order-last order-lg-first rst-content">
                         <main role="main" id="main">
-    <section id="struct">
-<span id="websocket-struct"></span><h1>Struct<a class="headerlink" href="#struct" title="Link to this heading"></a></h1>
-<section id="subscribe">
-<span id="websocket-struct-subscribe"></span><h2>Subscribe<a class="headerlink" href="#subscribe" title="Link to this heading"></a></h2>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;unsubscribe&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">]</span>
-<span class="p">}</span>
+    <section id="structures">
+<span id="websocket-struct"></span><h1>Structures<a class="headerlink" href="#structures" title="Link to this heading"></a></h1>
+<p>This section documents the message structures used in VoIPBIN’s WebSocket API for subscription management and event delivery.</p>
+<section id="message-overview">
+<h2>Message Overview<a class="headerlink" href="#message-overview" title="Link to this heading"></a></h2>
+<p>WebSocket communication uses JSON messages for all operations.</p>
+<p><strong>Message Categories</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-----------------------------------------------------------------------+</span>
+<span class="o">|</span>                    <span class="n">WebSocket</span> <span class="n">Message</span> <span class="n">Types</span>                            <span class="o">|</span>
+<span class="o">+-----------------------------------------------------------------------+</span>
+
+<span class="n">Client</span> <span class="o">-&gt;</span> <span class="n">Server</span><span class="p">:</span>
+<span class="o">+-----------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">subscribe</span>     <span class="o">|</span> <span class="n">Register</span> <span class="k">for</span> <span class="n">event</span> <span class="n">notifications</span>                      <span class="o">|</span>
+<span class="o">|</span> <span class="n">unsubscribe</span>   <span class="o">|</span> <span class="n">Stop</span> <span class="n">receiving</span> <span class="n">event</span> <span class="n">notifications</span>                    <span class="o">|</span>
+<span class="o">+-----------------------------------------------------------------------+</span>
+
+<span class="n">Server</span> <span class="o">-&gt;</span> <span class="n">Client</span><span class="p">:</span>
+<span class="o">+-----------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">event</span>         <span class="o">|</span> <span class="n">Real</span><span class="o">-</span><span class="n">time</span> <span class="n">event</span> <span class="n">notification</span> <span class="k">with</span> <span class="n">resource</span> <span class="n">data</span>       <span class="o">|</span>
+<span class="o">|</span> <span class="n">ack</span>           <span class="o">|</span> <span class="n">Acknowledgment</span> <span class="n">of</span> <span class="n">subscription</span> <span class="n">changes</span>                <span class="o">|</span>
+<span class="o">|</span> <span class="n">error</span>         <span class="o">|</span> <span class="n">Error</span> <span class="n">message</span> <span class="k">for</span> <span class="n">failed</span> <span class="n">operations</span>                   <span class="o">|</span>
+<span class="o">+-----------------------------------------------------------------------+</span>
 </pre></div>
 </div>
-<ul class="simple">
-<li><p>topic: List of subscribe topics.</p></li>
-</ul>
-<section id="example">
-<h3>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h3>
+</section>
+<section id="subscribe-message">
+<h2>Subscribe Message<a class="headerlink" href="#subscribe-message" title="Link to this heading"></a></h2>
+<p>Send a subscribe message to receive events for specific topics.</p>
+<p><strong>Structure</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;call&quot;</span><span class="p">]</span>
+    <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;&lt;topic-pattern-1&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;&lt;topic-pattern-2&gt;&quot;</span><span class="p">,</span>
+        <span class="o">...</span>
+    <span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
 </div>
-</section>
-</section>
-<section id="unsubscribe">
-<span id="websocket-struct-unsubscribe"></span><h2>Unsubscribe<a class="headerlink" href="#unsubscribe" title="Link to this heading"></a></h2>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;unsubscribe&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">]</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<ul class="simple">
-<li><p>topic: List of unsubscribe topics.</p></li>
-</ul>
-<section id="id1">
-<h3>Example<a class="headerlink" href="#id1" title="Link to this heading"></a></h3>
+<p><strong>Fields</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Field</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>type</p></td>
+<td><p>string</p></td>
+<td><p>Must be “subscribe”</p></td>
+</tr>
+<tr class="row-odd"><td><p>topics</p></td>
+<td><p>array</p></td>
+<td><p>List of topic patterns to subscribe to</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example: Subscribe to all calls</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;call&quot;</span><span class="p">]</span>
+    <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;customer_id:12345678-1234-1234-1234-123456789012:call:*&quot;</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Example: Subscribe to multiple resource types</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;customer_id:12345678-1234-1234-1234-123456789012:call:*&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;customer_id:12345678-1234-1234-1234-123456789012:message:*&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;customer_id:12345678-1234-1234-1234-123456789012:activeflow:*&quot;</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Example: Subscribe to specific resource</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;customer_id:12345678-1234-1234-1234-123456789012:call:a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Example: Agent-level subscription</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;agent_id:98765432-4321-4321-4321-210987654321:queue:*&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;agent_id:98765432-4321-4321-4321-210987654321:call:*&quot;</span>
+    <span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 </section>
+<section id="unsubscribe-message">
+<h2>Unsubscribe Message<a class="headerlink" href="#unsubscribe-message" title="Link to this heading"></a></h2>
+<p>Send an unsubscribe message to stop receiving events for specific topics.</p>
+<p><strong>Structure</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;unsubscribe&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;&lt;topic-pattern-1&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;&lt;topic-pattern-2&gt;&quot;</span><span class="p">,</span>
+        <span class="o">...</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Fields</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Field</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>type</p></td>
+<td><p>string</p></td>
+<td><p>Must be “unsubscribe”</p></td>
+</tr>
+<tr class="row-odd"><td><p>topics</p></td>
+<td><p>array</p></td>
+<td><p>List of topic patterns to unsubscribe from</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example: Unsubscribe from calls</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;unsubscribe&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;customer_id:12345678-1234-1234-1234-123456789012:call:*&quot;</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Example: Unsubscribe from specific resource</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;unsubscribe&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;customer_id:12345678-1234-1234-1234-123456789012:call:a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="topic-pattern-structure">
+<h2>Topic Pattern Structure<a class="headerlink" href="#topic-pattern-structure" title="Link to this heading"></a></h2>
+<p>Topics follow a consistent format for event filtering.</p>
+<p><strong>Topic Format</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">scope</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">scope_id</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">resource_type</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">resource_id</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p><strong>Topic Components</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Component</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>scope</p></td>
+<td><p>Access level: “customer_id” or “agent_id”</p></td>
+</tr>
+<tr class="row-odd"><td><p>scope_id</p></td>
+<td><p>UUID of the customer or agent</p></td>
+</tr>
+<tr class="row-even"><td><p>resource_type</p></td>
+<td><p>Type of resource: call, message, activeflow, conference, etc.</p></td>
+</tr>
+<tr class="row-odd"><td><p>resource_id</p></td>
+<td><p>UUID of specific resource or “*” for all</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Valid Scopes</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Scope</p></th>
+<th class="head"><p>Permission Required</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>customer_id</p></td>
+<td><p>Admin or Manager permission for the customer</p></td>
+</tr>
+<tr class="row-odd"><td><p>agent_id</p></td>
+<td><p>Must be the owner of the agent</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Valid Resource Types</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Resource Type</p></th>
+<th class="head"><p>Events</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>call</p></td>
+<td><p>call.created, call.status, call.ended</p></td>
+</tr>
+<tr class="row-odd"><td><p>message</p></td>
+<td><p>message.received, message.sent, message.delivery</p></td>
+</tr>
+<tr class="row-even"><td><p>activeflow</p></td>
+<td><p>activeflow.updated, activeflow.completed</p></td>
+</tr>
+<tr class="row-odd"><td><p>conference</p></td>
+<td><p>conference.joined, conference.left, conference.ended</p></td>
+</tr>
+<tr class="row-even"><td><p>queue</p></td>
+<td><p>queue.joined, queue.connected, queue.left</p></td>
+</tr>
+<tr class="row-odd"><td><p>agent</p></td>
+<td><p>agent.status</p></td>
+</tr>
+<tr class="row-even"><td><p>recording</p></td>
+<td><p>recording.started, recording.completed</p></td>
+</tr>
+<tr class="row-odd"><td><p>transcription</p></td>
+<td><p>transcription.completed</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Wildcard Usage</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-----------------------------------------------------------------------+</span>
+<span class="o">|</span>                         <span class="n">Wildcard</span> <span class="n">Patterns</span>                             <span class="o">|</span>
+<span class="o">+-----------------------------------------------------------------------+</span>
+
+<span class="n">Specific</span> <span class="n">resource</span><span class="p">:</span>
+<span class="n">customer_id</span><span class="p">:</span><span class="n">abc123</span><span class="p">:</span><span class="n">call</span><span class="p">:</span><span class="n">xyz789</span>
+<span class="o">-&gt;</span> <span class="n">Only</span> <span class="n">events</span> <span class="k">for</span> <span class="n">call</span> <span class="n">xyz789</span>
+
+<span class="n">All</span> <span class="n">resources</span> <span class="n">of</span> <span class="nb">type</span><span class="p">:</span>
+<span class="n">customer_id</span><span class="p">:</span><span class="n">abc123</span><span class="p">:</span><span class="n">call</span><span class="p">:</span><span class="o">*</span>
+<span class="o">-&gt;</span> <span class="n">All</span> <span class="n">call</span> <span class="n">events</span> <span class="k">for</span> <span class="n">customer</span> <span class="n">abc123</span>
+
+<span class="n">Multiple</span> <span class="n">types</span> <span class="p">(</span><span class="n">separate</span> <span class="n">subscriptions</span><span class="p">):</span>
+<span class="n">customer_id</span><span class="p">:</span><span class="n">abc123</span><span class="p">:</span><span class="n">call</span><span class="p">:</span><span class="o">*</span>
+<span class="n">customer_id</span><span class="p">:</span><span class="n">abc123</span><span class="p">:</span><span class="n">message</span><span class="p">:</span><span class="o">*</span>
+<span class="o">-&gt;</span> <span class="n">All</span> <span class="n">calls</span> <span class="n">AND</span> <span class="nb">all</span> <span class="n">messages</span>
+</pre></div>
+</div>
+</section>
+<section id="event-message-structure">
+<h2>Event Message Structure<a class="headerlink" href="#event-message-structure" title="Link to this heading"></a></h2>
+<p>Events are pushed from the server when subscribed resources change.</p>
+<p><strong>Structure</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;event_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;event-type&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;ISO-8601-timestamp&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;topic&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;topic-that-matched&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="o">//</span> <span class="n">Resource</span><span class="o">-</span><span class="n">specific</span> <span class="n">payload</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Fields</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Field</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>event_type</p></td>
+<td><p>string</p></td>
+<td><p>Type of event (e.g., “call.status”)</p></td>
+</tr>
+<tr class="row-odd"><td><p>timestamp</p></td>
+<td><p>string</p></td>
+<td><p>ISO 8601 timestamp in UTC</p></td>
+</tr>
+<tr class="row-even"><td><p>topic</p></td>
+<td><p>string</p></td>
+<td><p>Topic pattern that triggered this event</p></td>
+</tr>
+<tr class="row-odd"><td><p>data</p></td>
+<td><p>object</p></td>
+<td><p>Resource-specific data payload</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="event-type-reference">
+<h2>Event Type Reference<a class="headerlink" href="#event-type-reference" title="Link to this heading"></a></h2>
+<p>Complete list of event types and their data structures.</p>
+<p><strong>Call Events</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">call</span><span class="o">.</span><span class="n">created</span>
+<span class="p">{</span>
+    <span class="s2">&quot;event_type&quot;</span><span class="p">:</span> <span class="s2">&quot;call.created&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:30:00.000000Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;topic&quot;</span><span class="p">:</span> <span class="s2">&quot;customer_id:abc123:call:xyz789&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;xyz789&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;abc123&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;inbound&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15551234567&quot;</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15559876543&quot;</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ringing&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:30:00.000000Z&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="o">//</span> <span class="n">call</span><span class="o">.</span><span class="n">status</span>
+<span class="p">{</span>
+    <span class="s2">&quot;event_type&quot;</span><span class="p">:</span> <span class="s2">&quot;call.status&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:30:05.000000Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;topic&quot;</span><span class="p">:</span> <span class="s2">&quot;customer_id:abc123:call:xyz789&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;xyz789&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;answered&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;previous_status&quot;</span><span class="p">:</span> <span class="s2">&quot;ringing&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:30:05.000000Z&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Message Events</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">message</span><span class="o">.</span><span class="n">received</span>
+<span class="p">{</span>
+    <span class="s2">&quot;event_type&quot;</span><span class="p">:</span> <span class="s2">&quot;message.received&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:30:00.000000Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;topic&quot;</span><span class="p">:</span> <span class="s2">&quot;customer_id:abc123:message:msg789&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;msg789&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;abc123&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;inbound&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15551234567&quot;</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15559876543&quot;</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello, I need help with my order&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:30:00.000000Z&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="o">//</span> <span class="n">message</span><span class="o">.</span><span class="n">delivery</span>
+<span class="p">{</span>
+    <span class="s2">&quot;event_type&quot;</span><span class="p">:</span> <span class="s2">&quot;message.delivery&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:30:02.000000Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;topic&quot;</span><span class="p">:</span> <span class="s2">&quot;customer_id:abc123:message:msg789&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;msg789&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;delivered&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:30:02.000000Z&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Activeflow Events</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">activeflow</span><span class="o">.</span><span class="n">updated</span>
+<span class="p">{</span>
+    <span class="s2">&quot;event_type&quot;</span><span class="p">:</span> <span class="s2">&quot;activeflow.updated&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:30:00.000000Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;topic&quot;</span><span class="p">:</span> <span class="s2">&quot;customer_id:abc123:activeflow:flow789&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;flow789&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;template123&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;executing&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;current_action&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;action456&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;play&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;welcome_message&quot;</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:30:00.000000Z&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="o">//</span> <span class="n">activeflow</span><span class="o">.</span><span class="n">completed</span>
+<span class="p">{</span>
+    <span class="s2">&quot;event_type&quot;</span><span class="p">:</span> <span class="s2">&quot;activeflow.completed&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:35:00.000000Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;topic&quot;</span><span class="p">:</span> <span class="s2">&quot;customer_id:abc123:activeflow:flow789&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;flow789&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;template123&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;completed&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_end&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:35:00.000000Z&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Queue Events</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">queue</span><span class="o">.</span><span class="n">joined</span>
+<span class="p">{</span>
+    <span class="s2">&quot;event_type&quot;</span><span class="p">:</span> <span class="s2">&quot;queue.joined&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:30:00.000000Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;topic&quot;</span><span class="p">:</span> <span class="s2">&quot;customer_id:abc123:queue:queue789&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;queue_id&quot;</span><span class="p">:</span> <span class="s2">&quot;queue789&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;call_id&quot;</span><span class="p">:</span> <span class="s2">&quot;call456&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;position&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="s2">&quot;estimated_wait&quot;</span><span class="p">:</span> <span class="mi">120</span><span class="p">,</span>
+        <span class="s2">&quot;tm_join&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:30:00.000000Z&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="o">//</span> <span class="n">queue</span><span class="o">.</span><span class="n">connected</span>
+<span class="p">{</span>
+    <span class="s2">&quot;event_type&quot;</span><span class="p">:</span> <span class="s2">&quot;queue.connected&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:32:00.000000Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;topic&quot;</span><span class="p">:</span> <span class="s2">&quot;customer_id:abc123:queue:queue789&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;queue_id&quot;</span><span class="p">:</span> <span class="s2">&quot;queue789&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;call_id&quot;</span><span class="p">:</span> <span class="s2">&quot;call456&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;agent_id&quot;</span><span class="p">:</span> <span class="s2">&quot;agent123&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;wait_time&quot;</span><span class="p">:</span> <span class="mi">120</span><span class="p">,</span>
+        <span class="s2">&quot;tm_connect&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:32:00.000000Z&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Conference Events</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">conference</span><span class="o">.</span><span class="n">joined</span>
+<span class="p">{</span>
+    <span class="s2">&quot;event_type&quot;</span><span class="p">:</span> <span class="s2">&quot;conference.joined&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:30:00.000000Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;topic&quot;</span><span class="p">:</span> <span class="s2">&quot;customer_id:abc123:conference:conf789&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;conference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;conf789&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;call_id&quot;</span><span class="p">:</span> <span class="s2">&quot;call456&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;participant_count&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="s2">&quot;tm_join&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:30:00.000000Z&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="o">//</span> <span class="n">conference</span><span class="o">.</span><span class="n">left</span>
+<span class="p">{</span>
+    <span class="s2">&quot;event_type&quot;</span><span class="p">:</span> <span class="s2">&quot;conference.left&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:45:00.000000Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;topic&quot;</span><span class="p">:</span> <span class="s2">&quot;customer_id:abc123:conference:conf789&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;conference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;conf789&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;call_id&quot;</span><span class="p">:</span> <span class="s2">&quot;call456&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;participant_count&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="s2">&quot;reason&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_leave&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:45:00.000000Z&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Agent Events</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">agent</span><span class="o">.</span><span class="n">status</span>
+<span class="p">{</span>
+    <span class="s2">&quot;event_type&quot;</span><span class="p">:</span> <span class="s2">&quot;agent.status&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:30:00.000000Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;topic&quot;</span><span class="p">:</span> <span class="s2">&quot;agent_id:agent123:agent:agent123&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;agent_id&quot;</span><span class="p">:</span> <span class="s2">&quot;agent123&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;available&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;previous_status&quot;</span><span class="p">:</span> <span class="s2">&quot;busy&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:30:00.000000Z&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Recording Events</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">recording</span><span class="o">.</span><span class="n">completed</span>
+<span class="p">{</span>
+    <span class="s2">&quot;event_type&quot;</span><span class="p">:</span> <span class="s2">&quot;recording.completed&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:45:00.000000Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;topic&quot;</span><span class="p">:</span> <span class="s2">&quot;customer_id:abc123:recording:rec789&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;rec789&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;call_id&quot;</span><span class="p">:</span> <span class="s2">&quot;call456&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="mi">300</span><span class="p">,</span>
+        <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;wav&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="mi">2400000</span><span class="p">,</span>
+        <span class="s2">&quot;reference_url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://storage.voipbin.net/recordings/rec789.wav&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_complete&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:45:00.000000Z&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="acknowledgment-messages">
+<h2>Acknowledgment Messages<a class="headerlink" href="#acknowledgment-messages" title="Link to this heading"></a></h2>
+<p>Server may send acknowledgments for subscription operations.</p>
+<p><strong>Success Acknowledgment</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;ack&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;action&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;customer_id:abc123:call:*&quot;</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Error Response</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;error&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;action&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;customer_id:abc123:call:*&quot;</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;code&quot;</span><span class="p">:</span> <span class="s2">&quot;PERMISSION_DENIED&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;You do not have permission to subscribe to this topic&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Error Codes</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Code</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>PERMISSION_DENIED</p></td>
+<td><p>User lacks permission for the topic</p></td>
+</tr>
+<tr class="row-odd"><td><p>INVALID_TOPIC</p></td>
+<td><p>Topic format is invalid</p></td>
+</tr>
+<tr class="row-even"><td><p>INVALID_MESSAGE</p></td>
+<td><p>Message structure is invalid</p></td>
+</tr>
+<tr class="row-odd"><td><p>RATE_LIMITED</p></td>
+<td><p>Too many subscription requests</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="message-handling-examples">
+<h2>Message Handling Examples<a class="headerlink" href="#message-handling-examples" title="Link to this heading"></a></h2>
+<p>Code examples for processing WebSocket messages.</p>
+<p><strong>JavaScript</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ws</span><span class="o">.</span><span class="n">onmessage</span> <span class="o">=</span> <span class="n">function</span><span class="p">(</span><span class="n">event</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">const</span> <span class="n">message</span> <span class="o">=</span> <span class="n">JSON</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">data</span><span class="p">);</span>
+
+    <span class="n">switch</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">type</span> <span class="o">||</span> <span class="n">message</span><span class="o">.</span><span class="n">event_type</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">case</span> <span class="s1">&#39;ack&#39;</span><span class="p">:</span>
+            <span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s1">&#39;Subscription confirmed:&#39;</span><span class="p">,</span> <span class="n">message</span><span class="o">.</span><span class="n">topics</span><span class="p">);</span>
+            <span class="k">break</span><span class="p">;</span>
+
+        <span class="k">case</span> <span class="s1">&#39;error&#39;</span><span class="p">:</span>
+            <span class="n">console</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Error:&#39;</span><span class="p">,</span> <span class="n">message</span><span class="o">.</span><span class="n">code</span><span class="p">,</span> <span class="n">message</span><span class="o">.</span><span class="n">message</span><span class="p">);</span>
+            <span class="k">break</span><span class="p">;</span>
+
+        <span class="k">case</span> <span class="s1">&#39;call.status&#39;</span><span class="p">:</span>
+            <span class="n">handleCallStatus</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">data</span><span class="p">);</span>
+            <span class="k">break</span><span class="p">;</span>
+
+        <span class="k">case</span> <span class="s1">&#39;message.received&#39;</span><span class="p">:</span>
+            <span class="n">handleMessage</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">data</span><span class="p">);</span>
+            <span class="k">break</span><span class="p">;</span>
+
+        <span class="n">default</span><span class="p">:</span>
+            <span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s1">&#39;Received:&#39;</span><span class="p">,</span> <span class="n">message</span><span class="o">.</span><span class="n">event_type</span><span class="p">,</span> <span class="n">message</span><span class="o">.</span><span class="n">data</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+<p><strong>Python</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">on_message</span><span class="p">(</span><span class="n">ws</span><span class="p">,</span> <span class="n">raw_message</span><span class="p">):</span>
+    <span class="n">message</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">raw_message</span><span class="p">)</span>
+
+    <span class="n">msg_type</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">message</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;event_type&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">msg_type</span> <span class="o">==</span> <span class="s1">&#39;ack&#39;</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Subscription confirmed: </span><span class="si">{</span><span class="n">message</span><span class="p">[</span><span class="s1">&#39;topics&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">msg_type</span> <span class="o">==</span> <span class="s1">&#39;error&#39;</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error: </span><span class="si">{</span><span class="n">message</span><span class="p">[</span><span class="s1">&#39;code&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> - </span><span class="si">{</span><span class="n">message</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">msg_type</span> <span class="o">==</span> <span class="s1">&#39;call.status&#39;</span><span class="p">:</span>
+        <span class="n">handle_call_status</span><span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
+
+    <span class="k">elif</span> <span class="n">msg_type</span> <span class="o">==</span> <span class="s1">&#39;message.received&#39;</span><span class="p">:</span>
+        <span class="n">handle_message</span><span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Received: </span><span class="si">{</span><span class="n">msg_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="related-documentation">
+<h2>Related Documentation<a class="headerlink" href="#related-documentation" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="websocket_overview.html#websocket-overview"><span class="std std-ref">WebSocket Overview</span></a> - Connection and topic concepts</p></li>
+<li><p><a class="reference internal" href="websocket_tutorial.html#websocket-tutorial"><span class="std std-ref">WebSocket Tutorial</span></a> - Implementation examples</p></li>
+<li><p><a class="reference internal" href="call_struct_call.html#call-struct-call"><span class="std std-ref">Call Struct</span></a> - Complete call data structure</p></li>
+<li><p><a class="reference internal" href="message_struct_message.html#message-struct-message"><span class="std std-ref">Message Struct</span></a> - Complete message data structure</p></li>
+<li><p><a class="reference internal" href="flow.html#activeflow-struct-activeflow"><span class="std std-ref">Activeflow Struct</span></a> - Complete activeflow data structure</p></li>
+</ul>
 </section>
 </section>
 
@@ -237,15 +799,16 @@
                         <div class="sticky-top toc page-toc" aria-labelledby="page-toc-heading">
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
-<li><a class="reference internal" href="#">Struct</a><ul>
-<li><a class="reference internal" href="#subscribe">Subscribe</a><ul>
-<li><a class="reference internal" href="#example">Example</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#unsubscribe">Unsubscribe</a><ul>
-<li><a class="reference internal" href="#id1">Example</a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#">Structures</a><ul>
+<li><a class="reference internal" href="#message-overview">Message Overview</a></li>
+<li><a class="reference internal" href="#subscribe-message">Subscribe Message</a></li>
+<li><a class="reference internal" href="#unsubscribe-message">Unsubscribe Message</a></li>
+<li><a class="reference internal" href="#topic-pattern-structure">Topic Pattern Structure</a></li>
+<li><a class="reference internal" href="#event-message-structure">Event Message Structure</a></li>
+<li><a class="reference internal" href="#event-type-reference">Event Type Reference</a></li>
+<li><a class="reference internal" href="#acknowledgment-messages">Acknowledgment Messages</a></li>
+<li><a class="reference internal" href="#message-handling-examples">Message Handling Examples</a></li>
+<li><a class="reference internal" href="#related-documentation">Related Documentation</a></li>
 </ul>
 </li>
 </ul>

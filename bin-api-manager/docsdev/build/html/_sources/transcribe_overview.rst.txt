@@ -2,19 +2,233 @@
 
 Overview
 ========
-VoIPBIN's transcription functionality is designed to cater to a range of communication needs, covering calls, conferences, and recordings. This comprehensive support ensures that users can transcribe various types of interactions accurately and efficiently.
+VoIPBIN's Transcription API converts spoken audio from calls and conferences into text in real-time. Whether you need transcripts for compliance, searchable call logs, AI analysis, or accessibility, the Transcription API delivers accurate text as conversations happen.
 
-Whether it's a one-on-one conversation, a large conference call, or a recorded discussion, VoIPBIN's transcription service handles it with ease. By distinguishing between audio input and output, it provides nuanced transcriptions that accurately reflect the dialogue exchanged during communication sessions. This differentiation ensures that users can clearly identify who said what, enhancing the clarity and usefulness of the transcribed content.
+With the Transcription API you can:
 
-Real-Time capability
---------------------
-One notable aspect of VoIPBIN's transcription service is its real-time capability. This feature enables users to transcribe conversations as they occur, providing instant access to written records of ongoing discussions. Real-time transcription not only facilitates live communication but also streamlines documentation processes by eliminating the need for manual transcription after the fact. This functionality is particularly valuable in fast-paced environments where quick access to accurate information is essential.
+- Transcribe calls and conferences in real-time
+- Distinguish between incoming and outgoing speech
+- Receive transcripts via webhooks or WebSocket
+- Support 70+ languages and regional variants
+- Integrate with AI systems for sentiment analysis and summarization
 
-Additionally, VoIPBIN offers enhanced flexibility through websocket event subscription. Users can subscribe or unsubscribe to the transcript event using websocket event subscribe, ensuring seamless integration with their applications or systems. This allows for dynamic control over real-time transcription notifications, tailored to specific needs and workflows.
 
-Moreover, VoIPBIN offers an added feature for enhanced integration and convenience. By including webhook information in your customer settings, you can receive real-time updates through the `transcript_created` event of your transcription process. This enables seamless integration with your existing systems or applications, ensuring that you stay informed of transcription progress without manual intervention.
+How Transcription Works
+-----------------------
+When you start transcription, VoIPBIN captures audio from the call or conference, sends it to a speech-to-text (STT) engine, and delivers the resulting text to your application.
 
-Overall, VoIPBIN's transcription service offers a comprehensive solution for capturing and documenting verbal communication across various platforms. Whether users need transcriptions for analysis, reference, or archival purposes, VoIPBIN's transcription feature delivers accurate and timely results, enhancing communication workflows and productivity.
+**Transcription Architecture**
+
+::
+
+    +--------+        +----------------+        +------------+
+    |  Call  |--audio-->|     STT      |--text-->|  Webhook   |
+    +--------+        |    Engine      |        |     or     |
+                      +----------------+        | WebSocket  |
+    +------------+           |                  +------------+
+    | Conference |--audio----+                        |
+    +------------+                                    v
+                                              +------------+
+                                              |  Your App  |
+                                              +------------+
+
+**Key Components**
+
+- **Audio Source**: The call or conference being transcribed
+- **STT Engine**: Google Cloud Speech-to-Text for accurate recognition
+- **Delivery**: Webhooks (push) or WebSocket (subscribe) to your application
+
+**Transcription Types**
+
++---------------------+-------------------------------------------------------+
+| Type                | Description                                           |
++=====================+=======================================================+
+| Call Transcription  | Transcribes a single call with direction detection    |
++---------------------+-------------------------------------------------------+
+| Conference          | Transcribes all participants (direction indicates     |
+| Transcription       | speaker relative to conference)                       |
++---------------------+-------------------------------------------------------+
+
+
+Transcription Lifecycle
+-----------------------
+Transcription runs continuously while active, generating transcript segments as speech is detected.
+
+**Lifecycle Diagram**
+
+::
+
+    POST /transcribes or flow action
+           |
+           v
+    +-------------+                         +-------------+
+    |  starting   |------active------------>| transcribing|
+    +-------------+                         +------+------+
+                                                   |
+                              POST /transcribe_stop, hangup, or timeout
+                                                   |
+                                                   v
+                                            +-------------+
+                                            |   stopped   |
+                                            +-------------+
+
+**State Descriptions**
+
++---------------+------------------------------------------------------------------+
+| State         | What's happening                                                 |
++===============+==================================================================+
+| starting      | Transcription initialization. STT engine is connecting.          |
++---------------+------------------------------------------------------------------+
+| transcribing  | Actively processing audio. Transcripts are being generated.      |
++---------------+------------------------------------------------------------------+
+| stopped       | Transcription has ended. No more transcripts will be generated.  |
++---------------+------------------------------------------------------------------+
+
+**Transcript Delivery Flow**
+
+::
+
+    Call Audio          VoIPBIN STT           Your App
+        |                    |                    |
+        |====audio chunk====>|                    |
+        |                    | process            |
+        |                    |----+               |
+        |                    |<---+               |
+        |                    |                    |
+        |                    | transcript_created |
+        |                    +------------------->|
+        |                    |                    |
+        |====audio chunk====>|                    |
+        |                    | process            |
+        |                    +------------------->|
+        |                    |                    |
+
+Each transcript segment is delivered as soon as speech is recognized, enabling real-time processing.
+
+
+Starting Transcription
+----------------------
+VoIPBIN provides two methods to start transcription based on your use case.
+
+**Method 1: Via Flow Action**
+
+Use ``transcribe_start`` and ``transcribe_stop`` actions in your call flow for automatic control.
+
+::
+
+    Your Flow                    VoIPBIN                     Your App
+        |                           |                           |
+        | transcribe_start action   |                           |
+        +-------------------------->|                           |
+        |                           | Initialize STT            |
+        |                           |                           |
+        |                           |<====audio stream====      |
+        |                           |                           |
+        |                           | transcript_created        |
+        |                           +-------------------------->|
+        |                           |                           |
+        | transcribe_stop action    |                           |
+        +-------------------------->|                           |
+        |                           |                           |
+
+**Example flow with transcription:**
+
+.. code::
+
+    {
+        "actions": [
+            {
+                "type": "answer"
+            },
+            {
+                "type": "transcribe_start",
+                "option": {
+                    "language": "en-US"
+                }
+            },
+            {
+                "type": "talk",
+                "option": {
+                    "text": "Hello, how can I help you today?"
+                }
+            },
+            {
+                "type": "connect",
+                "option": {
+                    "destinations": [{"type": "tel", "target": "+15551234567"}]
+                }
+            },
+            {
+                "type": "transcribe_stop"
+            }
+        ]
+    }
+
+See detail :ref:`here <flow-struct-action-transribe_start>`.
+
+**Method 2: Via API (Interrupt Method)**
+
+Start transcription on an active call or conference programmatically.
+
+**Start transcription:**
+
+.. code::
+
+    $ curl -X POST 'https://api.voipbin.net/v1.0/transcribes?token=<token>' \
+        --header 'Content-Type: application/json' \
+        --data '{
+            "reference_type": "call",
+            "reference_id": "8c71bcb6-e7e7-4ed2-8aba-44bc2deda9a5",
+            "language": "en-US",
+            "direction": "both"
+        }'
+
+**Parameters:**
+
++------------------+----------------------------------------------------------------+
+| Parameter        | Description                                                    |
++==================+================================================================+
+| reference_type   | Type of resource: ``call`` or ``conference``                   |
++------------------+----------------------------------------------------------------+
+| reference_id     | UUID of the call or conference                                 |
++------------------+----------------------------------------------------------------+
+| language         | Language code (e.g., ``en-US``, ``ko-KR``)                     |
++------------------+----------------------------------------------------------------+
+| direction        | Which audio to transcribe: ``in``, ``out``, or ``both``        |
++------------------+----------------------------------------------------------------+
+
+**When to Use Each Method**
+
++-------------------+----------------------------------------------------------------+
+| Method            | Best for                                                       |
++===================+================================================================+
+| Flow Action       | Automated transcription based on call flow logic               |
++-------------------+----------------------------------------------------------------+
+| API (Interrupt)   | Dynamic control - start/stop based on external events          |
++-------------------+----------------------------------------------------------------+
+
+
+Receiving Transcripts
+---------------------
+VoIPBIN delivers transcripts to your application via webhooks or WebSocket subscription.
+
+**Webhook Delivery (Push)**
+
+Configure a webhook URL in your customer settings to receive ``transcript_created`` events automatically.
+
+::
+
+    VoIPBIN                           Your App
+        |                                 |
+        | POST /your-webhook-endpoint     |
+        | {transcript_created event}      |
+        +-------------------------------->|
+        |                                 |
+        |            200 OK               |
+        |<--------------------------------+
+        |                                 |
+
+**Webhook Payload:**
 
 .. code::
 
@@ -30,25 +244,79 @@ Overall, VoIPBIN's transcription service offers a comprehensive solution for cap
         }
     }
 
+**WebSocket Subscription (Subscribe)**
+
+Subscribe to transcript events via WebSocket for real-time streaming.
+
+::
+
+    Your App                          VoIPBIN
+        |                                 |
+        | WebSocket connect               |
+        +-------------------------------->|
+        |                                 |
+        | Subscribe to transcript events  |
+        +-------------------------------->|
+        |                                 |
+        |<======= transcript events =====>|
+        |<======= transcript events =====>|
+        |                                 |
+        | Unsubscribe                     |
+        +-------------------------------->|
+        |                                 |
+
+**Comparison: Webhook vs WebSocket**
+
++-------------------+--------------------------------+--------------------------------+
+| Aspect            | Webhook                        | WebSocket                      |
++===================+================================+================================+
+| Connection        | VoIPBIN initiates POST         | Your app maintains connection  |
++-------------------+--------------------------------+--------------------------------+
+| Latency           | Higher (HTTP overhead)         | Lower (persistent connection)  |
++-------------------+--------------------------------+--------------------------------+
+| Reliability       | Retry on failure               | Must handle reconnection       |
++-------------------+--------------------------------+--------------------------------+
+| Best for          | Simple integration, batch      | Real-time UI, low-latency      |
+|                   | processing                     | applications                   |
++-------------------+--------------------------------+--------------------------------+
+
+
 .. _transcribe-overview-transcription:
 
-Transcription
--------------
-VoIPBIN's transcription service not only captures the spoken word but also provides additional context by distinguishing between audio input and output. This unique feature enables users to discern the direction of the voice within each transcription, offering valuable insight into the flow of communication.
+Understanding Transcript Direction
+----------------------------------
+Each transcript includes a ``direction`` field indicating whether the speech was incoming or outgoing relative to VoIPBIN.
 
-By indicating whether the audio is incoming or outgoing, VoIPBIN's transcription service adds an extra layer of clarity to the transcribed content. Users can easily identify who initiated a statement or response, enhancing their understanding of the conversation dynamics.
+**Direction Detection**
 
-.. code::
+::
 
-    +--------+                               +-------+
-    |Customer|------ Direction: in --------->|VoIPBIN|
-    |        |                               |       |
-    |        |<----- Direction: out ---------|       |
-    +--------+                               +-------+
+    +----------+                             +---------+
+    |  Caller  |-----> direction: "in" ----->| VoIPBIN |
+    |          |                             |         |
+    |          |<---- direction: "out" <-----|         |
+    +----------+                             +---------+
 
-For example, in a call or conference scenario, users can quickly determine whether a particular remark was made by the caller or the recipient. Similarly, in recorded discussions, the audio in/out indication helps differentiate between speakers, facilitating more accurate transcription and analysis.
+**Example Conversation:**
 
-This audio in/out distinguish feature empowers users to gain a deeper understanding of the context and dynamics of communication, leading to more effective collaboration, documentation, and analysis. Whether it's monitoring customer interactions, conducting research, or reviewing meeting minutes, VoIPBIN's transcription service offers enhanced clarity and insight into verbal communication.
+::
+
+    [in]  "Hello, I need help with my account"
+    [out] "Sure, I can help you with that"
+    [in]  "My account number is 12345"
+    [out] "Let me look that up for you"
+
+**Direction Values**
+
++-------------+----------------------------------------------------------------+
+| Direction   | Meaning                                                        |
++=============+================================================================+
+| in          | Audio from the caller/remote party toward VoIPBIN             |
++-------------+----------------------------------------------------------------+
+| out         | Audio from VoIPBIN toward the caller/remote party             |
++-------------+----------------------------------------------------------------+
+
+**Transcript Data Structure:**
 
 .. code::
 
@@ -65,329 +333,278 @@ This audio in/out distinguish feature empowers users to gain a deeper understand
             "id": "3c95ea10-a5b7-4a68-aebf-ed1903baf110",
             "transcribe_id": "bbf08426-3979-41bc-a544-5fc92c237848",
             "direction": "out",
-            "message": "Welcome to the transcribe test scenario in this scenario. All your voice will be transcribed and delivered it to the web hook.",
+            "message": "Welcome to the transcribe test scenario.",
             "tm_transcript": "0001-01-01 00:00:43.116830",
             "tm_create": "2024-04-01 07:17:27.208337"
         }
     ]
 
-Enable transcribe
------------------
-VoIPBIN provides two different methods to start the transcribe.
 
-Automatic Trigger in the Flow
-+++++++++++++++++++++++++++++++
-Add the `transcribe_start` action in the action flow. This action automatically triggers transcribe when the flow reaches it. See detail :ref:`here <flow-struct-action-transribe_start>`.
+Working with Transcripts
+------------------------
+
+**Timestamp Fields**
+
++----------------+----------------------------------------------------------------+
+| Field          | Description                                                    |
++================+================================================================+
+| tm_transcript  | Time offset within the call when speech occurred               |
++----------------+----------------------------------------------------------------+
+| tm_create      | Absolute timestamp when transcript was created                 |
++----------------+----------------------------------------------------------------+
+
+**Combining Transcripts into Conversation**
+
+To reconstruct a conversation, sort transcripts by ``tm_transcript``:
+
+::
+
+    Transcripts received (order of delivery):
+    [out] 00:00:05 "Welcome to VoIPBIN support"
+    [in]  00:00:12 "Hi, I have a billing question"
+    [out] 00:00:18 "I'd be happy to help"
+    [in]  00:00:08 "Hello?"
+
+    Sorted by tm_transcript:
+    [out] 00:00:05 "Welcome to VoIPBIN support"
+    [in]  00:00:08 "Hello?"
+    [in]  00:00:12 "Hi, I have a billing question"
+    [out] 00:00:18 "I'd be happy to help"
+
+**Storing Transcripts**
+
+For long-term storage, consider:
+
+- Store raw transcripts with all metadata
+- Index by ``transcribe_id`` to group by session
+- Use ``direction`` for speaker attribution
+- Create searchable text indexes on ``message`` field
+
+
+Common Scenarios
+----------------
+
+**Scenario 1: Real-Time Call Transcription**
+
+Transcribe a call from start to finish with webhook delivery.
+
+::
+
+    Call starts
+         |
+         v
+    +--------------------+
+    | transcribe_start   |
+    | language: "en-US"  |
+    +--------+-----------+
+             |
+             v
+    +===================+
+    | Call in progress  |------> transcript_created events
+    +===================+           to your webhook
+             |
+             v
+    +--------------------+
+    | Call ends          |
+    | (auto-stop)        |
+    +--------------------+
+
+**Scenario 2: Conference with Multiple Speakers**
+
+Transcribe all participants in a conference.
+
+::
+
+    Conference
+    +-------------------------------------------------------+
+    |  +------+    +------+    +------+                     |
+    |  |User A|    |User B|    |User C|                     |
+    |  +--+---+    +--+---+    +--+---+                     |
+    |     |           |           |                         |
+    |     +-----+-----+-----+-----+                         |
+    |           |                                           |
+    |           v                                           |
+    |     +------------+                                    |
+    |     |Transcription|----> transcript_created events    |
+    |     +------------+       (direction indicates speaker)|
+    +-------------------------------------------------------+
+
+**Scenario 3: AI Integration**
+
+Send transcripts to an AI system for real-time analysis.
+
+::
+
+    VoIPBIN                Your App               AI Service
+        |                      |                      |
+        | transcript_created   |                      |
+        +--------------------->|                      |
+        |                      | Analyze sentiment    |
+        |                      +--------------------->|
+        |                      |                      |
+        |                      | sentiment: positive  |
+        |                      |<---------------------+
+        |                      |                      |
+        |                      | Update agent UI      |
+        |                      |                      |
+
+**Scenario 4: Compliance Recording with Transcription**
+
+Combine recording and transcription for complete call documentation.
 
 .. code::
 
     {
-        "id": "95c7a67f-9643-4237-8b69-7320a70b382b",
-        "next_id": "44e1dabc-a8c1-4647-90ba-16d414231058",
-        "type": "transcribe_start",
-        "option": {
-            "language": "en-US"
-        }
+        "actions": [
+            {"type": "answer"},
+            {"type": "recording_start"},
+            {"type": "transcribe_start", "option": {"language": "en-US"}},
+            {"type": "connect", "option": {"destinations": [...]}},
+            {"type": "transcribe_stop"},
+            {"type": "recording_stop"}
+        ]
     }
 
-
-Interrupt Trigger(Manual API Request)
-+++++++++++++++++++++++++++++++++++++
-The client can start the transcribe by API request sending. This allows you to start transcription manually in the middle of a call or conference. However, note that this method requires someone to initiate the API request.
-
-* POST /v1.0/transcribes: See detail `here <https://api.voipbin.net/swagger/index.html#/default/post_v1_0_transcribes>`_.
-
-.. code::
-
-    $ curl -X POST --location 'https://api.voipbin.net/v1.0/transcribes?token=token' \
-        --header 'Content-Type: application/json' \
-        --data '{
-            "reference_type": "call",
-            "reference_id": "8c71bcb6-e7e7-4ed2-8aba-44bc2deda9a5",
-            "language": "en-US",
-            "direction": "both"
-        }'
 
 .. _transcribe-overview-supported_languages:
 
 Supported Languages
 -------------------
-VoIPBIN supports transcription in over 70 languages and regional variants, enabling global communication scenarios. You can specify the desired language using the language option (e.g., "en-US", "ko-KR"). Below is a non-exhaustive list of available language codes:
+VoIPBIN supports transcription in 70+ languages and regional variants. Specify the language using the ``language`` option (e.g., ``en-US``, ``ko-KR``).
 
-============== =============================
-Language Code  Language
-============== =============================
-af-ZA          Afrikaans (South Africa)
--------------- -----------------------------
-am-ET          Amharic (Ethiopia)
--------------- -----------------------------
-ar-AE          Arabic (U.A.E.)
--------------- -----------------------------
-ar-BH          Arabic (Bahrain)
--------------- -----------------------------
-ar-DZ          Arabic (Algeria)
--------------- -----------------------------
-ar-EG          Arabic (Egypt)
--------------- -----------------------------
-ar-IQ          Arabic (Iraq)
--------------- -----------------------------
-ar-IL          Arabic (Israel)
--------------- -----------------------------
-ar-JO          Arabic (Jordan)
--------------- -----------------------------
-ar-KW          Arabic (Kuwait)
--------------- -----------------------------
-ar-LB          Arabic (Lebanon)
--------------- -----------------------------
-ar-MA          Arabic (Morocco)
--------------- -----------------------------
-ar-OM          Arabic (Oman)
--------------- -----------------------------
-ar-PS          Arabic (Palestinian Territories)
--------------- -----------------------------
-ar-QA          Arabic (Qatar)
--------------- -----------------------------
-ar-SA          Arabic (Saudi Arabia)
--------------- -----------------------------
-ar-TN          Arabic (Tunisia)
--------------- -----------------------------
-ar-YE          Arabic (Yemen)
--------------- -----------------------------
-az-AZ          Azerbaijani (Azerbaijan)
--------------- -----------------------------
-bg-BG          Bulgarian (Bulgaria)
--------------- -----------------------------
-bn-BD          Bengali (Bangladesh)
--------------- -----------------------------
-bn-IN          Bengali (India)
--------------- -----------------------------
-bs-BA          Bosnian (Bosnia and Herzegovina)
--------------- -----------------------------
-ca-ES          Catalan (Spain)
--------------- -----------------------------
-cs-CZ          Czech (Czech Republic)
--------------- -----------------------------
-da-DK          Danish (Denmark)
--------------- -----------------------------
-de-AT          German (Austria)
--------------- -----------------------------
-de-CH          German (Switzerland)
--------------- -----------------------------
-de-DE          German (Germany)
--------------- -----------------------------
-el-GR          Greek (Greece)
--------------- -----------------------------
-en-AU          English (Australia)
--------------- -----------------------------
-en-CA          English (Canada)
--------------- -----------------------------
-en-GB          English (United Kingdom)
--------------- -----------------------------
-en-GH          English (Ghana)
--------------- -----------------------------
-en-HK          English (Hong Kong)
--------------- -----------------------------
-en-IE          English (Ireland)
--------------- -----------------------------
-en-IN          English (India)
--------------- -----------------------------
-en-KE          English (Kenya)
--------------- -----------------------------
-en-NG          English (Nigeria)
--------------- -----------------------------
-en-NZ          English (New Zealand)
--------------- -----------------------------
-en-PH          English (Philippines)
--------------- -----------------------------
-en-SG          English (Singapore)
--------------- -----------------------------
-en-TZ          English (Tanzania)
--------------- -----------------------------
-en-US          English (United States)
--------------- -----------------------------
-en-ZA          English (South Africa)
--------------- -----------------------------
-es-AR          Spanish (Argentina)
--------------- -----------------------------
-es-BO          Spanish (Bolivia)
--------------- -----------------------------
-es-CL          Spanish (Chile)
--------------- -----------------------------
-es-CO          Spanish (Colombia)
--------------- -----------------------------
-es-CR          Spanish (Costa Rica)
--------------- -----------------------------
-es-DO          Spanish (Dominican Republic)
--------------- -----------------------------
-es-EC          Spanish (Ecuador)
--------------- -----------------------------
-es-ES          Spanish (Spain)
--------------- -----------------------------
-es-GT          Spanish (Guatemala)
--------------- -----------------------------
-es-HN          Spanish (Honduras)
--------------- -----------------------------
-es-MX          Spanish (Mexico)
--------------- -----------------------------
-es-NI          Spanish (Nicaragua)
--------------- -----------------------------
-es-PA          Spanish (Panama)
--------------- -----------------------------
-es-PE          Spanish (Peru)
--------------- -----------------------------
-es-PR          Spanish (Puerto Rico)
--------------- -----------------------------
-es-PY          Spanish (Paraguay)
--------------- -----------------------------
-es-SV          Spanish (El Salvador)
--------------- -----------------------------
-es-US          Spanish (United States)
--------------- -----------------------------
-es-UY          Spanish (Uruguay)
--------------- -----------------------------
-es-VE          Spanish (Venezuela)
--------------- -----------------------------
-et-EE          Estonian (Estonia)
--------------- -----------------------------
-eu-ES          Basque (Spain)
--------------- -----------------------------
-fa-IR          Persian (Iran)
--------------- -----------------------------
-fi-FI          Finnish (Finland)
--------------- -----------------------------
-fil-PH         Filipino (Philippines)
--------------- -----------------------------
-fr-BE          French (Belgium)
--------------- -----------------------------
-fr-CA          French (Canada)
--------------- -----------------------------
-fr-CH          French (Switzerland)
--------------- -----------------------------
-fr-FR          French (France)
--------------- -----------------------------
-gl-ES          Galician (Spain)
--------------- -----------------------------
-gu-IN          Gujarati (India)
--------------- -----------------------------
-he-IL          Hebrew (Israel)
--------------- -----------------------------
-hi-IN          Hindi (India)
--------------- -----------------------------
-hr-HR          Croatian (Croatia)
--------------- -----------------------------
-hu-HU          Hungarian (Hungary)
--------------- -----------------------------
-hy-AM          Armenian (Armenia)
--------------- -----------------------------
-id-ID          Indonesian (Indonesia)
--------------- -----------------------------
-is-IS          Icelandic (Iceland)
--------------- -----------------------------
-it-CH          Italian (Switzerland)
--------------- -----------------------------
-it-IT          Italian (Italy)
--------------- -----------------------------
-ja-JP          Japanese (Japan)
--------------- -----------------------------
-jv-ID          Javanese (Indonesia)
--------------- -----------------------------
-ka-GE          Georgian (Georgia)
--------------- -----------------------------
-kk-KZ          Kazakh (Kazakhstan)
--------------- -----------------------------
-km-KH          Khmer (Cambodia)
--------------- -----------------------------
-kn-IN          Kannada (India)
--------------- -----------------------------
-ko-KR          Korean (South Korea)
--------------- -----------------------------
-lo-LA          Lao (Laos)
--------------- -----------------------------
-lt-LT          Lithuanian (Lithuania)
--------------- -----------------------------
-lv-LV          Latvian (Latvia)
--------------- -----------------------------
-mk-MK          Macedonian (North Macedonia)
--------------- -----------------------------
-ml-IN          Malayalam (India)
--------------- -----------------------------
-mn-MN          Mongolian (Mongolia)
--------------- -----------------------------
-mr-IN          Marathi (India)
--------------- -----------------------------
-ms-MY          Malay (Malaysia)
--------------- -----------------------------
-my-MM          Burmese (Myanmar)
--------------- -----------------------------
-ne-NP          Nepali (Nepal)
--------------- -----------------------------
-nl-BE          Dutch (Belgium)
--------------- -----------------------------
-nl-NL          Dutch (Netherlands)
--------------- -----------------------------
-no-NO          Norwegian (Norway)
--------------- -----------------------------
-pa-Guru-IN     Punjabi (Gurmukhi, India)
--------------- -----------------------------
-pl-PL          Polish (Poland)
--------------- -----------------------------
-pt-BR          Portuguese (Brazil)
--------------- -----------------------------
-pt-PT          Portuguese (Portugal)
--------------- -----------------------------
-ro-RO          Romanian (Romania)
--------------- -----------------------------
-ru-RU          Russian (Russia)
--------------- -----------------------------
-si-LK          Sinhala (Sri Lanka)
--------------- -----------------------------
-sk-SK          Slovak (Slovakia)
--------------- -----------------------------
-sl-SI          Slovenian (Slovenia)
--------------- -----------------------------
-sq-AL          Albanian (Albania)
--------------- -----------------------------
-sr-RS          Serbian (Serbia)
--------------- -----------------------------
-su-ID          Sundanese (Indonesia)
--------------- -----------------------------
-sv-SE          Swedish (Sweden)
--------------- -----------------------------
-sw-KE          Swahili (Kenya)
--------------- -----------------------------
-sw-TZ          Swahili (Tanzania)
--------------- -----------------------------
-ta-IN          Tamil (India)
--------------- -----------------------------
-ta-LK          Tamil (Sri Lanka)
--------------- -----------------------------
-ta-MY          Tamil (Malaysia)
--------------- -----------------------------
-ta-SG          Tamil (Singapore)
--------------- -----------------------------
-te-IN          Telugu (India)
--------------- -----------------------------
-th-TH          Thai (Thailand)
--------------- -----------------------------
-tr-TR          Turkish (Turkey)
--------------- -----------------------------
-uk-UA          Ukrainian (Ukraine)
--------------- -----------------------------
-ur-IN          Urdu (India)
--------------- -----------------------------
-ur-PK          Urdu (Pakistan)
--------------- -----------------------------
-uz-UZ          Uzbek (Uzbekistan)
--------------- -----------------------------
-vi-VN          Vietnamese (Vietnam)
--------------- -----------------------------
-zh-CN          Chinese (Mandarin, Simplified)
--------------- -----------------------------
-zh-HK          Chinese (Cantonese, Traditional)
--------------- -----------------------------
-zh-TW          Chinese (Mandarin, Traditional)
--------------- -----------------------------
-zu-ZA          Zulu (South Africa)
-============== =============================
+**Common Languages**
 
-To ensure optimal transcription results, choose the correct code that best matches your speaker's language and dialect.
++----------------+---------------------------+
+| Language Code  | Language                  |
++================+===========================+
+| en-US          | English (United States)   |
++----------------+---------------------------+
+| en-GB          | English (United Kingdom)  |
++----------------+---------------------------+
+| es-ES          | Spanish (Spain)           |
++----------------+---------------------------+
+| es-MX          | Spanish (Mexico)          |
++----------------+---------------------------+
+| fr-FR          | French (France)           |
++----------------+---------------------------+
+| de-DE          | German (Germany)          |
++----------------+---------------------------+
+| it-IT          | Italian (Italy)           |
++----------------+---------------------------+
+| pt-BR          | Portuguese (Brazil)       |
++----------------+---------------------------+
+| ja-JP          | Japanese (Japan)          |
++----------------+---------------------------+
+| ko-KR          | Korean (South Korea)      |
++----------------+---------------------------+
+| zh-CN          | Chinese (Mandarin)        |
++----------------+---------------------------+
+| ar-SA          | Arabic (Saudi Arabia)     |
++----------------+---------------------------+
+| hi-IN          | Hindi (India)             |
++----------------+---------------------------+
+| nl-NL          | Dutch (Netherlands)       |
++----------------+---------------------------+
+| ru-RU          | Russian (Russia)          |
++----------------+---------------------------+
+
+VoIPBIN supports 70+ languages including regional variants for Arabic, Spanish, English, and more. Contact support for the complete language list.
+
+To ensure optimal transcription results, choose the code that best matches your speaker's language and dialect.
+
+
+Best Practices
+--------------
+
+**1. Language Selection**
+
+- Use the most specific regional variant (e.g., ``en-AU`` not just ``en-US`` for Australian speakers)
+- Mismatched language codes significantly reduce accuracy
+- For multi-language calls, consider separate transcription sessions
+
+**2. Audio Quality**
+
+- Clear audio produces better transcripts
+- Reduce background noise when possible
+- Avoid overlapping speech in group calls
+
+**3. Handling High Volume**
+
+- Use WebSocket for real-time applications with many concurrent calls
+- Batch process webhooks for analytics workloads
+- Index transcripts for efficient searching
+
+**4. Storage and Compliance**
+
+- Define retention policies for transcript data
+- Store transcripts with call metadata for context
+- Consider encryption for sensitive conversations
+
+
+Troubleshooting
+---------------
+
+**Transcription Not Starting**
+
++---------------------------+------------------------------------------------+
+| Symptom                   | Solution                                       |
++===========================+================================================+
+| No transcribe_id returned | Verify call/conference is in "progressing"     |
+|                           | status before starting transcription           |
++---------------------------+------------------------------------------------+
+| Permission denied         | Check API token has transcription permissions  |
++---------------------------+------------------------------------------------+
+| Invalid language code     | Verify language code is in supported list      |
++---------------------------+------------------------------------------------+
+
+**Poor Accuracy**
+
++---------------------------+------------------------------------------------+
+| Symptom                   | Solution                                       |
++===========================+================================================+
+| Words frequently wrong    | Check language code matches speaker's dialect  |
++---------------------------+------------------------------------------------+
+| Missing words             | Check audio quality - background noise or      |
+|                           | low volume reduces accuracy                    |
++---------------------------+------------------------------------------------+
+| Technical terms wrong     | STT may not recognize domain-specific terms;   |
+|                           | consider post-processing                       |
++---------------------------+------------------------------------------------+
+
+**Missing Transcripts**
+
++---------------------------+------------------------------------------------+
+| Symptom                   | Solution                                       |
++===========================+================================================+
+| Webhook not receiving     | Verify webhook URL is configured in customer   |
+|                           | settings and is publicly accessible            |
++---------------------------+------------------------------------------------+
+| WebSocket disconnects     | Implement reconnection logic; check for        |
+|                           | network issues                                 |
++---------------------------+------------------------------------------------+
+| Gaps in transcript        | Silence or unclear audio produces no           |
+|                           | transcripts - this is expected behavior        |
++---------------------------+------------------------------------------------+
+
+**Webhook Delivery Issues**
+
++---------------------------+------------------------------------------------+
+| Symptom                   | Solution                                       |
++===========================+================================================+
+| Events delayed            | Check webhook endpoint response time;          |
+|                           | should respond within 5 seconds                |
++---------------------------+------------------------------------------------+
+| Duplicate events          | Implement idempotency using transcript ``id``  |
++---------------------------+------------------------------------------------+
+| Events out of order       | Sort by ``tm_transcript`` to reconstruct       |
+|                           | conversation order                             |
++---------------------------+------------------------------------------------+
+
+
+Related Documentation
+---------------------
+
+- :ref:`Call Overview <call-overview>` - Transcribing calls
+- :ref:`Conference Overview <conference-overview>` - Transcribing conferences
+- :ref:`Recording Overview <recording-overview>` - Recording and transcribing together
+- :ref:`Flow Actions <flow-struct-action-transribe_start>` - Transcribe flow actions

@@ -100,7 +100,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="message.html">Message</a></li>
 <li class="toctree-l1"><a class="reference internal" href="email.html">Email</a></li>
-<li class="toctree-l1"><a class="reference internal" href="chat.html">Chat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="talk.html">Talk</a></li>
 <li class="toctree-l1"><a class="reference internal" href="conversation.html">Conversation</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">AI &amp; Automation</span></p>
@@ -127,7 +127,6 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
 <li class="toctree-l1"><a class="reference internal" href="websocket.html">Websocket</a></li>
-<li class="toctree-l1"><a class="reference internal" href="talk.html">Talk</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul>
@@ -185,20 +184,479 @@
                         <main role="main" id="main">
     <section id="overview">
 <span id="talk-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h1>
-<p>The VoIPBIN Talk API provides a modern messaging platform designed for real-time communication between agents. This feature enables efficient message exchange with support for threading, reactions, and group conversations, fostering collaborative teamwork and enhancing internal communication.</p>
-<section id="talk-and-participants">
-<h2>Talk and Participants<a class="headerlink" href="#talk-and-participants" title="Link to this heading"></a></h2>
-<p>The Talk functionality allows agents to create conversations and exchange messages with one another. Agents can engage in one-on-one talk sessions for private conversations, or create group talks that allow multiple agents to participate in discussions related to shared projects, tasks, or team-wide announcements.</p>
-<p>Participants are managed independently, allowing agents to join and leave talks dynamically. Each talk maintains a list of active participants who can send and receive messages within the conversation.</p>
+<p>VoIPBIN’s Talk API provides a modern messaging platform for real-time communication between agents. With support for threading, reactions, and group conversations, Talk enables efficient team collaboration and internal communication.</p>
+<p>With the Talk API you can:</p>
+<ul class="simple">
+<li><p>Create one-on-one and group conversations</p></li>
+<li><p>Send messages with threading support</p></li>
+<li><p>Add emoji reactions to messages</p></li>
+<li><p>Attach media files to messages</p></li>
+<li><p>Manage participants dynamically</p></li>
+</ul>
+<section id="how-talk-works">
+<h2>How Talk Works<a class="headerlink" href="#how-talk-works" title="Link to this heading"></a></h2>
+<p>Talk provides a real-time messaging system where agents communicate through conversations called “talks.”</p>
+<p><strong>Talk Architecture</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+----------+</span>        <span class="o">+----------------+</span>        <span class="o">+-----------+</span>
+<span class="o">|</span> <span class="n">Agent</span> <span class="n">A</span>  <span class="o">|--</span><span class="n">API</span><span class="o">--&gt;|</span>    <span class="n">VoIPBIN</span>     <span class="o">|--</span><span class="n">push</span><span class="o">-&gt;|</span> <span class="n">Agent</span> <span class="n">B</span>   <span class="o">|</span>
+<span class="o">+----------+</span>        <span class="o">|</span>   <span class="n">Talk</span> <span class="n">Hub</span>     <span class="o">|</span>        <span class="o">+-----------+</span>
+                    <span class="o">+----------------+</span>
+                           <span class="o">|</span>
+                    <span class="o">+------+------+</span>
+                    <span class="o">|</span>  <span class="n">WebSocket</span>  <span class="o">|</span>
+                    <span class="o">|</span>  <span class="p">(</span><span class="n">real</span><span class="o">-</span><span class="n">time</span><span class="p">)</span><span class="o">|</span>
+                    <span class="o">+-------------+</span>
+                           <span class="o">|</span>
+          <span class="o">+----------------+----------------+</span>
+          <span class="n">v</span>                <span class="n">v</span>                <span class="n">v</span>
+     <span class="o">+---------+</span>      <span class="o">+---------+</span>      <span class="o">+---------+</span>
+     <span class="o">|</span> <span class="n">Agent</span> <span class="n">C</span> <span class="o">|</span>      <span class="o">|</span> <span class="n">Agent</span> <span class="n">D</span> <span class="o">|</span>      <span class="o">|</span> <span class="n">Agent</span> <span class="n">E</span> <span class="o">|</span>
+     <span class="o">+---------+</span>      <span class="o">+---------+</span>      <span class="o">+---------+</span>
+</pre></div>
+</div>
+<p><strong>Key Components</strong></p>
+<ul class="simple">
+<li><p><strong>Talk</strong>: A conversation container with participants and messages</p></li>
+<li><p><strong>Participant</strong>: An agent who can send and receive messages in a talk</p></li>
+<li><p><strong>Message</strong>: Text, media, or system notifications within a talk</p></li>
+<li><p><strong>Thread</strong>: Messages grouped as replies to a parent message</p></li>
+</ul>
 </section>
-<section id="messages-with-threading-and-reactions">
-<h2>Messages with Threading and Reactions<a class="headerlink" href="#messages-with-threading-and-reactions" title="Link to this heading"></a></h2>
-<p>The Message represents individual messages exchanged within a talk. Messages support several advanced features:</p>
-<p><strong>Threading</strong>: Messages can be replies to other messages by specifying a parent message ID. This creates conversation threads that help organize discussions around specific topics within a talk.</p>
-<p><strong>Reactions</strong>: Agents can add emoji reactions to messages, providing quick feedback without sending a full message. Multiple agents can react to the same message with different emojis.</p>
-<p><strong>Media Attachments</strong>: Messages can include media attachments such as files, links, or other content types to enrich communication.</p>
-<p><strong>Message Types</strong>: Messages can be of type “normal” (regular agent messages) or “system” (automated system notifications).</p>
-<p>By leveraging the Talk API with its threading, reactions, and participant management features, organizations can streamline internal communication, enhance team collaboration, and foster a more connected and productive work environment. The Talk service provides a modern messaging platform that improves workflow efficiency and ensures that agents have a reliable platform for instant communication and information sharing.</p>
+<section id="talk-types">
+<h2>Talk Types<a class="headerlink" href="#talk-types" title="Link to this heading"></a></h2>
+<p>VoIPBIN supports different talk types for various communication needs.</p>
+<p><strong>One-on-One Talk</strong></p>
+<p>Private conversation between two agents.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-------------------------+</span>
+<span class="o">|</span>      <span class="n">Talk</span> <span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">1</span><span class="p">)</span>         <span class="o">|</span>
+<span class="o">+-------------------------+</span>
+<span class="o">|</span>                         <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+---------+</span>            <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span> <span class="n">Agent</span> <span class="n">A</span> <span class="o">|&lt;--------+</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+---------+</span>         <span class="o">|</span>  <span class="o">|</span>
+<span class="o">|</span>       <span class="o">|</span>              <span class="o">|</span>  <span class="o">|</span>
+<span class="o">|</span>       <span class="n">v</span>              <span class="o">|</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+---------+</span>         <span class="o">|</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span> <span class="n">Agent</span> <span class="n">B</span> <span class="o">|---------+</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+---------+</span>            <span class="o">|</span>
+<span class="o">|</span>                         <span class="o">|</span>
+<span class="o">+-------------------------+</span>
+</pre></div>
+</div>
+<p><strong>Group Talk</strong></p>
+<p>Multi-participant conversation for team discussions.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+---------------------------------------+</span>
+<span class="o">|</span>            <span class="n">Talk</span> <span class="p">(</span><span class="n">Group</span><span class="p">)</span>               <span class="o">|</span>
+<span class="o">+---------------------------------------+</span>
+<span class="o">|</span>                                       <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+---------+</span>  <span class="o">+---------+</span>  <span class="o">+-------+</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span> <span class="n">Agent</span> <span class="n">A</span> <span class="o">|</span>  <span class="o">|</span> <span class="n">Agent</span> <span class="n">B</span> <span class="o">|</span>  <span class="o">|</span> <span class="n">Agent</span> <span class="o">|</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+---------+</span>  <span class="o">+---------+</span>  <span class="o">|</span>   <span class="n">C</span>   <span class="o">|</span>  <span class="o">|</span>
+<span class="o">|</span>       <span class="o">|</span>           <span class="o">|</span>        <span class="o">+-------+</span>  <span class="o">|</span>
+<span class="o">|</span>       <span class="o">|</span>           <span class="o">|</span>            <span class="o">|</span>      <span class="o">|</span>
+<span class="o">|</span>       <span class="o">+-----+-----+------------+</span>      <span class="o">|</span>
+<span class="o">|</span>             <span class="o">|</span>                         <span class="o">|</span>
+<span class="o">|</span>             <span class="n">v</span>                         <span class="o">|</span>
+<span class="o">|</span>      <span class="o">+-------------+</span>                  <span class="o">|</span>
+<span class="o">|</span>      <span class="o">|</span> <span class="n">All</span> <span class="n">receive</span> <span class="o">|</span>                  <span class="o">|</span>
+<span class="o">|</span>      <span class="o">|</span>  <span class="n">messages</span>   <span class="o">|</span>                  <span class="o">|</span>
+<span class="o">|</span>      <span class="o">+-------------+</span>                  <span class="o">|</span>
+<span class="o">|</span>                                       <span class="o">|</span>
+<span class="o">+---------------------------------------+</span>
+</pre></div>
+</div>
+</section>
+<section id="talk-lifecycle">
+<h2>Talk Lifecycle<a class="headerlink" href="#talk-lifecycle" title="Link to this heading"></a></h2>
+<p>Talks and participants move through predictable states.</p>
+<p><strong>Talk States</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">POST</span> <span class="o">/</span><span class="n">talks</span>
+      <span class="o">|</span>
+      <span class="n">v</span>
+<span class="o">+------------+</span>
+<span class="o">|</span>   <span class="n">active</span>   <span class="o">|&lt;-----------------+</span>
+<span class="o">+-----+------+</span>                  <span class="o">|</span>
+      <span class="o">|</span>                         <span class="o">|</span>
+      <span class="o">|</span> <span class="n">close</span> <span class="ow">or</span>               <span class="o">|</span> <span class="n">reopen</span>
+      <span class="o">|</span> <span class="nb">all</span> <span class="n">leave</span>              <span class="o">|</span>
+      <span class="n">v</span>                         <span class="o">|</span>
+<span class="o">+------------+</span>                  <span class="o">|</span>
+<span class="o">|</span>   <span class="n">closed</span>   <span class="o">|------------------+</span>
+<span class="o">+------------+</span>
+</pre></div>
+</div>
+<p><strong>Participant States</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">POST</span> <span class="o">/</span><span class="n">talks</span><span class="o">/</span><span class="p">{</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">participants</span>
+          <span class="o">|</span>
+          <span class="n">v</span>
+   <span class="o">+------------+</span>
+   <span class="o">|</span>   <span class="n">active</span>   <span class="o">|</span>
+   <span class="o">+-----+------+</span>
+         <span class="o">|</span>
+         <span class="o">|</span> <span class="n">leave</span> <span class="ow">or</span> <span class="n">removed</span>
+         <span class="n">v</span>
+   <span class="o">+------------+</span>
+   <span class="o">|</span>    <span class="n">left</span>    <span class="o">|</span>
+   <span class="o">+------------+</span>
+</pre></div>
+</div>
+</section>
+<section id="creating-and-managing-talks">
+<h2>Creating and Managing Talks<a class="headerlink" href="#creating-and-managing-talks" title="Link to this heading"></a></h2>
+<p>Create talks and manage participants through the API.</p>
+<p><strong>Create a Talk</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/talks?token=&lt;token&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data &#39;{
+        &quot;name&quot;: &quot;Project Discussion&quot;,
+        &quot;participant_ids&quot;: [
+            &quot;agent-id-1&quot;,
+            &quot;agent-id-2&quot;,
+            &quot;agent-id-3&quot;
+        ]
+    }&#39;
+</pre></div>
+</div>
+<p><strong>Add Participant</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/talks/&lt;talk-id&gt;/participants?token=&lt;token&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data &#39;{
+        &quot;agent_id&quot;: &quot;agent-id-4&quot;
+    }&#39;
+</pre></div>
+</div>
+<p><strong>Remove Participant</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X DELETE &#39;https://api.voipbin.net/v1.0/talks/&lt;talk-id&gt;/participants/&lt;participant-id&gt;?token=&lt;token&gt;&#39;
+</pre></div>
+</div>
+</section>
+<section id="sending-messages">
+<h2>Sending Messages<a class="headerlink" href="#sending-messages" title="Link to this heading"></a></h2>
+<p>Send messages within talks with support for threading and media.</p>
+<p><strong>Send a Message</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Agent</span>                       <span class="n">VoIPBIN</span>                    <span class="n">Other</span> <span class="n">Participants</span>
+   <span class="o">|</span>                           <span class="o">|</span>                              <span class="o">|</span>
+   <span class="o">|</span> <span class="n">POST</span> <span class="o">/</span><span class="n">talks</span><span class="o">/</span><span class="p">{</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">messages</span> <span class="o">|</span>                              <span class="o">|</span>
+   <span class="o">+--------------------------&gt;|</span>                              <span class="o">|</span>
+   <span class="o">|</span>                           <span class="o">|</span> <span class="n">Broadcast</span> <span class="n">to</span> <span class="n">participants</span>    <span class="o">|</span>
+   <span class="o">|</span>                           <span class="o">+-----------------------------&gt;|</span>
+   <span class="o">|</span>  <span class="n">message_id</span>               <span class="o">|</span>                              <span class="o">|</span>
+   <span class="o">|&lt;--------------------------+</span>                              <span class="o">|</span>
+   <span class="o">|</span>                           <span class="o">|</span>                              <span class="o">|</span>
+</pre></div>
+</div>
+<p><strong>Basic Message Example:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/talks/&lt;talk-id&gt;/messages?token=&lt;token&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data &#39;{
+        &quot;text&quot;: &quot;Hello team, let&#39;\&#39;&#39;s discuss the project status.&quot;
+    }&#39;
+</pre></div>
+</div>
+<p><strong>Reply to Message (Threading):</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/talks/&lt;talk-id&gt;/messages?token=&lt;token&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data &#39;{
+        &quot;text&quot;: &quot;I agree, we should prioritize the API work.&quot;,
+        &quot;parent_id&quot;: &quot;parent-message-id&quot;
+    }&#39;
+</pre></div>
+</div>
+<p><strong>Message with Media:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/talks/&lt;talk-id&gt;/messages?token=&lt;token&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data &#39;{
+        &quot;text&quot;: &quot;Here is the design document.&quot;,
+        &quot;medias&quot;: [
+            {
+                &quot;type&quot;: &quot;application/pdf&quot;,
+                &quot;url&quot;: &quot;https://storage.example.com/design-doc.pdf&quot;,
+                &quot;name&quot;: &quot;design-document.pdf&quot;
+            }
+        ]
+    }&#39;
+</pre></div>
+</div>
+</section>
+<section id="message-threading">
+<h2>Message Threading<a class="headerlink" href="#message-threading" title="Link to this heading"></a></h2>
+<p>Threading organizes conversations by grouping related messages.</p>
+<p><strong>Thread Structure</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+---------------------------------------------------------------+</span>
+<span class="o">|</span>  <span class="n">Talk</span><span class="p">:</span> <span class="s2">&quot;Project Discussion&quot;</span>                                   <span class="o">|</span>
+<span class="o">+---------------------------------------------------------------+</span>
+<span class="o">|</span>                                                               <span class="o">|</span>
+<span class="o">|</span>  <span class="p">[</span><span class="n">Message</span> <span class="mi">1</span><span class="p">]</span> <span class="s2">&quot;What&#39;s the status of the API integration?&quot;</span>      <span class="o">|</span>
+<span class="o">|</span>       <span class="o">|</span>                                                       <span class="o">|</span>
+<span class="o">|</span>       <span class="o">+--</span> <span class="p">[</span><span class="n">Reply</span> <span class="mf">1.1</span><span class="p">]</span> <span class="s2">&quot;Working on authentication now&quot;</span>         <span class="o">|</span>
+<span class="o">|</span>       <span class="o">|</span>                                                       <span class="o">|</span>
+<span class="o">|</span>       <span class="o">+--</span> <span class="p">[</span><span class="n">Reply</span> <span class="mf">1.2</span><span class="p">]</span> <span class="s2">&quot;Should be done by Friday&quot;</span>              <span class="o">|</span>
+<span class="o">|</span>       <span class="o">|</span>                                                       <span class="o">|</span>
+<span class="o">|</span>       <span class="o">+--</span> <span class="p">[</span><span class="n">Reply</span> <span class="mf">1.3</span><span class="p">]</span> <span class="s2">&quot;Great, let me know if you need help&quot;</span>   <span class="o">|</span>
+<span class="o">|</span>                                                               <span class="o">|</span>
+<span class="o">|</span>  <span class="p">[</span><span class="n">Message</span> <span class="mi">2</span><span class="p">]</span> <span class="s2">&quot;Meeting tomorrow at 2pm&quot;</span>                        <span class="o">|</span>
+<span class="o">|</span>       <span class="o">|</span>                                                       <span class="o">|</span>
+<span class="o">|</span>       <span class="o">+--</span> <span class="p">[</span><span class="n">Reply</span> <span class="mf">2.1</span><span class="p">]</span> <span class="s2">&quot;I&#39;ll be there&quot;</span>                         <span class="o">|</span>
+<span class="o">|</span>                                                               <span class="o">|</span>
+<span class="o">+---------------------------------------------------------------+</span>
+</pre></div>
+</div>
+<p><strong>Thread Benefits</strong></p>
+<ul class="simple">
+<li><p>Keeps related discussions organized</p></li>
+<li><p>Easy to follow conversation context</p></li>
+<li><p>Reduces noise in main talk view</p></li>
+</ul>
+</section>
+<section id="message-reactions">
+<h2>Message Reactions<a class="headerlink" href="#message-reactions" title="Link to this heading"></a></h2>
+<p>Add emoji reactions to messages for quick feedback.</p>
+<p><strong>Add Reaction</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/messages/&lt;message-id&gt;/reactions?token=&lt;token&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data &#39;{
+        &quot;emoji&quot;: &quot;thumbsup&quot;
+    }&#39;
+</pre></div>
+</div>
+<p><strong>Reaction Display</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>+-----------------------------------------------+
+| [Agent A] &quot;The deployment was successful!&quot;    |
+|                                               |
+|  👍 3   🎉 2   ❤️ 1                           |
++-----------------------------------------------+
+</pre></div>
+</div>
+<p><strong>Common Reactions</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Emoji</p></th>
+<th class="head"><p>Common Use</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>👍</p></td>
+<td><p>Agreement, acknowledgment</p></td>
+</tr>
+<tr class="row-odd"><td><p>👎</p></td>
+<td><p>Disagreement</p></td>
+</tr>
+<tr class="row-even"><td><p>❤️</p></td>
+<td><p>Appreciation, love</p></td>
+</tr>
+<tr class="row-odd"><td><p>🎉</p></td>
+<td><p>Celebration, success</p></td>
+</tr>
+<tr class="row-even"><td><p>👀</p></td>
+<td><p>Looking into it</p></td>
+</tr>
+<tr class="row-odd"><td><p>✅</p></td>
+<td><p>Done, completed</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="message-types">
+<h2>Message Types<a class="headerlink" href="#message-types" title="Link to this heading"></a></h2>
+<p>Messages can be different types based on their origin.</p>
+<p><strong>Normal Messages</strong></p>
+<p>Regular messages sent by agents.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;agent_id&quot;</span><span class="p">:</span> <span class="s2">&quot;agent-123&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Let&#39;s schedule a call tomorrow.&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>System Messages</strong></p>
+<p>Automated notifications about talk events.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;system&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Agent B joined the conversation.&quot;</span>
+<span class="p">}</span>
+
+<span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;system&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Agent C left the conversation.&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="real-time-updates">
+<h2>Real-Time Updates<a class="headerlink" href="#real-time-updates" title="Link to this heading"></a></h2>
+<p>Receive real-time message updates via WebSocket.</p>
+<p><strong>WebSocket Connection</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Agent</span>                          <span class="n">VoIPBIN</span>
+   <span class="o">|</span>                              <span class="o">|</span>
+   <span class="o">|</span> <span class="n">WebSocket</span> <span class="n">connect</span>            <span class="o">|</span>
+   <span class="o">+-----------------------------&gt;|</span>
+   <span class="o">|</span>                              <span class="o">|</span>
+   <span class="o">|</span> <span class="n">Subscribe</span> <span class="n">to</span> <span class="n">talk</span> <span class="n">events</span>     <span class="o">|</span>
+   <span class="o">+-----------------------------&gt;|</span>
+   <span class="o">|</span>                              <span class="o">|</span>
+   <span class="o">|&lt;====</span> <span class="n">message_created</span> <span class="o">========|</span>
+   <span class="o">|&lt;====</span> <span class="n">message_updated</span> <span class="o">========|</span>
+   <span class="o">|&lt;====</span> <span class="n">participant_joined</span> <span class="o">=====|</span>
+   <span class="o">|&lt;====</span> <span class="n">reaction_added</span> <span class="o">=========|</span>
+   <span class="o">|</span>                              <span class="o">|</span>
+</pre></div>
+</div>
+<p><strong>Event Types</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Event</p></th>
+<th class="head"><p>When it fires</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>message_created</p></td>
+<td><p>New message sent to talk</p></td>
+</tr>
+<tr class="row-odd"><td><p>message_updated</p></td>
+<td><p>Message edited</p></td>
+</tr>
+<tr class="row-even"><td><p>message_deleted</p></td>
+<td><p>Message removed</p></td>
+</tr>
+<tr class="row-odd"><td><p>reaction_added</p></td>
+<td><p>Reaction added to message</p></td>
+</tr>
+<tr class="row-even"><td><p>reaction_removed</p></td>
+<td><p>Reaction removed from message</p></td>
+</tr>
+<tr class="row-odd"><td><p>participant_joined</p></td>
+<td><p>Agent joined the talk</p></td>
+</tr>
+<tr class="row-even"><td><p>participant_left</p></td>
+<td><p>Agent left the talk</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="common-scenarios">
+<h2>Common Scenarios<a class="headerlink" href="#common-scenarios" title="Link to this heading"></a></h2>
+<p><strong>Scenario 1: Team Project Discussion</strong></p>
+<p>Create a group talk for project collaboration.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1. Create talk with team members
+   POST /talks
+   { &quot;name&quot;: &quot;Q1 Project&quot;, &quot;participant_ids&quot;: [...] }
+
+2. Send updates as messages
+   POST /talks/{id}/messages
+   { &quot;text&quot;: &quot;Sprint 1 completed!&quot; }
+
+3. Team reacts and replies in threads
+   - Reactions: 🎉 👍
+   - Thread: &quot;Great work! What&#39;s next?&quot;
+</pre></div>
+</div>
+<p><strong>Scenario 2: Quick Decision</strong></p>
+<p>Use reactions for quick polls.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>[Agent A] &quot;Should we deploy today? 👍 for yes, 👎 for no&quot;
+     |
+     +-- 👍 Agent B
+     +-- 👍 Agent C
+     +-- 👍 Agent D
+     +-- 👎 Agent E
+     |
+Result: 3-1, deploy approved
+</pre></div>
+</div>
+<p><strong>Scenario 3: Support Escalation</strong></p>
+<p>Internal discussion about customer issue.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>+------------------------------------------------+
+| Talk: &quot;Customer Issue #12345&quot;                  |
++------------------------------------------------+
+|                                                |
+| [Agent A] &quot;Customer reporting payment failure&quot; |
+|                                                |
+| [Agent B] &quot;Let me check the logs&quot;              |
+|     |                                          |
+|     +-- [Reply] &quot;Found it - gateway timeout&quot;   |
+|     +-- [Reply] &quot;Retrying the transaction&quot;     |
+|                                                |
+| [Agent A] &quot;Customer confirmed it works now&quot;    |
+|     👍 Agent B                                 |
+|                                                |
++------------------------------------------------+
+</pre></div>
+</div>
+</section>
+<section id="best-practices">
+<h2>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading"></a></h2>
+<p><strong>1. Talk Organization</strong></p>
+<ul class="simple">
+<li><p>Use descriptive talk names</p></li>
+<li><p>Create separate talks for different topics</p></li>
+<li><p>Archive inactive talks</p></li>
+</ul>
+<p><strong>2. Threading</strong></p>
+<ul class="simple">
+<li><p>Reply in threads to keep discussions organized</p></li>
+<li><p>Use threads for detailed discussions</p></li>
+<li><p>Keep main talk for announcements and new topics</p></li>
+</ul>
+<p><strong>3. Reactions</strong></p>
+<ul class="simple">
+<li><p>Use reactions for quick acknowledgments</p></li>
+<li><p>Avoid over-reacting to every message</p></li>
+<li><p>Use consistent reaction meanings in your team</p></li>
+</ul>
+<p><strong>4. Media Sharing</strong></p>
+<ul class="simple">
+<li><p>Use descriptive filenames</p></li>
+<li><p>Keep file sizes reasonable</p></li>
+<li><p>Reference shared files in message text</p></li>
+</ul>
+</section>
+<section id="troubleshooting">
+<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h2>
+<p><strong>Message Issues</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Symptom</p></th>
+<th class="head"><p>Solution</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Message not delivered</p></td>
+<td><p>Check agent is participant in talk; verify
+WebSocket connection</p></td>
+</tr>
+<tr class="row-odd"><td><p>Thread not showing</p></td>
+<td><p>Verify parent_id is correct; check message
+exists</p></td>
+</tr>
+<tr class="row-even"><td><p>Media not loading</p></td>
+<td><p>Check URL accessibility; verify file format</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Participant Issues</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Symptom</p></th>
+<th class="head"><p>Solution</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Can’t add participant</p></td>
+<td><p>Verify agent exists; check talk is active</p></td>
+</tr>
+<tr class="row-odd"><td><p>Not receiving messages</p></td>
+<td><p>Check participant status; verify WebSocket
+subscription</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="related-documentation">
+<h2>Related Documentation<a class="headerlink" href="#related-documentation" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="agent_overview.html#agent-overview"><span class="std std-ref">Agent Overview</span></a> - Agent management</p></li>
+<li><p><span class="xref std std-ref">WebSocket Overview</span> - Real-time connections</p></li>
+<li><p><a class="reference internal" href="conversation_overview.html#conversation-overview"><span class="std std-ref">Conversation Overview</span></a> - Multi-channel messaging</p></li>
+</ul>
 </section>
 </section>
 
@@ -211,8 +669,19 @@
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
 <li><a class="reference internal" href="#">Overview</a><ul>
-<li><a class="reference internal" href="#talk-and-participants">Talk and Participants</a></li>
-<li><a class="reference internal" href="#messages-with-threading-and-reactions">Messages with Threading and Reactions</a></li>
+<li><a class="reference internal" href="#how-talk-works">How Talk Works</a></li>
+<li><a class="reference internal" href="#talk-types">Talk Types</a></li>
+<li><a class="reference internal" href="#talk-lifecycle">Talk Lifecycle</a></li>
+<li><a class="reference internal" href="#creating-and-managing-talks">Creating and Managing Talks</a></li>
+<li><a class="reference internal" href="#sending-messages">Sending Messages</a></li>
+<li><a class="reference internal" href="#message-threading">Message Threading</a></li>
+<li><a class="reference internal" href="#message-reactions">Message Reactions</a></li>
+<li><a class="reference internal" href="#message-types">Message Types</a></li>
+<li><a class="reference internal" href="#real-time-updates">Real-Time Updates</a></li>
+<li><a class="reference internal" href="#common-scenarios">Common Scenarios</a></li>
+<li><a class="reference internal" href="#best-practices">Best Practices</a></li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
+<li><a class="reference internal" href="#related-documentation">Related Documentation</a></li>
 </ul>
 </li>
 </ul>

@@ -12,6 +12,7 @@ With the VoIPBIN API you can:
 - Create conference calls.
 - Send text-to-speech messages in 50 languages with different gender and accents.
 
+
 Protocol
 --------
 VoIPBIN offers support for various call/video protocols, enabling users to join the same conference room and communicate with one another seamlessly. The flexibility in protocol options ensures efficient and reliable communication between different devices and platforms.
@@ -394,6 +395,67 @@ When calls are related, they form a chain:
     | Caller |<----->| VoIPBIN |<----->| Supervisor |
     +--------+       +---------+       +------------+
 
+**Multi-Party Chaining (3+ Parties)**
+
+Call chaining supports more than two parties. Each chained call connects to the master:
+
+::
+
+    +--------+       +---------+       +---------+
+    | Caller |<----->| VoIPBIN |<----->| Agent 1 |
+    +--------+       +----+----+       +---------+
+                          |
+                          +------------>+---------+
+                          |             | Agent 2 |
+                          |             +---------+
+                          |
+                          +------------>+------------+
+                                        | Supervisor |
+                                        +------------+
+
+    Master: Caller's call
+    Chained: Agent 1, Agent 2, Supervisor (all linked to master)
+
+**Chaining vs Conference Decision Guide**
+
+::
+
+                    Need multiple parties?
+                           |
+              +------------+------------+
+              |                         |
+         Sequential?               Simultaneous?
+         (one at a time)          (all at once)
+              |                         |
+        +-----+-----+             +-----+-----+
+        |           |             |           |
+       Yes         No            Yes         No
+        |           |             |           |
+        v           |             v           |
+    [Chaining]      |       [Conference]      |
+                    |                         |
+               Need transfers?                |
+                    |                         |
+              +-----+-----+                   |
+              |           |                   |
+             Yes         No                   |
+              |           +-------------------+
+              v                   |
+          [Chaining]              v
+                            [Conference]
+
++-------------------+----------------------------------+----------------------------------+
+| Aspect            | Call Chaining                    | Conference                       |
++===================+==================================+==================================+
+| Parties           | Sequential (transfer model)      | Simultaneous (meeting model)     |
++-------------------+----------------------------------+----------------------------------+
+| Audio             | Bridged between pairs            | Mixed for all participants       |
++-------------------+----------------------------------+----------------------------------+
+| Master Control    | Master hangup ends all           | Host controls conference         |
++-------------------+----------------------------------+----------------------------------+
+| Best For          | Transfers, escalation, queues    | Meetings, group calls            |
++-------------------+----------------------------------+----------------------------------+
+
 
 Timestamps Explained
 --------------------
@@ -634,3 +696,82 @@ VoIPBIN Call Concept
 * Visualizes a call's path, which may involve connecting to an agent and branching to additional destinations.
 
 In summary, while the traditional call concept adheres to a simple point-to-point model, the VoIPBIN call concept introduces a more flexible and multifaceted approach, accommodating diverse call scenarios and interactions.
+
+
+Related Documentation
+---------------------
+Calls integrate with many VoIPBIN features. Use these links for detailed information:
+
+**Recording a Call**
+
+Capture call audio for compliance, training, or analysis.
+
+::
+
+    Call                              Recording
+    +------------+                    +------------+
+    | progressing|---recording_start->| recording  |
+    |            |                    |            |
+    |            |<--recording_id-----| available  |
+    +------------+                    +------------+
+
+See :ref:`Recording Overview <recording-overview>` for recording lifecycle, storage, and best practices.
+
+**Transcribing a Call**
+
+Convert call audio to text in real-time.
+
+::
+
+    Call                              Transcription
+    +------------+                    +---------------+
+    | progressing|--transcribe_start->| transcribing  |
+    |            |                    |               |
+    |            |<--transcript events| (streaming)   |
+    +------------+                    +---------------+
+
+See :ref:`Transcribe Overview <transcribe-overview>` for transcription delivery and language support.
+
+**Streaming Call Audio**
+
+Access raw call audio via WebSocket for AI, analysis, or custom processing.
+
+::
+
+    Call                              Your App
+    +------------+                    +---------------+
+    | progressing|<== WebSocket ====>|  AI / STT     |
+    |            |   (audio stream)  |  Processing   |
+    +------------+                    +---------------+
+
+See :ref:`Media Stream Overview <mediastream-overview>` for encapsulation types and integration patterns.
+
+**Queuing a Call**
+
+Route calls through agent queues for call center scenarios.
+
+::
+
+    Call                              Queue
+    +------------+                    +---------------+
+    |  incoming  |---queue action---->| waiting       |
+    |            |                    |               |
+    |            |<--agent connected--| service       |
+    +------------+                    +---------------+
+
+See :ref:`Queue Overview <queue-overview>` for queue management and agent matching.
+
+**Adding to Conference**
+
+Join a call to a multi-party conference.
+
+::
+
+    Call                              Conference
+    +------------+                    +---------------+
+    | progressing|--join action------>| progressing   |
+    |            |                    |               |
+    |            |<--audio mixed------| (all parties) |
+    +------------+                    +---------------+
+
+See :ref:`Conference Overview <conference-overview>` for conference types and participant management.
