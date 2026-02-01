@@ -152,7 +152,7 @@ cartesia                 71a7ad14-091c-4e8e-a314-022ece01c121
 
 STT Type
 --------
-Speech-to-Text provider for converting caller audio to text.
+Speech-to-Text provider for converting incoming audio to text.
 
 ================ =======================================
 Type             Description

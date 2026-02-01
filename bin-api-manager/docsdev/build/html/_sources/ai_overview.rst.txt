@@ -36,7 +36,7 @@ VoIPBIN's AI system consists of two main components working together: the AI Man
            |                              | execution                  | processing
            v                              v                            v
     +-------------------+        +-------------------+        +-------------------+
-    |      Caller       |        | call-manager      |        |    STT / LLM      |
+    |       User        |        | call-manager      |        |    STT / LLM      |
     |    (Phone)        |        | message-manager   |        |      / TTS        |
     |                   |        | email-manager     |        |   Providers       |
     +-------------------+        +-------------------+        +-------------------+
@@ -52,7 +52,7 @@ Audio flows through the system with sample rate conversion between components:
     |                           Audio Flow                                  |
     +-----------------------------------------------------------------------+
 
-    Caller (Phone)                    VoIPBIN                    AI Providers
+    User (Phone)                    VoIPBIN                    AI Providers
          |                               |                           |
          |  RTP (8kHz PCM)               |                           |
          +------------------------------>|                           |
@@ -121,7 +121,7 @@ An AI call goes through several stages from initialization to termination:
 
     2. PROCESSING (Real-time conversation)
        +-------------------+        +-------------------+
-       |     Caller        |<------>|    Pipecat        |
+       |      User          |<------>|    Pipecat        |
        |   speaks/listens  |        |  STT->LLM->TTS    |
        +-------------------+        +-------------------+
               ^                            |
@@ -164,7 +164,7 @@ VoIPBIN's AI uses Speech-to-Text (STT) to convert spoken words into text, proces
 
 Voice Detection and Play Interruption
 -------------------------------------
-VoIPBIN incorporates voice detection for natural conversational flow. While the AI is speaking (TTS playback), if the system detects the caller's voice, it immediately stops TTS and routes the caller's speech to STT and then to the LLM. This ensures caller input is prioritized, enabling dynamic interaction that resembles real conversation.
+VoIPBIN incorporates voice detection for natural conversational flow. While the AI is speaking (TTS playback), if the system detects the user's voice, it immediately stops TTS and routes the user's speech to STT and then to the LLM. This ensures user input is prioritized, enabling dynamic interaction that resembles real conversation.
 
 ::
 
@@ -172,7 +172,7 @@ VoIPBIN incorporates voice detection for natural conversational flow. While the 
     |                       Voice Interruption Flow                         |
     +-----------------------------------------------------------------------+
 
-         AI Speaking                 Caller Interrupts            AI Listens
+         AI Speaking                 User Interrupts              AI Listens
               |                            |                          |
     +---------v---------+                  |                          |
     |  TTS audio plays  |                  |                          |
@@ -190,7 +190,7 @@ VoIPBIN incorporates voice detection for natural conversational flow. While the 
               +--------------------------->|                          |
                                            |                          |
                                   +--------v--------+                 |
-                                  | Caller speaks:  |                 |
+                                  | User speaks:    |                 |
                                   | "Actually, I    |                 |
                                   |  need help with |                 |
                                   |  something else"|                 |
@@ -226,7 +226,7 @@ Tool Execution Architecture
     |                      Tool Execution Flow                              |
     +-----------------------------------------------------------------------+
 
-    Step 1: Caller makes request
+    Step 1: User makes request
     +-------------------+
     | "Transfer me to   |
     |  sales please"    |
@@ -281,7 +281,7 @@ Tool Execution Architecture
     +-------------------+
     | TTS converts to   |
     | audio, plays to   |
-    | caller            |
+    | user              |
     +-------------------+
 
 
@@ -349,7 +349,7 @@ Key Features
 ------------
 
 * **Real-time Voice Interaction**: AI generates responses in real-time based on user input and delivers them as speech.
-* **Interruption Detection & Listening**: If the caller speaks while the AI is talking, the system immediately **stops the AI's speech** and captures the user's voice via STT. This ensures smooth, continuous conversation flow.
+* **Interruption Detection & Listening**: If the user speaks while the AI is talking, the system immediately **stops the AI's speech** and captures the user's voice via STT. This ensures smooth, continuous conversation flow.
 * **Low Latency Response**: For longer prompts, AI Talk generates and plays speech in smaller chunks, **reducing perceived response time** for the user.
 * **Multiple TTS/STT Providers**: Support for ElevenLabs, Deepgram, OpenAI, and many other providers.
 * **Tool Function Integration**: AI can perform actions like call transfers, sending messages, and managing variables during conversation.

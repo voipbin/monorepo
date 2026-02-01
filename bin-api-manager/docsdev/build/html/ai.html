@@ -219,7 +219,7 @@
        <span class="o">|</span>                              <span class="o">|</span> <span class="n">execution</span>                  <span class="o">|</span> <span class="n">processing</span>
        <span class="n">v</span>                              <span class="n">v</span>                            <span class="n">v</span>
 <span class="o">+-------------------+</span>        <span class="o">+-------------------+</span>        <span class="o">+-------------------+</span>
-<span class="o">|</span>      <span class="n">Caller</span>       <span class="o">|</span>        <span class="o">|</span> <span class="n">call</span><span class="o">-</span><span class="n">manager</span>      <span class="o">|</span>        <span class="o">|</span>    <span class="n">STT</span> <span class="o">/</span> <span class="n">LLM</span>      <span class="o">|</span>
+<span class="o">|</span>       <span class="n">User</span>        <span class="o">|</span>        <span class="o">|</span> <span class="n">call</span><span class="o">-</span><span class="n">manager</span>      <span class="o">|</span>        <span class="o">|</span>    <span class="n">STT</span> <span class="o">/</span> <span class="n">LLM</span>      <span class="o">|</span>
 <span class="o">|</span>    <span class="p">(</span><span class="n">Phone</span><span class="p">)</span>        <span class="o">|</span>        <span class="o">|</span> <span class="n">message</span><span class="o">-</span><span class="n">manager</span>   <span class="o">|</span>        <span class="o">|</span>      <span class="o">/</span> <span class="n">TTS</span>        <span class="o">|</span>
 <span class="o">|</span>                   <span class="o">|</span>        <span class="o">|</span> <span class="n">email</span><span class="o">-</span><span class="n">manager</span>     <span class="o">|</span>        <span class="o">|</span>   <span class="n">Providers</span>       <span class="o">|</span>
 <span class="o">+-------------------+</span>        <span class="o">+-------------------+</span>        <span class="o">+-------------------+</span>
@@ -233,7 +233,7 @@
 <span class="o">|</span>                           <span class="n">Audio</span> <span class="n">Flow</span>                                  <span class="o">|</span>
 <span class="o">+-----------------------------------------------------------------------+</span>
 
-<span class="n">Caller</span> <span class="p">(</span><span class="n">Phone</span><span class="p">)</span>                    <span class="n">VoIPBIN</span>                    <span class="n">AI</span> <span class="n">Providers</span>
+<span class="n">User</span> <span class="p">(</span><span class="n">Phone</span><span class="p">)</span>                    <span class="n">VoIPBIN</span>                    <span class="n">AI</span> <span class="n">Providers</span>
      <span class="o">|</span>                               <span class="o">|</span>                           <span class="o">|</span>
      <span class="o">|</span>  <span class="n">RTP</span> <span class="p">(</span><span class="mi">8</span><span class="n">kHz</span> <span class="n">PCM</span><span class="p">)</span>               <span class="o">|</span>                           <span class="o">|</span>
      <span class="o">+------------------------------&gt;|</span>                           <span class="o">|</span>
@@ -300,7 +300,7 @@
 
 <span class="mf">2.</span> <span class="n">PROCESSING</span> <span class="p">(</span><span class="n">Real</span><span class="o">-</span><span class="n">time</span> <span class="n">conversation</span><span class="p">)</span>
    <span class="o">+-------------------+</span>        <span class="o">+-------------------+</span>
-   <span class="o">|</span>     <span class="n">Caller</span>        <span class="o">|&lt;------&gt;|</span>    <span class="n">Pipecat</span>        <span class="o">|</span>
+   <span class="o">|</span>      <span class="n">User</span>          <span class="o">|&lt;------&gt;|</span>    <span class="n">Pipecat</span>        <span class="o">|</span>
    <span class="o">|</span>   <span class="n">speaks</span><span class="o">/</span><span class="n">listens</span>  <span class="o">|</span>        <span class="o">|</span>  <span class="n">STT</span><span class="o">-&gt;</span><span class="n">LLM</span><span class="o">-&gt;</span><span class="n">TTS</span>    <span class="o">|</span>
    <span class="o">+-------------------+</span>        <span class="o">+-------------------+</span>
           <span class="o">^</span>                            <span class="o">|</span>
@@ -338,12 +338,12 @@
 </section>
 <section id="voice-detection-and-play-interruption">
 <h3>Voice Detection and Play Interruption<a class="headerlink" href="#voice-detection-and-play-interruption" title="Link to this heading"></a></h3>
-<p>VoIPBIN incorporates voice detection for natural conversational flow. While the AI is speaking (TTS playback), if the system detects the caller’s voice, it immediately stops TTS and routes the caller’s speech to STT and then to the LLM. This ensures caller input is prioritized, enabling dynamic interaction that resembles real conversation.</p>
+<p>VoIPBIN incorporates voice detection for natural conversational flow. While the AI is speaking (TTS playback), if the system detects the user’s voice, it immediately stops TTS and routes the user’s speech to STT and then to the LLM. This ensures user input is prioritized, enabling dynamic interaction that resembles real conversation.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-----------------------------------------------------------------------+</span>
 <span class="o">|</span>                       <span class="n">Voice</span> <span class="n">Interruption</span> <span class="n">Flow</span>                         <span class="o">|</span>
 <span class="o">+-----------------------------------------------------------------------+</span>
 
-     <span class="n">AI</span> <span class="n">Speaking</span>                 <span class="n">Caller</span> <span class="n">Interrupts</span>            <span class="n">AI</span> <span class="n">Listens</span>
+     <span class="n">AI</span> <span class="n">Speaking</span>                 <span class="n">User</span> <span class="n">Interrupts</span>              <span class="n">AI</span> <span class="n">Listens</span>
           <span class="o">|</span>                            <span class="o">|</span>                          <span class="o">|</span>
 <span class="o">+---------</span><span class="n">v</span><span class="o">---------+</span>                  <span class="o">|</span>                          <span class="o">|</span>
 <span class="o">|</span>  <span class="n">TTS</span> <span class="n">audio</span> <span class="n">plays</span>  <span class="o">|</span>                  <span class="o">|</span>                          <span class="o">|</span>
@@ -361,7 +361,7 @@
           <span class="o">+---------------------------&gt;|</span>                          <span class="o">|</span>
                                        <span class="o">|</span>                          <span class="o">|</span>
                               <span class="o">+--------</span><span class="n">v</span><span class="o">--------+</span>                 <span class="o">|</span>
-                              <span class="o">|</span> <span class="n">Caller</span> <span class="n">speaks</span><span class="p">:</span>  <span class="o">|</span>                 <span class="o">|</span>
+                              <span class="o">|</span> <span class="n">User</span> <span class="n">speaks</span><span class="p">:</span>    <span class="o">|</span>                 <span class="o">|</span>
                               <span class="o">|</span> <span class="s2">&quot;Actually, I    |                 |</span>
                               <span class="o">|</span>  <span class="n">need</span> <span class="n">help</span> <span class="k">with</span> <span class="o">|</span>                 <span class="o">|</span>
                               <span class="o">|</span>  <span class="n">something</span> <span class="k">else</span><span class="s2">&quot;|                 |</span>
@@ -395,7 +395,7 @@
 <span class="o">|</span>                      <span class="n">Tool</span> <span class="n">Execution</span> <span class="n">Flow</span>                              <span class="o">|</span>
 <span class="o">+-----------------------------------------------------------------------+</span>
 
-<span class="n">Step</span> <span class="mi">1</span><span class="p">:</span> <span class="n">Caller</span> <span class="n">makes</span> <span class="n">request</span>
+<span class="n">Step</span> <span class="mi">1</span><span class="p">:</span> <span class="n">User</span> <span class="n">makes</span> <span class="n">request</span>
 <span class="o">+-------------------+</span>
 <span class="o">|</span> <span class="s2">&quot;Transfer me to   |</span>
 <span class="o">|</span>  <span class="n">sales</span> <span class="n">please</span><span class="s2">&quot;    |</span>
@@ -450,7 +450,7 @@
 <span class="o">+-------------------+</span>
 <span class="o">|</span> <span class="n">TTS</span> <span class="n">converts</span> <span class="n">to</span>   <span class="o">|</span>
 <span class="o">|</span> <span class="n">audio</span><span class="p">,</span> <span class="n">plays</span> <span class="n">to</span>   <span class="o">|</span>
-<span class="o">|</span> <span class="n">caller</span>            <span class="o">|</span>
+<span class="o">|</span> <span class="n">user</span>              <span class="o">|</span>
 <span class="o">+-------------------+</span>
 </pre></div>
 </div>
@@ -534,7 +534,7 @@
 <h3>Key Features<a class="headerlink" href="#key-features" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p><strong>Real-time Voice Interaction</strong>: AI generates responses in real-time based on user input and delivers them as speech.</p></li>
-<li><p><strong>Interruption Detection &amp; Listening</strong>: If the caller speaks while the AI is talking, the system immediately <strong>stops the AI’s speech</strong> and captures the user’s voice via STT. This ensures smooth, continuous conversation flow.</p></li>
+<li><p><strong>Interruption Detection &amp; Listening</strong>: If the user speaks while the AI is talking, the system immediately <strong>stops the AI’s speech</strong> and captures the user’s voice via STT. This ensures smooth, continuous conversation flow.</p></li>
 <li><p><strong>Low Latency Response</strong>: For longer prompts, AI Talk generates and plays speech in smaller chunks, <strong>reducing perceived response time</strong> for the user.</p></li>
 <li><p><strong>Multiple TTS/STT Providers</strong>: Support for ElevenLabs, Deepgram, OpenAI, and many other providers.</p></li>
 <li><p><strong>Tool Function Integration</strong>: AI can perform actions like call transfers, sending messages, and managing variables during conversation.</p></li>
@@ -967,7 +967,7 @@
 </section>
 <section id="stt-type">
 <span id="ai-struct-ai-stt-type"></span><h3>STT Type<a class="headerlink" href="#stt-type" title="Link to this heading"></a></h3>
-<p>Speech-to-Text provider for converting caller audio to text.</p>
+<p>Speech-to-Text provider for converting incoming audio to text.</p>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Type</p></th>
@@ -1092,7 +1092,7 @@
 </section>
 <section id="connect-call">
 <span id="ai-struct-tool-connect-call"></span><h3>connect_call<a class="headerlink" href="#connect-call" title="Link to this heading"></a></h3>
-<p>Connects or transfers the caller to another endpoint (person, department, or phone number).</p>
+<p>Connects or transfers the user to another endpoint (person, department, or phone number).</p>
 <p><strong>When to use:</strong></p>
 <ul class="simple">
 <li><p>Caller requests a transfer: “transfer me to…”, “connect me to…”</p></li>
@@ -1527,7 +1527,7 @@
 <span id="ai-tutorial"></span><h2>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h2>
 <section id="simple-ai-voice-assistant">
 <h3>Simple AI Voice Assistant<a class="headerlink" href="#simple-ai-voice-assistant" title="Link to this heading"></a></h3>
-<p>Create a basic AI voice assistant that answers questions during a call. The AI will listen to the caller’s speech, process it, and respond using text-to-speech.</p>
+<p>Create a basic AI voice assistant that answers questions during a call. The AI will listen to the user’s speech, process it, and respond using text-to-speech.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
     --data-raw &#39;{
@@ -1559,13 +1559,13 @@
 </div>
 <p>This creates a call with an AI assistant that will:
 1. Answer the incoming call
-2. Listen to the caller’s speech using STT (Speech-to-Text)
+2. Listen to the user’s speech using STT (Speech-to-Text)
 3. Process the input through the AI engine with the given prompt
 4. Respond using TTS (Text-to-Speech)</p>
 </section>
 <section id="ai-talk-with-real-time-conversation">
 <h3>AI Talk with Real-Time Conversation<a class="headerlink" href="#ai-talk-with-real-time-conversation" title="Link to this heading"></a></h3>
-<p>Use AI Talk for more natural, low-latency conversations powered by ElevenLabs. This enables interruption detection where the AI stops speaking when the caller starts talking.</p>
+<p>Use AI Talk for more natural, low-latency conversations powered by ElevenLabs. This enables interruption detection where the AI stops speaking when the user starts talking.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
     --data-raw &#39;{
@@ -1596,7 +1596,7 @@
 </pre></div>
 </div>
 <p>AI Talk provides:
-- <strong>Interruption Detection</strong>: Stops speaking when caller talks
+- <strong>Interruption Detection</strong>: Stops speaking when user talks
 - <strong>Low Latency</strong>: Streams responses in chunks for faster perceived response time
 - <strong>Natural Voice</strong>: Uses ElevenLabs for high-quality voice output
 - <strong>Context Retention</strong>: Remembers previous conversation exchanges</p>
@@ -1771,7 +1771,7 @@
 - Define the tone (professional, friendly, technical, etc.)</p>
 <p><strong>Language Support:</strong>
 - AI supports multiple languages (see <a class="reference internal" href="transcribe_overview.html#transcribe-overview-supported-languages"><span class="std std-ref">supported languages</span></a>)
-- Match the <code class="docutils literal notranslate"><span class="pre">language</span></code> parameter with caller’s expected language
+- Match the <code class="docutils literal notranslate"><span class="pre">language</span></code> parameter with the user’s expected language
 - AI can detect and respond in multiple languages if not constrained</p>
 <p><strong>Context Retention:</strong>
 - AI remembers conversation history within the same call
@@ -1780,7 +1780,7 @@
 <p><strong>Error Handling:</strong>
 - Always include fallback actions after AI actions
 - Handle cases where AI may not understand the input
-- Provide clear instructions to callers about what they can ask</p>
+- Provide clear instructions to users about what they can ask</p>
 <p>For more details on AI features and configuration, see <a class="reference internal" href="ai_overview.html#ai-overview"><span class="std std-ref">AI Overview</span></a>.</p>
 </section>
 </section>

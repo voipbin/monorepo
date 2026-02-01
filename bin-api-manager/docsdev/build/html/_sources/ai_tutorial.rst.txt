@@ -6,7 +6,7 @@ Tutorial
 Simple AI Voice Assistant
 -------------------------
 
-Create a basic AI voice assistant that answers questions during a call. The AI will listen to the caller's speech, process it, and respond using text-to-speech.
+Create a basic AI voice assistant that answers questions during a call. The AI will listen to the user's speech, process it, and respond using text-to-speech.
 
 .. code::
 
@@ -40,14 +40,14 @@ Create a basic AI voice assistant that answers questions during a call. The AI w
 
 This creates a call with an AI assistant that will:
 1. Answer the incoming call
-2. Listen to the caller's speech using STT (Speech-to-Text)
+2. Listen to the user's speech using STT (Speech-to-Text)
 3. Process the input through the AI engine with the given prompt
 4. Respond using TTS (Text-to-Speech)
 
 AI Talk with Real-Time Conversation
 ------------------------------------
 
-Use AI Talk for more natural, low-latency conversations powered by ElevenLabs. This enables interruption detection where the AI stops speaking when the caller starts talking.
+Use AI Talk for more natural, low-latency conversations powered by ElevenLabs. This enables interruption detection where the AI stops speaking when the user starts talking.
 
 .. code::
 
@@ -80,7 +80,7 @@ Use AI Talk for more natural, low-latency conversations powered by ElevenLabs. T
         }'
 
 AI Talk provides:
-- **Interruption Detection**: Stops speaking when caller talks
+- **Interruption Detection**: Stops speaking when user talks
 - **Low Latency**: Streams responses in chunks for faster perceived response time
 - **Natural Voice**: Uses ElevenLabs for high-quality voice output
 - **Context Retention**: Remembers previous conversation exchanges
@@ -266,7 +266,7 @@ Best Practices
 
 **Language Support:**
 - AI supports multiple languages (see :ref:`supported languages <transcribe-overview-supported_languages>`)
-- Match the ``language`` parameter with caller's expected language
+- Match the ``language`` parameter with the user's expected language
 - AI can detect and respond in multiple languages if not constrained
 
 **Context Retention:**
@@ -277,6 +277,6 @@ Best Practices
 **Error Handling:**
 - Always include fallback actions after AI actions
 - Handle cases where AI may not understand the input
-- Provide clear instructions to callers about what they can ask
+- Provide clear instructions to users about what they can ask
 
 For more details on AI features and configuration, see :ref:`AI Overview <ai-overview>`.

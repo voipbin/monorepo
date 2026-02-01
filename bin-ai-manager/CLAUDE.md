@@ -195,7 +195,7 @@ The AI Manager (Go) and Pipecat Manager (Python) work together to provide real-t
        |                              | execution                  | processing
        v                              v                            v
 +-------------------+        +-------------------+        +-------------------+
-|      Caller       |        | call-manager      |        |    STT / LLM      |
+|       User        |        | call-manager      |        |    STT / LLM      |
 |    (Phone)        |        | message-manager   |        |      / TTS        |
 |                   |        | email-manager     |        |   Providers       |
 +-------------------+        +-------------------+        +-------------------+
@@ -211,7 +211,7 @@ The AI Manager (Go) and Pipecat Manager (Python) work together to provide real-t
 **Audio Flow with Sample Rate Conversion:**
 
 ```
-Caller (Phone)     Asterisk        Pipecat         STT/LLM/TTS
+User (Phone)       Asterisk        Pipecat         STT/LLM/TTS
      |                |               |                |
      | RTP 8kHz PCM   |               |                |
      +--------------->|               |                |
