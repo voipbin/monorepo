@@ -2,7 +2,10 @@ package ai
 
 import (
 	"encoding/json"
+
 	commonidentity "monorepo/bin-common-handler/models/identity"
+
+	"monorepo/bin-ai-manager/models/tool"
 )
 
 // WebhookMessage defines webhook event
@@ -23,6 +26,8 @@ type WebhookMessage struct {
 	TTSVoiceID string  `json:"tts_voice_id,omitempty"`
 
 	STTType STTType `json:"stt_type,omitempty"`
+
+	ToolNames []tool.ToolName `json:"tool_names,omitempty"`
 
 	// timestamp
 	TMCreate string `json:"tm_create,omitempty"`
@@ -49,6 +54,8 @@ func (h *AI) ConvertWebhookMessage() *WebhookMessage {
 		TTSVoiceID: h.TTSVoiceID,
 
 		STTType: h.STTType,
+
+		ToolNames: h.ToolNames,
 
 		TMCreate: h.TMCreate,
 		TMUpdate: h.TMUpdate,
