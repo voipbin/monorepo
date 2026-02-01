@@ -184,43 +184,326 @@
                     <div class="col-12 col-lg-9 order-last order-lg-first rst-content">
                         <main role="main" id="main">
     <section id="overview">
-<h1>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h1>
-<p>VoIPBIN’s AI is a built-in AI agent that enables automated, intelligent voice interactions during live calls. Designed for seamless integration within VoIPBIN’s flow, the AI utilizes ChatGPT as its AI engine to process and respond to user inputs in real time. This allows developers to create dynamic and interactive voice experiences without requiring manual intervention.</p>
+<span id="ai-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h1>
+<p>VoIPBIN’s AI is a built-in AI agent that enables automated, intelligent voice interactions during live calls. The AI integrates with multiple LLM providers (OpenAI, Anthropic, Gemini, and 15+ others), real-time speech processing, and tool functions to create dynamic, interactive voice experiences.</p>
 </section>
 <section id="how-it-works">
 <h1>How it works<a class="headerlink" href="#how-it-works" title="Link to this heading"></a></h1>
+<section id="architecture-overview">
+<h2>Architecture Overview<a class="headerlink" href="#architecture-overview" title="Link to this heading"></a></h2>
+<p>VoIPBIN’s AI system consists of two main components working together: the AI Manager (Go) for orchestration and the Pipecat Manager (Python) for real-time audio processing.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-----------------------------------------------------------------------+</span>
+<span class="o">|</span>                        <span class="n">VoIPBIN</span> <span class="n">AI</span> <span class="n">Architecture</span>                        <span class="o">|</span>
+<span class="o">+-----------------------------------------------------------------------+</span>
+
+                             <span class="o">+-------------------+</span>
+                             <span class="o">|</span>   <span class="n">Flow</span> <span class="n">Manager</span>    <span class="o">|</span>
+                             <span class="o">|</span>  <span class="p">(</span><span class="n">ai_talk</span> <span class="n">action</span><span class="p">)</span> <span class="o">|</span>
+                             <span class="o">+--------+----------+</span>
+                                      <span class="o">|</span>
+                                      <span class="o">|</span> <span class="n">Start</span> <span class="n">AI</span> <span class="n">session</span>
+                                      <span class="n">v</span>
+<span class="o">+-------------------+</span>        <span class="o">+-------------------+</span>        <span class="o">+-------------------+</span>
+<span class="o">|</span>                   <span class="o">|</span>        <span class="o">|</span>                   <span class="o">|</span>        <span class="o">|</span>                   <span class="o">|</span>
+<span class="o">|</span>    <span class="n">Asterisk</span>       <span class="o">|&lt;------&gt;|</span>   <span class="n">AI</span> <span class="n">Manager</span>      <span class="o">|&lt;------&gt;|</span>  <span class="n">Pipecat</span> <span class="n">Manager</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="p">(</span><span class="mi">8</span><span class="n">kHz</span> <span class="n">audio</span><span class="p">)</span>     <span class="o">|</span>  <span class="n">HTTP</span>  <span class="o">|</span>     <span class="p">(</span><span class="n">Go</span><span class="p">)</span>          <span class="o">|</span> <span class="n">RMQ</span><span class="o">/</span><span class="n">WS</span> <span class="o">|</span>    <span class="p">(</span><span class="n">Python</span><span class="p">)</span>       <span class="o">|</span>
+<span class="o">|</span>                   <span class="o">|</span>        <span class="o">|</span>                   <span class="o">|</span>        <span class="o">|</span>                   <span class="o">|</span>
+<span class="o">+-------------------+</span>        <span class="o">+--------+----------+</span>        <span class="o">+--------+----------+</span>
+       <span class="o">^</span>                              <span class="o">|</span>                            <span class="o">|</span>
+       <span class="o">|</span>                              <span class="o">|</span>                            <span class="o">|</span>
+       <span class="o">|</span> <span class="n">RTP</span> <span class="n">audio</span>                    <span class="o">|</span> <span class="n">Tool</span>                       <span class="o">|</span> <span class="n">Real</span><span class="o">-</span><span class="n">time</span>
+       <span class="o">|</span>                              <span class="o">|</span> <span class="n">execution</span>                  <span class="o">|</span> <span class="n">processing</span>
+       <span class="n">v</span>                              <span class="n">v</span>                            <span class="n">v</span>
+<span class="o">+-------------------+</span>        <span class="o">+-------------------+</span>        <span class="o">+-------------------+</span>
+<span class="o">|</span>      <span class="n">Caller</span>       <span class="o">|</span>        <span class="o">|</span> <span class="n">call</span><span class="o">-</span><span class="n">manager</span>      <span class="o">|</span>        <span class="o">|</span>    <span class="n">STT</span> <span class="o">/</span> <span class="n">LLM</span>      <span class="o">|</span>
+<span class="o">|</span>    <span class="p">(</span><span class="n">Phone</span><span class="p">)</span>        <span class="o">|</span>        <span class="o">|</span> <span class="n">message</span><span class="o">-</span><span class="n">manager</span>   <span class="o">|</span>        <span class="o">|</span>      <span class="o">/</span> <span class="n">TTS</span>        <span class="o">|</span>
+<span class="o">|</span>                   <span class="o">|</span>        <span class="o">|</span> <span class="n">email</span><span class="o">-</span><span class="n">manager</span>     <span class="o">|</span>        <span class="o">|</span>   <span class="n">Providers</span>       <span class="o">|</span>
+<span class="o">+-------------------+</span>        <span class="o">+-------------------+</span>        <span class="o">+-------------------+</span>
+</pre></div>
+</div>
+</section>
+<section id="audio-flow">
+<h2>Audio Flow<a class="headerlink" href="#audio-flow" title="Link to this heading"></a></h2>
+<p>Audio flows through the system with sample rate conversion between components:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-----------------------------------------------------------------------+</span>
+<span class="o">|</span>                           <span class="n">Audio</span> <span class="n">Flow</span>                                  <span class="o">|</span>
+<span class="o">+-----------------------------------------------------------------------+</span>
+
+<span class="n">Caller</span> <span class="p">(</span><span class="n">Phone</span><span class="p">)</span>                    <span class="n">VoIPBIN</span>                    <span class="n">AI</span> <span class="n">Providers</span>
+     <span class="o">|</span>                               <span class="o">|</span>                           <span class="o">|</span>
+     <span class="o">|</span>  <span class="n">RTP</span> <span class="p">(</span><span class="mi">8</span><span class="n">kHz</span> <span class="n">PCM</span><span class="p">)</span>               <span class="o">|</span>                           <span class="o">|</span>
+     <span class="o">+------------------------------&gt;|</span>                           <span class="o">|</span>
+     <span class="o">|</span>                               <span class="o">|</span>                           <span class="o">|</span>
+     <span class="o">|</span>              <span class="o">+----------------+----------------+</span>          <span class="o">|</span>
+     <span class="o">|</span>              <span class="o">|</span>                                 <span class="o">|</span>          <span class="o">|</span>
+     <span class="o">|</span>              <span class="n">v</span>                                 <span class="n">v</span>          <span class="o">|</span>
+     <span class="o">|</span>      <span class="o">+---------------+</span>              <span class="o">+------------------+</span>  <span class="o">|</span>
+     <span class="o">|</span>      <span class="o">|</span>   <span class="n">Asterisk</span>    <span class="o">|</span>              <span class="o">|</span>     <span class="n">Pipecat</span>      <span class="o">|</span>  <span class="o">|</span>
+     <span class="o">|</span>      <span class="o">|</span>   <span class="p">(</span><span class="mi">8</span><span class="n">kHz</span><span class="p">)</span>      <span class="o">|&lt;------------&gt;|</span>     <span class="p">(</span><span class="mi">16</span><span class="n">kHz</span><span class="p">)</span>      <span class="o">|</span>  <span class="o">|</span>
+     <span class="o">|</span>      <span class="o">+---------------+</span>   <span class="n">WebSocket</span>  <span class="o">+------------------+</span>  <span class="o">|</span>
+     <span class="o">|</span>              <span class="o">|</span>          <span class="n">audio</span> <span class="n">stream</span>       <span class="o">|</span>              <span class="o">|</span>
+     <span class="o">|</span>              <span class="o">|</span>                             <span class="n">v</span>              <span class="o">|</span>
+     <span class="o">|</span>              <span class="o">|</span>                    <span class="o">+------------------+</span>    <span class="o">|</span>
+     <span class="o">|</span>              <span class="o">|</span>                    <span class="o">|</span>  <span class="n">Sample</span> <span class="n">Rate</span>     <span class="o">|</span>    <span class="o">|</span>
+     <span class="o">|</span>              <span class="o">|</span>                    <span class="o">|</span>  <span class="n">Conversion</span>      <span class="o">|</span>    <span class="o">|</span>
+     <span class="o">|</span>              <span class="o">|</span>                    <span class="o">|</span>  <span class="mi">8</span><span class="n">kHz</span> <span class="o">&lt;-&gt;</span> <span class="mi">16</span><span class="n">kHz</span>  <span class="o">|</span>    <span class="o">|</span>
+     <span class="o">|</span>              <span class="o">|</span>                    <span class="o">+--------+---------+</span>    <span class="o">|</span>
+     <span class="o">|</span>              <span class="o">|</span>                             <span class="o">|</span>              <span class="o">|</span>
+     <span class="o">|</span>              <span class="o">|</span>                             <span class="n">v</span>              <span class="o">|</span>
+     <span class="o">|</span>              <span class="o">|</span>                    <span class="o">+------------------+</span>    <span class="o">|</span>
+     <span class="o">|</span>              <span class="o">|</span>                    <span class="o">|</span>      <span class="n">STT</span>         <span class="o">|---&gt;|</span>
+     <span class="o">|</span>              <span class="o">|</span>                    <span class="o">|</span>   <span class="p">(</span><span class="n">Deepgram</span><span class="p">)</span>     <span class="o">|</span>    <span class="o">|</span>
+     <span class="o">|</span>              <span class="o">|</span>                    <span class="o">+------------------+</span>    <span class="o">|</span>
+     <span class="o">|</span>              <span class="o">|</span>                             <span class="o">|</span>              <span class="o">|</span>
+     <span class="o">|</span>              <span class="o">|</span>                             <span class="o">|</span> <span class="n">Text</span>         <span class="o">|</span>
+     <span class="o">|</span>              <span class="o">|</span>                             <span class="n">v</span>              <span class="o">|</span>
+     <span class="o">|</span>              <span class="o">|</span>                    <span class="o">+------------------+</span>    <span class="o">|</span>
+     <span class="o">|</span>              <span class="o">|</span>                    <span class="o">|</span>      <span class="n">LLM</span>         <span class="o">|---&gt;|</span>
+     <span class="o">|</span>              <span class="o">|</span>                    <span class="o">|</span>   <span class="p">(</span><span class="n">OpenAI</span><span class="o">/</span><span class="n">etc</span><span class="p">)</span>   <span class="o">|</span>    <span class="o">|</span>
+     <span class="o">|</span>              <span class="o">|</span>                    <span class="o">+------------------+</span>    <span class="o">|</span>
+     <span class="o">|</span>              <span class="o">|</span>                             <span class="o">|</span>              <span class="o">|</span>
+     <span class="o">|</span>              <span class="o">|</span>                             <span class="o">|</span> <span class="n">Response</span>     <span class="o">|</span>
+     <span class="o">|</span>              <span class="o">|</span>                             <span class="n">v</span>              <span class="o">|</span>
+     <span class="o">|</span>              <span class="o">|</span>                    <span class="o">+------------------+</span>    <span class="o">|</span>
+     <span class="o">|</span>              <span class="o">|&lt;-------------------|</span>      <span class="n">TTS</span>         <span class="o">|&lt;---|</span>
+     <span class="o">|</span>              <span class="o">|</span>   <span class="n">Audio</span> <span class="n">response</span>   <span class="o">|</span>  <span class="p">(</span><span class="n">ElevenLabs</span><span class="p">)</span>    <span class="o">|</span>    <span class="o">|</span>
+     <span class="o">|</span>              <span class="o">|</span>                    <span class="o">+------------------+</span>    <span class="o">|</span>
+     <span class="o">|</span>              <span class="o">|</span>                                            <span class="o">|</span>
+     <span class="o">|&lt;-------------+</span>                                            <span class="o">|</span>
+     <span class="o">|</span>  <span class="n">RTP</span> <span class="n">audio</span> <span class="n">playback</span>                                       <span class="o">|</span>
+     <span class="o">|</span>                                                           <span class="o">|</span>
+</pre></div>
+</div>
+</section>
+<section id="ai-call-lifecycle">
+<h2>AI Call Lifecycle<a class="headerlink" href="#ai-call-lifecycle" title="Link to this heading"></a></h2>
+<p>An AI call goes through several stages from initialization to termination:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-----------------------------------------------------------------------+</span>
+<span class="o">|</span>                        <span class="n">AI</span> <span class="n">Call</span> <span class="n">Lifecycle</span>                              <span class="o">|</span>
+<span class="o">+-----------------------------------------------------------------------+</span>
+
+<span class="mf">1.</span> <span class="n">INITIALIZATION</span>
+   <span class="o">+-------------------+</span>        <span class="o">+-------------------+</span>
+   <span class="o">|</span>   <span class="n">Flow</span> <span class="n">Manager</span>    <span class="o">|-------&gt;|</span>   <span class="n">AI</span> <span class="n">Manager</span>      <span class="o">|</span>
+   <span class="o">|</span>   <span class="p">(</span><span class="n">ai_talk</span><span class="p">)</span>       <span class="o">|</span>        <span class="o">|</span>   <span class="n">Start</span> <span class="n">AIcall</span>    <span class="o">|</span>
+   <span class="o">+-------------------+</span>        <span class="o">+--------+----------+</span>
+                                         <span class="o">|</span>
+                                         <span class="n">v</span>
+   <span class="o">+-------------------+</span>        <span class="o">+-------------------+</span>
+   <span class="o">|</span>   <span class="n">Pipecat</span>         <span class="o">|&lt;-------|</span>   <span class="n">Creates</span> <span class="n">session</span> <span class="o">|</span>
+   <span class="o">|</span>   <span class="n">Initializing</span>    <span class="o">|</span>        <span class="o">|</span>   <span class="ow">in</span> <span class="n">database</span>     <span class="o">|</span>
+   <span class="o">+-------------------+</span>        <span class="o">+-------------------+</span>
+
+<span class="mf">2.</span> <span class="n">PROCESSING</span> <span class="p">(</span><span class="n">Real</span><span class="o">-</span><span class="n">time</span> <span class="n">conversation</span><span class="p">)</span>
+   <span class="o">+-------------------+</span>        <span class="o">+-------------------+</span>
+   <span class="o">|</span>     <span class="n">Caller</span>        <span class="o">|&lt;------&gt;|</span>    <span class="n">Pipecat</span>        <span class="o">|</span>
+   <span class="o">|</span>   <span class="n">speaks</span><span class="o">/</span><span class="n">listens</span>  <span class="o">|</span>        <span class="o">|</span>  <span class="n">STT</span><span class="o">-&gt;</span><span class="n">LLM</span><span class="o">-&gt;</span><span class="n">TTS</span>    <span class="o">|</span>
+   <span class="o">+-------------------+</span>        <span class="o">+-------------------+</span>
+          <span class="o">^</span>                            <span class="o">|</span>
+          <span class="o">|</span>                            <span class="n">v</span>
+          <span class="o">|</span>                   <span class="o">+-------------------+</span>
+          <span class="o">|</span>                   <span class="o">|</span>  <span class="n">Tool</span> <span class="n">Execution</span>   <span class="o">|</span>
+          <span class="o">|</span>                   <span class="o">|</span>  <span class="p">(</span><span class="k">if</span> <span class="n">triggered</span><span class="p">)</span>   <span class="o">|</span>
+          <span class="o">|</span>                   <span class="o">+-------------------+</span>
+          <span class="o">|</span>                            <span class="o">|</span>
+          <span class="o">+----------------------------+</span>
+
+<span class="mf">3.</span> <span class="n">TERMINATION</span>
+   <span class="o">+-------------------+</span>        <span class="o">+-------------------+</span>
+   <span class="o">|</span>   <span class="n">stop_service</span>    <span class="o">|-------&gt;|</span>   <span class="n">AI</span> <span class="n">Manager</span>      <span class="o">|</span>
+   <span class="o">|</span>   <span class="ow">or</span> <span class="n">hangup</span>       <span class="o">|</span>        <span class="o">|</span>   <span class="n">Terminate</span>       <span class="o">|</span>
+   <span class="o">+-------------------+</span>        <span class="o">+--------+----------+</span>
+                                         <span class="o">|</span>
+                                         <span class="n">v</span>
+                                <span class="o">+-------------------+</span>
+                                <span class="o">|</span>  <span class="n">Cleanup</span> <span class="n">session</span>  <span class="o">|</span>
+                                <span class="o">|</span>  <span class="n">Save</span> <span class="n">messages</span>    <span class="o">|</span>
+                                <span class="o">+-------------------+</span>
+</pre></div>
+</div>
+</section>
 <section id="action-component">
-<h2>Action component<a class="headerlink" href="#action-component" title="Link to this heading"></a></h2>
-<p>The AI is integrated as one of the configurable components within a VoIPBIN flow. When a call reaches an AI action, the system triggers the AI to generate a response based on the provided prompt. The response is then processed and played back to the caller using text-to-speech (TTS). If the response is in a structured JSON format, VoIPBIN executes the defined actions accordingly.</p>
+<h2>Action Component<a class="headerlink" href="#action-component" title="Link to this heading"></a></h2>
+<p>The AI is integrated as a configurable action within VoIPBIN flows. When a call reaches an AI action, the system triggers the AI to generate responses based on the provided prompt.</p>
 <img alt="AI component in action builder" class="align-center" src="_images/ai_overview_overview.png" />
 </section>
 <section id="tts-stt-ai-engine">
 <h2>TTS/STT + AI Engine<a class="headerlink" href="#tts-stt-ai-engine" title="Link to this heading"></a></h2>
-<p>VoIPBIN’s AI is built using TTS/STT + AI Engine, where speech-to-text (STT) converts spoken words into text, and text-to-speech (TTS) converts responses back into audio. The system processes these in real time, enabling seamless conversations.</p>
+<p>VoIPBIN’s AI uses Speech-to-Text (STT) to convert spoken words into text, processes through the LLM, and Text-to-Speech (TTS) converts responses back to audio. This happens in real-time for seamless conversations.</p>
 <img alt="AI implementation using TTS/STT + AI Engine" class="align-center" src="_images/ai_overview_stt_tts.png" />
 </section>
 <section id="voice-detection-and-play-interruption">
-<h2>Voice Detection and Play Interruption:<a class="headerlink" href="#voice-detection-and-play-interruption" title="Link to this heading"></a></h2>
-<p>In addition to basic TTS and STT functionalities, VoIPBIN incorporates voice detection to create a more natural conversational flow. While the AI is speaking (i.e., playing TTS media), if the system detects the caller’s voice, it immediately stops the TTS playback and routes the caller’s speech (via STT) to the AI engine. This play interruption feature ensures that if the user starts talking, their input is prioritized, enabling a dynamic interaction that more closely resembles a real conversation.</p>
+<h2>Voice Detection and Play Interruption<a class="headerlink" href="#voice-detection-and-play-interruption" title="Link to this heading"></a></h2>
+<p>VoIPBIN incorporates voice detection for natural conversational flow. While the AI is speaking (TTS playback), if the system detects the caller’s voice, it immediately stops TTS and routes the caller’s speech to STT and then to the LLM. This ensures caller input is prioritized, enabling dynamic interaction that resembles real conversation.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-----------------------------------------------------------------------+</span>
+<span class="o">|</span>                       <span class="n">Voice</span> <span class="n">Interruption</span> <span class="n">Flow</span>                         <span class="o">|</span>
+<span class="o">+-----------------------------------------------------------------------+</span>
+
+     <span class="n">AI</span> <span class="n">Speaking</span>                 <span class="n">Caller</span> <span class="n">Interrupts</span>            <span class="n">AI</span> <span class="n">Listens</span>
+          <span class="o">|</span>                            <span class="o">|</span>                          <span class="o">|</span>
+<span class="o">+---------</span><span class="n">v</span><span class="o">---------+</span>                  <span class="o">|</span>                          <span class="o">|</span>
+<span class="o">|</span>  <span class="n">TTS</span> <span class="n">audio</span> <span class="n">plays</span>  <span class="o">|</span>                  <span class="o">|</span>                          <span class="o">|</span>
+<span class="o">|</span>  <span class="s2">&quot;I can help you  |                  |                          |</span>
+<span class="o">|</span>   <span class="k">with</span> <span class="n">that</span><span class="o">...</span><span class="s2">&quot;   |                  |                          |</span>
+<span class="o">+-------------------+</span>                  <span class="o">|</span>                          <span class="o">|</span>
+          <span class="o">|</span>                            <span class="o">|</span>                          <span class="o">|</span>
+          <span class="o">|</span>  <span class="o">&lt;----</span> <span class="n">Voice</span> <span class="n">detected</span> <span class="o">----&gt;|</span>                          <span class="o">|</span>
+          <span class="o">|</span>                            <span class="o">|</span>                          <span class="o">|</span>
+<span class="o">+---------</span><span class="n">v</span><span class="o">---------+</span>                  <span class="o">|</span>                          <span class="o">|</span>
+<span class="o">|</span>  <span class="n">STOP</span> <span class="n">TTS</span>         <span class="o">|</span>                  <span class="o">|</span>                          <span class="o">|</span>
+<span class="o">|</span>  <span class="n">immediately</span>      <span class="o">|</span>                  <span class="o">|</span>                          <span class="o">|</span>
+<span class="o">+-------------------+</span>                  <span class="o">|</span>                          <span class="o">|</span>
+          <span class="o">|</span>                            <span class="o">|</span>                          <span class="o">|</span>
+          <span class="o">+---------------------------&gt;|</span>                          <span class="o">|</span>
+                                       <span class="o">|</span>                          <span class="o">|</span>
+                              <span class="o">+--------</span><span class="n">v</span><span class="o">--------+</span>                 <span class="o">|</span>
+                              <span class="o">|</span> <span class="n">Caller</span> <span class="n">speaks</span><span class="p">:</span>  <span class="o">|</span>                 <span class="o">|</span>
+                              <span class="o">|</span> <span class="s2">&quot;Actually, I    |                 |</span>
+                              <span class="o">|</span>  <span class="n">need</span> <span class="n">help</span> <span class="k">with</span> <span class="o">|</span>                 <span class="o">|</span>
+                              <span class="o">|</span>  <span class="n">something</span> <span class="k">else</span><span class="s2">&quot;|                 |</span>
+                              <span class="o">+--------+--------+</span>                 <span class="o">|</span>
+                                       <span class="o">|</span>                          <span class="o">|</span>
+                                       <span class="o">|</span> <span class="n">STT</span> <span class="o">-&gt;</span> <span class="n">LLM</span>               <span class="o">|</span>
+                                       <span class="o">|</span>                          <span class="o">|</span>
+                                       <span class="o">+-------------------------&gt;|</span>
+                                                          <span class="o">+-------</span><span class="n">v</span><span class="o">-------+</span>
+                                                          <span class="o">|</span> <span class="n">AI</span> <span class="n">processes</span>  <span class="o">|</span>
+                                                          <span class="o">|</span> <span class="n">new</span> <span class="n">request</span>   <span class="o">|</span>
+                                                          <span class="o">+---------------+</span>
+</pre></div>
+</div>
 </section>
 <section id="context-retention">
 <h2>Context Retention<a class="headerlink" href="#context-retention" title="Link to this heading"></a></h2>
 <p>VoIPBIN’s AI supports context saving. During a conversation, the AI remembers prior exchanges, allowing it to maintain continuity and respond based on earlier parts of the interaction. This provides a more natural and human-like dialogue experience.</p>
 </section>
 <section id="multilingual-support">
-<h2>Multilingual support<a class="headerlink" href="#multilingual-support" title="Link to this heading"></a></h2>
+<h2>Multilingual Support<a class="headerlink" href="#multilingual-support" title="Link to this heading"></a></h2>
 <p>VoIPBIN’s AI supports multiple languages. See supported languages: <a class="reference internal" href="transcribe_overview.html#transcribe-overview-supported-languages"><span class="std std-ref">supported languages</span></a>.</p>
 </section>
-<section id="external-ai-agent-integration">
-<h2>External AI Agent Integration<a class="headerlink" href="#external-ai-agent-integration" title="Link to this heading"></a></h2>
-<p>For users who prefer to use external AI services, VoIPBIN offers media stream access via MCP (Media Control Protocol). This allows third-party AI engines to process voice data directly, enabling deeper customization and advanced AI capabilities.</p>
 </section>
-<section id="mcp-server">
-<h2>MCP Server<a class="headerlink" href="#mcp-server" title="Link to this heading"></a></h2>
-<p>A recommended open-source implementation is available here:</p>
-<ul class="simple">
-<li><p><a class="reference external" href="https://github.com/nrjchnd/voipbin-mcp">https://github.com/nrjchnd/voipbin-mcp</a></p></li>
-</ul>
+<section id="tool-functions">
+<h1>Tool Functions<a class="headerlink" href="#tool-functions" title="Link to this heading"></a></h1>
+<p>AI tool functions enable the AI to take actions during conversations, such as transferring calls, sending messages, or managing the conversation flow.</p>
+<section id="tool-execution-architecture">
+<h2>Tool Execution Architecture<a class="headerlink" href="#tool-execution-architecture" title="Link to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-----------------------------------------------------------------------+</span>
+<span class="o">|</span>                      <span class="n">Tool</span> <span class="n">Execution</span> <span class="n">Flow</span>                              <span class="o">|</span>
+<span class="o">+-----------------------------------------------------------------------+</span>
+
+<span class="n">Step</span> <span class="mi">1</span><span class="p">:</span> <span class="n">Caller</span> <span class="n">makes</span> <span class="n">request</span>
+<span class="o">+-------------------+</span>
+<span class="o">|</span> <span class="s2">&quot;Transfer me to   |</span>
+<span class="o">|</span>  <span class="n">sales</span> <span class="n">please</span><span class="s2">&quot;    |</span>
+<span class="o">+--------+----------+</span>
+         <span class="o">|</span>
+         <span class="n">v</span>
+<span class="n">Step</span> <span class="mi">2</span><span class="p">:</span> <span class="n">Speech</span><span class="o">-</span><span class="n">to</span><span class="o">-</span><span class="n">Text</span>
+<span class="o">+-------------------+</span>
+<span class="o">|</span> <span class="n">STT</span> <span class="n">converts</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="n">audio</span> <span class="n">to</span> <span class="n">text</span>     <span class="o">|</span>
+<span class="o">+--------+----------+</span>
+         <span class="o">|</span>
+         <span class="n">v</span>
+<span class="n">Step</span> <span class="mi">3</span><span class="p">:</span> <span class="n">LLM</span> <span class="n">Processing</span>
+<span class="o">+-------------------+</span>
+<span class="o">|</span> <span class="n">LLM</span> <span class="n">detects</span> <span class="n">intent</span><span class="o">|</span>
+<span class="o">|</span> <span class="n">Generates</span><span class="p">:</span>        <span class="o">|</span>
+<span class="o">|</span> <span class="n">function_call</span><span class="p">:</span>    <span class="o">|</span>
+<span class="o">|</span>   <span class="n">connect_call</span>    <span class="o">|</span>
+<span class="o">+--------+----------+</span>
+         <span class="o">|</span>
+         <span class="n">v</span>
+<span class="n">Step</span> <span class="mi">4</span><span class="p">:</span> <span class="n">Tool</span> <span class="n">Execution</span>
+<span class="o">+-------------------+</span>        <span class="o">+-------------------+</span>
+<span class="o">|</span> <span class="n">Python</span> <span class="n">Pipecat</span>    <span class="o">|-------&gt;|</span>   <span class="n">Go</span> <span class="n">AIcallHandler</span><span class="o">|</span>
+<span class="o">|</span> <span class="n">sends</span> <span class="n">HTTP</span> <span class="n">POST</span>   <span class="o">|</span>        <span class="o">|</span>   <span class="n">ToolHandle</span><span class="p">()</span>    <span class="o">|</span>
+<span class="o">+-------------------+</span>        <span class="o">+--------+----------+</span>
+                                      <span class="o">|</span>
+                                      <span class="n">v</span>
+                             <span class="o">+-------------------+</span>
+                             <span class="o">|</span> <span class="n">Execute</span> <span class="n">via</span>       <span class="o">|</span>
+                             <span class="o">|</span> <span class="n">call</span><span class="o">-</span><span class="n">manager</span>      <span class="o">|</span>
+                             <span class="o">+--------+----------+</span>
+                                      <span class="o">|</span>
+                                      <span class="n">v</span>
+<span class="n">Step</span> <span class="mi">5</span><span class="p">:</span> <span class="n">Result</span> <span class="n">returned</span>
+<span class="o">+-------------------+</span>        <span class="o">+-------------------+</span>
+<span class="o">|</span> <span class="n">Pipecat</span> <span class="n">receives</span>  <span class="o">|&lt;-------|</span>  <span class="n">Tool</span> <span class="n">result</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="n">success</span><span class="o">/</span><span class="n">failure</span>   <span class="o">|</span>        <span class="o">|</span>  <span class="n">returned</span>         <span class="o">|</span>
+<span class="o">+--------+----------+</span>        <span class="o">+-------------------+</span>
+         <span class="o">|</span>
+         <span class="n">v</span>
+<span class="n">Step</span> <span class="mi">6</span><span class="p">:</span> <span class="n">AI</span> <span class="n">Response</span>
+<span class="o">+-------------------+</span>
+<span class="o">|</span> <span class="n">LLM</span> <span class="n">generates</span>     <span class="o">|</span>
+<span class="o">|</span> <span class="s2">&quot;Connecting you   |</span>
+<span class="o">|</span>  <span class="n">to</span> <span class="n">sales</span> <span class="n">now</span><span class="o">...</span><span class="s2">&quot; |</span>
+<span class="o">+--------+----------+</span>
+         <span class="o">|</span>
+         <span class="n">v</span>
+<span class="n">Step</span> <span class="mi">7</span><span class="p">:</span> <span class="n">TTS</span> <span class="n">Playback</span>
+<span class="o">+-------------------+</span>
+<span class="o">|</span> <span class="n">TTS</span> <span class="n">converts</span> <span class="n">to</span>   <span class="o">|</span>
+<span class="o">|</span> <span class="n">audio</span><span class="p">,</span> <span class="n">plays</span> <span class="n">to</span>   <span class="o">|</span>
+<span class="o">|</span> <span class="n">caller</span>            <span class="o">|</span>
+<span class="o">+-------------------+</span>
+</pre></div>
+</div>
+</section>
+<section id="available-tools">
+<h2>Available Tools<a class="headerlink" href="#available-tools" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Tool</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>connect_call</p></td>
+<td><p>Transfer or connect to another endpoint</p></td>
+</tr>
+<tr class="row-odd"><td><p>send_email</p></td>
+<td><p>Send an email message</p></td>
+</tr>
+<tr class="row-even"><td><p>send_message</p></td>
+<td><p>Send an SMS text message</p></td>
+</tr>
+<tr class="row-odd"><td><p>stop_media</p></td>
+<td><p>Stop currently playing media</p></td>
+</tr>
+<tr class="row-even"><td><p>stop_service</p></td>
+<td><p>End AI conversation (soft stop, flow continues)</p></td>
+</tr>
+<tr class="row-odd"><td><p>stop_flow</p></td>
+<td><p>Terminate entire flow (hard stop, call ends)</p></td>
+</tr>
+<tr class="row-even"><td><p>set_variables</p></td>
+<td><p>Save data to flow context</p></td>
+</tr>
+<tr class="row-odd"><td><p>get_variables</p></td>
+<td><p>Retrieve data from flow context</p></td>
+</tr>
+<tr class="row-even"><td><p>get_aicall_messages</p></td>
+<td><p>Get message history from an AI call</p></td>
+</tr>
+</tbody>
+</table>
+<p>For detailed documentation on each tool, see <a class="reference internal" href="ai_struct_tool.html#ai-struct-tool"><span class="std std-ref">Tool Functions</span></a>.</p>
+</section>
+<section id="configuring-tools">
+<h2>Configuring Tools<a class="headerlink" href="#configuring-tools" title="Link to this heading"></a></h2>
+<p>Tools are configured per-AI using the <code class="docutils literal notranslate"><span class="pre">tool_names</span></code> field:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">Enable</span> <span class="nb">all</span> <span class="n">tools</span>
+<span class="s2">&quot;tool_names&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;all&quot;</span><span class="p">]</span>
+
+<span class="o">//</span> <span class="n">Enable</span> <span class="n">specific</span> <span class="n">tools</span> <span class="n">only</span>
+<span class="s2">&quot;tool_names&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;connect_call&quot;</span><span class="p">,</span> <span class="s2">&quot;send_email&quot;</span><span class="p">,</span> <span class="s2">&quot;stop_service&quot;</span><span class="p">]</span>
+
+<span class="o">//</span> <span class="n">Disable</span> <span class="nb">all</span> <span class="n">tools</span> <span class="p">(</span><span class="n">conversation</span><span class="o">-</span><span class="n">only</span><span class="p">)</span>
+<span class="s2">&quot;tool_names&quot;</span><span class="p">:</span> <span class="p">[]</span>
+</pre></div>
+</div>
 </section>
 </section>
 <section id="using-the-ai">
@@ -240,17 +523,17 @@
 </section>
 <section id="ai-talk">
 <h1>AI Talk<a class="headerlink" href="#ai-talk" title="Link to this heading"></a></h1>
-<p><strong>AI Talk</strong> enables real-time conversational AI with voice in VoIPBIN, powered by <strong>ElevenLabs’ voice engine</strong> for natural-sounding speech.</p>
+<p><strong>AI Talk</strong> enables real-time conversational AI with voice in VoIPBIN, powered by high-quality TTS engines (ElevenLabs, Deepgram, OpenAI, etc.) for natural-sounding speech.</p>
 <a class="reference internal image-reference" href="_images/ai_overview_ai_talk.png"><img alt="AI Talk component in action builder" class="align-center" src="_images/ai_overview_ai_talk.png" style="width: 300px;" />
 </a>
 <section id="key-features">
 <h2>Key Features<a class="headerlink" href="#key-features" title="Link to this heading"></a></h2>
 <ul class="simple">
 <li><p><strong>Real-time Voice Interaction</strong>: AI generates responses in real-time based on user input and delivers them as speech.</p></li>
-<li><p><strong>Interruption Detection &amp; Listening</strong>: If the other party speaks while the AI is talking, the system immediately <strong>stops the AI’s speech</strong> and switches to capturing the user’s voice via STT.
-This ensures a smooth and continuous conversation flow.</p></li>
-<li><p><strong>Low Latency Response</strong>: For longer prompts, AI Talk does not wait for the entire response to finish. Instead, it generates and plays speech in smaller chunks, <strong>reducing perceived response time</strong> for the user.</p></li>
-<li><p><strong>ElevenLabs Voice Engine</strong>: High-quality, natural-sounding voice output ensures the AI feels like a real conversation partner.</p></li>
+<li><p><strong>Interruption Detection &amp; Listening</strong>: If the caller speaks while the AI is talking, the system immediately <strong>stops the AI’s speech</strong> and captures the user’s voice via STT. This ensures smooth, continuous conversation flow.</p></li>
+<li><p><strong>Low Latency Response</strong>: For longer prompts, AI Talk generates and plays speech in smaller chunks, <strong>reducing perceived response time</strong> for the user.</p></li>
+<li><p><strong>Multiple TTS/STT Providers</strong>: Support for ElevenLabs, Deepgram, OpenAI, and many other providers.</p></li>
+<li><p><strong>Tool Function Integration</strong>: AI can perform actions like call transfers, sending messages, and managing variables during conversation.</p></li>
 </ul>
 </section>
 <section id="built-in-elevenlabs-voice-ids">
@@ -408,6 +691,17 @@ This ensures a smooth and continuous conversation flow.</p></li>
 * For post-call summaries, use recording_id: This ensures that the full conversation is summarized from the recorded audio.</p>
 </section>
 </section>
+<section id="external-ai-agent-integration">
+<h1>External AI Agent Integration<a class="headerlink" href="#external-ai-agent-integration" title="Link to this heading"></a></h1>
+<p>For users who prefer to use external AI services, VoIPBIN offers media stream access. This allows third-party AI engines to process voice data directly, enabling deeper customization and advanced AI capabilities.</p>
+<section id="mcp-server">
+<h2>MCP Server<a class="headerlink" href="#mcp-server" title="Link to this heading"></a></h2>
+<p>A recommended open-source implementation is available here:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/nrjchnd/voipbin-mcp">https://github.com/nrjchnd/voipbin-mcp</a></p></li>
+</ul>
+</section>
+</section>
 
 </main>
                         
@@ -419,13 +713,20 @@ This ensures a smooth and continuous conversation flow.</p></li>
                             <ul>
 <li><a class="reference internal" href="#">Overview</a></li>
 <li><a class="reference internal" href="#how-it-works">How it works</a><ul>
-<li><a class="reference internal" href="#action-component">Action component</a></li>
+<li><a class="reference internal" href="#architecture-overview">Architecture Overview</a></li>
+<li><a class="reference internal" href="#audio-flow">Audio Flow</a></li>
+<li><a class="reference internal" href="#ai-call-lifecycle">AI Call Lifecycle</a></li>
+<li><a class="reference internal" href="#action-component">Action Component</a></li>
 <li><a class="reference internal" href="#tts-stt-ai-engine">TTS/STT + AI Engine</a></li>
-<li><a class="reference internal" href="#voice-detection-and-play-interruption">Voice Detection and Play Interruption:</a></li>
+<li><a class="reference internal" href="#voice-detection-and-play-interruption">Voice Detection and Play Interruption</a></li>
 <li><a class="reference internal" href="#context-retention">Context Retention</a></li>
-<li><a class="reference internal" href="#multilingual-support">Multilingual support</a></li>
-<li><a class="reference internal" href="#external-ai-agent-integration">External AI Agent Integration</a></li>
-<li><a class="reference internal" href="#mcp-server">MCP Server</a></li>
+<li><a class="reference internal" href="#multilingual-support">Multilingual Support</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#tool-functions">Tool Functions</a><ul>
+<li><a class="reference internal" href="#tool-execution-architecture">Tool Execution Architecture</a></li>
+<li><a class="reference internal" href="#available-tools">Available Tools</a></li>
+<li><a class="reference internal" href="#configuring-tools">Configuring Tools</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#using-the-ai">Using the AI</a><ul>
@@ -446,6 +747,10 @@ This ensures a smooth and continuous conversation flow.</p></li>
 <li><a class="reference internal" href="#choosing-between-real-time-and-non-real-time-summaries">Choosing Between Real-time and Non-Real-time Summaries</a></li>
 <li><a class="reference internal" href="#ai-summary-behavior">AI Summary Behavior</a></li>
 <li><a class="reference internal" href="#ensuring-full-coverage">Ensuring Full Coverage</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#external-ai-agent-integration">External AI Agent Integration</a><ul>
+<li><a class="reference internal" href="#mcp-server">MCP Server</a></li>
 </ul>
 </li>
 </ul>

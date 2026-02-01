@@ -1,16 +1,154 @@
-.. _ai-overview: ai-overview
+.. _ai-overview:
 
 Overview
 ========
-VoIPBIN's AI is a built-in AI agent that enables automated, intelligent voice interactions during live calls. Designed for seamless integration within VoIPBIN's flow, the AI utilizes ChatGPT as its AI engine to process and respond to user inputs in real time. This allows developers to create dynamic and interactive voice experiences without requiring manual intervention.
+VoIPBIN's AI is a built-in AI agent that enables automated, intelligent voice interactions during live calls. The AI integrates with multiple LLM providers (OpenAI, Anthropic, Gemini, and 15+ others), real-time speech processing, and tool functions to create dynamic, interactive voice experiences.
 
 How it works
 ============
 
-Action component
-----------------
+Architecture Overview
+---------------------
+VoIPBIN's AI system consists of two main components working together: the AI Manager (Go) for orchestration and the Pipecat Manager (Python) for real-time audio processing.
 
-The AI is integrated as one of the configurable components within a VoIPBIN flow. When a call reaches an AI action, the system triggers the AI to generate a response based on the provided prompt. The response is then processed and played back to the caller using text-to-speech (TTS). If the response is in a structured JSON format, VoIPBIN executes the defined actions accordingly.
+::
+
+    +-----------------------------------------------------------------------+
+    |                        VoIPBIN AI Architecture                        |
+    +-----------------------------------------------------------------------+
+
+                                 +-------------------+
+                                 |   Flow Manager    |
+                                 |  (ai_talk action) |
+                                 +--------+----------+
+                                          |
+                                          | Start AI session
+                                          v
+    +-------------------+        +-------------------+        +-------------------+
+    |                   |        |                   |        |                   |
+    |    Asterisk       |<------>|   AI Manager      |<------>|  Pipecat Manager  |
+    |  (8kHz audio)     |  HTTP  |     (Go)          | RMQ/WS |    (Python)       |
+    |                   |        |                   |        |                   |
+    +-------------------+        +--------+----------+        +--------+----------+
+           ^                              |                            |
+           |                              |                            |
+           | RTP audio                    | Tool                       | Real-time
+           |                              | execution                  | processing
+           v                              v                            v
+    +-------------------+        +-------------------+        +-------------------+
+    |      Caller       |        | call-manager      |        |    STT / LLM      |
+    |    (Phone)        |        | message-manager   |        |      / TTS        |
+    |                   |        | email-manager     |        |   Providers       |
+    +-------------------+        +-------------------+        +-------------------+
+
+
+Audio Flow
+----------
+Audio flows through the system with sample rate conversion between components:
+
+::
+
+    +-----------------------------------------------------------------------+
+    |                           Audio Flow                                  |
+    +-----------------------------------------------------------------------+
+
+    Caller (Phone)                    VoIPBIN                    AI Providers
+         |                               |                           |
+         |  RTP (8kHz PCM)               |                           |
+         +------------------------------>|                           |
+         |                               |                           |
+         |              +----------------+----------------+          |
+         |              |                                 |          |
+         |              v                                 v          |
+         |      +---------------+              +------------------+  |
+         |      |   Asterisk    |              |     Pipecat      |  |
+         |      |   (8kHz)      |<------------>|     (16kHz)      |  |
+         |      +---------------+   WebSocket  +------------------+  |
+         |              |          audio stream       |              |
+         |              |                             v              |
+         |              |                    +------------------+    |
+         |              |                    |  Sample Rate     |    |
+         |              |                    |  Conversion      |    |
+         |              |                    |  8kHz <-> 16kHz  |    |
+         |              |                    +--------+---------+    |
+         |              |                             |              |
+         |              |                             v              |
+         |              |                    +------------------+    |
+         |              |                    |      STT         |--->|
+         |              |                    |   (Deepgram)     |    |
+         |              |                    +------------------+    |
+         |              |                             |              |
+         |              |                             | Text         |
+         |              |                             v              |
+         |              |                    +------------------+    |
+         |              |                    |      LLM         |--->|
+         |              |                    |   (OpenAI/etc)   |    |
+         |              |                    +------------------+    |
+         |              |                             |              |
+         |              |                             | Response     |
+         |              |                             v              |
+         |              |                    +------------------+    |
+         |              |<-------------------|      TTS         |<---|
+         |              |   Audio response   |  (ElevenLabs)    |    |
+         |              |                    +------------------+    |
+         |              |                                            |
+         |<-------------+                                            |
+         |  RTP audio playback                                       |
+         |                                                           |
+
+
+AI Call Lifecycle
+-----------------
+An AI call goes through several stages from initialization to termination:
+
+::
+
+    +-----------------------------------------------------------------------+
+    |                        AI Call Lifecycle                              |
+    +-----------------------------------------------------------------------+
+
+    1. INITIALIZATION
+       +-------------------+        +-------------------+
+       |   Flow Manager    |------->|   AI Manager      |
+       |   (ai_talk)       |        |   Start AIcall    |
+       +-------------------+        +--------+----------+
+                                             |
+                                             v
+       +-------------------+        +-------------------+
+       |   Pipecat         |<-------|   Creates session |
+       |   Initializing    |        |   in database     |
+       +-------------------+        +-------------------+
+
+    2. PROCESSING (Real-time conversation)
+       +-------------------+        +-------------------+
+       |     Caller        |<------>|    Pipecat        |
+       |   speaks/listens  |        |  STT->LLM->TTS    |
+       +-------------------+        +-------------------+
+              ^                            |
+              |                            v
+              |                   +-------------------+
+              |                   |  Tool Execution   |
+              |                   |  (if triggered)   |
+              |                   +-------------------+
+              |                            |
+              +----------------------------+
+
+    3. TERMINATION
+       +-------------------+        +-------------------+
+       |   stop_service    |------->|   AI Manager      |
+       |   or hangup       |        |   Terminate       |
+       +-------------------+        +--------+----------+
+                                             |
+                                             v
+                                    +-------------------+
+                                    |  Cleanup session  |
+                                    |  Save messages    |
+                                    +-------------------+
+
+
+Action Component
+----------------
+The AI is integrated as a configurable action within VoIPBIN flows. When a call reaches an AI action, the system triggers the AI to generate responses based on the provided prompt.
 
 .. image:: _static/images/ai_overview_overview.png
     :alt: AI component in action builder
@@ -18,37 +156,171 @@ The AI is integrated as one of the configurable components within a VoIPBIN flow
 
 TTS/STT + AI Engine
 -------------------
-
-VoIPBIN's AI is built using TTS/STT + AI Engine, where speech-to-text (STT) converts spoken words into text, and text-to-speech (TTS) converts responses back into audio. The system processes these in real time, enabling seamless conversations.
+VoIPBIN's AI uses Speech-to-Text (STT) to convert spoken words into text, processes through the LLM, and Text-to-Speech (TTS) converts responses back to audio. This happens in real-time for seamless conversations.
 
 .. image:: _static/images/ai_overview_stt_tts.png
     :alt: AI implementation using TTS/STT + AI Engine
     :align: center
 
-Voice Detection and Play Interruption:
---------------------------------------
-In addition to basic TTS and STT functionalities, VoIPBIN incorporates voice detection to create a more natural conversational flow. While the AI is speaking (i.e., playing TTS media), if the system detects the caller's voice, it immediately stops the TTS playback and routes the caller's speech (via STT) to the AI engine. This play interruption feature ensures that if the user starts talking, their input is prioritized, enabling a dynamic interaction that more closely resembles a real conversation.
+Voice Detection and Play Interruption
+-------------------------------------
+VoIPBIN incorporates voice detection for natural conversational flow. While the AI is speaking (TTS playback), if the system detects the caller's voice, it immediately stops TTS and routes the caller's speech to STT and then to the LLM. This ensures caller input is prioritized, enabling dynamic interaction that resembles real conversation.
+
+::
+
+    +-----------------------------------------------------------------------+
+    |                       Voice Interruption Flow                         |
+    +-----------------------------------------------------------------------+
+
+         AI Speaking                 Caller Interrupts            AI Listens
+              |                            |                          |
+    +---------v---------+                  |                          |
+    |  TTS audio plays  |                  |                          |
+    |  "I can help you  |                  |                          |
+    |   with that..."   |                  |                          |
+    +-------------------+                  |                          |
+              |                            |                          |
+              |  <---- Voice detected ---->|                          |
+              |                            |                          |
+    +---------v---------+                  |                          |
+    |  STOP TTS         |                  |                          |
+    |  immediately      |                  |                          |
+    +-------------------+                  |                          |
+              |                            |                          |
+              +--------------------------->|                          |
+                                           |                          |
+                                  +--------v--------+                 |
+                                  | Caller speaks:  |                 |
+                                  | "Actually, I    |                 |
+                                  |  need help with |                 |
+                                  |  something else"|                 |
+                                  +--------+--------+                 |
+                                           |                          |
+                                           | STT -> LLM               |
+                                           |                          |
+                                           +------------------------->|
+                                                              +-------v-------+
+                                                              | AI processes  |
+                                                              | new request   |
+                                                              +---------------+
+
 
 Context Retention
 -----------------
 VoIPBIN's AI supports context saving. During a conversation, the AI remembers prior exchanges, allowing it to maintain continuity and respond based on earlier parts of the interaction. This provides a more natural and human-like dialogue experience.
 
-Multilingual support
+Multilingual Support
 --------------------
 VoIPBIN's AI supports multiple languages. See supported languages: :ref:`supported languages <transcribe-overview-supported_languages>`.
 
-External AI Agent Integration
------------------------------
-For users who prefer to use external AI services, VoIPBIN offers media stream access via MCP (Media Control Protocol). This allows third-party AI engines to process voice data directly, enabling deeper customization and advanced AI capabilities.
+Tool Functions
+==============
+AI tool functions enable the AI to take actions during conversations, such as transferring calls, sending messages, or managing the conversation flow.
 
-MCP Server
-----------
-A recommended open-source implementation is available here:
+Tool Execution Architecture
+---------------------------
 
-* https://github.com/nrjchnd/voipbin-mcp
+::
+
+    +-----------------------------------------------------------------------+
+    |                      Tool Execution Flow                              |
+    +-----------------------------------------------------------------------+
+
+    Step 1: Caller makes request
+    +-------------------+
+    | "Transfer me to   |
+    |  sales please"    |
+    +--------+----------+
+             |
+             v
+    Step 2: Speech-to-Text
+    +-------------------+
+    | STT converts      |
+    | audio to text     |
+    +--------+----------+
+             |
+             v
+    Step 3: LLM Processing
+    +-------------------+
+    | LLM detects intent|
+    | Generates:        |
+    | function_call:    |
+    |   connect_call    |
+    +--------+----------+
+             |
+             v
+    Step 4: Tool Execution
+    +-------------------+        +-------------------+
+    | Python Pipecat    |------->|   Go AIcallHandler|
+    | sends HTTP POST   |        |   ToolHandle()    |
+    +-------------------+        +--------+----------+
+                                          |
+                                          v
+                                 +-------------------+
+                                 | Execute via       |
+                                 | call-manager      |
+                                 +--------+----------+
+                                          |
+                                          v
+    Step 5: Result returned
+    +-------------------+        +-------------------+
+    | Pipecat receives  |<-------|  Tool result      |
+    | success/failure   |        |  returned         |
+    +--------+----------+        +-------------------+
+             |
+             v
+    Step 6: AI Response
+    +-------------------+
+    | LLM generates     |
+    | "Connecting you   |
+    |  to sales now..." |
+    +--------+----------+
+             |
+             v
+    Step 7: TTS Playback
+    +-------------------+
+    | TTS converts to   |
+    | audio, plays to   |
+    | caller            |
+    +-------------------+
+
+
+Available Tools
+---------------
+
+========================= ===================================================
+Tool                      Description
+========================= ===================================================
+connect_call              Transfer or connect to another endpoint
+send_email                Send an email message
+send_message              Send an SMS text message
+stop_media                Stop currently playing media
+stop_service              End AI conversation (soft stop, flow continues)
+stop_flow                 Terminate entire flow (hard stop, call ends)
+set_variables             Save data to flow context
+get_variables             Retrieve data from flow context
+get_aicall_messages       Get message history from an AI call
+========================= ===================================================
+
+For detailed documentation on each tool, see :ref:`Tool Functions <ai-struct-tool>`.
+
+Configuring Tools
+-----------------
+Tools are configured per-AI using the ``tool_names`` field:
+
+::
+
+    // Enable all tools
+    "tool_names": ["all"]
+
+    // Enable specific tools only
+    "tool_names": ["connect_call", "send_email", "stop_service"]
+
+    // Disable all tools (conversation-only)
+    "tool_names": []
 
 Using the AI
-=================
+============
 
 Initial Prompt
 --------------
@@ -66,7 +338,7 @@ Example Prompt:
 AI Talk
 =======
 
-**AI Talk** enables real-time conversational AI with voice in VoIPBIN, powered by **ElevenLabs' voice engine** for natural-sounding speech.
+**AI Talk** enables real-time conversational AI with voice in VoIPBIN, powered by high-quality TTS engines (ElevenLabs, Deepgram, OpenAI, etc.) for natural-sounding speech.
 
 .. image:: _static/images/ai_overview_ai_talk.png
     :alt: AI Talk component in action builder
@@ -77,10 +349,10 @@ Key Features
 ------------
 
 * **Real-time Voice Interaction**: AI generates responses in real-time based on user input and delivers them as speech.
-* **Interruption Detection & Listening**: If the other party speaks while the AI is talking, the system immediately **stops the AI's speech** and switches to capturing the user's voice via STT.  
-  This ensures a smooth and continuous conversation flow.
-* **Low Latency Response**: For longer prompts, AI Talk does not wait for the entire response to finish. Instead, it generates and plays speech in smaller chunks, **reducing perceived response time** for the user.
-* **ElevenLabs Voice Engine**: High-quality, natural-sounding voice output ensures the AI feels like a real conversation partner.
+* **Interruption Detection & Listening**: If the caller speaks while the AI is talking, the system immediately **stops the AI's speech** and captures the user's voice via STT. This ensures smooth, continuous conversation flow.
+* **Low Latency Response**: For longer prompts, AI Talk generates and plays speech in smaller chunks, **reducing perceived response time** for the user.
+* **Multiple TTS/STT Providers**: Support for ElevenLabs, Deepgram, OpenAI, and many other providers.
+* **Tool Function Integration**: AI can perform actions like call transfers, sending messages, and managing variables during conversation.
 
 Built-in ElevenLabs Voice IDs
 ---------------------------------
@@ -142,7 +414,7 @@ Supported Resources
 
 AI summaries work with a single resource at a time. The supported resources are:
 
-Real-time Summary: 
+Real-time Summary:
 * Live call transcription
 * Live conference transcription
 
@@ -182,3 +454,13 @@ Since starting an AI summary action late in the call results in missing earlier 
 * Enable transcribe_start early: This ensures that transcriptions are available even if an AI summary action is triggered later.
 * Use transcribe_id instead of call_id: This allows summarizing a full transcription rather than just the latest segment.
 * For post-call summaries, use recording_id: This ensures that the full conversation is summarized from the recorded audio.
+
+External AI Agent Integration
+=============================
+For users who prefer to use external AI services, VoIPBIN offers media stream access. This allows third-party AI engines to process voice data directly, enabling deeper customization and advanced AI capabilities.
+
+MCP Server
+----------
+A recommended open-source implementation is available here:
+
+* https://github.com/nrjchnd/voipbin-mcp

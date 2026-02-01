@@ -79,7 +79,7 @@ VoIPBIN consists of 30+ specialized Go microservices, organized by domain:
 * bin-call-manager: Call lifecycle and routing
 * bin-conference-manager: Conference bridge management
 * bin-sms-manager: SMS messaging
-* bin-chat-manager: Real-time chat
+* bin-talk-manager: Real-time chat
 
 **AI Services:**
 * bin-ai-manager: AI assistant, transcription, summarization

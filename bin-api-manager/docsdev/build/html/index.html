@@ -1316,13 +1316,20 @@
 <li class="toctree-l1"><a class="reference internal" href="ai.html">AI</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="ai.html#overview">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai.html#how-it-works">How it works</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="ai.html#action-component">Action component</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#architecture-overview">Architecture Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#audio-flow">Audio Flow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#ai-call-lifecycle">AI Call Lifecycle</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#action-component">Action Component</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ai.html#tts-stt-ai-engine">TTS/STT + AI Engine</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ai.html#voice-detection-and-play-interruption">Voice Detection and Play Interruption:</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#voice-detection-and-play-interruption">Voice Detection and Play Interruption</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ai.html#context-retention">Context Retention</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ai.html#multilingual-support">Multilingual support</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ai.html#external-ai-agent-integration">External AI Agent Integration</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ai.html#mcp-server">MCP Server</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#multilingual-support">Multilingual Support</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="ai.html#tool-functions">Tool Functions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#tool-execution-architecture">Tool Execution Architecture</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#available-tools">Available Tools</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#configuring-tools">Configuring Tools</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="ai.html#using-the-ai">Using the AI</a><ul>
@@ -1345,12 +1352,36 @@
 <li class="toctree-l3"><a class="reference internal" href="ai.html#ensuring-full-coverage">Ensuring Full Coverage</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="ai.html#external-ai-agent-integration">External AI Agent Integration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#mcp-server">MCP Server</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="ai.html#ai-struct-ai">AI</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="ai.html#ai-struct-ai-ai">AI</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="ai.html#example">Example</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="ai.html#type">Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#engine-model">Engine Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#tts-type">TTS Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#stt-type">STT Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#tool-names">Tool Names</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="ai.html#ai-struct-tool">Tool Functions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#id4">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#id5">Available Tools</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#connect-call">connect_call</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#send-email">send_email</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#send-message">send_message</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#stop-media">stop_media</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#stop-service">stop_service</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#stop-flow">stop_flow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#set-variables">set_variables</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#get-variables">get_variables</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#get-aicall-messages">get_aicall_messages</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#run-llm-parameter">run_llm Parameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#tool-execution-flow">Tool Execution Flow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#best-practices">Best Practices</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="ai.html#tutorial">Tutorial</a><ul>
@@ -1359,7 +1390,7 @@
 <li class="toctree-l3"><a class="reference internal" href="ai.html#ai-with-custom-voice-id">AI with Custom Voice ID</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ai.html#ai-summary-for-call-transcription">AI Summary for Call Transcription</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ai.html#real-time-ai-summary">Real-Time AI Summary</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ai.html#best-practices">Best Practices</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#id6">Best Practices</a></li>
 </ul>
 </li>
 </ul>

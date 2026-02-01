@@ -6,4 +6,5 @@ AI
 
 .. include:: ai_overview.rst
 .. include:: ai_struct_ai.rst
+.. include:: ai_struct_tool.rst
 .. include:: ai_tutorial.rst
