@@ -4,7 +4,9 @@ package notifyhandler
 
 import (
 	"context"
+	"time"
 
+	"github.com/ClickHouse/clickhouse-go/v2"
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
@@ -33,6 +35,9 @@ const (
 	DelayMinute int = DelaySecond * 60
 	DelayHour   int = DelayMinute * 60
 )
+
+// clickhouse retry interval
+const clickhouseRetryInterval = 30 * time.Second
 
 // list of prometheus metrics
 var (
@@ -85,12 +90,16 @@ type notifyHandler struct {
 	queueNotify commonoutline.QueueName
 
 	publisher commonoutline.ServiceName
+
+	clickhouseAddress string
+	chClient          clickhouse.Conn
 }
 
 // NewNotifyHandler create NotifyHandler
 // queueEvent: queue name for notification. the notify handler will publish the event to this queue name.
 // publisher: publisher service name. the notify handler will publish the event with this publisher service name.
-func NewNotifyHandler(sockHandler sockhandler.SockHandler, reqHandler requesthandler.RequestHandler, queueEvent commonoutline.QueueName, publisher commonoutline.ServiceName) NotifyHandler {
+// clickhouseAddress: clickhouse address for event logging. if empty, clickhouse publishing is disabled.
+func NewNotifyHandler(sockHandler sockhandler.SockHandler, reqHandler requesthandler.RequestHandler, queueEvent commonoutline.QueueName, publisher commonoutline.ServiceName, clickhouseAddress string) NotifyHandler {
 	h := &notifyHandler{
 		sockHandler: sockHandler,
 		reqHandler:  reqHandler,
@@ -98,6 +107,8 @@ func NewNotifyHandler(sockHandler sockhandler.SockHandler, reqHandler requesthan
 		queueNotify: queueEvent,
 
 		publisher: publisher,
+
+		clickhouseAddress: clickhouseAddress,
 	}
 
 	if err := sockHandler.TopicCreate(string(queueEvent)); err != nil {
@@ -105,8 +116,65 @@ func NewNotifyHandler(sockHandler sockhandler.SockHandler, reqHandler requesthan
 		return nil
 	}
 
+	// Start ClickHouse connection loop if address is provided
+	if clickhouseAddress != "" {
+		go h.clickhouseConnectionLoop()
+	}
+
 	namespace := commonoutline.GetMetricNameSpace(publisher)
 	initPrometheus(namespace)
 
 	return h
+}
+
+// newClickHouseClient creates a new ClickHouse client connection
+func newClickHouseClient(address string) (clickhouse.Conn, error) {
+	conn, err := clickhouse.Open(&clickhouse.Options{
+		Addr: []string{address},
+		Auth: clickhouse.Auth{
+			Database: "default",
+		},
+		Settings: clickhouse.Settings{
+			"max_execution_time": 60,
+		},
+		DialTimeout: 5 * time.Second,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// Ping to verify connection
+	if err := conn.Ping(context.Background()); err != nil {
+		return nil, err
+	}
+
+	return conn, nil
+}
+
+// clickhouseConnectionLoop maintains the ClickHouse connection with retry logic
+func (h *notifyHandler) clickhouseConnectionLoop() {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "clickhouseConnectionLoop",
+		"address": h.clickhouseAddress,
+	})
+
+	for {
+		// Skip if already connected
+		if h.chClient != nil {
+			time.Sleep(clickhouseRetryInterval)
+			continue
+		}
+
+		client, err := newClickHouseClient(h.clickhouseAddress)
+		if err != nil {
+			log.Errorf("Could not connect to ClickHouse, retrying in %v. err: %v",
+				clickhouseRetryInterval, err)
+			time.Sleep(clickhouseRetryInterval)
+			continue
+		}
+
+		log.Info("Successfully connected to ClickHouse")
+		h.chClient = client
+		time.Sleep(clickhouseRetryInterval)
+	}
 }
