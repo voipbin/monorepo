@@ -253,6 +253,46 @@ Follow these standards:
 
 ### Common Gotchas
 
+#### Updating Shared Library Function Signatures
+
+**CRITICAL: When updating function signatures in bin-common-handler, you MUST account for ALL call patterns across the monorepo.**
+
+Services use different import aliases and call formats:
+```go
+// Some services use single-line with one alias
+notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, queueName, serviceName, "")
+
+// Other services use multi-line with different alias
+notifyHandler := commonnotify.NewNotifyHandler(
+    sockHandler,
+    reqHandler,
+    queueName,
+    serviceName,
+)
+```
+
+**When updating function signatures:**
+1. **Search for ALL import aliases** - Use `grep -r "notifyhandler\|commonnotify" --include="*.go"` to find all aliases
+2. **Check for multi-line calls** - Simple sed patterns only match single-line; multi-line calls will be missed
+3. **Run full verification for ALL services** - Don't rely on pattern matching; build errors will catch missed updates
+4. **Prefer manual verification** - After bulk updates, manually review files with different patterns
+
+**Example failure mode:**
+```bash
+# This sed command ONLY matches single-line patterns:
+sed -i 's/notifyhandler.NewNotifyHandler(\([^)]*\))/notifyhandler.NewNotifyHandler(\1, "")/g'
+
+# It MISSES multi-line patterns like:
+commonnotify.NewNotifyHandler(
+    sockHandler,
+    reqHandler,
+    queueName,
+    serviceName,  # Missing 5th param!
+)
+```
+
+**Safe approach:** After any bin-common-handler signature change, run the full verification workflow on ALL 30+ services to catch any missed updates.
+
 #### UUID Fields and DB Tags
 
 **CRITICAL: UUID fields MUST use the `,uuid` db tag for proper type conversion.**
