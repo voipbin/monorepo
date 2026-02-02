@@ -12,5 +12,4 @@ COPY --from=builder /app/timeline-manager .
 COPY --from=builder /app/timeline-control .
 COPY --from=builder /app/migrations ./migrations
 
-EXPOSE 8080
 CMD ["./timeline-manager"]

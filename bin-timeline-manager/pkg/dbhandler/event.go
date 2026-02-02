@@ -13,28 +13,14 @@ import (
 	"monorepo/bin-timeline-manager/models/event"
 )
 
-// EventList queries events from ClickHouse.
-func (h *dbHandler) EventList(
-	ctx context.Context,
+// buildEventQuery constructs the SQL query and args for listing events.
+func buildEventQuery(
 	publisher commonoutline.ServiceName,
 	resourceID uuid.UUID,
 	events []string,
 	pageToken string,
 	pageSize int,
-) ([]*event.Event, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":        "EventList",
-		"publisher":   publisher,
-		"resource_id": resourceID,
-		"events":      events,
-		"page_token":  pageToken,
-		"page_size":   pageSize,
-	})
-
-	if h.conn == nil {
-		return nil, errors.New("clickhouse connection not established")
-	}
-
+) (string, []interface{}) {
 	query := `
 		SELECT timestamp, event_type, publisher, data_type, data
 		FROM events
@@ -59,6 +45,33 @@ func (h *dbHandler) EventList(
 
 	query += " ORDER BY timestamp DESC LIMIT ?"
 	args = append(args, pageSize)
+
+	return query, args
+}
+
+// EventList queries events from ClickHouse.
+func (h *dbHandler) EventList(
+	ctx context.Context,
+	publisher commonoutline.ServiceName,
+	resourceID uuid.UUID,
+	events []string,
+	pageToken string,
+	pageSize int,
+) ([]*event.Event, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "EventList",
+		"publisher":   publisher,
+		"resource_id": resourceID,
+		"events":      events,
+		"page_token":  pageToken,
+		"page_size":   pageSize,
+	})
+
+	if h.conn == nil {
+		return nil, errors.New("clickhouse connection not established")
+	}
+
+	query, args := buildEventQuery(publisher, resourceID, events, pageToken, pageSize)
 
 	log.Debugf("Executing query: %s with args: %v", query, args)
 
