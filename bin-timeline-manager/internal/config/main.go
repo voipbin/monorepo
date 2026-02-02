@@ -22,6 +22,7 @@ type Config struct {
 	PrometheusListenAddress string
 	ClickHouseAddress       string
 	ClickHouseDatabase      string
+	MigrationsPath          string
 }
 
 func Bootstrap(cmd *cobra.Command) error {
@@ -41,6 +42,7 @@ func bindConfig(cmd *cobra.Command) error {
 	f.String("prometheus_listen_address", "", "Prometheus listen address")
 	f.String("clickhouse_address", "", "ClickHouse server address")
 	f.String("clickhouse_database", "default", "ClickHouse database name")
+	f.String("migrations_path", "./migrations", "Path to migration files")
 
 	bindings := map[string]string{
 		"rabbitmq_address":          "RABBITMQ_ADDRESS",
@@ -48,6 +50,7 @@ func bindConfig(cmd *cobra.Command) error {
 		"prometheus_listen_address": "PROMETHEUS_LISTEN_ADDRESS",
 		"clickhouse_address":        "CLICKHOUSE_ADDRESS",
 		"clickhouse_database":       "CLICKHOUSE_DATABASE",
+		"migrations_path":           "MIGRATIONS_PATH",
 	}
 
 	for flagKey, envKey := range bindings {
@@ -74,6 +77,7 @@ func LoadGlobalConfig() {
 			PrometheusListenAddress: viper.GetString("prometheus_listen_address"),
 			ClickHouseAddress:       viper.GetString("clickhouse_address"),
 			ClickHouseDatabase:      viper.GetString("clickhouse_database"),
+			MigrationsPath:          viper.GetString("migrations_path"),
 		}
 		logrus.Debug("Configuration has been loaded and locked.")
 	})

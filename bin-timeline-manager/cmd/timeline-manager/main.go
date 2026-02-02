@@ -1,11 +1,15 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/clickhouse"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
@@ -54,12 +58,53 @@ func runDaemon() error {
 	log := logrus.WithField("func", "runDaemon")
 	log.WithField("config", config.Get()).Info("Starting timeline-manager...")
 
+	// Run database migrations before starting services
+	if errMigrate := runMigrations(); errMigrate != nil {
+		return errors.Wrapf(errMigrate, "could not run migrations")
+	}
+
 	if errStart := runServices(); errStart != nil {
 		return errors.Wrapf(errStart, "could not start services")
 	}
 
 	<-chDone
 	log.Info("Timeline-manager stopped safely.")
+	return nil
+}
+
+func runMigrations() error {
+	log := logrus.WithField("func", "runMigrations")
+
+	cfg := config.Get()
+	if cfg.ClickHouseAddress == "" {
+		log.Warn("ClickHouse address not configured, skipping migrations")
+		return nil
+	}
+
+	dsn := fmt.Sprintf("clickhouse://%s/%s?x-multi-statement=true", cfg.ClickHouseAddress, cfg.ClickHouseDatabase)
+	sourceURL := fmt.Sprintf("file://%s", cfg.MigrationsPath)
+
+	log.WithFields(logrus.Fields{
+		"source": sourceURL,
+		"dsn":    cfg.ClickHouseAddress,
+	}).Info("Running database migrations...")
+
+	m, err := migrate.New(sourceURL, dsn)
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize migrate")
+	}
+	defer func() { _, _ = m.Close() }()
+
+	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
+		return errors.Wrap(err, "migration failed")
+	}
+
+	version, dirty, _ := m.Version()
+	log.WithFields(logrus.Fields{
+		"version": version,
+		"dirty":   dirty,
+	}).Info("Database migrations completed")
+
 	return nil
 }
 
