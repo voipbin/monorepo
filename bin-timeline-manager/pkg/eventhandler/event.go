@@ -1,0 +1,62 @@
+package eventhandler
+
+import (
+	"context"
+
+	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
+
+	"monorepo/bin-timeline-manager/models/event"
+)
+
+// List returns events matching the request criteria.
+func (h *eventHandler) List(ctx context.Context, req *event.EventListRequest) (*event.EventListResponse, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "List",
+		"publisher": req.Publisher,
+		"id":        req.ID,
+		"events":    req.Events,
+	})
+
+	// Validate request
+	if req.Publisher == "" {
+		return nil, errors.New("publisher is required")
+	}
+	if req.ID == uuid.Nil {
+		return nil, errors.New("id is required")
+	}
+	if len(req.Events) == 0 {
+		return nil, errors.New("events filter is required")
+	}
+
+	// Apply defaults
+	pageSize := req.PageSize
+	if pageSize <= 0 {
+		pageSize = event.DefaultPageSize
+	}
+	if pageSize > event.MaxPageSize {
+		pageSize = event.MaxPageSize
+	}
+
+	// Query database (request pageSize + 1 to determine if more results exist)
+	events, err := h.db.EventList(ctx, req.Publisher, req.ID, req.Events, req.PageToken, pageSize+1)
+	if err != nil {
+		log.Errorf("Could not list events. err: %v", err)
+		return nil, errors.Wrap(err, "could not list events")
+	}
+
+	// Build response with pagination
+	response := &event.EventListResponse{
+		Result: events,
+	}
+
+	// If we got more than pageSize, there are more results
+	if len(events) > pageSize {
+		response.Result = events[:pageSize]
+		// Use timestamp of last returned event as next page token
+		response.NextPageToken = events[pageSize-1].Timestamp
+	}
+
+	return response, nil
+}
