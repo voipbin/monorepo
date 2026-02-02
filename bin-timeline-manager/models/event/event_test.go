@@ -3,6 +3,7 @@ package event
 import (
 	"encoding/json"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 
@@ -10,8 +11,9 @@ import (
 )
 
 func TestEvent_JSONMarshal(t *testing.T) {
+	ts := time.Date(2024, 1, 15, 10, 30, 0, 123000000, time.UTC)
 	e := &Event{
-		Timestamp: "2024-01-15T10:30:00.123Z",
+		Timestamp: ts,
 		EventType: "activeflow_created",
 		Publisher: commonoutline.ServiceNameFlowManager,
 		DataType:  "application/json",
@@ -28,8 +30,8 @@ func TestEvent_JSONMarshal(t *testing.T) {
 		t.Fatalf("json.Unmarshal() error = %v", err)
 	}
 
-	if unmarshaled.Timestamp != e.Timestamp {
-		t.Errorf("Timestamp = %q, want %q", unmarshaled.Timestamp, e.Timestamp)
+	if !unmarshaled.Timestamp.Equal(e.Timestamp) {
+		t.Errorf("Timestamp = %v, want %v", unmarshaled.Timestamp, e.Timestamp)
 	}
 
 	if unmarshaled.EventType != e.EventType {
@@ -59,8 +61,9 @@ func TestEvent_JSONUnmarshal(t *testing.T) {
 		t.Fatalf("json.Unmarshal() error = %v", err)
 	}
 
-	if e.Timestamp != "2024-01-15T10:30:00.123Z" {
-		t.Errorf("Timestamp = %q, want %q", e.Timestamp, "2024-01-15T10:30:00.123Z")
+	expectedTime := time.Date(2024, 1, 15, 10, 30, 0, 123000000, time.UTC)
+	if !e.Timestamp.Equal(expectedTime) {
+		t.Errorf("Timestamp = %v, want %v", e.Timestamp, expectedTime)
 	}
 
 	if e.EventType != "activeflow_created" {
@@ -73,10 +76,12 @@ func TestEvent_JSONUnmarshal(t *testing.T) {
 }
 
 func TestEventListResponse_JSONMarshal(t *testing.T) {
+	ts1 := time.Date(2024, 1, 15, 10, 30, 0, 123000000, time.UTC)
+	ts2 := time.Date(2024, 1, 15, 10, 29, 0, 123000000, time.UTC)
 	resp := &EventListResponse{
 		Result: []*Event{
-			{Timestamp: "2024-01-15T10:30:00.123Z", EventType: "activeflow_created"},
-			{Timestamp: "2024-01-15T10:29:00.123Z", EventType: "activeflow_started"},
+			{Timestamp: ts1, EventType: "activeflow_created"},
+			{Timestamp: ts2, EventType: "activeflow_started"},
 		},
 		NextPageToken: "2024-01-15T10:29:00.123Z",
 	}
@@ -125,9 +130,10 @@ func TestEventListResponse_EmptyResult(t *testing.T) {
 }
 
 func TestEventListResponse_OmitEmptyNextPageToken(t *testing.T) {
+	ts := time.Date(2024, 1, 15, 10, 30, 0, 123000000, time.UTC)
 	resp := &EventListResponse{
 		Result: []*Event{
-			{Timestamp: "2024-01-15T10:30:00.123Z", EventType: "activeflow_created"},
+			{Timestamp: ts, EventType: "activeflow_created"},
 		},
 		NextPageToken: "",
 	}

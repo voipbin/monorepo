@@ -55,7 +55,7 @@ func (h *eventHandler) List(ctx context.Context, req *event.EventListRequest) (*
 	if len(events) > pageSize {
 		response.Result = events[:pageSize]
 		// Use timestamp of last returned event as next page token
-		response.NextPageToken = events[pageSize-1].Timestamp
+		response.NextPageToken = events[pageSize-1].Timestamp.Format("2006-01-02T15:04:05.000Z")
 	}
 
 	return response, nil

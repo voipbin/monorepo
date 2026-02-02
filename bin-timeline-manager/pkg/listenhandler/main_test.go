@@ -5,13 +5,14 @@ import (
 	"encoding/json"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
-	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-timeline-manager/models/event"
 	"monorepo/bin-timeline-manager/pkg/eventhandler"
 )
@@ -72,9 +73,10 @@ func TestProcessRequest_V1EventsPost(t *testing.T) {
 	}
 	reqData, _ := json.Marshal(req)
 
+	ts := time.Date(2024, 1, 15, 10, 30, 0, 123000000, time.UTC)
 	expectedResponse := &event.EventListResponse{
 		Result: []*event.Event{
-			{Timestamp: "2024-01-15T10:30:00.123Z", EventType: "activeflow_created"},
+			{Timestamp: ts, EventType: "activeflow_created"},
 		},
 	}
 

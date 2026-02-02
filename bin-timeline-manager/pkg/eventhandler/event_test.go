@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -105,9 +106,11 @@ func TestList_Success(t *testing.T) {
 		PageSize:  10,
 	}
 
+	ts1 := time.Date(2024, 1, 15, 10, 30, 0, 123000000, time.UTC)
+	ts2 := time.Date(2024, 1, 15, 10, 29, 0, 123000000, time.UTC)
 	expectedEvents := []*event.Event{
-		{Timestamp: "2024-01-15T10:30:00.123Z", EventType: "activeflow_created"},
-		{Timestamp: "2024-01-15T10:29:00.123Z", EventType: "activeflow_started"},
+		{Timestamp: ts1, EventType: "activeflow_created"},
+		{Timestamp: ts2, EventType: "activeflow_started"},
 	}
 
 	mockDB.EXPECT().
@@ -143,11 +146,14 @@ func TestList_Pagination_HasMore(t *testing.T) {
 		PageSize:  2,
 	}
 
+	ts1 := time.Date(2024, 1, 15, 10, 30, 0, 123000000, time.UTC)
+	ts2 := time.Date(2024, 1, 15, 10, 29, 0, 123000000, time.UTC)
+	ts3 := time.Date(2024, 1, 15, 10, 28, 0, 123000000, time.UTC)
 	// Return 3 events when requesting pageSize+1 (3), indicating more results
 	expectedEvents := []*event.Event{
-		{Timestamp: "2024-01-15T10:30:00.123Z", EventType: "activeflow_created"},
-		{Timestamp: "2024-01-15T10:29:00.123Z", EventType: "activeflow_started"},
-		{Timestamp: "2024-01-15T10:28:00.123Z", EventType: "activeflow_finished"},
+		{Timestamp: ts1, EventType: "activeflow_created"},
+		{Timestamp: ts2, EventType: "activeflow_started"},
+		{Timestamp: ts3, EventType: "activeflow_finished"},
 	}
 
 	mockDB.EXPECT().
@@ -185,8 +191,9 @@ func TestList_Pagination_WithPageToken(t *testing.T) {
 		PageToken: pageToken,
 	}
 
+	ts := time.Date(2024, 1, 15, 10, 28, 0, 123000000, time.UTC)
 	expectedEvents := []*event.Event{
-		{Timestamp: "2024-01-15T10:28:00.123Z", EventType: "activeflow_finished"},
+		{Timestamp: ts, EventType: "activeflow_finished"},
 	}
 
 	mockDB.EXPECT().
@@ -384,9 +391,11 @@ func TestList_MultipleEventFilters(t *testing.T) {
 		PageSize:  10,
 	}
 
+	ts1 := time.Date(2024, 1, 15, 10, 30, 0, 123000000, time.UTC)
+	ts2 := time.Date(2024, 1, 15, 10, 29, 0, 123000000, time.UTC)
 	expectedEvents := []*event.Event{
-		{Timestamp: "2024-01-15T10:30:00.123Z", EventType: "activeflow_created"},
-		{Timestamp: "2024-01-15T10:29:00.123Z", EventType: "flow_updated"},
+		{Timestamp: ts1, EventType: "activeflow_created"},
+		{Timestamp: ts2, EventType: "flow_updated"},
 	}
 
 	mockDB.EXPECT().
