@@ -66,7 +66,7 @@ func (h *dbHandler) EventList(
 	if err != nil {
 		return nil, errors.Wrap(err, "could not query events")
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var result []*event.Event
 	for rows.Next() {

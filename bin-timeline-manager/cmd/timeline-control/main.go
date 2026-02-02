@@ -151,7 +151,7 @@ func cmdMigrateUp() *cobra.Command {
 			if err != nil {
 				return errors.Wrap(err, "failed to initialize migrate")
 			}
-			defer m.Close()
+			defer func() { _, _ = m.Close() }()
 
 			if err := m.Up(); err != nil && err != migrate.ErrNoChange {
 				return errors.Wrap(err, "migration failed")
@@ -172,7 +172,7 @@ func cmdMigrateDown() *cobra.Command {
 			if err != nil {
 				return errors.Wrap(err, "failed to initialize migrate")
 			}
-			defer m.Close()
+			defer func() { _, _ = m.Close() }()
 
 			if err := m.Steps(-1); err != nil {
 				return errors.Wrap(err, "rollback failed")
@@ -193,7 +193,7 @@ func cmdMigrateStatus() *cobra.Command {
 			if err != nil {
 				return errors.Wrap(err, "failed to initialize migrate")
 			}
-			defer m.Close()
+			defer func() { _, _ = m.Close() }()
 
 			version, dirty, err := m.Version()
 			if err != nil && err != migrate.ErrNilVersion {

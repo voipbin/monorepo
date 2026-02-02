@@ -21,8 +21,6 @@ import (
 	"monorepo/bin-timeline-manager/pkg/listenhandler"
 )
 
-const serviceName = commonoutline.ServiceNameTimelineManager
-
 var chSigs = make(chan os.Signal, 1)
 var chDone = make(chan bool, 1)
 
