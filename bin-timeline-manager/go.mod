@@ -7,6 +7,7 @@ replace monorepo/bin-common-handler => ../bin-common-handler
 require (
 	github.com/ClickHouse/clickhouse-go/v2 v2.43.0
 	github.com/gofrs/uuid v4.4.0+incompatible
+	github.com/golang-migrate/migrate/v4 v4.19.1
 	github.com/joonix/log v0.0.0-20251205082533-cd78070927ea
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.23.2
@@ -53,6 +54,6 @@ require (
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/sys v0.40.0 // indirect
 	golang.org/x/text v0.32.0 // indirect
-	google.golang.org/genproto v0.0.0-20240213162025-012b6fc9bca9 // indirect
+	google.golang.org/genproto v0.0.0-20250603155806-513f23925822 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
 )
