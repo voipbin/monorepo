@@ -46,6 +46,8 @@ spec:
               value: ${REDIS_PASSWORD}
             - name: REDIS_DATABASE
               value: "1"
+            - name: CLICKHOUSE_ADDRESS
+              value: "clickhouse.default.svc.cluster.local:9000"
           ports:
             - name: metrics
               protocol: "TCP"

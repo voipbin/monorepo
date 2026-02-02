@@ -56,6 +56,8 @@ spec:
               value: "voipbin.net"
             - name: PROJECT_BUCKET_NAME
               value: "voipbin-voip-media-bucket-europe-west4"
+            - name: CLICKHOUSE_ADDRESS
+              value: "clickhouse.default.svc.cluster.local:9000"
           ports:
             - name: metrics
               protocol: "TCP"
