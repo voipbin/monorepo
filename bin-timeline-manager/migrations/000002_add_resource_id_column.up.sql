@@ -1,2 +1,2 @@
 ALTER TABLE events
-ADD COLUMN resource_id String MATERIALIZED JSONExtractString(data, 'id');
+ADD COLUMN IF NOT EXISTS resource_id String MATERIALIZED JSONExtractString(data, 'id');

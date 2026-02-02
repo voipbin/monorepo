@@ -1,2 +1,2 @@
 ALTER TABLE events
-DROP COLUMN resource_id;
+DROP COLUMN IF EXISTS resource_id;
