@@ -5,11 +5,13 @@ go 1.25.3
 replace monorepo/bin-common-handler => ../bin-common-handler
 
 require (
+	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/joonix/log v0.0.0-20251205082533-cd78070927ea
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.9.4
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/viper v1.21.0
+	monorepo/bin-common-handler v0.0.0-00010101000000-000000000000
 )
 
 require (
