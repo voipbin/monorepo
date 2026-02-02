@@ -123,6 +123,10 @@ parameters:
     type: boolean
     default: false
 
+  run-bin-timeline-manager:
+    type: boolean
+    default: false
+
   run-bin-transcribe-manager:
     type: boolean
     default: false
@@ -610,6 +614,25 @@ workflows:
           <<: *context_production
           requires:
             - bin-talk-manager-build
+            - release-approval
+
+  bin-timeline-manager:
+    when:
+      or: [<< pipeline.parameters.run-bin-timeline-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    jobs:
+      - bin-timeline-manager-test
+      - bin-timeline-manager-build:
+          <<: *context_production
+          requires:
+            - bin-timeline-manager-test
+      - release-approval:
+          type: approval
+          requires:
+            - bin-timeline-manager-build
+      - bin-timeline-manager-release:
+          <<: *context_production
+          requires:
+            - bin-timeline-manager-build
             - release-approval
 
   bin-transcribe-manager:
@@ -1305,6 +1328,30 @@ jobs:
           image-name: talk-manager
           source-directory: bin-talk-manager
 
+  # bin-timeline-manager
+  bin-timeline-manager-test:
+    docker: *go_image
+    steps:
+      - go-test:
+          source-directory: bin-timeline-manager
+
+  bin-timeline-manager-build:
+    docker: *gcp_image
+    steps:
+      - docker-build:
+          project-id: voipbin
+          project-repository: bin-timeline-manager
+          source-directory: bin-timeline-manager
+
+  bin-timeline-manager-release:
+    docker: *gcloud_image
+    steps:
+      - docker-release:
+          project-id: voipbin
+          project-repository: bin-timeline-manager
+          image-name: timeline-manager
+          source-directory: bin-timeline-manager
+
   # bin-transcribe-manager
   bin-transcribe-manager-test:
     docker: *go_image
@@ -1653,6 +1700,8 @@ commands:
             find . -type f -exec sed -i -e "s|\${HOMER_WHITELIST}|$CC_HOMER_WHITELIST|g" {} +
             find . -type f -exec sed -i -e "s|\${ELEVENLABS_API_KEY}|$CC_ELEVENLABS_API_KEY|g" {} +
             find . -type f -exec sed -i -e "s|\${CARTESIA_API_KEY}|$CC_CARTESIA_API_KEY|g" {} +
+            find . -type f -exec sed -i -e "s|\${CLICKHOUSE_ADDRESS}|$CC_CLICKHOUSE_ADDRESS|g" {} +
+            find . -type f -exec sed -i -e "s|\${CLICKHOUSE_DATABASE}|$CC_CLICKHOUSE_DATABASE|g" {} +
             find . -type f -exec sed -i -e "s|\${DEEPGRAM_API_KEY}|$CC_DEEPGRAM_API_KEY|g" {} +
             find . -type f -exec sed -i -e "s|\${MAILGUN_API_KEY}|$CC_MAILGUN_API_KEY|g" {} +
             find . -type f -exec sed -i -e "s|\${DOMAIN_NAME_EXTENSION}|$CC_DOMAIN_NAME_EXTENSION|g" {} +

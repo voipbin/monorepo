@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: timeline-manager
+  labels:
+    app: timeline-manager
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: timeline-manager
+  template:
+    metadata:
+      labels:
+        app: timeline-manager
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "2112"
+    spec:
+      containers:
+        - name: timeline-manager
+          image: timeline-manager-image
+          command:
+            - './timeline-manager'
+          env:
+            - name: NODE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: CLICKHOUSE_ADDRESS
+              value: ${CLICKHOUSE_ADDRESS}
+            - name: CLICKHOUSE_DATABASE
+              value: ${CLICKHOUSE_DATABASE}
+            - name: PROMETHEUS_ENDPOINT
+              value: "/metrics"
+            - name: PROMETHEUS_LISTEN_ADDRESS
+              value: ":2112"
+            - name: RABBITMQ_ADDRESS
+              value: ${RABBITMQ_ADDRESS}
+          ports:
+            - name: metrics
+              protocol: "TCP"
+              containerPort: 2112
+          resources:
+            limits:
+              cpu: "100m"
+              memory: "100Mi"
