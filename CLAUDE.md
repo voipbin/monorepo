@@ -67,7 +67,19 @@ golangci-lint run -v --timeout 5m
 
 ### Special Cases
 
-**Changes to bin-common-handler:** Update ALL 30+ services in the monorepo.
+**Changes to bin-common-handler:** Run the full verification workflow for ALL 30+ services in the monorepo.
+
+This is **NOT optional** - you MUST run `go mod tidy && go mod vendor && go test ./...` for EVERY service, not just the ones you directly modified. Dependencies propagate through the monorepo and services may need go.mod/go.sum updates even if you didn't touch their code.
+
+```bash
+# Run for ALL services after bin-common-handler changes
+for dir in bin-*/; do
+  if [ -f "$dir/go.mod" ]; then
+    echo "=== $dir ===" && \
+    (cd "$dir" && go mod tidy && go mod vendor && go test ./...) || echo "FAILED: $dir"
+  fi
+done
+```
 
 **Changes to public-facing models:** Update OpenAPI schemas in bin-openapi-manager.
 
