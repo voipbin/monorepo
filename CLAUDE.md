@@ -67,19 +67,52 @@ golangci-lint run -v --timeout 5m
 
 ### Special Cases
 
-**Changes to bin-common-handler:** Run the full verification workflow for ALL 30+ services in the monorepo.
+#### When to Run Verification and Where
 
-This is **NOT optional** - you MUST run `go mod tidy && go mod vendor && go test ./...` for EVERY service, not just the ones you directly modified. Dependencies propagate through the monorepo and services may need go.mod/go.sum updates even if you didn't touch their code.
+**If you changed bin-common-handler:** Run the full verification workflow for ALL 30+ services.
+
+Since all services depend on bin-common-handler, ANY change to it can affect every service. Dependencies propagate through the monorepo and services may need go.mod/go.sum updates even if you didn't touch their code directly.
 
 ```bash
-# Run for ALL services after bin-common-handler changes
+# Run full verification for ALL services after bin-common-handler changes
 for dir in bin-*/; do
   if [ -f "$dir/go.mod" ]; then
     echo "=== $dir ===" && \
-    (cd "$dir" && go mod tidy && go mod vendor && go test ./...) || echo "FAILED: $dir"
+    (cd "$dir" && \
+      go mod tidy && \
+      go mod vendor && \
+      go generate ./... && \
+      go test ./... && \
+      golangci-lint run -v --timeout 5m) || echo "FAILED: $dir"
   fi
 done
 ```
+
+**If you changed specific services (NOT bin-common-handler):** Run the full verification workflow only for those services.
+
+```bash
+# Run full verification only for the changed service
+cd bin-<service-name>
+go mod tidy && \
+go mod vendor && \
+go generate ./... && \
+go test ./... && \
+golangci-lint run -v --timeout 5m
+```
+
+#### Full Verification Workflow Steps
+
+The full verification workflow consists of 5 steps that MUST all be run:
+
+| Step | Command | Purpose |
+|------|---------|---------|
+| 1 | `go mod tidy` | Sync go.mod/go.sum with imports, remove unused deps, add missing ones |
+| 2 | `go mod vendor` | Copy dependencies to vendor/ for reproducible builds |
+| 3 | `go generate ./...` | Run code generators (mocks, OpenAPI types, etc.) |
+| 4 | `go test ./...` | Run all unit tests |
+| 5 | `golangci-lint run -v --timeout 5m` | Run static analysis and linting |
+
+**Do NOT skip any steps.** Each step can catch different issues.
 
 **Changes to public-facing models:** Update OpenAPI schemas in bin-openapi-manager.
 
