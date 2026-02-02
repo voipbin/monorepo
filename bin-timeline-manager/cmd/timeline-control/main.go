@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/golang-migrate/migrate/v4"
@@ -111,6 +112,14 @@ func runEventList(cmd *cobra.Command, args []string) error {
 	events := strings.Split(eventsStr, ",")
 
 	db := dbhandler.NewHandler(config.Get().ClickHouseAddress, config.Get().ClickHouseDatabase)
+
+	// Wait for ClickHouse connection with timeout
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := db.WaitForConnection(ctx); err != nil {
+		return errors.Wrap(err, "failed to connect to ClickHouse")
+	}
+
 	handler := eventhandler.NewEventHandler(db)
 
 	req := &event.EventListRequest{

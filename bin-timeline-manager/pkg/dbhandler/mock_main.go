@@ -57,3 +57,17 @@ func (mr *MockDBHandlerMockRecorder) EventList(ctx, publisher, resourceID, event
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventList", reflect.TypeOf((*MockDBHandler)(nil).EventList), ctx, publisher, resourceID, events, pageToken, pageSize)
 }
+
+// WaitForConnection mocks base method.
+func (m *MockDBHandler) WaitForConnection(ctx context.Context) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "WaitForConnection", ctx)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// WaitForConnection indicates an expected call of WaitForConnection.
+func (mr *MockDBHandlerMockRecorder) WaitForConnection(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WaitForConnection", reflect.TypeOf((*MockDBHandler)(nil).WaitForConnection), ctx)
+}
