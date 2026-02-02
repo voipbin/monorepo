@@ -69,7 +69,11 @@ golangci-lint run -v --timeout 5m
 
 #### When to Run Verification and Where
 
-**If you changed bin-common-handler:** Run the full verification workflow for ALL 30+ services.
+**CRITICAL: Run verification BEFORE every commit, not just once per branch.**
+
+"Changed" means compared to the `main` branch, NOT compared to your previous commit. If your branch has modified bin-common-handler at any point (even in earlier commits), you MUST run the full verification for ALL services before EVERY subsequent commit.
+
+**If you changed bin-common-handler (compared to main):** Run the full verification workflow for ALL 30+ services.
 
 Since all services depend on bin-common-handler, ANY change to it can affect every service. Dependencies propagate through the monorepo and services may need go.mod/go.sum updates even if you didn't touch their code directly.
 
