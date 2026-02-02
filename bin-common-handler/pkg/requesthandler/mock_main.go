@@ -72,6 +72,7 @@ import (
 	chat "monorepo/bin-talk-manager/models/chat"
 	message3 "monorepo/bin-talk-manager/models/message"
 	participant "monorepo/bin-talk-manager/models/participant"
+	event "monorepo/bin-timeline-manager/models/event"
 	transcribe "monorepo/bin-transcribe-manager/models/transcribe"
 	transcript "monorepo/bin-transcribe-manager/models/transcript"
 	transfer "monorepo/bin-transfer-manager/models/transfer"
@@ -5430,6 +5431,21 @@ func (m *MockRequestHandler) TalkV1ParticipantListWithFilters(ctx context.Contex
 func (mr *MockRequestHandlerMockRecorder) TalkV1ParticipantListWithFilters(ctx, filters, pageToken, pageSize any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TalkV1ParticipantListWithFilters", reflect.TypeOf((*MockRequestHandler)(nil).TalkV1ParticipantListWithFilters), ctx, filters, pageToken, pageSize)
+}
+
+// TimelineV1EventList mocks base method.
+func (m *MockRequestHandler) TimelineV1EventList(ctx context.Context, req *event.EventListRequest) (*event.EventListResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TimelineV1EventList", ctx, req)
+	ret0, _ := ret[0].(*event.EventListResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TimelineV1EventList indicates an expected call of TimelineV1EventList.
+func (mr *MockRequestHandlerMockRecorder) TimelineV1EventList(ctx, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TimelineV1EventList", reflect.TypeOf((*MockRequestHandler)(nil).TimelineV1EventList), ctx, req)
 }
 
 // TranscribeV1TranscribeDelete mocks base method.

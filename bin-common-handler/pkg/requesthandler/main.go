@@ -72,6 +72,8 @@ import (
 
 	tmtag "monorepo/bin-tag-manager/models/tag"
 
+	tmevent "monorepo/bin-timeline-manager/models/event"
+
 	talkmessage "monorepo/bin-talk-manager/models/message"
 	talkparticipant "monorepo/bin-talk-manager/models/participant"
 	tkchat "monorepo/bin-talk-manager/models/chat"
@@ -1154,6 +1156,9 @@ type RequestHandler interface {
 
 	// transfer-manager
 	TransferV1TransferStart(ctx context.Context, transferType tmtransfer.Type, transfererCallID uuid.UUID, transfereeAddresses []commonaddress.Address) (*tmtransfer.Transfer, error)
+
+	// timeline-manager events
+	TimelineV1EventList(ctx context.Context, req *tmevent.EventListRequest) (*tmevent.EventListResponse, error)
 
 	// webhook-manager webhooks
 	WebhookV1WebhookSend(ctx context.Context, customerID uuid.UUID, dataType wmwebhook.DataType, messageType string, messageData []byte) error
