@@ -64,7 +64,7 @@ func initMessageHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (message
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameMessageEvent, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameMessageEvent, serviceName, "")
 	requestExternal := requestexternal.NewRequestExternal(config.Get().AuthtokenTelnyx, config.Get().AuthtokenMessagebird)
 
 	return messagehandler.NewMessageHandler(reqHandler, notifyHandler, db, requestExternal), nil

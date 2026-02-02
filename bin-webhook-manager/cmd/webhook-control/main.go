@@ -63,7 +63,7 @@ func initWebhookHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (webhook
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameWebhookEvent, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameWebhookEvent, serviceName, "")
 	accountHandler := accounthandler.NewAccountHandler(db, reqHandler)
 
 	return webhookhandler.NewWebhookHandler(db, notifyHandler, accountHandler), nil

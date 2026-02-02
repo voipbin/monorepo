@@ -355,7 +355,7 @@ func initAIHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (aihandler.AI
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameAIEvent, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameAIEvent, serviceName, "")
 
 	return aihandler.NewAIHandler(reqHandler, notifyHandler, db), nil
 }
@@ -401,7 +401,7 @@ func initAIcallHandler() (aicallhandler.AIcallHandler, error) {
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameAIEvent, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameAIEvent, serviceName, "")
 
 	// For these operations, we don't need aiHandler and messageHandler
 	return aicallhandler.NewAIcallHandler(reqHandler, notifyHandler, dbHandler, nil, nil), nil

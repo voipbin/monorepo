@@ -138,7 +138,7 @@ func run(dbHandler dbhandler.DBHandler, cfg *config.Config) {
 
 	// create handlers
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameEmailEvent, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameEmailEvent, serviceName, "")
 
 	emailHandler := emailhandler.NewEmailHandler(dbHandler, reqHandler, notifyHandler, cfg.SendgridAPIKey, cfg.MailgunAPIKey)
 

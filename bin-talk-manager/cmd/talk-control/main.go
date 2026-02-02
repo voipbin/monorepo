@@ -54,7 +54,7 @@ func initHandlers() (chathandler.ChatHandler, messagehandler.MessageHandler, par
 
 	utilHandler := utilhandler.NewUtilHandler()
 	dbHandler := dbhandler.New(db, redisClient, utilHandler)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, nil, "", serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, nil, "", serviceName, "")
 
 	participantHandler := participanthandler.New(dbHandler, sockHandler, notifyHandler, utilHandler)
 	chatHandler := chathandler.New(dbHandler, participantHandler, notifyHandler, utilHandler)

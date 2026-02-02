@@ -92,7 +92,7 @@ func runServices(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameAgentEvent, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameAgentEvent, serviceName, "")
 	agentHandler := agenthandler.NewAgentHandler(reqHandler, db, notifyHandler)
 
 	if errListen := runServiceListen(sockHandler, agentHandler); errListen != nil {

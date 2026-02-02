@@ -114,7 +114,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler, cfg *config.Config) err
 	sockHandler.Connect()
 
 	requestHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, requestHandler, commonoutline.QueueNameConferenceEvent, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, requestHandler, commonoutline.QueueNameConferenceEvent, serviceName, "")
 
 	conferenceHandler := conferencehandler.NewConferenceHandler(requestHandler, notifyHandler, db)
 	conferencecallHandler := conferencecallhandler.NewConferencecallHandler(requestHandler, notifyHandler, db, conferenceHandler)

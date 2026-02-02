@@ -64,7 +64,7 @@ func initConferenceHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (conf
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameConferenceEvent, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameConferenceEvent, serviceName, "")
 
 	return conferencehandler.NewConferenceHandler(reqHandler, notifyHandler, db), nil
 }

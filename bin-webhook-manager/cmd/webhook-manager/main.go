@@ -149,7 +149,7 @@ func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameWebhookEvent, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameWebhookEvent, serviceName, "")
 	accountHandler := accounthandler.NewAccountHandler(db, reqHandler)
 
 	whHandler := webhookhandler.NewWebhookHandler(db, notifyHandler, accountHandler)

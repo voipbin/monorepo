@@ -101,7 +101,7 @@ func initExtensionHandler() (extensionhandler.ExtensionHandler, error) {
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameRegistrarEvent, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameRegistrarEvent, serviceName, "")
 
 	return extensionhandler.NewExtensionHandler(reqHandler, dbAst, dbBin, notifyHandler), nil
 }
@@ -123,7 +123,7 @@ func initTrunkHandler() (trunkhandler.TrunkHandler, error) {
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameRegistrarEvent, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameRegistrarEvent, serviceName, "")
 
 	return trunkhandler.NewTrunkHandler(reqHandler, dbBin, notifyHandler), nil
 }

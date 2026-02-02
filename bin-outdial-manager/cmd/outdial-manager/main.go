@@ -127,7 +127,7 @@ func run(dbHandler dbhandler.DBHandler) error {
 
 	// create handlers
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameOutdialEvent, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameOutdialEvent, serviceName, "")
 
 	outdialHandler := outdialhandler.NewOutdialHandler(dbHandler, reqHandler, notifyHandler)
 	outdialTargethandler := outdialtargethandler.NewOutdialTargetHandler(dbHandler, reqHandler, notifyHandler)

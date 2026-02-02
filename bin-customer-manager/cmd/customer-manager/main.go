@@ -90,7 +90,7 @@ func startServices(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameCustomerEvent, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameCustomerEvent, serviceName, "")
 	customerHandler := customerhandler.NewCustomerHandler(reqHandler, db, notifyHandler)
 	accesskeyHandler := accesskeyhandler.NewAccesskeyHandler(reqHandler, db, notifyHandler)
 

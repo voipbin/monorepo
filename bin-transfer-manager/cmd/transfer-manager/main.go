@@ -134,7 +134,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 
 	// create handlers
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameTransferEvent, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameTransferEvent, serviceName, "")
 	transferHandler := transferhandler.NewTransferHandler(reqHandler, notifyHandler, db)
 
 	// run event listener

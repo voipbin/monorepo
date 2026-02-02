@@ -67,7 +67,7 @@ func initFlowHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (flowhandle
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameFlowEvent, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameFlowEvent, serviceName, "")
 
 	actionHandler := actionhandler.NewActionHandler()
 	variableHandler := variablehandler.NewVariableHandler(db, reqHandler)
