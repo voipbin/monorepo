@@ -10,7 +10,6 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-timeline-manager/models/event"
 )
 
@@ -18,7 +17,7 @@ const clickhouseRetryInterval = 30 * time.Second
 
 // DBHandler interface for database operations.
 type DBHandler interface {
-	EventList(ctx context.Context, publisher commonoutline.ServiceName, resourceID uuid.UUID, events []string, pageToken string, pageSize int) ([]*event.Event, error)
+	EventList(ctx context.Context, publisher string, resourceID uuid.UUID, events []string, pageToken string, pageSize int) ([]*event.Event, error)
 	WaitForConnection(ctx context.Context) error
 }
 

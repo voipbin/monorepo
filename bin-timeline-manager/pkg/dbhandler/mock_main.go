@@ -11,7 +11,6 @@ package dbhandler
 
 import (
 	context "context"
-	outline "monorepo/bin-common-handler/models/outline"
 	event "monorepo/bin-timeline-manager/models/event"
 	reflect "reflect"
 
@@ -44,7 +43,7 @@ func (m *MockDBHandler) EXPECT() *MockDBHandlerMockRecorder {
 }
 
 // EventList mocks base method.
-func (m *MockDBHandler) EventList(ctx context.Context, publisher outline.ServiceName, resourceID uuid.UUID, events []string, pageToken string, pageSize int) ([]*event.Event, error) {
+func (m *MockDBHandler) EventList(ctx context.Context, publisher string, resourceID uuid.UUID, events []string, pageToken string, pageSize int) ([]*event.Event, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "EventList", ctx, publisher, resourceID, events, pageToken, pageSize)
 	ret0, _ := ret[0].([]*event.Event)

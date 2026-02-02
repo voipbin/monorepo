@@ -2,15 +2,13 @@ package event
 
 import (
 	"github.com/gofrs/uuid"
-
-	commonoutline "monorepo/bin-common-handler/models/outline"
 )
 
 // EventListRequest represents the request for listing events.
 type EventListRequest struct {
-	Publisher commonoutline.ServiceName `json:"publisher"`
-	ID        uuid.UUID                 `json:"id"`
-	Events    []string                  `json:"events"`
+	Publisher string    `json:"publisher"`
+	ID        uuid.UUID `json:"id"`
+	Events    []string  `json:"events"`
 
 	// Pagination
 	PageToken string `json:"page_token,omitempty"`

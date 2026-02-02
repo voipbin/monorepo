@@ -9,7 +9,6 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
-	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-timeline-manager/models/event"
 	"monorepo/bin-timeline-manager/pkg/dbhandler"
 )
@@ -51,7 +50,7 @@ func TestList_Validation(t *testing.T) {
 		{
 			name: "missing id",
 			req: &event.EventListRequest{
-				Publisher: commonoutline.ServiceNameFlowManager,
+				Publisher: "flow-manager",
 				Events:    []string{"activeflow_*"},
 			},
 			wantErr: true,
@@ -60,7 +59,7 @@ func TestList_Validation(t *testing.T) {
 		{
 			name: "missing events",
 			req: &event.EventListRequest{
-				Publisher: commonoutline.ServiceNameFlowManager,
+				Publisher: "flow-manager",
 				ID:        uuid.Must(uuid.NewV4()),
 			},
 			wantErr: true,
@@ -69,7 +68,7 @@ func TestList_Validation(t *testing.T) {
 		{
 			name: "empty events slice",
 			req: &event.EventListRequest{
-				Publisher: commonoutline.ServiceNameFlowManager,
+				Publisher: "flow-manager",
 				ID:        uuid.Must(uuid.NewV4()),
 				Events:    []string{},
 			},
@@ -100,7 +99,7 @@ func TestList_Success(t *testing.T) {
 
 	testID := uuid.Must(uuid.NewV4())
 	req := &event.EventListRequest{
-		Publisher: commonoutline.ServiceNameFlowManager,
+		Publisher: "flow-manager",
 		ID:        testID,
 		Events:    []string{"activeflow_*"},
 		PageSize:  10,
@@ -140,7 +139,7 @@ func TestList_Pagination_HasMore(t *testing.T) {
 
 	testID := uuid.Must(uuid.NewV4())
 	req := &event.EventListRequest{
-		Publisher: commonoutline.ServiceNameFlowManager,
+		Publisher: "flow-manager",
 		ID:        testID,
 		Events:    []string{"activeflow_*"},
 		PageSize:  2,
@@ -184,7 +183,7 @@ func TestList_Pagination_WithPageToken(t *testing.T) {
 	testID := uuid.Must(uuid.NewV4())
 	pageToken := "2024-01-15T10:29:00.123Z"
 	req := &event.EventListRequest{
-		Publisher: commonoutline.ServiceNameFlowManager,
+		Publisher: "flow-manager",
 		ID:        testID,
 		Events:    []string{"activeflow_*"},
 		PageSize:  10,
@@ -223,7 +222,7 @@ func TestList_DefaultPageSize(t *testing.T) {
 
 	testID := uuid.Must(uuid.NewV4())
 	req := &event.EventListRequest{
-		Publisher: commonoutline.ServiceNameFlowManager,
+		Publisher: "flow-manager",
 		ID:        testID,
 		Events:    []string{"activeflow_*"},
 		// PageSize not set, should use default (100)
@@ -248,7 +247,7 @@ func TestList_NegativePageSize(t *testing.T) {
 
 	testID := uuid.Must(uuid.NewV4())
 	req := &event.EventListRequest{
-		Publisher: commonoutline.ServiceNameFlowManager,
+		Publisher: "flow-manager",
 		ID:        testID,
 		Events:    []string{"activeflow_*"},
 		PageSize:  -5, // Negative, should use default
@@ -273,7 +272,7 @@ func TestList_MaxPageSize(t *testing.T) {
 
 	testID := uuid.Must(uuid.NewV4())
 	req := &event.EventListRequest{
-		Publisher: commonoutline.ServiceNameFlowManager,
+		Publisher: "flow-manager",
 		ID:        testID,
 		Events:    []string{"activeflow_*"},
 		PageSize:  5000, // Over max, should be capped to MaxPageSize (1000)
@@ -298,7 +297,7 @@ func TestList_DatabaseError(t *testing.T) {
 
 	testID := uuid.Must(uuid.NewV4())
 	req := &event.EventListRequest{
-		Publisher: commonoutline.ServiceNameFlowManager,
+		Publisher: "flow-manager",
 		ID:        testID,
 		Events:    []string{"activeflow_*"},
 		PageSize:  10,
@@ -323,7 +322,7 @@ func TestList_EmptyResult(t *testing.T) {
 
 	testID := uuid.Must(uuid.NewV4())
 	req := &event.EventListRequest{
-		Publisher: commonoutline.ServiceNameFlowManager,
+		Publisher: "flow-manager",
 		ID:        testID,
 		Events:    []string{"activeflow_*"},
 		PageSize:  10,
@@ -356,7 +355,7 @@ func TestList_NilResult(t *testing.T) {
 
 	testID := uuid.Must(uuid.NewV4())
 	req := &event.EventListRequest{
-		Publisher: commonoutline.ServiceNameFlowManager,
+		Publisher: "flow-manager",
 		ID:        testID,
 		Events:    []string{"activeflow_*"},
 		PageSize:  10,
@@ -385,7 +384,7 @@ func TestList_MultipleEventFilters(t *testing.T) {
 
 	testID := uuid.Must(uuid.NewV4())
 	req := &event.EventListRequest{
-		Publisher: commonoutline.ServiceNameFlowManager,
+		Publisher: "flow-manager",
 		ID:        testID,
 		Events:    []string{"activeflow_created", "activeflow_started", "flow_*"},
 		PageSize:  10,

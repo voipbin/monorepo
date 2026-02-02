@@ -6,8 +6,6 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
-
-	commonoutline "monorepo/bin-common-handler/models/outline"
 )
 
 func TestEvent_JSONMarshal(t *testing.T) {
@@ -15,7 +13,7 @@ func TestEvent_JSONMarshal(t *testing.T) {
 	e := &Event{
 		Timestamp: ts,
 		EventType: "activeflow_created",
-		Publisher: commonoutline.ServiceNameFlowManager,
+		Publisher: "flow-manager",
 		DataType:  "application/json",
 		Data:      json.RawMessage(`{"key":"value"}`),
 	}
@@ -70,8 +68,8 @@ func TestEvent_JSONUnmarshal(t *testing.T) {
 		t.Errorf("EventType = %q, want %q", e.EventType, "activeflow_created")
 	}
 
-	if e.Publisher != commonoutline.ServiceNameFlowManager {
-		t.Errorf("Publisher = %q, want %q", e.Publisher, commonoutline.ServiceNameFlowManager)
+	if e.Publisher != "flow-manager" {
+		t.Errorf("Publisher = %q, want %q", e.Publisher, "flow-manager")
 	}
 }
 
@@ -157,7 +155,7 @@ func TestEventListResponse_OmitEmptyNextPageToken(t *testing.T) {
 func TestEventListRequest_JSONMarshal(t *testing.T) {
 	testID := uuid.Must(uuid.NewV4())
 	req := &EventListRequest{
-		Publisher: commonoutline.ServiceNameFlowManager,
+		Publisher: "flow-manager",
 		ID:        testID,
 		Events:    []string{"activeflow_*", "flow_created"},
 		PageToken: "2024-01-15T10:29:00.123Z",
@@ -210,8 +208,8 @@ func TestEventListRequest_JSONUnmarshal(t *testing.T) {
 		t.Fatalf("json.Unmarshal() error = %v", err)
 	}
 
-	if req.Publisher != commonoutline.ServiceNameFlowManager {
-		t.Errorf("Publisher = %q, want %q", req.Publisher, commonoutline.ServiceNameFlowManager)
+	if req.Publisher != "flow-manager" {
+		t.Errorf("Publisher = %q, want %q", req.Publisher, "flow-manager")
 	}
 
 	if req.ID != testID {
@@ -230,7 +228,7 @@ func TestEventListRequest_JSONUnmarshal(t *testing.T) {
 func TestEventListRequest_OmitEmptyFields(t *testing.T) {
 	testID := uuid.Must(uuid.NewV4())
 	req := &EventListRequest{
-		Publisher: commonoutline.ServiceNameFlowManager,
+		Publisher: "flow-manager",
 		ID:        testID,
 		Events:    []string{"activeflow_*"},
 		// PageToken and PageSize not set

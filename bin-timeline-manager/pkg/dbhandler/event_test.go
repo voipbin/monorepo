@@ -6,8 +6,6 @@ import (
 	"testing"
 
 	"github.com/gofrs/uuid"
-
-	commonoutline "monorepo/bin-common-handler/models/outline"
 )
 
 func TestBuildEventConditions(t *testing.T) {
@@ -98,7 +96,7 @@ func TestEventList_NoConnection(t *testing.T) {
 	ctx := context.Background()
 	testID := uuid.Must(uuid.NewV4())
 
-	_, err := handler.EventList(ctx, commonoutline.ServiceNameFlowManager, testID, []string{"activeflow_*"}, "", 10)
+	_, err := handler.EventList(ctx, "flow-manager", testID, []string{"activeflow_*"}, "", 10)
 	if err == nil {
 		t.Error("EventList() expected error when conn is nil, got nil")
 	}
@@ -124,7 +122,7 @@ func TestDBHandler_Interface(t *testing.T) {
 
 func TestBuildEventQuery_Basic(t *testing.T) {
 	testID := uuid.Must(uuid.NewV4())
-	publisher := commonoutline.ServiceNameFlowManager
+	publisher := "flow-manager"
 
 	query, args := buildEventQuery(publisher, testID, []string{"activeflow_*"}, "", 10)
 
@@ -149,7 +147,7 @@ func TestBuildEventQuery_Basic(t *testing.T) {
 	if len(args) != 3 {
 		t.Errorf("Expected 3 args, got %d", len(args))
 	}
-	if args[0] != string(publisher) {
+	if args[0] != publisher {
 		t.Errorf("First arg should be publisher, got %v", args[0])
 	}
 	if args[1] != testID.String() {
@@ -162,7 +160,7 @@ func TestBuildEventQuery_Basic(t *testing.T) {
 
 func TestBuildEventQuery_WithPageToken(t *testing.T) {
 	testID := uuid.Must(uuid.NewV4())
-	publisher := commonoutline.ServiceNameFlowManager
+	publisher := "flow-manager"
 	pageToken := "2024-01-15T10:29:00.123Z"
 
 	query, args := buildEventQuery(publisher, testID, []string{"activeflow_*"}, pageToken, 10)
@@ -183,7 +181,7 @@ func TestBuildEventQuery_WithPageToken(t *testing.T) {
 
 func TestBuildEventQuery_WithEventFilters(t *testing.T) {
 	testID := uuid.Must(uuid.NewV4())
-	publisher := commonoutline.ServiceNameFlowManager
+	publisher := "flow-manager"
 
 	query, _ := buildEventQuery(publisher, testID, []string{"activeflow_created", "flow_*"}, "", 10)
 
@@ -198,7 +196,7 @@ func TestBuildEventQuery_WithEventFilters(t *testing.T) {
 
 func TestBuildEventQuery_NoEventFilters(t *testing.T) {
 	testID := uuid.Must(uuid.NewV4())
-	publisher := commonoutline.ServiceNameFlowManager
+	publisher := "flow-manager"
 
 	query, _ := buildEventQuery(publisher, testID, []string{}, "", 10)
 
@@ -210,7 +208,7 @@ func TestBuildEventQuery_NoEventFilters(t *testing.T) {
 
 func TestBuildEventQuery_WildcardAll(t *testing.T) {
 	testID := uuid.Must(uuid.NewV4())
-	publisher := commonoutline.ServiceNameFlowManager
+	publisher := "flow-manager"
 
 	query, _ := buildEventQuery(publisher, testID, []string{"*"}, "", 10)
 
@@ -222,7 +220,7 @@ func TestBuildEventQuery_WildcardAll(t *testing.T) {
 
 func TestBuildEventQuery_ComplexScenario(t *testing.T) {
 	testID := uuid.Must(uuid.NewV4())
-	publisher := commonoutline.ServiceNameCallManager
+	publisher := "call-manager"
 	pageToken := "2024-01-15T10:29:00.123Z"
 	events := []string{"call_created", "call_hangup", "groupcall_*"}
 
@@ -246,7 +244,7 @@ func TestBuildEventQuery_ComplexScenario(t *testing.T) {
 	if len(args) != 4 {
 		t.Errorf("Expected 4 args, got %d", len(args))
 	}
-	if args[0] != string(publisher) {
+	if args[0] != publisher {
 		t.Errorf("First arg should be publisher (%s), got %v", publisher, args[0])
 	}
 	if args[1] != testID.String() {

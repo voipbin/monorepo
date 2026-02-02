@@ -10,7 +10,6 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
-	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-timeline-manager/models/event"
@@ -66,7 +65,7 @@ func TestProcessRequest_V1EventsPost(t *testing.T) {
 
 	testID := uuid.Must(uuid.NewV4())
 	req := &event.EventListRequest{
-		Publisher: commonoutline.ServiceNameFlowManager,
+		Publisher: "flow-manager",
 		ID:        testID,
 		Events:    []string{"activeflow_*"},
 		PageSize:  10,
@@ -146,7 +145,7 @@ func TestProcessRequest_V1EventsPost_HandlerError(t *testing.T) {
 
 	testID := uuid.Must(uuid.NewV4())
 	req := &event.EventListRequest{
-		Publisher: commonoutline.ServiceNameFlowManager,
+		Publisher: "flow-manager",
 		ID:        testID,
 		Events:    []string{"activeflow_*"},
 		PageSize:  10,
