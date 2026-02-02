@@ -40,7 +40,7 @@ func bindConfig(cmd *cobra.Command) error {
 	f.String("rabbitmq_address", "", "RabbitMQ server address")
 	f.String("prometheus_endpoint", "", "Prometheus metrics endpoint")
 	f.String("prometheus_listen_address", "", "Prometheus listen address")
-	f.String("clickhouse_address", "clickhouse.infrastructure:9000", "ClickHouse server address")
+	f.String("clickhouse_address", "", "ClickHouse server address")
 	f.String("clickhouse_database", "default", "ClickHouse database name")
 	f.String("migrations_path", "./migrations", "Path to migration files")
 

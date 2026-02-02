@@ -44,9 +44,11 @@ Uses **Cobra + Viper** pattern (see `internal/config/`):
 - Optional: `clickhouse_database` (default: `default`), `prometheus_endpoint`, `prometheus_listen_address`, `migrations_path`
 
 Default values:
-- `clickhouse_address`: `clickhouse.infrastructure:9000`
 - `clickhouse_database`: `default`
 - `migrations_path`: `./migrations`
+
+Production values (set in k8s deployment):
+- `clickhouse_address`: `clickhouse.infrastructure:9000`
 
 ## Development Commands
 
@@ -213,6 +215,6 @@ Deployment files in `k8s/`:
 - `kustomization.yml`: Kustomize configuration
 
 Environment variables in deployment:
-- `CLICKHOUSE_ADDRESS`: Set via kustomize substitution
-- `CLICKHOUSE_DATABASE`: Set via kustomize substitution
+- `CLICKHOUSE_ADDRESS`: `clickhouse.infrastructure:9000`
+- `CLICKHOUSE_DATABASE`: `default`
 - `RABBITMQ_ADDRESS`: Set via kustomize substitution
