@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 
 	"monorepo/bin-flow-manager/internal/config"
 	"monorepo/bin-flow-manager/models/action"
@@ -67,7 +68,7 @@ func initFlowHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (flowhandle
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameFlowEvent, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameFlowEvent, serviceName, os.Getenv("CLICKHOUSE_ADDRESS"))
 
 	actionHandler := actionhandler.NewActionHandler()
 	variableHandler := variablehandler.NewVariableHandler(db, reqHandler)

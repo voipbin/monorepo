@@ -146,7 +146,7 @@ func runListen(sqlDB *sql.DB, cache cachehandler.CacheHandler, cfg *config.Confi
 
 	// create handlers
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameMessageEvent, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameMessageEvent, serviceName, "")
 
 	requestExternal := requestexternal.NewRequestExternal(cfg.AuthtokenMessagebird, cfg.AuthtokenTelnyx)
 

@@ -84,6 +84,7 @@ func runDaemon() error {
 		reqHandler,
 		commonoutline.QueueNameTalkEvent,
 		commonoutline.ServiceNameTalkManager,
+		"",
 	)
 
 	// Initialize Redis

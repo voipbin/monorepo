@@ -119,7 +119,7 @@ func run() error {
 	listenAddress := fmt.Sprintf("%s:%d", listenIP, 8080)
 
 	requestHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, requestHandler, commonoutline.QueueNamePipecatEvent, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, requestHandler, commonoutline.QueueNamePipecatEvent, serviceName, "")
 
 	// Create tool handler and fetch tools from ai-manager
 	toolHandler := toolhandler.NewToolHandler(requestHandler)

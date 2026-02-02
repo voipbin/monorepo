@@ -63,7 +63,7 @@ func initTransferHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (transf
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameTransferEvent, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameTransferEvent, serviceName, "")
 
 	return transferhandler.NewTransferHandler(reqHandler, notifyHandler, db), nil
 }

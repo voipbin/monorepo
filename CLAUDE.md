@@ -67,7 +67,56 @@ golangci-lint run -v --timeout 5m
 
 ### Special Cases
 
-**Changes to bin-common-handler:** Update ALL 30+ services in the monorepo.
+#### When to Run Verification and Where
+
+**CRITICAL: Run verification BEFORE every commit, not just once per branch.**
+
+"Changed" means compared to the `main` branch, NOT compared to your previous commit. If your branch has modified bin-common-handler at any point (even in earlier commits), you MUST run the full verification for ALL services before EVERY subsequent commit.
+
+**If you changed bin-common-handler (compared to main):** Run the full verification workflow for ALL 30+ services.
+
+Since all services depend on bin-common-handler, ANY change to it can affect every service. Dependencies propagate through the monorepo and services may need go.mod/go.sum updates even if you didn't touch their code directly.
+
+```bash
+# Run full verification for ALL services after bin-common-handler changes
+for dir in bin-*/; do
+  if [ -f "$dir/go.mod" ]; then
+    echo "=== $dir ===" && \
+    (cd "$dir" && \
+      go mod tidy && \
+      go mod vendor && \
+      go generate ./... && \
+      go test ./... && \
+      golangci-lint run -v --timeout 5m) || echo "FAILED: $dir"
+  fi
+done
+```
+
+**If you changed specific services (NOT bin-common-handler):** Run the full verification workflow only for those services.
+
+```bash
+# Run full verification only for the changed service
+cd bin-<service-name>
+go mod tidy && \
+go mod vendor && \
+go generate ./... && \
+go test ./... && \
+golangci-lint run -v --timeout 5m
+```
+
+#### Full Verification Workflow Steps
+
+The full verification workflow consists of 5 steps that MUST all be run:
+
+| Step | Command | Purpose |
+|------|---------|---------|
+| 1 | `go mod tidy` | Sync go.mod/go.sum with imports, remove unused deps, add missing ones |
+| 2 | `go mod vendor` | Copy dependencies to vendor/ for reproducible builds |
+| 3 | `go generate ./...` | Run code generators (mocks, OpenAPI types, etc.) |
+| 4 | `go test ./...` | Run all unit tests |
+| 5 | `golangci-lint run -v --timeout 5m` | Run static analysis and linting |
+
+**Do NOT skip any steps.** Each step can catch different issues.
 
 **Changes to public-facing models:** Update OpenAPI schemas in bin-openapi-manager.
 
@@ -252,6 +301,46 @@ Follow these standards:
 **For detailed standards, logging examples, and naming conventions, see [code-quality-standards.md](docs/code-quality-standards.md)**
 
 ### Common Gotchas
+
+#### Updating Shared Library Function Signatures
+
+**CRITICAL: When updating function signatures in bin-common-handler, you MUST account for ALL call patterns across the monorepo.**
+
+Services use different import aliases and call formats:
+```go
+// Some services use single-line with one alias
+notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, queueName, serviceName, "")
+
+// Other services use multi-line with different alias
+notifyHandler := commonnotify.NewNotifyHandler(
+    sockHandler,
+    reqHandler,
+    queueName,
+    serviceName,
+)
+```
+
+**When updating function signatures:**
+1. **Search for ALL import aliases** - Use `grep -r "notifyhandler\|commonnotify" --include="*.go"` to find all aliases
+2. **Check for multi-line calls** - Simple sed patterns only match single-line; multi-line calls will be missed
+3. **Run full verification for ALL services** - Don't rely on pattern matching; build errors will catch missed updates
+4. **Prefer manual verification** - After bulk updates, manually review files with different patterns
+
+**Example failure mode:**
+```bash
+# This sed command ONLY matches single-line patterns:
+sed -i 's/notifyhandler.NewNotifyHandler(\([^)]*\))/notifyhandler.NewNotifyHandler(\1, "")/g'
+
+# It MISSES multi-line patterns like:
+commonnotify.NewNotifyHandler(
+    sockHandler,
+    reqHandler,
+    queueName,
+    serviceName,  # Missing 5th param!
+)
+```
+
+**Safe approach:** After any bin-common-handler signature change, run the full verification workflow on ALL 30+ services to catch any missed updates.
 
 #### UUID Fields and DB Tags
 

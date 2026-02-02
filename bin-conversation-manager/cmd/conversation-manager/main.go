@@ -119,7 +119,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler, cfg *config.Config) err
 
 	// create handlers
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameConversationEvent, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameConversationEvent, serviceName, "")
 
 	lineHandler := linehandler.NewLineHandler(reqHandler)
 	accountHandler := accounthandler.NewAccountHandler(db, reqHandler, notifyHandler, lineHandler)

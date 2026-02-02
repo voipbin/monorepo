@@ -92,7 +92,7 @@ func initRouteHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (routehand
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameRouteEvent, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameRouteEvent, serviceName, "")
 
 	return routehandler.NewRouteHandler(db, reqHandler, notifyHandler), nil
 }

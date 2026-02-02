@@ -65,7 +65,7 @@ func initNumberHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (numberha
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameNumberEvent, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameNumberEvent, serviceName, "")
 
 	nHandlerTelnyx := numberhandlertelnyx.NewNumberHandler(
 		reqHandler,

@@ -152,7 +152,7 @@ func runService(dbHandler dbhandler.DBHandler) error {
 
 	// create handlers
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameStorageEvent, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameStorageEvent, serviceName, "")
 	accountHandler := accounthandler.NewAccountHandler(notifyHandler, dbHandler)
 	fileHandler := filehandler.NewFileHandler(notifyHandler, dbHandler, accountHandler, cfg.GCPProjectID, cfg.GCPBucketNameMedia, cfg.GCPBucketNameTmp)
 	storageHandler := storagehandler.NewStorageHandler(reqHandler, fileHandler, cfg.GCPBucketNameMedia)

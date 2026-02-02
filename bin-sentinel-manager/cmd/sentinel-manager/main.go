@@ -90,7 +90,7 @@ func runService(ctx context.Context, cancel context.CancelFunc) {
 
 	// create handlers
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameSentinelEvent, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameSentinelEvent, serviceName, "")
 	utilHandler := utilhandler.NewUtilHandler()
 
 	monitoringHandler := monitoringhandler.NewMonitoringHandler(reqHandler, notifyHandler, utilHandler)

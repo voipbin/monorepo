@@ -105,7 +105,7 @@ func main() {
 	log.Debugf("Volatile listen queue name: %s", rabbitQueueListenRequestsVolatile)
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameAsteriskEventAll, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameAsteriskEventAll, serviceName, "")
 	serviceHandler := servicehandler.NewServiceHandler(recordingBucketName, recordingAsteriskDirectory, recordingBucketDirectory)
 
 	// create event handler

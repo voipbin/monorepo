@@ -63,7 +63,7 @@ func initTagHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (taghandler.
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameTagEvent, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameTagEvent, serviceName, "")
 
 	return taghandler.NewTagHandler(reqHandler, db, notifyHandler), nil
 }

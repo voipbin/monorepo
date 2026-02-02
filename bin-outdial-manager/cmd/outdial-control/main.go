@@ -62,7 +62,7 @@ func initOutdialHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (outdial
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameOutdialEvent, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameOutdialEvent, serviceName, "")
 
 	return outdialhandler.NewOutdialHandler(db, reqHandler, notifyHandler), nil
 }

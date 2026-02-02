@@ -124,7 +124,7 @@ func runServices(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	// create handlers
 	db := dbhandler.NewHandler(sqlDB, cache)
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameNumberEvent, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameNumberEvent, serviceName, "")
 
 	nHandlerTelnyx := numberhandlertelnyx.NewNumberHandler(reqHandler, db, config.Get().TelnyxConnectionID, config.Get().TelnyxProfileID, config.Get().TelnyxToken)
 	nHandlerTwilio := numberhandlertwilio.NewNumberHandler(reqHandler, db, config.Get().TwilioSID, config.Get().TwilioToken)

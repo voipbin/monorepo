@@ -54,7 +54,7 @@ func initHandlers() (conversationhandler.ConversationHandler, accounthandler.Acc
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, "bin-manager.conversation-manager.event", serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, "bin-manager.conversation-manager.event", serviceName, "")
 
 	return initConversationHandlers(db, cache, reqHandler, notifyHandler)
 }
