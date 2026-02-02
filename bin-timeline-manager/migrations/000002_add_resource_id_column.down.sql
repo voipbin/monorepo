@@ -1,0 +1,2 @@
+ALTER TABLE events
+DROP COLUMN IF EXISTS resource_id;
