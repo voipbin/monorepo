@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/golang-migrate/migrate/v4"
@@ -17,9 +18,9 @@ import (
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-timeline-manager/internal/config"
-	"monorepo/bin-timeline-manager/models/event"
 	"monorepo/bin-timeline-manager/pkg/dbhandler"
 	"monorepo/bin-timeline-manager/pkg/eventhandler"
+	"monorepo/bin-timeline-manager/pkg/listenhandler/models/request"
 )
 
 func main() {
@@ -111,9 +112,17 @@ func runEventList(cmd *cobra.Command, args []string) error {
 	events := strings.Split(eventsStr, ",")
 
 	db := dbhandler.NewHandler(config.Get().ClickHouseAddress, config.Get().ClickHouseDatabase)
+
+	// Wait for ClickHouse connection with timeout
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := db.WaitForConnection(ctx); err != nil {
+		return errors.Wrap(err, "failed to connect to ClickHouse")
+	}
+
 	handler := eventhandler.NewEventHandler(db)
 
-	req := &event.EventListRequest{
+	req := &request.V1DataEventsPost{
 		Publisher: commonoutline.ServiceName(publisher),
 		ID:        id,
 		Events:    events,

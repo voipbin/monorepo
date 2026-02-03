@@ -10,7 +10,6 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-timeline-manager/models/event"
 )
 
@@ -18,7 +17,8 @@ const clickhouseRetryInterval = 30 * time.Second
 
 // DBHandler interface for database operations.
 type DBHandler interface {
-	EventList(ctx context.Context, publisher commonoutline.ServiceName, resourceID uuid.UUID, events []string, pageToken string, pageSize int) ([]*event.Event, error)
+	EventList(ctx context.Context, publisher string, resourceID uuid.UUID, events []string, pageToken string, pageSize int) ([]*event.Event, error)
+	WaitForConnection(ctx context.Context) error
 }
 
 type dbHandler struct {
@@ -37,6 +37,23 @@ func NewHandler(address, database string) DBHandler {
 	go h.connectionLoop()
 
 	return h
+}
+
+// WaitForConnection waits for the ClickHouse connection to be established.
+func (h *dbHandler) WaitForConnection(ctx context.Context) error {
+	ticker := time.NewTicker(100 * time.Millisecond)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-ticker.C:
+			if h.conn != nil {
+				return nil
+			}
+		}
+	}
 }
 
 func (h *dbHandler) connectionLoop() {

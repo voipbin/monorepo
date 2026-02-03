@@ -9,13 +9,12 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-timeline-manager/models/event"
 )
 
 // buildEventQuery constructs the SQL query and args for listing events.
 func buildEventQuery(
-	publisher commonoutline.ServiceName,
+	publisher string,
 	resourceID uuid.UUID,
 	events []string,
 	pageToken string,
@@ -27,7 +26,7 @@ func buildEventQuery(
 		WHERE publisher = ?
 		  AND resource_id = ?
 	`
-	args := []interface{}{string(publisher), resourceID.String()}
+	args := []interface{}{publisher, resourceID.String()}
 
 	// Add event type filters
 	if len(events) > 0 {
@@ -52,7 +51,7 @@ func buildEventQuery(
 // EventList queries events from ClickHouse.
 func (h *dbHandler) EventList(
 	ctx context.Context,
-	publisher commonoutline.ServiceName,
+	publisher string,
 	resourceID uuid.UUID,
 	events []string,
 	pageToken string,

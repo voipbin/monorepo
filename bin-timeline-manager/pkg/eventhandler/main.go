@@ -5,13 +5,14 @@ package eventhandler
 import (
 	"context"
 
-	"monorepo/bin-timeline-manager/models/event"
 	"monorepo/bin-timeline-manager/pkg/dbhandler"
+	"monorepo/bin-timeline-manager/pkg/listenhandler/models/request"
+	"monorepo/bin-timeline-manager/pkg/listenhandler/models/response"
 )
 
 // EventHandler interface for event operations.
 type EventHandler interface {
-	List(ctx context.Context, req *event.EventListRequest) (*event.EventListResponse, error)
+	List(ctx context.Context, req *request.V1DataEventsPost) (*response.V1DataEventsPost, error)
 }
 
 type eventHandler struct {

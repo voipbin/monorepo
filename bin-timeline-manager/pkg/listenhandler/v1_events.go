@@ -8,7 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-timeline-manager/models/event"
+	"monorepo/bin-timeline-manager/pkg/listenhandler/models/request"
 )
 
 func (h *listenHandler) v1EventsPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
@@ -17,7 +17,7 @@ func (h *listenHandler) v1EventsPost(ctx context.Context, m *sock.Request) (*soc
 	})
 
 	// Parse request
-	var req event.EventListRequest
+	var req request.V1DataEventsPost
 	if err := json.Unmarshal(m.Data, &req); err != nil {
 		log.Errorf("Could not unmarshal request. err: %v", err)
 		return simpleResponse(400), nil

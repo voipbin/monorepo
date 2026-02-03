@@ -33,9 +33,9 @@ spec:
                 fieldRef:
                   fieldPath: status.podIP
             - name: CLICKHOUSE_ADDRESS
-              value: ${CLICKHOUSE_ADDRESS}
+              value: "clickhouse.infrastructure:9000"
             - name: CLICKHOUSE_DATABASE
-              value: ${CLICKHOUSE_DATABASE}
+              value: "default"
             - name: PROMETHEUS_ENDPOINT
               value: "/metrics"
             - name: PROMETHEUS_LISTEN_ADDRESS

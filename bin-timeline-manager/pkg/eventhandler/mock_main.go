@@ -11,7 +11,8 @@ package eventhandler
 
 import (
 	context "context"
-	event "monorepo/bin-timeline-manager/models/event"
+	request "monorepo/bin-timeline-manager/pkg/listenhandler/models/request"
+	response "monorepo/bin-timeline-manager/pkg/listenhandler/models/response"
 	reflect "reflect"
 
 	gomock "go.uber.org/mock/gomock"
@@ -42,10 +43,10 @@ func (m *MockEventHandler) EXPECT() *MockEventHandlerMockRecorder {
 }
 
 // List mocks base method.
-func (m *MockEventHandler) List(ctx context.Context, req *event.EventListRequest) (*event.EventListResponse, error) {
+func (m *MockEventHandler) List(ctx context.Context, req *request.V1DataEventsPost) (*response.V1DataEventsPost, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "List", ctx, req)
-	ret0, _ := ret[0].(*event.EventListResponse)
+	ret0, _ := ret[0].(*response.V1DataEventsPost)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
