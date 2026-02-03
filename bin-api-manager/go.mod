@@ -113,6 +113,7 @@ require (
 	monorepo/bin-storage-manager v0.0.0-20240330083852-ab008a2e3880
 	monorepo/bin-tag-manager v0.0.0-20240313070856-7d3433af905d
 	monorepo/bin-talk-manager v0.0.0-00010101000000-000000000000
+	monorepo/bin-timeline-manager v0.0.0-00010101000000-000000000000
 	monorepo/bin-transcribe-manager v0.0.0-20240405044227-febd49f8b700
 	monorepo/bin-transfer-manager v0.0.0-20230419025515-44dea928ef34
 	monorepo/bin-webhook-manager v0.0.0-20240313071253-ebca1db1437c
@@ -222,6 +223,5 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	monorepo/bin-hook-manager v0.0.0-20240313052650-d3e4c79af4c0 // indirect
 	monorepo/bin-pipecat-manager v0.0.0-00010101000000-000000000000 // indirect
-	monorepo/bin-timeline-manager v0.0.0-00010101000000-000000000000 // indirect
 	monorepo/bin-tts-manager v0.0.0-20240313070648-addf67d64996 // indirect
 )
