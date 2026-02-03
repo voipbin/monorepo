@@ -50,6 +50,11 @@ const (
 	QueueNameConferenceRequest   QueueName = "bin-manager.conference-manager.request"
 	QueueNameConferenceSubscribe QueueName = "bin-manager.conference-manager.subscribe"
 
+	// contact-manager
+	QueueNameContactEvent     QueueName = "bin-manager.contact-manager.event"
+	QueueNameContactRequest   QueueName = "bin-manager.contact-manager.request"
+	QueueNameContactSubscribe QueueName = "bin-manager.contact-manager.subscribe"
+
 	// conversation-manager
 	QueueNameConversationEvent     QueueName = "bin-manager.conversation-manager.event"
 	QueueNameConversationRequest   QueueName = "bin-manager.conversation-manager.request"

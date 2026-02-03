@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: contact-manager
+  labels:
+    app: contact-manager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: contact-manager
+  template:
+    metadata:
+      labels:
+        app: contact-manager
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "2112"
+    spec:
+      containers:
+        - name: contact-manager
+          image: contact-manager-image
+          command:
+            - './contact-manager'
+          env:
+            - name: DATABASE_DSN
+              value: ${DATABASE_DSN}
+            - name: PROMETHEUS_ENDPOINT
+              value: "/metrics"
+            - name: PROMETHEUS_LISTEN_ADDRESS
+              value: ":2112"
+            - name: RABBITMQ_ADDRESS
+              value: ${RABBITMQ_ADDRESS}
+            - name: REDIS_ADDRESS
+              value: ${REDIS_ADDRESS}
+            - name: REDIS_PASSWORD
+              value: ${REDIS_PASSWORD}
+            - name: REDIS_DATABASE
+              value: "1"
+          ports:
+            - name: metrics
+              protocol: "TCP"
+              containerPort: 2112
+          resources:
+            limits:
+              cpu: "10m"
+              memory: "30M"
