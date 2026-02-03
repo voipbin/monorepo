@@ -4002,6 +4002,25 @@ paths:
   /conferences:
     $ref: './paths/conferences/main.yaml'
 
+  /contacts:
+    $ref: './paths/contacts/main.yaml'
+  /contacts/lookup:
+    $ref: './paths/contacts/lookup.yaml'
+  /contacts/{id}:
+    $ref: './paths/contacts/id.yaml'
+  /contacts/{id}/phone-numbers:
+    $ref: './paths/contacts/id_phonenumbers.yaml'
+  /contacts/{id}/phone-numbers/{phone_number_id}:
+    $ref: './paths/contacts/id_phonenumbers_id.yaml'
+  /contacts/{id}/emails:
+    $ref: './paths/contacts/id_emails.yaml'
+  /contacts/{id}/emails/{email_id}:
+    $ref: './paths/contacts/id_emails_id.yaml'
+  /contacts/{id}/tags:
+    $ref: './paths/contacts/id_tags.yaml'
+  /contacts/{id}/tags/{tag_id}:
+    $ref: './paths/contacts/id_tags_id.yaml'
+
   /conversation_accounts/{id}:
     $ref: './paths/conversation_accounts/id.yaml'
   /conversation_accounts:
