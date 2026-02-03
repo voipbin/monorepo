@@ -1,0 +1,92 @@
+get:
+  summary: List contacts
+  description: Get contacts for the customer.
+  tags:
+    - Contact
+  parameters:
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
+  responses:
+    '200':
+      description: Successful response.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/CommonPagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ContactManagerContact'
+
+post:
+  summary: Create a new contact
+  description: Create a new contact for the customer.
+  tags:
+    - Contact
+  requestBody:
+    description: Request body to create a new contact.
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            first_name:
+              type: string
+            last_name:
+              type: string
+            display_name:
+              type: string
+            company:
+              type: string
+            job_title:
+              type: string
+            source:
+              type: string
+              enum: [manual, import, api, sync]
+            external_id:
+              type: string
+            notes:
+              type: string
+            phone_numbers:
+              type: array
+              items:
+                type: object
+                properties:
+                  number:
+                    type: string
+                  type:
+                    type: string
+                    enum: [mobile, work, home, fax, other]
+                  is_primary:
+                    type: boolean
+            emails:
+              type: array
+              items:
+                type: object
+                properties:
+                  address:
+                    type: string
+                    format: email
+                  type:
+                    type: string
+                    enum: [work, personal, other]
+                  is_primary:
+                    type: boolean
+            tag_ids:
+              type: array
+              items:
+                type: string
+                format: uuid
+  responses:
+    '201':
+      description: Contact created successfully.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ContactManagerContact'
+    '400':
+      description: Invalid input.
