@@ -98,7 +98,7 @@ func runEventList(cmd *cobra.Command, args []string) error {
 
 	idStr := viper.GetString("id")
 	if idStr == "" {
-		return fmt.Errorf("id is required")
+		return fmt.Errorf("resource_id is required")
 	}
 	id := uuid.FromStringOrNil(idStr)
 	if id == uuid.Nil {
@@ -124,7 +124,7 @@ func runEventList(cmd *cobra.Command, args []string) error {
 
 	req := &request.V1DataEventsPost{
 		Publisher: commonoutline.ServiceName(publisher),
-		ID:        id,
+		ResourceID: id,
 		Events:    events,
 		PageSize:  viper.GetInt("page-size"),
 		PageToken: viper.GetString("page-token"),

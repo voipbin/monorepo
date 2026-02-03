@@ -69,7 +69,7 @@ func TestProcessRequest_V1EventsPost(t *testing.T) {
 	testID := uuid.Must(uuid.NewV4())
 	req := &request.V1DataEventsPost{
 		Publisher: commonoutline.ServiceName("flow-manager"),
-		ID:        testID,
+		ResourceID: testID,
 		Events:    []string{"activeflow_*"},
 		PageSize:  10,
 	}
@@ -149,7 +149,7 @@ func TestProcessRequest_V1EventsPost_HandlerError(t *testing.T) {
 	testID := uuid.Must(uuid.NewV4())
 	req := &request.V1DataEventsPost{
 		Publisher: commonoutline.ServiceName("flow-manager"),
-		ID:        testID,
+		ResourceID: testID,
 		Events:    []string{"activeflow_*"},
 		PageSize:  10,
 	}

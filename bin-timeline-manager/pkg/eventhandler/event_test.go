@@ -43,7 +43,7 @@ func TestList_Validation(t *testing.T) {
 		{
 			name: "missing publisher",
 			req: &request.V1DataEventsPost{
-				ID:     uuid.Must(uuid.NewV4()),
+				ResourceID: uuid.Must(uuid.NewV4()),
 				Events: []string{"activeflow_*"},
 			},
 			wantErr: true,
@@ -56,13 +56,13 @@ func TestList_Validation(t *testing.T) {
 				Events:    []string{"activeflow_*"},
 			},
 			wantErr: true,
-			errMsg:  "id is required",
+			errMsg:  "resource_id is required",
 		},
 		{
 			name: "missing events",
 			req: &request.V1DataEventsPost{
 				Publisher: commonoutline.ServiceName("flow-manager"),
-				ID:        uuid.Must(uuid.NewV4()),
+				ResourceID: uuid.Must(uuid.NewV4()),
 			},
 			wantErr: true,
 			errMsg:  "events filter is required",
@@ -71,7 +71,7 @@ func TestList_Validation(t *testing.T) {
 			name: "empty events slice",
 			req: &request.V1DataEventsPost{
 				Publisher: commonoutline.ServiceName("flow-manager"),
-				ID:        uuid.Must(uuid.NewV4()),
+				ResourceID: uuid.Must(uuid.NewV4()),
 				Events:    []string{},
 			},
 			wantErr: true,
@@ -102,7 +102,7 @@ func TestList_Success(t *testing.T) {
 	testID := uuid.Must(uuid.NewV4())
 	req := &request.V1DataEventsPost{
 		Publisher: commonoutline.ServiceName("flow-manager"),
-		ID:        testID,
+		ResourceID: testID,
 		Events:    []string{"activeflow_*"},
 		PageSize:  10,
 	}
@@ -142,7 +142,7 @@ func TestList_Pagination_HasMore(t *testing.T) {
 	testID := uuid.Must(uuid.NewV4())
 	req := &request.V1DataEventsPost{
 		Publisher: commonoutline.ServiceName("flow-manager"),
-		ID:        testID,
+		ResourceID: testID,
 		Events:    []string{"activeflow_*"},
 		PageSize:  2,
 	}
@@ -186,7 +186,7 @@ func TestList_Pagination_WithPageToken(t *testing.T) {
 	pageToken := "2024-01-15T10:29:00.123Z"
 	req := &request.V1DataEventsPost{
 		Publisher: commonoutline.ServiceName("flow-manager"),
-		ID:        testID,
+		ResourceID: testID,
 		Events:    []string{"activeflow_*"},
 		PageSize:  10,
 		PageToken: pageToken,
@@ -225,7 +225,7 @@ func TestList_DefaultPageSize(t *testing.T) {
 	testID := uuid.Must(uuid.NewV4())
 	req := &request.V1DataEventsPost{
 		Publisher: commonoutline.ServiceName("flow-manager"),
-		ID:        testID,
+		ResourceID: testID,
 		Events:    []string{"activeflow_*"},
 		// PageSize not set, should use default (100)
 	}
@@ -250,7 +250,7 @@ func TestList_NegativePageSize(t *testing.T) {
 	testID := uuid.Must(uuid.NewV4())
 	req := &request.V1DataEventsPost{
 		Publisher: commonoutline.ServiceName("flow-manager"),
-		ID:        testID,
+		ResourceID: testID,
 		Events:    []string{"activeflow_*"},
 		PageSize:  -5, // Negative, should use default
 	}
@@ -275,7 +275,7 @@ func TestList_MaxPageSize(t *testing.T) {
 	testID := uuid.Must(uuid.NewV4())
 	req := &request.V1DataEventsPost{
 		Publisher: commonoutline.ServiceName("flow-manager"),
-		ID:        testID,
+		ResourceID: testID,
 		Events:    []string{"activeflow_*"},
 		PageSize:  5000, // Over max, should be capped to MaxPageSize (1000)
 	}
@@ -300,7 +300,7 @@ func TestList_DatabaseError(t *testing.T) {
 	testID := uuid.Must(uuid.NewV4())
 	req := &request.V1DataEventsPost{
 		Publisher: commonoutline.ServiceName("flow-manager"),
-		ID:        testID,
+		ResourceID: testID,
 		Events:    []string{"activeflow_*"},
 		PageSize:  10,
 	}
@@ -325,7 +325,7 @@ func TestList_EmptyResult(t *testing.T) {
 	testID := uuid.Must(uuid.NewV4())
 	req := &request.V1DataEventsPost{
 		Publisher: commonoutline.ServiceName("flow-manager"),
-		ID:        testID,
+		ResourceID: testID,
 		Events:    []string{"activeflow_*"},
 		PageSize:  10,
 	}
@@ -358,7 +358,7 @@ func TestList_NilResult(t *testing.T) {
 	testID := uuid.Must(uuid.NewV4())
 	req := &request.V1DataEventsPost{
 		Publisher: commonoutline.ServiceName("flow-manager"),
-		ID:        testID,
+		ResourceID: testID,
 		Events:    []string{"activeflow_*"},
 		PageSize:  10,
 	}
@@ -387,7 +387,7 @@ func TestList_MultipleEventFilters(t *testing.T) {
 	testID := uuid.Must(uuid.NewV4())
 	req := &request.V1DataEventsPost{
 		Publisher: commonoutline.ServiceName("flow-manager"),
-		ID:        testID,
+		ResourceID: testID,
 		Events:    []string{"activeflow_created", "activeflow_started", "flow_*"},
 		PageSize:  10,
 	}

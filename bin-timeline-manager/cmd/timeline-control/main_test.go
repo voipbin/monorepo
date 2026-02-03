@@ -190,8 +190,8 @@ func TestRunEventList_MissingID(t *testing.T) {
 		t.Fatal("runEventList() expected error for missing id")
 	}
 
-	if err.Error() != "id is required" {
-		t.Errorf("runEventList() error = %q, want %q", err.Error(), "id is required")
+	if err.Error() != "resource_id is required" {
+		t.Errorf("runEventList() error = %q, want %q", err.Error(), "resource_id is required")
 	}
 }
 
