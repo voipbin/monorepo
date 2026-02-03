@@ -13,9 +13,3 @@ type Event struct {
 	DataType  string          `json:"data_type"`
 	Data      json.RawMessage `json:"data"`
 }
-
-// EventListResponse represents the response for event list queries.
-type EventListResponse struct {
-	Result        []*Event `json:"result"`
-	NextPageToken string   `json:"next_page_token,omitempty"`
-}

@@ -10,10 +10,13 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-timeline-manager/models/event"
 	"monorepo/bin-timeline-manager/pkg/eventhandler"
+	"monorepo/bin-timeline-manager/pkg/listenhandler/models/request"
+	"monorepo/bin-timeline-manager/pkg/listenhandler/models/response"
 )
 
 func TestNewListenHandler(t *testing.T) {
@@ -64,8 +67,8 @@ func TestProcessRequest_V1EventsPost(t *testing.T) {
 	}
 
 	testID := uuid.Must(uuid.NewV4())
-	req := &event.EventListRequest{
-		Publisher: "flow-manager",
+	req := &request.V1DataEventsPost{
+		Publisher: commonoutline.ServiceName("flow-manager"),
 		ID:        testID,
 		Events:    []string{"activeflow_*"},
 		PageSize:  10,
@@ -73,7 +76,7 @@ func TestProcessRequest_V1EventsPost(t *testing.T) {
 	reqData, _ := json.Marshal(req)
 
 	ts := time.Date(2024, 1, 15, 10, 30, 0, 123000000, time.UTC)
-	expectedResponse := &event.EventListResponse{
+	expectedResponse := &response.V1DataEventsPost{
 		Result: []*event.Event{
 			{Timestamp: ts, EventType: "activeflow_created"},
 		},
@@ -144,8 +147,8 @@ func TestProcessRequest_V1EventsPost_HandlerError(t *testing.T) {
 	}
 
 	testID := uuid.Must(uuid.NewV4())
-	req := &event.EventListRequest{
-		Publisher: "flow-manager",
+	req := &request.V1DataEventsPost{
+		Publisher: commonoutline.ServiceName("flow-manager"),
 		ID:        testID,
 		Events:    []string{"activeflow_*"},
 		PageSize:  10,

@@ -7,11 +7,12 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"monorepo/bin-timeline-manager/models/event"
+	"monorepo/bin-timeline-manager/pkg/listenhandler/models/request"
+	"monorepo/bin-timeline-manager/pkg/listenhandler/models/response"
 )
 
 // List returns events matching the request criteria.
-func (h *eventHandler) List(ctx context.Context, req *event.EventListRequest) (*event.EventListResponse, error) {
+func (h *eventHandler) List(ctx context.Context, req *request.V1DataEventsPost) (*response.V1DataEventsPost, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":      "List",
 		"publisher": req.Publisher,
@@ -33,30 +34,31 @@ func (h *eventHandler) List(ctx context.Context, req *event.EventListRequest) (*
 	// Apply defaults
 	pageSize := req.PageSize
 	if pageSize <= 0 {
-		pageSize = event.DefaultPageSize
+		pageSize = request.DefaultPageSize
 	}
-	if pageSize > event.MaxPageSize {
-		pageSize = event.MaxPageSize
+	if pageSize > request.MaxPageSize {
+		pageSize = request.MaxPageSize
 	}
 
 	// Query database (request pageSize + 1 to determine if more results exist)
-	events, err := h.db.EventList(ctx, req.Publisher, req.ID, req.Events, req.PageToken, pageSize+1)
+	// Convert ServiceName to string for database query
+	events, err := h.db.EventList(ctx, string(req.Publisher), req.ID, req.Events, req.PageToken, pageSize+1)
 	if err != nil {
 		log.Errorf("Could not list events. err: %v", err)
 		return nil, errors.Wrap(err, "could not list events")
 	}
 
 	// Build response with pagination
-	response := &event.EventListResponse{
+	res := &response.V1DataEventsPost{
 		Result: events,
 	}
 
 	// If we got more than pageSize, there are more results
 	if len(events) > pageSize {
-		response.Result = events[:pageSize]
+		res.Result = events[:pageSize]
 		// Use timestamp of last returned event as next page token
-		response.NextPageToken = events[pageSize-1].Timestamp.Format("2006-01-02T15:04:05.000Z")
+		res.NextPageToken = events[pageSize-1].Timestamp.Format("2006-01-02T15:04:05.000Z")
 	}
 
-	return response, nil
+	return res, nil
 }

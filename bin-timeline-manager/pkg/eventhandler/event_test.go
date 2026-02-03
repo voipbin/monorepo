@@ -9,8 +9,10 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-timeline-manager/models/event"
 	"monorepo/bin-timeline-manager/pkg/dbhandler"
+	"monorepo/bin-timeline-manager/pkg/listenhandler/models/request"
 )
 
 func TestNewEventHandler(t *testing.T) {
@@ -34,13 +36,13 @@ func TestList_Validation(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		req     *event.EventListRequest
+		req     *request.V1DataEventsPost
 		wantErr bool
 		errMsg  string
 	}{
 		{
 			name: "missing publisher",
-			req: &event.EventListRequest{
+			req: &request.V1DataEventsPost{
 				ID:     uuid.Must(uuid.NewV4()),
 				Events: []string{"activeflow_*"},
 			},
@@ -49,8 +51,8 @@ func TestList_Validation(t *testing.T) {
 		},
 		{
 			name: "missing id",
-			req: &event.EventListRequest{
-				Publisher: "flow-manager",
+			req: &request.V1DataEventsPost{
+				Publisher: commonoutline.ServiceName("flow-manager"),
 				Events:    []string{"activeflow_*"},
 			},
 			wantErr: true,
@@ -58,8 +60,8 @@ func TestList_Validation(t *testing.T) {
 		},
 		{
 			name: "missing events",
-			req: &event.EventListRequest{
-				Publisher: "flow-manager",
+			req: &request.V1DataEventsPost{
+				Publisher: commonoutline.ServiceName("flow-manager"),
 				ID:        uuid.Must(uuid.NewV4()),
 			},
 			wantErr: true,
@@ -67,8 +69,8 @@ func TestList_Validation(t *testing.T) {
 		},
 		{
 			name: "empty events slice",
-			req: &event.EventListRequest{
-				Publisher: "flow-manager",
+			req: &request.V1DataEventsPost{
+				Publisher: commonoutline.ServiceName("flow-manager"),
 				ID:        uuid.Must(uuid.NewV4()),
 				Events:    []string{},
 			},
@@ -98,8 +100,8 @@ func TestList_Success(t *testing.T) {
 	handler := NewEventHandler(mockDB)
 
 	testID := uuid.Must(uuid.NewV4())
-	req := &event.EventListRequest{
-		Publisher: "flow-manager",
+	req := &request.V1DataEventsPost{
+		Publisher: commonoutline.ServiceName("flow-manager"),
 		ID:        testID,
 		Events:    []string{"activeflow_*"},
 		PageSize:  10,
@@ -113,7 +115,7 @@ func TestList_Success(t *testing.T) {
 	}
 
 	mockDB.EXPECT().
-		EventList(gomock.Any(), req.Publisher, testID, req.Events, "", 11).
+		EventList(gomock.Any(), string(req.Publisher), testID, req.Events, "", 11).
 		Return(expectedEvents, nil)
 
 	result, err := handler.List(context.Background(), req)
@@ -138,8 +140,8 @@ func TestList_Pagination_HasMore(t *testing.T) {
 	handler := NewEventHandler(mockDB)
 
 	testID := uuid.Must(uuid.NewV4())
-	req := &event.EventListRequest{
-		Publisher: "flow-manager",
+	req := &request.V1DataEventsPost{
+		Publisher: commonoutline.ServiceName("flow-manager"),
 		ID:        testID,
 		Events:    []string{"activeflow_*"},
 		PageSize:  2,
@@ -156,7 +158,7 @@ func TestList_Pagination_HasMore(t *testing.T) {
 	}
 
 	mockDB.EXPECT().
-		EventList(gomock.Any(), req.Publisher, testID, req.Events, "", 3).
+		EventList(gomock.Any(), string(req.Publisher), testID, req.Events, "", 3).
 		Return(expectedEvents, nil)
 
 	result, err := handler.List(context.Background(), req)
@@ -182,8 +184,8 @@ func TestList_Pagination_WithPageToken(t *testing.T) {
 
 	testID := uuid.Must(uuid.NewV4())
 	pageToken := "2024-01-15T10:29:00.123Z"
-	req := &event.EventListRequest{
-		Publisher: "flow-manager",
+	req := &request.V1DataEventsPost{
+		Publisher: commonoutline.ServiceName("flow-manager"),
 		ID:        testID,
 		Events:    []string{"activeflow_*"},
 		PageSize:  10,
@@ -196,7 +198,7 @@ func TestList_Pagination_WithPageToken(t *testing.T) {
 	}
 
 	mockDB.EXPECT().
-		EventList(gomock.Any(), req.Publisher, testID, req.Events, pageToken, 11).
+		EventList(gomock.Any(), string(req.Publisher), testID, req.Events, pageToken, 11).
 		Return(expectedEvents, nil)
 
 	result, err := handler.List(context.Background(), req)
@@ -221,15 +223,15 @@ func TestList_DefaultPageSize(t *testing.T) {
 	handler := NewEventHandler(mockDB)
 
 	testID := uuid.Must(uuid.NewV4())
-	req := &event.EventListRequest{
-		Publisher: "flow-manager",
+	req := &request.V1DataEventsPost{
+		Publisher: commonoutline.ServiceName("flow-manager"),
 		ID:        testID,
 		Events:    []string{"activeflow_*"},
 		// PageSize not set, should use default (100)
 	}
 
 	mockDB.EXPECT().
-		EventList(gomock.Any(), req.Publisher, testID, req.Events, "", event.DefaultPageSize+1).
+		EventList(gomock.Any(), string(req.Publisher), testID, req.Events, "", request.DefaultPageSize+1).
 		Return([]*event.Event{}, nil)
 
 	_, err := handler.List(context.Background(), req)
@@ -246,15 +248,15 @@ func TestList_NegativePageSize(t *testing.T) {
 	handler := NewEventHandler(mockDB)
 
 	testID := uuid.Must(uuid.NewV4())
-	req := &event.EventListRequest{
-		Publisher: "flow-manager",
+	req := &request.V1DataEventsPost{
+		Publisher: commonoutline.ServiceName("flow-manager"),
 		ID:        testID,
 		Events:    []string{"activeflow_*"},
 		PageSize:  -5, // Negative, should use default
 	}
 
 	mockDB.EXPECT().
-		EventList(gomock.Any(), req.Publisher, testID, req.Events, "", event.DefaultPageSize+1).
+		EventList(gomock.Any(), string(req.Publisher), testID, req.Events, "", request.DefaultPageSize+1).
 		Return([]*event.Event{}, nil)
 
 	_, err := handler.List(context.Background(), req)
@@ -271,15 +273,15 @@ func TestList_MaxPageSize(t *testing.T) {
 	handler := NewEventHandler(mockDB)
 
 	testID := uuid.Must(uuid.NewV4())
-	req := &event.EventListRequest{
-		Publisher: "flow-manager",
+	req := &request.V1DataEventsPost{
+		Publisher: commonoutline.ServiceName("flow-manager"),
 		ID:        testID,
 		Events:    []string{"activeflow_*"},
 		PageSize:  5000, // Over max, should be capped to MaxPageSize (1000)
 	}
 
 	mockDB.EXPECT().
-		EventList(gomock.Any(), req.Publisher, testID, req.Events, "", event.MaxPageSize+1).
+		EventList(gomock.Any(), string(req.Publisher), testID, req.Events, "", request.MaxPageSize+1).
 		Return([]*event.Event{}, nil)
 
 	_, err := handler.List(context.Background(), req)
@@ -296,15 +298,15 @@ func TestList_DatabaseError(t *testing.T) {
 	handler := NewEventHandler(mockDB)
 
 	testID := uuid.Must(uuid.NewV4())
-	req := &event.EventListRequest{
-		Publisher: "flow-manager",
+	req := &request.V1DataEventsPost{
+		Publisher: commonoutline.ServiceName("flow-manager"),
 		ID:        testID,
 		Events:    []string{"activeflow_*"},
 		PageSize:  10,
 	}
 
 	mockDB.EXPECT().
-		EventList(gomock.Any(), req.Publisher, testID, req.Events, "", 11).
+		EventList(gomock.Any(), string(req.Publisher), testID, req.Events, "", 11).
 		Return(nil, errors.New("database connection failed"))
 
 	_, err := handler.List(context.Background(), req)
@@ -321,15 +323,15 @@ func TestList_EmptyResult(t *testing.T) {
 	handler := NewEventHandler(mockDB)
 
 	testID := uuid.Must(uuid.NewV4())
-	req := &event.EventListRequest{
-		Publisher: "flow-manager",
+	req := &request.V1DataEventsPost{
+		Publisher: commonoutline.ServiceName("flow-manager"),
 		ID:        testID,
 		Events:    []string{"activeflow_*"},
 		PageSize:  10,
 	}
 
 	mockDB.EXPECT().
-		EventList(gomock.Any(), req.Publisher, testID, req.Events, "", 11).
+		EventList(gomock.Any(), string(req.Publisher), testID, req.Events, "", 11).
 		Return([]*event.Event{}, nil)
 
 	result, err := handler.List(context.Background(), req)
@@ -354,15 +356,15 @@ func TestList_NilResult(t *testing.T) {
 	handler := NewEventHandler(mockDB)
 
 	testID := uuid.Must(uuid.NewV4())
-	req := &event.EventListRequest{
-		Publisher: "flow-manager",
+	req := &request.V1DataEventsPost{
+		Publisher: commonoutline.ServiceName("flow-manager"),
 		ID:        testID,
 		Events:    []string{"activeflow_*"},
 		PageSize:  10,
 	}
 
 	mockDB.EXPECT().
-		EventList(gomock.Any(), req.Publisher, testID, req.Events, "", 11).
+		EventList(gomock.Any(), string(req.Publisher), testID, req.Events, "", 11).
 		Return(nil, nil)
 
 	result, err := handler.List(context.Background(), req)
@@ -383,8 +385,8 @@ func TestList_MultipleEventFilters(t *testing.T) {
 	handler := NewEventHandler(mockDB)
 
 	testID := uuid.Must(uuid.NewV4())
-	req := &event.EventListRequest{
-		Publisher: "flow-manager",
+	req := &request.V1DataEventsPost{
+		Publisher: commonoutline.ServiceName("flow-manager"),
 		ID:        testID,
 		Events:    []string{"activeflow_created", "activeflow_started", "flow_*"},
 		PageSize:  10,
@@ -398,7 +400,7 @@ func TestList_MultipleEventFilters(t *testing.T) {
 	}
 
 	mockDB.EXPECT().
-		EventList(gomock.Any(), req.Publisher, testID, req.Events, "", 11).
+		EventList(gomock.Any(), string(req.Publisher), testID, req.Events, "", 11).
 		Return(expectedEvents, nil)
 
 	result, err := handler.List(context.Background(), req)

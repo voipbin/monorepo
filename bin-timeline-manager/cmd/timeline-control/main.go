@@ -16,10 +16,11 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-timeline-manager/internal/config"
-	"monorepo/bin-timeline-manager/models/event"
 	"monorepo/bin-timeline-manager/pkg/dbhandler"
 	"monorepo/bin-timeline-manager/pkg/eventhandler"
+	"monorepo/bin-timeline-manager/pkg/listenhandler/models/request"
 )
 
 func main() {
@@ -121,8 +122,8 @@ func runEventList(cmd *cobra.Command, args []string) error {
 
 	handler := eventhandler.NewEventHandler(db)
 
-	req := &event.EventListRequest{
-		Publisher: publisher,
+	req := &request.V1DataEventsPost{
+		Publisher: commonoutline.ServiceName(publisher),
 		ID:        id,
 		Events:    events,
 		PageSize:  viper.GetInt("page-size"),
