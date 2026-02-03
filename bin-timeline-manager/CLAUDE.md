@@ -26,7 +26,9 @@ cmd/timeline-manager/main.go
 ```
 
 **Layer Responsibilities:**
-- `models/event/`: Event data structures (Event, EventListRequest, EventListResponse)
+- `models/event/`: Domain Event struct (database-compatible types)
+- `pkg/listenhandler/models/request/`: API request DTOs (uses ServiceName type)
+- `pkg/listenhandler/models/response/`: API response DTOs
 - `pkg/eventhandler/`: Business logic for event queries with cursor-based pagination
 - `pkg/dbhandler/`: ClickHouse database operations
 - `pkg/listenhandler/`: RabbitMQ RPC request routing
@@ -153,21 +155,34 @@ ORDER BY (publisher, resource_id, timestamp)
 
 ## Key Data Models
 
-### Event (`models/event/event.go`)
-Represents a timeline event:
-- **Timestamp**: When the event occurred (DateTime64)
-- **Publisher**: Service that published the event (e.g., `flow-manager`, `call-manager`)
-- **EventType**: Type of event (e.g., `activeflow_created`, `call_hangup`)
-- **ResourceID**: UUID of the resource the event relates to
-- **Data**: JSON payload with event details
+### Model Organization Pattern
 
-### EventListRequest (`models/event/request.go`)
-Request for listing events:
-- **Publisher**: Required - filter by service name
-- **ID**: Required - filter by resource ID
+This service follows a layered model pattern (similar to flow-manager):
+
+- **Domain models** (`models/event/`): Database-compatible types using basic Go types
+- **API DTOs** (`pkg/listenhandler/models/`): Request/response types with richer types like `ServiceName`
+- **Type conversion**: Happens in `pkg/eventhandler/` at the boundary between API and database layers
+
+### Event (`models/event/event.go`)
+Domain model representing a timeline event (uses `string` for ClickHouse compatibility):
+- **Timestamp**: When the event occurred (`time.Time`)
+- **Publisher**: Service name as `string` (e.g., `"flow-manager"`, `"call-manager"`)
+- **EventType**: Type of event (e.g., `"activeflow_created"`, `"call_hangup"`)
+- **DataType**: MIME type of the data payload
+- **Data**: JSON payload with event details (`json.RawMessage`)
+
+### V1DataEventsPost Request (`pkg/listenhandler/models/request/event.go`)
+API request DTO for listing events:
+- **Publisher**: Required - `ServiceName` type from common-handler
+- **ID**: Required - filter by resource ID (`uuid.UUID`)
 - **Events**: Required - list of event type patterns (supports wildcards like `activeflow_*`)
 - **PageSize**: Optional - number of results per page (default: 100, max: 1000)
 - **PageToken**: Optional - cursor for pagination
+
+### V1DataEventsPost Response (`pkg/listenhandler/models/response/event.go`)
+API response DTO:
+- **Result**: List of Event pointers
+- **NextPageToken**: Cursor for next page (omitted if no more results)
 
 ## Monorepo Context
 
@@ -187,7 +202,7 @@ Example test structure:
 ```go
 tests := []struct {
     name    string
-    req     *event.EventListRequest
+    req     *request.V1DataEventsPost
     wantErr bool
 }{
     {"valid request", validReq, false},
@@ -206,6 +221,42 @@ for _, tt := range tests {
 
 Service exposes metrics on configured endpoint (default `:2112/metrics`):
 - `receive_request_process_time` - Histogram of RPC request processing time (labels: type, method)
+
+## Common Gotchas
+
+### ClickHouse Type Conversion
+
+**CRITICAL: ClickHouse driver cannot convert String columns to custom Go types.**
+
+The ClickHouse Go driver only supports basic Go types for column scanning. Custom types like `ServiceName` will cause runtime errors:
+
+```
+converting String to *outline.ServiceName is unsupported
+```
+
+**Solution:** Use basic Go types (`string`, `int`, `time.Time`, etc.) in domain models that are scanned from ClickHouse. Convert to/from richer types at the handler layer boundary.
+
+```go
+// ✅ CORRECT - Domain model uses string for ClickHouse compatibility
+type Event struct {
+    Publisher string `json:"publisher"`  // string for ClickHouse
+}
+
+// ✅ CORRECT - API DTO uses ServiceName for type safety
+type V1DataEventsPost struct {
+    Publisher commonoutline.ServiceName `json:"publisher"`
+}
+
+// ✅ CORRECT - Convert at handler boundary
+events, err := h.db.EventList(ctx, string(req.Publisher), ...)
+```
+
+```go
+// ❌ WRONG - Custom type in domain model
+type Event struct {
+    Publisher commonoutline.ServiceName `json:"publisher"`  // Will fail!
+}
+```
 
 ## Kubernetes Deployment
 
