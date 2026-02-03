@@ -25,7 +25,9 @@ Grok's API is OpenAI-compatible, so we reuse `OpenAILLMService` with a custom `b
 | File | Changes |
 |------|---------|
 | `bin-ai-manager/models/ai/main.go` | Add model constants + update `GetEngineModelTarget()` |
+| `bin-ai-manager/models/ai/main_test.go` | Add test cases for Grok models |
 | `bin-pipecat-manager/scripts/pipecat/run.py` | Add `grok` case in `create_llm_service()` |
+| `bin-pipecat-manager/scripts/pipecat/test_run.py` | New test file for `create_llm_service()` |
 | `bin-pipecat-manager/k8s/deployment.yml` | Add `XAI_API_KEY` env var (2 places) |
 | `.circleci/config_work.yml` | Add sed substitution for `XAI_API_KEY` |
 
@@ -107,10 +109,176 @@ Note: `CC_XAI_API_KEY` needs to be added to CircleCI project environment variabl
 2. If no `engine_key`, falls back to `XAI_API_KEY` environment variable
 3. Key is passed from Go (bin-ai-manager) → Python (bin-pipecat-manager) via `/run` endpoint
 
+## Tests
+
+### Go Tests (bin-ai-manager/models/ai/main_test.go)
+
+Add test cases to existing test functions:
+
+**TestEngineModelTargetConstants:**
+```go
+{
+    name:     "engine_model_target_grok",
+    constant: EngineModelTargetGrok,
+    expected: "grok",
+},
+```
+
+**TestEngineModelConstants:**
+```go
+{
+    name:     "engine_model_grok3",
+    constant: EngineModelGrok3,
+    expected: "grok.grok-3",
+},
+{
+    name:     "engine_model_grok3_mini",
+    constant: EngineModelGrok3Mini,
+    expected: "grok.grok-3-mini",
+},
+```
+
+**TestGetEngineModelTarget:**
+```go
+{
+    name:        "grok3_returns_grok",
+    engineModel: EngineModelGrok3,
+    expected:    EngineModelTargetGrok,
+},
+{
+    name:        "grok3_mini_returns_grok",
+    engineModel: EngineModelGrok3Mini,
+    expected:    EngineModelTargetGrok,
+},
+```
+
+**TestGetEngineModelName:**
+```go
+{
+    name:        "grok3_returns_grok3",
+    engineModel: EngineModelGrok3,
+    expected:    "grok-3",
+},
+```
+
+**TestIsValidEngineModel:**
+```go
+{
+    name:        "grok_model_is_valid",
+    engineModel: EngineModel("grok.grok-3"),
+    expected:    true,
+},
+```
+
+### Python Tests (bin-pipecat-manager/scripts/pipecat/test_run.py)
+
+New test file for `create_llm_service()`:
+
+```python
+import pytest
+from unittest.mock import patch, MagicMock
+import os
+
+
+class TestCreateLLMService:
+    """Tests for create_llm_service function."""
+
+    @patch("run.OpenAILLMService")
+    @patch("run.OpenAILLMContext")
+    def test_openai_service_creation(self, mock_context, mock_service):
+        """Test OpenAI service is created with correct parameters."""
+        from run import create_llm_service
+
+        mock_llm = MagicMock()
+        mock_service.return_value = mock_llm
+        mock_llm.create_context_aggregator.return_value = MagicMock()
+
+        llm, aggregator = create_llm_service(
+            type="openai.gpt-4o",
+            key="test-key",
+            messages=[{"role": "user", "content": "hello"}],
+            tools=[]
+        )
+
+        mock_service.assert_called_once_with(api_key="test-key", model="gpt-4o")
+
+    @patch("run.OpenAILLMService")
+    @patch("run.OpenAILLMContext")
+    def test_grok_service_creation(self, mock_context, mock_service):
+        """Test Grok service is created with xAI base URL."""
+        from run import create_llm_service
+
+        mock_llm = MagicMock()
+        mock_service.return_value = mock_llm
+        mock_llm.create_context_aggregator.return_value = MagicMock()
+
+        llm, aggregator = create_llm_service(
+            type="grok.grok-3",
+            key="xai-test-key",
+            messages=[{"role": "user", "content": "hello"}],
+            tools=[]
+        )
+
+        mock_service.assert_called_once_with(
+            api_key="xai-test-key",
+            model="grok-3",
+            base_url="https://api.x.ai/v1"
+        )
+
+    @patch("run.OpenAILLMService")
+    @patch("run.OpenAILLMContext")
+    def test_grok_uses_env_var_fallback(self, mock_context, mock_service):
+        """Test Grok falls back to XAI_API_KEY env var."""
+        from run import create_llm_service
+
+        mock_llm = MagicMock()
+        mock_service.return_value = mock_llm
+        mock_llm.create_context_aggregator.return_value = MagicMock()
+
+        with patch.dict(os.environ, {"XAI_API_KEY": "env-xai-key"}):
+            llm, aggregator = create_llm_service(
+                type="grok.grok-3-mini",
+                key="",
+                messages=[],
+                tools=[]
+            )
+
+        mock_service.assert_called_once_with(
+            api_key="env-xai-key",
+            model="grok-3-mini",
+            base_url="https://api.x.ai/v1"
+        )
+
+    def test_unsupported_service_raises_error(self):
+        """Test unsupported service raises ValueError."""
+        from run import create_llm_service
+
+        with pytest.raises(ValueError, match="Unsupported LLM service"):
+            create_llm_service(
+                type="unsupported.model",
+                key="key",
+                messages=[],
+                tools=[]
+            )
+
+    def test_invalid_format_raises_error(self):
+        """Test invalid format without dot raises ValueError."""
+        from run import create_llm_service
+
+        with pytest.raises(ValueError, match="Wrong LLM format"):
+            create_llm_service(
+                type="invalidformat",
+                key="key",
+                messages=[],
+                tools=[]
+            )
+```
+
 ## Validation
 
-1. Run `go test ./...` in `bin-ai-manager` to ensure model constants work
-2. Create an AI config with `engine_model: "grok.grok-3"` and test a conversation
+1. Run `go test ./...` in `bin-ai-manager` to ensure model constants and tests pass
+2. Run `pytest test_run.py` in `bin-pipecat-manager/scripts/pipecat/` to ensure Python tests pass
+3. Create an AI config with `engine_model: "grok.grok-3"` and test a conversation
 
 ## Usage
 
