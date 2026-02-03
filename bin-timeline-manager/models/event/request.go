@@ -1,4 +1,4 @@
-package request
+package event
 
 import (
 	"github.com/gofrs/uuid"
@@ -6,8 +6,9 @@ import (
 	commonoutline "monorepo/bin-common-handler/models/outline"
 )
 
-// V1DataEventsPost represents the request for listing events.
-type V1DataEventsPost struct {
+// EventListRequest represents the request for listing events.
+// Used by the request handler to communicate with timeline-manager.
+type EventListRequest struct {
 	Publisher  commonoutline.ServiceName `json:"publisher"`
 	ResourceID uuid.UUID                 `json:"resource_id"`
 	Events     []string                  `json:"events"`
@@ -16,9 +17,3 @@ type V1DataEventsPost struct {
 	PageToken string `json:"page_token,omitempty"`
 	PageSize  int    `json:"page_size,omitempty"`
 }
-
-// Default and max page sizes
-const (
-	DefaultPageSize = 100
-	MaxPageSize     = 1000
-)

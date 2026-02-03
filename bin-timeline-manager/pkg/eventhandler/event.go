@@ -14,18 +14,18 @@ import (
 // List returns events matching the request criteria.
 func (h *eventHandler) List(ctx context.Context, req *request.V1DataEventsPost) (*response.V1DataEventsPost, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":      "List",
-		"publisher": req.Publisher,
-		"id":        req.ID,
-		"events":    req.Events,
+		"func":        "List",
+		"publisher":   req.Publisher,
+		"resource_id": req.ResourceID,
+		"events":      req.Events,
 	})
 
 	// Validate request
 	if req.Publisher == "" {
 		return nil, errors.New("publisher is required")
 	}
-	if req.ID == uuid.Nil {
-		return nil, errors.New("id is required")
+	if req.ResourceID == uuid.Nil {
+		return nil, errors.New("resource_id is required")
 	}
 	if len(req.Events) == 0 {
 		return nil, errors.New("events filter is required")
@@ -42,7 +42,7 @@ func (h *eventHandler) List(ctx context.Context, req *request.V1DataEventsPost) 
 
 	// Query database (request pageSize + 1 to determine if more results exist)
 	// Convert ServiceName to string for database query
-	events, err := h.db.EventList(ctx, string(req.Publisher), req.ID, req.Events, req.PageToken, pageSize+1)
+	events, err := h.db.EventList(ctx, string(req.Publisher), req.ResourceID, req.Events, req.PageToken, pageSize+1)
 	if err != nil {
 		log.Errorf("Could not list events. err: %v", err)
 		return nil, errors.Wrap(err, "could not list events")

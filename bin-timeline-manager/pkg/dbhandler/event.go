@@ -9,6 +9,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-timeline-manager/models/event"
 )
 
@@ -83,10 +84,11 @@ func (h *dbHandler) EventList(
 	var result []*event.Event
 	for rows.Next() {
 		var e event.Event
-		var data string
-		if err := rows.Scan(&e.Timestamp, &e.EventType, &e.Publisher, &e.DataType, &data); err != nil {
+		var publisherStr, data string
+		if err := rows.Scan(&e.Timestamp, &e.EventType, &publisherStr, &e.DataType, &data); err != nil {
 			return nil, errors.Wrap(err, "could not scan event row")
 		}
+		e.Publisher = commonoutline.ServiceName(publisherStr)
 		e.Data = []byte(data)
 		result = append(result, &e)
 	}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -31,10 +32,10 @@ func Test_TimelineV1EventList(t *testing.T) {
 			name: "normal",
 
 			req: &tmevent.EventListRequest{
-				Publisher: commonoutline.ServiceNameCallManager,
-				ID:        uuid.FromStringOrNil("55ecfc4e-2c74-11ee-98fb-0762519529f3"),
-				Events:    []string{"call_created", "call_progressing"},
-				PageSize:  10,
+				Publisher:  commonoutline.ServiceNameCallManager,
+				ResourceID: uuid.FromStringOrNil("55ecfc4e-2c74-11ee-98fb-0762519529f3"),
+				Events:     []string{"call_created", "call_progressing"},
+				PageSize:   10,
 			},
 
 			expectTarget: "bin-manager.timeline-manager.request",
@@ -42,7 +43,7 @@ func Test_TimelineV1EventList(t *testing.T) {
 				URI:      "/v1/events",
 				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"publisher":"call-manager","id":"55ecfc4e-2c74-11ee-98fb-0762519529f3","events":["call_created","call_progressing"],"page_size":10}`),
+				Data:     []byte(`{"publisher":"call-manager","resource_id":"55ecfc4e-2c74-11ee-98fb-0762519529f3","events":["call_created","call_progressing"],"page_size":10}`),
 			},
 			response: &sock.Response{
 				StatusCode: 200,
@@ -52,7 +53,7 @@ func Test_TimelineV1EventList(t *testing.T) {
 			expectRes: &tmevent.EventListResponse{
 				Result: []*tmevent.Event{
 					{
-						Timestamp: "2024-01-15T10:00:00Z",
+						Timestamp: time.Date(2024, 1, 15, 10, 0, 0, 0, time.UTC),
 						EventType: "call_created",
 						Publisher: commonoutline.ServiceNameCallManager,
 						DataType:  "application/json",
