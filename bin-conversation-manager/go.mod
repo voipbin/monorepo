@@ -10,6 +10,8 @@ replace monorepo/bin-call-manager => ../bin-call-manager
 
 replace monorepo/bin-common-handler => ../bin-common-handler
 
+replace monorepo/bin-contact-manager => ../bin-contact-manager
+
 replace monorepo/bin-talk-manager => ../bin-talk-manager
 
 replace monorepo/bin-campaign-manager => ../bin-campaign-manager
@@ -127,6 +129,7 @@ require (
 	monorepo/bin-call-manager v0.0.0-20240403030948-51eb7c33cf9a // indirect
 	monorepo/bin-campaign-manager v0.0.0-20240313031908-f098e3fb6f12 // indirect
 	monorepo/bin-conference-manager v0.0.0-20240329045829-45dc5f4e4e76 // indirect
+	monorepo/bin-contact-manager v0.0.0-00010101000000-000000000000 // indirect
 	monorepo/bin-customer-manager v0.0.0-20240408042746-c45b2b5aa984 // indirect
 	monorepo/bin-email-manager v0.0.0-00010101000000-000000000000 // indirect
 	monorepo/bin-outdial-manager v0.0.0-20240313064601-888fe8578646 // indirect
