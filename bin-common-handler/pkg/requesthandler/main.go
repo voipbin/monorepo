@@ -35,6 +35,9 @@ import (
 	cfconference "monorepo/bin-conference-manager/models/conference"
 	cfconferencecall "monorepo/bin-conference-manager/models/conferencecall"
 
+	cmcontact "monorepo/bin-contact-manager/models/contact"
+	cmrequest "monorepo/bin-contact-manager/pkg/listenhandler/models/request"
+
 	cvaccount "monorepo/bin-conversation-manager/models/account"
 	cvconversation "monorepo/bin-conversation-manager/models/conversation"
 	cvmedia "monorepo/bin-conversation-manager/models/media"
@@ -724,6 +727,63 @@ type RequestHandler interface {
 		referenceType cfconferencecall.ReferenceType,
 		referenceID uuid.UUID,
 	) (*service.Service, error)
+
+	// contact-manager contact
+	ContactV1ContactCreate(
+		ctx context.Context,
+		customerID uuid.UUID,
+		firstName string,
+		lastName string,
+		displayName string,
+		company string,
+		jobTitle string,
+		source string,
+		externalID string,
+		notes string,
+		phoneNumbers []cmrequest.PhoneNumberCreate,
+		emails []cmrequest.EmailCreate,
+		tagIDs []uuid.UUID,
+	) (*cmcontact.Contact, error)
+	ContactV1ContactGet(ctx context.Context, contactID uuid.UUID) (*cmcontact.Contact, error)
+	ContactV1ContactList(ctx context.Context, pageToken string, pageSize uint64, filters map[cmcontact.Field]any) ([]cmcontact.Contact, error)
+	ContactV1ContactUpdate(
+		ctx context.Context,
+		contactID uuid.UUID,
+		firstName *string,
+		lastName *string,
+		displayName *string,
+		company *string,
+		jobTitle *string,
+		externalID *string,
+		notes *string,
+	) (*cmcontact.Contact, error)
+	ContactV1ContactDelete(ctx context.Context, contactID uuid.UUID) (*cmcontact.Contact, error)
+	ContactV1ContactLookup(ctx context.Context, customerID uuid.UUID, phoneE164 string, email string) (*cmcontact.Contact, error)
+
+	// contact-manager phone-numbers
+	ContactV1PhoneNumberCreate(
+		ctx context.Context,
+		contactID uuid.UUID,
+		number string,
+		numberE164 string,
+		phoneType string,
+		isPrimary bool,
+	) (*cmcontact.Contact, error)
+	ContactV1PhoneNumberDelete(ctx context.Context, contactID uuid.UUID, phoneNumberID uuid.UUID) (*cmcontact.Contact, error)
+
+	// contact-manager emails
+	ContactV1EmailCreate(
+		ctx context.Context,
+		contactID uuid.UUID,
+		address string,
+		emailType string,
+		isPrimary bool,
+	) (*cmcontact.Contact, error)
+	ContactV1EmailDelete(ctx context.Context, contactID uuid.UUID, emailID uuid.UUID) (*cmcontact.Contact, error)
+
+	// contact-manager tags
+	ContactV1TagAdd(ctx context.Context, contactID uuid.UUID, tagID uuid.UUID) (*cmcontact.Contact, error)
+	ContactV1TagRemove(ctx context.Context, contactID uuid.UUID, tagID uuid.UUID) (*cmcontact.Contact, error)
 
 	// conversation-manager account
 	ConversationV1AccountGet(ctx context.Context, accountID uuid.UUID) (*cvaccount.Account, error)

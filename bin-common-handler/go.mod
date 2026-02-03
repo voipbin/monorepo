@@ -16,6 +16,8 @@ replace monorepo/bin-ai-manager => ../bin-ai-manager
 
 replace monorepo/bin-conference-manager => ../bin-conference-manager
 
+replace monorepo/bin-contact-manager => ../bin-contact-manager
+
 replace monorepo/bin-conversation-manager => ../bin-conversation-manager
 
 replace monorepo/bin-customer-manager => ../bin-customer-manager
@@ -78,6 +80,7 @@ require (
 	monorepo/bin-call-manager v0.0.0-20240403030948-51eb7c33cf9a
 	monorepo/bin-campaign-manager v0.0.0-20240313031908-f098e3fb6f12
 	monorepo/bin-conference-manager v0.0.0-20240329045829-45dc5f4e4e76
+	monorepo/bin-contact-manager v0.0.0-00010101000000-000000000000
 	monorepo/bin-conversation-manager v0.0.0-20231117134833-7918f76572d4
 	monorepo/bin-customer-manager v0.0.0-20240408042746-c45b2b5aa984
 	monorepo/bin-email-manager v0.0.0-00010101000000-000000000000
