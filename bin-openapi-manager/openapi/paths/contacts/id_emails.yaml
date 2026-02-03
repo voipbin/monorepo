@@ -1,0 +1,36 @@
+post:
+  summary: Add email to contact
+  description: Add a new email address to the contact.
+  tags:
+    - Contact
+  parameters:
+    - name: id
+      in: path
+      description: The ID of the contact.
+      required: true
+      schema:
+        type: string
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - address
+          properties:
+            address:
+              type: string
+              format: email
+            type:
+              type: string
+              enum: [work, personal, other]
+            is_primary:
+              type: boolean
+  responses:
+    '200':
+      description: Email added successfully.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ContactManagerContact'

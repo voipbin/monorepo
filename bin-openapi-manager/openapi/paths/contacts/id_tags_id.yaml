@@ -1,0 +1,25 @@
+delete:
+  summary: Remove tag from contact
+  description: Remove a tag from the contact.
+  tags:
+    - Contact
+  parameters:
+    - name: id
+      in: path
+      description: The ID of the contact.
+      required: true
+      schema:
+        type: string
+    - name: tag_id
+      in: path
+      description: The ID of the tag.
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Tag removed successfully.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ContactManagerContact'

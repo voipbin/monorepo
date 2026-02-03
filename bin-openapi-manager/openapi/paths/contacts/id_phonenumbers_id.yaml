@@ -1,0 +1,25 @@
+delete:
+  summary: Remove phone number from contact
+  description: Remove a phone number from the contact.
+  tags:
+    - Contact
+  parameters:
+    - name: id
+      in: path
+      description: The ID of the contact.
+      required: true
+      schema:
+        type: string
+    - name: phone_number_id
+      in: path
+      description: The ID of the phone number.
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Phone number removed successfully.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ContactManagerContact'
