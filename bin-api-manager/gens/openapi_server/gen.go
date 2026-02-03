@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"mime/multipart"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/oapi-codegen/runtime"
@@ -655,6 +656,14 @@ const (
 const (
 	Line    GetConversationsJSONBodyType = "line"
 	Message GetConversationsJSONBodyType = "message"
+)
+
+// Defines values for GetTimelinesResourceTypeResourceIdEventsParamsResourceType.
+const (
+	Activeflows GetTimelinesResourceTypeResourceIdEventsParamsResourceType = "activeflows"
+	Calls       GetTimelinesResourceTypeResourceIdEventsParamsResourceType = "calls"
+	Conferences GetTimelinesResourceTypeResourceIdEventsParamsResourceType = "conferences"
+	Flows       GetTimelinesResourceTypeResourceIdEventsParamsResourceType = "flows"
 )
 
 // AIManagerAI defines model for AIManagerAI.
@@ -2921,6 +2930,18 @@ type TalkManagerTalk struct {
 // TalkManagerTalkType Type of the talk.
 type TalkManagerTalkType string
 
+// TimelineManagerEvent A timeline event with WebhookMessage data
+type TimelineManagerEvent struct {
+	// Data Event data in WebhookMessage format
+	Data *map[string]interface{} `json:"data,omitempty"`
+
+	// EventType Type of event (e.g., call_created, conference_started)
+	EventType *string `json:"event_type,omitempty"`
+
+	// Timestamp When the event occurred
+	Timestamp *time.Time `json:"timestamp,omitempty"`
+}
+
 // TranscribeManagerTranscribe defines model for TranscribeManagerTranscribe.
 type TranscribeManagerTranscribe struct {
 	// CustomerId Customer ID
@@ -4475,6 +4496,18 @@ type PutTagsIdJSONBody struct {
 	Name   string `json:"name"`
 }
 
+// GetTimelinesResourceTypeResourceIdEventsParams defines parameters for GetTimelinesResourceTypeResourceIdEvents.
+type GetTimelinesResourceTypeResourceIdEventsParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// GetTimelinesResourceTypeResourceIdEventsParamsResourceType defines parameters for GetTimelinesResourceTypeResourceIdEvents.
+type GetTimelinesResourceTypeResourceIdEventsParamsResourceType string
+
 // GetTranscribesParams defines parameters for GetTranscribes.
 type GetTranscribesParams struct {
 	// PageSize The size of results.
@@ -5554,6 +5587,9 @@ type ServerInterface interface {
 	// Update the tag info
 	// (PUT /tags/{id})
 	PutTagsId(c *gin.Context, id string)
+	// Get timeline events for a resource
+	// (GET /timelines/{resource_type}/{resource_id}/events)
+	GetTimelinesResourceTypeResourceIdEvents(c *gin.Context, resourceType GetTimelinesResourceTypeResourceIdEventsParamsResourceType, resourceId openapi_types.UUID, params GetTimelinesResourceTypeResourceIdEventsParams)
 	// Get list of transcribes
 	// (GET /transcribes)
 	GetTranscribes(c *gin.Context, params GetTranscribesParams)
@@ -11492,6 +11528,58 @@ func (siw *ServerInterfaceWrapper) PutTagsId(c *gin.Context) {
 	siw.Handler.PutTagsId(c, id)
 }
 
+// GetTimelinesResourceTypeResourceIdEvents operation middleware
+func (siw *ServerInterfaceWrapper) GetTimelinesResourceTypeResourceIdEvents(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "resource_type" -------------
+	var resourceType GetTimelinesResourceTypeResourceIdEventsParamsResourceType
+
+	err = runtime.BindStyledParameterWithOptions("simple", "resource_type", c.Param("resource_type"), &resourceType, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter resource_type: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Path parameter "resource_id" -------------
+	var resourceId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "resource_id", c.Param("resource_id"), &resourceId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter resource_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetTimelinesResourceTypeResourceIdEventsParams
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetTimelinesResourceTypeResourceIdEvents(c, resourceType, resourceId, params)
+}
+
 // GetTranscribes operation middleware
 func (siw *ServerInterfaceWrapper) GetTranscribes(c *gin.Context) {
 
@@ -12072,6 +12160,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.DELETE(options.BaseURL+"/tags/:id", wrapper.DeleteTagsId)
 	router.GET(options.BaseURL+"/tags/:id", wrapper.GetTagsId)
 	router.PUT(options.BaseURL+"/tags/:id", wrapper.PutTagsId)
+	router.GET(options.BaseURL+"/timelines/:resource_type/:resource_id/events", wrapper.GetTimelinesResourceTypeResourceIdEvents)
 	router.GET(options.BaseURL+"/transcribes", wrapper.GetTranscribes)
 	router.POST(options.BaseURL+"/transcribes", wrapper.PostTranscribes)
 	router.DELETE(options.BaseURL+"/transcribes/:id", wrapper.DeleteTranscribesId)
@@ -16676,6 +16765,45 @@ func (response PutTagsId200JSONResponse) VisitPutTagsIdResponse(w http.ResponseW
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetTimelinesResourceTypeResourceIdEventsRequestObject struct {
+	ResourceType GetTimelinesResourceTypeResourceIdEventsParamsResourceType `json:"resource_type"`
+	ResourceId   openapi_types.UUID                                         `json:"resource_id"`
+	Params       GetTimelinesResourceTypeResourceIdEventsParams
+}
+
+type GetTimelinesResourceTypeResourceIdEventsResponseObject interface {
+	VisitGetTimelinesResourceTypeResourceIdEventsResponse(w http.ResponseWriter) error
+}
+
+type GetTimelinesResourceTypeResourceIdEvents200JSONResponse struct {
+	// NextPageToken The token for next pagination.
+	NextPageToken *string                 `json:"next_page_token,omitempty"`
+	Result        *[]TimelineManagerEvent `json:"result,omitempty"`
+}
+
+func (response GetTimelinesResourceTypeResourceIdEvents200JSONResponse) VisitGetTimelinesResourceTypeResourceIdEventsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetTimelinesResourceTypeResourceIdEvents400Response struct {
+}
+
+func (response GetTimelinesResourceTypeResourceIdEvents400Response) VisitGetTimelinesResourceTypeResourceIdEventsResponse(w http.ResponseWriter) error {
+	w.WriteHeader(400)
+	return nil
+}
+
+type GetTimelinesResourceTypeResourceIdEvents404Response struct {
+}
+
+func (response GetTimelinesResourceTypeResourceIdEvents404Response) VisitGetTimelinesResourceTypeResourceIdEventsResponse(w http.ResponseWriter) error {
+	w.WriteHeader(404)
+	return nil
+}
+
 type GetTranscribesRequestObject struct {
 	Params GetTranscribesParams
 }
@@ -17622,6 +17750,9 @@ type StrictServerInterface interface {
 	// Update the tag info
 	// (PUT /tags/{id})
 	PutTagsId(ctx context.Context, request PutTagsIdRequestObject) (PutTagsIdResponseObject, error)
+	// Get timeline events for a resource
+	// (GET /timelines/{resource_type}/{resource_id}/events)
+	GetTimelinesResourceTypeResourceIdEvents(ctx context.Context, request GetTimelinesResourceTypeResourceIdEventsRequestObject) (GetTimelinesResourceTypeResourceIdEventsResponseObject, error)
 	// Get list of transcribes
 	// (GET /transcribes)
 	GetTranscribes(ctx context.Context, request GetTranscribesRequestObject) (GetTranscribesResponseObject, error)
@@ -24784,6 +24915,35 @@ func (sh *strictHandler) PutTagsId(ctx *gin.Context, id string) {
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PutTagsIdResponseObject); ok {
 		if err := validResponse.VisitPutTagsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetTimelinesResourceTypeResourceIdEvents operation middleware
+func (sh *strictHandler) GetTimelinesResourceTypeResourceIdEvents(ctx *gin.Context, resourceType GetTimelinesResourceTypeResourceIdEventsParamsResourceType, resourceId openapi_types.UUID, params GetTimelinesResourceTypeResourceIdEventsParams) {
+	var request GetTimelinesResourceTypeResourceIdEventsRequestObject
+
+	request.ResourceType = resourceType
+	request.ResourceId = resourceId
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetTimelinesResourceTypeResourceIdEvents(ctx, request.(GetTimelinesResourceTypeResourceIdEventsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetTimelinesResourceTypeResourceIdEvents")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetTimelinesResourceTypeResourceIdEventsResponseObject); ok {
+		if err := validResponse.VisitGetTimelinesResourceTypeResourceIdEventsResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {
