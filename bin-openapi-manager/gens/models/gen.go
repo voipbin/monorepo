@@ -4,6 +4,8 @@
 package models
 
 import (
+	"time"
+
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
@@ -646,6 +648,14 @@ const (
 const (
 	Line    GetConversationsJSONBodyType = "line"
 	Message GetConversationsJSONBodyType = "message"
+)
+
+// Defines values for GetTimelinesResourceTypeResourceIdEventsParamsResourceType.
+const (
+	Activeflows GetTimelinesResourceTypeResourceIdEventsParamsResourceType = "activeflows"
+	Calls       GetTimelinesResourceTypeResourceIdEventsParamsResourceType = "calls"
+	Conferences GetTimelinesResourceTypeResourceIdEventsParamsResourceType = "conferences"
+	Flows       GetTimelinesResourceTypeResourceIdEventsParamsResourceType = "flows"
 )
 
 // AIManagerAI defines model for AIManagerAI.
@@ -2912,6 +2922,18 @@ type TalkManagerTalk struct {
 // TalkManagerTalkType Type of the talk.
 type TalkManagerTalkType string
 
+// TimelineManagerEvent A timeline event with WebhookMessage data
+type TimelineManagerEvent struct {
+	// Data Event data in WebhookMessage format
+	Data *map[string]interface{} `json:"data,omitempty"`
+
+	// EventType Type of event (e.g., call_created, conference_started)
+	EventType *string `json:"event_type,omitempty"`
+
+	// Timestamp When the event occurred
+	Timestamp *time.Time `json:"timestamp,omitempty"`
+}
+
 // TranscribeManagerTranscribe defines model for TranscribeManagerTranscribe.
 type TranscribeManagerTranscribe struct {
 	// CustomerId Customer ID
@@ -4465,6 +4487,18 @@ type PutTagsIdJSONBody struct {
 	Detail string `json:"detail"`
 	Name   string `json:"name"`
 }
+
+// GetTimelinesResourceTypeResourceIdEventsParams defines parameters for GetTimelinesResourceTypeResourceIdEvents.
+type GetTimelinesResourceTypeResourceIdEventsParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// GetTimelinesResourceTypeResourceIdEventsParamsResourceType defines parameters for GetTimelinesResourceTypeResourceIdEvents.
+type GetTimelinesResourceTypeResourceIdEventsParamsResourceType string
 
 // GetTranscribesParams defines parameters for GetTranscribes.
 type GetTranscribesParams struct {

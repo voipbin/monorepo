@@ -1,0 +1,44 @@
+get:
+  summary: Get timeline events for a resource
+  description: Returns timeline events for the specified resource in WebhookMessage format.
+  tags:
+    - Timeline
+  parameters:
+    - name: resource_type
+      in: path
+      required: true
+      description: The type of resource (calls, conferences, flows, activeflows)
+      schema:
+        type: string
+        enum:
+          - calls
+          - conferences
+          - flows
+          - activeflows
+    - name: resource_id
+      in: path
+      required: true
+      description: The UUID of the resource
+      schema:
+        type: string
+        format: uuid
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
+  responses:
+    '200':
+      description: A list of timeline events.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/CommonPagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TimelineManagerEvent'
+    '400':
+      description: Invalid request parameters
+    '404':
+      description: Resource not found

@@ -188,6 +188,9 @@ tags:
       description: Find more about websocket
       url: https://api.voipbin.net/docs/websocket.html
 
+  - name: Timeline
+    description: Operations related to timeline events
+
 
 components:
 
@@ -3519,6 +3522,25 @@ components:
 
 
 #########################################
+# Timeline Manager
+#########################################
+    TimelineManagerEvent:
+      type: object
+      description: A timeline event with WebhookMessage data
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          description: When the event occurred
+        event_type:
+          type: string
+          description: Type of event (e.g., call_created, conference_started)
+        data:
+          type: object
+          description: Event data in WebhookMessage format
+
+
+#########################################
 # Tag Manager
 #########################################
     TagManagerTag:
@@ -4050,6 +4072,9 @@ paths:
     $ref: './paths/trunks/id.yaml'
   /trunks:
     $ref: './paths/trunks/main.yaml'
+
+  /timelines/{resource_type}/{resource_id}/events:
+    $ref: './paths/timelines/resource_events.yaml'
 
   /ws:
     $ref: './paths/ws/main.yaml'
