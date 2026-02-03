@@ -3636,6 +3636,22 @@ func (mr *MockServiceHandlerMockRecorder) TagUpdate(ctx, a, id, name, detail any
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TagUpdate", reflect.TypeOf((*MockServiceHandler)(nil).TagUpdate), ctx, a, id, name, detail)
 }
 
+// TimelineEventList mocks base method.
+func (m *MockServiceHandler) TimelineEventList(ctx context.Context, a *agent.Agent, resourceType string, resourceID uuid.UUID, pageSize int, pageToken string) ([]*TimelineEvent, string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TimelineEventList", ctx, a, resourceType, resourceID, pageSize, pageToken)
+	ret0, _ := ret[0].([]*TimelineEvent)
+	ret1, _ := ret[1].(string)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// TimelineEventList indicates an expected call of TimelineEventList.
+func (mr *MockServiceHandlerMockRecorder) TimelineEventList(ctx, a, resourceType, resourceID, pageSize, pageToken any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TimelineEventList", reflect.TypeOf((*MockServiceHandler)(nil).TimelineEventList), ctx, a, resourceType, resourceID, pageSize, pageToken)
+}
+
 // TranscribeDelete mocks base method.
 func (m *MockServiceHandler) TranscribeDelete(ctx context.Context, a *agent.Agent, transcribeID uuid.UUID) (*transcribe.WebhookMessage, error) {
 	m.ctrl.T.Helper()
