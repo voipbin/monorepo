@@ -144,8 +144,8 @@ Uses same environment variables as ai-manager (`DATABASE_DSN`, `RABBITMQ_ADDRESS
 
 **AI** (`models/ai/main.go:8-31`)
 - Configuration for an AI agent
-- EngineModel format: `<target>.<model>` (e.g., `openai.gpt-4o`, `dialogflow.cx`)
-- Supports 18+ LLM providers (Anthropic, AWS, Azure, Cerebras, DeepSeek, etc.)
+- EngineModel format: `<target>.<model>` (e.g., `openai.gpt-4o`, `grok.grok-3`, `dialogflow.cx`)
+- Supports 18+ LLM providers (Anthropic, AWS, Azure, Cerebras, DeepSeek, Grok, etc.)
 - TTS types: cartesia, deepgram, elevenlabs, openai, etc.
 - STT types: cartesia, deepgram, elevenlabs
 
