@@ -56,7 +56,7 @@ const (
 	EngineModelTargetDeepSeek   EngineModelTarget = "deepseek"   // DeepSeek
 	EngineModelTargetFireworks  EngineModelTarget = "fireworks"  // Fireworks AI
 	EngineModelTargetGemini     EngineModelTarget = "gemini"     // Google Gemini
-	EngineModelTargetGrok       EngineModelTarget = "grok"       // Grok
+	EngineModelTargetGrok       EngineModelTarget = "grok"       // Grok (xAI)
 	EngineModelTargetGroq       EngineModelTarget = "groq"       // Groq
 	EngineModelTargetMistral    EngineModelTarget = "mistral"    // Mistral AI
 	EngineModelTargetNvidiaNIM  EngineModelTarget = "nvidia"     // NVIDIA NIM
