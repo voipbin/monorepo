@@ -1,0 +1,4 @@
+vendor
+contact-manager
+.vscode
+!cmd/*

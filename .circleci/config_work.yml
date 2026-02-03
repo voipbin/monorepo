@@ -47,6 +47,10 @@ parameters:
     type: boolean
     default: false
 
+  run-bin-contact-manager:
+    type: boolean
+    default: false
+
   run-bin-conference-manager:
     type: boolean
     default: false
@@ -160,8 +164,7 @@ workflows:
   ############################################
 
   bin-agent-manager:
-    when: 
-      or: [<< pipeline.parameters.run-bin-agent-manager >>, << pipeline.parameters.run-bin-common-handler >> ]
+    when: << pipeline.parameters.run-bin-agent-manager >>
     jobs:
       - bin-agent-manager-test
       - bin-agent-manager-build:
@@ -179,8 +182,8 @@ workflows:
             - release-approval
 
   bin-api-manager:
-    when: 
-      or: [<< pipeline.parameters.run-bin-api-manager >>, << pipeline.parameters.run-bin-common-handler >>, << pipeline.parameters.run-bin-openapi-manager >>]
+    when:
+      or: [<< pipeline.parameters.run-bin-api-manager >>, << pipeline.parameters.run-bin-openapi-manager >>]
     jobs:
       - bin-api-manager-test
       - bin-api-manager-build:
@@ -198,8 +201,7 @@ workflows:
             - release-approval
 
   bin-billing-manager:
-    when: 
-      or: [<< pipeline.parameters.run-bin-billing-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    when: << pipeline.parameters.run-bin-billing-manager >>
     jobs:
       - bin-billing-manager-test
       - bin-billing-manager-build:
@@ -217,8 +219,7 @@ workflows:
             - release-approval
 
   bin-call-manager:
-    when: 
-      or: [<< pipeline.parameters.run-bin-call-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    when: << pipeline.parameters.run-bin-call-manager >>
     jobs:
       - bin-call-manager-test
       - bin-call-manager-build:
@@ -236,8 +237,7 @@ workflows:
             - release-approval
 
   bin-campaign-manager:
-    when: 
-      or: [<< pipeline.parameters.run-bin-campaign-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    when: << pipeline.parameters.run-bin-campaign-manager >>
     jobs:
       - bin-campaign-manager-test
       - bin-campaign-manager-build:
@@ -255,8 +255,7 @@ workflows:
             - release-approval
 
   bin-ai-manager:
-    when: 
-      or: [<< pipeline.parameters.run-bin-ai-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    when: << pipeline.parameters.run-bin-ai-manager >>
     jobs:
       - bin-ai-manager-test
       - bin-ai-manager-build:
@@ -278,9 +277,26 @@ workflows:
     jobs:
       - bin-common-handler-test
 
+  bin-contact-manager:
+    when: << pipeline.parameters.run-bin-contact-manager >>
+    jobs:
+      - bin-contact-manager-test
+      - bin-contact-manager-build:
+          <<: *context_production
+          requires:
+            - bin-contact-manager-test
+      - release-approval:
+          type: approval
+          requires:
+            - bin-contact-manager-build
+      - bin-contact-manager-release:
+          <<: *context_production
+          requires:
+            - bin-contact-manager-build
+            - release-approval
+
   bin-conference-manager:
-    when: 
-      or: [<< pipeline.parameters.run-bin-conference-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    when: << pipeline.parameters.run-bin-conference-manager >>
     jobs:
       - bin-conference-manager-test
       - bin-conference-manager-build:
@@ -298,8 +314,7 @@ workflows:
             - release-approval
 
   bin-conversation-manager:
-    when: 
-      or: [<< pipeline.parameters.run-bin-conversation-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    when: << pipeline.parameters.run-bin-conversation-manager >>
     jobs:
       - bin-conversation-manager-test
       - bin-conversation-manager-build:
@@ -317,8 +332,7 @@ workflows:
             - release-approval
 
   bin-customer-manager:
-    when: 
-      or: [<< pipeline.parameters.run-bin-customer-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    when: << pipeline.parameters.run-bin-customer-manager >>
     jobs:
       - bin-customer-manager-test
       - bin-customer-manager-build:
@@ -346,8 +360,7 @@ workflows:
             - bin-dbscheme-manager-build
 
   bin-email-manager:
-    when: 
-      or: [<< pipeline.parameters.run-bin-email-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    when: << pipeline.parameters.run-bin-email-manager >>
     jobs:
       - bin-email-manager-test
       - bin-email-manager-build:
@@ -365,8 +378,7 @@ workflows:
             - release-approval
 
   bin-flow-manager:
-    when: 
-      or: [<< pipeline.parameters.run-bin-flow-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    when: << pipeline.parameters.run-bin-flow-manager >>
     jobs:
       - bin-flow-manager-test
       - bin-flow-manager-build:
@@ -384,8 +396,7 @@ workflows:
             - release-approval
 
   bin-hook-manager:
-    when: 
-      or: [<< pipeline.parameters.run-bin-hook-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    when: << pipeline.parameters.run-bin-hook-manager >>
     jobs:
       - bin-hook-manager-test
       - bin-hook-manager-build:
@@ -403,8 +414,7 @@ workflows:
             - release-approval
 
   bin-message-manager:
-    when: 
-      or: [<< pipeline.parameters.run-bin-message-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    when: << pipeline.parameters.run-bin-message-manager >>
     jobs:
       - bin-message-manager-test
       - bin-message-manager-build:
@@ -422,8 +432,7 @@ workflows:
             - release-approval
 
   bin-number-manager:
-    when: 
-      or: [<< pipeline.parameters.run-bin-number-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    when: << pipeline.parameters.run-bin-number-manager >>
     jobs:
       - bin-number-manager-test
       - bin-number-manager-build:
@@ -446,8 +455,7 @@ workflows:
       - bin-openapi-manager-validate
 
   bin-outdial-manager:
-    when:
-      or: [<< pipeline.parameters.run-bin-outdial-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    when: << pipeline.parameters.run-bin-outdial-manager >>
     jobs:
       - bin-outdial-manager-test
       - bin-outdial-manager-build:
@@ -465,8 +473,7 @@ workflows:
             - release-approval
 
   bin-pipecat-manager:
-    when:
-      or: [<< pipeline.parameters.run-bin-pipecat-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    when: << pipeline.parameters.run-bin-pipecat-manager >>
     jobs:
       - bin-pipecat-manager-test
       - bin-pipecat-manager-build:
@@ -484,8 +491,7 @@ workflows:
             - release-approval
 
   bin-queue-manager:
-    when: 
-      or: [<< pipeline.parameters.run-bin-queue-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    when: << pipeline.parameters.run-bin-queue-manager >>
     jobs:
       - bin-queue-manager-test
       - bin-queue-manager-build:
@@ -503,8 +509,7 @@ workflows:
             - release-approval
 
   bin-registrar-manager:
-    when: 
-      or: [<< pipeline.parameters.run-bin-registrar-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    when: << pipeline.parameters.run-bin-registrar-manager >>
     jobs:
       - bin-registrar-manager-test
       - bin-registrar-manager-build:
@@ -522,8 +527,7 @@ workflows:
             - release-approval
 
   bin-route-manager:
-    when: 
-      or: [<< pipeline.parameters.run-bin-route-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    when: << pipeline.parameters.run-bin-route-manager >>
     jobs:
       - bin-route-manager-test
       - bin-route-manager-build:
@@ -541,8 +545,7 @@ workflows:
             - release-approval
 
   bin-sentinel-manager:
-    when: 
-      or: [<< pipeline.parameters.run-bin-sentinel-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    when: << pipeline.parameters.run-bin-sentinel-manager >>
     jobs:
       - bin-sentinel-manager-test
       - bin-sentinel-manager-build:
@@ -560,8 +563,7 @@ workflows:
             - release-approval
 
   bin-storage-manager:
-    when: 
-      or: [<< pipeline.parameters.run-bin-storage-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    when: << pipeline.parameters.run-bin-storage-manager >>
     jobs:
       - bin-storage-manager-test
       - bin-storage-manager-build:
@@ -579,8 +581,7 @@ workflows:
             - release-approval
 
   bin-tag-manager:
-    when:
-      or: [<< pipeline.parameters.run-bin-tag-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    when: << pipeline.parameters.run-bin-tag-manager >>
     jobs:
       - bin-tag-manager-test
       - bin-tag-manager-build:
@@ -598,8 +599,7 @@ workflows:
             - release-approval
 
   bin-talk-manager:
-    when:
-      or: [<< pipeline.parameters.run-bin-talk-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    when: << pipeline.parameters.run-bin-talk-manager >>
     jobs:
       - bin-talk-manager-test
       - bin-talk-manager-build:
@@ -617,8 +617,7 @@ workflows:
             - release-approval
 
   bin-timeline-manager:
-    when:
-      or: [<< pipeline.parameters.run-bin-timeline-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    when: << pipeline.parameters.run-bin-timeline-manager >>
     jobs:
       - bin-timeline-manager-test
       - bin-timeline-manager-build:
@@ -636,8 +635,7 @@ workflows:
             - release-approval
 
   bin-transcribe-manager:
-    when: 
-      or: [<< pipeline.parameters.run-bin-transcribe-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    when: << pipeline.parameters.run-bin-transcribe-manager >>
     jobs:
       - bin-transcribe-manager-test
       - bin-transcribe-manager-build:
@@ -655,8 +653,7 @@ workflows:
             - release-approval
 
   bin-transfer-manager:
-    when: 
-      or: [<< pipeline.parameters.run-bin-transfer-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    when: << pipeline.parameters.run-bin-transfer-manager >>
     jobs:
       - bin-transfer-manager-test
       - bin-transfer-manager-build:
@@ -674,8 +671,7 @@ workflows:
             - release-approval
 
   bin-tts-manager:
-    when: 
-      or: [<< pipeline.parameters.run-bin-tts-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    when: << pipeline.parameters.run-bin-tts-manager >>
     jobs:
       - bin-tts-manager-test
       - bin-tts-manager-build:
@@ -693,8 +689,7 @@ workflows:
             - release-approval
 
   bin-webhook-manager:
-    when: 
-      or: [<< pipeline.parameters.run-bin-webhook-manager >>, << pipeline.parameters.run-bin-common-handler >>]
+    when: << pipeline.parameters.run-bin-webhook-manager >>
     jobs:
       - bin-webhook-manager-test
       - bin-webhook-manager-build:
@@ -883,6 +878,30 @@ jobs:
     steps:
       - go-test:
           source-directory: bin-common-handler
+
+  # bin-contact-manager
+  bin-contact-manager-test:
+    docker: *go_image
+    steps:
+      - go-test:
+          source-directory: bin-contact-manager
+
+  bin-contact-manager-build:
+    docker: *gcp_image
+    steps:
+      - docker-build:
+          source-directory: bin-contact-manager
+          project-id: voipbin
+          project-repository: bin-contact-manager
+
+  bin-contact-manager-release:
+    docker: *gcloud_image
+    steps:
+      - docker-release:
+          source-directory: bin-contact-manager
+          image-name: contact-manager
+          project-id: voipbin
+          project-repository: bin-contact-manager
 
   # bin-conference-manager
   bin-conference-manager-test:
