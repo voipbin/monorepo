@@ -35,6 +35,9 @@ import (
 	cfconference "monorepo/bin-conference-manager/models/conference"
 	cfconferencecall "monorepo/bin-conference-manager/models/conferencecall"
 
+	cmcontact "monorepo/bin-contact-manager/models/contact"
+	cmrequest "monorepo/bin-contact-manager/pkg/listenhandler/models/request"
+
 	cvaccount "monorepo/bin-conversation-manager/models/account"
 	cvconversation "monorepo/bin-conversation-manager/models/conversation"
 	cvmedia "monorepo/bin-conversation-manager/models/media"
@@ -339,6 +342,60 @@ type ServiceHandler interface {
 	ConferencecallGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*cfconferencecall.WebhookMessage, error)
 	ConferencecallList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*cfconferencecall.WebhookMessage, error)
 	ConferencecallKick(ctx context.Context, a *amagent.Agent, conferencecallID uuid.UUID) (*cfconferencecall.WebhookMessage, error)
+
+	// contact handlers
+	ContactCreate(
+		ctx context.Context,
+		a *amagent.Agent,
+		firstName string,
+		lastName string,
+		displayName string,
+		company string,
+		jobTitle string,
+		source string,
+		externalID string,
+		notes string,
+		phoneNumbers []cmrequest.PhoneNumberCreate,
+		emails []cmrequest.EmailCreate,
+		tagIDs []uuid.UUID,
+	) (*cmcontact.WebhookMessage, error)
+	ContactGet(ctx context.Context, a *amagent.Agent, contactID uuid.UUID) (*cmcontact.WebhookMessage, error)
+	ContactList(ctx context.Context, a *amagent.Agent, size uint64, token string, filters map[string]string) ([]*cmcontact.WebhookMessage, error)
+	ContactUpdate(
+		ctx context.Context,
+		a *amagent.Agent,
+		contactID uuid.UUID,
+		firstName *string,
+		lastName *string,
+		displayName *string,
+		company *string,
+		jobTitle *string,
+		externalID *string,
+		notes *string,
+	) (*cmcontact.WebhookMessage, error)
+	ContactDelete(ctx context.Context, a *amagent.Agent, contactID uuid.UUID) (*cmcontact.WebhookMessage, error)
+	ContactLookup(ctx context.Context, a *amagent.Agent, phoneE164 string, email string) (*cmcontact.WebhookMessage, error)
+	ContactPhoneNumberCreate(
+		ctx context.Context,
+		a *amagent.Agent,
+		contactID uuid.UUID,
+		number string,
+		numberE164 string,
+		phoneType string,
+		isPrimary bool,
+	) (*cmcontact.WebhookMessage, error)
+	ContactPhoneNumberDelete(ctx context.Context, a *amagent.Agent, contactID uuid.UUID, phoneNumberID uuid.UUID) (*cmcontact.WebhookMessage, error)
+	ContactEmailCreate(
+		ctx context.Context,
+		a *amagent.Agent,
+		contactID uuid.UUID,
+		address string,
+		emailType string,
+		isPrimary bool,
+	) (*cmcontact.WebhookMessage, error)
+	ContactEmailDelete(ctx context.Context, a *amagent.Agent, contactID uuid.UUID, emailID uuid.UUID) (*cmcontact.WebhookMessage, error)
+	ContactTagAdd(ctx context.Context, a *amagent.Agent, contactID uuid.UUID, tagID uuid.UUID) (*cmcontact.WebhookMessage, error)
+	ContactTagRemove(ctx context.Context, a *amagent.Agent, contactID uuid.UUID, tagID uuid.UUID) (*cmcontact.WebhookMessage, error)
 
 	// conversation handlers
 	ConversationGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*cvconversation.WebhookMessage, error)

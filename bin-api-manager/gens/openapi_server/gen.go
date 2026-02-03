@@ -324,6 +324,30 @@ const (
 	ConferenceManagerConferencecallStatusLeaving ConferenceManagerConferencecallStatus = "leaving"
 )
 
+// Defines values for ContactManagerContactSource.
+const (
+	ContactManagerContactSourceAPI    ContactManagerContactSource = "api"
+	ContactManagerContactSourceImport ContactManagerContactSource = "import"
+	ContactManagerContactSourceManual ContactManagerContactSource = "manual"
+	ContactManagerContactSourceSync   ContactManagerContactSource = "sync"
+)
+
+// Defines values for ContactManagerEmailType.
+const (
+	ContactManagerEmailTypeOther    ContactManagerEmailType = "other"
+	ContactManagerEmailTypePersonal ContactManagerEmailType = "personal"
+	ContactManagerEmailTypeWork     ContactManagerEmailType = "work"
+)
+
+// Defines values for ContactManagerPhoneNumberType.
+const (
+	ContactManagerPhoneNumberTypeFax    ContactManagerPhoneNumberType = "fax"
+	ContactManagerPhoneNumberTypeHome   ContactManagerPhoneNumberType = "home"
+	ContactManagerPhoneNumberTypeMobile ContactManagerPhoneNumberType = "mobile"
+	ContactManagerPhoneNumberTypeOther  ContactManagerPhoneNumberType = "other"
+	ContactManagerPhoneNumberTypeWork   ContactManagerPhoneNumberType = "work"
+)
+
 // Defines values for ConversationManagerAccountType.
 const (
 	ConversationManagerAccountTypeLine ConversationManagerAccountType = "line"
@@ -650,6 +674,46 @@ const (
 // Defines values for PostConferencesIdRecordingStartJSONBodyFormat.
 const (
 	Wav PostConferencesIdRecordingStartJSONBodyFormat = "wav"
+)
+
+// Defines values for PostContactsJSONBodyEmailsType.
+const (
+	PostContactsJSONBodyEmailsTypeOther    PostContactsJSONBodyEmailsType = "other"
+	PostContactsJSONBodyEmailsTypePersonal PostContactsJSONBodyEmailsType = "personal"
+	PostContactsJSONBodyEmailsTypeWork     PostContactsJSONBodyEmailsType = "work"
+)
+
+// Defines values for PostContactsJSONBodyPhoneNumbersType.
+const (
+	PostContactsJSONBodyPhoneNumbersTypeFax    PostContactsJSONBodyPhoneNumbersType = "fax"
+	PostContactsJSONBodyPhoneNumbersTypeHome   PostContactsJSONBodyPhoneNumbersType = "home"
+	PostContactsJSONBodyPhoneNumbersTypeMobile PostContactsJSONBodyPhoneNumbersType = "mobile"
+	PostContactsJSONBodyPhoneNumbersTypeOther  PostContactsJSONBodyPhoneNumbersType = "other"
+	PostContactsJSONBodyPhoneNumbersTypeWork   PostContactsJSONBodyPhoneNumbersType = "work"
+)
+
+// Defines values for PostContactsJSONBodySource.
+const (
+	Api    PostContactsJSONBodySource = "api"
+	Import PostContactsJSONBodySource = "import"
+	Manual PostContactsJSONBodySource = "manual"
+	Sync   PostContactsJSONBodySource = "sync"
+)
+
+// Defines values for PostContactsIdEmailsJSONBodyType.
+const (
+	PostContactsIdEmailsJSONBodyTypeOther    PostContactsIdEmailsJSONBodyType = "other"
+	PostContactsIdEmailsJSONBodyTypePersonal PostContactsIdEmailsJSONBodyType = "personal"
+	PostContactsIdEmailsJSONBodyTypeWork     PostContactsIdEmailsJSONBodyType = "work"
+)
+
+// Defines values for PostContactsIdPhoneNumbersJSONBodyType.
+const (
+	PostContactsIdPhoneNumbersJSONBodyTypeFax    PostContactsIdPhoneNumbersJSONBodyType = "fax"
+	PostContactsIdPhoneNumbersJSONBodyTypeHome   PostContactsIdPhoneNumbersJSONBodyType = "home"
+	PostContactsIdPhoneNumbersJSONBodyTypeMobile PostContactsIdPhoneNumbersJSONBodyType = "mobile"
+	PostContactsIdPhoneNumbersJSONBodyTypeOther  PostContactsIdPhoneNumbersJSONBodyType = "other"
+	PostContactsIdPhoneNumbersJSONBodyTypeWork   PostContactsIdPhoneNumbersJSONBodyType = "work"
 )
 
 // Defines values for GetConversationsJSONBodyType.
@@ -1521,6 +1585,102 @@ type ConferenceManagerConferencecallReferenceType string
 
 // ConferenceManagerConferencecallStatus Status of the conference call.
 type ConferenceManagerConferencecallStatus string
+
+// ContactManagerContact defines model for ContactManagerContact.
+type ContactManagerContact struct {
+	// Company Company name associated with the contact.
+	Company *string `json:"company,omitempty"`
+
+	// CustomerId Unique identifier of the associated customer.
+	CustomerId *openapi_types.UUID `json:"customer_id,omitempty"`
+
+	// DisplayName Display name of the contact.
+	DisplayName *string `json:"display_name,omitempty"`
+
+	// Emails List of email addresses associated with the contact.
+	Emails *[]ContactManagerEmail `json:"emails,omitempty"`
+
+	// ExternalId External identifier for the contact.
+	ExternalId *string `json:"external_id,omitempty"`
+
+	// FirstName First name of the contact.
+	FirstName *string `json:"first_name,omitempty"`
+
+	// Id Unique identifier for the contact.
+	Id *openapi_types.UUID `json:"id,omitempty"`
+
+	// JobTitle Job title of the contact.
+	JobTitle *string `json:"job_title,omitempty"`
+
+	// LastName Last name of the contact.
+	LastName *string `json:"last_name,omitempty"`
+
+	// PhoneNumbers List of phone numbers associated with the contact.
+	PhoneNumbers *[]ContactManagerPhoneNumber `json:"phone_numbers,omitempty"`
+
+	// Source Source of the contact.
+	Source *ContactManagerContactSource `json:"source,omitempty"`
+
+	// TagIds List of tag IDs associated with the contact.
+	TagIds *[]openapi_types.UUID `json:"tag_ids,omitempty"`
+
+	// TmCreate Timestamp when the contact was created.
+	TmCreate *time.Time `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the contact was deleted.
+	TmDelete *time.Time `json:"tm_delete,omitempty"`
+
+	// TmUpdate Timestamp when the contact was last updated.
+	TmUpdate *time.Time `json:"tm_update,omitempty"`
+}
+
+// ContactManagerContactSource Source of the contact.
+type ContactManagerContactSource string
+
+// ContactManagerEmail defines model for ContactManagerEmail.
+type ContactManagerEmail struct {
+	// Address Email address.
+	Address *openapi_types.Email `json:"address,omitempty"`
+
+	// Id Unique identifier for the email address.
+	Id *openapi_types.UUID `json:"id,omitempty"`
+
+	// IsPrimary Indicates if this is the primary email address.
+	IsPrimary *bool `json:"is_primary,omitempty"`
+
+	// TmCreate Timestamp when the email was created.
+	TmCreate *time.Time `json:"tm_create,omitempty"`
+
+	// Type Type of the email address.
+	Type *ContactManagerEmailType `json:"type,omitempty"`
+}
+
+// ContactManagerEmailType Type of the email address.
+type ContactManagerEmailType string
+
+// ContactManagerPhoneNumber defines model for ContactManagerPhoneNumber.
+type ContactManagerPhoneNumber struct {
+	// Id Unique identifier for the phone number.
+	Id *openapi_types.UUID `json:"id,omitempty"`
+
+	// IsPrimary Indicates if this is the primary phone number.
+	IsPrimary *bool `json:"is_primary,omitempty"`
+
+	// Number Phone number as entered.
+	Number *string `json:"number,omitempty"`
+
+	// NumberE164 Phone number in E.164 format.
+	NumberE164 *string `json:"number_e164,omitempty"`
+
+	// TmCreate Timestamp when the phone number was created.
+	TmCreate *time.Time `json:"tm_create,omitempty"`
+
+	// Type Type of the phone number.
+	Type *ContactManagerPhoneNumberType `json:"type,omitempty"`
+}
+
+// ContactManagerPhoneNumberType Type of the phone number.
+type ContactManagerPhoneNumberType string
 
 // ConversationManagerAccount defines model for ConversationManagerAccount.
 type ConversationManagerAccount struct {
@@ -3613,6 +3773,92 @@ type PostConferencesIdTranscribeStartJSONBody struct {
 	Language string `json:"language"`
 }
 
+// GetContactsParams defines parameters for GetContacts.
+type GetContactsParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostContactsJSONBody defines parameters for PostContacts.
+type PostContactsJSONBody struct {
+	Company     *string `json:"company,omitempty"`
+	DisplayName *string `json:"display_name,omitempty"`
+	Emails      *[]struct {
+		Address   *openapi_types.Email            `json:"address,omitempty"`
+		IsPrimary *bool                           `json:"is_primary,omitempty"`
+		Type      *PostContactsJSONBodyEmailsType `json:"type,omitempty"`
+	} `json:"emails,omitempty"`
+	ExternalId   *string `json:"external_id,omitempty"`
+	FirstName    *string `json:"first_name,omitempty"`
+	JobTitle     *string `json:"job_title,omitempty"`
+	LastName     *string `json:"last_name,omitempty"`
+	Notes        *string `json:"notes,omitempty"`
+	PhoneNumbers *[]struct {
+		IsPrimary *bool                                 `json:"is_primary,omitempty"`
+		Number    *string                               `json:"number,omitempty"`
+		Type      *PostContactsJSONBodyPhoneNumbersType `json:"type,omitempty"`
+	} `json:"phone_numbers,omitempty"`
+	Source *PostContactsJSONBodySource `json:"source,omitempty"`
+	TagIds *[]openapi_types.UUID       `json:"tag_ids,omitempty"`
+}
+
+// PostContactsJSONBodyEmailsType defines parameters for PostContacts.
+type PostContactsJSONBodyEmailsType string
+
+// PostContactsJSONBodyPhoneNumbersType defines parameters for PostContacts.
+type PostContactsJSONBodyPhoneNumbersType string
+
+// PostContactsJSONBodySource defines parameters for PostContacts.
+type PostContactsJSONBodySource string
+
+// GetContactsLookupParams defines parameters for GetContactsLookup.
+type GetContactsLookupParams struct {
+	// Phone Phone number in E.164 format to lookup.
+	Phone *string `form:"phone,omitempty" json:"phone,omitempty"`
+
+	// Email Email address to lookup.
+	Email *string `form:"email,omitempty" json:"email,omitempty"`
+}
+
+// PutContactsIdJSONBody defines parameters for PutContactsId.
+type PutContactsIdJSONBody struct {
+	Company     *string `json:"company,omitempty"`
+	DisplayName *string `json:"display_name,omitempty"`
+	ExternalId  *string `json:"external_id,omitempty"`
+	FirstName   *string `json:"first_name,omitempty"`
+	JobTitle    *string `json:"job_title,omitempty"`
+	LastName    *string `json:"last_name,omitempty"`
+	Notes       *string `json:"notes,omitempty"`
+}
+
+// PostContactsIdEmailsJSONBody defines parameters for PostContactsIdEmails.
+type PostContactsIdEmailsJSONBody struct {
+	Address   openapi_types.Email               `json:"address"`
+	IsPrimary *bool                             `json:"is_primary,omitempty"`
+	Type      *PostContactsIdEmailsJSONBodyType `json:"type,omitempty"`
+}
+
+// PostContactsIdEmailsJSONBodyType defines parameters for PostContactsIdEmails.
+type PostContactsIdEmailsJSONBodyType string
+
+// PostContactsIdPhoneNumbersJSONBody defines parameters for PostContactsIdPhoneNumbers.
+type PostContactsIdPhoneNumbersJSONBody struct {
+	IsPrimary *bool                                   `json:"is_primary,omitempty"`
+	Number    string                                  `json:"number"`
+	Type      *PostContactsIdPhoneNumbersJSONBodyType `json:"type,omitempty"`
+}
+
+// PostContactsIdPhoneNumbersJSONBodyType defines parameters for PostContactsIdPhoneNumbers.
+type PostContactsIdPhoneNumbersJSONBodyType string
+
+// PostContactsIdTagsJSONBody defines parameters for PostContactsIdTags.
+type PostContactsIdTagsJSONBody struct {
+	TagId openapi_types.UUID `json:"tag_id"`
+}
+
 // GetConversationAccountsParams defines parameters for GetConversationAccounts.
 type GetConversationAccountsParams struct {
 	// PageSize The size of results.
@@ -4694,6 +4940,21 @@ type PostConferencesIdRecordingStartJSONRequestBody PostConferencesIdRecordingSt
 // PostConferencesIdTranscribeStartJSONRequestBody defines body for PostConferencesIdTranscribeStart for application/json ContentType.
 type PostConferencesIdTranscribeStartJSONRequestBody PostConferencesIdTranscribeStartJSONBody
 
+// PostContactsJSONRequestBody defines body for PostContacts for application/json ContentType.
+type PostContactsJSONRequestBody PostContactsJSONBody
+
+// PutContactsIdJSONRequestBody defines body for PutContactsId for application/json ContentType.
+type PutContactsIdJSONRequestBody PutContactsIdJSONBody
+
+// PostContactsIdEmailsJSONRequestBody defines body for PostContactsIdEmails for application/json ContentType.
+type PostContactsIdEmailsJSONRequestBody PostContactsIdEmailsJSONBody
+
+// PostContactsIdPhoneNumbersJSONRequestBody defines body for PostContactsIdPhoneNumbers for application/json ContentType.
+type PostContactsIdPhoneNumbersJSONRequestBody PostContactsIdPhoneNumbersJSONBody
+
+// PostContactsIdTagsJSONRequestBody defines body for PostContactsIdTags for application/json ContentType.
+type PostContactsIdTagsJSONRequestBody PostContactsIdTagsJSONBody
+
 // PostConversationAccountsJSONRequestBody defines body for PostConversationAccounts for application/json ContentType.
 type PostConversationAccountsJSONRequestBody PostConversationAccountsJSONBody
 
@@ -5146,6 +5407,42 @@ type ServerInterface interface {
 	// Stop conference transcription
 	// (POST /conferences/{id}/transcribe_stop)
 	PostConferencesIdTranscribeStop(c *gin.Context, id string)
+	// List contacts
+	// (GET /contacts)
+	GetContacts(c *gin.Context, params GetContactsParams)
+	// Create a new contact
+	// (POST /contacts)
+	PostContacts(c *gin.Context)
+	// Lookup contact
+	// (GET /contacts/lookup)
+	GetContactsLookup(c *gin.Context, params GetContactsLookupParams)
+	// Delete the contact
+	// (DELETE /contacts/{id})
+	DeleteContactsId(c *gin.Context, id string)
+	// Get the contact
+	// (GET /contacts/{id})
+	GetContactsId(c *gin.Context, id string)
+	// Update a contact
+	// (PUT /contacts/{id})
+	PutContactsId(c *gin.Context, id string)
+	// Add email to contact
+	// (POST /contacts/{id}/emails)
+	PostContactsIdEmails(c *gin.Context, id string)
+	// Remove email from contact
+	// (DELETE /contacts/{id}/emails/{email_id})
+	DeleteContactsIdEmailsEmailId(c *gin.Context, id string, emailId string)
+	// Add phone number to contact
+	// (POST /contacts/{id}/phone-numbers)
+	PostContactsIdPhoneNumbers(c *gin.Context, id string)
+	// Remove phone number from contact
+	// (DELETE /contacts/{id}/phone-numbers/{phone_number_id})
+	DeleteContactsIdPhoneNumbersPhoneNumberId(c *gin.Context, id string, phoneNumberId string)
+	// Add tag to contact
+	// (POST /contacts/{id}/tags)
+	PostContactsIdTags(c *gin.Context, id string)
+	// Remove tag from contact
+	// (DELETE /contacts/{id}/tags/{tag_id})
+	DeleteContactsIdTagsTagId(c *gin.Context, id string, tagId string)
 	// Gets a list of conversation accounts
 	// (GET /conversation_accounts)
 	GetConversationAccounts(c *gin.Context, params GetConversationAccountsParams)
@@ -7974,6 +8271,330 @@ func (siw *ServerInterfaceWrapper) PostConferencesIdTranscribeStop(c *gin.Contex
 	}
 
 	siw.Handler.PostConferencesIdTranscribeStop(c, id)
+}
+
+// GetContacts operation middleware
+func (siw *ServerInterfaceWrapper) GetContacts(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetContactsParams
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetContacts(c, params)
+}
+
+// PostContacts operation middleware
+func (siw *ServerInterfaceWrapper) PostContacts(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostContacts(c)
+}
+
+// GetContactsLookup operation middleware
+func (siw *ServerInterfaceWrapper) GetContactsLookup(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetContactsLookupParams
+
+	// ------------- Optional query parameter "phone" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "phone", c.Request.URL.Query(), &params.Phone)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter phone: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "email" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "email", c.Request.URL.Query(), &params.Email)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter email: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetContactsLookup(c, params)
+}
+
+// DeleteContactsId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteContactsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteContactsId(c, id)
+}
+
+// GetContactsId operation middleware
+func (siw *ServerInterfaceWrapper) GetContactsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetContactsId(c, id)
+}
+
+// PutContactsId operation middleware
+func (siw *ServerInterfaceWrapper) PutContactsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PutContactsId(c, id)
+}
+
+// PostContactsIdEmails operation middleware
+func (siw *ServerInterfaceWrapper) PostContactsIdEmails(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostContactsIdEmails(c, id)
+}
+
+// DeleteContactsIdEmailsEmailId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteContactsIdEmailsEmailId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Path parameter "email_id" -------------
+	var emailId string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "email_id", c.Param("email_id"), &emailId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter email_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteContactsIdEmailsEmailId(c, id, emailId)
+}
+
+// PostContactsIdPhoneNumbers operation middleware
+func (siw *ServerInterfaceWrapper) PostContactsIdPhoneNumbers(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostContactsIdPhoneNumbers(c, id)
+}
+
+// DeleteContactsIdPhoneNumbersPhoneNumberId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteContactsIdPhoneNumbersPhoneNumberId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Path parameter "phone_number_id" -------------
+	var phoneNumberId string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "phone_number_id", c.Param("phone_number_id"), &phoneNumberId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter phone_number_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteContactsIdPhoneNumbersPhoneNumberId(c, id, phoneNumberId)
+}
+
+// PostContactsIdTags operation middleware
+func (siw *ServerInterfaceWrapper) PostContactsIdTags(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostContactsIdTags(c, id)
+}
+
+// DeleteContactsIdTagsTagId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteContactsIdTagsTagId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Path parameter "tag_id" -------------
+	var tagId string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "tag_id", c.Param("tag_id"), &tagId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter tag_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteContactsIdTagsTagId(c, id, tagId)
 }
 
 // GetConversationAccounts operation middleware
@@ -12013,6 +12634,18 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.POST(options.BaseURL+"/conferences/:id/recording_stop", wrapper.PostConferencesIdRecordingStop)
 	router.POST(options.BaseURL+"/conferences/:id/transcribe_start", wrapper.PostConferencesIdTranscribeStart)
 	router.POST(options.BaseURL+"/conferences/:id/transcribe_stop", wrapper.PostConferencesIdTranscribeStop)
+	router.GET(options.BaseURL+"/contacts", wrapper.GetContacts)
+	router.POST(options.BaseURL+"/contacts", wrapper.PostContacts)
+	router.GET(options.BaseURL+"/contacts/lookup", wrapper.GetContactsLookup)
+	router.DELETE(options.BaseURL+"/contacts/:id", wrapper.DeleteContactsId)
+	router.GET(options.BaseURL+"/contacts/:id", wrapper.GetContactsId)
+	router.PUT(options.BaseURL+"/contacts/:id", wrapper.PutContactsId)
+	router.POST(options.BaseURL+"/contacts/:id/emails", wrapper.PostContactsIdEmails)
+	router.DELETE(options.BaseURL+"/contacts/:id/emails/:email_id", wrapper.DeleteContactsIdEmailsEmailId)
+	router.POST(options.BaseURL+"/contacts/:id/phone-numbers", wrapper.PostContactsIdPhoneNumbers)
+	router.DELETE(options.BaseURL+"/contacts/:id/phone-numbers/:phone_number_id", wrapper.DeleteContactsIdPhoneNumbersPhoneNumberId)
+	router.POST(options.BaseURL+"/contacts/:id/tags", wrapper.PostContactsIdTags)
+	router.DELETE(options.BaseURL+"/contacts/:id/tags/:tag_id", wrapper.DeleteContactsIdTagsTagId)
 	router.GET(options.BaseURL+"/conversation_accounts", wrapper.GetConversationAccounts)
 	router.POST(options.BaseURL+"/conversation_accounts", wrapper.PostConversationAccounts)
 	router.DELETE(options.BaseURL+"/conversation_accounts/:id", wrapper.DeleteConversationAccountsId)
@@ -13989,6 +14622,237 @@ type PostConferencesIdTranscribeStop200Response struct {
 func (response PostConferencesIdTranscribeStop200Response) VisitPostConferencesIdTranscribeStopResponse(w http.ResponseWriter) error {
 	w.WriteHeader(200)
 	return nil
+}
+
+type GetContactsRequestObject struct {
+	Params GetContactsParams
+}
+
+type GetContactsResponseObject interface {
+	VisitGetContactsResponse(w http.ResponseWriter) error
+}
+
+type GetContacts200JSONResponse struct {
+	// NextPageToken The token for next pagination.
+	NextPageToken *string                  `json:"next_page_token,omitempty"`
+	Result        *[]ContactManagerContact `json:"result,omitempty"`
+}
+
+func (response GetContacts200JSONResponse) VisitGetContactsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostContactsRequestObject struct {
+	Body *PostContactsJSONRequestBody
+}
+
+type PostContactsResponseObject interface {
+	VisitPostContactsResponse(w http.ResponseWriter) error
+}
+
+type PostContacts201JSONResponse ContactManagerContact
+
+func (response PostContacts201JSONResponse) VisitPostContactsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(201)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostContacts400Response struct {
+}
+
+func (response PostContacts400Response) VisitPostContactsResponse(w http.ResponseWriter) error {
+	w.WriteHeader(400)
+	return nil
+}
+
+type GetContactsLookupRequestObject struct {
+	Params GetContactsLookupParams
+}
+
+type GetContactsLookupResponseObject interface {
+	VisitGetContactsLookupResponse(w http.ResponseWriter) error
+}
+
+type GetContactsLookup200JSONResponse ContactManagerContact
+
+func (response GetContactsLookup200JSONResponse) VisitGetContactsLookupResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetContactsLookup404Response struct {
+}
+
+func (response GetContactsLookup404Response) VisitGetContactsLookupResponse(w http.ResponseWriter) error {
+	w.WriteHeader(404)
+	return nil
+}
+
+type DeleteContactsIdRequestObject struct {
+	Id string `json:"id"`
+}
+
+type DeleteContactsIdResponseObject interface {
+	VisitDeleteContactsIdResponse(w http.ResponseWriter) error
+}
+
+type DeleteContactsId200JSONResponse ContactManagerContact
+
+func (response DeleteContactsId200JSONResponse) VisitDeleteContactsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetContactsIdRequestObject struct {
+	Id string `json:"id"`
+}
+
+type GetContactsIdResponseObject interface {
+	VisitGetContactsIdResponse(w http.ResponseWriter) error
+}
+
+type GetContactsId200JSONResponse ContactManagerContact
+
+func (response GetContactsId200JSONResponse) VisitGetContactsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutContactsIdRequestObject struct {
+	Id   string `json:"id"`
+	Body *PutContactsIdJSONRequestBody
+}
+
+type PutContactsIdResponseObject interface {
+	VisitPutContactsIdResponse(w http.ResponseWriter) error
+}
+
+type PutContactsId200JSONResponse ContactManagerContact
+
+func (response PutContactsId200JSONResponse) VisitPutContactsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostContactsIdEmailsRequestObject struct {
+	Id   string `json:"id"`
+	Body *PostContactsIdEmailsJSONRequestBody
+}
+
+type PostContactsIdEmailsResponseObject interface {
+	VisitPostContactsIdEmailsResponse(w http.ResponseWriter) error
+}
+
+type PostContactsIdEmails200JSONResponse ContactManagerContact
+
+func (response PostContactsIdEmails200JSONResponse) VisitPostContactsIdEmailsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteContactsIdEmailsEmailIdRequestObject struct {
+	Id      string `json:"id"`
+	EmailId string `json:"email_id"`
+}
+
+type DeleteContactsIdEmailsEmailIdResponseObject interface {
+	VisitDeleteContactsIdEmailsEmailIdResponse(w http.ResponseWriter) error
+}
+
+type DeleteContactsIdEmailsEmailId200JSONResponse ContactManagerContact
+
+func (response DeleteContactsIdEmailsEmailId200JSONResponse) VisitDeleteContactsIdEmailsEmailIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostContactsIdPhoneNumbersRequestObject struct {
+	Id   string `json:"id"`
+	Body *PostContactsIdPhoneNumbersJSONRequestBody
+}
+
+type PostContactsIdPhoneNumbersResponseObject interface {
+	VisitPostContactsIdPhoneNumbersResponse(w http.ResponseWriter) error
+}
+
+type PostContactsIdPhoneNumbers200JSONResponse ContactManagerContact
+
+func (response PostContactsIdPhoneNumbers200JSONResponse) VisitPostContactsIdPhoneNumbersResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteContactsIdPhoneNumbersPhoneNumberIdRequestObject struct {
+	Id            string `json:"id"`
+	PhoneNumberId string `json:"phone_number_id"`
+}
+
+type DeleteContactsIdPhoneNumbersPhoneNumberIdResponseObject interface {
+	VisitDeleteContactsIdPhoneNumbersPhoneNumberIdResponse(w http.ResponseWriter) error
+}
+
+type DeleteContactsIdPhoneNumbersPhoneNumberId200JSONResponse ContactManagerContact
+
+func (response DeleteContactsIdPhoneNumbersPhoneNumberId200JSONResponse) VisitDeleteContactsIdPhoneNumbersPhoneNumberIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostContactsIdTagsRequestObject struct {
+	Id   string `json:"id"`
+	Body *PostContactsIdTagsJSONRequestBody
+}
+
+type PostContactsIdTagsResponseObject interface {
+	VisitPostContactsIdTagsResponse(w http.ResponseWriter) error
+}
+
+type PostContactsIdTags200JSONResponse ContactManagerContact
+
+func (response PostContactsIdTags200JSONResponse) VisitPostContactsIdTagsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteContactsIdTagsTagIdRequestObject struct {
+	Id    string `json:"id"`
+	TagId string `json:"tag_id"`
+}
+
+type DeleteContactsIdTagsTagIdResponseObject interface {
+	VisitDeleteContactsIdTagsTagIdResponse(w http.ResponseWriter) error
+}
+
+type DeleteContactsIdTagsTagId200JSONResponse ContactManagerContact
+
+func (response DeleteContactsIdTagsTagId200JSONResponse) VisitDeleteContactsIdTagsTagIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
 type GetConversationAccountsRequestObject struct {
@@ -17309,6 +18173,42 @@ type StrictServerInterface interface {
 	// Stop conference transcription
 	// (POST /conferences/{id}/transcribe_stop)
 	PostConferencesIdTranscribeStop(ctx context.Context, request PostConferencesIdTranscribeStopRequestObject) (PostConferencesIdTranscribeStopResponseObject, error)
+	// List contacts
+	// (GET /contacts)
+	GetContacts(ctx context.Context, request GetContactsRequestObject) (GetContactsResponseObject, error)
+	// Create a new contact
+	// (POST /contacts)
+	PostContacts(ctx context.Context, request PostContactsRequestObject) (PostContactsResponseObject, error)
+	// Lookup contact
+	// (GET /contacts/lookup)
+	GetContactsLookup(ctx context.Context, request GetContactsLookupRequestObject) (GetContactsLookupResponseObject, error)
+	// Delete the contact
+	// (DELETE /contacts/{id})
+	DeleteContactsId(ctx context.Context, request DeleteContactsIdRequestObject) (DeleteContactsIdResponseObject, error)
+	// Get the contact
+	// (GET /contacts/{id})
+	GetContactsId(ctx context.Context, request GetContactsIdRequestObject) (GetContactsIdResponseObject, error)
+	// Update a contact
+	// (PUT /contacts/{id})
+	PutContactsId(ctx context.Context, request PutContactsIdRequestObject) (PutContactsIdResponseObject, error)
+	// Add email to contact
+	// (POST /contacts/{id}/emails)
+	PostContactsIdEmails(ctx context.Context, request PostContactsIdEmailsRequestObject) (PostContactsIdEmailsResponseObject, error)
+	// Remove email from contact
+	// (DELETE /contacts/{id}/emails/{email_id})
+	DeleteContactsIdEmailsEmailId(ctx context.Context, request DeleteContactsIdEmailsEmailIdRequestObject) (DeleteContactsIdEmailsEmailIdResponseObject, error)
+	// Add phone number to contact
+	// (POST /contacts/{id}/phone-numbers)
+	PostContactsIdPhoneNumbers(ctx context.Context, request PostContactsIdPhoneNumbersRequestObject) (PostContactsIdPhoneNumbersResponseObject, error)
+	// Remove phone number from contact
+	// (DELETE /contacts/{id}/phone-numbers/{phone_number_id})
+	DeleteContactsIdPhoneNumbersPhoneNumberId(ctx context.Context, request DeleteContactsIdPhoneNumbersPhoneNumberIdRequestObject) (DeleteContactsIdPhoneNumbersPhoneNumberIdResponseObject, error)
+	// Add tag to contact
+	// (POST /contacts/{id}/tags)
+	PostContactsIdTags(ctx context.Context, request PostContactsIdTagsRequestObject) (PostContactsIdTagsResponseObject, error)
+	// Remove tag from contact
+	// (DELETE /contacts/{id}/tags/{tag_id})
+	DeleteContactsIdTagsTagId(ctx context.Context, request DeleteContactsIdTagsTagIdRequestObject) (DeleteContactsIdTagsTagIdResponseObject, error)
 	// Gets a list of conversation accounts
 	// (GET /conversation_accounts)
 	GetConversationAccounts(ctx context.Context, request GetConversationAccountsRequestObject) (GetConversationAccountsResponseObject, error)
@@ -20585,6 +21485,371 @@ func (sh *strictHandler) PostConferencesIdTranscribeStop(ctx *gin.Context, id st
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PostConferencesIdTranscribeStopResponseObject); ok {
 		if err := validResponse.VisitPostConferencesIdTranscribeStopResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetContacts operation middleware
+func (sh *strictHandler) GetContacts(ctx *gin.Context, params GetContactsParams) {
+	var request GetContactsRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetContacts(ctx, request.(GetContactsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetContacts")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetContactsResponseObject); ok {
+		if err := validResponse.VisitGetContactsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostContacts operation middleware
+func (sh *strictHandler) PostContacts(ctx *gin.Context) {
+	var request PostContactsRequestObject
+
+	var body PostContactsJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostContacts(ctx, request.(PostContactsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostContacts")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostContactsResponseObject); ok {
+		if err := validResponse.VisitPostContactsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetContactsLookup operation middleware
+func (sh *strictHandler) GetContactsLookup(ctx *gin.Context, params GetContactsLookupParams) {
+	var request GetContactsLookupRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetContactsLookup(ctx, request.(GetContactsLookupRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetContactsLookup")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetContactsLookupResponseObject); ok {
+		if err := validResponse.VisitGetContactsLookupResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteContactsId operation middleware
+func (sh *strictHandler) DeleteContactsId(ctx *gin.Context, id string) {
+	var request DeleteContactsIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteContactsId(ctx, request.(DeleteContactsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteContactsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteContactsIdResponseObject); ok {
+		if err := validResponse.VisitDeleteContactsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetContactsId operation middleware
+func (sh *strictHandler) GetContactsId(ctx *gin.Context, id string) {
+	var request GetContactsIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetContactsId(ctx, request.(GetContactsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetContactsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetContactsIdResponseObject); ok {
+		if err := validResponse.VisitGetContactsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PutContactsId operation middleware
+func (sh *strictHandler) PutContactsId(ctx *gin.Context, id string) {
+	var request PutContactsIdRequestObject
+
+	request.Id = id
+
+	var body PutContactsIdJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PutContactsId(ctx, request.(PutContactsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PutContactsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PutContactsIdResponseObject); ok {
+		if err := validResponse.VisitPutContactsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostContactsIdEmails operation middleware
+func (sh *strictHandler) PostContactsIdEmails(ctx *gin.Context, id string) {
+	var request PostContactsIdEmailsRequestObject
+
+	request.Id = id
+
+	var body PostContactsIdEmailsJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostContactsIdEmails(ctx, request.(PostContactsIdEmailsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostContactsIdEmails")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostContactsIdEmailsResponseObject); ok {
+		if err := validResponse.VisitPostContactsIdEmailsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteContactsIdEmailsEmailId operation middleware
+func (sh *strictHandler) DeleteContactsIdEmailsEmailId(ctx *gin.Context, id string, emailId string) {
+	var request DeleteContactsIdEmailsEmailIdRequestObject
+
+	request.Id = id
+	request.EmailId = emailId
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteContactsIdEmailsEmailId(ctx, request.(DeleteContactsIdEmailsEmailIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteContactsIdEmailsEmailId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteContactsIdEmailsEmailIdResponseObject); ok {
+		if err := validResponse.VisitDeleteContactsIdEmailsEmailIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostContactsIdPhoneNumbers operation middleware
+func (sh *strictHandler) PostContactsIdPhoneNumbers(ctx *gin.Context, id string) {
+	var request PostContactsIdPhoneNumbersRequestObject
+
+	request.Id = id
+
+	var body PostContactsIdPhoneNumbersJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostContactsIdPhoneNumbers(ctx, request.(PostContactsIdPhoneNumbersRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostContactsIdPhoneNumbers")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostContactsIdPhoneNumbersResponseObject); ok {
+		if err := validResponse.VisitPostContactsIdPhoneNumbersResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteContactsIdPhoneNumbersPhoneNumberId operation middleware
+func (sh *strictHandler) DeleteContactsIdPhoneNumbersPhoneNumberId(ctx *gin.Context, id string, phoneNumberId string) {
+	var request DeleteContactsIdPhoneNumbersPhoneNumberIdRequestObject
+
+	request.Id = id
+	request.PhoneNumberId = phoneNumberId
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteContactsIdPhoneNumbersPhoneNumberId(ctx, request.(DeleteContactsIdPhoneNumbersPhoneNumberIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteContactsIdPhoneNumbersPhoneNumberId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteContactsIdPhoneNumbersPhoneNumberIdResponseObject); ok {
+		if err := validResponse.VisitDeleteContactsIdPhoneNumbersPhoneNumberIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostContactsIdTags operation middleware
+func (sh *strictHandler) PostContactsIdTags(ctx *gin.Context, id string) {
+	var request PostContactsIdTagsRequestObject
+
+	request.Id = id
+
+	var body PostContactsIdTagsJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostContactsIdTags(ctx, request.(PostContactsIdTagsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostContactsIdTags")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostContactsIdTagsResponseObject); ok {
+		if err := validResponse.VisitPostContactsIdTagsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteContactsIdTagsTagId operation middleware
+func (sh *strictHandler) DeleteContactsIdTagsTagId(ctx *gin.Context, id string, tagId string) {
+	var request DeleteContactsIdTagsTagIdRequestObject
+
+	request.Id = id
+	request.TagId = tagId
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteContactsIdTagsTagId(ctx, request.(DeleteContactsIdTagsTagIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteContactsIdTagsTagId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteContactsIdTagsTagIdResponseObject); ok {
+		if err := validResponse.VisitDeleteContactsIdTagsTagIdResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {
