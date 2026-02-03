@@ -56,7 +56,7 @@ const (
 	EngineModelTargetDeepSeek   EngineModelTarget = "deepseek"   // DeepSeek
 	EngineModelTargetFireworks  EngineModelTarget = "fireworks"  // Fireworks AI
 	EngineModelTargetGemini     EngineModelTarget = "gemini"     // Google Gemini
-	EngineModelTargetGrok       EngineModelTarget = "grok"       // Grok
+	EngineModelTargetGrok       EngineModelTarget = "grok"       // Grok (xAI)
 	EngineModelTargetGroq       EngineModelTarget = "groq"       // Groq
 	EngineModelTargetMistral    EngineModelTarget = "mistral"    // Mistral AI
 	EngineModelTargetNvidiaNIM  EngineModelTarget = "nvidia"     // NVIDIA NIM
@@ -109,6 +109,9 @@ const (
 
 	EngineModelDialogflowCX EngineModel = "dialogflow.cx"
 	EngineModelDialogflowES EngineModel = "dialogflow.es"
+
+	EngineModelGrok3     EngineModel = "grok.grok-3"
+	EngineModelGrok3Mini EngineModel = "grok.grok-3-mini"
 )
 
 func GetEngineModelTarget(engineModel EngineModel) EngineModelTarget {
@@ -126,6 +129,9 @@ func GetEngineModelTarget(engineModel EngineModel) EngineModelTarget {
 
 		EngineModelDialogflowCX: EngineModelTargetDialogflow,
 		EngineModelDialogflowES: EngineModelTargetDialogflow,
+
+		EngineModelGrok3:     EngineModelTargetGrok,
+		EngineModelGrok3Mini: EngineModelTargetGrok,
 	}
 
 	res, ok := mapModelTarget[engineModel]

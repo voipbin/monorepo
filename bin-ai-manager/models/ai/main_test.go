@@ -172,6 +172,11 @@ func TestEngineModelTargetConstants(t *testing.T) {
 			constant: EngineModelTargetGroq,
 			expected: "groq",
 		},
+		{
+			name:     "engine_model_target_grok",
+			constant: EngineModelTargetGrok,
+			expected: "grok",
+		},
 	}
 
 	for _, tt := range tests {
@@ -224,6 +229,16 @@ func TestEngineModelConstants(t *testing.T) {
 			constant: EngineModelDialogflowES,
 			expected: "dialogflow.es",
 		},
+		{
+			name:     "engine_model_grok3",
+			constant: EngineModelGrok3,
+			expected: "grok.grok-3",
+		},
+		{
+			name:     "engine_model_grok3_mini",
+			constant: EngineModelGrok3Mini,
+			expected: "grok.grok-3-mini",
+		},
 	}
 
 	for _, tt := range tests {
@@ -266,6 +281,16 @@ func TestGetEngineModelTarget(t *testing.T) {
 			engineModel: EngineModel("unknown.model"),
 			expected:    EngineModelTargetNone,
 		},
+		{
+			name:        "grok3_returns_grok",
+			engineModel: EngineModelGrok3,
+			expected:    EngineModelTargetGrok,
+		},
+		{
+			name:        "grok3_mini_returns_grok",
+			engineModel: EngineModelGrok3Mini,
+			expected:    EngineModelTargetGrok,
+		},
 	}
 
 	for _, tt := range tests {
@@ -298,6 +323,11 @@ func TestGetEngineModelName(t *testing.T) {
 			name:        "invalid_model_returns_empty",
 			engineModel: EngineModel("invalid"),
 			expected:    "",
+		},
+		{
+			name:        "grok3_returns_grok3",
+			engineModel: EngineModelGrok3,
+			expected:    "grok-3",
 		},
 	}
 
@@ -341,6 +371,11 @@ func TestIsValidEngineModel(t *testing.T) {
 			name:        "invalid_target",
 			engineModel: EngineModel("unknown.model"),
 			expected:    false,
+		},
+		{
+			name:        "grok_model_is_valid",
+			engineModel: EngineModel("grok.grok-3"),
+			expected:    true,
 		},
 	}
 

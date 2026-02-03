@@ -1722,6 +1722,7 @@ commands:
             find . -type f -exec sed -i -e "s|\${CLICKHOUSE_ADDRESS}|$CC_CLICKHOUSE_ADDRESS|g" {} +
             find . -type f -exec sed -i -e "s|\${CLICKHOUSE_DATABASE}|$CC_CLICKHOUSE_DATABASE|g" {} +
             find . -type f -exec sed -i -e "s|\${DEEPGRAM_API_KEY}|$CC_DEEPGRAM_API_KEY|g" {} +
+            find . -type f -exec sed -i -e "s|\${XAI_API_KEY}|$CC_XAI_API_KEY|g" {} +
             find . -type f -exec sed -i -e "s|\${MAILGUN_API_KEY}|$CC_MAILGUN_API_KEY|g" {} +
             find . -type f -exec sed -i -e "s|\${DOMAIN_NAME_EXTENSION}|$CC_DOMAIN_NAME_EXTENSION|g" {} +
             find . -type f -exec sed -i -e "s|\${DOMAIN_NAME_TRUNK}|$CC_DOMAIN_NAME_TRUNK|g" {} +

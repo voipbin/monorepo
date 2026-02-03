@@ -292,6 +292,20 @@ def create_llm_service(type: str, key: str, messages: list[dict], tools: list[di
         aggregator = llm.create_context_aggregator(ctx)
 
         return llm, aggregator
+
+    elif service_name == "grok":
+        api_key = key or os.getenv("XAI_API_KEY")
+        llm = OpenAILLMService(
+            api_key=api_key,
+            model=model_name,
+            base_url="https://api.x.ai/v1"
+        )
+
+        ctx = OpenAILLMContext(messages=valid_messages, tools=tools)
+        aggregator = llm.create_context_aggregator(ctx)
+
+        return llm, aggregator
+
     else:
         raise ValueError(f"Unsupported LLM service: {service_name}")
 

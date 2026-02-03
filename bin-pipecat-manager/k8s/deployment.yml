@@ -55,6 +55,8 @@ spec:
               value: ${AUTHTOKEN_OPENAI}
             - name: DEEPGRAM_API_KEY
               value: ${DEEPGRAM_API_KEY}
+            - name: XAI_API_KEY
+              value: ${XAI_API_KEY}
           ports:
             - name: metrics
               protocol: "TCP"
@@ -81,6 +83,8 @@ spec:
               value: ${AUTHTOKEN_OPENAI}
             - name: DEEPGRAM_API_KEY
               value: ${DEEPGRAM_API_KEY}
+            - name: XAI_API_KEY
+              value: ${XAI_API_KEY}
           resources:
             limits:
               cpu: "200m"
