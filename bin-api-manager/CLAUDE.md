@@ -432,20 +432,111 @@ if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
 }
 ```
 
+## Git Workflow
+
+### Use Git Worktrees for Feature Development
+
+**CRITICAL: Never edit files directly in the main repository directory for feature work.**
+
+```bash
+# Create a worktree for your feature
+git worktree add ../worktrees/NOJIRA-feature-name -b NOJIRA-feature-name
+
+# Work in the worktree
+cd ../worktrees/NOJIRA-feature-name
+
+# When done, remove the worktree
+git worktree remove ../worktrees/NOJIRA-feature-name
+```
+
+**Why worktrees:**
+- Keeps main repository clean and always on `main` branch
+- Allows parallel work on multiple features
+- Easy to abandon work without affecting main workspace
+- Clear separation between exploration and implementation
+
 ## Common Workflows
 
 ### Adding a New API Endpoint
-1. Define OpenAPI spec in `openapi/config_server/`
-2. Regenerate code: run `oapi-codegen` or update generation scripts
-3. Implement handler in `lib/service/` or register with generated router
-4. Add business logic in `pkg/servicehandler/` if calling other managers
-5. Update Swagger annotations and regenerate docs
+
+**CRITICAL: Always follow the OpenAPI-first workflow. Never modify api-manager code directly without updating OpenAPI specs first.**
+
+**Correct workflow:**
+1. **Update OpenAPI spec first** in `bin-openapi-manager/openapi/` (paths, schemas, etc.)
+2. **Regenerate code**: `cd ../bin-openapi-manager && go generate ./...`
+3. **Update api-manager dependencies**: `go mod tidy && go mod vendor`
+4. **Implement handler** in `server/` using the generated types
+5. **Add business logic** in `pkg/servicehandler/` if calling other managers
+6. **Update Swagger annotations** and regenerate docs if needed
+
+**Why OpenAPI-first matters:**
+- Single source of truth for API contracts
+- Generated types ensure consistency between spec and implementation
+- Prevents drift between documentation and actual API behavior
+- Makes API changes reviewable before implementation
 
 ### Modifying Inter-Service Communication
 When adding calls to a new manager:
 1. Import the manager's models from the monorepo (e.g., `monorepo/bin-X-manager/models/...`)
 2. Use `serviceHandler.requestHandler` to send RabbitMQ requests
 3. Follow the existing pattern in `pkg/servicehandler/main.go`
+
+### Before Adding New Validation Functions
+
+**CRITICAL: Always check for existing validation helpers before creating new ones.**
+
+The `pkg/servicehandler/` directory contains private helper functions for fetching and validating resources:
+- `callGet()`, `groupcallGet()`, `queuecallGet()`, `conferencecallGet()`, `activeflowGet()`, etc.
+- `hasPermission()` for ownership/permission validation
+
+**When implementing new API endpoints that need resource validation:**
+1. Check if a private helper already exists for that resource type
+2. Reuse existing helpers instead of duplicating fetch/validation logic
+3. Follow the two-level pattern: private helper (fetch) + public method (permission check)
+
+**Example - Reusing existing validation:**
+```go
+func (h *serviceHandler) TimelineCallEventsGet(ctx context.Context, a *amagent.Agent, callID uuid.UUID) (*TimelineResponse, error) {
+    // Reuse existing callGet helper
+    c, err := h.callGet(ctx, callID)
+    if err != nil {
+        return nil, err
+    }
+
+    // Reuse existing hasPermission
+    if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+        return nil, fmt.Errorf("user has no permission")
+    }
+
+    // Continue with timeline-specific logic...
+}
+```
+
+### Use Constants for Service Names
+
+**CRITICAL: Always use `commonoutline.ServiceName*` constants instead of string literals for service names.**
+
+```go
+import commonoutline "monorepo/bin-common-handler/models/outline"
+
+// ✅ CORRECT - Use constants
+res, err := h.reqHandler.TimelineV1EventList(ctx, commonoutline.ServiceNameCallManager, ...)
+
+// ❌ WRONG - String literals
+res, err := h.reqHandler.TimelineV1EventList(ctx, "call-manager", ...)
+```
+
+**Available constants (defined in `bin-common-handler/models/outline/servicename.go`):**
+- `ServiceNameCallManager` → "call-manager"
+- `ServiceNameFlowManager` → "flow-manager"
+- `ServiceNameQueueManager` → "queue-manager"
+- `ServiceNameConferenceManager` → "conference-manager"
+- And many others...
+
+**Why this matters:**
+- Prevents typos in service names
+- Makes refactoring easier (rename in one place)
+- Provides compile-time checking
 
 ### Working with Database Changes
 Database operations go through `pkg/dbhandler/`. This wraps both MySQL and Redis caching. Don't bypass this abstraction.

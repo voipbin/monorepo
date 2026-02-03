@@ -126,6 +126,29 @@ The full verification workflow consists of 5 steps that MUST all be run:
 
 ## Git Workflow
 
+### Git Worktrees
+
+**CRITICAL: Use git worktrees for all feature development. Never edit files directly in the main repository.**
+
+**Worktree location:** `~/gitvoipbin/monorepo-worktrees/`
+
+```bash
+# Create a worktree for your feature
+git worktree add ~/gitvoipbin/monorepo-worktrees/NOJIRA-feature-name -b NOJIRA-feature-name
+
+# Work in the worktree
+cd ~/gitvoipbin/monorepo-worktrees/NOJIRA-feature-name
+
+# When done, remove the worktree
+git worktree remove ~/gitvoipbin/monorepo-worktrees/NOJIRA-feature-name
+```
+
+**Why worktrees:**
+- Keeps main repository (`~/gitvoipbin/monorepo`) clean and always on `main` branch
+- Allows parallel work on multiple features
+- Easy to abandon work without affecting main workspace
+- Clear separation between exploration and implementation
+
 ### Commit Message Format
 
 **CRITICAL: Commit title MUST match the branch name exactly.**
