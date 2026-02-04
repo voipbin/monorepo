@@ -18,7 +18,7 @@ import (
 
 // default variables
 const (
-	DefaultTimeStamp = "9999-01-01 00:00:00.000000" // DefaultTimeStamp default timestamp
+	DefaultTimeStamp = "9999-01-01T00:00:00.000000Z" // DefaultTimeStamp default timestamp
 )
 
 // DBHandler interface

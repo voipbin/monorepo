@@ -33,7 +33,7 @@ func TestCampaigncallStruct(t *testing.T) {
 		TryCount:         1,
 		TMCreate:         "2024-01-01 00:00:00.000000",
 		TMUpdate:         "2024-01-01 00:00:00.000000",
-		TMDelete:         "9999-01-01 00:00:00.000000",
+		TMDelete:         "9999-01-01T00:00:00.000000Z",
 	}
 	cc.ID = id
 

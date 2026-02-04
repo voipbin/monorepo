@@ -72,8 +72,8 @@ func Test_FileCreate(t *testing.T) {
 				URIDownload:      "https://test.com/uri_download",
 				TMDownloadExpire: "2024-05-18 03:22:17.995000",
 				TMCreate:         "2024-05-18 03:22:17.995000",
-				TMUpdate:         "9999-01-01 00:00:00.000000",
-				TMDelete:         "9999-01-01 00:00:00.000000",
+				TMUpdate:         "9999-01-01T00:00:00.000000Z",
+				TMDelete:         "9999-01-01T00:00:00.000000Z",
 			},
 		},
 	}
@@ -159,8 +159,8 @@ func Test_FileList(t *testing.T) {
 					},
 					Name:     "test1",
 					TMCreate: "2024-05-16 03:22:17.995000",
-					TMUpdate: "9999-01-01 00:00:00.000000",
-					TMDelete: "9999-01-01 00:00:00.000000",
+					TMUpdate: "9999-01-01T00:00:00.000000Z",
+					TMDelete: "9999-01-01T00:00:00.000000Z",
 				},
 				{
 					Identity: commonidentity.Identity{
@@ -169,8 +169,8 @@ func Test_FileList(t *testing.T) {
 					},
 					Name:     "test2",
 					TMCreate: "2024-05-16 03:22:17.995000",
-					TMUpdate: "9999-01-01 00:00:00.000000",
-					TMDelete: "9999-01-01 00:00:00.000000",
+					TMUpdate: "9999-01-01T00:00:00.000000Z",
+					TMDelete: "9999-01-01T00:00:00.000000Z",
 				},
 			},
 		},
@@ -339,7 +339,7 @@ func Test_FileDelete(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if res.TMDelete == "9999-01-01 00:00:00.000000" {
+			if res.TMDelete == "9999-01-01T00:00:00.000000Z" {
 				t.Errorf("Wrong match. expect: any other, got: %s", res.TMDelete)
 			}
 

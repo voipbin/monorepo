@@ -336,7 +336,7 @@ func TestPrintJSON_Output(t *testing.T) {
 		"result": []map[string]string{
 			{"event_type": "activeflow_created"},
 		},
-		"next_page_token": "2024-01-15T10:30:00.123Z",
+		"next_page_token": "2024-01-15T10:30:00.123000Z",
 	}
 
 	// Marshal to verify structure
@@ -351,8 +351,8 @@ func TestPrintJSON_Output(t *testing.T) {
 		t.Fatalf("json.Unmarshal() error = %v, output was not valid JSON", err)
 	}
 
-	if parsed["next_page_token"] != "2024-01-15T10:30:00.123Z" {
-		t.Errorf("parsed next_page_token = %v, want %v", parsed["next_page_token"], "2024-01-15T10:30:00.123Z")
+	if parsed["next_page_token"] != "2024-01-15T10:30:00.123000Z" {
+		t.Errorf("parsed next_page_token = %v, want %v", parsed["next_page_token"], "2024-01-15T10:30:00.123000Z")
 	}
 }
 

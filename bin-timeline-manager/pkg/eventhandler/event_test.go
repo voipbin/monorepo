@@ -170,8 +170,8 @@ func TestList_Pagination_HasMore(t *testing.T) {
 		t.Errorf("List() returned %d events, want 2", len(result.Result))
 	}
 
-	if result.NextPageToken != "2024-01-15T10:29:00.123Z" {
-		t.Errorf("List() NextPageToken = %q, want %q", result.NextPageToken, "2024-01-15T10:29:00.123Z")
+	if result.NextPageToken != "2024-01-15T10:29:00.123000Z" {
+		t.Errorf("List() NextPageToken = %q, want %q", result.NextPageToken, "2024-01-15T10:29:00.123000Z")
 	}
 }
 
@@ -183,7 +183,7 @@ func TestList_Pagination_WithPageToken(t *testing.T) {
 	handler := NewEventHandler(mockDB)
 
 	testID := uuid.Must(uuid.NewV4())
-	pageToken := "2024-01-15T10:29:00.123Z"
+	pageToken := "2024-01-15T10:29:00.123000Z"
 	req := &request.V1DataEventsPost{
 		Publisher: commonoutline.ServiceName("flow-manager"),
 		ResourceID: testID,

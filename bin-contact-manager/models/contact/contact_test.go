@@ -47,7 +47,7 @@ func TestContact_Matches(t *testing.T) {
 				FirstName: "John",
 				TMCreate:  "2020-01-01 00:00:00.000000",
 				TMUpdate:  "2020-01-02 00:00:00.000000",
-				TMDelete:  "9999-01-01 00:00:00.000000",
+				TMDelete:  "9999-01-01T00:00:00.000000Z",
 			},
 			other: &Contact{
 				Identity: commonidentity.Identity{
@@ -57,7 +57,7 @@ func TestContact_Matches(t *testing.T) {
 				FirstName: "John",
 				TMCreate:  "2021-01-01 00:00:00.000000",
 				TMUpdate:  "2021-01-02 00:00:00.000000",
-				TMDelete:  "9999-01-01 00:00:00.000000",
+				TMDelete:  "9999-01-01T00:00:00.000000Z",
 			},
 			expected: true,
 		},

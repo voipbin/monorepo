@@ -45,7 +45,7 @@ func TestEvent_JSONMarshal(t *testing.T) {
 
 func TestEvent_JSONUnmarshal(t *testing.T) {
 	jsonData := `{
-		"timestamp": "2024-01-15T10:30:00.123Z",
+		"timestamp": "2024-01-15T10:30:00.123000Z",
 		"event_type": "activeflow_created",
 		"publisher": "flow-manager",
 		"data_type": "application/json",

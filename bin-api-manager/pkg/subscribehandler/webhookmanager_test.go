@@ -48,7 +48,7 @@ func Test_processEventWebhookManagerWebhookPublished(t *testing.T) {
 						"customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
 						"tm_update": "2022-07-23 15:02:35.763577",
 						"reference_id": "167e552a-a739-473d-b7a7-245b258a4af0",
-						"tm_delete": "9999-01-01 00:00:00.000000"
+						"tm_delete": "9999-01-01T00:00:00.000000Z"
 					  },
 					  "type": "activeflow_created"
 					},
@@ -63,7 +63,7 @@ func Test_processEventWebhookManagerWebhookPublished(t *testing.T) {
 				// New format (service-namespaced)
 				"customer_id:5e4a0680-804e-11ec-8477-2fea5968d85b:webhook:activeflow_created:d5d70d9d-85ad-4ffc-90c1-fdda37c046b0",
 			},
-			expectEvent: `{"data":{"current_action":{"id":"00000000-0000-0000-0000-000000000001","next_id":"00000000-0000-0000-0000-000000000000","type":""},"customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","flow_id":"d78245f0-8239-4298-b27b-1e3fc2185ba0","forward_action_id":"00000000-0000-0000-0000-000000000000","id":"d5d70d9d-85ad-4ffc-90c1-fdda37c046b0","reference_id":"167e552a-a739-473d-b7a7-245b258a4af0","reference_type":"call","tm_create":"2022-07-23 15:02:35.763577","tm_delete":"9999-01-01 00:00:00.000000","tm_update":"2022-07-23 15:02:35.763577"},"type":"activeflow_created"}`,
+			expectEvent: `{"data":{"current_action":{"id":"00000000-0000-0000-0000-000000000001","next_id":"00000000-0000-0000-0000-000000000000","type":""},"customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","flow_id":"d78245f0-8239-4298-b27b-1e3fc2185ba0","forward_action_id":"00000000-0000-0000-0000-000000000000","id":"d5d70d9d-85ad-4ffc-90c1-fdda37c046b0","reference_id":"167e552a-a739-473d-b7a7-245b258a4af0","reference_type":"call","tm_create":"2022-07-23 15:02:35.763577","tm_delete":"9999-01-01T00:00:00.000000Z","tm_update":"2022-07-23 15:02:35.763577"},"type":"activeflow_created"}`,
 		},
 		{
 			name: "owner level normal",

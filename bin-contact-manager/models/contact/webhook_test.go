@@ -44,7 +44,7 @@ func TestContact_ConvertWebhookMessage(t *testing.T) {
 		},
 		TMCreate: "2020-01-01 00:00:00.000000",
 		TMUpdate: "2020-01-02 00:00:00.000000",
-		TMDelete: "9999-01-01 00:00:00.000000",
+		TMDelete: "9999-01-01T00:00:00.000000Z",
 	}
 
 	webhook := contact.ConvertWebhookMessage()

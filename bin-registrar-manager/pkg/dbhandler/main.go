@@ -23,7 +23,7 @@ import (
 
 // list of const variables
 const (
-	DefaultTimeStamp = "9999-01-01 00:00:00.000000" // default timestamp
+	DefaultTimeStamp = "9999-01-01T00:00:00.000000Z" // default timestamp
 )
 
 // DBHandler interface for call_manager database handle
