@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
+	"time"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -17,13 +18,19 @@ import (
 	"monorepo/bin-agent-manager/pkg/cachehandler"
 )
 
+// testTime is a helper to create *time.Time from string for tests
+func testTime(s string) *time.Time {
+	t, _ := time.Parse("2006-01-02T15:04:05.000000Z", s)
+	return &t
+}
+
 func Test_AgentCreate(t *testing.T) {
 
 	tests := []struct {
 		name  string
 		agent *agent.Agent
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *agent.Agent
 	}{
 		{
@@ -36,7 +43,7 @@ func Test_AgentCreate(t *testing.T) {
 				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: testTime("2020-04-18T03:22:17.995000Z"),
 			expectRes: &agent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("4f6a7348-4b42-11ec-80ba-13dbc38fe32c"),
@@ -45,9 +52,9 @@ func Test_AgentCreate(t *testing.T) {
 				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 				TagIDs:       []uuid.UUID{},
 				Addresses:    []commonaddress.Address{},
-				TMCreate:     "2020-04-18T03:22:17.995000Z",
-				TMUpdate:     DefaultTimeStamp,
-				TMDelete:     DefaultTimeStamp,
+				TMCreate:     testTime("2020-04-18T03:22:17.995000Z"),
+				TMUpdate:     nil,
+				TMDelete:     nil,
 			},
 		},
 		{
@@ -67,7 +74,7 @@ func Test_AgentCreate(t *testing.T) {
 				},
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: testTime("2020-04-18T03:22:17.995000Z"),
 			expectRes: &agent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("0e2f3d1c-4b4e-11ec-9455-9f4517cb3460"),
@@ -82,9 +89,9 @@ func Test_AgentCreate(t *testing.T) {
 						Name:   "",
 					},
 				},
-				TMCreate: "2020-04-18T03:22:17.995000Z",
-				TMUpdate: DefaultTimeStamp,
-				TMDelete: DefaultTimeStamp,
+				TMCreate: testTime("2020-04-18T03:22:17.995000Z"),
+				TMUpdate: nil,
+				TMDelete: nil,
 			},
 		},
 		{
@@ -109,7 +116,7 @@ func Test_AgentCreate(t *testing.T) {
 				},
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: testTime("2020-04-18T03:22:17.995000Z"),
 			expectRes: &agent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("523b3a6a-4b4e-11ec-b8fc-03aa2e2902d4"),
@@ -129,9 +136,9 @@ func Test_AgentCreate(t *testing.T) {
 						Name:   "",
 					},
 				},
-				TMCreate: "2020-04-18T03:22:17.995000Z",
-				TMUpdate: DefaultTimeStamp,
-				TMDelete: DefaultTimeStamp,
+				TMCreate: testTime("2020-04-18T03:22:17.995000Z"),
+				TMUpdate: nil,
+				TMDelete: nil,
 			},
 		},
 		{
@@ -146,7 +153,7 @@ func Test_AgentCreate(t *testing.T) {
 				TagIDs:       []uuid.UUID{uuid.FromStringOrNil("700c10b4-4b4e-11ec-959b-bb95248c693f")},
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: testTime("2020-04-18T03:22:17.995000Z"),
 			expectRes: &agent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("48436342-4b4f-11ec-9fcb-0be19dd3beda"),
@@ -156,9 +163,9 @@ func Test_AgentCreate(t *testing.T) {
 				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 				TagIDs:       []uuid.UUID{uuid.FromStringOrNil("700c10b4-4b4e-11ec-959b-bb95248c693f")},
 				Addresses:    []commonaddress.Address{},
-				TMCreate:     "2020-04-18T03:22:17.995000Z",
-				TMUpdate:     DefaultTimeStamp,
-				TMDelete:     DefaultTimeStamp,
+				TMCreate:     testTime("2020-04-18T03:22:17.995000Z"),
+				TMUpdate:     nil,
+				TMDelete:     nil,
 			},
 		},
 	}
@@ -177,7 +184,7 @@ func Test_AgentCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().AgentSet(gomock.Any(), gomock.Any())
 			if err := h.AgentCreate(ctx, tt.agent); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -203,7 +210,7 @@ func Test_AgentDelete(t *testing.T) {
 		name  string
 		agent *agent.Agent
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *agent.Agent
 	}{
 		{
@@ -216,7 +223,7 @@ func Test_AgentDelete(t *testing.T) {
 				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: testTime("2020-04-18T03:22:17.995000Z"),
 			expectRes: &agent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("e0f86bb8-53a7-11ec-a123-c70052e998aa"),
@@ -225,9 +232,9 @@ func Test_AgentDelete(t *testing.T) {
 				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 				TagIDs:       []uuid.UUID{},
 				Addresses:    []commonaddress.Address{},
-				TMCreate:     "2020-04-18T03:22:17.995000Z",
-				TMUpdate:     "2020-04-18T03:22:17.995000Z",
-				TMDelete:     "2020-04-18T03:22:17.995000Z",
+				TMCreate:     testTime("2020-04-18T03:22:17.995000Z"),
+				TMUpdate:     testTime("2020-04-18T03:22:17.995000Z"),
+				TMDelete:     testTime("2020-04-18T03:22:17.995000Z"),
 			},
 		},
 	}
@@ -246,13 +253,13 @@ func Test_AgentDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().AgentSet(ctx, gomock.Any())
 			if err := h.AgentCreate(ctx, tt.agent); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().AgentSet(ctx, gomock.Any())
 			if err := h.AgentDelete(ctx, tt.agent.ID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -281,7 +288,7 @@ func Test_AgentList(t *testing.T) {
 		size    uint64
 		filters map[agent.Field]any
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       []*agent.Agent
 	}{
 		{
@@ -311,7 +318,7 @@ func Test_AgentList(t *testing.T) {
 				agent.FieldDeleted:    false,
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: testTime("2020-04-18T03:22:17.995000Z"),
 			expectRes: []*agent.Agent{
 				{
 					Identity: commonidentity.Identity{
@@ -322,9 +329,9 @@ func Test_AgentList(t *testing.T) {
 					PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 					TagIDs:       []uuid.UUID{},
 					Addresses:    []commonaddress.Address{},
-					TMCreate:     "2020-04-18T03:22:17.995000Z",
-					TMUpdate:     DefaultTimeStamp,
-					TMDelete:     DefaultTimeStamp,
+					TMCreate:     testTime("2020-04-18T03:22:17.995000Z"),
+					TMUpdate:     nil,
+					TMDelete:     nil,
 				},
 				{
 					Identity: commonidentity.Identity{
@@ -335,9 +342,9 @@ func Test_AgentList(t *testing.T) {
 					PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 					TagIDs:       []uuid.UUID{},
 					Addresses:    []commonaddress.Address{},
-					TMCreate:     "2020-04-18T03:22:17.995000Z",
-					TMUpdate:     DefaultTimeStamp,
-					TMDelete:     DefaultTimeStamp,
+					TMCreate:     testTime("2020-04-18T03:22:17.995000Z"),
+					TMUpdate:     nil,
+					TMDelete:     nil,
 				},
 			},
 		},
@@ -360,7 +367,7 @@ func Test_AgentList(t *testing.T) {
 				agent.FieldDeleted:  false,
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: testTime("2020-04-18T03:22:17.995000Z"),
 			expectRes: []*agent.Agent{
 				{
 					Identity: commonidentity.Identity{
@@ -371,9 +378,9 @@ func Test_AgentList(t *testing.T) {
 					PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 					TagIDs:       []uuid.UUID{},
 					Addresses:    []commonaddress.Address{},
-					TMCreate:     "2020-04-18T03:22:17.995000Z",
-					TMUpdate:     DefaultTimeStamp,
-					TMDelete:     DefaultTimeStamp,
+					TMCreate:     testTime("2020-04-18T03:22:17.995000Z"),
+					TMUpdate:     nil,
+					TMDelete:     nil,
 				},
 			},
 		},
@@ -387,7 +394,7 @@ func Test_AgentList(t *testing.T) {
 				agent.FieldDeleted:  false,
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: testTime("2020-04-18T03:22:17.995000Z"),
 			expectRes:       []*agent.Agent{},
 		},
 	}
@@ -408,7 +415,7 @@ func Test_AgentList(t *testing.T) {
 
 			mockCache.EXPECT().AgentSet(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 			for _, u := range tt.agents {
-				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 				if err := h.AgentCreate(ctx, u); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
 				}
@@ -435,7 +442,7 @@ func Test_AgentSetAddresses(t *testing.T) {
 
 		agents []*agent.Agent
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *agent.Agent
 	}{
 		{
@@ -465,7 +472,7 @@ func Test_AgentSetAddresses(t *testing.T) {
 				},
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: testTime("2020-04-18T03:22:17.995000Z"),
 			expectRes: &agent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("ae1e0150-4c6b-11ec-922d-27336e407864"),
@@ -484,9 +491,9 @@ func Test_AgentSetAddresses(t *testing.T) {
 						Target: "+821021656521",
 					},
 				},
-				TMCreate: "2020-04-18T03:22:17.995000Z",
-				TMUpdate: "2020-04-18T03:22:17.995000Z",
-				TMDelete: DefaultTimeStamp,
+				TMCreate: testTime("2020-04-18T03:22:17.995000Z"),
+				TMUpdate: testTime("2020-04-18T03:22:17.995000Z"),
+				TMDelete: nil,
 			},
 		},
 	}
@@ -506,14 +513,14 @@ func Test_AgentSetAddresses(t *testing.T) {
 			ctx := context.Background()
 
 			for _, u := range tt.agents {
-				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 				mockCache.EXPECT().AgentSet(ctx, gomock.Any())
 				if err := h.AgentCreate(ctx, u); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
 				}
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().AgentSet(ctx, gomock.Any())
 			err := h.AgentSetAddresses(ctx, tt.id, tt.addresses)
 			if err != nil {

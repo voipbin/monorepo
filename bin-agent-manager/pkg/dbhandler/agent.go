@@ -40,12 +40,12 @@ func (h *handler) agentGetFromRow(row *sql.Rows) (*agent.Agent, error) {
 
 // AgentCreate creates new agent record and returns the created agent record.
 func (h *handler) AgentCreate(ctx context.Context, a *agent.Agent) error {
-	now := h.utilHandler.TimeGetCurTime()
+	now := h.utilHandler.TimeNow()
 
 	// Set timestamps
 	a.TMCreate = now
-	a.TMUpdate = commondatabasehandler.DefaultTimeStamp
-	a.TMDelete = commondatabasehandler.DefaultTimeStamp
+	a.TMUpdate = nil
+	a.TMDelete = nil
 
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(a)
@@ -220,7 +220,7 @@ func (h *handler) AgentGetByCustomerIDAndAddress(ctx context.Context, customerID
 		Select(fields...).
 		From(agentTable).
 		Where(squirrel.Eq{string(agent.FieldCustomerID): customerID.Bytes()}).
-		Where(squirrel.GtOrEq{string(agent.FieldTMDelete): commondatabasehandler.DefaultTimeStamp}).
+		Where(squirrel.Eq{string(agent.FieldTMDelete): nil}).
 		Where("json_contains(addresses, JSON_OBJECT('type', ?, 'target', ?))", address.Type, address.Target).
 		PlaceholderFormat(squirrel.Question).
 		ToSql()
@@ -269,7 +269,7 @@ func (h *handler) AgentGetByUsername(ctx context.Context, username string) (*age
 
 // AgentDelete deletes the agent.
 func (h *handler) AgentDelete(ctx context.Context, id uuid.UUID) error {
-	now := h.utilHandler.TimeGetCurTime()
+	now := h.utilHandler.TimeNow()
 	fields := map[agent.Field]any{
 		agent.FieldTMDelete: now,
 		agent.FieldTMUpdate: now,
@@ -288,7 +288,7 @@ func (h *handler) AgentUpdate(ctx context.Context, id uuid.UUID, fields map[agen
 		return nil
 	}
 
-	fields[agent.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
+	fields[agent.FieldTMUpdate] = h.utilHandler.TimeNow()
 
 	return h.agentUpdate(ctx, id, fields)
 }

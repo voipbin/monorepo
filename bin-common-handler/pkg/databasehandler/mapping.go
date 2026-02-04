@@ -7,9 +7,16 @@ import (
 	"reflect"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/gofrs/uuid"
 )
+
+// timeType is the reflect.Type for time.Time
+var timeType = reflect.TypeOf(time.Time{})
+
+// timePtrType is the reflect.Type for *time.Time
+var timePtrType = reflect.TypeOf((*time.Time)(nil))
 
 // mysqlDatetimeRegex matches MySQL DATETIME format: "2024-01-15 10:30:45.123456"
 var mysqlDatetimeRegex = regexp.MustCompile(`^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(\.\d+)?$`)
@@ -116,7 +123,8 @@ func ScanRow(row *sql.Rows, dest interface{}) error {
 // Conversion rules:
 // - conversionType "uuid": uuid.UUID → []byte
 // - conversionType "json": any → []byte (JSON marshaled)
-// - Auto-detect: Slice/Map/Struct (non-UUID) → []byte (JSON marshaled)
+// - Auto-detect: Slice/Map/Struct (non-UUID, non-time.Time) → []byte (JSON marshaled)
+// - time.Time and *time.Time: pass through unchanged (database driver handles)
 // - Primitives: pass through unchanged
 func convertValueForDB(value interface{}, conversionType string) (interface{}, error) {
 	// Explicit UUID conversion
@@ -141,6 +149,16 @@ func convertValueForDB(value interface{}, conversionType string) (interface{}, e
 		return value, nil
 	}
 
+	// Auto-detect: time.Time passes through unchanged (database driver handles it)
+	if _, isTime := value.(time.Time); isTime {
+		return value, nil
+	}
+
+	// Auto-detect: *time.Time passes through unchanged (database driver handles it)
+	if _, isTimePtr := value.(*time.Time); isTimePtr {
+		return value, nil
+	}
+
 	// Auto-detect: complex types get JSON marshaled
 	rv := reflect.ValueOf(value)
 	// Handle pointer types - dereference and check the underlying type
@@ -150,6 +168,12 @@ func convertValueForDB(value interface{}, conversionType string) (interface{}, e
 		}
 		rv = rv.Elem()
 	}
+
+	// Check if it's time.Time after dereference (for other pointer types to time.Time)
+	if rv.Type() == timeType {
+		return value, nil
+	}
+
 	switch rv.Kind() {
 	case reflect.Slice, reflect.Map, reflect.Struct:
 		jsonBytes, err := json.Marshal(value)
@@ -374,9 +398,14 @@ func (t *scanTarget) copyPrimitive() error {
 	switch v := t.scanPtr.(type) {
 	case *sql.NullString:
 		if v.Valid {
+			// Handle *time.Time fields specially
+			if t.fieldVal.Type() == timePtrType {
+				return t.copyTimePtr(v.String)
+			}
 			// Convert MySQL datetime format to ISO 8601 if detected
 			t.fieldVal.SetString(convertMySQLTimestampToISO8601(v.String))
 		}
+		// If not valid (NULL), leave as nil for *time.Time or zero value for string
 	case *sql.NullInt64:
 		if v.Valid {
 			switch t.fieldVal.Kind() {
@@ -395,6 +424,44 @@ func (t *scanTarget) copyPrimitive() error {
 			t.fieldVal.SetBool(v.Bool)
 		}
 	}
+	return nil
+}
+
+// copyTimePtr parses a datetime string and sets it as *time.Time
+func (t *scanTarget) copyTimePtr(s string) error {
+	// Convert MySQL format to ISO 8601 if needed
+	isoStr := convertMySQLTimestampToISO8601(s)
+
+	// Try parsing with multiple layouts
+	layouts := []string{
+		"2006-01-02T15:04:05.000000Z",    // ISO 8601 with microseconds
+		"2006-01-02T15:04:05.000000",     // ISO 8601 without Z
+		"2006-01-02T15:04:05Z",           // ISO 8601 without microseconds
+		"2006-01-02T15:04:05",            // ISO 8601 no Z no micros
+		"2006-01-02 15:04:05.000000",     // MySQL format with microseconds
+		"2006-01-02 15:04:05",            // MySQL format without microseconds
+		"2006-01-02 15:04:05.999-07:00",  // SQLite format with timezone
+		"2006-01-02 15:04:05.999+00:00",  // SQLite format with +00:00
+		time.RFC3339,                     // RFC 3339
+		time.RFC3339Nano,                 // RFC 3339 with nanoseconds
+	}
+
+	var parsed time.Time
+	var err error
+	for _, layout := range layouts {
+		parsed, err = time.Parse(layout, isoStr)
+		if err == nil {
+			break
+		}
+	}
+
+	if err != nil {
+		return fmt.Errorf("cannot parse time string %q: %w", s, err)
+	}
+
+	// Set the parsed time as a pointer (convert to UTC)
+	parsed = parsed.UTC()
+	t.fieldVal.Set(reflect.ValueOf(&parsed))
 	return nil
 }
 
@@ -441,6 +508,11 @@ func buildScanTargets(val reflect.Value) []scanTarget {
 func createScanPtr(fieldVal reflect.Value, conversionType string) interface{} {
 	// UUID and JSON both scan as NullString
 	if conversionType == "uuid" || conversionType == "json" {
+		return new(sql.NullString)
+	}
+
+	// Handle *time.Time specially - scan as NullString and convert later
+	if fieldVal.Type() == timePtrType {
 		return new(sql.NullString)
 	}
 

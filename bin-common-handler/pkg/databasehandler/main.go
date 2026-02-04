@@ -80,7 +80,11 @@ func ApplyFields[K ~string](sb squirrel.SelectBuilder, fields map[K]any) (squirr
 
 		case bool:
 			if key == "deleted" && !val {
-				sb = sb.Where(squirrel.GtOrEq{"tm_delete": DefaultTimeStamp})
+				// Filter for non-deleted records: tm_delete IS NULL
+				sb = sb.Where(squirrel.Eq{"tm_delete": nil})
+			} else if key == "deleted" && val {
+				// Filter for deleted records: tm_delete IS NOT NULL
+				sb = sb.Where(squirrel.NotEq{"tm_delete": nil})
 			} else {
 				sb = sb.Where(squirrel.Eq{key: val})
 			}

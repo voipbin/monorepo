@@ -63,7 +63,14 @@ func Test_ApplyFields(t *testing.T) {
 			fields: filter{
 				"deleted": false,
 			},
-			wantSQL: `SELECT * FROM dummy WHERE tm_delete >= ?`,
+			wantSQL: `SELECT * FROM dummy WHERE tm_delete IS NULL`,
+		},
+		{
+			name: "bool field deleted",
+			fields: filter{
+				"deleted": true,
+			},
+			wantSQL: `SELECT * FROM dummy WHERE tm_delete IS NOT NULL`,
 		},
 		{
 			name: "bool field normal",
