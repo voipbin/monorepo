@@ -2,11 +2,16 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** Migrate all timestamp fields from `string` to `*time.Time` across 23 services and 93 model files.
+**Goal:** Migrate all timestamp fields from `string` to `*time.Time` across 23 services and 93 model files, using `nil` for unset values.
 
-**Architecture:** Direct type change in Go structs. Database already uses `DATETIME(6)`, so sql driver handles conversion automatically. No schema migrations needed.
+**Architecture:** Direct type change in Go structs. Database already uses `DATETIME(6)`. Alembic migration converts sentinel values (`9999-01-01`) to `NULL`. Go code uses `nil` to represent "not set".
 
-**Tech Stack:** Go 1.21+, MySQL DATETIME(6), standard library `time` package, `database/sql` driver.
+**Tech Stack:** Go 1.21+, MySQL DATETIME(6), standard library `time` package, `database/sql` driver, Alembic migrations.
+
+**Semantics:**
+- `TMCreate`: Always set when record is created
+- `TMUpdate`: `nil` = never updated, `*time.Time` = last update time
+- `TMDelete`: `nil` = not deleted (active), `*time.Time` = deleted at this time
 
 ---
 
@@ -15,7 +20,6 @@
 **Files:**
 - Modify: `bin-common-handler/pkg/utilhandler/time.go`
 - Modify: `bin-common-handler/pkg/utilhandler/time_test.go`
-- Modify: `bin-common-handler/pkg/databasehandler/main.go`
 
 **Step 1: Write the failing tests for new time utilities**
 
@@ -51,52 +55,30 @@ func Test_TimeNowAdd(t *testing.T) {
 	}
 }
 
-func Test_IsSentinel(t *testing.T) {
+func Test_IsDeleted(t *testing.T) {
 	tests := []struct {
 		name   string
 		input  *time.Time
 		expect bool
 	}{
-		{"nil", nil, false},
-		{"sentinel", NewSentinel(), true},
-		{"non-sentinel", TimeNow(), false},
-		{"zero time", func() *time.Time { t := time.Time{}; return &t }(), false},
+		{"nil means not deleted", nil, false},
+		{"non-nil means deleted", TimeNow(), true},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := IsSentinel(tt.input)
+			result := IsDeleted(tt.input)
 			if result != tt.expect {
-				t.Errorf("IsSentinel(%v) = %v, want %v", tt.input, result, tt.expect)
+				t.Errorf("IsDeleted(%v) = %v, want %v", tt.input, result, tt.expect)
 			}
 		})
-	}
-}
-
-func Test_NewSentinel(t *testing.T) {
-	result := NewSentinel()
-
-	if result == nil {
-		t.Error("Expected non-nil pointer, got nil")
-	}
-
-	expected := time.Date(9999, 1, 1, 0, 0, 0, 0, time.UTC)
-	if !result.Equal(expected) {
-		t.Errorf("NewSentinel() = %v, want %v", *result, expected)
-	}
-}
-
-func Test_SentinelDeleteTime(t *testing.T) {
-	expected := time.Date(9999, 1, 1, 0, 0, 0, 0, time.UTC)
-	if !SentinelDeleteTime.Equal(expected) {
-		t.Errorf("SentinelDeleteTime = %v, want %v", SentinelDeleteTime, expected)
 	}
 }
 ```
 
 **Step 2: Run test to verify it fails**
 
-Run: `cd bin-common-handler && go test -v ./pkg/utilhandler/... -run "Test_TimeNow|Test_IsSentinel|Test_NewSentinel|Test_SentinelDeleteTime|Test_TimeNowAdd"`
+Run: `cd bin-common-handler && go test -v ./pkg/utilhandler/... -run "Test_TimeNow|Test_TimeNowAdd|Test_IsDeleted"`
 Expected: FAIL with undefined functions
 
 **Step 3: Write minimal implementation**
@@ -104,9 +86,6 @@ Expected: FAIL with undefined functions
 Add to `bin-common-handler/pkg/utilhandler/time.go`:
 
 ```go
-// SentinelDeleteTime is the sentinel value used for soft deletes (9999-01-01 00:00:00 UTC)
-var SentinelDeleteTime = time.Date(9999, 1, 1, 0, 0, 0, 0, time.UTC)
-
 // TimeNow returns a pointer to the current UTC time
 func TimeNow() *time.Time {
 	now := time.Now().UTC()
@@ -119,18 +98,10 @@ func TimeNowAdd(d time.Duration) *time.Time {
 	return &t
 }
 
-// NewSentinel returns a pointer to the sentinel time value
-func NewSentinel() *time.Time {
-	t := SentinelDeleteTime
-	return &t
-}
-
-// IsSentinel returns true if the given time pointer points to the sentinel value
-func IsSentinel(t *time.Time) bool {
-	if t == nil {
-		return false
-	}
-	return t.Equal(SentinelDeleteTime)
+// IsDeleted returns true if the timestamp is not nil (record has been deleted)
+// nil means not deleted, non-nil means deleted at that time
+func IsDeleted(t *time.Time) bool {
+	return t != nil
 }
 
 // Method versions for utilHandler interface
@@ -142,12 +113,8 @@ func (h *utilHandler) TimeNowAdd(d time.Duration) *time.Time {
 	return TimeNowAdd(d)
 }
 
-func (h *utilHandler) IsSentinel(t *time.Time) bool {
-	return IsSentinel(t)
-}
-
-func (h *utilHandler) NewSentinel() *time.Time {
-	return NewSentinel()
+func (h *utilHandler) IsDeleted(t *time.Time) bool {
+	return IsDeleted(t)
 }
 ```
 
@@ -159,60 +126,178 @@ Add to interface in `bin-common-handler/pkg/utilhandler/main.go`:
 // Add these methods to the UtilHandler interface
 TimeNow() *time.Time
 TimeNowAdd(d time.Duration) *time.Time
-IsSentinel(t *time.Time) bool
-NewSentinel() *time.Time
+IsDeleted(t *time.Time) bool
 ```
 
 **Step 5: Run test to verify it passes**
 
-Run: `cd bin-common-handler && go test -v ./pkg/utilhandler/... -run "Test_TimeNow|Test_IsSentinel|Test_NewSentinel|Test_SentinelDeleteTime|Test_TimeNowAdd"`
+Run: `cd bin-common-handler && go test -v ./pkg/utilhandler/... -run "Test_TimeNow|Test_TimeNowAdd|Test_IsDeleted"`
 Expected: PASS
 
-**Step 6: Update databasehandler DefaultTimeStamp**
-
-In `bin-common-handler/pkg/databasehandler/main.go`, add:
-
-```go
-import "time"
-
-// DefaultSentinelTime is the time.Time version of the sentinel value
-var DefaultSentinelTime = time.Date(9999, 1, 1, 0, 0, 0, 0, time.UTC)
-
-// NewDefaultSentinel returns a pointer to the default sentinel time
-func NewDefaultSentinel() *time.Time {
-	t := DefaultSentinelTime
-	return &t
-}
-
-// IsSentinelTime returns true if the given time equals the sentinel value
-func IsSentinelTime(t *time.Time) bool {
-	if t == nil {
-		return false
-	}
-	return t.Equal(DefaultSentinelTime)
-}
-```
-
-**Step 7: Run full verification**
+**Step 6: Run full verification**
 
 Run: `cd bin-common-handler && go mod tidy && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m`
 Expected: All pass
 
-**Step 8: Commit**
+**Step 7: Commit**
 
 ```bash
 cd ~/gitvoipbin/monorepo-worktrees/NOJIRA-Timestamp-string-to-time-migration
 git add bin-common-handler/
 git commit -m "NOJIRA-Timestamp-string-to-time-migration
 
-- bin-common-handler: Add TimeNow, TimeNowAdd, NewSentinel, IsSentinel utilities
-- bin-common-handler: Add SentinelDeleteTime constant for *time.Time usage
-- bin-common-handler: Add DefaultSentinelTime and helpers in databasehandler"
+- bin-common-handler: Add TimeNow, TimeNowAdd utilities for *time.Time
+- bin-common-handler: Add IsDeleted helper (nil = not deleted, non-nil = deleted)"
 ```
 
 ---
 
-## Task 2: Migrate bin-agent-manager Models
+## Task 2: Create Alembic Migration to Convert Sentinel to NULL
+
+**Files:**
+- Create: `bin-dbscheme-manager/bin-manager/main/versions/XXXXXX_timestamp_sentinel_to_null.py`
+
+**Step 1: Create the migration file**
+
+```bash
+cd bin-dbscheme-manager/bin-manager/main
+alembic -c alembic.ini revision -m "timestamp_sentinel_to_null"
+```
+
+**Step 2: Edit the migration file**
+
+```python
+"""timestamp_sentinel_to_null
+
+Revision ID: <generated>
+Revises: <previous>
+Create Date: <generated>
+
+"""
+from alembic import op
+
+# revision identifiers
+revision = '<generated>'
+down_revision = '<previous>'
+branch_labels = None
+depends_on = None
+
+# List of all tables with tm_update and tm_delete columns
+TABLES_WITH_TIMESTAMPS = [
+    'agent_agents',
+    'ai_ais',
+    'ai_aicalls',
+    'ai_messages',
+    'ai_summaries',
+    'billing_accounts',
+    'billing_billings',
+    'call_calls',
+    'call_channels',
+    'call_confbridges',
+    'call_groupcalls',
+    'call_recordings',
+    'campaign_campaigns',
+    'campaign_campaigncalls',
+    'campaign_outplans',
+    'conference_conferences',
+    'conference_conferencecalls',
+    'contact_contacts',
+    'contact_contact_numbers',
+    'contact_contact_emails',
+    'contact_contact_addresses',
+    'contact_contact_activities',
+    'contact_contact_groups',
+    'conversation_accounts',
+    'conversation_conversations',
+    'conversation_medias',
+    'customer_customers',
+    'customer_accesskeys',
+    'email_emails',
+    'flow_flows',
+    'flow_activeflows',
+    'message_messages',
+    'number_numbers',
+    'outdial_outdials',
+    'outdial_outdialtargets',
+    'pipecat_pipecatcalls',
+    'queue_queues',
+    'queue_queuecalls',
+    'registrar_sip_auths',
+    'registrar_trunks',
+    'route_routes',
+    'storage_accounts',
+    'storage_files',
+    'tag_tags',
+    'talk_chats',
+    'talk_chatmembers',
+    'talk_messages',
+    'transcribe_transcribes',
+    'transfer_transfers',
+]
+
+# Sentinel value patterns (both formats for safety)
+SENTINEL_VALUES = [
+    '9999-01-01 00:00:00.000000',
+    '9999-01-01T00:00:00.000000Z',
+]
+
+
+def upgrade():
+    """Convert sentinel timestamp values to NULL."""
+    for table in TABLES_WITH_TIMESTAMPS:
+        for sentinel in SENTINEL_VALUES:
+            # Update tm_update
+            op.execute(f"""
+                UPDATE `{table}`
+                SET tm_update = NULL
+                WHERE tm_update = '{sentinel}'
+            """)
+            # Update tm_delete
+            op.execute(f"""
+                UPDATE `{table}`
+                SET tm_delete = NULL
+                WHERE tm_delete = '{sentinel}'
+            """)
+
+
+def downgrade():
+    """Convert NULL back to sentinel timestamp values."""
+    sentinel = '9999-01-01T00:00:00.000000Z'
+    for table in TABLES_WITH_TIMESTAMPS:
+        # Revert tm_update
+        op.execute(f"""
+            UPDATE `{table}`
+            SET tm_update = '{sentinel}'
+            WHERE tm_update IS NULL
+        """)
+        # Revert tm_delete
+        op.execute(f"""
+            UPDATE `{table}`
+            SET tm_delete = '{sentinel}'
+            WHERE tm_delete IS NULL
+        """)
+```
+
+**Step 3: Verify migration file syntax**
+
+Run: `cd bin-dbscheme-manager/bin-manager/main && python -m py_compile versions/<migration_file>.py`
+Expected: No syntax errors
+
+**Step 4: Commit (DO NOT run alembic upgrade)**
+
+```bash
+git add bin-dbscheme-manager/
+git commit -m "NOJIRA-Timestamp-string-to-time-migration
+
+- bin-dbscheme-manager: Add migration to convert sentinel timestamps to NULL
+- bin-dbscheme-manager: Affects tm_update and tm_delete in all tables"
+```
+
+**IMPORTANT:** Do NOT run `alembic upgrade`. The migration will be applied manually by a human with proper authorization and database access.
+
+---
+
+## Task 3: Migrate bin-agent-manager Models
 
 **Files:**
 - Modify: `bin-agent-manager/models/agent/agent.go`
@@ -251,40 +336,45 @@ In `bin-agent-manager/pkg/dbhandler/agent.go`, change:
 // Before
 a.TMUpdate = commondatabasehandler.DefaultTimeStamp
 a.TMDelete = commondatabasehandler.DefaultTimeStamp
-
-// After
-a.TMUpdate = commondatabasehandler.NewDefaultSentinel()
-a.TMDelete = commondatabasehandler.NewDefaultSentinel()
-```
-
-And:
-```go
-// Before
 a.TMCreate = now
 
-// After (assuming now is from utilHandler.TimeNow())
+// After (nil for unset, TimeNow() for create)
 a.TMCreate = h.utilHandler.TimeNow()
+a.TMUpdate = nil  // not updated yet
+a.TMDelete = nil  // not deleted
 ```
 
 **Step 4: Update dbhandler queries**
 
-In queries using sentinel comparison:
+In queries filtering for non-deleted records:
 
 ```go
 // Before
 Where(squirrel.GtOrEq{string(agent.FieldTMDelete): commondatabasehandler.DefaultTimeStamp})
 
-// After
-Where(squirrel.GtOrEq{string(agent.FieldTMDelete): commondatabasehandler.DefaultSentinelTime})
+// After (NULL means not deleted)
+Where(squirrel.Eq{string(agent.FieldTMDelete): nil})
 ```
 
-**Step 5: Update DefaultTimeStamp constant usage**
+**Step 5: Remove DefaultTimeStamp constant**
 
-In `bin-agent-manager/pkg/dbhandler/main.go`, remove the local `DefaultTimeStamp` constant if it exists, use `commondatabasehandler.DefaultSentinelTime` instead.
+In `bin-agent-manager/pkg/dbhandler/main.go`, remove the local `DefaultTimeStamp` constant - it's no longer needed.
 
 **Step 6: Update test files**
 
-Update all test files to use `*time.Time` instead of string for timestamp fields. Use `commondatabasehandler.NewDefaultSentinel()` for sentinel values.
+Update all test files to use `*time.Time` instead of string for timestamp fields:
+
+```go
+// Before
+TMCreate: "2026-01-01T00:00:00.000000Z",
+TMUpdate: DefaultTimeStamp,
+TMDelete: DefaultTimeStamp,
+
+// After
+TMCreate: utilhandler.TimeNow(),
+TMUpdate: nil,
+TMDelete: nil,
+```
 
 **Step 7: Run verification**
 
@@ -298,13 +388,13 @@ git add bin-agent-manager/
 git commit -m "NOJIRA-Timestamp-string-to-time-migration
 
 - bin-agent-manager: Migrate timestamp fields from string to *time.Time
-- bin-agent-manager: Update dbhandler to use TimeNow() and NewDefaultSentinel()
-- bin-agent-manager: Update tests for new timestamp types"
+- bin-agent-manager: Use nil for unset TMUpdate/TMDelete
+- bin-agent-manager: Update queries to check for NULL instead of sentinel"
 ```
 
 ---
 
-## Task 3: Migrate bin-call-manager Models
+## Task 4: Migrate bin-call-manager Models
 
 **Files:**
 - Modify: `bin-call-manager/models/call/call.go`
@@ -361,18 +451,18 @@ c.TMRinging = commondatabasehandler.DefaultTimeStamp
 c.TMProgressing = commondatabasehandler.DefaultTimeStamp
 c.TMHangup = commondatabasehandler.DefaultTimeStamp
 
-// After
+// After (nil for unset events)
 c.TMCreate = h.utilHandler.TimeNow()
-c.TMUpdate = commondatabasehandler.NewDefaultSentinel()
-c.TMDelete = commondatabasehandler.NewDefaultSentinel()
-c.TMRinging = commondatabasehandler.NewDefaultSentinel()
-c.TMProgressing = commondatabasehandler.NewDefaultSentinel()
-c.TMHangup = commondatabasehandler.NewDefaultSentinel()
+c.TMUpdate = nil
+c.TMDelete = nil
+c.TMRinging = nil      // set when call starts ringing
+c.TMProgressing = nil  // set when call is answered
+c.TMHangup = nil       // set when call hangs up
 ```
 
 **Step 4: Update test files**
 
-Update all `_test.go` files to use `*time.Time`.
+Update all `_test.go` files to use `*time.Time` and `nil` for unset values.
 
 **Step 5: Run verification**
 
@@ -386,39 +476,39 @@ git add bin-call-manager/
 git commit -m "NOJIRA-Timestamp-string-to-time-migration
 
 - bin-call-manager: Migrate timestamp fields from string to *time.Time
-- bin-call-manager: Update dbhandler to use TimeNow() and NewDefaultSentinel()
-- bin-call-manager: Update tests for new timestamp types"
+- bin-call-manager: Use nil for unset event timestamps (TMRinging, TMProgressing, TMHangup)
+- bin-call-manager: Use nil for TMUpdate/TMDelete"
 ```
 
 ---
 
-## Task 4-23: Migrate Remaining Services
+## Tasks 5-25: Migrate Remaining Services
 
-**Repeat the pattern from Tasks 2-3 for each remaining service:**
+**Repeat the pattern from Tasks 3-4 for each remaining service:**
 
 | Task | Service | Model Files |
 |------|---------|-------------|
-| 4 | bin-ai-manager | 8 files |
-| 5 | bin-billing-manager | 4 files |
-| 6 | bin-campaign-manager | 6 files |
-| 7 | bin-conference-manager | 4 files |
-| 8 | bin-contact-manager | 4 files |
-| 9 | bin-conversation-manager | 7 files |
-| 10 | bin-customer-manager | 4 files |
-| 11 | bin-email-manager | 2 files |
-| 12 | bin-flow-manager | 4 files |
-| 13 | bin-message-manager | 2 files |
-| 14 | bin-number-manager | 3 files |
-| 15 | bin-outdial-manager | 5 files |
-| 16 | bin-pipecat-manager | 1 file |
-| 17 | bin-queue-manager | 4 files |
-| 18 | bin-registrar-manager | 5 files |
-| 19 | bin-route-manager | 4 files |
-| 20 | bin-storage-manager | 4 files |
-| 21 | bin-tag-manager | 2 files |
-| 22 | bin-talk-manager | 3 files |
-| 23 | bin-transcribe-manager | 4 files |
-| 24 | bin-transfer-manager | 2 files |
+| 5 | bin-ai-manager | 8 files |
+| 6 | bin-billing-manager | 4 files |
+| 7 | bin-campaign-manager | 6 files |
+| 8 | bin-conference-manager | 4 files |
+| 9 | bin-contact-manager | 4 files |
+| 10 | bin-conversation-manager | 7 files |
+| 11 | bin-customer-manager | 4 files |
+| 12 | bin-email-manager | 2 files |
+| 13 | bin-flow-manager | 4 files |
+| 14 | bin-message-manager | 2 files |
+| 15 | bin-number-manager | 3 files |
+| 16 | bin-outdial-manager | 5 files |
+| 17 | bin-pipecat-manager | 1 file |
+| 18 | bin-queue-manager | 4 files |
+| 19 | bin-registrar-manager | 5 files |
+| 20 | bin-route-manager | 4 files |
+| 21 | bin-storage-manager | 4 files |
+| 22 | bin-tag-manager | 2 files |
+| 23 | bin-talk-manager | 3 files |
+| 24 | bin-transcribe-manager | 4 files |
+| 25 | bin-transfer-manager | 2 files |
 
 **For each service, follow this pattern:**
 
@@ -427,15 +517,16 @@ git commit -m "NOJIRA-Timestamp-string-to-time-migration
 3. Add `import "time"` where needed
 4. Update dbhandler code:
    - `TimeGetCurTime()` → `TimeNow()`
-   - `commondatabasehandler.DefaultTimeStamp` → `commondatabasehandler.NewDefaultSentinel()`
-   - String comparisons → `IsSentinelTime()` or nil checks
-5. Update test files
-6. Run verification: `go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m`
-7. Commit with service name prefix
+   - `commondatabasehandler.DefaultTimeStamp` → `nil`
+   - Sentinel comparisons → `nil` checks or `IsDeleted()`
+5. Update SQL queries: `WHERE tm_delete >= '9999...'` → `WHERE tm_delete IS NULL`
+6. Update test files
+7. Run verification: `go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m`
+8. Commit with service name prefix
 
 ---
 
-## Task 25: Full Monorepo Verification
+## Task 26: Full Monorepo Verification
 
 **Step 1: Run verification for ALL services**
 
@@ -473,7 +564,7 @@ git commit -m "NOJIRA-Timestamp-string-to-time-migration
 
 ---
 
-## Task 26: Cleanup Deprecated Functions (Optional)
+## Task 27: Cleanup Deprecated Functions (Optional)
 
 After confirming migration is complete:
 
@@ -481,6 +572,7 @@ After confirming migration is complete:
 
 ```bash
 grep -rn "TimeGetCurTime()" bin-*/ --include="*.go" | grep -v vendor
+grep -rn "DefaultTimeStamp" bin-*/ --include="*.go" | grep -v vendor
 ```
 
 **Step 2: If no usages found, deprecate old functions**
@@ -494,13 +586,21 @@ func TimeGetCurTime() string {
 }
 ```
 
+In `bin-common-handler/pkg/databasehandler/main.go`:
+
+```go
+// Deprecated: Use nil instead. This constant is only kept for backward compatibility.
+const DefaultTimeStamp = "9999-01-01T00:00:00.000000Z"
+```
+
 **Step 3: Commit**
 
 ```bash
 git add bin-common-handler/
 git commit -m "NOJIRA-Timestamp-string-to-time-migration
 
-- bin-common-handler: Deprecate TimeGetCurTime in favor of TimeNow"
+- bin-common-handler: Deprecate TimeGetCurTime in favor of TimeNow
+- bin-common-handler: Deprecate DefaultTimeStamp (use nil instead)"
 ```
 
 ---
@@ -525,22 +625,24 @@ model.TMCreate = h.utilHandler.TimeGetCurTime()
 model.TMCreate = h.utilHandler.TimeNow()
 ```
 
-### Pattern 3: Setting Sentinel Value
+### Pattern 3: Setting Unset Value (TMUpdate, TMDelete)
 ```go
 // Before
 model.TMDelete = commondatabasehandler.DefaultTimeStamp
 
 // After
-model.TMDelete = commondatabasehandler.NewDefaultSentinel()
+model.TMDelete = nil
 ```
 
-### Pattern 4: Checking for Sentinel
+### Pattern 4: Checking if Deleted
 ```go
 // Before
 if model.TMDelete != commondatabasehandler.DefaultTimeStamp { ... }
 
 // After
-if !commondatabasehandler.IsSentinelTime(model.TMDelete) { ... }
+if utilhandler.IsDeleted(model.TMDelete) { ... }
+// Or simply:
+if model.TMDelete != nil { ... }
 ```
 
 ### Pattern 5: Checking for Empty/Unset
@@ -552,22 +654,33 @@ if model.TMCreate == "" { ... }
 if model.TMCreate == nil { ... }
 ```
 
-### Pattern 6: SQL Query with Sentinel
+### Pattern 6: SQL Query for Non-Deleted Records
 ```go
 // Before
 Where(squirrel.GtOrEq{"tm_delete": commondatabasehandler.DefaultTimeStamp})
 
 // After
-Where(squirrel.GtOrEq{"tm_delete": commondatabasehandler.DefaultSentinelTime})
+Where(squirrel.Eq{"tm_delete": nil})
 ```
 
 ### Pattern 7: Test Data
 ```go
 // Before
 TMCreate: "2026-01-01T00:00:00.000000Z",
+TMUpdate: "9999-01-01T00:00:00.000000Z",
 TMDelete: "9999-01-01T00:00:00.000000Z",
 
 // After
 TMCreate: utilhandler.TimeNow(),
-TMDelete: commondatabasehandler.NewDefaultSentinel(),
+TMUpdate: nil,
+TMDelete: nil,
+```
+
+### Pattern 8: Setting Delete Time (Soft Delete)
+```go
+// Before
+model.TMDelete = h.utilHandler.TimeGetCurTime()
+
+// After
+model.TMDelete = h.utilHandler.TimeNow()
 ```
