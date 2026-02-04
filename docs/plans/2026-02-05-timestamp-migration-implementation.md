@@ -334,15 +334,17 @@ In `bin-agent-manager/pkg/dbhandler/agent.go`, change:
 
 ```go
 // Before
+now := h.utilHandler.TimeGetCurTime()
+a.TMCreate = now
 a.TMUpdate = commondatabasehandler.DefaultTimeStamp
 a.TMDelete = commondatabasehandler.DefaultTimeStamp
-a.TMCreate = now
 
-// After (nil for unset, TimeNow() for create)
+// After - REMOVE the TMUpdate/TMDelete lines entirely, they default to nil
 a.TMCreate = h.utilHandler.TimeNow()
-a.TMUpdate = nil  // not updated yet
-a.TMDelete = nil  // not deleted
+// DO NOT set TMUpdate or TMDelete - nil is the correct default
 ```
+
+**IMPORTANT:** Do NOT replace sentinel assignments with `= nil`. Simply **delete** those lines. The `*time.Time` fields default to `nil` automatically.
 
 **Step 4: Update dbhandler queries**
 
@@ -451,14 +453,13 @@ c.TMRinging = commondatabasehandler.DefaultTimeStamp
 c.TMProgressing = commondatabasehandler.DefaultTimeStamp
 c.TMHangup = commondatabasehandler.DefaultTimeStamp
 
-// After (nil for unset events)
+// After - REMOVE all sentinel assignments, only set TMCreate
 c.TMCreate = h.utilHandler.TimeNow()
-c.TMUpdate = nil
-c.TMDelete = nil
-c.TMRinging = nil      // set when call starts ringing
-c.TMProgressing = nil  // set when call is answered
-c.TMHangup = nil       // set when call hangs up
+// DO NOT set TMUpdate, TMDelete, TMRinging, TMProgressing, TMHangup
+// They default to nil and will be set when the event actually occurs
 ```
+
+**IMPORTANT:** Delete the sentinel assignment lines. Do NOT replace with `= nil`.
 
 **Step 4: Update test files**
 
@@ -515,14 +516,18 @@ git commit -m "NOJIRA-Timestamp-string-to-time-migration
 1. Find all model files with timestamp fields: `grep -rn "TMCreate\s*string" bin-<service>/ --include="*.go" | grep -v vendor`
 2. Update struct definitions: `string` → `*time.Time`
 3. Add `import "time"` where needed
-4. Update dbhandler code:
-   - `TimeGetCurTime()` → `TimeNow()`
-   - `commondatabasehandler.DefaultTimeStamp` → `nil`
-   - Sentinel comparisons → `nil` checks or `IsDeleted()`
-5. Update SQL queries: `WHERE tm_delete >= '9999...'` → `WHERE tm_delete IS NULL`
-6. Update test files
-7. Run verification: `go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m`
-8. Commit with service name prefix
+4. Update dbhandler Create functions:
+   - `TimeGetCurTime()` → `TimeNow()` for TMCreate
+   - **DELETE** all `= commondatabasehandler.DefaultTimeStamp` lines (don't replace with nil)
+5. Update dbhandler Update functions:
+   - When updating, set `TMUpdate = h.utilHandler.TimeNow()`
+6. Update dbhandler Delete functions:
+   - When soft-deleting, set `TMDelete = h.utilHandler.TimeNow()`
+7. Update SQL queries: `WHERE tm_delete >= '9999...'` → `WHERE tm_delete IS NULL`
+8. Update sentinel comparisons → `nil` checks or `IsDeleted()`
+9. Update test files (remove sentinel values, use nil for unset)
+10. Run verification: `go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m`
+11. Commit with service name prefix
 
 ---
 
@@ -718,14 +723,18 @@ model.TMCreate = h.utilHandler.TimeGetCurTime()
 model.TMCreate = h.utilHandler.TimeNow()
 ```
 
-### Pattern 3: Setting Unset Value (TMUpdate, TMDelete)
+### Pattern 3: Remove Sentinel Assignments (TMUpdate, TMDelete, event timestamps)
 ```go
-// Before
+// Before - explicitly setting sentinel
+model.TMUpdate = commondatabasehandler.DefaultTimeStamp
 model.TMDelete = commondatabasehandler.DefaultTimeStamp
+model.TMRinging = commondatabasehandler.DefaultTimeStamp
 
-// After
-model.TMDelete = nil
+// After - DELETE these lines entirely
+// *time.Time fields default to nil, no assignment needed
 ```
+
+**IMPORTANT:** Do NOT replace with `= nil`. Simply remove the lines.
 
 ### Pattern 4: Checking if Deleted
 ```go
@@ -759,14 +768,24 @@ Where(squirrel.Eq{"tm_delete": nil})
 ### Pattern 7: Test Data
 ```go
 // Before
-TMCreate: "2026-01-01T00:00:00.000000Z",
-TMUpdate: "9999-01-01T00:00:00.000000Z",
-TMDelete: "9999-01-01T00:00:00.000000Z",
+agent := &agent.Agent{
+    TMCreate: "2026-01-01T00:00:00.000000Z",
+    TMUpdate: "9999-01-01T00:00:00.000000Z",
+    TMDelete: "9999-01-01T00:00:00.000000Z",
+}
 
-// After
-TMCreate: utilhandler.TimeNow(),
-TMUpdate: nil,
-TMDelete: nil,
+// After - omit TMUpdate/TMDelete entirely (nil by default)
+agent := &agent.Agent{
+    TMCreate: utilhandler.TimeNow(),
+    // TMUpdate and TMDelete omitted - they're nil by default
+}
+
+// Or if you need to be explicit in tests:
+agent := &agent.Agent{
+    TMCreate: utilhandler.TimeNow(),
+    TMUpdate: nil,
+    TMDelete: nil,
+}
 ```
 
 ### Pattern 8: Setting Delete Time (Soft Delete)
