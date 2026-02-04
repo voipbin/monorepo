@@ -15,6 +15,280 @@
 
 ---
 
+## ⚠️ CRITICAL WARNING ⚠️
+
+**This migration changes VoIPBIN's core behavior across ALL services.**
+
+- 23 services affected
+- 93 model files modified
+- 133 OpenAPI fields updated
+- Database-wide data migration
+
+**Before EACH task:**
+1. Read the task completely
+2. Understand what will change
+3. Write tests FIRST
+4. Verify tests pass before AND after changes
+5. Run full verification workflow
+
+**If anything fails:** STOP. Do not proceed. Investigate and fix before continuing.
+
+---
+
+## Task 0: Add Comprehensive Timestamp Tests (BEFORE ANY CHANGES)
+
+**Purpose:** Establish baseline test coverage for timestamp behavior BEFORE making any changes. These tests verify current behavior and will catch regressions.
+
+**Files:**
+- Create: `bin-common-handler/pkg/utilhandler/time_migration_test.go`
+- Create: `bin-common-handler/pkg/databasehandler/timestamp_test.go`
+
+**Step 1: Create timestamp utility tests**
+
+Create `bin-common-handler/pkg/utilhandler/time_migration_test.go`:
+
+```go
+package utilhandler
+
+import (
+	"encoding/json"
+	"testing"
+	"time"
+)
+
+// Test that *time.Time marshals to ISO 8601 format (RFC 3339)
+func Test_TimePointer_JSONMarshal(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    *time.Time
+		expected string
+	}{
+		{
+			name:     "non-nil time marshals to ISO 8601",
+			input:    func() *time.Time { t := time.Date(2026, 2, 5, 10, 30, 45, 123456000, time.UTC); return &t }(),
+			expected: `"2026-02-05T10:30:45.123456Z"`,
+		},
+		{
+			name:     "nil time marshals to null",
+			input:    nil,
+			expected: `null`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := json.Marshal(tt.input)
+			if err != nil {
+				t.Fatalf("Marshal error: %v", err)
+			}
+			if string(result) != tt.expected {
+				t.Errorf("got %s, want %s", string(result), tt.expected)
+			}
+		})
+	}
+}
+
+// Test that *time.Time unmarshals from ISO 8601 format
+func Test_TimePointer_JSONUnmarshal(t *testing.T) {
+	tests := []struct {
+		name      string
+		input     string
+		expectNil bool
+		expectErr bool
+	}{
+		{
+			name:      "ISO 8601 with Z",
+			input:     `"2026-02-05T10:30:45.123456Z"`,
+			expectNil: false,
+			expectErr: false,
+		},
+		{
+			name:      "null becomes nil",
+			input:     `null`,
+			expectNil: true,
+			expectErr: false,
+		},
+		{
+			name:      "ISO 8601 without microseconds",
+			input:     `"2026-02-05T10:30:45Z"`,
+			expectNil: false,
+			expectErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var result *time.Time
+			err := json.Unmarshal([]byte(tt.input), &result)
+
+			if tt.expectErr && err == nil {
+				t.Error("expected error, got nil")
+			}
+			if !tt.expectErr && err != nil {
+				t.Errorf("unexpected error: %v", err)
+			}
+			if tt.expectNil && result != nil {
+				t.Errorf("expected nil, got %v", result)
+			}
+			if !tt.expectNil && result == nil {
+				t.Error("expected non-nil, got nil")
+			}
+		})
+	}
+}
+
+// Test struct with timestamp fields marshals correctly
+func Test_StructWithTimestamps_JSONMarshal(t *testing.T) {
+	type TestModel struct {
+		ID       string     `json:"id"`
+		TMCreate *time.Time `json:"tm_create,omitempty"`
+		TMUpdate *time.Time `json:"tm_update,omitempty"`
+		TMDelete *time.Time `json:"tm_delete,omitempty"`
+	}
+
+	now := time.Date(2026, 2, 5, 10, 30, 45, 0, time.UTC)
+
+	tests := []struct {
+		name     string
+		input    TestModel
+		contains []string
+		excludes []string
+	}{
+		{
+			name: "all timestamps set",
+			input: TestModel{
+				ID:       "test-1",
+				TMCreate: &now,
+				TMUpdate: &now,
+				TMDelete: &now,
+			},
+			contains: []string{`"tm_create"`, `"tm_update"`, `"tm_delete"`},
+			excludes: []string{},
+		},
+		{
+			name: "only tm_create set (omitempty hides nil)",
+			input: TestModel{
+				ID:       "test-2",
+				TMCreate: &now,
+				TMUpdate: nil,
+				TMDelete: nil,
+			},
+			contains: []string{`"tm_create"`},
+			excludes: []string{`"tm_update"`, `"tm_delete"`},
+		},
+		{
+			name: "all nil (omitempty hides all)",
+			input: TestModel{
+				ID:       "test-3",
+				TMCreate: nil,
+				TMUpdate: nil,
+				TMDelete: nil,
+			},
+			contains: []string{`"id"`},
+			excludes: []string{`"tm_create"`, `"tm_update"`, `"tm_delete"`},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := json.Marshal(tt.input)
+			if err != nil {
+				t.Fatalf("Marshal error: %v", err)
+			}
+
+			resultStr := string(result)
+			for _, s := range tt.contains {
+				if !contains(resultStr, s) {
+					t.Errorf("expected to contain %s, got %s", s, resultStr)
+				}
+			}
+			for _, s := range tt.excludes {
+				if contains(resultStr, s) {
+					t.Errorf("expected to NOT contain %s, got %s", s, resultStr)
+				}
+			}
+		})
+	}
+}
+
+func contains(s, substr string) bool {
+	return len(s) >= len(substr) && (s == substr || len(substr) == 0 ||
+		(len(s) > 0 && len(substr) > 0 && searchString(s, substr)))
+}
+
+func searchString(s, substr string) bool {
+	for i := 0; i <= len(s)-len(substr); i++ {
+		if s[i:i+len(substr)] == substr {
+			return true
+		}
+	}
+	return false
+}
+
+// Test time comparison helpers
+func Test_TimeComparison(t *testing.T) {
+	now := time.Now().UTC()
+	earlier := now.Add(-time.Hour)
+	later := now.Add(time.Hour)
+
+	tests := []struct {
+		name   string
+		a      *time.Time
+		b      *time.Time
+		aIsNil bool
+		bIsNil bool
+		aAfterB bool
+	}{
+		{"both nil", nil, nil, true, true, false},
+		{"a nil, b not", nil, &now, true, false, false},
+		{"a not, b nil", &now, nil, false, true, false},
+		{"a before b", &earlier, &later, false, false, false},
+		{"a after b", &later, &earlier, false, false, true},
+		{"a equals b", &now, &now, false, false, false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if (tt.a == nil) != tt.aIsNil {
+				t.Errorf("a nil check failed")
+			}
+			if (tt.b == nil) != tt.bIsNil {
+				t.Errorf("b nil check failed")
+			}
+			if tt.a != nil && tt.b != nil {
+				if tt.a.After(*tt.b) != tt.aAfterB {
+					t.Errorf("After comparison failed")
+				}
+			}
+		})
+	}
+}
+```
+
+**Step 2: Run the new tests**
+
+Run: `cd bin-common-handler && go test -v ./pkg/utilhandler/... -run "Test_TimePointer|Test_StructWithTimestamps|Test_TimeComparison"`
+Expected: All PASS
+
+**Step 3: Verify existing timestamp tests still pass**
+
+Run: `cd bin-common-handler && go test -v ./...`
+Expected: All PASS
+
+**Step 4: Commit baseline tests**
+
+```bash
+git add bin-common-handler/
+git commit -m "NOJIRA-Timestamp-string-to-time-migration
+
+- bin-common-handler: Add comprehensive timestamp migration tests
+- bin-common-handler: Test *time.Time JSON marshal/unmarshal behavior
+- bin-common-handler: Test struct with timestamp fields
+- bin-common-handler: Test time comparison with nil handling"
+```
+
+---
+
 ## Task 1: Add New Time Utilities to bin-common-handler
 
 **Files:**
@@ -339,12 +613,16 @@ a.TMCreate = now
 a.TMUpdate = commondatabasehandler.DefaultTimeStamp
 a.TMDelete = commondatabasehandler.DefaultTimeStamp
 
-// After - REMOVE the TMUpdate/TMDelete lines entirely, they default to nil
+// After - Remove DefaultTimeStamp usage
 a.TMCreate = h.utilHandler.TimeNow()
-// DO NOT set TMUpdate or TMDelete - nil is the correct default
+a.TMUpdate = nil  // or simply omit if not needed
+a.TMDelete = nil  // or simply omit if not needed
 ```
 
-**IMPORTANT:** Do NOT replace sentinel assignments with `= nil`. Simply **delete** those lines. The `*time.Time` fields default to `nil` automatically.
+**KEY RULE:** Remove ALL usage of `commondatabasehandler.DefaultTimeStamp`.
+- Setting `= nil` explicitly is OK
+- Omitting the assignment (letting it default to nil) is also OK
+- Using `DefaultTimeStamp` is NOT OK
 
 **Step 4: Update dbhandler queries**
 
@@ -453,13 +731,16 @@ c.TMRinging = commondatabasehandler.DefaultTimeStamp
 c.TMProgressing = commondatabasehandler.DefaultTimeStamp
 c.TMHangup = commondatabasehandler.DefaultTimeStamp
 
-// After - REMOVE all sentinel assignments, only set TMCreate
+// After - Remove DefaultTimeStamp usage
 c.TMCreate = h.utilHandler.TimeNow()
-// DO NOT set TMUpdate, TMDelete, TMRinging, TMProgressing, TMHangup
-// They default to nil and will be set when the event actually occurs
+c.TMUpdate = nil      // or omit
+c.TMDelete = nil      // or omit
+c.TMRinging = nil     // set to TimeNow() when call starts ringing
+c.TMProgressing = nil // set to TimeNow() when call is answered
+c.TMHangup = nil      // set to TimeNow() when call hangs up
 ```
 
-**IMPORTANT:** Delete the sentinel assignment lines. Do NOT replace with `= nil`.
+**KEY RULE:** Remove ALL usage of `commondatabasehandler.DefaultTimeStamp`.
 
 **Step 4: Update test files**
 
@@ -513,21 +794,28 @@ git commit -m "NOJIRA-Timestamp-string-to-time-migration
 
 **For each service, follow this pattern:**
 
-1. Find all model files with timestamp fields: `grep -rn "TMCreate\s*string" bin-<service>/ --include="*.go" | grep -v vendor`
-2. Update struct definitions: `string` → `*time.Time`
-3. Add `import "time"` where needed
-4. Update dbhandler Create functions:
+1. **Find model files:** `grep -rn "TMCreate\s*string" bin-<service>/ --include="*.go" | grep -v vendor`
+2. **Update struct definitions:** `string` → `*time.Time`
+3. **Add import:** `import "time"` where needed
+4. **Update dbhandler Create functions:**
    - `TimeGetCurTime()` → `TimeNow()` for TMCreate
-   - **DELETE** all `= commondatabasehandler.DefaultTimeStamp` lines (don't replace with nil)
-5. Update dbhandler Update functions:
+   - Remove `DefaultTimeStamp` usage (replace with `= nil` or omit entirely)
+5. **Update dbhandler Update functions:**
    - When updating, set `TMUpdate = h.utilHandler.TimeNow()`
-6. Update dbhandler Delete functions:
+6. **Update dbhandler Delete functions:**
    - When soft-deleting, set `TMDelete = h.utilHandler.TimeNow()`
-7. Update SQL queries: `WHERE tm_delete >= '9999...'` → `WHERE tm_delete IS NULL`
-8. Update sentinel comparisons → `nil` checks or `IsDeleted()`
-9. Update test files (remove sentinel values, use nil for unset)
-10. Run verification: `go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m`
-11. Commit with service name prefix
+7. **Update SQL queries:** `WHERE tm_delete >= '9999...'` → `WHERE tm_delete IS NULL`
+8. **Update comparisons:** Sentinel comparisons → `nil` checks or `IsDeleted()`
+9. **Update test files:** Remove sentinel values, use nil for unset timestamps
+10. **Run verification:** `go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m`
+11. **STOP if any test fails.** Investigate before proceeding.
+12. **Commit** with service name prefix
+
+**⚠️ VERIFICATION CHECKPOINT:** After each service migration, verify:
+- All tests pass
+- No compilation errors
+- No lint errors
+- Service can start (if possible to test locally)
 
 ---
 
@@ -723,18 +1011,20 @@ model.TMCreate = h.utilHandler.TimeGetCurTime()
 model.TMCreate = h.utilHandler.TimeNow()
 ```
 
-### Pattern 3: Remove Sentinel Assignments (TMUpdate, TMDelete, event timestamps)
+### Pattern 3: Remove DefaultTimeStamp Usage
 ```go
-// Before - explicitly setting sentinel
+// Before - using sentinel constant
 model.TMUpdate = commondatabasehandler.DefaultTimeStamp
 model.TMDelete = commondatabasehandler.DefaultTimeStamp
 model.TMRinging = commondatabasehandler.DefaultTimeStamp
 
-// After - DELETE these lines entirely
-// *time.Time fields default to nil, no assignment needed
+// After - use nil (explicit or implicit)
+model.TMUpdate = nil  // explicit nil is OK
+model.TMDelete = nil  // explicit nil is OK
+// Or simply omit these lines - *time.Time defaults to nil
 ```
 
-**IMPORTANT:** Do NOT replace with `= nil`. Simply remove the lines.
+**KEY RULE:** Remove ALL usage of `DefaultTimeStamp`. Using `= nil` is allowed.
 
 ### Pattern 4: Checking if Deleted
 ```go
