@@ -8,6 +8,8 @@ replace monorepo/bin-billing-manager => ../bin-billing-manager
 
 replace monorepo/bin-common-handler => ../bin-common-handler
 
+replace monorepo/bin-contact-manager => ../bin-contact-manager
+
 replace monorepo/bin-talk-manager => ../bin-talk-manager
 
 replace monorepo/bin-campaign-manager => ../bin-campaign-manager
@@ -146,6 +148,7 @@ require (
 	k8s.io/utils v0.0.0-20260108192941-914a6e750570 // indirect
 	monorepo/bin-ai-manager v0.0.0-20240313050825-1c666b883013 // indirect
 	monorepo/bin-campaign-manager v0.0.0-20240313031908-f098e3fb6f12 // indirect
+	monorepo/bin-contact-manager v0.0.0-00010101000000-000000000000 // indirect
 	monorepo/bin-conversation-manager v0.0.0-20231117134833-7918f76572d4 // indirect
 	monorepo/bin-email-manager v0.0.0-00010101000000-000000000000 // indirect
 	monorepo/bin-hook-manager v0.0.0-20240313052650-d3e4c79af4c0 // indirect

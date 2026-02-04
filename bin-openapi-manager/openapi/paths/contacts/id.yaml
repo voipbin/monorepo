@@ -1,0 +1,80 @@
+get:
+  summary: Get the contact
+  description: Get the contact of the given ID.
+  tags:
+    - Contact
+  parameters:
+    - name: id
+      in: path
+      description: The ID of the contact.
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Successful response.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ContactManagerContact'
+
+put:
+  summary: Update a contact
+  description: Update a contact and return updated details.
+  tags:
+    - Contact
+  parameters:
+    - name: id
+      in: path
+      description: The ID of the contact.
+      required: true
+      schema:
+        type: string
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            first_name:
+              type: string
+            last_name:
+              type: string
+            display_name:
+              type: string
+            company:
+              type: string
+            job_title:
+              type: string
+            external_id:
+              type: string
+            notes:
+              type: string
+  responses:
+    '200':
+      description: Successful response.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ContactManagerContact'
+
+delete:
+  summary: Delete the contact
+  description: Delete the contact of the given ID.
+  tags:
+    - Contact
+  parameters:
+    - name: id
+      in: path
+      description: The ID of the contact.
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Successful response.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ContactManagerContact'

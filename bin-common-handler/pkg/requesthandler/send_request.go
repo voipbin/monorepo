@@ -281,3 +281,11 @@ func (r *requestHandler) sendRequestTimeline(ctx context.Context, uri string, me
 
 	return r.sendRequest(ctx, commonoutline.QueueNameTimelineRequest, uri, method, resource, timeout, delayed, dataType, data)
 }
+
+// sendRequestContact send a request to the contact-manager and return the response
+// timeout millisecond
+// delayed millisecond
+func (r *requestHandler) sendRequestContact(ctx context.Context, uri string, method sock.RequestMethod, resource string, timeout, delayed int, dataType string, data []byte) (*sock.Response, error) {
+
+	return r.sendRequest(ctx, commonoutline.QueueNameContactRequest, uri, method, resource, timeout, delayed, dataType, data)
+}

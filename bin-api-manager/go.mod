@@ -16,6 +16,8 @@ replace monorepo/bin-ai-manager => ../bin-ai-manager
 
 replace monorepo/bin-conference-manager => ../bin-conference-manager
 
+replace monorepo/bin-contact-manager => ../bin-contact-manager
+
 replace monorepo/bin-conversation-manager => ../bin-conversation-manager
 
 replace monorepo/bin-email-manager => ../bin-email-manager
@@ -100,6 +102,7 @@ require (
 	monorepo/bin-campaign-manager v0.0.0-20240313031908-f098e3fb6f12
 	monorepo/bin-common-handler v0.0.0-20240408033155-50f0cd082334
 	monorepo/bin-conference-manager v0.0.0-20240329045829-45dc5f4e4e76
+	monorepo/bin-contact-manager v0.0.0-00010101000000-000000000000
 	monorepo/bin-conversation-manager v0.0.0-20231117134833-7918f76572d4
 	monorepo/bin-customer-manager v0.0.0-20240408042746-c45b2b5aa984
 	monorepo/bin-email-manager v0.0.0-00010101000000-000000000000
@@ -179,6 +182,7 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.3-0.20250322232337-35a7c28c31ee // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
+	github.com/oapi-codegen/oapi-codegen/v2 v2.5.1 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
 	github.com/pion/randutil v0.1.0 // indirect
 	github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10 // indirect

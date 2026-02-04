@@ -1,0 +1,35 @@
+post:
+  summary: Add phone number to contact
+  description: Add a new phone number to the contact.
+  tags:
+    - Contact
+  parameters:
+    - name: id
+      in: path
+      description: The ID of the contact.
+      required: true
+      schema:
+        type: string
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - number
+          properties:
+            number:
+              type: string
+            type:
+              type: string
+              enum: [mobile, work, home, fax, other]
+            is_primary:
+              type: boolean
+  responses:
+    '200':
+      description: Phone number added successfully.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ContactManagerContact'

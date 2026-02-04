@@ -1,4 +1,4 @@
-create table contact_manager_contact(
+create table contact_contacts(
   -- identity
   id            binary(16),
   customer_id   binary(16),
@@ -22,10 +22,10 @@ create table contact_manager_contact(
   primary key(id)
 );
 
-create index idx_contact_manager_contact_customer_id on contact_manager_contact(customer_id);
-create index idx_contact_manager_contact_external_id on contact_manager_contact(external_id);
+create index idx_contact_contacts_customer_id on contact_contacts(customer_id);
+create index idx_contact_contacts_external_id on contact_contacts(external_id);
 
-create table contact_manager_phone_number(
+create table contact_phone_numbers(
   id            binary(16),
   customer_id   binary(16),
   contact_id    binary(16),
@@ -40,10 +40,10 @@ create table contact_manager_phone_number(
   primary key(id)
 );
 
-create index idx_contact_manager_phone_number_contact_id on contact_manager_phone_number(contact_id);
-create index idx_contact_manager_phone_number_number_e164 on contact_manager_phone_number(number_e164);
+create index idx_contact_phone_numbers_contact_id on contact_phone_numbers(contact_id);
+create index idx_contact_phone_numbers_number_e164 on contact_phone_numbers(number_e164);
 
-create table contact_manager_email(
+create table contact_emails(
   id            binary(16),
   customer_id   binary(16),
   contact_id    binary(16),
@@ -57,10 +57,10 @@ create table contact_manager_email(
   primary key(id)
 );
 
-create index idx_contact_manager_email_contact_id on contact_manager_email(contact_id);
-create index idx_contact_manager_email_address on contact_manager_email(address);
+create index idx_contact_emails_contact_id on contact_emails(contact_id);
+create index idx_contact_emails_address on contact_emails(address);
 
-create table contact_manager_tag_assignment(
+create table contact_tag_assignments(
   contact_id    binary(16),
   tag_id        binary(16),
 

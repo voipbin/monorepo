@@ -4,6 +4,8 @@ go 1.25.3
 
 replace monorepo/bin-common-handler => ../bin-common-handler
 
+replace monorepo/bin-contact-manager => ../bin-contact-manager
+
 require (
 	github.com/ClickHouse/clickhouse-go/v2 v2.43.0
 	github.com/gofrs/uuid v4.4.0+incompatible

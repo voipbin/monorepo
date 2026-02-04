@@ -1530,6 +1530,156 @@ components:
 
 
 #########################################
+# Contact Manager
+#########################################
+    ContactManagerContact:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the contact.
+        customer_id:
+          type: string
+          format: uuid
+          description: Unique identifier of the associated customer.
+        first_name:
+          type: string
+          description: First name of the contact.
+        last_name:
+          type: string
+          description: Last name of the contact.
+        display_name:
+          type: string
+          description: Display name of the contact.
+        company:
+          type: string
+          description: Company name associated with the contact.
+        job_title:
+          type: string
+          description: Job title of the contact.
+        source:
+          $ref: '#/components/schemas/ContactManagerContactSource'
+        external_id:
+          type: string
+          description: External identifier for the contact.
+        phone_numbers:
+          type: array
+          description: List of phone numbers associated with the contact.
+          items:
+            $ref: '#/components/schemas/ContactManagerPhoneNumber'
+        emails:
+          type: array
+          description: List of email addresses associated with the contact.
+          items:
+            $ref: '#/components/schemas/ContactManagerEmail'
+        tag_ids:
+          type: array
+          description: List of tag IDs associated with the contact.
+          items:
+            type: string
+            format: uuid
+        tm_create:
+          type: string
+          format: date-time
+          description: Timestamp when the contact was created.
+        tm_update:
+          type: string
+          format: date-time
+          description: Timestamp when the contact was last updated.
+        tm_delete:
+          type: string
+          format: date-time
+          description: Timestamp when the contact was deleted.
+
+    ContactManagerContactSource:
+      type: string
+      description: Source of the contact.
+      enum:
+        - manual
+        - import
+        - api
+        - sync
+      x-enum-varnames:
+        - ContactManagerContactSourceManual
+        - ContactManagerContactSourceImport
+        - ContactManagerContactSourceAPI
+        - ContactManagerContactSourceSync
+
+    ContactManagerEmail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the email address.
+        address:
+          type: string
+          format: email
+          description: Email address.
+        type:
+          $ref: '#/components/schemas/ContactManagerEmailType'
+        is_primary:
+          type: boolean
+          description: Indicates if this is the primary email address.
+        tm_create:
+          type: string
+          format: date-time
+          description: Timestamp when the email was created.
+
+    ContactManagerEmailType:
+      type: string
+      description: Type of the email address.
+      enum:
+        - work
+        - personal
+        - other
+      x-enum-varnames:
+        - ContactManagerEmailTypeWork
+        - ContactManagerEmailTypePersonal
+        - ContactManagerEmailTypeOther
+
+    ContactManagerPhoneNumber:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the phone number.
+        number:
+          type: string
+          description: Phone number as entered.
+        number_e164:
+          type: string
+          description: Phone number in E.164 format.
+        type:
+          $ref: '#/components/schemas/ContactManagerPhoneNumberType'
+        is_primary:
+          type: boolean
+          description: Indicates if this is the primary phone number.
+        tm_create:
+          type: string
+          format: date-time
+          description: Timestamp when the phone number was created.
+
+    ContactManagerPhoneNumberType:
+      type: string
+      description: Type of the phone number.
+      enum:
+        - mobile
+        - work
+        - home
+        - fax
+        - other
+      x-enum-varnames:
+        - ContactManagerPhoneNumberTypeMobile
+        - ContactManagerPhoneNumberTypeWork
+        - ContactManagerPhoneNumberTypeHome
+        - ContactManagerPhoneNumberTypeFax
+        - ContactManagerPhoneNumberTypeOther
+
+
+#########################################
 # Conversation Manager
 #########################################
     ConversationManagerAccountType:
@@ -3851,6 +4001,25 @@ paths:
     $ref: './paths/conferences/id.yaml'
   /conferences:
     $ref: './paths/conferences/main.yaml'
+
+  /contacts:
+    $ref: './paths/contacts/main.yaml'
+  /contacts/lookup:
+    $ref: './paths/contacts/lookup.yaml'
+  /contacts/{id}:
+    $ref: './paths/contacts/id.yaml'
+  /contacts/{id}/phone-numbers:
+    $ref: './paths/contacts/id_phonenumbers.yaml'
+  /contacts/{id}/phone-numbers/{phone_number_id}:
+    $ref: './paths/contacts/id_phonenumbers_id.yaml'
+  /contacts/{id}/emails:
+    $ref: './paths/contacts/id_emails.yaml'
+  /contacts/{id}/emails/{email_id}:
+    $ref: './paths/contacts/id_emails_id.yaml'
+  /contacts/{id}/tags:
+    $ref: './paths/contacts/id_tags.yaml'
+  /contacts/{id}/tags/{tag_id}:
+    $ref: './paths/contacts/id_tags_id.yaml'
 
   /conversation_accounts/{id}:
     $ref: './paths/conversation_accounts/id.yaml'
