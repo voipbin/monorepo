@@ -38,10 +38,10 @@ func Test_TranscriptCreate(t *testing.T) {
 				TranscribeID: uuid.FromStringOrNil("60942350-7e2f-11ed-be15-9fea382cfa70"),
 				Direction:    transcript.DirectionIn,
 				Message:      "Hello, this is test message",
-				TMTranscript: "0000-00-00 00:00:01.00000",
+				TMTranscript: "0000-00-00T00:00:01.00000Z",
 			},
 
-			responseCurTime: "2021-01-01 00:00:00.000",
+			responseCurTime: "2021-01-01T00:00:00.000Z",
 			expectRes: &transcript.Transcript{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("6029f7a0-7e2f-11ed-b9d0-5f9428aa8958"),
@@ -50,8 +50,8 @@ func Test_TranscriptCreate(t *testing.T) {
 				TranscribeID: uuid.FromStringOrNil("60942350-7e2f-11ed-be15-9fea382cfa70"),
 				Direction:    transcript.DirectionIn,
 				Message:      "Hello, this is test message",
-				TMTranscript: "0000-00-00 00:00:01.00000",
-				TMCreate:     "2021-01-01 00:00:00.000",
+				TMTranscript: "0000-00-00T00:00:01.00000Z",
+				TMCreate:     "2021-01-01T00:00:00.000Z",
 				TMDelete:     DefaultTimeStamp,
 			},
 		},
@@ -63,12 +63,12 @@ func Test_TranscriptCreate(t *testing.T) {
 				},
 			},
 
-			responseCurTime: "2021-01-01 00:00:00.000",
+			responseCurTime: "2021-01-01T00:00:00.000Z",
 			expectRes: &transcript.Transcript{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("f2757f08-7e2f-11ed-a6c5-af8cdad93769"),
 				},
-				TMCreate: "2021-01-01 00:00:00.000",
+				TMCreate: "2021-01-01T00:00:00.000Z",
 				TMDelete: DefaultTimeStamp,
 			},
 		},
@@ -136,14 +136,14 @@ func Test_TranscriptList(t *testing.T) {
 				transcript.FieldDeleted:      false,
 			},
 
-			responseCurTime: "2021-01-01 00:00:00.000",
+			responseCurTime: "2021-01-01T00:00:00.000Z",
 			expectRes: []*transcript.Transcript{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("4db68b46-7e30-11ed-8c50-0fe723a2648a"),
 					},
 					TranscribeID: uuid.FromStringOrNil("4dda38ac-7e30-11ed-876b-3bf1eb420c31"),
-					TMCreate:     "2021-01-01 00:00:00.000",
+					TMCreate:     "2021-01-01T00:00:00.000Z",
 					TMDelete:     DefaultTimeStamp,
 				},
 			},
@@ -181,14 +181,14 @@ func Test_TranscriptList(t *testing.T) {
 				transcript.FieldDeleted:      false,
 			},
 
-			responseCurTime: "2021-01-01 00:00:00.000",
+			responseCurTime: "2021-01-01T00:00:00.000Z",
 			expectRes: []*transcript.Transcript{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("892afd74-7e30-11ed-808f-578ac2e92b40"),
 					},
 					TranscribeID: uuid.FromStringOrNil("89560596-7e30-11ed-b714-e7b0632f17e9"),
-					TMCreate:     "2021-01-01 00:00:00.000",
+					TMCreate:     "2021-01-01T00:00:00.000Z",
 					TMDelete:     DefaultTimeStamp,
 				},
 				{
@@ -196,7 +196,7 @@ func Test_TranscriptList(t *testing.T) {
 						ID: uuid.FromStringOrNil("8937c114-7e2e-11ed-8566-ffc2c99e510d"),
 					},
 					TranscribeID: uuid.FromStringOrNil("89560596-7e30-11ed-b714-e7b0632f17e9"),
-					TMCreate:     "2021-01-01 00:00:00.000",
+					TMCreate:     "2021-01-01T00:00:00.000Z",
 					TMDelete:     DefaultTimeStamp,
 				},
 			},
@@ -259,13 +259,13 @@ func Test_TranscriptDelete(t *testing.T) {
 				},
 			},
 
-			responseCurTime: "2021-01-01 00:00:00.000",
+			responseCurTime: "2021-01-01T00:00:00.000Z",
 			expectRes: &transcript.Transcript{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("15f2b1f4-f197-11ee-b786-7b9a797be96c"),
 				},
-				TMCreate: "2021-01-01 00:00:00.000",
-				TMDelete: "2021-01-01 00:00:00.000",
+				TMCreate: "2021-01-01T00:00:00.000Z",
+				TMDelete: "2021-01-01T00:00:00.000Z",
 			},
 		},
 	}

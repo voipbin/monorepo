@@ -252,7 +252,7 @@ func Test_OutdialtargetListByOutdialID(t *testing.T) {
 				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("cf21cd20-c829-11ec-8452-6746e25a4103"),
-			"2021-03-01 01:00:00.995000",
+			"2021-03-01T01:00:00.995000Z",
 			10,
 
 			&omoutdial.Outdial{

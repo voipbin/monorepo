@@ -346,7 +346,7 @@ func Test_updateCurrentAction(t *testing.T) {
 					Type: action.TypeAnswer,
 				},
 				ExecuteCount: 1,
-				TMUpdate:     "2022-04-18 03:22:17.995000",
+				TMUpdate:     "2022-04-18T03:22:17.995000Z",
 			},
 		},
 	}
@@ -799,7 +799,7 @@ func Test_List(t *testing.T) {
 		{
 			name: "test normal",
 
-			token: "2020-10-10T03:30:17.000000",
+			token: "2020-10-10T03:30:17.000000Z",
 			size:  10,
 			filters: map[activeflow.Field]any{
 				activeflow.FieldCustomerID: uuid.FromStringOrNil("e3bb9832-f81d-11ec-bcd9-9f298317c9f9"),

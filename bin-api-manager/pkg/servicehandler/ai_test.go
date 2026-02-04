@@ -153,7 +153,7 @@ func Test_AIListByCustomerID(t *testing.T) {
 				Permission: amagent.PermissionCustomerAdmin,
 			},
 			size:  10,
-			token: "2020-09-20 03:23:20.995000",
+			token: "2020-09-20T03:23:20.995000Z",
 			filters: map[amai.Field]any{
 				amai.FieldDeleted:    false,
 				amai.FieldCustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),

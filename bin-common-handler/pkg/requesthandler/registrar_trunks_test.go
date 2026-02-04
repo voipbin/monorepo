@@ -111,7 +111,7 @@ func Test_RegistrarV1TrunkList(t *testing.T) {
 		{
 			name: "normal",
 
-			pageToken: "2020-09-20 03:23:20.995000",
+			pageToken: "2020-09-20T03:23:20.995000Z",
 			pageSize:  10,
 			filters: map[rmtrunk.Field]any{
 				rmtrunk.FieldDeleted: false,
@@ -124,7 +124,7 @@ func Test_RegistrarV1TrunkList(t *testing.T) {
 
 			expectTarget: "bin-manager.registrar-manager.request",
 			expectRequest: &sock.Request{
-				URI:      "/v1/trunks?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10",
+				URI:      "/v1/trunks?page_token=2020-09-20T03%3A23%3A20.995000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"deleted":false}`),

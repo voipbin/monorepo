@@ -5,10 +5,28 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"regexp"
 	"strings"
 
 	"github.com/gofrs/uuid"
 )
+
+// mysqlDatetimeRegex matches MySQL DATETIME format: "2024-01-15 10:30:45.123456"
+var mysqlDatetimeRegex = regexp.MustCompile(`^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(\.\d+)?$`)
+
+// convertMySQLTimestampToISO8601 converts MySQL datetime format to ISO 8601.
+// Input:  "2024-01-15 10:30:45.123456"
+// Output: "2024-01-15T10:30:45.123456Z"
+// If the input is not in MySQL format, it returns the original string unchanged.
+func convertMySQLTimestampToISO8601(s string) string {
+	if !mysqlDatetimeRegex.MatchString(s) {
+		return s
+	}
+
+	// Replace space with 'T' and append 'Z'
+	// "2024-01-15 10:30:45.123456" -> "2024-01-15T10:30:45.123456Z"
+	return strings.Replace(s, " ", "T", 1) + "Z"
+}
 
 // ============================================================================
 // Public API Functions
@@ -356,7 +374,8 @@ func (t *scanTarget) copyPrimitive() error {
 	switch v := t.scanPtr.(type) {
 	case *sql.NullString:
 		if v.Valid {
-			t.fieldVal.SetString(v.String)
+			// Convert MySQL datetime format to ISO 8601 if detected
+			t.fieldVal.SetString(convertMySQLTimestampToISO8601(v.String))
 		}
 	case *sql.NullInt64:
 		if v.Valid {

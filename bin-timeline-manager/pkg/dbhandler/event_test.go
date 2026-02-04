@@ -161,7 +161,7 @@ func TestBuildEventQuery_Basic(t *testing.T) {
 func TestBuildEventQuery_WithPageToken(t *testing.T) {
 	testID := uuid.Must(uuid.NewV4())
 	publisher := "flow-manager"
-	pageToken := "2024-01-15T10:29:00.123Z"
+	pageToken := "2024-01-15T10:29:00.123000Z"
 
 	query, args := buildEventQuery(publisher, testID, []string{"activeflow_*"}, pageToken, 10)
 
@@ -221,7 +221,7 @@ func TestBuildEventQuery_WildcardAll(t *testing.T) {
 func TestBuildEventQuery_ComplexScenario(t *testing.T) {
 	testID := uuid.Must(uuid.NewV4())
 	publisher := "call-manager"
-	pageToken := "2024-01-15T10:29:00.123Z"
+	pageToken := "2024-01-15T10:29:00.123000Z"
 	events := []string{"call_created", "call_hangup", "groupcall_*"}
 
 	query, args := buildEventQuery(publisher, testID, events, pageToken, 50)

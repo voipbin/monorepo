@@ -39,7 +39,7 @@ func Test_MessagesGET(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/messages?page_size=10&page_token=2021-03-02%2003%3A23%3A20.995000",
+			reqQuery: "/messages?page_size=10&page_token=2021-03-02T03:23:20.995000Z",
 
 			responseGets: []*mmmessage.WebhookMessage{
 				{
@@ -50,7 +50,7 @@ func Test_MessagesGET(t *testing.T) {
 			},
 
 			expectPageSize:  10,
-			expectPageToken: "2021-03-02 03:23:20.995000",
+			expectPageToken: "2021-03-02T03:23:20.995000Z",
 			expectRes:       `{"result":[{"id":"282cf482-a2e9-11ec-a87d-6f5255677379","customer_id":"00000000-0000-0000-0000-000000000000","type":"","source":null,"targets":null,"text":"","direction":"","tm_create":"","tm_update":"","tm_delete":""}],"next_page_token":""}`,
 		},
 	}

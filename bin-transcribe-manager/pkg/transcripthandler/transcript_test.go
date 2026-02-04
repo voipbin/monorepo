@@ -40,7 +40,7 @@ func Test_Create(t *testing.T) {
 			uuid.FromStringOrNil("0da54c10-7eb5-11ed-b190-43412cc32f80"),
 			transcript.DirectionIn,
 			"test transcript",
-			"0000-00-00 00:00:01.00000",
+			"0000-00-00T00:00:01.00000Z",
 
 			uuid.FromStringOrNil("494f5bfc-7eb5-11ed-a6d7-07162f18f28e"),
 			&transcript.Transcript{
@@ -51,7 +51,7 @@ func Test_Create(t *testing.T) {
 				TranscribeID: uuid.FromStringOrNil("0da54c10-7eb5-11ed-b190-43412cc32f80"),
 				Direction:    transcript.DirectionIn,
 				Message:      "test transcript",
-				TMTranscript: "0000-00-00 00:00:01.00000",
+				TMTranscript: "0000-00-00T00:00:01.00000Z",
 			},
 
 			&transcript.Transcript{
@@ -62,7 +62,7 @@ func Test_Create(t *testing.T) {
 				TranscribeID: uuid.FromStringOrNil("0da54c10-7eb5-11ed-b190-43412cc32f80"),
 				Direction:    transcript.DirectionIn,
 				Message:      "test transcript",
-				TMTranscript: "0000-00-00 00:00:01.00000",
+				TMTranscript: "0000-00-00T00:00:01.00000Z",
 			},
 		},
 	}
@@ -116,7 +116,7 @@ func Test_List(t *testing.T) {
 			name: "normal",
 
 			size:  10,
-			token: "2020-05-03%2021:35:02.809",
+			token: "2020-05-03T21:35:02.809Z",
 			filters: map[transcript.Field]any{
 				transcript.FieldCustomerID: uuid.FromStringOrNil("cf322d78-ed98-11ee-813d-1ff686765c1f"),
 			},

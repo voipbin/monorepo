@@ -31,12 +31,12 @@ func Test_processV1ConferencesGet(t *testing.T) {
 		{
 			name: "normal",
 			request: &sock.Request{
-				URI:    "/v1/conferences?page_size=10&page_token=2020-05-03%2021:35:02.809",
+				URI:    "/v1/conferences?page_size=10&page_token=2020-05-03T21:35:02.809Z",
 				Method: sock.RequestMethodGet,
 				Data:   []byte(`{"customer_id":"24676972-7f49-11ec-bc89-b7d33e9d3ea8"}`),
 			},
 			pageSize:  10,
-			pageToken: "2020-05-03 21:35:02.809",
+			pageToken: "2020-05-03T21:35:02.809Z",
 			responseConferences: []*conference.Conference{
 				{
 					Identity: commonidentity.Identity{

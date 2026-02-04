@@ -16,7 +16,7 @@ func Test_URLParseFilters(t *testing.T) {
 	}{
 		{
 			"normal",
-			"/v1/agents?page_size=10&page_token=2021-11-23%2017:55:39.712000&filter_customer_id=5fd7f9b8-cb37-11ee-bd29-f30560a6ac86&filter_tag_ids=f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a,08789a66-b236-11ee-8a51-b31bbd98fe91&filter_deleted=false&filter_status=available&filter_test1=&filter_test2=test2_value&filter_number=%2B14703298699",
+			"/v1/agents?page_size=10&page_token=2021-11-23T17%3A55%3A39.712000Z&filter_customer_id=5fd7f9b8-cb37-11ee-bd29-f30560a6ac86&filter_tag_ids=f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a,08789a66-b236-11ee-8a51-b31bbd98fe91&filter_deleted=false&filter_status=available&filter_test1=&filter_test2=test2_value&filter_number=%2B14703298699",
 
 			map[string]string{
 				"customer_id": "5fd7f9b8-cb37-11ee-bd29-f30560a6ac86",

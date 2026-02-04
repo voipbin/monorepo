@@ -93,7 +93,7 @@ func Test_CallCreate(t *testing.T) {
 					},
 				},
 			},
-			"2020-04-18T03:22:17.995000",
+			"2020-04-18T03:22:17.995000Z",
 
 			&call.Call{
 				Identity: commonidentity.Identity{
@@ -157,7 +157,7 @@ func Test_CallCreate(t *testing.T) {
 				TMRinging:     DefaultTimeStamp,
 				TMHangup:      DefaultTimeStamp,
 
-				TMCreate: "2020-04-18T03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
 				TMUpdate: DefaultTimeStamp,
 				TMDelete: DefaultTimeStamp,
 			},
@@ -170,7 +170,7 @@ func Test_CallCreate(t *testing.T) {
 					ID: uuid.FromStringOrNil("64e31a36-b6fc-4df5-9a66-48f68ad60a70"),
 				},
 			},
-			"2020-04-18T03:22:17.995000",
+			"2020-04-18T03:22:17.995000Z",
 
 			&call.Call{
 				Identity: commonidentity.Identity{
@@ -185,7 +185,7 @@ func Test_CallCreate(t *testing.T) {
 				TMRinging:     DefaultTimeStamp,
 				TMHangup:      DefaultTimeStamp,
 
-				TMCreate: "2020-04-18T03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
 				TMUpdate: DefaultTimeStamp,
 				TMDelete: DefaultTimeStamp,
 			},
@@ -265,7 +265,7 @@ func Test_CallList(t *testing.T) {
 				call.FieldDeleted:    false,
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 
 			expectRes: []*call.Call{
 				{
@@ -283,7 +283,7 @@ func Test_CallList(t *testing.T) {
 					TMRinging:     DefaultTimeStamp,
 					TMHangup:      DefaultTimeStamp,
 
-					TMCreate: "2020-04-18 03:22:17.995000",
+					TMCreate: "2020-04-18T03:22:17.995000Z",
 					TMUpdate: DefaultTimeStamp,
 					TMDelete: DefaultTimeStamp,
 				},
@@ -302,7 +302,7 @@ func Test_CallList(t *testing.T) {
 					TMRinging:     DefaultTimeStamp,
 					TMHangup:      DefaultTimeStamp,
 
-					TMCreate: "2020-04-18 03:22:17.995000",
+					TMCreate: "2020-04-18T03:22:17.995000Z",
 					TMUpdate: DefaultTimeStamp,
 					TMDelete: DefaultTimeStamp,
 				},
@@ -317,7 +317,7 @@ func Test_CallList(t *testing.T) {
 				call.FieldDeleted:    false,
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 			expectRes:       []*call.Call{},
 		},
 	}
@@ -394,7 +394,7 @@ func Test_CallList_delete(t *testing.T) {
 				uuid.FromStringOrNil("e9decd77-1c77-4ef0-bb92-547fd40cd911"),
 			},
 
-			"2020-04-18 03:22:17.995000",
+			"2020-04-18T03:22:17.995000Z",
 
 			[]*call.Call{
 				{
@@ -412,7 +412,7 @@ func Test_CallList_delete(t *testing.T) {
 					TMRinging:     DefaultTimeStamp,
 					TMHangup:      DefaultTimeStamp,
 
-					TMCreate: "2020-04-18 03:22:17.995000",
+					TMCreate: "2020-04-18T03:22:17.995000Z",
 					TMUpdate: DefaultTimeStamp,
 					TMDelete: DefaultTimeStamp,
 				},
@@ -491,7 +491,7 @@ func Test_CallSetBridgeID(t *testing.T) {
 
 			uuid.FromStringOrNil("853a2b18-5f8b-11ed-ba64-d35836e18de8"),
 			"c6d46f04-5f89-11ed-98b2-57f1fabc3cf4",
-			"2020-04-18T03:22:17.995000",
+			"2020-04-18T03:22:17.995000Z",
 
 			&call.Call{
 				Identity: commonidentity.Identity{
@@ -507,8 +507,8 @@ func Test_CallSetBridgeID(t *testing.T) {
 
 				Dialroutes: []rmroute.Route{},
 
-				TMCreate: "2020-04-18T03:22:17.995000",
-				TMUpdate: "2020-04-18T03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
+				TMUpdate: "2020-04-18T03:22:17.995000Z",
 				TMDelete: DefaultTimeStamp,
 
 				TMRinging:     DefaultTimeStamp,
@@ -590,7 +590,7 @@ func Test_CallSetStatus(t *testing.T) {
 			uuid.FromStringOrNil("93d7aea3-4a93-4c58-8bce-d956a0f73ad6"),
 			call.StatusTerminating,
 
-			"2020-04-18 03:22:17.995000",
+			"2020-04-18T03:22:17.995000Z",
 
 			&call.Call{
 				Identity: commonidentity.Identity{
@@ -609,8 +609,8 @@ func Test_CallSetStatus(t *testing.T) {
 
 				Dialroutes: []rmroute.Route{},
 
-				TMCreate: "2020-04-18 03:22:17.995000",
-				TMUpdate: "2020-04-18 03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
+				TMUpdate: "2020-04-18T03:22:17.995000Z",
 				TMDelete: DefaultTimeStamp,
 
 				TMProgressing: DefaultTimeStamp,
@@ -690,7 +690,7 @@ func Test_CallGetByChannelID(t *testing.T) {
 
 			"54963ab2-6bc8-11ed-9acd-8325f591cc80",
 
-			"2020-04-18T03:22:17.995000",
+			"2020-04-18T03:22:17.995000Z",
 			call.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("5462dfbe-6bc8-11ed-b128-57813cbc586f"),
@@ -710,7 +710,7 @@ func Test_CallGetByChannelID(t *testing.T) {
 				TMProgressing: DefaultTimeStamp,
 				TMHangup:      DefaultTimeStamp,
 
-				TMCreate: "2020-04-18T03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
 				TMUpdate: DefaultTimeStamp,
 				TMDelete: DefaultTimeStamp,
 			},
@@ -735,7 +735,7 @@ func Test_CallGetByChannelID(t *testing.T) {
 
 			"79b8a8b6-6bc8-11ed-8ace-af5dbf486a09",
 
-			"2020-04-18T03:22:17.995000",
+			"2020-04-18T03:22:17.995000Z",
 			call.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("79dc4e7e-6bc8-11ed-a082-2f57dba9cd50"),
@@ -759,7 +759,7 @@ func Test_CallGetByChannelID(t *testing.T) {
 				TMProgressing: DefaultTimeStamp,
 				TMHangup:      DefaultTimeStamp,
 
-				TMCreate: "2020-04-18T03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
 				TMUpdate: DefaultTimeStamp,
 				TMDelete: DefaultTimeStamp,
 			},
@@ -831,14 +831,14 @@ func Test_CallSetHangup(t *testing.T) {
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
 
-				TMCreate: "2020-04-18T03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
 			},
 
 			uuid.FromStringOrNil("0ffea974-6bc9-11ed-96aa-b35964df6757"),
 			call.HangupReasonNormal,
 			call.HangupByLocal,
 
-			"2020-04-18T03:22:18.995000",
+			"2020-04-18T03:22:18.995000Z",
 
 			call.Call{
 				Identity: commonidentity.Identity{
@@ -863,10 +863,10 @@ func Test_CallSetHangup(t *testing.T) {
 
 				TMRinging:     DefaultTimeStamp,
 				TMProgressing: DefaultTimeStamp,
-				TMHangup:      "2020-04-18T03:22:18.995000",
+				TMHangup:      "2020-04-18T03:22:18.995000Z",
 
-				TMCreate: "2020-04-18T03:22:18.995000",
-				TMUpdate: "2020-04-18T03:22:18.995000",
+				TMCreate: "2020-04-18T03:22:18.995000Z",
+				TMUpdate: "2020-04-18T03:22:18.995000Z",
 				TMDelete: DefaultTimeStamp,
 			},
 		},
@@ -935,7 +935,7 @@ func Test_CallSetFlowID(t *testing.T) {
 
 			uuid.FromStringOrNil("52f4a50a-8cc7-11ea-87f7-f36a8e4090eb"),
 
-			"2020-04-18T03:22:17.995000",
+			"2020-04-18T03:22:17.995000Z",
 			&call.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("3599ce5e-9357-11ea-b215-f7ddc7ee506e"),
@@ -953,8 +953,8 @@ func Test_CallSetFlowID(t *testing.T) {
 				TMProgressing: DefaultTimeStamp,
 				TMHangup:      DefaultTimeStamp,
 
-				TMCreate: "2020-04-18T03:22:17.995000",
-				TMUpdate: "2020-04-18T03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
+				TMUpdate: "2020-04-18T03:22:17.995000Z",
 				TMDelete: DefaultTimeStamp,
 			},
 		},
@@ -1024,7 +1024,7 @@ func Test_CallSetConfbridgeID(t *testing.T) {
 			},
 
 			uuid.FromStringOrNil("62faff48-9358-11ea-8455-8fd1af79d7dc"),
-			"2020-04-18T03:22:17.995000",
+			"2020-04-18T03:22:17.995000Z",
 
 			&call.Call{
 				Identity: commonidentity.Identity{
@@ -1043,8 +1043,8 @@ func Test_CallSetConfbridgeID(t *testing.T) {
 				TMProgressing: DefaultTimeStamp,
 				TMHangup:      DefaultTimeStamp,
 
-				TMCreate: "2020-04-18T03:22:17.995000",
-				TMUpdate: "2020-04-18T03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
+				TMUpdate: "2020-04-18T03:22:17.995000Z",
 				TMDelete: DefaultTimeStamp,
 			},
 		},
@@ -1129,7 +1129,7 @@ func Test_CallSetActionAndActionNextHold(t *testing.T) {
 			},
 			false,
 
-			"2020-04-18T03:22:17.995000",
+			"2020-04-18T03:22:17.995000Z",
 			&call.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("1d55d302-8d02-11ea-992f-53a0113a8a9b"),
@@ -1161,8 +1161,8 @@ func Test_CallSetActionAndActionNextHold(t *testing.T) {
 				TMProgressing: DefaultTimeStamp,
 				TMHangup:      DefaultTimeStamp,
 
-				TMCreate: "2020-04-18T03:22:17.995000",
-				TMUpdate: "2020-04-18T03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
+				TMUpdate: "2020-04-18T03:22:17.995000Z",
 				TMDelete: DefaultTimeStamp,
 			},
 		},
@@ -1188,7 +1188,7 @@ func Test_CallSetActionAndActionNextHold(t *testing.T) {
 			},
 			false,
 
-			"2020-04-18T03:22:17.995000",
+			"2020-04-18T03:22:17.995000Z",
 			&call.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("964b060e-8d04-11ea-bc42-93d5d0871556"),
@@ -1217,8 +1217,8 @@ func Test_CallSetActionAndActionNextHold(t *testing.T) {
 				TMProgressing: DefaultTimeStamp,
 				TMHangup:      DefaultTimeStamp,
 
-				TMCreate: "2020-04-18T03:22:17.995000",
-				TMUpdate: "2020-04-18T03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
+				TMUpdate: "2020-04-18T03:22:17.995000Z",
 				TMDelete: DefaultTimeStamp,
 			},
 		},
@@ -1289,7 +1289,7 @@ func Test_CallSetMasterCallID(t *testing.T) {
 			},
 			uuid.FromStringOrNil("4a6ce0aa-24fc-11eb-aec0-4b97b9a2422a"),
 
-			"2020-04-18T03:22:17.995000",
+			"2020-04-18T03:22:17.995000Z",
 			&call.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("14649d2c-24fc-11eb-bb0b-9bd6970f725f"),
@@ -1306,8 +1306,8 @@ func Test_CallSetMasterCallID(t *testing.T) {
 				TMProgressing: DefaultTimeStamp,
 				TMHangup:      DefaultTimeStamp,
 
-				TMCreate: "2020-04-18T03:22:17.995000",
-				TMUpdate: "2020-04-18T03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
+				TMUpdate: "2020-04-18T03:22:17.995000Z",
 				TMDelete: DefaultTimeStamp,
 			},
 		},
@@ -1321,7 +1321,7 @@ func Test_CallSetMasterCallID(t *testing.T) {
 			},
 			uuid.Nil,
 
-			"2020-04-18T03:22:17.995000",
+			"2020-04-18T03:22:17.995000Z",
 			&call.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("665db8f2-2501-11eb-86ce-f3a50eef6f26"),
@@ -1336,8 +1336,8 @@ func Test_CallSetMasterCallID(t *testing.T) {
 				TMProgressing: DefaultTimeStamp,
 				TMHangup:      DefaultTimeStamp,
 
-				TMCreate: "2020-04-18T03:22:17.995000",
-				TMUpdate: "2020-04-18T03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
+				TMUpdate: "2020-04-18T03:22:17.995000Z",
 				TMDelete: DefaultTimeStamp,
 			},
 		},
@@ -1404,11 +1404,11 @@ func Test_CallSetRecordingID(t *testing.T) {
 				},
 				ChannelID: "4e2fe520-282b-11eb-ad66-b777dce59261",
 				Type:      call.TypeFlow,
-				TMCreate:  "2020-04-18T03:22:17.995000",
+				TMCreate:  "2020-04-18T03:22:17.995000Z",
 			},
 			uuid.FromStringOrNil("4e847572-282b-11eb-9c58-97622e4406e2"),
 
-			"2020-04-18T03:22:17.995000",
+			"2020-04-18T03:22:17.995000Z",
 			&call.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("46ab9ad8-282b-11eb-82c3-6782faf5e030"),
@@ -1426,8 +1426,8 @@ func Test_CallSetRecordingID(t *testing.T) {
 				TMProgressing: DefaultTimeStamp,
 				TMHangup:      DefaultTimeStamp,
 
-				TMCreate: "2020-04-18T03:22:17.995000",
-				TMUpdate: "2020-04-18T03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
+				TMUpdate: "2020-04-18T03:22:17.995000Z",
 				TMDelete: DefaultTimeStamp,
 			},
 		},
@@ -1438,11 +1438,11 @@ func Test_CallSetRecordingID(t *testing.T) {
 					ID: uuid.FromStringOrNil("7b3e197e-282b-11eb-956d-4feb054947db"),
 				},
 				Type:     call.TypeFlow,
-				TMCreate: "2020-04-18T03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
 			},
 			uuid.Nil,
 
-			"2020-04-18T03:22:17.995000",
+			"2020-04-18T03:22:17.995000Z",
 			&call.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("7b3e197e-282b-11eb-956d-4feb054947db"),
@@ -1457,8 +1457,8 @@ func Test_CallSetRecordingID(t *testing.T) {
 				TMProgressing: DefaultTimeStamp,
 				TMHangup:      DefaultTimeStamp,
 
-				TMCreate: "2020-04-18T03:22:17.995000",
-				TMUpdate: "2020-04-18T03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
+				TMUpdate: "2020-04-18T03:22:17.995000Z",
 				TMDelete: DefaultTimeStamp,
 			},
 		},
@@ -1528,7 +1528,7 @@ func Test_CallSetExternalMediaID(t *testing.T) {
 
 			uuid.FromStringOrNil("94202c28-96f3-11ed-9327-176b7622fb32"),
 
-			"2020-04-18T03:22:17.995000",
+			"2020-04-18T03:22:17.995000Z",
 			&call.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("93eef900-96f3-11ed-9ce1-3f97da39b9d8"),
@@ -1544,8 +1544,8 @@ func Test_CallSetExternalMediaID(t *testing.T) {
 				TMProgressing: DefaultTimeStamp,
 				TMHangup:      DefaultTimeStamp,
 
-				TMCreate: "2020-04-18T03:22:17.995000",
-				TMUpdate: "2020-04-18T03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
+				TMUpdate: "2020-04-18T03:22:17.995000Z",
 				TMDelete: DefaultTimeStamp,
 			},
 		},
@@ -1622,7 +1622,7 @@ func Test_CallSetForRouteFailover(t *testing.T) {
 			"06372bc6-6036-11ed-bd92-7793e1da99bd",
 			uuid.FromStringOrNil("11441a56-6036-11ed-9ac4-3b51fc15b1a1"),
 
-			"2020-04-18T03:22:17.995000",
+			"2020-04-18T03:22:17.995000Z",
 			&call.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("eff7e968-6035-11ed-b494-17ddee07f371"),
@@ -1639,8 +1639,8 @@ func Test_CallSetForRouteFailover(t *testing.T) {
 				TMProgressing: DefaultTimeStamp,
 				TMHangup:      DefaultTimeStamp,
 
-				TMCreate: "2020-04-18T03:22:17.995000",
-				TMUpdate: "2020-04-18T03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
+				TMUpdate: "2020-04-18T03:22:17.995000Z",
 				TMDelete: DefaultTimeStamp,
 			},
 		},
@@ -1710,7 +1710,7 @@ func Test_CallSetActionNextHold(t *testing.T) {
 			},
 			true,
 
-			"2020-04-18 03:22:17.995000",
+			"2020-04-18T03:22:17.995000Z",
 			&call.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("b347a946-6bab-11ed-845d-3fd878a04427"),
@@ -1725,8 +1725,8 @@ func Test_CallSetActionNextHold(t *testing.T) {
 				TMProgressing: DefaultTimeStamp,
 				TMHangup:      DefaultTimeStamp,
 
-				TMCreate: "2020-04-18 03:22:17.995000",
-				TMUpdate: "2020-04-18 03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
+				TMUpdate: "2020-04-18T03:22:17.995000Z",
 				TMDelete: DefaultTimeStamp,
 			},
 		},
@@ -1739,7 +1739,7 @@ func Test_CallSetActionNextHold(t *testing.T) {
 			},
 			false,
 
-			"2020-04-18 03:22:17.995000",
+			"2020-04-18T03:22:17.995000Z",
 			&call.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("10ecffc8-6bad-11ed-89dd-7bd54d2b1b6b"),
@@ -1754,8 +1754,8 @@ func Test_CallSetActionNextHold(t *testing.T) {
 				TMProgressing: DefaultTimeStamp,
 				TMHangup:      DefaultTimeStamp,
 
-				TMCreate: "2020-04-18 03:22:17.995000",
-				TMUpdate: "2020-04-18 03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
+				TMUpdate: "2020-04-18T03:22:17.995000Z",
 				TMDelete: DefaultTimeStamp,
 			},
 		},
@@ -1825,7 +1825,7 @@ func Test_CallDelete(t *testing.T) {
 			},
 
 			uuid.FromStringOrNil("407a8f3a-0fed-45b6-9587-a963e39c91ec"),
-			"2020-04-18T03:22:18.995000",
+			"2020-04-18T03:22:18.995000Z",
 
 			call.Call{
 				Identity: commonidentity.Identity{
@@ -1845,9 +1845,9 @@ func Test_CallDelete(t *testing.T) {
 				TMProgressing: DefaultTimeStamp,
 				TMHangup:      DefaultTimeStamp,
 
-				TMCreate: "2020-04-18T03:22:18.995000",
-				TMUpdate: "2020-04-18T03:22:18.995000",
-				TMDelete: "2020-04-18T03:22:18.995000",
+				TMCreate: "2020-04-18T03:22:18.995000Z",
+				TMUpdate: "2020-04-18T03:22:18.995000Z",
+				TMDelete: "2020-04-18T03:22:18.995000Z",
 			},
 		},
 	}
@@ -1918,7 +1918,7 @@ func Test_CallSetData(t *testing.T) {
 			map[call.DataType]string{
 				call.DataTypeExecuteNextMasterOnHangup: "false",
 			},
-			"2020-04-18T03:22:17.995000",
+			"2020-04-18T03:22:17.995000Z",
 
 			&call.Call{
 				Identity: commonidentity.Identity{
@@ -1934,8 +1934,8 @@ func Test_CallSetData(t *testing.T) {
 
 				Dialroutes: []rmroute.Route{},
 
-				TMCreate: "2020-04-18T03:22:17.995000",
-				TMUpdate: "2020-04-18T03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
+				TMUpdate: "2020-04-18T03:22:17.995000Z",
 				TMDelete: DefaultTimeStamp,
 
 				TMRinging:     DefaultTimeStamp,
@@ -2011,7 +2011,7 @@ func Test_CallSetMuteDirection(t *testing.T) {
 
 			uuid.FromStringOrNil("21771598-d243-11ed-bbd2-b39e5d43e568"),
 			call.MuteDirectionBoth,
-			"2020-04-18T03:22:17.995000",
+			"2020-04-18T03:22:17.995000Z",
 
 			&call.Call{
 				Identity: commonidentity.Identity{
@@ -2025,8 +2025,8 @@ func Test_CallSetMuteDirection(t *testing.T) {
 
 				Dialroutes: []rmroute.Route{},
 
-				TMCreate: "2020-04-18T03:22:17.995000",
-				TMUpdate: "2020-04-18T03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
+				TMUpdate: "2020-04-18T03:22:17.995000Z",
 				TMDelete: DefaultTimeStamp,
 
 				TMRinging:     DefaultTimeStamp,

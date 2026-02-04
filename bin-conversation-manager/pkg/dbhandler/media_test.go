@@ -39,7 +39,7 @@ func Test_MediaCreate(t *testing.T) {
 				Filename: "testfilename.wav",
 			},
 
-			"2022-04-18 03:22:17.995000",
+			"2022-04-18T03:22:17.995000Z",
 			&media.Media{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("77f3825a-eb9c-11ec-9fa6-ef743d81dea8"),
@@ -48,7 +48,7 @@ func Test_MediaCreate(t *testing.T) {
 
 				Type:     media.TypeAudio,
 				Filename: "testfilename.wav",
-				TMCreate: "2022-04-18 03:22:17.995000",
+				TMCreate: "2022-04-18T03:22:17.995000Z",
 				TMUpdate: commondatabasehandler.DefaultTimeStamp,
 				TMDelete: commondatabasehandler.DefaultTimeStamp,
 			},

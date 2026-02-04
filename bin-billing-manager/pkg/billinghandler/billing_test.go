@@ -45,7 +45,7 @@ func Test_BillingStart(t *testing.T) {
 			customerID:     uuid.FromStringOrNil("a1f18e42-09f7-11ee-8485-5b8f354924bd"),
 			referenceType:  billing.ReferenceTypeCall,
 			referenceID:    uuid.FromStringOrNil("a21b5088-09f7-11ee-b0f7-2ba7f59b91a8"),
-			tmBillingStart: "2023-06-08 03:22:17.995000",
+			tmBillingStart: "2023-06-08T03:22:17.995000Z",
 			source: &commonaddress.Address{
 				Target: "+821100000001",
 			},
@@ -78,7 +78,7 @@ func Test_BillingStart(t *testing.T) {
 				CostPerUnit:      billing.DefaultCostPerUnitReferenceTypeCall,
 				CostTotal:        0,
 				BillingUnitCount: 0,
-				TMBillingStart:   "2023-06-08 03:22:17.995000",
+				TMBillingStart:   "2023-06-08T03:22:17.995000Z",
 				TMBillingEnd:     dbhandler.DefaultTimeStamp,
 			},
 		},
@@ -141,7 +141,7 @@ func Test_BillingStart_number_sms(t *testing.T) {
 			customerID:     uuid.FromStringOrNil("c29c8386-16a9-11ee-ae77-c336432e00f9"),
 			referenceType:  billing.ReferenceTypeSMS,
 			referenceID:    uuid.FromStringOrNil("c3183f6c-16a9-11ee-b2b9-677692eb71ef"),
-			tmBillingStart: "2023-06-08 03:22:17.995000",
+			tmBillingStart: "2023-06-08T03:22:17.995000Z",
 			source: &commonaddress.Address{
 				Target: "+821100000001",
 			},
@@ -180,7 +180,7 @@ func Test_BillingStart_number_sms(t *testing.T) {
 				CostPerUnit:      billing.DefaultCostPerUnitReferenceTypeSMS,
 				CostTotal:        0,
 				BillingUnitCount: 0,
-				TMBillingStart:   "2023-06-08 03:22:17.995000",
+				TMBillingStart:   "2023-06-08T03:22:17.995000Z",
 				TMBillingEnd:     dbhandler.DefaultTimeStamp,
 			},
 		},
@@ -252,9 +252,9 @@ func Test_BillingEnd(t *testing.T) {
 				},
 				AccountID:      uuid.FromStringOrNil("23d43574-16ad-11ee-9c99-3b8e376bb5a3"),
 				ReferenceType:  billing.ReferenceTypeCall,
-				TMBillingStart: "2023-06-08 03:22:07.991000",
+				TMBillingStart: "2023-06-08T03:22:07.991000Z",
 			},
-			tmBillingEnd: "2023-06-08 03:22:17.995000",
+			tmBillingEnd: "2023-06-08T03:22:17.995000Z",
 			source: &commonaddress.Address{
 				Target: "+821100000001",
 			},
@@ -269,7 +269,7 @@ func Test_BillingEnd(t *testing.T) {
 				},
 				AccountID:      uuid.FromStringOrNil("23d43574-16ad-11ee-9c99-3b8e376bb5a3"),
 				ReferenceType:  billing.ReferenceTypeCall,
-				TMBillingStart: "2023-06-08 03:22:07.991000",
+				TMBillingStart: "2023-06-08T03:22:07.991000Z",
 			},
 			responseAccount: &account.Account{
 				Identity: commonidentity.Identity{
@@ -289,9 +289,9 @@ func Test_BillingEnd(t *testing.T) {
 				},
 				AccountID:      uuid.FromStringOrNil("9e128c36-16ae-11ee-9655-2f9b21f8f7ba"),
 				ReferenceType:  billing.ReferenceTypeSMS,
-				TMBillingStart: "2023-06-08 03:22:07.991000",
+				TMBillingStart: "2023-06-08T03:22:07.991000Z",
 			},
-			tmBillingEnd: "2023-06-08 03:22:17.995000",
+			tmBillingEnd: "2023-06-08T03:22:17.995000Z",
 			source:       &commonaddress.Address{},
 			destination:  &commonaddress.Address{},
 
@@ -302,7 +302,7 @@ func Test_BillingEnd(t *testing.T) {
 				},
 				AccountID:      uuid.FromStringOrNil("9e128c36-16ae-11ee-9655-2f9b21f8f7ba"),
 				ReferenceType:  billing.ReferenceTypeCall,
-				TMBillingStart: "2023-06-08 03:22:07.991000",
+				TMBillingStart: "2023-06-08T03:22:07.991000Z",
 			},
 			responseAccount: &account.Account{
 				Identity: commonidentity.Identity{

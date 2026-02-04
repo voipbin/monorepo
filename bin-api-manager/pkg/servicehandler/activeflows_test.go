@@ -345,7 +345,7 @@ func Test_ActiveflowList(t *testing.T) {
 				Permission: amagent.PermissionCustomerAdmin,
 			},
 			size:  10,
-			token: "2020-09-20 03:23:20.995000",
+			token: "2020-09-20T03:23:20.995000Z",
 
 			responseActiveflows: []fmactiveflow.Activeflow{
 				{

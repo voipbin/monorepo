@@ -66,7 +66,7 @@ func Test_AgentV1AgentCreate(t *testing.T) {
 			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"7fdb8e66-7fe7-11ec-ac90-878b581c2615","username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["27d3bc3e-4d88-11ec-a61d-af78fdede455"],"addresses":[{"type":"tel","target":"+821021656521"}],"tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01 00:00:00.000000","tm_delete":"9999-01-01 00:00:00.000000"}`),
+				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"7fdb8e66-7fe7-11ec-ac90-878b581c2615","username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["27d3bc3e-4d88-11ec-a61d-af78fdede455"],"addresses":[{"type":"tel","target":"+821021656521"}],"tm_create":"2021-11-23T17:55:39.712000Z","tm_update":"9999-01-01T00:00:00.000000Z","tm_delete":"9999-01-01T00:00:00.000000Z"}`),
 			},
 			expectRes: &amagent.Agent{
 				Identity: commonidentity.Identity{
@@ -87,9 +87,9 @@ func Test_AgentV1AgentCreate(t *testing.T) {
 						Target: "+821021656521",
 					},
 				},
-				TMCreate: "2021-11-23 17:55:39.712000",
-				TMUpdate: "9999-01-01 00:00:00.000000",
-				TMDelete: "9999-01-01 00:00:00.000000",
+				TMCreate: "2021-11-23T17:55:39.712000Z",
+				TMUpdate: "9999-01-01T00:00:00.000000Z",
+				TMDelete: "9999-01-01T00:00:00.000000Z",
 			},
 		},
 	}
@@ -265,7 +265,7 @@ func Test_AgentV1AgentList(t *testing.T) {
 		{
 			"normal",
 
-			"2020-09-20T03:23:20.995000",
+			"2020-09-20T03:23:20.995000Z",
 			10,
 			map[amagent.Field]any{
 				amagent.FieldDeleted: false,
@@ -273,7 +273,7 @@ func Test_AgentV1AgentList(t *testing.T) {
 
 			"bin-manager.agent-manager.request",
 			&sock.Request{
-				URI:      "/v1/agents?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
+				URI:      "/v1/agents?page_token=2020-09-20T03%3A23%3A20.995000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"deleted":false}`),
@@ -294,7 +294,7 @@ func Test_AgentV1AgentList(t *testing.T) {
 		{
 			"2 agents",
 
-			"2020-09-20T03:23:20.995000",
+			"2020-09-20T03:23:20.995000Z",
 			10,
 			map[amagent.Field]any{
 				amagent.FieldDeleted: false,
@@ -302,7 +302,7 @@ func Test_AgentV1AgentList(t *testing.T) {
 
 			"bin-manager.agent-manager.request",
 			&sock.Request{
-				URI:      "/v1/agents?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
+				URI:      "/v1/agents?page_token=2020-09-20T03%3A23%3A20.995000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"deleted":false}`),

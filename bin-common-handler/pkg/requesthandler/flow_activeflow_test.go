@@ -571,16 +571,16 @@ func Test_FlowV1ActiveflowList(t *testing.T) {
 		{
 			name: "normal",
 
-			pageToken: "2020-09-20T03:23:20.995000",
+			pageToken: "2020-09-20T03:23:20.995000Z",
 			pageSize:  10,
 			filters: map[fmactiveflow.Field]any{
 				fmactiveflow.FieldDeleted: false,
 			},
 
-			expectURL:    "/v1/activeflows?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
+			expectURL:    "/v1/activeflows?page_token=2020-09-20T03%3A23%3A20.995000Z&page_size=10",
 			expectTarget: "bin-manager.flow-manager.request",
 			expectRequest: &sock.Request{
-				URI:      "/v1/activeflows?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
+				URI:      "/v1/activeflows?page_token=2020-09-20T03%3A23%3A20.995000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"deleted":false}`),
@@ -601,16 +601,16 @@ func Test_FlowV1ActiveflowList(t *testing.T) {
 		{
 			name: "2 items",
 
-			pageToken: "2020-09-20T03:23:20.995000",
+			pageToken: "2020-09-20T03:23:20.995000Z",
 			pageSize:  10,
 			filters: map[fmactiveflow.Field]any{
 				fmactiveflow.FieldDeleted: false,
 			},
 
-			expectURL:    "/v1/activeflows?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
+			expectURL:    "/v1/activeflows?page_token=2020-09-20T03%3A23%3A20.995000Z&page_size=10",
 			expectTarget: "bin-manager.flow-manager.request",
 			expectRequest: &sock.Request{
-				URI:      "/v1/activeflows?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
+				URI:      "/v1/activeflows?page_token=2020-09-20T03%3A23%3A20.995000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"deleted":false}`),

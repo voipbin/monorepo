@@ -103,7 +103,7 @@ func Test_List(t *testing.T) {
 			"normal",
 
 			10,
-			"2023-01-03 21:35:02.809",
+			"2023-01-03T21:35:02.809Z",
 			map[conferencecall.Field]any{
 				conferencecall.FieldDeleted: false,
 			},

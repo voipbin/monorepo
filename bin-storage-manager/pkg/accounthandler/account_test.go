@@ -144,7 +144,7 @@ func Test_List(t *testing.T) {
 		{
 			name: "normal",
 
-			token: "2024-05-16 03:22:17.995000",
+			token: "2024-05-16T03:22:17.995000Z",
 			size:  10,
 			filters: map[account.Field]any{
 				account.FieldCustomerID: uuid.FromStringOrNil("5d2c486c-199e-11ef-9826-5b645642ab65"),

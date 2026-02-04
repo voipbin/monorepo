@@ -7,6 +7,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	commonutil "monorepo/bin-common-handler/pkg/utilhandler"
+
 	"monorepo/bin-timeline-manager/pkg/listenhandler/models/request"
 	"monorepo/bin-timeline-manager/pkg/listenhandler/models/response"
 )
@@ -57,7 +59,7 @@ func (h *eventHandler) List(ctx context.Context, req *request.V1DataEventsPost) 
 	if len(events) > pageSize {
 		res.Result = events[:pageSize]
 		// Use timestamp of last returned event as next page token
-		res.NextPageToken = events[pageSize-1].Timestamp.Format("2006-01-02T15:04:05.000Z")
+		res.NextPageToken = events[pageSize-1].Timestamp.Format(commonutil.ISO8601Layout)
 	}
 
 	return res, nil

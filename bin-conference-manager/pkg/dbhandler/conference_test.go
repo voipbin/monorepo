@@ -62,7 +62,7 @@ func Test_ConferenceCreate(t *testing.T) {
 				},
 			},
 
-			"2023-01-03 21:35:02.809",
+			"2023-01-03T21:35:02.809Z",
 			&conference.Conference{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("26a42912-9163-11ea-93ca-bf5915635f88"),
@@ -95,7 +95,7 @@ func Test_ConferenceCreate(t *testing.T) {
 					uuid.FromStringOrNil("b238edc8-98b8-11ed-9ce4-73af14c3e8ff"),
 				},
 				TMEnd:    DefaultTimeStamp,
-				TMCreate: "2023-01-03 21:35:02.809",
+				TMCreate: "2023-01-03T21:35:02.809Z",
 				TMUpdate: DefaultTimeStamp,
 				TMDelete: DefaultTimeStamp,
 			},
@@ -108,7 +108,7 @@ func Test_ConferenceCreate(t *testing.T) {
 				},
 			},
 
-			"2023-01-03 21:35:02.809",
+			"2023-01-03T21:35:02.809Z",
 			&conference.Conference{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("a9f69592-98b9-11ed-947e-0f7ac40639b6"),
@@ -118,7 +118,7 @@ func Test_ConferenceCreate(t *testing.T) {
 				RecordingIDs:      []uuid.UUID{},
 				TranscribeIDs:     []uuid.UUID{},
 				TMEnd:             DefaultTimeStamp,
-				TMCreate:          "2023-01-03 21:35:02.809",
+				TMCreate:          "2023-01-03T21:35:02.809Z",
 				TMUpdate:          DefaultTimeStamp,
 				TMDelete:          DefaultTimeStamp,
 			},
@@ -184,7 +184,7 @@ func Test_ConferenceGetByConfbridgeID(t *testing.T) {
 				Detail:       "test type conference detail",
 			},
 
-			"2023-01-03 21:35:02.809",
+			"2023-01-03T21:35:02.809Z",
 			&conference.Conference{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("1ac9f480-9861-11ec-8e29-c7820822026e"),
@@ -199,7 +199,7 @@ func Test_ConferenceGetByConfbridgeID(t *testing.T) {
 				RecordingIDs:      []uuid.UUID{},
 				TranscribeIDs:     []uuid.UUID{},
 				TMEnd:             DefaultTimeStamp,
-				TMCreate:          "2023-01-03 21:35:02.809",
+				TMCreate:          "2023-01-03T21:35:02.809Z",
 				TMUpdate:          DefaultTimeStamp,
 				TMDelete:          DefaultTimeStamp,
 			},
@@ -271,7 +271,7 @@ func Test_ConferenceUpdate(t *testing.T) {
 				conference.FieldPostFlowID: uuid.FromStringOrNil("91345970-1e0b-11f0-a446-bf10e1f783b5"),
 			},
 
-			responseCurTime: "2023-01-03 21:35:02.809",
+			responseCurTime: "2023-01-03T21:35:02.809Z",
 			expectRes: &conference.Conference{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("90d83f46-1e0b-11f0-881e-db8cc51c453b"),
@@ -288,8 +288,8 @@ func Test_ConferenceUpdate(t *testing.T) {
 				RecordingIDs:      []uuid.UUID{},
 				TranscribeIDs:     []uuid.UUID{},
 				TMEnd:             DefaultTimeStamp,
-				TMCreate:          "2023-01-03 21:35:02.809",
-				TMUpdate:          "2023-01-03 21:35:02.809",
+				TMCreate:          "2023-01-03T21:35:02.809Z",
+				TMUpdate:          "2023-01-03T21:35:02.809Z",
 				TMDelete:          DefaultTimeStamp,
 			},
 		},
@@ -356,7 +356,7 @@ func Test_ConferenceUpdateRecordingID(t *testing.T) {
 			},
 			uuid.FromStringOrNil("2fb4b446-2834-11eb-b864-1fdb13777d08"),
 
-			"2023-01-03 21:35:02.809",
+			"2023-01-03T21:35:02.809Z",
 			&conference.Conference{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2f7b0ee4-2834-11eb-9a6d-5beea5795ea6"),
@@ -367,8 +367,8 @@ func Test_ConferenceUpdateRecordingID(t *testing.T) {
 				RecordingIDs:      []uuid.UUID{},
 				TranscribeIDs:     []uuid.UUID{},
 				TMEnd:             DefaultTimeStamp,
-				TMCreate:          "2023-01-03 21:35:02.809",
-				TMUpdate:          "2023-01-03 21:35:02.809",
+				TMCreate:          "2023-01-03T21:35:02.809Z",
+				TMUpdate:          "2023-01-03T21:35:02.809Z",
 				TMDelete:          DefaultTimeStamp,
 			},
 		},
@@ -442,7 +442,7 @@ func Test_ConferenceUpdateData(t *testing.T) {
 				"key1": "string value",
 			},
 
-			"2023-01-03 21:35:02.809",
+			"2023-01-03T21:35:02.809Z",
 			&conference.Conference{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("0a64e234-675d-11eb-92c7-13f0c9a0e28b"),
@@ -454,8 +454,8 @@ func Test_ConferenceUpdateData(t *testing.T) {
 				RecordingIDs:      []uuid.UUID{},
 				TranscribeIDs:     []uuid.UUID{},
 				TMEnd:             DefaultTimeStamp,
-				TMCreate:          "2023-01-03 21:35:02.809",
-				TMUpdate:          "2023-01-03 21:35:02.809",
+				TMCreate:          "2023-01-03T21:35:02.809Z",
+				TMUpdate:          "2023-01-03T21:35:02.809Z",
 				TMDelete:          DefaultTimeStamp,
 			},
 		},
@@ -471,7 +471,7 @@ func Test_ConferenceUpdateData(t *testing.T) {
 				"key2": "string value",
 			},
 
-			"2023-01-03 21:35:02.809",
+			"2023-01-03T21:35:02.809Z",
 			&conference.Conference{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("d54bf5b4-675d-11eb-b133-9b06996a9b99"),
@@ -484,8 +484,8 @@ func Test_ConferenceUpdateData(t *testing.T) {
 				RecordingIDs:      []uuid.UUID{},
 				TranscribeIDs:     []uuid.UUID{},
 				TMEnd:             DefaultTimeStamp,
-				TMCreate:          "2023-01-03 21:35:02.809",
-				TMUpdate:          "2023-01-03 21:35:02.809",
+				TMCreate:          "2023-01-03T21:35:02.809Z",
+				TMUpdate:          "2023-01-03T21:35:02.809Z",
 				TMDelete:          DefaultTimeStamp,
 			},
 		},
@@ -501,7 +501,7 @@ func Test_ConferenceUpdateData(t *testing.T) {
 				"key2": 123,
 			},
 
-			"2023-01-03 21:35:02.809",
+			"2023-01-03T21:35:02.809Z",
 			&conference.Conference{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("efa1ec2a-675d-11eb-b854-ffe06d0fc488"),
@@ -514,8 +514,8 @@ func Test_ConferenceUpdateData(t *testing.T) {
 				RecordingIDs:      []uuid.UUID{},
 				TranscribeIDs:     []uuid.UUID{},
 				TMEnd:             DefaultTimeStamp,
-				TMCreate:          "2023-01-03 21:35:02.809",
-				TMUpdate:          "2023-01-03 21:35:02.809",
+				TMCreate:          "2023-01-03T21:35:02.809Z",
+				TMUpdate:          "2023-01-03T21:35:02.809Z",
 				TMDelete:          DefaultTimeStamp,
 			},
 		},
@@ -601,7 +601,7 @@ func Test_ConferenceList(t *testing.T) {
 				conference.FieldDeleted:    false,
 			},
 
-			"2023-01-03 21:35:02.809",
+			"2023-01-03T21:35:02.809Z",
 			[]*conference.Conference{
 				{
 					Identity: commonidentity.Identity{
@@ -613,7 +613,7 @@ func Test_ConferenceList(t *testing.T) {
 					RecordingIDs:      []uuid.UUID{},
 					TranscribeIDs:     []uuid.UUID{},
 					TMEnd:             DefaultTimeStamp,
-					TMCreate:          "2023-01-03 21:35:02.809",
+					TMCreate:          "2023-01-03T21:35:02.809Z",
 					TMUpdate:          DefaultTimeStamp,
 					TMDelete:          DefaultTimeStamp,
 				},
@@ -627,7 +627,7 @@ func Test_ConferenceList(t *testing.T) {
 					RecordingIDs:      []uuid.UUID{},
 					TranscribeIDs:     []uuid.UUID{},
 					TMEnd:             DefaultTimeStamp,
-					TMCreate:          "2023-01-03 21:35:02.809",
+					TMCreate:          "2023-01-03T21:35:02.809Z",
 					TMUpdate:          DefaultTimeStamp,
 					TMDelete:          DefaultTimeStamp,
 				},
@@ -667,7 +667,7 @@ func Test_ConferenceList(t *testing.T) {
 				conference.FieldType:       conference.TypeConference,
 			},
 
-			"2023-01-03 21:35:02.809",
+			"2023-01-03T21:35:02.809Z",
 			[]*conference.Conference{
 				{
 					Identity: commonidentity.Identity{
@@ -680,7 +680,7 @@ func Test_ConferenceList(t *testing.T) {
 					RecordingIDs:      []uuid.UUID{},
 					TranscribeIDs:     []uuid.UUID{},
 					TMEnd:             DefaultTimeStamp,
-					TMCreate:          "2023-01-03 21:35:02.809",
+					TMCreate:          "2023-01-03T21:35:02.809Z",
 					TMUpdate:          DefaultTimeStamp,
 					TMDelete:          DefaultTimeStamp,
 				},
@@ -695,7 +695,7 @@ func Test_ConferenceList(t *testing.T) {
 					RecordingIDs:      []uuid.UUID{},
 					TranscribeIDs:     []uuid.UUID{},
 					TMEnd:             DefaultTimeStamp,
-					TMCreate:          "2023-01-03 21:35:02.809",
+					TMCreate:          "2023-01-03T21:35:02.809Z",
 					TMUpdate:          DefaultTimeStamp,
 					TMDelete:          DefaultTimeStamp,
 				},
@@ -711,7 +711,7 @@ func Test_ConferenceList(t *testing.T) {
 				conference.FieldCustomerID: uuid.FromStringOrNil("3f84e9f4-ed84-11ee-9bfb-2bce0d221d0b"),
 			},
 
-			"2023-01-03 21:35:02.809",
+			"2023-01-03T21:35:02.809Z",
 			[]*conference.Conference{},
 		},
 	}
@@ -773,7 +773,7 @@ func Test_ConferenceEnd(t *testing.T) {
 
 			uuid.FromStringOrNil("722c7822-94ca-11ed-b0a9-ef969fc8348d"),
 
-			"2023-01-03 21:35:02.809",
+			"2023-01-03T21:35:02.809Z",
 			&conference.Conference{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("722c7822-94ca-11ed-b0a9-ef969fc8348d"),
@@ -783,9 +783,9 @@ func Test_ConferenceEnd(t *testing.T) {
 				ConferencecallIDs: []uuid.UUID{},
 				RecordingIDs:      []uuid.UUID{},
 				TranscribeIDs:     []uuid.UUID{},
-				TMEnd:             "2023-01-03 21:35:02.809",
-				TMCreate:          "2023-01-03 21:35:02.809",
-				TMUpdate:          "2023-01-03 21:35:02.809",
+				TMEnd:             "2023-01-03T21:35:02.809Z",
+				TMCreate:          "2023-01-03T21:35:02.809Z",
+				TMUpdate:          "2023-01-03T21:35:02.809Z",
 				TMDelete:          DefaultTimeStamp,
 			},
 		},
@@ -855,7 +855,7 @@ func Test_ConferenceDelete(t *testing.T) {
 
 			uuid.FromStringOrNil("7a23bfa0-94e2-11ed-8dd9-0b374780e823"),
 
-			"2023-01-03 21:35:02.809",
+			"2023-01-03T21:35:02.809Z",
 			&conference.Conference{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("7a23bfa0-94e2-11ed-8dd9-0b374780e823"),
@@ -865,9 +865,9 @@ func Test_ConferenceDelete(t *testing.T) {
 				RecordingIDs:      []uuid.UUID{},
 				TranscribeIDs:     []uuid.UUID{},
 				TMEnd:             DefaultTimeStamp,
-				TMCreate:          "2023-01-03 21:35:02.809",
-				TMUpdate:          "2023-01-03 21:35:02.809",
-				TMDelete:          "2023-01-03 21:35:02.809",
+				TMCreate:          "2023-01-03T21:35:02.809Z",
+				TMUpdate:          "2023-01-03T21:35:02.809Z",
+				TMDelete:          "2023-01-03T21:35:02.809Z",
 			},
 		},
 	}
@@ -933,7 +933,7 @@ func Test_ConferenceUpdateTranscribeID(t *testing.T) {
 			},
 			uuid.FromStringOrNil("003eb216-98c1-11ed-9789-ff71dbeab66e"),
 
-			"2023-01-03 21:35:02.809",
+			"2023-01-03T21:35:02.809Z",
 			&conference.Conference{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("000ca104-98c1-11ed-bde2-9badb79a7365"),
@@ -944,8 +944,8 @@ func Test_ConferenceUpdateTranscribeID(t *testing.T) {
 				TranscribeID:      uuid.FromStringOrNil("003eb216-98c1-11ed-9789-ff71dbeab66e"),
 				TranscribeIDs:     []uuid.UUID{},
 				TMEnd:             DefaultTimeStamp,
-				TMCreate:          "2023-01-03 21:35:02.809",
-				TMUpdate:          "2023-01-03 21:35:02.809",
+				TMCreate:          "2023-01-03T21:35:02.809Z",
+				TMUpdate:          "2023-01-03T21:35:02.809Z",
 				TMDelete:          DefaultTimeStamp,
 			},
 		},

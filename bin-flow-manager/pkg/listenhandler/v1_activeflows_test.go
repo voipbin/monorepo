@@ -159,7 +159,7 @@ func Test_v1ActiveflowsGet(t *testing.T) {
 		{
 			name: "1 item",
 			request: &sock.Request{
-				URI:      "/v1/activeflows?page_token=2020-10-10%2003:30:17.000000&page_size=10",
+				URI:      "/v1/activeflows?page_token=2020-10-10T03:30:17.000000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id": "16d3fcf0-7f4c-11ec-a4c3-7bf43125108d", "deleted": false}`),
@@ -178,7 +178,7 @@ func Test_v1ActiveflowsGet(t *testing.T) {
 				},
 			},
 
-			expectedToken: "2020-10-10 03:30:17.000000",
+			expectedToken: "2020-10-10T03:30:17.000000Z",
 			expectedSize:  10,
 			expectedRes: &sock.Response{
 				StatusCode: 200,
@@ -189,7 +189,7 @@ func Test_v1ActiveflowsGet(t *testing.T) {
 		{
 			name: "2 items",
 			request: &sock.Request{
-				URI:      "/v1/activeflows?page_token=2020-10-10%2003:30:17.000000&page_size=10",
+				URI:      "/v1/activeflows?page_token=2020-10-10T03:30:17.000000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id": "2457d824-7f4c-11ec-9489-b3552a7c9d63", "deleted": false}`),
@@ -212,7 +212,7 @@ func Test_v1ActiveflowsGet(t *testing.T) {
 				},
 			},
 
-			expectedToken: "2020-10-10 03:30:17.000000",
+			expectedToken: "2020-10-10T03:30:17.000000Z",
 			expectedSize:  10,
 			expectedRes: &sock.Response{
 				StatusCode: 200,
@@ -223,7 +223,7 @@ func Test_v1ActiveflowsGet(t *testing.T) {
 		{
 			name: "empty",
 			request: &sock.Request{
-				URI:      "/v1/activeflows?page_token=2020-10-10%2003:30:17.000000&page_size=10",
+				URI:      "/v1/activeflows?page_token=2020-10-10T03:30:17.000000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id": "3ee14bee-7f4c-11ec-a1d8-a3a488ed5885", "deleted": false}`),
@@ -235,7 +235,7 @@ func Test_v1ActiveflowsGet(t *testing.T) {
 			},
 			responseActiveflows: []*activeflow.Activeflow{},
 
-			expectedToken: "2020-10-10 03:30:17.000000",
+			expectedToken: "2020-10-10T03:30:17.000000Z",
 			expectedSize:  10,
 			expectedRes: &sock.Response{
 				StatusCode: 200,

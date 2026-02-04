@@ -124,21 +124,21 @@ func Test_GetAimessages(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/aimessages?page_size=10&page_token=2020-09-20%2003:23:20.995000&aicall_id=ecebd332-f31e-11ef-9ab5-33426e3ee4ff",
+			reqQuery: "/aimessages?page_size=10&page_token=2020-09-20T03:23:20.995000Z&aicall_id=ecebd332-f31e-11ef-9ab5-33426e3ee4ff",
 
 			responseAImessages: []*ammessage.WebhookMessage{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("ed2346dc-f31e-11ef-acd5-67a8f966fe17"),
 					},
-					TMCreate: "2020-09-20T03:23:21.995000",
+					TMCreate: "2020-09-20T03:23:21.995000Z",
 				},
 			},
 
 			expectedAIcallID:  uuid.FromStringOrNil("ecebd332-f31e-11ef-9ab5-33426e3ee4ff"),
 			expectedPageSize:  10,
-			expectedPageToken: "2020-09-20 03:23:20.995000",
-			expectedRes:       `{"result":[{"id":"ed2346dc-f31e-11ef-acd5-67a8f966fe17","customer_id":"00000000-0000-0000-0000-000000000000","aicall_id":"00000000-0000-0000-0000-000000000000","role":"","content":"","direction":"","tm_create":"2020-09-20T03:23:21.995000"}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
+			expectedPageToken: "2020-09-20T03:23:20.995000Z",
+			expectedRes:       `{"result":[{"id":"ed2346dc-f31e-11ef-acd5-67a8f966fe17","customer_id":"00000000-0000-0000-0000-000000000000","aicall_id":"00000000-0000-0000-0000-000000000000","role":"","content":"","direction":"","tm_create":"2020-09-20T03:23:21.995000Z"}],"next_page_token":"2020-09-20T03:23:21.995000Z"}`,
 		},
 		{
 			name: "more than 2 items",
@@ -148,33 +148,33 @@ func Test_GetAimessages(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/aimessages?page_size=10&page_token=2020-09-20%2003:23:20.995000&aicall_id=ed487b96-f31e-11ef-9337-e792818f3609",
+			reqQuery: "/aimessages?page_size=10&page_token=2020-09-20T03:23:20.995000Z&aicall_id=ed487b96-f31e-11ef-9337-e792818f3609",
 
 			responseAImessages: []*ammessage.WebhookMessage{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("1707f380-f31f-11ef-bfe4-7ff769b357b3"),
 					},
-					TMCreate: "2020-09-20T03:23:21.995000",
+					TMCreate: "2020-09-20T03:23:21.995000Z",
 				},
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("17268426-f31f-11ef-aa11-6f21c1723af6"),
 					},
-					TMCreate: "2020-09-20T03:23:22.995000",
+					TMCreate: "2020-09-20T03:23:22.995000Z",
 				},
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("17468500-f31f-11ef-b7b6-9b29397f4894"),
 					},
-					TMCreate: "2020-09-20T03:23:23.995000",
+					TMCreate: "2020-09-20T03:23:23.995000Z",
 				},
 			},
 
 			expectedAIcallID:  uuid.FromStringOrNil("ed487b96-f31e-11ef-9337-e792818f3609"),
 			expectedPageSize:  10,
-			expectedPageToken: "2020-09-20 03:23:20.995000",
-			expectedRes:       `{"result":[{"id":"1707f380-f31f-11ef-bfe4-7ff769b357b3","customer_id":"00000000-0000-0000-0000-000000000000","aicall_id":"00000000-0000-0000-0000-000000000000","role":"","content":"","direction":"","tm_create":"2020-09-20T03:23:21.995000"},{"id":"17268426-f31f-11ef-aa11-6f21c1723af6","customer_id":"00000000-0000-0000-0000-000000000000","aicall_id":"00000000-0000-0000-0000-000000000000","role":"","content":"","direction":"","tm_create":"2020-09-20T03:23:22.995000"},{"id":"17468500-f31f-11ef-b7b6-9b29397f4894","customer_id":"00000000-0000-0000-0000-000000000000","aicall_id":"00000000-0000-0000-0000-000000000000","role":"","content":"","direction":"","tm_create":"2020-09-20T03:23:23.995000"}],"next_page_token":"2020-09-20T03:23:23.995000"}`,
+			expectedPageToken: "2020-09-20T03:23:20.995000Z",
+			expectedRes:       `{"result":[{"id":"1707f380-f31f-11ef-bfe4-7ff769b357b3","customer_id":"00000000-0000-0000-0000-000000000000","aicall_id":"00000000-0000-0000-0000-000000000000","role":"","content":"","direction":"","tm_create":"2020-09-20T03:23:21.995000Z"},{"id":"17268426-f31f-11ef-aa11-6f21c1723af6","customer_id":"00000000-0000-0000-0000-000000000000","aicall_id":"00000000-0000-0000-0000-000000000000","role":"","content":"","direction":"","tm_create":"2020-09-20T03:23:22.995000Z"},{"id":"17468500-f31f-11ef-b7b6-9b29397f4894","customer_id":"00000000-0000-0000-0000-000000000000","aicall_id":"00000000-0000-0000-0000-000000000000","role":"","content":"","direction":"","tm_create":"2020-09-20T03:23:23.995000Z"}],"next_page_token":"2020-09-20T03:23:23.995000Z"}`,
 		},
 	}
 

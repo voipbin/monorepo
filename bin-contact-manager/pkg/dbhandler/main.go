@@ -57,7 +57,7 @@ var (
 
 // List of default values
 const (
-	DefaultTimeStamp = "9999-01-01 00:00:00.000000" // default timestamp for soft delete
+	DefaultTimeStamp = "9999-01-01T00:00:00.000000Z" // default timestamp for soft delete
 )
 
 // NewHandler creates DBHandler

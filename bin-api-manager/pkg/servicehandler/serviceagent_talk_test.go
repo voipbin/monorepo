@@ -249,7 +249,7 @@ func Test_ServiceAgentTalkChatList(t *testing.T) {
 				},
 			},
 			size:  10,
-			token: "2024-01-01 00:00:00.000000",
+			token: "2024-01-01T00:00:00.000000Z",
 			responseChats: []*tkchat.Chat{
 				{
 					Identity: commonidentity.Identity{
@@ -258,7 +258,7 @@ func Test_ServiceAgentTalkChatList(t *testing.T) {
 					},
 					Type:     tkchat.TypeGroup,
 					Name:     "Test Chat",
-					TMCreate: "2024-01-01 00:00:00.000000",
+					TMCreate: "2024-01-01T00:00:00.000000Z",
 				},
 			},
 			expectFilters: map[string]any{
@@ -274,7 +274,7 @@ func Test_ServiceAgentTalkChatList(t *testing.T) {
 					},
 					Type:     tkchat.TypeGroup,
 					Name:     "Test Chat",
-					TMCreate: "2024-01-01 00:00:00.000000",
+					TMCreate: "2024-01-01T00:00:00.000000Z",
 				},
 			},
 		},
@@ -331,7 +331,7 @@ func Test_ServiceAgentTalkChannelList(t *testing.T) {
 				},
 			},
 			size:  10,
-			token: "2024-01-01 00:00:00.000000",
+			token: "2024-01-01T00:00:00.000000Z",
 			responseChats: []*tkchat.Chat{
 				{
 					Identity: commonidentity.Identity{
@@ -340,7 +340,7 @@ func Test_ServiceAgentTalkChannelList(t *testing.T) {
 					},
 					Type:     tkchat.TypeTalk,
 					Name:     "General Channel",
-					TMCreate: "2024-01-01 00:00:00.000000",
+					TMCreate: "2024-01-01T00:00:00.000000Z",
 				},
 			},
 			expectFilters: map[string]any{
@@ -356,7 +356,7 @@ func Test_ServiceAgentTalkChannelList(t *testing.T) {
 					},
 					Type:     tkchat.TypeTalk,
 					Name:     "General Channel",
-					TMCreate: "2024-01-01 00:00:00.000000",
+					TMCreate: "2024-01-01T00:00:00.000000Z",
 				},
 			},
 		},

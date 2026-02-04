@@ -54,14 +54,14 @@ func Test_EventHandlerChannelCreated(t *testing.T) {
 				Event: ari.Event{
 					Type:        ari.EventTypeChannelCreated,
 					Application: "voipbin",
-					Timestamp:   "2020-04-19T14:38:00.363",
+					Timestamp:   "2020-04-19T14:38:00.363Z",
 					AsteriskID:  "42:01:0a:a4:00:05",
 				},
 				Channel: ari.Channel{
 					ID:           "1587307080.49",
 					Name:         "PJSIP/in-voipbin-00000030",
 					Language:     "en",
-					CreationTime: "2020-04-19T14:38:00.363",
+					CreationTime: "2020-04-19T14:38:00.363Z",
 					State:        ari.ChannelStateRing,
 					Caller: ari.CallerID{
 						Number: "68025",
@@ -166,14 +166,14 @@ func Test_EventHandlerChannelDestroyed(t *testing.T) {
 				Event: ari.Event{
 					Type:        ari.EventTypeChannelDestroyed,
 					Application: "voipbin",
-					Timestamp:   "2020-04-19T17:02:58.651",
+					Timestamp:   "2020-04-19T17:02:58.651Z",
 					AsteriskID:  "42:01:0a:a4:00:03",
 				},
 				Channel: ari.Channel{
 					ID:           "1587315778.885",
 					Name:         "PJSIP/in-voipbin-00000370",
 					Language:     "en",
-					CreationTime: "2020-04-19T17:02:58.651",
+					CreationTime: "2020-04-19T17:02:58.651Z",
 					State:        ari.ChannelStateRing,
 					Caller: ari.CallerID{
 						Number: "804",
@@ -242,14 +242,14 @@ func Test_EventHandlerChannelStateChange(t *testing.T) {
 				Event: ari.Event{
 					Type:        ari.EventTypeChannelStateChange,
 					Application: "voipbin",
-					Timestamp:   "2020-04-25T19:17:13.786",
+					Timestamp:   "2020-04-25T19:17:13.786Z",
 					AsteriskID:  "42:01:0a:a4:00:05",
 				},
 				Channel: ari.Channel{
 					ID:           "1587842233.10218",
 					Name:         "PJSIP/in-voipbin-000026ee",
 					Language:     "en",
-					CreationTime: "2020-04-25T19:17:13.585",
+					CreationTime: "2020-04-25T19:17:13.585Z",
 					State:        ari.ChannelStateUp,
 					Caller: ari.CallerID{
 						Number: "586737682",
@@ -316,14 +316,14 @@ func Test_EventHandlerChannelEnteredBridge(t *testing.T) {
 				Event: ari.Event{
 					Type:        ari.EventTypeChannelEnteredBridge,
 					Application: "voipbin",
-					Timestamp:   "2020-05-09T10:36:04.595",
+					Timestamp:   "2020-05-09T10:36:04.595Z",
 					AsteriskID:  "42:01:0a:a4:00:05",
 				},
 				Channel: ari.Channel{
 					ID:           "1589020563.4752",
 					Name:         "PJSIP/in-voipbin-000008cc",
 					Language:     "en",
-					CreationTime: "2020-05-09T10:36:03.792",
+					CreationTime: "2020-05-09T10:36:03.792Z",
 					State:        ari.ChannelStateRing,
 					Caller: ari.CallerID{
 						Name:   "tttt",
@@ -364,14 +364,14 @@ func Test_EventHandlerChannelEnteredBridge(t *testing.T) {
 				Event: ari.Event{
 					Type:        ari.EventTypeChannelEnteredBridge,
 					Application: "voipbin",
-					Timestamp:   "2020-05-09T10:36:04.595",
+					Timestamp:   "2020-05-09T10:36:04.595Z",
 					AsteriskID:  "42:01:0a:a4:00:05",
 				},
 				Channel: ari.Channel{
 					ID:           "1589020563.4752",
 					Name:         "PJSIP/in-voipbin-000008cc",
 					Language:     "en",
-					CreationTime: "2020-05-09T10:36:03.792",
+					CreationTime: "2020-05-09T10:36:03.792Z",
 					State:        ari.ChannelStateRing,
 					Caller: ari.CallerID{
 						Name:   "tttt",
@@ -413,14 +413,14 @@ func Test_EventHandlerChannelEnteredBridge(t *testing.T) {
 				Event: ari.Event{
 					Type:        ari.EventTypeChannelEnteredBridge,
 					Application: "voipbin",
-					Timestamp:   "2020-05-09T10:36:04.595",
+					Timestamp:   "2020-05-09T10:36:04.595Z",
 					AsteriskID:  "42:01:0a:a4:00:05",
 				},
 				Channel: ari.Channel{
 					ID:           "1589020563.4752",
 					Name:         "PJSIP/in-voipbin-000008cc",
 					Language:     "en",
-					CreationTime: "2020-05-09T10:36:03.792",
+					CreationTime: "2020-05-09T10:36:03.792Z",
 					State:        ari.ChannelStateRing,
 					Caller: ari.CallerID{
 						Name:   "tttt",
@@ -510,14 +510,14 @@ func Test_EventHandlerChannelLeftBridge(t *testing.T) {
 				Event: ari.Event{
 					Type:        ari.EventTypeChannelLeftBridge,
 					Application: "voipbin",
-					Timestamp:   "2020-05-09T10:53:39.181",
+					Timestamp:   "2020-05-09T10:53:39.181Z",
 					AsteriskID:  "42:01:0a:a4:00:05",
 				},
 				Channel: ari.Channel{
 					ID:           "1589020563.4752",
 					Name:         "PJSIP/in-voipbin-000008cc",
 					Language:     "en",
-					CreationTime: "2020-05-09T10:36:03.792",
+					CreationTime: "2020-05-09T10:36:03.792Z",
 					State:        ari.ChannelStateUp,
 					Caller: ari.CallerID{
 						Name:   "tttt",
@@ -559,14 +559,14 @@ func Test_EventHandlerChannelLeftBridge(t *testing.T) {
 				Event: ari.Event{
 					Type:        ari.EventTypeChannelLeftBridge,
 					Application: "voipbin",
-					Timestamp:   "2020-05-09T10:53:39.181",
+					Timestamp:   "2020-05-09T10:53:39.181Z",
 					AsteriskID:  "42:01:0a:a4:00:05",
 				},
 				Channel: ari.Channel{
 					ID:           "1589020563.4752",
 					Name:         "PJSIP/in-voipbin-000008cc",
 					Language:     "en",
-					CreationTime: "2020-05-09T10:36:03.792",
+					CreationTime: "2020-05-09T10:36:03.792Z",
 					State:        ari.ChannelStateUp,
 					Caller: ari.CallerID{
 						Name:   "tttt",
@@ -608,14 +608,14 @@ func Test_EventHandlerChannelLeftBridge(t *testing.T) {
 				Event: ari.Event{
 					Type:        ari.EventTypeChannelLeftBridge,
 					Application: "voipbin",
-					Timestamp:   "2020-05-09T10:53:39.181",
+					Timestamp:   "2020-05-09T10:53:39.181Z",
 					AsteriskID:  "42:01:0a:a4:00:05",
 				},
 				Channel: ari.Channel{
 					ID:           "1589020563.4752",
 					Name:         "PJSIP/in-voipbin-000008cc",
 					Language:     "en",
-					CreationTime: "2020-05-09T10:36:03.792",
+					CreationTime: "2020-05-09T10:36:03.792Z",
 					State:        ari.ChannelStateUp,
 					Caller: ari.CallerID{
 						Name:   "tttt",
@@ -657,14 +657,14 @@ func Test_EventHandlerChannelLeftBridge(t *testing.T) {
 				Event: ari.Event{
 					Type:        ari.EventTypeChannelLeftBridge,
 					Application: "voipbin",
-					Timestamp:   "2020-05-09T10:53:39.181",
+					Timestamp:   "2020-05-09T10:53:39.181Z",
 					AsteriskID:  "42:01:0a:a4:00:05",
 				},
 				Channel: ari.Channel{
 					ID:           "1589020563.4752",
 					Name:         "PJSIP/in-voipbin-000008cc",
 					Language:     "en",
-					CreationTime: "2020-05-09T10:36:03.792",
+					CreationTime: "2020-05-09T10:36:03.792Z",
 					State:        ari.ChannelStateUp,
 					Caller: ari.CallerID{
 						Name:   "tttt",
@@ -760,14 +760,14 @@ func Test_EventHandlerChannelDtmfReceived(t *testing.T) {
 				Event: ari.Event{
 					Type:        ari.EventTypeChannelDtmfReceived,
 					Application: "voipbin",
-					Timestamp:   "2020-05-20T18:43:32.809",
+					Timestamp:   "2020-05-20T18:43:32.809Z",
 					AsteriskID:  "42:01:0a:a4:00:03",
 				},
 				Channel: ari.Channel{
 					ID:           "1590000197.6557",
 					Name:         "PJSIP/call-in-0000067a",
 					Language:     "en",
-					CreationTime: "2020-05-20T18:43:17.822",
+					CreationTime: "2020-05-20T18:43:17.822Z",
 					State:        ari.ChannelStateUp,
 					Caller: ari.CallerID{
 						Name:   "tttt",

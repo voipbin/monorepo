@@ -530,7 +530,7 @@ func Test_MessageAddReactionAtomic(t *testing.T) {
 				Emoji:     "👍",
 				OwnerType: string(commonidentity.OwnerTypeAgent),
 				OwnerID:   uuid.FromStringOrNil("9922f8c2-e428-11ec-b1a3-4bc67cb9da47"),
-				TMCreate:  "2024-01-01 00:00:00.000000",
+				TMCreate:  "2024-01-01T00:00:00.000000Z",
 			},
 			expectCount: 1,
 		},
@@ -623,7 +623,7 @@ func Test_MessageAddReactionAtomic_Concurrent(t *testing.T) {
 				Emoji:     "👍",
 				OwnerType: string(commonidentity.OwnerTypeAgent),
 				OwnerID:   uuid.Must(uuid.NewV4()),
-				TMCreate:  "2024-01-01 00:00:00.000000",
+				TMCreate:  "2024-01-01T00:00:00.000000Z",
 			}
 
 			reactionJSON, err := json.Marshal(reaction)
@@ -682,7 +682,7 @@ func Test_MessageRemoveReactionAtomic(t *testing.T) {
 				Emoji:     "👍",
 				OwnerType: string(commonidentity.OwnerTypeAgent),
 				OwnerID:   uuid.FromStringOrNil("b922f8c2-e428-11ec-b1a3-4bc67cb9da54"),
-				TMCreate:  "2024-01-01 00:00:00.000000",
+				TMCreate:  "2024-01-01T00:00:00.000000Z",
 			},
 			removeEmoji:     "👍",
 			removeOwnerType: string(commonidentity.OwnerTypeAgent),

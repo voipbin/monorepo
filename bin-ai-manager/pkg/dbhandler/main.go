@@ -59,7 +59,7 @@ var (
 
 // list of default values
 const (
-	DefaultTimeStamp = "9999-01-01 00:00:00.000000" //nolint:varcheck,deadcode // this is fine
+	DefaultTimeStamp = "9999-01-01T00:00:00.000000Z" //nolint:varcheck,deadcode // this is fine
 )
 
 // NewHandler creates DBHandler

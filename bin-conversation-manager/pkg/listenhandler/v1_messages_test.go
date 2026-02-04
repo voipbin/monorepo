@@ -99,7 +99,7 @@ func Test_processV1MessagesGet(t *testing.T) {
 		{
 			name: "normal",
 			request: &sock.Request{
-				URI:      "/v1/messages?page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000",
+				URI:      "/v1/messages?page_size=10&page_token=2021-03-01T03:30:17.000000Z",
 				Method:   sock.RequestMethodGet,
 				DataType: requesthandler.ContentTypeJSON,
 				Data:     []byte(`{"conversation_id":"22f83522-0a74-4a91-813b-1fc45e5bd9fa","deleted":false}`),
@@ -118,7 +118,7 @@ func Test_processV1MessagesGet(t *testing.T) {
 			},
 
 			expectPageSize:  10,
-			expectPageToken: "2021-03-01 03:30:17.000000",
+			expectPageToken: "2021-03-01T03:30:17.000000Z",
 			expectedResponse: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
@@ -129,7 +129,7 @@ func Test_processV1MessagesGet(t *testing.T) {
 			name: "multiple results",
 
 			request: &sock.Request{
-				URI:      "/v1/messages?page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000",
+				URI:      "/v1/messages?page_size=10&page_token=2021-03-01T03:30:17.000000Z",
 				Method:   sock.RequestMethodGet,
 				DataType: requesthandler.ContentTypeJSON,
 				Data:     []byte(`{"conversation_id":"813840b3-9055-449c-b97b-558a0472f6bb","deleted":false}`),
@@ -153,7 +153,7 @@ func Test_processV1MessagesGet(t *testing.T) {
 			},
 
 			expectPageSize:  10,
-			expectPageToken: "2021-03-01 03:30:17.000000",
+			expectPageToken: "2021-03-01T03:30:17.000000Z",
 			expectedResponse: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",

@@ -33,12 +33,12 @@ func Test_ProviderCreate(t *testing.T) {
 				ID: uuid.FromStringOrNil("55b05798-42d8-11ed-bf01-63eb9485e19d"),
 			},
 
-			"2020-04-18 03:22:17.995000",
+			"2020-04-18T03:22:17.995000Z",
 
 			&provider.Provider{
 				ID:          uuid.FromStringOrNil("55b05798-42d8-11ed-bf01-63eb9485e19d"),
 				TechHeaders: map[string]string{},
-				TMCreate:    "2020-04-18 03:22:17.995000",
+				TMCreate:    "2020-04-18T03:22:17.995000Z",
 				TMUpdate:    commondatabasehandler.DefaultTimeStamp,
 				TMDelete:    commondatabasehandler.DefaultTimeStamp,
 			},
@@ -58,7 +58,7 @@ func Test_ProviderCreate(t *testing.T) {
 				Detail: "provider detail",
 			},
 
-			"2020-04-18 03:22:17.995000",
+			"2020-04-18T03:22:17.995000Z",
 
 			&provider.Provider{
 				ID:          uuid.FromStringOrNil("bc376722-42d8-11ed-a4aa-93b57648abc4"),
@@ -71,7 +71,7 @@ func Test_ProviderCreate(t *testing.T) {
 				},
 				Name:     "provider name",
 				Detail:   "provider detail",
-				TMCreate: "2020-04-18 03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
 				TMUpdate: commondatabasehandler.DefaultTimeStamp,
 				TMDelete: commondatabasehandler.DefaultTimeStamp,
 			},
@@ -128,7 +128,7 @@ func Test_ProviderList(t *testing.T) {
 		{
 			"normal",
 
-			"2018-12-30 04:22:17.995000",
+			"2018-12-30T04:22:17.995000Z",
 			10,
 			[]provider.Provider{
 				{
@@ -141,14 +141,14 @@ func Test_ProviderList(t *testing.T) {
 				},
 			},
 
-			"2018-04-18 03:22:17.995000",
+			"2018-04-18T03:22:17.995000Z",
 
 			[]*provider.Provider{
 				{
 					ID:          uuid.FromStringOrNil("634cdf70-42dd-11ed-bd60-ebdb62f04c25"),
 					Name:        "test2",
 					TechHeaders: map[string]string{},
-					TMCreate:    "2018-04-18 03:22:17.995000",
+					TMCreate:    "2018-04-18T03:22:17.995000Z",
 					TMUpdate:    commondatabasehandler.DefaultTimeStamp,
 					TMDelete:    commondatabasehandler.DefaultTimeStamp,
 				},
@@ -156,7 +156,7 @@ func Test_ProviderList(t *testing.T) {
 					ID:          uuid.FromStringOrNil("626446ac-42dd-11ed-863f-1f7b39fa9d61"),
 					Name:        "test1",
 					TechHeaders: map[string]string{},
-					TMCreate:    "2018-04-18 03:22:17.995000",
+					TMCreate:    "2018-04-18T03:22:17.995000Z",
 					TMUpdate:    commondatabasehandler.DefaultTimeStamp,
 					TMDelete:    commondatabasehandler.DefaultTimeStamp,
 				},
@@ -211,8 +211,8 @@ func Test_ProviderDelete(t *testing.T) {
 
 			&provider.Provider{
 				ID:       uuid.FromStringOrNil("2396620a-432f-11ed-9c2e-37f76ce929df"),
-				TMCreate: "2020-04-18T03:22:17.995000",
-				TMUpdate: "2020-04-18T03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
+				TMUpdate: "2020-04-18T03:22:17.995000Z",
 				TMDelete: commondatabasehandler.DefaultTimeStamp,
 			},
 		},
@@ -273,8 +273,8 @@ func Test_ProviderUpdate(t *testing.T) {
 				Name:   "test name",
 				Detail: "test detail",
 
-				TMCreate: "2021-04-18 03:22:17.995000",
-				TMUpdate: "2021-04-18 03:22:17.995000",
+				TMCreate: "2021-04-18T03:22:17.995000Z",
+				TMUpdate: "2021-04-18T03:22:17.995000Z",
 				TMDelete: commondatabasehandler.DefaultTimeStamp,
 			},
 
@@ -283,7 +283,7 @@ func Test_ProviderUpdate(t *testing.T) {
 				provider.FieldDetail: "update detail",
 			},
 
-			"2021-04-18 03:22:17.995000",
+			"2021-04-18T03:22:17.995000Z",
 
 			&provider.Provider{
 				ID:          uuid.FromStringOrNil("e8776eb6-432f-11ed-acde-b7089222dfd9"),
@@ -291,8 +291,8 @@ func Test_ProviderUpdate(t *testing.T) {
 				Detail:      "update detail",
 				TechHeaders: map[string]string{},
 
-				TMCreate: "2021-04-18 03:22:17.995000",
-				TMUpdate: "2021-04-18 03:22:17.995000",
+				TMCreate: "2021-04-18T03:22:17.995000Z",
+				TMUpdate: "2021-04-18T03:22:17.995000Z",
 				TMDelete: commondatabasehandler.DefaultTimeStamp,
 			},
 		},

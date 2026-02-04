@@ -134,7 +134,7 @@ func Test_AISummaryListByCustomerID(t *testing.T) {
 				Permission: amagent.PermissionCustomerAdmin,
 			},
 			size:  10,
-			token: "2020-09-20 03:23:20.995000",
+			token: "2020-09-20T03:23:20.995000Z",
 			filters: map[amsummary.Field]any{
 				amsummary.FieldDeleted:    false,
 				amsummary.FieldCustomerID: uuid.FromStringOrNil("2017e1fe-0ccb-11f0-9c4f-73268b39a2cc"),

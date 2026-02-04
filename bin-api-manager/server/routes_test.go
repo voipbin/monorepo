@@ -40,20 +40,20 @@ func Test_routesGet_customer_id(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/routes?customer_id=de748080-7939-4625-a929-459c09a08448&page_size=10&page_token=2020-09-20%2003:23:20.995000",
+			reqQuery: "/routes?customer_id=de748080-7939-4625-a929-459c09a08448&page_size=10&page_token=2020-09-20T03:23:20.995000Z",
 
 			responseRoutes: []*rmroute.WebhookMessage{
 				{
 					ID:       uuid.FromStringOrNil("611c9384-5166-11ed-aee0-43c348138b55"),
-					TMCreate: "2020-09-20T03:23:21.995000",
+					TMCreate: "2020-09-20T03:23:21.995000Z",
 					Name:     "Route 1",
 				},
 			},
 
 			expectPageSize:   10,
-			expectPageToken:  "2020-09-20 03:23:20.995000",
+			expectPageToken:  "2020-09-20T03:23:20.995000Z",
 			expectCustomerID: uuid.FromStringOrNil("de748080-7939-4625-a929-459c09a08448"),
-			expectRes:        `{"result":[{"id":"611c9384-5166-11ed-aee0-43c348138b55","customer_id":"00000000-0000-0000-0000-000000000000","name":"Route 1","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
+			expectRes:        `{"result":[{"id":"611c9384-5166-11ed-aee0-43c348138b55","customer_id":"00000000-0000-0000-0000-000000000000","name":"Route 1","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"2020-09-20T03:23:21.995000Z","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000Z"}`,
 		},
 		{
 			name: "more than 2 items",
@@ -63,30 +63,30 @@ func Test_routesGet_customer_id(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/routes?customer_id=0e4bcfb0-f90a-4abf-83e1-08a4f0cd0260&page_size=10&page_token=2020-09-20%2003:23:20.995000",
+			reqQuery: "/routes?customer_id=0e4bcfb0-f90a-4abf-83e1-08a4f0cd0260&page_size=10&page_token=2020-09-20T03:23:20.995000Z",
 
 			responseRoutes: []*rmroute.WebhookMessage{
 				{
 					ID:       uuid.FromStringOrNil("6158d6dc-5166-11ed-9a8c-7f1a71b3baaa"),
-					TMCreate: "2020-09-20T03:23:21.995000",
+					TMCreate: "2020-09-20T03:23:21.995000Z",
 					Name:     "Route 2",
 				},
 				{
 					ID:       uuid.FromStringOrNil("618bdbea-5166-11ed-88a2-af045be175e7"),
-					TMCreate: "2020-09-20T03:23:22.995000",
+					TMCreate: "2020-09-20T03:23:22.995000Z",
 					Name:     "Route 3",
 				},
 				{
 					ID:       uuid.FromStringOrNil("61bbd872-5166-11ed-83e9-5f5f0b484429"),
-					TMCreate: "2020-09-20T03:23:23.995000",
+					TMCreate: "2020-09-20T03:23:23.995000Z",
 					Name:     "Route 4",
 				},
 			},
 
 			expectPageSize:   10,
-			expectPageToken:  "2020-09-20 03:23:20.995000",
+			expectPageToken:  "2020-09-20T03:23:20.995000Z",
 			expectCustomerID: uuid.FromStringOrNil("0e4bcfb0-f90a-4abf-83e1-08a4f0cd0260"),
-			expectRes:        `{"result":[{"id":"6158d6dc-5166-11ed-9a8c-7f1a71b3baaa","customer_id":"00000000-0000-0000-0000-000000000000","name":"Route 2","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""},{"id":"618bdbea-5166-11ed-88a2-af045be175e7","customer_id":"00000000-0000-0000-0000-000000000000","name":"Route 3","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"2020-09-20T03:23:22.995000","tm_update":"","tm_delete":""},{"id":"61bbd872-5166-11ed-83e9-5f5f0b484429","customer_id":"00000000-0000-0000-0000-000000000000","name":"Route 4","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"2020-09-20T03:23:23.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:23.995000"}`,
+			expectRes:        `{"result":[{"id":"6158d6dc-5166-11ed-9a8c-7f1a71b3baaa","customer_id":"00000000-0000-0000-0000-000000000000","name":"Route 2","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"2020-09-20T03:23:21.995000Z","tm_update":"","tm_delete":""},{"id":"618bdbea-5166-11ed-88a2-af045be175e7","customer_id":"00000000-0000-0000-0000-000000000000","name":"Route 3","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"2020-09-20T03:23:22.995000Z","tm_update":"","tm_delete":""},{"id":"61bbd872-5166-11ed-83e9-5f5f0b484429","customer_id":"00000000-0000-0000-0000-000000000000","name":"Route 4","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"2020-09-20T03:23:23.995000Z","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:23.995000Z"}`,
 		},
 	}
 
@@ -147,18 +147,18 @@ func Test_routesGet_without_customer_id(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/routes?page_size=10&page_token=2020-09-20%2003:23:20.995000",
+			reqQuery: "/routes?page_size=10&page_token=2020-09-20T03:23:20.995000Z",
 
 			responseRoutes: []*rmroute.WebhookMessage{
 				{
 					ID:       uuid.FromStringOrNil("93b9143a-68a2-11ee-b676-8718718cd43e"),
-					TMCreate: "2020-09-20T03:23:21.995000",
+					TMCreate: "2020-09-20T03:23:21.995000Z",
 				},
 			},
 
 			expectPageSize:  10,
-			expectPageToken: "2020-09-20 03:23:20.995000",
-			expectRes:       `{"result":[{"id":"93b9143a-68a2-11ee-b676-8718718cd43e","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
+			expectPageToken: "2020-09-20T03:23:20.995000Z",
+			expectRes:       `{"result":[{"id":"93b9143a-68a2-11ee-b676-8718718cd43e","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"2020-09-20T03:23:21.995000Z","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000Z"}`,
 		},
 		{
 			name: "more than 2 items",
@@ -167,26 +167,26 @@ func Test_routesGet_without_customer_id(t *testing.T) {
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
 			},
-			reqQuery: "/routes?page_size=10&page_token=2020-09-20%2003:23:20.995000",
+			reqQuery: "/routes?page_size=10&page_token=2020-09-20T03:23:20.995000Z",
 
 			responseRoutes: []*rmroute.WebhookMessage{
 				{
 					ID:       uuid.FromStringOrNil("941551f0-68a2-11ee-889c-ff0e92d76ad5"),
-					TMCreate: "2020-09-20T03:23:21.995000",
+					TMCreate: "2020-09-20T03:23:21.995000Z",
 				},
 				{
 					ID:       uuid.FromStringOrNil("94455364-68a2-11ee-9d8f-d376b317364d"),
-					TMCreate: "2020-09-20T03:23:22.995000",
+					TMCreate: "2020-09-20T03:23:22.995000Z",
 				},
 				{
 					ID:       uuid.FromStringOrNil("947bb1de-68a2-11ee-a56d-4f6139e966bd"),
-					TMCreate: "2020-09-20T03:23:23.995000",
+					TMCreate: "2020-09-20T03:23:23.995000Z",
 				},
 			},
 
 			expectPageSize:  10,
-			expectPageToken: "2020-09-20 03:23:20.995000",
-			expectRes:       `{"result":[{"id":"941551f0-68a2-11ee-889c-ff0e92d76ad5","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""},{"id":"94455364-68a2-11ee-9d8f-d376b317364d","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"2020-09-20T03:23:22.995000","tm_update":"","tm_delete":""},{"id":"947bb1de-68a2-11ee-a56d-4f6139e966bd","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"2020-09-20T03:23:23.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:23.995000"}`,
+			expectPageToken: "2020-09-20T03:23:20.995000Z",
+			expectRes:       `{"result":[{"id":"941551f0-68a2-11ee-889c-ff0e92d76ad5","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"2020-09-20T03:23:21.995000Z","tm_update":"","tm_delete":""},{"id":"94455364-68a2-11ee-9d8f-d376b317364d","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"2020-09-20T03:23:22.995000Z","tm_update":"","tm_delete":""},{"id":"947bb1de-68a2-11ee-a56d-4f6139e966bd","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"2020-09-20T03:23:23.995000Z","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:23.995000Z"}`,
 		},
 	}
 
@@ -336,11 +336,11 @@ func Test_routesIDGet(t *testing.T) {
 
 			responseRoute: &rmroute.WebhookMessage{
 				ID:       uuid.FromStringOrNil("1c776852-5167-11ed-bf9a-eba39c6546e4"),
-				TMCreate: "2020-09-20T03:23:21.995000",
+				TMCreate: "2020-09-20T03:23:21.995000Z",
 			},
 
 			expectRouteID: uuid.FromStringOrNil("1c776852-5167-11ed-bf9a-eba39c6546e4"),
-			expectRes:     `{"id":"1c776852-5167-11ed-bf9a-eba39c6546e4","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}`,
+			expectRes:     `{"id":"1c776852-5167-11ed-bf9a-eba39c6546e4","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"2020-09-20T03:23:21.995000Z","tm_update":"","tm_delete":""}`,
 		},
 	}
 

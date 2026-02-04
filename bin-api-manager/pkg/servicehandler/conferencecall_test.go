@@ -106,7 +106,7 @@ func Test_ConferencecallList(t *testing.T) {
 				Permission: amagent.PermissionCustomerAdmin,
 			},
 
-			"2020-09-20T03:23:20.995000",
+			"2020-09-20T03:23:20.995000Z",
 			10,
 
 			[]cfconferencecall.Conferencecall{

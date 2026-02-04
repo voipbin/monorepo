@@ -17,13 +17,13 @@ func TestMetadataStruct(t *testing.T) {
 				Emoji:     "👍",
 				OwnerType: "agent",
 				OwnerID:   ownerID,
-				TMCreate:  "2023-01-01 00:00:00",
+				TMCreate:  "2023-01-01T00:00:00Z",
 			},
 			{
 				Emoji:     "❤️",
 				OwnerType: "user",
 				OwnerID:   uuid.Must(uuid.NewV4()),
-				TMCreate:  "2023-01-01 00:01:00",
+				TMCreate:  "2023-01-01T00:01:00Z",
 			},
 		},
 	}
@@ -49,7 +49,7 @@ func TestReactionStruct(t *testing.T) {
 		Emoji:     "🎉",
 		OwnerType: "agent",
 		OwnerID:   ownerID,
-		TMCreate:  "2023-01-01 00:00:00",
+		TMCreate:  "2023-01-01T00:00:00Z",
 	}
 
 	if reaction.Emoji != "🎉" {
@@ -61,8 +61,8 @@ func TestReactionStruct(t *testing.T) {
 	if reaction.OwnerID != ownerID {
 		t.Errorf("Reaction.OwnerID = %v, expected %v", reaction.OwnerID, ownerID)
 	}
-	if reaction.TMCreate != "2023-01-01 00:00:00" {
-		t.Errorf("Reaction.TMCreate = %v, expected %v", reaction.TMCreate, "2023-01-01 00:00:00")
+	if reaction.TMCreate != "2023-01-01T00:00:00Z" {
+		t.Errorf("Reaction.TMCreate = %v, expected %v", reaction.TMCreate, "2023-01-01T00:00:00Z")
 	}
 }
 
@@ -75,7 +75,7 @@ func TestMetadataMarshalUnmarshal(t *testing.T) {
 				Emoji:     "👍",
 				OwnerType: "agent",
 				OwnerID:   ownerID,
-				TMCreate:  "2023-01-01 00:00:00",
+				TMCreate:  "2023-01-01T00:00:00Z",
 			},
 		},
 	}

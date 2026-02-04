@@ -54,7 +54,7 @@ var (
 
 // list of default variables
 const (
-	DefaultTimeStamp = "9999-01-01 00:00:00.000000"
+	DefaultTimeStamp = "9999-01-01T00:00:00.000000Z"
 )
 
 // NewHandler creates DBHandler

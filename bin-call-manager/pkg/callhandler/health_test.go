@@ -71,7 +71,7 @@ func Test_HealthCheck(t *testing.T) {
 			},
 			responseChannel: &channel.Channel{
 				ID:       "cba7edf9-8586-40c0-992b-5885103228c1",
-				TMEnd:    "2023-01-18 03:22:18.995000",
+				TMEnd:    "2023-01-18T03:22:18.995000Z",
 				TMDelete: dbhandler.DefaultTimeStamp,
 			},
 
@@ -95,7 +95,7 @@ func Test_HealthCheck(t *testing.T) {
 			responseChannel: &channel.Channel{
 				ID:       "cba7edf9-8586-40c0-992b-5885103228c1",
 				TMEnd:    dbhandler.DefaultTimeStamp,
-				TMDelete: "2023-01-18 03:22:18.995000",
+				TMDelete: "2023-01-18T03:22:18.995000Z",
 			},
 
 			expectRetryCount: 1,

@@ -137,7 +137,7 @@ func (h *streamingHandler) awsProcessResult(ctx context.Context, cancel context.
 				tmGap := time.Time{}.Add(t3)
 
 				// create transcript
-				ts, err := h.transcriptHandler.Create(ctx, st.CustomerID, st.TranscribeID, st.Direction, message, tmGap.Format("2006-01-02 15:04:05.00000"))
+				ts, err := h.transcriptHandler.Create(ctx, st.CustomerID, st.TranscribeID, st.Direction, message, tmGap.Format("2006-01-02T15:04:05.00000Z"))
 				if err != nil {
 					log.Errorf("Could not create transript. err: %v", err)
 					break

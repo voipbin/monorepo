@@ -111,7 +111,7 @@ func Test_AIV1AIcallList(t *testing.T) {
 		{
 			name: "normal",
 
-			pageToken: "2020-09-20 03:23:20.995000",
+			pageToken: "2020-09-20T03:23:20.995000Z",
 			pageSize:  10,
 			filters: map[amaicall.Field]any{
 				amaicall.FieldDeleted:    false,
@@ -126,7 +126,7 @@ func Test_AIV1AIcallList(t *testing.T) {
 
 			expectTarget: string(outline.QueueNameAIRequest),
 			expectRequest: &sock.Request{
-				URI:      fmt.Sprintf("/v1/aicalls?page_token=%s&page_size=10", url.QueryEscape("2020-09-20 03:23:20.995000")),
+				URI:      fmt.Sprintf("/v1/aicalls?page_token=%s&page_size=10", url.QueryEscape("2020-09-20T03:23:20.995000Z")),
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"ccf7720e-4838-4f97-bb61-3021e14c185a","deleted":false}`),

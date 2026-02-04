@@ -104,7 +104,7 @@ func Test_TagList(t *testing.T) {
 				Permission: amagent.PermissionCustomerAdmin,
 			},
 			10,
-			"2020-09-20 03:23:20.995000",
+			"2020-09-20T03:23:20.995000Z",
 
 			[]tmtag.Tag{
 				{
@@ -131,7 +131,7 @@ func Test_TagList(t *testing.T) {
 				Permission: amagent.PermissionCustomerAdmin,
 			},
 			10,
-			"2020-09-20 03:23:20.995000",
+			"2020-09-20T03:23:20.995000Z",
 
 			[]tmtag.Tag{
 				{

@@ -349,8 +349,8 @@ func Test_startLive(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 
-			if "9999-01-01 00:00:000000" < commondatabase.DefaultTimeStamp {
-				t.Errorf("Wrong match. DefaultTimeStamp should be greater than 9999-01-01 00:00:000000")
+			if commondatabase.DefaultTimeStamp < "9999-01-01T00:00:00.000000Z" {
+				t.Errorf("Wrong match. DefaultTimeStamp should be greater than or equal to 9999-01-01T00:00:00.000000Z")
 			}
 		})
 	}

@@ -50,7 +50,7 @@ func Test_OutdialTargetCallCreate(t *testing.T) {
 				DestinationIndex: 0,
 				TryCount:         1,
 
-				TMCreate: "2020-04-18 03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
 			},
 			&outdialtargetcall.OutdialTargetCall{
 				Identity: commonidentity.Identity{
@@ -67,7 +67,7 @@ func Test_OutdialTargetCallCreate(t *testing.T) {
 				DestinationIndex: 0,
 				TryCount:         1,
 
-				TMCreate: "2020-04-18 03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
 			},
 		},
 		{
@@ -92,7 +92,7 @@ func Test_OutdialTargetCallCreate(t *testing.T) {
 				DestinationIndex: 0,
 				TryCount:         1,
 
-				TMCreate: "2020-04-18 03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
 			},
 			&outdialtargetcall.OutdialTargetCall{
 				Identity: commonidentity.Identity{
@@ -114,7 +114,7 @@ func Test_OutdialTargetCallCreate(t *testing.T) {
 				DestinationIndex: 0,
 				TryCount:         1,
 
-				TMCreate: "2020-04-18 03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
 			},
 		},
 	}
@@ -224,7 +224,7 @@ func Test_OutdialTargetCallList(t *testing.T) {
 					DestinationIndex: 0,
 					TryCount:         1,
 
-					TMCreate: "2020-04-18 03:22:17.995000",
+					TMCreate: "2020-04-18T03:22:17.995000Z",
 				},
 			},
 
@@ -250,7 +250,7 @@ func Test_OutdialTargetCallList(t *testing.T) {
 					DestinationIndex: 0,
 					TryCount:         1,
 
-					TMCreate: "2020-04-18 03:22:17.995000",
+					TMCreate: "2020-04-18T03:22:17.995000Z",
 				},
 			},
 		},
@@ -273,7 +273,7 @@ func Test_OutdialTargetCallList(t *testing.T) {
 					DestinationIndex: 0,
 					TryCount:         1,
 
-					TMCreate: "2020-04-18 03:22:17.995000",
+					TMCreate: "2020-04-18T03:22:17.995000Z",
 				},
 				{
 					Identity: commonidentity.Identity{
@@ -291,7 +291,7 @@ func Test_OutdialTargetCallList(t *testing.T) {
 					DestinationIndex: 0,
 					TryCount:         1,
 
-					TMCreate: "2020-04-18 03:22:17.995000",
+					TMCreate: "2020-04-18T03:22:17.995000Z",
 				},
 			},
 
@@ -317,7 +317,7 @@ func Test_OutdialTargetCallList(t *testing.T) {
 					DestinationIndex: 0,
 					TryCount:         1,
 
-					TMCreate: "2020-04-18 03:22:17.995000",
+					TMCreate: "2020-04-18T03:22:17.995000Z",
 				},
 				{
 					Identity: commonidentity.Identity{
@@ -335,7 +335,7 @@ func Test_OutdialTargetCallList(t *testing.T) {
 					DestinationIndex: 0,
 					TryCount:         1,
 
-					TMCreate: "2020-04-18 03:22:17.995000",
+					TMCreate: "2020-04-18T03:22:17.995000Z",
 				},
 			},
 		},
@@ -358,7 +358,7 @@ func Test_OutdialTargetCallList(t *testing.T) {
 					DestinationIndex: 0,
 					TryCount:         1,
 
-					TMCreate: "2020-04-18 03:22:17.995000",
+					TMCreate: "2020-04-18T03:22:17.995000Z",
 				},
 			},
 
@@ -384,7 +384,7 @@ func Test_OutdialTargetCallList(t *testing.T) {
 					DestinationIndex: 0,
 					TryCount:         1,
 
-					TMCreate: "2020-04-18 03:22:17.995000",
+					TMCreate: "2020-04-18T03:22:17.995000Z",
 				},
 			},
 		},
@@ -407,7 +407,7 @@ func Test_OutdialTargetCallList(t *testing.T) {
 					DestinationIndex: 0,
 					TryCount:         1,
 
-					TMCreate: "2020-04-18 03:22:17.995000",
+					TMCreate: "2020-04-18T03:22:17.995000Z",
 				},
 				{
 					Identity: commonidentity.Identity{
@@ -425,7 +425,7 @@ func Test_OutdialTargetCallList(t *testing.T) {
 					DestinationIndex: 0,
 					TryCount:         1,
 
-					TMCreate: "2020-04-18 03:22:17.995000",
+					TMCreate: "2020-04-18T03:22:17.995000Z",
 				},
 			},
 
@@ -451,7 +451,7 @@ func Test_OutdialTargetCallList(t *testing.T) {
 					DestinationIndex: 0,
 					TryCount:         1,
 
-					TMCreate: "2020-04-18 03:22:17.995000",
+					TMCreate: "2020-04-18T03:22:17.995000Z",
 				},
 				{
 					Identity: commonidentity.Identity{
@@ -469,7 +469,7 @@ func Test_OutdialTargetCallList(t *testing.T) {
 					DestinationIndex: 0,
 					TryCount:         1,
 
-					TMCreate: "2020-04-18 03:22:17.995000",
+					TMCreate: "2020-04-18T03:22:17.995000Z",
 				},
 			},
 		},

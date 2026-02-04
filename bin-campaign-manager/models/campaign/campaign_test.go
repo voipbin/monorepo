@@ -27,9 +27,9 @@ func TestCampaignStruct(t *testing.T) {
 		OutdialID:      outdialID,
 		QueueID:        queueID,
 		NextCampaignID: nextCampaignID,
-		TMCreate:       "2024-01-01 00:00:00.000000",
-		TMUpdate:       "2024-01-01 00:00:00.000000",
-		TMDelete:       "9999-01-01 00:00:00.000000",
+		TMCreate:       "2024-01-01T00:00:00.000000Z",
+		TMUpdate:       "2024-01-01T00:00:00.000000Z",
+		TMDelete:       "9999-01-01T00:00:00.000000Z",
 	}
 	c.ID = id
 

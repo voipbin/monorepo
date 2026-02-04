@@ -40,7 +40,7 @@ func Test_MessageList(t *testing.T) {
 				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
-			"2021-03-01 01:00:00.995000",
+			"2021-03-01T01:00:00.995000Z",
 			10,
 
 			[]mmmessage.Message{

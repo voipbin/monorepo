@@ -45,7 +45,7 @@ func Test_OutdialCreate(t *testing.T) {
 
 				Data: "test uuid data string",
 
-				TMCreate: "2020-04-18 03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
 			},
 			&outdial.Outdial{
 				Identity: commonidentity.Identity{
@@ -59,7 +59,7 @@ func Test_OutdialCreate(t *testing.T) {
 
 				Data: "test uuid data string",
 
-				TMCreate: "2020-04-18 03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
 			},
 		},
 	}

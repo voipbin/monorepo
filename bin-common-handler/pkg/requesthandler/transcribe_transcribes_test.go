@@ -98,7 +98,7 @@ func Test_TranscribeV1TranscribeList(t *testing.T) {
 		{
 			name: "1 item",
 
-			pageToken: "2020-09-20T03:23:20.995000",
+			pageToken: "2020-09-20T03:23:20.995000Z",
 			pageSize:  10,
 			filters: map[tmtranscribe.Field]any{
 				tmtranscribe.FieldCustomerID: uuid.FromStringOrNil("adddce70-8093-11ed-9a79-530f80f428d8"),
@@ -112,7 +112,7 @@ func Test_TranscribeV1TranscribeList(t *testing.T) {
 
 			expectedTarget: "bin-manager.transcribe-manager.request",
 			expectedRequest: &sock.Request{
-				URI:      "/v1/transcribes?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
+				URI:      "/v1/transcribes?page_token=2020-09-20T03%3A23%3A20.995000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"adddce70-8093-11ed-9a79-530f80f428d8"}`),
@@ -128,7 +128,7 @@ func Test_TranscribeV1TranscribeList(t *testing.T) {
 		{
 			name: "2 items",
 
-			pageToken: "2020-09-20T03:23:20.995000",
+			pageToken: "2020-09-20T03:23:20.995000Z",
 			pageSize:  10,
 			filters: map[tmtranscribe.Field]any{
 				tmtranscribe.FieldCustomerID: uuid.FromStringOrNil("bb3c9146-8093-11ed-a0df-6fbf1a76cbd3"),
@@ -142,7 +142,7 @@ func Test_TranscribeV1TranscribeList(t *testing.T) {
 
 			expectedTarget: "bin-manager.transcribe-manager.request",
 			expectedRequest: &sock.Request{
-				URI:      "/v1/transcribes?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
+				URI:      "/v1/transcribes?page_token=2020-09-20T03%3A23%3A20.995000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"bb3c9146-8093-11ed-a0df-6fbf1a76cbd3"}`),

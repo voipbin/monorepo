@@ -116,10 +116,10 @@ func Test_processV1TrunksGet(t *testing.T) {
 		{
 			"normal",
 			uuid.FromStringOrNil("8c1f0206-7fed-11ec-bc4d-b75bc59a142c"),
-			"2020-10-10T03:30:17.000000",
+			"2020-10-10T03:30:17.000000Z",
 			10,
 			&sock.Request{
-				URI:      "/v1/trunks?page_token=2020-10-10T03:30:17.000000&page_size=10",
+				URI:      "/v1/trunks?page_token=2020-10-10T03:30:17.000000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"8c1f0206-7fed-11ec-bc4d-b75bc59a142c"}`),
@@ -146,10 +146,10 @@ func Test_processV1TrunksGet(t *testing.T) {
 		{
 			"empty",
 			uuid.FromStringOrNil("8c1f0206-7fed-11ec-bc4d-b75bc59a142c"),
-			"2020-10-10T03:30:17.000000",
+			"2020-10-10T03:30:17.000000Z",
 			10,
 			&sock.Request{
-				URI:      "/v1/trunks?page_token=2020-10-10T03:30:17.000000&page_size=10",
+				URI:      "/v1/trunks?page_token=2020-10-10T03:30:17.000000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"8c1f0206-7fed-11ec-bc4d-b75bc59a142c"}`),

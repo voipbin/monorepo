@@ -15,7 +15,8 @@ import (
 
 const (
 	// DefaultTimeStamp is a placeholder for a default timestamp value used in specific queries.
-	DefaultTimeStamp = "9999-01-01 00:00:00.000000"
+	// Uses ISO 8601 format with microsecond precision.
+	DefaultTimeStamp = "9999-01-01T00:00:00.000000Z"
 )
 
 func Connect(dsn string) (*sql.DB, error) {

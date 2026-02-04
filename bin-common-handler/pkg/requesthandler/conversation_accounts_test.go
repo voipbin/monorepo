@@ -97,17 +97,17 @@ func Test_ConversationV1AccountList(t *testing.T) {
 		{
 			name: "normal",
 
-			pageToken: "2021-03-02 03:23:20.995000",
+			pageToken: "2021-03-02T03:23:20.995000Z",
 			pageSize:  10,
 			filters: map[cvaccount.Field]any{
 				cvaccount.FieldDeleted:    false,
 				cvaccount.FieldCustomerID: uuid.FromStringOrNil("ea626f1c-33fc-11f0-9f26-03f438132b87"),
 			},
 
-			expectURL:    "/v1/accounts?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10",
+			expectURL:    "/v1/accounts?page_token=2021-03-02T03%3A23%3A20.995000Z&page_size=10",
 			expectTarget: "bin-manager.conversation-manager.request",
 			expectRequest: &sock.Request{
-				URI:      "/v1/accounts?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10",
+				URI:      "/v1/accounts?page_token=2021-03-02T03%3A23%3A20.995000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"customer_id":"ea626f1c-33fc-11f0-9f26-03f438132b87","deleted":false}`),

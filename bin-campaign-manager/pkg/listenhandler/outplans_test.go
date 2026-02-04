@@ -119,13 +119,13 @@ func Test_v1OutplansGet(t *testing.T) {
 		{
 			"normal",
 			&sock.Request{
-				URI:      "/v1/outplans?page_token=2020-10-10%2003:30:17.000000&page_size=10",
+				URI:      "/v1/outplans?page_token=2020-10-10T03:30:17.000000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"4890c13c-c467-11ec-add3-77ebc79554b0"}`),
 			},
 
-			"2020-10-10 03:30:17.000000",
+			"2020-10-10T03:30:17.000000Z",
 			10,
 			map[outplan.Field]any{
 				outplan.FieldCustomerID: uuid.FromStringOrNil("4890c13c-c467-11ec-add3-77ebc79554b0"),

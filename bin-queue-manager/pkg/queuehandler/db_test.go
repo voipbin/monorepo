@@ -31,7 +31,7 @@ func Test_List(t *testing.T) {
 			"normal",
 
 			100,
-			"2020-05-03 21:35:02.809",
+			"2020-05-03T21:35:02.809Z",
 			map[queue.Field]any{
 				queue.FieldCustomerID: uuid.FromStringOrNil("e2fc1400-d25a-11ec-9cd3-73acb3bb9c85"),
 				queue.FieldDeleted:    false,

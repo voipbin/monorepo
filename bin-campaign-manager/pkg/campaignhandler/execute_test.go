@@ -320,8 +320,8 @@ func Test_isDialableTarget(t *testing.T) {
 					Target: "+821100000001",
 				},
 				TryCount0: 0,
-				TMCreate:  "2022-04-18 03:00:17.995000",
-				TMUpdate:  "2022-04-18 03:22:17.995000",
+				TMCreate:  "2022-04-18T03:00:17.995000Z",
+				TMUpdate:  "2022-04-18T03:22:17.995000Z",
 			},
 			600000, // 10 min
 
@@ -337,8 +337,8 @@ func Test_isDialableTarget(t *testing.T) {
 					Target: "+821100000001",
 				},
 				TryCount0: 0,
-				TMCreate:  "2020-04-18 03:22:17.995000",
-				TMUpdate:  "2020-04-18 03:22:17.995000",
+				TMCreate:  "2020-04-18T03:22:17.995000Z",
+				TMUpdate:  "2020-04-18T03:22:17.995000Z",
 			},
 			315360000000, // 10 years
 
@@ -354,8 +354,8 @@ func Test_isDialableTarget(t *testing.T) {
 					Target: "+821100000001",
 				},
 				TryCount0: 0,
-				TMCreate:  "2022-04-18 03:00:17.995000",
-				TMUpdate:  "2022-04-18 03:22:17.995000",
+				TMCreate:  "2022-04-18T03:00:17.995000Z",
+				TMUpdate:  "2022-04-18T03:22:17.995000Z",
 			},
 			315360000000, // 10 years
 

@@ -132,8 +132,8 @@ func Test_ExtensionUpdate(t *testing.T) {
 				Detail:    "update detail",
 				Extension: "test",
 				Password:  "update password",
-				TMCreate:  "2020-09-20 03:23:20.995000",
-				TMUpdate:  "2020-09-20 03:23:23.995000",
+				TMCreate:  "2020-09-20T03:23:20.995000Z",
+				TMUpdate:  "2020-09-20T03:23:23.995000Z",
 			},
 			&rmextension.WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -144,8 +144,8 @@ func Test_ExtensionUpdate(t *testing.T) {
 				Detail:    "update detail",
 				Extension: "test",
 				Password:  "update password",
-				TMCreate:  "2020-09-20 03:23:20.995000",
-				TMUpdate:  "2020-09-20 03:23:23.995000"},
+				TMCreate:  "2020-09-20T03:23:20.995000Z",
+				TMUpdate:  "2020-09-20T03:23:23.995000Z"},
 		},
 	}
 
@@ -350,7 +350,7 @@ func Test_ExtensionList(t *testing.T) {
 				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
-			"2020-10-20T01:00:00.995000",
+			"2020-10-20T01:00:00.995000Z",
 			10,
 			map[rmextension.Field]any{
 				rmextension.FieldCustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),

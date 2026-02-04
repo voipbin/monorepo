@@ -31,13 +31,13 @@ func Test_processV1CustomersGet(t *testing.T) {
 		{
 			"normal",
 			&sock.Request{
-				URI:      "/v1/customers?page_size=10&page_token=2021-11-23%2017:55:39.712000",
+				URI:      "/v1/customers?page_size=10&page_token=2021-11-23T17:55:39.712000Z",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"deleted":false}`),
 			},
 			10,
-			"2021-11-23 17:55:39.712000",
+			"2021-11-23T17:55:39.712000Z",
 
 			map[customer.Field]any{
 				customer.FieldDeleted: false,
@@ -59,13 +59,13 @@ func Test_processV1CustomersGet(t *testing.T) {
 		{
 			"2 customers",
 			&sock.Request{
-				URI:      "/v1/customers?page_size=10&page_token=2021-11-23%2017:55:39.712000",
+				URI:      "/v1/customers?page_size=10&page_token=2021-11-23T17:55:39.712000Z",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"deleted":false}`),
 			},
 			10,
-			"2021-11-23 17:55:39.712000",
+			"2021-11-23T17:55:39.712000Z",
 
 			map[customer.Field]any{
 				customer.FieldDeleted: false,

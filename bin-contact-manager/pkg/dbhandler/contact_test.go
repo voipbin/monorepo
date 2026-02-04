@@ -41,7 +41,7 @@ func Test_ContactCreate(t *testing.T) {
 				Notes:       "Test contact",
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 			expectRes: &contact.Contact{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("250bbfa4-50d7-11ec-a6b1-8f9671a9e70e"),
@@ -55,7 +55,7 @@ func Test_ContactCreate(t *testing.T) {
 				Source:      "manual",
 				ExternalID:  "ext-001",
 				Notes:       "Test contact",
-				TMCreate:    "2020-04-18 03:22:17.995000",
+				TMCreate:    "2020-04-18T03:22:17.995000Z",
 				TMUpdate:    DefaultTimeStamp,
 				TMDelete:    DefaultTimeStamp,
 			},
@@ -132,7 +132,7 @@ func Test_ContactUpdate(t *testing.T) {
 				contact.FieldDisplayName: "Updated Name",
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 			expectRes: &contact.Contact{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("ae1e0150-4c6b-11ec-922d-27336e407864"),
@@ -142,8 +142,8 @@ func Test_ContactUpdate(t *testing.T) {
 				LastName:    "Name",
 				DisplayName: "Updated Name",
 				Source:      "manual",
-				TMCreate:    "2020-04-18 03:22:17.995000",
-				TMUpdate:    "2020-04-18 03:22:17.995000",
+				TMCreate:    "2020-04-18T03:22:17.995000Z",
+				TMUpdate:    "2020-04-18T03:22:17.995000Z",
 				TMDelete:    DefaultTimeStamp,
 			},
 		},
@@ -218,7 +218,7 @@ func Test_ContactDelete(t *testing.T) {
 				Source:      "manual",
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 		},
 	}
 
@@ -295,7 +295,7 @@ func Test_PhoneNumberCreate(t *testing.T) {
 				IsPrimary:  true,
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 		},
 	}
 
@@ -374,7 +374,7 @@ func Test_EmailCreate(t *testing.T) {
 				IsPrimary:  true,
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 		},
 	}
 
@@ -449,7 +449,7 @@ func Test_TagAssignmentCreate(t *testing.T) {
 			},
 			tagID: uuid.FromStringOrNil("99999999-9999-9999-9999-999999999999"),
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 		},
 	}
 
@@ -521,7 +521,7 @@ func Test_TagAssignmentDelete(t *testing.T) {
 			},
 			tagID: uuid.FromStringOrNil("cccccccc-cccc-cccc-cccc-cccccccccccc"),
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 		},
 	}
 
@@ -603,7 +603,7 @@ func Test_PhoneNumberDelete(t *testing.T) {
 				IsPrimary:  true,
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 		},
 	}
 
@@ -684,7 +684,7 @@ func Test_EmailDelete(t *testing.T) {
 				IsPrimary:  true,
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 		},
 	}
 
@@ -769,7 +769,7 @@ func Test_ContactDeleteByCustomerID(t *testing.T) {
 			},
 			customerID: uuid.FromStringOrNil("b0000000-0000-0000-0000-000000000000"),
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 		},
 	}
 
@@ -932,7 +932,7 @@ func Test_PhoneNumberListByContactID(t *testing.T) {
 				},
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 		},
 	}
 
@@ -1043,7 +1043,7 @@ func Test_EmailListByContactID(t *testing.T) {
 				},
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 		},
 	}
 
@@ -1140,7 +1140,7 @@ func Test_TagAssignmentListByContactID(t *testing.T) {
 				uuid.FromStringOrNil("faaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 		},
 	}
 
@@ -1249,7 +1249,7 @@ func Test_ContactUpdate_AllFields(t *testing.T) {
 				contact.FieldNotes:       "New notes",
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 		},
 	}
 
@@ -1338,7 +1338,7 @@ func Test_ContactCreate_WithAllFields(t *testing.T) {
 		Notes:       "This is a full contact with all fields",
 	}
 
-	mockUtil.EXPECT().TimeGetCurTime().Return("2020-04-18 03:22:17.995000")
+	mockUtil.EXPECT().TimeGetCurTime().Return("2020-04-18T03:22:17.995000Z")
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 
 	if err := h.ContactCreate(ctx, c); err != nil {
@@ -1407,7 +1407,7 @@ func Test_ContactLookupByPhone(t *testing.T) {
 				IsPrimary:  true,
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 		},
 	}
 
@@ -1505,7 +1505,7 @@ func Test_ContactLookupByEmail(t *testing.T) {
 				IsPrimary:  true,
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 		},
 	}
 
@@ -1598,7 +1598,7 @@ func Test_ContactDeleteByCustomerID_NoMatches(t *testing.T) {
 	// Use a non-existent customer ID
 	nonExistentCustomerID := uuid.FromStringOrNil("12121212-1212-1212-1212-121212121212")
 
-	mockUtil.EXPECT().TimeGetCurTime().Return("2020-04-18 03:22:17.995000")
+	mockUtil.EXPECT().TimeGetCurTime().Return("2020-04-18T03:22:17.995000Z")
 
 	err := h.ContactDeleteByCustomerID(ctx, nonExistentCustomerID)
 	if err != nil {
@@ -1732,7 +1732,7 @@ func Test_Multiple_PhoneNumbers_ForSameContact(t *testing.T) {
 	}
 
 	// Create contact
-	mockUtil.EXPECT().TimeGetCurTime().Return("2020-04-18 03:22:17.995000")
+	mockUtil.EXPECT().TimeGetCurTime().Return("2020-04-18T03:22:17.995000Z")
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	if err := h.ContactCreate(ctx, c); err != nil {
 		t.Errorf("ContactCreate() error = %v", err)
@@ -1748,7 +1748,7 @@ func Test_Multiple_PhoneNumbers_ForSameContact(t *testing.T) {
 		Type:       "mobile",
 		IsPrimary:  true,
 	}
-	mockUtil.EXPECT().TimeGetCurTime().Return("2020-04-18 03:22:17.995000")
+	mockUtil.EXPECT().TimeGetCurTime().Return("2020-04-18T03:22:17.995000Z")
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	if err := h.PhoneNumberCreate(ctx, phone1); err != nil {
 		t.Errorf("PhoneNumberCreate() error = %v", err)
@@ -1764,7 +1764,7 @@ func Test_Multiple_PhoneNumbers_ForSameContact(t *testing.T) {
 		Type:       "work",
 		IsPrimary:  false,
 	}
-	mockUtil.EXPECT().TimeGetCurTime().Return("2020-04-18 03:22:17.995000")
+	mockUtil.EXPECT().TimeGetCurTime().Return("2020-04-18T03:22:17.995000Z")
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	if err := h.PhoneNumberCreate(ctx, phone2); err != nil {
 		t.Errorf("PhoneNumberCreate() error = %v", err)
@@ -1806,7 +1806,7 @@ func Test_Multiple_Emails_ForSameContact(t *testing.T) {
 	}
 
 	// Create contact
-	mockUtil.EXPECT().TimeGetCurTime().Return("2020-04-18 03:22:17.995000")
+	mockUtil.EXPECT().TimeGetCurTime().Return("2020-04-18T03:22:17.995000Z")
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	if err := h.ContactCreate(ctx, c); err != nil {
 		t.Errorf("ContactCreate() error = %v", err)
@@ -1821,7 +1821,7 @@ func Test_Multiple_Emails_ForSameContact(t *testing.T) {
 		Type:       "work",
 		IsPrimary:  true,
 	}
-	mockUtil.EXPECT().TimeGetCurTime().Return("2020-04-18 03:22:17.995000")
+	mockUtil.EXPECT().TimeGetCurTime().Return("2020-04-18T03:22:17.995000Z")
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	if err := h.EmailCreate(ctx, email1); err != nil {
 		t.Errorf("EmailCreate() error = %v", err)
@@ -1836,7 +1836,7 @@ func Test_Multiple_Emails_ForSameContact(t *testing.T) {
 		Type:       "personal",
 		IsPrimary:  false,
 	}
-	mockUtil.EXPECT().TimeGetCurTime().Return("2020-04-18 03:22:17.995000")
+	mockUtil.EXPECT().TimeGetCurTime().Return("2020-04-18T03:22:17.995000Z")
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	if err := h.EmailCreate(ctx, email2); err != nil {
 		t.Errorf("EmailCreate() error = %v", err)
@@ -1878,7 +1878,7 @@ func Test_Multiple_Tags_ForSameContact(t *testing.T) {
 	}
 
 	// Create contact
-	mockUtil.EXPECT().TimeGetCurTime().Return("2020-04-18 03:22:17.995000")
+	mockUtil.EXPECT().TimeGetCurTime().Return("2020-04-18T03:22:17.995000Z")
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	if err := h.ContactCreate(ctx, c); err != nil {
 		t.Errorf("ContactCreate() error = %v", err)
@@ -1886,7 +1886,7 @@ func Test_Multiple_Tags_ForSameContact(t *testing.T) {
 
 	// Create first tag
 	tag1 := uuid.FromStringOrNil("29292929-2929-2929-2929-292929292929")
-	mockUtil.EXPECT().TimeGetCurTime().Return("2020-04-18 03:22:17.995000")
+	mockUtil.EXPECT().TimeGetCurTime().Return("2020-04-18T03:22:17.995000Z")
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	if err := h.TagAssignmentCreate(ctx, c.ID, tag1); err != nil {
 		t.Errorf("TagAssignmentCreate() error = %v", err)
@@ -1894,7 +1894,7 @@ func Test_Multiple_Tags_ForSameContact(t *testing.T) {
 
 	// Create second tag
 	tag2 := uuid.FromStringOrNil("30303030-3030-3030-3030-303030303030")
-	mockUtil.EXPECT().TimeGetCurTime().Return("2020-04-18 03:22:17.995000")
+	mockUtil.EXPECT().TimeGetCurTime().Return("2020-04-18T03:22:17.995000Z")
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	if err := h.TagAssignmentCreate(ctx, c.ID, tag2); err != nil {
 		t.Errorf("TagAssignmentCreate() error = %v", err)

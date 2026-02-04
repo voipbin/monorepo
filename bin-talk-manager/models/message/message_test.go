@@ -165,8 +165,8 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 				Text:     "Hello world",
 				Medias:   []Media{},
 				Metadata: Metadata{Reactions: []Reaction{}},
-				TMCreate: "2024-01-15 10:30:00.000000",
-				TMUpdate: "2024-01-15 10:30:00.000000",
+				TMCreate: "2024-01-15T10:30:00.000000Z",
+				TMUpdate: "2024-01-15T10:30:00.000000Z",
 			},
 			expect: &WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -182,8 +182,8 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 				Text:     "Hello world",
 				Medias:   []Media{},
 				Metadata: Metadata{Reactions: []Reaction{}},
-				TMCreate: "2024-01-15 10:30:00.000000",
-				TMUpdate: "2024-01-15 10:30:00.000000",
+				TMCreate: "2024-01-15T10:30:00.000000Z",
+				TMUpdate: "2024-01-15T10:30:00.000000Z",
 			},
 		},
 		{
@@ -207,8 +207,8 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 					},
 				},
 				Metadata: Metadata{Reactions: []Reaction{}},
-				TMCreate: "2024-01-15 10:30:00.000000",
-				TMUpdate: "2024-01-15 10:30:00.000000",
+				TMCreate: "2024-01-15T10:30:00.000000Z",
+				TMUpdate: "2024-01-15T10:30:00.000000Z",
 			},
 			expect: &WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -229,8 +229,8 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 					},
 				},
 				Metadata: Metadata{Reactions: []Reaction{}},
-				TMCreate: "2024-01-15 10:30:00.000000",
-				TMUpdate: "2024-01-15 10:30:00.000000",
+				TMCreate: "2024-01-15T10:30:00.000000Z",
+				TMUpdate: "2024-01-15T10:30:00.000000Z",
 			},
 		},
 		{
@@ -254,8 +254,8 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 					},
 				},
 				Metadata: Metadata{Reactions: []Reaction{}},
-				TMCreate: "2024-01-15 10:30:00.000000",
-				TMUpdate: "2024-01-15 10:30:00.000000",
+				TMCreate: "2024-01-15T10:30:00.000000Z",
+				TMUpdate: "2024-01-15T10:30:00.000000Z",
 			},
 			expect: &WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -276,8 +276,8 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 					},
 				},
 				Metadata: Metadata{Reactions: []Reaction{}},
-				TMCreate: "2024-01-15 10:30:00.000000",
-				TMUpdate: "2024-01-15 10:30:00.000000",
+				TMCreate: "2024-01-15T10:30:00.000000Z",
+				TMUpdate: "2024-01-15T10:30:00.000000Z",
 			},
 		},
 	}
@@ -323,8 +323,8 @@ func Test_CreateWebhookEvent(t *testing.T) {
 					},
 				},
 				Metadata: Metadata{Reactions: []Reaction{}},
-				TMCreate: "2024-01-15 10:30:00.000000",
-				TMUpdate: "2024-01-15 10:30:00.000000",
+				TMCreate: "2024-01-15T10:30:00.000000Z",
+				TMUpdate: "2024-01-15T10:30:00.000000Z",
 			},
 		},
 	}
@@ -382,8 +382,8 @@ func Test_WebhookMessage_CreateWebhookEvent(t *testing.T) {
 					},
 				},
 				Metadata: Metadata{Reactions: []Reaction{}},
-				TMCreate: "2024-01-15 10:30:00.000000",
-				TMUpdate: "2024-01-15 10:30:00.000000",
+				TMCreate: "2024-01-15T10:30:00.000000Z",
+				TMUpdate: "2024-01-15T10:30:00.000000Z",
 			},
 		},
 	}

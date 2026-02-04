@@ -33,11 +33,11 @@ func Test_RouteCreate(t *testing.T) {
 				ID: uuid.FromStringOrNil("df43b28c-4334-11ed-800b-1365aa60a589"),
 			},
 
-			"2020-04-18 03:22:17.995000",
+			"2020-04-18T03:22:17.995000Z",
 
 			&route.Route{
 				ID:       uuid.FromStringOrNil("df43b28c-4334-11ed-800b-1365aa60a589"),
-				TMCreate: "2020-04-18 03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
 				TMUpdate: commondatabasehandler.DefaultTimeStamp,
 				TMDelete: commondatabasehandler.DefaultTimeStamp,
 			},
@@ -52,7 +52,7 @@ func Test_RouteCreate(t *testing.T) {
 				Target:     "all",
 			},
 
-			"2020-04-18 03:22:17.995000",
+			"2020-04-18T03:22:17.995000Z",
 
 			&route.Route{
 				ID:         uuid.FromStringOrNil("df888a56-4334-11ed-b4c2-8b00086523fb"),
@@ -60,7 +60,7 @@ func Test_RouteCreate(t *testing.T) {
 				ProviderID: uuid.FromStringOrNil("efec350a-4334-11ed-a603-334dec19334f"),
 				Priority:   1,
 				Target:     "all",
-				TMCreate:   "2020-04-18 03:22:17.995000",
+				TMCreate:   "2020-04-18T03:22:17.995000Z",
 				TMUpdate:   commondatabasehandler.DefaultTimeStamp,
 				TMDelete:   commondatabasehandler.DefaultTimeStamp,
 			},
@@ -125,7 +125,7 @@ func Test_RouteList(t *testing.T) {
 			},
 
 			10,
-			"2020-04-18 03:22:17.995000",
+			"2020-04-18T03:22:17.995000Z",
 		},
 	}
 
@@ -183,15 +183,15 @@ func Test_RouteListByCustomerID(t *testing.T) {
 				{
 					ID:         uuid.FromStringOrNil("4004e982-4336-11ed-99fc-53e93440d555"),
 					CustomerID: uuid.FromStringOrNil("3fc93770-4336-11ed-a641-73b648571f6b"),
-					TMCreate:   "2020-04-18 03:22:17.995000",
-					TMUpdate:   "2020-04-18 03:22:17.995000",
+					TMCreate:   "2020-04-18T03:22:17.995000Z",
+					TMUpdate:   "2020-04-18T03:22:17.995000Z",
 					TMDelete:   commondatabasehandler.DefaultTimeStamp,
 				},
 				{
 					ID:         uuid.FromStringOrNil("40335d58-4336-11ed-b1ec-57f4e8d28783"),
 					CustomerID: uuid.FromStringOrNil("3fc93770-4336-11ed-a641-73b648571f6b"),
-					TMCreate:   "2020-04-18 03:22:17.995000",
-					TMUpdate:   "2020-04-18 03:22:17.995000",
+					TMCreate:   "2020-04-18T03:22:17.995000Z",
+					TMUpdate:   "2020-04-18T03:22:17.995000Z",
 					TMDelete:   commondatabasehandler.DefaultTimeStamp,
 				},
 			},
@@ -199,20 +199,20 @@ func Test_RouteListByCustomerID(t *testing.T) {
 			uuid.FromStringOrNil("3fc93770-4336-11ed-a641-73b648571f6b"),
 			10,
 
-			"2020-04-18 03:22:17.995000",
+			"2020-04-18T03:22:17.995000Z",
 
 			[]*route.Route{
 				{
 					ID:         uuid.FromStringOrNil("40335d58-4336-11ed-b1ec-57f4e8d28783"),
 					CustomerID: uuid.FromStringOrNil("3fc93770-4336-11ed-a641-73b648571f6b"),
-					TMCreate:   "2020-04-18 03:22:17.995000",
+					TMCreate:   "2020-04-18T03:22:17.995000Z",
 					TMUpdate:   commondatabasehandler.DefaultTimeStamp,
 					TMDelete:   commondatabasehandler.DefaultTimeStamp,
 				},
 				{
 					ID:         uuid.FromStringOrNil("4004e982-4336-11ed-99fc-53e93440d555"),
 					CustomerID: uuid.FromStringOrNil("3fc93770-4336-11ed-a641-73b648571f6b"),
-					TMCreate:   "2020-04-18 03:22:17.995000",
+					TMCreate:   "2020-04-18T03:22:17.995000Z",
 					TMUpdate:   commondatabasehandler.DefaultTimeStamp,
 					TMDelete:   commondatabasehandler.DefaultTimeStamp,
 				},
@@ -291,9 +291,9 @@ func Test_RouteListByCustomerIDWithTarget(t *testing.T) {
 
 			uuid.FromStringOrNil("b048bb00-4337-11ed-96f0-4b0f7dc31ba1"),
 			"all",
-			"2020-05-18 03:22:18.995000", // token should be after the TMCreate
+			"2020-05-18T03:22:18.995000Z", // token should be after the TMCreate
 
-			"2020-05-18 03:22:17.995000",
+			"2020-05-18T03:22:17.995000Z",
 
 			// Results are ordered by TMCreate DESC, ID DESC
 			// Since both have same TMCreate, they're ordered by ID DESC
@@ -304,7 +304,7 @@ func Test_RouteListByCustomerIDWithTarget(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("b048bb00-4337-11ed-96f0-4b0f7dc31ba1"),
 					Target:     "all",
 					Priority:   2,
-					TMCreate:   "2020-05-18 03:22:17.995000",
+					TMCreate:   "2020-05-18T03:22:17.995000Z",
 					TMUpdate:   commondatabasehandler.DefaultTimeStamp,
 					TMDelete:   commondatabasehandler.DefaultTimeStamp,
 				},
@@ -313,7 +313,7 @@ func Test_RouteListByCustomerIDWithTarget(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("b048bb00-4337-11ed-96f0-4b0f7dc31ba1"),
 					Target:     "all",
 					Priority:   1,
-					TMCreate:   "2020-05-18 03:22:17.995000",
+					TMCreate:   "2020-05-18T03:22:17.995000Z",
 					TMUpdate:   commondatabasehandler.DefaultTimeStamp,
 					TMDelete:   commondatabasehandler.DefaultTimeStamp,
 				},
@@ -369,8 +369,8 @@ func Test_RouteDelete(t *testing.T) {
 			"normal",
 			&route.Route{
 				ID:       uuid.FromStringOrNil("76fc1f26-4338-11ed-bd70-1ba6021f2c4c"),
-				TMCreate: "2020-04-18T03:22:17.995000",
-				TMUpdate: "2020-04-18T03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
+				TMUpdate: "2020-04-18T03:22:17.995000Z",
 				TMDelete: commondatabasehandler.DefaultTimeStamp,
 			},
 		},
@@ -444,7 +444,7 @@ func Test_RouteUpdate(t *testing.T) {
 				route.FieldTarget:     "+82",
 			},
 
-			responseCurTime: "2020-05-18 03:22:17.995000",
+			responseCurTime: "2020-05-18T03:22:17.995000Z",
 
 			expectRes: &route.Route{
 				ID:         uuid.FromStringOrNil("e8776eb6-432f-11ed-acde-b7089222dfd9"),
@@ -454,8 +454,8 @@ func Test_RouteUpdate(t *testing.T) {
 				ProviderID: uuid.FromStringOrNil("f7855bcc-6b54-11ee-a216-bbb1db932bc9"),
 				Priority:   2,
 				Target:     "+82",
-				TMCreate:   "2020-05-18 03:22:17.995000",
-				TMUpdate:   "2020-05-18 03:22:17.995000",
+				TMCreate:   "2020-05-18T03:22:17.995000Z",
+				TMUpdate:   "2020-05-18T03:22:17.995000Z",
 				TMDelete:   commondatabasehandler.DefaultTimeStamp,
 			},
 		},

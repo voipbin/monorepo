@@ -103,14 +103,14 @@ func Test_v1RoutesGet(t *testing.T) {
 		{
 			"1 item",
 			&sock.Request{
-				URI:      "/v1/routes?page_token=2020-10-10T03:30:17.000000&page_size=10",
+				URI:      "/v1/routes?page_token=2020-10-10T03:30:17.000000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"e2d763cc-486a-11ed-8d55-e34391ad9311"}`),
 			},
 
 			uuid.FromStringOrNil("e2d763cc-486a-11ed-8d55-e34391ad9311"),
-			"2020-10-10T03:30:17.000000",
+			"2020-10-10T03:30:17.000000Z",
 			10,
 
 			[]*route.Route{
@@ -128,14 +128,14 @@ func Test_v1RoutesGet(t *testing.T) {
 		{
 			"2 items",
 			&sock.Request{
-				URI:      "/v1/routes?page_token=2020-10-10T03:30:17.000000&page_size=10",
+				URI:      "/v1/routes?page_token=2020-10-10T03:30:17.000000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"4d4b055a-486c-11ed-9e9a-8f788b18b04c"}`),
 			},
 
 			uuid.FromStringOrNil("4d4b055a-486c-11ed-9e9a-8f788b18b04c"),
-			"2020-10-10T03:30:17.000000",
+			"2020-10-10T03:30:17.000000Z",
 			10,
 
 			[]*route.Route{
@@ -156,14 +156,14 @@ func Test_v1RoutesGet(t *testing.T) {
 		{
 			"empty response",
 			&sock.Request{
-				URI:      "/v1/routes?page_token=2020-10-10T03:30:17.000000&page_size=10",
+				URI:      "/v1/routes?page_token=2020-10-10T03:30:17.000000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"7a484950-486c-11ed-8224-b3c5db4f575e"}`),
 			},
 
 			uuid.FromStringOrNil("7a484950-486c-11ed-8224-b3c5db4f575e"),
-			"2020-10-10T03:30:17.000000",
+			"2020-10-10T03:30:17.000000Z",
 			10,
 
 			[]*route.Route{},

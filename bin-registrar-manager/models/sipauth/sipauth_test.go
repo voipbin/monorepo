@@ -17,8 +17,8 @@ func TestSIPAuthStruct(t *testing.T) {
 		Username:      "testuser",
 		Password:      "testpass",
 		AllowedIPs:    []string{"192.168.1.1", "10.0.0.1"},
-		TMCreate:      "2023-01-01 00:00:00",
-		TMUpdate:      "2023-01-02 00:00:00",
+		TMCreate:      "2023-01-01T00:00:00Z",
+		TMUpdate:      "2023-01-02T00:00:00Z",
 	}
 
 	if sa.ID != id {

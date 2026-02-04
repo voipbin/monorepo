@@ -39,7 +39,7 @@ func Test_conversationsGET(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/service_agents/conversations?page_token=2020-09-20%2003:23:20.995000&page_size=10",
+			reqQuery: "/service_agents/conversations?page_token=2020-09-20T03:23:20.995000Z&page_size=10",
 
 			responseConversations: []*cvconversation.WebhookMessage{
 				{
@@ -54,7 +54,7 @@ func Test_conversationsGET(t *testing.T) {
 				},
 			},
 
-			expectPageToken: "2020-09-20 03:23:20.995000",
+			expectPageToken: "2020-09-20T03:23:20.995000Z",
 			expectPageSize:  10,
 			expectRes:       `{"result":[{"id":"83d48228-3ed7-11ef-a9ca-070e7ba46a55","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","account_id":"00000000-0000-0000-0000-000000000000","self":{},"peer":{}},{"id":"84caa752-3ed7-11ef-a428-7bbe6c050b77","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","account_id":"00000000-0000-0000-0000-000000000000","self":{},"peer":{}}],"next_page_token":""}`,
 		},
@@ -122,7 +122,7 @@ func Test_conversationsIDGET(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("e66d1da0-3ed7-11ef-9208-4bcc069917a1"),
 				},
-				TMCreate: "2020-09-20T03:23:21.995000",
+				TMCreate: "2020-09-20T03:23:21.995000Z",
 			},
 
 			expectConversationID: uuid.FromStringOrNil("e66d1da0-3ed7-11ef-9208-4bcc069917a1"),

@@ -41,7 +41,7 @@ func Test_CampaigncallList(t *testing.T) {
 				Permission: amagent.PermissionCustomerAdmin,
 			},
 			size:  10,
-			token: "2020-09-20 03:23:20.995000",
+			token: "2020-09-20T03:23:20.995000Z",
 
 			responseCampaigncalls: []cacampaigncall.Campaigncall{
 				{
@@ -122,7 +122,7 @@ func Test_campaigncallListByCampaignID(t *testing.T) {
 				Permission: amagent.PermissionCustomerAdmin,
 			},
 			uuid.FromStringOrNil("8ac37eee-c86a-11ec-ba1f-9bdb87f79ae6"),
-			"2020-10-20T01:00:00.995000",
+			"2020-10-20T01:00:00.995000Z",
 			10,
 
 			&cacampaign.Campaign{

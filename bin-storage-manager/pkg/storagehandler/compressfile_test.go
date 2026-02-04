@@ -66,7 +66,7 @@ func Test_CompressCreate(t *testing.T) {
 			},
 			responseFilepath:    "test/result/file/path/3bb54938-1d6b-11ef-996a-b79925fc2e03",
 			responseDownloadURI: "http://localhost/download/uri",
-			responseCurTimeAdd:  "2024-05-16 03:22:17.995000",
+			responseCurTimeAdd:  "2024-05-16T03:22:17.995000Z",
 
 			expectSourcefilePaths: []string{
 				"test/file/path/4ada1a3e-1d6a-11ef-99c3-076e46349385",
@@ -92,7 +92,7 @@ func Test_CompressCreate(t *testing.T) {
 					uuid.FromStringOrNil("536b5c64-1d6d-11ef-bf65-1ffae2d556ab"),
 				},
 				DownloadURI:      "http://localhost/download/uri",
-				TMDownloadExpire: "2024-05-16 03:22:17.995000",
+				TMDownloadExpire: "2024-05-16T03:22:17.995000Z",
 			},
 		},
 	}

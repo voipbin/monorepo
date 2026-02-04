@@ -208,7 +208,7 @@ func Test_List(t *testing.T) {
 			"normal",
 
 			10,
-			"2020-05-03%2021:35:02.809",
+			"2020-05-03T21:35:02.809Z",
 			map[trunk.Field]any{
 				trunk.FieldDeleted:    false,
 				trunk.FieldCustomerID: uuid.FromStringOrNil("aa2be0f0-5234-11ee-960c-43d098822966"),

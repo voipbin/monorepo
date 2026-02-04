@@ -184,7 +184,7 @@ func Test_RegistrarV1ExtensionGet(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"342f9734-6fa1-11eb-a937-17d537105d6a","customer_id":"324cf776-7ff0-11ec-a0ea-e30825a4224f","domain_id":"4351e596-6fa1-11eb-b086-db7f03792b30","name":"test domain","detail":"test domain detail","extension":"test","password":"password","tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"342f9734-6fa1-11eb-a937-17d537105d6a","customer_id":"324cf776-7ff0-11ec-a0ea-e30825a4224f","domain_id":"4351e596-6fa1-11eb-b086-db7f03792b30","name":"test domain","detail":"test domain detail","extension":"test","password":"password","tm_create":"2020-09-20T03:23:20.995000Z","tm_update":"","tm_delete":""}`),
 			},
 
 			"bin-manager.registrar-manager.request",
@@ -202,7 +202,7 @@ func Test_RegistrarV1ExtensionGet(t *testing.T) {
 				Password:  "password",
 				Name:      "test domain",
 				Detail:    "test domain detail",
-				TMCreate:  "2020-09-20 03:23:20.995000",
+				TMCreate:  "2020-09-20T03:23:20.995000Z",
 				TMUpdate:  "",
 				TMDelete:  "",
 			},
@@ -314,7 +314,7 @@ func Test_RegistrarV1ExtensionList(t *testing.T) {
 		{
 			"normal",
 
-			"2020-09-20 03:23:20.995000",
+			"2020-09-20T03:23:20.995000Z",
 			10,
 			map[rmextension.Field]any{
 				rmextension.FieldCustomerID: uuid.FromStringOrNil("f18dcabe-4ff3-11ee-80be-875a8c6041d4"),
@@ -328,7 +328,7 @@ func Test_RegistrarV1ExtensionList(t *testing.T) {
 
 			"bin-manager.registrar-manager.request",
 			&sock.Request{
-				URI:      "/v1/extensions?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10",
+				URI:      "/v1/extensions?page_token=2020-09-20T03%3A23%3A20.995000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"f18dcabe-4ff3-11ee-80be-875a8c6041d4"}`),
@@ -391,7 +391,7 @@ func Test_RegistrarV1ExtensionGetsByExtension(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"d19c3956-6ed8-11eb-b971-fb12bc338aeb","customer_id":"5703f08a-5710-11ee-9295-77eb098ad269","domain_id":"e45dafce-6fa1-11eb-9e87-7ba8b7ae10f0","name":"test","detail":"test detail","extension":"test","password":"password","tm_create":"2020-09-20 03:23:20.995000","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"d19c3956-6ed8-11eb-b971-fb12bc338aeb","customer_id":"5703f08a-5710-11ee-9295-77eb098ad269","domain_id":"e45dafce-6fa1-11eb-9e87-7ba8b7ae10f0","name":"test","detail":"test detail","extension":"test","password":"password","tm_create":"2020-09-20T03:23:20.995000Z","tm_update":"","tm_delete":""}`),
 			},
 
 			"bin-manager.registrar-manager.request",
@@ -410,7 +410,7 @@ func Test_RegistrarV1ExtensionGetsByExtension(t *testing.T) {
 				Detail:    "test detail",
 				Extension: "test",
 				Password:  "password",
-				TMCreate:  "2020-09-20 03:23:20.995000",
+				TMCreate:  "2020-09-20T03:23:20.995000Z",
 				TMUpdate:  "",
 				TMDelete:  "",
 			},

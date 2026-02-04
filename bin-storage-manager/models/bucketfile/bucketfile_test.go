@@ -14,7 +14,7 @@ func TestBucketFileStruct(t *testing.T) {
 		ReferenceID:      referenceID,
 		BucketURI:        "gs://voipbin-media/recording/2023/01/file.wav",
 		DownloadURI:      "https://storage.googleapis.com/voipbin-media/...",
-		TMDownloadExpire: "2023-01-02 00:00:00",
+		TMDownloadExpire: "2023-01-02T00:00:00Z",
 	}
 
 	if bf.ReferenceType != ReferenceTypeRecording {
@@ -29,8 +29,8 @@ func TestBucketFileStruct(t *testing.T) {
 	if bf.DownloadURI != "https://storage.googleapis.com/voipbin-media/..." {
 		t.Errorf("BucketFile.DownloadURI = %v, expected %v", bf.DownloadURI, "https://storage.googleapis.com/voipbin-media/...")
 	}
-	if bf.TMDownloadExpire != "2023-01-02 00:00:00" {
-		t.Errorf("BucketFile.TMDownloadExpire = %v, expected %v", bf.TMDownloadExpire, "2023-01-02 00:00:00")
+	if bf.TMDownloadExpire != "2023-01-02T00:00:00Z" {
+		t.Errorf("BucketFile.TMDownloadExpire = %v, expected %v", bf.TMDownloadExpire, "2023-01-02T00:00:00Z")
 	}
 }
 

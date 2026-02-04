@@ -40,7 +40,7 @@ func Test_FlowCreate(t *testing.T) {
 				Detail: "test flow detail",
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 
 			expectedRes: &flow.Flow{
 				Identity: commonidentity.Identity{
@@ -49,7 +49,7 @@ func Test_FlowCreate(t *testing.T) {
 				Name:     "test flow name",
 				Detail:   "test flow detail",
 				Persist:  true,
-				TMCreate: "2020-04-18 03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
 				TMUpdate: commondatabasehandler.DefaultTimeStamp,
 				TMDelete: commondatabasehandler.DefaultTimeStamp,
 			},
@@ -71,7 +71,7 @@ func Test_FlowCreate(t *testing.T) {
 				},
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 
 			expectedRes: &flow.Flow{
 				Identity: commonidentity.Identity{
@@ -86,7 +86,7 @@ func Test_FlowCreate(t *testing.T) {
 						Type: action.TypeEcho,
 					},
 				},
-				TMCreate: "2020-04-18 03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
 				TMUpdate: commondatabasehandler.DefaultTimeStamp,
 				TMDelete: commondatabasehandler.DefaultTimeStamp,
 			},
@@ -117,7 +117,7 @@ func Test_FlowCreate(t *testing.T) {
 				OnCompleteFlowID: uuid.FromStringOrNil("a7d3d97e-ce16-11f0-809a-ff2f69e4c16a"),
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 
 			expectedRes: &flow.Flow{
 				Identity: commonidentity.Identity{
@@ -138,7 +138,7 @@ func Test_FlowCreate(t *testing.T) {
 					},
 				},
 				OnCompleteFlowID: uuid.FromStringOrNil("a7d3d97e-ce16-11f0-809a-ff2f69e4c16a"),
-				TMCreate:         "2020-04-18 03:22:17.995000",
+				TMCreate:         "2020-04-18T03:22:17.995000Z",
 				TMUpdate:         commondatabasehandler.DefaultTimeStamp,
 				TMDelete:         commondatabasehandler.DefaultTimeStamp,
 			},
@@ -220,7 +220,7 @@ func Test_FlowList(t *testing.T) {
 				flow.FieldDeleted:    false,
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 			expectedRes: []*flow.Flow{
 				{
 					Identity: commonidentity.Identity{
@@ -229,7 +229,7 @@ func Test_FlowList(t *testing.T) {
 					},
 					Name:     "test1",
 					Persist:  true,
-					TMCreate: "2020-04-18 03:22:17.995000",
+					TMCreate: "2020-04-18T03:22:17.995000Z",
 					TMUpdate: commondatabasehandler.DefaultTimeStamp,
 					TMDelete: commondatabasehandler.DefaultTimeStamp,
 				},
@@ -240,7 +240,7 @@ func Test_FlowList(t *testing.T) {
 					},
 					Name:     "test2",
 					Persist:  true,
-					TMCreate: "2020-04-18 03:22:17.995000",
+					TMCreate: "2020-04-18T03:22:17.995000Z",
 					TMUpdate: commondatabasehandler.DefaultTimeStamp,
 					TMDelete: commondatabasehandler.DefaultTimeStamp,
 				},
@@ -267,7 +267,7 @@ func Test_FlowList(t *testing.T) {
 				flow.FieldType:       flow.TypeFlow,
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 			expectedRes: []*flow.Flow{
 				{
 					Identity: commonidentity.Identity{
@@ -277,7 +277,7 @@ func Test_FlowList(t *testing.T) {
 					Type:     flow.TypeFlow,
 					Name:     "test filter type",
 					Persist:  true,
-					TMCreate: "2020-04-18 03:22:17.995000",
+					TMCreate: "2020-04-18T03:22:17.995000Z",
 					TMUpdate: commondatabasehandler.DefaultTimeStamp,
 					TMDelete: commondatabasehandler.DefaultTimeStamp,
 				},
@@ -482,7 +482,7 @@ func Test_FlowDelete(t *testing.T) {
 				Detail: "test flow detail",
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 
 			expectedRes: &flow.Flow{
 				Identity: commonidentity.Identity{
@@ -493,9 +493,9 @@ func Test_FlowDelete(t *testing.T) {
 				Detail:  "test flow detail",
 				Persist: true,
 
-				TMCreate: "2020-04-18 03:22:17.995000",
-				TMUpdate: "2020-04-18 03:22:17.995000",
-				TMDelete: "2020-04-18 03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
+				TMUpdate: "2020-04-18T03:22:17.995000Z",
+				TMDelete: "2020-04-18T03:22:17.995000Z",
 			},
 		},
 	}

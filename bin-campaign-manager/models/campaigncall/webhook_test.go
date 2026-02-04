@@ -48,8 +48,8 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 				},
 				DestinationIndex: 0,
 				TryCount:         0,
-				TMCreate:         "2020-10-10 03:30:17.000000",
-				TMUpdate:         "2020-10-10 03:31:17.000000",
+				TMCreate:         "2020-10-10T03:30:17.000000Z",
+				TMUpdate:         "2020-10-10T03:31:17.000000Z",
 			},
 
 			expectRes: &WebhookMessage{
@@ -78,8 +78,8 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 				},
 				DestinationIndex: 0,
 				TryCount:         0,
-				TMCreate:         "2020-10-10 03:30:17.000000",
-				TMUpdate:         "2020-10-10 03:31:17.000000",
+				TMCreate:         "2020-10-10T03:30:17.000000Z",
+				TMUpdate:         "2020-10-10T03:31:17.000000Z",
 			},
 		},
 	}

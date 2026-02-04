@@ -39,7 +39,7 @@ func Test_List(t *testing.T) {
 			"normal",
 
 			1000,
-			"2021-04-18 03:22:17.994000",
+			"2021-04-18T03:22:17.994000Z",
 			map[queuecall.Field]any{
 				queuecall.FieldDeleted: false,
 			},
@@ -491,10 +491,10 @@ func Test_UpdateStatusService(t *testing.T) {
 			&queuecall.Queuecall{Identity: commonidentity.Identity{
 				ID: uuid.FromStringOrNil("d0631846-ad53-11ed-a845-47d58282b8a9"),
 			},
-				TMCreate: "2023-02-16 03:21:17.994000",
+				TMCreate: "2023-02-16T03:21:17.994000Z",
 			},
 
-			"2023-02-16 03:22:17.994000",
+			"2023-02-16T03:22:17.994000Z",
 			&queuecall.Queuecall{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d0631846-ad53-11ed-a845-47d58282b8a9"),
@@ -567,10 +567,10 @@ func Test_UpdateStatusAbandoned(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("1e7f1f56-ad55-11ed-8b59-8fd30a025131"),
 				},
-				TMCreate: "2023-02-16 03:21:17.994000",
+				TMCreate: "2023-02-16T03:21:17.994000Z",
 			},
 
-			"2023-02-16 03:22:17.994000",
+			"2023-02-16T03:22:17.994000Z",
 			&queuecall.Queuecall{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("1e7f1f56-ad55-11ed-8b59-8fd30a025131"),
@@ -643,10 +643,10 @@ func Test_UpdateStatusDone(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("b9b87b66-ad55-11ed-a5a1-ff26874e502a"),
 				},
-				TMCreate: "2023-02-16 03:21:17.994000",
+				TMCreate: "2023-02-16T03:21:17.994000Z",
 			},
 
-			"2023-02-16 03:22:17.994000",
+			"2023-02-16T03:22:17.994000Z",
 			&queuecall.Queuecall{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("b9b87b66-ad55-11ed-a5a1-ff26874e502a"),

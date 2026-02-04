@@ -284,12 +284,12 @@ func Test_OutdialV1OutdialtargetGetsByOutdialID(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("835e7280-c78e-11ec-9d4c-871c179d2bd9"),
-			"2021-03-02 03:23:20.995000",
+			"2021-03-02T03:23:20.995000Z",
 			10,
 
 			"bin-manager.outdial-manager.request",
 			&sock.Request{
-				URI:      fmt.Sprintf("/v1/outdials/835e7280-c78e-11ec-9d4c-871c179d2bd9/targets?page_token=%s&page_size=10", url.QueryEscape("2021-03-02 03:23:20.995000")),
+				URI:      fmt.Sprintf("/v1/outdials/835e7280-c78e-11ec-9d4c-871c179d2bd9/targets?page_token=%s&page_size=10", url.QueryEscape("2021-03-02T03:23:20.995000Z")),
 				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			},

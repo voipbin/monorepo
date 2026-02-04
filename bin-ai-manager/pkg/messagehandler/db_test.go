@@ -138,7 +138,7 @@ func Test_List(t *testing.T) {
 			name: "normal",
 
 			size:  10,
-			token: "2023-01-03 21:35:02.809",
+			token: "2023-01-03T21:35:02.809Z",
 			filters: map[message.Field]any{
 				message.FieldAIcallID: uuid.FromStringOrNil("5774f2dc-f262-11ef-b704-bb967f775316"),
 				message.FieldDeleted:  false,

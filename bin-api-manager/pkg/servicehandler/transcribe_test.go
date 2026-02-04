@@ -114,7 +114,7 @@ func Test_TranscribeList(t *testing.T) {
 				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
-			"2020-10-20 01:00:00.995000",
+			"2020-10-20T01:00:00.995000Z",
 			10,
 
 			[]tmtranscribe.Transcribe{

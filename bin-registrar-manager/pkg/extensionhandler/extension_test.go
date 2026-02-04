@@ -439,7 +439,7 @@ func Test_List(t *testing.T) {
 		{
 			"normal",
 
-			"2021-02-15 17:31:59.519672",
+			"2021-02-15T17:31:59.519672Z",
 			10,
 			map[extension.Field]any{
 				extension.FieldDeleted: false,

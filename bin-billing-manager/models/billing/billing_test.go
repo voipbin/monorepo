@@ -19,11 +19,11 @@ func TestBillingStruct(t *testing.T) {
 		CostPerUnit:      0.020,
 		CostTotal:        0.40,
 		BillingUnitCount: 20,
-		TMBillingStart:   "2024-01-01 00:00:00.000000",
-		TMBillingEnd:     "2024-01-01 00:20:00.000000",
-		TMCreate:         "2024-01-01 00:00:00.000000",
-		TMUpdate:         "2024-01-01 00:20:00.000000",
-		TMDelete:         "9999-01-01 00:00:00.000000",
+		TMBillingStart:   "2024-01-01T00:00:00.000000Z",
+		TMBillingEnd:     "2024-01-01T00:20:00.000000Z",
+		TMCreate:         "2024-01-01T00:00:00.000000Z",
+		TMUpdate:         "2024-01-01T00:20:00.000000Z",
+		TMDelete:         "9999-01-01T00:00:00.000000Z",
 	}
 	b.ID = id
 

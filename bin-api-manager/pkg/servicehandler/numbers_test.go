@@ -43,7 +43,7 @@ func Test_OrderNumberList(t *testing.T) {
 				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
-			"2021-03-01 01:00:00.995000",
+			"2021-03-01T01:00:00.995000Z",
 			10,
 
 			[]nmnumber.Number{
@@ -195,7 +195,7 @@ func Test_OrderNumberGetError(t *testing.T) {
 				Status:              nmnumber.StatusActive,
 				T38Enabled:          false,
 				EmergencyEnabled:    false,
-				TMDelete:            "2021-03-02 01:00:00.995000",
+				TMDelete:            "2021-03-02T01:00:00.995000Z",
 			},
 		},
 	}
@@ -342,9 +342,9 @@ func Test_NumberDelete(t *testing.T) {
 				Status:              nmnumber.StatusDeleted,
 				T38Enabled:          false,
 				EmergencyEnabled:    false,
-				TMCreate:            "2021-10-15 00:00:00.000001",
-				TMUpdate:            "2021-10-16 00:00:00.000001",
-				TMDelete:            "2021-10-16 00:00:00.000001",
+				TMCreate:            "2021-10-15T00:00:00.000001Z",
+				TMUpdate:            "2021-10-16T00:00:00.000001Z",
+				TMDelete:            "2021-10-16T00:00:00.000001Z",
 			},
 		},
 	}
@@ -531,7 +531,7 @@ func Test_NumberUpdateError(t *testing.T) {
 				Status:              nmnumber.StatusActive,
 				T38Enabled:          false,
 				EmergencyEnabled:    false,
-				TMDelete:            "2021-03-02 01:00:00.995000",
+				TMDelete:            "2021-03-02T01:00:00.995000Z",
 			},
 		},
 	}
@@ -583,7 +583,7 @@ func Test_NumberRenew(t *testing.T) {
 				Permission: amagent.PermissionProjectSuperAdmin,
 			},
 
-			tmRenew: "2021-03-02 01:00:00.995000",
+			tmRenew: "2021-03-02T01:00:00.995000Z",
 
 			responseNumbers: []nmnumber.Number{
 				{

@@ -26,19 +26,19 @@ func Test_sortTranscriptsByTMTranscript(t *testing.T) {
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("494f5bfc-7eb5-11ed-a6d7-07162f18f28e"),
 					},
-					TMTranscript: "2022-01-01 00:00:01.00001",
+					TMTranscript: "2022-01-01T00:00:01.00001Z",
 				},
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("d1f9be6e-0b23-11f0-b828-37e1c878aff0"),
 					},
-					TMTranscript: "2022-01-01 00:00:00.00000",
+					TMTranscript: "2022-01-01T00:00:00.00000Z",
 				},
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("d21e19ee-0b23-11f0-aad2-73ff70024ad9"),
 					},
-					TMTranscript: "2022-01-01 00:00:01.00000",
+					TMTranscript: "2022-01-01T00:00:01.00000Z",
 				},
 			},
 			expectRes: []*transcript.Transcript{
@@ -46,19 +46,19 @@ func Test_sortTranscriptsByTMTranscript(t *testing.T) {
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("d1f9be6e-0b23-11f0-b828-37e1c878aff0"),
 					},
-					TMTranscript: "2022-01-01 00:00:00.00000",
+					TMTranscript: "2022-01-01T00:00:00.00000Z",
 				},
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("d21e19ee-0b23-11f0-aad2-73ff70024ad9"),
 					},
-					TMTranscript: "2022-01-01 00:00:01.00000",
+					TMTranscript: "2022-01-01T00:00:01.00000Z",
 				},
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("494f5bfc-7eb5-11ed-a6d7-07162f18f28e"),
 					},
-					TMTranscript: "2022-01-01 00:00:01.00001",
+					TMTranscript: "2022-01-01T00:00:01.00001Z",
 				},
 			},
 		},

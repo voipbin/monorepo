@@ -775,13 +775,13 @@ func Test_processEvent_AsteriskProxy_RecordingStarted(t *testing.T) {
 				Publisher: "asterisk-proxy",
 				Type:      "ari_event",
 				DataType:  "application/json",
-				Data:      []byte(`{"type": "RecordingStarted","timestamp": "2020-02-10T13:08:18.888","recording": {"name": "call_3b16cef6-2b99-11eb-87eb-571ab4136611_2020-02-10T13:08:18.888Z","format": "wav","state": "recording","target_uri": "channel:test_call"},"asterisk_id": "42:01:0a:84:00:12","application": "voipbin"}`),
+				Data:      []byte(`{"type": "RecordingStarted","timestamp": "2020-02-10T13:08:18.888Z","recording": {"name": "call_3b16cef6-2b99-11eb-87eb-571ab4136611_2020-02-10T13:08:18.888Z","format": "wav","state": "recording","target_uri": "channel:test_call"},"asterisk_id": "42:01:0a:84:00:12","application": "voipbin"}`),
 			},
 			&ari.RecordingStarted{
 				Event: ari.Event{
 					Type:        ari.EventTypeRecordingStarted,
 					Application: "voipbin",
-					Timestamp:   "2020-02-10T13:08:18.888",
+					Timestamp:   "2020-02-10T13:08:18.888Z",
 					AsteriskID:  "42:01:0a:84:00:12",
 				},
 				Recording: ari.RecordingLive{
@@ -834,13 +834,13 @@ func Test_processEvent_AsteriskProxy_RecordingFinished(t *testing.T) {
 				Publisher: "asterisk-proxy",
 				Type:      "ari_event",
 				DataType:  "application/json",
-				Data:      []byte(`{"type": "RecordingFinished","timestamp": "2020-02-10T13:08:40.888","recording": {"name": "call_3b16cef6-2b99-11eb-87eb-571ab4136611_2020-02-10T13:08:18.888","format": "wav","state": "done","target_uri": "channel:test_call","duration": 351},"asterisk_id": "42:01:0a:84:00:12","application": "voipbin"}`),
+				Data:      []byte(`{"type": "RecordingFinished","timestamp": "2020-02-10T13:08:40.888Z","recording": {"name": "call_3b16cef6-2b99-11eb-87eb-571ab4136611_2020-02-10T13:08:18.888","format": "wav","state": "done","target_uri": "channel:test_call","duration": 351},"asterisk_id": "42:01:0a:84:00:12","application": "voipbin"}`),
 			},
 			&ari.RecordingFinished{
 				Event: ari.Event{
 					Type:        ari.EventTypeRecordingFinished,
 					Application: "voipbin",
-					Timestamp:   "2020-02-10T13:08:40.888",
+					Timestamp:   "2020-02-10T13:08:40.888Z",
 					AsteriskID:  "42:01:0a:84:00:12",
 				},
 				Recording: ari.RecordingLive{

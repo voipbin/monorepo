@@ -40,9 +40,9 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 				MaxTryCount2: 7,
 				MaxTryCount3: 8,
 				MaxTryCount4: 9,
-				TMCreate:     "2020-10-10 03:30:17.000000",
-				TMUpdate:     "2020-10-10 03:31:17.000000",
-				TMDelete:     "9999-01-01 00:00:00.000000",
+				TMCreate:     "2020-10-10T03:30:17.000000Z",
+				TMUpdate:     "2020-10-10T03:31:17.000000Z",
+				TMDelete:     "9999-01-01T00:00:00.000000Z",
 			},
 
 			expectRes: &WebhookMessage{
@@ -63,9 +63,9 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 				MaxTryCount2: 7,
 				MaxTryCount3: 8,
 				MaxTryCount4: 9,
-				TMCreate:     "2020-10-10 03:30:17.000000",
-				TMUpdate:     "2020-10-10 03:31:17.000000",
-				TMDelete:     "9999-01-01 00:00:00.000000",
+				TMCreate:     "2020-10-10T03:30:17.000000Z",
+				TMUpdate:     "2020-10-10T03:31:17.000000Z",
+				TMDelete:     "9999-01-01T00:00:00.000000Z",
 			},
 		},
 	}

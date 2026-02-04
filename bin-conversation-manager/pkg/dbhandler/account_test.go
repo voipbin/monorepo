@@ -41,7 +41,7 @@ func Test_AccountCreate(t *testing.T) {
 				Secret: "test secret",
 				Token:  "test token",
 			},
-			responseCurTime: "2020-04-18T03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 
 			expectRes: &account.Account{
 				Identity: commonidentity.Identity{
@@ -54,7 +54,7 @@ func Test_AccountCreate(t *testing.T) {
 				Secret: "test secret",
 				Token:  "test token",
 
-				TMCreate: "2020-04-18T03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
 				TMUpdate: commondatabasehandler.DefaultTimeStamp,
 				TMDelete: commondatabasehandler.DefaultTimeStamp,
 			},
@@ -67,14 +67,14 @@ func Test_AccountCreate(t *testing.T) {
 					ID: uuid.FromStringOrNil("ec8d1c56-fdf3-11ed-83a6-2bfbd5b33bd6"),
 				},
 			},
-			responseCurTime: "2020-04-18T03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 
 			expectRes: &account.Account{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("ec8d1c56-fdf3-11ed-83a6-2bfbd5b33bd6"),
 				},
 
-				TMCreate: "2020-04-18T03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
 				TMUpdate: commondatabasehandler.DefaultTimeStamp,
 				TMDelete: commondatabasehandler.DefaultTimeStamp,
 			},
@@ -148,7 +148,7 @@ func Test_AccountSet(t *testing.T) {
 			secret:      "test secret",
 			token:       "test token",
 
-			responseCurTime: "2020-04-18T03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 			expectRes: &account.Account{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("463bfbc0-fee2-11ed-81c2-639d6bd87cf4"),
@@ -159,8 +159,8 @@ func Test_AccountSet(t *testing.T) {
 				Detail:   "test detail",
 				Secret:   "test secret",
 				Token:    "test token",
-				TMCreate: "2020-04-18T03:22:17.995000",
-				TMUpdate: "2020-04-18T03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
+				TMUpdate: "2020-04-18T03:22:17.995000Z",
 				TMDelete: commondatabasehandler.DefaultTimeStamp,
 			},
 		},
@@ -282,21 +282,21 @@ func Test_AccountList(t *testing.T) {
 				},
 			},
 
-			token: "2022-06-18 03:22:17.995000",
+			token: "2022-06-18T03:22:17.995000Z",
 			limit: 100,
 			filters: map[account.Field]any{
 				account.FieldDeleted:    false,
 				account.FieldCustomerID: uuid.FromStringOrNil("157d41b4-3e16-11ef-a8ed-4b84a868d055"),
 			},
 
-			responseCurTime: "2022-04-18 03:22:17.995000",
+			responseCurTime: "2022-04-18T03:22:17.995000Z",
 			expectRes: []*account.Account{
 				{
 					Identity: commonidentity.Identity{
 						ID:         uuid.FromStringOrNil("151e39da-3e16-11ef-955d-4711f28377ec"),
 						CustomerID: uuid.FromStringOrNil("157d41b4-3e16-11ef-a8ed-4b84a868d055"),
 					},
-					TMCreate: "2022-04-18 03:22:17.995000",
+					TMCreate: "2022-04-18T03:22:17.995000Z",
 					TMUpdate: commondatabasehandler.DefaultTimeStamp,
 					TMDelete: commondatabasehandler.DefaultTimeStamp,
 				},
@@ -305,7 +305,7 @@ func Test_AccountList(t *testing.T) {
 						ID:         uuid.FromStringOrNil("15b4e826-3e16-11ef-8cff-47069c33bcae"),
 						CustomerID: uuid.FromStringOrNil("157d41b4-3e16-11ef-a8ed-4b84a868d055"),
 					},
-					TMCreate: "2022-04-18 03:22:17.995000",
+					TMCreate: "2022-04-18T03:22:17.995000Z",
 					TMUpdate: commondatabasehandler.DefaultTimeStamp,
 					TMDelete: commondatabasehandler.DefaultTimeStamp,
 				},
@@ -372,7 +372,7 @@ func Test_AccountDelete(t *testing.T) {
 			},
 
 			id:              uuid.FromStringOrNil("fe975e76-1bdc-11f0-9f72-b3f86287ed78"),
-			responseCurTime: "2020-04-18T03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 
 			expectRes: &account.Account{
 				Identity: commonidentity.Identity{
@@ -380,9 +380,9 @@ func Test_AccountDelete(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("876fb2c6-796d-4925-aaf0-570b0a4323bb"),
 				},
 
-				TMCreate: "2020-04-18T03:22:17.995000",
-				TMUpdate: "2020-04-18T03:22:17.995000",
-				TMDelete: "2020-04-18T03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
+				TMUpdate: "2020-04-18T03:22:17.995000Z",
+				TMDelete: "2020-04-18T03:22:17.995000Z",
 			},
 		},
 	}

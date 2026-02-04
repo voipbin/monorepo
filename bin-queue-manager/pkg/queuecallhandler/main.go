@@ -4,7 +4,6 @@ package queuecallhandler
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
@@ -99,20 +98,33 @@ func NewQueuecallHandler(
 }
 
 // parseTime return the time.Time of parsed voipbin's timestamp string.
+// Supports both ISO 8601 format (2006-01-02T15:04:05.000000Z) and legacy format (2006-01-02 15:04:05.000000).
+// Handles timestamps with extra trailing characters by truncating to expected length.
 func parseTime(timestamp string) (time.Time, error) {
-	layout := "2006-01-02 15:04:05.000000"
-
-	if len(timestamp) < len(layout) {
-		return time.Time{}, fmt.Errorf("wrong format")
+	// Try ISO 8601 format first (with Z suffix) - 27 characters: "2006-01-02T15:04:05.000000Z"
+	if len(timestamp) >= 27 && timestamp[10] == 'T' {
+		ts := timestamp[:27]
+		res, err := utilhandler.TimeParseWithError(ts)
+		if err == nil {
+			return res, nil
+		}
 	}
-	ts := timestamp[:len(layout)]
 
-	res, err := time.Parse(layout, ts)
+	// Try legacy format - 26 characters: "2006-01-02 15:04:05.000000"
+	if len(timestamp) >= 26 && timestamp[10] == ' ' {
+		ts := timestamp[:26]
+		res, err := utilhandler.TimeParseWithError(ts)
+		if err == nil {
+			return res, nil
+		}
+	}
+
+	// Fall back to direct parsing
+	res, err := utilhandler.TimeParseWithError(timestamp)
 	if err != nil {
 		logrus.Errorf("Could not parse the timestamp. err: %v", err)
 		return time.Time{}, err
 	}
-
 	return res, nil
 }
 

@@ -41,10 +41,10 @@ func Test_storageAccountsGet(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/storage_accounts?page_size=20&page_token=2020-09-20%2003:23:20.995000",
+			reqQuery: "/storage_accounts?page_size=20&page_token=2020-09-20T03:23:20.995000Z",
 
 			expectPageSize:  20,
-			expectPageToken: "2020-09-20 03:23:20.995000",
+			expectPageToken: "2020-09-20T03:23:20.995000Z",
 
 			responseAccounts: []*smaccount.WebhookMessage{
 				{

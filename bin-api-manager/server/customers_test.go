@@ -133,7 +133,7 @@ func Test_customersGet(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/customers?page_size=20&page_token=2020-09-20%2003:23:20.995000",
+			reqQuery: "/customers?page_size=20&page_token=2020-09-20T03:23:20.995000Z",
 
 			responseCustomers: []*cscustomer.WebhookMessage{
 				{
@@ -142,7 +142,7 @@ func Test_customersGet(t *testing.T) {
 			},
 
 			expectPageSize:  20,
-			expectPageToken: "2020-09-20 03:23:20.995000",
+			expectPageToken: "2020-09-20T03:23:20.995000Z",
 			expectFilters: map[string]string{
 				"deleted": "false",
 			},

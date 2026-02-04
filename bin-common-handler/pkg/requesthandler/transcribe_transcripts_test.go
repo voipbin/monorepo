@@ -35,7 +35,7 @@ func Test_TranscribeV1TranscriptList(t *testing.T) {
 		{
 			name: "normal",
 
-			pageToken: "2020-09-20T03:23:20.995000",
+			pageToken: "2020-09-20T03:23:20.995000Z",
 			pageSize:  10,
 			filters: map[tmtranscript.Field]any{
 				tmtranscript.FieldTranscribeID: uuid.FromStringOrNil("8fe05f90-8229-11ed-a215-a78ed418d1c0"),
@@ -49,7 +49,7 @@ func Test_TranscribeV1TranscriptList(t *testing.T) {
 
 			expectedTarget: "bin-manager.transcribe-manager.request",
 			expectedRequest: &sock.Request{
-				URI:      "/v1/transcripts?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
+				URI:      "/v1/transcripts?page_token=2020-09-20T03%3A23%3A20.995000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"transcribe_id":"8fe05f90-8229-11ed-a215-a78ed418d1c0"}`),

@@ -90,13 +90,13 @@ func Test_v1AccountsGet(t *testing.T) {
 		{
 			"1 item",
 			&sock.Request{
-				URI:      "/v1/accounts?page_token=2020-10-10T03:30:17.000000&page_size=10",
+				URI:      "/v1/accounts?page_token=2020-10-10T03:30:17.000000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"deleted":false}`),
 			},
 
-			"2020-10-10T03:30:17.000000",
+			"2020-10-10T03:30:17.000000Z",
 			10,
 			map[account.Field]any{
 				account.FieldDeleted: false,

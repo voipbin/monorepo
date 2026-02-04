@@ -52,7 +52,7 @@ func Test_ReactionAdd(t *testing.T) {
 				Type:     message.TypeNormal,
 				Text:     "Hello, world!",
 				Metadata: message.Metadata{Reactions: []message.Reaction{}},
-				TMCreate: "2024-01-15 10:30:00.000000",
+				TMCreate: "2024-01-15T10:30:00.000000Z",
 			},
 			responseUpdatedMessage: &message.Message{
 				Identity: commonidentity.Identity{
@@ -63,7 +63,7 @@ func Test_ReactionAdd(t *testing.T) {
 				Type:     message.TypeNormal,
 				Text:     "Hello, world!",
 				Metadata: message.Metadata{Reactions: []message.Reaction{{Emoji: "👍", OwnerType: "agent", OwnerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"), TMCreate: "2024-01-17T10:30:00.000000Z"}}},
-				TMCreate: "2024-01-15 10:30:00.000000",
+				TMCreate: "2024-01-15T10:30:00.000000Z",
 			},
 
 			expectError: false,
@@ -85,7 +85,7 @@ func Test_ReactionAdd(t *testing.T) {
 				Type:     message.TypeNormal,
 				Text:     "Message with existing reaction",
 				Metadata: message.Metadata{Reactions: []message.Reaction{{Emoji: "👍", OwnerType: "agent", OwnerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"), TMCreate: "2024-01-17T10:30:00.000000Z"}}},
-				TMCreate: "2024-01-15 10:30:00.000000",
+				TMCreate: "2024-01-15T10:30:00.000000Z",
 			},
 			responseUpdatedMessage: &message.Message{
 				Identity: commonidentity.Identity{
@@ -96,7 +96,7 @@ func Test_ReactionAdd(t *testing.T) {
 				Type:     message.TypeNormal,
 				Text:     "Message with existing reaction",
 				Metadata: message.Metadata{Reactions: []message.Reaction{{Emoji: "👍", OwnerType: "agent", OwnerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"), TMCreate: "2024-01-17T10:30:00.000000Z"}, {Emoji: "❤️", OwnerType: "agent", OwnerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"), TMCreate: "2024-01-17T10:35:00.000000Z"}}},
-				TMCreate: "2024-01-15 10:30:00.000000",
+				TMCreate: "2024-01-15T10:30:00.000000Z",
 			},
 
 			expectError: false,
@@ -118,7 +118,7 @@ func Test_ReactionAdd(t *testing.T) {
 				Type:     message.TypeNormal,
 				Text:     "Message with reaction",
 				Metadata: message.Metadata{Reactions: []message.Reaction{{Emoji: "👍", OwnerType: "agent", OwnerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"), TMCreate: "2024-01-17T10:30:00.000000Z"}}},
-				TMCreate: "2024-01-15 10:30:00.000000",
+				TMCreate: "2024-01-15T10:30:00.000000Z",
 			},
 			responseUpdatedMessage: nil, // Not used - returns same message
 
@@ -141,7 +141,7 @@ func Test_ReactionAdd(t *testing.T) {
 				Type:     message.TypeNormal,
 				Text:     "Message with reaction from another user",
 				Metadata: message.Metadata{Reactions: []message.Reaction{{Emoji: "👍", OwnerType: "agent", OwnerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"), TMCreate: "2024-01-17T10:30:00.000000Z"}}},
-				TMCreate: "2024-01-15 10:30:00.000000",
+				TMCreate: "2024-01-15T10:30:00.000000Z",
 			},
 			responseUpdatedMessage: &message.Message{
 				Identity: commonidentity.Identity{
@@ -152,7 +152,7 @@ func Test_ReactionAdd(t *testing.T) {
 				Type:     message.TypeNormal,
 				Text:     "Message with reaction from another user",
 				Metadata: message.Metadata{Reactions: []message.Reaction{{Emoji: "👍", OwnerType: "agent", OwnerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"), TMCreate: "2024-01-17T10:30:00.000000Z"}, {Emoji: "👍", OwnerType: "agent", OwnerID: uuid.FromStringOrNil("31536998-da36-11ee-976a-b31b049d62c2"), TMCreate: "2024-01-17T10:35:00.000000Z"}}},
-				TMCreate: "2024-01-15 10:30:00.000000",
+				TMCreate: "2024-01-15T10:30:00.000000Z",
 			},
 
 			expectError: false,
@@ -438,7 +438,7 @@ func Test_ReactionRemove(t *testing.T) {
 				Type:     message.TypeNormal,
 				Text:     "Message after reaction removed",
 				Metadata: message.Metadata{Reactions: []message.Reaction{}},
-				TMCreate: "2024-01-15 10:30:00.000000",
+				TMCreate: "2024-01-15T10:30:00.000000Z",
 			},
 
 			expectError: false,
@@ -460,7 +460,7 @@ func Test_ReactionRemove(t *testing.T) {
 				Type:     message.TypeNormal,
 				Text:     "Message with remaining reactions",
 				Metadata: message.Metadata{Reactions: []message.Reaction{{Emoji: "❤️", OwnerType: "agent", OwnerID: uuid.FromStringOrNil("31536998-da36-11ee-976a-b31b049d62c2"), TMCreate: "2024-01-17T10:35:00.000000Z"}}},
-				TMCreate: "2024-01-15 10:30:00.000000",
+				TMCreate: "2024-01-15T10:30:00.000000Z",
 			},
 
 			expectError: false,
@@ -482,7 +482,7 @@ func Test_ReactionRemove(t *testing.T) {
 				Type:     message.TypeNormal,
 				Text:     "Message after specific user reaction removed",
 				Metadata: message.Metadata{Reactions: []message.Reaction{{Emoji: "👍", OwnerType: "agent", OwnerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"), TMCreate: "2024-01-17T10:30:00.000000Z"}}},
-				TMCreate: "2024-01-15 10:30:00.000000",
+				TMCreate: "2024-01-15T10:30:00.000000Z",
 			},
 
 			expectError: false,

@@ -129,7 +129,7 @@ func Test_trunksGET(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/trunks?page_size=20&page_token=2020-09-20%2003:23:20.995000",
+			reqQuery: "/trunks?page_size=20&page_token=2020-09-20T03:23:20.995000Z",
 
 			responseTrunks: []*rmtrunk.WebhookMessage{
 				{
@@ -145,7 +145,7 @@ func Test_trunksGET(t *testing.T) {
 			},
 
 			expectPageSize:  20,
-			expectPageToken: "2020-09-20 03:23:20.995000",
+			expectPageToken: "2020-09-20T03:23:20.995000Z",
 			expectRes:       `{"result":[{"id":"39c62e0a-db14-11ef-beab-071cd0697120","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","domain_name":"","auth_types":null,"username":"","password":"","allowed_ips":null,"tm_create":"","tm_update":"","tm_delete":""},{"id":"3ac27c32-db14-11ef-b206-cf30e0a672b7","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","domain_name":"","auth_types":null,"username":"","password":"","allowed_ips":null,"tm_create":"","tm_update":"","tm_delete":""}],"next_page_token":""}`,
 		},
 	}

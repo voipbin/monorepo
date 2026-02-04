@@ -38,7 +38,7 @@ func Test_EventHandlerRecordingStarted(t *testing.T) {
 				Event: ari.Event{
 					Type:        ari.EventTypeRecordingStarted,
 					Application: "voipbin",
-					Timestamp:   "2020-02-10T13:08:18.888",
+					Timestamp:   "2020-02-10T13:08:18.888Z",
 					AsteriskID:  "42:01:0a:84:00:12",
 				},
 				Recording: ari.RecordingLive{
@@ -70,7 +70,7 @@ func Test_EventHandlerRecordingStarted(t *testing.T) {
 				Event: ari.Event{
 					Type:        ari.EventTypeRecordingStarted,
 					Application: "voipbin",
-					Timestamp:   "2020-02-10T13:08:18.888",
+					Timestamp:   "2020-02-10T13:08:18.888Z",
 					AsteriskID:  "42:01:0a:84:00:12",
 				},
 				Recording: ari.RecordingLive{
@@ -149,7 +149,7 @@ func Test_EventHandlerRecordingFinished_call(t *testing.T) {
 				Event: ari.Event{
 					Type:        ari.EventTypeRecordingFinished,
 					Application: "voipbin",
-					Timestamp:   "2020-02-10T13:08:40.888",
+					Timestamp:   "2020-02-10T13:08:40.888Z",
 					AsteriskID:  "42:01:0a:84:00:12",
 				},
 				Recording: ari.RecordingLive{
@@ -179,7 +179,7 @@ func Test_EventHandlerRecordingFinished_call(t *testing.T) {
 				ReferenceType: recording.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("3b16cef6-2b99-11eb-87eb-571ab4136611"),
 			},
-			"2020-02-10T13:08:40.888",
+			"2020-02-10T13:08:40.888Z",
 
 			"call_3b16cef6-2b99-11eb-87eb-571ab4136611_2020-02-10T13:08:18.888Z",
 		},

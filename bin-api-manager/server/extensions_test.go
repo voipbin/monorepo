@@ -122,7 +122,7 @@ func Test_ExtensionsGET(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/extensions?page_size=20&page_token=2020-09-20%2003:23:20.995000",
+			reqQuery: "/extensions?page_size=20&page_token=2020-09-20T03:23:20.995000Z",
 
 			responseExntesions: []*rmextension.WebhookMessage{
 				{
@@ -133,7 +133,7 @@ func Test_ExtensionsGET(t *testing.T) {
 			},
 
 			expectPageSize:  20,
-			expectPageToken: "2020-09-20 03:23:20.995000",
+			expectPageToken: "2020-09-20T03:23:20.995000Z",
 			expectRes:       `{"result":[{"id":"2ce09268-d8e2-11ef-af37-7baa30593c20","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","extension":"","domain_name":"","username":"","password":"","tm_create":"","tm_update":"","tm_delete":""}],"next_page_token":""}`,
 		},
 	}

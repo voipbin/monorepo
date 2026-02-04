@@ -32,7 +32,7 @@ func Test_List(t *testing.T) {
 			name: "normal",
 
 			size:  10,
-			token: "2020-04-18 03:22:17.995000",
+			token: "2020-04-18T03:22:17.995000Z",
 			filters: map[tag.Field]any{
 				tag.FieldCustomerID: uuid.FromStringOrNil("a082d59c-2a00-11ee-8fb1-8bbf141432f6"),
 				tag.FieldDeleted:    false,

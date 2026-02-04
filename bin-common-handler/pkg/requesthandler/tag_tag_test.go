@@ -293,12 +293,12 @@ func Test_TagV1TagList(t *testing.T) {
 			name: "normal",
 
 			customerID: uuid.FromStringOrNil("8fe6c136-2c75-11ee-a3a4-37400837e12e"),
-			token:      "2020-09-20 03:23:20.995000",
+			token:      "2020-09-20T03:23:20.995000Z",
 			pageSize:   10,
 
 			expectTarget: "bin-manager.tag-manager.request",
 			expectRequest: &sock.Request{
-			URI:      "/v1/tags?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10",
+			URI:      "/v1/tags?page_token=2020-09-20T03%3A23%3A20.995000Z&page_size=10",
 			Method:   sock.RequestMethodGet,
 			DataType: ContentTypeJSON,
 			Data:     []byte(`{"customer_id":"8fe6c136-2c75-11ee-a3a4-37400837e12e"}`),

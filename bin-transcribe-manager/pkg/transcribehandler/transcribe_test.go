@@ -129,7 +129,7 @@ func Test_List(t *testing.T) {
 			name: "normal",
 
 			size:  10,
-			token: "2020-05-03%2021:35:02.809",
+			token: "2020-05-03T21:35:02.809Z",
 			filters: map[transcribe.Field]any{
 				transcribe.FieldCustomerID: uuid.FromStringOrNil("2fd5bd08-7f6c-11ed-8d71-67bb37305dd8"),
 			},

@@ -58,7 +58,7 @@ func Test_QueueCreate(t *testing.T) {
 				TotalAbandonedCount: 0,
 			},
 
-			responseCurTime: "2023-02-15 03:22:17.994000",
+			responseCurTime: "2023-02-15T03:22:17.994000Z",
 			expectRes: &queue.Queue{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("cba57fb6-59de-11ec-b230-5b6ab3380040"),
@@ -83,7 +83,7 @@ func Test_QueueCreate(t *testing.T) {
 				TotalIncomingCount:  0,
 				TotalServicedCount:  0,
 				TotalAbandonedCount: 0,
-				TMCreate:            "2023-02-15 03:22:17.994000",
+				TMCreate:            "2023-02-15T03:22:17.994000Z",
 				TMUpdate:            DefaultTimeStamp,
 				TMDelete:            DefaultTimeStamp,
 			},
@@ -165,13 +165,13 @@ func Test_QueueList(t *testing.T) {
 			},
 
 			size:  2,
-			token: "2021-04-18T03:22:17.994000",
+			token: "2021-04-18T03:22:17.994000Z",
 			filters: map[queue.Field]any{
 				queue.FieldCustomerID: uuid.FromStringOrNil("68079af2-7f54-11ec-99c2-53bfcf885867"),
 				queue.FieldDeleted:    false,
 			},
 
-			responseCurtime: "2020-04-18T03:22:17.995000",
+			responseCurtime: "2020-04-18T03:22:17.995000Z",
 			expectRes: []*queue.Queue{
 				{
 					Identity: commonidentity.Identity{
@@ -183,7 +183,7 @@ func Test_QueueList(t *testing.T) {
 					TagIDs:              []uuid.UUID{},
 					WaitQueuecallIDs:    []uuid.UUID{},
 					ServiceQueuecallIDs: []uuid.UUID{},
-					TMCreate:            "2020-04-18T03:22:17.995000",
+					TMCreate:            "2020-04-18T03:22:17.995000Z",
 					TMUpdate:            DefaultTimeStamp,
 					TMDelete:            DefaultTimeStamp,
 				},
@@ -197,7 +197,7 @@ func Test_QueueList(t *testing.T) {
 					TagIDs:              []uuid.UUID{},
 					WaitQueuecallIDs:    []uuid.UUID{},
 					ServiceQueuecallIDs: []uuid.UUID{},
-					TMCreate:            "2020-04-18T03:22:17.995000",
+					TMCreate:            "2020-04-18T03:22:17.995000Z",
 					TMUpdate:            DefaultTimeStamp,
 					TMDelete:            DefaultTimeStamp,
 				},
@@ -255,7 +255,7 @@ func Test_QueueDelete(t *testing.T) {
 				},
 			},
 
-			responseCurTime: "2023-02-18 03:22:17.995000",
+			responseCurTime: "2023-02-18T03:22:17.995000Z",
 			expectRes: &queue.Queue{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("e0f86bb8-53a7-11ec-a123-c70052e998aa"),
@@ -263,9 +263,9 @@ func Test_QueueDelete(t *testing.T) {
 				TagIDs:              []uuid.UUID{},
 				WaitQueuecallIDs:    []uuid.UUID{},
 				ServiceQueuecallIDs: []uuid.UUID{},
-				TMCreate:            "2023-02-18 03:22:17.995000",
-				TMUpdate:            "2023-02-18 03:22:17.995000",
-				TMDelete:            "2023-02-18 03:22:17.995000",
+				TMCreate:            "2023-02-18T03:22:17.995000Z",
+				TMUpdate:            "2023-02-18T03:22:17.995000Z",
+				TMDelete:            "2023-02-18T03:22:17.995000Z",
 			},
 		},
 	}
@@ -342,7 +342,7 @@ func Test_QueueUpdate(t *testing.T) {
 				queue.FieldServiceTimeout: 6000000,
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 			expectRes: &queue.Queue{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("5ddf2884-5a73-11ec-af95-43b28c48368b"),
@@ -359,8 +359,8 @@ func Test_QueueUpdate(t *testing.T) {
 				ServiceTimeout:      6000000,
 				WaitQueuecallIDs:    []uuid.UUID{},
 				ServiceQueuecallIDs: []uuid.UUID{},
-				TMCreate:            "2020-04-18T03:22:17.995000",
-				TMUpdate:            "2020-04-18T03:22:17.995000",
+				TMCreate:            "2020-04-18T03:22:17.995000Z",
+				TMUpdate:            "2020-04-18T03:22:17.995000Z",
 				TMDelete:            DefaultTimeStamp,
 			},
 		},
@@ -378,7 +378,7 @@ func Test_QueueUpdate(t *testing.T) {
 				queue.FieldRoutingMethod: queue.RoutingMethodRandom,
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 			expectRes: &queue.Queue{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("5e2a6740-5a73-11ec-83a2-07ef5e2c1687"),
@@ -387,8 +387,8 @@ func Test_QueueUpdate(t *testing.T) {
 				TagIDs:              []uuid.UUID{},
 				WaitQueuecallIDs:    []uuid.UUID{},
 				ServiceQueuecallIDs: []uuid.UUID{},
-				TMCreate:            "2020-04-18 03:22:17.995000",
-				TMUpdate:            "2020-04-18 03:22:17.995000",
+				TMCreate:            "2020-04-18T03:22:17.995000Z",
+				TMUpdate:            "2020-04-18T03:22:17.995000Z",
 				TMDelete:            DefaultTimeStamp,
 			},
 		},
@@ -399,7 +399,7 @@ func Test_QueueUpdate(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("5e4a3b7e-5a73-11ec-81e9-a79e401158f0"),
 				},
-				TMCreate: "2020-04-18T03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
 			},
 
 			id: uuid.FromStringOrNil("5e4a3b7e-5a73-11ec-81e9-a79e401158f0"),
@@ -407,7 +407,7 @@ func Test_QueueUpdate(t *testing.T) {
 				queue.FieldTagIDs: []uuid.UUID{uuid.FromStringOrNil("21fcd3d4-5a73-11ec-a185-935d2e1f0846")},
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 			expectRes: &queue.Queue{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("5e4a3b7e-5a73-11ec-81e9-a79e401158f0"),
@@ -417,8 +417,8 @@ func Test_QueueUpdate(t *testing.T) {
 				},
 				WaitQueuecallIDs:    []uuid.UUID{},
 				ServiceQueuecallIDs: []uuid.UUID{},
-				TMCreate:            "2020-04-18 03:22:17.995000",
-				TMUpdate:            "2020-04-18 03:22:17.995000",
+				TMCreate:            "2020-04-18T03:22:17.995000Z",
+				TMUpdate:            "2020-04-18T03:22:17.995000Z",
 				TMDelete:            DefaultTimeStamp,
 			},
 		},

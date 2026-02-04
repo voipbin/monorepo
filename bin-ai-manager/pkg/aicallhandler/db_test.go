@@ -318,7 +318,7 @@ func Test_List(t *testing.T) {
 			name: "normal",
 
 			size:  10,
-			token: "2023-01-03 21:35:02.809",
+			token: "2023-01-03T21:35:02.809Z",
 			filters: map[aicall.Field]any{
 				aicall.FieldDeleted:    false,
 				aicall.FieldCustomerID: uuid.FromStringOrNil("1694a6ac-b485-11ee-9900-ff6bfeb9a3cc"),

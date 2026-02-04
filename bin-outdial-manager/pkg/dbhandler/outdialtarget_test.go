@@ -49,7 +49,7 @@ func Test_OutdialTargetCreate(t *testing.T) {
 					Target: "+821100000001",
 				},
 
-				TMCreate: "2020-04-18 03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
 			},
 			&outdialtarget.OutdialTarget{
 				ID:        uuid.FromStringOrNil("26f03072-b01b-11ec-8b95-b7c2633990d7"),
@@ -66,7 +66,7 @@ func Test_OutdialTargetCreate(t *testing.T) {
 					Target: "+821100000001",
 				},
 
-				TMCreate: "2020-04-18 03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
 			},
 		},
 	}

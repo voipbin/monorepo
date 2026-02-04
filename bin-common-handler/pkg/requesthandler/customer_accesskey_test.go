@@ -32,7 +32,7 @@ func Test_CustomerV1AccesskeyList(t *testing.T) {
 		{
 			name: "normal",
 
-			pageToken:  "2021-03-02 03:23:20.995000",
+			pageToken:  "2021-03-02T03:23:20.995000Z",
 			pageSize:   10,
 			customerID: uuid.FromStringOrNil("eee40e32-ab3b-11ef-8190-ab49eeb155a1"),
 			filters: map[csaccesskey.Field]any{
@@ -47,7 +47,7 @@ func Test_CustomerV1AccesskeyList(t *testing.T) {
 
 			expectedTarget: "bin-manager.customer-manager.request",
 			expectedRequest: &sock.Request{
-				URI:      "/v1/accesskeys?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10",
+				URI:      "/v1/accesskeys?page_token=2021-03-02T03%3A23%3A20.995000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"deleted":false}`),

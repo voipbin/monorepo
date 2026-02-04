@@ -48,7 +48,7 @@ func Test_AICreate(t *testing.T) {
 				STTType:    ai.STTTypeElevenLabs,
 			},
 
-			responseCurTime: "2023-01-03 21:35:02.809",
+			responseCurTime: "2023-01-03T21:35:02.809Z",
 			expectRes: &ai.AI{
 				Identity: identity.Identity{
 					ID:         uuid.FromStringOrNil("165c9f1e-a5e0-11ed-8521-db074e85944c"),
@@ -67,7 +67,7 @@ func Test_AICreate(t *testing.T) {
 				TTSVoiceID: "test tts voice id",
 				STTType:    ai.STTTypeElevenLabs,
 
-				TMCreate: "2023-01-03 21:35:02.809",
+				TMCreate: "2023-01-03T21:35:02.809Z",
 				TMUpdate: DefaultTimeStamp,
 				TMDelete: DefaultTimeStamp,
 			},
@@ -80,13 +80,13 @@ func Test_AICreate(t *testing.T) {
 				},
 			},
 
-			responseCurTime: "2023-01-03 21:35:02.809",
+			responseCurTime: "2023-01-03T21:35:02.809Z",
 			expectRes: &ai.AI{
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("16bbdc18-a5e0-11ed-8762-5771d36fd113"),
 				},
 				EngineData: nil,
-				TMCreate:   "2023-01-03 21:35:02.809",
+				TMCreate:   "2023-01-03T21:35:02.809Z",
 				TMUpdate:   DefaultTimeStamp,
 				TMDelete:   DefaultTimeStamp,
 			},
@@ -150,15 +150,15 @@ func Test_AIDelete(t *testing.T) {
 
 			id: uuid.FromStringOrNil("5b769ed2-a5e1-11ed-8ad0-5bc10434535b"),
 
-			responseCurTime: "2023-01-03 21:35:02.809",
+			responseCurTime: "2023-01-03T21:35:02.809Z",
 			expectRes: &ai.AI{
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("5b769ed2-a5e1-11ed-8ad0-5bc10434535b"),
 				},
 				EngineData: nil,
-				TMCreate:   "2023-01-03 21:35:02.809",
-				TMUpdate:   "2023-01-03 21:35:02.809",
-				TMDelete:   "2023-01-03 21:35:02.809",
+				TMCreate:   "2023-01-03T21:35:02.809Z",
+				TMUpdate:   "2023-01-03T21:35:02.809Z",
+				TMDelete:   "2023-01-03T21:35:02.809Z",
 			},
 		},
 	}
@@ -240,7 +240,7 @@ func Test_AIList(t *testing.T) {
 				ai.FieldCustomerID: uuid.FromStringOrNil("6d35368c-a76d-11ed-9699-235c9e4a0117"),
 			},
 
-			responseCurTime: "2023-01-03 21:35:02.809",
+			responseCurTime: "2023-01-03T21:35:02.809Z",
 			expectRes: []*ai.AI{
 				{
 					Identity: identity.Identity{
@@ -248,7 +248,7 @@ func Test_AIList(t *testing.T) {
 						CustomerID: uuid.FromStringOrNil("6d35368c-a76d-11ed-9699-235c9e4a0117"),
 					},
 					EngineData: nil,
-					TMCreate:   "2023-01-03 21:35:02.809",
+					TMCreate:   "2023-01-03T21:35:02.809Z",
 					TMUpdate:   DefaultTimeStamp,
 					TMDelete:   DefaultTimeStamp,
 				},
@@ -258,7 +258,7 @@ func Test_AIList(t *testing.T) {
 						CustomerID: uuid.FromStringOrNil("6d35368c-a76d-11ed-9699-235c9e4a0117"),
 					},
 					EngineData: nil,
-					TMCreate:   "2023-01-03 21:35:02.809",
+					TMCreate:   "2023-01-03T21:35:02.809Z",
 					TMUpdate:   DefaultTimeStamp,
 					TMDelete:   DefaultTimeStamp,
 				},
@@ -274,7 +274,7 @@ func Test_AIList(t *testing.T) {
 				ai.FieldCustomerID: uuid.FromStringOrNil("b31d32ae-7f45-11ec-82c6-936e22306376"),
 			},
 
-			responseCurTime: "2023-01-03 21:35:02.809",
+			responseCurTime: "2023-01-03T21:35:02.809Z",
 			expectRes:       []*ai.AI{},
 		},
 	}
@@ -352,7 +352,7 @@ func Test_AIUpdate(t *testing.T) {
 				ai.FieldSTTType:    ai.STTTypeElevenLabs,
 			},
 
-			responseCurTime: "2023-01-03 21:35:02.809",
+			responseCurTime: "2023-01-03T21:35:02.809Z",
 			expectRes: &ai.AI{
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("8bdc0568-f82e-11ed-9b13-0fb0a7490981"),
@@ -370,8 +370,8 @@ func Test_AIUpdate(t *testing.T) {
 				TTSType:    ai.TTSTypeCartesia,
 				TTSVoiceID: "new tts voice id",
 				STTType:    ai.STTTypeElevenLabs,
-				TMCreate:   "2023-01-03 21:35:02.809",
-				TMUpdate:   "2023-01-03 21:35:02.809",
+				TMCreate:   "2023-01-03T21:35:02.809Z",
+				TMUpdate:   "2023-01-03T21:35:02.809Z",
 				TMDelete:   DefaultTimeStamp,
 			},
 		},

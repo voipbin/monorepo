@@ -218,7 +218,7 @@ func Test_AgentList(t *testing.T) {
 				Permission: amagent.PermissionCustomerAdmin,
 			},
 			10,
-			"2020-09-20 03:23:20.995000",
+			"2020-09-20T03:23:20.995000Z",
 			map[string]string{
 				"deleted": "false",
 			},
@@ -251,7 +251,7 @@ func Test_AgentList(t *testing.T) {
 				Permission: amagent.PermissionCustomerAdmin,
 			},
 			10,
-			"2020-09-20 03:23:20.995000",
+			"2020-09-20T03:23:20.995000Z",
 			map[string]string{
 				"deleted": "false",
 			},

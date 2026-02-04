@@ -32,13 +32,13 @@ func Test_v1CampaigncallsGet_campaignID(t *testing.T) {
 		{
 			"normal",
 			&sock.Request{
-				URI:      "/v1/campaigncalls?page_token=2020-10-10%2003:30:17.000000&page_size=10",
+				URI:      "/v1/campaigncalls?page_token=2020-10-10T03:30:17.000000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"campaign_id":"d448b208-c849-11ec-8ea9-130b51c62f3e"}`),
 			},
 
-			"2020-10-10 03:30:17.000000",
+			"2020-10-10T03:30:17.000000Z",
 			10,
 			map[campaigncall.Field]any{
 				campaigncall.FieldCampaignID: uuid.FromStringOrNil("d448b208-c849-11ec-8ea9-130b51c62f3e"),
@@ -103,13 +103,13 @@ func Test_v1CampaigncallsGet_customerID(t *testing.T) {
 		{
 			"normal",
 			&sock.Request{
-				URI:      "/v1/campaigncalls?page_token=2020-10-10%2003:30:17.000000&page_size=10",
+				URI:      "/v1/campaigncalls?page_token=2020-10-10T03:30:17.000000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"a5b9fbf6-6e31-11ee-98a3-33e454942a48"}`),
 			},
 
-			"2020-10-10 03:30:17.000000",
+			"2020-10-10T03:30:17.000000Z",
 			10,
 			map[campaigncall.Field]any{
 				campaigncall.FieldCustomerID: uuid.FromStringOrNil("a5b9fbf6-6e31-11ee-98a3-33e454942a48"),

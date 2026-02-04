@@ -42,9 +42,9 @@ func TestContact_ConvertWebhookMessage(t *testing.T) {
 		TagIDs: []uuid.UUID{
 			uuid.FromStringOrNil("55555555-5555-5555-5555-555555555555"),
 		},
-		TMCreate: "2020-01-01 00:00:00.000000",
-		TMUpdate: "2020-01-02 00:00:00.000000",
-		TMDelete: "9999-01-01 00:00:00.000000",
+		TMCreate: "2020-01-01T00:00:00.000000Z",
+		TMUpdate: "2020-01-02T00:00:00.000000Z",
+		TMDelete: "9999-01-01T00:00:00.000000Z",
 	}
 
 	webhook := contact.ConvertWebhookMessage()
@@ -112,7 +112,7 @@ func TestContact_CreateWebhookEvent(t *testing.T) {
 				FirstName:   "John",
 				LastName:    "Doe",
 				DisplayName: "John Doe",
-				TMCreate:    "2020-01-01 00:00:00.000000",
+				TMCreate:    "2020-01-01T00:00:00.000000Z",
 			},
 			wantErr: false,
 		},

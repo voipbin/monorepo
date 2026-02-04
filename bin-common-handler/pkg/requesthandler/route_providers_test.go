@@ -310,7 +310,7 @@ func Test_RouteV1ProviderList(t *testing.T) {
 		{
 			"normal",
 
-			"2020-09-20 03:23:20.995000",
+			"2020-09-20T03:23:20.995000Z",
 			10,
 
 			&sock.Response{
@@ -321,7 +321,7 @@ func Test_RouteV1ProviderList(t *testing.T) {
 
 			"bin-manager.route-manager.request",
 			&sock.Request{
-				URI:      fmt.Sprintf("/v1/providers?page_token=%s&page_size=10", url.QueryEscape("2020-09-20 03:23:20.995000")),
+				URI:      fmt.Sprintf("/v1/providers?page_token=%s&page_size=10", url.QueryEscape("2020-09-20T03:23:20.995000Z")),
 				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeNone,
 			},

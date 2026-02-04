@@ -41,20 +41,20 @@ func Test_queuesGet(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/queues?page_size=20&page_token=2020-09-20%2003:23:20.995000",
+			reqQuery: "/queues?page_size=20&page_token=2020-09-20T03:23:20.995000Z",
 
 			responseQueues: []*qmqueue.WebhookMessage{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("f188b7aa-6476-11ec-a130-03a796c9e1e4"),
 					},
-					TMCreate: "2020-09-20T03:23:21.995000",
+					TMCreate: "2020-09-20T03:23:21.995000Z",
 				},
 			},
 
 			expectPageSize:  20,
-			expectPageToken: "2020-09-20 03:23:20.995000",
-			expectRes:       `{"result":[{"id":"f188b7aa-6476-11ec-a130-03a796c9e1e4","customer_id":"00000000-0000-0000-0000-000000000000","wait_flow_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:21.995000"}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
+			expectPageToken: "2020-09-20T03:23:20.995000Z",
+			expectRes:       `{"result":[{"id":"f188b7aa-6476-11ec-a130-03a796c9e1e4","customer_id":"00000000-0000-0000-0000-000000000000","wait_flow_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:21.995000Z"}],"next_page_token":"2020-09-20T03:23:21.995000Z"}`,
 		},
 		{
 			name: "more than 2 items",
@@ -64,7 +64,7 @@ func Test_queuesGet(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/queues?page_size=20&page_token=2020-09-20%2003:23:20.995000",
+			reqQuery: "/queues?page_size=20&page_token=2020-09-20T03:23:20.995000Z",
 
 			responseQueues: []*qmqueue.WebhookMessage{
 				{
@@ -75,7 +75,7 @@ func Test_queuesGet(t *testing.T) {
 
 					WaitQueuecallIDs:    []uuid.UUID{},
 					ServiceQueuecallIDs: []uuid.UUID{},
-					TMCreate:            "2020-09-20T03:23:21.995000",
+					TMCreate:            "2020-09-20T03:23:21.995000Z",
 				},
 				{
 					Identity: commonidentity.Identity{
@@ -85,7 +85,7 @@ func Test_queuesGet(t *testing.T) {
 
 					WaitQueuecallIDs:    []uuid.UUID{},
 					ServiceQueuecallIDs: []uuid.UUID{},
-					TMCreate:            "2020-09-20T03:23:22.995000",
+					TMCreate:            "2020-09-20T03:23:22.995000Z",
 				},
 				{
 					Identity: commonidentity.Identity{
@@ -95,13 +95,13 @@ func Test_queuesGet(t *testing.T) {
 
 					WaitQueuecallIDs:    []uuid.UUID{},
 					ServiceQueuecallIDs: []uuid.UUID{},
-					TMCreate:            "2020-09-20T03:23:23.995000",
+					TMCreate:            "2020-09-20T03:23:23.995000Z",
 				},
 			},
 
 			expectPageSize:  20,
-			expectPageToken: "2020-09-20 03:23:20.995000",
-			expectRes:       `{"result":[{"id":"f1ad64a6-6476-11ec-a650-cf22de7273e6","customer_id":"00000000-0000-0000-0000-000000000000","wait_flow_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:21.995000"},{"id":"f1d22dd6-6476-11ec-84e0-676f11515eed","customer_id":"00000000-0000-0000-0000-000000000000","wait_flow_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:22.995000"},{"id":"f1fd30c6-6476-11ec-8b55-7f9c5b9550b7","customer_id":"00000000-0000-0000-0000-000000000000","wait_flow_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:23.995000"}],"next_page_token":"2020-09-20T03:23:23.995000"}`,
+			expectPageToken: "2020-09-20T03:23:20.995000Z",
+			expectRes:       `{"result":[{"id":"f1ad64a6-6476-11ec-a650-cf22de7273e6","customer_id":"00000000-0000-0000-0000-000000000000","wait_flow_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:21.995000Z"},{"id":"f1d22dd6-6476-11ec-84e0-676f11515eed","customer_id":"00000000-0000-0000-0000-000000000000","wait_flow_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:22.995000Z"},{"id":"f1fd30c6-6476-11ec-8b55-7f9c5b9550b7","customer_id":"00000000-0000-0000-0000-000000000000","wait_flow_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:23.995000Z"}],"next_page_token":"2020-09-20T03:23:23.995000Z"}`,
 		},
 	}
 

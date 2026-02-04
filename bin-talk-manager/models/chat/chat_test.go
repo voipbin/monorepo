@@ -23,8 +23,8 @@ func TestChatStruct(t *testing.T) {
 		Name:        "Test Chat",
 		Detail:      "Test chat description",
 		MemberCount: 2,
-		TMCreate:    "2023-01-01 00:00:00",
-		TMUpdate:    "2023-01-02 00:00:00",
+		TMCreate:    "2023-01-01T00:00:00Z",
+		TMUpdate:    "2023-01-02T00:00:00Z",
 		TMDelete:    "",
 	}
 
@@ -81,8 +81,8 @@ func TestChat_ConvertWebhookMessage(t *testing.T) {
 		Name:        "Team Chat",
 		Detail:      "Team communication channel",
 		MemberCount: 5,
-		TMCreate:    "2023-01-01 00:00:00",
-		TMUpdate:    "2023-01-02 00:00:00",
+		TMCreate:    "2023-01-01T00:00:00Z",
+		TMUpdate:    "2023-01-02T00:00:00Z",
 	}
 
 	result := c.ConvertWebhookMessage()
@@ -116,7 +116,7 @@ func TestChat_CreateWebhookEvent(t *testing.T) {
 		Type:        TypeDirect,
 		Name:        "Test Chat",
 		MemberCount: 2,
-		TMCreate:    "2023-01-01 00:00:00",
+		TMCreate:    "2023-01-01T00:00:00Z",
 	}
 
 	data, err := c.CreateWebhookEvent()

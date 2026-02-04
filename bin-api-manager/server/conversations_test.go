@@ -43,10 +43,10 @@ func Test_conversationsGet(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/conversations?page_size=20&page_token=2020-09-20%2003:23:20.995000",
+			reqQuery: "/conversations?page_size=20&page_token=2020-09-20T03:23:20.995000Z",
 
 			expectPageSize:  20,
-			expectPageToken: "2020-09-20 03:23:20.995000",
+			expectPageToken: "2020-09-20T03:23:20.995000Z",
 
 			responseConversations: []*cvconversation.WebhookMessage{
 				{
@@ -193,7 +193,7 @@ func Test_GetConversationsIdMessages(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/conversations/a09b01e0-ed2e-11ec-bdf1-8fa58d1092ad/messages?page_size=20&page_token=2020-09-20%2003:23:20.995000",
+			reqQuery: "/conversations/a09b01e0-ed2e-11ec-bdf1-8fa58d1092ad/messages?page_size=20&page_token=2020-09-20T03:23:20.995000Z",
 
 			responseMessages: []*cvmessage.WebhookMessage{
 				{
@@ -205,7 +205,7 @@ func Test_GetConversationsIdMessages(t *testing.T) {
 
 			expectConversationID: uuid.FromStringOrNil("a09b01e0-ed2e-11ec-bdf1-8fa58d1092ad"),
 			expectPageSize:       20,
-			expectPageToken:      "2020-09-20 03:23:20.995000",
+			expectPageToken:      "2020-09-20T03:23:20.995000Z",
 			expectRes:            `{"result":[{"id":"120bc6da-ed2e-11ec-839d-cb324c315bf3","customer_id":"00000000-0000-0000-0000-000000000000","conversation_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000"}],"next_page_token":""}`,
 		},
 	}

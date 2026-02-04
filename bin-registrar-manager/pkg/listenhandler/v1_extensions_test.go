@@ -123,10 +123,10 @@ func Test_processV1ExtensionsGet(t *testing.T) {
 		{
 			name: "normal",
 
-			pageToken: "2020-10-10T03:30:17.000000",
+			pageToken: "2020-10-10T03:30:17.000000Z",
 			pageSize:  10,
 			request: &sock.Request{
-				URI:      "/v1/extensions?page_token=2020-10-10T03:30:17.000000&page_size=10",
+				URI:      "/v1/extensions?page_token=2020-10-10T03:30:17.000000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"1b642fde-4ff1-11ee-8b2f-2f40ea091b7d"}`),
@@ -153,10 +153,10 @@ func Test_processV1ExtensionsGet(t *testing.T) {
 		{
 			name: "empty",
 
-			pageToken: "2020-10-10T03:30:17.000000",
+			pageToken: "2020-10-10T03:30:17.000000Z",
 			pageSize:  10,
 			request: &sock.Request{
-				URI:      "/v1/extensions?page_token=2020-10-10T03:30:17.000000&page_size=10",
+				URI:      "/v1/extensions?page_token=2020-10-10T03:30:17.000000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"1b991686-4ff1-11ee-89fd-2f283e362ada"}`),

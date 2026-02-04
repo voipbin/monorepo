@@ -95,12 +95,12 @@ func Test_processV1CallsGet(t *testing.T) {
 			name: "normal",
 
 			request: &sock.Request{
-				URI:    "/v1/calls?page_size=10&page_token=2020-05-03%2021:35:02.809",
+				URI:    "/v1/calls?page_size=10&page_token=2020-05-03T21:35:02.809Z",
 				Method: sock.RequestMethodGet,
 				Data:   []byte(`{"customer_id":"ac03d4ea-7f50-11ec-908d-d39407ab524d","deleted":false}`),
 			},
 			pageSize:  10,
-			pageToken: "2020-05-03 21:35:02.809",
+			pageToken: "2020-05-03T21:35:02.809Z",
 
 			responseCalls: []*call.Call{
 				{
@@ -124,12 +124,12 @@ func Test_processV1CallsGet(t *testing.T) {
 			name: "2 items",
 
 			request: &sock.Request{
-				URI:    "/v1/calls?page_size=10&page_token=2020-05-03%2021:35:02.809",
+				URI:    "/v1/calls?page_size=10&page_token=2020-05-03T21:35:02.809Z",
 				Method: sock.RequestMethodGet,
 				Data:   []byte(`{"customer_id":"ac35aeb6-7f50-11ec-b7c5-abac92baf1fb","deleted":false}`),
 			},
 			pageSize:  10,
-			pageToken: "2020-05-03 21:35:02.809",
+			pageToken: "2020-05-03T21:35:02.809Z",
 
 			responseCalls: []*call.Call{
 				{
@@ -253,12 +253,12 @@ func TestProcessV1CallsIDActionTimeoutPost(t *testing.T) {
 				URI:      "/v1/calls/1a94c1e6-982e-11ea-9298-43412daaf0da/action-timeout",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"action_id": "ec4c8192-994b-11ea-ab64-9b63b984b7c4", "action_type": "echo", "tm_execute": "2020-05-03T21:35:02.809"}`),
+				Data:     []byte(`{"action_id": "ec4c8192-994b-11ea-ab64-9b63b984b7c4", "action_type": "echo", "tm_execute": "2020-05-03T21:35:02.809Z"}`),
 			},
 			action: &fmaction.Action{
 				ID:        uuid.FromStringOrNil("ec4c8192-994b-11ea-ab64-9b63b984b7c4"),
 				Type:      fmaction.TypeEcho,
-				TMExecute: "2020-05-03T21:35:02.809",
+				TMExecute: "2020-05-03T21:35:02.809Z",
 			},
 			expectRes: &sock.Response{
 				StatusCode: 200,
