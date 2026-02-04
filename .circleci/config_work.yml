@@ -1575,9 +1575,9 @@ commands:
             go mod download
             go mod vendor          
       - run:
-          name: Install latest golangci-lint
+          name: Install golangci-lint v2.5.0
           command: |
-            curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s latest
+            curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v2.5.0
             sudo mv ./bin/golangci-lint /usr/local/bin/
             golangci-lint version
       - run:
@@ -1621,9 +1621,9 @@ commands:
           command: |
             sudo apt-get update && sudo apt install -y pkg-config libzmq5 libzmq3-dev libczmq4 libczmq-dev
       - run:
-          name: Install latest golangci-lint
+          name: Install golangci-lint v2.5.0
           command: |
-            curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s latest
+            curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v2.5.0
             sudo mv ./bin/golangci-lint /usr/local/bin/
             golangci-lint version
       - run:
@@ -1668,9 +1668,9 @@ commands:
           command: |
             sudo apt-get update && sudo apt install -y pkg-config libsoxr-dev
       - run:
-          name: Install latest golangci-lint
+          name: Install golangci-lint v2.5.0
           command: |
-            curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s latest
+            curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v2.5.0
             sudo mv ./bin/golangci-lint /usr/local/bin/
             golangci-lint version
       - run:
