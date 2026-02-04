@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	tagAssignmentTable = "contact_manager_tag_assignment"
+	tagAssignmentTable = "contact_tag_assignments"
 )
 
 // TagAssignmentCreate creates a new tag assignment

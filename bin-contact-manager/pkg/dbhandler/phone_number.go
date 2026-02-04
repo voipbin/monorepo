@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	phoneNumberTable = "contact_manager_phone_number"
+	phoneNumberTable = "contact_phone_numbers"
 )
 
 // phoneNumberGetFromRow scans a single row into a PhoneNumber struct

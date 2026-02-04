@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	contactTable = "contact_manager_contact"
+	contactTable = "contact_contacts"
 )
 
 // contactGetFromRow scans a single row into a Contact struct using db tags

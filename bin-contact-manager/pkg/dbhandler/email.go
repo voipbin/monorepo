@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	emailTable = "contact_manager_email"
+	emailTable = "contact_emails"
 )
 
 // emailGetFromRow scans a single row into an Email struct
