@@ -56,9 +56,9 @@ func Test_EventCallCallHangup(t *testing.T) {
 				},
 
 				Status:   queuecall.StatusWaiting,
-				TMCreate: "2021-04-18 03:22:17.994000",
+				TMCreate: "2021-04-18T03:22:17.994000Z",
 				TMEnd:    dbhandler.DefaultTimeStamp,
-				TMDelete: "2021-04-18 03:52:17.994000",
+				TMDelete: "2021-04-18T03:52:17.994000Z",
 			},
 		},
 	}
@@ -139,12 +139,12 @@ func Test_EventCallConfbridgeJoined(t *testing.T) {
 				},
 
 				Status:    queuecall.StatusService,
-				TMCreate:  "2021-04-18 03:22:17.994000",
-				TMService: "2021-04-18 03:22:17.994000",
+				TMCreate:  "2021-04-18T03:22:17.994000Z",
+				TMService: "2021-04-18T03:22:17.994000Z",
 				TMEnd:     dbhandler.DefaultTimeStamp,
 				TMDelete:  dbhandler.DefaultTimeStamp,
 			},
-			"2021-04-18 03:23:17.994000",
+			"2021-04-18T03:23:17.994000Z",
 
 			60000,
 		},
@@ -223,9 +223,9 @@ func Test_EventCallConfbridgeLeaved(t *testing.T) {
 				},
 
 				Status:    queuecall.StatusService,
-				TMService: "2021-04-18 03:22:17.994000",
+				TMService: "2021-04-18T03:22:17.994000Z",
 				TMEnd:     dbhandler.DefaultTimeStamp,
-				TMDelete:  "2021-04-18 03:52:17.994000",
+				TMDelete:  "2021-04-18T03:52:17.994000Z",
 			},
 		},
 	}

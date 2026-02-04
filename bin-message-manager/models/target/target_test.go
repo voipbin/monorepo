@@ -14,7 +14,7 @@ func TestTargetStruct(t *testing.T) {
 		},
 		Status:   StatusSent,
 		Parts:    2,
-		TMUpdate: "2024-01-01 00:00:00.000000",
+		TMUpdate: "2024-01-01T00:00:00.000000Z",
 	}
 
 	if target.Destination.Type != commonaddress.TypeTel {
@@ -29,8 +29,8 @@ func TestTargetStruct(t *testing.T) {
 	if target.Parts != 2 {
 		t.Errorf("Target.Parts = %v, expected %v", target.Parts, 2)
 	}
-	if target.TMUpdate != "2024-01-01 00:00:00.000000" {
-		t.Errorf("Target.TMUpdate = %v, expected %v", target.TMUpdate, "2024-01-01 00:00:00.000000")
+	if target.TMUpdate != "2024-01-01T00:00:00.000000Z" {
+		t.Errorf("Target.TMUpdate = %v, expected %v", target.TMUpdate, "2024-01-01T00:00:00.000000Z")
 	}
 }
 

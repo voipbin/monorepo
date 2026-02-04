@@ -345,7 +345,7 @@ func Test_Started(t *testing.T) {
 
 			id: uuid.FromStringOrNil("def310b4-9011-11ed-bc02-ab675449097d"),
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 			responseRecording: &recording.Recording{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("def310b4-9011-11ed-bc02-ab675449097d"),

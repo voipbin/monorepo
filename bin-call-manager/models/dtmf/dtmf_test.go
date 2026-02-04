@@ -14,7 +14,7 @@ func TestDTMFStruct(t *testing.T) {
 		CallID:   callID,
 		Digit:    "5",
 		Duration: 100,
-		TMCreate: "2024-01-01 00:00:00.000000",
+		TMCreate: "2024-01-01T00:00:00.000000Z",
 	}
 	d.ID = id
 
@@ -30,8 +30,8 @@ func TestDTMFStruct(t *testing.T) {
 	if d.Duration != 100 {
 		t.Errorf("DTMF.Duration = %v, expected %v", d.Duration, 100)
 	}
-	if d.TMCreate != "2024-01-01 00:00:00.000000" {
-		t.Errorf("DTMF.TMCreate = %v, expected %v", d.TMCreate, "2024-01-01 00:00:00.000000")
+	if d.TMCreate != "2024-01-01T00:00:00.000000Z" {
+		t.Errorf("DTMF.TMCreate = %v, expected %v", d.TMCreate, "2024-01-01T00:00:00.000000Z")
 	}
 }
 

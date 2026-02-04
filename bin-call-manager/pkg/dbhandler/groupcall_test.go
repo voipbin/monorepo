@@ -76,7 +76,7 @@ func Test_GroupcallCreate(t *testing.T) {
 				DialIndex:      1,
 			},
 
-			responseCurTime: "2023-01-18 03:22:18.995000",
+			responseCurTime: "2023-01-18T03:22:18.995000Z",
 			expectRes: &groupcall.Groupcall{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("39ee40d7-9f83-45bb-ba29-7bb9de62c93e"),
@@ -121,7 +121,7 @@ func Test_GroupcallCreate(t *testing.T) {
 				CallCount:      2,
 				GroupcallCount: 2,
 				DialIndex:      1,
-				TMCreate:       "2023-01-18 03:22:18.995000",
+				TMCreate:       "2023-01-18T03:22:18.995000Z",
 				TMUpdate:       DefaultTimeStamp,
 				TMDelete:       DefaultTimeStamp,
 			},
@@ -209,7 +209,7 @@ func Test_GroupcallSetAnswerCallID(t *testing.T) {
 			id:           uuid.FromStringOrNil("feaf81a6-bd77-11ed-bd82-cba4c20d3477"),
 			answerCallID: uuid.FromStringOrNil("49081344-bd78-11ed-aa51-0349af7b9f8b"),
 
-			responseCurTime: "2023-01-18 03:22:18.995000",
+			responseCurTime: "2023-01-18T03:22:18.995000Z",
 			expectRes: &groupcall.Groupcall{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("feaf81a6-bd77-11ed-bd82-cba4c20d3477"),
@@ -239,8 +239,8 @@ func Test_GroupcallSetAnswerCallID(t *testing.T) {
 				},
 				GroupcallIDs: []uuid.UUID{},
 
-				TMCreate: "2023-01-18 03:22:18.995000",
-				TMUpdate: "2023-01-18 03:22:18.995000",
+				TMCreate: "2023-01-18T03:22:18.995000Z",
+				TMUpdate: "2023-01-18T03:22:18.995000Z",
 				TMDelete: DefaultTimeStamp,
 			},
 		},
@@ -319,7 +319,7 @@ func Test_GroupcallSetAnswerGroupcallID(t *testing.T) {
 			id:                uuid.FromStringOrNil("864ce138-e2b9-11ed-b321-333da5e2b527"),
 			answerGroupcallID: uuid.FromStringOrNil("b6fbd8d4-e2b9-11ed-b577-47ff74c6d9a5"),
 
-			responseCurTime: "2023-01-18 03:22:18.995000",
+			responseCurTime: "2023-01-18T03:22:18.995000Z",
 			expectRes: &groupcall.Groupcall{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("864ce138-e2b9-11ed-b321-333da5e2b527"),
@@ -334,8 +334,8 @@ func Test_GroupcallSetAnswerGroupcallID(t *testing.T) {
 					uuid.FromStringOrNil("4936e9f8-bd78-11ed-b921-37bb6ae97f98"),
 				},
 
-				TMCreate: "2023-01-18 03:22:18.995000",
-				TMUpdate: "2023-01-18 03:22:18.995000",
+				TMCreate: "2023-01-18T03:22:18.995000Z",
+				TMUpdate: "2023-01-18T03:22:18.995000Z",
 				TMDelete: DefaultTimeStamp,
 			},
 		},
@@ -408,7 +408,7 @@ func Test_GroupcallDecreaseCallCount(t *testing.T) {
 
 			id: uuid.FromStringOrNil("694c2b84-d913-11ed-82ca-8ffe9f085634"),
 
-			responseCurTime: "2023-01-18 03:22:18.995000",
+			responseCurTime: "2023-01-18T03:22:18.995000Z",
 			expectRes: &groupcall.Groupcall{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("694c2b84-d913-11ed-82ca-8ffe9f085634"),
@@ -420,8 +420,8 @@ func Test_GroupcallDecreaseCallCount(t *testing.T) {
 				GroupcallIDs: []uuid.UUID{},
 				CallCount:    1,
 
-				TMCreate: "2023-01-18 03:22:18.995000",
-				TMUpdate: "2023-01-18 03:22:18.995000",
+				TMCreate: "2023-01-18T03:22:18.995000Z",
+				TMUpdate: "2023-01-18T03:22:18.995000Z",
 				TMDelete: DefaultTimeStamp,
 			},
 		},
@@ -494,7 +494,7 @@ func Test_GroupcallDecreaseGroupcallCount(t *testing.T) {
 
 			id: uuid.FromStringOrNil("00731852-e2c3-11ed-99d8-53674cc4d92d"),
 
-			responseCurTime: "2023-01-18 03:22:18.995000",
+			responseCurTime: "2023-01-18T03:22:18.995000Z",
 			expectRes: &groupcall.Groupcall{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("00731852-e2c3-11ed-99d8-53674cc4d92d"),
@@ -506,8 +506,8 @@ func Test_GroupcallDecreaseGroupcallCount(t *testing.T) {
 				GroupcallIDs:   []uuid.UUID{},
 				GroupcallCount: 1,
 
-				TMCreate: "2023-01-18 03:22:18.995000",
-				TMUpdate: "2023-01-18 03:22:18.995000",
+				TMCreate: "2023-01-18T03:22:18.995000Z",
+				TMUpdate: "2023-01-18T03:22:18.995000Z",
 				TMDelete: DefaultTimeStamp,
 			},
 		},
@@ -577,7 +577,7 @@ func Test_GroupcallSetStatus(t *testing.T) {
 			id:     uuid.FromStringOrNil("ee34fa3e-e123-11ed-92bf-a3c23e7dcb96"),
 			status: groupcall.StatusProgressing,
 
-			responseCurTime: "2023-01-18 03:22:18.995000",
+			responseCurTime: "2023-01-18T03:22:18.995000Z",
 			expectRes: &groupcall.Groupcall{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("ee34fa3e-e123-11ed-92bf-a3c23e7dcb96"),
@@ -589,8 +589,8 @@ func Test_GroupcallSetStatus(t *testing.T) {
 				CallIDs:      []uuid.UUID{},
 				GroupcallIDs: []uuid.UUID{},
 
-				TMCreate: "2023-01-18 03:22:18.995000",
-				TMUpdate: "2023-01-18 03:22:18.995000",
+				TMCreate: "2023-01-18T03:22:18.995000Z",
+				TMUpdate: "2023-01-18T03:22:18.995000Z",
 				TMDelete: DefaultTimeStamp,
 			},
 		},
@@ -668,7 +668,7 @@ func Test_GroupcallSetCallIDsAndCallCountAndDialIndex(t *testing.T) {
 			callCount: 2,
 			dialIndex: 3,
 
-			responseCurTime: "2023-01-18 03:22:18.995000",
+			responseCurTime: "2023-01-18T03:22:18.995000Z",
 			expectRes: &groupcall.Groupcall{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("e8c41e5a-e127-11ed-836a-4777b4880b93"),
@@ -684,8 +684,8 @@ func Test_GroupcallSetCallIDsAndCallCountAndDialIndex(t *testing.T) {
 				CallCount:    2,
 				DialIndex:    3,
 
-				TMCreate: "2023-01-18 03:22:18.995000",
-				TMUpdate: "2023-01-18 03:22:18.995000",
+				TMCreate: "2023-01-18T03:22:18.995000Z",
+				TMUpdate: "2023-01-18T03:22:18.995000Z",
 				TMDelete: DefaultTimeStamp,
 			},
 		},
@@ -768,7 +768,7 @@ func Test_GroupcallList(t *testing.T) {
 				groupcall.FieldDeleted:    false,
 			},
 
-			"2020-04-18 03:22:17.995000",
+			"2020-04-18T03:22:17.995000Z",
 
 			[]*groupcall.Groupcall{
 				{
@@ -782,7 +782,7 @@ func Test_GroupcallList(t *testing.T) {
 					CallIDs:      []uuid.UUID{},
 					GroupcallIDs: []uuid.UUID{},
 
-					TMCreate: "2020-04-18 03:22:17.995000",
+					TMCreate: "2020-04-18T03:22:17.995000Z",
 					TMUpdate: DefaultTimeStamp,
 					TMDelete: DefaultTimeStamp,
 				},
@@ -797,7 +797,7 @@ func Test_GroupcallList(t *testing.T) {
 					CallIDs:      []uuid.UUID{},
 					GroupcallIDs: []uuid.UUID{},
 
-					TMCreate: "2020-04-18 03:22:17.995000",
+					TMCreate: "2020-04-18T03:22:17.995000Z",
 					TMUpdate: DefaultTimeStamp,
 					TMDelete: DefaultTimeStamp,
 				},
@@ -812,7 +812,7 @@ func Test_GroupcallList(t *testing.T) {
 				groupcall.FieldDeleted:    false,
 			},
 
-			"2020-04-18 03:22:17.995000",
+			"2020-04-18T03:22:17.995000Z",
 			[]*groupcall.Groupcall{},
 		},
 	}

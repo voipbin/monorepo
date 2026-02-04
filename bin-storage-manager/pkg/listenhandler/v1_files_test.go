@@ -108,13 +108,13 @@ func Test_v1FilesGet(t *testing.T) {
 		{
 			"1 item",
 			&sock.Request{
-				URI:      "/v1/files?page_token=2020-10-10T03:30:17.000000&page_size=10",
+				URI:      "/v1/files?page_token=2020-10-10T03:30:17.000000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"bd47c576-15ea-11ef-93f4-7b6a665b785d","deleted":false}`),
 			},
 
-			"2020-10-10T03:30:17.000000",
+			"2020-10-10T03:30:17.000000Z",
 			10,
 			map[file.Field]any{
 				file.FieldCustomerID: uuid.FromStringOrNil("bd47c576-15ea-11ef-93f4-7b6a665b785d"),

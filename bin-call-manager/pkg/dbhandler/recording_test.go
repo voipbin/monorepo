@@ -61,11 +61,11 @@ func Test_RecordingCreate(t *testing.T) {
 					"125a1ea4-8cb9-11ed-b34c-336ac5eeeec4",
 				},
 
-				TMStart: "2020-04-18 03:22:18.995000",
-				TMEnd:   "2020-04-18 03:22:19.995000",
+				TMStart: "2020-04-18T03:22:18.995000Z",
+				TMEnd:   "2020-04-18T03:22:19.995000Z",
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 
 			expectedRes: &recording.Recording{
 				Identity: commonidentity.Identity{
@@ -97,9 +97,9 @@ func Test_RecordingCreate(t *testing.T) {
 					"125a1ea4-8cb9-11ed-b34c-336ac5eeeec4",
 				},
 
-				TMStart:  "2020-04-18 03:22:18.995000",
-				TMEnd:    "2020-04-18 03:22:19.995000",
-				TMCreate: "2020-04-18 03:22:17.995000",
+				TMStart:  "2020-04-18T03:22:18.995000Z",
+				TMEnd:    "2020-04-18T03:22:19.995000Z",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
 				TMUpdate: DefaultTimeStamp,
 				TMDelete: DefaultTimeStamp,
 			},
@@ -187,7 +187,7 @@ func Test_RecordingList(t *testing.T) {
 				recording.FieldCustomerID: uuid.FromStringOrNil("f15430d8-7f43-11ec-b82c-b7ffeefaf0b9"),
 				recording.FieldDeleted:    false,
 			},
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 
 			expectedRes: []*recording.Recording{
 				{
@@ -200,7 +200,7 @@ func Test_RecordingList(t *testing.T) {
 
 					TMStart:  "",
 					TMEnd:    "",
-					TMCreate: "2020-04-18 03:22:17.995000",
+					TMCreate: "2020-04-18T03:22:17.995000Z",
 					TMUpdate: DefaultTimeStamp,
 					TMDelete: DefaultTimeStamp,
 				},
@@ -214,7 +214,7 @@ func Test_RecordingList(t *testing.T) {
 
 					TMStart:  "",
 					TMEnd:    "",
-					TMCreate: "2020-04-18 03:22:17.995000",
+					TMCreate: "2020-04-18T03:22:17.995000Z",
 					TMUpdate: DefaultTimeStamp,
 					TMDelete: DefaultTimeStamp,
 				},
@@ -228,7 +228,7 @@ func Test_RecordingList(t *testing.T) {
 			filters: map[recording.Field]any{
 				recording.FieldCustomerID: uuid.FromStringOrNil("08cb92b0-7f44-11ec-8753-6f51eae532cc"),
 			},
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 
 			expectedRes: []*recording.Recording{},
 		},
@@ -289,7 +289,7 @@ func Test_RecordingDelete(t *testing.T) {
 			},
 
 			id:              uuid.FromStringOrNil("86d8f342-8eb5-11ed-b1b3-cf6176be331f"),
-			responseCurTime: "2020-04-18T03:22:18.995000",
+			responseCurTime: "2020-04-18T03:22:18.995000Z",
 
 			expectedRes: &recording.Recording{
 				Identity: commonidentity.Identity{
@@ -299,9 +299,9 @@ func Test_RecordingDelete(t *testing.T) {
 				Filenames:  []string{},
 				ChannelIDs: []string{},
 
-				TMCreate: "2020-04-18T03:22:18.995000",
-				TMUpdate: "2020-04-18T03:22:18.995000",
-				TMDelete: "2020-04-18T03:22:18.995000",
+				TMCreate: "2020-04-18T03:22:18.995000Z",
+				TMUpdate: "2020-04-18T03:22:18.995000Z",
+				TMDelete: "2020-04-18T03:22:18.995000Z",
 			},
 		},
 	}

@@ -15,8 +15,8 @@ func TestAccountStruct(t *testing.T) {
 		CustomerID:     customerID,
 		TotalFileCount: 100,
 		TotalFileSize:  1073741824, // 1GB
-		TMCreate:       "2023-01-01 00:00:00",
-		TMUpdate:       "2023-01-02 00:00:00",
+		TMCreate:       "2023-01-01T00:00:00Z",
+		TMUpdate:       "2023-01-02T00:00:00Z",
 		TMDelete:       "",
 	}
 
@@ -32,10 +32,10 @@ func TestAccountStruct(t *testing.T) {
 	if a.TotalFileSize != 1073741824 {
 		t.Errorf("Account.TotalFileSize = %v, expected %v", a.TotalFileSize, 1073741824)
 	}
-	if a.TMCreate != "2023-01-01 00:00:00" {
-		t.Errorf("Account.TMCreate = %v, expected %v", a.TMCreate, "2023-01-01 00:00:00")
+	if a.TMCreate != "2023-01-01T00:00:00Z" {
+		t.Errorf("Account.TMCreate = %v, expected %v", a.TMCreate, "2023-01-01T00:00:00Z")
 	}
-	if a.TMUpdate != "2023-01-02 00:00:00" {
-		t.Errorf("Account.TMUpdate = %v, expected %v", a.TMUpdate, "2023-01-02 00:00:00")
+	if a.TMUpdate != "2023-01-02T00:00:00Z" {
+		t.Errorf("Account.TMUpdate = %v, expected %v", a.TMUpdate, "2023-01-02T00:00:00Z")
 	}
 }

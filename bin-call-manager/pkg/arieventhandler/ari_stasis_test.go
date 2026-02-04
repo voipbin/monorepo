@@ -32,7 +32,7 @@ func Test_EventHandlerStasisStart(t *testing.T) {
 				Event: ari.Event{
 					Type:        ari.EventTypeStasisStart,
 					Application: "voipbin",
-					Timestamp:   "2020-04-25T00:27:18.342",
+					Timestamp:   "2020-04-25T00:27:18.342Z",
 					AsteriskID:  "42:01:0a:a4:00:03",
 				},
 				Args: ari.ArgsMap{
@@ -48,7 +48,7 @@ func Test_EventHandlerStasisStart(t *testing.T) {
 					ID:           "1587774438.2390",
 					Name:         "PJSIP/in-voipbin-00000948",
 					Language:     "en",
-					CreationTime: "2020-04-25T00:27:18.341",
+					CreationTime: "2020-04-25T00:27:18.341Z",
 					State:        ari.ChannelStateRing,
 					Caller: ari.CallerID{
 						Name:   "tttt",
@@ -131,14 +131,14 @@ func Test_EventHandlerStasisEnd(t *testing.T) {
 				Event: ari.Event{
 					Type:        ari.EventTypeStasisEnd,
 					Application: "voipbin",
-					Timestamp:   "2020-05-06T15:36:26.406",
+					Timestamp:   "2020-05-06T15:36:26.406Z",
 					AsteriskID:  "42:01:0a:a4:00:03",
 				},
 				Channel: ari.Channel{
 					ID:           "1588779386.6019",
 					Name:         "PJSIP/in-voipbin-00000bcb",
 					Language:     "en",
-					CreationTime: "2020-05-06T15:36:26.003",
+					CreationTime: "2020-05-06T15:36:26.003Z",
 					State:        ari.ChannelStateUp,
 					Caller: ari.CallerID{
 						Number: "287",

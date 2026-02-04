@@ -42,7 +42,7 @@ func TestParticipantStruct(t *testing.T) {
 			OwnerID:   ownerID,
 		},
 		ChatID:   chatID,
-		TMJoined: "2023-01-01 00:00:00",
+		TMJoined: "2023-01-01T00:00:00Z",
 	}
 
 	if p.ID != id {
@@ -60,8 +60,8 @@ func TestParticipantStruct(t *testing.T) {
 	if p.ChatID != chatID {
 		t.Errorf("Participant.ChatID = %v, expected %v", p.ChatID, chatID)
 	}
-	if p.TMJoined != "2023-01-01 00:00:00" {
-		t.Errorf("Participant.TMJoined = %v, expected %v", p.TMJoined, "2023-01-01 00:00:00")
+	if p.TMJoined != "2023-01-01T00:00:00Z" {
+		t.Errorf("Participant.TMJoined = %v, expected %v", p.TMJoined, "2023-01-01T00:00:00Z")
 	}
 }
 
@@ -81,7 +81,7 @@ func TestParticipant_ConvertWebhookMessage(t *testing.T) {
 			OwnerID:   ownerID,
 		},
 		ChatID:   chatID,
-		TMJoined: "2023-01-01 00:00:00",
+		TMJoined: "2023-01-01T00:00:00Z",
 	}
 
 	result := p.ConvertWebhookMessage()
@@ -119,7 +119,7 @@ func TestParticipant_CreateWebhookEvent(t *testing.T) {
 			OwnerID:   ownerID,
 		},
 		ChatID:   chatID,
-		TMJoined: "2023-01-01 00:00:00",
+		TMJoined: "2023-01-01T00:00:00Z",
 	}
 
 	data, err := p.CreateWebhookEvent()

@@ -257,7 +257,7 @@ func Test_processV1NumbersGet(t *testing.T) {
 			"normal",
 
 			10,
-			"2021-03-01 03:30:17.000000",
+			"2021-03-01T03:30:17.000000Z",
 
 			[]*number.Number{
 				{
@@ -282,7 +282,7 @@ func Test_processV1NumbersGet(t *testing.T) {
 			},
 
 			&sock.Request{
-				URI:    "/v1/numbers?page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000",
+				URI:    "/v1/numbers?page_size=10&page_token=2021-03-01T03:30:17.000000Z",
 				Method: sock.RequestMethodGet,
 				Data:   []byte(`{"customer_id":"bfc9a3de-eca8-11ee-967c-87c3c0ddb3d2","deleted":false}`),
 			},
@@ -296,7 +296,7 @@ func Test_processV1NumbersGet(t *testing.T) {
 			"2 results",
 
 			10,
-			"2021-03-01 03:30:17.000000",
+			"2021-03-01T03:30:17.000000Z",
 
 			[]*number.Number{
 				{
@@ -335,7 +335,7 @@ func Test_processV1NumbersGet(t *testing.T) {
 			},
 
 			&sock.Request{
-				URI:    "/v1/numbers?page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000",
+				URI:    "/v1/numbers?page_size=10&page_token=2021-03-01T03:30:17.000000Z",
 				Method: sock.RequestMethodGet,
 				Data:   []byte(`{"customer_id":"dcff90a8-eca8-11ee-8816-0fa58b162524","deleted":false}`),
 			},
@@ -567,13 +567,13 @@ func Test_processV1NumbersRenewPost(t *testing.T) {
 
 			days:    3,
 			hours:   10,
-			tmRenew: "2023-06-26 18:26:49.000",
+			tmRenew: "2023-06-26T18:26:49.000Z",
 
 			request: &sock.Request{
 				URI:      "/v1/numbers/renew",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"days":3,"hours":10,"tm_renew":"2023-06-26 18:26:49.000"}`),
+				Data:     []byte(`{"days":3,"hours":10,"tm_renew":"2023-06-26T18:26:49.000Z"}`),
 			},
 			response: &sock.Response{
 				StatusCode: 200,

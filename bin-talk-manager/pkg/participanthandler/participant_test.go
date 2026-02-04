@@ -208,7 +208,7 @@ func Test_ParticipantAdd_error(t *testing.T) {
 					ID:         uuid.FromStringOrNil("e8427fa8-17b2-4e9e-8855-90e516bcf1d3"),
 					CustomerID: uuid.FromStringOrNil("ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4"),
 				},
-				TMDelete: "2024-01-15 10:30:00.000000", // Chat is deleted
+				TMDelete: "2024-01-15T10:30:00.000000Z", // Chat is deleted
 			},
 			expectError: true,
 		},
@@ -301,7 +301,7 @@ func Test_ParticipantList(t *testing.T) {
 						OwnerID:   uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
 					},
 					ChatID:   uuid.FromStringOrNil("ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4"),
-					TMJoined: "2024-01-15 10:30:00.000000",
+					TMJoined: "2024-01-15T10:30:00.000000Z",
 				},
 			},
 		},
@@ -322,7 +322,7 @@ func Test_ParticipantList(t *testing.T) {
 						OwnerID:   uuid.FromStringOrNil("31536998-da36-11ee-976a-b31b049d62c2"),
 					},
 					ChatID:   uuid.FromStringOrNil("ac810dc4-298c-11ee-984c-ebb7811c4114"),
-					TMJoined: "2024-01-15 10:30:00.000000",
+					TMJoined: "2024-01-15T10:30:00.000000Z",
 				},
 				{
 					Identity: commonidentity.Identity{
@@ -334,7 +334,7 @@ func Test_ParticipantList(t *testing.T) {
 						OwnerID:   uuid.FromStringOrNil("62b0e2b7-0583-4f78-9406-45b00d17a9b4"),
 					},
 					ChatID:   uuid.FromStringOrNil("ac810dc4-298c-11ee-984c-ebb7811c4114"),
-					TMJoined: "2024-01-15 11:00:00.000000",
+					TMJoined: "2024-01-15T11:00:00.000000Z",
 				},
 				{
 					Identity: commonidentity.Identity{
@@ -346,7 +346,7 @@ func Test_ParticipantList(t *testing.T) {
 						OwnerID:   uuid.FromStringOrNil("809656e2-305e-43cd-8d7b-ccb44373dddb"),
 					},
 					ChatID:   uuid.FromStringOrNil("ac810dc4-298c-11ee-984c-ebb7811c4114"),
-					TMJoined: "2024-01-15 12:00:00.000000",
+					TMJoined: "2024-01-15T12:00:00.000000Z",
 				},
 			},
 		},
@@ -489,7 +489,7 @@ func Test_ParticipantRemove(t *testing.T) {
 					OwnerID:   uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
 				},
 				ChatID:   uuid.FromStringOrNil("ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4"),
-				TMJoined: "2024-01-15 10:30:00.000000",
+				TMJoined: "2024-01-15T10:30:00.000000Z",
 			},
 		},
 		{
@@ -508,7 +508,7 @@ func Test_ParticipantRemove(t *testing.T) {
 					OwnerID:   uuid.FromStringOrNil("31536998-da36-11ee-976a-b31b049d62c2"),
 				},
 				ChatID:   uuid.FromStringOrNil("ac810dc4-298c-11ee-984c-ebb7811c4114"),
-				TMJoined: "2024-01-15 11:00:00.000000",
+				TMJoined: "2024-01-15T11:00:00.000000Z",
 			},
 		},
 	}

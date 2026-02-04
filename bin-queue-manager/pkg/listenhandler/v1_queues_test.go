@@ -126,7 +126,7 @@ func Test_processV1QueuesGet(t *testing.T) {
 		{
 			name: "normal",
 			request: &sock.Request{
-				URI:      "/v1/queues?page_size=10&page_token=2020-05-03%2021:35:02.809",
+				URI:      "/v1/queues?page_size=10&page_token=2020-05-03T21:35:02.809Z",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"570b5094-7f55-11ec-b5cd-1b925f9028af","deleted":false}`),
@@ -145,7 +145,7 @@ func Test_processV1QueuesGet(t *testing.T) {
 			},
 
 			expectedPageSize:  10,
-			expectedPageToken: "2020-05-03 21:35:02.809",
+			expectedPageToken: "2020-05-03T21:35:02.809Z",
 			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
@@ -155,7 +155,7 @@ func Test_processV1QueuesGet(t *testing.T) {
 		{
 			name: "2 items",
 			request: &sock.Request{
-				URI:      "/v1/queues?page_size=10&page_token=2020-05-03%2021:35:02.809",
+				URI:      "/v1/queues?page_size=10&page_token=2020-05-03T21:35:02.809Z",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"6a7ce2b4-7f55-11ec-a666-8b44aa06d0db","deleted":false}`),
@@ -179,7 +179,7 @@ func Test_processV1QueuesGet(t *testing.T) {
 			},
 
 			expectedPageSize:  10,
-			expectedPageToken: "2020-05-03 21:35:02.809",
+			expectedPageToken: "2020-05-03T21:35:02.809Z",
 			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",

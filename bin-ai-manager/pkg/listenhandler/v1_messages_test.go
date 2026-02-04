@@ -32,7 +32,7 @@ func Test_processV1MessagesGet(t *testing.T) {
 		{
 			name: "normal",
 			request: &sock.Request{
-				URI:    "/v1/messages?page_size=10&page_token=2020-05-03%2021:35:02.809",
+				URI:    "/v1/messages?page_size=10&page_token=2020-05-03T21:35:02.809Z",
 				Method: sock.RequestMethodGet,
 			Data:   []byte(`{"aicall_id":"445110a0-f25d-11ef-9ff1-2f4ea94a72ac","deleted":false}`),
 			},
@@ -52,7 +52,7 @@ func Test_processV1MessagesGet(t *testing.T) {
 
 			expectAIcallID:  uuid.FromStringOrNil("445110a0-f25d-11ef-9ff1-2f4ea94a72ac"),
 			expectPageSize:  10,
-			expectPageToken: "2020-05-03 21:35:02.809",
+			expectPageToken: "2020-05-03T21:35:02.809Z",
 			expectFilters: map[message.Field]any{
 				message.FieldAIcallID: uuid.FromStringOrNil("445110a0-f25d-11ef-9ff1-2f4ea94a72ac"),
 				message.FieldDeleted:  false,

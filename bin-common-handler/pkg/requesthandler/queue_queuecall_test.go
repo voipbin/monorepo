@@ -32,7 +32,7 @@ func Test_QueueV1QueuecallList(t *testing.T) {
 		{
 			"normal",
 
-			"2020-09-20T03:23:20.995000",
+			"2020-09-20T03:23:20.995000Z",
 			10,
 			map[qmqueuecall.Field]any{
 				qmqueuecall.FieldDeleted: false,
@@ -40,7 +40,7 @@ func Test_QueueV1QueuecallList(t *testing.T) {
 
 			"bin-manager.queue-manager.request",
 			&sock.Request{
-				URI:      "/v1/queuecalls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
+				URI:      "/v1/queuecalls?page_token=2020-09-20T03%3A23%3A20.995000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"deleted":false}`),
@@ -61,7 +61,7 @@ func Test_QueueV1QueuecallList(t *testing.T) {
 		{
 			"2 results",
 
-			"2020-09-20T03:23:20.995000",
+			"2020-09-20T03:23:20.995000Z",
 			10,
 			map[qmqueuecall.Field]any{
 				qmqueuecall.FieldDeleted: false,
@@ -69,7 +69,7 @@ func Test_QueueV1QueuecallList(t *testing.T) {
 
 			"bin-manager.queue-manager.request",
 			&sock.Request{
-				URI:      "/v1/queuecalls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
+				URI:      "/v1/queuecalls?page_token=2020-09-20T03%3A23%3A20.995000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"deleted":false}`),

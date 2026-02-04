@@ -45,10 +45,10 @@ func Test_Conference_MarshalUnmarshal(t *testing.T) {
 				TranscribeIDs: []uuid.UUID{
 					uuid.FromStringOrNil("d0278cd8-1350-11ed-91f4-4f03d0c82169"),
 				},
-				TMEnd:    "2025-05-01 00:00:00.000",
-				TMCreate: "2025-04-02 00:00:00.000",
-				TMUpdate: "2025-04-03 00:00:00.000",
-				TMDelete: "2025-04-04 00:00:00.000",
+				TMEnd:    "2025-05-01T00:00:00.000Z",
+				TMCreate: "2025-04-02T00:00:00.000Z",
+				TMUpdate: "2025-04-03T00:00:00.000Z",
+				TMDelete: "2025-04-04T00:00:00.000Z",
 			},
 		},
 	}

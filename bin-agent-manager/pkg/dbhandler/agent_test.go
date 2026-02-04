@@ -36,7 +36,7 @@ func Test_AgentCreate(t *testing.T) {
 				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 			expectRes: &agent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("4f6a7348-4b42-11ec-80ba-13dbc38fe32c"),
@@ -45,7 +45,7 @@ func Test_AgentCreate(t *testing.T) {
 				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 				TagIDs:       []uuid.UUID{},
 				Addresses:    []commonaddress.Address{},
-				TMCreate:     "2020-04-18 03:22:17.995000",
+				TMCreate:     "2020-04-18T03:22:17.995000Z",
 				TMUpdate:     DefaultTimeStamp,
 				TMDelete:     DefaultTimeStamp,
 			},
@@ -67,7 +67,7 @@ func Test_AgentCreate(t *testing.T) {
 				},
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 			expectRes: &agent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("0e2f3d1c-4b4e-11ec-9455-9f4517cb3460"),
@@ -82,7 +82,7 @@ func Test_AgentCreate(t *testing.T) {
 						Name:   "",
 					},
 				},
-				TMCreate: "2020-04-18 03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
 				TMUpdate: DefaultTimeStamp,
 				TMDelete: DefaultTimeStamp,
 			},
@@ -109,7 +109,7 @@ func Test_AgentCreate(t *testing.T) {
 				},
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 			expectRes: &agent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("523b3a6a-4b4e-11ec-b8fc-03aa2e2902d4"),
@@ -129,7 +129,7 @@ func Test_AgentCreate(t *testing.T) {
 						Name:   "",
 					},
 				},
-				TMCreate: "2020-04-18 03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
 				TMUpdate: DefaultTimeStamp,
 				TMDelete: DefaultTimeStamp,
 			},
@@ -146,7 +146,7 @@ func Test_AgentCreate(t *testing.T) {
 				TagIDs:       []uuid.UUID{uuid.FromStringOrNil("700c10b4-4b4e-11ec-959b-bb95248c693f")},
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 			expectRes: &agent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("48436342-4b4f-11ec-9fcb-0be19dd3beda"),
@@ -156,7 +156,7 @@ func Test_AgentCreate(t *testing.T) {
 				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 				TagIDs:       []uuid.UUID{uuid.FromStringOrNil("700c10b4-4b4e-11ec-959b-bb95248c693f")},
 				Addresses:    []commonaddress.Address{},
-				TMCreate:     "2020-04-18 03:22:17.995000",
+				TMCreate:     "2020-04-18T03:22:17.995000Z",
 				TMUpdate:     DefaultTimeStamp,
 				TMDelete:     DefaultTimeStamp,
 			},
@@ -216,7 +216,7 @@ func Test_AgentDelete(t *testing.T) {
 				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 			expectRes: &agent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("e0f86bb8-53a7-11ec-a123-c70052e998aa"),
@@ -225,9 +225,9 @@ func Test_AgentDelete(t *testing.T) {
 				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 				TagIDs:       []uuid.UUID{},
 				Addresses:    []commonaddress.Address{},
-				TMCreate:     "2020-04-18 03:22:17.995000",
-				TMUpdate:     "2020-04-18 03:22:17.995000",
-				TMDelete:     "2020-04-18 03:22:17.995000",
+				TMCreate:     "2020-04-18T03:22:17.995000Z",
+				TMUpdate:     "2020-04-18T03:22:17.995000Z",
+				TMDelete:     "2020-04-18T03:22:17.995000Z",
 			},
 		},
 	}
@@ -311,7 +311,7 @@ func Test_AgentList(t *testing.T) {
 				agent.FieldDeleted:    false,
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 			expectRes: []*agent.Agent{
 				{
 					Identity: commonidentity.Identity{
@@ -322,7 +322,7 @@ func Test_AgentList(t *testing.T) {
 					PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 					TagIDs:       []uuid.UUID{},
 					Addresses:    []commonaddress.Address{},
-					TMCreate:     "2020-04-18 03:22:17.995000",
+					TMCreate:     "2020-04-18T03:22:17.995000Z",
 					TMUpdate:     DefaultTimeStamp,
 					TMDelete:     DefaultTimeStamp,
 				},
@@ -335,7 +335,7 @@ func Test_AgentList(t *testing.T) {
 					PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 					TagIDs:       []uuid.UUID{},
 					Addresses:    []commonaddress.Address{},
-					TMCreate:     "2020-04-18 03:22:17.995000",
+					TMCreate:     "2020-04-18T03:22:17.995000Z",
 					TMUpdate:     DefaultTimeStamp,
 					TMDelete:     DefaultTimeStamp,
 				},
@@ -360,7 +360,7 @@ func Test_AgentList(t *testing.T) {
 				agent.FieldDeleted:  false,
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 			expectRes: []*agent.Agent{
 				{
 					Identity: commonidentity.Identity{
@@ -371,7 +371,7 @@ func Test_AgentList(t *testing.T) {
 					PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 					TagIDs:       []uuid.UUID{},
 					Addresses:    []commonaddress.Address{},
-					TMCreate:     "2020-04-18 03:22:17.995000",
+					TMCreate:     "2020-04-18T03:22:17.995000Z",
 					TMUpdate:     DefaultTimeStamp,
 					TMDelete:     DefaultTimeStamp,
 				},
@@ -387,7 +387,7 @@ func Test_AgentList(t *testing.T) {
 				agent.FieldDeleted:  false,
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 			expectRes:       []*agent.Agent{},
 		},
 	}
@@ -465,7 +465,7 @@ func Test_AgentSetAddresses(t *testing.T) {
 				},
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 			expectRes: &agent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("ae1e0150-4c6b-11ec-922d-27336e407864"),
@@ -484,8 +484,8 @@ func Test_AgentSetAddresses(t *testing.T) {
 						Target: "+821021656521",
 					},
 				},
-				TMCreate: "2020-04-18 03:22:17.995000",
-				TMUpdate: "2020-04-18 03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
+				TMUpdate: "2020-04-18T03:22:17.995000Z",
 				TMDelete: DefaultTimeStamp,
 			},
 		},

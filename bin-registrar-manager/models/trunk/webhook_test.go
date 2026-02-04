@@ -36,9 +36,9 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 				AllowedIPs: []string{
 					"1.2.3.4",
 				},
-				TMCreate: "2020-04-18 03:22:17.995000",
-				TMUpdate: "2020-04-18 03:22:18.995000",
-				TMDelete: "2020-04-18 03:22:19.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
+				TMUpdate: "2020-04-18T03:22:18.995000Z",
+				TMDelete: "2020-04-18T03:22:19.995000Z",
 			},
 
 			expectRes: &WebhookMessage{
@@ -55,9 +55,9 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 				AllowedIPs: []string{
 					"1.2.3.4",
 				},
-				TMCreate: "2020-04-18 03:22:17.995000",
-				TMUpdate: "2020-04-18 03:22:18.995000",
-				TMDelete: "2020-04-18 03:22:19.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
+				TMUpdate: "2020-04-18T03:22:18.995000Z",
+				TMDelete: "2020-04-18T03:22:19.995000Z",
 			},
 		},
 	}

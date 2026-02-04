@@ -16,9 +16,9 @@ func TestAccesskeyStruct(t *testing.T) {
 		Name:       "Test Accesskey",
 		Detail:     "Test accesskey details",
 		Token:      "test-token-12345",
-		TMExpire:   "2025-01-01 00:00:00.000000",
-		TMCreate:   "2024-01-01 00:00:00.000000",
-		TMUpdate:   "2024-01-01 00:00:00.000000",
+		TMExpire:   "2025-01-01T00:00:00.000000Z",
+		TMCreate:   "2024-01-01T00:00:00.000000Z",
+		TMUpdate:   "2024-01-01T00:00:00.000000Z",
 		TMDelete:   "9999-01-01T00:00:00.000000Z",
 	}
 

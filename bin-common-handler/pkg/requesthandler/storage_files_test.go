@@ -191,7 +191,7 @@ func Test_StorageV1FileList(t *testing.T) {
 		{
 			"normal",
 
-			"2020-09-20 03:23:20.995000",
+			"2020-09-20T03:23:20.995000Z",
 			10,
 			map[smfile.Field]any{
 				smfile.FieldCustomerID: uuid.FromStringOrNil("31237c7c-1610-11ef-84b3-f728e90c5c3e"),
@@ -205,7 +205,7 @@ func Test_StorageV1FileList(t *testing.T) {
 
 			"bin-manager.storage-manager.request",
 			&sock.Request{
-				URI:      "/v1/files?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10",
+				URI:      "/v1/files?page_token=2020-09-20T03%3A23%3A20.995000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"31237c7c-1610-11ef-84b3-f728e90c5c3e"}`),

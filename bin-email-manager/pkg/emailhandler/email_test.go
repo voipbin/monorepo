@@ -173,7 +173,7 @@ func Test_List(t *testing.T) {
 		{
 			name: "normal",
 
-			token: "2025-03-14 03:23:20.995000",
+			token: "2025-03-14T03:23:20.995000Z",
 			size:  10,
 			filters: map[email.Field]any{
 				email.FieldDeleted: "false",

@@ -8,6 +8,8 @@ import (
 const (
 	// ISO8601Layout is the standard ISO 8601 format with microsecond precision
 	ISO8601Layout = "2006-01-02T15:04:05.000000Z"
+	// ISO8601LayoutNoZ is the ISO 8601 format without trailing Z (for parsing only)
+	ISO8601LayoutNoZ = "2006-01-02T15:04:05.000000"
 	// LegacyLayout is the old custom format for backward compatibility
 	LegacyLayout = "2006-01-02 15:04:05.000000"
 )
@@ -64,8 +66,13 @@ func TimeParse(timeString string) time.Time {
 // This allows callers to detect and handle invalid time strings appropriately.
 // Supports both ISO 8601 format and legacy custom format for backward compatibility.
 func TimeParseWithError(timeString string) (time.Time, error) {
-	// Try ISO 8601 format first (new format)
+	// Try ISO 8601 format with Z suffix first (new format)
 	if t, err := time.Parse(ISO8601Layout, timeString); err == nil {
+		return t, nil
+	}
+
+	// Try ISO 8601 format without Z suffix
+	if t, err := time.Parse(ISO8601LayoutNoZ, timeString); err == nil {
 		return t, nil
 	}
 

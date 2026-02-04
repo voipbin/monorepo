@@ -41,7 +41,7 @@ func Test_conversationAccountsGet(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/conversation_accounts?page_size=20&page_token=2020-09-20%2003:23:20.995000",
+			reqQuery: "/conversation_accounts?page_size=20&page_token=2020-09-20T03:23:20.995000Z",
 
 			responseAccounts: []*cvaccount.WebhookMessage{
 				{
@@ -52,7 +52,7 @@ func Test_conversationAccountsGet(t *testing.T) {
 			},
 
 			expectPageSize:  20,
-			expectPageToken: "2020-09-20 03:23:20.995000",
+			expectPageToken: "2020-09-20T03:23:20.995000Z",
 			expectRes:       `{"result":[{"id":"6adce0da-004e-11ee-b74a-23da476139db","customer_id":"00000000-0000-0000-0000-000000000000"}],"next_page_token":""}`,
 		},
 	}

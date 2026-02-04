@@ -171,7 +171,7 @@ func Test_Create(t *testing.T) {
 					},
 				},
 
-				TMCreate:      "2020-04-18T03:22:17.995000",
+				TMCreate:      "2020-04-18T03:22:17.995000Z",
 				TMUpdate:      dbhandler.DefaultTimeStamp,
 				TMProgressing: dbhandler.DefaultTimeStamp,
 				TMRinging:     dbhandler.DefaultTimeStamp,
@@ -277,7 +277,7 @@ func Test_List(t *testing.T) {
 			"normal",
 
 			10,
-			"2020-05-03%2021:35:02.809",
+			"2020-05-03T21:35:02.809Z",
 			map[call.Field]any{
 				call.FieldCustomerID: uuid.FromStringOrNil("9880aedc-992e-11ec-aed2-bf63c2b64858"),
 				call.FieldDeleted:    false,

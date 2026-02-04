@@ -50,7 +50,7 @@ func Test_OutplanCreate(t *testing.T) {
 				MaxTryCount4: 3,
 			},
 
-			"2020-04-18 03:22:17.995000",
+			"2020-04-18T03:22:17.995000Z",
 
 			&outplan.Outplan{
 				Identity: commonidentity.Identity{
@@ -73,7 +73,7 @@ func Test_OutplanCreate(t *testing.T) {
 				MaxTryCount2: 3,
 				MaxTryCount3: 3,
 				MaxTryCount4: 3,
-				TMCreate:     "2020-04-18 03:22:17.995000",
+				TMCreate:     "2020-04-18T03:22:17.995000Z",
 				TMUpdate:     DefaultTimeStamp,
 				TMDelete:     DefaultTimeStamp,
 			},
@@ -151,7 +151,7 @@ func Test_OutplanDelete(t *testing.T) {
 				MaxTryCount4: 3,
 			},
 
-			"2020-04-18 03:22:17.995000",
+			"2020-04-18T03:22:17.995000Z",
 			&outplan.Outplan{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("9a72c25e-b47f-11ec-8c84-fbce9a6f9ddf"),
@@ -175,9 +175,9 @@ func Test_OutplanDelete(t *testing.T) {
 				MaxTryCount3: 3,
 				MaxTryCount4: 3,
 
-				TMCreate: "2020-04-18 03:22:17.995000",
-				TMUpdate: "2020-04-18 03:22:17.995000",
-				TMDelete: "2020-04-18 03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
+				TMUpdate: "2020-04-18T03:22:17.995000Z",
+				TMDelete: "2020-04-18T03:22:17.995000Z",
 			},
 		},
 	}
@@ -263,10 +263,10 @@ func Test_OutplanListByCustomerID(t *testing.T) {
 			},
 
 			uuid.FromStringOrNil("0e4af5f8-b3b7-11ec-b721-578bb8a6f432"),
-			"2022-04-18 03:22:17.995000",
+			"2022-04-18T03:22:17.995000Z",
 			100,
 
-			"2020-04-18 03:22:17.995000",
+			"2020-04-18T03:22:17.995000Z",
 			[]*outplan.Outplan{
 				{
 					Identity: commonidentity.Identity{
@@ -291,7 +291,7 @@ func Test_OutplanListByCustomerID(t *testing.T) {
 					MaxTryCount3: 3,
 					MaxTryCount4: 3,
 
-					TMCreate: "2020-04-18 03:22:17.995000",
+					TMCreate: "2020-04-18T03:22:17.995000Z",
 					TMUpdate: DefaultTimeStamp,
 					TMDelete: DefaultTimeStamp,
 				},
@@ -347,10 +347,10 @@ func Test_OutplanListByCustomerID(t *testing.T) {
 			},
 
 			uuid.FromStringOrNil("37671b14-b3b8-11ec-a203-532a1edfa496"),
-			"2022-04-18 03:22:17.995000",
+			"2022-04-18T03:22:17.995000Z",
 			100,
 
-			"2020-04-18 03:22:17.995000",
+			"2020-04-18T03:22:17.995000Z",
 			[]*outplan.Outplan{
 				{
 					Identity: commonidentity.Identity{
@@ -374,7 +374,7 @@ func Test_OutplanListByCustomerID(t *testing.T) {
 					MaxTryCount3: 3,
 					MaxTryCount4: 3,
 
-					TMCreate: "2020-04-18 03:22:17.995000",
+					TMCreate: "2020-04-18T03:22:17.995000Z",
 					TMUpdate: DefaultTimeStamp,
 					TMDelete: DefaultTimeStamp,
 				},
@@ -400,7 +400,7 @@ func Test_OutplanListByCustomerID(t *testing.T) {
 					MaxTryCount3: 3,
 					MaxTryCount4: 3,
 
-					TMCreate: "2020-04-18 03:22:17.995000",
+					TMCreate: "2020-04-18T03:22:17.995000Z",
 					TMUpdate: DefaultTimeStamp,
 					TMDelete: DefaultTimeStamp,
 				},
@@ -483,7 +483,7 @@ func Test_OutplanUpdateBasicInfo(t *testing.T) {
 			"update name",
 			"update detail",
 
-			"2020-04-18 03:22:17.995000",
+			"2020-04-18T03:22:17.995000Z",
 			&outplan.Outplan{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("b231e8a0-b3d2-11ec-b78a-57bdcb8f39c3"),
@@ -505,8 +505,8 @@ func Test_OutplanUpdateBasicInfo(t *testing.T) {
 				MaxTryCount2: 3,
 				MaxTryCount3: 3,
 				MaxTryCount4: 3,
-				TMCreate:     "2020-04-18 03:22:17.995000",
-				TMUpdate:     "2020-04-18 03:22:17.995000",
+				TMCreate:     "2020-04-18T03:22:17.995000Z",
+				TMUpdate:     "2020-04-18T03:22:17.995000Z",
 				TMDelete:     DefaultTimeStamp,
 			},
 		},
@@ -604,7 +604,7 @@ func Test_OutplanUpdateDialInfo(t *testing.T) {
 			2,
 			2,
 
-			"2020-04-18 03:22:17.995000",
+			"2020-04-18T03:22:17.995000Z",
 			&outplan.Outplan{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("78f2b8de-b3ce-11ec-b4f4-e7c49d54d606"),
@@ -623,8 +623,8 @@ func Test_OutplanUpdateDialInfo(t *testing.T) {
 				MaxTryCount2: 2,
 				MaxTryCount3: 2,
 				MaxTryCount4: 2,
-				TMCreate:     "2020-04-18 03:22:17.995000",
-				TMUpdate:     "2020-04-18 03:22:17.995000",
+				TMCreate:     "2020-04-18T03:22:17.995000Z",
+				TMUpdate:     "2020-04-18T03:22:17.995000Z",
 				TMDelete:     DefaultTimeStamp,
 			},
 		},

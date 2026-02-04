@@ -147,20 +147,20 @@ func Test_outplansGET(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/outplans?page_size=20&page_token=2020-09-20%2003:23:20.995000",
+			reqQuery: "/outplans?page_size=20&page_token=2020-09-20T03:23:20.995000Z",
 
 			responseOutplans: []*caoutplan.WebhookMessage{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("891dceb2-c64b-11ec-ad40-4f3b7ab8bd4e"),
 					},
-					TMCreate: "2020-09-20T03:23:21.995000",
+					TMCreate: "2020-09-20T03:23:21.995000Z",
 				},
 			},
 
 			expectPageSize:  20,
-			expectPageToken: "2020-09-20 03:23:20.995000",
-			expectRes:       `{"result":[{"id":"891dceb2-c64b-11ec-ad40-4f3b7ab8bd4e","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","source":null,"dial_timeout":0,"try_interval":0,"max_try_count_0":0,"max_try_count_1":0,"max_try_count_2":0,"max_try_count_3":0,"max_try_count_4":0,"tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
+			expectPageToken: "2020-09-20T03:23:20.995000Z",
+			expectRes:       `{"result":[{"id":"891dceb2-c64b-11ec-ad40-4f3b7ab8bd4e","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","source":null,"dial_timeout":0,"try_interval":0,"max_try_count_0":0,"max_try_count_1":0,"max_try_count_2":0,"max_try_count_3":0,"max_try_count_4":0,"tm_create":"2020-09-20T03:23:21.995000Z","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000Z"}`,
 		},
 		{
 			name: "more than 2 items",
@@ -170,32 +170,32 @@ func Test_outplansGET(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/outplans?page_size=20&page_token=2020-09-20%2003:23:20.995000",
+			reqQuery: "/outplans?page_size=20&page_token=2020-09-20T03:23:20.995000Z",
 
 			responseOutplans: []*caoutplan.WebhookMessage{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("b85b50fa-c64b-11ec-a17f-fb6cd8c28a0d"),
 					},
-					TMCreate: "2020-09-20T03:23:21.995000",
+					TMCreate: "2020-09-20T03:23:21.995000Z",
 				},
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("b88bd6f8-c64b-11ec-a895-0f50245da5a9"),
 					},
-					TMCreate: "2020-09-20T03:23:22.995000",
+					TMCreate: "2020-09-20T03:23:22.995000Z",
 				},
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("b8c11570-c64b-11ec-82f7-abb0350c1d7d"),
 					},
-					TMCreate: "2020-09-20T03:23:23.995000",
+					TMCreate: "2020-09-20T03:23:23.995000Z",
 				},
 			},
 
 			expectPageSize:  20,
-			expectPageToken: "2020-09-20 03:23:20.995000",
-			expectRes:       `{"result":[{"id":"b85b50fa-c64b-11ec-a17f-fb6cd8c28a0d","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","source":null,"dial_timeout":0,"try_interval":0,"max_try_count_0":0,"max_try_count_1":0,"max_try_count_2":0,"max_try_count_3":0,"max_try_count_4":0,"tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""},{"id":"b88bd6f8-c64b-11ec-a895-0f50245da5a9","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","source":null,"dial_timeout":0,"try_interval":0,"max_try_count_0":0,"max_try_count_1":0,"max_try_count_2":0,"max_try_count_3":0,"max_try_count_4":0,"tm_create":"2020-09-20T03:23:22.995000","tm_update":"","tm_delete":""},{"id":"b8c11570-c64b-11ec-82f7-abb0350c1d7d","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","source":null,"dial_timeout":0,"try_interval":0,"max_try_count_0":0,"max_try_count_1":0,"max_try_count_2":0,"max_try_count_3":0,"max_try_count_4":0,"tm_create":"2020-09-20T03:23:23.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:23.995000"}`,
+			expectPageToken: "2020-09-20T03:23:20.995000Z",
+			expectRes:       `{"result":[{"id":"b85b50fa-c64b-11ec-a17f-fb6cd8c28a0d","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","source":null,"dial_timeout":0,"try_interval":0,"max_try_count_0":0,"max_try_count_1":0,"max_try_count_2":0,"max_try_count_3":0,"max_try_count_4":0,"tm_create":"2020-09-20T03:23:21.995000Z","tm_update":"","tm_delete":""},{"id":"b88bd6f8-c64b-11ec-a895-0f50245da5a9","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","source":null,"dial_timeout":0,"try_interval":0,"max_try_count_0":0,"max_try_count_1":0,"max_try_count_2":0,"max_try_count_3":0,"max_try_count_4":0,"tm_create":"2020-09-20T03:23:22.995000Z","tm_update":"","tm_delete":""},{"id":"b8c11570-c64b-11ec-82f7-abb0350c1d7d","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","source":null,"dial_timeout":0,"try_interval":0,"max_try_count_0":0,"max_try_count_1":0,"max_try_count_2":0,"max_try_count_3":0,"max_try_count_4":0,"tm_create":"2020-09-20T03:23:23.995000Z","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:23.995000Z"}`,
 		},
 	}
 

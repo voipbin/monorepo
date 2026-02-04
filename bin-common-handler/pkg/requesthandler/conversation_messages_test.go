@@ -171,7 +171,7 @@ func Test_ConversationV1MessageList(t *testing.T) {
 		{
 			name: "normal",
 
-			pageToken: "2021-03-02 03:23:20.995000",
+			pageToken: "2021-03-02T03:23:20.995000Z",
 			pageSize:  10,
 			filters: map[cvmessage.Field]any{
 				cvmessage.FieldDeleted: false,
@@ -183,10 +183,10 @@ func Test_ConversationV1MessageList(t *testing.T) {
 				Data:       []byte(`[{"id":"8ad602dc-1ae0-11f0-8b78-57f87f455d8c"},{"id":"8afa8b48-1ae0-11f0-8e81-4715950aa160"}]`),
 			},
 
-			expectURL:    "/v1/messages?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10",
+			expectURL:    "/v1/messages?page_token=2021-03-02T03%3A23%3A20.995000Z&page_size=10",
 			expectTarget: "bin-manager.conversation-manager.request",
 			expectRequest: &sock.Request{
-				URI:      "/v1/messages?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10",
+				URI:      "/v1/messages?page_token=2021-03-02T03%3A23%3A20.995000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"deleted":false}`),

@@ -31,13 +31,13 @@ func TestProcessV1TagsGet(t *testing.T) {
 		{
 			"normal",
 			&sock.Request{
-				URI:      "/v1/tags?customer_id=92883d56-7fe3-11ec-8931-37d08180a2b9&page_size=10&page_token=2021-11-23%2017:55:39.712000",
+				URI:      "/v1/tags?customer_id=92883d56-7fe3-11ec-8931-37d08180a2b9&page_size=10&page_token=2021-11-23T17:55:39.712000Z",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
 			10,
-			"2021-11-23 17:55:39.712000",
+			"2021-11-23T17:55:39.712000Z",
 			map[tag.Field]any{
 				tag.FieldCustomerID: uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
 				tag.FieldDeleted:    false,
@@ -51,7 +51,7 @@ func TestProcessV1TagsGet(t *testing.T) {
 					},
 					Name:     "test tag 1",
 					Detail:   "test tag 1 detail",
-					TMCreate: "2021-11-23 17:55:39.712000",
+					TMCreate: "2021-11-23T17:55:39.712000Z",
 					TMUpdate: "9999-01-01T00:00:00.000000Z",
 					TMDelete: "9999-01-01T00:00:00.000000Z",
 				},
@@ -59,19 +59,19 @@ func TestProcessV1TagsGet(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","name":"test tag 1","detail":"test tag 1 detail","tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01T00:00:00.000000Z","tm_delete":"9999-01-01T00:00:00.000000Z"}]`),
+				Data:       []byte(`[{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","name":"test tag 1","detail":"test tag 1 detail","tm_create":"2021-11-23T17:55:39.712000Z","tm_update":"9999-01-01T00:00:00.000000Z","tm_delete":"9999-01-01T00:00:00.000000Z"}]`),
 			},
 		},
 		{
 			"have 2 results",
 			&sock.Request{
-				URI:      "/v1/tags?customer_id=92883d56-7fe3-11ec-8931-37d08180a2b9&page_size=10&page_token=2021-11-23%2017:55:39.712000",
+				URI:      "/v1/tags?customer_id=92883d56-7fe3-11ec-8931-37d08180a2b9&page_size=10&page_token=2021-11-23T17:55:39.712000Z",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
 			10,
-			"2021-11-23 17:55:39.712000",
+			"2021-11-23T17:55:39.712000Z",
 			map[tag.Field]any{
 				tag.FieldCustomerID: uuid.FromStringOrNil("92883d56-7fe3-11ec-8931-37d08180a2b9"),
 				tag.FieldDeleted:    false,
@@ -85,7 +85,7 @@ func TestProcessV1TagsGet(t *testing.T) {
 					},
 					Name:     "test tag 1",
 					Detail:   "test tag 1 detail",
-					TMCreate: "2021-11-23 17:55:39.712000",
+					TMCreate: "2021-11-23T17:55:39.712000Z",
 					TMUpdate: "9999-01-01T00:00:00.000000Z",
 					TMDelete: "9999-01-01T00:00:00.000000Z",
 				},
@@ -96,7 +96,7 @@ func TestProcessV1TagsGet(t *testing.T) {
 					},
 					Name:     "test tag 2",
 					Detail:   "test tag 2 detail",
-					TMCreate: "2021-11-23 17:55:39.712000",
+					TMCreate: "2021-11-23T17:55:39.712000Z",
 					TMUpdate: "9999-01-01T00:00:00.000000Z",
 					TMDelete: "9999-01-01T00:00:00.000000Z",
 				},
@@ -104,7 +104,7 @@ func TestProcessV1TagsGet(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","name":"test tag 1","detail":"test tag 1 detail","tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01T00:00:00.000000Z","tm_delete":"9999-01-01T00:00:00.000000Z"},{"id":"7379c73c-4e69-11ec-b667-4313a9abe846","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","name":"test tag 2","detail":"test tag 2 detail","tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01T00:00:00.000000Z","tm_delete":"9999-01-01T00:00:00.000000Z"}]`),
+				Data:       []byte(`[{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","name":"test tag 1","detail":"test tag 1 detail","tm_create":"2021-11-23T17:55:39.712000Z","tm_update":"9999-01-01T00:00:00.000000Z","tm_delete":"9999-01-01T00:00:00.000000Z"},{"id":"7379c73c-4e69-11ec-b667-4313a9abe846","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","name":"test tag 2","detail":"test tag 2 detail","tm_create":"2021-11-23T17:55:39.712000Z","tm_update":"9999-01-01T00:00:00.000000Z","tm_delete":"9999-01-01T00:00:00.000000Z"}]`),
 			},
 		},
 	}
@@ -171,14 +171,14 @@ func TestProcessV1TagsPost(t *testing.T) {
 				},
 				Name:     "test tag1",
 				Detail:   "test tag1 detail",
-				TMCreate: "2021-11-23 17:55:39.712000",
+				TMCreate: "2021-11-23T17:55:39.712000Z",
 				TMUpdate: "9999-01-01T00:00:00.000000Z",
 				TMDelete: "9999-01-01T00:00:00.000000Z",
 			},
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","name":"test tag1","detail":"test tag1 detail","tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01T00:00:00.000000Z","tm_delete":"9999-01-01T00:00:00.000000Z"}`),
+				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","name":"test tag1","detail":"test tag1 detail","tm_create":"2021-11-23T17:55:39.712000Z","tm_update":"9999-01-01T00:00:00.000000Z","tm_delete":"9999-01-01T00:00:00.000000Z"}`),
 			},
 		},
 	}
@@ -241,14 +241,14 @@ func TestProcessV1TagsIDGet(t *testing.T) {
 				},
 				Name:     "test tag1",
 				Detail:   "test tag1 detail",
-				TMCreate: "2021-11-23 17:55:39.712000",
+				TMCreate: "2021-11-23T17:55:39.712000Z",
 				TMUpdate: "9999-01-01T00:00:00.000000Z",
 				TMDelete: "9999-01-01T00:00:00.000000Z",
 			},
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","name":"test tag1","detail":"test tag1 detail","tm_create":"2021-11-23 17:55:39.712000","tm_update":"9999-01-01T00:00:00.000000Z","tm_delete":"9999-01-01T00:00:00.000000Z"}`),
+				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","name":"test tag1","detail":"test tag1 detail","tm_create":"2021-11-23T17:55:39.712000Z","tm_update":"9999-01-01T00:00:00.000000Z","tm_delete":"9999-01-01T00:00:00.000000Z"}`),
 			},
 		},
 	}

@@ -33,7 +33,7 @@ func Test_processV1MessagesGet(t *testing.T) {
 			"normal",
 
 			10,
-			"2021-03-01 03:30:17.000000",
+			"2021-03-01T03:30:17.000000Z",
 			map[message.Field]any{
 				message.FieldCustomerID: uuid.FromStringOrNil("197609d6-a29b-11ec-b884-5b8a227db58a"),
 			},
@@ -47,7 +47,7 @@ func Test_processV1MessagesGet(t *testing.T) {
 			},
 
 			&sock.Request{
-				URI:    "/v1/messages?page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000",
+				URI:    "/v1/messages?page_size=10&page_token=2021-03-01T03:30:17.000000Z",
 				Method: sock.RequestMethodGet,
 				Data:   []byte(`{"customer_id":"197609d6-a29b-11ec-b884-5b8a227db58a"}`),
 			},
@@ -61,7 +61,7 @@ func Test_processV1MessagesGet(t *testing.T) {
 			"2 results",
 
 			10,
-			"2021-03-01 03:30:17.000000",
+			"2021-03-01T03:30:17.000000Z",
 			map[message.Field]any{
 				message.FieldCustomerID: uuid.FromStringOrNil("75dd760a-a29b-11ec-ba70-cb282aa1d594"),
 			},
@@ -81,7 +81,7 @@ func Test_processV1MessagesGet(t *testing.T) {
 			},
 
 			&sock.Request{
-				URI:    "/v1/messages?page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000",
+				URI:    "/v1/messages?page_size=10&page_token=2021-03-01T03:30:17.000000Z",
 				Method: sock.RequestMethodGet,
 				Data:   []byte(`{"customer_id":"75dd760a-a29b-11ec-ba70-cb282aa1d594"}`),
 			},

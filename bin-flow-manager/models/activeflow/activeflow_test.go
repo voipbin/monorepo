@@ -146,16 +146,16 @@ func TestActiveflowMatches(t *testing.T) {
 	a1 := &Activeflow{
 		FlowID:   flowID,
 		Status:   StatusRunning,
-		TMCreate: "2024-01-01 00:00:00.000000",
-		TMUpdate: "2024-01-01 00:00:00.000000",
+		TMCreate: "2024-01-01T00:00:00.000000Z",
+		TMUpdate: "2024-01-01T00:00:00.000000Z",
 	}
 	a1.ID = id
 
 	a2 := &Activeflow{
 		FlowID:   flowID,
 		Status:   StatusRunning,
-		TMCreate: "2024-01-02 00:00:00.000000",
-		TMUpdate: "2024-01-02 00:00:00.000000",
+		TMCreate: "2024-01-02T00:00:00.000000Z",
+		TMUpdate: "2024-01-02T00:00:00.000000Z",
 	}
 	a2.ID = id
 

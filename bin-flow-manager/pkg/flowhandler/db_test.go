@@ -242,7 +242,7 @@ func Test_List(t *testing.T) {
 		{
 			name: "normal",
 
-			token: "2020-10-10T03:30:17.000000",
+			token: "2020-10-10T03:30:17.000000Z",
 			limit: 10,
 			filters: map[flow.Field]any{
 				flow.FieldCustomerID: uuid.FromStringOrNil("938cdf96-7f4c-11ec-94d3-8ba7d397d7fb"),

@@ -34,11 +34,11 @@ func Test_v1EmailsGet(t *testing.T) {
 		{
 			name: "1 item",
 			request: &sock.Request{
-				URI:    "/v1/emails?page_token=2020-10-10%2003:30:17.000000&page_size=10&filter_customer_id=16d3fcf0-7f4c-11ec-a4c3-7bf43125108d&filter_deleted=false",
+				URI:    "/v1/emails?page_token=2020-10-10T03:30:17.000000Z&page_size=10&filter_customer_id=16d3fcf0-7f4c-11ec-a4c3-7bf43125108d&filter_deleted=false",
 				Method: sock.RequestMethodGet,
 			},
 
-			pageToken: "2020-10-10 03:30:17.000000",
+			pageToken: "2020-10-10T03:30:17.000000Z",
 			pageSize:  10,
 
 			responseFilters: map[string]string{
@@ -66,11 +66,11 @@ func Test_v1EmailsGet(t *testing.T) {
 		{
 			name: "2 items",
 			request: &sock.Request{
-				URI:    "/v1/emails?page_token=2020-10-10%2003:30:17.000000&page_size=10&filter_customer_id=2457d824-7f4c-11ec-9489-b3552a7c9d63&filter_deleted=false",
+				URI:    "/v1/emails?page_token=2020-10-10T03:30:17.000000Z&page_size=10&filter_customer_id=2457d824-7f4c-11ec-9489-b3552a7c9d63&filter_deleted=false",
 				Method: sock.RequestMethodGet,
 			},
 
-			pageToken: "2020-10-10 03:30:17.000000",
+			pageToken: "2020-10-10T03:30:17.000000Z",
 			pageSize:  10,
 
 			responseFilters: map[string]string{
@@ -102,12 +102,12 @@ func Test_v1EmailsGet(t *testing.T) {
 		{
 			name: "empty",
 			request: &sock.Request{
-				URI:      "/v1/emails?page_token=2020-10-10%2003:30:17.000000&page_size=10&filter_customer_id=3ee14bee-7f4c-11ec-a1d8-a3a488ed5885&filter_deleted=false",
+				URI:      "/v1/emails?page_token=2020-10-10T03:30:17.000000Z&page_size=10&filter_customer_id=3ee14bee-7f4c-11ec-a1d8-a3a488ed5885&filter_deleted=false",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
-			pageToken: "2020-10-10 03:30:17.000000",
+			pageToken: "2020-10-10T03:30:17.000000Z",
 			pageSize:  10,
 
 			responseFilters: map[string]string{

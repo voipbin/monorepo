@@ -43,7 +43,7 @@ func Test_NumberCreate(t *testing.T) {
 				EmergencyEnabled:    false,
 			},
 
-			"2021-02-26 18:26:49.000",
+			"2021-02-26T18:26:49.000Z",
 			&number.Number{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("8290e0be-7905-11eb-90c7-d3d5addc947a"),
@@ -55,9 +55,9 @@ func Test_NumberCreate(t *testing.T) {
 				Status:              number.StatusActive,
 				T38Enabled:          true,
 				EmergencyEnabled:    false,
-				TMPurchase:          "2021-02-26 18:26:49.000",
-				TMRenew:             "2021-02-26 18:26:49.000",
-				TMCreate:            "2021-02-26 18:26:49.000",
+				TMPurchase:          "2021-02-26T18:26:49.000Z",
+				TMRenew:             "2021-02-26T18:26:49.000Z",
+				TMCreate:            "2021-02-26T18:26:49.000Z",
 				TMUpdate:            DefaultTimeStamp,
 				TMDelete:            DefaultTimeStamp,
 			},
@@ -132,7 +132,7 @@ func Test_NumberList(t *testing.T) {
 				number.FieldDeleted:    false,
 			},
 
-			"2021-01-01 00:00:00.000",
+			"2021-01-01T00:00:00.000Z",
 
 			[]*number.Number{
 				{
@@ -141,9 +141,9 @@ func Test_NumberList(t *testing.T) {
 						CustomerID: uuid.FromStringOrNil("ca8a717e-eca6-11ee-8067-1785c729a82f"),
 					},
 					Number:     "+1234567890",
-					TMPurchase: "2021-01-01 00:00:00.000",
-					TMRenew:    "2021-01-01 00:00:00.000",
-					TMCreate:   "2021-01-01 00:00:00.000",
+					TMPurchase: "2021-01-01T00:00:00.000Z",
+					TMRenew:    "2021-01-01T00:00:00.000Z",
+					TMCreate:   "2021-01-01T00:00:00.000Z",
 					TMUpdate:   DefaultTimeStamp,
 					TMDelete:   DefaultTimeStamp,
 				},
@@ -158,7 +158,7 @@ func Test_NumberList(t *testing.T) {
 				number.FieldCustomerID: uuid.FromStringOrNil("f0395124-eca6-11ee-919f-9b86454807ab"),
 			},
 
-			"2021-01-01 00:00:00.000",
+			"2021-01-01T00:00:00.000Z",
 			[]*number.Number{},
 		},
 	}
@@ -221,7 +221,7 @@ func Test_NumberDelete(t *testing.T) {
 				EmergencyEnabled:    false,
 			},
 
-			"2021-02-26 18:26:49.000",
+			"2021-02-26T18:26:49.000Z",
 			&number.Number{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("13218b0c-790f-11eb-9553-2f17a3e27acb"),
@@ -233,11 +233,11 @@ func Test_NumberDelete(t *testing.T) {
 				Status:              number.StatusDeleted,
 				T38Enabled:          true,
 				EmergencyEnabled:    false,
-				TMPurchase:          "2021-02-26 18:26:49.000",
-				TMRenew:             "2021-02-26 18:26:49.000",
-				TMCreate:            "2021-02-26 18:26:49.000",
-				TMUpdate:            "2021-02-26 18:26:49.000",
-				TMDelete:            "2021-02-26 18:26:49.000",
+				TMPurchase:          "2021-02-26T18:26:49.000Z",
+				TMRenew:             "2021-02-26T18:26:49.000Z",
+				TMCreate:            "2021-02-26T18:26:49.000Z",
+				TMUpdate:            "2021-02-26T18:26:49.000Z",
+				TMDelete:            "2021-02-26T18:26:49.000Z",
 			},
 		},
 	}
@@ -323,7 +323,7 @@ func Test_NumberUpdate(t *testing.T) {
 				number.FieldDetail:        "update detail",
 			},
 
-			responseCurTime: "2021-02-26 18:26:49.000",
+			responseCurTime: "2021-02-26T18:26:49.000Z",
 			expectNumber: &number.Number{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("88df0e44-7c54-11eb-b2f8-37f9f70b06cd"),
@@ -339,10 +339,10 @@ func Test_NumberUpdate(t *testing.T) {
 				Status:              number.StatusActive,
 				T38Enabled:          true,
 				EmergencyEnabled:    false,
-				TMPurchase:          "2021-02-26 18:26:49.000",
-				TMRenew:             "2021-02-26 18:26:49.000",
-				TMCreate:            "2021-02-26 18:26:49.000",
-				TMUpdate:            "2021-02-26 18:26:49.000",
+				TMPurchase:          "2021-02-26T18:26:49.000Z",
+				TMRenew:             "2021-02-26T18:26:49.000Z",
+				TMCreate:            "2021-02-26T18:26:49.000Z",
+				TMUpdate:            "2021-02-26T18:26:49.000Z",
 				TMDelete:            DefaultTimeStamp,
 			},
 		},
@@ -422,7 +422,7 @@ func Test_NumberUpdateFlowID(t *testing.T) {
 				number.FieldMessageFlowID: uuid.FromStringOrNil("4af49f4e-a85f-11ec-ad06-676681d45adb"),
 			},
 
-			"2021-02-26 18:26:49.000",
+			"2021-02-26T18:26:49.000Z",
 			&number.Number{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("4a7c7d2a-a85f-11ec-8d15-9730036800e5"),
@@ -438,10 +438,10 @@ func Test_NumberUpdateFlowID(t *testing.T) {
 				Status:              number.StatusActive,
 				T38Enabled:          true,
 				EmergencyEnabled:    false,
-				TMPurchase:          "2021-02-26 18:26:49.000",
-				TMRenew:             "2021-02-26 18:26:49.000",
-				TMCreate:            "2021-02-26 18:26:49.000",
-				TMUpdate:            "2021-02-26 18:26:49.000",
+				TMPurchase:          "2021-02-26T18:26:49.000Z",
+				TMRenew:             "2021-02-26T18:26:49.000Z",
+				TMCreate:            "2021-02-26T18:26:49.000Z",
+				TMUpdate:            "2021-02-26T18:26:49.000Z",
 				TMDelete:            DefaultTimeStamp,
 			},
 		},
@@ -519,7 +519,7 @@ func Test_NumberUpdateCallFlowID(t *testing.T) {
 				number.FieldCallFlowID: uuid.FromStringOrNil("535c0ca4-8801-11ec-accb-7bd692b1c078"),
 			},
 
-			"2021-02-26 18:26:49.000",
+			"2021-02-26T18:26:49.000Z",
 			&number.Number{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("37357400-8817-11ec-9616-0f38be341833"),
@@ -535,10 +535,10 @@ func Test_NumberUpdateCallFlowID(t *testing.T) {
 				Status:              number.StatusActive,
 				T38Enabled:          true,
 				EmergencyEnabled:    false,
-				TMPurchase:          "2021-02-26 18:26:49.000",
-				TMRenew:             "2021-02-26 18:26:49.000",
-				TMCreate:            "2021-02-26 18:26:49.000",
-				TMUpdate:            "2021-02-26 18:26:49.000",
+				TMPurchase:          "2021-02-26T18:26:49.000Z",
+				TMRenew:             "2021-02-26T18:26:49.000Z",
+				TMCreate:            "2021-02-26T18:26:49.000Z",
+				TMUpdate:            "2021-02-26T18:26:49.000Z",
 				TMDelete:            DefaultTimeStamp,
 			},
 		},
@@ -616,7 +616,7 @@ func Test_NumberUpdateMessageFlowID(t *testing.T) {
 				number.FieldMessageFlowID: uuid.FromStringOrNil("b416b062-a85e-11ec-a230-7f3aae198503"),
 			},
 
-			"2021-02-26 18:26:49.000",
+			"2021-02-26T18:26:49.000Z",
 			&number.Number{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("b37a0bae-a85e-11ec-b666-7fce3ed0d0d5"),
@@ -631,10 +631,10 @@ func Test_NumberUpdateMessageFlowID(t *testing.T) {
 				Status:              number.StatusActive,
 				T38Enabled:          true,
 				EmergencyEnabled:    false,
-				TMPurchase:          "2021-02-26 18:26:49.000",
-				TMRenew:             "2021-02-26 18:26:49.000",
-				TMCreate:            "2021-02-26 18:26:49.000",
-				TMUpdate:            "2021-02-26 18:26:49.000",
+				TMPurchase:          "2021-02-26T18:26:49.000Z",
+				TMRenew:             "2021-02-26T18:26:49.000Z",
+				TMCreate:            "2021-02-26T18:26:49.000Z",
+				TMUpdate:            "2021-02-26T18:26:49.000Z",
 				TMDelete:            DefaultTimeStamp,
 			},
 		},
@@ -698,16 +698,16 @@ func Test_NumberSetTMRenew(t *testing.T) {
 				},
 			},
 
-			responseCurTime:      "2021-02-26 18:26:49.000",
-			responseCurTimeRenew: "2021-02-27 18:26:49.000",
+			responseCurTime:      "2021-02-26T18:26:49.000Z",
+			responseCurTimeRenew: "2021-02-27T18:26:49.000Z",
 			expectRes: &number.Number{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("51535516-144b-11ee-8f01-3f32d4b89553"),
 				},
-				TMPurchase: "2021-02-26 18:26:49.000",
-				TMRenew:    "2021-02-27 18:26:49.000",
-				TMCreate:   "2021-02-26 18:26:49.000",
-				TMUpdate:   "2021-02-27 18:26:49.000",
+				TMPurchase: "2021-02-26T18:26:49.000Z",
+				TMRenew:    "2021-02-27T18:26:49.000Z",
+				TMCreate:   "2021-02-26T18:26:49.000Z",
+				TMUpdate:   "2021-02-27T18:26:49.000Z",
 				TMDelete:   DefaultTimeStamp,
 			},
 		},
@@ -799,26 +799,26 @@ func Test_NumberListByTMRenew(t *testing.T) {
 			},
 
 			id:      uuid.FromStringOrNil("51535516-144b-11ee-8f01-3f32d4b89553"),
-			tmRenew: "2020-04-12 20:26:49.000",
+			tmRenew: "2020-04-12T20:26:49.000Z",
 			size:    100,
 			filters: map[number.Field]any{
 				number.FieldDeleted: false,
 			},
 
 			responseCurTimes: []string{
-				"2020-04-10 18:26:49.000",
-				"2020-04-11 18:26:49.000",
-				"2020-04-12 18:26:49.000",
-				"2020-04-13 18:26:49.000",
+				"2020-04-10T18:26:49.000Z",
+				"2020-04-11T18:26:49.000Z",
+				"2020-04-12T18:26:49.000Z",
+				"2020-04-13T18:26:49.000Z",
 			},
 			expectRes: []*number.Number{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("93b536da-144c-11ee-8e04-5f11847ed981"),
 					},
-					TMPurchase: "2020-04-12 18:26:49.000",
-					TMRenew:    "2020-04-12 18:26:49.000",
-					TMCreate:   "2020-04-12 18:26:49.000",
+					TMPurchase: "2020-04-12T18:26:49.000Z",
+					TMRenew:    "2020-04-12T18:26:49.000Z",
+					TMCreate:   "2020-04-12T18:26:49.000Z",
 					TMUpdate:   DefaultTimeStamp,
 					TMDelete:   DefaultTimeStamp,
 				},
@@ -826,9 +826,9 @@ func Test_NumberListByTMRenew(t *testing.T) {
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("93884aa8-144c-11ee-a261-eb324d4a94ab"),
 					},
-					TMPurchase: "2020-04-11 18:26:49.000",
-					TMRenew:    "2020-04-11 18:26:49.000",
-					TMCreate:   "2020-04-11 18:26:49.000",
+					TMPurchase: "2020-04-11T18:26:49.000Z",
+					TMRenew:    "2020-04-11T18:26:49.000Z",
+					TMCreate:   "2020-04-11T18:26:49.000Z",
 					TMUpdate:   DefaultTimeStamp,
 					TMDelete:   DefaultTimeStamp,
 				},
@@ -836,9 +836,9 @@ func Test_NumberListByTMRenew(t *testing.T) {
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("9356093a-144c-11ee-b0ca-fbaf4f96747c"),
 					},
-					TMPurchase: "2020-04-10 18:26:49.000",
-					TMRenew:    "2020-04-10 18:26:49.000",
-					TMCreate:   "2020-04-10 18:26:49.000",
+					TMPurchase: "2020-04-10T18:26:49.000Z",
+					TMRenew:    "2020-04-10T18:26:49.000Z",
+					TMCreate:   "2020-04-10T18:26:49.000Z",
 					TMUpdate:   DefaultTimeStamp,
 					TMDelete:   DefaultTimeStamp,
 				},

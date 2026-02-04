@@ -44,7 +44,7 @@ func Test_ConferencecallCreate(t *testing.T) {
 				Status: conferencecall.StatusJoining,
 			},
 
-			responseCurTime: "2023-01-03 21:35:02.809",
+			responseCurTime: "2023-01-03T21:35:02.809Z",
 			expectRes: &conferencecall.Conferencecall{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("aab1d10e-2bb2-41fe-b519-273af50e8774"),
@@ -59,7 +59,7 @@ func Test_ConferencecallCreate(t *testing.T) {
 
 				Status: conferencecall.StatusJoining,
 
-				TMCreate: "2023-01-03 21:35:02.809",
+				TMCreate: "2023-01-03T21:35:02.809Z",
 				TMUpdate: DefaultTimeStamp,
 				TMDelete: DefaultTimeStamp,
 			},
@@ -128,7 +128,7 @@ func Test_ConferencecallGetByReferenceID(t *testing.T) {
 
 			uuid.FromStringOrNil("371ebbd2-b52c-4e03-9444-0110f2b695cb"),
 
-			"2023-01-03 21:35:02.809",
+			"2023-01-03T21:35:02.809Z",
 			&conferencecall.Conferencecall{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("1b4e752c-b766-4419-b778-73308e9607be"),
@@ -136,7 +136,7 @@ func Test_ConferencecallGetByReferenceID(t *testing.T) {
 				},
 				ReferenceType: conferencecall.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("371ebbd2-b52c-4e03-9444-0110f2b695cb"),
-				TMCreate:      "2023-01-03 21:35:02.809",
+				TMCreate:      "2023-01-03T21:35:02.809Z",
 				TMUpdate:      DefaultTimeStamp,
 				TMDelete:      DefaultTimeStamp,
 			},
@@ -215,14 +215,14 @@ func Test_ConferencecallList(t *testing.T) {
 				conferencecall.FieldDeleted:    false,
 			},
 
-			"2023-01-03 21:35:02.809",
+			"2023-01-03T21:35:02.809Z",
 			[]*conferencecall.Conferencecall{
 				{
 					Identity: commonidentity.Identity{
 						ID:         uuid.FromStringOrNil("43b02684-94ce-11ed-95e6-3727def0e4fd"),
 						CustomerID: uuid.FromStringOrNil("8512e56c-cb08-46fa-96de-7855d0889577"),
 					},
-					TMCreate: "2023-01-03 21:35:02.809",
+					TMCreate: "2023-01-03T21:35:02.809Z",
 					TMUpdate: DefaultTimeStamp,
 					TMDelete: DefaultTimeStamp,
 				},
@@ -231,7 +231,7 @@ func Test_ConferencecallList(t *testing.T) {
 						ID:         uuid.FromStringOrNil("50be6c64-94ce-11ed-9def-dfcdc44a112d"),
 						CustomerID: uuid.FromStringOrNil("8512e56c-cb08-46fa-96de-7855d0889577"),
 					},
-					TMCreate: "2023-01-03 21:35:02.809",
+					TMCreate: "2023-01-03T21:35:02.809Z",
 					TMUpdate: DefaultTimeStamp,
 					TMDelete: DefaultTimeStamp,
 				},
@@ -247,7 +247,7 @@ func Test_ConferencecallList(t *testing.T) {
 				conferencecall.FieldDeleted:    false,
 			},
 
-			"2023-01-03 21:35:02.809",
+			"2023-01-03T21:35:02.809Z",
 			[]*conferencecall.Conferencecall{},
 		},
 	}
@@ -307,14 +307,14 @@ func Test_ConferencecallDelete(t *testing.T) {
 
 			uuid.FromStringOrNil("284a800e-94d0-11ed-89ad-c749aec641a6"),
 
-			"2023-01-03 21:35:02.809",
+			"2023-01-03T21:35:02.809Z",
 			&conferencecall.Conferencecall{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("284a800e-94d0-11ed-89ad-c749aec641a6"),
 				},
-				TMCreate: "2023-01-03 21:35:02.809",
-				TMUpdate: "2023-01-03 21:35:02.809",
-				TMDelete: "2023-01-03 21:35:02.809",
+				TMCreate: "2023-01-03T21:35:02.809Z",
+				TMUpdate: "2023-01-03T21:35:02.809Z",
+				TMDelete: "2023-01-03T21:35:02.809Z",
 			},
 		},
 	}

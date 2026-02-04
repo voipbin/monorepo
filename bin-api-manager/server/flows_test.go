@@ -130,7 +130,7 @@ func Test_GetFlows(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/flows?page_size=20&page_token=2020-09-20%2003:23:20.995000",
+			reqQuery: "/flows?page_size=20&page_token=2020-09-20T03:23:20.995000Z",
 
 			responseFlows: []*fmflow.WebhookMessage{
 				{
@@ -141,7 +141,7 @@ func Test_GetFlows(t *testing.T) {
 			},
 
 			expectPageSize:  20,
-			expectPageToken: "2020-09-20 03:23:20.995000",
+			expectPageToken: "2020-09-20T03:23:20.995000Z",
 			expectRes:       `{"result":[{"id":"5af5346a-d92d-11ef-8c33-67a5ecb7e5e5","customer_id":"00000000-0000-0000-0000-000000000000","on_complete_flow_id":"00000000-0000-0000-0000-000000000000"}],"next_page_token":""}`,
 		},
 	}

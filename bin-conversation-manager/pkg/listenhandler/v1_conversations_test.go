@@ -38,14 +38,14 @@ func Test_processV1ConversationsGet(t *testing.T) {
 			name: "normal",
 
 			request: &sock.Request{
-				URI:      "/v1/conversations?page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000",
+				URI:      "/v1/conversations?page_size=10&page_token=2021-03-01T03:30:17.000000Z",
 				Method:   sock.RequestMethodGet,
 				DataType: requesthandler.ContentTypeJSON,
 				Data:     []byte(`{"customer_id":"64a3cbd8-e863-11ec-85de-1bcd09d3872e","deleted":false}`),
 			},
 
 			expectPageSize:  10,
-			expectPageToken: "2021-03-01 03:30:17.000000",
+			expectPageToken: "2021-03-01T03:30:17.000000Z",
 			expectFields: map[conversation.Field]any{
 				conversation.FieldCustomerID: uuid.FromStringOrNil("64a3cbd8-e863-11ec-85de-1bcd09d3872e"),
 				conversation.FieldDeleted:    false,
@@ -70,14 +70,14 @@ func Test_processV1ConversationsGet(t *testing.T) {
 			name: "2 results",
 
 			request: &sock.Request{
-				URI:      "/v1/conversations?page_size=10&page_token=2021-03-01%2003%3A30%3A17.000000",
+				URI:      "/v1/conversations?page_size=10&page_token=2021-03-01T03:30:17.000000Z",
 				Method:   sock.RequestMethodGet,
 				DataType: requesthandler.ContentTypeJSON,
 				Data:     []byte(`{"customer_id":"b77be746-e863-11ec-97b0-bb06bbb7db0e","deleted":false}`),
 			},
 
 			expectPageSize:  10,
-			expectPageToken: "2021-03-01 03:30:17.000000",
+			expectPageToken: "2021-03-01T03:30:17.000000Z",
 			expectFields: map[conversation.Field]any{
 				conversation.FieldCustomerID: uuid.FromStringOrNil("b77be746-e863-11ec-97b0-bb06bbb7db0e"),
 				conversation.FieldDeleted:    false,

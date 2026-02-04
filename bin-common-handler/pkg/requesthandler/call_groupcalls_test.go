@@ -33,7 +33,7 @@ func Test_CallV1GroupcallList(t *testing.T) {
 		{
 			"normal",
 
-			"2020-09-20T03:23:20.995000",
+			"2020-09-20T03:23:20.995000Z",
 			10,
 			map[cmgroupcall.Field]any{
 				cmgroupcall.FieldDeleted: false,
@@ -41,7 +41,7 @@ func Test_CallV1GroupcallList(t *testing.T) {
 
 			"bin-manager.call-manager.request",
 			&sock.Request{
-				URI:      "/v1/groupcalls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
+				URI:      "/v1/groupcalls?page_token=2020-09-20T03%3A23%3A20.995000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"deleted":false}`),
@@ -62,7 +62,7 @@ func Test_CallV1GroupcallList(t *testing.T) {
 		{
 			"2 calls",
 
-			"2020-09-20T03:23:20.995000",
+			"2020-09-20T03:23:20.995000Z",
 			10,
 			map[cmgroupcall.Field]any{
 				cmgroupcall.FieldDeleted: false,
@@ -70,7 +70,7 @@ func Test_CallV1GroupcallList(t *testing.T) {
 
 			"bin-manager.call-manager.request",
 			&sock.Request{
-				URI:      "/v1/groupcalls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
+				URI:      "/v1/groupcalls?page_token=2020-09-20T03%3A23%3A20.995000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"deleted":false}`),

@@ -53,7 +53,7 @@ func Test_MessageCreate(t *testing.T) {
 				Direction:           message.DirectionOutbound,
 			},
 
-			"2021-02-26 18:26:49.000",
+			"2021-02-26T18:26:49.000Z",
 			&message.Message{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("f5f2cefa-a055-11ec-a0d1-c7b28923b1f5"),
@@ -78,7 +78,7 @@ func Test_MessageCreate(t *testing.T) {
 				Text:                "Hello, this is test message.",
 				Medias:              []string{},
 				Direction:           message.DirectionOutbound,
-				TMCreate:            "2021-02-26 18:26:49.000",
+				TMCreate:            "2021-02-26T18:26:49.000Z",
 				TMUpdate:            DefaultTimeStamp,
 				TMDelete:            DefaultTimeStamp,
 			},
@@ -158,7 +158,7 @@ func Test_MessageDelete(t *testing.T) {
 				Direction:           message.DirectionOutbound,
 			},
 
-			"2021-02-26 18:26:49.000",
+			"2021-02-26T18:26:49.000Z",
 			&message.Message{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("fc67b82c-a2a3-11ec-970f-1f9f06c64b70"),
@@ -183,9 +183,9 @@ func Test_MessageDelete(t *testing.T) {
 				Text:                "Hello, this is test message.",
 				Medias:              []string{},
 				Direction:           message.DirectionOutbound,
-				TMCreate:            "2021-02-26 18:26:49.000",
-				TMUpdate:            "2021-02-26 18:26:49.000",
-				TMDelete:            "2021-02-26 18:26:49.000",
+				TMCreate:            "2021-02-26T18:26:49.000Z",
+				TMUpdate:            "2021-02-26T18:26:49.000Z",
+				TMDelete:            "2021-02-26T18:26:49.000Z",
 			},
 		},
 	}
@@ -284,7 +284,7 @@ func Test_MessageUpdateTargets(t *testing.T) {
 				},
 			},
 
-			responseCurTime: "2021-02-26 18:26:49.000",
+			responseCurTime: "2021-02-26T18:26:49.000Z",
 			expectRes: &message.Message{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("4757235a-a226-11ec-9834-f70b08e3860f"),
@@ -309,8 +309,8 @@ func Test_MessageUpdateTargets(t *testing.T) {
 				Text:                "Hello, this is test message.",
 				Medias:              []string{},
 				Direction:           message.DirectionOutbound,
-				TMCreate:            "2021-02-26 18:26:49.000",
-				TMUpdate:            "2021-02-26 18:26:49.000",
+				TMCreate:            "2021-02-26T18:26:49.000Z",
+				TMUpdate:            "2021-02-26T18:26:49.000Z",
 				TMDelete:            DefaultTimeStamp,
 			},
 		},
@@ -378,7 +378,7 @@ func Test_MessageList(t *testing.T) {
 						CustomerID: uuid.FromStringOrNil("a73a34f4-a296-11ec-b7df-a3ed77d36f0d"),
 					},
 
-					TMCreate: "2021-01-01 00:00:00.000",
+					TMCreate: "2021-01-01T00:00:00.000Z",
 					TMUpdate: DefaultTimeStamp,
 					TMDelete: DefaultTimeStamp,
 				},
@@ -389,7 +389,7 @@ func Test_MessageList(t *testing.T) {
 				message.FieldTMDelete:   DefaultTimeStamp,
 			},
 
-			"2021-01-01 00:00:00.000",
+			"2021-01-01T00:00:00.000Z",
 			1,
 		},
 		{

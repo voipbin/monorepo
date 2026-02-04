@@ -49,7 +49,7 @@ func Test_TranscribeCreate(t *testing.T) {
 				},
 			},
 
-			responseCurTime: "2021-01-01 00:00:00.000",
+			responseCurTime: "2021-01-01T00:00:00.000Z",
 			expectRes: &transcribe.Transcribe{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("63b17070-0edb-11ec-8563-33766d40e3fa"),
@@ -67,7 +67,7 @@ func Test_TranscribeCreate(t *testing.T) {
 					uuid.FromStringOrNil("41eb75da-9878-11ed-9f62-97d0d501930c"),
 					uuid.FromStringOrNil("421e8bc8-9878-11ed-84be-1f7747406f78"),
 				},
-				TMCreate: "2021-01-01 00:00:00.000",
+				TMCreate: "2021-01-01T00:00:00.000Z",
 				TMUpdate: DefaultTimeStamp,
 				TMDelete: DefaultTimeStamp,
 			},
@@ -80,13 +80,13 @@ func Test_TranscribeCreate(t *testing.T) {
 				},
 			},
 
-			responseCurTime: "2021-01-01 00:00:00.000",
+			responseCurTime: "2021-01-01T00:00:00.000Z",
 			expectRes: &transcribe.Transcribe{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("81ce2448-0edd-11ec-861d-c7b56c3e942a"),
 				},
 				StreamingIDs: []uuid.UUID{},
-				TMCreate:     "2021-01-01 00:00:00.000",
+				TMCreate:     "2021-01-01T00:00:00.000Z",
 				TMUpdate:     DefaultTimeStamp,
 				TMDelete:     DefaultTimeStamp,
 			},
@@ -155,7 +155,7 @@ func Test_TranscribeList(t *testing.T) {
 				transcribe.FieldDeleted:    false,
 			},
 
-			responseCurTime: "2021-01-01 00:00:00.000",
+			responseCurTime: "2021-01-01T00:00:00.000Z",
 			expectRes: []*transcribe.Transcribe{
 				{
 					Identity: commonidentity.Identity{
@@ -163,7 +163,7 @@ func Test_TranscribeList(t *testing.T) {
 						CustomerID: uuid.FromStringOrNil("68fdd924-ed95-11ee-a7ea-57b90b872fde"),
 					},
 					StreamingIDs: []uuid.UUID{},
-					TMCreate:     "2021-01-01 00:00:00.000",
+					TMCreate:     "2021-01-01T00:00:00.000Z",
 					TMUpdate:     DefaultTimeStamp,
 					TMDelete:     DefaultTimeStamp,
 				},
@@ -202,7 +202,7 @@ func Test_TranscribeList(t *testing.T) {
 				transcribe.FieldDeleted:    false,
 			},
 
-			responseCurTime: "2021-01-01 00:00:00.000",
+			responseCurTime: "2021-01-01T00:00:00.000Z",
 			expectRes: []*transcribe.Transcribe{
 				{
 					Identity: commonidentity.Identity{
@@ -210,7 +210,7 @@ func Test_TranscribeList(t *testing.T) {
 						CustomerID: uuid.FromStringOrNil("c1644a94-ed95-11ee-b2c8-8bf8e129a2f7"),
 					},
 					StreamingIDs: []uuid.UUID{},
-					TMCreate:     "2021-01-01 00:00:00.000",
+					TMCreate:     "2021-01-01T00:00:00.000Z",
 					TMUpdate:     DefaultTimeStamp,
 					TMDelete:     DefaultTimeStamp,
 				},
@@ -220,7 +220,7 @@ func Test_TranscribeList(t *testing.T) {
 						CustomerID: uuid.FromStringOrNil("c1644a94-ed95-11ee-b2c8-8bf8e129a2f7"),
 					},
 					StreamingIDs: []uuid.UUID{},
-					TMCreate:     "2021-01-01 00:00:00.000",
+					TMCreate:     "2021-01-01T00:00:00.000Z",
 					TMUpdate:     DefaultTimeStamp,
 					TMDelete:     DefaultTimeStamp,
 				},
@@ -292,7 +292,7 @@ func Test_TranscribeUpdate(t *testing.T) {
 			fields: map[transcribe.Field]any{
 				transcribe.FieldStatus: transcribe.StatusProgressing,
 			},
-			responseCurTime: "2020-04-18T03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 
 			expectRes: &transcribe.Transcribe{
 				Identity: commonidentity.Identity{
@@ -301,8 +301,8 @@ func Test_TranscribeUpdate(t *testing.T) {
 				Status:       transcribe.StatusProgressing,
 				StreamingIDs: []uuid.UUID{},
 
-				TMCreate: "2020-04-18T03:22:17.995000",
-				TMUpdate: "2020-04-18T03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
+				TMUpdate: "2020-04-18T03:22:17.995000Z",
 				TMDelete: DefaultTimeStamp,
 			},
 		},
@@ -370,15 +370,15 @@ func Test_TranscribeDelete(t *testing.T) {
 				},
 			},
 
-			responseCurTime: "2021-01-01 00:00:00.000",
+			responseCurTime: "2021-01-01T00:00:00.000Z",
 			expectRes: &transcribe.Transcribe{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("6a51f5b2-f196-11ee-b98b-cfc1a7583b20"),
 				},
 				StreamingIDs: []uuid.UUID{},
-				TMCreate:     "2021-01-01 00:00:00.000",
-				TMUpdate:     "2021-01-01 00:00:00.000",
-				TMDelete:     "2021-01-01 00:00:00.000",
+				TMCreate:     "2021-01-01T00:00:00.000Z",
+				TMUpdate:     "2021-01-01T00:00:00.000Z",
+				TMDelete:     "2021-01-01T00:00:00.000Z",
 			},
 		},
 	}

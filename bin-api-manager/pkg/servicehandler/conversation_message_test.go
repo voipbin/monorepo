@@ -43,7 +43,7 @@ func Test_ConversationMessageListByConversationID(t *testing.T) {
 				Permission: amagent.PermissionCustomerAdmin,
 			},
 			conversationID: uuid.FromStringOrNil("ee26103a-ed24-11ec-bfa1-7b247ecf7e93"),
-			pageToken:      "2020-10-20T01:00:00.995000",
+			pageToken:      "2020-10-20T01:00:00.995000Z",
 			pageSize:       10,
 
 			responseConversation: &cvconversation.Conversation{

@@ -33,12 +33,12 @@ func Test_BridgeCreate(t *testing.T) {
 				ID:         "98ff3f2a-8226-11ea-9ec5-079bcb66275c",
 			},
 
-			"2020-04-18 03:22:17.995000",
+			"2020-04-18T03:22:17.995000Z",
 			&bridge.Bridge{
 				AsteriskID: "3e:50:6b:43:bb:30",
 				ID:         "98ff3f2a-8226-11ea-9ec5-079bcb66275c",
 				ChannelIDs: []string{},
-				TMCreate:   "2020-04-18 03:22:17.995000",
+				TMCreate:   "2020-04-18T03:22:17.995000Z",
 				TMUpdate:   DefaultTimeStamp,
 				TMDelete:   DefaultTimeStamp,
 			},
@@ -52,14 +52,14 @@ func Test_BridgeCreate(t *testing.T) {
 				ReferenceID:   uuid.FromStringOrNil("23c83b3e-9316-11ea-91c3-ef8d90e0ec42"),
 			},
 
-			"2020-04-18 03:22:17.995000",
+			"2020-04-18T03:22:17.995000Z",
 			&bridge.Bridge{
 				AsteriskID:    "3e:50:6b:43:bb:30",
 				ID:            "36d8b0be-9316-11ea-b829-6be92ca1faee",
 				ChannelIDs:    []string{},
 				ReferenceType: bridge.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("23c83b3e-9316-11ea-91c3-ef8d90e0ec42"),
-				TMCreate:      "2020-04-18 03:22:17.995000",
+				TMCreate:      "2020-04-18T03:22:17.995000Z",
 				TMUpdate:      DefaultTimeStamp,
 				TMDelete:      DefaultTimeStamp,
 			},
@@ -73,14 +73,14 @@ func Test_BridgeCreate(t *testing.T) {
 				ReferenceID:   uuid.FromStringOrNil("560448b8-9316-11ea-a651-b78c9ee8e874"),
 			},
 
-			"2020-04-18 03:22:17.995000",
+			"2020-04-18T03:22:17.995000Z",
 			&bridge.Bridge{
 				AsteriskID:    "3e:50:6b:43:bb:30",
 				ID:            "5149007a-9316-11ea-9de0-5f9cb2e8c235",
 				ChannelIDs:    []string{},
 				ReferenceType: bridge.ReferenceTypeConfbridge,
 				ReferenceID:   uuid.FromStringOrNil("560448b8-9316-11ea-a651-b78c9ee8e874"),
-				TMCreate:      "2020-04-18 03:22:17.995000",
+				TMCreate:      "2020-04-18T03:22:17.995000Z",
 				TMUpdate:      DefaultTimeStamp,
 				TMDelete:      DefaultTimeStamp,
 			},
@@ -139,14 +139,14 @@ func Test_BridgeEnd(t *testing.T) {
 				ID:         "208a5bbe-8ee3-11ea-b267-174c3bd0a842",
 			},
 
-			"2020-04-18 05:22:17.995000",
+			"2020-04-18T05:22:17.995000Z",
 			&bridge.Bridge{
 				AsteriskID: "3e:50:6b:43:bb:30",
 				ID:         "208a5bbe-8ee3-11ea-b267-174c3bd0a842",
 				ChannelIDs: []string{},
-				TMCreate:   "2020-04-18 05:22:17.995000",
-				TMUpdate:   "2020-04-18 05:22:17.995000",
-				TMDelete:   "2020-04-18 05:22:17.995000",
+				TMCreate:   "2020-04-18T05:22:17.995000Z",
+				TMUpdate:   "2020-04-18T05:22:17.995000Z",
+				TMDelete:   "2020-04-18T05:22:17.995000Z",
 			},
 		},
 	}

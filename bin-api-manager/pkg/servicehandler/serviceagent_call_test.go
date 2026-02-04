@@ -40,7 +40,7 @@ func Test_ServiceAgentCallList(t *testing.T) {
 				Permission: amagent.PermissionCustomerAgent,
 			},
 			size:  100,
-			token: "2021-03-01 01:00:00.995000",
+			token: "2021-03-01T01:00:00.995000Z",
 
 			responseCalls: []cmcall.Call{
 				{

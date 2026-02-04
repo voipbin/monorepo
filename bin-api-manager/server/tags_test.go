@@ -119,20 +119,20 @@ func TestTagsGET(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/tags?page_size=11&page_token=2020-09-20T03:23:20.995000",
+			reqQuery: "/tags?page_size=11&page_token=2020-09-20T03:23:20.995000Z",
 
 			responseTags: []*tmtag.WebhookMessage{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("bafb72ae-f983-11ea-9b02-67e734510d1a"),
 					},
-					TMCreate: "2020-09-20T03:23:21.995000",
+					TMCreate: "2020-09-20T03:23:21.995000Z",
 				},
 			},
 
 			expectPageSize:  11,
-			expectPageToken: "2020-09-20T03:23:20.995000",
-			expectRes:       `{"result":[{"id":"bafb72ae-f983-11ea-9b02-67e734510d1a","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
+			expectPageToken: "2020-09-20T03:23:20.995000Z",
+			expectRes:       `{"result":[{"id":"bafb72ae-f983-11ea-9b02-67e734510d1a","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","tm_create":"2020-09-20T03:23:21.995000Z","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000Z"}`,
 		},
 		{
 			name: "more than 2 results",
@@ -142,26 +142,26 @@ func TestTagsGET(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/tags?page_size=10&page_token=2020-09-20T03:23:20.995000",
+			reqQuery: "/tags?page_size=10&page_token=2020-09-20T03:23:20.995000Z",
 
 			responseTags: []*tmtag.WebhookMessage{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("bafb72ae-f983-11ea-9b02-67e734510d1a"),
 					},
-					TMCreate: "2020-09-20T03:23:21.995000",
+					TMCreate: "2020-09-20T03:23:21.995000Z",
 				},
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("2c1abc5c-500d-11ec-8896-9bca824c5a63"),
 					},
-					TMCreate: "2020-09-20T03:23:21.995002",
+					TMCreate: "2020-09-20T03:23:21.995002Z",
 				},
 			},
 
 			expectPageSize:  10,
-			expectPageToken: "2020-09-20T03:23:20.995000",
-			expectRes:       `{"result":[{"id":"bafb72ae-f983-11ea-9b02-67e734510d1a","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""},{"id":"2c1abc5c-500d-11ec-8896-9bca824c5a63","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","tm_create":"2020-09-20T03:23:21.995002","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995002"}`,
+			expectPageToken: "2020-09-20T03:23:20.995000Z",
+			expectRes:       `{"result":[{"id":"bafb72ae-f983-11ea-9b02-67e734510d1a","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","tm_create":"2020-09-20T03:23:21.995000Z","tm_update":"","tm_delete":""},{"id":"2c1abc5c-500d-11ec-8896-9bca824c5a63","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","tm_create":"2020-09-20T03:23:21.995002Z","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995002Z"}`,
 		},
 	}
 

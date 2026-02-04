@@ -169,7 +169,7 @@ func Test_List(t *testing.T) {
 			name: "normal",
 
 			size:  10,
-			token: "2023-01-18 03:22:18.995000",
+			token: "2023-01-18T03:22:18.995000Z",
 			filters: map[groupcall.Field]any{
 				groupcall.FieldCustomerID: uuid.FromStringOrNil("b3944c9c-bd7c-11ed-874c-6b6fb342a46d"),
 			},

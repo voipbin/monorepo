@@ -124,19 +124,19 @@ func Test_GetAisummaries(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/aisummaries?page_size=10&page_token=2020-09-20%2003:23:20.995000",
+			reqQuery: "/aisummaries?page_size=10&page_token=2020-09-20T03:23:20.995000Z",
 
 			responseAIsummaries: []*amsummary.WebhookMessage{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("f01f38f0-0ccd-11f0-81ab-730c812c39fb"),
 					},
-					TMCreate: "2020-09-20T03:23:21.995000",
+					TMCreate: "2020-09-20T03:23:21.995000Z",
 				},
 			},
 			expectedPageSize:  10,
-			expectedPageToken: "2020-09-20 03:23:20.995000",
-			expectedRes:       `{"result":[{"id":"f01f38f0-0ccd-11f0-81ab-730c812c39fb","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","on_end_flow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:21.995000"}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
+			expectedPageToken: "2020-09-20T03:23:20.995000Z",
+			expectedRes:       `{"result":[{"id":"f01f38f0-0ccd-11f0-81ab-730c812c39fb","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","on_end_flow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:21.995000Z"}],"next_page_token":"2020-09-20T03:23:21.995000Z"}`,
 		},
 	}
 

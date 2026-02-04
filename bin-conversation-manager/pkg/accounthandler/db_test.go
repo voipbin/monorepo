@@ -170,7 +170,7 @@ func Test_List(t *testing.T) {
 			name: "normal",
 
 			size:  10,
-			token: "2020-05-03%2021:35:02.809",
+			token: "2020-05-03T21:35:02.809Z",
 			filters: map[account.Field]any{
 				account.FieldCustomerID: "99a9734a-3e16-11ef-94d4-9b7a8c5e0f6c",
 			},

@@ -34,7 +34,7 @@ func Test_AIV1MessageGetsByAIcallID(t *testing.T) {
 			name: "normal",
 
 			aicallID:  uuid.FromStringOrNil("d43e25a6-f2ce-11ef-bd10-3b19aa3747d8"),
-			pageToken: "2020-09-20 03:23:20.995000",
+			pageToken: "2020-09-20T03:23:20.995000Z",
 			pageSize:  10,
 			filters: map[cbmessage.Field]any{
 				cbmessage.FieldDeleted: false,
@@ -48,7 +48,7 @@ func Test_AIV1MessageGetsByAIcallID(t *testing.T) {
 
 			expectTarget: string(outline.QueueNameAIRequest),
 			expectRequest: &sock.Request{
-				URI:      "/v1/messages?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10",
+				URI:      "/v1/messages?page_token=2020-09-20T03%3A23%3A20.995000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"aicall_id":"d43e25a6-f2ce-11ef-bd10-3b19aa3747d8","deleted":false}`),

@@ -51,9 +51,9 @@ func Test_ServiceAgentCustomerGet(t *testing.T) {
 
 				BillingAccountID: uuid.FromStringOrNil("fe6f4c86-bc89-11ef-a7d5-7bf111ffbe12"),
 
-				TMCreate: "2024-12-01 10:15:30.123456",
-				TMUpdate: "2024-12-01 10:15:30.123457",
-				TMDelete: "2024-12-01 10:15:30.123458",
+				TMCreate: "2024-12-01T10:15:30.123456Z",
+				TMUpdate: "2024-12-01T10:15:30.123457Z",
+				TMDelete: "2024-12-01T10:15:30.123458Z",
 			},
 			expectedRes: &cscustomer.WebhookMessage{
 				ID: uuid.FromStringOrNil("fd9e1d8c-bc89-11ef-9c59-e39b69889bbf"),
@@ -61,9 +61,9 @@ func Test_ServiceAgentCustomerGet(t *testing.T) {
 				Name:   "test name",
 				Detail: "test detail",
 
-				TMCreate: "2024-12-01 10:15:30.123456",
-				TMUpdate: "2024-12-01 10:15:30.123457",
-				TMDelete: "2024-12-01 10:15:30.123458",
+				TMCreate: "2024-12-01T10:15:30.123456Z",
+				TMUpdate: "2024-12-01T10:15:30.123457Z",
+				TMDelete: "2024-12-01T10:15:30.123458Z",
 			},
 		},
 	}

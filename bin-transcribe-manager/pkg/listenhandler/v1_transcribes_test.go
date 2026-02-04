@@ -113,13 +113,13 @@ func Test_processV1TranscribesGet(t *testing.T) {
 		{
 			name: "normal",
 			request: &sock.Request{
-				URI:    "/v1/transcribes?page_size=10&page_token=2020-05-03%2021:35:02.809",
+				URI:    "/v1/transcribes?page_size=10&page_token=2020-05-03T21:35:02.809Z",
 				Method: sock.RequestMethodGet,
 				Data:   []byte(`{"customer_id":"079ffd84-7f68-11ed-ae05-430c9b75ab3b"}`),
 			},
 
 			pageSize:  10,
-			pageToken: "2020-05-03 21:35:02.809",
+			pageToken: "2020-05-03T21:35:02.809Z",
 
 			expectFilters: map[transcribe.Field]any{
 				transcribe.FieldCustomerID: uuid.FromStringOrNil("079ffd84-7f68-11ed-ae05-430c9b75ab3b"),
@@ -141,13 +141,13 @@ func Test_processV1TranscribesGet(t *testing.T) {
 		{
 			name: "2 items",
 			request: &sock.Request{
-				URI:    "/v1/transcribes?page_size=10&page_token=2020-05-03%2021:35:02.809",
+				URI:    "/v1/transcribes?page_size=10&page_token=2020-05-03T21:35:02.809Z",
 				Method: sock.RequestMethodGet,
 				Data:   []byte(`{"customer_id":"871275ba-7f68-11ed-a6e2-dbc6d9a383d9"}`),
 			},
 
 			pageSize:  10,
-			pageToken: "2020-05-03 21:35:02.809",
+			pageToken: "2020-05-03T21:35:02.809Z",
 
 			expectFilters: map[transcribe.Field]any{
 				transcribe.FieldCustomerID: uuid.FromStringOrNil("871275ba-7f68-11ed-a6e2-dbc6d9a383d9"),

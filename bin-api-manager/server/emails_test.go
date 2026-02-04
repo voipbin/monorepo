@@ -130,7 +130,7 @@ func Test_GetEmails(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/emails?page_size=20&page_token=2020-09-20%2003:23:20.995000",
+			reqQuery: "/emails?page_size=20&page_token=2020-09-20T03:23:20.995000Z",
 
 			responseEmails: []*ememail.WebhookMessage{
 				{
@@ -141,7 +141,7 @@ func Test_GetEmails(t *testing.T) {
 			},
 
 			expectPageSize:  20,
-			expectPageToken: "2020-09-20 03:23:20.995000",
+			expectPageToken: "2020-09-20T03:23:20.995000Z",
 			expectRes:       `{"result":[{"id":"7be21f1e-00ef-11f0-8a0c-f7709910a0da","customer_id":"00000000-0000-0000-0000-000000000000","source":null,"destinations":null,"status":"","subject":"","content":"","attachments":null,"tm_create":"","tm_update":"","tm_delete":""}],"next_page_token":""}`,
 		},
 	}

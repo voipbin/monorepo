@@ -31,7 +31,7 @@ func Test_CallV1ExternalMediaList(t *testing.T) {
 		{
 			"normal",
 
-			"2020-09-20T03:23:20.995000",
+			"2020-09-20T03:23:20.995000Z",
 			10,
 			map[cmexternalmedia.Field]any{
 				cmexternalmedia.FieldReferenceID: uuid.FromStringOrNil("6ddd7aa8-e82c-11ee-9ae3-23cca4c32454"),
@@ -39,7 +39,7 @@ func Test_CallV1ExternalMediaList(t *testing.T) {
 
 			"bin-manager.call-manager.request",
 			&sock.Request{
-				URI:      "/v1/external-medias?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
+				URI:      "/v1/external-medias?page_token=2020-09-20T03%3A23%3A20.995000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"reference_id":"6ddd7aa8-e82c-11ee-9ae3-23cca4c32454"}`),
@@ -58,7 +58,7 @@ func Test_CallV1ExternalMediaList(t *testing.T) {
 		{
 			"2 results",
 
-			"2020-09-20T03:23:20.995000",
+			"2020-09-20T03:23:20.995000Z",
 			10,
 			map[cmexternalmedia.Field]any{
 				cmexternalmedia.FieldReferenceID: uuid.FromStringOrNil("a188209c-e82c-11ee-9a12-2f13b7edeb5f"),
@@ -66,7 +66,7 @@ func Test_CallV1ExternalMediaList(t *testing.T) {
 
 			"bin-manager.call-manager.request",
 			&sock.Request{
-				URI:      "/v1/external-medias?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
+				URI:      "/v1/external-medias?page_token=2020-09-20T03%3A23%3A20.995000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"reference_id":"a188209c-e82c-11ee-9a12-2f13b7edeb5f"}`),

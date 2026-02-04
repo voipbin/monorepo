@@ -36,7 +36,7 @@ func Test_CampaignV1CampaigncallList(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("61e0b6f6-6e2a-11ee-8da5-ef7ab5511ed0"),
-			"2020-09-20 03:23:20.995000",
+			"2020-09-20T03:23:20.995000Z",
 			10,
 
 			&sock.Response{
@@ -47,7 +47,7 @@ func Test_CampaignV1CampaigncallList(t *testing.T) {
 
 			"bin-manager.campaign-manager.request",
 			&sock.Request{
-				URI:      fmt.Sprintf("/v1/campaigncalls?page_token=%s&page_size=10", url.QueryEscape("2020-09-20 03:23:20.995000")),
+				URI:      fmt.Sprintf("/v1/campaigncalls?page_token=%s&page_size=10", url.QueryEscape("2020-09-20T03:23:20.995000Z")),
 				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			Data:     []byte(`{"customer_id":"61e0b6f6-6e2a-11ee-8da5-ef7ab5511ed0"}`),
@@ -109,7 +109,7 @@ func Test_CampaignV1CampaigncallGetsByCampaignID(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("b2b0be5a-c859-11ec-acc0-c75b05c4cd00"),
-			"2020-09-20 03:23:20.995000",
+			"2020-09-20T03:23:20.995000Z",
 			10,
 
 			&sock.Response{
@@ -120,7 +120,7 @@ func Test_CampaignV1CampaigncallGetsByCampaignID(t *testing.T) {
 
 			"bin-manager.campaign-manager.request",
 			&sock.Request{
-				URI:      fmt.Sprintf("/v1/campaigncalls?page_token=%s&page_size=10", url.QueryEscape("2020-09-20 03:23:20.995000")),
+				URI:      fmt.Sprintf("/v1/campaigncalls?page_token=%s&page_size=10", url.QueryEscape("2020-09-20T03:23:20.995000Z")),
 				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"campaign_id":"b2b0be5a-c859-11ec-acc0-c75b05c4cd00"}`),

@@ -200,7 +200,7 @@ func Test_filesGET(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/files?page_size=20&page_token=2020-09-20%2003:23:20.995000",
+			reqQuery: "/files?page_size=20&page_token=2020-09-20T03:23:20.995000Z",
 			responseFile: []*smfile.WebhookMessage{
 				{
 					Identity: commonidentity.Identity{
@@ -210,7 +210,7 @@ func Test_filesGET(t *testing.T) {
 			},
 
 			expectPageSize:  20,
-			expectPageToken: "2020-09-20 03:23:20.995000",
+			expectPageToken: "2020-09-20T03:23:20.995000Z",
 			expectRes:       `{"result":[{"id":"2fbb29c0-6fb0-11eb-b2ef-4303769ecba5","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","filename":"","filesize":0,"uri_download":"","tm_download_expire":"","tm_create":"","tm_update":"","tm_delete":""}],"next_page_token":""}`,
 		},
 	}

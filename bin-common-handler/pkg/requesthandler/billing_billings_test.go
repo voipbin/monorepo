@@ -33,7 +33,7 @@ func Test_BillingV1BillingList(t *testing.T) {
 			name: "normal",
 
 			size:  10,
-			token: "2023-06-08 03:22:17.995000",
+			token: "2023-06-08T03:22:17.995000Z",
 			filters: map[bmbilling.Field]any{
 				bmbilling.FieldCustomerID: uuid.FromStringOrNil("84ec5606-f556-11ee-b9a0-dbdcc291145b"),
 			},
@@ -46,7 +46,7 @@ func Test_BillingV1BillingList(t *testing.T) {
 
 			expectTarget: "bin-manager.billing-manager.request",
 			expectRequest: &sock.Request{
-				URI:      "/v1/billings?page_token=2023-06-08+03%3A22%3A17.995000&page_size=10",
+				URI:      "/v1/billings?page_token=2023-06-08T03%3A22%3A17.995000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"84ec5606-f556-11ee-b9a0-dbdcc291145b"}`),

@@ -32,7 +32,7 @@ func Test_EventHandlerContactStatusChange(t *testing.T) {
 				Event: ari.Event{
 					Type:        ari.EventTypeContactStatusChange,
 					Application: "voipbin",
-					Timestamp:   "2021-02-19T06:32:14.621",
+					Timestamp:   "2021-02-19T06:32:14.621Z",
 					AsteriskID:  "8e:86:e2:2c:a7:51",
 				},
 				Endpoint: ari.Endpoint{

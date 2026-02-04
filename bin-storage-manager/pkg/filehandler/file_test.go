@@ -79,7 +79,7 @@ func Test_List(t *testing.T) {
 		{
 			name: "normal",
 
-			token: "2024-05-16 03:22:17.995000",
+			token: "2024-05-16T03:22:17.995000Z",
 			size:  10,
 			filters: map[file.Field]any{
 				file.FieldCustomerID: uuid.FromStringOrNil("ba5d2ed2-1531-11ef-960b-cfcd7e5676b9"),

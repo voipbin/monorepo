@@ -50,7 +50,7 @@ func Test_MessageCreate(t *testing.T) {
 				ToolCallID: "6798165e-9324-11f0-91a4-c7ebb2a64dfd",
 			},
 
-			responseCurTime: "2023-01-03 21:35:02.809",
+			responseCurTime: "2023-01-03T21:35:02.809Z",
 			expectRes: &message.Message{
 				Identity: identity.Identity{
 					ID:         uuid.FromStringOrNil("d5df8eac-f22b-11ef-b88e-7f62eefdf1ca"),
@@ -73,7 +73,7 @@ func Test_MessageCreate(t *testing.T) {
 				},
 				ToolCallID: "6798165e-9324-11f0-91a4-c7ebb2a64dfd",
 
-				TMCreate: "2023-01-03 21:35:02.809",
+				TMCreate: "2023-01-03T21:35:02.809Z",
 				TMDelete: DefaultTimeStamp,
 			},
 		},
@@ -87,14 +87,14 @@ func Test_MessageCreate(t *testing.T) {
 				AIcallID: uuid.FromStringOrNil("20b4c03c-f22c-11ef-abe7-3b10f3525941"),
 			},
 
-			responseCurTime: "2023-01-03 21:35:02.809",
+			responseCurTime: "2023-01-03T21:35:02.809Z",
 			expectRes: &message.Message{
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("d62e7a58-f22b-11ef-8edc-9b57d94ff8fc"),
 				},
 				AIcallID:  uuid.FromStringOrNil("20b4c03c-f22c-11ef-abe7-3b10f3525941"),
 				ToolCalls: nil,
-				TMCreate:  "2023-01-03 21:35:02.809",
+				TMCreate:  "2023-01-03T21:35:02.809Z",
 				TMDelete:  DefaultTimeStamp,
 			},
 		},

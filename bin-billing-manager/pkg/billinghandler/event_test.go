@@ -122,7 +122,7 @@ func Test_EventCMCallHangup(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("beaacf10-f549-11ee-9511-77ae64a3ef25"),
 				},
-				TMHangup: "2023-06-08 03:23:17.995000",
+				TMHangup: "2023-06-08T03:23:17.995000Z",
 			},
 
 			responseBilling: &billing.Billing{
@@ -131,7 +131,7 @@ func Test_EventCMCallHangup(t *testing.T) {
 				},
 				ReferenceType:  billing.ReferenceTypeCall,
 				ReferenceID:    uuid.FromStringOrNil("beaacf10-f549-11ee-9511-77ae64a3ef25"),
-				TMBillingStart: "2023-06-08 03:22:17.995000",
+				TMBillingStart: "2023-06-08T03:22:17.995000Z",
 			},
 			responseAccount: &account.Account{
 				Identity: commonidentity.Identity{

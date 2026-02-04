@@ -138,7 +138,7 @@ func Test_CampaignV1CampaignList(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("4b1deb60-a784-4207-b1d8-a96df6bae951"),
-			"2020-09-20 03:23:20.995000",
+			"2020-09-20T03:23:20.995000Z",
 			10,
 
 			&sock.Response{
@@ -149,7 +149,7 @@ func Test_CampaignV1CampaignList(t *testing.T) {
 
 			"bin-manager.campaign-manager.request",
 			&sock.Request{
-				URI:      fmt.Sprintf("/v1/campaigns?page_token=%s&page_size=10", url.QueryEscape("2020-09-20 03:23:20.995000")),
+				URI:      fmt.Sprintf("/v1/campaigns?page_token=%s&page_size=10", url.QueryEscape("2020-09-20T03:23:20.995000Z")),
 				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			Data:     []byte(`{"customer_id":"4b1deb60-a784-4207-b1d8-a96df6bae951"}`),

@@ -106,7 +106,7 @@ func Test_NumberV1NumberList(t *testing.T) {
 		{
 			"normal",
 
-			"2020-09-20T03:23:20.995000",
+			"2020-09-20T03:23:20.995000Z",
 			10,
 			map[nmnumber.Field]any{
 				nmnumber.FieldCustomerID: uuid.FromStringOrNil("b7041f62-7ff5-11ec-b1dd-d7e05b3c5096"),
@@ -114,7 +114,7 @@ func Test_NumberV1NumberList(t *testing.T) {
 
 			"bin-manager.number-manager.request",
 			&sock.Request{
-				URI:      "/v1/numbers?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
+				URI:      "/v1/numbers?page_token=2020-09-20T03%3A23%3A20.995000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"b7041f62-7ff5-11ec-b1dd-d7e05b3c5096"}`),
@@ -482,14 +482,14 @@ func Test_NumberV1NumberRenewByTmRenew(t *testing.T) {
 		{
 			name: "normal",
 
-			tmRenew: "2021-02-26 18:26:49.000",
+			tmRenew: "2021-02-26T18:26:49.000Z",
 
 			expectTarget: "bin-manager.number-manager.request",
 			expectRequest: &sock.Request{
 				URI:      "/v1/numbers/renew",
 				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"tm_renew":"2021-02-26 18:26:49.000"}`),
+				Data:     []byte(`{"tm_renew":"2021-02-26T18:26:49.000Z"}`),
 			},
 			response: &sock.Response{
 				StatusCode: 200,

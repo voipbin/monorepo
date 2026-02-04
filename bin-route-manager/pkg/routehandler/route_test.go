@@ -137,7 +137,7 @@ func Test_ListByCustomerID(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("b4ff0a22-4662-11ed-bba2-dfe5060382ff"),
-			"2020-04-18 03:22:17.995000",
+			"2020-04-18T03:22:17.995000Z",
 			10,
 
 			[]*route.Route{
@@ -192,7 +192,7 @@ func Test_ListByCustomerID_customer_id_is_nil(t *testing.T) {
 		{
 			"normal",
 
-			"2020-04-18 03:22:17.995000",
+			"2020-04-18T03:22:17.995000Z",
 			10,
 
 			[]*route.Route{

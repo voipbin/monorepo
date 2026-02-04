@@ -138,7 +138,7 @@ func Test_ListByOutdialID(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("05b5c738-b2c2-11ec-acd3-27fc70dc1b15"),
-			"2020-10-10 03:30:17.000000",
+			"2020-10-10T03:30:17.000000Z",
 			10,
 		},
 	}

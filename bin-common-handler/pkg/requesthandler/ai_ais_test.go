@@ -34,7 +34,7 @@ func Test_AIV1AIList(t *testing.T) {
 		{
 			name: "normal",
 
-			pageToken: "2020-09-20 03:23:20.995000",
+			pageToken: "2020-09-20T03:23:20.995000Z",
 			pageSize:  10,
 			filters: map[amai.Field]any{
 				amai.FieldCustomerID: uuid.FromStringOrNil("83fec56f-8e28-4356-a50c-7641e39ed2df"),
@@ -49,7 +49,7 @@ func Test_AIV1AIList(t *testing.T) {
 
 			expectTarget: string(outline.QueueNameAIRequest),
 			expectRequest: &sock.Request{
-				URI:      "/v1/ais?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10",
+				URI:      "/v1/ais?page_token=2020-09-20T03%3A23%3A20.995000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"83fec56f-8e28-4356-a50c-7641e39ed2df","deleted":false}`),

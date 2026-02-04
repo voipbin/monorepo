@@ -65,7 +65,7 @@ func Test_GetActiveflows(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/activeflows?page_size=10&page_token=2020-09-20%2003:23:20.995000",
+			reqQuery: "/activeflows?page_size=10&page_token=2020-09-20T03:23:20.995000Z",
 
 			resActiveflows: []*fmactiveflow.WebhookMessage{
 				{
@@ -76,7 +76,7 @@ func Test_GetActiveflows(t *testing.T) {
 			},
 
 			expectedPageSize:  10,
-			expectedPageToken: "2020-09-20 03:23:20.995000",
+			expectedPageToken: "2020-09-20T03:23:20.995000Z",
 			expectedRes:       `{"result":[{"id":"ca5324bc-d3aa-11ef-b3a2-5f9b2297d0b5","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","on_complete_flow_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000"},"forward_action_id":"00000000-0000-0000-0000-000000000000"}],"next_page_token":""}`,
 		},
 		{
@@ -88,7 +88,7 @@ func Test_GetActiveflows(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/activeflows?page_size=10&page_token=2020-09-20%2003:23:20.995000",
+			reqQuery: "/activeflows?page_size=10&page_token=2020-09-20T03:23:20.995000Z",
 
 			resActiveflows: []*fmactiveflow.WebhookMessage{
 				{
@@ -109,7 +109,7 @@ func Test_GetActiveflows(t *testing.T) {
 			},
 
 			expectedPageSize:  10,
-			expectedPageToken: "2020-09-20 03:23:20.995000",
+			expectedPageToken: "2020-09-20T03:23:20.995000Z",
 			expectedRes:       `{"result":[{"id":"ca814ff4-d3aa-11ef-b654-4356ff1e24b8","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","on_complete_flow_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000"},"forward_action_id":"00000000-0000-0000-0000-000000000000"},{"id":"caaf28de-d3aa-11ef-acab-8364561636de","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","on_complete_flow_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000"},"forward_action_id":"00000000-0000-0000-0000-000000000000"},{"id":"d80bf73c-d3aa-11ef-9e3b-5327fa6fb18b","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","on_complete_flow_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000"},"forward_action_id":"00000000-0000-0000-0000-000000000000"}],"next_page_token":""}`,
 		},
 	}
@@ -282,11 +282,11 @@ func Test_GetActiveflowsId(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("31c3088a-cb2c-11ed-b323-2b5e8c1da422"),
 				},
-				TMCreate: "2020-09-20 03:23:21.995000",
+				TMCreate: "2020-09-20T03:23:21.995000Z",
 			},
 
 			expectedActiveflowID: uuid.FromStringOrNil("31c3088a-cb2c-11ed-b323-2b5e8c1da422"),
-			expectedRes:          `{"id":"31c3088a-cb2c-11ed-b323-2b5e8c1da422","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","on_complete_flow_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000"},"forward_action_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20 03:23:21.995000"}`,
+			expectedRes:          `{"id":"31c3088a-cb2c-11ed-b323-2b5e8c1da422","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","on_complete_flow_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000"},"forward_action_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:21.995000Z"}`,
 		},
 	}
 

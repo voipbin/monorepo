@@ -35,7 +35,7 @@ func Test_processV1AccountsGet(t *testing.T) {
 		{
 			name: "normal",
 			request: &sock.Request{
-				URI:    "/v1/accounts?page_size=10&page_token=2023-06-08%2003:22:17.995000&customer_id=bc8f9070-0e5a-11ee-b22e-97ef303987a3",
+				URI:    "/v1/accounts?page_size=10&page_token=2023-06-08T03:22:17.995000Z&customer_id=bc8f9070-0e5a-11ee-b22e-97ef303987a3",
 				Method: sock.RequestMethodGet,
 			},
 
@@ -56,7 +56,7 @@ func Test_processV1AccountsGet(t *testing.T) {
 				account.FieldCustomerID: uuid.FromStringOrNil("bc8f9070-0e5a-11ee-b22e-97ef303987a3"),
 			},
 			expectSize:  10,
-			expectToken: "2023-06-08 03:22:17.995000",
+			expectToken: "2023-06-08T03:22:17.995000Z",
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",

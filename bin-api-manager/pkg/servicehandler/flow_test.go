@@ -316,7 +316,7 @@ func Test_FlowList(t *testing.T) {
 				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
-			pageToken: "2020-10-20T01:00:00.995000",
+			pageToken: "2020-10-20T01:00:00.995000Z",
 			pageSize:  10,
 
 			responseFlows: []fmflow.Flow{
@@ -378,7 +378,7 @@ func Test_FlowList(t *testing.T) {
 				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
-			pageToken: "2020-10-20T01:00:00.995000",
+			pageToken: "2020-10-20T01:00:00.995000Z",
 			pageSize:  10,
 
 			responseFlows: []fmflow.Flow{

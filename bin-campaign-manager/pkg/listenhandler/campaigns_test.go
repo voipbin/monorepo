@@ -124,13 +124,13 @@ func Test_v1CampaignsGet(t *testing.T) {
 		{
 			"normal",
 			&sock.Request{
-				URI:      "/v1/campaigns?page_token=2020-10-10%2003:30:17.000000&page_size=10",
+				URI:      "/v1/campaigns?page_token=2020-10-10T03:30:17.000000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"1a2f447a-c459-11ec-8299-636f031f01c1"}`),
 			},
 
-			"2020-10-10 03:30:17.000000",
+			"2020-10-10T03:30:17.000000Z",
 			10,
 			map[campaign.Field]any{
 				campaign.FieldCustomerID: uuid.FromStringOrNil("1a2f447a-c459-11ec-8299-636f031f01c1"),

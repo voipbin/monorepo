@@ -47,10 +47,10 @@ func Test_FileCreate(t *testing.T) {
 				Filepath:         "/tmp/6c0e06ba-146a-11ef-8697-c7c53a81a655",
 				URIBucket:        "https://test.com/uri_bucket",
 				URIDownload:      "https://test.com/uri_download",
-				TMDownloadExpire: "2024-05-18 03:22:17.995000",
+				TMDownloadExpire: "2024-05-18T03:22:17.995000Z",
 			},
 
-			"2024-05-18 03:22:17.995000",
+			"2024-05-18T03:22:17.995000Z",
 			&file.File{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("ee9ff382-13f1-11ef-a41a-b3608f793722"),
@@ -70,8 +70,8 @@ func Test_FileCreate(t *testing.T) {
 				Filesize:         1000,
 				URIBucket:        "https://test.com/uri_bucket",
 				URIDownload:      "https://test.com/uri_download",
-				TMDownloadExpire: "2024-05-18 03:22:17.995000",
-				TMCreate:         "2024-05-18 03:22:17.995000",
+				TMDownloadExpire: "2024-05-18T03:22:17.995000Z",
+				TMCreate:         "2024-05-18T03:22:17.995000Z",
 				TMUpdate:         "9999-01-01T00:00:00.000000Z",
 				TMDelete:         "9999-01-01T00:00:00.000000Z",
 			},
@@ -150,7 +150,7 @@ func Test_FileList(t *testing.T) {
 				file.FieldDeleted:    false,
 			},
 
-			"2024-05-16 03:22:17.995000",
+			"2024-05-16T03:22:17.995000Z",
 			[]*file.File{
 				{
 					Identity: commonidentity.Identity{
@@ -158,7 +158,7 @@ func Test_FileList(t *testing.T) {
 						CustomerID: uuid.FromStringOrNil("a42851e0-13f2-11ef-a75e-57b5fc5932e1"),
 					},
 					Name:     "test1",
-					TMCreate: "2024-05-16 03:22:17.995000",
+					TMCreate: "2024-05-16T03:22:17.995000Z",
 					TMUpdate: "9999-01-01T00:00:00.000000Z",
 					TMDelete: "9999-01-01T00:00:00.000000Z",
 				},
@@ -168,7 +168,7 @@ func Test_FileList(t *testing.T) {
 						CustomerID: uuid.FromStringOrNil("a42851e0-13f2-11ef-a75e-57b5fc5932e1"),
 					},
 					Name:     "test2",
-					TMCreate: "2024-05-16 03:22:17.995000",
+					TMCreate: "2024-05-16T03:22:17.995000Z",
 					TMUpdate: "9999-01-01T00:00:00.000000Z",
 					TMDelete: "9999-01-01T00:00:00.000000Z",
 				},

@@ -43,11 +43,11 @@ func Test_BillingCreate(t *testing.T) {
 				CostPerUnit:      2.02,
 				CostTotal:        0,
 				BillingUnitCount: 30.12,
-				TMBillingStart:   "2020-04-18 03:22:18.995000",
-				TMBillingEnd:     "2020-04-18 03:22:19.995000",
+				TMBillingStart:   "2020-04-18T03:22:18.995000Z",
+				TMBillingEnd:     "2020-04-18T03:22:19.995000Z",
 			},
 
-			responseCurTime: "2023-06-07 03:22:17.995000",
+			responseCurTime: "2023-06-07T03:22:17.995000Z",
 			expectRes: &billing.Billing{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("012b0808-07ae-11ee-956e-a31693cf908b"),
@@ -60,9 +60,9 @@ func Test_BillingCreate(t *testing.T) {
 				CostPerUnit:      2.02,
 				CostTotal:        0,
 				BillingUnitCount: 30.12,
-				TMBillingStart:   "2020-04-18 03:22:18.995000",
-				TMBillingEnd:     "2020-04-18 03:22:19.995000",
-				TMCreate:         "2023-06-07 03:22:17.995000",
+				TMBillingStart:   "2020-04-18T03:22:18.995000Z",
+				TMBillingEnd:     "2020-04-18T03:22:19.995000Z",
+				TMCreate:         "2023-06-07T03:22:17.995000Z",
 				TMUpdate:         DefaultTimeStamp,
 				TMDelete:         DefaultTimeStamp,
 			},
@@ -76,12 +76,12 @@ func Test_BillingCreate(t *testing.T) {
 				},
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 			expectRes: &billing.Billing{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("a94849ce-07ae-11ee-a930-9b5e28e2ead9"),
 				},
-				TMCreate: "2020-04-18 03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
 				TMUpdate: DefaultTimeStamp,
 				TMDelete: DefaultTimeStamp,
 			},
@@ -168,14 +168,14 @@ func Test_BillingList(t *testing.T) {
 				billing.FieldCustomerID: uuid.FromStringOrNil("a9db1420-07ae-11ee-ab10-1ffa68fea7d8"),
 			},
 
-			responseCurTime: "2023-06-08 03:22:17.995000",
+			responseCurTime: "2023-06-08T03:22:17.995000Z",
 			expectRes: []*billing.Billing{
 				{
 					Identity: commonidentity.Identity{
 						ID:         uuid.FromStringOrNil("a97bade6-07ae-11ee-8916-4f8af853ac9b"),
 						CustomerID: uuid.FromStringOrNil("a9db1420-07ae-11ee-ab10-1ffa68fea7d8"),
 					},
-					TMCreate: "2023-06-08 03:22:17.995000",
+					TMCreate: "2023-06-08T03:22:17.995000Z",
 					TMUpdate: DefaultTimeStamp,
 					TMDelete: DefaultTimeStamp,
 				},
@@ -184,7 +184,7 @@ func Test_BillingList(t *testing.T) {
 						ID:         uuid.FromStringOrNil("a9ab7120-07ae-11ee-9a8d-6f3e025fae7a"),
 						CustomerID: uuid.FromStringOrNil("a9db1420-07ae-11ee-ab10-1ffa68fea7d8"),
 					},
-					TMCreate: "2023-06-08 03:22:17.995000",
+					TMCreate: "2023-06-08T03:22:17.995000Z",
 					TMUpdate: DefaultTimeStamp,
 					TMDelete: DefaultTimeStamp,
 				},
@@ -257,9 +257,9 @@ func Test_BillingSetStatusEnd(t *testing.T) {
 
 			id:              uuid.FromStringOrNil("1441f0ac-07b1-11ee-a5d8-cb0119ac5064"),
 			billingDuration: 10.12,
-			timestamp:       "2023-06-08 03:22:15.995000",
+			timestamp:       "2023-06-08T03:22:15.995000Z",
 
-			responseCurTime: "2023-06-08 03:22:17.995000",
+			responseCurTime: "2023-06-08T03:22:17.995000Z",
 			expectRes: &billing.Billing{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("1441f0ac-07b1-11ee-a5d8-cb0119ac5064"),
@@ -268,10 +268,10 @@ func Test_BillingSetStatusEnd(t *testing.T) {
 				CostPerUnit:      10.12,
 				CostTotal:        102.4144,
 				BillingUnitCount: 10.12,
-				TMBillingEnd:     "2023-06-08 03:22:15.995000",
+				TMBillingEnd:     "2023-06-08T03:22:15.995000Z",
 
-				TMCreate: "2023-06-08 03:22:17.995000",
-				TMUpdate: "2023-06-08 03:22:17.995000",
+				TMCreate: "2023-06-08T03:22:17.995000Z",
+				TMUpdate: "2023-06-08T03:22:17.995000Z",
 				TMDelete: DefaultTimeStamp,
 			},
 		},
@@ -345,15 +345,15 @@ func Test_BillingSetStatus(t *testing.T) {
 			id:     uuid.FromStringOrNil("1d30c8de-07b4-11ee-b80c-c7c0f2007941"),
 			status: billing.StatusFinished,
 
-			responseCurTime: "2023-06-08 03:22:17.995000",
+			responseCurTime: "2023-06-08T03:22:17.995000Z",
 			expectRes: &billing.Billing{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("1d30c8de-07b4-11ee-b80c-c7c0f2007941"),
 				},
 				Status: billing.StatusFinished,
 
-				TMCreate: "2023-06-08 03:22:17.995000",
-				TMUpdate: "2023-06-08 03:22:17.995000",
+				TMCreate: "2023-06-08T03:22:17.995000Z",
+				TMUpdate: "2023-06-08T03:22:17.995000Z",
 				TMDelete: DefaultTimeStamp,
 			},
 		},
@@ -424,15 +424,15 @@ func Test_BillingDelete(t *testing.T) {
 
 			id: uuid.FromStringOrNil("699bdc72-07b4-11ee-83bc-db5341c91127"),
 
-			responseCurTime: "2023-06-08 03:22:17.995000",
+			responseCurTime: "2023-06-08T03:22:17.995000Z",
 			expectRes: &billing.Billing{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("699bdc72-07b4-11ee-83bc-db5341c91127"),
 				},
 
-				TMCreate: "2023-06-08 03:22:17.995000",
-				TMUpdate: "2023-06-08 03:22:17.995000",
-				TMDelete: "2023-06-08 03:22:17.995000",
+				TMCreate: "2023-06-08T03:22:17.995000Z",
+				TMUpdate: "2023-06-08T03:22:17.995000Z",
+				TMDelete: "2023-06-08T03:22:17.995000Z",
 			},
 		},
 	}

@@ -35,14 +35,14 @@ func Test_TagCreate(t *testing.T) {
 				Detail: "detail1",
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 			expectRes: &tag.Tag{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("250bbfa4-50d7-11ec-a6b1-8f9671a9e70e"),
 				},
 				Name:     "name1",
 				Detail:   "detail1",
-				TMCreate: "2020-04-18 03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
 				TMUpdate: DefaultTimeStamp,
 				TMDelete: DefaultTimeStamp,
 			},
@@ -122,7 +122,7 @@ func Test_TagList(t *testing.T) {
 				tag.FieldDeleted:    false,
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 			expectRes: []*tag.Tag{
 				{
 					Identity: commonidentity.Identity{
@@ -131,7 +131,7 @@ func Test_TagList(t *testing.T) {
 					},
 					Name:     "name1",
 					Detail:   "detail1",
-					TMCreate: "2020-04-18 03:22:17.995000",
+					TMCreate: "2020-04-18T03:22:17.995000Z",
 					TMUpdate: DefaultTimeStamp,
 					TMDelete: DefaultTimeStamp,
 				},
@@ -142,7 +142,7 @@ func Test_TagList(t *testing.T) {
 					},
 					Name:     "name2",
 					Detail:   "detail2",
-					TMCreate: "2020-04-18 03:22:17.995000",
+					TMCreate: "2020-04-18T03:22:17.995000Z",
 					TMUpdate: DefaultTimeStamp,
 					TMDelete: DefaultTimeStamp,
 				},
@@ -216,7 +216,7 @@ func Test_TagSetBasicInfo(t *testing.T) {
 				},
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 			expectRes: &tag.Tag{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("ae1e0150-4c6b-11ec-922d-27336e407864"),
@@ -224,8 +224,8 @@ func Test_TagSetBasicInfo(t *testing.T) {
 				},
 				Name:     "name1",
 				Detail:   "detail1",
-				TMCreate: "2020-04-18 03:22:17.995000",
-				TMUpdate: "2020-04-18 03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
+				TMUpdate: "2020-04-18T03:22:17.995000Z",
 				TMDelete: DefaultTimeStamp,
 			},
 		},
@@ -298,7 +298,7 @@ func Test_TagDelete(t *testing.T) {
 
 			id: uuid.FromStringOrNil("3963dbc6-50d7-11ec-916c-1b7d3056c90a"),
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 			expectRes: &tag.Tag{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("3963dbc6-50d7-11ec-916c-1b7d3056c90a"),
@@ -306,9 +306,9 @@ func Test_TagDelete(t *testing.T) {
 				},
 				Name:     "name1",
 				Detail:   "detail1",
-				TMCreate: "2020-04-18 03:22:17.995000",
-				TMUpdate: "2020-04-18 03:22:17.995000",
-				TMDelete: "2020-04-18 03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
+				TMUpdate: "2020-04-18T03:22:17.995000Z",
+				TMDelete: "2020-04-18T03:22:17.995000Z",
 			},
 		},
 	}

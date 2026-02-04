@@ -53,7 +53,7 @@ func TestPhoneNumberConvertNumber(t *testing.T) {
 				Status:              "active",
 				T38Enabled:          true,
 				EmergencyEnabled:    false,
-				TMPurchase:          "2021-02-25 17:54:53.000",
+				TMPurchase:          "2021-02-25T17:54:53.000000Z",
 				TMCreate:            "",
 				TMUpdate:            "",
 				TMDelete:            "",

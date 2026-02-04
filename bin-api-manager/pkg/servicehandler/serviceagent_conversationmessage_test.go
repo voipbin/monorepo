@@ -46,7 +46,7 @@ func Test_ServiceAgentConversationMessageList(t *testing.T) {
 			},
 			conversationID: uuid.FromStringOrNil("d186a8c4-3ed3-11ef-8ff9-931b5d4f8461"),
 			size:           100,
-			token:          "2021-03-01 01:00:00.995000",
+			token:          "2021-03-01T01:00:00.995000Z",
 
 			responseConversation: &cvconversation.Conversation{
 				Identity: commonidentity.Identity{

@@ -123,7 +123,7 @@ func Test_v1FlowsGet(t *testing.T) {
 		{
 			name: "1 item",
 			request: &sock.Request{
-				URI:      "/v1/flows?page_token=2020-10-10T03:30:17.000000&page_size=10",
+				URI:      "/v1/flows?page_token=2020-10-10T03:30:17.000000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"16d3fcf0-7f4c-11ec-a4c3-7bf43125108d","deleted":false}`),
@@ -149,7 +149,7 @@ func Test_v1FlowsGet(t *testing.T) {
 				},
 			},
 
-			expectedToken: "2020-10-10T03:30:17.000000",
+			expectedToken: "2020-10-10T03:30:17.000000Z",
 			expectedSize:  10,
 			expectedRes: &sock.Response{
 				StatusCode: 200,
@@ -160,7 +160,7 @@ func Test_v1FlowsGet(t *testing.T) {
 		{
 			name: "has various filters",
 			request: &sock.Request{
-				URI:      "/v1/flows?page_token=2020-10-10T03:30:17.000000&page_size=10",
+				URI:      "/v1/flows?page_token=2020-10-10T03:30:17.000000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"16d3fcf0-7f4c-11ec-a4c3-7bf43125108d","deleted":false,"type":"flow"}`),
@@ -187,7 +187,7 @@ func Test_v1FlowsGet(t *testing.T) {
 				},
 			},
 
-			expectedToken: "2020-10-10T03:30:17.000000",
+			expectedToken: "2020-10-10T03:30:17.000000Z",
 			expectedSize:  10,
 			expectedRes: &sock.Response{
 				StatusCode: 200,
@@ -198,7 +198,7 @@ func Test_v1FlowsGet(t *testing.T) {
 		{
 			name: "2 items",
 			request: &sock.Request{
-				URI:      "/v1/flows?page_token=2020-10-10T03:30:17.000000&page_size=10",
+				URI:      "/v1/flows?page_token=2020-10-10T03:30:17.000000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"2457d824-7f4c-11ec-9489-b3552a7c9d63"}`),
@@ -235,7 +235,7 @@ func Test_v1FlowsGet(t *testing.T) {
 				},
 			},
 
-			expectedToken: "2020-10-10T03:30:17.000000",
+			expectedToken: "2020-10-10T03:30:17.000000Z",
 			expectedSize:  10,
 			expectedRes: &sock.Response{
 				StatusCode: 200,
@@ -246,7 +246,7 @@ func Test_v1FlowsGet(t *testing.T) {
 		{
 			name: "empty",
 			request: &sock.Request{
-				URI:      "/v1/flows?page_token=2020-10-10T03:30:17.000000&page_size=10",
+				URI:      "/v1/flows?page_token=2020-10-10T03:30:17.000000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"3ee14bee-7f4c-11ec-a1d8-a3a488ed5885"}`),
@@ -257,7 +257,7 @@ func Test_v1FlowsGet(t *testing.T) {
 			},
 			responseFlows: []*flow.Flow{},
 
-			expectedToken: "2020-10-10T03:30:17.000000",
+			expectedToken: "2020-10-10T03:30:17.000000Z",
 			expectedSize:  10,
 			expectedRes: &sock.Response{
 				StatusCode: 200,
@@ -268,7 +268,7 @@ func Test_v1FlowsGet(t *testing.T) {
 		{
 			name: "type flow",
 			request: &sock.Request{
-				URI:      "/v1/flows?page_token=2020-10-10T03:30:17.000000&page_size=10",
+				URI:      "/v1/flows?page_token=2020-10-10T03:30:17.000000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"49e66560-7f4c-11ec-9d15-2396902a0309","type":"flow"}`),
@@ -293,7 +293,7 @@ func Test_v1FlowsGet(t *testing.T) {
 				},
 			},
 
-			expectedToken: "2020-10-10T03:30:17.000000",
+			expectedToken: "2020-10-10T03:30:17.000000Z",
 			expectedSize:  10,
 			expectedRes: &sock.Response{
 				StatusCode: 200,

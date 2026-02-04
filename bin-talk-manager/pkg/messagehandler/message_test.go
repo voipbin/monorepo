@@ -152,7 +152,7 @@ func Test_MessageCreate(t *testing.T) {
 				ChatID:   chatID,
 				Type:     message.TypeNormal,
 				Text:     "Deleted parent message",
-				TMDelete: "2024-01-17 00:00:00.000000", // Soft-deleted
+				TMDelete: "2024-01-17T00:00:00.000000Z", // Soft-deleted
 			},
 
 			expectError: false, // MUST NOT error - soft-deleted parents allowed
@@ -740,7 +740,7 @@ func Test_MessageGet(t *testing.T) {
 				Type:     message.TypeNormal,
 				Text:     "Hello, world!",
 				Metadata: message.Metadata{Reactions: []message.Reaction{}},
-				TMCreate: "2024-01-15 10:30:00.000000",
+				TMCreate: "2024-01-15T10:30:00.000000Z",
 			},
 		},
 		{
@@ -762,7 +762,7 @@ func Test_MessageGet(t *testing.T) {
 				Type:     message.TypeNormal,
 				Text:     "This is a reply",
 				Metadata: message.Metadata{Reactions: []message.Reaction{}},
-				TMCreate: "2024-01-15 11:00:00.000000",
+				TMCreate: "2024-01-15T11:00:00.000000Z",
 			},
 		},
 	}
@@ -871,7 +871,7 @@ func Test_MessageList(t *testing.T) {
 				message.FieldChatID:     uuid.FromStringOrNil("ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4"),
 				message.FieldDeleted:    false,
 			},
-			token: "2024-01-15 10:30:00.000000",
+			token: "2024-01-15T10:30:00.000000Z",
 			size:  10,
 
 			responseMessages: []*message.Message{
@@ -888,7 +888,7 @@ func Test_MessageList(t *testing.T) {
 					Type:     message.TypeNormal,
 					Text:     "First message",
 					Metadata: message.Metadata{Reactions: []message.Reaction{}},
-					TMCreate: "2024-01-15 10:30:00.000000",
+					TMCreate: "2024-01-15T10:30:00.000000Z",
 				},
 				{
 					Identity: commonidentity.Identity{
@@ -903,7 +903,7 @@ func Test_MessageList(t *testing.T) {
 					Type:     message.TypeNormal,
 					Text:     "Second message",
 					Metadata: message.Metadata{Reactions: []message.Reaction{}},
-					TMCreate: "2024-01-15 11:00:00.000000",
+					TMCreate: "2024-01-15T11:00:00.000000Z",
 				},
 			},
 		},
@@ -933,7 +933,7 @@ func Test_MessageList(t *testing.T) {
 					Type:     message.TypeNormal,
 					Text:     "Agent message",
 					Metadata: message.Metadata{Reactions: []message.Reaction{}},
-					TMCreate: "2024-01-15 12:00:00.000000",
+					TMCreate: "2024-01-15T12:00:00.000000Z",
 				},
 			},
 		},
@@ -1065,7 +1065,7 @@ func Test_MessageDelete(t *testing.T) {
 				Type:     message.TypeNormal,
 				Text:     "Message to delete",
 				Metadata: message.Metadata{Reactions: []message.Reaction{}},
-				TMCreate: "2024-01-15 10:30:00.000000",
+				TMCreate: "2024-01-15T10:30:00.000000Z",
 				TMDelete: "",
 			},
 			responseUpdatedMessage: &message.Message{
@@ -1081,8 +1081,8 @@ func Test_MessageDelete(t *testing.T) {
 				Type:     message.TypeNormal,
 				Text:     "Message to delete",
 				Metadata: message.Metadata{Reactions: []message.Reaction{}},
-				TMCreate: "2024-01-15 10:30:00.000000",
-				TMDelete: "2024-01-17 15:00:00.000000",
+				TMCreate: "2024-01-15T10:30:00.000000Z",
+				TMDelete: "2024-01-17T15:00:00.000000Z",
 			},
 		},
 	}
@@ -1171,7 +1171,7 @@ func Test_MessageDelete_error(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("809656e2-305e-43cd-8d7b-ccb44373dddb"),
 				},
 				ChatID:   uuid.FromStringOrNil("ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4"),
-				TMDelete: "2024-01-17 10:00:00.000000", // Already deleted
+				TMDelete: "2024-01-17T10:00:00.000000Z", // Already deleted
 			},
 			getError: nil,
 		},

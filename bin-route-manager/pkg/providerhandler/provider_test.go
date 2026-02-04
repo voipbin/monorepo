@@ -140,7 +140,7 @@ func Test_List(t *testing.T) {
 		{
 			"normal",
 
-			"2020-04-18 03:22:17.995000",
+			"2020-04-18T03:22:17.995000Z",
 			10,
 
 			[]*provider.Provider{

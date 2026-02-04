@@ -32,7 +32,7 @@ func Test_EmailV1EmailList(t *testing.T) {
 		{
 			name: "normal",
 
-			pageToken: "2021-03-02 03:23:20.995000",
+			pageToken: "2021-03-02T03:23:20.995000Z",
 			pageSize:  10,
 			filters: map[ememail.Field]any{
 				ememail.FieldDeleted: false,
@@ -46,7 +46,7 @@ func Test_EmailV1EmailList(t *testing.T) {
 
 			expectTarget: "bin-manager.email-manager.request",
 			expectRequest: &sock.Request{
-				URI:      "/v1/emails?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10",
+				URI:      "/v1/emails?page_token=2021-03-02T03%3A23%3A20.995000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"deleted":false}`),

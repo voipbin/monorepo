@@ -29,13 +29,13 @@ func Test_processV1AccesskeysGet(t *testing.T) {
 		{
 			"normal",
 			&sock.Request{
-				URI:      "/v1/accesskeys?page_size=10&page_token=2021-11-23%2017:55:39.712000",
+				URI:      "/v1/accesskeys?page_size=10&page_token=2021-11-23T17:55:39.712000Z",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"deleted":false}`),
 			},
 			10,
-			"2021-11-23 17:55:39.712000",
+			"2021-11-23T17:55:39.712000Z",
 
 			map[accesskey.Field]any{
 				accesskey.FieldDeleted: false,
@@ -54,13 +54,13 @@ func Test_processV1AccesskeysGet(t *testing.T) {
 		{
 			"2 accesskeys",
 			&sock.Request{
-				URI:      "/v1/accesskeys?page_size=10&page_token=2021-11-23%2017:55:39.712000",
+				URI:      "/v1/accesskeys?page_size=10&page_token=2021-11-23T17:55:39.712000Z",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"deleted":false}`),
 			},
 			10,
-			"2021-11-23 17:55:39.712000",
+			"2021-11-23T17:55:39.712000Z",
 
 			map[accesskey.Field]any{
 				accesskey.FieldDeleted: false,

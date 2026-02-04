@@ -123,12 +123,12 @@ func Test_processV1ExternalMediasGet(t *testing.T) {
 			name: "normal",
 
 			request: &sock.Request{
-				URI:    "/v1/external-medias?page_size=10&page_token=2020-05-03%2021:35:02.809",
+				URI:    "/v1/external-medias?page_size=10&page_token=2020-05-03T21:35:02.809Z",
 				Method: sock.RequestMethodGet,
 				Data:   []byte(`{"reference_id":"0971d7c4-e829-11ee-a17d-b320c527e478"}`),
 			},
 			pageSize:  10,
-			pageToken: "2020-05-03 21:35:02.809",
+			pageToken: "2020-05-03T21:35:02.809Z",
 
 			responseExternalMedias: []*externalmedia.ExternalMedia{
 				{
@@ -145,12 +145,12 @@ func Test_processV1ExternalMediasGet(t *testing.T) {
 			name: "2 items",
 
 			request: &sock.Request{
-				URI:    "/v1/external-medias?page_size=10&page_token=2020-05-03%2021:35:02.809",
+				URI:    "/v1/external-medias?page_size=10&page_token=2020-05-03T21:35:02.809Z",
 				Method: sock.RequestMethodGet,
 				Data:   []byte(`{"reference_id":"98d20344-e829-11ee-992d-fbe3942f7a49"}`),
 			},
 			pageSize:  10,
-			pageToken: "2020-05-03 21:35:02.809",
+			pageToken: "2020-05-03T21:35:02.809Z",
 
 			responseExternalMedias: []*externalmedia.ExternalMedia{
 				{

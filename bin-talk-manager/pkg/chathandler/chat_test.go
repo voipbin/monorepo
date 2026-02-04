@@ -348,7 +348,7 @@ func Test_ChatGet(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("809656e2-305e-43cd-8d7b-ccb44373dddb"),
 				},
 				Type:     chat.TypeDirect,
-				TMCreate: "2024-01-15 10:30:00.000000",
+				TMCreate: "2024-01-15T10:30:00.000000Z",
 			},
 		},
 	}
@@ -452,7 +452,7 @@ func Test_ChatList(t *testing.T) {
 				chat.FieldCustomerID: uuid.FromStringOrNil("809656e2-305e-43cd-8d7b-ccb44373dddb"),
 				chat.FieldDeleted:    false,
 			},
-			token: "2024-01-15 10:30:00.000000",
+			token: "2024-01-15T10:30:00.000000Z",
 			size:  10,
 
 			responseTalks: []*chat.Chat{
@@ -462,7 +462,7 @@ func Test_ChatList(t *testing.T) {
 						CustomerID: uuid.FromStringOrNil("809656e2-305e-43cd-8d7b-ccb44373dddb"),
 					},
 					Type:     chat.TypeDirect,
-					TMCreate: "2024-01-15 10:30:00.000000",
+					TMCreate: "2024-01-15T10:30:00.000000Z",
 				},
 				{
 					Identity: commonidentity.Identity{
@@ -470,7 +470,7 @@ func Test_ChatList(t *testing.T) {
 						CustomerID: uuid.FromStringOrNil("809656e2-305e-43cd-8d7b-ccb44373dddb"),
 					},
 					Type:     chat.TypeGroup,
-					TMCreate: "2024-01-15 11:00:00.000000",
+					TMCreate: "2024-01-15T11:00:00.000000Z",
 				},
 			},
 		},
@@ -492,7 +492,7 @@ func Test_ChatList(t *testing.T) {
 						CustomerID: uuid.FromStringOrNil("ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4"),
 					},
 					Type:     chat.TypeGroup,
-					TMCreate: "2024-01-15 12:00:00.000000",
+					TMCreate: "2024-01-15T12:00:00.000000Z",
 				},
 			},
 		},
@@ -617,7 +617,7 @@ func Test_ChatUpdate(t *testing.T) {
 				Type:     chat.TypeGroup,
 				Name:     "Old Name",
 				Detail:   "Old Detail",
-				TMCreate: "2024-01-15 10:30:00.000000",
+				TMCreate: "2024-01-15T10:30:00.000000Z",
 			},
 			responseUpdatedChat: &chat.Chat{
 				Identity: commonidentity.Identity{
@@ -627,8 +627,8 @@ func Test_ChatUpdate(t *testing.T) {
 				Type:     chat.TypeGroup,
 				Name:     "New Name",
 				Detail:   "Old Detail",
-				TMCreate: "2024-01-15 10:30:00.000000",
-				TMUpdate: "2024-01-15 11:00:00.000000",
+				TMCreate: "2024-01-15T10:30:00.000000Z",
+				TMUpdate: "2024-01-15T11:00:00.000000Z",
 			},
 		},
 		{
@@ -646,7 +646,7 @@ func Test_ChatUpdate(t *testing.T) {
 				Type:     chat.TypeGroup,
 				Name:     "Old Name",
 				Detail:   "Old Detail",
-				TMCreate: "2024-01-15 10:30:00.000000",
+				TMCreate: "2024-01-15T10:30:00.000000Z",
 			},
 			responseUpdatedChat: &chat.Chat{
 				Identity: commonidentity.Identity{
@@ -656,8 +656,8 @@ func Test_ChatUpdate(t *testing.T) {
 				Type:     chat.TypeGroup,
 				Name:     "Old Name",
 				Detail:   "New Detail",
-				TMCreate: "2024-01-15 10:30:00.000000",
-				TMUpdate: "2024-01-15 11:00:00.000000",
+				TMCreate: "2024-01-15T10:30:00.000000Z",
+				TMUpdate: "2024-01-15T11:00:00.000000Z",
 			},
 		},
 		{
@@ -675,7 +675,7 @@ func Test_ChatUpdate(t *testing.T) {
 				Type:     chat.TypeGroup,
 				Name:     "Old Name",
 				Detail:   "Old Detail",
-				TMCreate: "2024-01-15 10:30:00.000000",
+				TMCreate: "2024-01-15T10:30:00.000000Z",
 			},
 			responseUpdatedChat: &chat.Chat{
 				Identity: commonidentity.Identity{
@@ -685,8 +685,8 @@ func Test_ChatUpdate(t *testing.T) {
 				Type:     chat.TypeGroup,
 				Name:     "New Name",
 				Detail:   "New Detail",
-				TMCreate: "2024-01-15 10:30:00.000000",
-				TMUpdate: "2024-01-15 11:00:00.000000",
+				TMCreate: "2024-01-15T10:30:00.000000Z",
+				TMUpdate: "2024-01-15T11:00:00.000000Z",
 			},
 		},
 	}
@@ -862,7 +862,7 @@ func Test_ChatDelete(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("809656e2-305e-43cd-8d7b-ccb44373dddb"),
 				},
 				Type:     chat.TypeDirect,
-				TMCreate: "2024-01-15 10:30:00.000000",
+				TMCreate: "2024-01-15T10:30:00.000000Z",
 			},
 		},
 	}

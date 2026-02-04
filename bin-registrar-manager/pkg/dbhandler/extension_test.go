@@ -51,7 +51,7 @@ func Test_ExtensionCreate(t *testing.T) {
 				Password: "7818abce-6ebc-11eb-b4fe-e748480c228a",
 			},
 
-			"2021-02-26 18:26:49.000",
+			"2021-02-26T18:26:49.000Z",
 			&extension.Extension{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("3fecf3d6-6ebc-11eb-a0e7-23ecc297d9a5"),
@@ -72,7 +72,7 @@ func Test_ExtensionCreate(t *testing.T) {
 				Username: "608cbfae-6ebc-11eb-a74b-671d17dda173",
 				Password: "7818abce-6ebc-11eb-b4fe-e748480c228a",
 
-				TMCreate: "2021-02-26 18:26:49.000",
+				TMCreate: "2021-02-26T18:26:49.000Z",
 				TMUpdate: DefaultTimeStamp,
 				TMDelete: DefaultTimeStamp,
 			},
@@ -164,7 +164,7 @@ func Test_ExtensionGetByExtension(t *testing.T) {
 			uuid.FromStringOrNil("56c83c70-564d-11ee-b707-d3539191ce8c"),
 			"56f79dda-564d-11ee-9b02-2ff26b372f36",
 
-			"2021-02-26 18:26:49.000",
+			"2021-02-26T18:26:49.000Z",
 			&extension.Extension{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("569711e0-564d-11ee-97bc-e73899c004b9"),
@@ -184,7 +184,7 @@ func Test_ExtensionGetByExtension(t *testing.T) {
 				Username:   "56f79dda-564d-11ee-9b02-2ff26b372f36",
 				Password:   "eb605618-6ebc-11eb-a421-4bbf5d9a2fac",
 
-				TMCreate: "2021-02-26 18:26:49.000",
+				TMCreate: "2021-02-26T18:26:49.000Z",
 				TMUpdate: DefaultTimeStamp,
 				TMDelete: DefaultTimeStamp,
 			},
@@ -260,7 +260,7 @@ func Test_ExtensionDelete(t *testing.T) {
 				Password:   "eb605618-6ebc-11eb-a421-4bbf5d9a2fac",
 			},
 
-			"2021-02-26 18:26:49.000",
+			"2021-02-26T18:26:49.000Z",
 			&extension.Extension{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("def11a70-6ebc-11eb-ae2b-d31ef2c6d22d"),
@@ -280,9 +280,9 @@ func Test_ExtensionDelete(t *testing.T) {
 				Username:   "e56c33b2-6ebc-11eb-bada-4f15e459e32f",
 				Password:   "eb605618-6ebc-11eb-a421-4bbf5d9a2fac",
 
-				TMCreate: "2021-02-26 18:26:49.000",
-				TMUpdate: "2021-02-26 18:26:49.000",
-				TMDelete: "2021-02-26 18:26:49.000",
+				TMCreate: "2021-02-26T18:26:49.000Z",
+				TMUpdate: "2021-02-26T18:26:49.000Z",
+				TMDelete: "2021-02-26T18:26:49.000Z",
 			},
 		},
 	}
@@ -368,7 +368,7 @@ func Test_ExtensionUpdate(t *testing.T) {
 				extension.FieldPassword: "update password",
 			},
 
-			"2021-02-26 18:26:49.000",
+			"2021-02-26T18:26:49.000Z",
 			&extension.Extension{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("e3ebc6fe-711b-11eb-8385-ef7ccec2e41a"),
@@ -384,8 +384,8 @@ func Test_ExtensionUpdate(t *testing.T) {
 				Username:   "test",
 				Password:   "update password",
 
-				TMCreate: "2021-02-26 18:26:49.000",
-				TMUpdate: "2021-02-26 18:26:49.000",
+				TMCreate: "2021-02-26T18:26:49.000Z",
+				TMUpdate: "2021-02-26T18:26:49.000Z",
 				TMDelete: DefaultTimeStamp,
 			},
 		},
@@ -472,7 +472,7 @@ func Test_ExtensionList(t *testing.T) {
 				extension.FieldCustomerID: uuid.FromStringOrNil("f3bcb6d0-cdc8-11ee-82a8-430793535c91"),
 			},
 
-			"2021-02-26 18:26:49.000",
+			"2021-02-26T18:26:49.000Z",
 			[]*extension.Extension{
 				{
 					Identity: commonidentity.Identity{
@@ -480,7 +480,7 @@ func Test_ExtensionList(t *testing.T) {
 						CustomerID: uuid.FromStringOrNil("f3bcb6d0-cdc8-11ee-82a8-430793535c91"),
 					},
 					Name:     "test1",
-					TMCreate: "2021-02-26 18:26:49.000",
+					TMCreate: "2021-02-26T18:26:49.000Z",
 					TMUpdate: DefaultTimeStamp,
 					TMDelete: DefaultTimeStamp,
 				},
@@ -490,7 +490,7 @@ func Test_ExtensionList(t *testing.T) {
 						CustomerID: uuid.FromStringOrNil("f3bcb6d0-cdc8-11ee-82a8-430793535c91"),
 					},
 					Name:     "test2",
-					TMCreate: "2021-02-26 18:26:49.000",
+					TMCreate: "2021-02-26T18:26:49.000Z",
 					TMUpdate: DefaultTimeStamp,
 					TMDelete: DefaultTimeStamp,
 				},

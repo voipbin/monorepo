@@ -44,20 +44,20 @@ func Test_outdialsGET(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/outdials?page_size=10&page_token=2021-03-02%2003%3A23%3A20.995000",
+			reqQuery: "/outdials?page_size=10&page_token=2021-03-02T03:23:20.995000Z",
 
 			responseOutdials: []*omoutdial.WebhookMessage{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("438f0ccc-c64a-11ec-9ac6-b729ca9f28bf"),
 					},
-					TMCreate: "2020-09-20T03:23:21.995000",
+					TMCreate: "2020-09-20T03:23:21.995000Z",
 				},
 			},
 
 			expectPageSize:  10,
-			expectPageToken: "2021-03-02 03:23:20.995000",
-			expectRes:       `{"result":[{"id":"438f0ccc-c64a-11ec-9ac6-b729ca9f28bf","customer_id":"00000000-0000-0000-0000-000000000000","campaign_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
+			expectPageToken: "2021-03-02T03:23:20.995000Z",
+			expectRes:       `{"result":[{"id":"438f0ccc-c64a-11ec-9ac6-b729ca9f28bf","customer_id":"00000000-0000-0000-0000-000000000000","campaign_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","tm_create":"2020-09-20T03:23:21.995000Z","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000Z"}`,
 		},
 		{
 			name: "more than 2 items",
@@ -67,32 +67,32 @@ func Test_outdialsGET(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/outdials?page_size=10&page_token=2021-03-02%2003%3A23%3A20.995000",
+			reqQuery: "/outdials?page_size=10&page_token=2021-03-02T03:23:20.995000Z",
 
 			responseOutdials: []*omoutdial.WebhookMessage{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("ad4ec08a-c64a-11ec-ad4d-2b9c85718834"),
 					},
-					TMCreate: "2020-09-20T03:23:21.995000",
+					TMCreate: "2020-09-20T03:23:21.995000Z",
 				},
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("b088244e-c64a-11ec-afb8-2f6ebf108ed8"),
 					},
-					TMCreate: "2020-09-20T03:23:22.995000",
+					TMCreate: "2020-09-20T03:23:22.995000Z",
 				},
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("c3e247e0-c64a-11ec-b415-c786d3fa957c"),
 					},
-					TMCreate: "2020-09-20T03:23:23.995000",
+					TMCreate: "2020-09-20T03:23:23.995000Z",
 				},
 			},
 
 			expectPageSize:  10,
-			expectPageToken: "2021-03-02 03:23:20.995000",
-			expectRes:       `{"result":[{"id":"ad4ec08a-c64a-11ec-ad4d-2b9c85718834","customer_id":"00000000-0000-0000-0000-000000000000","campaign_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""},{"id":"b088244e-c64a-11ec-afb8-2f6ebf108ed8","customer_id":"00000000-0000-0000-0000-000000000000","campaign_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","tm_create":"2020-09-20T03:23:22.995000","tm_update":"","tm_delete":""},{"id":"c3e247e0-c64a-11ec-b415-c786d3fa957c","customer_id":"00000000-0000-0000-0000-000000000000","campaign_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","tm_create":"2020-09-20T03:23:23.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:23.995000"}`,
+			expectPageToken: "2021-03-02T03:23:20.995000Z",
+			expectRes:       `{"result":[{"id":"ad4ec08a-c64a-11ec-ad4d-2b9c85718834","customer_id":"00000000-0000-0000-0000-000000000000","campaign_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","tm_create":"2020-09-20T03:23:21.995000Z","tm_update":"","tm_delete":""},{"id":"b088244e-c64a-11ec-afb8-2f6ebf108ed8","customer_id":"00000000-0000-0000-0000-000000000000","campaign_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","tm_create":"2020-09-20T03:23:22.995000Z","tm_update":"","tm_delete":""},{"id":"c3e247e0-c64a-11ec-b415-c786d3fa957c","customer_id":"00000000-0000-0000-0000-000000000000","campaign_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","tm_create":"2020-09-20T03:23:23.995000Z","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:23.995000Z"}`,
 		},
 	}
 
@@ -821,19 +821,19 @@ func Test_outdialsIDTargetGET(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/outdials/fe7a06b6-c82c-11ec-89fd-f741623099f0/targets?page_size=10&page_token=2020-09-20%2003:23:21.995000",
+			reqQuery: "/outdials/fe7a06b6-c82c-11ec-89fd-f741623099f0/targets?page_size=10&page_token=2020-09-20T03:23:21.995000Z",
 
 			responseOutdialtargets: []*omoutdialtarget.WebhookMessage{
 				{
 					ID:       uuid.FromStringOrNil("80fcacd4-c82c-11ec-b008-67e3b5299bec"),
-					TMCreate: "2020-09-20T03:23:21.995000",
+					TMCreate: "2020-09-20T03:23:21.995000Z",
 				},
 			},
 
 			expectOutdialID: uuid.FromStringOrNil("fe7a06b6-c82c-11ec-89fd-f741623099f0"),
 			expectPageSize:  10,
-			expectPageToken: "2020-09-20 03:23:21.995000",
-			expectRes:       `{"result":[{"id":"80fcacd4-c82c-11ec-b008-67e3b5299bec","outdial_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","status":"","destination_0":null,"destination_1":null,"destination_2":null,"destination_3":null,"destination_4":null,"try_count_0":0,"try_count_1":0,"try_count_2":0,"try_count_3":0,"try_count_4":0,"tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
+			expectPageToken: "2020-09-20T03:23:21.995000Z",
+			expectRes:       `{"result":[{"id":"80fcacd4-c82c-11ec-b008-67e3b5299bec","outdial_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","status":"","destination_0":null,"destination_1":null,"destination_2":null,"destination_3":null,"destination_4":null,"try_count_0":0,"try_count_1":0,"try_count_2":0,"try_count_3":0,"try_count_4":0,"tm_create":"2020-09-20T03:23:21.995000Z","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000Z"}`,
 		},
 		{
 			name: "more than 2 items",
@@ -843,27 +843,27 @@ func Test_outdialsIDTargetGET(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/outdials/33d8b93c-c82e-11ec-b630-f304b7d48448/targets?page_size=15&page_token=2020-09-20%2003:23:21.995000",
+			reqQuery: "/outdials/33d8b93c-c82e-11ec-b630-f304b7d48448/targets?page_size=15&page_token=2020-09-20T03:23:21.995000Z",
 
 			responseOutdialtargets: []*omoutdialtarget.WebhookMessage{
 				{
 					ID:       uuid.FromStringOrNil("340757d8-c82e-11ec-92ef-235422080f76"),
-					TMCreate: "2020-09-20T03:23:21.995000",
+					TMCreate: "2020-09-20T03:23:21.995000Z",
 				},
 				{
 					ID:       uuid.FromStringOrNil("34353180-c82e-11ec-b8f2-87eaa2dc5a1b"),
-					TMCreate: "2020-09-20T03:23:22.995000",
+					TMCreate: "2020-09-20T03:23:22.995000Z",
 				},
 				{
 					ID:       uuid.FromStringOrNil("61f53c3c-c82e-11ec-ba3d-f387359c8014"),
-					TMCreate: "2020-09-20T03:23:23.995000",
+					TMCreate: "2020-09-20T03:23:23.995000Z",
 				},
 			},
 
 			expectOutdialID: uuid.FromStringOrNil("33d8b93c-c82e-11ec-b630-f304b7d48448"),
 			expectPageSize:  15,
-			expectPageToken: "2020-09-20 03:23:21.995000",
-			expectRes:       `{"result":[{"id":"340757d8-c82e-11ec-92ef-235422080f76","outdial_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","status":"","destination_0":null,"destination_1":null,"destination_2":null,"destination_3":null,"destination_4":null,"try_count_0":0,"try_count_1":0,"try_count_2":0,"try_count_3":0,"try_count_4":0,"tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""},{"id":"34353180-c82e-11ec-b8f2-87eaa2dc5a1b","outdial_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","status":"","destination_0":null,"destination_1":null,"destination_2":null,"destination_3":null,"destination_4":null,"try_count_0":0,"try_count_1":0,"try_count_2":0,"try_count_3":0,"try_count_4":0,"tm_create":"2020-09-20T03:23:22.995000","tm_update":"","tm_delete":""},{"id":"61f53c3c-c82e-11ec-ba3d-f387359c8014","outdial_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","status":"","destination_0":null,"destination_1":null,"destination_2":null,"destination_3":null,"destination_4":null,"try_count_0":0,"try_count_1":0,"try_count_2":0,"try_count_3":0,"try_count_4":0,"tm_create":"2020-09-20T03:23:23.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:23.995000"}`,
+			expectPageToken: "2020-09-20T03:23:21.995000Z",
+			expectRes:       `{"result":[{"id":"340757d8-c82e-11ec-92ef-235422080f76","outdial_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","status":"","destination_0":null,"destination_1":null,"destination_2":null,"destination_3":null,"destination_4":null,"try_count_0":0,"try_count_1":0,"try_count_2":0,"try_count_3":0,"try_count_4":0,"tm_create":"2020-09-20T03:23:21.995000Z","tm_update":"","tm_delete":""},{"id":"34353180-c82e-11ec-b8f2-87eaa2dc5a1b","outdial_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","status":"","destination_0":null,"destination_1":null,"destination_2":null,"destination_3":null,"destination_4":null,"try_count_0":0,"try_count_1":0,"try_count_2":0,"try_count_3":0,"try_count_4":0,"tm_create":"2020-09-20T03:23:22.995000Z","tm_update":"","tm_delete":""},{"id":"61f53c3c-c82e-11ec-ba3d-f387359c8014","outdial_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","status":"","destination_0":null,"destination_1":null,"destination_2":null,"destination_3":null,"destination_4":null,"try_count_0":0,"try_count_1":0,"try_count_2":0,"try_count_3":0,"try_count_4":0,"tm_create":"2020-09-20T03:23:23.995000Z","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:23.995000Z"}`,
 		},
 	}
 

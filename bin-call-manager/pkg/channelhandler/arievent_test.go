@@ -48,7 +48,7 @@ func Test_ARIStasisStart(t *testing.T) {
 				Event: ari.Event{
 					Type:        ari.EventTypeStasisStart,
 					Application: "voipbin",
-					Timestamp:   "2020-04-25T00:27:18.342",
+					Timestamp:   "2020-04-25T00:27:18.342Z",
 					AsteriskID:  "42:01:0a:a4:00:03",
 				},
 				Args: ari.ArgsMap{
@@ -66,7 +66,7 @@ func Test_ARIStasisStart(t *testing.T) {
 					ID:           "1587774438.2390",
 					Name:         "PJSIP/in-voipbin-00001948",
 					Language:     "en",
-					CreationTime: "2020-04-25T00:27:18.341",
+					CreationTime: "2020-04-25T00:27:18.341Z",
 					State:        ari.ChannelStateRing,
 					Caller: ari.CallerID{
 						Name:   "tttt",
@@ -283,14 +283,14 @@ func Test_ARIChannelStateChange_outgoing_statusUp(t *testing.T) {
 				Event: ari.Event{
 					Type:        ari.EventTypeChannelStateChange,
 					Application: "voipbin",
-					Timestamp:   "2020-04-25T19:17:13.786",
+					Timestamp:   "2020-04-25T19:17:13.786Z",
 					AsteriskID:  "42:01:0a:a4:00:05",
 				},
 				Channel: ari.Channel{
 					ID:           "1587842233.10219",
 					Name:         "PJSIP/in-voipbin-000026ef",
 					Language:     "en",
-					CreationTime: "2020-04-25T19:17:13.585",
+					CreationTime: "2020-04-25T19:17:13.585Z",
 					State:        ari.ChannelStateUp,
 					Caller: ari.CallerID{
 						Number: "586737682",

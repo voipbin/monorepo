@@ -131,7 +131,7 @@ func Test_transcribesGET(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/transcribes?page_size=10&page_token=2020-09-20%2003:23:20.995000",
+			reqQuery: "/transcribes?page_size=10&page_token=2020-09-20T03:23:20.995000Z",
 
 			responseTranscribes: []*tmtranscribe.WebhookMessage{
 				{
@@ -142,7 +142,7 @@ func Test_transcribesGET(t *testing.T) {
 			},
 
 			expectedPageSize:  10,
-			expectedPageToken: "2020-09-20 03:23:20.995000",
+			expectedPageToken: "2020-09-20T03:23:20.995000Z",
 			expectedRes:       `{"result":[{"id":"6e812ad0-828a-11ed-bfe8-9f9b344a834b","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","on_end_flow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","language":"","direction":"","tm_create":"","tm_update":"","tm_delete":""}],"next_page_token":""}`,
 		},
 	}

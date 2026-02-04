@@ -32,7 +32,7 @@ func Test_processV1BillingsGet(t *testing.T) {
 		{
 			name: "normal",
 			request: &sock.Request{
-				URI:    "/v1/billings?page_size=10&page_token=2023-06-08%2003:22:17.995000&customer_id=6a93f71e-f542-11ee-9a48-7f8011d36229",
+				URI:    "/v1/billings?page_size=10&page_token=2023-06-08T03:22:17.995000Z&customer_id=6a93f71e-f542-11ee-9a48-7f8011d36229",
 				Method: sock.RequestMethodGet,
 			},
 
@@ -53,7 +53,7 @@ func Test_processV1BillingsGet(t *testing.T) {
 				billing.FieldCustomerID: uuid.FromStringOrNil("6a93f71e-f542-11ee-9a48-7f8011d36229"),
 			},
 			expectSize:  10,
-			expectToken: "2023-06-08 03:22:17.995000",
+			expectToken: "2023-06-08T03:22:17.995000Z",
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",

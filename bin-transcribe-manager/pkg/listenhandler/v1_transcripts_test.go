@@ -33,13 +33,13 @@ func Test_processV1TranscriptsGet(t *testing.T) {
 		{
 			name: "normal",
 			request: &sock.Request{
-				URI:    "/v1/transcripts?page_size=10&page_token=2020-05-03%2021:35:02.809",
+				URI:    "/v1/transcripts?page_size=10&page_token=2020-05-03T21:35:02.809Z",
 				Method: sock.RequestMethodGet,
 				Data:   []byte(`{"transcribe_id":"4f08e520-821d-11ed-844e-67fdcb950f6f"}`),
 			},
 
 			pageSize:  10,
-			pageToken: "2020-05-03 21:35:02.809",
+			pageToken: "2020-05-03T21:35:02.809Z",
 
 			expectFilters: map[transcript.Field]any{
 				transcript.FieldTranscribeID: uuid.FromStringOrNil("4f08e520-821d-11ed-844e-67fdcb950f6f"),
@@ -61,13 +61,13 @@ func Test_processV1TranscriptsGet(t *testing.T) {
 		{
 			name: "2 items",
 			request: &sock.Request{
-				URI:    "/v1/transcripts?page_size=10&page_token=2020-05-03%2021:35:02.809",
+				URI:    "/v1/transcripts?page_size=10&page_token=2020-05-03T21:35:02.809Z",
 				Method: sock.RequestMethodGet,
 				Data:   []byte(`{"transcribe_id":"43b608e6-821e-11ed-9611-e329cba76cc9"}`),
 			},
 
 			pageSize:  10,
-			pageToken: "2020-05-03 21:35:02.809",
+			pageToken: "2020-05-03T21:35:02.809Z",
 
 			expectFilters: map[transcript.Field]any{
 				transcript.FieldTranscribeID: uuid.FromStringOrNil("43b608e6-821e-11ed-9611-e329cba76cc9"),

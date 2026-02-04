@@ -213,19 +213,19 @@ func Test_GetAis(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/ais?page_size=10&page_token=2020-09-20%2003:23:20.995000",
+			reqQuery: "/ais?page_size=10&page_token=2020-09-20T03:23:20.995000Z",
 
 			responseAIs: []*amai.WebhookMessage{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("4a918c83-50b9-4fb4-8a22-afd1a1fd2dc6"),
 					},
-					TMCreate: "2020-09-20T03:23:21.995000",
+					TMCreate: "2020-09-20T03:23:21.995000Z",
 				},
 			},
 			expectedPageSize:  10,
-			expectedPageToken: "2020-09-20 03:23:20.995000",
-			expectedRes:       `{"result":[{"id":"4a918c83-50b9-4fb4-8a22-afd1a1fd2dc6","customer_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:21.995000"}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
+			expectedPageToken: "2020-09-20T03:23:20.995000Z",
+			expectedRes:       `{"result":[{"id":"4a918c83-50b9-4fb4-8a22-afd1a1fd2dc6","customer_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:21.995000Z"}],"next_page_token":"2020-09-20T03:23:21.995000Z"}`,
 		},
 		{
 			name: "more than 2 items",
@@ -235,32 +235,32 @@ func Test_GetAis(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/ais?page_size=10&page_token=2020-09-20%2003:23:20.995000",
+			reqQuery: "/ais?page_size=10&page_token=2020-09-20T03:23:20.995000Z",
 
 			responseAIs: []*amai.WebhookMessage{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("6a812daf-6ca6-4c34-892f-6e83dfd976f2"),
 					},
-					TMCreate: "2020-09-20T03:23:21.995000",
+					TMCreate: "2020-09-20T03:23:21.995000Z",
 				},
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("aff6883a-b24f-4d93-ba09-32a276cedcb7"),
 					},
-					TMCreate: "2020-09-20T03:23:22.995000",
+					TMCreate: "2020-09-20T03:23:22.995000Z",
 				},
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("e9a4b1e2-100a-4433-a854-e4fb9b668681"),
 					},
-					TMCreate: "2020-09-20T03:23:23.995000",
+					TMCreate: "2020-09-20T03:23:23.995000Z",
 				},
 			},
 
 			expectedPageSize:  10,
-			expectedPageToken: "2020-09-20 03:23:20.995000",
-			expectedRes:       `{"result":[{"id":"6a812daf-6ca6-4c34-892f-6e83dfd976f2","customer_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:21.995000"},{"id":"aff6883a-b24f-4d93-ba09-32a276cedcb7","customer_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:22.995000"},{"id":"e9a4b1e2-100a-4433-a854-e4fb9b668681","customer_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:23.995000"}],"next_page_token":"2020-09-20T03:23:23.995000"}`,
+			expectedPageToken: "2020-09-20T03:23:20.995000Z",
+			expectedRes:       `{"result":[{"id":"6a812daf-6ca6-4c34-892f-6e83dfd976f2","customer_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:21.995000Z"},{"id":"aff6883a-b24f-4d93-ba09-32a276cedcb7","customer_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:22.995000Z"},{"id":"e9a4b1e2-100a-4433-a854-e4fb9b668681","customer_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:23.995000Z"}],"next_page_token":"2020-09-20T03:23:23.995000Z"}`,
 		},
 	}
 

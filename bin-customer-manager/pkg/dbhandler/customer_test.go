@@ -39,7 +39,7 @@ func Test_CustomerCreate(t *testing.T) {
 				BillingAccountID: uuid.FromStringOrNil("5d7c011c-0e83-11ee-afc0-57978d43b290"),
 			},
 
-			responseCurTime: "2024-04-18 03:22:17.995000",
+			responseCurTime: "2024-04-18T03:22:17.995000Z",
 			expectRes: &customer.Customer{
 				ID:               uuid.FromStringOrNil("0bc5b900-7c65-11ec-a205-3b81594c7376"),
 				Name:             "test name",
@@ -50,7 +50,7 @@ func Test_CustomerCreate(t *testing.T) {
 				WebhookMethod:    "POST",
 				WebhookURI:       "test.com",
 				BillingAccountID: uuid.FromStringOrNil("5d7c011c-0e83-11ee-afc0-57978d43b290"),
-				TMCreate:         "2024-04-18 03:22:17.995000",
+				TMCreate:         "2024-04-18T03:22:17.995000Z",
 				TMUpdate:         DefaultTimeStamp,
 				TMDelete:         DefaultTimeStamp,
 			},
@@ -106,12 +106,12 @@ func TestCustomerDelete(t *testing.T) {
 				ID: uuid.FromStringOrNil("45adb3e8-7c65-11ec-8720-8f643ab80535"),
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 			expectRes: &customer.Customer{
 				ID:       uuid.FromStringOrNil("45adb3e8-7c65-11ec-8720-8f643ab80535"),
-				TMCreate: "2020-04-18 03:22:17.995000",
-				TMUpdate: "2020-04-18 03:22:17.995000",
-				TMDelete: "2020-04-18 03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
+				TMUpdate: "2020-04-18T03:22:17.995000Z",
+				TMDelete: "2020-04-18T03:22:17.995000Z",
 			},
 		},
 	}
@@ -177,22 +177,22 @@ func Test_CustomerList(t *testing.T) {
 				},
 			},
 			size:  2,
-			token: "2020-04-18 03:22:17.995001",
+			token: "2020-04-18T03:22:17.995001Z",
 			filters: map[customer.Field]any{
 				customer.FieldDeleted: false,
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 			expectRes: []*customer.Customer{
 				{
 					ID:       uuid.FromStringOrNil("500f6624-7c65-11ec-ba0f-8399fe28afb2"),
-					TMCreate: "2020-04-18 03:22:17.995000",
+					TMCreate: "2020-04-18T03:22:17.995000Z",
 					TMUpdate: DefaultTimeStamp,
 					TMDelete: DefaultTimeStamp,
 				},
 				{
 					ID:       uuid.FromStringOrNil("5c4b732e-7c65-11ec-8f09-2720f96bb96d"),
-					TMCreate: "2020-04-18 03:22:17.995000",
+					TMCreate: "2020-04-18T03:22:17.995000Z",
 					TMUpdate: DefaultTimeStamp,
 					TMDelete: DefaultTimeStamp,
 				},
@@ -269,7 +269,7 @@ func Test_CustomerUpdate(t *testing.T) {
 				customer.FieldWebhookURI:    "test.com",
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 			expectRes: &customer.Customer{
 				ID:            uuid.FromStringOrNil("a3697e6a-7c72-11ec-8fdf-dbda7d8fab3e"),
 				Name:          "test4 new",
@@ -279,8 +279,8 @@ func Test_CustomerUpdate(t *testing.T) {
 				Address:       "middle of nowhere",
 				WebhookMethod: customer.WebhookMethodPost,
 				WebhookURI:    "test.com",
-				TMCreate:      "2020-04-18 03:22:17.995000",
-				TMUpdate:      "2020-04-18 03:22:17.995000",
+				TMCreate:      "2020-04-18T03:22:17.995000Z",
+				TMUpdate:      "2020-04-18T03:22:17.995000Z",
 				TMDelete:      DefaultTimeStamp,
 			},
 		},
@@ -307,15 +307,15 @@ func Test_CustomerUpdate(t *testing.T) {
 				customer.FieldWebhookURI:    "",
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 			expectRes: &customer.Customer{
 				ID:            uuid.FromStringOrNil("e778f8b0-7c72-11ec-8605-9f86a3f3debe"),
 				Name:          "",
 				Detail:        "",
 				WebhookMethod: "",
 				WebhookURI:    "",
-				TMCreate:      "2020-04-18 03:22:17.995000",
-				TMUpdate:      "2020-04-18 03:22:17.995000",
+				TMCreate:      "2020-04-18T03:22:17.995000Z",
+				TMUpdate:      "2020-04-18T03:22:17.995000Z",
 				TMDelete:      DefaultTimeStamp,
 			},
 		},
@@ -383,14 +383,14 @@ func Test_CustomerUpdateBillingAccountID(t *testing.T) {
 
 			uuid.FromStringOrNil("fc1bc1fc-0f8e-11ee-970b-b75ca3799e1f"),
 
-			"2020-04-18 03:22:17.995000",
+			"2020-04-18T03:22:17.995000Z",
 			&customer.Customer{
 				ID:               uuid.FromStringOrNil("fb6946f8-0f8e-11ee-b6e8-0b5d7cba3ef2"),
 				Name:             "test7",
 				Detail:           "detail7",
 				BillingAccountID: uuid.FromStringOrNil("fc1bc1fc-0f8e-11ee-970b-b75ca3799e1f"),
-				TMCreate:         "2020-04-18 03:22:17.995000",
-				TMUpdate:         "2020-04-18 03:22:17.995000",
+				TMCreate:         "2020-04-18T03:22:17.995000Z",
+				TMUpdate:         "2020-04-18T03:22:17.995000Z",
 				TMDelete:         DefaultTimeStamp,
 			},
 		},

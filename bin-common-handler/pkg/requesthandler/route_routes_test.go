@@ -300,7 +300,7 @@ func Test_RouteV1RouteGets_WithCustomerIDFilter(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("aee4503c-2657-41c9-8f20-5848173bcecf"),
-			"2020-09-20 03:23:20.995000",
+			"2020-09-20T03:23:20.995000Z",
 			10,
 
 			&sock.Response{
@@ -311,7 +311,7 @@ func Test_RouteV1RouteGets_WithCustomerIDFilter(t *testing.T) {
 
 		"bin-manager.route-manager.request",
 		&sock.Request{
-			URI:      fmt.Sprintf("/v1/routes?page_token=%s&page_size=10", url.QueryEscape("2020-09-20 03:23:20.995000")),
+			URI:      fmt.Sprintf("/v1/routes?page_token=%s&page_size=10", url.QueryEscape("2020-09-20T03:23:20.995000Z")),
 			Method:   sock.RequestMethodGet,
 			DataType: ContentTypeJSON,
 			Data:     []byte(`{"customer_id":"aee4503c-2657-41c9-8f20-5848173bcecf"}`),
@@ -369,7 +369,7 @@ func Test_RouteV1RouteList(t *testing.T) {
 		{
 			"normal",
 
-			"2020-09-20 03:23:20.995000",
+			"2020-09-20T03:23:20.995000Z",
 			10,
 
 			&sock.Response{
@@ -380,7 +380,7 @@ func Test_RouteV1RouteList(t *testing.T) {
 
 			"bin-manager.route-manager.request",
 			&sock.Request{
-				URI:      fmt.Sprintf("/v1/routes?page_token=%s&page_size=10", url.QueryEscape("2020-09-20 03:23:20.995000")),
+				URI:      fmt.Sprintf("/v1/routes?page_token=%s&page_size=10", url.QueryEscape("2020-09-20T03:23:20.995000Z")),
 				Method:   sock.RequestMethodGet,
 			DataType: ContentTypeJSON,
 			Data:     []byte(`{}`),

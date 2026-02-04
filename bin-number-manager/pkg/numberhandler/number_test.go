@@ -341,8 +341,8 @@ func Test_Update(t *testing.T) {
 				Status:              number.StatusActive,
 				T38Enabled:          false,
 				EmergencyEnabled:    false,
-				TMPurchase:          "2021-02-26 18:26:49.000",
-				TMCreate:            "2021-02-26 18:26:49.000",
+				TMPurchase:          "2021-02-26T18:26:49.000Z",
+				TMCreate:            "2021-02-26T18:26:49.000Z",
 			},
 		},
 	}
@@ -397,7 +397,7 @@ func Test_List(t *testing.T) {
 			"normal",
 
 			10,
-			"2021-02-26 18:26:49.000",
+			"2021-02-26T18:26:49.000Z",
 			map[number.Field]any{
 				number.FieldCustomerID: uuid.FromStringOrNil("0b22cb36-eca8-11ee-a178-2f4c3561dcfd"),
 				number.FieldDeleted:    false,
@@ -415,8 +415,8 @@ func Test_List(t *testing.T) {
 					Status:              number.StatusActive,
 					T38Enabled:          false,
 					EmergencyEnabled:    false,
-					TMPurchase:          "2021-02-26 18:26:49.000",
-					TMCreate:            "2021-02-26 18:26:49.000",
+					TMPurchase:          "2021-02-26T18:26:49.000Z",
+					TMCreate:            "2021-02-26T18:26:49.000Z",
 				},
 			},
 		},
@@ -424,7 +424,7 @@ func Test_List(t *testing.T) {
 			"empty result",
 
 			10,
-			"2021-02-26 18:26:49.000",
+			"2021-02-26T18:26:49.000Z",
 			map[number.Field]any{
 				number.FieldCustomerID: uuid.FromStringOrNil("17ea600e-eca8-11ee-b3c1-576ea96bdbfb"),
 				number.FieldDeleted:    false,

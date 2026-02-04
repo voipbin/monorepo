@@ -36,7 +36,7 @@ func Test_agentsGET(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/service_agents/agents?page_token=2020-09-20%2003:23:20.995000&page_size=10",
+			reqQuery: "/service_agents/agents?page_token=2020-09-20T03:23:20.995000Z&page_size=10",
 
 			responseCalls: []*amagent.WebhookMessage{
 				{
@@ -51,7 +51,7 @@ func Test_agentsGET(t *testing.T) {
 				},
 			},
 
-			expectPageToken: "2020-09-20 03:23:20.995000",
+			expectPageToken: "2020-09-20T03:23:20.995000Z",
 			expectPageSize:  10,
 			expectRes:       `{"result":[{"id":"2e0e4bc4-3fa1-11ef-956a-cfb5ea5ac8ef","customer_id":"00000000-0000-0000-0000-000000000000","username":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"tm_create":"","tm_update":"","tm_delete":""},{"id":"2e6cb808-3fa1-11ef-a2c1-9b3188520125","customer_id":"00000000-0000-0000-0000-000000000000","username":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"tm_create":"","tm_update":"","tm_delete":""}],"next_page_token":""}`,
 		},
@@ -120,11 +120,11 @@ func Test_agentsIDGET(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("5fc7c6d6-3fa1-11ef-8f91-2b9c5b095cab"),
 				},
-				TMCreate: "2020-09-20T03:23:21.995000",
+				TMCreate: "2020-09-20T03:23:21.995000Z",
 			},
 
 			expectAgentID: uuid.FromStringOrNil("5fc7c6d6-3fa1-11ef-8f91-2b9c5b095cab"),
-			expectRes:     `{"id":"5fc7c6d6-3fa1-11ef-8f91-2b9c5b095cab","customer_id":"00000000-0000-0000-0000-000000000000","username":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}`,
+			expectRes:     `{"id":"5fc7c6d6-3fa1-11ef-8f91-2b9c5b095cab","customer_id":"00000000-0000-0000-0000-000000000000","username":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"tm_create":"2020-09-20T03:23:21.995000Z","tm_update":"","tm_delete":""}`,
 		},
 	}
 

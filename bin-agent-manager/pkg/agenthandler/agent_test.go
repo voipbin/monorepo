@@ -35,7 +35,7 @@ func Test_List(t *testing.T) {
 			"normal",
 
 			10,
-			"2021-11-23 17:55:39.712000",
+			"2021-11-23T17:55:39.712000Z",
 			map[agent.Field]any{
 				agent.FieldDeleted: false,
 			},

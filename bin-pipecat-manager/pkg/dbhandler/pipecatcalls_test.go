@@ -63,7 +63,7 @@ func Test_PipecatcallsCreate(t *testing.T) {
 				TTSVoiceID:  "test-voice-id",
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 
 			expectedRes: &pipecatcall.Pipecatcall{
 				Identity: commonidentity.Identity{
@@ -95,7 +95,7 @@ func Test_PipecatcallsCreate(t *testing.T) {
 				TTSLanguage: "en-US",
 				TTSVoiceID:  "test-voice-id",
 
-				TMCreate: "2020-04-18 03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
 				TMUpdate: commondatabasehandler.DefaultTimeStamp,
 				TMDelete: commondatabasehandler.DefaultTimeStamp,
 			},
@@ -109,13 +109,13 @@ func Test_PipecatcallsCreate(t *testing.T) {
 				},
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 
 			expectedRes: &pipecatcall.Pipecatcall{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2386221a-88e6-11ea-adeb-5f7b70fc89ff"),
 				},
-				TMCreate: "2020-04-18 03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
 				TMUpdate: commondatabasehandler.DefaultTimeStamp,
 				TMDelete: commondatabasehandler.DefaultTimeStamp,
 			},
@@ -190,7 +190,7 @@ func Test_PipecatcallUpdate(t *testing.T) {
 				},
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 
 			expectedRes: &pipecatcall.Pipecatcall{
 				Identity: commonidentity.Identity{
@@ -205,8 +205,8 @@ func Test_PipecatcallUpdate(t *testing.T) {
 					},
 				},
 
-				TMCreate: "2020-04-18 03:22:17.995000",
-				TMUpdate: "2020-04-18 03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
+				TMUpdate: "2020-04-18T03:22:17.995000Z",
 				TMDelete: commondatabasehandler.DefaultTimeStamp,
 			},
 		},
@@ -271,7 +271,7 @@ func Test_FlowDelete(t *testing.T) {
 				},
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 
 			expectedRes: &pipecatcall.Pipecatcall{
 				Identity: commonidentity.Identity{
@@ -279,9 +279,9 @@ func Test_FlowDelete(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("4fd5c734-b492-11f0-8d98-7f3010848eb1"),
 				},
 
-				TMCreate: "2020-04-18 03:22:17.995000",
-				TMUpdate: "2020-04-18 03:22:17.995000",
-				TMDelete: "2020-04-18 03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
+				TMUpdate: "2020-04-18T03:22:17.995000Z",
+				TMDelete: "2020-04-18T03:22:17.995000Z",
 			},
 		},
 	}

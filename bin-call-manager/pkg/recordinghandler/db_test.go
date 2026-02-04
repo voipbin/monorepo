@@ -34,7 +34,7 @@ func Test_List(t *testing.T) {
 			name: "normal reference type call",
 
 			size:  10,
-			token: "2020-05-03%2021:35:02.809",
+			token: "2020-05-03T21:35:02.809Z",
 			filters: map[recording.Field]any{
 				recording.FieldCustomerID: uuid.FromStringOrNil("fc5f8d06-8ff0-11ed-b07c-2776de9bed19"),
 			},

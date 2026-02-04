@@ -107,12 +107,12 @@ func Test_v1ProvidersGet(t *testing.T) {
 		{
 			"1 item",
 			&sock.Request{
-				URI:      "/v1/providers?page_token=2020-10-10T03:30:17.000000&page_size=10",
+				URI:      "/v1/providers?page_token=2020-10-10T03:30:17.000000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
-			"2020-10-10T03:30:17.000000",
+			"2020-10-10T03:30:17.000000Z",
 			10,
 
 			[]*provider.Provider{
@@ -130,12 +130,12 @@ func Test_v1ProvidersGet(t *testing.T) {
 		{
 			"2 items",
 			&sock.Request{
-				URI:      "/v1/providers?page_token=2020-10-10T03:30:17.000000&page_size=10",
+				URI:      "/v1/providers?page_token=2020-10-10T03:30:17.000000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
-			"2020-10-10T03:30:17.000000",
+			"2020-10-10T03:30:17.000000Z",
 			10,
 
 			[]*provider.Provider{
@@ -156,12 +156,12 @@ func Test_v1ProvidersGet(t *testing.T) {
 		{
 			"empty response",
 			&sock.Request{
-				URI:      "/v1/providers?page_token=2020-10-10T03:30:17.000000&page_size=10",
+				URI:      "/v1/providers?page_token=2020-10-10T03:30:17.000000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
-			"2020-10-10T03:30:17.000000",
+			"2020-10-10T03:30:17.000000Z",
 			10,
 
 			[]*provider.Provider{},

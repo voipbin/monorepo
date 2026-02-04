@@ -163,14 +163,14 @@ func Test_Create(t *testing.T) {
 
 			responseUUID:   uuid.FromStringOrNil("5947fe5a-a75e-11ef-8595-878f92d49c95"),
 			responseToken:  "test_token",
-			responseExpire: "2024-04-04 07:15:59.233415",
+			responseExpire: "2024-04-04T07:15:59.233415Z",
 			expectAccesskey: &accesskey.Accesskey{
 				ID:         uuid.FromStringOrNil("5947fe5a-a75e-11ef-8595-878f92d49c95"),
 				CustomerID: uuid.FromStringOrNil("58d43704-a75e-11ef-b9b7-279abaf5dda3"),
 				Name:       "test1",
 				Detail:     "detail1",
 				Token:      "test_token",
-				TMExpire:   "2024-04-04 07:15:59.233415",
+				TMExpire:   "2024-04-04T07:15:59.233415Z",
 			},
 		},
 	}

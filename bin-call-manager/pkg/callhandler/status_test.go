@@ -32,7 +32,7 @@ func Test_UpdateStatusRinging(t *testing.T) {
 		{
 			"call status dialing",
 			&channel.Channel{
-				TMRinging: "2020-09-20T03:23:20.995000",
+				TMRinging: "2020-09-20T03:23:20.995000Z",
 			},
 			&call.Call{
 				Identity: commonidentity.Identity{
@@ -86,7 +86,7 @@ func Test_UpdateStatusRingingFail(t *testing.T) {
 		{
 			"call status ringing",
 			&channel.Channel{
-				TMRinging: "2020-09-20T03:23:20.995000",
+				TMRinging: "2020-09-20T03:23:20.995000Z",
 			},
 			&call.Call{
 				Identity: commonidentity.Identity{
@@ -98,7 +98,7 @@ func Test_UpdateStatusRingingFail(t *testing.T) {
 		{
 			"call status progressing",
 			&channel.Channel{
-				TMRinging: "2020-09-20T03:23:20.995000",
+				TMRinging: "2020-09-20T03:23:20.995000Z",
 			},
 			&call.Call{
 				Identity: commonidentity.Identity{
@@ -110,7 +110,7 @@ func Test_UpdateStatusRingingFail(t *testing.T) {
 		{
 			"call status terminating",
 			&channel.Channel{
-				TMRinging: "2020-09-20T03:23:20.995000",
+				TMRinging: "2020-09-20T03:23:20.995000Z",
 			},
 			&call.Call{
 				Identity: commonidentity.Identity{
@@ -122,7 +122,7 @@ func Test_UpdateStatusRingingFail(t *testing.T) {
 		{
 			"call status canceling",
 			&channel.Channel{
-				TMRinging: "2020-09-20T03:23:20.995000",
+				TMRinging: "2020-09-20T03:23:20.995000Z",
 			},
 			&call.Call{
 				Identity: commonidentity.Identity{
@@ -134,7 +134,7 @@ func Test_UpdateStatusRingingFail(t *testing.T) {
 		{
 			"call status hangup",
 			&channel.Channel{
-				TMRinging: "2020-09-20T03:23:20.995000",
+				TMRinging: "2020-09-20T03:23:20.995000Z",
 			},
 			&call.Call{
 				Identity: commonidentity.Identity{
@@ -181,7 +181,7 @@ func Test_UpdateStatusProgressing(t *testing.T) {
 		{
 			"call status dialing for incoming",
 			&channel.Channel{
-				TMAnswer: "2020-09-20T03:23:20.995000",
+				TMAnswer: "2020-09-20T03:23:20.995000Z",
 			},
 			&call.Call{
 				Identity: commonidentity.Identity{
@@ -201,7 +201,7 @@ func Test_UpdateStatusProgressing(t *testing.T) {
 		{
 			"call status ringing for incoming",
 			&channel.Channel{
-				TMAnswer: "2020-09-20T03:23:20.995000",
+				TMAnswer: "2020-09-20T03:23:20.995000Z",
 			},
 			&call.Call{
 				Identity: commonidentity.Identity{
@@ -221,7 +221,7 @@ func Test_UpdateStatusProgressing(t *testing.T) {
 		{
 			"call status dialing for outgoing",
 			&channel.Channel{
-				TMAnswer: "2020-09-20T03:23:20.995000",
+				TMAnswer: "2020-09-20T03:23:20.995000Z",
 			},
 			&call.Call{
 				Identity: commonidentity.Identity{
@@ -241,7 +241,7 @@ func Test_UpdateStatusProgressing(t *testing.T) {
 		{
 			"call status ringing for outgoing",
 			&channel.Channel{
-				TMAnswer: "2020-09-20T03:23:20.995000",
+				TMAnswer: "2020-09-20T03:23:20.995000Z",
 			},
 			&call.Call{
 				Identity: commonidentity.Identity{
@@ -316,7 +316,7 @@ func Test_UpdateStatusProgressing_answerGroupcall(t *testing.T) {
 		{
 			name: "normal",
 			channel: &channel.Channel{
-				TMAnswer: "2020-09-20T03:23:20.995000",
+				TMAnswer: "2020-09-20T03:23:20.995000Z",
 			},
 			call: &call.Call{
 				Identity: commonidentity.Identity{
@@ -402,7 +402,7 @@ func Test_UpdateStatusProgressingFail(t *testing.T) {
 		{
 			"call status progressing",
 			&channel.Channel{
-				TMRinging: "2020-09-20T03:23:20.995000",
+				TMRinging: "2020-09-20T03:23:20.995000Z",
 			},
 			&call.Call{
 				Identity: commonidentity.Identity{
@@ -415,7 +415,7 @@ func Test_UpdateStatusProgressingFail(t *testing.T) {
 		{
 			"call status terminating",
 			&channel.Channel{
-				TMRinging: "2020-09-20T03:23:20.995000",
+				TMRinging: "2020-09-20T03:23:20.995000Z",
 			},
 			&call.Call{
 				Identity: commonidentity.Identity{
@@ -428,7 +428,7 @@ func Test_UpdateStatusProgressingFail(t *testing.T) {
 		{
 			"call status canceling",
 			&channel.Channel{
-				TMRinging: "2020-09-20T03:23:20.995000",
+				TMRinging: "2020-09-20T03:23:20.995000Z",
 			},
 			&call.Call{
 				Identity: commonidentity.Identity{
@@ -441,7 +441,7 @@ func Test_UpdateStatusProgressingFail(t *testing.T) {
 		{
 			"call status hangup",
 			&channel.Channel{
-				TMRinging: "2020-09-20T03:23:20.995000",
+				TMRinging: "2020-09-20T03:23:20.995000Z",
 			},
 			&call.Call{
 				Identity: commonidentity.Identity{

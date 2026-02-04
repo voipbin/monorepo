@@ -109,7 +109,7 @@ func Test_RouteList(t *testing.T) {
 				Permission: amagent.PermissionProjectSuperAdmin,
 			},
 
-			"2021-03-01 01:00:00.995000",
+			"2021-03-01T01:00:00.995000Z",
 			10,
 
 			[]rmroute.Route{
@@ -181,7 +181,7 @@ func Test_RouteListByCustomerID(t *testing.T) {
 			},
 
 			uuid.FromStringOrNil("3ebe976f-ecca-436a-a2d3-bc0c75501882"),
-			"2021-03-01 01:00:00.995000",
+			"2021-03-01T01:00:00.995000Z",
 			10,
 
 			[]rmroute.Route{

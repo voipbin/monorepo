@@ -233,7 +233,7 @@ func Test_ListByCustomerID(t *testing.T) {
 			name: "normal",
 
 			size:  10,
-			token: "2023-06-07 03:22:17.995000",
+			token: "2023-06-07T03:22:17.995000Z",
 			filters: map[account.Field]any{
 				account.FieldCustomerID: uuid.FromStringOrNil("480cd15e-f3d8-11ee-8212-bfff8eb203cc"),
 			},

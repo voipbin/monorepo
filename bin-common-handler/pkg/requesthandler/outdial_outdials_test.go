@@ -98,12 +98,12 @@ func Test_OutdialV1OutdialList(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("74b94c72-b650-11ec-a5cf-ff01639e276f"),
-			"2021-03-02 03:23:20.995000",
+			"2021-03-02T03:23:20.995000Z",
 			10,
 
 			"bin-manager.outdial-manager.request",
 			&sock.Request{
-				URI:      fmt.Sprintf("/v1/outdials?page_token=%s&page_size=10", url.QueryEscape("2021-03-02 03:23:20.995000")),
+				URI:      fmt.Sprintf("/v1/outdials?page_token=%s&page_size=10", url.QueryEscape("2021-03-02T03:23:20.995000Z")),
 				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
 			Data:     []byte(`{"customer_id":"74b94c72-b650-11ec-a5cf-ff01639e276f"}`),

@@ -33,7 +33,7 @@ func Test_EventHandlerPlaybackStarted(t *testing.T) {
 				Event: ari.Event{
 					Type:        ari.EventTypePlaybackStarted,
 					Application: "voipbin",
-					Timestamp:   "2020-11-15T14:04:49.762",
+					Timestamp:   "2020-11-15T14:04:49.762Z",
 					AsteriskID:  "42:01:0a:a4:0f:d0",
 				},
 				Playback: ari.Playback{
@@ -102,7 +102,7 @@ func Test_EventHandlerPlaybackFinished(t *testing.T) {
 				Event: ari.Event{
 					Type:        ari.EventTypePlaybackFinished,
 					Application: "voipbin",
-					Timestamp:   "2020-11-15T14:04:49.762",
+					Timestamp:   "2020-11-15T14:04:49.762Z",
 					AsteriskID:  "42:01:0a:a4:0f:d0",
 				},
 				Playback: ari.Playback{
@@ -171,7 +171,7 @@ func TestEventHandlerPlaybackFinishedChannelGone(t *testing.T) {
 				Event: ari.Event{
 					Type:        ari.EventTypePlaybackFinished,
 					Application: "voipbin",
-					Timestamp:   "2020-11-15T14:04:49.762",
+					Timestamp:   "2020-11-15T14:04:49.762Z",
 					AsteriskID:  "42:01:0a:a4:0f:d0",
 				},
 				Playback: ari.Playback{
@@ -187,7 +187,7 @@ func TestEventHandlerPlaybackFinishedChannelGone(t *testing.T) {
 				AsteriskID: "42:01:0a:a4:0f:d0",
 				ID:         "ec552c6c-2757-11eb-b12c-9f77f7c7cb07",
 				State:      "Down",
-				TMEnd:      "2023-01-18 03:22:18.995000",
+				TMEnd:      "2023-01-18T03:22:18.995000Z",
 			},
 			"ec552c6c-2757-11eb-b12c-9f77f7c7cb07",
 			"a41baef4-04b9-403d-a9f5-8ea82c8b1749",

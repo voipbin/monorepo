@@ -148,20 +148,20 @@ func Test_campaignsGET(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/campaigns?page_size=10&page_token=2020-09-20%2003:23:20.995000",
+			reqQuery: "/campaigns?page_size=10&page_token=2020-09-20T03:23:20.995000Z",
 
 			responseCampaigns: []*cacampaign.WebhookMessage{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("3bc539bc-c68b-11ec-b41f-0776699e7467"),
 					},
-					TMCreate: "2020-09-20T03:23:21.995000",
+					TMCreate: "2020-09-20T03:23:21.995000Z",
 				},
 			},
 
 			expectPageSize:  10,
-			expectPageToken: "2020-09-20 03:23:20.995000",
-			expectRes:       `{"result":[{"id":"3bc539bc-c68b-11ec-b41f-0776699e7467","customer_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","actions":null,"outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
+			expectPageToken: "2020-09-20T03:23:20.995000Z",
+			expectRes:       `{"result":[{"id":"3bc539bc-c68b-11ec-b41f-0776699e7467","customer_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","actions":null,"outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:21.995000Z","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000Z"}`,
 		},
 		{
 			name: "more than 2 items",
@@ -171,32 +171,32 @@ func Test_campaignsGET(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/campaigns?page_size=10&page_token=2020-09-20%2003:23:20.995000",
+			reqQuery: "/campaigns?page_size=10&page_token=2020-09-20T03:23:20.995000Z",
 
 			responseCampaigns: []*cacampaign.WebhookMessage{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("3bfa9cc4-c68b-11ec-a1cf-5fffd85773bb"),
 					},
-					TMCreate: "2020-09-20T03:23:21.995000",
+					TMCreate: "2020-09-20T03:23:21.995000Z",
 				},
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("3c2648d8-c68b-11ec-a47f-7bfbe26dbdcf"),
 					},
-					TMCreate: "2020-09-20T03:23:22.995000",
+					TMCreate: "2020-09-20T03:23:22.995000Z",
 				},
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("3c4d9a1e-c68b-11ec-8b46-5f282fd0eb19"),
 					},
-					TMCreate: "2020-09-20T03:23:23.995000",
+					TMCreate: "2020-09-20T03:23:23.995000Z",
 				},
 			},
 
 			expectPageSize:  10,
-			expectPageToken: "2020-09-20 03:23:20.995000",
-			expectRes:       `{"result":[{"id":"3bfa9cc4-c68b-11ec-a1cf-5fffd85773bb","customer_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","actions":null,"outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""},{"id":"3c2648d8-c68b-11ec-a47f-7bfbe26dbdcf","customer_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","actions":null,"outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:22.995000","tm_update":"","tm_delete":""},{"id":"3c4d9a1e-c68b-11ec-8b46-5f282fd0eb19","customer_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","actions":null,"outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:23.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:23.995000"}`,
+			expectPageToken: "2020-09-20T03:23:20.995000Z",
+			expectRes:       `{"result":[{"id":"3bfa9cc4-c68b-11ec-a1cf-5fffd85773bb","customer_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","actions":null,"outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:21.995000Z","tm_update":"","tm_delete":""},{"id":"3c2648d8-c68b-11ec-a47f-7bfbe26dbdcf","customer_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","actions":null,"outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:22.995000Z","tm_update":"","tm_delete":""},{"id":"3c4d9a1e-c68b-11ec-8b46-5f282fd0eb19","customer_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","actions":null,"outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:23.995000Z","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:23.995000Z"}`,
 		},
 	}
 
@@ -857,19 +857,19 @@ func Test_campaignsIDCampaigncallsGET(t *testing.T) {
 			},
 			campaignID: uuid.FromStringOrNil("571e5aa6-c86e-11ec-a62f-d7989ff2e4dd"),
 
-			reqQuery: "/campaigns/571e5aa6-c86e-11ec-a62f-d7989ff2e4dd/campaigncalls?page_size=10&page_token=2020-09-20%2003:23:20.995000",
+			reqQuery: "/campaigns/571e5aa6-c86e-11ec-a62f-d7989ff2e4dd/campaigncalls?page_size=10&page_token=2020-09-20T03:23:20.995000Z",
 			responseOutdials: []*cacampaigncall.WebhookMessage{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("3bc539bc-c68b-11ec-b41f-0776699e7467"),
 					},
-					TMCreate: "2020-09-20T03:23:21.995000",
+					TMCreate: "2020-09-20T03:23:21.995000Z",
 				},
 			},
 
 			expectPageSize:  10,
-			expectPageToken: "2020-09-20 03:23:20.995000",
-			expectRes:       `{"result":[{"id":"3bc539bc-c68b-11ec-b41f-0776699e7467","customer_id":"00000000-0000-0000-0000-000000000000","campaign_id":"00000000-0000-0000-0000-000000000000","outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","outdial_target_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","result":"","source":null,"destination":null,"destination_index":0,"try_count":0,"tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000"}`,
+			expectPageToken: "2020-09-20T03:23:20.995000Z",
+			expectRes:       `{"result":[{"id":"3bc539bc-c68b-11ec-b41f-0776699e7467","customer_id":"00000000-0000-0000-0000-000000000000","campaign_id":"00000000-0000-0000-0000-000000000000","outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","outdial_target_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","result":"","source":null,"destination":null,"destination_index":0,"try_count":0,"tm_create":"2020-09-20T03:23:21.995000Z","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000Z"}`,
 		},
 		{
 			name: "more than 2 items",
@@ -880,32 +880,32 @@ func Test_campaignsIDCampaigncallsGET(t *testing.T) {
 			},
 			campaignID: uuid.FromStringOrNil("ef319a88-c86e-11ec-a8b2-abe87e962b9b"),
 
-			reqQuery: "/campaigns/ef319a88-c86e-11ec-a8b2-abe87e962b9b/campaigncalls?page_size=10&page_token=2020-09-20%2003:23:20.995000",
+			reqQuery: "/campaigns/ef319a88-c86e-11ec-a8b2-abe87e962b9b/campaigncalls?page_size=10&page_token=2020-09-20T03:23:20.995000Z",
 
 			responseOutdials: []*cacampaigncall.WebhookMessage{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("ef5da59c-c86e-11ec-95bf-b7309c164fc2"),
 					},
-					TMCreate: "2020-09-20T03:23:21.995000",
+					TMCreate: "2020-09-20T03:23:21.995000Z",
 				},
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("ef83ff26-c86e-11ec-bfae-d34d64f4c3a5"),
 					},
-					TMCreate: "2020-09-20T03:23:22.995000",
+					TMCreate: "2020-09-20T03:23:22.995000Z",
 				},
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("efab58fa-c86e-11ec-9fcb-4b7edd03d7cb"),
 					},
-					TMCreate: "2020-09-20T03:23:23.995000",
+					TMCreate: "2020-09-20T03:23:23.995000Z",
 				},
 			},
 
 			expectPageSize:  10,
-			expectPageToken: "2020-09-20 03:23:20.995000",
-			expectRes:       `{"result":[{"id":"ef5da59c-c86e-11ec-95bf-b7309c164fc2","customer_id":"00000000-0000-0000-0000-000000000000","campaign_id":"00000000-0000-0000-0000-000000000000","outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","outdial_target_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","result":"","source":null,"destination":null,"destination_index":0,"try_count":0,"tm_create":"2020-09-20T03:23:21.995000","tm_update":"","tm_delete":""},{"id":"ef83ff26-c86e-11ec-bfae-d34d64f4c3a5","customer_id":"00000000-0000-0000-0000-000000000000","campaign_id":"00000000-0000-0000-0000-000000000000","outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","outdial_target_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","result":"","source":null,"destination":null,"destination_index":0,"try_count":0,"tm_create":"2020-09-20T03:23:22.995000","tm_update":"","tm_delete":""},{"id":"efab58fa-c86e-11ec-9fcb-4b7edd03d7cb","customer_id":"00000000-0000-0000-0000-000000000000","campaign_id":"00000000-0000-0000-0000-000000000000","outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","outdial_target_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","result":"","source":null,"destination":null,"destination_index":0,"try_count":0,"tm_create":"2020-09-20T03:23:23.995000","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:23.995000"}`,
+			expectPageToken: "2020-09-20T03:23:20.995000Z",
+			expectRes:       `{"result":[{"id":"ef5da59c-c86e-11ec-95bf-b7309c164fc2","customer_id":"00000000-0000-0000-0000-000000000000","campaign_id":"00000000-0000-0000-0000-000000000000","outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","outdial_target_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","result":"","source":null,"destination":null,"destination_index":0,"try_count":0,"tm_create":"2020-09-20T03:23:21.995000Z","tm_update":"","tm_delete":""},{"id":"ef83ff26-c86e-11ec-bfae-d34d64f4c3a5","customer_id":"00000000-0000-0000-0000-000000000000","campaign_id":"00000000-0000-0000-0000-000000000000","outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","outdial_target_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","result":"","source":null,"destination":null,"destination_index":0,"try_count":0,"tm_create":"2020-09-20T03:23:22.995000Z","tm_update":"","tm_delete":""},{"id":"efab58fa-c86e-11ec-9fcb-4b7edd03d7cb","customer_id":"00000000-0000-0000-0000-000000000000","campaign_id":"00000000-0000-0000-0000-000000000000","outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","outdial_target_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","result":"","source":null,"destination":null,"destination_index":0,"try_count":0,"tm_create":"2020-09-20T03:23:23.995000Z","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:23.995000Z"}`,
 		},
 	}
 

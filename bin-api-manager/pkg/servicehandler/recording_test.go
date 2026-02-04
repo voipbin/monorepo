@@ -44,7 +44,7 @@ func Test_RecordingList(t *testing.T) {
 				Permission: amagent.PermissionCustomerAdmin,
 			},
 			10,
-			"2020-10-20 01:00:00.995000",
+			"2020-10-20T01:00:00.995000Z",
 
 			[]cmrecording.Recording{
 				{

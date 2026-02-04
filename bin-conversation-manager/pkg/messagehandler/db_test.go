@@ -179,7 +179,7 @@ func Test_List(t *testing.T) {
 		{
 			name: "normal",
 
-			pageToken: "2022-04-18 03:22:17.995000",
+			pageToken: "2022-04-18T03:22:17.995000Z",
 			pageSize:  100,
 			filters: map[message.Field]any{
 				message.FieldCustomerID: uuid.FromStringOrNil("853f266e-1bda-11f0-b63c-43ea1644089b"),

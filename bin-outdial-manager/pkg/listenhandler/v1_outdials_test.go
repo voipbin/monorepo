@@ -89,10 +89,10 @@ func Test_v1OutdialsGet(t *testing.T) {
 				outdial.FieldCustomerID: uuid.FromStringOrNil("3ffc0038-b36c-11ec-8de7-df466e08d7fc"),
 				outdial.FieldDeleted:    false,
 			},
-			"2020-10-10T03:30:17.000000",
+			"2020-10-10T03:30:17.000000Z",
 			10,
 			&sock.Request{
-				URI:      "/v1/outdials?page_token=2020-10-10T03:30:17.000000&page_size=10",
+				URI:      "/v1/outdials?page_token=2020-10-10T03:30:17.000000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"3ffc0038-b36c-11ec-8de7-df466e08d7fc","deleted":false}`),
@@ -116,10 +116,10 @@ func Test_v1OutdialsGet(t *testing.T) {
 				outdial.FieldCustomerID: uuid.FromStringOrNil("974f7298-b36c-11ec-9d42-07020f9318fb"),
 				outdial.FieldDeleted:    false,
 			},
-			"2020-10-10T03:30:17.000000",
+			"2020-10-10T03:30:17.000000Z",
 			10,
 			&sock.Request{
-				URI:      "/v1/outdials?page_token=2020-10-10T03:30:17.000000&page_size=10",
+				URI:      "/v1/outdials?page_token=2020-10-10T03:30:17.000000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"974f7298-b36c-11ec-9d42-07020f9318fb","deleted":false}`),
@@ -561,13 +561,13 @@ func Test_v1OutdialsIDTargetsGet(t *testing.T) {
 		{
 			"1 item",
 			&sock.Request{
-				URI:      "/v1/outdials/e3a71d6c-b371-11ec-b69c-2b0e0342d71a/targets?page_token=2020-10-10T03:30:17.000000&page_size=10",
+				URI:      "/v1/outdials/e3a71d6c-b371-11ec-b69c-2b0e0342d71a/targets?page_token=2020-10-10T03:30:17.000000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
 			uuid.FromStringOrNil("e3a71d6c-b371-11ec-b69c-2b0e0342d71a"),
-			"2020-10-10T03:30:17.000000",
+			"2020-10-10T03:30:17.000000Z",
 			10,
 			[]*outdialtarget.OutdialTarget{
 				{
@@ -583,13 +583,13 @@ func Test_v1OutdialsIDTargetsGet(t *testing.T) {
 		{
 			"2 items",
 			&sock.Request{
-				URI:      "/v1/outdials/e7f5ddd0-b372-11ec-8516-4bc424f70ef9/targets?page_token=2020-10-10T03:30:17.000000&page_size=10",
+				URI:      "/v1/outdials/e7f5ddd0-b372-11ec-8516-4bc424f70ef9/targets?page_token=2020-10-10T03:30:17.000000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			},
 
 			uuid.FromStringOrNil("e7f5ddd0-b372-11ec-8516-4bc424f70ef9"),
-			"2020-10-10T03:30:17.000000",
+			"2020-10-10T03:30:17.000000Z",
 			10,
 			[]*outdialtarget.OutdialTarget{
 				{

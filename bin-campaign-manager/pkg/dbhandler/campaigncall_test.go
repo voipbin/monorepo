@@ -54,7 +54,7 @@ func Test_CampaigncallCreate(t *testing.T) {
 				TryCount:         1,
 			},
 
-			"2020-04-18 03:22:17.995000",
+			"2020-04-18T03:22:17.995000Z",
 			&campaigncall.Campaigncall{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("5ed54e04-b4fe-11ec-bab7-1bbc3ac23720"),
@@ -80,7 +80,7 @@ func Test_CampaigncallCreate(t *testing.T) {
 				},
 				DestinationIndex: 0,
 				TryCount:         1,
-				TMCreate:         "2020-04-18 03:22:17.995000",
+				TMCreate:         "2020-04-18T03:22:17.995000Z",
 				TMUpdate:         DefaultTimeStamp,
 				TMDelete:         DefaultTimeStamp,
 			},
@@ -158,7 +158,7 @@ func Test_CampaigncallGetByReferenceID(t *testing.T) {
 				TryCount:         1,
 			},
 
-			"2020-04-18 03:22:17.995000",
+			"2020-04-18T03:22:17.995000Z",
 			&campaigncall.Campaigncall{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("6ab033dd-1509-4f25-b831-8d1ccfdf3c92"),
@@ -183,7 +183,7 @@ func Test_CampaigncallGetByReferenceID(t *testing.T) {
 				},
 				DestinationIndex: 0,
 				TryCount:         1,
-				TMCreate:         "2020-04-18 03:22:17.995000",
+				TMCreate:         "2020-04-18T03:22:17.995000Z",
 				TMUpdate:         DefaultTimeStamp,
 				TMDelete:         DefaultTimeStamp,
 			},
@@ -260,7 +260,7 @@ func Test_CampaigncallGetByActiveflowID(t *testing.T) {
 				TryCount:         1,
 			},
 
-			"2020-04-18 03:22:17.995000",
+			"2020-04-18T03:22:17.995000Z",
 			&campaigncall.Campaigncall{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("ff63cbaf-2221-4631-9b0d-215784734f80"),
@@ -285,7 +285,7 @@ func Test_CampaigncallGetByActiveflowID(t *testing.T) {
 				},
 				DestinationIndex: 0,
 				TryCount:         1,
-				TMCreate:         "2020-04-18 03:22:17.995000",
+				TMCreate:         "2020-04-18T03:22:17.995000Z",
 				TMUpdate:         DefaultTimeStamp,
 				TMDelete:         DefaultTimeStamp,
 			},
@@ -349,17 +349,17 @@ func Test_CampaigncallListByCustomerID(t *testing.T) {
 			},
 
 			customerID: uuid.FromStringOrNil("3d286678-6e30-11ee-82b1-d7f075ddecab"),
-			token:      "2022-04-18 03:22:17.995000",
+			token:      "2022-04-18T03:22:17.995000Z",
 			limit:      100,
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 			expectRes: []*campaigncall.Campaigncall{
 				{
 					Identity: commonidentity.Identity{
 						ID:         uuid.FromStringOrNil("3cf4996a-6e30-11ee-b4df-e3435f75c8d9"),
 						CustomerID: uuid.FromStringOrNil("3d286678-6e30-11ee-82b1-d7f075ddecab"),
 					},
-					TMCreate: "2020-04-18 03:22:17.995000",
+					TMCreate: "2020-04-18T03:22:17.995000Z",
 					TMUpdate: DefaultTimeStamp,
 					TMDelete: DefaultTimeStamp,
 				},
@@ -445,10 +445,10 @@ func Test_CampaigncallListByCampaignID(t *testing.T) {
 			},
 
 			uuid.FromStringOrNil("82dbd470-b4ff-11ec-b0f4-db46cf5d928e"),
-			"2022-04-18 03:22:17.995000",
+			"2022-04-18T03:22:17.995000Z",
 			100,
 
-			"2020-04-18 03:22:17.995000",
+			"2020-04-18T03:22:17.995000Z",
 			[]*campaigncall.Campaigncall{
 				{
 					Identity: commonidentity.Identity{
@@ -474,7 +474,7 @@ func Test_CampaigncallListByCampaignID(t *testing.T) {
 					},
 					DestinationIndex: 0,
 					TryCount:         1,
-					TMCreate:         "2020-04-18 03:22:17.995000",
+					TMCreate:         "2020-04-18T03:22:17.995000Z",
 					TMUpdate:         DefaultTimeStamp,
 					TMDelete:         DefaultTimeStamp,
 				},
@@ -536,10 +536,10 @@ func Test_CampaigncallListByCampaignID(t *testing.T) {
 			},
 
 			uuid.FromStringOrNil("db0c5d9a-b4ff-11ec-95e4-ebaba2bdd23e"),
-			"2022-04-18 03:22:17.995000",
+			"2022-04-18T03:22:17.995000Z",
 			100,
 
-			"2020-04-18 03:22:17.995000",
+			"2020-04-18T03:22:17.995000Z",
 			[]*campaigncall.Campaigncall{
 				{
 					Identity: commonidentity.Identity{
@@ -565,7 +565,7 @@ func Test_CampaigncallListByCampaignID(t *testing.T) {
 					},
 					DestinationIndex: 0,
 					TryCount:         1,
-					TMCreate:         "2020-04-18 03:22:17.995000",
+					TMCreate:         "2020-04-18T03:22:17.995000Z",
 					TMUpdate:         DefaultTimeStamp,
 					TMDelete:         DefaultTimeStamp,
 				},
@@ -593,7 +593,7 @@ func Test_CampaigncallListByCampaignID(t *testing.T) {
 					},
 					DestinationIndex: 0,
 					TryCount:         1,
-					TMCreate:         "2020-04-18 03:22:17.995000",
+					TMCreate:         "2020-04-18T03:22:17.995000Z",
 					TMUpdate:         DefaultTimeStamp,
 					TMDelete:         DefaultTimeStamp,
 				},
@@ -681,10 +681,10 @@ func Test_CampaigncallListByCampaignIDAndStatus(t *testing.T) {
 
 			uuid.FromStringOrNil("624d111e-b500-11ec-a605-e3f84329977e"),
 			campaigncall.StatusProgressing,
-			"2022-04-18 03:22:17.995000",
+			"2022-04-18T03:22:17.995000Z",
 			100,
 
-			"2020-04-18 03:22:17.995000",
+			"2020-04-18T03:22:17.995000Z",
 			[]*campaigncall.Campaigncall{
 				{
 					Identity: commonidentity.Identity{
@@ -710,7 +710,7 @@ func Test_CampaigncallListByCampaignIDAndStatus(t *testing.T) {
 					},
 					DestinationIndex: 0,
 					TryCount:         1,
-					TMCreate:         "2020-04-18 03:22:17.995000",
+					TMCreate:         "2020-04-18T03:22:17.995000Z",
 					TMUpdate:         DefaultTimeStamp,
 					TMDelete:         DefaultTimeStamp,
 				},
@@ -773,10 +773,10 @@ func Test_CampaigncallListByCampaignIDAndStatus(t *testing.T) {
 
 			uuid.FromStringOrNil("0b529838-b501-11ec-8e54-1b6991614914"),
 			campaigncall.StatusProgressing,
-			"2022-04-18 03:22:17.995000",
+			"2022-04-18T03:22:17.995000Z",
 			100,
 
-			"2020-04-18 03:22:18.995000",
+			"2020-04-18T03:22:18.995000Z",
 			[]*campaigncall.Campaigncall{
 				{
 					Identity: commonidentity.Identity{
@@ -802,7 +802,7 @@ func Test_CampaigncallListByCampaignIDAndStatus(t *testing.T) {
 					},
 					DestinationIndex: 0,
 					TryCount:         1,
-					TMCreate:         "2020-04-18 03:22:18.995000",
+					TMCreate:         "2020-04-18T03:22:18.995000Z",
 					TMUpdate:         DefaultTimeStamp,
 					TMDelete:         DefaultTimeStamp,
 				},
@@ -830,7 +830,7 @@ func Test_CampaigncallListByCampaignIDAndStatus(t *testing.T) {
 					},
 					DestinationIndex: 0,
 					TryCount:         1,
-					TMCreate:         "2020-04-18 03:22:18.995000",
+					TMCreate:         "2020-04-18T03:22:18.995000Z",
 					TMUpdate:         DefaultTimeStamp,
 					TMDelete:         DefaultTimeStamp,
 				},
@@ -916,10 +916,10 @@ func Test_CampaigncallListOngoingByCampaignID(t *testing.T) {
 			},
 
 			uuid.FromStringOrNil("3388b6fc-c447-11ec-863e-67f3cc218843"),
-			"2022-04-18 03:22:17.995000",
+			"2022-04-18T03:22:17.995000Z",
 			100,
 
-			"2020-04-18 03:22:17.995000",
+			"2020-04-18T03:22:17.995000Z",
 			[]*campaigncall.Campaigncall{
 				{
 					Identity: commonidentity.Identity{
@@ -945,7 +945,7 @@ func Test_CampaigncallListOngoingByCampaignID(t *testing.T) {
 					},
 					DestinationIndex: 0,
 					TryCount:         1,
-					TMCreate:         "2020-04-18 03:22:17.995000",
+					TMCreate:         "2020-04-18T03:22:17.995000Z",
 					TMUpdate:         DefaultTimeStamp,
 					TMDelete:         DefaultTimeStamp,
 				},
@@ -1007,10 +1007,10 @@ func Test_CampaigncallListOngoingByCampaignID(t *testing.T) {
 			},
 
 			uuid.FromStringOrNil("336245d0-c447-11ec-a3da-87ac346b98ad"),
-			"2022-04-18 03:22:17.995000",
+			"2022-04-18T03:22:17.995000Z",
 			100,
 
-			"2020-04-18 03:22:18.995000",
+			"2020-04-18T03:22:18.995000Z",
 			[]*campaigncall.Campaigncall{
 				{
 					Identity: commonidentity.Identity{
@@ -1036,7 +1036,7 @@ func Test_CampaigncallListOngoingByCampaignID(t *testing.T) {
 					},
 					DestinationIndex: 0,
 					TryCount:         1,
-					TMCreate:         "2020-04-18 03:22:18.995000",
+					TMCreate:         "2020-04-18T03:22:18.995000Z",
 					TMUpdate:         DefaultTimeStamp,
 					TMDelete:         DefaultTimeStamp,
 				},
@@ -1064,7 +1064,7 @@ func Test_CampaigncallListOngoingByCampaignID(t *testing.T) {
 					},
 					DestinationIndex: 0,
 					TryCount:         1,
-					TMCreate:         "2020-04-18 03:22:18.995000",
+					TMCreate:         "2020-04-18T03:22:18.995000Z",
 					TMUpdate:         DefaultTimeStamp,
 					TMDelete:         DefaultTimeStamp,
 				},
@@ -1147,7 +1147,7 @@ func Test_CampaigncallUpdateStatus(t *testing.T) {
 
 			campaigncall.StatusDone,
 
-			"2020-04-18 03:22:18.995000",
+			"2020-04-18T03:22:18.995000Z",
 			&campaigncall.Campaigncall{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("a408f39c-b501-11ec-8222-cfde83409646"),
@@ -1172,8 +1172,8 @@ func Test_CampaigncallUpdateStatus(t *testing.T) {
 				},
 				DestinationIndex: 0,
 				TryCount:         1,
-				TMCreate:         "2020-04-18 03:22:18.995000",
-				TMUpdate:         "2020-04-18 03:22:18.995000",
+				TMCreate:         "2020-04-18T03:22:18.995000Z",
+				TMUpdate:         "2020-04-18T03:22:18.995000Z",
 				TMDelete:         DefaultTimeStamp,
 			},
 		},
@@ -1263,7 +1263,7 @@ func Test_CampaigncallUpdateStatusAndResult(t *testing.T) {
 			campaigncall.StatusDone,
 			campaigncall.ResultSuccess,
 
-			"2020-04-18 03:22:18.995000",
+			"2020-04-18T03:22:18.995000Z",
 			&campaigncall.Campaigncall{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("bb76dc75-4b32-446c-98e3-bf08eaa85a54"),
@@ -1289,8 +1289,8 @@ func Test_CampaigncallUpdateStatusAndResult(t *testing.T) {
 				},
 				DestinationIndex: 0,
 				TryCount:         1,
-				TMCreate:         "2020-04-18 03:22:18.995000",
-				TMUpdate:         "2020-04-18 03:22:18.995000",
+				TMCreate:         "2020-04-18T03:22:18.995000Z",
+				TMUpdate:         "2020-04-18T03:22:18.995000Z",
 				TMDelete:         DefaultTimeStamp,
 			},
 		},
@@ -1353,8 +1353,8 @@ func Test_CampaigncallDelete(t *testing.T) {
 				OutplanID: uuid.FromStringOrNil("ba29f006-b3ce-11ec-80d2-a71d2212a7d7"),
 				OutdialID: uuid.FromStringOrNil("ba5c57c6-b3ce-11ec-b997-4b54d7754db6"),
 				QueueID:   uuid.FromStringOrNil("ba91a87c-b3ce-11ec-993c-2f5317fef011"),
-				TMCreate:  "2020-04-18 03:22:17.995000",
-				TMUpdate:  "2020-04-18 03:22:17.995000",
+				TMCreate:  "2020-04-18T03:22:17.995000Z",
+				TMUpdate:  "2020-04-18T03:22:17.995000Z",
 				TMDelete:  DefaultTimeStamp,
 			},
 		},

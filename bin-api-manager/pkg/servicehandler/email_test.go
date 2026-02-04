@@ -116,7 +116,7 @@ func Test_EmailList(t *testing.T) {
 				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
-			pageToken: "2020-10-20T01:00:00.995000",
+			pageToken: "2020-10-20T01:00:00.995000Z",
 			pageSize:  10,
 
 			responseEmails: []ememail.Email{
@@ -157,7 +157,7 @@ func Test_EmailList(t *testing.T) {
 				},
 				Permission: amagent.PermissionCustomerAdmin,
 			},
-			pageToken: "2020-10-20T01:00:00.995000",
+			pageToken: "2020-10-20T01:00:00.995000Z",
 			pageSize:  10,
 
 			responseEmails: []ememail.Email{

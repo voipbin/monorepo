@@ -103,7 +103,7 @@ func Test_ConversationV1ConversationList(t *testing.T) {
 		{
 			name: "normal",
 
-			pageToken: "2021-03-02 03:23:20.995000",
+			pageToken: "2021-03-02T03:23:20.995000Z",
 			pageSize:  10,
 			filters: map[cvconversation.Field]any{
 				cvconversation.FieldDeleted:    false,
@@ -116,10 +116,10 @@ func Test_ConversationV1ConversationList(t *testing.T) {
 				Data:       []byte(`[{"id":"30071608-7e43-11ec-b04a-bb4270e3e223"},{"id":"5ca81a9a-7e43-11ec-b271-5b65823bfdd3"}]`),
 			},
 
-			expectURL:    "/v1/conversations?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10",
+			expectURL:    "/v1/conversations?page_token=2021-03-02T03%3A23%3A20.995000Z&page_size=10",
 			expectTarget: "bin-manager.conversation-manager.request",
 			expectRequest: &sock.Request{
-				URI:      "/v1/conversations?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10",
+				URI:      "/v1/conversations?page_token=2021-03-02T03%3A23%3A20.995000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"customer_id":"84b4b554-21ef-11f0-a5bb-e33bf5a5a345","deleted":false}`),

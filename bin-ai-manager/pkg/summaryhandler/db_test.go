@@ -193,7 +193,7 @@ func Test_List(t *testing.T) {
 			name: "normal",
 
 			size:  100,
-			token: "2025-03-28 21:35:02.809",
+			token: "2025-03-28T21:35:02.809Z",
 			filters: map[summary.Field]any{
 				summary.FieldDeleted:    false,
 				summary.FieldCustomerID: uuid.FromStringOrNil("2e194dfe-0b92-11f0-b142-1bfcc0d84473"),

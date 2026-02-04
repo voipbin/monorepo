@@ -34,14 +34,14 @@ func Test_BillingV1AccountList(t *testing.T) {
 			name: "normal",
 
 			size:  10,
-			token: "2023-06-08 03:22:17.995000",
+			token: "2023-06-08T03:22:17.995000Z",
 			filters: map[bmaccount.Field]any{
 				bmaccount.FieldCustomerID: uuid.FromStringOrNil("33a95f94-0e7c-11ee-aeb3-57a93b9f70fd"),
 			},
 
 			expectTarget: "bin-manager.billing-manager.request",
 			expectRequest: &sock.Request{
-				URI:      "/v1/accounts?page_token=2023-06-08+03%3A22%3A17.995000&page_size=10",
+				URI:      "/v1/accounts?page_token=2023-06-08T03%3A22%3A17.995000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"33a95f94-0e7c-11ee-aeb3-57a93b9f70fd"}`),

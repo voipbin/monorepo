@@ -126,7 +126,7 @@ func Test_callGet_error(t *testing.T) {
 					ID:         uuid.FromStringOrNil("7b7e58de-8f37-11ed-8852-0f407ad6849f"),
 					CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 				},
-				TMDelete: "2020-09-20 03:23:20.995000",
+				TMDelete: "2020-09-20T03:23:20.995000Z",
 			},
 		},
 	}
@@ -844,7 +844,7 @@ func Test_CallList(t *testing.T) {
 				Permission: amagent.PermissionCustomerAdmin,
 			},
 
-			"2021-03-01 01:00:00.995000",
+			"2021-03-01T01:00:00.995000Z",
 			10,
 
 			[]cmcall.Call{

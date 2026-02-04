@@ -34,7 +34,7 @@ func Test_ConfbridgeCreateAndGet(t *testing.T) {
 				},
 			},
 
-			responseCurTime: "2023-01-18 03:22:18.995000",
+			responseCurTime: "2023-01-18T03:22:18.995000Z",
 			expectRes: &confbridge.Confbridge{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("32318203-58bf-4105-adf4-e3b9866ee9a9"),
@@ -42,7 +42,7 @@ func Test_ConfbridgeCreateAndGet(t *testing.T) {
 				Flags:          []confbridge.Flag{},
 				ChannelCallIDs: map[string]uuid.UUID{},
 				RecordingIDs:   []uuid.UUID{},
-				TMCreate:       "2023-01-18 03:22:18.995000",
+				TMCreate:       "2023-01-18T03:22:18.995000Z",
 				TMUpdate:       DefaultTimeStamp,
 				TMDelete:       DefaultTimeStamp,
 			},
@@ -73,7 +73,7 @@ func Test_ConfbridgeCreateAndGet(t *testing.T) {
 				ExternalMediaID: uuid.FromStringOrNil("f4deecf0-972c-11ed-8ad1-1b7b0c5441ac"),
 			},
 
-			responseCurTime: "2023-01-18 03:22:18.995000",
+			responseCurTime: "2023-01-18T03:22:18.995000Z",
 			expectRes: &confbridge.Confbridge{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("fc07eed6-3301-11ec-8218-f37dfb357914"),
@@ -96,7 +96,7 @@ func Test_ConfbridgeCreateAndGet(t *testing.T) {
 					uuid.FromStringOrNil("f4bb44a8-972c-11ed-b242-d37f337f0809"),
 				},
 				ExternalMediaID: uuid.FromStringOrNil("f4deecf0-972c-11ed-8ad1-1b7b0c5441ac"),
-				TMCreate:        "2023-01-18 03:22:18.995000",
+				TMCreate:        "2023-01-18T03:22:18.995000Z",
 				TMUpdate:        DefaultTimeStamp,
 				TMDelete:        DefaultTimeStamp,
 			},
@@ -162,7 +162,7 @@ func Test_ConfbridgeGetByBridgeID(t *testing.T) {
 				RecordingIDs:   []uuid.UUID{},
 			},
 
-			responseCurTime: "2023-01-18 03:22:18.995000",
+			responseCurTime: "2023-01-18T03:22:18.995000Z",
 			expectRes: &confbridge.Confbridge{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("bf738558-34ef-11ec-a927-6ba7cd3ff490"),
@@ -171,7 +171,7 @@ func Test_ConfbridgeGetByBridgeID(t *testing.T) {
 				Flags:          []confbridge.Flag{},
 				ChannelCallIDs: map[string]uuid.UUID{},
 				RecordingIDs:   []uuid.UUID{},
-				TMCreate:       "2023-01-18 03:22:18.995000",
+				TMCreate:       "2023-01-18T03:22:18.995000Z",
 				TMUpdate:       DefaultTimeStamp,
 				TMDelete:       DefaultTimeStamp,
 			},
@@ -248,7 +248,7 @@ func Test_ConfbridgeList(t *testing.T) {
 				confbridge.FieldDeleted:    false,
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 
 			expectRes: []*confbridge.Confbridge{
 				{
@@ -261,7 +261,7 @@ func Test_ConfbridgeList(t *testing.T) {
 					ChannelCallIDs: map[string]uuid.UUID{},
 					RecordingIDs:   []uuid.UUID{},
 
-					TMCreate: "2020-04-18 03:22:17.995000",
+					TMCreate: "2020-04-18T03:22:17.995000Z",
 					TMUpdate: DefaultTimeStamp,
 					TMDelete: DefaultTimeStamp,
 				},
@@ -275,7 +275,7 @@ func Test_ConfbridgeList(t *testing.T) {
 					ChannelCallIDs: map[string]uuid.UUID{},
 					RecordingIDs:   []uuid.UUID{},
 
-					TMCreate: "2020-04-18 03:22:17.995000",
+					TMCreate: "2020-04-18T03:22:17.995000Z",
 					TMUpdate: DefaultTimeStamp,
 					TMDelete: DefaultTimeStamp,
 				},
@@ -290,7 +290,7 @@ func Test_ConfbridgeList(t *testing.T) {
 				confbridge.FieldDeleted:    false,
 			},
 
-			"2020-04-18 03:22:17.995000",
+			"2020-04-18T03:22:17.995000Z",
 			[]*confbridge.Confbridge{},
 		},
 	}
@@ -350,7 +350,7 @@ func Test_ConfbridgeSetRecordingID(t *testing.T) {
 			},
 			recordID: uuid.FromStringOrNil("760b193a-3305-11ec-a9af-0fbbe717a04f"),
 
-			responseCurTime: "2023-01-18 03:22:18.995000",
+			responseCurTime: "2023-01-18T03:22:18.995000Z",
 			expectRes: &confbridge.Confbridge{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("75b1275e-3305-11ec-8dba-8bf525336b2b"),
@@ -359,8 +359,8 @@ func Test_ConfbridgeSetRecordingID(t *testing.T) {
 				ChannelCallIDs: map[string]uuid.UUID{},
 				RecordingID:    uuid.FromStringOrNil("760b193a-3305-11ec-a9af-0fbbe717a04f"),
 				RecordingIDs:   []uuid.UUID{},
-				TMCreate:       "2023-01-18 03:22:18.995000",
-				TMUpdate:       "2023-01-18 03:22:18.995000",
+				TMCreate:       "2023-01-18T03:22:18.995000Z",
+				TMUpdate:       "2023-01-18T03:22:18.995000Z",
 				TMDelete:       DefaultTimeStamp,
 			},
 		},
@@ -429,7 +429,7 @@ func Test_ConfbridgeSetExternalMediaID(t *testing.T) {
 			},
 			externalMediaID: uuid.FromStringOrNil("a5b2cc80-972e-11ed-86cc-a31ac34ae6bc"),
 
-			responseCurTime: "2023-01-18 03:22:18.995000",
+			responseCurTime: "2023-01-18T03:22:18.995000Z",
 			expectRes: &confbridge.Confbridge{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("a587afdc-972e-11ed-9c8a-c71ab8ef38bd"),
@@ -438,8 +438,8 @@ func Test_ConfbridgeSetExternalMediaID(t *testing.T) {
 				ChannelCallIDs:  map[string]uuid.UUID{},
 				RecordingIDs:    []uuid.UUID{},
 				ExternalMediaID: uuid.FromStringOrNil("a5b2cc80-972e-11ed-86cc-a31ac34ae6bc"),
-				TMCreate:        "2023-01-18 03:22:18.995000",
-				TMUpdate:        "2023-01-18 03:22:18.995000",
+				TMCreate:        "2023-01-18T03:22:18.995000Z",
+				TMUpdate:        "2023-01-18T03:22:18.995000Z",
 				TMDelete:        DefaultTimeStamp,
 			},
 		},
@@ -510,7 +510,7 @@ func Test_ConfbridgeSetFlags(t *testing.T) {
 				confbridge.FlagNoAutoLeave,
 			},
 
-			responseCurTime: "2023-01-18 03:22:18.995000",
+			responseCurTime: "2023-01-18T03:22:18.995000Z",
 			expectRes: &confbridge.Confbridge{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("64a9668e-d709-11ed-a3f4-d75381c89660"),
@@ -520,8 +520,8 @@ func Test_ConfbridgeSetFlags(t *testing.T) {
 				},
 				ChannelCallIDs: map[string]uuid.UUID{},
 				RecordingIDs:   []uuid.UUID{},
-				TMCreate:       "2023-01-18 03:22:18.995000",
-				TMUpdate:       "2023-01-18 03:22:18.995000",
+				TMCreate:       "2023-01-18T03:22:18.995000Z",
+				TMUpdate:       "2023-01-18T03:22:18.995000Z",
 				TMDelete:       DefaultTimeStamp,
 			},
 		},
@@ -591,7 +591,7 @@ func Test_ConfbridgeSetStatus(t *testing.T) {
 			},
 			status: confbridge.StatusTerminating,
 
-			responseCurTime: "2023-01-18 03:22:18.995000",
+			responseCurTime: "2023-01-18T03:22:18.995000Z",
 			expectRes: &confbridge.Confbridge{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("623042b0-6193-42dc-9b80-299f12b3df24"),
@@ -600,8 +600,8 @@ func Test_ConfbridgeSetStatus(t *testing.T) {
 				Flags:          []confbridge.Flag{},
 				ChannelCallIDs: map[string]uuid.UUID{},
 				RecordingIDs:   []uuid.UUID{},
-				TMCreate:       "2023-01-18 03:22:18.995000",
-				TMUpdate:       "2023-01-18 03:22:18.995000",
+				TMCreate:       "2023-01-18T03:22:18.995000Z",
+				TMUpdate:       "2023-01-18T03:22:18.995000Z",
 				TMDelete:       DefaultTimeStamp,
 			},
 		},

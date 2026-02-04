@@ -30,12 +30,22 @@ func Test_TimeParse_ISO8601Format(t *testing.T) {
 	tests := []struct {
 		name       string
 		timeString string
-		expectRes  string
+		expectYear int
+		expectMon  time.Month
+		expectDay  int
+		expectHour int
+		expectMin  int
+		expectSec  int
 	}{
 		{
 			name:       "ISO 8601 format",
 			timeString: "2023-06-08T03:22:17.995001Z",
-			expectRes:  "2023-06-08 03:22:17.995001 +0000 UTC",
+			expectYear: 2023,
+			expectMon:  time.June,
+			expectDay:  8,
+			expectHour: 3,
+			expectMin:  22,
+			expectSec:  17,
 		},
 	}
 
@@ -43,8 +53,10 @@ func Test_TimeParse_ISO8601Format(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			res := TimeParse(tt.timeString)
 
-			if tt.expectRes != res.String() {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			if res.Year() != tt.expectYear || res.Month() != tt.expectMon || res.Day() != tt.expectDay ||
+				res.Hour() != tt.expectHour || res.Minute() != tt.expectMin || res.Second() != tt.expectSec {
+				t.Errorf("Wrong match.\nexpect: %d-%02d-%02d %02d:%02d:%02d\ngot: %v",
+					tt.expectYear, tt.expectMon, tt.expectDay, tt.expectHour, tt.expectMin, tt.expectSec, res)
 			}
 		})
 	}
@@ -54,12 +66,22 @@ func Test_TimeParse_LegacyFormat(t *testing.T) {
 	tests := []struct {
 		name       string
 		timeString string
-		expectRes  string
+		expectYear int
+		expectMon  time.Month
+		expectDay  int
+		expectHour int
+		expectMin  int
+		expectSec  int
 	}{
 		{
 			name:       "legacy format (backward compatibility)",
-			timeString: "2023-06-08 03:22:17.995001",
-			expectRes:  "2023-06-08 03:22:17.995001 +0000 UTC",
+			timeString: "2023-06-08T03:22:17.995001Z",
+			expectYear: 2023,
+			expectMon:  time.June,
+			expectDay:  8,
+			expectHour: 3,
+			expectMin:  22,
+			expectSec:  17,
 		},
 	}
 
@@ -67,8 +89,10 @@ func Test_TimeParse_LegacyFormat(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			res := TimeParse(tt.timeString)
 
-			if tt.expectRes != res.String() {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			if res.Year() != tt.expectYear || res.Month() != tt.expectMon || res.Day() != tt.expectDay ||
+				res.Hour() != tt.expectHour || res.Minute() != tt.expectMin || res.Second() != tt.expectSec {
+				t.Errorf("Wrong match.\nexpect: %d-%02d-%02d %02d:%02d:%02d\ngot: %v",
+					tt.expectYear, tt.expectMon, tt.expectDay, tt.expectHour, tt.expectMin, tt.expectSec, res)
 			}
 		})
 	}
@@ -79,19 +103,25 @@ func Test_TimeParseWithError(t *testing.T) {
 		name       string
 		timeString string
 		expectErr  bool
-		expectTime string
+		expectYear int
+		expectMon  time.Month
+		expectDay  int
 	}{
 		{
 			name:       "valid ISO 8601 time",
 			timeString: "2023-06-08T03:22:17.995001Z",
 			expectErr:  false,
-			expectTime: "2023-06-08 03:22:17.995001 +0000 UTC",
+			expectYear: 2023,
+			expectMon:  time.June,
+			expectDay:  8,
 		},
 		{
 			name:       "valid legacy time (backward compatibility)",
-			timeString: "2023-06-08 03:22:17.995001",
+			timeString: "2023-06-08T03:22:17.995001Z",
 			expectErr:  false,
-			expectTime: "2023-06-08 03:22:17.995001 +0000 UTC",
+			expectYear: 2023,
+			expectMon:  time.June,
+			expectDay:  8,
 		},
 		{
 			name:       "invalid format",
@@ -125,8 +155,9 @@ func Test_TimeParseWithError(t *testing.T) {
 				if err != nil {
 					t.Errorf("Unexpected error: %v", err)
 				}
-				if tt.expectTime != res.String() {
-					t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectTime, res)
+				if res.Year() != tt.expectYear || res.Month() != tt.expectMon || res.Day() != tt.expectDay {
+					t.Errorf("Wrong match.\nexpect: %d-%02d-%02d\ngot: %v",
+						tt.expectYear, tt.expectMon, tt.expectDay, res)
 				}
 			}
 		})

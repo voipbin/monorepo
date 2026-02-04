@@ -141,7 +141,7 @@ func Test_processV1GroupcallsGet(t *testing.T) {
 		{
 			name: "normal",
 			request: &sock.Request{
-				URI:    "/v1/groupcalls?page_size=10&page_token=2023-05-03%2021:35:02.809",
+				URI:    "/v1/groupcalls?page_size=10&page_token=2023-05-03T21:35:02.809Z",
 				Method: sock.RequestMethodGet,
 				Data:   []byte(`{"customer_id":"256d8080-bd7e-11ed-b083-93a9d3f167e7","deleted":false}`),
 			},
@@ -159,7 +159,7 @@ func Test_processV1GroupcallsGet(t *testing.T) {
 			},
 
 			expectPageSize:  10,
-			expectPageToken: "2023-05-03 21:35:02.809",
+			expectPageToken: "2023-05-03T21:35:02.809Z",
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",

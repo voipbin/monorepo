@@ -60,7 +60,7 @@ func Test_EmailCreate(t *testing.T) {
 				},
 			},
 
-			responseCurTime: "2025-03-13 03:22:17.995000",
+			responseCurTime: "2025-03-13T03:22:17.995000Z",
 
 			expectResCreate: &email.Email{
 				Identity: commonidentity.Identity{
@@ -94,7 +94,7 @@ func Test_EmailCreate(t *testing.T) {
 					},
 				},
 
-				TMCreate: "2025-03-13 03:22:17.995000",
+				TMCreate: "2025-03-13T03:22:17.995000Z",
 				TMUpdate: DefaultTimeStamp,
 				TMDelete: DefaultTimeStamp,
 			},
@@ -308,7 +308,7 @@ func Test_EmailUpdateProviderReferenceID(t *testing.T) {
 			id:                  uuid.FromStringOrNil("83bf937c-0010-11f0-98ab-f7954e7eb6d8"),
 			providerReferenceID: "8409255a-0010-11f0-8fe6-c7156be65533",
 
-			responseCurTime: "2025-03-13 03:22:17.995000",
+			responseCurTime: "2025-03-13T03:22:17.995000Z",
 
 			expectRes: &email.Email{
 				Identity: commonidentity.Identity{
@@ -319,8 +319,8 @@ func Test_EmailUpdateProviderReferenceID(t *testing.T) {
 				Destinations:        []commonaddress.Address{},
 				Attachments:         []email.Attachment{},
 
-				TMCreate: "2025-03-13 03:22:17.995000",
-				TMUpdate: "2025-03-13 03:22:17.995000",
+				TMCreate: "2025-03-13T03:22:17.995000Z",
+				TMUpdate: "2025-03-13T03:22:17.995000Z",
 				TMDelete: DefaultTimeStamp,
 			},
 		},

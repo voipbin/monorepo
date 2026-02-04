@@ -99,9 +99,12 @@ const (
 // ConvertNumber returns converted number
 func (t *PhoneNumber) ConvertNumber() *number.Number {
 
-	// convert purchaseat
-	tmPurchase := strings.ReplaceAll(t.PurchasedAt, "T", " ")
-	tmPurchase = strings.ReplaceAll(tmPurchase, "Z", ".000")
+	// Keep purchasedAt in ISO 8601 format, just ensure it has microseconds
+	tmPurchase := t.PurchasedAt
+	if strings.HasSuffix(tmPurchase, "Z") {
+		// Convert from "2021-02-25T17:54:53Z" to "2021-02-25T17:54:53.000000Z"
+		tmPurchase = strings.TrimSuffix(tmPurchase, "Z") + ".000000Z"
+	}
 
 	res := &number.Number{
 		Number: t.PhoneNumber,

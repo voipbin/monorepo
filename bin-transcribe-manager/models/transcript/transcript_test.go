@@ -21,8 +21,8 @@ func TestTranscriptStruct(t *testing.T) {
 		TranscribeID: transcribeID,
 		Direction:    DirectionIn,
 		Message:      "Hello, this is a test message.",
-		TMTranscript: "2023-01-01 00:00:01.123456",
-		TMCreate:     "2023-01-01 00:00:00",
+		TMTranscript: "2023-01-01T00:00:01.123456Z",
+		TMCreate:     "2023-01-01T00:00:00Z",
 		TMDelete:     "",
 	}
 
@@ -41,8 +41,8 @@ func TestTranscriptStruct(t *testing.T) {
 	if tr.Message != "Hello, this is a test message." {
 		t.Errorf("Transcript.Message = %v, expected %v", tr.Message, "Hello, this is a test message.")
 	}
-	if tr.TMTranscript != "2023-01-01 00:00:01.123456" {
-		t.Errorf("Transcript.TMTranscript = %v, expected %v", tr.TMTranscript, "2023-01-01 00:00:01.123456")
+	if tr.TMTranscript != "2023-01-01T00:00:01.123456Z" {
+		t.Errorf("Transcript.TMTranscript = %v, expected %v", tr.TMTranscript, "2023-01-01T00:00:01.123456Z")
 	}
 }
 

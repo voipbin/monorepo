@@ -92,7 +92,7 @@ func Test_StorageV1AccountList(t *testing.T) {
 		{
 			"normal",
 
-			"2020-09-20 03:23:20.995000",
+			"2020-09-20T03:23:20.995000Z",
 			10,
 			map[smaccount.Field]any{
 				smaccount.FieldDeleted: false,
@@ -106,7 +106,7 @@ func Test_StorageV1AccountList(t *testing.T) {
 
 			"bin-manager.storage-manager.request",
 			&sock.Request{
-				URI:      "/v1/accounts?page_token=2020-09-20+03%3A23%3A20.995000&page_size=10",
+				URI:      "/v1/accounts?page_token=2020-09-20T03%3A23%3A20.995000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"deleted":false}`),

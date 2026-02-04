@@ -142,7 +142,7 @@ func Test_EventHandlerBridgeDestroyed(t *testing.T) {
 				Event: ari.Event{
 					Type:        ari.EventTypeBridgeDestroyed,
 					Application: "voipbin",
-					Timestamp:   "2020-05-04T00:27:59.747",
+					Timestamp:   "2020-05-04T00:27:59.747Z",
 					AsteriskID:  "42:01:0a:a4:00:03",
 				},
 
@@ -163,7 +163,7 @@ func Test_EventHandlerBridgeDestroyed(t *testing.T) {
 				},
 			},
 			"17174a5e-91f6-11ea-b637-fb223e63cedf",
-			"2020-05-04T00:27:59.747",
+			"2020-05-04T00:27:59.747Z",
 
 			&bridge.Bridge{
 				ID: "17174a5e-91f6-11ea-b637-fb223e63cedf",

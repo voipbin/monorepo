@@ -57,7 +57,7 @@ func Test_ConversationCreate(t *testing.T) {
 				},
 			},
 
-			responseCurTime: "2022-04-18 03:22:17.995000",
+			responseCurTime: "2022-04-18T03:22:17.995000Z",
 			expectRes: &conversation.Conversation{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("586e8e64-e428-11ec-baf2-7b14625ea112"),
@@ -81,7 +81,7 @@ func Test_ConversationCreate(t *testing.T) {
 					Target:     "e9d6a222-e42a-11ec-a678-57ec5f8add13",
 					TargetName: "test user",
 				},
-				TMCreate: "2022-04-18 03:22:17.995000",
+				TMCreate: "2022-04-18T03:22:17.995000Z",
 				TMUpdate: commondatabasehandler.DefaultTimeStamp,
 				TMDelete: commondatabasehandler.DefaultTimeStamp,
 			},
@@ -173,7 +173,7 @@ func Test_ConversationList(t *testing.T) {
 				},
 			},
 
-			token: "2022-06-18 03:22:17.995000",
+			token: "2022-06-18T03:22:17.995000Z",
 			limit: 100,
 			filters: map[conversation.Field]any{
 				conversation.FieldDeleted:    false,
@@ -181,7 +181,7 @@ func Test_ConversationList(t *testing.T) {
 				conversation.FieldType:       conversation.TypeLine,
 			},
 
-			responseCurTime: "2022-04-18 03:22:17.995000",
+			responseCurTime: "2022-04-18T03:22:17.995000Z",
 			expectRes: []*conversation.Conversation{
 				{
 					Identity: commonidentity.Identity{
@@ -199,7 +199,7 @@ func Test_ConversationList(t *testing.T) {
 					DialogID: "38a2bdf6-e42a-11ec-b5a9-43316ee06787",
 					Self:     commonaddress.Address{},
 					Peer:     commonaddress.Address{},
-					TMCreate: "2022-04-18 03:22:17.995000",
+					TMCreate: "2022-04-18T03:22:17.995000Z",
 					TMUpdate: commondatabasehandler.DefaultTimeStamp,
 					TMDelete: commondatabasehandler.DefaultTimeStamp,
 				},
@@ -219,7 +219,7 @@ func Test_ConversationList(t *testing.T) {
 					DialogID: "387f1afe-e42a-11ec-ad8f-1340414f9a51",
 					Self:     commonaddress.Address{},
 					Peer:     commonaddress.Address{},
-					TMCreate: "2022-04-18 03:22:17.995000",
+					TMCreate: "2022-04-18T03:22:17.995000Z",
 					TMUpdate: commondatabasehandler.DefaultTimeStamp,
 					TMDelete: commondatabasehandler.DefaultTimeStamp,
 				},
@@ -294,7 +294,7 @@ func Test_ConversationUpdate(t *testing.T) {
 				},
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 			expectRes: &conversation.Conversation{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("00f151ba-2199-11f0-85be-9b26b400d0c2"),
@@ -311,8 +311,8 @@ func Test_ConversationUpdate(t *testing.T) {
 					Target: "+123456789",
 				},
 
-				TMCreate: "2020-04-18T03:22:17.995000",
-				TMUpdate: "2020-04-18T03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
+				TMUpdate: "2020-04-18T03:22:17.995000Z",
 				TMDelete: commondatabasehandler.DefaultTimeStamp,
 			},
 		},

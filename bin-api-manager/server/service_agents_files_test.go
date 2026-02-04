@@ -39,7 +39,7 @@ func Test_GetServiceAgentsFiles(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/service_agents/files?page_token=2020-09-20%2003:23:20.995000&page_size=10",
+			reqQuery: "/service_agents/files?page_token=2020-09-20T03:23:20.995000Z&page_size=10",
 
 			responseFiles: []*smfile.WebhookMessage{
 				{
@@ -54,7 +54,7 @@ func Test_GetServiceAgentsFiles(t *testing.T) {
 				},
 			},
 
-			expectPageToken: "2020-09-20 03:23:20.995000",
+			expectPageToken: "2020-09-20T03:23:20.995000Z",
 			expectPageSize:  10,
 			expectRes:       `{"result":[{"id":"89f20424-c063-11ef-850f-ff10a10c813c","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","filename":"","filesize":0,"uri_download":"","tm_download_expire":"","tm_create":"","tm_update":"","tm_delete":""},{"id":"8a56f320-c063-11ef-9e55-37bada852d90","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","filename":"","filesize":0,"uri_download":"","tm_download_expire":"","tm_create":"","tm_update":"","tm_delete":""}],"next_page_token":""}`,
 		},

@@ -42,7 +42,7 @@ func Test_SummaryCreate(t *testing.T) {
 				Content:  "Hello",
 			},
 
-			responseCurTime: "2023-01-03 21:35:02.809",
+			responseCurTime: "2023-01-03T21:35:02.809Z",
 			expectRes: &summary.Summary{
 				Identity: identity.Identity{
 					ID:         uuid.FromStringOrNil("69973904-0a48-11f0-8f10-037c653e7ac2"),
@@ -57,7 +57,7 @@ func Test_SummaryCreate(t *testing.T) {
 				Language: "en-US",
 				Content:  "Hello",
 
-				TMCreate: "2023-01-03 21:35:02.809",
+				TMCreate: "2023-01-03T21:35:02.809Z",
 				TMUpdate: DefaultTimeStamp,
 				TMDelete: DefaultTimeStamp,
 			},
@@ -72,13 +72,13 @@ func Test_SummaryCreate(t *testing.T) {
 				},
 			},
 
-			responseCurTime: "2023-01-03 21:35:02.809",
+			responseCurTime: "2023-01-03T21:35:02.809Z",
 			expectRes: &summary.Summary{
 				Identity: identity.Identity{
 					ID:         uuid.FromStringOrNil("b4ec7c70-0a48-11f0-bfb1-9f0ee7583e2a"),
 					CustomerID: uuid.FromStringOrNil("6a04b59c-0a48-11f0-a206-d723dd7442a6"),
 				},
-				TMCreate: "2023-01-03 21:35:02.809",
+				TMCreate: "2023-01-03T21:35:02.809Z",
 				TMUpdate: DefaultTimeStamp,
 				TMDelete: DefaultTimeStamp,
 			},
@@ -165,7 +165,7 @@ func Test_SummaryUpdate(t *testing.T) {
 				summary.FieldContent: "test content",
 			},
 
-			responseCurTime: "2023-01-03 21:35:02.809",
+			responseCurTime: "2023-01-03T21:35:02.809Z",
 			expectRes: &summary.Summary{
 				Identity: identity.Identity{
 					ID:         uuid.FromStringOrNil("0951c95e-0bd5-11f0-a747-c75eccfcb319"),
@@ -180,8 +180,8 @@ func Test_SummaryUpdate(t *testing.T) {
 				Language: "en-US",
 				Content:  "test content",
 
-				TMCreate: "2023-01-03 21:35:02.809",
-				TMUpdate: "2023-01-03 21:35:02.809",
+				TMCreate: "2023-01-03T21:35:02.809Z",
+				TMUpdate: "2023-01-03T21:35:02.809Z",
 				TMDelete: DefaultTimeStamp,
 			},
 		},

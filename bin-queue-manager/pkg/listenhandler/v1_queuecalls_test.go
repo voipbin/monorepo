@@ -34,14 +34,14 @@ func Test_processV1QueuecallsGet(t *testing.T) {
 		{
 			name: "normal",
 			request: &sock.Request{
-				URI:      "/v1/queuecalls?page_size=10&page_token=2020-05-03%2021:35:02.809",
+				URI:      "/v1/queuecalls?page_size=10&page_token=2020-05-03T21:35:02.809Z",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"f9f94078-7f54-11ec-8387-9fe49204286f","deleted":false,"queue_id":"d885e09e-b14e-11ee-95f5-37ef89c64b7a","status":"waiting"}`),
 			},
 
 			pageSize:  10,
-			pageToken: "2020-05-03 21:35:02.809",
+			pageToken: "2020-05-03T21:35:02.809Z",
 
 			responseFilters: map[queuecall.Field]any{
 				queuecall.FieldCustomerID: uuid.FromStringOrNil("f9f94078-7f54-11ec-8387-9fe49204286f"),
@@ -67,14 +67,14 @@ func Test_processV1QueuecallsGet(t *testing.T) {
 		{
 			name: "2 items",
 			request: &sock.Request{
-				URI:      "/v1/queuecalls?page_size=10&page_token=2020-05-03%2021:35:02.809",
+				URI:      "/v1/queuecalls?page_size=10&page_token=2020-05-03T21:35:02.809Z",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"13529ca4-7f55-11ec-b445-c3f90a718170","deleted":false}`),
 			},
 
 			pageSize:  10,
-			pageToken: "2020-05-03 21:35:02.809",
+			pageToken: "2020-05-03T21:35:02.809Z",
 			responseFilters: map[queuecall.Field]any{
 				queuecall.FieldCustomerID: uuid.FromStringOrNil("13529ca4-7f55-11ec-b445-c3f90a718170"),
 				queuecall.FieldDeleted:    false,

@@ -32,7 +32,7 @@ func Test_processV1AIcallsGet(t *testing.T) {
 		{
 			name: "normal",
 			request: &sock.Request{
-				URI:    "/v1/aicalls?page_size=10&page_token=2020-05-03%2021:35:02.809&filter_customer_id=645e65c8-a773-11ed-b5ae-df76e94347ad&filter_deleted=false",
+				URI:    "/v1/aicalls?page_size=10&page_token=2020-05-03T21:35:02.809Z&filter_customer_id=645e65c8-a773-11ed-b5ae-df76e94347ad&filter_deleted=false",
 				Method: sock.RequestMethodGet,
 			},
 
@@ -50,7 +50,7 @@ func Test_processV1AIcallsGet(t *testing.T) {
 			},
 
 			expectPageSize:  10,
-			expectPageToken: "2020-05-03 21:35:02.809",
+			expectPageToken: "2020-05-03T21:35:02.809Z",
 			expectFilters: map[aicall.Field]any{
 				aicall.FieldDeleted:    false,
 				aicall.FieldCustomerID: uuid.FromStringOrNil("645e65c8-a773-11ed-b5ae-df76e94347ad"),

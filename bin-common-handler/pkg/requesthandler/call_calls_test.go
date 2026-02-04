@@ -96,7 +96,7 @@ func Test_CallV1CallActionTimeout(t *testing.T) {
 			&fmaction.Action{
 				ID:        uuid.FromStringOrNil("eccec152-4c6e-11ec-bb47-d343ee142464"),
 				Type:      fmaction.TypeAnswer,
-				TMExecute: "2020-09-20T03:23:20.995000",
+				TMExecute: "2020-09-20T03:23:20.995000Z",
 			},
 
 			"bin-manager.call-manager.request",
@@ -104,7 +104,7 @@ func Test_CallV1CallActionTimeout(t *testing.T) {
 				URI:      "/v1/calls/c8ab1794-4c6e-11ec-86bc-773d32f65e3b/action-timeout",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"action_id":"eccec152-4c6e-11ec-bb47-d343ee142464","action_type":"answer","tm_execute":"2020-09-20T03:23:20.995000"}`),
+				Data:     []byte(`{"action_id":"eccec152-4c6e-11ec-bb47-d343ee142464","action_type":"answer","tm_execute":"2020-09-20T03:23:20.995000Z"}`),
 			},
 			&sock.Response{
 				StatusCode: 200,
@@ -468,7 +468,7 @@ func Test_CallV1CallList(t *testing.T) {
 		{
 			"normal",
 
-			"2020-09-20T03:23:20.995000",
+			"2020-09-20T03:23:20.995000Z",
 			10,
 			map[cmcall.Field]any{
 				cmcall.FieldDeleted: false,
@@ -476,7 +476,7 @@ func Test_CallV1CallList(t *testing.T) {
 
 			"bin-manager.call-manager.request",
 			&sock.Request{
-				URI:      "/v1/calls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
+				URI:      "/v1/calls?page_token=2020-09-20T03%3A23%3A20.995000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"deleted":false}`),
@@ -497,7 +497,7 @@ func Test_CallV1CallList(t *testing.T) {
 		{
 			"2 calls",
 
-			"2020-09-20T03:23:20.995000",
+			"2020-09-20T03:23:20.995000Z",
 			10,
 			map[cmcall.Field]any{
 				cmcall.FieldDeleted: false,
@@ -505,7 +505,7 @@ func Test_CallV1CallList(t *testing.T) {
 
 			"bin-manager.call-manager.request",
 			&sock.Request{
-				URI:      "/v1/calls?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
+				URI:      "/v1/calls?page_token=2020-09-20T03%3A23%3A20.995000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"deleted":false}`),

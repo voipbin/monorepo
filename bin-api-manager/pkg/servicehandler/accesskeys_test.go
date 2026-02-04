@@ -233,7 +233,7 @@ func Test_AccesskeyList(t *testing.T) {
 				Permission: amagent.PermissionCustomerAdmin,
 			},
 			10,
-			"2020-09-20 03:23:20.995000",
+			"2020-09-20T03:23:20.995000Z",
 			map[csaccesskey.Field]any{
 				csaccesskey.FieldCustomerID: uuid.FromStringOrNil("51639bbe-8e5e-11ee-afc4-4fbef5d3d983"),
 				csaccesskey.FieldDeleted:    false,
@@ -260,7 +260,7 @@ func Test_AccesskeyList(t *testing.T) {
 				Permission: amagent.PermissionCustomerAdmin,
 			},
 			10,
-			"2020-09-20 03:23:20.995000",
+			"2020-09-20T03:23:20.995000Z",
 			map[csaccesskey.Field]any{
 				csaccesskey.FieldCustomerID: uuid.FromStringOrNil("51639bbe-8e5e-11ee-afc4-4fbef5d3d983"),
 				csaccesskey.FieldDeleted:    false,

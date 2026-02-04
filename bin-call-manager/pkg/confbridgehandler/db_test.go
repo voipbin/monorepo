@@ -135,7 +135,7 @@ func Test_List(t *testing.T) {
 			name: "normal",
 
 			size:  10,
-			token: "2020-05-03%2021:35:02.809",
+			token: "2020-05-03T21:35:02.809Z",
 			filters: map[string]string{
 				"customer_id": "78a0debc-f0ce-11ee-8de6-9b2ff94e8b94",
 				"deleted":     "false",

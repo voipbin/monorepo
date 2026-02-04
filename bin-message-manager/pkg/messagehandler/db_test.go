@@ -226,7 +226,7 @@ func Test_List(t *testing.T) {
 		{
 			"normal",
 
-			"2021-02-26 18:26:49.000",
+			"2021-02-26T18:26:49.000Z",
 			10,
 			map[message.Field]any{
 				message.FieldCustomerID: uuid.FromStringOrNil("90c4eadc-a298-11ec-ab3a-8b21b05640ec"),

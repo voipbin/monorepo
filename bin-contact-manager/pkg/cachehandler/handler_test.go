@@ -49,8 +49,8 @@ func TestHandler_ContactSetAndGet(t *testing.T) {
 		JobTitle:    "Engineer",
 		Source:      "manual",
 		ExternalID:  "ext-123",
-		TMCreate:    "2020-01-01 00:00:00.000000",
-		TMUpdate:    "2020-01-02 00:00:00.000000",
+		TMCreate:    "2020-01-01T00:00:00.000000Z",
+		TMUpdate:    "2020-01-02T00:00:00.000000Z",
 		TMDelete:    "9999-01-01T00:00:00.000000Z",
 	}
 
@@ -457,8 +457,8 @@ func TestHandler_ContactGet_AllFields(t *testing.T) {
 		Source:      "manual",
 		ExternalID:  "ext-123",
 		Notes:       "Some notes here",
-		TMCreate:    "2020-01-01 00:00:00.000000",
-		TMUpdate:    "2020-01-02 00:00:00.000000",
+		TMCreate:    "2020-01-01T00:00:00.000000Z",
+		TMUpdate:    "2020-01-02T00:00:00.000000Z",
 		TMDelete:    "9999-01-01T00:00:00.000000Z",
 	}
 
@@ -687,8 +687,8 @@ func TestHandler_ContactWithLargeData(t *testing.T) {
 			uuid.FromStringOrNil("c0002222-2222-2222-2222-222222222222"),
 			uuid.FromStringOrNil("c0003333-3333-3333-3333-333333333333"),
 		},
-		TMCreate: "2020-01-01 00:00:00.000000",
-		TMUpdate: "2020-01-02 00:00:00.000000",
+		TMCreate: "2020-01-01T00:00:00.000000Z",
+		TMUpdate: "2020-01-02T00:00:00.000000Z",
 		TMDelete: "9999-01-01T00:00:00.000000Z",
 	}
 

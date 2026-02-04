@@ -34,12 +34,12 @@ func Test_MessageV1MessageList(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("2970f4e8-a2b1-11ec-b21d-a7848e946530"),
-			"2020-09-20T03:23:20.995000",
+			"2020-09-20T03:23:20.995000Z",
 			10,
 
 			"bin-manager.message-manager.request",
 			&sock.Request{
-				URI:      "/v1/messages?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
+				URI:      "/v1/messages?page_token=2020-09-20T03%3A23%3A20.995000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			Data:     []byte(`{"customer_id":"2970f4e8-a2b1-11ec-b21d-a7848e946530"}`),
@@ -61,12 +61,12 @@ func Test_MessageV1MessageList(t *testing.T) {
 			"2 messages",
 
 			uuid.FromStringOrNil("6f0e7d2c-a2b1-11ec-88c4-af58c97aff78"),
-			"2020-09-20T03:23:20.995000",
+			"2020-09-20T03:23:20.995000Z",
 			10,
 
 			"bin-manager.message-manager.request",
 			&sock.Request{
-				URI:      "/v1/messages?page_token=2020-09-20T03%3A23%3A20.995000&page_size=10",
+				URI:      "/v1/messages?page_token=2020-09-20T03%3A23%3A20.995000Z&page_size=10",
 			Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 			Data:     []byte(`{"customer_id":"6f0e7d2c-a2b1-11ec-88c4-af58c97aff78"}`),

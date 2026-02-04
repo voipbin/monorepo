@@ -55,7 +55,7 @@ func Test_AIcallCreate(t *testing.T) {
 				Language:      "en-US",
 			},
 
-			responseCurTime: "2023-01-03 21:35:02.809",
+			responseCurTime: "2023-01-03T21:35:02.809Z",
 			expectRes: &aicall.AIcall{
 				Identity: identity.Identity{
 					ID:         uuid.FromStringOrNil("b11ef334-a5e1-11ed-8006-bf175306f060"),
@@ -80,7 +80,7 @@ func Test_AIcallCreate(t *testing.T) {
 				Gender:        aicall.GenderFemale,
 				Language:      "en-US",
 				TMEnd:         DefaultTimeStamp,
-				TMCreate:      "2023-01-03 21:35:02.809",
+				TMCreate:      "2023-01-03T21:35:02.809Z",
 				TMUpdate:      DefaultTimeStamp,
 				TMDelete:      DefaultTimeStamp,
 			},
@@ -93,14 +93,14 @@ func Test_AIcallCreate(t *testing.T) {
 				},
 			},
 
-			"2023-01-03 21:35:02.809",
+			"2023-01-03T21:35:02.809Z",
 			&aicall.AIcall{
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("e2fa5772-a5e1-11ed-94a9-f72c152d4780"),
 				},
 				AIEngineData: nil,
 				TMEnd:        DefaultTimeStamp,
-				TMCreate:     "2023-01-03 21:35:02.809",
+				TMCreate:     "2023-01-03T21:35:02.809Z",
 				TMUpdate:     DefaultTimeStamp,
 				TMDelete:     DefaultTimeStamp,
 			},
@@ -167,7 +167,7 @@ func Test_AIcallGetByReferenceID(t *testing.T) {
 
 			uuid.FromStringOrNil("a8ebd744-a5e2-11ed-bc18-d3a88a0f1ffa"),
 
-			"2023-01-03 21:35:02.809",
+			"2023-01-03T21:35:02.809Z",
 			&aicall.AIcall{
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("a8b26464-a5e2-11ed-bce7-83b475b0c53d"),
@@ -176,7 +176,7 @@ func Test_AIcallGetByReferenceID(t *testing.T) {
 				ReferenceType: aicall.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("a8ebd744-a5e2-11ed-bc18-d3a88a0f1ffa"),
 				TMEnd:         DefaultTimeStamp,
-				TMCreate:      "2023-01-03 21:35:02.809",
+				TMCreate:      "2023-01-03T21:35:02.809Z",
 				TMUpdate:      DefaultTimeStamp,
 				TMDelete:      DefaultTimeStamp,
 			},
@@ -246,7 +246,7 @@ func Test_AIcallUpdate(t *testing.T) {
 				aicall.FieldPipecatcallID: uuid.FromStringOrNil("f720a0d4-afbc-11f0-954f-6ff64a2d4520"),
 			},
 
-			responseCurTime: "2023-01-03 21:35:02.809",
+			responseCurTime: "2023-01-03T21:35:02.809Z",
 			expectRes: &aicall.AIcall{
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("f6c9d56a-afbc-11f0-bb5f-1b20049b3cfb"),
@@ -254,8 +254,8 @@ func Test_AIcallUpdate(t *testing.T) {
 				AIEngineData:  nil,
 				PipecatcallID: uuid.FromStringOrNil("f720a0d4-afbc-11f0-954f-6ff64a2d4520"),
 				TMEnd:         DefaultTimeStamp,
-				TMCreate:      "2023-01-03 21:35:02.809",
-				TMUpdate:      "2023-01-03 21:35:02.809",
+				TMCreate:      "2023-01-03T21:35:02.809Z",
+				TMUpdate:      "2023-01-03T21:35:02.809Z",
 				TMDelete:      DefaultTimeStamp,
 			},
 		},
@@ -272,7 +272,7 @@ func Test_AIcallUpdate(t *testing.T) {
 				aicall.FieldStatus: aicall.StatusProgressing,
 			},
 
-			responseCurTime: "2023-01-03 21:35:02.809",
+			responseCurTime: "2023-01-03T21:35:02.809Z",
 			expectRes: &aicall.AIcall{
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("f7c0bf02-b083-11f0-99e0-ffcbb19dc61e"),
@@ -280,8 +280,8 @@ func Test_AIcallUpdate(t *testing.T) {
 				AIEngineData: nil,
 				Status:       aicall.StatusProgressing,
 				TMEnd:        DefaultTimeStamp,
-				TMCreate:     "2023-01-03 21:35:02.809",
-				TMUpdate:     "2023-01-03 21:35:02.809",
+				TMCreate:     "2023-01-03T21:35:02.809Z",
+				TMUpdate:     "2023-01-03T21:35:02.809Z",
 				TMDelete:     DefaultTimeStamp,
 			},
 		},
@@ -350,16 +350,16 @@ func Test_AIcallDelete(t *testing.T) {
 
 			id: uuid.FromStringOrNil("78f9a8fc-a5e4-11ed-95aa-133c8380df73"),
 
-			responseCurTime: "2023-01-03 21:35:02.809",
+			responseCurTime: "2023-01-03T21:35:02.809Z",
 			expectRes: &aicall.AIcall{
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("78f9a8fc-a5e4-11ed-95aa-133c8380df73"),
 				},
 				AIEngineData: nil,
 				TMEnd:        DefaultTimeStamp,
-				TMCreate:     "2023-01-03 21:35:02.809",
-				TMUpdate:     "2023-01-03 21:35:02.809",
-				TMDelete:     "2023-01-03 21:35:02.809",
+				TMCreate:     "2023-01-03T21:35:02.809Z",
+				TMUpdate:     "2023-01-03T21:35:02.809Z",
+				TMDelete:     "2023-01-03T21:35:02.809Z",
 			},
 		},
 	}
@@ -441,7 +441,7 @@ func Test_AIcallList(t *testing.T) {
 				aicall.FieldCustomerID: uuid.FromStringOrNil("6d35368c-a76d-11ed-9699-235c9e4a0117"),
 			},
 
-			responseCurTime: "2023-01-03 21:35:02.809",
+			responseCurTime: "2023-01-03T21:35:02.809Z",
 			expectRes: []*aicall.AIcall{
 				{
 					Identity: identity.Identity{
@@ -450,7 +450,7 @@ func Test_AIcallList(t *testing.T) {
 					},
 					AIEngineData: nil,
 					TMEnd:        DefaultTimeStamp,
-					TMCreate:     "2023-01-03 21:35:02.809",
+					TMCreate:     "2023-01-03T21:35:02.809Z",
 					TMUpdate:     DefaultTimeStamp,
 					TMDelete:     DefaultTimeStamp,
 				},
@@ -461,7 +461,7 @@ func Test_AIcallList(t *testing.T) {
 					},
 					AIEngineData: nil,
 					TMEnd:        DefaultTimeStamp,
-					TMCreate:     "2023-01-03 21:35:02.809",
+					TMCreate:     "2023-01-03T21:35:02.809Z",
 					TMUpdate:     DefaultTimeStamp,
 					TMDelete:     DefaultTimeStamp,
 				},
@@ -477,7 +477,7 @@ func Test_AIcallList(t *testing.T) {
 				aicall.FieldCustomerID: uuid.FromStringOrNil("a819a17a-0ba7-11f0-94b8-77c77a198260"),
 			},
 
-			responseCurTime: "2023-01-03 21:35:02.809",
+			responseCurTime: "2023-01-03T21:35:02.809Z",
 			expectRes:       []*aicall.AIcall{},
 		},
 	}

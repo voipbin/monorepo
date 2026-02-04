@@ -118,7 +118,7 @@ func Test_AImessageListByAIcallID(t *testing.T) {
 			},
 			aicallID: uuid.FromStringOrNil("24d250de-f31d-11ef-846e-9ba3307567d6"),
 			size:     10,
-			token:    "2020-09-20 03:23:20.995000",
+			token:    "2020-09-20T03:23:20.995000Z",
 
 			responseAIcall: &amaicall.AIcall{
 				Identity: commonidentity.Identity{

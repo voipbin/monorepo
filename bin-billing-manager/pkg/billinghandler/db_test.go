@@ -44,7 +44,7 @@ func Test_Create(t *testing.T) {
 			referenceType:  billing.ReferenceTypeCall,
 			referenceID:    uuid.FromStringOrNil("978512dc-08fb-11ee-953a-cb7160fb1372"),
 			costPerUnit:    billing.DefaultCostPerUnitReferenceTypeCall,
-			tmBillingStart: "2023-06-08 03:22:17.995000",
+			tmBillingStart: "2023-06-08T03:22:17.995000Z",
 
 			responseUUID: uuid.FromStringOrNil("97a8cf42-08fb-11ee-a352-8fbcbed34869"),
 			responseBilling: &billing.Billing{
@@ -64,7 +64,7 @@ func Test_Create(t *testing.T) {
 				ReferenceID:    uuid.FromStringOrNil("978512dc-08fb-11ee-953a-cb7160fb1372"),
 				CostPerUnit:    billing.DefaultCostPerUnitReferenceTypeCall,
 				CostTotal:      0,
-				TMBillingStart: "2023-06-08 03:22:17.995000",
+				TMBillingStart: "2023-06-08T03:22:17.995000Z",
 				TMBillingEnd:   dbhandler.DefaultTimeStamp,
 			},
 		},
@@ -238,7 +238,7 @@ func Test_List(t *testing.T) {
 			name: "normal",
 
 			size:  10,
-			token: "2023-06-08 03:22:17.995000",
+			token: "2023-06-08T03:22:17.995000Z",
 			filters: map[billing.Field]any{
 				billing.FieldCustomerID: uuid.FromStringOrNil("bd5b3ae6-08ff-11ee-8101-1396e6f3622a"),
 			},
@@ -310,7 +310,7 @@ func Test_UpdateStatusEnd(t *testing.T) {
 
 			id:              uuid.FromStringOrNil("a33c2c6e-0900-11ee-b83b-5f7796e6df8a"),
 			billingDuration: 10.32,
-			tmBillingEnd:    "2023-06-09 03:22:17.995000",
+			tmBillingEnd:    "2023-06-09T03:22:17.995000Z",
 
 			responseBilling: &billing.Billing{
 				Identity: commonidentity.Identity{

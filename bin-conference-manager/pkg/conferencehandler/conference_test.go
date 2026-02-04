@@ -585,7 +585,7 @@ func Test_List(t *testing.T) {
 
 			customerID: uuid.FromStringOrNil("c7dc2ef0-afd3-11ee-a624-3fa2cdf1cb55"),
 			size:       10,
-			token:      "2023-01-03 21:35:02.809",
+			token:      "2023-01-03T21:35:02.809Z",
 			filters: map[conference.Field]any{
 				conference.FieldType: conference.TypeConnect,
 			},

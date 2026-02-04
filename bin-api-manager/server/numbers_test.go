@@ -40,8 +40,8 @@ func TestNumbersGET(t *testing.T) {
 				},
 			},
 
-			reqQuery: "/numbers?page_size=10&page_token=2021-03-02%2003%3A23%3A20.995000",
-			reqBody:  []byte(`{"pagination":{"page_size":10,"page_token":"2021-03-02 03:23:20.995000"}}`),
+			reqQuery: "/numbers?page_size=10&page_token=2021-03-02T03:23:20.995000Z",
+			reqBody:  []byte(`{"pagination":{"page_size":10,"page_token":"2021-03-02T03:23:20.995000Z"}}`),
 
 			responseNumbers: []*nmnumber.WebhookMessage{
 				{
@@ -51,7 +51,7 @@ func TestNumbersGET(t *testing.T) {
 				},
 			},
 			expectPageSize:  10,
-			expectPageToken: "2021-03-02 03:23:20.995000",
+			expectPageToken: "2021-03-02T03:23:20.995000Z",
 			expectRes:       `{"result":[{"id":"31ee638c-7b23-11eb-858a-33e73c4f82f7","customer_id":"00000000-0000-0000-0000-000000000000","number":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","status":"","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_renew":"","tm_create":"","tm_update":"","tm_delete":""}],"next_page_token":""}`,
 		},
 	}
@@ -491,7 +491,7 @@ func Test_NumbersRenewPOST(t *testing.T) {
 			},
 
 			reqQuery: "/numbers/renew",
-			reqBody:  []byte(`{"tm_renew":"2023-04-06 14:54:24.652558"}`),
+			reqBody:  []byte(`{"tm_renew":"2023-04-06T14:54:24.652558Z"}`),
 
 			responseNumbers: []*nmnumber.WebhookMessage{
 				{
@@ -506,7 +506,7 @@ func Test_NumbersRenewPOST(t *testing.T) {
 				},
 			},
 
-			expectTMRenew: "2023-04-06 14:54:24.652558",
+			expectTMRenew: "2023-04-06T14:54:24.652558Z",
 			expectRes:     (`[{"id":"c2998386-1634-11ee-993a-37ac8d7a675d","customer_id":"00000000-0000-0000-0000-000000000000","number":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","status":"","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_renew":"","tm_create":"","tm_update":"","tm_delete":""},{"id":"c2e1ff3a-1634-11ee-bcc7-9f2a231b7b8a","customer_id":"00000000-0000-0000-0000-000000000000","number":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","status":"","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_renew":"","tm_create":"","tm_update":"","tm_delete":""}]`),
 		},
 	}

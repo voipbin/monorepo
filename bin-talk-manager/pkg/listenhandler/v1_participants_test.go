@@ -51,12 +51,12 @@ func Test_processV1TalksIDParticipantsPost(t *testing.T) {
 					OwnerID:   uuid.FromStringOrNil("7fcd7990-42eb-11ed-9fa6-b4cd93af9796"),
 				},
 				ChatID:   uuid.FromStringOrNil("6ebc6880-31da-11ed-8e95-a3bc92af9795"),
-				TMJoined: "2021-11-23 17:55:39.712000",
+				TMJoined: "2021-11-23T17:55:39.712000Z",
 			},
 			expectRes: &sock.Response{
 				StatusCode: 201,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"bbef9d30-75fe-11ed-c3ea-f8e017af9700","customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","owner_type":"agent","owner_id":"7fcd7990-42eb-11ed-9fa6-b4cd93af9796","chat_id":"6ebc6880-31da-11ed-8e95-a3bc92af9795","tm_joined":"2021-11-23 17:55:39.712000"}`),
+				Data:       []byte(`{"id":"bbef9d30-75fe-11ed-c3ea-f8e017af9700","customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","owner_type":"agent","owner_id":"7fcd7990-42eb-11ed-9fa6-b4cd93af9796","chat_id":"6ebc6880-31da-11ed-8e95-a3bc92af9795","tm_joined":"2021-11-23T17:55:39.712000Z"}`),
 			},
 		},
 		{
@@ -81,12 +81,12 @@ func Test_processV1TalksIDParticipantsPost(t *testing.T) {
 					OwnerID:   uuid.FromStringOrNil("8ede8b40-86ef-11ed-d4fb-e9e028af9801"),
 				},
 				ChatID:   uuid.FromStringOrNil("6ebc6880-31da-11ed-8e95-a3bc92af9795"),
-				TMJoined: "2021-11-23 18:00:00.000000",
+				TMJoined: "2021-11-23T18:00:00.000000Z",
 			},
 			expectRes: &sock.Response{
 				StatusCode: 201,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"cce09e40-86ef-11ed-e5ec-e0e039af9902","customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","owner_type":"customer","owner_id":"8ede8b40-86ef-11ed-d4fb-e9e028af9801","chat_id":"6ebc6880-31da-11ed-8e95-a3bc92af9795","tm_joined":"2021-11-23 18:00:00.000000"}`),
+				Data:       []byte(`{"id":"cce09e40-86ef-11ed-e5ec-e0e039af9902","customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","owner_type":"customer","owner_id":"8ede8b40-86ef-11ed-d4fb-e9e028af9801","chat_id":"6ebc6880-31da-11ed-8e95-a3bc92af9795","tm_joined":"2021-11-23T18:00:00.000000Z"}`),
 			},
 		},
 	}
@@ -216,13 +216,13 @@ func Test_processV1TalksIDParticipantsGet(t *testing.T) {
 						OwnerID:   uuid.FromStringOrNil("7fcd7990-42eb-11ed-9fa6-b4cd93af9796"),
 					},
 					ChatID:   uuid.FromStringOrNil("6ebc6880-31da-11ed-8e95-a3bc92af9795"),
-					TMJoined: "2021-11-23 17:55:39.712000",
+					TMJoined: "2021-11-23T17:55:39.712000Z",
 				},
 			},
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"bbef9d30-75fe-11ed-c3ea-f8e017af9700","customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","owner_type":"agent","owner_id":"7fcd7990-42eb-11ed-9fa6-b4cd93af9796","chat_id":"6ebc6880-31da-11ed-8e95-a3bc92af9795","tm_joined":"2021-11-23 17:55:39.712000"}]`),
+				Data:       []byte(`[{"id":"bbef9d30-75fe-11ed-c3ea-f8e017af9700","customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","owner_type":"agent","owner_id":"7fcd7990-42eb-11ed-9fa6-b4cd93af9796","chat_id":"6ebc6880-31da-11ed-8e95-a3bc92af9795","tm_joined":"2021-11-23T17:55:39.712000Z"}]`),
 			},
 		},
 		{

@@ -33,12 +33,12 @@ func Test_processV1ConferencecallsGet(t *testing.T) {
 			"normal",
 
 			&sock.Request{
-				URI:    "/v1/conferencecalls?page_size=10&page_token=2020-05-03%2021:35:02.809",
+				URI:    "/v1/conferencecalls?page_size=10&page_token=2020-05-03T21:35:02.809Z",
 				Method: sock.RequestMethodGet,
 				Data:   []byte(`{"customer_id":"54197ee2-50c3-11ee-ba48-af437ce87cbf","deleted":false}`),
 			},
 			10,
-			"2020-05-03 21:35:02.809",
+			"2020-05-03T21:35:02.809Z",
 
 			[]*conferencecall.Conferencecall{
 				{

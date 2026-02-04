@@ -95,7 +95,7 @@ func Test_ConferenceV1ConferenceList(t *testing.T) {
 		{
 			"normal conference",
 
-			"2021-03-02 03:23:20.995000",
+			"2021-03-02T03:23:20.995000Z",
 			10,
 			map[cfconference.Field]any{
 				cfconference.FieldType: string(cfconference.TypeConference),
@@ -103,7 +103,7 @@ func Test_ConferenceV1ConferenceList(t *testing.T) {
 
 			"bin-manager.conference-manager.request",
 			&sock.Request{
-				URI:      "/v1/conferences?page_token=2021-03-02+03%3A23%3A20.995000&page_size=10",
+				URI:      "/v1/conferences?page_token=2021-03-02T03%3A23%3A20.995000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
 				Data:     []byte(`{"type":"conference"}`),

@@ -76,7 +76,7 @@ func Test_ActiveflowCreate(t *testing.T) {
 				},
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 
 			expectedRes: &activeflow.Activeflow{
 				Identity: commonidentity.Identity{
@@ -120,7 +120,7 @@ func Test_ActiveflowCreate(t *testing.T) {
 					},
 				},
 
-				TMCreate: "2020-04-18 03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
 				TMUpdate: commondatabasehandler.DefaultTimeStamp,
 				TMDelete: commondatabasehandler.DefaultTimeStamp,
 			},
@@ -232,7 +232,7 @@ func Test_ActiveflowUpdate(t *testing.T) {
 				},
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 
 			expectedRes: &activeflow.Activeflow{
 				Identity: commonidentity.Identity{
@@ -277,8 +277,8 @@ func Test_ActiveflowUpdate(t *testing.T) {
 					},
 				},
 
-				TMCreate: "2020-04-18 03:22:17.995000",
-				TMUpdate: "2020-04-18 03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
+				TMUpdate: "2020-04-18T03:22:17.995000Z",
 				TMDelete: commondatabasehandler.DefaultTimeStamp,
 			},
 		},
@@ -376,7 +376,7 @@ func Test_ActiveflowDelete(t *testing.T) {
 				ExecutedActions: []action.Action{},
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 
 			expectedRes: &activeflow.Activeflow{
 				Identity: commonidentity.Identity{
@@ -414,9 +414,9 @@ func Test_ActiveflowDelete(t *testing.T) {
 				ExecuteCount:    1,
 				ExecutedActions: []action.Action{},
 
-				TMCreate: "2020-04-18 03:22:17.995000",
-				TMUpdate: "2020-04-18 03:22:17.995000",
-				TMDelete: "2020-04-18 03:22:17.995000",
+				TMCreate: "2020-04-18T03:22:17.995000Z",
+				TMUpdate: "2020-04-18T03:22:17.995000Z",
+				TMDelete: "2020-04-18T03:22:17.995000Z",
 			},
 		},
 	}
@@ -498,7 +498,7 @@ func Test_ActiveflowList(t *testing.T) {
 				activeflow.FieldDeleted:    false,
 			},
 
-			responseCurTime: "2020-04-18 03:22:17.995000",
+			responseCurTime: "2020-04-18T03:22:17.995000Z",
 
 			expectedRes: []*activeflow.Activeflow{
 				{
@@ -506,7 +506,7 @@ func Test_ActiveflowList(t *testing.T) {
 						ID:         uuid.FromStringOrNil("b9c89d28-ecda-11ee-a4c3-3f9069ec91c9"),
 						CustomerID: uuid.FromStringOrNil("c3419d78-ecda-11ee-96fd-276b944569e9"),
 					},
-					TMCreate: "2020-04-18 03:22:17.995000",
+					TMCreate: "2020-04-18T03:22:17.995000Z",
 					TMUpdate: commondatabasehandler.DefaultTimeStamp,
 					TMDelete: commondatabasehandler.DefaultTimeStamp,
 				},
@@ -515,7 +515,7 @@ func Test_ActiveflowList(t *testing.T) {
 						ID:         uuid.FromStringOrNil("ba4c00d2-ecda-11ee-9b4e-efecfed060d2"),
 						CustomerID: uuid.FromStringOrNil("c3419d78-ecda-11ee-96fd-276b944569e9"),
 					},
-					TMCreate: "2020-04-18 03:22:17.995000",
+					TMCreate: "2020-04-18T03:22:17.995000Z",
 					TMUpdate: commondatabasehandler.DefaultTimeStamp,
 					TMDelete: commondatabasehandler.DefaultTimeStamp,
 				},
