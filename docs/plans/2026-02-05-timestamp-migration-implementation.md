@@ -526,7 +526,100 @@ git commit -m "NOJIRA-Timestamp-string-to-time-migration
 
 ---
 
-## Task 26: Full Monorepo Verification
+## Task 26: Update OpenAPI Schema
+
+**Files:**
+- Modify: `bin-openapi-manager/openapi/openapi.yaml`
+
+**Step 1: Update tm_create fields (non-nullable)**
+
+Add `format: date-time` to all `tm_create` fields:
+
+```yaml
+# Before
+tm_create:
+  type: string
+  description: Created timestamp.
+
+# After
+tm_create:
+  type: string
+  format: date-time
+  description: Created timestamp.
+```
+
+**Step 2: Update tm_update, tm_delete fields (nullable)**
+
+Add `format: date-time` and `nullable: true` to all nullable timestamp fields:
+
+```yaml
+# Before
+tm_update:
+  type: string
+  description: Updated timestamp.
+tm_delete:
+  type: string
+  description: Deleted timestamp.
+
+# After
+tm_update:
+  type: string
+  format: date-time
+  nullable: true
+  description: Updated timestamp. Null if never updated.
+tm_delete:
+  type: string
+  format: date-time
+  nullable: true
+  description: Deleted timestamp. Null if not deleted.
+```
+
+**Step 3: Update event timestamps (nullable)**
+
+Apply same pattern to event timestamps like `tm_ringing`, `tm_progressing`, `tm_hangup`:
+
+```yaml
+# After
+tm_ringing:
+  type: string
+  format: date-time
+  nullable: true
+  description: Timestamp when call started ringing. Null if not yet ringing.
+tm_progressing:
+  type: string
+  format: date-time
+  nullable: true
+  description: Timestamp when call was answered. Null if not yet answered.
+tm_hangup:
+  type: string
+  format: date-time
+  nullable: true
+  description: Timestamp when call ended. Null if still active.
+```
+
+**Step 4: Regenerate OpenAPI code**
+
+Run: `cd bin-openapi-manager && go generate ./...`
+
+**Step 5: Run verification**
+
+Run: `cd bin-openapi-manager && go mod tidy && go test ./... && golangci-lint run -v --timeout 5m`
+Expected: All pass
+
+**Step 6: Commit**
+
+```bash
+git add bin-openapi-manager/
+git commit -m "NOJIRA-Timestamp-string-to-time-migration
+
+- bin-openapi-manager: Add format: date-time to all timestamp fields
+- bin-openapi-manager: Add nullable: true to tm_update, tm_delete, and event timestamps
+- bin-openapi-manager: Update descriptions to clarify null semantics"
+```
+
+---
+
+## Task 27: Full Monorepo Verification
 
 **Step 1: Run verification for ALL services**
 
@@ -564,7 +657,7 @@ git commit -m "NOJIRA-Timestamp-string-to-time-migration
 
 ---
 
-## Task 27: Cleanup Deprecated Functions (Optional)
+## Task 28: Cleanup Deprecated Functions (Optional)
 
 After confirming migration is complete:
 
