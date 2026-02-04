@@ -83,3 +83,41 @@ func TimeParseWithError(timeString string) (time.Time, error) {
 
 	return time.Time{}, fmt.Errorf("unable to parse time: %s", timeString)
 }
+
+// TimeNow returns a pointer to the current UTC time.
+// Returns a *time.Time for use with nullable timestamp fields.
+func (h *utilHandler) TimeNow() *time.Time {
+	return TimeNow()
+}
+
+// TimeNowAdd returns a pointer to the current UTC time plus the given duration.
+// Returns a *time.Time for use with nullable timestamp fields.
+func (h *utilHandler) TimeNowAdd(d time.Duration) *time.Time {
+	return TimeNowAdd(d)
+}
+
+// IsDeleted returns true if the timestamp pointer is not nil.
+// Used for soft delete semantics: nil = not deleted, non-nil = deleted at that time.
+func (h *utilHandler) IsDeleted(t *time.Time) bool {
+	return IsDeleted(t)
+}
+
+// TimeNow returns a pointer to the current UTC time.
+// Returns a *time.Time for use with nullable timestamp fields.
+func TimeNow() *time.Time {
+	t := time.Now().UTC()
+	return &t
+}
+
+// TimeNowAdd returns a pointer to the current UTC time plus the given duration.
+// Returns a *time.Time for use with nullable timestamp fields.
+func TimeNowAdd(d time.Duration) *time.Time {
+	t := time.Now().Add(d).UTC()
+	return &t
+}
+
+// IsDeleted returns true if the timestamp pointer is not nil.
+// Used for soft delete semantics: nil = not deleted, non-nil = deleted at that time.
+func IsDeleted(t *time.Time) bool {
+	return t != nil
+}

@@ -85,6 +85,20 @@ func (mr *MockUtilHandlerMockRecorder) HashGenerate(org, cost any) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HashGenerate", reflect.TypeOf((*MockUtilHandler)(nil).HashGenerate), org, cost)
 }
 
+// IsDeleted mocks base method.
+func (m *MockUtilHandler) IsDeleted(t *time.Time) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsDeleted", t)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// IsDeleted indicates an expected call of IsDeleted.
+func (mr *MockUtilHandlerMockRecorder) IsDeleted(t any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsDeleted", reflect.TypeOf((*MockUtilHandler)(nil).IsDeleted), t)
+}
+
 // ParseFiltersFromRequestBody mocks base method.
 func (m *MockUtilHandler) ParseFiltersFromRequestBody(data []byte) (map[string]any, error) {
 	m.ctrl.T.Helper()
@@ -155,6 +169,34 @@ func (m *MockUtilHandler) TimeGetCurTimeRFC3339() string {
 func (mr *MockUtilHandlerMockRecorder) TimeGetCurTimeRFC3339() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TimeGetCurTimeRFC3339", reflect.TypeOf((*MockUtilHandler)(nil).TimeGetCurTimeRFC3339))
+}
+
+// TimeNow mocks base method.
+func (m *MockUtilHandler) TimeNow() *time.Time {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TimeNow")
+	ret0, _ := ret[0].(*time.Time)
+	return ret0
+}
+
+// TimeNow indicates an expected call of TimeNow.
+func (mr *MockUtilHandlerMockRecorder) TimeNow() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TimeNow", reflect.TypeOf((*MockUtilHandler)(nil).TimeNow))
+}
+
+// TimeNowAdd mocks base method.
+func (m *MockUtilHandler) TimeNowAdd(d time.Duration) *time.Time {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TimeNowAdd", d)
+	ret0, _ := ret[0].(*time.Time)
+	return ret0
+}
+
+// TimeNowAdd indicates an expected call of TimeNowAdd.
+func (mr *MockUtilHandlerMockRecorder) TimeNowAdd(d any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TimeNowAdd", reflect.TypeOf((*MockUtilHandler)(nil).TimeNowAdd), d)
 }
 
 // TimeParse mocks base method.
