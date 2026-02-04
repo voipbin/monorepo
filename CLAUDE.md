@@ -128,26 +128,55 @@ The full verification workflow consists of 5 steps that MUST all be run:
 
 ### Git Worktrees
 
-**CRITICAL: Use git worktrees for all feature development. Never edit files directly in the main repository.**
+**CRITICAL: MANDATORY RULE - NO EXCEPTIONS**
+
+**NEVER edit, create, or modify ANY files directly in the main repository (`~/gitvoipbin/monorepo`).**
+
+This includes:
+- Code changes
+- Config file changes (including `.circleci/`)
+- Documentation changes (including `docs/`)
+- Design documents
+- ANY file modifications
+
+**BEFORE making any changes, you MUST:**
+
+1. **Check current directory:**
+   ```bash
+   pwd
+   # If output is ~/gitvoipbin/monorepo → STOP, create worktree first
+   # If output is ~/gitvoipbin/monorepo-worktrees/<branch-name> → OK to proceed
+   ```
+
+2. **Create a worktree (if not already in one):**
+   ```bash
+   cd ~/gitvoipbin/monorepo
+   git worktree add ~/gitvoipbin/monorepo-worktrees/NOJIRA-feature-name -b NOJIRA-feature-name
+   cd ~/gitvoipbin/monorepo-worktrees/NOJIRA-feature-name
+   ```
+
+3. **Work in the worktree:**
+   - All file edits, document creation, and commits happen here
+   - Main repository stays clean on `main` branch
+
+4. **When done, remove the worktree:**
+   ```bash
+   cd ~/gitvoipbin/monorepo
+   git worktree remove ~/gitvoipbin/monorepo-worktrees/NOJIRA-feature-name
+   ```
 
 **Worktree location:** `~/gitvoipbin/monorepo-worktrees/`
-
-```bash
-# Create a worktree for your feature
-git worktree add ~/gitvoipbin/monorepo-worktrees/NOJIRA-feature-name -b NOJIRA-feature-name
-
-# Work in the worktree
-cd ~/gitvoipbin/monorepo-worktrees/NOJIRA-feature-name
-
-# When done, remove the worktree
-git worktree remove ~/gitvoipbin/monorepo-worktrees/NOJIRA-feature-name
-```
 
 **Why worktrees:**
 - Keeps main repository (`~/gitvoipbin/monorepo`) clean and always on `main` branch
 - Allows parallel work on multiple features
 - Easy to abandon work without affecting main workspace
 - Clear separation between exploration and implementation
+
+**If you accidentally edited files in main repository:**
+1. Do NOT commit
+2. Stash or discard changes: `git stash` or `git checkout .`
+3. Create worktree and apply changes there
 
 ### Commit Message Format
 
