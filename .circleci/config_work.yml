@@ -166,545 +166,524 @@ workflows:
   bin-agent-manager:
     when: << pipeline.parameters.run-bin-agent-manager >>
     jobs:
-      - bin-agent-manager-test
+      - build-approval:
+          type: approval
+      - bin-agent-manager-test:
+          requires:
+            - build-approval
       - bin-agent-manager-build:
           <<: *context_production
           requires:
             - bin-agent-manager-test
-      - release-approval:
-          type: approval
-          requires:
-            - bin-agent-manager-build
       - bin-agent-manager-release:
           <<: *context_production
           requires:
             - bin-agent-manager-build
-            - release-approval
 
   bin-api-manager:
     when:
       or: [<< pipeline.parameters.run-bin-api-manager >>, << pipeline.parameters.run-bin-openapi-manager >>]
     jobs:
-      - bin-api-manager-test
+      - build-approval:
+          type: approval
+      - bin-api-manager-test:
+          requires:
+            - build-approval
       - bin-api-manager-build:
           <<: *context_production
           requires:
             - bin-api-manager-test
-      - release-approval:
-          type: approval
-          requires:
-            - bin-api-manager-build
       - bin-api-manager-release:
           <<: *context_production
           requires:
             - bin-api-manager-build
-            - release-approval
 
   bin-billing-manager:
     when: << pipeline.parameters.run-bin-billing-manager >>
     jobs:
-      - bin-billing-manager-test
+      - build-approval:
+          type: approval
+      - bin-billing-manager-test:
+          requires:
+            - build-approval
       - bin-billing-manager-build:
           <<: *context_production
           requires:
             - bin-billing-manager-test
-      - release-approval:
-          type: approval
-          requires:
-            - bin-billing-manager-build
       - bin-billing-manager-release:
           <<: *context_production
           requires:
             - bin-billing-manager-build
-            - release-approval
 
   bin-call-manager:
     when: << pipeline.parameters.run-bin-call-manager >>
     jobs:
-      - bin-call-manager-test
+      - build-approval:
+          type: approval
+      - bin-call-manager-test:
+          requires:
+            - build-approval
       - bin-call-manager-build:
           <<: *context_production
           requires:
             - bin-call-manager-test
-      - release-approval:
-          type: approval
-          requires:
-            - bin-call-manager-build
       - bin-call-manager-release:
           <<: *context_production
           requires:
             - bin-call-manager-build
-            - release-approval
 
   bin-campaign-manager:
     when: << pipeline.parameters.run-bin-campaign-manager >>
     jobs:
-      - bin-campaign-manager-test
+      - build-approval:
+          type: approval
+      - bin-campaign-manager-test:
+          requires:
+            - build-approval
       - bin-campaign-manager-build:
           <<: *context_production
           requires:
             - bin-campaign-manager-test
-      - release-approval:
-          type: approval
-          requires:
-            - bin-campaign-manager-build
       - bin-campaign-manager-release:
           <<: *context_production
           requires:
             - bin-campaign-manager-build
-            - release-approval
 
   bin-ai-manager:
     when: << pipeline.parameters.run-bin-ai-manager >>
     jobs:
-      - bin-ai-manager-test
+      - build-approval:
+          type: approval
+      - bin-ai-manager-test:
+          requires:
+            - build-approval
       - bin-ai-manager-build:
           <<: *context_production
           requires:
             - bin-ai-manager-test
-      - release-approval:
-          type: approval
-          requires:
-            - bin-ai-manager-build
       - bin-ai-manager-release:
           <<: *context_production
           requires:
             - bin-ai-manager-build
-            - release-approval
 
   bin-common-handler:
     when: << pipeline.parameters.run-bin-common-handler >>
     jobs:
-      - bin-common-handler-test
+      - build-approval:
+          type: approval
+      - bin-common-handler-test:
+          requires:
+            - build-approval
 
   bin-contact-manager:
     when: << pipeline.parameters.run-bin-contact-manager >>
     jobs:
-      - bin-contact-manager-test
+      - build-approval:
+          type: approval
+      - bin-contact-manager-test:
+          requires:
+            - build-approval
       - bin-contact-manager-build:
           <<: *context_production
           requires:
             - bin-contact-manager-test
-      - release-approval:
-          type: approval
-          requires:
-            - bin-contact-manager-build
       - bin-contact-manager-release:
           <<: *context_production
           requires:
             - bin-contact-manager-build
-            - release-approval
 
   bin-conference-manager:
     when: << pipeline.parameters.run-bin-conference-manager >>
     jobs:
-      - bin-conference-manager-test
+      - build-approval:
+          type: approval
+      - bin-conference-manager-test:
+          requires:
+            - build-approval
       - bin-conference-manager-build:
           <<: *context_production
           requires:
             - bin-conference-manager-test
-      - release-approval:
-          type: approval
-          requires:
-            - bin-conference-manager-build
       - bin-conference-manager-release:
           <<: *context_production
           requires:
             - bin-conference-manager-build
-            - release-approval
 
   bin-conversation-manager:
     when: << pipeline.parameters.run-bin-conversation-manager >>
     jobs:
-      - bin-conversation-manager-test
+      - build-approval:
+          type: approval
+      - bin-conversation-manager-test:
+          requires:
+            - build-approval
       - bin-conversation-manager-build:
           <<: *context_production
           requires:
             - bin-conversation-manager-test
-      - release-approval:
-          type: approval
-          requires:
-            - bin-conversation-manager-build
       - bin-conversation-manager-release:
           <<: *context_production
           requires:
             - bin-conversation-manager-build
-            - release-approval
 
   bin-customer-manager:
     when: << pipeline.parameters.run-bin-customer-manager >>
     jobs:
-      - bin-customer-manager-test
+      - build-approval:
+          type: approval
+      - bin-customer-manager-test:
+          requires:
+            - build-approval
       - bin-customer-manager-build:
           <<: *context_production
           requires:
             - bin-customer-manager-test
-      - release-approval:
-          type: approval
-          requires:
-            - bin-customer-manager-build
       - bin-customer-manager-release:
           <<: *context_production
           requires:
             - bin-customer-manager-build
-            - release-approval
 
   bin-dbscheme-manager:
     when: << pipeline.parameters.run-bin-dbscheme-manager >>
     jobs:
+      - build-approval:
+          type: approval
       - bin-dbscheme-manager-build:
           <<: *context_production
-      - release-approval:
-          type: approval
           requires:
-            - bin-dbscheme-manager-build
+            - build-approval
 
   bin-email-manager:
     when: << pipeline.parameters.run-bin-email-manager >>
     jobs:
-      - bin-email-manager-test
+      - build-approval:
+          type: approval
+      - bin-email-manager-test:
+          requires:
+            - build-approval
       - bin-email-manager-build:
           <<: *context_production
           requires:
             - bin-email-manager-test
-      - release-approval:
-          type: approval
-          requires:
-            - bin-email-manager-build
       - bin-email-manager-release:
           <<: *context_production
           requires:
             - bin-email-manager-build
-            - release-approval
 
   bin-flow-manager:
     when: << pipeline.parameters.run-bin-flow-manager >>
     jobs:
-      - bin-flow-manager-test
+      - build-approval:
+          type: approval
+      - bin-flow-manager-test:
+          requires:
+            - build-approval
       - bin-flow-manager-build:
           <<: *context_production
           requires:
             - bin-flow-manager-test
-      - release-approval:
-          type: approval
-          requires:
-            - bin-flow-manager-build
       - bin-flow-manager-release:
           <<: *context_production
           requires:
             - bin-flow-manager-build
-            - release-approval
 
   bin-hook-manager:
     when: << pipeline.parameters.run-bin-hook-manager >>
     jobs:
-      - bin-hook-manager-test
+      - build-approval:
+          type: approval
+      - bin-hook-manager-test:
+          requires:
+            - build-approval
       - bin-hook-manager-build:
           <<: *context_production
           requires:
             - bin-hook-manager-test
-      - release-approval:
-          type: approval
-          requires:
-            - bin-hook-manager-build
       - bin-hook-manager-release:
           <<: *context_production
           requires:
             - bin-hook-manager-build
-            - release-approval
 
   bin-message-manager:
     when: << pipeline.parameters.run-bin-message-manager >>
     jobs:
-      - bin-message-manager-test
+      - build-approval:
+          type: approval
+      - bin-message-manager-test:
+          requires:
+            - build-approval
       - bin-message-manager-build:
           <<: *context_production
           requires:
             - bin-message-manager-test
-      - release-approval:
-          type: approval
-          requires:
-            - bin-message-manager-build
       - bin-message-manager-release:
           <<: *context_production
           requires:
             - bin-message-manager-build
-            - release-approval
 
   bin-number-manager:
     when: << pipeline.parameters.run-bin-number-manager >>
     jobs:
-      - bin-number-manager-test
+      - build-approval:
+          type: approval
+      - bin-number-manager-test:
+          requires:
+            - build-approval
       - bin-number-manager-build:
           <<: *context_production
           requires:
             - bin-number-manager-test
-      - release-approval:
-          type: approval
-          requires:
-            - bin-number-manager-build
       - bin-number-manager-release:
           <<: *context_production
           requires:
             - bin-number-manager-build
-            - release-approval
 
   bin-openapi-manager:
     when: << pipeline.parameters.run-bin-openapi-manager >>
     jobs:
-      - bin-openapi-manager-validate
+      - build-approval:
+          type: approval
+      - bin-openapi-manager-validate:
+          requires:
+            - build-approval
 
   bin-outdial-manager:
     when: << pipeline.parameters.run-bin-outdial-manager >>
     jobs:
-      - bin-outdial-manager-test
+      - build-approval:
+          type: approval
+      - bin-outdial-manager-test:
+          requires:
+            - build-approval
       - bin-outdial-manager-build:
           <<: *context_production
           requires:
             - bin-outdial-manager-test
-      - release-approval:
-          type: approval
-          requires:
-            - bin-outdial-manager-build
       - bin-outdial-manager-release:
           <<: *context_production
           requires:
             - bin-outdial-manager-build
-            - release-approval
 
   bin-pipecat-manager:
     when: << pipeline.parameters.run-bin-pipecat-manager >>
     jobs:
-      - bin-pipecat-manager-test
+      - build-approval:
+          type: approval
+      - bin-pipecat-manager-test:
+          requires:
+            - build-approval
       - bin-pipecat-manager-build:
           <<: *context_production
           requires:
             - bin-pipecat-manager-test
-      - release-approval:
-          type: approval
-          requires:
-            - bin-pipecat-manager-build
       - bin-pipecat-manager-release:
           <<: *context_production
           requires:
             - bin-pipecat-manager-build
-            - release-approval
 
   bin-queue-manager:
     when: << pipeline.parameters.run-bin-queue-manager >>
     jobs:
-      - bin-queue-manager-test
+      - build-approval:
+          type: approval
+      - bin-queue-manager-test:
+          requires:
+            - build-approval
       - bin-queue-manager-build:
           <<: *context_production
           requires:
             - bin-queue-manager-test
-      - release-approval:
-          type: approval
-          requires:
-            - bin-queue-manager-build
       - bin-queue-manager-release:
           <<: *context_production
           requires:
             - bin-queue-manager-build
-            - release-approval
 
   bin-registrar-manager:
     when: << pipeline.parameters.run-bin-registrar-manager >>
     jobs:
-      - bin-registrar-manager-test
+      - build-approval:
+          type: approval
+      - bin-registrar-manager-test:
+          requires:
+            - build-approval
       - bin-registrar-manager-build:
           <<: *context_production
           requires:
             - bin-registrar-manager-test
-      - release-approval:
-          type: approval
-          requires:
-            - bin-registrar-manager-build
       - bin-registrar-manager-release:
           <<: *context_production
           requires:
             - bin-registrar-manager-build
-            - release-approval
 
   bin-route-manager:
     when: << pipeline.parameters.run-bin-route-manager >>
     jobs:
-      - bin-route-manager-test
+      - build-approval:
+          type: approval
+      - bin-route-manager-test:
+          requires:
+            - build-approval
       - bin-route-manager-build:
           <<: *context_production
           requires:
             - bin-route-manager-test
-      - release-approval:
-          type: approval
-          requires:
-            - bin-route-manager-build
       - bin-route-manager-release:
           <<: *context_production
           requires:
             - bin-route-manager-build
-            - release-approval
 
   bin-sentinel-manager:
     when: << pipeline.parameters.run-bin-sentinel-manager >>
     jobs:
-      - bin-sentinel-manager-test
+      - build-approval:
+          type: approval
+      - bin-sentinel-manager-test:
+          requires:
+            - build-approval
       - bin-sentinel-manager-build:
           <<: *context_production
           requires:
             - bin-sentinel-manager-test
-      - release-approval:
-          type: approval
-          requires:
-            - bin-sentinel-manager-build
       - bin-sentinel-manager-release:
           <<: *context_production
           requires:
             - bin-sentinel-manager-build
-            - release-approval
 
   bin-storage-manager:
     when: << pipeline.parameters.run-bin-storage-manager >>
     jobs:
-      - bin-storage-manager-test
+      - build-approval:
+          type: approval
+      - bin-storage-manager-test:
+          requires:
+            - build-approval
       - bin-storage-manager-build:
           <<: *context_production
           requires:
             - bin-storage-manager-test
-      - release-approval:
-          type: approval
-          requires:
-            - bin-storage-manager-build
       - bin-storage-manager-release:
           <<: *context_production
           requires:
             - bin-storage-manager-build
-            - release-approval
 
   bin-tag-manager:
     when: << pipeline.parameters.run-bin-tag-manager >>
     jobs:
-      - bin-tag-manager-test
+      - build-approval:
+          type: approval
+      - bin-tag-manager-test:
+          requires:
+            - build-approval
       - bin-tag-manager-build:
           <<: *context_production
           requires:
             - bin-tag-manager-test
-      - release-approval:
-          type: approval
-          requires:
-            - bin-tag-manager-build
       - bin-tag-manager-release:
           <<: *context_production
           requires:
             - bin-tag-manager-build
-            - release-approval
 
   bin-talk-manager:
     when: << pipeline.parameters.run-bin-talk-manager >>
     jobs:
-      - bin-talk-manager-test
+      - build-approval:
+          type: approval
+      - bin-talk-manager-test:
+          requires:
+            - build-approval
       - bin-talk-manager-build:
           <<: *context_production
           requires:
             - bin-talk-manager-test
-      - release-approval:
-          type: approval
-          requires:
-            - bin-talk-manager-build
       - bin-talk-manager-release:
           <<: *context_production
           requires:
             - bin-talk-manager-build
-            - release-approval
 
   bin-timeline-manager:
     when: << pipeline.parameters.run-bin-timeline-manager >>
     jobs:
-      - bin-timeline-manager-test
+      - build-approval:
+          type: approval
+      - bin-timeline-manager-test:
+          requires:
+            - build-approval
       - bin-timeline-manager-build:
           <<: *context_production
           requires:
             - bin-timeline-manager-test
-      - release-approval:
-          type: approval
-          requires:
-            - bin-timeline-manager-build
       - bin-timeline-manager-release:
           <<: *context_production
           requires:
             - bin-timeline-manager-build
-            - release-approval
 
   bin-transcribe-manager:
     when: << pipeline.parameters.run-bin-transcribe-manager >>
     jobs:
-      - bin-transcribe-manager-test
+      - build-approval:
+          type: approval
+      - bin-transcribe-manager-test:
+          requires:
+            - build-approval
       - bin-transcribe-manager-build:
           <<: *context_production
           requires:
             - bin-transcribe-manager-test
-      - release-approval:
-          type: approval
-          requires:
-            - bin-transcribe-manager-build
       - bin-transcribe-manager-release:
           <<: *context_production
           requires:
             - bin-transcribe-manager-build
-            - release-approval
 
   bin-transfer-manager:
     when: << pipeline.parameters.run-bin-transfer-manager >>
     jobs:
-      - bin-transfer-manager-test
+      - build-approval:
+          type: approval
+      - bin-transfer-manager-test:
+          requires:
+            - build-approval
       - bin-transfer-manager-build:
           <<: *context_production
           requires:
             - bin-transfer-manager-test
-      - release-approval:
-          type: approval
-          requires:
-            - bin-transfer-manager-build
       - bin-transfer-manager-release:
           <<: *context_production
           requires:
             - bin-transfer-manager-build
-            - release-approval
 
   bin-tts-manager:
     when: << pipeline.parameters.run-bin-tts-manager >>
     jobs:
-      - bin-tts-manager-test
+      - build-approval:
+          type: approval
+      - bin-tts-manager-test:
+          requires:
+            - build-approval
       - bin-tts-manager-build:
           <<: *context_production
           requires:
             - bin-tts-manager-test
-      - release-approval:
-          type: approval
-          requires:
-            - bin-tts-manager-build
       - bin-tts-manager-release:
           <<: *context_production
           requires:
             - bin-tts-manager-build
-            - release-approval
 
   bin-webhook-manager:
     when: << pipeline.parameters.run-bin-webhook-manager >>
     jobs:
-      - bin-webhook-manager-test
+      - build-approval:
+          type: approval
+      - bin-webhook-manager-test:
+          requires:
+            - build-approval
       - bin-webhook-manager-build:
           <<: *context_production
           requires:
             - bin-webhook-manager-test
-      - release-approval:
-          type: approval
-          requires:
-            - bin-webhook-manager-build
       - bin-webhook-manager-release:
           <<: *context_production
           requires:
             - bin-webhook-manager-build
-            - release-approval
 
 
   ############################################
@@ -712,11 +691,15 @@ workflows:
   ############################################
 
   voip-asterisk-proxy:
-    when: 
+    when:
       or: [<< pipeline.parameters.run-voip-asterisk-proxy >>]
     jobs:
+      - build-approval:
+          type: approval
       - voip-asterisk-proxy-build:
           <<: *context_production
+          requires:
+            - build-approval
 
 
 #########################################################################################################################################################################
@@ -731,12 +714,14 @@ jobs:
   # bin-agent-manager
   bin-agent-manager-test:
     docker: *go_image
+    resource_class: small
     steps:
       - go-test:
           source-directory: bin-agent-manager
 
   bin-agent-manager-build:
     docker: *gcp_image
+    resource_class: small
     steps:
       - docker-build:
           source-directory: bin-agent-manager
@@ -745,6 +730,7 @@ jobs:
 
   bin-agent-manager-release:
     docker: *gcloud_image
+    resource_class: small
     steps:
       - docker-release:
           source-directory: bin-agent-manager
@@ -755,12 +741,14 @@ jobs:
   # bin-api-manager
   bin-api-manager-test:
     docker: *go_image
+    resource_class: small
     steps:
       - go-test-api-manager:
           source-directory: bin-api-manager
 
   bin-api-manager-build:
     docker: *gcp_image
+    resource_class: small
     steps:
       - docker-build:
           source-directory: bin-api-manager
@@ -769,6 +757,7 @@ jobs:
 
   bin-api-manager-release:
     docker: *gcloud_image
+    resource_class: small
     steps:
       - docker-release:
           source-directory: bin-api-manager
@@ -779,12 +768,14 @@ jobs:
   # bin-billing-manager
   bin-billing-manager-test:
     docker: *go_image
+    resource_class: small
     steps:
       - go-test:
           source-directory: bin-billing-manager
 
   bin-billing-manager-build:
     docker: *gcp_image
+    resource_class: small
     steps:
       - docker-build:
           source-directory: bin-billing-manager
@@ -793,6 +784,7 @@ jobs:
 
   bin-billing-manager-release:
     docker: *gcloud_image
+    resource_class: small
     steps:
       - docker-release:
           project-id: voipbin
@@ -803,12 +795,14 @@ jobs:
   # bin-call-manager
   bin-call-manager-test:
     docker: *go_image
+    resource_class: small
     steps:
       - go-test:
           source-directory: bin-call-manager
 
   bin-call-manager-build:
     docker: *gcp_image
+    resource_class: small
     steps:
       - docker-build:
           source-directory: bin-call-manager
@@ -817,6 +811,7 @@ jobs:
 
   bin-call-manager-release:
     docker: *gcloud_image
+    resource_class: small
     steps:
       - docker-release:
           source-directory: bin-call-manager
@@ -827,12 +822,14 @@ jobs:
   # bin-campaign-manager
   bin-campaign-manager-test:
     docker: *go_image
+    resource_class: small
     steps:
       - go-test:
           source-directory: bin-campaign-manager
 
   bin-campaign-manager-build:
     docker: *gcp_image
+    resource_class: small
     steps:
       - docker-build:
           source-directory: bin-campaign-manager
@@ -841,6 +838,7 @@ jobs:
 
   bin-campaign-manager-release:
     docker: *gcloud_image
+    resource_class: small
     steps:
       - docker-release:
           source-directory: bin-campaign-manager
@@ -851,12 +849,14 @@ jobs:
   # bin-ai-manager
   bin-ai-manager-test:
     docker: *go_image
+    resource_class: small
     steps:
       - go-test:
           source-directory: bin-ai-manager
 
   bin-ai-manager-build:
     docker: *gcp_image
+    resource_class: small
     steps:
       - docker-build:
           source-directory: bin-ai-manager
@@ -865,6 +865,7 @@ jobs:
 
   bin-ai-manager-release:
     docker: *gcloud_image
+    resource_class: small
     steps:
       - docker-release:
           source-directory: bin-ai-manager
@@ -875,6 +876,7 @@ jobs:
   # bin-common-handler
   bin-common-handler-test:
     docker: *go_image
+    resource_class: small
     steps:
       - go-test:
           source-directory: bin-common-handler
@@ -882,12 +884,14 @@ jobs:
   # bin-contact-manager
   bin-contact-manager-test:
     docker: *go_image
+    resource_class: small
     steps:
       - go-test:
           source-directory: bin-contact-manager
 
   bin-contact-manager-build:
     docker: *gcp_image
+    resource_class: small
     steps:
       - docker-build:
           source-directory: bin-contact-manager
@@ -896,6 +900,7 @@ jobs:
 
   bin-contact-manager-release:
     docker: *gcloud_image
+    resource_class: small
     steps:
       - docker-release:
           source-directory: bin-contact-manager
@@ -906,12 +911,14 @@ jobs:
   # bin-conference-manager
   bin-conference-manager-test:
     docker: *go_image
+    resource_class: small
     steps:
       - go-test:
           source-directory: bin-conference-manager
 
   bin-conference-manager-build:
     docker: *gcp_image
+    resource_class: small
     steps:
       - docker-build:
           source-directory: bin-conference-manager
@@ -920,6 +927,7 @@ jobs:
 
   bin-conference-manager-release:
     docker: *gcloud_image
+    resource_class: small
     steps:
       - docker-release:
           source-directory: bin-conference-manager
@@ -930,12 +938,14 @@ jobs:
   # bin-conversation-manager
   bin-conversation-manager-test:
     docker: *go_image
+    resource_class: small
     steps:
       - go-test:
           source-directory: bin-conversation-manager
 
   bin-conversation-manager-build:
     docker: *gcp_image
+    resource_class: small
     steps:
       - docker-build:
           source-directory: bin-conversation-manager
@@ -944,6 +954,7 @@ jobs:
 
   bin-conversation-manager-release:
     docker: *gcloud_image
+    resource_class: small
     steps:
       - docker-release:
           source-directory: bin-conversation-manager
@@ -954,12 +965,14 @@ jobs:
   # bin-customer-manager
   bin-customer-manager-test:
     docker: *go_image
+    resource_class: small
     steps:
       - go-test:
           source-directory: bin-customer-manager
 
   bin-customer-manager-build:
     docker: *gcp_image
+    resource_class: small
     steps:
       - docker-build:
           source-directory: bin-customer-manager
@@ -968,6 +981,7 @@ jobs:
 
   bin-customer-manager-release:
     docker: *gcloud_image
+    resource_class: small
     steps:
       - docker-release:
           source-directory: bin-customer-manager
@@ -978,6 +992,7 @@ jobs:
   # bin-dbscheme-manager
   bin-dbscheme-manager-build:
     docker: *gcp_image
+    resource_class: small
     steps:
       - docker-build:
           source-directory: bin-dbscheme-manager
@@ -987,12 +1002,14 @@ jobs:
   # bin-email-manager
   bin-email-manager-test:
     docker: *go_image
+    resource_class: small
     steps:
       - go-test:
           source-directory: bin-email-manager
 
   bin-email-manager-build:
     docker: *gcp_image
+    resource_class: small
     steps:
       - docker-build:
           source-directory: bin-email-manager
@@ -1001,6 +1018,7 @@ jobs:
 
   bin-email-manager-release:
     docker: *gcloud_image
+    resource_class: small
     steps:
       - docker-release:
           source-directory: bin-email-manager
@@ -1011,12 +1029,14 @@ jobs:
   # bin-flow-manager
   bin-flow-manager-test:
     docker: *go_image
+    resource_class: small
     steps:
       - go-test:
           source-directory: bin-flow-manager
 
   bin-flow-manager-build:
     docker: *gcp_image
+    resource_class: small
     steps:
       - docker-build:
           source-directory: bin-flow-manager
@@ -1025,6 +1045,7 @@ jobs:
 
   bin-flow-manager-release:
     docker: *gcloud_image
+    resource_class: small
     steps:
       - docker-release:
           source-directory: bin-flow-manager
@@ -1035,12 +1056,14 @@ jobs:
   # bin-hook-manager
   bin-hook-manager-test:
     docker: *go_image
+    resource_class: small
     steps:
       - go-test:
           source-directory: bin-hook-manager
 
   bin-hook-manager-build:
     docker: *gcp_image
+    resource_class: small
     steps:
       - docker-build:
           source-directory: bin-hook-manager
@@ -1049,6 +1072,7 @@ jobs:
 
   bin-hook-manager-release:
     docker: *gcloud_image
+    resource_class: small
     steps:
       - docker-release:
           source-directory: bin-hook-manager
@@ -1059,12 +1083,14 @@ jobs:
   # bin-message-manager
   bin-message-manager-test:
     docker: *go_image
+    resource_class: small
     steps:
       - go-test:
           source-directory: bin-message-manager
 
   bin-message-manager-build:
     docker: *gcp_image
+    resource_class: small
     steps:
       - docker-build:
           project-id: voipbin
@@ -1073,6 +1099,7 @@ jobs:
 
   bin-message-manager-release:
     docker: *gcloud_image
+    resource_class: small
     steps:
       - docker-release:
           project-id: voipbin
@@ -1083,12 +1110,14 @@ jobs:
   # bin-number-manager
   bin-number-manager-test:
     docker: *go_image
+    resource_class: small
     steps:
       - go-test:
           source-directory: bin-number-manager
 
   bin-number-manager-build:
     docker: *gcp_image
+    resource_class: small
     steps:
       - docker-build:
           project-id: voipbin
@@ -1097,6 +1126,7 @@ jobs:
 
   bin-number-manager-release:
     docker: *gcloud_image
+    resource_class: small
     steps:
       - docker-release:
           project-id: voipbin
@@ -1107,6 +1137,7 @@ jobs:
   # bin-openapi-manager
   bin-openapi-manager-validate:
     docker: *go_image
+    resource_class: small
     steps:
       - checkout
       - run:
@@ -1134,12 +1165,14 @@ jobs:
   # bin-outdial-manager
   bin-outdial-manager-test:
     docker: *go_image
+    resource_class: small
     steps:
       - go-test:
           source-directory: bin-outdial-manager
 
   bin-outdial-manager-build:
     docker: *gcp_image
+    resource_class: small
     steps:
       - docker-build:
           project-id: voipbin
@@ -1148,6 +1181,7 @@ jobs:
 
   bin-outdial-manager-release:
     docker: *gcloud_image
+    resource_class: small
     steps:
       - docker-release:
           project-id: voipbin
@@ -1158,12 +1192,14 @@ jobs:
   # bin-pipecat-manager
   bin-pipecat-manager-test:
     docker: *go_image
+    resource_class: small
     steps:
       - go-test-pipecat-manager:
           source-directory: bin-pipecat-manager
 
   bin-pipecat-manager-build:
     docker: *gcp_image
+    resource_class: small
     steps:
       - docker-build:
           project-id: voipbin
@@ -1172,6 +1208,7 @@ jobs:
 
   bin-pipecat-manager-release:
     docker: *gcloud_image
+    resource_class: small
     steps:
       - docker-release:
           project-id: voipbin
@@ -1182,12 +1219,14 @@ jobs:
   # bin-queue-manager
   bin-queue-manager-test:
     docker: *go_image
+    resource_class: small
     steps:
       - go-test:
           source-directory: bin-queue-manager
 
   bin-queue-manager-build:
     docker: *gcp_image
+    resource_class: small
     steps:
       - docker-build:
           project-id: voipbin
@@ -1196,6 +1235,7 @@ jobs:
 
   bin-queue-manager-release:
     docker: *gcloud_image
+    resource_class: small
     steps:
       - docker-release:
           project-id: voipbin
@@ -1206,12 +1246,14 @@ jobs:
   # bin-registrar-manager
   bin-registrar-manager-test:
     docker: *go_image
+    resource_class: small
     steps:
       - go-test:
           source-directory: bin-registrar-manager
 
   bin-registrar-manager-build:
     docker: *gcp_image
+    resource_class: small
     steps:
       - docker-build:
           project-id: voipbin
@@ -1220,6 +1262,7 @@ jobs:
 
   bin-registrar-manager-release:
     docker: *gcloud_image
+    resource_class: small
     steps:
       - docker-release:
           project-id: voipbin
@@ -1230,12 +1273,14 @@ jobs:
   # bin-route-manager
   bin-route-manager-test:
     docker: *go_image
+    resource_class: small
     steps:
       - go-test:
           source-directory: bin-route-manager
 
   bin-route-manager-build:
     docker: *gcp_image
+    resource_class: small
     steps:
       - docker-build:
           project-id: voipbin
@@ -1244,6 +1289,7 @@ jobs:
 
   bin-route-manager-release:
     docker: *gcloud_image
+    resource_class: small
     steps:
       - docker-release:
           project-id: voipbin
@@ -1254,12 +1300,14 @@ jobs:
   # bin-sentinel-manager
   bin-sentinel-manager-test:
     docker: *go_image
+    resource_class: small
     steps:
       - go-test:
           source-directory: bin-sentinel-manager
 
   bin-sentinel-manager-build:
     docker: *gcp_image
+    resource_class: small
     steps:
       - docker-build:
           project-id: voipbin
@@ -1268,6 +1316,7 @@ jobs:
 
   bin-sentinel-manager-release:
     docker: *gcloud_image
+    resource_class: small
     steps:
       - docker-release:
           project-id: voipbin
@@ -1278,12 +1327,14 @@ jobs:
   # bin-storage-manager
   bin-storage-manager-test:
     docker: *go_image
+    resource_class: small
     steps:
       - go-test:
           source-directory: bin-storage-manager
 
   bin-storage-manager-build:
     docker: *gcp_image
+    resource_class: small
     steps:
       - docker-build:
           project-id: voipbin
@@ -1292,6 +1343,7 @@ jobs:
 
   bin-storage-manager-release:
     docker: *gcloud_image
+    resource_class: small
     steps:
       - docker-release:
           project-id: voipbin
@@ -1302,12 +1354,14 @@ jobs:
   # bin-tag-manager
   bin-tag-manager-test:
     docker: *go_image
+    resource_class: small
     steps:
       - go-test:
           source-directory: bin-tag-manager
 
   bin-tag-manager-build:
     docker: *gcp_image
+    resource_class: small
     steps:
       - docker-build:
           project-id: voipbin
@@ -1316,6 +1370,7 @@ jobs:
 
   bin-tag-manager-release:
     docker: *gcloud_image
+    resource_class: small
     steps:
       - docker-release:
           project-id: voipbin
@@ -1326,12 +1381,14 @@ jobs:
   # bin-talk-manager
   bin-talk-manager-test:
     docker: *go_image
+    resource_class: small
     steps:
       - go-test:
           source-directory: bin-talk-manager
 
   bin-talk-manager-build:
     docker: *gcp_image
+    resource_class: small
     steps:
       - docker-build:
           project-id: voipbin
@@ -1340,6 +1397,7 @@ jobs:
 
   bin-talk-manager-release:
     docker: *gcloud_image
+    resource_class: small
     steps:
       - docker-release:
           project-id: voipbin
@@ -1350,12 +1408,14 @@ jobs:
   # bin-timeline-manager
   bin-timeline-manager-test:
     docker: *go_image
+    resource_class: small
     steps:
       - go-test:
           source-directory: bin-timeline-manager
 
   bin-timeline-manager-build:
     docker: *gcp_image
+    resource_class: small
     steps:
       - docker-build:
           project-id: voipbin
@@ -1364,6 +1424,7 @@ jobs:
 
   bin-timeline-manager-release:
     docker: *gcloud_image
+    resource_class: small
     steps:
       - docker-release:
           project-id: voipbin
@@ -1374,12 +1435,14 @@ jobs:
   # bin-transcribe-manager
   bin-transcribe-manager-test:
     docker: *go_image
+    resource_class: small
     steps:
       - go-test:
           source-directory: bin-transcribe-manager
 
   bin-transcribe-manager-build:
     docker: *gcp_image
+    resource_class: small
     steps:
       - docker-build:
           project-id: voipbin
@@ -1388,6 +1451,7 @@ jobs:
 
   bin-transcribe-manager-release:
     docker: *gcloud_image
+    resource_class: small
     steps:
       - docker-release:
           project-id: voipbin
@@ -1398,12 +1462,14 @@ jobs:
   # bin-transfer-manager
   bin-transfer-manager-test:
     docker: *go_image
+    resource_class: small
     steps:
       - go-test:
           source-directory: bin-transfer-manager
 
   bin-transfer-manager-build:
     docker: *gcp_image
+    resource_class: small
     steps:
       - docker-build:
           project-id: voipbin
@@ -1412,6 +1478,7 @@ jobs:
 
   bin-transfer-manager-release:
     docker: *gcloud_image
+    resource_class: small
     steps:
       - docker-release:
           project-id: voipbin
@@ -1422,12 +1489,14 @@ jobs:
   # bin-tts-manager
   bin-tts-manager-test:
     docker: *go_image
+    resource_class: small
     steps:
       - go-test:
           source-directory: bin-tts-manager
 
   bin-tts-manager-build:
     docker: *gcp_image
+    resource_class: small
     steps:
       - docker-build:
           project-id: voipbin
@@ -1436,6 +1505,7 @@ jobs:
 
   bin-tts-manager-release:
     docker: *gcloud_image
+    resource_class: small
     steps:
       - docker-release:
           project-id: voipbin
@@ -1446,12 +1516,14 @@ jobs:
   # bin-webhook-manager
   bin-webhook-manager-test:
     docker: *go_image
+    resource_class: small
     steps:
       - go-test:
           source-directory: bin-webhook-manager
 
   bin-webhook-manager-build:
     docker: *gcp_image
+    resource_class: small
     steps:
       - docker-build:
           project-id: voipbin
@@ -1460,6 +1532,7 @@ jobs:
 
   bin-webhook-manager-release:
     docker: *gcloud_image
+    resource_class: small
     steps:
       - docker-release:
           project-id: voipbin
@@ -1474,6 +1547,7 @@ jobs:
   # voip-asterisk-proxy
   voip-asterisk-proxy-build:
     docker: *gcp_image
+    resource_class: small
     steps:
       - docker-build:
           project-id: voipbin
@@ -1635,7 +1709,9 @@ commands:
 
     steps:
       - run: echo working on << parameters.source-directory >>
-      - setup_remote_docker
+      - setup_remote_docker:
+          docker_layer_caching: false
+          size: small
       - checkout
       - run:
           name: Building Docker image
@@ -1671,7 +1747,6 @@ commands:
         default: "none"
     steps:
       - run: echo working on << parameters.source-directory >>
-      - setup_remote_docker
       - checkout
       - run:
           name: Config service account
