@@ -9,7 +9,7 @@ import (
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
-	commondatabase "monorepo/bin-common-handler/pkg/databasehandler"
+
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -349,9 +349,7 @@ func Test_startLive(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 
-			if commondatabase.DefaultTimeStamp < "9999-01-01T00:00:00.000000Z" {
-				t.Errorf("Wrong match. DefaultTimeStamp should be greater than or equal to 9999-01-01T00:00:00.000000Z")
-			}
+
 		})
 	}
 }

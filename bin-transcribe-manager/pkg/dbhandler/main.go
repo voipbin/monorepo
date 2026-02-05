@@ -9,8 +9,6 @@ import (
 
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
-	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
-
 	"github.com/gofrs/uuid"
 
 	"monorepo/bin-transcribe-manager/models/streaming"
@@ -49,10 +47,6 @@ type handler struct {
 	cache       cachehandler.CacheHandler
 }
 
-// List of default values
-const (
-	DefaultTimeStamp = commondatabasehandler.DefaultTimeStamp
-)
 
 // handler errors
 var (

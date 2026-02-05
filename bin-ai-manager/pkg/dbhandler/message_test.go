@@ -139,7 +139,8 @@ func Test_MessageCreate(t *testing.T) {
 			}
 
 			expectRes := []*message.Message{tt.expectRes}
-			resGets, err := h.MessageList(ctx, 100, DefaultTimeStamp, map[message.Field]any{
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime.Format(utilhandler.ISO8601Layout))
+			resGets, err := h.MessageList(ctx, 100, "", map[message.Field]any{
 				message.FieldAIcallID: tt.message.AIcallID,
 			})
 			if err != nil {

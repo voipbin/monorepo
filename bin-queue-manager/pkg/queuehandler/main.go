@@ -21,7 +21,6 @@ import (
 
 // List of default values
 const (
-	// defaultTimeStamp = "9999-01-01 00:00:00.000000" // default timestamp
 	defaultExecuteDelay = 1000 // 1000 ms(1 sec)
 )
 

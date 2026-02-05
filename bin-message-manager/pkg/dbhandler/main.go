@@ -33,10 +33,6 @@ type handler struct {
 	cache       cachehandler.CacheHandler
 }
 
-// List of default values
-const (
-	DefaultTimeStamp = "9999-01-01T00:00:00.000000Z" // Deprecated: kept for pagination token usage only
-)
 
 // handler errors
 var (
