@@ -13,11 +13,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-const (
-	// DefaultTimeStamp is a placeholder for a default timestamp value used in specific queries.
-	// Uses ISO 8601 format with microsecond precision.
-	DefaultTimeStamp = "9999-01-01T00:00:00.000000Z"
-)
 
 func Connect(dsn string) (*sql.DB, error) {
 	res, err := sql.Open("mysql", dsn)
@@ -48,7 +43,7 @@ func Close(db *sql.DB) {
 // - uuid.UUID: Converted to bytes for equality comparison.
 // - string, int, int64, uint, uint64, float32, float64: Used directly for equality comparison.
 // - bool:
-//   - If the key is "deleted" and value is false, it applies a special condition: "tm_delete" >= DefaultTimeStamp.
+//   - If the key is "deleted" and value is false, it applies a special condition: "tm_delete" IS NULL.
 //   - Otherwise, used for equality comparison.
 //   - Other string-based, integer-based, or float-based custom types (detected via reflection):
 //     Converted to their base type for equality comparison.

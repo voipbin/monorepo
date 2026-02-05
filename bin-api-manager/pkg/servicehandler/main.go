@@ -89,8 +89,7 @@ import (
 )
 
 const (
-	defaultTimestamp string = "9999-01-01 00:00:00.000000" // default timestamp
-	TokenExpiration         = time.Hour * 24 * 7           // default token expiration time. 1 week(7 days)
+	TokenExpiration = time.Hour * 24 * 7 // default token expiration time. 1 week(7 days)
 )
 
 // ServiceHandler is interface for service handle

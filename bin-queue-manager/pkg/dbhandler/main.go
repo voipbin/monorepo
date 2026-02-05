@@ -17,10 +17,6 @@ import (
 	"monorepo/bin-queue-manager/pkg/cachehandler"
 )
 
-// default variables
-const (
-	DefaultTimeStamp = "9999-01-01T00:00:00.000000Z" // DefaultTimeStamp default timestamp
-)
 
 // DBHandler interface
 type DBHandler interface {

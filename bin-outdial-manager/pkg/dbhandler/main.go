@@ -9,7 +9,6 @@ import (
 	"errors"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
-	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
@@ -68,10 +67,6 @@ var (
 	ErrNotFound = errors.New("record not found")
 )
 
-// list of default values
-var (
-	DefaultTimeStamp = commondatabasehandler.DefaultTimeStamp
-)
 
 // NewHandler creates DBHandler
 func NewHandler(db *sql.DB, cache cachehandler.CacheHandler) DBHandler {

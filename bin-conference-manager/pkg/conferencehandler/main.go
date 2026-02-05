@@ -76,8 +76,7 @@ type conferenceHandler struct {
 // List of default values
 const (
 	defaultDialTimeout      = 60                           //nolint:deadcode,varcheck // default outgoing dial timeout
-	defaultTimeStamp        = "9999-01-01 00:00:00.000000" // default timestamp
-	defaultRecordingTimeout = 86400                        // 24hours
+defaultRecordingTimeout = 86400                        // 24hours
 )
 
 var (

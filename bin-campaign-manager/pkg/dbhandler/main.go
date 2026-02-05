@@ -100,11 +100,6 @@ var (
 	ErrNotFound = errors.New("record not found")
 )
 
-// list of default values
-var (
-	// DefaultTimeStamp is nil, representing an unset timestamp.
-	DefaultTimeStamp *time.Time
-)
 
 // NewHandler creates DBHandler
 func NewHandler(db *sql.DB, cache cachehandler.CacheHandler) DBHandler {

@@ -3,6 +3,7 @@ package servicehandler
 import (
 	"context"
 	"fmt"
+	"time"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 	tmsipmessage "monorepo/bin-timeline-manager/models/sipmessage"
@@ -56,12 +57,12 @@ func (h *serviceHandler) TimelineSIPMessagesGet(
 	// Determine time range from call timestamps
 	fromTime := call.TMCreate
 	toTime := call.TMHangup
-	if toTime == "" || toTime >= defaultTimestamp {
+	if toTime == nil {
 		toTime = call.TMUpdate
 	}
 
 	// Call timeline-manager
-	res, err := h.reqHandler.TimelineV1SIPMessagesGet(ctx, callID, ch.SIPCallID, fromTime, toTime)
+	res, err := h.reqHandler.TimelineV1SIPMessagesGet(ctx, callID, ch.SIPCallID, fromTime.Format(time.RFC3339), toTime.Format(time.RFC3339))
 	if err != nil {
 		log.Errorf("Could not get SIP messages: %v", err)
 		return nil, fmt.Errorf("upstream service unavailable")
@@ -115,12 +116,12 @@ func (h *serviceHandler) TimelineSIPPcapGet(
 	// Determine time range from call timestamps
 	fromTime := call.TMCreate
 	toTime := call.TMHangup
-	if toTime == "" || toTime >= defaultTimestamp {
+	if toTime == nil {
 		toTime = call.TMUpdate
 	}
 
 	// Call timeline-manager
-	res, err := h.reqHandler.TimelineV1SIPPcapGet(ctx, callID, ch.SIPCallID, fromTime, toTime)
+	res, err := h.reqHandler.TimelineV1SIPPcapGet(ctx, callID, ch.SIPCallID, fromTime.Format(time.RFC3339), toTime.Format(time.RFC3339))
 	if err != nil {
 		log.Errorf("Could not get PCAP: %v", err)
 		return nil, fmt.Errorf("upstream service unavailable")

@@ -123,7 +123,8 @@ func Test_SummaryCreate(t *testing.T) {
 			}
 
 			expectRes := []*summary.Summary{tt.expectRes}
-			resGets, err := h.SummaryList(ctx, 100, DefaultTimeStamp, map[summary.Field]any{summary.FieldReferenceID: tt.summary.ReferenceID})
+			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime.Format(utilhandler.ISO8601Layout))
+			resGets, err := h.SummaryList(ctx, 100, "", map[summary.Field]any{summary.FieldReferenceID: tt.summary.ReferenceID})
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
