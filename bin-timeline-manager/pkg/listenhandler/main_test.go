@@ -17,6 +17,7 @@ import (
 	"monorepo/bin-timeline-manager/pkg/eventhandler"
 	"monorepo/bin-timeline-manager/pkg/listenhandler/models/request"
 	"monorepo/bin-timeline-manager/pkg/listenhandler/models/response"
+	"monorepo/bin-timeline-manager/pkg/siphandler"
 )
 
 func TestNewListenHandler(t *testing.T) {
@@ -25,8 +26,9 @@ func TestNewListenHandler(t *testing.T) {
 
 	mockSock := sockhandler.NewMockSockHandler(ctrl)
 	mockEvent := eventhandler.NewMockEventHandler(ctrl)
+	mockSIP := siphandler.NewMockSIPHandler(ctrl)
 
-	handler := NewListenHandler(mockSock, mockEvent)
+	handler := NewListenHandler(mockSock, mockEvent, mockSIP)
 	if handler == nil {
 		t.Error("NewListenHandler() returned nil")
 	}
@@ -225,8 +227,9 @@ func TestRun_QueueCreateError(t *testing.T) {
 
 	mockSock := sockhandler.NewMockSockHandler(ctrl)
 	mockEvent := eventhandler.NewMockEventHandler(ctrl)
+	mockSIP := siphandler.NewMockSIPHandler(ctrl)
 
-	handler := NewListenHandler(mockSock, mockEvent)
+	handler := NewListenHandler(mockSock, mockEvent, mockSIP)
 
 	mockSock.EXPECT().
 		QueueCreate("test-queue", "normal").
@@ -244,8 +247,9 @@ func TestRun_Success(t *testing.T) {
 
 	mockSock := sockhandler.NewMockSockHandler(ctrl)
 	mockEvent := eventhandler.NewMockEventHandler(ctrl)
+	mockSIP := siphandler.NewMockSIPHandler(ctrl)
 
-	handler := NewListenHandler(mockSock, mockEvent)
+	handler := NewListenHandler(mockSock, mockEvent, mockSIP)
 
 	mockSock.EXPECT().
 		QueueCreate("test-queue", "normal").

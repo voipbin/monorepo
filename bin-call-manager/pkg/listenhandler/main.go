@@ -80,6 +80,7 @@ var (
 
 	// channels
 	regV1ChannelsIDHealth = regexp.MustCompile("/v1/channels/" + regAny + "/health-check$")
+	regV1ChannelsID       = regexp.MustCompile("/v1/channels/" + regAny + "$")
 
 	// confbridges
 	regV1Confbridges                 = regexp.MustCompile("/v1/confbridges$")
@@ -369,6 +370,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1ChannelsIDHealth.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1ChannelsIDHealthPost(ctx, m)
 		requestType = "/v1/channels/<channel-id>/health-check"
+
+	// GET /channels/<channel-id>
+	case regV1ChannelsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		requestType = "/channels/{id}"
+		response, err = h.processV1ChannelsIDGet(ctx, m)
 
 	//////////////
 	// confbridges

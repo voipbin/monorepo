@@ -76,6 +76,7 @@ import (
 	tmtag "monorepo/bin-tag-manager/models/tag"
 
 	tmevent "monorepo/bin-timeline-manager/models/event"
+	tmsipmessage "monorepo/bin-timeline-manager/models/sipmessage"
 
 	talkmessage "monorepo/bin-talk-manager/models/message"
 	talkparticipant "monorepo/bin-talk-manager/models/participant"
@@ -462,6 +463,7 @@ type RequestHandler interface {
 	CallV1CallSilenceOff(ctx context.Context, callID uuid.UUID) error
 
 	// call-manager channel
+	CallV1ChannelGet(ctx context.Context, channelID string) (*cmchannel.Channel, error)
 	CallV1ChannelHealth(ctx context.Context, channelID string, delay, retryCount int) error
 
 	// call-manager confbridge
@@ -1219,6 +1221,10 @@ type RequestHandler interface {
 
 	// timeline-manager events
 	TimelineV1EventList(ctx context.Context, req *tmevent.EventListRequest) (*tmevent.EventListResponse, error)
+
+	// timeline-manager sip
+	TimelineV1SIPMessagesGet(ctx context.Context, callID uuid.UUID, sipCallID string, fromTime, toTime string) (*tmsipmessage.SIPMessagesResponse, error)
+	TimelineV1SIPPcapGet(ctx context.Context, callID uuid.UUID, sipCallID string, fromTime, toTime string) ([]byte, error)
 
 	// webhook-manager webhooks
 	WebhookV1WebhookSend(ctx context.Context, customerID uuid.UUID, dataType wmwebhook.DataType, messageType string, messageData []byte) error

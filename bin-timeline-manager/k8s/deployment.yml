@@ -42,6 +42,10 @@ spec:
               value: ":2112"
             - name: RABBITMQ_ADDRESS
               value: ${RABBITMQ_ADDRESS}
+            - name: HOMER_API_ADDRESS
+              value: ${HOMER_API_ADDRESS}
+            - name: HOMER_AUTH_TOKEN
+              value: ${HOMER_AUTH_TOKEN}
           ports:
             - name: metrics
               protocol: "TCP"
