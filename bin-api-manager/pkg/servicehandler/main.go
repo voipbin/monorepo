@@ -66,6 +66,8 @@ import (
 
 	tmtag "monorepo/bin-tag-manager/models/tag"
 
+	tmsipmessage "monorepo/bin-timeline-manager/models/sipmessage"
+
 	tkmessage "monorepo/bin-talk-manager/models/message"
 	tkparticipant "monorepo/bin-talk-manager/models/participant"
 	tkchat "monorepo/bin-talk-manager/models/chat"
@@ -798,6 +800,8 @@ type ServiceHandler interface {
 
 	// timeline
 	TimelineEventList(ctx context.Context, a *amagent.Agent, resourceType string, resourceID uuid.UUID, pageSize int, pageToken string) ([]*TimelineEvent, string, error)
+	TimelineSIPMessagesGet(ctx context.Context, a *amagent.Agent, callID uuid.UUID) (*tmsipmessage.SIPMessagesResponse, error)
+	TimelineSIPPcapGet(ctx context.Context, a *amagent.Agent, callID uuid.UUID) ([]byte, error)
 
 	WebsockCreate(ctx context.Context, a *amagent.Agent, w http.ResponseWriter, r *http.Request) error
 }

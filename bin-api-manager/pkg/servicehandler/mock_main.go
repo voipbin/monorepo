@@ -59,6 +59,7 @@ import (
 	chat "monorepo/bin-talk-manager/models/chat"
 	message2 "monorepo/bin-talk-manager/models/message"
 	participant "monorepo/bin-talk-manager/models/participant"
+	sipmessage "monorepo/bin-timeline-manager/models/sipmessage"
 	transcribe "monorepo/bin-transcribe-manager/models/transcribe"
 	transcript "monorepo/bin-transcribe-manager/models/transcript"
 	transfer "monorepo/bin-transfer-manager/models/transfer"
@@ -3832,6 +3833,36 @@ func (m *MockServiceHandler) TimelineEventList(ctx context.Context, a *agent.Age
 func (mr *MockServiceHandlerMockRecorder) TimelineEventList(ctx, a, resourceType, resourceID, pageSize, pageToken any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TimelineEventList", reflect.TypeOf((*MockServiceHandler)(nil).TimelineEventList), ctx, a, resourceType, resourceID, pageSize, pageToken)
+}
+
+// TimelineSIPMessagesGet mocks base method.
+func (m *MockServiceHandler) TimelineSIPMessagesGet(ctx context.Context, a *agent.Agent, callID uuid.UUID) (*sipmessage.SIPMessagesResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TimelineSIPMessagesGet", ctx, a, callID)
+	ret0, _ := ret[0].(*sipmessage.SIPMessagesResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TimelineSIPMessagesGet indicates an expected call of TimelineSIPMessagesGet.
+func (mr *MockServiceHandlerMockRecorder) TimelineSIPMessagesGet(ctx, a, callID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TimelineSIPMessagesGet", reflect.TypeOf((*MockServiceHandler)(nil).TimelineSIPMessagesGet), ctx, a, callID)
+}
+
+// TimelineSIPPcapGet mocks base method.
+func (m *MockServiceHandler) TimelineSIPPcapGet(ctx context.Context, a *agent.Agent, callID uuid.UUID) ([]byte, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TimelineSIPPcapGet", ctx, a, callID)
+	ret0, _ := ret[0].([]byte)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TimelineSIPPcapGet indicates an expected call of TimelineSIPPcapGet.
+func (mr *MockServiceHandlerMockRecorder) TimelineSIPPcapGet(ctx, a, callID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TimelineSIPPcapGet", reflect.TypeOf((*MockServiceHandler)(nil).TimelineSIPPcapGet), ctx, a, callID)
 }
 
 // TranscribeDelete mocks base method.
