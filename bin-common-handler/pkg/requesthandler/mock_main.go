@@ -75,6 +75,7 @@ import (
 	message3 "monorepo/bin-talk-manager/models/message"
 	participant "monorepo/bin-talk-manager/models/participant"
 	event "monorepo/bin-timeline-manager/models/event"
+	sipmessage "monorepo/bin-timeline-manager/models/sipmessage"
 	transcribe "monorepo/bin-transcribe-manager/models/transcribe"
 	transcript "monorepo/bin-transcribe-manager/models/transcript"
 	transfer "monorepo/bin-transfer-manager/models/transfer"
@@ -1774,6 +1775,21 @@ func (m *MockRequestHandler) CallV1CallsCreate(ctx context.Context, customerID, 
 func (mr *MockRequestHandlerMockRecorder) CallV1CallsCreate(ctx, customerID, flowID, masterCallID, source, destinations, ealryExecution, connect any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallsCreate", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallsCreate), ctx, customerID, flowID, masterCallID, source, destinations, ealryExecution, connect)
+}
+
+// CallV1ChannelGet mocks base method.
+func (m *MockRequestHandler) CallV1ChannelGet(ctx context.Context, channelID string) (*channel.Channel, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallV1ChannelGet", ctx, channelID)
+	ret0, _ := ret[0].(*channel.Channel)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CallV1ChannelGet indicates an expected call of CallV1ChannelGet.
+func (mr *MockRequestHandlerMockRecorder) CallV1ChannelGet(ctx, channelID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1ChannelGet", reflect.TypeOf((*MockRequestHandler)(nil).CallV1ChannelGet), ctx, channelID)
 }
 
 // CallV1ChannelHealth mocks base method.
@@ -5628,6 +5644,36 @@ func (m *MockRequestHandler) TimelineV1EventList(ctx context.Context, req *event
 func (mr *MockRequestHandlerMockRecorder) TimelineV1EventList(ctx, req any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TimelineV1EventList", reflect.TypeOf((*MockRequestHandler)(nil).TimelineV1EventList), ctx, req)
+}
+
+// TimelineV1SIPMessagesGet mocks base method.
+func (m *MockRequestHandler) TimelineV1SIPMessagesGet(ctx context.Context, callID uuid.UUID, sipCallID, fromTime, toTime string) (*sipmessage.SIPMessagesResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TimelineV1SIPMessagesGet", ctx, callID, sipCallID, fromTime, toTime)
+	ret0, _ := ret[0].(*sipmessage.SIPMessagesResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TimelineV1SIPMessagesGet indicates an expected call of TimelineV1SIPMessagesGet.
+func (mr *MockRequestHandlerMockRecorder) TimelineV1SIPMessagesGet(ctx, callID, sipCallID, fromTime, toTime any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TimelineV1SIPMessagesGet", reflect.TypeOf((*MockRequestHandler)(nil).TimelineV1SIPMessagesGet), ctx, callID, sipCallID, fromTime, toTime)
+}
+
+// TimelineV1SIPPcapGet mocks base method.
+func (m *MockRequestHandler) TimelineV1SIPPcapGet(ctx context.Context, callID uuid.UUID, sipCallID, fromTime, toTime string) ([]byte, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TimelineV1SIPPcapGet", ctx, callID, sipCallID, fromTime, toTime)
+	ret0, _ := ret[0].([]byte)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TimelineV1SIPPcapGet indicates an expected call of TimelineV1SIPPcapGet.
+func (mr *MockRequestHandlerMockRecorder) TimelineV1SIPPcapGet(ctx, callID, sipCallID, fromTime, toTime any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TimelineV1SIPPcapGet", reflect.TypeOf((*MockRequestHandler)(nil).TimelineV1SIPPcapGet), ctx, callID, sipCallID, fromTime, toTime)
 }
 
 // TranscribeV1TranscribeDelete mocks base method.
