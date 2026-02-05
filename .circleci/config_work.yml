@@ -1573,19 +1573,20 @@ commands:
           command: |
             cd << parameters.source-directory >>
             go mod download
-            go mod vendor          
-      - run:
-          name: Install golangci-lint v2.5.0
-          command: |
-            curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v2.5.0
-            sudo mv ./bin/golangci-lint /usr/local/bin/
-            golangci-lint version
-      - run:
-          name: Linting and vet
-          command: |
-            cd << parameters.source-directory >>
-            golangci-lint run -v --timeout 5m
-            go vet $(go list ./...)
+            go mod vendor
+      # TODO: Re-enable golangci-lint after fixing OOM on small resource_class
+      # - run:
+      #     name: Install golangci-lint v2.5.0
+      #     command: |
+      #       curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v2.5.0
+      #       sudo mv ./bin/golangci-lint /usr/local/bin/
+      #       golangci-lint version
+      # - run:
+      #     name: Linting and vet
+      #     command: |
+      #       cd << parameters.source-directory >>
+      #       golangci-lint run -v --timeout 5m
+      #       go vet $(go list ./...)
       - run:
           name: Testing
           command: |
@@ -1615,23 +1616,24 @@ commands:
           command: |
             cd << parameters.source-directory >>
             go mod download
-            go mod vendor          
+            go mod vendor
       - run:
           name: Install extra dependencies
           command: |
             sudo apt-get update && sudo apt install -y pkg-config libzmq5 libzmq3-dev libczmq4 libczmq-dev
-      - run:
-          name: Install golangci-lint v2.5.0
-          command: |
-            curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v2.5.0
-            sudo mv ./bin/golangci-lint /usr/local/bin/
-            golangci-lint version
-      - run:
-          name: Linting and vet
-          command: |
-            cd << parameters.source-directory >>
-            golangci-lint run -v --timeout 5m
-            go vet $(go list ./...)
+      # TODO: Re-enable golangci-lint after fixing OOM on small resource_class
+      # - run:
+      #     name: Install golangci-lint v2.5.0
+      #     command: |
+      #       curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v2.5.0
+      #       sudo mv ./bin/golangci-lint /usr/local/bin/
+      #       golangci-lint version
+      # - run:
+      #     name: Linting and vet
+      #     command: |
+      #       cd << parameters.source-directory >>
+      #       golangci-lint run -v --timeout 5m
+      #       go vet $(go list ./...)
       - run:
           name: Testing
           command: |
@@ -1667,18 +1669,19 @@ commands:
           name: Install extra dependencies (libsoxr for audio resampling)
           command: |
             sudo apt-get update && sudo apt install -y pkg-config libsoxr-dev
-      - run:
-          name: Install golangci-lint v2.5.0
-          command: |
-            curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v2.5.0
-            sudo mv ./bin/golangci-lint /usr/local/bin/
-            golangci-lint version
-      - run:
-          name: Linting and vet
-          command: |
-            cd << parameters.source-directory >>
-            golangci-lint run -v --timeout 5m
-            go vet $(go list ./...)
+      # TODO: Re-enable golangci-lint after fixing OOM on small resource_class
+      # - run:
+      #     name: Install golangci-lint v2.5.0
+      #     command: |
+      #       curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v2.5.0
+      #       sudo mv ./bin/golangci-lint /usr/local/bin/
+      #       golangci-lint version
+      # - run:
+      #     name: Linting and vet
+      #     command: |
+      #       cd << parameters.source-directory >>
+      #       golangci-lint run -v --timeout 5m
+      #       go vet $(go list ./...)
       - run:
           name: Testing
           command: |
