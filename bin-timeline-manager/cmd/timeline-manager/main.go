@@ -22,7 +22,9 @@ import (
 	"monorepo/bin-timeline-manager/internal/config"
 	"monorepo/bin-timeline-manager/pkg/dbhandler"
 	"monorepo/bin-timeline-manager/pkg/eventhandler"
+	"monorepo/bin-timeline-manager/pkg/homerhandler"
 	"monorepo/bin-timeline-manager/pkg/listenhandler"
+	"monorepo/bin-timeline-manager/pkg/siphandler"
 )
 
 var chSigs = make(chan os.Signal, 1)
@@ -140,17 +142,20 @@ func runServices() error {
 
 	evtHandler := eventhandler.NewEventHandler(db)
 
-	if errListen := runListen(sockHandler, evtHandler); errListen != nil {
+	homerH := homerhandler.NewHomerHandler(config.Get().HomerAPIAddress, config.Get().HomerAuthToken)
+	sipH := siphandler.NewSIPHandler(homerH)
+
+	if errListen := runListen(sockHandler, evtHandler, sipH); errListen != nil {
 		return errors.Wrapf(errListen, "failed to run service listen")
 	}
 
 	return nil
 }
 
-func runListen(sockListen sockhandler.SockHandler, evtHandler eventhandler.EventHandler) error {
+func runListen(sockListen sockhandler.SockHandler, evtHandler eventhandler.EventHandler, sipH siphandler.SIPHandler) error {
 	log := logrus.WithField("func", "runListen")
 
-	listenHdlr := listenhandler.NewListenHandler(sockListen, evtHandler)
+	listenHdlr := listenhandler.NewListenHandler(sockListen, evtHandler, sipH)
 
 	if errRun := listenHdlr.Run(string(commonoutline.QueueNameTimelineRequest)); errRun != nil {
 		log.Errorf("Error occurred in listen handler. err: %v", errRun)

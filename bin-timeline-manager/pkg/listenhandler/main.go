@@ -14,10 +14,13 @@ import (
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-timeline-manager/pkg/eventhandler"
+	"monorepo/bin-timeline-manager/pkg/siphandler"
 )
 
 var (
-	regV1Events = regexp.MustCompile("/v1/events$")
+	regV1Events      = regexp.MustCompile("/v1/events$")
+	regV1SIPMessages = regexp.MustCompile("/v1/sip/messages$")
+	regV1SIPPcap     = regexp.MustCompile("/v1/sip/pcap$")
 )
 
 var (
@@ -46,16 +49,19 @@ type ListenHandler interface {
 type listenHandler struct {
 	sockHandler  sockhandler.SockHandler
 	eventHandler eventhandler.EventHandler
+	sipHandler   siphandler.SIPHandler
 }
 
 // NewListenHandler creates a new ListenHandler.
 func NewListenHandler(
 	sockHandler sockhandler.SockHandler,
 	eventHandler eventhandler.EventHandler,
+	sipHandler siphandler.SIPHandler,
 ) ListenHandler {
 	return &listenHandler{
 		sockHandler:  sockHandler,
 		eventHandler: eventHandler,
+		sipHandler:   sipHandler,
 	}
 }
 
@@ -105,6 +111,14 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1Events.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		requestType = "/events"
 		response, err = h.v1EventsPost(ctx, m)
+
+	case regV1SIPMessages.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		requestType = "/sip/messages"
+		response, err = h.v1SIPMessagesPost(ctx, m)
+
+	case regV1SIPPcap.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		requestType = "/sip/pcap"
+		response, err = h.v1SIPPcapPost(ctx, m)
 
 	default:
 		log.Errorf("Could not find corresponded request handler. data: %s", m.Data)

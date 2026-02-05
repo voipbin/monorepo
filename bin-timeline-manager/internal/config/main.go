@@ -23,6 +23,8 @@ type Config struct {
 	ClickHouseAddress       string
 	ClickHouseDatabase      string
 	MigrationsPath          string
+	HomerAPIAddress         string
+	HomerAuthToken          string
 }
 
 func Bootstrap(cmd *cobra.Command) error {
@@ -43,6 +45,8 @@ func bindConfig(cmd *cobra.Command) error {
 	f.String("clickhouse_address", "", "ClickHouse server address")
 	f.String("clickhouse_database", "default", "ClickHouse database name")
 	f.String("migrations_path", "./migrations", "Path to migration files")
+	f.String("homer_api_address", "", "Homer API address")
+	f.String("homer_auth_token", "", "Homer auth token")
 
 	bindings := map[string]string{
 		"rabbitmq_address":          "RABBITMQ_ADDRESS",
@@ -51,6 +55,8 @@ func bindConfig(cmd *cobra.Command) error {
 		"clickhouse_address":        "CLICKHOUSE_ADDRESS",
 		"clickhouse_database":       "CLICKHOUSE_DATABASE",
 		"migrations_path":           "MIGRATIONS_PATH",
+		"homer_api_address":         "HOMER_API_ADDRESS",
+		"homer_auth_token":          "HOMER_AUTH_TOKEN",
 	}
 
 	for flagKey, envKey := range bindings {
@@ -78,6 +84,8 @@ func LoadGlobalConfig() {
 			ClickHouseAddress:       viper.GetString("clickhouse_address"),
 			ClickHouseDatabase:      viper.GetString("clickhouse_database"),
 			MigrationsPath:          viper.GetString("migrations_path"),
+			HomerAPIAddress:         viper.GetString("homer_api_address"),
+			HomerAuthToken:          viper.GetString("homer_auth_token"),
 		}
 		logrus.Debug("Configuration has been loaded and locked.")
 	})
