@@ -239,6 +239,7 @@ func (h *pipecatcallHandler) RunnerWebsocketHandleOutput(id uuid.UUID, c *gin.Co
 	// this is used to start sending audio from asterisk to pipecat runner
 	// we consider the pipecatcall initialized when the output websocket is connected
 	// because once the output websocket is connected, we are ready to receiving the audio from the pipecat runner.
+	log.WithField("pipecatcall", pc).Debugf("Publishing pipecatcall_initialized event. tm_create: %v, tm_update: %v, tm_delete: %v", pc.TMCreate, pc.TMUpdate, pc.TMDelete)
 	h.notifyHandler.PublishEvent(se.Ctx, pipecatcall.EventTypeInitialized, pc)
 	log.Debugf("Notified that pipecatcall is initialized. pipecatcall_id: %s", id)
 
