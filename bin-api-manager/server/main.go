@@ -5,8 +5,10 @@ import (
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	commonaddress "monorepo/bin-common-handler/models/address"
+	utilhandler "monorepo/bin-common-handler/pkg/utilhandler"
 	ememail "monorepo/bin-email-manager/models/email"
 	fmaction "monorepo/bin-flow-manager/models/action"
+	"time"
 
 	"github.com/gofrs/uuid"
 )
@@ -52,15 +54,22 @@ func ConvertFlowManagerAction(fma openapi_server.FlowManagerAction) fmaction.Act
 		ID:        id,
 		NextID:    nextID,
 		Type:      fmaction.Type(fma.Type),
-		TMExecute: "",
+		TMExecute: nil,
 	}
 
 	if fma.Option != nil {
 		res.Option = *fma.Option
 	}
 
-	if fma.TmExecute != nil {
-		res.TMExecute = *fma.TmExecute
+	if fma.TmExecute != nil && *fma.TmExecute != "" {
+		if t, err := time.Parse(time.RFC3339Nano, *fma.TmExecute); err == nil {
+			res.TMExecute = &t
+		} else {
+			t := utilhandler.TimeParse(*fma.TmExecute)
+			if !t.IsZero() {
+				res.TMExecute = &t
+			}
+		}
 	}
 
 	return res

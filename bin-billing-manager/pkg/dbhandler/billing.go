@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
@@ -30,9 +31,9 @@ func (h *handler) billingGetFromRow(row *sql.Rows) (*billing.Billing, error) {
 
 // BillingCreate creates new billing record.
 func (h *handler) BillingCreate(ctx context.Context, c *billing.Billing) error {
-	c.TMCreate = h.utilHandler.TimeGetCurTime()
-	c.TMUpdate = DefaultTimeStamp
-	c.TMDelete = DefaultTimeStamp
+	c.TMCreate = h.utilHandler.TimeNow()
+	c.TMUpdate = nil
+	c.TMDelete = nil
 
 	fields, err := commondatabasehandler.PrepareFields(c)
 	if err != nil {
@@ -242,7 +243,7 @@ func (h *handler) BillingUpdate(ctx context.Context, id uuid.UUID, fields map[bi
 	for k, v := range fields {
 		updateFields[string(k)] = v
 	}
-	updateFields["tm_update"] = h.utilHandler.TimeGetCurTime()
+	updateFields["tm_update"] = h.utilHandler.TimeNow()
 
 	preparedFields, err := commondatabasehandler.PrepareFields(updateFields)
 	if err != nil {
@@ -269,7 +270,7 @@ func (h *handler) BillingUpdate(ctx context.Context, id uuid.UUID, fields map[bi
 }
 
 // BillingSetStatusEnd sets the billing status to end
-func (h *handler) BillingSetStatusEnd(ctx context.Context, id uuid.UUID, billingDuration float32, timestamp string) error {
+func (h *handler) BillingSetStatusEnd(ctx context.Context, id uuid.UUID, billingDuration float32, timestamp *time.Time) error {
 	// prepare - using raw SQL for the formula
 	q := `
 	update
@@ -284,7 +285,7 @@ func (h *handler) BillingSetStatusEnd(ctx context.Context, id uuid.UUID, billing
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, billing.StatusEnd, billingDuration, billingDuration, timestamp, h.utilHandler.TimeGetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, billing.StatusEnd, billingDuration, billingDuration, timestamp, h.utilHandler.TimeNow(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. BillingSetStatusEnd. err: %v", err)
 	}
@@ -306,7 +307,7 @@ func (h *handler) BillingSetStatus(ctx context.Context, id uuid.UUID, status bil
 
 // BillingDelete deletes the billing
 func (h *handler) BillingDelete(ctx context.Context, id uuid.UUID) error {
-	ts := h.utilHandler.TimeGetCurTime()
+	ts := h.utilHandler.TimeNow()
 
 	query, args, err := sq.Update(billingsTable).
 		SetMap(map[string]any{

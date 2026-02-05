@@ -37,7 +37,7 @@ func Test_Delete(t *testing.T) {
 					ID: uuid.FromStringOrNil("841c5fa2-f0c2-11ee-834f-53b2b00ec88d"),
 				},
 				Status:   call.StatusHangup,
-				TMDelete: dbhandler.DefaultTimeStamp,
+				TMDelete: nil,
 			},
 
 			&call.Call{
@@ -45,7 +45,7 @@ func Test_Delete(t *testing.T) {
 					ID: uuid.FromStringOrNil("841c5fa2-f0c2-11ee-834f-53b2b00ec88d"),
 				},
 				Status:   call.StatusHangup,
-				TMDelete: dbhandler.DefaultTimeStamp,
+				TMDelete: nil,
 			},
 		},
 	}

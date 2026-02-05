@@ -1,6 +1,8 @@
 package outplan
 
 import (
+	"time"
+
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 )
@@ -27,9 +29,9 @@ type Outplan struct {
 	MaxTryCount3 int `json:"max_try_count_3" db:"max_try_count_3"` // max try count for destination_3
 	MaxTryCount4 int `json:"max_try_count_4" db:"max_try_count_4"` // max try count for destination_4
 
-	TMCreate string `json:"tm_create" db:"tm_create"`
-	TMUpdate string `json:"tm_update" db:"tm_update"`
-	TMDelete string `json:"tm_delete" db:"tm_delete"`
+	TMCreate *time.Time `json:"tm_create" db:"tm_create"`
+	TMUpdate *time.Time `json:"tm_update" db:"tm_update"`
+	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"`
 }
 
 // const defines

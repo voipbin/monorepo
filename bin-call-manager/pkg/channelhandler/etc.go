@@ -5,8 +5,6 @@ import (
 	"fmt"
 
 	"github.com/pkg/errors"
-
-	"monorepo/bin-call-manager/pkg/dbhandler"
 )
 
 // Answer answers the given channel's playback
@@ -16,7 +14,7 @@ func (h *channelHandler) Answer(ctx context.Context, id string) error {
 		return errors.Wrap(err, "could not get channel info")
 	}
 
-	if cn.TMDelete < dbhandler.DefaultTimeStamp {
+	if cn.TMDelete != nil {
 		return fmt.Errorf("the channel has hungup already")
 	}
 
@@ -35,7 +33,7 @@ func (h *channelHandler) DTMFSend(ctx context.Context, id string, digit string, 
 		return errors.Wrap(err, "could not get channel info")
 	}
 
-	if cn.TMDelete < dbhandler.DefaultTimeStamp {
+	if cn.TMDelete != nil {
 		return fmt.Errorf("the channel has hungup already")
 	}
 
@@ -54,7 +52,7 @@ func (h *channelHandler) Record(ctx context.Context, id string, filename string,
 		return errors.Wrap(err, "could not get channel info")
 	}
 
-	if cn.TMDelete < dbhandler.DefaultTimeStamp {
+	if cn.TMDelete != nil {
 		return fmt.Errorf("the channel has hungup already")
 	}
 
@@ -73,7 +71,7 @@ func (h *channelHandler) Dial(ctx context.Context, id string, caller string, tim
 		return errors.Wrap(err, "could not get channel info")
 	}
 
-	if cn.TMDelete < dbhandler.DefaultTimeStamp {
+	if cn.TMDelete != nil {
 		return fmt.Errorf("the channel has hungup already")
 	}
 
@@ -92,7 +90,7 @@ func (h *channelHandler) Redirect(ctx context.Context, id string, contextName st
 		return errors.Wrap(err, "could not get channel info")
 	}
 
-	if cn.TMDelete < dbhandler.DefaultTimeStamp {
+	if cn.TMDelete != nil {
 		return fmt.Errorf("the channel has hungup already")
 	}
 
@@ -111,7 +109,7 @@ func (h *channelHandler) Continue(ctx context.Context, id string, context string
 		return errors.Wrap(err, "could not get channel info")
 	}
 
-	if cn.TMDelete < dbhandler.DefaultTimeStamp {
+	if cn.TMDelete != nil {
 		return fmt.Errorf("the channel has hungup already")
 	}
 
@@ -130,7 +128,7 @@ func (h *channelHandler) Ring(ctx context.Context, id string) error {
 		return errors.Wrap(err, "could not get channel info")
 	}
 
-	if cn.TMDelete < dbhandler.DefaultTimeStamp {
+	if cn.TMDelete != nil {
 		return fmt.Errorf("the channel has hungup already")
 	}
 

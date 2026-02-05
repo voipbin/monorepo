@@ -214,6 +214,7 @@ func Test_EventFlowDeleted(t *testing.T) {
 			}
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+
 			mockDB.EXPECT().NumberList(gomock.Any(), gomock.Any(), gomock.Any(), tt.expectFiltersMessageFlow).Return(tt.responseNumbersMessageFlow, nil)
 			for _, num := range tt.responseNumbersMessageFlow {
 				mockDB.EXPECT().NumberUpdate(gomock.Any(), num.ID, map[number.Field]any{

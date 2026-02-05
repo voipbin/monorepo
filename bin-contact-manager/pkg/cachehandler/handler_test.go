@@ -3,6 +3,7 @@ package cachehandler
 import (
 	"context"
 	"testing"
+	"time"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
@@ -12,6 +13,10 @@ import (
 
 	"monorepo/bin-contact-manager/models/contact"
 )
+
+func timePtr(t time.Time) *time.Time {
+	return &t
+}
 
 func setupTestHandler(t *testing.T) (*handler, *miniredis.Miniredis) {
 	mr, err := miniredis.Run()
@@ -49,9 +54,9 @@ func TestHandler_ContactSetAndGet(t *testing.T) {
 		JobTitle:    "Engineer",
 		Source:      "manual",
 		ExternalID:  "ext-123",
-		TMCreate:    "2020-01-01T00:00:00.000000Z",
-		TMUpdate:    "2020-01-02T00:00:00.000000Z",
-		TMDelete:    "9999-01-01T00:00:00.000000Z",
+		TMCreate:    timePtr(time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)),
+		TMUpdate:    timePtr(time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC)),
+		TMDelete:    nil,
 	}
 
 	// Test Set
@@ -457,9 +462,9 @@ func TestHandler_ContactGet_AllFields(t *testing.T) {
 		Source:      "manual",
 		ExternalID:  "ext-123",
 		Notes:       "Some notes here",
-		TMCreate:    "2020-01-01T00:00:00.000000Z",
-		TMUpdate:    "2020-01-02T00:00:00.000000Z",
-		TMDelete:    "9999-01-01T00:00:00.000000Z",
+		TMCreate:    timePtr(time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)),
+		TMUpdate:    timePtr(time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC)),
+		TMDelete:    nil,
 	}
 
 	// Set contact
@@ -687,9 +692,9 @@ func TestHandler_ContactWithLargeData(t *testing.T) {
 			uuid.FromStringOrNil("c0002222-2222-2222-2222-222222222222"),
 			uuid.FromStringOrNil("c0003333-3333-3333-3333-333333333333"),
 		},
-		TMCreate: "2020-01-01T00:00:00.000000Z",
-		TMUpdate: "2020-01-02T00:00:00.000000Z",
-		TMDelete: "9999-01-01T00:00:00.000000Z",
+		TMCreate: timePtr(time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)),
+		TMUpdate: timePtr(time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC)),
+		TMDelete: nil,
 	}
 
 	// Set contact

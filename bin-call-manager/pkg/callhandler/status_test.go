@@ -1,6 +1,7 @@
 package callhandler
 
 import (
+	"monorepo/bin-call-manager/pkg/testhelper"
 	"context"
 	"testing"
 	"time"
@@ -32,7 +33,7 @@ func Test_UpdateStatusRinging(t *testing.T) {
 		{
 			"call status dialing",
 			&channel.Channel{
-				TMRinging: "2020-09-20T03:23:20.995000Z",
+				TMRinging: testhelper.TimePtr("2020-09-20T03:23:20.995000Z"),
 			},
 			&call.Call{
 				Identity: commonidentity.Identity{
@@ -86,7 +87,7 @@ func Test_UpdateStatusRingingFail(t *testing.T) {
 		{
 			"call status ringing",
 			&channel.Channel{
-				TMRinging: "2020-09-20T03:23:20.995000Z",
+				TMRinging: testhelper.TimePtr("2020-09-20T03:23:20.995000Z"),
 			},
 			&call.Call{
 				Identity: commonidentity.Identity{
@@ -98,7 +99,7 @@ func Test_UpdateStatusRingingFail(t *testing.T) {
 		{
 			"call status progressing",
 			&channel.Channel{
-				TMRinging: "2020-09-20T03:23:20.995000Z",
+				TMRinging: testhelper.TimePtr("2020-09-20T03:23:20.995000Z"),
 			},
 			&call.Call{
 				Identity: commonidentity.Identity{
@@ -110,7 +111,7 @@ func Test_UpdateStatusRingingFail(t *testing.T) {
 		{
 			"call status terminating",
 			&channel.Channel{
-				TMRinging: "2020-09-20T03:23:20.995000Z",
+				TMRinging: testhelper.TimePtr("2020-09-20T03:23:20.995000Z"),
 			},
 			&call.Call{
 				Identity: commonidentity.Identity{
@@ -122,7 +123,7 @@ func Test_UpdateStatusRingingFail(t *testing.T) {
 		{
 			"call status canceling",
 			&channel.Channel{
-				TMRinging: "2020-09-20T03:23:20.995000Z",
+				TMRinging: testhelper.TimePtr("2020-09-20T03:23:20.995000Z"),
 			},
 			&call.Call{
 				Identity: commonidentity.Identity{
@@ -134,7 +135,7 @@ func Test_UpdateStatusRingingFail(t *testing.T) {
 		{
 			"call status hangup",
 			&channel.Channel{
-				TMRinging: "2020-09-20T03:23:20.995000Z",
+				TMRinging: testhelper.TimePtr("2020-09-20T03:23:20.995000Z"),
 			},
 			&call.Call{
 				Identity: commonidentity.Identity{
@@ -181,7 +182,7 @@ func Test_UpdateStatusProgressing(t *testing.T) {
 		{
 			"call status dialing for incoming",
 			&channel.Channel{
-				TMAnswer: "2020-09-20T03:23:20.995000Z",
+				TMAnswer: testhelper.TimePtr("2020-09-20T03:23:20.995000Z"),
 			},
 			&call.Call{
 				Identity: commonidentity.Identity{
@@ -201,7 +202,7 @@ func Test_UpdateStatusProgressing(t *testing.T) {
 		{
 			"call status ringing for incoming",
 			&channel.Channel{
-				TMAnswer: "2020-09-20T03:23:20.995000Z",
+				TMAnswer: testhelper.TimePtr("2020-09-20T03:23:20.995000Z"),
 			},
 			&call.Call{
 				Identity: commonidentity.Identity{
@@ -221,7 +222,7 @@ func Test_UpdateStatusProgressing(t *testing.T) {
 		{
 			"call status dialing for outgoing",
 			&channel.Channel{
-				TMAnswer: "2020-09-20T03:23:20.995000Z",
+				TMAnswer: testhelper.TimePtr("2020-09-20T03:23:20.995000Z"),
 			},
 			&call.Call{
 				Identity: commonidentity.Identity{
@@ -241,7 +242,7 @@ func Test_UpdateStatusProgressing(t *testing.T) {
 		{
 			"call status ringing for outgoing",
 			&channel.Channel{
-				TMAnswer: "2020-09-20T03:23:20.995000Z",
+				TMAnswer: testhelper.TimePtr("2020-09-20T03:23:20.995000Z"),
 			},
 			&call.Call{
 				Identity: commonidentity.Identity{
@@ -291,7 +292,7 @@ func Test_UpdateStatusProgressing(t *testing.T) {
 				mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.responseCall.ID, gomock.Any())
 				mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), gomock.Any(), gomock.Any())
-				mockChannel.EXPECT().HangingUp(gomock.Any(), gomock.Any(), gomock.Any()).Return(&channel.Channel{TMEnd: dbhandler.DefaultTimeStamp}, nil)
+				mockChannel.EXPECT().HangingUp(gomock.Any(), gomock.Any(), gomock.Any()).Return(&channel.Channel{TMEnd: nil}, nil)
 			}
 
 			if err := h.updateStatusProgressing(ctx, tt.channel, tt.call); err != nil {
@@ -316,7 +317,7 @@ func Test_UpdateStatusProgressing_answerGroupcall(t *testing.T) {
 		{
 			name: "normal",
 			channel: &channel.Channel{
-				TMAnswer: "2020-09-20T03:23:20.995000Z",
+				TMAnswer: testhelper.TimePtr("2020-09-20T03:23:20.995000Z"),
 			},
 			call: &call.Call{
 				Identity: commonidentity.Identity{
@@ -381,7 +382,7 @@ func Test_UpdateStatusProgressing_answerGroupcall(t *testing.T) {
 			mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.responseCall.ID, gomock.Any())
 			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), gomock.Any(), gomock.Any())
-			mockChannel.EXPECT().HangingUp(gomock.Any(), gomock.Any(), gomock.Any()).Return(&channel.Channel{TMEnd: dbhandler.DefaultTimeStamp}, nil)
+			mockChannel.EXPECT().HangingUp(gomock.Any(), gomock.Any(), gomock.Any()).Return(&channel.Channel{TMEnd: nil}, nil)
 
 			if err := h.updateStatusProgressing(ctx, tt.channel, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -402,7 +403,7 @@ func Test_UpdateStatusProgressingFail(t *testing.T) {
 		{
 			"call status progressing",
 			&channel.Channel{
-				TMRinging: "2020-09-20T03:23:20.995000Z",
+				TMRinging: testhelper.TimePtr("2020-09-20T03:23:20.995000Z"),
 			},
 			&call.Call{
 				Identity: commonidentity.Identity{
@@ -415,7 +416,7 @@ func Test_UpdateStatusProgressingFail(t *testing.T) {
 		{
 			"call status terminating",
 			&channel.Channel{
-				TMRinging: "2020-09-20T03:23:20.995000Z",
+				TMRinging: testhelper.TimePtr("2020-09-20T03:23:20.995000Z"),
 			},
 			&call.Call{
 				Identity: commonidentity.Identity{
@@ -428,7 +429,7 @@ func Test_UpdateStatusProgressingFail(t *testing.T) {
 		{
 			"call status canceling",
 			&channel.Channel{
-				TMRinging: "2020-09-20T03:23:20.995000Z",
+				TMRinging: testhelper.TimePtr("2020-09-20T03:23:20.995000Z"),
 			},
 			&call.Call{
 				Identity: commonidentity.Identity{
@@ -441,7 +442,7 @@ func Test_UpdateStatusProgressingFail(t *testing.T) {
 		{
 			"call status hangup",
 			&channel.Channel{
-				TMRinging: "2020-09-20T03:23:20.995000Z",
+				TMRinging: testhelper.TimePtr("2020-09-20T03:23:20.995000Z"),
 			},
 			&call.Call{
 				Identity: commonidentity.Identity{

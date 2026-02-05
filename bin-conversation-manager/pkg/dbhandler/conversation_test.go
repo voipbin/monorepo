@@ -5,10 +5,10 @@ import (
 	"fmt"
 	reflect "reflect"
 	"testing"
+	"time"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
-	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
@@ -25,7 +25,7 @@ func Test_ConversationCreate(t *testing.T) {
 
 		conversation *conversation.Conversation
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *conversation.Conversation
 	}{
 		{
@@ -57,7 +57,7 @@ func Test_ConversationCreate(t *testing.T) {
 				},
 			},
 
-			responseCurTime: "2022-04-18T03:22:17.995000Z",
+			responseCurTime: func() *time.Time { t := time.Date(2022, 4, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
 			expectRes: &conversation.Conversation{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("586e8e64-e428-11ec-baf2-7b14625ea112"),
@@ -81,9 +81,9 @@ func Test_ConversationCreate(t *testing.T) {
 					Target:     "e9d6a222-e42a-11ec-a678-57ec5f8add13",
 					TargetName: "test user",
 				},
-				TMCreate: "2022-04-18T03:22:17.995000Z",
-				TMUpdate: commondatabasehandler.DefaultTimeStamp,
-				TMDelete: commondatabasehandler.DefaultTimeStamp,
+				TMCreate: func() *time.Time { t := time.Date(2022, 4, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
+				TMUpdate: nil,
+				TMDelete: nil,
 			},
 		},
 	}
@@ -103,7 +103,7 @@ func Test_ConversationCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().ConversationSet(ctx, gomock.Any())
 			if err := h.ConversationCreate(ctx, tt.conversation); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -133,7 +133,7 @@ func Test_ConversationList(t *testing.T) {
 		limit   uint64
 		filters map[conversation.Field]any
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       []*conversation.Conversation
 	}{
 		{
@@ -181,7 +181,7 @@ func Test_ConversationList(t *testing.T) {
 				conversation.FieldType:       conversation.TypeLine,
 			},
 
-			responseCurTime: "2022-04-18T03:22:17.995000Z",
+			responseCurTime: func() *time.Time { t := time.Date(2022, 4, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
 			expectRes: []*conversation.Conversation{
 				{
 					Identity: commonidentity.Identity{
@@ -199,9 +199,9 @@ func Test_ConversationList(t *testing.T) {
 					DialogID: "38a2bdf6-e42a-11ec-b5a9-43316ee06787",
 					Self:     commonaddress.Address{},
 					Peer:     commonaddress.Address{},
-					TMCreate: "2022-04-18T03:22:17.995000Z",
-					TMUpdate: commondatabasehandler.DefaultTimeStamp,
-					TMDelete: commondatabasehandler.DefaultTimeStamp,
+					TMCreate: func() *time.Time { t := time.Date(2022, 4, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
+					TMUpdate: nil,
+					TMDelete: nil,
 				},
 				{
 					Identity: commonidentity.Identity{
@@ -219,9 +219,9 @@ func Test_ConversationList(t *testing.T) {
 					DialogID: "387f1afe-e42a-11ec-ad8f-1340414f9a51",
 					Self:     commonaddress.Address{},
 					Peer:     commonaddress.Address{},
-					TMCreate: "2022-04-18T03:22:17.995000Z",
-					TMUpdate: commondatabasehandler.DefaultTimeStamp,
-					TMDelete: commondatabasehandler.DefaultTimeStamp,
+					TMCreate: func() *time.Time { t := time.Date(2022, 4, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
+					TMUpdate: nil,
+					TMDelete: nil,
 				},
 			},
 		},
@@ -243,7 +243,7 @@ func Test_ConversationList(t *testing.T) {
 			ctx := context.Background()
 
 			for _, c := range tt.conversations {
-				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 				mockCache.EXPECT().ConversationSet(gomock.Any(), gomock.Any())
 				if err := h.ConversationCreate(ctx, c); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -270,7 +270,7 @@ func Test_ConversationUpdate(t *testing.T) {
 		id    uuid.UUID
 		field map[conversation.Field]any
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *conversation.Conversation
 	}{
 		{
@@ -294,7 +294,7 @@ func Test_ConversationUpdate(t *testing.T) {
 				},
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: func() *time.Time { t := time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
 			expectRes: &conversation.Conversation{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("00f151ba-2199-11f0-85be-9b26b400d0c2"),
@@ -311,9 +311,9 @@ func Test_ConversationUpdate(t *testing.T) {
 					Target: "+123456789",
 				},
 
-				TMCreate: "2020-04-18T03:22:17.995000Z",
-				TMUpdate: "2020-04-18T03:22:17.995000Z",
-				TMDelete: commondatabasehandler.DefaultTimeStamp,
+				TMCreate: func() *time.Time { t := time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
+				TMUpdate: func() *time.Time { t := time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
+				TMDelete: nil,
 			},
 		},
 	}
@@ -332,13 +332,13 @@ func Test_ConversationUpdate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().ConversationSet(ctx, gomock.Any())
 			if err := h.ConversationCreate(ctx, tt.conversation); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().ConversationSet(gomock.Any(), gomock.Any()).Return(nil)
 			if err := h.ConversationUpdate(ctx, tt.id, tt.field); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

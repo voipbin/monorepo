@@ -10,7 +10,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-queue-manager/models/queuecall"
-	"monorepo/bin-queue-manager/pkg/dbhandler"
 )
 
 // EventCallCallHangup handles call-manager call_hungup
@@ -26,7 +25,7 @@ func (h *queuecallHandler) EventCallCallHangup(ctx context.Context, referenceID 
 		return
 	}
 
-	if qc.TMEnd < dbhandler.DefaultTimeStamp || qc.Status == queuecall.StatusService {
+	if qc.TMEnd != nil || qc.Status == queuecall.StatusService {
 		// already done or other handler will deal with it.
 		// nothing to do.
 		return
@@ -52,7 +51,7 @@ func (h *queuecallHandler) EventCallConfbridgeJoined(ctx context.Context, refere
 		return
 	}
 
-	if qc.TMEnd < dbhandler.DefaultTimeStamp || qc.ConfbridgeID != confbridgeID {
+	if qc.TMEnd != nil || qc.ConfbridgeID != confbridgeID {
 		// already done or other handler will deal with it.
 		// nothing to do.
 		return
@@ -82,7 +81,7 @@ func (h *queuecallHandler) EventCallConfbridgeLeaved(ctx context.Context, refere
 	}
 
 	// validate the queuecall info
-	if qc.ConfbridgeID != confbridgeID || qc.TMEnd < dbhandler.DefaultTimeStamp {
+	if qc.ConfbridgeID != confbridgeID || qc.TMEnd != nil {
 		// queuecall is not valid.
 		return
 	}

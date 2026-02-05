@@ -1,6 +1,10 @@
 package provider
 
-import "github.com/gofrs/uuid"
+import (
+	"time"
+
+	"github.com/gofrs/uuid"
+)
 
 // Provider defines
 type Provider struct {
@@ -18,9 +22,9 @@ type Provider struct {
 	Detail string `json:"detail" db:"detail"`
 
 	// timestamp
-	TMCreate string `json:"tm_create" db:"tm_create"`
-	TMUpdate string `json:"tm_update" db:"tm_update"`
-	TMDelete string `json:"tm_delete" db:"tm_delete"`
+	TMCreate *time.Time `json:"tm_create" db:"tm_create"`
+	TMUpdate *time.Time `json:"tm_update" db:"tm_update"`
+	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"`
 }
 
 // Type defines provider's type.

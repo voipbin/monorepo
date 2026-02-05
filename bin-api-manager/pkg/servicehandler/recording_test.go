@@ -145,7 +145,7 @@ func Test_RecordingDelete(t *testing.T) {
 					ID:         uuid.FromStringOrNil("8f7a8b7e-8f1d-11ed-be94-07c28fd4c979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-				TMDelete: defaultTimestamp,
+				TMDelete: nil,
 			},
 
 			&cmrecording.WebhookMessage{
@@ -153,7 +153,7 @@ func Test_RecordingDelete(t *testing.T) {
 					ID:         uuid.FromStringOrNil("8f7a8b7e-8f1d-11ed-be94-07c28fd4c979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-				TMDelete: defaultTimestamp,
+				TMDelete: nil,
 			},
 		},
 	}

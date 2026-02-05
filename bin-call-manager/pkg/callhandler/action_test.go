@@ -3,6 +3,7 @@ package callhandler
 import (
 	"context"
 	"testing"
+	"time"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
@@ -197,13 +198,13 @@ func Test_ActionTimeoutNext(t *testing.T) {
 				ChannelID: "12a05228-e3fd-11ea-b55f-afd68e7aa755",
 				Action: fmaction.Action{
 					ID:        uuid.FromStringOrNil("b44bae7a-e3fc-11ea-a908-374a03455628"),
-					TMExecute: "2020-04-18T03:22:17.995000Z",
+					TMExecute: func() *time.Time { t := time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
 				},
 			},
 			&fmaction.Action{
 				ID:        uuid.FromStringOrNil("b44bae7a-e3fc-11ea-a908-374a03455628"),
 				Type:      fmaction.TypeAnswer,
-				TMExecute: "2020-04-18T03:22:17.995000Z",
+				TMExecute: func() *time.Time { t := time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
 			},
 			&channel.Channel{
 				ID: "12a05228-e3fd-11ea-b55f-afd68e7aa755",
@@ -1274,7 +1275,7 @@ func Test_ActionNext(t *testing.T) {
 
 			mockDB.EXPECT().CallSetActionNextHold(ctx, tt.call.ID, true).Return(nil)
 			mockReq.EXPECT().FlowV1ActiveflowGetNextAction(ctx, tt.call.ActiveflowID, tt.call.Action.ID).Return(tt.responseAction, nil)
-			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+			mockUtil.EXPECT().TimeNow().Return(utilhandler.TimeNow())
 			mockDB.EXPECT().CallSetActionAndActionNextHold(ctx, tt.call.ID, tt.responseAction, false).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.responseCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallUpdated, tt.responseCall)
@@ -1330,7 +1331,7 @@ func Test_actionExecuteHangup_reason(t *testing.T) {
 				},
 			},
 			responseChannel: &channel.Channel{
-				TMEnd: dbhandler.DefaultTimeStamp,
+				TMEnd: nil,
 			},
 			expectCause: ari.ChannelCauseUserBusy,
 		},
@@ -1428,7 +1429,7 @@ func Test_actionExecuteHangup_reference(t *testing.T) {
 				HangupCause: ari.ChannelCauseUserBusy,
 			},
 			responseChannel: &channel.Channel{
-				TMEnd: dbhandler.DefaultTimeStamp,
+				TMEnd: nil,
 			},
 
 			expectCause: ari.ChannelCauseUserBusy,
@@ -1477,7 +1478,7 @@ func Test_actionExecuteHangup_reference(t *testing.T) {
 				HangupCause: ari.ChannelCauseNoRouteDestination,
 			},
 			responseChannel: &channel.Channel{
-				TMEnd: dbhandler.DefaultTimeStamp,
+				TMEnd: nil,
 			},
 
 			expectCause: ari.ChannelCauseNoRouteDestination,
@@ -1544,7 +1545,7 @@ func Test_ActionNextForce(t *testing.T) {
 
 			responseChannel: &channel.Channel{
 				ID:    "d3234c52-264f-11ee-951a-83d7ae2f2751",
-				TMEnd: dbhandler.DefaultTimeStamp,
+				TMEnd: nil,
 			},
 		},
 	}

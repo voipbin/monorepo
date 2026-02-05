@@ -6,6 +6,7 @@ import (
 	context "context"
 	"database/sql"
 	"errors"
+	"time"
 
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -47,9 +48,9 @@ type DBHandler interface {
 
 	// Queuecall status operations
 	QueuecallSetStatusConnecting(ctx context.Context, id uuid.UUID, serviceAgentID uuid.UUID) error
-	QueuecallSetStatusService(ctx context.Context, id uuid.UUID, durationWaiting int, ts string) error
-	QueuecallSetStatusAbandoned(ctx context.Context, id uuid.UUID, durationWaiting int, ts string) error
-	QueuecallSetStatusDone(ctx context.Context, id uuid.UUID, durationService int, ts string) error
+	QueuecallSetStatusService(ctx context.Context, id uuid.UUID, durationWaiting int, ts *time.Time) error
+	QueuecallSetStatusAbandoned(ctx context.Context, id uuid.UUID, durationWaiting int, ts *time.Time) error
+	QueuecallSetStatusDone(ctx context.Context, id uuid.UUID, durationService int, ts *time.Time) error
 	QueuecallSetStatusWaiting(ctx context.Context, id uuid.UUID) error
 	QueuecallSetStatusKicking(ctx context.Context, id uuid.UUID) error
 }

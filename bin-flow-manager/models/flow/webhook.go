@@ -2,6 +2,7 @@ package flow
 
 import (
 	"encoding/json"
+	"time"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-flow-manager/models/action"
@@ -22,9 +23,9 @@ type WebhookMessage struct {
 
 	OnCompleteFlowID uuid.UUID `json:"on_complete_flow_id,omitempty"`
 
-	TMCreate string `json:"tm_create,omitempty"`
-	TMUpdate string `json:"tm_update,omitempty"`
-	TMDelete string `json:"tm_delete,omitempty"`
+	TMCreate *time.Time `json:"tm_create"`
+	TMUpdate *time.Time `json:"tm_update"`
+	TMDelete *time.Time `json:"tm_delete"`
 }
 
 // ConvertWebhookMessage converts to the event

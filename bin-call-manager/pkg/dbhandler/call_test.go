@@ -1,6 +1,8 @@
 package dbhandler
 
 import (
+	"time"
+	"monorepo/bin-call-manager/pkg/testhelper"
 	"context"
 	"fmt"
 	"reflect"
@@ -27,7 +29,7 @@ func Test_CallCreate(t *testing.T) {
 	type test struct {
 		name            string
 		call            *call.Call
-		responseCurTime string
+		responseCurTime *time.Time
 
 		expectRes *call.Call
 	}
@@ -93,7 +95,7 @@ func Test_CallCreate(t *testing.T) {
 					},
 				},
 			},
-			"2020-04-18T03:22:17.995000Z",
+			testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
 
 			&call.Call{
 				Identity: commonidentity.Identity{
@@ -153,13 +155,13 @@ func Test_CallCreate(t *testing.T) {
 					},
 				},
 
-				TMProgressing: DefaultTimeStamp,
-				TMRinging:     DefaultTimeStamp,
-				TMHangup:      DefaultTimeStamp,
+				TMProgressing: nil,
+				TMRinging:     nil,
+				TMHangup:      nil,
 
-				TMCreate: "2020-04-18T03:22:17.995000Z",
-				TMUpdate: DefaultTimeStamp,
-				TMDelete: DefaultTimeStamp,
+				TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMUpdate: nil,
+				TMDelete: nil,
 			},
 		},
 		{
@@ -170,7 +172,7 @@ func Test_CallCreate(t *testing.T) {
 					ID: uuid.FromStringOrNil("64e31a36-b6fc-4df5-9a66-48f68ad60a70"),
 				},
 			},
-			"2020-04-18T03:22:17.995000Z",
+			testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
 
 			&call.Call{
 				Identity: commonidentity.Identity{
@@ -181,13 +183,13 @@ func Test_CallCreate(t *testing.T) {
 				Data:           map[call.DataType]string{},
 				Dialroutes:     []rmroute.Route{},
 
-				TMProgressing: DefaultTimeStamp,
-				TMRinging:     DefaultTimeStamp,
-				TMHangup:      DefaultTimeStamp,
+				TMProgressing: nil,
+				TMRinging:     nil,
+				TMHangup:      nil,
 
-				TMCreate: "2020-04-18T03:22:17.995000Z",
-				TMUpdate: DefaultTimeStamp,
-				TMDelete: DefaultTimeStamp,
+				TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMUpdate: nil,
+				TMDelete: nil,
 			},
 		},
 	}
@@ -208,7 +210,7 @@ func Test_CallCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallCreate(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -237,7 +239,7 @@ func Test_CallList(t *testing.T) {
 
 		filters map[call.Field]any
 
-		responseCurTime string
+		responseCurTime *time.Time
 
 		expectRes []*call.Call
 	}
@@ -265,7 +267,7 @@ func Test_CallList(t *testing.T) {
 				call.FieldDeleted:    false,
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
 
 			expectRes: []*call.Call{
 				{
@@ -279,13 +281,13 @@ func Test_CallList(t *testing.T) {
 					Data:           map[call.DataType]string{},
 					Dialroutes:     []rmroute.Route{},
 
-					TMProgressing: DefaultTimeStamp,
-					TMRinging:     DefaultTimeStamp,
-					TMHangup:      DefaultTimeStamp,
+					TMProgressing: nil,
+					TMRinging:     nil,
+					TMHangup:      nil,
 
-					TMCreate: "2020-04-18T03:22:17.995000Z",
-					TMUpdate: DefaultTimeStamp,
-					TMDelete: DefaultTimeStamp,
+					TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+					TMUpdate: nil,
+					TMDelete: nil,
 				},
 				{
 					Identity: commonidentity.Identity{
@@ -298,13 +300,13 @@ func Test_CallList(t *testing.T) {
 					Data:           map[call.DataType]string{},
 					Dialroutes:     []rmroute.Route{},
 
-					TMProgressing: DefaultTimeStamp,
-					TMRinging:     DefaultTimeStamp,
-					TMHangup:      DefaultTimeStamp,
+					TMProgressing: nil,
+					TMRinging:     nil,
+					TMHangup:      nil,
 
-					TMCreate: "2020-04-18T03:22:17.995000Z",
-					TMUpdate: DefaultTimeStamp,
-					TMDelete: DefaultTimeStamp,
+					TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+					TMUpdate: nil,
+					TMDelete: nil,
 				},
 			},
 		},
@@ -317,7 +319,7 @@ func Test_CallList(t *testing.T) {
 				call.FieldDeleted:    false,
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
 			expectRes:       []*call.Call{},
 		},
 	}
@@ -339,7 +341,7 @@ func Test_CallList(t *testing.T) {
 			ctx := context.Background()
 
 			for _, c := range tt.calls {
-				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 				mockCache.EXPECT().CallSet(ctx, gomock.Any())
 				_ = h.CallCreate(ctx, c)
 			}
@@ -366,7 +368,7 @@ func Test_CallList_delete(t *testing.T) {
 
 		deleteCallIDs []uuid.UUID
 
-		responseCurTime string
+		responseCurTime *time.Time
 
 		expectRes []*call.Call
 	}
@@ -394,7 +396,7 @@ func Test_CallList_delete(t *testing.T) {
 				uuid.FromStringOrNil("e9decd77-1c77-4ef0-bb92-547fd40cd911"),
 			},
 
-			"2020-04-18T03:22:17.995000Z",
+			testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
 
 			[]*call.Call{
 				{
@@ -408,13 +410,13 @@ func Test_CallList_delete(t *testing.T) {
 					Data:           map[call.DataType]string{},
 					Dialroutes:     []rmroute.Route{},
 
-					TMProgressing: DefaultTimeStamp,
-					TMRinging:     DefaultTimeStamp,
-					TMHangup:      DefaultTimeStamp,
+					TMProgressing: nil,
+					TMRinging:     nil,
+					TMHangup:      nil,
 
-					TMCreate: "2020-04-18T03:22:17.995000Z",
-					TMUpdate: DefaultTimeStamp,
-					TMDelete: DefaultTimeStamp,
+					TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+					TMUpdate: nil,
+					TMDelete: nil,
 				},
 			},
 		},
@@ -437,14 +439,14 @@ func Test_CallList_delete(t *testing.T) {
 			ctx := context.Background()
 
 			for _, c := range tt.calls {
-				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 				mockCache.EXPECT().CallSet(ctx, gomock.Any())
 				_ = h.CallCreate(ctx, c)
 			}
 
 			// delete
 			for _, id := range tt.deleteCallIDs {
-				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 				mockCache.EXPECT().CallSet(ctx, gomock.Any())
 				_ = h.CallDelete(ctx, id)
 			}
@@ -474,7 +476,7 @@ func Test_CallSetBridgeID(t *testing.T) {
 
 		id              uuid.UUID
 		bridgeID        string
-		responseCurTime string
+		responseCurTime *time.Time
 
 		expectRes *call.Call
 	}
@@ -491,7 +493,7 @@ func Test_CallSetBridgeID(t *testing.T) {
 
 			uuid.FromStringOrNil("853a2b18-5f8b-11ed-ba64-d35836e18de8"),
 			"c6d46f04-5f89-11ed-98b2-57f1fabc3cf4",
-			"2020-04-18T03:22:17.995000Z",
+			testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
 
 			&call.Call{
 				Identity: commonidentity.Identity{
@@ -507,13 +509,13 @@ func Test_CallSetBridgeID(t *testing.T) {
 
 				Dialroutes: []rmroute.Route{},
 
-				TMCreate: "2020-04-18T03:22:17.995000Z",
-				TMUpdate: "2020-04-18T03:22:17.995000Z",
-				TMDelete: DefaultTimeStamp,
+				TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMUpdate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMDelete: nil,
 
-				TMRinging:     DefaultTimeStamp,
-				TMProgressing: DefaultTimeStamp,
-				TMHangup:      DefaultTimeStamp,
+				TMRinging:     nil,
+				TMProgressing: nil,
+				TMHangup:      nil,
 			},
 		},
 	}
@@ -534,13 +536,13 @@ func Test_CallSetBridgeID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallCreate(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CallGet(ctx, tt.id).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallSetBridgeID(ctx, tt.id, tt.bridgeID); err != nil {
@@ -569,7 +571,7 @@ func Test_CallSetStatus(t *testing.T) {
 		id     uuid.UUID
 		status call.Status
 
-		responseCurtime string
+		responseCurtime *time.Time
 
 		expectRes *call.Call
 	}
@@ -590,7 +592,7 @@ func Test_CallSetStatus(t *testing.T) {
 			uuid.FromStringOrNil("93d7aea3-4a93-4c58-8bce-d956a0f73ad6"),
 			call.StatusTerminating,
 
-			"2020-04-18T03:22:17.995000Z",
+			testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
 
 			&call.Call{
 				Identity: commonidentity.Identity{
@@ -609,13 +611,13 @@ func Test_CallSetStatus(t *testing.T) {
 
 				Dialroutes: []rmroute.Route{},
 
-				TMCreate: "2020-04-18T03:22:17.995000Z",
-				TMUpdate: "2020-04-18T03:22:17.995000Z",
-				TMDelete: DefaultTimeStamp,
+				TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMUpdate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMDelete: nil,
 
-				TMProgressing: DefaultTimeStamp,
-				TMRinging:     DefaultTimeStamp,
-				TMHangup:      DefaultTimeStamp,
+				TMProgressing: nil,
+				TMRinging:     nil,
+				TMHangup:      nil,
 			},
 		},
 	}
@@ -636,13 +638,13 @@ func Test_CallSetStatus(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurtime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurtime)
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallCreate(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurtime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurtime)
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallSetStatus(ctx, tt.id, tt.status); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -670,7 +672,7 @@ func Test_CallGetByChannelID(t *testing.T) {
 
 		channelID string
 
-		responseCurtime string
+		responseCurtime *time.Time
 		expectCall      call.Call
 	}
 
@@ -690,7 +692,7 @@ func Test_CallGetByChannelID(t *testing.T) {
 
 			"54963ab2-6bc8-11ed-9acd-8325f591cc80",
 
-			"2020-04-18T03:22:17.995000Z",
+			testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
 			call.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("5462dfbe-6bc8-11ed-b128-57813cbc586f"),
@@ -706,13 +708,13 @@ func Test_CallGetByChannelID(t *testing.T) {
 				Data:       map[call.DataType]string{},
 				Dialroutes: []rmroute.Route{},
 
-				TMRinging:     DefaultTimeStamp,
-				TMProgressing: DefaultTimeStamp,
-				TMHangup:      DefaultTimeStamp,
+				TMRinging:     nil,
+				TMProgressing: nil,
+				TMHangup:      nil,
 
-				TMCreate: "2020-04-18T03:22:17.995000Z",
-				TMUpdate: DefaultTimeStamp,
-				TMDelete: DefaultTimeStamp,
+				TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMUpdate: nil,
+				TMDelete: nil,
 			},
 		},
 		{
@@ -735,7 +737,7 @@ func Test_CallGetByChannelID(t *testing.T) {
 
 			"79b8a8b6-6bc8-11ed-8ace-af5dbf486a09",
 
-			"2020-04-18T03:22:17.995000Z",
+			testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
 			call.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("79dc4e7e-6bc8-11ed-a082-2f57dba9cd50"),
@@ -755,13 +757,13 @@ func Test_CallGetByChannelID(t *testing.T) {
 				Data:       map[call.DataType]string{},
 				Dialroutes: []rmroute.Route{},
 
-				TMRinging:     DefaultTimeStamp,
-				TMProgressing: DefaultTimeStamp,
-				TMHangup:      DefaultTimeStamp,
+				TMRinging:     nil,
+				TMProgressing: nil,
+				TMHangup:      nil,
 
-				TMCreate: "2020-04-18T03:22:17.995000Z",
-				TMUpdate: DefaultTimeStamp,
-				TMDelete: DefaultTimeStamp,
+				TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMUpdate: nil,
+				TMDelete: nil,
 			},
 		},
 	}
@@ -782,7 +784,7 @@ func Test_CallGetByChannelID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurtime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurtime)
 			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
 			if err := h.CallCreate(ctx, &tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -810,7 +812,7 @@ func Test_CallSetHangup(t *testing.T) {
 		reason   call.HangupReason
 		hangupBy call.HangupBy
 
-		responseCurTime string
+		responseCurTime *time.Time
 
 		expectCall call.Call
 	}
@@ -831,14 +833,14 @@ func Test_CallSetHangup(t *testing.T) {
 				Status:    call.StatusRinging,
 				Direction: call.DirectionIncoming,
 
-				TMCreate: "2020-04-18T03:22:17.995000Z",
+				TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
 			},
 
 			uuid.FromStringOrNil("0ffea974-6bc9-11ed-96aa-b35964df6757"),
 			call.HangupReasonNormal,
 			call.HangupByLocal,
 
-			"2020-04-18T03:22:18.995000Z",
+			testhelper.TimePtr("2020-04-18T03:22:18.995000Z"),
 
 			call.Call{
 				Identity: commonidentity.Identity{
@@ -861,13 +863,13 @@ func Test_CallSetHangup(t *testing.T) {
 				Data:         map[call.DataType]string{},
 				Dialroutes:   []rmroute.Route{},
 
-				TMRinging:     DefaultTimeStamp,
-				TMProgressing: DefaultTimeStamp,
-				TMHangup:      "2020-04-18T03:22:18.995000Z",
+				TMRinging:     nil,
+				TMProgressing: nil,
+				TMHangup: testhelper.TimePtr("2020-04-18T03:22:18.995000Z"),
 
-				TMCreate: "2020-04-18T03:22:18.995000Z",
-				TMUpdate: "2020-04-18T03:22:18.995000Z",
-				TMDelete: DefaultTimeStamp,
+				TMCreate: testhelper.TimePtr("2020-04-18T03:22:18.995000Z"),
+				TMUpdate: testhelper.TimePtr("2020-04-18T03:22:18.995000Z"),
+				TMDelete: nil,
 			},
 		},
 	}
@@ -885,13 +887,13 @@ func Test_CallSetHangup(t *testing.T) {
 				cache:       mockCache,
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
 			if err := h.CallCreate(context.Background(), tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
 			if err := h.CallSetHangup(context.Background(), tt.id, tt.reason, tt.hangupBy); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -919,7 +921,7 @@ func Test_CallSetFlowID(t *testing.T) {
 
 		flowID uuid.UUID
 
-		responseCurTime string
+		responseCurTime *time.Time
 
 		expectCall *call.Call
 	}
@@ -935,7 +937,7 @@ func Test_CallSetFlowID(t *testing.T) {
 
 			uuid.FromStringOrNil("52f4a50a-8cc7-11ea-87f7-f36a8e4090eb"),
 
-			"2020-04-18T03:22:17.995000Z",
+			testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
 			&call.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("3599ce5e-9357-11ea-b215-f7ddc7ee506e"),
@@ -949,13 +951,13 @@ func Test_CallSetFlowID(t *testing.T) {
 				Data:       map[call.DataType]string{},
 				Dialroutes: []rmroute.Route{},
 
-				TMRinging:     DefaultTimeStamp,
-				TMProgressing: DefaultTimeStamp,
-				TMHangup:      DefaultTimeStamp,
+				TMRinging:     nil,
+				TMProgressing: nil,
+				TMHangup:      nil,
 
-				TMCreate: "2020-04-18T03:22:17.995000Z",
-				TMUpdate: "2020-04-18T03:22:17.995000Z",
-				TMDelete: DefaultTimeStamp,
+				TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMUpdate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMDelete: nil,
 			},
 		},
 	}
@@ -975,13 +977,13 @@ func Test_CallSetFlowID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallCreate(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallSetFlowID(ctx, tt.call.ID, tt.flowID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1009,7 +1011,7 @@ func Test_CallSetConfbridgeID(t *testing.T) {
 
 		confbridgeID uuid.UUID
 
-		responseCurTime string
+		responseCurTime *time.Time
 
 		expectCall *call.Call
 	}
@@ -1024,7 +1026,7 @@ func Test_CallSetConfbridgeID(t *testing.T) {
 			},
 
 			uuid.FromStringOrNil("62faff48-9358-11ea-8455-8fd1af79d7dc"),
-			"2020-04-18T03:22:17.995000Z",
+			testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
 
 			&call.Call{
 				Identity: commonidentity.Identity{
@@ -1039,13 +1041,13 @@ func Test_CallSetConfbridgeID(t *testing.T) {
 				Data:       map[call.DataType]string{},
 				Dialroutes: []rmroute.Route{},
 
-				TMRinging:     DefaultTimeStamp,
-				TMProgressing: DefaultTimeStamp,
-				TMHangup:      DefaultTimeStamp,
+				TMRinging:     nil,
+				TMProgressing: nil,
+				TMHangup:      nil,
 
-				TMCreate: "2020-04-18T03:22:17.995000Z",
-				TMUpdate: "2020-04-18T03:22:17.995000Z",
-				TMDelete: DefaultTimeStamp,
+				TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMUpdate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMDelete: nil,
 			},
 		},
 	}
@@ -1063,13 +1065,13 @@ func Test_CallSetConfbridgeID(t *testing.T) {
 				cache:       mockCache,
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
 			if err := h.CallCreate(context.Background(), tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(gomock.Any(), gomock.Any())
 			if err := h.CallSetConfbridgeID(context.Background(), tt.call.ID, tt.confbridgeID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1098,7 +1100,7 @@ func Test_CallSetActionAndActionNextHold(t *testing.T) {
 		action *fmaction.Action
 		hold   bool
 
-		responseCurTime string
+		responseCurTime *time.Time
 
 		expectCall *call.Call
 	}
@@ -1129,7 +1131,7 @@ func Test_CallSetActionAndActionNextHold(t *testing.T) {
 			},
 			false,
 
-			"2020-04-18T03:22:17.995000Z",
+			testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
 			&call.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("1d55d302-8d02-11ea-992f-53a0113a8a9b"),
@@ -1157,13 +1159,13 @@ func Test_CallSetActionAndActionNextHold(t *testing.T) {
 				Data:           map[call.DataType]string{},
 				Dialroutes:     []rmroute.Route{},
 
-				TMRinging:     DefaultTimeStamp,
-				TMProgressing: DefaultTimeStamp,
-				TMHangup:      DefaultTimeStamp,
+				TMRinging:     nil,
+				TMProgressing: nil,
+				TMHangup:      nil,
 
-				TMCreate: "2020-04-18T03:22:17.995000Z",
-				TMUpdate: "2020-04-18T03:22:17.995000Z",
-				TMDelete: DefaultTimeStamp,
+				TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMUpdate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMDelete: nil,
 			},
 		},
 		{
@@ -1188,7 +1190,7 @@ func Test_CallSetActionAndActionNextHold(t *testing.T) {
 			},
 			false,
 
-			"2020-04-18T03:22:17.995000Z",
+			testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
 			&call.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("964b060e-8d04-11ea-bc42-93d5d0871556"),
@@ -1213,13 +1215,13 @@ func Test_CallSetActionAndActionNextHold(t *testing.T) {
 				Data:           map[call.DataType]string{},
 				Dialroutes:     []rmroute.Route{},
 
-				TMRinging:     DefaultTimeStamp,
-				TMProgressing: DefaultTimeStamp,
-				TMHangup:      DefaultTimeStamp,
+				TMRinging:     nil,
+				TMProgressing: nil,
+				TMHangup:      nil,
 
-				TMCreate: "2020-04-18T03:22:17.995000Z",
-				TMUpdate: "2020-04-18T03:22:17.995000Z",
-				TMDelete: DefaultTimeStamp,
+				TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMUpdate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMDelete: nil,
 			},
 		},
 	}
@@ -1239,13 +1241,13 @@ func Test_CallSetActionAndActionNextHold(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallCreate(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallSetActionAndActionNextHold(ctx, tt.call.ID, tt.action, tt.hold); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1272,7 +1274,7 @@ func Test_CallSetMasterCallID(t *testing.T) {
 		call         *call.Call
 		masterCallID uuid.UUID
 
-		responseCurTime string
+		responseCurTime *time.Time
 
 		expectCall *call.Call
 	}
@@ -1289,7 +1291,7 @@ func Test_CallSetMasterCallID(t *testing.T) {
 			},
 			uuid.FromStringOrNil("4a6ce0aa-24fc-11eb-aec0-4b97b9a2422a"),
 
-			"2020-04-18T03:22:17.995000Z",
+			testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
 			&call.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("14649d2c-24fc-11eb-bb0b-9bd6970f725f"),
@@ -1302,13 +1304,13 @@ func Test_CallSetMasterCallID(t *testing.T) {
 				Dialroutes:     []rmroute.Route{},
 				MasterCallID:   uuid.FromStringOrNil("4a6ce0aa-24fc-11eb-aec0-4b97b9a2422a"),
 
-				TMRinging:     DefaultTimeStamp,
-				TMProgressing: DefaultTimeStamp,
-				TMHangup:      DefaultTimeStamp,
+				TMRinging:     nil,
+				TMProgressing: nil,
+				TMHangup:      nil,
 
-				TMCreate: "2020-04-18T03:22:17.995000Z",
-				TMUpdate: "2020-04-18T03:22:17.995000Z",
-				TMDelete: DefaultTimeStamp,
+				TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMUpdate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMDelete: nil,
 			},
 		},
 		{
@@ -1321,7 +1323,7 @@ func Test_CallSetMasterCallID(t *testing.T) {
 			},
 			uuid.Nil,
 
-			"2020-04-18T03:22:17.995000Z",
+			testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
 			&call.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("665db8f2-2501-11eb-86ce-f3a50eef6f26"),
@@ -1332,13 +1334,13 @@ func Test_CallSetMasterCallID(t *testing.T) {
 				Data:           map[call.DataType]string{},
 				Dialroutes:     []rmroute.Route{},
 
-				TMRinging:     DefaultTimeStamp,
-				TMProgressing: DefaultTimeStamp,
-				TMHangup:      DefaultTimeStamp,
+				TMRinging:     nil,
+				TMProgressing: nil,
+				TMHangup:      nil,
 
-				TMCreate: "2020-04-18T03:22:17.995000Z",
-				TMUpdate: "2020-04-18T03:22:17.995000Z",
-				TMDelete: DefaultTimeStamp,
+				TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMUpdate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMDelete: nil,
 			},
 		},
 	}
@@ -1358,13 +1360,13 @@ func Test_CallSetMasterCallID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallCreate(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallSetMasterCallID(ctx, tt.call.ID, tt.masterCallID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1391,7 +1393,7 @@ func Test_CallSetRecordingID(t *testing.T) {
 		call     *call.Call
 		reocrdID uuid.UUID
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectCall      *call.Call
 	}
 
@@ -1404,11 +1406,11 @@ func Test_CallSetRecordingID(t *testing.T) {
 				},
 				ChannelID: "4e2fe520-282b-11eb-ad66-b777dce59261",
 				Type:      call.TypeFlow,
-				TMCreate:  "2020-04-18T03:22:17.995000Z",
+				TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
 			},
 			uuid.FromStringOrNil("4e847572-282b-11eb-9c58-97622e4406e2"),
 
-			"2020-04-18T03:22:17.995000Z",
+			testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
 			&call.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("46ab9ad8-282b-11eb-82c3-6782faf5e030"),
@@ -1422,13 +1424,13 @@ func Test_CallSetRecordingID(t *testing.T) {
 
 				RecordingID: uuid.FromStringOrNil("4e847572-282b-11eb-9c58-97622e4406e2"),
 
-				TMRinging:     DefaultTimeStamp,
-				TMProgressing: DefaultTimeStamp,
-				TMHangup:      DefaultTimeStamp,
+				TMRinging:     nil,
+				TMProgressing: nil,
+				TMHangup:      nil,
 
-				TMCreate: "2020-04-18T03:22:17.995000Z",
-				TMUpdate: "2020-04-18T03:22:17.995000Z",
-				TMDelete: DefaultTimeStamp,
+				TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMUpdate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMDelete: nil,
 			},
 		},
 		{
@@ -1438,11 +1440,11 @@ func Test_CallSetRecordingID(t *testing.T) {
 					ID: uuid.FromStringOrNil("7b3e197e-282b-11eb-956d-4feb054947db"),
 				},
 				Type:     call.TypeFlow,
-				TMCreate: "2020-04-18T03:22:17.995000Z",
+				TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
 			},
 			uuid.Nil,
 
-			"2020-04-18T03:22:17.995000Z",
+			testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
 			&call.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("7b3e197e-282b-11eb-956d-4feb054947db"),
@@ -1453,13 +1455,13 @@ func Test_CallSetRecordingID(t *testing.T) {
 				Data:           map[call.DataType]string{},
 				Dialroutes:     []rmroute.Route{},
 
-				TMRinging:     DefaultTimeStamp,
-				TMProgressing: DefaultTimeStamp,
-				TMHangup:      DefaultTimeStamp,
+				TMRinging:     nil,
+				TMProgressing: nil,
+				TMHangup:      nil,
 
-				TMCreate: "2020-04-18T03:22:17.995000Z",
-				TMUpdate: "2020-04-18T03:22:17.995000Z",
-				TMDelete: DefaultTimeStamp,
+				TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMUpdate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMDelete: nil,
 			},
 		},
 	}
@@ -1479,13 +1481,13 @@ func Test_CallSetRecordingID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallCreate(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallSetRecordingID(ctx, tt.call.ID, tt.reocrdID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1513,7 +1515,7 @@ func Test_CallSetExternalMediaID(t *testing.T) {
 
 		externalMediaID uuid.UUID
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectCall      *call.Call
 	}
 
@@ -1528,7 +1530,7 @@ func Test_CallSetExternalMediaID(t *testing.T) {
 
 			uuid.FromStringOrNil("94202c28-96f3-11ed-9327-176b7622fb32"),
 
-			"2020-04-18T03:22:17.995000Z",
+			testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
 			&call.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("93eef900-96f3-11ed-9ce1-3f97da39b9d8"),
@@ -1540,13 +1542,13 @@ func Test_CallSetExternalMediaID(t *testing.T) {
 
 				ExternalMediaID: uuid.FromStringOrNil("94202c28-96f3-11ed-9327-176b7622fb32"),
 
-				TMRinging:     DefaultTimeStamp,
-				TMProgressing: DefaultTimeStamp,
-				TMHangup:      DefaultTimeStamp,
+				TMRinging:     nil,
+				TMProgressing: nil,
+				TMHangup:      nil,
 
-				TMCreate: "2020-04-18T03:22:17.995000Z",
-				TMUpdate: "2020-04-18T03:22:17.995000Z",
-				TMDelete: DefaultTimeStamp,
+				TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMUpdate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMDelete: nil,
 			},
 		},
 	}
@@ -1566,13 +1568,13 @@ func Test_CallSetExternalMediaID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallCreate(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallSetExternalMediaID(ctx, tt.call.ID, tt.externalMediaID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1602,7 +1604,7 @@ func Test_CallSetForRouteFailover(t *testing.T) {
 		channelID   string
 		dialrouteID uuid.UUID
 
-		responseCurTime string
+		responseCurTime *time.Time
 
 		expectRes *call.Call
 	}
@@ -1622,7 +1624,7 @@ func Test_CallSetForRouteFailover(t *testing.T) {
 			"06372bc6-6036-11ed-bd92-7793e1da99bd",
 			uuid.FromStringOrNil("11441a56-6036-11ed-9ac4-3b51fc15b1a1"),
 
-			"2020-04-18T03:22:17.995000Z",
+			testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
 			&call.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("eff7e968-6035-11ed-b494-17ddee07f371"),
@@ -1635,13 +1637,13 @@ func Test_CallSetForRouteFailover(t *testing.T) {
 				DialrouteID:    uuid.FromStringOrNil("11441a56-6036-11ed-9ac4-3b51fc15b1a1"),
 				Dialroutes:     []rmroute.Route{},
 
-				TMRinging:     DefaultTimeStamp,
-				TMProgressing: DefaultTimeStamp,
-				TMHangup:      DefaultTimeStamp,
+				TMRinging:     nil,
+				TMProgressing: nil,
+				TMHangup:      nil,
 
-				TMCreate: "2020-04-18T03:22:17.995000Z",
-				TMUpdate: "2020-04-18T03:22:17.995000Z",
-				TMDelete: DefaultTimeStamp,
+				TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMUpdate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMDelete: nil,
 			},
 		},
 	}
@@ -1661,13 +1663,13 @@ func Test_CallSetForRouteFailover(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallCreate(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallSetForRouteFailover(ctx, tt.id, tt.channelID, tt.dialrouteID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1695,7 +1697,7 @@ func Test_CallSetActionNextHold(t *testing.T) {
 		call *call.Call
 		hold bool
 
-		responseCurTime string
+		responseCurTime *time.Time
 
 		expectCall *call.Call
 	}
@@ -1710,7 +1712,7 @@ func Test_CallSetActionNextHold(t *testing.T) {
 			},
 			true,
 
-			"2020-04-18T03:22:17.995000Z",
+			testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
 			&call.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("b347a946-6bab-11ed-845d-3fd878a04427"),
@@ -1721,13 +1723,13 @@ func Test_CallSetActionNextHold(t *testing.T) {
 				Data:           map[call.DataType]string{},
 				Dialroutes:     []rmroute.Route{},
 
-				TMRinging:     DefaultTimeStamp,
-				TMProgressing: DefaultTimeStamp,
-				TMHangup:      DefaultTimeStamp,
+				TMRinging:     nil,
+				TMProgressing: nil,
+				TMHangup:      nil,
 
-				TMCreate: "2020-04-18T03:22:17.995000Z",
-				TMUpdate: "2020-04-18T03:22:17.995000Z",
-				TMDelete: DefaultTimeStamp,
+				TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMUpdate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMDelete: nil,
 			},
 		},
 		{
@@ -1739,7 +1741,7 @@ func Test_CallSetActionNextHold(t *testing.T) {
 			},
 			false,
 
-			"2020-04-18T03:22:17.995000Z",
+			testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
 			&call.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("10ecffc8-6bad-11ed-89dd-7bd54d2b1b6b"),
@@ -1750,13 +1752,13 @@ func Test_CallSetActionNextHold(t *testing.T) {
 				Data:           map[call.DataType]string{},
 				Dialroutes:     []rmroute.Route{},
 
-				TMRinging:     DefaultTimeStamp,
-				TMProgressing: DefaultTimeStamp,
-				TMHangup:      DefaultTimeStamp,
+				TMRinging:     nil,
+				TMProgressing: nil,
+				TMHangup:      nil,
 
-				TMCreate: "2020-04-18T03:22:17.995000Z",
-				TMUpdate: "2020-04-18T03:22:17.995000Z",
-				TMDelete: DefaultTimeStamp,
+				TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMUpdate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMDelete: nil,
 			},
 		},
 	}
@@ -1776,13 +1778,13 @@ func Test_CallSetActionNextHold(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallCreate(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallSetActionNextHold(ctx, tt.call.ID, tt.hold); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1810,7 +1812,7 @@ func Test_CallDelete(t *testing.T) {
 
 		id uuid.UUID
 
-		responseCurTime string
+		responseCurTime *time.Time
 
 		expectRes call.Call
 	}
@@ -1825,7 +1827,7 @@ func Test_CallDelete(t *testing.T) {
 			},
 
 			uuid.FromStringOrNil("407a8f3a-0fed-45b6-9587-a963e39c91ec"),
-			"2020-04-18T03:22:18.995000Z",
+			testhelper.TimePtr("2020-04-18T03:22:18.995000Z"),
 
 			call.Call{
 				Identity: commonidentity.Identity{
@@ -1841,13 +1843,13 @@ func Test_CallDelete(t *testing.T) {
 				Data:       map[call.DataType]string{},
 				Dialroutes: []rmroute.Route{},
 
-				TMRinging:     DefaultTimeStamp,
-				TMProgressing: DefaultTimeStamp,
-				TMHangup:      DefaultTimeStamp,
+				TMRinging:     nil,
+				TMProgressing: nil,
+				TMHangup:      nil,
 
-				TMCreate: "2020-04-18T03:22:18.995000Z",
-				TMUpdate: "2020-04-18T03:22:18.995000Z",
-				TMDelete: "2020-04-18T03:22:18.995000Z",
+				TMCreate: testhelper.TimePtr("2020-04-18T03:22:18.995000Z"),
+				TMUpdate: testhelper.TimePtr("2020-04-18T03:22:18.995000Z"),
+				TMDelete: testhelper.TimePtr("2020-04-18T03:22:18.995000Z"),
 			},
 		},
 	}
@@ -1866,13 +1868,13 @@ func Test_CallDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallCreate(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallDelete(ctx, tt.id); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1899,7 +1901,7 @@ func Test_CallSetData(t *testing.T) {
 
 		id              uuid.UUID
 		data            map[call.DataType]string
-		responseCurTime string
+		responseCurTime *time.Time
 
 		expectRes *call.Call
 	}
@@ -1918,7 +1920,7 @@ func Test_CallSetData(t *testing.T) {
 			map[call.DataType]string{
 				call.DataTypeExecuteNextMasterOnHangup: "false",
 			},
-			"2020-04-18T03:22:17.995000Z",
+			testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
 
 			&call.Call{
 				Identity: commonidentity.Identity{
@@ -1934,13 +1936,13 @@ func Test_CallSetData(t *testing.T) {
 
 				Dialroutes: []rmroute.Route{},
 
-				TMCreate: "2020-04-18T03:22:17.995000Z",
-				TMUpdate: "2020-04-18T03:22:17.995000Z",
-				TMDelete: DefaultTimeStamp,
+				TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMUpdate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMDelete: nil,
 
-				TMRinging:     DefaultTimeStamp,
-				TMProgressing: DefaultTimeStamp,
-				TMHangup:      DefaultTimeStamp,
+				TMRinging:     nil,
+				TMProgressing: nil,
+				TMHangup:      nil,
 			},
 		},
 	}
@@ -1961,13 +1963,13 @@ func Test_CallSetData(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallCreate(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CallGet(ctx, tt.id).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallSetData(ctx, tt.id, tt.data); err != nil {
@@ -1994,7 +1996,7 @@ func Test_CallSetMuteDirection(t *testing.T) {
 
 		id              uuid.UUID
 		mute            call.MuteDirection
-		responseCurTime string
+		responseCurTime *time.Time
 
 		expectRes *call.Call
 	}
@@ -2011,7 +2013,7 @@ func Test_CallSetMuteDirection(t *testing.T) {
 
 			uuid.FromStringOrNil("21771598-d243-11ed-bbd2-b39e5d43e568"),
 			call.MuteDirectionBoth,
-			"2020-04-18T03:22:17.995000Z",
+			testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
 
 			&call.Call{
 				Identity: commonidentity.Identity{
@@ -2025,13 +2027,13 @@ func Test_CallSetMuteDirection(t *testing.T) {
 
 				Dialroutes: []rmroute.Route{},
 
-				TMCreate: "2020-04-18T03:22:17.995000Z",
-				TMUpdate: "2020-04-18T03:22:17.995000Z",
-				TMDelete: DefaultTimeStamp,
+				TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMUpdate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMDelete: nil,
 
-				TMRinging:     DefaultTimeStamp,
-				TMProgressing: DefaultTimeStamp,
-				TMHangup:      DefaultTimeStamp,
+				TMRinging:     nil,
+				TMProgressing: nil,
+				TMHangup:      nil,
 			},
 		},
 	}
@@ -2052,13 +2054,13 @@ func Test_CallSetMuteDirection(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallCreate(ctx, tt.call); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CallGet(ctx, tt.id).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().CallSet(ctx, gomock.Any())
 			if err := h.CallSetMuteDirection(ctx, tt.id, tt.mute); err != nil {

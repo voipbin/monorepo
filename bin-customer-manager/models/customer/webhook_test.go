@@ -3,6 +3,7 @@ package customer
 import (
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 )
@@ -15,6 +16,10 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 
 		expectRes *WebhookMessage
 	}
+
+	tmCreate := time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)
+	tmUpdate := time.Date(2020, 4, 18, 3, 22, 18, 995000000, time.UTC)
+	tmDelete := time.Date(2020, 4, 18, 3, 22, 19, 995000000, time.UTC)
 
 	tests := []test{
 		{
@@ -29,9 +34,9 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 				WebhookMethod:    WebhookMethodPost,
 				WebhookURI:       "test.com",
 				BillingAccountID: uuid.FromStringOrNil("1c61bf00-4a01-11ee-9e71-2b88ad09ca2f"),
-				TMCreate:         "2020-04-18T03:22:17.995000Z",
-				TMUpdate:         "2020-04-18T03:22:18.995000Z",
-				TMDelete:         "2020-04-18T03:22:19.995000Z",
+				TMCreate:         &tmCreate,
+				TMUpdate:         &tmUpdate,
+				TMDelete:         &tmDelete,
 			},
 
 			expectRes: &WebhookMessage{
@@ -44,9 +49,9 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 				WebhookMethod:    WebhookMethodPost,
 				WebhookURI:       "test.com",
 				BillingAccountID: uuid.FromStringOrNil("1c61bf00-4a01-11ee-9e71-2b88ad09ca2f"),
-				TMCreate:         "2020-04-18T03:22:17.995000Z",
-				TMUpdate:         "2020-04-18T03:22:18.995000Z",
-				TMDelete:         "2020-04-18T03:22:19.995000Z",
+				TMCreate:         &tmCreate,
+				TMUpdate:         &tmUpdate,
+				TMDelete:         &tmDelete,
 			},
 		},
 	}

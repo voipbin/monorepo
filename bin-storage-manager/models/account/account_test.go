@@ -2,6 +2,7 @@ package account
 
 import (
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 )
@@ -10,14 +11,17 @@ func TestAccountStruct(t *testing.T) {
 	id := uuid.Must(uuid.NewV4())
 	customerID := uuid.Must(uuid.NewV4())
 
+	tmCreate := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
+	tmUpdate := time.Date(2023, 1, 2, 0, 0, 0, 0, time.UTC)
+
 	a := Account{
 		ID:             id,
 		CustomerID:     customerID,
 		TotalFileCount: 100,
 		TotalFileSize:  1073741824, // 1GB
-		TMCreate:       "2023-01-01T00:00:00Z",
-		TMUpdate:       "2023-01-02T00:00:00Z",
-		TMDelete:       "",
+		TMCreate:       &tmCreate,
+		TMUpdate:       &tmUpdate,
+		TMDelete:       nil,
 	}
 
 	if a.ID != id {
@@ -32,10 +36,10 @@ func TestAccountStruct(t *testing.T) {
 	if a.TotalFileSize != 1073741824 {
 		t.Errorf("Account.TotalFileSize = %v, expected %v", a.TotalFileSize, 1073741824)
 	}
-	if a.TMCreate != "2023-01-01T00:00:00Z" {
-		t.Errorf("Account.TMCreate = %v, expected %v", a.TMCreate, "2023-01-01T00:00:00Z")
+	if !a.TMCreate.Equal(tmCreate) {
+		t.Errorf("Account.TMCreate = %v, expected %v", a.TMCreate, tmCreate)
 	}
-	if a.TMUpdate != "2023-01-02T00:00:00Z" {
-		t.Errorf("Account.TMUpdate = %v, expected %v", a.TMUpdate, "2023-01-02T00:00:00Z")
+	if !a.TMUpdate.Equal(tmUpdate) {
+		t.Errorf("Account.TMUpdate = %v, expected %v", a.TMUpdate, tmUpdate)
 	}
 }

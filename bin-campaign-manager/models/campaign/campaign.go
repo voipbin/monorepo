@@ -1,6 +1,8 @@
 package campaign
 
 import (
+	"time"
+
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	fmaction "monorepo/bin-flow-manager/models/action"
 
@@ -32,9 +34,9 @@ type Campaign struct {
 	QueueID        uuid.UUID `json:"queue_id" db:"queue_id,uuid"`
 	NextCampaignID uuid.UUID `json:"next_campaign_id" db:"next_campaign_id,uuid"`
 
-	TMCreate string `json:"tm_create" db:"tm_create"`
-	TMUpdate string `json:"tm_update" db:"tm_update"`
-	TMDelete string `json:"tm_delete" db:"tm_delete"`
+	TMCreate *time.Time `json:"tm_create" db:"tm_create"`
+	TMUpdate *time.Time `json:"tm_update" db:"tm_update"`
+	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"`
 }
 
 // Type defines

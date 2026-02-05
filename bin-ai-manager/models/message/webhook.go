@@ -2,6 +2,8 @@ package message
 
 import (
 	"encoding/json"
+	"time"
+
 	"monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
@@ -19,7 +21,7 @@ type WebhookMessage struct {
 	ToolCalls  []ToolCall `json:"tool_calls,omitempty"`
 	ToolCallID string     `json:"tool_call_id,omitempty"`
 
-	TMCreate string `json:"tm_create,omitempty"`
+	TMCreate *time.Time `json:"tm_create"`
 }
 
 func (h *Message) ConvertWebhookMessage() *WebhookMessage {

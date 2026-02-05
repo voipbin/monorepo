@@ -14,6 +14,7 @@ import (
 	queue "monorepo/bin-queue-manager/models/queue"
 	queuecall "monorepo/bin-queue-manager/models/queuecall"
 	reflect "reflect"
+	time "time"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -259,7 +260,7 @@ func (mr *MockDBHandlerMockRecorder) QueuecallList(ctx, size, token, filters any
 }
 
 // QueuecallSetStatusAbandoned mocks base method.
-func (m *MockDBHandler) QueuecallSetStatusAbandoned(ctx context.Context, id uuid.UUID, durationWaiting int, ts string) error {
+func (m *MockDBHandler) QueuecallSetStatusAbandoned(ctx context.Context, id uuid.UUID, durationWaiting int, ts *time.Time) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "QueuecallSetStatusAbandoned", ctx, id, durationWaiting, ts)
 	ret0, _ := ret[0].(error)
@@ -287,7 +288,7 @@ func (mr *MockDBHandlerMockRecorder) QueuecallSetStatusConnecting(ctx, id, servi
 }
 
 // QueuecallSetStatusDone mocks base method.
-func (m *MockDBHandler) QueuecallSetStatusDone(ctx context.Context, id uuid.UUID, durationService int, ts string) error {
+func (m *MockDBHandler) QueuecallSetStatusDone(ctx context.Context, id uuid.UUID, durationService int, ts *time.Time) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "QueuecallSetStatusDone", ctx, id, durationService, ts)
 	ret0, _ := ret[0].(error)
@@ -315,7 +316,7 @@ func (mr *MockDBHandlerMockRecorder) QueuecallSetStatusKicking(ctx, id any) *gom
 }
 
 // QueuecallSetStatusService mocks base method.
-func (m *MockDBHandler) QueuecallSetStatusService(ctx context.Context, id uuid.UUID, durationWaiting int, ts string) error {
+func (m *MockDBHandler) QueuecallSetStatusService(ctx context.Context, id uuid.UUID, durationWaiting int, ts *time.Time) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "QueuecallSetStatusService", ctx, id, durationWaiting, ts)
 	ret0, _ := ret[0].(error)

@@ -3,6 +3,7 @@ package contact
 import (
 	"fmt"
 	"reflect"
+	"time"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
@@ -102,16 +103,16 @@ type Contact struct {
 	// Timestamps
 	// -------------------------------------------------------------------------
 
-	// TMCreate is when the contact was created (ISO 8601 format).
-	TMCreate string `json:"tm_create" db:"tm_create"`
+	// TMCreate is when the contact was created.
+	TMCreate *time.Time `json:"tm_create" db:"tm_create"`
 
-	// TMUpdate is when the contact was last modified (ISO 8601 format).
-	TMUpdate string `json:"tm_update" db:"tm_update"`
+	// TMUpdate is when the contact was last modified.
+	TMUpdate *time.Time `json:"tm_update" db:"tm_update"`
 
 	// TMDelete is the soft-delete timestamp. If set, the contact is
 	// considered deleted but data is retained for recovery/audit.
-	// Null/empty means the contact is active.
-	TMDelete string `json:"tm_delete" db:"tm_delete"`
+	// Nil means the contact is active.
+	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"`
 }
 
 // Source type constants

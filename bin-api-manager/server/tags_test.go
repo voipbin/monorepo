@@ -54,7 +54,7 @@ func Test_TagsPOST(t *testing.T) {
 
 			expectName:   "test1 name",
 			expectDetail: "test1 detail",
-			expectRes:    `{"id":"bd8cee04-4f21-11ec-9955-db7041b6d997","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes:    `{"id":"bd8cee04-4f21-11ec-9955-db7041b6d997","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -126,13 +126,13 @@ func TestTagsGET(t *testing.T) {
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("bafb72ae-f983-11ea-9b02-67e734510d1a"),
 					},
-					TMCreate: "2020-09-20T03:23:21.995000Z",
+					TMCreate: timePtr("2020-09-20T03:23:21.995000Z"),
 				},
 			},
 
 			expectPageSize:  11,
 			expectPageToken: "2020-09-20T03:23:20.995000Z",
-			expectRes:       `{"result":[{"id":"bafb72ae-f983-11ea-9b02-67e734510d1a","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","tm_create":"2020-09-20T03:23:21.995000Z","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000Z"}`,
+			expectRes:       `{"result":[{"id":"bafb72ae-f983-11ea-9b02-67e734510d1a","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null}],"next_page_token":"2020-09-20T03:23:21.995000Z"}`,
 		},
 		{
 			name: "more than 2 results",
@@ -149,19 +149,19 @@ func TestTagsGET(t *testing.T) {
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("bafb72ae-f983-11ea-9b02-67e734510d1a"),
 					},
-					TMCreate: "2020-09-20T03:23:21.995000Z",
+					TMCreate: timePtr("2020-09-20T03:23:21.995000Z"),
 				},
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("2c1abc5c-500d-11ec-8896-9bca824c5a63"),
 					},
-					TMCreate: "2020-09-20T03:23:21.995002Z",
+					TMCreate: timePtr("2020-09-20T03:23:21.995002Z"),
 				},
 			},
 
 			expectPageSize:  10,
 			expectPageToken: "2020-09-20T03:23:20.995000Z",
-			expectRes:       `{"result":[{"id":"bafb72ae-f983-11ea-9b02-67e734510d1a","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","tm_create":"2020-09-20T03:23:21.995000Z","tm_update":"","tm_delete":""},{"id":"2c1abc5c-500d-11ec-8896-9bca824c5a63","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","tm_create":"2020-09-20T03:23:21.995002Z","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995002Z"}`,
+			expectRes:       `{"result":[{"id":"bafb72ae-f983-11ea-9b02-67e734510d1a","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null},{"id":"2c1abc5c-500d-11ec-8896-9bca824c5a63","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","tm_create":"2020-09-20T03:23:21.995002Z","tm_update":null,"tm_delete":null}],"next_page_token":"2020-09-20T03:23:21.995002Z"}`,
 		},
 	}
 
@@ -231,7 +231,7 @@ func TestTagsDelete(t *testing.T) {
 			},
 
 			expectTagID: uuid.FromStringOrNil("c07ff34e-500d-11ec-8393-2bc7870b7eff"),
-			expectRes:   `{"id":"c07ff34e-500d-11ec-8393-2bc7870b7eff","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes:   `{"id":"c07ff34e-500d-11ec-8393-2bc7870b7eff","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -303,7 +303,7 @@ func TestTagsIDGet(t *testing.T) {
 			},
 
 			expectTagID: uuid.FromStringOrNil("c07ff34e-500d-11ec-8393-2bc7870b7eff"),
-			expectRes:   `{"id":"c07ff34e-500d-11ec-8393-2bc7870b7eff","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes:   `{"id":"c07ff34e-500d-11ec-8393-2bc7870b7eff","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -381,7 +381,7 @@ func Test_TagsIDPut(t *testing.T) {
 			expectTagID:  uuid.FromStringOrNil("c07ff34e-500d-11ec-8393-2bc7870b7eff"),
 			expectName:   "update name",
 			expectDetail: "update detail",
-			expectRes:    `{"id":"c07ff34e-500d-11ec-8393-2bc7870b7eff","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes:    `{"id":"c07ff34e-500d-11ec-8393-2bc7870b7eff","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 

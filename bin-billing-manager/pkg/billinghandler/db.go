@@ -3,13 +3,13 @@ package billinghandler
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-billing-manager/models/billing"
-	"monorepo/bin-billing-manager/pkg/dbhandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 )
 
@@ -21,7 +21,7 @@ func (h *billingHandler) Create(
 	referenceType billing.ReferenceType,
 	referenceID uuid.UUID,
 	costPerUnit float32,
-	tmBillingStart string,
+	tmBillingStart *time.Time,
 ) (*billing.Billing, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":             "Create",
@@ -47,7 +47,7 @@ func (h *billingHandler) Create(
 		CostTotal:        0,
 		BillingUnitCount: 0,
 		TMBillingStart:   tmBillingStart,
-		TMBillingEnd:     dbhandler.DefaultTimeStamp,
+		TMBillingEnd:     nil,
 	}
 
 	if errCreate := h.db.BillingCreate(ctx, c); errCreate != nil {
@@ -124,7 +124,7 @@ func (h *billingHandler) List(ctx context.Context, size uint64, token string, fi
 }
 
 // UpdateStatusEnd creats a new billing and return the created billing.
-func (h *billingHandler) UpdateStatusEnd(ctx context.Context, id uuid.UUID, billingUnitCount float32, tmBillingEnd string) (*billing.Billing, error) {
+func (h *billingHandler) UpdateStatusEnd(ctx context.Context, id uuid.UUID, billingUnitCount float32, tmBillingEnd *time.Time) (*billing.Billing, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":             "UpdateStatusEnd",
 		"billing_id":       id,

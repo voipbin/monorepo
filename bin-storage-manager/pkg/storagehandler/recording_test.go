@@ -80,7 +80,7 @@ func Test_RecordingGet(t *testing.T) {
 				ReferenceID:      uuid.FromStringOrNil("5d946b94-9969-11eb-8bb3-07ff2b1cff3d"),
 				BucketURI:        "gs://voipbin-production/tmp/bdd24974-8ce0-11ed-aca5-1b4a5f897d9f",
 				DownloadURI:      "https://download.uri/recording/call_e2951d7c-ac2d-11ea-8d4b-aff0e70476d6_2020-05-03T21:35:02.809Z.wav",
-				TMDownloadExpire: "",
+				TMDownloadExpire: nil,
 			},
 		},
 	}
@@ -107,7 +107,7 @@ func Test_RecordingGet(t *testing.T) {
 
 			mockFile.EXPECT().CompressCreate(ctx, tt.responseFiles).Return(tt.responseBucketName, tt.responseFilepath, nil)
 			mockFile.EXPECT().DownloadURIGet(ctx, tt.responseBucketName, tt.responseFilepath, time.Hour*24).Return(tt.responseBucketURI, tt.responseDownloadURI, nil)
-			mockUtil.EXPECT().TimeGetCurTimeAdd(gomock.Any()).Return("")
+			mockUtil.EXPECT().TimeNowAdd(gomock.Any()).Return(nil)
 
 			res, err := h.RecordingGet(ctx, tt.recordingID)
 			if err != nil {

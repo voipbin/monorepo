@@ -18,7 +18,6 @@ import (
 	"monorepo/bin-campaign-manager/models/campaign"
 	"monorepo/bin-campaign-manager/models/campaigncall"
 	"monorepo/bin-campaign-manager/models/outplan"
-	"monorepo/bin-campaign-manager/pkg/dbhandler"
 )
 
 // Execute executes the campaign.
@@ -185,13 +184,13 @@ func (h *campaignHandler) getTarget(ctx context.Context, c *campaign.Campaign, p
 func (h *campaignHandler) isDialableTarget(ctx context.Context, target *omoutdialtarget.OutdialTarget, interval int) bool {
 
 	// is the target never tried before
-	if target.TMCreate == target.TMUpdate {
+	if (target.TMCreate == nil && target.TMUpdate == nil) || (target.TMCreate != nil && target.TMUpdate != nil && target.TMCreate.Equal(*target.TMUpdate)) {
 		return true
 	}
 
 	// the target is retry-able
-	ts := dbhandler.GetCurTimeAdd(-time.Duration(time.Millisecond * time.Duration(interval)))
-	return target.TMUpdate <= ts
+	ts := time.Now().Add(-time.Duration(interval) * time.Millisecond).UTC()
+	return target.TMUpdate != nil && !target.TMUpdate.After(ts)
 }
 
 // executeCall handles call type of campaigncall's exeucte.
@@ -385,7 +384,7 @@ func (h *campaignHandler) isDialable(ctx context.Context, campaignID uuid.UUID, 
 	}
 
 	// get queuecall dialings
-	dialings, err := h.campaigncallHandler.ListByCampaignIDAndStatus(ctx, campaignID, campaigncall.StatusDialing, dbhandler.DefaultTimeStamp, 100)
+	dialings, err := h.campaigncallHandler.ListByCampaignIDAndStatus(ctx, campaignID, campaigncall.StatusDialing, "", 100)
 	if err != nil {
 		log.Errorf("Could not get campaigncalls. err: %v", err)
 		return false

@@ -53,10 +53,15 @@ func (r *requestHandler) CallV1CallHealth(ctx context.Context, id uuid.UUID, del
 func (r *requestHandler) CallV1CallActionTimeout(ctx context.Context, id uuid.UUID, delay int, a *action.Action) error {
 	uri := fmt.Sprintf("/v1/calls/%s/action-timeout", id)
 
+	var tmExecuteStr string
+	if a.TMExecute != nil {
+		tmExecuteStr = a.TMExecute.UTC().Format("2006-01-02T15:04:05.000000Z")
+	}
+
 	m, err := json.Marshal(cmrequest.V1DataCallsIDActionTimeoutPost{
 		ActionID:   a.ID,
 		ActionType: a.Type,
-		TMExecute:  a.TMExecute,
+		TMExecute:  tmExecuteStr,
 	})
 	if err != nil {
 		return err

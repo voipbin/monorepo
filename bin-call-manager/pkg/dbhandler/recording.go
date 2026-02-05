@@ -38,12 +38,12 @@ func (h *handler) recordingGetFromRow(row *sql.Rows) (*recording.Recording, erro
 
 // RecordingCreate creates new record.
 func (h *handler) RecordingCreate(ctx context.Context, c *recording.Recording) error {
-	now := h.utilHandler.TimeGetCurTime()
+	now := h.utilHandler.TimeNow()
 
 	// Set timestamps
 	c.TMCreate = now
-	c.TMUpdate = commondatabasehandler.DefaultTimeStamp
-	c.TMDelete = commondatabasehandler.DefaultTimeStamp
+	c.TMUpdate = nil
+	c.TMDelete = nil
 
 	// Initialize nil slices
 	if c.Filenames == nil {
@@ -257,7 +257,7 @@ func (h *handler) RecordingUpdate(ctx context.Context, id uuid.UUID, fields map[
 
 	// Only set TMUpdate if it's not already provided
 	if _, ok := fields[recording.FieldTMUpdate]; !ok {
-		fields[recording.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
+		fields[recording.FieldTMUpdate] = h.utilHandler.TimeNow()
 	}
 
 	tmpFields, err := commondatabasehandler.PrepareFields(fields)
@@ -299,7 +299,7 @@ func (h *handler) RecordingSetStatus(ctx context.Context, id uuid.UUID, status r
 
 // recordingSetStatusRecording sets the record's status recording
 func (h *handler) recordingSetStatusRecording(ctx context.Context, id uuid.UUID) error {
-	ts := h.utilHandler.TimeGetCurTime()
+	ts := h.utilHandler.TimeNow()
 	return h.RecordingUpdate(ctx, id, map[recording.Field]any{
 		recording.FieldStatus:   recording.StatusRecording,
 		recording.FieldTMStart:  ts,
@@ -309,7 +309,7 @@ func (h *handler) recordingSetStatusRecording(ctx context.Context, id uuid.UUID)
 
 // recordingSetStatusEnd sets the record's status to end
 func (h *handler) recordingSetStatusEnd(ctx context.Context, id uuid.UUID) error {
-	ts := h.utilHandler.TimeGetCurTime()
+	ts := h.utilHandler.TimeNow()
 	return h.RecordingUpdate(ctx, id, map[recording.Field]any{
 		recording.FieldStatus:   recording.StatusEnded,
 		recording.FieldTMEnd:    ts,
@@ -326,7 +326,7 @@ func (h *handler) recordingSetStatusStopping(ctx context.Context, id uuid.UUID) 
 
 // RecordingDelete deletes the recording
 func (h *handler) RecordingDelete(ctx context.Context, id uuid.UUID) error {
-	ts := h.utilHandler.TimeGetCurTime()
+	ts := h.utilHandler.TimeNow()
 	return h.RecordingUpdate(ctx, id, map[recording.Field]any{
 		recording.FieldTMUpdate: ts,
 		recording.FieldTMDelete: ts,

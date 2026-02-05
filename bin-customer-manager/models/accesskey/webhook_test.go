@@ -3,6 +3,7 @@ package accesskey
 import (
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 )
@@ -16,6 +17,11 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 		expectRes *WebhookMessage
 	}
 
+	tmExpire := time.Date(2022, 4, 18, 3, 22, 17, 995000000, time.UTC)
+	tmCreate := time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)
+	tmUpdate := time.Date(2020, 4, 18, 3, 22, 18, 995000000, time.UTC)
+	tmDelete := time.Date(2020, 4, 18, 3, 22, 19, 995000000, time.UTC)
+
 	tests := []test{
 		{
 			name: "normal",
@@ -25,10 +31,10 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 				Name:       "test name",
 				Detail:     "test detail",
 				Token:      "test_token",
-				TMExpire:   "2022-04-18T03:22:17.995000Z",
-				TMCreate:   "2020-04-18T03:22:17.995000Z",
-				TMUpdate:   "2020-04-18T03:22:18.995000Z",
-				TMDelete:   "2020-04-18T03:22:19.995000Z",
+				TMExpire:   &tmExpire,
+				TMCreate:   &tmCreate,
+				TMUpdate:   &tmUpdate,
+				TMDelete:   &tmDelete,
 			},
 
 			expectRes: &WebhookMessage{
@@ -37,10 +43,10 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 				Name:       "test name",
 				Detail:     "test detail",
 				Token:      "test_token",
-				TMExpire:   "2022-04-18T03:22:17.995000Z",
-				TMCreate:   "2020-04-18T03:22:17.995000Z",
-				TMUpdate:   "2020-04-18T03:22:18.995000Z",
-				TMDelete:   "2020-04-18T03:22:19.995000Z",
+				TMExpire:   &tmExpire,
+				TMCreate:   &tmCreate,
+				TMUpdate:   &tmUpdate,
+				TMDelete:   &tmDelete,
 			},
 		},
 	}

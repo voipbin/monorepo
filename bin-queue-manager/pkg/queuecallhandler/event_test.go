@@ -3,6 +3,7 @@ package queuecallhandler
 import (
 	"context"
 	"testing"
+	"time"
 
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 
@@ -56,9 +57,9 @@ func Test_EventCallCallHangup(t *testing.T) {
 				},
 
 				Status:   queuecall.StatusWaiting,
-				TMCreate: "2021-04-18T03:22:17.994000Z",
-				TMEnd:    dbhandler.DefaultTimeStamp,
-				TMDelete: "2021-04-18T03:52:17.994000Z",
+				TMCreate: timePtr(time.Date(2021, time.April, 18, 3, 22, 17, 994000000, time.UTC)),
+				TMEnd:    nil,
+				TMDelete: timePtr(time.Date(2021, time.April, 18, 3, 52, 17, 994000000, time.UTC)),
 			},
 		},
 	}
@@ -87,7 +88,7 @@ func Test_EventCallCallHangup(t *testing.T) {
 			mockDB.EXPECT().QueuecallGetByReferenceID(ctx, tt.referenceID).Return(tt.responseQueuecall, nil)
 
 			// UpdateStatusAbandoned
-			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+			mockUtil.EXPECT().TimeNow().Return(utilhandler.TimeNow())
 			mockDB.EXPECT().QueuecallSetStatusAbandoned(ctx, tt.responseQueuecall.ID, gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().QueuecallGet(ctx, tt.responseQueuecall.ID).Return(tt.responseQueuecall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallAbandoned, tt.responseQueuecall)
@@ -110,7 +111,7 @@ func Test_EventCallConfbridgeJoined(t *testing.T) {
 		confbridgeID uuid.UUID
 
 		responseQueuecall *queuecall.Queuecall
-		responseCurTime   string
+		responseCurTime   *time.Time
 
 		expectDuration int
 	}{
@@ -139,12 +140,12 @@ func Test_EventCallConfbridgeJoined(t *testing.T) {
 				},
 
 				Status:    queuecall.StatusService,
-				TMCreate:  "2021-04-18T03:22:17.994000Z",
-				TMService: "2021-04-18T03:22:17.994000Z",
-				TMEnd:     dbhandler.DefaultTimeStamp,
-				TMDelete:  dbhandler.DefaultTimeStamp,
+				TMCreate:  timePtr(time.Date(2021, time.April, 18, 3, 22, 17, 994000000, time.UTC)),
+				TMService: timePtr(time.Date(2021, time.April, 18, 3, 22, 17, 994000000, time.UTC)),
+				TMEnd:     nil,
+				TMDelete:  nil,
 			},
-			"2021-04-18T03:23:17.994000Z",
+			timePtr(time.Date(2021, time.April, 18, 3, 23, 17, 994000000, time.UTC)),
 
 			60000,
 		},
@@ -173,7 +174,7 @@ func Test_EventCallConfbridgeJoined(t *testing.T) {
 
 			mockDB.EXPECT().QueuecallGetByReferenceID(ctx, tt.referenceID).Return(tt.responseQueuecall, nil)
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockDB.EXPECT().QueuecallSetStatusService(ctx, tt.responseQueuecall.ID, tt.expectDuration, tt.responseCurTime).Return(nil)
 			mockDB.EXPECT().QueuecallGet(ctx, tt.responseQueuecall.ID).Return(tt.responseQueuecall, nil)
 
@@ -223,9 +224,9 @@ func Test_EventCallConfbridgeLeaved(t *testing.T) {
 				},
 
 				Status:    queuecall.StatusService,
-				TMService: "2021-04-18T03:22:17.994000Z",
-				TMEnd:     dbhandler.DefaultTimeStamp,
-				TMDelete:  "2021-04-18T03:52:17.994000Z",
+				TMService: timePtr(time.Date(2021, time.April, 18, 3, 22, 17, 994000000, time.UTC)),
+				TMEnd:     nil,
+				TMDelete:  timePtr(time.Date(2021, time.April, 18, 3, 52, 17, 994000000, time.UTC)),
 			},
 		},
 	}
@@ -254,7 +255,7 @@ func Test_EventCallConfbridgeLeaved(t *testing.T) {
 			mockDB.EXPECT().QueuecallGetByReferenceID(ctx, tt.referenceID).Return(tt.responseQueuecall, nil)
 
 			// UpdateStatusDone
-			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+			mockUtil.EXPECT().TimeNow().Return(utilhandler.TimeNow())
 			mockDB.EXPECT().QueuecallSetStatusDone(ctx, tt.responseQueuecall.ID, gomock.Any(), gomock.Any()).Return(nil)
 			mockDB.EXPECT().QueuecallGet(ctx, tt.responseQueuecall.ID).Return(tt.responseQueuecall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallDone, tt.responseQueuecall)

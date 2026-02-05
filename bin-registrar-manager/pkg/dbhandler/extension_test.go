@@ -5,6 +5,7 @@ import (
 	"fmt"
 	reflect "reflect"
 	"testing"
+	"time"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -19,11 +20,13 @@ import (
 
 func Test_ExtensionCreate(t *testing.T) {
 
+	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
+
 	type test struct {
 		name string
 		ext  *extension.Extension
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *extension.Extension
 	}
 
@@ -51,7 +54,7 @@ func Test_ExtensionCreate(t *testing.T) {
 				Password: "7818abce-6ebc-11eb-b4fe-e748480c228a",
 			},
 
-			"2021-02-26T18:26:49.000Z",
+			curTime,
 			&extension.Extension{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("3fecf3d6-6ebc-11eb-a0e7-23ecc297d9a5"),
@@ -72,9 +75,9 @@ func Test_ExtensionCreate(t *testing.T) {
 				Username: "608cbfae-6ebc-11eb-a74b-671d17dda173",
 				Password: "7818abce-6ebc-11eb-b4fe-e748480c228a",
 
-				TMCreate: "2021-02-26T18:26:49.000Z",
-				TMUpdate: DefaultTimeStamp,
-				TMDelete: DefaultTimeStamp,
+				TMCreate: curTime,
+				TMUpdate: nil,
+				TMDelete: nil,
 			},
 		},
 	}
@@ -94,7 +97,7 @@ func Test_ExtensionCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().ExtensionSet(ctx, gomock.Any())
 			if err := h.ExtensionCreate(ctx, tt.ext); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -127,6 +130,8 @@ func Test_ExtensionCreate(t *testing.T) {
 
 func Test_ExtensionGetByExtension(t *testing.T) {
 
+	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
+
 	type test struct {
 		name string
 		ext  *extension.Extension
@@ -134,7 +139,7 @@ func Test_ExtensionGetByExtension(t *testing.T) {
 		customerID uuid.UUID
 		exten      string
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *extension.Extension
 	}
 
@@ -164,7 +169,7 @@ func Test_ExtensionGetByExtension(t *testing.T) {
 			uuid.FromStringOrNil("56c83c70-564d-11ee-b707-d3539191ce8c"),
 			"56f79dda-564d-11ee-9b02-2ff26b372f36",
 
-			"2021-02-26T18:26:49.000Z",
+			curTime,
 			&extension.Extension{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("569711e0-564d-11ee-97bc-e73899c004b9"),
@@ -184,9 +189,9 @@ func Test_ExtensionGetByExtension(t *testing.T) {
 				Username:   "56f79dda-564d-11ee-9b02-2ff26b372f36",
 				Password:   "eb605618-6ebc-11eb-a421-4bbf5d9a2fac",
 
-				TMCreate: "2021-02-26T18:26:49.000Z",
-				TMUpdate: DefaultTimeStamp,
-				TMDelete: DefaultTimeStamp,
+				TMCreate: curTime,
+				TMUpdate: nil,
+				TMDelete: nil,
 			},
 		},
 	}
@@ -207,7 +212,7 @@ func Test_ExtensionGetByExtension(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().ExtensionSet(ctx, gomock.Any())
 			if err := h.ExtensionCreate(ctx, tt.ext); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -229,11 +234,13 @@ func Test_ExtensionGetByExtension(t *testing.T) {
 
 func Test_ExtensionDelete(t *testing.T) {
 
+	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
+
 	type test struct {
 		name string
 		ext  *extension.Extension
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *extension.Extension
 	}
 
@@ -260,7 +267,7 @@ func Test_ExtensionDelete(t *testing.T) {
 				Password:   "eb605618-6ebc-11eb-a421-4bbf5d9a2fac",
 			},
 
-			"2021-02-26T18:26:49.000Z",
+			curTime,
 			&extension.Extension{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("def11a70-6ebc-11eb-ae2b-d31ef2c6d22d"),
@@ -280,9 +287,9 @@ func Test_ExtensionDelete(t *testing.T) {
 				Username:   "e56c33b2-6ebc-11eb-bada-4f15e459e32f",
 				Password:   "eb605618-6ebc-11eb-a421-4bbf5d9a2fac",
 
-				TMCreate: "2021-02-26T18:26:49.000Z",
-				TMUpdate: "2021-02-26T18:26:49.000Z",
-				TMDelete: "2021-02-26T18:26:49.000Z",
+				TMCreate: curTime,
+				TMUpdate: curTime,
+				TMDelete: curTime,
 			},
 		},
 	}
@@ -303,13 +310,13 @@ func Test_ExtensionDelete(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().ExtensionSet(ctx, gomock.Any())
 			if err := h.ExtensionCreate(ctx, tt.ext); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().ExtensionSet(ctx, gomock.Any())
 			if err := h.ExtensionDelete(ctx, tt.ext.ID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -331,6 +338,8 @@ func Test_ExtensionDelete(t *testing.T) {
 
 func Test_ExtensionUpdate(t *testing.T) {
 
+	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
+
 	type test struct {
 		name            string
 		extensionCreate *extension.Extension
@@ -338,7 +347,7 @@ func Test_ExtensionUpdate(t *testing.T) {
 		id     uuid.UUID
 		fields map[extension.Field]any
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *extension.Extension
 	}
 
@@ -368,7 +377,7 @@ func Test_ExtensionUpdate(t *testing.T) {
 				extension.FieldPassword: "update password",
 			},
 
-			"2021-02-26T18:26:49.000Z",
+			curTime,
 			&extension.Extension{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("e3ebc6fe-711b-11eb-8385-ef7ccec2e41a"),
@@ -384,9 +393,9 @@ func Test_ExtensionUpdate(t *testing.T) {
 				Username:   "test",
 				Password:   "update password",
 
-				TMCreate: "2021-02-26T18:26:49.000Z",
-				TMUpdate: "2021-02-26T18:26:49.000Z",
-				TMDelete: DefaultTimeStamp,
+				TMCreate: curTime,
+				TMUpdate: curTime,
+				TMDelete: nil,
 			},
 		},
 	}
@@ -407,13 +416,13 @@ func Test_ExtensionUpdate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().ExtensionSet(gomock.Any(), gomock.Any())
 			if err := h.ExtensionCreate(ctx, tt.extensionCreate); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().ExtensionSet(gomock.Any(), gomock.Any())
 			if err := h.ExtensionUpdate(ctx, tt.id, tt.fields); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -435,6 +444,8 @@ func Test_ExtensionUpdate(t *testing.T) {
 
 func Test_ExtensionList(t *testing.T) {
 
+	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
+
 	type test struct {
 		name       string
 		extensions []extension.Extension
@@ -442,7 +453,7 @@ func Test_ExtensionList(t *testing.T) {
 		limit   uint64
 		filters map[extension.Field]any
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       []*extension.Extension
 	}
 
@@ -472,7 +483,7 @@ func Test_ExtensionList(t *testing.T) {
 				extension.FieldCustomerID: uuid.FromStringOrNil("f3bcb6d0-cdc8-11ee-82a8-430793535c91"),
 			},
 
-			"2021-02-26T18:26:49.000Z",
+			curTime,
 			[]*extension.Extension{
 				{
 					Identity: commonidentity.Identity{
@@ -480,9 +491,9 @@ func Test_ExtensionList(t *testing.T) {
 						CustomerID: uuid.FromStringOrNil("f3bcb6d0-cdc8-11ee-82a8-430793535c91"),
 					},
 					Name:     "test1",
-					TMCreate: "2021-02-26T18:26:49.000Z",
-					TMUpdate: DefaultTimeStamp,
-					TMDelete: DefaultTimeStamp,
+					TMCreate: curTime,
+					TMUpdate: nil,
+					TMDelete: nil,
 				},
 				{
 					Identity: commonidentity.Identity{
@@ -490,9 +501,9 @@ func Test_ExtensionList(t *testing.T) {
 						CustomerID: uuid.FromStringOrNil("f3bcb6d0-cdc8-11ee-82a8-430793535c91"),
 					},
 					Name:     "test2",
-					TMCreate: "2021-02-26T18:26:49.000Z",
-					TMUpdate: DefaultTimeStamp,
-					TMDelete: DefaultTimeStamp,
+					TMCreate: curTime,
+					TMUpdate: nil,
+					TMDelete: nil,
 				},
 			},
 		},
@@ -515,7 +526,7 @@ func Test_ExtensionList(t *testing.T) {
 			ctx := context.Background()
 
 			for _, d := range tt.extensions {
-				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 				mockCache.EXPECT().ExtensionSet(gomock.Any(), gomock.Any())
 				if err := h.ExtensionCreate(ctx, &d); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)

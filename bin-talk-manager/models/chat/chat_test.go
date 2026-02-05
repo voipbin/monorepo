@@ -4,11 +4,16 @@ import (
 	"encoding/json"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 )
+
+func timePtr(t time.Time) *time.Time {
+	return &t
+}
 
 func TestChatStruct(t *testing.T) {
 	id := uuid.Must(uuid.NewV4())
@@ -23,9 +28,9 @@ func TestChatStruct(t *testing.T) {
 		Name:        "Test Chat",
 		Detail:      "Test chat description",
 		MemberCount: 2,
-		TMCreate:    "2023-01-01T00:00:00Z",
-		TMUpdate:    "2023-01-02T00:00:00Z",
-		TMDelete:    "",
+		TMCreate:    timePtr(time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)),
+		TMUpdate:    timePtr(time.Date(2023, 1, 2, 0, 0, 0, 0, time.UTC)),
+		TMDelete:    nil,
 	}
 
 	if c.ID != id {
@@ -81,8 +86,8 @@ func TestChat_ConvertWebhookMessage(t *testing.T) {
 		Name:        "Team Chat",
 		Detail:      "Team communication channel",
 		MemberCount: 5,
-		TMCreate:    "2023-01-01T00:00:00Z",
-		TMUpdate:    "2023-01-02T00:00:00Z",
+		TMCreate:    timePtr(time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)),
+		TMUpdate:    timePtr(time.Date(2023, 1, 2, 0, 0, 0, 0, time.UTC)),
 	}
 
 	result := c.ConvertWebhookMessage()
@@ -116,7 +121,7 @@ func TestChat_CreateWebhookEvent(t *testing.T) {
 		Type:        TypeDirect,
 		Name:        "Test Chat",
 		MemberCount: 2,
-		TMCreate:    "2023-01-01T00:00:00Z",
+		TMCreate:    timePtr(time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)),
 	}
 
 	data, err := c.CreateWebhookEvent()

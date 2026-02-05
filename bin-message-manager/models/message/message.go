@@ -1,6 +1,8 @@
 package message
 
 import (
+	"time"
+
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
@@ -26,9 +28,9 @@ type Message struct {
 	Medias    []string  `json:"medias" db:"medias,json"`
 	Direction Direction `json:"direction" db:"direction"`
 
-	TMCreate string `json:"tm_create" db:"tm_create"`
-	TMUpdate string `json:"tm_update" db:"tm_update"`
-	TMDelete string `json:"tm_delete" db:"tm_delete"`
+	TMCreate *time.Time `json:"tm_create" db:"tm_create"`
+	TMUpdate *time.Time `json:"tm_update" db:"tm_update"`
+	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"`
 }
 
 // Type defines

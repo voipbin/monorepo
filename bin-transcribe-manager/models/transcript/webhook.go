@@ -2,6 +2,8 @@ package transcript
 
 import (
 	"encoding/json"
+	"time"
+
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
@@ -15,8 +17,8 @@ type WebhookMessage struct {
 	Direction    Direction `json:"direction"` // direction. in/out
 	Message      string    `json:"message"`   // message
 
-	TMTranscript string `json:"tm_transcript"`
-	TMCreate     string `json:"tm_create"` // timestamp
+	TMTranscript *time.Time `json:"tm_transcript"`
+	TMCreate     *time.Time `json:"tm_create"` // timestamp
 }
 
 // ConvertWebhookMessage converts to the event

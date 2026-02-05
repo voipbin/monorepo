@@ -29,7 +29,7 @@ func (h *handler) phoneNumberGetFromRow(rows *sql.Rows) (*contact.PhoneNumber, e
 
 // PhoneNumberCreate creates a new phone number record
 func (h *handler) PhoneNumberCreate(ctx context.Context, p *contact.PhoneNumber) error {
-	p.TMCreate = h.utilHandler.TimeGetCurTime()
+	p.TMCreate = h.utilHandler.TimeNow()
 
 	// prepare fields for insert
 	fields, err := commondatabasehandler.PrepareFields(p)

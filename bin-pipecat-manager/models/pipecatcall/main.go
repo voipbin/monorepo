@@ -2,6 +2,7 @@ package pipecatcall
 
 import (
 	"monorepo/bin-common-handler/models/identity"
+	"time"
 
 	"github.com/gofrs/uuid"
 )
@@ -25,9 +26,9 @@ type Pipecatcall struct {
 	TTSLanguage string  `json:"tts_language,omitempty" db:"tts_language"`
 	TTSVoiceID  string  `json:"tts_voice_id,omitempty" db:"tts_voice_id"`
 
-	TMCreate string `json:"tm_create,omitempty" db:"tm_create"`
-	TMUpdate string `json:"tm_update,omitempty" db:"tm_update"`
-	TMDelete string `json:"tm_delete,omitempty" db:"tm_delete"`
+	TMCreate *time.Time `json:"tm_create" db:"tm_create"`
+	TMUpdate *time.Time `json:"tm_update" db:"tm_update"`
+	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"`
 }
 
 type ReferenceType string

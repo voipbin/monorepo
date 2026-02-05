@@ -39,9 +39,9 @@ func (h *aicallHandler) SendReferenceTypeCall(ctx context.Context, c *aicall.AIc
 
 	res, err := h.messageHandler.Create(ctx, c.CustomerID, c.ID, message.DirectionOutgoing, message.RoleUser, messageText, nil, "")
 	if err != nil {
-		return nil, errors.Wrapf(err, "could not create the message. aicall_id: %s", res.ID)
+		return nil, errors.Wrapf(err, "could not create the message. aicall_id: %s", c.ID)
 	}
-	log.WithField("message", res).Debugf("Created the message to the ai. aicall_id: %s, message_id: %s", res.ID, res.ID)
+	log.WithField("message", res).Debugf("Created the message to the ai. aicall_id: %s, message_id: %s", c.ID, res.ID)
 
 	tmp, err := h.reqHandler.PipecatV1MessageSend(ctx, pc.HostID, pc.ID, res.ID.String(), messageText, runImmediately, audioResponse)
 	if err != nil {
@@ -59,18 +59,19 @@ func (h *aicallHandler) SendReferenceTypeOthers(ctx context.Context, c *aicall.A
 	})
 
 	// note: after create a new aicall, we need to create a new message for the conversation message
-	res, errTerminate := h.messageHandler.Create(ctx, c.CustomerID, c.ID, message.DirectionOutgoing, message.RoleUser, messageText, nil, "")
+	aicallID := c.ID
+	res, errTerminate := h.messageHandler.Create(ctx, c.CustomerID, aicallID, message.DirectionOutgoing, message.RoleUser, messageText, nil, "")
 	if errTerminate != nil {
-		return nil, errors.Wrapf(errTerminate, "could not create the message. aicall_id: %s", res.ID)
+		return nil, errors.Wrapf(errTerminate, "could not create the message. aicall_id: %s", aicallID)
 	}
 
 	newPipecatcallID := h.utilHandler.UUIDCreate()
-	c, errTerminate = h.UpdatePipecatcallID(ctx, c.ID, newPipecatcallID)
+	c, errTerminate = h.UpdatePipecatcallID(ctx, aicallID, newPipecatcallID)
 	if errTerminate != nil {
-		return nil, errors.Wrapf(errTerminate, "could not update the pipecatcall id for existing aicall. aicall_id: %s", c.ID)
+		return nil, errors.Wrapf(errTerminate, "could not update the pipecatcall id for existing aicall. aicall_id: %s", aicallID)
 	}
 
-	log.WithField("message", res).Debugf("Created the message to the ai. aicall_id: %s, message_id: %s", res.ID, res.ID)
+	log.WithField("message", res).Debugf("Created the message to the ai. aicall_id: %s, message_id: %s", aicallID, res.ID)
 	pc, errTerminate := h.startPipecatcall(ctx, c)
 	if errTerminate != nil {
 		return nil, errors.Wrapf(errTerminate, "could not start pipecatcall for aicall. aicall_id: %s", res.ID)

@@ -1,6 +1,8 @@
 package conversation
 
 import (
+	"time"
+
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
@@ -27,9 +29,9 @@ type Conversation struct {
 	Self commonaddress.Address `json:"self,omitempty" db:"self,json"` // self address
 	Peer commonaddress.Address `json:"peer,omitempty" db:"peer,json"` // peer address
 
-	TMCreate string `json:"tm_create,omitempty" db:"tm_create"`
-	TMUpdate string `json:"tm_update,omitempty" db:"tm_update"`
-	TMDelete string `json:"tm_delete,omitempty" db:"tm_delete"`
+	TMCreate *time.Time `json:"tm_create" db:"tm_create"`
+	TMUpdate *time.Time `json:"tm_update" db:"tm_update"`
+	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"`
 }
 
 type Field string

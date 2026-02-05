@@ -3,6 +3,7 @@ package call
 import (
 	"fmt"
 	"reflect"
+	"time"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -57,14 +58,14 @@ type Call struct {
 	DialrouteID uuid.UUID       `json:"dialroute_id,omitempty" db:"dialroute_id,uuid"` // dialroute id(current use)
 	Dialroutes  []rmroute.Route `json:"dialroutes,omitempty" db:"dialroutes,json"`     // list of dialroutes for dialing.
 
-	TMRinging     string `json:"tm_ringing,omitempty" db:"tm_ringing"`
-	TMProgressing string `json:"tm_progressing,omitempty" db:"tm_progressing"`
-	TMHangup      string `json:"tm_hangup,omitempty" db:"tm_hangup"`
+	TMRinging     *time.Time `json:"tm_ringing,omitempty" db:"tm_ringing"`
+	TMProgressing *time.Time `json:"tm_progressing,omitempty" db:"tm_progressing"`
+	TMHangup      *time.Time `json:"tm_hangup,omitempty" db:"tm_hangup"`
 
 	// timestamp
-	TMCreate string `json:"tm_create,omitempty" db:"tm_create"`
-	TMUpdate string `json:"tm_update,omitempty" db:"tm_update"`
-	TMDelete string `json:"tm_delete,omitempty" db:"tm_delete"`
+	TMCreate *time.Time `json:"tm_create,omitempty" db:"tm_create"`
+	TMUpdate *time.Time `json:"tm_update,omitempty" db:"tm_update"`
+	TMDelete *time.Time `json:"tm_delete,omitempty" db:"tm_delete"`
 }
 
 // Type type

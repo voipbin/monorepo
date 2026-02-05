@@ -2,6 +2,8 @@ package outdial
 
 import (
 	"encoding/json"
+	"time"
+
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
@@ -18,9 +20,9 @@ type WebhookMessage struct {
 
 	Data string `json:"data"`
 
-	TMCreate string `json:"tm_create"`
-	TMUpdate string `json:"tm_update"`
-	TMDelete string `json:"tm_delete"`
+	TMCreate *time.Time `json:"tm_create"`
+	TMUpdate *time.Time `json:"tm_update"`
+	TMDelete *time.Time `json:"tm_delete"`
 }
 
 // ConvertWebhookMessage converts to the event

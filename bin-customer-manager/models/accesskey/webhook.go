@@ -2,6 +2,7 @@ package accesskey
 
 import (
 	"encoding/json"
+	"time"
 
 	"github.com/gofrs/uuid"
 )
@@ -16,11 +17,11 @@ type WebhookMessage struct {
 
 	Token string `json:"token"`
 
-	TMExpire string `json:"tm_expire,omitempty"`
+	TMExpire *time.Time `json:"tm_expire"`
 
-	TMCreate string `json:"tm_create,omitempty"`
-	TMUpdate string `json:"tm_update,omitempty"`
-	TMDelete string `json:"tm_delete,omitempty"`
+	TMCreate *time.Time `json:"tm_create"`
+	TMUpdate *time.Time `json:"tm_update"`
+	TMDelete *time.Time `json:"tm_delete"`
 }
 
 // ConvertWebhookMessage converts to the event

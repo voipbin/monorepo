@@ -66,7 +66,7 @@ func Test_PostEmails(t *testing.T) {
 					ReferenceID:   uuid.FromStringOrNil("c322a4da-00ee-11f0-aecf-374e31931c10"),
 				},
 			},
-			expectRes: `{"id":"c2ca66d0-00ee-11f0-a1a7-d7a5ce06bea8","customer_id":"00000000-0000-0000-0000-000000000000","source":null,"destinations":null,"status":"","subject":"","content":"","attachments":null,"tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes: `{"id":"c2ca66d0-00ee-11f0-a1a7-d7a5ce06bea8","customer_id":"00000000-0000-0000-0000-000000000000","source":null,"destinations":null,"status":"","subject":"","content":"","attachments":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -142,7 +142,7 @@ func Test_GetEmails(t *testing.T) {
 
 			expectPageSize:  20,
 			expectPageToken: "2020-09-20T03:23:20.995000Z",
-			expectRes:       `{"result":[{"id":"7be21f1e-00ef-11f0-8a0c-f7709910a0da","customer_id":"00000000-0000-0000-0000-000000000000","source":null,"destinations":null,"status":"","subject":"","content":"","attachments":null,"tm_create":"","tm_update":"","tm_delete":""}],"next_page_token":""}`,
+			expectRes:       `{"result":[{"id":"7be21f1e-00ef-11f0-8a0c-f7709910a0da","customer_id":"00000000-0000-0000-0000-000000000000","source":null,"destinations":null,"status":"","subject":"","content":"","attachments":null,"tm_create":null,"tm_update":null,"tm_delete":null}],"next_page_token":""}`,
 		},
 	}
 
@@ -210,7 +210,7 @@ func Test_GetEmailsId(t *testing.T) {
 			},
 
 			expectEmailID: uuid.FromStringOrNil("b174da36-00ef-11f0-a47f-0fd0872cf536"),
-			expectRes:     `{"id":"b174da36-00ef-11f0-a47f-0fd0872cf536","customer_id":"00000000-0000-0000-0000-000000000000","source":null,"destinations":null,"status":"","subject":"","content":"","attachments":null,"tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes:     `{"id":"b174da36-00ef-11f0-a47f-0fd0872cf536","customer_id":"00000000-0000-0000-0000-000000000000","source":null,"destinations":null,"status":"","subject":"","content":"","attachments":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -278,7 +278,7 @@ func Test_DeleteemailsId(t *testing.T) {
 			},
 
 			expectEmailID: uuid.FromStringOrNil("25ddd076-00f0-11f0-a451-fbb20c8dd036"),
-			expectRes:     `{"id":"25ddd076-00f0-11f0-a451-fbb20c8dd036","customer_id":"00000000-0000-0000-0000-000000000000","source":null,"destinations":null,"status":"","subject":"","content":"","attachments":null,"tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes:     `{"id":"25ddd076-00f0-11f0-a451-fbb20c8dd036","customer_id":"00000000-0000-0000-0000-000000000000","source":null,"destinations":null,"status":"","subject":"","content":"","attachments":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 

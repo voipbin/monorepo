@@ -2,6 +2,7 @@ package conferencecall
 
 import (
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 )
@@ -12,15 +13,18 @@ func TestConferencecallStruct(t *testing.T) {
 	conferenceID := uuid.Must(uuid.NewV4())
 	referenceID := uuid.Must(uuid.NewV4())
 
+	tmCreate := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+	tmUpdate := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+
 	cc := Conferencecall{
 		ActiveflowID:  activeflowID,
 		ConferenceID:  conferenceID,
 		ReferenceType: ReferenceTypeCall,
 		ReferenceID:   referenceID,
 		Status:        StatusJoining,
-		TMCreate:      "2024-01-01T00:00:00.000000Z",
-		TMUpdate:      "2024-01-01T00:00:00.000000Z",
-		TMDelete:      "9999-01-01T00:00:00.000000Z",
+		TMCreate:      &tmCreate,
+		TMUpdate:      &tmUpdate,
+		TMDelete:      nil,
 	}
 	cc.ID = id
 

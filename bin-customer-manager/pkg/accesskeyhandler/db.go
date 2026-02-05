@@ -9,7 +9,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-customer-manager/models/accesskey"
-	"monorepo/bin-customer-manager/pkg/dbhandler"
 )
 
 // List returns list of accesskeys
@@ -90,7 +89,7 @@ func (h *accesskeyHandler) Create(
 	log.Debug("Creating a new accesskey.")
 
 	id := h.utilHandler.UUIDCreate()
-	tmExpire := h.utilHandler.TimeGetCurTimeAdd(expire)
+	tmExpire := h.utilHandler.TimeNowAdd(expire)
 
 	token, err := h.utilHandler.StringGenerateRandom(defaultLenToken)
 	if err != nil {
@@ -141,7 +140,7 @@ func (h *accesskeyHandler) Delete(ctx context.Context, id uuid.UUID) (*accesskey
 		return nil, err
 	}
 
-	if c.TMDelete != dbhandler.DefaultTimeStamp {
+	if c.TMDelete != nil {
 		// already deleted
 		log.Infof("The accesskey already deleted. accesskey_id: %s", c.ID)
 		return c, nil

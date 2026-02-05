@@ -58,7 +58,7 @@ func Test_Hangup(t *testing.T) {
 				},
 			},
 			responseChannel: &channel.Channel{
-				TMEnd: dbhandler.DefaultTimeStamp,
+				TMEnd: nil,
 			},
 		},
 		{
@@ -85,7 +85,7 @@ func Test_Hangup(t *testing.T) {
 				},
 			},
 			responseChannel: &channel.Channel{
-				TMEnd: dbhandler.DefaultTimeStamp,
+				TMEnd: nil,
 			},
 		},
 		{
@@ -109,7 +109,7 @@ func Test_Hangup(t *testing.T) {
 				GroupcallID: uuid.FromStringOrNil("0a660c00-d901-11ed-9d27-eb63c32e1192"),
 			},
 			responseChannel: &channel.Channel{
-				TMEnd: dbhandler.DefaultTimeStamp,
+				TMEnd: nil,
 			},
 		},
 	}
@@ -219,7 +219,7 @@ func Test_hangingUpWithCause(t *testing.T) {
 			&channel.Channel{
 				ID:         "7877dce8-1777-11ec-b4ea-3bb953ca2fe7",
 				AsteriskID: "80:fa:5b:5e:da:81",
-				TMEnd:      dbhandler.DefaultTimeStamp,
+				TMEnd:      nil,
 			},
 
 			call.StatusTerminating,
@@ -245,7 +245,7 @@ func Test_hangingUpWithCause(t *testing.T) {
 			&channel.Channel{
 				ID:         "ac7411a4-ab1c-11ec-bce4-e7e983448875",
 				AsteriskID: "80:fa:5b:5e:da:81",
-				TMEnd:      dbhandler.DefaultTimeStamp,
+				TMEnd:      nil,
 			},
 
 			call.StatusCanceling,
@@ -332,7 +332,7 @@ func Test_hangingupWithReference(t *testing.T) {
 			&channel.Channel{
 				ID:          "19b1bc03-cf90-47b9-9fbd-5fef6d9393a4",
 				HangupCause: ari.ChannelCauseNoAnswer,
-				TMEnd:       dbhandler.DefaultTimeStamp,
+				TMEnd:       nil,
 			},
 			&call.Call{
 				Identity: commonidentity.Identity{

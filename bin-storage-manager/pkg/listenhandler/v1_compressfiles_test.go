@@ -53,7 +53,7 @@ func Test_v1CompressfilesPost(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"file_ids":["f2525e0e-1d6d-11ef-8d33-f3f47b464f43","25c5729e-1d6e-11ef-940b-0fa28944ca27","f27dacc6-1d6d-11ef-954e-73482b2c50cb","25e8ab92-1d6e-11ef-a6e2-8f552c006c72"],"download_uri":"","tm_download_expire":""}`),
+				Data:       []byte(`{"file_ids":["f2525e0e-1d6d-11ef-8d33-f3f47b464f43","25c5729e-1d6e-11ef-940b-0fa28944ca27","f27dacc6-1d6d-11ef-954e-73482b2c50cb","25e8ab92-1d6e-11ef-a6e2-8f552c006c72"],"download_uri":"","tm_download_expire":null}`),
 			},
 		},
 	}

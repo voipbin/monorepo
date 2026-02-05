@@ -10,7 +10,6 @@ import (
 
 	"monorepo/bin-billing-manager/models/account"
 	"monorepo/bin-billing-manager/models/billing"
-	"monorepo/bin-billing-manager/pkg/dbhandler"
 )
 
 // IsValidBalanceByCustomerID returns false if the given customer's balance is not valid
@@ -52,7 +51,7 @@ func (h *accountHandler) IsValidBalance(ctx context.Context, accountID uuid.UUID
 		return false, errors.Wrap(err, "could not get account info")
 	}
 
-	if a.TMDelete < dbhandler.DefaultTimeStamp {
+	if a.TMDelete != nil {
 		log.WithField("account", a).Debugf("The account has deleted already. account_id: %s", a.ID)
 		return false, nil
 	}

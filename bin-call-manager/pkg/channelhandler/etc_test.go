@@ -31,7 +31,7 @@ func Test_Answer(t *testing.T) {
 			&channel.Channel{
 				AsteriskID: "42:01:0a:a4:00:03",
 				ID:         "7bb6f7d2-f1d6-11ed-a374-27c4926da333",
-				TMDelete:   dbhandler.DefaultTimeStamp,
+				TMDelete:   nil,
 			},
 		},
 	}
@@ -93,7 +93,7 @@ func Test_DTMFSend(t *testing.T) {
 			&channel.Channel{
 				AsteriskID: "42:01:0a:a4:00:03",
 				ID:         "f982b8d6-f1d6-11ed-a858-273f6fafdf2d",
-				TMDelete:   dbhandler.DefaultTimeStamp,
+				TMDelete:   nil,
 			},
 		},
 	}
@@ -159,7 +159,7 @@ func Test_Record(t *testing.T) {
 			&channel.Channel{
 				AsteriskID: "42:01:0a:a4:00:03",
 				ID:         "7a441186-f1d7-11ed-b7fd-dfeed495bcd9",
-				TMDelete:   dbhandler.DefaultTimeStamp,
+				TMDelete:   nil,
 			},
 		},
 	}
@@ -215,7 +215,7 @@ func Test_Dial(t *testing.T) {
 			&channel.Channel{
 				AsteriskID: "42:01:0a:a4:00:03",
 				ID:         "48fa7588-f1d8-11ed-b6fc-33b1a48c2ece",
-				TMDelete:   dbhandler.DefaultTimeStamp,
+				TMDelete:   nil,
 			},
 		},
 	}
@@ -273,7 +273,7 @@ func Test_Redirect(t *testing.T) {
 			responseChannel: &channel.Channel{
 				AsteriskID: "42:01:0a:a4:00:03",
 				ID:         "cf67ff40-f24c-11ed-ac88-67537dac4349",
-				TMDelete:   dbhandler.DefaultTimeStamp,
+				TMDelete:   nil,
 			},
 		},
 	}
@@ -333,7 +333,7 @@ func Test_Continue(t *testing.T) {
 			responseChannel: &channel.Channel{
 				AsteriskID: "42:01:0a:a4:00:03",
 				ID:         "cf67ff40-f24c-11ed-ac88-67537dac4349",
-				TMDelete:   dbhandler.DefaultTimeStamp,
+				TMDelete:   nil,
 			},
 		},
 	}
@@ -385,7 +385,7 @@ func Test_Ring(t *testing.T) {
 			responseChannel: &channel.Channel{
 				AsteriskID: "42:01:0a:a4:00:03",
 				ID:         "8da2f10e-f24d-11ed-bc85-0f4baf3d3589",
-				TMDelete:   dbhandler.DefaultTimeStamp,
+				TMDelete:   nil,
 			},
 		},
 	}

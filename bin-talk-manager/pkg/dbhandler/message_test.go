@@ -6,14 +6,18 @@ import (
 	"reflect"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
-	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	commonutil "monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-talk-manager/models/message"
 )
+
+func timePtr(t time.Time) *time.Time {
+	return &t
+}
 
 func Test_MessageCreate(t *testing.T) {
 	tests := []struct {
@@ -102,12 +106,12 @@ func Test_MessageCreate(t *testing.T) {
 			}
 
 			// Clear timestamps for comparison
-			tt.data.TMCreate = ""
-			tt.data.TMUpdate = ""
-			tt.data.TMDelete = ""
-			res.TMCreate = ""
-			res.TMUpdate = ""
-			res.TMDelete = ""
+			tt.data.TMCreate = nil
+			tt.data.TMUpdate = nil
+			tt.data.TMDelete = nil
+			res.TMCreate = nil
+			res.TMUpdate = nil
+			res.TMDelete = nil
 
 			if !reflect.DeepEqual(tt.data, res) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.data, res)
@@ -481,9 +485,9 @@ func Test_MessageDelete(t *testing.T) {
 			// Verify soft delete - should return error when getting deleted message
 			res, err := h.MessageGet(ctx, tt.deleteID)
 			if err == nil {
-				// If no error, verify tm_delete is not default
-				if res.TMDelete == commondatabasehandler.DefaultTimeStamp {
-					t.Errorf("Expected soft delete timestamp, got default timestamp")
+				// If no error, verify tm_delete is not nil (was soft deleted)
+				if res.TMDelete == nil {
+					t.Errorf("Expected soft delete timestamp, got nil")
 				}
 			}
 
@@ -530,7 +534,7 @@ func Test_MessageAddReactionAtomic(t *testing.T) {
 				Emoji:     "👍",
 				OwnerType: string(commonidentity.OwnerTypeAgent),
 				OwnerID:   uuid.FromStringOrNil("9922f8c2-e428-11ec-b1a3-4bc67cb9da47"),
-				TMCreate:  "2024-01-01T00:00:00.000000Z",
+				TMCreate:  timePtr(time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)),
 			},
 			expectCount: 1,
 		},
@@ -623,7 +627,7 @@ func Test_MessageAddReactionAtomic_Concurrent(t *testing.T) {
 				Emoji:     "👍",
 				OwnerType: string(commonidentity.OwnerTypeAgent),
 				OwnerID:   uuid.Must(uuid.NewV4()),
-				TMCreate:  "2024-01-01T00:00:00.000000Z",
+				TMCreate:  timePtr(time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)),
 			}
 
 			reactionJSON, err := json.Marshal(reaction)
@@ -682,7 +686,7 @@ func Test_MessageRemoveReactionAtomic(t *testing.T) {
 				Emoji:     "👍",
 				OwnerType: string(commonidentity.OwnerTypeAgent),
 				OwnerID:   uuid.FromStringOrNil("b922f8c2-e428-11ec-b1a3-4bc67cb9da54"),
-				TMCreate:  "2024-01-01T00:00:00.000000Z",
+				TMCreate:  timePtr(time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)),
 			},
 			removeEmoji:     "👍",
 			removeOwnerType: string(commonidentity.OwnerTypeAgent),

@@ -2,6 +2,7 @@ package message
 
 import (
 	"encoding/json"
+	"time"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -23,9 +24,9 @@ type WebhookMessage struct {
 	Text      string    `json:"text"` // Text delivered in the body of the message.
 	Direction Direction `json:"direction"`
 
-	TMCreate string `json:"tm_create"`
-	TMUpdate string `json:"tm_update"`
-	TMDelete string `json:"tm_delete"`
+	TMCreate *time.Time `json:"tm_create"`
+	TMUpdate *time.Time `json:"tm_update"`
+	TMDelete *time.Time `json:"tm_delete"`
 }
 
 // ConvertWebhookMessage converts to the event

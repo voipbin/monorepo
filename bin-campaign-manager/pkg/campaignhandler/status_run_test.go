@@ -52,21 +52,19 @@ func Test_campaignRun(t *testing.T) {
 					ID:         uuid.FromStringOrNil("c9af1a74-2dc8-4053-a181-5b47bebab2c4"),
 					CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
 				},
-				TMDelete: dbhandler.DefaultTimeStamp,
 			},
 			responseOutdial: &omoutdial.Outdial{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("c7268f48-1a01-47ee-8cb1-ea2a34c53bff"),
 					CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
 				},
-				TMDelete: dbhandler.DefaultTimeStamp,
 			},
 			responseQueue: &qmqueue.Queue{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("c7268f48-1a01-47ee-8cb1-ea2a34c53bff"),
 					CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
 				},
-				TMDelete: dbhandler.DefaultTimeStamp,
+				TMDelete: nil,
 			},
 		},
 	}

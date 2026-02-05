@@ -5,12 +5,12 @@ import (
 	"fmt"
 	reflect "reflect"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
-	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-conversation-manager/models/media"
 	"monorepo/bin-conversation-manager/pkg/cachehandler"
@@ -23,7 +23,7 @@ func Test_MediaCreate(t *testing.T) {
 
 		media *media.Media
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *media.Media
 	}{
 		{
@@ -39,7 +39,7 @@ func Test_MediaCreate(t *testing.T) {
 				Filename: "testfilename.wav",
 			},
 
-			"2022-04-18T03:22:17.995000Z",
+			func() *time.Time { t := time.Date(2022, 4, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
 			&media.Media{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("77f3825a-eb9c-11ec-9fa6-ef743d81dea8"),
@@ -48,9 +48,9 @@ func Test_MediaCreate(t *testing.T) {
 
 				Type:     media.TypeAudio,
 				Filename: "testfilename.wav",
-				TMCreate: "2022-04-18T03:22:17.995000Z",
-				TMUpdate: commondatabasehandler.DefaultTimeStamp,
-				TMDelete: commondatabasehandler.DefaultTimeStamp,
+				TMCreate: func() *time.Time { t := time.Date(2022, 4, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
+				TMUpdate: nil,
+				TMDelete: nil,
 			},
 		},
 	}
@@ -71,7 +71,7 @@ func Test_MediaCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().MediaSet(gomock.Any(), gomock.Any())
 			if err := h.MediaCreate(ctx, tt.media); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

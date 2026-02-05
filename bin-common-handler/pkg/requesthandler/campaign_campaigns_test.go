@@ -633,7 +633,7 @@ func Test_CampaignV1CampaignUpdateActions(t *testing.T) {
 				URI:      "/v1/campaigns/381d05c3-5cc2-4296-89c9-80aa751e2d2c/actions",
 				Method:   sock.RequestMethodPut,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}]}`),
+				Data:     []byte(`{"actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer","tm_execute":null}]}`),
 			},
 			&cacampaign.Campaign{
 				Identity: identity.Identity{

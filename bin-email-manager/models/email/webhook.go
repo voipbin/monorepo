@@ -2,6 +2,8 @@ package email
 
 import (
 	"encoding/json"
+	"time"
+
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 )
@@ -19,9 +21,9 @@ type WebhookMessage struct {
 
 	Attachments []Attachment `json:"attachments"`
 
-	TMCreate string `json:"tm_create"`
-	TMUpdate string `json:"tm_update"`
-	TMDelete string `json:"tm_delete"`
+	TMCreate *time.Time `json:"tm_create"`
+	TMUpdate *time.Time `json:"tm_update"`
+	TMDelete *time.Time `json:"tm_delete"`
 }
 
 // ConvertWebhookMessage converts to the event

@@ -47,13 +47,13 @@ func Test_conferencecallsGET(t *testing.T) {
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("abd295d0-50cb-11ee-8248-c352b46cb94a"),
 					},
-					TMCreate: "2020-09-20T03:23:21.995000Z",
+					TMCreate: timePtr("2020-09-20T03:23:21.995000Z"),
 				},
 			},
 
 			expectPageSize:  10,
 			expectPageToken: "2020-09-20T03:23:20.995000Z",
-			expectRes:       `{"result":[{"id":"abd295d0-50cb-11ee-8248-c352b46cb94a","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","conference_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:21.995000Z"}],"next_page_token":"2020-09-20T03:23:21.995000Z"}`,
+			expectRes:       `{"result":[{"id":"abd295d0-50cb-11ee-8248-c352b46cb94a","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","conference_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null}],"next_page_token":"2020-09-20T03:23:21.995000Z"}`,
 		},
 		{
 			name: "more than 2 items",
@@ -70,25 +70,25 @@ func Test_conferencecallsGET(t *testing.T) {
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("ac00629e-50cb-11ee-979d-4f2d9dd53b6f"),
 					},
-					TMCreate: "2020-09-20T03:23:21.995000Z",
+					TMCreate: timePtr("2020-09-20T03:23:21.995000Z"),
 				},
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("ac330f78-50cb-11ee-a312-5f2d51198045"),
 					},
-					TMCreate: "2020-09-20T03:23:22.995000Z",
+					TMCreate: timePtr("2020-09-20T03:23:22.995000Z"),
 				},
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("ac5c2840-50cb-11ee-85d2-0321e8bcf0d4"),
 					},
-					TMCreate: "2020-09-20T03:23:23.995000Z",
+					TMCreate: timePtr("2020-09-20T03:23:23.995000Z"),
 				},
 			},
 
 			expectPageSize:  10,
 			expectPageToken: "2020-09-20T03:23:20.995000Z",
-			expectRes:       `{"result":[{"id":"ac00629e-50cb-11ee-979d-4f2d9dd53b6f","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","conference_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:21.995000Z"},{"id":"ac330f78-50cb-11ee-a312-5f2d51198045","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","conference_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:22.995000Z"},{"id":"ac5c2840-50cb-11ee-85d2-0321e8bcf0d4","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","conference_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:23.995000Z"}],"next_page_token":"2020-09-20T03:23:23.995000Z"}`,
+			expectRes:       `{"result":[{"id":"ac00629e-50cb-11ee-979d-4f2d9dd53b6f","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","conference_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null},{"id":"ac330f78-50cb-11ee-a312-5f2d51198045","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","conference_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:22.995Z","tm_update":null,"tm_delete":null},{"id":"ac5c2840-50cb-11ee-85d2-0321e8bcf0d4","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","conference_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:23.995Z","tm_update":null,"tm_delete":null}],"next_page_token":"2020-09-20T03:23:23.995000Z"}`,
 		},
 	}
 
@@ -158,7 +158,7 @@ func Test_ConferencecallsIDGET(t *testing.T) {
 			},
 
 			expectConferencecallID: uuid.FromStringOrNil("c2de6db2-15b2-11ed-a8c9-df3874205c01"),
-			expectRes:              `{"id":"c2de6db2-15b2-11ed-a8c9-df3874205c01","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","conference_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000"}`,
+			expectRes:              `{"id":"c2de6db2-15b2-11ed-a8c9-df3874205c01","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","conference_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -225,7 +225,7 @@ func Test_conferencecallsIDDELETE(t *testing.T) {
 			},
 
 			expectConferencecallID: uuid.FromStringOrNil("23d576b4-15b4-11ed-b6f4-fbfaed3df462"),
-			expectRes:              `{"id":"23d576b4-15b4-11ed-b6f4-fbfaed3df462","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","conference_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000"}`,
+			expectRes:              `{"id":"23d576b4-15b4-11ed-b6f4-fbfaed3df462","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","conference_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 

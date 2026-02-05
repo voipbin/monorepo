@@ -44,8 +44,8 @@ type ChannelHandler interface {
 		ctx context.Context,
 		asteriskID string,
 		channelType channel.Type,
-		startTime string,
-		endTime string,
+		startTime *time.Time,
+		endTime *time.Time,
 		size uint64,
 	) ([]*channel.Channel, error)
 	Delete(ctx context.Context, id string, cause ari.ChannelCause) (*channel.Channel, error)

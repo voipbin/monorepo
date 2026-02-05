@@ -1,6 +1,7 @@
 package callhandler
 
 import (
+	"monorepo/bin-call-manager/pkg/testhelper"
 	"context"
 	"fmt"
 	"testing"
@@ -41,7 +42,7 @@ func Test_ARIChannelStateChangeStatusProgressing(t *testing.T) {
 				Data:     map[string]interface{}{},
 				State:    ari.ChannelStateUp,
 				Type:     channel.TypeCall,
-				TMAnswer: "2020-05-02T20:56:51.498Z",
+				TMAnswer: testhelper.TimePtr("2020-05-02T20:56:51.498Z"),
 			},
 			&call.Call{
 				Identity: commonidentity.Identity{
@@ -64,7 +65,7 @@ func Test_ARIChannelStateChangeStatusProgressing(t *testing.T) {
 				Data:     map[string]interface{}{},
 				State:    ari.ChannelStateUp,
 				Type:     channel.TypeCall,
-				TMAnswer: "2020-05-02T20:56:51.498Z",
+				TMAnswer: testhelper.TimePtr("2020-05-02T20:56:51.498Z"),
 			},
 			&call.Call{
 				Identity: commonidentity.Identity{
@@ -136,7 +137,7 @@ func Test_ARIChannelStateChangeStatusRinging(t *testing.T) {
 				Data:      map[string]interface{}{},
 				State:     ari.ChannelStateRing,
 				Type:      channel.TypeCall,
-				TMRinging: "2020-05-02T20:56:51.498Z",
+				TMRinging: testhelper.TimePtr("2020-05-02T20:56:51.498Z"),
 			},
 			&call.Call{
 				Identity: commonidentity.Identity{

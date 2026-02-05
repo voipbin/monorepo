@@ -18,9 +18,9 @@ const (
 
 // SummaryCreate creates a new summary record.
 func (h *handler) SummaryCreate(ctx context.Context, c *summary.Summary) error {
-	c.TMCreate = h.utilHandler.TimeGetCurTime()
-	c.TMUpdate = DefaultTimeStamp
-	c.TMDelete = DefaultTimeStamp
+	c.TMCreate = h.utilHandler.TimeNow()
+	c.TMUpdate = nil
+	c.TMDelete = nil
 
 	fields, err := commondatabasehandler.PrepareFields(c)
 	if err != nil {
@@ -126,7 +126,7 @@ func (h *handler) SummaryGet(ctx context.Context, id uuid.UUID) (*summary.Summar
 
 // SummaryDelete deletes the summary.
 func (h *handler) SummaryDelete(ctx context.Context, id uuid.UUID) error {
-	ts := h.utilHandler.TimeGetCurTime()
+	ts := h.utilHandler.TimeNow()
 
 	query, args, err := sq.Update(summaryTable).
 		SetMap(map[string]any{
@@ -198,7 +198,7 @@ func (h *handler) SummaryUpdate(ctx context.Context, id uuid.UUID, fields map[su
 	for k, v := range fields {
 		updateFields[string(k)] = v
 	}
-	updateFields["tm_update"] = h.utilHandler.TimeGetCurTime()
+	updateFields["tm_update"] = h.utilHandler.TimeNow()
 
 	preparedFields, err := commondatabasehandler.PrepareFields(updateFields)
 	if err != nil {

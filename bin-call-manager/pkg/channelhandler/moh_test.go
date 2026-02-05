@@ -33,7 +33,7 @@ func Test_MOHOn(t *testing.T) {
 			&channel.Channel{
 				ID:         "9c399960-d138-11ed-922d-2f430e6193fe",
 				AsteriskID: "3e:50:6b:43:bb:30",
-				TMDelete:   dbhandler.DefaultTimeStamp,
+				TMDelete:   nil,
 			},
 		},
 	}
@@ -85,7 +85,7 @@ func Test_MOHOff(t *testing.T) {
 			&channel.Channel{
 				ID:         "9c6b532e-d138-11ed-95e8-7bca000c02ad",
 				AsteriskID: "3e:50:6b:43:bb:30",
-				TMDelete:   dbhandler.DefaultTimeStamp,
+				TMDelete:   nil,
 			},
 		},
 	}

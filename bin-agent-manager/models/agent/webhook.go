@@ -2,6 +2,7 @@ package agent
 
 import (
 	"encoding/json"
+	"time"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -25,9 +26,9 @@ type WebhookMessage struct {
 	TagIDs     []uuid.UUID             `json:"tag_ids"`    // agent's tag ids
 	Addresses  []commonaddress.Address `json:"addresses"`  // agent's endpoint addresses
 
-	TMCreate string `json:"tm_create"` // Created timestamp.
-	TMUpdate string `json:"tm_update"` // Updated timestamp.
-	TMDelete string `json:"tm_delete"` // Deleted timestamp.
+	TMCreate *time.Time `json:"tm_create,omitempty"` // Created timestamp.
+	TMUpdate *time.Time `json:"tm_update,omitempty"` // Updated timestamp.
+	TMDelete *time.Time `json:"tm_delete,omitempty"` // Deleted timestamp.
 }
 
 // ConvertWebhookMessage converts to the event

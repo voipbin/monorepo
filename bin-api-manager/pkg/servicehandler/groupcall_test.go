@@ -50,14 +50,14 @@ func Test_GroupcallGet(t *testing.T) {
 					ID:         uuid.FromStringOrNil("979b59ec-bf00-11ed-a60e-77087af74425"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-				TMDelete: defaultTimestamp,
+				TMDelete: nil,
 			},
 			&cmgroupcall.WebhookMessage{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("979b59ec-bf00-11ed-a60e-77087af74425"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-				TMDelete: defaultTimestamp,
+				TMDelete: nil,
 			},
 		},
 	}
@@ -141,13 +141,13 @@ func Test_GroupcallCreate(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("88d05668-efc5-11ea-940c-b39a697e7abe"),
 				},
-				TMDelete: defaultTimestamp,
+				TMDelete: nil,
 			},
 			expectRes: &cmgroupcall.WebhookMessage{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("88d05668-efc5-11ea-940c-b39a697e7abe"),
 				},
-				TMDelete: defaultTimestamp,
+				TMDelete: nil,
 			},
 		},
 	}
@@ -212,14 +212,14 @@ func Test_GroupcallHangup(t *testing.T) {
 					ID:         uuid.FromStringOrNil("415fd3ee-bf02-11ed-90a4-1fde392a001c"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-				TMDelete: defaultTimestamp,
+				TMDelete: nil,
 			},
 			expectRes: &cmgroupcall.WebhookMessage{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("415fd3ee-bf02-11ed-90a4-1fde392a001c"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-				TMDelete: defaultTimestamp,
+				TMDelete: nil,
 			},
 		},
 	}
@@ -281,14 +281,14 @@ func Test_GroupcallDelete(t *testing.T) {
 					ID:         uuid.FromStringOrNil("3c3b27dc-bf03-11ed-9885-d7004ea1cd6a"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-				TMDelete: defaultTimestamp,
+				TMDelete: nil,
 			},
 			expectRes: &cmgroupcall.WebhookMessage{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("3c3b27dc-bf03-11ed-9885-d7004ea1cd6a"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-				TMDelete: defaultTimestamp,
+				TMDelete: nil,
 			},
 		},
 	}

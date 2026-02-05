@@ -48,7 +48,7 @@ func Test_FlowV1ActiveflowCreate(t *testing.T) {
 			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
-				Data:       []byte(`{"id":"aa847807-6cc4-4713-9dec-53a42840e74c","flow_id":"44ebbd2e-82d8-11eb-8a4e-f7957fea9f50","reference_type":"call","reference_id":"447e712e-82d8-11eb-8900-7b97c080ddd8","customer_id":"f42b33e2-7f4d-11ec-8c86-ebf558a4306c","current_action":{"id":"00000000-0000-0000-0000-000000000001","type":""},"actions":[],"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"aa847807-6cc4-4713-9dec-53a42840e74c","flow_id":"44ebbd2e-82d8-11eb-8a4e-f7957fea9f50","reference_type":"call","reference_id":"447e712e-82d8-11eb-8900-7b97c080ddd8","customer_id":"f42b33e2-7f4d-11ec-8c86-ebf558a4306c","current_action":{"id":"00000000-0000-0000-0000-000000000001","type":"","tm_execute":null},"actions":[],"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 
 			expectedQueue: "bin-manager.flow-manager.request",
@@ -700,7 +700,7 @@ func Test_FlowV1ActiveflowAddActions(t *testing.T) {
 				URI:      "/v1/activeflows/6a5bb518-03f9-11f0-b284-bb23d250808c/add_actions",
 				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"actions":[{"id":"6ac3888c-03f9-11f0-9cbc-0f40d578c119","next_id":"00000000-0000-0000-0000-000000000000"},{"id":"6b03b7c2-03f9-11f0-af7d-dbc31d2927cc","next_id":"00000000-0000-0000-0000-000000000000"}]}`),
+				Data:     []byte(`{"actions":[{"id":"6ac3888c-03f9-11f0-9cbc-0f40d578c119","next_id":"00000000-0000-0000-0000-000000000000","tm_execute":null},{"id":"6b03b7c2-03f9-11f0-af7d-dbc31d2927cc","next_id":"00000000-0000-0000-0000-000000000000","tm_execute":null}]}`),
 			},
 			expectRes: &fmactiveflow.Activeflow{
 				Identity: identity.Identity{
@@ -770,7 +770,7 @@ func Test_FlowV1ActiveflowPushActions(t *testing.T) {
 				URI:      "/v1/activeflows/0dd10f12-fb1a-11ed-a3e2-dbe67cf6376c/push_actions",
 				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}]}`),
+				Data:     []byte(`{"actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer","tm_execute":null}]}`),
 			},
 			expectRes: &fmactiveflow.Activeflow{
 				Identity: identity.Identity{

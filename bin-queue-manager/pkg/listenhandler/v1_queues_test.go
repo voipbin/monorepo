@@ -66,7 +66,7 @@ func Test_processV1QueuesPost(t *testing.T) {
 			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"cba57fb6-59de-11ec-b230-5b6ab3380040","customer_id":"00000000-0000-0000-0000-000000000000","wait_flow_id":"00000000-0000-0000-0000-000000000000"}`),
+				Data:       []byte(`{"id":"cba57fb6-59de-11ec-b230-5b6ab3380040","customer_id":"00000000-0000-0000-0000-000000000000","wait_flow_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -149,7 +149,7 @@ func Test_processV1QueuesGet(t *testing.T) {
 			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"866ad964-620e-11eb-9f09-9fab48a7edd3","customer_id":"00000000-0000-0000-0000-000000000000","wait_flow_id":"00000000-0000-0000-0000-000000000000"}]`),
+				Data:       []byte(`[{"id":"866ad964-620e-11eb-9f09-9fab48a7edd3","customer_id":"00000000-0000-0000-0000-000000000000","wait_flow_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}]`),
 			},
 		},
 		{
@@ -183,7 +183,7 @@ func Test_processV1QueuesGet(t *testing.T) {
 			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"866ad964-620e-11eb-9f09-9fab48a7edd3","customer_id":"00000000-0000-0000-0000-000000000000","wait_flow_id":"00000000-0000-0000-0000-000000000000"},{"id":"e218b154-5f6b-11ec-818d-633351f9e341","customer_id":"00000000-0000-0000-0000-000000000000","wait_flow_id":"00000000-0000-0000-0000-000000000000"}]`),
+				Data:       []byte(`[{"id":"866ad964-620e-11eb-9f09-9fab48a7edd3","customer_id":"00000000-0000-0000-0000-000000000000","wait_flow_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null},{"id":"e218b154-5f6b-11ec-818d-633351f9e341","customer_id":"00000000-0000-0000-0000-000000000000","wait_flow_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}]`),
 			},
 		},
 	}
@@ -245,7 +245,7 @@ func Test_processV1QueuesIDGet(t *testing.T) {
 			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"a8e8faba-6150-11ec-bde0-e75ae9f16df7","customer_id":"00000000-0000-0000-0000-000000000000","wait_flow_id":"00000000-0000-0000-0000-000000000000"}`),
+				Data:       []byte(`{"id":"a8e8faba-6150-11ec-bde0-e75ae9f16df7","customer_id":"00000000-0000-0000-0000-000000000000","wait_flow_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -307,7 +307,7 @@ func Test_processV1QueuesIDDelete(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"a8e8faba-6150-11ec-bde0-e75ae9f16df7","customer_id":"00000000-0000-0000-0000-000000000000","wait_flow_id":"00000000-0000-0000-0000-000000000000"}`),
+				Data:       []byte(`{"id":"a8e8faba-6150-11ec-bde0-e75ae9f16df7","customer_id":"00000000-0000-0000-0000-000000000000","wait_flow_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -387,7 +387,7 @@ func Test_processV1QueuesIDPut(t *testing.T) {
 			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"66f7d436-5f6c-11ec-9298-677df04a59c2","customer_id":"00000000-0000-0000-0000-000000000000","wait_flow_id":"00000000-0000-0000-0000-000000000000"}`),
+				Data:       []byte(`{"id":"66f7d436-5f6c-11ec-9298-677df04a59c2","customer_id":"00000000-0000-0000-0000-000000000000","wait_flow_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -464,7 +464,7 @@ func Test_processV1QueuesIDTagIDsPut(t *testing.T) {
 			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"4c898be8-5f6d-11ec-b701-a7ba1509a629","customer_id":"00000000-0000-0000-0000-000000000000","wait_flow_id":"00000000-0000-0000-0000-000000000000"}`),
+				Data:       []byte(`{"id":"4c898be8-5f6d-11ec-b701-a7ba1509a629","customer_id":"00000000-0000-0000-0000-000000000000","wait_flow_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 		{
@@ -490,7 +490,7 @@ func Test_processV1QueuesIDTagIDsPut(t *testing.T) {
 			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"1c0938ae-6019-11ec-8a5d-ab6c7909948a","customer_id":"00000000-0000-0000-0000-000000000000","wait_flow_id":"00000000-0000-0000-0000-000000000000"}`),
+				Data:       []byte(`{"id":"1c0938ae-6019-11ec-8a5d-ab6c7909948a","customer_id":"00000000-0000-0000-0000-000000000000","wait_flow_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -555,7 +555,7 @@ func Test_processV1QueuesIDRoutingMethodPut(t *testing.T) {
 			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"89b402a8-6019-11ec-8f65-cb5c282f0024","customer_id":"00000000-0000-0000-0000-000000000000","wait_flow_id":"00000000-0000-0000-0000-000000000000"}`),
+				Data:       []byte(`{"id":"89b402a8-6019-11ec-8f65-cb5c282f0024","customer_id":"00000000-0000-0000-0000-000000000000","wait_flow_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -695,7 +695,7 @@ func Test_processV1QueuesIDAgentsGet(t *testing.T) {
 			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"2e5b56a2-b49e-11ec-a643-5b72b632781f","customer_id":"00000000-0000-0000-0000-000000000000","username":"","password_hash":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"2e5b56a2-b49e-11ec-a643-5b72b632781f","customer_id":"00000000-0000-0000-0000-000000000000","username":"","password_hash":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null}]`),
 			},
 		},
 	}
@@ -811,7 +811,7 @@ func Test_processV1QueuesIDExecutePut(t *testing.T) {
 			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"e5e9af02-d1d7-11ec-b5e1-0782d8999acb","customer_id":"00000000-0000-0000-0000-000000000000","wait_flow_id":"00000000-0000-0000-0000-000000000000"}`),
+				Data:       []byte(`{"id":"e5e9af02-d1d7-11ec-b5e1-0782d8999acb","customer_id":"00000000-0000-0000-0000-000000000000","wait_flow_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}

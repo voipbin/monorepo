@@ -55,7 +55,7 @@ func (h *storageHandler) CompressfileCreate(ctx context.Context, referenceIDs []
 	}
 
 	// create compress file
-	tmExpire := h.utilHandler.TimeGetCurTimeAdd(24 * time.Hour)
+	tmExpire := h.utilHandler.TimeNowAdd(24 * time.Hour)
 	res := &compressfile.CompressFile{
 		FileIDs:          targetFileIDs,
 		DownloadURI:      downloadURI,

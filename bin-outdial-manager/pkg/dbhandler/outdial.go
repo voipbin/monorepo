@@ -147,7 +147,7 @@ func (h *handler) OutdialGet(ctx context.Context, id uuid.UUID) (*outdial.Outdia
 
 // OutdialDelete deletes the outdial.
 func (h *handler) OutdialDelete(ctx context.Context, id uuid.UUID) error {
-	ts := h.utilHandler.TimeGetCurTime()
+	ts := h.utilHandler.TimeNow()
 
 	fields := map[outdial.Field]any{
 		outdial.FieldTMUpdate: ts,
@@ -233,7 +233,7 @@ func (h *handler) OutdialUpdate(ctx context.Context, id uuid.UUID, fields map[ou
 		return nil
 	}
 
-	fields[outdial.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
+	fields[outdial.FieldTMUpdate] = h.utilHandler.TimeNow()
 
 	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {

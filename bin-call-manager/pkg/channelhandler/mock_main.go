@@ -15,6 +15,7 @@ import (
 	channel "monorepo/bin-call-manager/models/channel"
 	address "monorepo/bin-common-handler/models/address"
 	reflect "reflect"
+	time "time"
 
 	gomock "go.uber.org/mock/gomock"
 )
@@ -217,7 +218,7 @@ func (mr *MockChannelHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
 }
 
 // GetChannelsForRecovery mocks base method.
-func (m *MockChannelHandler) GetChannelsForRecovery(ctx context.Context, asteriskID string, channelType channel.Type, startTime, endTime string, size uint64) ([]*channel.Channel, error) {
+func (m *MockChannelHandler) GetChannelsForRecovery(ctx context.Context, asteriskID string, channelType channel.Type, startTime, endTime *time.Time, size uint64) ([]*channel.Channel, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetChannelsForRecovery", ctx, asteriskID, channelType, startTime, endTime, size)
 	ret0, _ := ret[0].([]*channel.Channel)

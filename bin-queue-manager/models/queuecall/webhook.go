@@ -2,6 +2,8 @@ package queuecall
 
 import (
 	"encoding/json"
+	"time"
+
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	uuid "github.com/gofrs/uuid"
@@ -20,10 +22,10 @@ type WebhookMessage struct {
 	DurationWaiting int `json:"duration_waiting,omitempty"` // duration for waiting(ms)
 	DurationService int `json:"duration_service,omitempty"` // duration for service(ms)
 
-	TMCreate  string `json:"tm_create,omitempty"`
-	TMService string `json:"tm_service,omitempty"`
-	TMUpdate  string `json:"tm_update,omitempty"`
-	TMDelete  string `json:"tm_delete,omitempty"`
+	TMCreate  *time.Time `json:"tm_create"`
+	TMService *time.Time `json:"tm_service"`
+	TMUpdate  *time.Time `json:"tm_update"`
+	TMDelete  *time.Time `json:"tm_delete"`
 }
 
 // ConvertWebhookMessage defines

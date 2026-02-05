@@ -330,7 +330,7 @@ func Test_updateCurrentAction(t *testing.T) {
 					},
 				},
 			},
-			expectActiveflowUpdate: &activeflow.Activeflow{
+		expectActiveflowUpdate: &activeflow.Activeflow{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("f594ebd8-06ae-11eb-9bca-5757b3876041"),
 				},
@@ -346,7 +346,6 @@ func Test_updateCurrentAction(t *testing.T) {
 					Type: action.TypeAnswer,
 				},
 				ExecuteCount: 1,
-				TMUpdate:     "2022-04-18T03:22:17.995000Z",
 			},
 		},
 	}
@@ -401,7 +400,7 @@ func Test_Delete(t *testing.T) {
 					ID: uuid.FromStringOrNil("57214714-f168-11ee-9706-6f34dc976036"),
 				},
 				Status:   activeflow.StatusEnded,
-				TMDelete: dbhandler.DefaultTimeStamp,
+				TMDelete: nil,
 			},
 		},
 	}

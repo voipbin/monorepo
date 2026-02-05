@@ -2,6 +2,7 @@ package message
 
 import (
 	"encoding/json"
+	"time"
 
 	"github.com/gofrs/uuid"
 
@@ -32,9 +33,9 @@ type Message struct {
 	Metadata Metadata `json:"metadata" db:"metadata,json"`
 
 	// Timestamps
-	TMCreate string `json:"tm_create" db:"tm_create"`
-	TMUpdate string `json:"tm_update" db:"tm_update"`
-	TMDelete string `json:"tm_delete" db:"tm_delete"`
+	TMCreate *time.Time `json:"tm_create" db:"tm_create"`
+	TMUpdate *time.Time `json:"tm_update" db:"tm_update"`
+	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"`
 }
 
 // WebhookMessage is the webhook payload for message events
@@ -50,9 +51,9 @@ type WebhookMessage struct {
 	Medias   []Media  `json:"medias"`
 	Metadata Metadata `json:"metadata"`
 
-	TMCreate string `json:"tm_create"`
-	TMUpdate string `json:"tm_update"`
-	TMDelete string `json:"tm_delete"`
+	TMCreate *time.Time `json:"tm_create"`
+	TMUpdate *time.Time `json:"tm_update"`
+	TMDelete *time.Time `json:"tm_delete"`
 }
 
 // MediaType defines the type of media content

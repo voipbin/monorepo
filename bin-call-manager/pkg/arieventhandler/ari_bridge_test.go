@@ -3,6 +3,7 @@ package arieventhandler
 import (
 	"context"
 	"testing"
+	"time"
 
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
@@ -16,6 +17,7 @@ import (
 	"monorepo/bin-call-manager/pkg/callhandler"
 	"monorepo/bin-call-manager/pkg/confbridgehandler"
 	"monorepo/bin-call-manager/pkg/dbhandler"
+	"monorepo/bin-call-manager/pkg/testhelper"
 )
 
 func Test_EventHandlerBridgeCreated(t *testing.T) {
@@ -132,7 +134,7 @@ func Test_EventHandlerBridgeDestroyed(t *testing.T) {
 
 		event           *ari.BridgeDestroyed
 		expectBridgeID  string
-		expectTimestamp string
+		expectTimestamp *time.Time
 
 		responseBridge *bridge.Bridge
 	}{
@@ -163,7 +165,7 @@ func Test_EventHandlerBridgeDestroyed(t *testing.T) {
 				},
 			},
 			"17174a5e-91f6-11ea-b637-fb223e63cedf",
-			"2020-05-04T00:27:59.747Z",
+			testhelper.TimePtr("2020-05-04T00:27:59.747Z"),
 
 			&bridge.Bridge{
 				ID: "17174a5e-91f6-11ea-b637-fb223e63cedf",

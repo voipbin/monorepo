@@ -30,12 +30,12 @@ func (h *handler) providerGetFromRow(row *sql.Rows) (*provider.Provider, error) 
 
 // ProviderCreate creates a new provider record
 func (h *handler) ProviderCreate(ctx context.Context, p *provider.Provider) error {
-	now := h.utilHandler.TimeGetCurTime()
+	now := h.utilHandler.TimeNow()
 
 	// Set timestamps
 	p.TMCreate = now
-	p.TMUpdate = commondatabasehandler.DefaultTimeStamp
-	p.TMDelete = commondatabasehandler.DefaultTimeStamp
+	p.TMUpdate = nil
+	p.TMDelete = nil
 
 	// Initialize tech_headers if nil to avoid null in database
 	if p.TechHeaders == nil {
@@ -165,7 +165,7 @@ func (h *handler) ProviderList(ctx context.Context, token string, limit uint64, 
 	sb := squirrel.
 		Select(fields...).
 		From(providersTable).
-		Where(squirrel.GtOrEq{string(provider.FieldTMDelete): commondatabasehandler.DefaultTimeStamp}).
+		Where(squirrel.Eq{string(provider.FieldTMDelete): nil}).
 		Where(squirrel.Lt{string(provider.FieldTMCreate): token}).
 		OrderBy(string(provider.FieldTMCreate) + " DESC", string(provider.FieldID) + " DESC").
 		Limit(limit).
@@ -206,7 +206,7 @@ func (h *handler) ProviderList(ctx context.Context, token string, limit uint64, 
 
 // ProviderDelete deletes the given provider
 func (h *handler) ProviderDelete(ctx context.Context, id uuid.UUID) error {
-	ts := h.utilHandler.TimeGetCurTime()
+	ts := h.utilHandler.TimeNow()
 
 	fields := map[provider.Field]any{
 		provider.FieldTMUpdate: ts,
@@ -252,7 +252,7 @@ func (h *handler) ProviderUpdate(ctx context.Context, id uuid.UUID, fields map[p
 		return nil
 	}
 
-	fields[provider.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
+	fields[provider.FieldTMUpdate] = h.utilHandler.TimeNow()
 
 	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {

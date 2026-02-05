@@ -8,7 +8,6 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
-	commondb "monorepo/bin-common-handler/pkg/databasehandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-talk-manager/models/participant"
 )
@@ -48,7 +47,7 @@ func (h *participantHandler) ParticipantAdd(ctx context.Context, chatID, ownerID
 		log.Error("Chat not found")
 		return nil, fmt.Errorf("chat not found")
 	}
-	if chat.TMDelete < commondb.DefaultTimeStamp {
+	if chat.TMDelete != nil {
 		log.Error("Chat has been deleted")
 		return nil, fmt.Errorf("chat has been deleted")
 	}

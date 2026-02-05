@@ -5,10 +5,9 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
+	"time"
 
 	"monorepo/bin-common-handler/pkg/utilhandler"
-
-	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -17,13 +16,17 @@ import (
 	"monorepo/bin-route-manager/pkg/cachehandler"
 )
 
+func timePtr(t time.Time) *time.Time {
+	return &t
+}
+
 func Test_ProviderCreate(t *testing.T) {
 
 	tests := []struct {
 		name     string
 		provider *provider.Provider
 
-		responseCurTime string
+		responseCurTime *time.Time
 
 		expectRes *provider.Provider
 	}{
@@ -33,14 +36,14 @@ func Test_ProviderCreate(t *testing.T) {
 				ID: uuid.FromStringOrNil("55b05798-42d8-11ed-bf01-63eb9485e19d"),
 			},
 
-			"2020-04-18T03:22:17.995000Z",
+			timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)),
 
 			&provider.Provider{
 				ID:          uuid.FromStringOrNil("55b05798-42d8-11ed-bf01-63eb9485e19d"),
 				TechHeaders: map[string]string{},
-				TMCreate:    "2020-04-18T03:22:17.995000Z",
-				TMUpdate:    commondatabasehandler.DefaultTimeStamp,
-				TMDelete:    commondatabasehandler.DefaultTimeStamp,
+				TMCreate:    timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)),
+				TMUpdate:    nil,
+				TMDelete:    nil,
 			},
 		},
 		{
@@ -58,7 +61,7 @@ func Test_ProviderCreate(t *testing.T) {
 				Detail: "provider detail",
 			},
 
-			"2020-04-18T03:22:17.995000Z",
+			timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)),
 
 			&provider.Provider{
 				ID:          uuid.FromStringOrNil("bc376722-42d8-11ed-a4aa-93b57648abc4"),
@@ -71,9 +74,9 @@ func Test_ProviderCreate(t *testing.T) {
 				},
 				Name:     "provider name",
 				Detail:   "provider detail",
-				TMCreate: "2020-04-18T03:22:17.995000Z",
-				TMUpdate: commondatabasehandler.DefaultTimeStamp,
-				TMDelete: commondatabasehandler.DefaultTimeStamp,
+				TMCreate: timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)),
+				TMUpdate: nil,
+				TMDelete: nil,
 			},
 		},
 	}
@@ -92,7 +95,7 @@ func Test_ProviderCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime).AnyTimes()
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime).AnyTimes()
 			mockCache.EXPECT().ProviderSet(ctx, gomock.Any())
 			if err := h.ProviderCreate(ctx, tt.provider); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -121,9 +124,7 @@ func Test_ProviderList(t *testing.T) {
 		limit     uint64
 		providers []provider.Provider
 
-		responseCurTime string
-
-		expectRes []*provider.Provider
+		responseCurTime *time.Time
 	}{
 		{
 			"normal",
@@ -141,26 +142,7 @@ func Test_ProviderList(t *testing.T) {
 				},
 			},
 
-			"2018-04-18T03:22:17.995000Z",
-
-			[]*provider.Provider{
-				{
-					ID:          uuid.FromStringOrNil("634cdf70-42dd-11ed-bd60-ebdb62f04c25"),
-					Name:        "test2",
-					TechHeaders: map[string]string{},
-					TMCreate:    "2018-04-18T03:22:17.995000Z",
-					TMUpdate:    commondatabasehandler.DefaultTimeStamp,
-					TMDelete:    commondatabasehandler.DefaultTimeStamp,
-				},
-				{
-					ID:          uuid.FromStringOrNil("626446ac-42dd-11ed-863f-1f7b39fa9d61"),
-					Name:        "test1",
-					TechHeaders: map[string]string{},
-					TMCreate:    "2018-04-18T03:22:17.995000Z",
-					TMUpdate:    commondatabasehandler.DefaultTimeStamp,
-					TMDelete:    commondatabasehandler.DefaultTimeStamp,
-				},
-			},
+			timePtr(time.Date(2018, 4, 18, 3, 22, 17, 995000000, time.UTC)),
 		},
 	}
 
@@ -178,7 +160,7 @@ func Test_ProviderList(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime).AnyTimes()
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime).AnyTimes()
 			for _, p := range tt.providers {
 				mockCache.EXPECT().ProviderSet(ctx, gomock.Any())
 				if err := h.ProviderCreate(ctx, &p); err != nil {
@@ -211,9 +193,9 @@ func Test_ProviderDelete(t *testing.T) {
 
 			&provider.Provider{
 				ID:       uuid.FromStringOrNil("2396620a-432f-11ed-9c2e-37f76ce929df"),
-				TMCreate: "2020-04-18T03:22:17.995000Z",
-				TMUpdate: "2020-04-18T03:22:17.995000Z",
-				TMDelete: commondatabasehandler.DefaultTimeStamp,
+				TMCreate: timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)),
+				TMUpdate: timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)),
+				TMDelete: nil,
 			},
 		},
 	}
@@ -246,8 +228,8 @@ func Test_ProviderDelete(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if res.TMDelete == commondatabasehandler.DefaultTimeStamp {
-				t.Errorf("Wrong match. expect: any other, got: %s", res.TMDelete)
+			if res.TMDelete == nil {
+				t.Errorf("Wrong match. expect: non-nil, got: nil")
 			}
 		})
 	}
@@ -262,7 +244,7 @@ func Test_ProviderUpdate(t *testing.T) {
 
 		updateFields map[provider.Field]any
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *provider.Provider
 	}{
 		{
@@ -273,9 +255,9 @@ func Test_ProviderUpdate(t *testing.T) {
 				Name:   "test name",
 				Detail: "test detail",
 
-				TMCreate: "2021-04-18T03:22:17.995000Z",
-				TMUpdate: "2021-04-18T03:22:17.995000Z",
-				TMDelete: commondatabasehandler.DefaultTimeStamp,
+				TMCreate: timePtr(time.Date(2021, 4, 18, 3, 22, 17, 995000000, time.UTC)),
+				TMUpdate: timePtr(time.Date(2021, 4, 18, 3, 22, 17, 995000000, time.UTC)),
+				TMDelete: nil,
 			},
 
 			map[provider.Field]any{
@@ -283,7 +265,7 @@ func Test_ProviderUpdate(t *testing.T) {
 				provider.FieldDetail: "update detail",
 			},
 
-			"2021-04-18T03:22:17.995000Z",
+			timePtr(time.Date(2021, 4, 18, 3, 22, 17, 995000000, time.UTC)),
 
 			&provider.Provider{
 				ID:          uuid.FromStringOrNil("e8776eb6-432f-11ed-acde-b7089222dfd9"),
@@ -291,9 +273,9 @@ func Test_ProviderUpdate(t *testing.T) {
 				Detail:      "update detail",
 				TechHeaders: map[string]string{},
 
-				TMCreate: "2021-04-18T03:22:17.995000Z",
-				TMUpdate: "2021-04-18T03:22:17.995000Z",
-				TMDelete: commondatabasehandler.DefaultTimeStamp,
+				TMCreate: timePtr(time.Date(2021, 4, 18, 3, 22, 17, 995000000, time.UTC)),
+				TMUpdate: timePtr(time.Date(2021, 4, 18, 3, 22, 17, 995000000, time.UTC)),
+				TMDelete: nil,
 			},
 		},
 	}
@@ -312,7 +294,7 @@ func Test_ProviderUpdate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime).AnyTimes()
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime).AnyTimes()
 			mockCache.EXPECT().ProviderSet(ctx, gomock.Any())
 			if err := h.ProviderCreate(ctx, tt.provider); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

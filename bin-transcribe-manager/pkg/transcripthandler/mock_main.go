@@ -13,6 +13,7 @@ import (
 	context "context"
 	transcript "monorepo/bin-transcribe-manager/models/transcript"
 	reflect "reflect"
+	time "time"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -43,7 +44,7 @@ func (m *MockTranscriptHandler) EXPECT() *MockTranscriptHandlerMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockTranscriptHandler) Create(ctx context.Context, customerID, transcribeID uuid.UUID, direction transcript.Direction, message, tmTranscript string) (*transcript.Transcript, error) {
+func (m *MockTranscriptHandler) Create(ctx context.Context, customerID, transcribeID uuid.UUID, direction transcript.Direction, message string, tmTranscript *time.Time) (*transcript.Transcript, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Create", ctx, customerID, transcribeID, direction, message, tmTranscript)
 	ret0, _ := ret[0].(*transcript.Transcript)

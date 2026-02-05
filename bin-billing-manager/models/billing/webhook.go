@@ -2,6 +2,8 @@ package billing
 
 import (
 	"encoding/json"
+	"time"
+
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
@@ -23,13 +25,13 @@ type WebhookMessage struct {
 
 	BillingUnitCount float32 `json:"billing_unit_count"`
 
-	TMBillingStart string `json:"tm_billing_start"`
-	TMBillingEnd   string `json:"tm_billing_end"`
+	TMBillingStart *time.Time `json:"tm_billing_start"`
+	TMBillingEnd   *time.Time `json:"tm_billing_end"`
 
 	// timestamp
-	TMCreate string `json:"tm_create"`
-	TMUpdate string `json:"tm_update"`
-	TMDelete string `json:"tm_delete"`
+	TMCreate *time.Time `json:"tm_create"`
+	TMUpdate *time.Time `json:"tm_update"`
+	TMDelete *time.Time `json:"tm_delete"`
 }
 
 // ConvertWebhookMessage converts to the event

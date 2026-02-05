@@ -2,6 +2,8 @@ package file
 
 import (
 	"encoding/json"
+	"time"
+
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
@@ -23,10 +25,10 @@ type WebhookMessage struct {
 
 	URIDownload string `json:"uri_download"` // uri for download
 
-	TMDownloadExpire string `json:"tm_download_expire"`
-	TMCreate         string `json:"tm_create"`
-	TMUpdate         string `json:"tm_update"`
-	TMDelete         string `json:"tm_delete"`
+	TMDownloadExpire *time.Time `json:"tm_download_expire"`
+	TMCreate         *time.Time `json:"tm_create"`
+	TMUpdate         *time.Time `json:"tm_update"`
+	TMDelete         *time.Time `json:"tm_delete"`
 }
 
 // ConvertWebhookMessage converts to the event

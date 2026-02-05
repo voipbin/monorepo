@@ -3,6 +3,7 @@ package ari
 import (
 	"encoding/json"
 	"strings"
+	"time"
 )
 
 // Event is ARI base event
@@ -42,6 +43,30 @@ const (
 
 // Timestamp for timestamp
 type Timestamp string
+
+// ToTime converts the ARI Timestamp to *time.Time
+// ARI timestamps are in the format "2023-01-02T15:04:05.000" (after +0000 is trimmed)
+func (t Timestamp) ToTime() *time.Time {
+	if t == "" {
+		return nil
+	}
+
+	// Try parsing with different layouts
+	layouts := []string{
+		"2006-01-02T15:04:05.000",
+		"2006-01-02T15:04:05",
+		time.RFC3339,
+		time.RFC3339Nano,
+	}
+
+	for _, layout := range layouts {
+		if parsed, err := time.Parse(layout, string(t)); err == nil {
+			return &parsed
+		}
+	}
+
+	return nil
+}
 
 // ArgsMap map for args
 type ArgsMap map[string]string

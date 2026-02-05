@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 
@@ -11,6 +12,10 @@ import (
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 )
+
+func timePtr(t time.Time) *time.Time {
+	return &t
+}
 
 func Test_MediaMarshalUnmarshal(t *testing.T) {
 	tests := []struct {
@@ -165,8 +170,8 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 				Text:     "Hello world",
 				Medias:   []Media{},
 				Metadata: Metadata{Reactions: []Reaction{}},
-				TMCreate: "2024-01-15T10:30:00.000000Z",
-				TMUpdate: "2024-01-15T10:30:00.000000Z",
+				TMCreate: timePtr(time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)),
+				TMUpdate: timePtr(time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)),
 			},
 			expect: &WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -182,8 +187,8 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 				Text:     "Hello world",
 				Medias:   []Media{},
 				Metadata: Metadata{Reactions: []Reaction{}},
-				TMCreate: "2024-01-15T10:30:00.000000Z",
-				TMUpdate: "2024-01-15T10:30:00.000000Z",
+				TMCreate: timePtr(time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)),
+				TMUpdate: timePtr(time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)),
 			},
 		},
 		{
@@ -207,8 +212,8 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 					},
 				},
 				Metadata: Metadata{Reactions: []Reaction{}},
-				TMCreate: "2024-01-15T10:30:00.000000Z",
-				TMUpdate: "2024-01-15T10:30:00.000000Z",
+				TMCreate: timePtr(time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)),
+				TMUpdate: timePtr(time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)),
 			},
 			expect: &WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -229,8 +234,8 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 					},
 				},
 				Metadata: Metadata{Reactions: []Reaction{}},
-				TMCreate: "2024-01-15T10:30:00.000000Z",
-				TMUpdate: "2024-01-15T10:30:00.000000Z",
+				TMCreate: timePtr(time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)),
+				TMUpdate: timePtr(time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)),
 			},
 		},
 		{
@@ -254,8 +259,8 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 					},
 				},
 				Metadata: Metadata{Reactions: []Reaction{}},
-				TMCreate: "2024-01-15T10:30:00.000000Z",
-				TMUpdate: "2024-01-15T10:30:00.000000Z",
+				TMCreate: timePtr(time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)),
+				TMUpdate: timePtr(time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)),
 			},
 			expect: &WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -276,8 +281,8 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 					},
 				},
 				Metadata: Metadata{Reactions: []Reaction{}},
-				TMCreate: "2024-01-15T10:30:00.000000Z",
-				TMUpdate: "2024-01-15T10:30:00.000000Z",
+				TMCreate: timePtr(time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)),
+				TMUpdate: timePtr(time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)),
 			},
 		},
 	}
@@ -323,8 +328,8 @@ func Test_CreateWebhookEvent(t *testing.T) {
 					},
 				},
 				Metadata: Metadata{Reactions: []Reaction{}},
-				TMCreate: "2024-01-15T10:30:00.000000Z",
-				TMUpdate: "2024-01-15T10:30:00.000000Z",
+				TMCreate: timePtr(time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)),
+				TMUpdate: timePtr(time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)),
 			},
 		},
 	}
@@ -382,8 +387,8 @@ func Test_WebhookMessage_CreateWebhookEvent(t *testing.T) {
 					},
 				},
 				Metadata: Metadata{Reactions: []Reaction{}},
-				TMCreate: "2024-01-15T10:30:00.000000Z",
-				TMUpdate: "2024-01-15T10:30:00.000000Z",
+				TMCreate: timePtr(time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)),
+				TMUpdate: timePtr(time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)),
 			},
 		},
 	}

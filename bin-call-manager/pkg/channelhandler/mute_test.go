@@ -35,7 +35,7 @@ func Test_MuteOn(t *testing.T) {
 			&channel.Channel{
 				ID:         "bad221d0-d138-11ed-b162-433a46a331a4",
 				AsteriskID: "3e:50:6b:43:bb:30",
-				TMDelete:   dbhandler.DefaultTimeStamp,
+				TMDelete:   nil,
 			},
 		},
 	}
@@ -92,7 +92,7 @@ func Test_MuteOff(t *testing.T) {
 			&channel.Channel{
 				ID:         "bafa3030-d138-11ed-9bdb-9f79a8a1de00",
 				AsteriskID: "3e:50:6b:43:bb:30",
-				TMDelete:   dbhandler.DefaultTimeStamp,
+				TMDelete:   nil,
 			},
 			channel.MuteDirectionNone,
 		},

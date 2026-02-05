@@ -42,7 +42,7 @@ func Test_storageFileGet(t *testing.T) {
 					ID:         uuid.FromStringOrNil("ee294376-1c03-11ef-b40d-372468bd9437"),
 					CustomerID: uuid.FromStringOrNil("b83e3c98-1bd7-11ef-8f14-9f07e5f6c56b"),
 				},
-				TMDelete: defaultTimestamp,
+				TMDelete: nil,
 			},
 		},
 	}
@@ -106,7 +106,7 @@ func Test_ServiceAgentFileDelete(t *testing.T) {
 				Owner: commonidentity.Owner{
 					OwnerID: uuid.FromStringOrNil("1a49c8f8-1bd8-11ef-b861-bf0a568022b9"),
 				},
-				TMDelete: defaultTimestamp,
+				TMDelete: nil,
 			},
 			expectRes: &smfile.WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -116,7 +116,7 @@ func Test_ServiceAgentFileDelete(t *testing.T) {
 				Owner: commonidentity.Owner{
 					OwnerID: uuid.FromStringOrNil("1a49c8f8-1bd8-11ef-b861-bf0a568022b9"),
 				},
-				TMDelete: defaultTimestamp,
+				TMDelete: nil,
 			},
 		},
 	}

@@ -42,7 +42,7 @@ func Test_StartSnoop(t *testing.T) {
 			responseChannel: &channel.Channel{
 				ID:         "d2d4036e-f2a5-11ed-9338-4fcdc112773e",
 				AsteriskID: "3e:50:6b:43:bb:30",
-				TMDelete:   dbhandler.DefaultTimeStamp,
+				TMDelete:   nil,
 			},
 		},
 	}
@@ -119,7 +119,7 @@ func Test_StartExternalMedia(t *testing.T) {
 			responseChannel: &channel.Channel{
 				ID:         "d2d4036e-f2a5-11ed-9338-4fcdc112773e",
 				AsteriskID: "3e:50:6b:43:bb:30",
-				TMDelete:   dbhandler.DefaultTimeStamp,
+				TMDelete:   nil,
 			},
 		},
 	}
@@ -191,7 +191,7 @@ func Test_StartChannel(t *testing.T) {
 			responseChannel: &channel.Channel{
 				ID:         "d2d4036e-f2a5-11ed-9338-4fcdc112773e",
 				AsteriskID: "3e:50:6b:43:bb:30",
-				TMDelete:   dbhandler.DefaultTimeStamp,
+				TMDelete:   nil,
 			},
 		},
 	}
@@ -264,12 +264,12 @@ func Test_StartChannelWithBaseChannel(t *testing.T) {
 			responseBaseChannel: &channel.Channel{
 				ID:         "25ef5bb2-f2aa-11ed-a779-1b07c9d70cca",
 				AsteriskID: "3e:50:6b:43:bb:30",
-				TMDelete:   dbhandler.DefaultTimeStamp,
+				TMDelete:   nil,
 			},
 			responseChannel: &channel.Channel{
 				ID:         "261a4688-f2aa-11ed-a10b-bbd267479090",
 				AsteriskID: "3e:50:6b:43:bb:30",
-				TMDelete:   dbhandler.DefaultTimeStamp,
+				TMDelete:   nil,
 			},
 		},
 	}

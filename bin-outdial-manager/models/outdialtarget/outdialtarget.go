@@ -1,6 +1,8 @@
 package outdialtarget
 
 import (
+	"time"
+
 	commonaddress "monorepo/bin-common-handler/models/address"
 
 	"github.com/gofrs/uuid"
@@ -31,9 +33,9 @@ type OutdialTarget struct {
 	TryCount3 int `json:"try_count_3" db:"try_count_3"` // try count for destination 3
 	TryCount4 int `json:"try_count_4" db:"try_count_4"` // try count for destination 4
 
-	TMCreate string `json:"tm_create" db:"tm_create"`
-	TMUpdate string `json:"tm_update" db:"tm_update"`
-	TMDelete string `json:"tm_delete" db:"tm_delete"`
+	TMCreate *time.Time `json:"tm_create" db:"tm_create"`
+	TMUpdate *time.Time `json:"tm_update" db:"tm_update"`
+	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"`
 }
 
 // Status defines

@@ -18,9 +18,9 @@ const (
 
 // AICreate creates new ai record.
 func (h *handler) AICreate(ctx context.Context, c *ai.AI) error {
-	c.TMCreate = h.utilHandler.TimeGetCurTime()
-	c.TMUpdate = DefaultTimeStamp
-	c.TMDelete = DefaultTimeStamp
+	c.TMCreate = h.utilHandler.TimeNow()
+	c.TMUpdate = nil
+	c.TMDelete = nil
 
 	fields, err := commondatabasehandler.PrepareFields(c)
 	if err != nil {
@@ -126,7 +126,7 @@ func (h *handler) AIGet(ctx context.Context, id uuid.UUID) (*ai.AI, error) {
 
 // AIDelete deletes the ai.
 func (h *handler) AIDelete(ctx context.Context, id uuid.UUID) error {
-	ts := h.utilHandler.TimeGetCurTime()
+	ts := h.utilHandler.TimeNow()
 
 	query, args, err := sq.Update(aiTable).
 		SetMap(map[string]any{
@@ -198,7 +198,7 @@ func (h *handler) AIUpdate(ctx context.Context, id uuid.UUID, fields map[ai.Fiel
 	for k, v := range fields {
 		updateFields[string(k)] = v
 	}
-	updateFields["tm_update"] = h.utilHandler.TimeGetCurTime()
+	updateFields["tm_update"] = h.utilHandler.TimeNow()
 
 	preparedFields, err := commondatabasehandler.PrepareFields(updateFields)
 	if err != nil {

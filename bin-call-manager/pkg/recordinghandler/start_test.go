@@ -10,12 +10,14 @@ import (
 	"monorepo/bin-call-manager/pkg/bridgehandler"
 	"monorepo/bin-call-manager/pkg/channelhandler"
 	"monorepo/bin-call-manager/pkg/dbhandler"
+	"monorepo/bin-call-manager/pkg/testhelper"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	reflect "reflect"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -122,8 +124,8 @@ func Test_Start_call(t *testing.T) {
 					"4acf57a2-8fd6-11ed-98e5-6f1e54343269",
 					"4af70a04-8fd6-11ed-a294-4b2bc83c1829",
 				},
-				TMStart: dbhandler.DefaultTimeStamp,
-				TMEnd:   dbhandler.DefaultTimeStamp,
+				TMStart: nil,
+				TMEnd:   nil,
 			},
 		},
 	}
@@ -228,7 +230,7 @@ func Test_Start_confbridge(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("fff4ad02-98f6-11ed-aa9b-4f84a05324f1"),
 				},
 				BridgeID: "6822e4c8-90a2-11ed-8002-4bf0087d99cb",
-				TMDelete: dbhandler.DefaultTimeStamp,
+				TMDelete: nil,
 			},
 			responseBridge: &bridge.Bridge{
 				AsteriskID: "42:01:0a:a4:00:03",
@@ -262,8 +264,8 @@ func Test_Start_confbridge(t *testing.T) {
 				},
 				AsteriskID: "42:01:0a:a4:00:03",
 				ChannelIDs: []string{},
-				TMStart:    dbhandler.DefaultTimeStamp,
-				TMEnd:      dbhandler.DefaultTimeStamp,
+				TMStart:    nil,
+				TMEnd:      nil,
 			},
 		},
 	}
@@ -337,7 +339,7 @@ func Test_Started(t *testing.T) {
 
 		id uuid.UUID
 
-		responseCurTime   string
+		responseCurTime   *time.Time
 		responseRecording *recording.Recording
 	}{
 		{
@@ -345,7 +347,7 @@ func Test_Started(t *testing.T) {
 
 			id: uuid.FromStringOrNil("def310b4-9011-11ed-bc02-ab675449097d"),
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
 			responseRecording: &recording.Recording{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("def310b4-9011-11ed-bc02-ab675449097d"),

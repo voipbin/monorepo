@@ -297,9 +297,9 @@ func Test_OutdialtargetListByOutdialID(t *testing.T) {
 			}
 
 			for _, tmp := range res {
-				tmp.TMCreate = ""
-				tmp.TMUpdate = ""
-				tmp.TMDelete = ""
+				tmp.TMCreate = nil
+				tmp.TMUpdate = nil
+				tmp.TMDelete = nil
 			}
 
 			if !reflect.DeepEqual(res[0], tt.expectRes[0]) {

@@ -7,7 +7,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-call-manager/models/ari"
-	"monorepo/bin-call-manager/pkg/dbhandler"
 )
 
 // HealthCheck checks the given channel is still vaild
@@ -37,7 +36,7 @@ func (h *channelHandler) HealthCheck(ctx context.Context, channelID string, retr
 	}
 
 	// check if the channel has deleted already, we don't go further.
-	if cn.TMEnd != dbhandler.DefaultTimeStamp {
+	if cn.TMEnd != nil {
 		// the channel has hungup already. no need to check the health anymore
 		return
 	}

@@ -1,6 +1,8 @@
 package outdialtargetcall
 
 import (
+	"time"
+
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
@@ -25,9 +27,9 @@ type OutdialTargetCall struct {
 	DestinationIndex int                    `json:"destination_index" db:"destination_index"`
 	TryCount         int                    `json:"try_count" db:"try_count"`
 
-	TMCreate string `json:"tm_create" db:"tm_create"`
-	TMUpdate string `json:"tm_update" db:"tm_update"`
-	TMDelete string `json:"tm_delete" db:"tm_delete"`
+	TMCreate *time.Time `json:"tm_create" db:"tm_create"`
+	TMUpdate *time.Time `json:"tm_update" db:"tm_update"`
+	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"`
 }
 
 // ReferenceType defines

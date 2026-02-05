@@ -3,6 +3,7 @@ package campaigncall
 import (
 	"reflect"
 	"testing"
+	"time"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -48,8 +49,8 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 				},
 				DestinationIndex: 0,
 				TryCount:         0,
-				TMCreate:         "2020-10-10T03:30:17.000000Z",
-				TMUpdate:         "2020-10-10T03:31:17.000000Z",
+				TMCreate:         ptrTime(time.Date(2020, 10, 10, 3, 30, 17, 0, time.UTC)),
+				TMUpdate:         ptrTime(time.Date(2020, 10, 10, 3, 31, 17, 0, time.UTC)),
 			},
 
 			expectRes: &WebhookMessage{
@@ -78,8 +79,8 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 				},
 				DestinationIndex: 0,
 				TryCount:         0,
-				TMCreate:         "2020-10-10T03:30:17.000000Z",
-				TMUpdate:         "2020-10-10T03:31:17.000000Z",
+				TMCreate:         ptrTime(time.Date(2020, 10, 10, 3, 30, 17, 0, time.UTC)),
+				TMUpdate:         ptrTime(time.Date(2020, 10, 10, 3, 31, 17, 0, time.UTC)),
 			},
 		},
 	}

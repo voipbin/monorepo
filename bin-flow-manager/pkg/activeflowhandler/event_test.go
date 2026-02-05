@@ -112,14 +112,14 @@ func Test_EventCustomerDeleted(t *testing.T) {
 						ID: uuid.FromStringOrNil("83faabd2-ecdf-11ee-bed3-3f83c1ac3dbd"),
 					},
 					Status:   activeflow.StatusEnded,
-					TMDelete: dbhandler.DefaultTimeStamp,
+					TMDelete: nil,
 				},
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("8454d30a-ecdf-11ee-939e-c7eac852f244"),
 					},
 					Status:   activeflow.StatusEnded,
-					TMDelete: dbhandler.DefaultTimeStamp,
+					TMDelete: nil,
 				},
 			},
 		},

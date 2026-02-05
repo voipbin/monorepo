@@ -34,7 +34,7 @@ func Test_TimelineEventList_calls(t *testing.T) {
 			ID:         callID,
 			CustomerID: customerID,
 		},
-		TMDelete: defaultTimestamp,
+		TMDelete: nil,
 	}
 
 	callJSON, _ := json.Marshal(testCall)
@@ -141,7 +141,7 @@ func Test_TimelineEventList_conferences(t *testing.T) {
 			CustomerID: customerID,
 		},
 		Name:     "Test Conference",
-		TMDelete: defaultTimestamp,
+		TMDelete: nil,
 	}
 
 	conferenceJSON, _ := json.Marshal(testConference)
@@ -242,7 +242,7 @@ func Test_TimelineEventList_flows(t *testing.T) {
 			CustomerID: customerID,
 		},
 		Name:     "Test Flow",
-		TMDelete: defaultTimestamp,
+		TMDelete: nil,
 	}
 
 	flowJSON, _ := json.Marshal(testFlow)
@@ -343,7 +343,7 @@ func Test_TimelineEventList_activeflows(t *testing.T) {
 			CustomerID: customerID,
 		},
 		Status:   fmactiveflow.StatusRunning,
-		TMDelete: defaultTimestamp,
+		TMDelete: nil,
 	}
 
 	activeflowJSON, _ := json.Marshal(testActiveflow)
@@ -443,7 +443,7 @@ func Test_TimelineEventList_timeline_service_error(t *testing.T) {
 			ID:         callID,
 			CustomerID: customerID,
 		},
-		TMDelete: defaultTimestamp,
+		TMDelete: nil,
 	}
 
 	tests := []struct {
@@ -520,7 +520,7 @@ func Test_TimelineEventList_empty_response(t *testing.T) {
 			ID:         callID,
 			CustomerID: customerID,
 		},
-		TMDelete: defaultTimestamp,
+		TMDelete: nil,
 	}
 
 	tests := []struct {
@@ -740,7 +740,7 @@ func Test_TimelineEventList_error_permission_denied(t *testing.T) {
 					ID:         callID,
 					CustomerID: callCustomerID,
 				},
-				TMDelete: defaultTimestamp,
+				TMDelete: nil,
 			},
 		},
 	}
@@ -781,7 +781,7 @@ func Test_convertEventToWebhookMessage(t *testing.T) {
 			ID:         callID,
 			CustomerID: customerID,
 		},
-		TMDelete: defaultTimestamp,
+		TMDelete: nil,
 	}
 	callJSON, _ := json.Marshal(testCall)
 
@@ -793,7 +793,7 @@ func Test_convertEventToWebhookMessage(t *testing.T) {
 			CustomerID: customerID,
 		},
 		Name:     "Test Conference",
-		TMDelete: defaultTimestamp,
+		TMDelete: nil,
 	}
 	conferenceJSON, _ := json.Marshal(testConference)
 
@@ -805,7 +805,7 @@ func Test_convertEventToWebhookMessage(t *testing.T) {
 			CustomerID: customerID,
 		},
 		Name:     "Test Flow",
-		TMDelete: defaultTimestamp,
+		TMDelete: nil,
 	}
 	flowJSON, _ := json.Marshal(testFlow)
 
@@ -817,7 +817,7 @@ func Test_convertEventToWebhookMessage(t *testing.T) {
 			CustomerID: customerID,
 		},
 		Status:   fmactiveflow.StatusRunning,
-		TMDelete: defaultTimestamp,
+		TMDelete: nil,
 	}
 	activeflowJSON, _ := json.Marshal(testActiveflow)
 

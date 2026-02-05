@@ -29,7 +29,7 @@ func (h *serviceHandler) billingAccountGet(ctx context.Context, accountID uuid.U
 	}
 	log.WithField("billing_account", res).Debug("Received result.")
 
-	if res.TMDelete < defaultTimestamp {
+	if res.TMDelete != nil {
 		log.Debugf("Deleted billing_account. billing_account_id: %s", res.ID)
 		return nil, fmt.Errorf("not found")
 	}

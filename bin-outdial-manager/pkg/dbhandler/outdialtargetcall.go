@@ -325,7 +325,7 @@ func (h *handler) OutdialTargetCallUpdate(ctx context.Context, id uuid.UUID, fie
 		return nil
 	}
 
-	fields[outdialtargetcall.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
+	fields[outdialtargetcall.FieldTMUpdate] = h.utilHandler.TimeNow()
 
 	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {

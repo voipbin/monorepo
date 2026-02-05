@@ -2,6 +2,7 @@ package chat
 
 import (
 	"encoding/json"
+	"time"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 )
@@ -34,22 +35,22 @@ type Chat struct {
 	MemberCount int `json:"member_count" db:"member_count"`
 
 	// Timestamps
-	TMCreate string `json:"tm_create" db:"tm_create"`
-	TMUpdate string `json:"tm_update" db:"tm_update"`
-	TMDelete string `json:"tm_delete" db:"tm_delete"`
+	TMCreate *time.Time `json:"tm_create" db:"tm_create"`
+	TMUpdate *time.Time `json:"tm_update" db:"tm_update"`
+	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"`
 }
 
 // WebhookMessage is the webhook payload for chat events
 type WebhookMessage struct {
 	commonidentity.Identity
 
-	Type        Type   `json:"type,omitempty"`
-	Name        string `json:"name,omitempty"`
-	Detail      string `json:"detail,omitempty"`
-	MemberCount int    `json:"member_count,omitempty"`
-	TMCreate    string `json:"tm_create,omitempty"`
-	TMUpdate    string `json:"tm_update,omitempty"`
-	TMDelete    string `json:"tm_delete,omitempty"`
+	Type        Type       `json:"type,omitempty"`
+	Name        string     `json:"name,omitempty"`
+	Detail      string     `json:"detail,omitempty"`
+	MemberCount int        `json:"member_count,omitempty"`
+	TMCreate    *time.Time `json:"tm_create"`
+	TMUpdate    *time.Time `json:"tm_update"`
+	TMDelete    *time.Time `json:"tm_delete"`
 }
 
 // ConvertWebhookMessage converts Chat to WebhookMessage

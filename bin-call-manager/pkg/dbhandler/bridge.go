@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"monorepo/bin-call-manager/models/bridge"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 )
 
 const (
@@ -39,6 +40,7 @@ const (
 
 func (h *handler) bridgeGetFromRow(row *sql.Rows) (*bridge.Bridge, error) {
 	var channelIDs sql.NullString
+	var tmCreateStr, tmUpdateStr, tmDeleteStr sql.NullString
 
 	res := &bridge.Bridge{}
 	if err := row.Scan(
@@ -59,9 +61,9 @@ func (h *handler) bridgeGetFromRow(row *sql.Rows) (*bridge.Bridge, error) {
 		&res.ReferenceType,
 		&res.ReferenceID,
 
-		&res.TMCreate,
-		&res.TMUpdate,
-		&res.TMDelete,
+		&tmCreateStr,
+		&tmUpdateStr,
+		&tmDeleteStr,
 	); err != nil {
 		return nil, fmt.Errorf("could not scan the row. bridgeGetFromRow. err: %v", err)
 	}
@@ -73,6 +75,25 @@ func (h *handler) bridgeGetFromRow(row *sql.Rows) (*bridge.Bridge, error) {
 	}
 	if res.ChannelIDs == nil {
 		res.ChannelIDs = []string{}
+	}
+
+	if tmCreateStr.Valid && tmCreateStr.String != "" {
+		t := utilhandler.TimeParse(tmCreateStr.String).UTC()
+		if !t.IsZero() {
+			res.TMCreate = &t
+		}
+	}
+	if tmUpdateStr.Valid && tmUpdateStr.String != "" {
+		t := utilhandler.TimeParse(tmUpdateStr.String).UTC()
+		if !t.IsZero() {
+			res.TMUpdate = &t
+		}
+	}
+	if tmDeleteStr.Valid && tmDeleteStr.String != "" {
+		t := utilhandler.TimeParse(tmDeleteStr.String).UTC()
+		if !t.IsZero() {
+			res.TMDelete = &t
+		}
 	}
 
 	return res, nil
@@ -134,9 +155,9 @@ func (h *handler) BridgeCreate(ctx context.Context, b *bridge.Bridge) error {
 		b.ReferenceType,
 		b.ReferenceID.Bytes(),
 
-		h.utilHandler.TimeGetCurTime(),
-		DefaultTimeStamp,
-		DefaultTimeStamp,
+		h.utilHandler.TimeNow(),
+		nil,
+		nil,
 	)
 	if err != nil {
 		return fmt.Errorf("could not execute. BridgeCreate. err: %v", err)
@@ -239,7 +260,7 @@ func (h *handler) BridgeEnd(ctx context.Context, id string) error {
 		id = ?
 	`
 
-	ts := h.utilHandler.TimeGetCurTime()
+	ts := h.utilHandler.TimeNow()
 	_, err := h.db.Exec(q, ts, ts, id)
 	if err != nil {
 		return fmt.Errorf("could not execute. BridgeEnd. err: %v", err)
@@ -266,7 +287,7 @@ func (h *handler) BridgeAddChannelID(ctx context.Context, id, channelID string) 
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, channelID, h.utilHandler.TimeGetCurTime(), id)
+	_, err := h.db.Exec(q, channelID, h.utilHandler.TimeNow(), id)
 	if err != nil {
 		return fmt.Errorf("could not execute. BridgeAddChannelID. err: %v", err)
 	}
@@ -298,7 +319,7 @@ func (h *handler) BridgeRemoveChannelID(ctx context.Context, id, channelID strin
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, channelID, h.utilHandler.TimeGetCurTime(), id)
+	_, err := h.db.Exec(q, channelID, h.utilHandler.TimeNow(), id)
 	if err != nil {
 		return fmt.Errorf("could not execute. BridgeRemoveChannelID. err: %v", err)
 	}

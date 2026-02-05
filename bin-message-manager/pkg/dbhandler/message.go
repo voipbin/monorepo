@@ -43,9 +43,9 @@ func (h *handler) messageGetFromRow(rows *sql.Rows) (*message.Message, error) {
 
 // MessageCreate creates a new message record.
 func (h *handler) MessageCreate(ctx context.Context, m *message.Message) error {
-	m.TMCreate = h.utilHandler.TimeGetCurTime()
-	m.TMUpdate = DefaultTimeStamp
-	m.TMDelete = DefaultTimeStamp
+	m.TMCreate = h.utilHandler.TimeNow()
+	m.TMUpdate = nil
+	m.TMDelete = nil
 
 	// prepare fields for insert
 	fields, err := commondatabasehandler.PrepareFields(m)
@@ -154,7 +154,7 @@ func (h *handler) MessageGet(ctx context.Context, id uuid.UUID) (*message.Messag
 // MessageUpdate updates a message with the given fields.
 func (h *handler) MessageUpdate(ctx context.Context, id uuid.UUID, fields map[message.Field]any) error {
 	// add update timestamp
-	fields[message.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
+	fields[message.FieldTMUpdate] = h.utilHandler.TimeNow()
 
 	// prepare fields for update
 	data, err := commondatabasehandler.PrepareFields(fields)
@@ -239,7 +239,7 @@ func (h *handler) MessageList(ctx context.Context, token string, size uint64, fi
 
 // MessageDelete deletes the message.
 func (h *handler) MessageDelete(ctx context.Context, id uuid.UUID) error {
-	ts := h.utilHandler.TimeGetCurTime()
+	ts := h.utilHandler.TimeNow()
 	fields := map[message.Field]any{
 		message.FieldTMUpdate: ts,
 		message.FieldTMDelete: ts,

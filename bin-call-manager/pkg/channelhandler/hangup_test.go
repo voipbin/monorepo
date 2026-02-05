@@ -37,7 +37,7 @@ func Test_HangingUp(t *testing.T) {
 
 			&channel.Channel{
 				ID:       "9510666c-9a2b-11ed-9cff-67a60fb2f265",
-				TMDelete: dbhandler.DefaultTimeStamp,
+				TMDelete: nil,
 			},
 			&channel.Channel{
 				ID: "764818be-6e0d-11ed-a193-33bbe6697279",

@@ -54,7 +54,7 @@ func Test_PostAimessages(t *testing.T) {
 			expectedRole:     ammessage.RoleUser,
 			expectedContent:  "test text",
 
-			expectedRes: `{"id":"dbceb866-4506-4e86-9851-a82d4d3ced88","customer_id":"00000000-0000-0000-0000-000000000000","aicall_id":"00000000-0000-0000-0000-000000000000","role":"","content":"","direction":""}`,
+			expectedRes: `{"id":"dbceb866-4506-4e86-9851-a82d4d3ced88","customer_id":"00000000-0000-0000-0000-000000000000","aicall_id":"00000000-0000-0000-0000-000000000000","role":"","content":"","direction":"","tm_create":null}`,
 		},
 	}
 
@@ -131,14 +131,14 @@ func Test_GetAimessages(t *testing.T) {
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("ed2346dc-f31e-11ef-acd5-67a8f966fe17"),
 					},
-					TMCreate: "2020-09-20T03:23:21.995000Z",
+					TMCreate: timePtr("2020-09-20T03:23:21.995000Z"),
 				},
 			},
 
 			expectedAIcallID:  uuid.FromStringOrNil("ecebd332-f31e-11ef-9ab5-33426e3ee4ff"),
 			expectedPageSize:  10,
 			expectedPageToken: "2020-09-20T03:23:20.995000Z",
-			expectedRes:       `{"result":[{"id":"ed2346dc-f31e-11ef-acd5-67a8f966fe17","customer_id":"00000000-0000-0000-0000-000000000000","aicall_id":"00000000-0000-0000-0000-000000000000","role":"","content":"","direction":"","tm_create":"2020-09-20T03:23:21.995000Z"}],"next_page_token":"2020-09-20T03:23:21.995000Z"}`,
+			expectedRes:       `{"result":[{"id":"ed2346dc-f31e-11ef-acd5-67a8f966fe17","customer_id":"00000000-0000-0000-0000-000000000000","aicall_id":"00000000-0000-0000-0000-000000000000","role":"","content":"","direction":"","tm_create":"2020-09-20T03:23:21.995Z"}],"next_page_token":"2020-09-20T03:23:21.995000Z"}`,
 		},
 		{
 			name: "more than 2 items",
@@ -155,26 +155,26 @@ func Test_GetAimessages(t *testing.T) {
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("1707f380-f31f-11ef-bfe4-7ff769b357b3"),
 					},
-					TMCreate: "2020-09-20T03:23:21.995000Z",
+					TMCreate: timePtr("2020-09-20T03:23:21.995000Z"),
 				},
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("17268426-f31f-11ef-aa11-6f21c1723af6"),
 					},
-					TMCreate: "2020-09-20T03:23:22.995000Z",
+					TMCreate: timePtr("2020-09-20T03:23:22.995000Z"),
 				},
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("17468500-f31f-11ef-b7b6-9b29397f4894"),
 					},
-					TMCreate: "2020-09-20T03:23:23.995000Z",
+					TMCreate: timePtr("2020-09-20T03:23:23.995000Z"),
 				},
 			},
 
 			expectedAIcallID:  uuid.FromStringOrNil("ed487b96-f31e-11ef-9337-e792818f3609"),
 			expectedPageSize:  10,
 			expectedPageToken: "2020-09-20T03:23:20.995000Z",
-			expectedRes:       `{"result":[{"id":"1707f380-f31f-11ef-bfe4-7ff769b357b3","customer_id":"00000000-0000-0000-0000-000000000000","aicall_id":"00000000-0000-0000-0000-000000000000","role":"","content":"","direction":"","tm_create":"2020-09-20T03:23:21.995000Z"},{"id":"17268426-f31f-11ef-aa11-6f21c1723af6","customer_id":"00000000-0000-0000-0000-000000000000","aicall_id":"00000000-0000-0000-0000-000000000000","role":"","content":"","direction":"","tm_create":"2020-09-20T03:23:22.995000Z"},{"id":"17468500-f31f-11ef-b7b6-9b29397f4894","customer_id":"00000000-0000-0000-0000-000000000000","aicall_id":"00000000-0000-0000-0000-000000000000","role":"","content":"","direction":"","tm_create":"2020-09-20T03:23:23.995000Z"}],"next_page_token":"2020-09-20T03:23:23.995000Z"}`,
+			expectedRes:       `{"result":[{"id":"1707f380-f31f-11ef-bfe4-7ff769b357b3","customer_id":"00000000-0000-0000-0000-000000000000","aicall_id":"00000000-0000-0000-0000-000000000000","role":"","content":"","direction":"","tm_create":"2020-09-20T03:23:21.995Z"},{"id":"17268426-f31f-11ef-aa11-6f21c1723af6","customer_id":"00000000-0000-0000-0000-000000000000","aicall_id":"00000000-0000-0000-0000-000000000000","role":"","content":"","direction":"","tm_create":"2020-09-20T03:23:22.995Z"},{"id":"17468500-f31f-11ef-b7b6-9b29397f4894","customer_id":"00000000-0000-0000-0000-000000000000","aicall_id":"00000000-0000-0000-0000-000000000000","role":"","content":"","direction":"","tm_create":"2020-09-20T03:23:23.995Z"}],"next_page_token":"2020-09-20T03:23:23.995000Z"}`,
 		},
 	}
 
@@ -242,7 +242,7 @@ func Test_GetAimessagesId(t *testing.T) {
 			},
 
 			expectedAImessageID: uuid.FromStringOrNil("796924c2-f31f-11ef-8589-c3efd79e11d5"),
-			expectRes:           `{"id":"796924c2-f31f-11ef-8589-c3efd79e11d5","customer_id":"00000000-0000-0000-0000-000000000000","aicall_id":"00000000-0000-0000-0000-000000000000","role":"","content":"","direction":""}`,
+			expectRes:           `{"id":"796924c2-f31f-11ef-8589-c3efd79e11d5","customer_id":"00000000-0000-0000-0000-000000000000","aicall_id":"00000000-0000-0000-0000-000000000000","role":"","content":"","direction":"","tm_create":null}`,
 		},
 	}
 
@@ -310,7 +310,7 @@ func Test_DeleteAimessagesId(t *testing.T) {
 			},
 
 			expectedAImessageID: uuid.FromStringOrNil("b3fc4312-f31f-11ef-8661-939776978f23"),
-			expectedRes:         `{"id":"ab6f6c84-b9c2-4350-9978-4336b677603c","customer_id":"00000000-0000-0000-0000-000000000000","aicall_id":"00000000-0000-0000-0000-000000000000","role":"","content":"","direction":""}`,
+			expectedRes:         `{"id":"ab6f6c84-b9c2-4350-9978-4336b677603c","customer_id":"00000000-0000-0000-0000-000000000000","aicall_id":"00000000-0000-0000-0000-000000000000","role":"","content":"","direction":"","tm_create":null}`,
 		},
 	}
 

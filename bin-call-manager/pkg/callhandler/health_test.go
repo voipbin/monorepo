@@ -1,6 +1,7 @@
 package callhandler
 
 import (
+	"monorepo/bin-call-manager/pkg/testhelper"
 	"context"
 	"testing"
 
@@ -43,13 +44,13 @@ func Test_HealthCheck(t *testing.T) {
 				},
 				ChannelID: "a5416ed3-5f61-4e1e-971f-0b3ff61ce19e",
 				Status:    call.StatusProgressing,
-				TMHangup:  dbhandler.DefaultTimeStamp,
-				TMDelete:  dbhandler.DefaultTimeStamp,
+				TMHangup:  nil,
+				TMDelete:  nil,
 			},
 			responseChannel: &channel.Channel{
 				ID:       "a5416ed3-5f61-4e1e-971f-0b3ff61ce19e",
-				TMEnd:    dbhandler.DefaultTimeStamp,
-				TMDelete: dbhandler.DefaultTimeStamp,
+				TMEnd:    nil,
+				TMDelete: nil,
 			},
 
 			expectRetryCount: 0,
@@ -66,13 +67,13 @@ func Test_HealthCheck(t *testing.T) {
 				},
 				ChannelID: "cba7edf9-8586-40c0-992b-5885103228c1",
 				Status:    call.StatusProgressing,
-				TMHangup:  dbhandler.DefaultTimeStamp,
-				TMDelete:  dbhandler.DefaultTimeStamp,
+				TMHangup:  nil,
+				TMDelete:  nil,
 			},
 			responseChannel: &channel.Channel{
 				ID:       "cba7edf9-8586-40c0-992b-5885103228c1",
-				TMEnd:    "2023-01-18T03:22:18.995000Z",
-				TMDelete: dbhandler.DefaultTimeStamp,
+				TMEnd: testhelper.TimePtr("2023-01-18T03:22:18.995000Z"),
+				TMDelete: nil,
 			},
 
 			expectRetryCount: 1,
@@ -89,13 +90,13 @@ func Test_HealthCheck(t *testing.T) {
 				},
 				ChannelID: "cba7edf9-8586-40c0-992b-5885103228c1",
 				Status:    call.StatusProgressing,
-				TMHangup:  dbhandler.DefaultTimeStamp,
-				TMDelete:  dbhandler.DefaultTimeStamp,
+				TMHangup:  nil,
+				TMDelete:  nil,
 			},
 			responseChannel: &channel.Channel{
 				ID:       "cba7edf9-8586-40c0-992b-5885103228c1",
-				TMEnd:    dbhandler.DefaultTimeStamp,
-				TMDelete: "2023-01-18T03:22:18.995000Z",
+				TMEnd:    nil,
+				TMDelete: testhelper.TimePtr("2023-01-18T03:22:18.995000Z"),
 			},
 
 			expectRetryCount: 1,

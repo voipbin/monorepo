@@ -8,7 +8,6 @@ import (
 	"github.com/gofrs/uuid"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
-	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	commonutil "monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-talk-manager/models/chat"
 )
@@ -65,12 +64,12 @@ func Test_ChatCreate(t *testing.T) {
 			}
 
 			// Clear timestamps for comparison
-			tt.data.TMCreate = ""
-			tt.data.TMUpdate = ""
-			tt.data.TMDelete = ""
-			res.TMCreate = ""
-			res.TMUpdate = ""
-			res.TMDelete = ""
+			tt.data.TMCreate = nil
+			tt.data.TMUpdate = nil
+			tt.data.TMDelete = nil
+			res.TMCreate = nil
+			res.TMUpdate = nil
+			res.TMDelete = nil
 
 			if !reflect.DeepEqual(tt.data, res) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.data, res)
@@ -372,9 +371,9 @@ func Test_ChatDelete(t *testing.T) {
 			// Verify soft delete - should return error when getting deleted talk
 			res, err := h.ChatGet(ctx, tt.deleteID)
 			if err == nil {
-				// If no error, verify tm_delete is not default
-				if res.TMDelete == commondatabasehandler.DefaultTimeStamp {
-					t.Errorf("Expected soft delete timestamp, got default timestamp")
+				// If no error, verify tm_delete is not nil (was soft deleted)
+				if res.TMDelete == nil {
+					t.Errorf("Expected soft delete timestamp, got nil")
 				}
 			}
 

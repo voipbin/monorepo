@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
+	"time"
 
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -23,7 +24,7 @@ func Test_FileCreate(t *testing.T) {
 		name string
 		file *file.File
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *file.File
 	}{
 		{
@@ -47,10 +48,10 @@ func Test_FileCreate(t *testing.T) {
 				Filepath:         "/tmp/6c0e06ba-146a-11ef-8697-c7c53a81a655",
 				URIBucket:        "https://test.com/uri_bucket",
 				URIDownload:      "https://test.com/uri_download",
-				TMDownloadExpire: "2024-05-18T03:22:17.995000Z",
+				TMDownloadExpire: func() *time.Time { t := time.Date(2024, 5, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
 			},
 
-			"2024-05-18T03:22:17.995000Z",
+			func() *time.Time { t := time.Date(2024, 5, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
 			&file.File{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("ee9ff382-13f1-11ef-a41a-b3608f793722"),
@@ -70,10 +71,10 @@ func Test_FileCreate(t *testing.T) {
 				Filesize:         1000,
 				URIBucket:        "https://test.com/uri_bucket",
 				URIDownload:      "https://test.com/uri_download",
-				TMDownloadExpire: "2024-05-18T03:22:17.995000Z",
-				TMCreate:         "2024-05-18T03:22:17.995000Z",
-				TMUpdate:         "9999-01-01T00:00:00.000000Z",
-				TMDelete:         "9999-01-01T00:00:00.000000Z",
+				TMDownloadExpire: func() *time.Time { t := time.Date(2024, 5, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
+				TMCreate:         func() *time.Time { t := time.Date(2024, 5, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
+				TMUpdate:         nil,
+				TMDelete:         nil,
 			},
 		},
 	}
@@ -93,7 +94,7 @@ func Test_FileCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().FileSet(ctx, gomock.Any())
 			if err := h.FileCreate(ctx, tt.file); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -122,7 +123,7 @@ func Test_FileList(t *testing.T) {
 		size    uint64
 		filters map[file.Field]any
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       []*file.File
 	}{
 		{
@@ -150,7 +151,7 @@ func Test_FileList(t *testing.T) {
 				file.FieldDeleted:    false,
 			},
 
-			"2024-05-16T03:22:17.995000Z",
+			func() *time.Time { t := time.Date(2024, 5, 16, 3, 22, 17, 995000000, time.UTC); return &t }(),
 			[]*file.File{
 				{
 					Identity: commonidentity.Identity{
@@ -158,9 +159,9 @@ func Test_FileList(t *testing.T) {
 						CustomerID: uuid.FromStringOrNil("a42851e0-13f2-11ef-a75e-57b5fc5932e1"),
 					},
 					Name:     "test1",
-					TMCreate: "2024-05-16T03:22:17.995000Z",
-					TMUpdate: "9999-01-01T00:00:00.000000Z",
-					TMDelete: "9999-01-01T00:00:00.000000Z",
+					TMCreate: func() *time.Time { t := time.Date(2024, 5, 16, 3, 22, 17, 995000000, time.UTC); return &t }(),
+					TMUpdate: nil,
+					TMDelete: nil,
 				},
 				{
 					Identity: commonidentity.Identity{
@@ -168,9 +169,9 @@ func Test_FileList(t *testing.T) {
 						CustomerID: uuid.FromStringOrNil("a42851e0-13f2-11ef-a75e-57b5fc5932e1"),
 					},
 					Name:     "test2",
-					TMCreate: "2024-05-16T03:22:17.995000Z",
-					TMUpdate: "9999-01-01T00:00:00.000000Z",
-					TMDelete: "9999-01-01T00:00:00.000000Z",
+					TMCreate: func() *time.Time { t := time.Date(2024, 5, 16, 3, 22, 17, 995000000, time.UTC); return &t }(),
+					TMUpdate: nil,
+					TMDelete: nil,
 				},
 			},
 		},
@@ -191,7 +192,7 @@ func Test_FileList(t *testing.T) {
 			ctx := context.Background()
 
 			for _, f := range tt.files {
-				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 				mockCache.EXPECT().FileSet(ctx, gomock.Any())
 				if err := h.FileCreate(ctx, &f); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -258,13 +259,13 @@ func Test_FileUpdate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+			mockUtil.EXPECT().TimeNow().Return(utilhandler.TimeNow())
 			mockCache.EXPECT().FileSet(ctx, gomock.Any())
 			if err := h.FileCreate(ctx, tt.file); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+			mockUtil.EXPECT().TimeNow().Return(utilhandler.TimeNow())
 			mockCache.EXPECT().FileSet(ctx, gomock.Any())
 			if err := h.FileUpdate(ctx, tt.file.ID, tt.updateFields); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -277,10 +278,10 @@ func Test_FileUpdate(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			res.TMDownloadExpire = ""
-			res.TMUpdate = ""
-			res.TMCreate = ""
-			res.TMDelete = ""
+			res.TMDownloadExpire = nil
+			res.TMUpdate = nil
+			res.TMCreate = nil
+			res.TMDelete = nil
 			if reflect.DeepEqual(tt.expectRes, res) == false {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
@@ -320,7 +321,7 @@ func Test_FileDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime()).AnyTimes()
+			mockUtil.EXPECT().TimeNow().Return(utilhandler.TimeNow()).AnyTimes()
 
 			mockCache.EXPECT().FileSet(ctx, gomock.Any())
 			if err := h.FileCreate(ctx, tt.file); err != nil {
@@ -339,8 +340,8 @@ func Test_FileDelete(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if res.TMDelete == "9999-01-01T00:00:00.000000Z" {
-				t.Errorf("Wrong match. expect: any other, got: %s", res.TMDelete)
+			if res.TMDelete == nil {
+				t.Errorf("Wrong match. expect: non-nil, got: nil")
 			}
 
 		})

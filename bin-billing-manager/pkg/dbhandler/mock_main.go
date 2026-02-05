@@ -14,6 +14,7 @@ import (
 	account "monorepo/bin-billing-manager/models/account"
 	billing "monorepo/bin-billing-manager/models/billing"
 	reflect "reflect"
+	time "time"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -246,7 +247,7 @@ func (mr *MockDBHandlerMockRecorder) BillingSetStatus(ctx, id, status any) *gomo
 }
 
 // BillingSetStatusEnd mocks base method.
-func (m *MockDBHandler) BillingSetStatusEnd(ctx context.Context, id uuid.UUID, billingDuration float32, timestamp string) error {
+func (m *MockDBHandler) BillingSetStatusEnd(ctx context.Context, id uuid.UUID, billingDuration float32, timestamp *time.Time) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BillingSetStatusEnd", ctx, id, billingDuration, timestamp)
 	ret0, _ := ret[0].(error)

@@ -1,6 +1,8 @@
 package billing
 
 import (
+	"time"
+
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
@@ -22,13 +24,13 @@ type Billing struct {
 
 	BillingUnitCount float32 `json:"billing_unit_count" db:"billing_unit_count"`
 
-	TMBillingStart string `json:"tm_billing_start" db:"tm_billing_start"`
-	TMBillingEnd   string `json:"tm_billing_end" db:"tm_billing_end"`
+	TMBillingStart *time.Time `json:"tm_billing_start" db:"tm_billing_start"`
+	TMBillingEnd   *time.Time `json:"tm_billing_end" db:"tm_billing_end"`
 
 	// timestamp
-	TMCreate string `json:"tm_create" db:"tm_create"`
-	TMUpdate string `json:"tm_update" db:"tm_update"`
-	TMDelete string `json:"tm_delete" db:"tm_delete"`
+	TMCreate *time.Time `json:"tm_create" db:"tm_create"`
+	TMUpdate *time.Time `json:"tm_update" db:"tm_update"`
+	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"`
 }
 
 // ReferenceType define

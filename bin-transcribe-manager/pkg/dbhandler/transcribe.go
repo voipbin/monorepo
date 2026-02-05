@@ -35,12 +35,12 @@ func (h *handler) transcribeGetFromRow(row *sql.Rows) (*transcribe.Transcribe, e
 
 // TranscribeCreate creates a new transcribe
 func (h *handler) TranscribeCreate(ctx context.Context, t *transcribe.Transcribe) error {
-	now := h.utilHandler.TimeGetCurTime()
+	now := h.utilHandler.TimeNow()
 
 	// Set timestamps
 	t.TMCreate = now
-	t.TMUpdate = commondatabasehandler.DefaultTimeStamp
-	t.TMDelete = commondatabasehandler.DefaultTimeStamp
+	t.TMUpdate = nil
+	t.TMDelete = nil
 
 	// Ensure StreamingIDs is not nil
 	if t.StreamingIDs == nil {
@@ -163,7 +163,7 @@ func (h *handler) transcribeGetFromDB(ctx context.Context, id uuid.UUID) (*trans
 
 // TranscribeDelete deletes the transcribe.
 func (h *handler) TranscribeDelete(ctx context.Context, id uuid.UUID) error {
-	ts := h.utilHandler.TimeGetCurTime()
+	ts := h.utilHandler.TimeNow()
 
 	fields := map[transcribe.Field]any{
 		transcribe.FieldTMUpdate: ts,
@@ -296,7 +296,7 @@ func (h *handler) TranscribeUpdate(ctx context.Context, id uuid.UUID, fields map
 		return nil
 	}
 
-	fields[transcribe.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
+	fields[transcribe.FieldTMUpdate] = h.utilHandler.TimeNow()
 
 	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {

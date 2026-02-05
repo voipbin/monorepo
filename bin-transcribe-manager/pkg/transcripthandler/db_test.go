@@ -34,7 +34,7 @@ func Test_dbDelete(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2adc1780-f260-11ee-9069-8bb772a86cf3"),
 				},
-				TMDelete: dbhandler.DefaultTimeStamp,
+				TMDelete: nil,
 			},
 		},
 	}

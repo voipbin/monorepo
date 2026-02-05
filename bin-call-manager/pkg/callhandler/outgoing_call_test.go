@@ -1,6 +1,7 @@
 package callhandler
 
 import (
+	"monorepo/bin-call-manager/pkg/testhelper"
 	"context"
 	"reflect"
 	"testing"
@@ -130,11 +131,11 @@ func Test_CreateCallOutgoing_TypeSIP(t *testing.T) {
 
 				Dialroutes: []rmroute.Route{},
 
-				TMCreate:      "2021-02-19T06:32:14.621Z",
-				TMUpdate:      dbhandler.DefaultTimeStamp,
-				TMRinging:     dbhandler.DefaultTimeStamp,
-				TMProgressing: dbhandler.DefaultTimeStamp,
-				TMHangup:      dbhandler.DefaultTimeStamp,
+				TMCreate: testhelper.TimePtr("2021-02-19T06:32:14.621Z"),
+				TMUpdate:      nil,
+				TMRinging:     nil,
+				TMProgressing: nil,
+				TMHangup:      nil,
 			},
 			expectArgs:        "context_type=call,context=call-out,call_id=f1afa9ce-ecb2-11ea-ab94-a768ab787da0,transport=udp,direction=outgoing",
 			expectEndpointDst: "pjsip/call-out/sip:testoutgoing@test.com",
@@ -324,11 +325,11 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 					},
 				},
 
-				TMCreate:      "2021-02-19T06:32:14.621Z",
-				TMUpdate:      dbhandler.DefaultTimeStamp,
-				TMRinging:     dbhandler.DefaultTimeStamp,
-				TMProgressing: dbhandler.DefaultTimeStamp,
-				TMHangup:      dbhandler.DefaultTimeStamp,
+				TMCreate: testhelper.TimePtr("2021-02-19T06:32:14.621Z"),
+				TMUpdate:      nil,
+				TMRinging:     nil,
+				TMProgressing: nil,
+				TMHangup:      nil,
 			},
 			expectProviderID:  uuid.FromStringOrNil("c213af44-534e-11ed-9a1d-73b0076723b8"),
 			expectArgs:        "context_type=call,context=call-out,call_id=b7c40962-07fb-11eb-bb82-a3bd16bf1bd9,transport=udp,direction=outgoing",

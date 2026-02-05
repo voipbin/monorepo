@@ -4,6 +4,7 @@ import (
 	"context"
 	reflect "reflect"
 	"testing"
+	"time"
 
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -16,11 +17,13 @@ import (
 
 func Test_SIPAuthCreate(t *testing.T) {
 
+	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
+
 	type test struct {
 		name    string
 		sipauth *sipauth.SIPAuth
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *sipauth.SIPAuth
 	}
 
@@ -37,7 +40,7 @@ func Test_SIPAuthCreate(t *testing.T) {
 				AllowedIPs:    []string{"1.2.3.4", "1.2.3.5"},
 			},
 
-			"2021-02-26T18:26:49.000Z",
+			curTime,
 			&sipauth.SIPAuth{
 				ID:            uuid.FromStringOrNil("35e51522-cda4-11ee-a4e3-835eaf8559f0"),
 				ReferenceType: sipauth.ReferenceTypeTrunk,
@@ -49,8 +52,8 @@ func Test_SIPAuthCreate(t *testing.T) {
 					"1.2.3.4",
 					"1.2.3.5",
 				},
-				TMCreate: "2021-02-26T18:26:49.000Z",
-				TMUpdate: DefaultTimeStamp,
+				TMCreate: curTime,
+				TMUpdate: nil,
 			},
 		},
 		{
@@ -59,13 +62,13 @@ func Test_SIPAuthCreate(t *testing.T) {
 				ID: uuid.FromStringOrNil("36174498-cda4-11ee-ad5c-93439335fc1a"),
 			},
 
-			"2021-02-26T18:26:49.000Z",
+			curTime,
 			&sipauth.SIPAuth{
 				ID:         uuid.FromStringOrNil("36174498-cda4-11ee-ad5c-93439335fc1a"),
 				AuthTypes:  []sipauth.AuthType{},
 				AllowedIPs: []string{},
-				TMCreate:   "2021-02-26T18:26:49.000Z",
-				TMUpdate:   DefaultTimeStamp,
+				TMCreate:   curTime,
+				TMUpdate:   nil,
 			},
 		},
 	}
@@ -85,7 +88,7 @@ func Test_SIPAuthCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			if err := h.SIPAuthCreate(ctx, tt.sipauth); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -104,13 +107,15 @@ func Test_SIPAuthCreate(t *testing.T) {
 
 func Test_SIPAuthUpdate(t *testing.T) {
 
+	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
+
 	type test struct {
 		name    string
 		sipauth *sipauth.SIPAuth
 
 		updateFields map[sipauth.Field]any
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *sipauth.SIPAuth
 	}
 
@@ -135,7 +140,7 @@ func Test_SIPAuthUpdate(t *testing.T) {
 				sipauth.FieldAllowedIPs: []string{"1.2.3.6", "1.2.3.7"},
 			},
 
-			"2021-02-26T18:26:49.000Z",
+			curTime,
 			&sipauth.SIPAuth{
 				ID:            uuid.FromStringOrNil("3859e9de-cda6-11ee-b6c1-678b4af08a31"),
 				ReferenceType: sipauth.ReferenceTypeTrunk,
@@ -144,8 +149,8 @@ func Test_SIPAuthUpdate(t *testing.T) {
 				Username:      "updateusername",
 				Password:      "updatepassword",
 				AllowedIPs:    []string{"1.2.3.6", "1.2.3.7"},
-				TMCreate:      "2021-02-26T18:26:49.000Z",
-				TMUpdate:      "2021-02-26T18:26:49.000Z",
+				TMCreate:      curTime,
+				TMUpdate:      curTime,
 			},
 		},
 		{
@@ -168,14 +173,14 @@ func Test_SIPAuthUpdate(t *testing.T) {
 				sipauth.FieldAllowedIPs: []string{},
 			},
 
-			"2021-02-26T18:26:49.000Z",
+			curTime,
 			&sipauth.SIPAuth{
 				ID:            uuid.FromStringOrNil("3829303c-cda6-11ee-9273-672228e0f5ba"),
 				ReferenceType: sipauth.ReferenceTypeTrunk,
 				AuthTypes:     []sipauth.AuthType{},
 				AllowedIPs:    []string{},
-				TMCreate:      "2021-02-26T18:26:49.000Z",
-				TMUpdate:      "2021-02-26T18:26:49.000Z",
+				TMCreate:      curTime,
+				TMUpdate:      curTime,
 			},
 		},
 	}
@@ -195,12 +200,12 @@ func Test_SIPAuthUpdate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			if err := h.SIPAuthCreate(ctx, tt.sipauth); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			if err := h.SIPAuthUpdate(ctx, tt.sipauth.ID, tt.updateFields); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -219,11 +224,13 @@ func Test_SIPAuthUpdate(t *testing.T) {
 
 func Test_SIPAuthDelete(t *testing.T) {
 
+	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
+
 	type test struct {
 		name    string
 		sipauth *sipauth.SIPAuth
 
-		responseCurTime string
+		responseCurTime *time.Time
 	}
 
 	tests := []test{
@@ -239,7 +246,7 @@ func Test_SIPAuthDelete(t *testing.T) {
 				AllowedIPs:    []string{"1.2.3.4", "1.2.3.5"},
 			},
 
-			"2021-02-26T18:26:49.000Z",
+			curTime,
 		},
 		{
 			"empty",
@@ -253,7 +260,7 @@ func Test_SIPAuthDelete(t *testing.T) {
 				AllowedIPs:    []string{"1.2.3.4", "1.2.3.5"},
 			},
 
-			"2021-02-26T18:26:49.000Z",
+			curTime,
 		},
 	}
 
@@ -272,7 +279,7 @@ func Test_SIPAuthDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			if err := h.SIPAuthCreate(ctx, tt.sipauth); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

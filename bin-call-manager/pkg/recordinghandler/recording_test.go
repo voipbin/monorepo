@@ -123,8 +123,8 @@ func Test_recordingReferenceTypeCall(t *testing.T) {
 					"8ebcbdb6-f24a-11ed-a11f-43ae14bc23bf",
 					"a3c515c8-f24a-11ed-959a-6711635061dd",
 				},
-				TMStart: dbhandler.DefaultTimeStamp,
-				TMEnd:   dbhandler.DefaultTimeStamp,
+				TMStart: nil,
+				TMEnd:   nil,
 			},
 		},
 	}
@@ -216,7 +216,7 @@ func Test_recordingReferenceTypeConfbridge(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("fff4ad02-98f6-11ed-aa9b-4f84a05324f1"),
 				},
 				BridgeID: "4ee52ba0-f24b-11ed-a01d-f77eee7d92ee",
-				TMDelete: dbhandler.DefaultTimeStamp,
+				TMDelete: nil,
 			},
 			responseBridge: &bridge.Bridge{
 				AsteriskID: "42:01:0a:a4:00:03",
@@ -249,8 +249,8 @@ func Test_recordingReferenceTypeConfbridge(t *testing.T) {
 				},
 				AsteriskID: "42:01:0a:a4:00:03",
 				ChannelIDs: []string{},
-				TMStart:    dbhandler.DefaultTimeStamp,
-				TMEnd:      dbhandler.DefaultTimeStamp,
+				TMStart:    nil,
+				TMEnd:      nil,
 			},
 		},
 	}

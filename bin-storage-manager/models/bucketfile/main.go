@@ -1,6 +1,10 @@
 package bucketfile
 
-import "github.com/gofrs/uuid"
+import (
+	"time"
+
+	"github.com/gofrs/uuid"
+)
 
 // BucketFile struct
 type BucketFile struct {
@@ -8,7 +12,7 @@ type BucketFile struct {
 	ReferenceID      uuid.UUID     `json:"reference_id"`
 	BucketURI        string        `json:"bucket_uri"`         // bucket uri.
 	DownloadURI      string        `json:"download_uri"`       // download link
-	TMDownloadExpire string        `json:"tm_download_expire"` // timestamp for download link expire
+	TMDownloadExpire *time.Time    `json:"tm_download_expire"` // timestamp for download link expire
 }
 
 // ReferenceType define

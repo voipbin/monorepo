@@ -30,12 +30,12 @@ func (h *handler) mediaGetFromRow(row *sql.Rows) (*media.Media, error) {
 
 // MediaCreate creates a new media record
 func (h *handler) MediaCreate(ctx context.Context, m *media.Media) error {
-	now := h.utilHandler.TimeGetCurTime()
+	now := h.utilHandler.TimeNow()
 
 	// Set timestamps
 	m.TMCreate = now
-	m.TMUpdate = commondatabasehandler.DefaultTimeStamp
-	m.TMDelete = commondatabasehandler.DefaultTimeStamp
+	m.TMUpdate = nil
+	m.TMDelete = nil
 
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(m)

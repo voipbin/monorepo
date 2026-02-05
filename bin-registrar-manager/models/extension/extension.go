@@ -1,6 +1,8 @@
 package extension
 
 import (
+	"time"
+
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-registrar-manager/models/sipauth"
 )
@@ -25,9 +27,9 @@ type Extension struct {
 	Username string `json:"username" db:"username"` // DO NOT CHANGE. This used by the kamailio's INVITE validation
 	Password string `json:"password" db:"password"` // DO NOT CHANGE. This used by the kamailio's INVITE validation
 
-	TMCreate string `json:"tm_create" db:"tm_create"`
-	TMUpdate string `json:"tm_update" db:"tm_update"`
-	TMDelete string `json:"tm_delete" db:"tm_delete"`
+	TMCreate *time.Time `json:"tm_create" db:"tm_create"`
+	TMUpdate *time.Time `json:"tm_update" db:"tm_update"`
+	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"`
 }
 
 // GenerateSIPAuth returns sipauth of the given extension

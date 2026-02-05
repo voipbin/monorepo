@@ -30,12 +30,12 @@ func (h *handler) accountGetFromRow(row *sql.Rows) (*account.Account, error) {
 
 // AccountCreate creates a new account record
 func (h *handler) AccountCreate(ctx context.Context, ac *account.Account) error {
-	now := h.utilHandler.TimeGetCurTime()
+	now := h.utilHandler.TimeNow()
 
 	// Set timestamps
 	ac.TMCreate = now
-	ac.TMUpdate = commondatabasehandler.DefaultTimeStamp
-	ac.TMDelete = commondatabasehandler.DefaultTimeStamp
+	ac.TMUpdate = nil
+	ac.TMDelete = nil
 
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(ac)
@@ -218,7 +218,7 @@ func (h *handler) AccountUpdate(ctx context.Context, id uuid.UUID, fields map[ac
 		return nil
 	}
 
-	fields[account.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
+	fields[account.FieldTMUpdate] = h.utilHandler.TimeNow()
 
 	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
@@ -244,7 +244,7 @@ func (h *handler) AccountUpdate(ctx context.Context, id uuid.UUID, fields map[ac
 }
 
 func (h *handler) AccountDelete(ctx context.Context, id uuid.UUID) error {
-	ts := h.utilHandler.TimeGetCurTime()
+	ts := h.utilHandler.TimeNow()
 
 	fields := map[account.Field]any{
 		account.FieldTMUpdate: ts,

@@ -3,7 +3,6 @@ package bridgehandler
 import (
 	"context"
 	"fmt"
-	"monorepo/bin-call-manager/pkg/dbhandler"
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -31,7 +30,7 @@ func (h *bridgeHandler) Play(
 		return errors.Wrap(err, "could not get bridge info")
 	}
 
-	if br.TMDelete < dbhandler.DefaultTimeStamp {
+	if br.TMDelete != nil {
 		log.Errorf("The bridge has hungup already.")
 		return fmt.Errorf("the bridge has hungup already")
 	}

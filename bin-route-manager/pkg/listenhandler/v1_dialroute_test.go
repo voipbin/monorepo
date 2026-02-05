@@ -49,7 +49,7 @@ func Test_v1DialroutesGet(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"79f2705e-b57f-4957-8ad6-6e162802b115","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"79f2705e-b57f-4957-8ad6-6e162802b115","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":null,"tm_update":null,"tm_delete":null}]`),
 			},
 		},
 		{
@@ -76,7 +76,7 @@ func Test_v1DialroutesGet(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"ea23a015-6d11-4014-894d-2aaa96cbd851","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"","tm_update":"","tm_delete":""},{"id":"3bb96c6e-1526-4628-806a-dc780b43a82a","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"ea23a015-6d11-4014-894d-2aaa96cbd851","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":null,"tm_update":null,"tm_delete":null},{"id":"3bb96c6e-1526-4628-806a-dc780b43a82a","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":null,"tm_update":null,"tm_delete":null}]`),
 			},
 		},
 		{

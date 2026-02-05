@@ -1,6 +1,8 @@
 package confbridge
 
 import (
+	"time"
+
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
@@ -30,9 +32,9 @@ type Confbridge struct {
 	// current external media id
 	ExternalMediaID uuid.UUID `json:"external_media_id" db:"external_media_id,uuid"`
 
-	TMCreate string `json:"tm_create" db:"tm_create"`
-	TMUpdate string `json:"tm_update" db:"tm_update"`
-	TMDelete string `json:"tm_delete" db:"tm_delete"`
+	TMCreate *time.Time `json:"tm_create" db:"tm_create"`
+	TMUpdate *time.Time `json:"tm_update" db:"tm_update"`
+	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"`
 }
 
 type ReferenceType string

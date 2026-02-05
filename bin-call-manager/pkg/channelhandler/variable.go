@@ -8,7 +8,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-call-manager/models/channel"
-	"monorepo/bin-call-manager/pkg/dbhandler"
 )
 
 // VariableSet sets the variable
@@ -26,7 +25,7 @@ func (h *channelHandler) VariableSet(ctx context.Context, id string, key string,
 		return err
 	}
 
-	if res.TMDelete < dbhandler.DefaultTimeStamp {
+	if res.TMDelete != nil {
 		// already hungup nothing to do
 		return fmt.Errorf("already hungup")
 	}

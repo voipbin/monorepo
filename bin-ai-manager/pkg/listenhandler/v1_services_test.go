@@ -214,7 +214,7 @@ func Test_processV1ServicesTypeTaskPost(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"5cc6ce70-d70b-11f0-b271-5bfd90b50be7","type":"aicall","push_actions":[{"id":"5cea16f0-d70b-11f0-91ac-0bcc871a5da5","next_id":"00000000-0000-0000-0000-000000000000","type":"block"}]}`),
+				Data:       []byte(`{"id":"5cc6ce70-d70b-11f0-b271-5bfd90b50be7","type":"aicall","push_actions":[{"id":"5cea16f0-d70b-11f0-91ac-0bcc871a5da5","next_id":"00000000-0000-0000-0000-000000000000","type":"block","tm_execute":null}]}`),
 			},
 		},
 	}

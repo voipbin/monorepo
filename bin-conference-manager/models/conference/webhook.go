@@ -2,6 +2,7 @@ package conference
 
 import (
 	"encoding/json"
+	"time"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
@@ -32,11 +33,11 @@ type WebhookMessage struct {
 	TranscribeID  uuid.UUID   `json:"transcribe_id,omitempty"`
 	TranscribeIDs []uuid.UUID `json:"transcribe_ids,omitempty"`
 
-	TMEnd string `json:"tm_end,omitempty"`
+	TMEnd *time.Time `json:"tm_end"`
 
-	TMCreate string `json:"tm_create,omitempty"`
-	TMUpdate string `json:"tm_update,omitempty"`
-	TMDelete string `json:"tm_delete,omitempty"`
+	TMCreate *time.Time `json:"tm_create"`
+	TMUpdate *time.Time `json:"tm_update"`
+	TMDelete *time.Time `json:"tm_delete"`
 }
 
 // ConvertWebhookMessage converts to the event

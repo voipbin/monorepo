@@ -10,7 +10,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	commondatabase "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-transcribe-manager/models/transcribe"
 	"monorepo/bin-transcribe-manager/models/transcript"
 )
@@ -88,8 +87,8 @@ func (h *transcribeHandler) isValidReference(ctx context.Context, referenceType 
 			return false
 		}
 
-		if tmp.TMDelete < commondatabase.DefaultTimeStamp {
-			log.Errorf("Call is not valid for transcribe. tm_delete: %s", tmp.TMDelete)
+		if tmp.TMDelete != nil {
+			log.Errorf("Call is not valid for transcribe. tm_delete: %v", tmp.TMDelete)
 			return false
 		}
 
@@ -99,8 +98,8 @@ func (h *transcribeHandler) isValidReference(ctx context.Context, referenceType 
 			log.Errorf("Could not get reference info. type: %s, err: %v", referenceType, err)
 			return false
 		}
-		if tmp.TMDelete < commondatabase.DefaultTimeStamp {
-			log.Errorf("Confbridge is not valid for transcribe. tm_delete: %s", tmp.TMDelete)
+		if tmp.TMDelete != nil {
+			log.Errorf("Confbridge is not valid for transcribe. tm_delete: %v", tmp.TMDelete)
 			return false
 		}
 

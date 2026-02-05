@@ -1,9 +1,11 @@
 package ai
 
 import (
+	"strings"
+	"time"
+
 	"monorepo/bin-ai-manager/models/tool"
 	"monorepo/bin-common-handler/models/identity"
-	"strings"
 )
 
 // AI define
@@ -30,9 +32,9 @@ type AI struct {
 	ToolNames []tool.ToolName `json:"tool_names,omitempty" db:"tool_names,json"`
 
 	// timestamp
-	TMCreate string `json:"tm_create,omitempty" db:"tm_create"`
-	TMUpdate string `json:"tm_update,omitempty" db:"tm_update"`
-	TMDelete string `json:"tm_delete,omitempty" db:"tm_delete"`
+	TMCreate *time.Time `json:"tm_create" db:"tm_create"`
+	TMUpdate *time.Time `json:"tm_update" db:"tm_update"`
+	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"`
 }
 
 // EngineType define

@@ -1,6 +1,8 @@
 package message
 
 import (
+	"time"
+
 	"monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
@@ -19,8 +21,8 @@ type Message struct {
 	ToolCalls  []ToolCall `json:"tool_calls,omitempty" db:"tool_calls,json"`
 	ToolCallID string     `json:"tool_call_id,omitempty" db:"tool_call_id"`
 
-	TMCreate string `json:"tm_create,omitempty" db:"tm_create"`
-	TMDelete string `json:"tm_delete,omitempty" db:"tm_delete"`
+	TMCreate *time.Time `json:"tm_create" db:"tm_create"`
+	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"`
 }
 
 // Role defiens

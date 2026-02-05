@@ -2,6 +2,7 @@ package participant
 
 import (
 	"encoding/json"
+	"time"
 
 	"github.com/gofrs/uuid"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -21,7 +22,7 @@ type Participant struct {
 	ChatID uuid.UUID `json:"chat_id" db:"chat_id,uuid"`
 
 	// Timestamps
-	TMJoined string `json:"tm_joined" db:"tm_joined"`
+	TMJoined *time.Time `json:"tm_joined" db:"tm_joined"`
 }
 
 // WebhookMessage is the webhook payload for participant events
@@ -29,8 +30,8 @@ type WebhookMessage struct {
 	commonidentity.Identity
 	commonidentity.Owner
 
-	ChatID   uuid.UUID `json:"chat_id"`
-	TMJoined string    `json:"tm_joined"`
+	ChatID   uuid.UUID  `json:"chat_id"`
+	TMJoined *time.Time `json:"tm_joined"`
 }
 
 // ConvertWebhookMessage converts Participant to WebhookMessage

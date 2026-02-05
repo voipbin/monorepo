@@ -56,7 +56,7 @@ func (h *reactionHandler) ReactionAdd(ctx context.Context, messageID uuid.UUID, 
 
 	// Add reaction atomically using MySQL JSON functions
 	// This prevents race conditions when multiple users add reactions simultaneously
-	now := h.utilHandler.TimeGetCurTime()
+	now := h.utilHandler.TimeNow()
 	reaction := message.Reaction{
 		Emoji:     emoji,
 		OwnerType: ownerType,

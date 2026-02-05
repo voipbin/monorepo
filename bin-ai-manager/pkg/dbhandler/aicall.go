@@ -18,10 +18,10 @@ const (
 
 // AIcallCreate creates a new aicall record.
 func (h *handler) AIcallCreate(ctx context.Context, cb *aicall.AIcall) error {
-	cb.TMEnd = DefaultTimeStamp
-	cb.TMCreate = h.utilHandler.TimeGetCurTime()
-	cb.TMUpdate = DefaultTimeStamp
-	cb.TMDelete = DefaultTimeStamp
+	cb.TMEnd = nil
+	cb.TMCreate = h.utilHandler.TimeNow()
+	cb.TMUpdate = nil
+	cb.TMDelete = nil
 
 	fields, err := commondatabasehandler.PrepareFields(cb)
 	if err != nil {
@@ -165,7 +165,7 @@ func (h *handler) AIcallGetByReferenceID(ctx context.Context, referenceID uuid.U
 
 // AIcallDelete deletes the aicall.
 func (h *handler) AIcallDelete(ctx context.Context, id uuid.UUID) error {
-	ts := h.utilHandler.TimeGetCurTime()
+	ts := h.utilHandler.TimeNow()
 
 	query, args, err := sq.Update(aicallTable).
 		SetMap(map[string]any{
@@ -237,7 +237,7 @@ func (h *handler) AIcallUpdate(ctx context.Context, id uuid.UUID, fields map[aic
 	for k, v := range fields {
 		updateFields[string(k)] = v
 	}
-	updateFields["tm_update"] = h.utilHandler.TimeGetCurTime()
+	updateFields["tm_update"] = h.utilHandler.TimeNow()
 
 	preparedFields, err := commondatabasehandler.PrepareFields(updateFields)
 	if err != nil {

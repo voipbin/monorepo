@@ -3,6 +3,7 @@ package listenhandler
 import (
 	reflect "reflect"
 	"testing"
+	"time"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -16,6 +17,12 @@ import (
 	"monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-agent-manager/pkg/agenthandler"
 )
+
+// testTime is a helper to create a *time.Time for test cases
+func testTime(s string) *time.Time {
+	t, _ := time.Parse(time.RFC3339Nano, s)
+	return &t
+}
 
 func Test_ProcessV1AgentsGet(t *testing.T) {
 
@@ -68,15 +75,15 @@ func Test_ProcessV1AgentsGet(t *testing.T) {
 							Target: "+821021656521",
 						},
 					},
-					TMCreate: "2021-11-23T17:55:39.712000Z",
-					TMUpdate: "9999-01-01T00:00:00.000000Z",
-					TMDelete: "9999-01-01T00:00:00.000000Z",
+					TMCreate: testTime("2021-11-23T17:55:39.712000Z"),
+					TMUpdate: nil,
+					TMDelete: nil,
 				},
 			},
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"5fd7f9b8-cb37-11ee-bd29-f30560a6ac86","username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["27d3bc3e-4d88-11ec-a61d-af78fdede455"],"addresses":[{"type":"tel","target":"+821021656521"}],"tm_create":"2021-11-23T17:55:39.712000Z","tm_update":"9999-01-01T00:00:00.000000Z","tm_delete":"9999-01-01T00:00:00.000000Z"}]`),
+				Data:       []byte(`[{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"5fd7f9b8-cb37-11ee-bd29-f30560a6ac86","username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["27d3bc3e-4d88-11ec-a61d-af78fdede455"],"addresses":[{"type":"tel","target":"+821021656521"}],"tm_create":"2021-11-23T17:55:39.712Z"}]`),
 			},
 		},
 	}
@@ -470,14 +477,14 @@ func TestProcessV1AgentsPost(t *testing.T) {
 						Target: "+821021656521",
 					},
 				},
-				TMCreate: "2021-11-23T17:55:39.712000Z",
-				TMUpdate: "9999-01-01T00:00:00.000000Z",
-				TMDelete: "9999-01-01T00:00:00.000000Z",
+				TMCreate: testTime("2021-11-23T17:55:39.712000Z"),
+				TMUpdate: nil,
+				TMDelete: nil,
 			},
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["27d3bc3e-4d88-11ec-a61d-af78fdede455"],"addresses":[{"type":"tel","target":"+821021656521"}],"tm_create":"2021-11-23T17:55:39.712000Z","tm_update":"9999-01-01T00:00:00.000000Z","tm_delete":"9999-01-01T00:00:00.000000Z"}`),
+				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["27d3bc3e-4d88-11ec-a61d-af78fdede455"],"addresses":[{"type":"tel","target":"+821021656521"}],"tm_create":"2021-11-23T17:55:39.712Z"}`),
 			},
 		},
 		{
@@ -529,14 +536,14 @@ func TestProcessV1AgentsPost(t *testing.T) {
 						Target: "+821021656521",
 					},
 				},
-				TMCreate: "2021-11-23T17:55:39.712000Z",
-				TMUpdate: "9999-01-01T00:00:00.000000Z",
-				TMDelete: "9999-01-01T00:00:00.000000Z",
+				TMCreate: testTime("2021-11-23T17:55:39.712000Z"),
+				TMUpdate: nil,
+				TMDelete: nil,
 			},
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"28a63cc8-4d8c-11ec-959e-6bedf5864e94","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["159623f0-4d8c-11ec-85da-432863b96d60","15ec14e0-4d8c-11ec-82e5-cbde7c2e6f84"],"addresses":[{"type":"tel","target":"+821021656521"}],"tm_create":"2021-11-23T17:55:39.712000Z","tm_update":"9999-01-01T00:00:00.000000Z","tm_delete":"9999-01-01T00:00:00.000000Z"}`),
+				Data:       []byte(`{"id":"28a63cc8-4d8c-11ec-959e-6bedf5864e94","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["159623f0-4d8c-11ec-85da-432863b96d60","15ec14e0-4d8c-11ec-82e5-cbde7c2e6f84"],"addresses":[{"type":"tel","target":"+821021656521"}],"tm_create":"2021-11-23T17:55:39.712Z"}`),
 			},
 		},
 		{
@@ -596,14 +603,14 @@ func TestProcessV1AgentsPost(t *testing.T) {
 						Target: "+821021656522",
 					},
 				},
-				TMCreate: "2021-11-23T17:55:39.712000Z",
-				TMUpdate: "9999-01-01T00:00:00.000000Z",
-				TMDelete: "9999-01-01T00:00:00.000000Z",
+				TMCreate: testTime("2021-11-23T17:55:39.712000Z"),
+				TMUpdate: nil,
+				TMDelete: nil,
 			},
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"e85d8d78-4d8c-11ec-8a91-1f780097ef8d","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["e7b166ec-4d8c-11ec-8c61-0b9e85603e10","e82a311c-4d8c-11ec-9411-3382b1284325"],"addresses":[{"type":"tel","target":"+821021656521"},{"type":"tel","target":"+821021656522"}],"tm_create":"2021-11-23T17:55:39.712000Z","tm_update":"9999-01-01T00:00:00.000000Z","tm_delete":"9999-01-01T00:00:00.000000Z"}`),
+				Data:       []byte(`{"id":"e85d8d78-4d8c-11ec-8a91-1f780097ef8d","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","ring_method":"ringall","status":"offline","permission":1,"tag_ids":["e7b166ec-4d8c-11ec-8c61-0b9e85603e10","e82a311c-4d8c-11ec-9411-3382b1284325"],"addresses":[{"type":"tel","target":"+821021656521"},{"type":"tel","target":"+821021656522"}],"tm_create":"2021-11-23T17:55:39.712Z"}`),
 			},
 		},
 	}
@@ -679,14 +686,14 @@ func TestProcessV1AgentsUsernameLoginPost(t *testing.T) {
 						Target: "+821021656521",
 					},
 				},
-				TMCreate: "2021-11-23T17:55:39.712000Z",
-				TMUpdate: "9999-01-01T00:00:00.000000Z",
-				TMDelete: "9999-01-01T00:00:00.000000Z",
+				TMCreate: testTime("2021-11-23T17:55:39.712000Z"),
+				TMUpdate: nil,
+				TMDelete: nil,
 			},
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","ring_method":"ringall","status":"available","permission":1,"tag_ids":["f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a"],"addresses":[{"type":"tel","target":"+821021656521"}],"tm_create":"2021-11-23T17:55:39.712000Z","tm_update":"9999-01-01T00:00:00.000000Z","tm_delete":"9999-01-01T00:00:00.000000Z"}`),
+				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username":"test1","password_hash":"password","name":"test agent1","detail":"test agent1 detail","ring_method":"ringall","status":"available","permission":1,"tag_ids":["f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a"],"addresses":[{"type":"tel","target":"+821021656521"}],"tm_create":"2021-11-23T17:55:39.712Z"}`),
 			},
 		},
 	}
@@ -749,7 +756,7 @@ func TestProcessV1AgentsIDGet(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username":"","password_hash":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","username":"","password_hash":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null}`),
 			},
 		},
 	}
@@ -818,7 +825,7 @@ func TestProcessV1AgentsIDPut(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"00000000-0000-0000-0000-000000000000","username":"","password_hash":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"00000000-0000-0000-0000-000000000000","username":"","password_hash":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null}`),
 			},
 		},
 	}
@@ -887,7 +894,7 @@ func TestProcessV1AgentsIDAddressesPut(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"00000000-0000-0000-0000-000000000000","username":"","password_hash":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"00000000-0000-0000-0000-000000000000","username":"","password_hash":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null}`),
 			},
 		},
 	}
@@ -951,7 +958,7 @@ func TestProcessV1AgentsIDStatusPut(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"00000000-0000-0000-0000-000000000000","username":"","password_hash":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"00000000-0000-0000-0000-000000000000","username":"","password_hash":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null}`),
 			},
 		},
 	}
@@ -1016,7 +1023,7 @@ func TestProcessV1AgentsIDPasswordPut(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"00000000-0000-0000-0000-000000000000","username":"","password_hash":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"00000000-0000-0000-0000-000000000000","username":"","password_hash":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null}`),
 			},
 		},
 	}
@@ -1082,7 +1089,7 @@ func TestProcessV1AgentsIDTagIDsPut(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"00000000-0000-0000-0000-000000000000","username":"","password_hash":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"00000000-0000-0000-0000-000000000000","username":"","password_hash":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null}`),
 			},
 		},
 	}
@@ -1143,7 +1150,7 @@ func TestProcessV1AgentsIDDelete(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"00000000-0000-0000-0000-000000000000","username":"","password_hash":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"00000000-0000-0000-0000-000000000000","username":"","password_hash":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null}`),
 			},
 		},
 	}
@@ -1208,7 +1215,7 @@ func Test_processV1AgentsIDPermissionPut(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"f1ba04b0-951e-11ee-a0a2-7b8600a1ee45","customer_id":"00000000-0000-0000-0000-000000000000","username":"","password_hash":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"f1ba04b0-951e-11ee-a0a2-7b8600a1ee45","customer_id":"00000000-0000-0000-0000-000000000000","username":"","password_hash":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null}`),
 			},
 		},
 	}
@@ -1277,7 +1284,7 @@ func Test_processV1AgentsGetByCustomerIDAddressPost(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"f2a28abc-2d91-11ef-823f-b37d45f6968f","customer_id":"00000000-0000-0000-0000-000000000000","username":"","password_hash":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"f2a28abc-2d91-11ef-823f-b37d45f6968f","customer_id":"00000000-0000-0000-0000-000000000000","username":"","password_hash":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null}`),
 			},
 		},
 	}

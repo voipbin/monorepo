@@ -211,3 +211,155 @@ func Test_TimeGetCurTime_RoundTrip(t *testing.T) {
 		t.Errorf("Parsed time is not recent. Now: %v, Parsed: %v, Diff: %v", now, parsed, diff)
 	}
 }
+
+// Tests for new *time.Time helper functions
+
+func Test_TimeNow(t *testing.T) {
+	// Get current time as pointer
+	result := TimeNow()
+
+	// Verify result is not nil
+	if result == nil {
+		t.Fatal("TimeNow() returned nil")
+	}
+
+	// Verify it's in UTC
+	if result.Location() != time.UTC {
+		t.Errorf("TimeNow() not in UTC. Location: %v", result.Location())
+	}
+
+	// Verify it's recent (within last second)
+	now := time.Now().UTC()
+	diff := now.Sub(*result)
+	if diff < 0 || diff > time.Second {
+		t.Errorf("TimeNow() is not recent. Now: %v, Result: %v, Diff: %v", now, *result, diff)
+	}
+}
+
+func Test_TimeNowAdd(t *testing.T) {
+	tests := []struct {
+		name     string
+		duration time.Duration
+	}{
+		{"add 1 hour", time.Hour},
+		{"add 30 minutes", 30 * time.Minute},
+		{"subtract 1 hour", -time.Hour},
+		{"add 0", 0},
+		{"add 24 hours", 24 * time.Hour},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			before := time.Now().UTC()
+			result := TimeNowAdd(tt.duration)
+			after := time.Now().UTC()
+
+			// Verify result is not nil
+			if result == nil {
+				t.Fatal("TimeNowAdd() returned nil")
+			}
+
+			// Verify it's in UTC
+			if result.Location() != time.UTC {
+				t.Errorf("TimeNowAdd() not in UTC. Location: %v", result.Location())
+			}
+
+			// Verify the time is correct (between before+duration and after+duration)
+			expectedMin := before.Add(tt.duration)
+			expectedMax := after.Add(tt.duration)
+
+			if result.Before(expectedMin) || result.After(expectedMax) {
+				t.Errorf("TimeNowAdd(%v) out of range. Result: %v, Expected: [%v, %v]",
+					tt.duration, *result, expectedMin, expectedMax)
+			}
+		})
+	}
+}
+
+func Test_IsDeleted(t *testing.T) {
+	now := time.Now().UTC()
+
+	tests := []struct {
+		name     string
+		input    *time.Time
+		expected bool
+	}{
+		{
+			name:     "nil means not deleted",
+			input:    nil,
+			expected: false,
+		},
+		{
+			name:     "non-nil time means deleted",
+			input:    &now,
+			expected: true,
+		},
+		{
+			name:     "zero time means deleted (pointer is not nil)",
+			input:    func() *time.Time { t := time.Time{}; return &t }(),
+			expected: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := IsDeleted(tt.input)
+			if result != tt.expected {
+				t.Errorf("IsDeleted(%v) = %v, want %v", tt.input, result, tt.expected)
+			}
+		})
+	}
+}
+
+func Test_utilHandler_TimeNow(t *testing.T) {
+	h := NewUtilHandler()
+
+	result := h.TimeNow()
+
+	if result == nil {
+		t.Fatal("TimeNow() returned nil")
+	}
+
+	// Verify it's in UTC and recent
+	now := time.Now().UTC()
+	diff := now.Sub(*result)
+	if diff < 0 || diff > time.Second {
+		t.Errorf("TimeNow() is not recent. Now: %v, Result: %v, Diff: %v", now, *result, diff)
+	}
+}
+
+func Test_utilHandler_TimeNowAdd(t *testing.T) {
+	h := NewUtilHandler()
+
+	duration := time.Hour
+	before := time.Now().UTC()
+	result := h.TimeNowAdd(duration)
+	after := time.Now().UTC()
+
+	if result == nil {
+		t.Fatal("TimeNowAdd() returned nil")
+	}
+
+	expectedMin := before.Add(duration)
+	expectedMax := after.Add(duration)
+
+	if result.Before(expectedMin) || result.After(expectedMax) {
+		t.Errorf("TimeNowAdd(%v) out of range. Result: %v, Expected: [%v, %v]",
+			duration, *result, expectedMin, expectedMax)
+	}
+}
+
+func Test_utilHandler_IsDeleted(t *testing.T) {
+	h := NewUtilHandler()
+
+	// Test nil - not deleted
+	if h.IsDeleted(nil) {
+		t.Error("IsDeleted(nil) should return false")
+	}
+
+	// Test non-nil - deleted
+	now := time.Now().UTC()
+	if !h.IsDeleted(&now) {
+		t.Error("IsDeleted(&now) should return true")
+	}
+}

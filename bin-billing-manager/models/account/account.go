@@ -1,6 +1,8 @@
 package account
 
 import (
+	"time"
+
 	commonidentity "monorepo/bin-common-handler/models/identity"
 )
 
@@ -19,9 +21,9 @@ type Account struct {
 	PaymentMethod PaymentMethod `json:"payment_method" db:"payment_method"`
 
 	// timestamp
-	TMCreate string `json:"tm_create" db:"tm_create"`
-	TMUpdate string `json:"tm_update" db:"tm_update"`
-	TMDelete string `json:"tm_delete" db:"tm_delete"`
+	TMCreate *time.Time `json:"tm_create" db:"tm_create"`
+	TMUpdate *time.Time `json:"tm_update" db:"tm_update"`
+	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"`
 }
 
 // Type define

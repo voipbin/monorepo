@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"monorepo/bin-call-manager/models/groupcall"
-	"monorepo/bin-call-manager/pkg/dbhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -24,7 +23,7 @@ func (h *groupcallHandler) Delete(ctx context.Context, id uuid.UUID) (*groupcall
 		return nil, err
 	}
 
-	if gc.TMDelete != dbhandler.DefaultTimeStamp {
+	if gc.TMDelete != nil {
 		// the call has been deleted already.
 		return gc, nil
 	}

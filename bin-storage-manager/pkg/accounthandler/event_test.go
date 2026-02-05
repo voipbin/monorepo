@@ -2,7 +2,6 @@ package accounthandler
 
 import (
 	"context"
-	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	cucustomer "monorepo/bin-customer-manager/models/customer"
@@ -35,7 +34,7 @@ func Test_EventCustomerCreated(t *testing.T) {
 
 			responseAccounts: &account.Account{
 				ID:       uuid.FromStringOrNil("f055b6ac-1b6d-11ef-9381-033d27b16b0d"),
-				TMDelete: commondatabasehandler.DefaultTimeStamp,
+				TMDelete: nil,
 			},
 			responseUUID: uuid.FromStringOrNil("f0aaee06-1b6d-11ef-acb1-87b1e9c73a2f"),
 
@@ -105,7 +104,7 @@ func Test_EventCustomerDeleted(t *testing.T) {
 			responseAccounts: []*account.Account{
 				{
 					ID:       uuid.FromStringOrNil("53b343d2-1b6d-11ef-8d3f-87f6aa5d9616"),
-					TMDelete: commondatabasehandler.DefaultTimeStamp,
+					TMDelete: nil,
 				},
 			},
 		},

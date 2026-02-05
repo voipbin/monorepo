@@ -120,8 +120,8 @@ func (h *channelHandler) GetChannelsForRecovery(
 	ctx context.Context,
 	asteriskID string,
 	channelType channel.Type,
-	startTime string,
-	endTime string,
+	startTime *time.Time,
+	endTime *time.Time,
 	size uint64,
 ) ([]*channel.Channel, error) {
 	res, err := h.db.ChannelGetsForRecovery(ctx,

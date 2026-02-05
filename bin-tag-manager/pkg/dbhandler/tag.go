@@ -29,9 +29,9 @@ func (h *handler) tagGetFromRow(rows *sql.Rows) (*tag.Tag, error) {
 
 // TagCreate creates new tag record
 func (h *handler) TagCreate(ctx context.Context, t *tag.Tag) error {
-	t.TMCreate = h.utilHandler.TimeGetCurTime()
-	t.TMUpdate = DefaultTimeStamp
-	t.TMDelete = DefaultTimeStamp
+	t.TMCreate = h.utilHandler.TimeNow()
+	t.TMUpdate = nil
+	t.TMDelete = nil
 
 	// prepare fields for insert
 	fields, err := commondatabasehandler.PrepareFields(t)
@@ -185,7 +185,7 @@ func (h *handler) TagList(ctx context.Context, size uint64, token string, filter
 // TagUpdate updates a tag with the given fields.
 func (h *handler) TagUpdate(ctx context.Context, id uuid.UUID, fields map[tag.Field]any) error {
 	// add update timestamp
-	fields[tag.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
+	fields[tag.FieldTMUpdate] = h.utilHandler.TimeNow()
 
 	// prepare fields for update
 	data, err := commondatabasehandler.PrepareFields(fields)
@@ -224,7 +224,7 @@ func (h *handler) TagSetBasicInfo(ctx context.Context, id uuid.UUID, name, detai
 
 // TagDelete deletes the tag info.
 func (h *handler) TagDelete(ctx context.Context, id uuid.UUID) error {
-	ts := h.utilHandler.TimeGetCurTime()
+	ts := h.utilHandler.TimeNow()
 	fields := map[tag.Field]any{
 		tag.FieldTMUpdate: ts,
 		tag.FieldTMDelete: ts,

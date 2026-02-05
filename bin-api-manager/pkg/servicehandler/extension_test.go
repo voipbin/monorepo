@@ -132,8 +132,8 @@ func Test_ExtensionUpdate(t *testing.T) {
 				Detail:    "update detail",
 				Extension: "test",
 				Password:  "update password",
-				TMCreate:  "2020-09-20T03:23:20.995000Z",
-				TMUpdate:  "2020-09-20T03:23:23.995000Z",
+				TMCreate:  timePtr("2020-09-20T03:23:20.995000Z"),
+				TMUpdate:  timePtr("2020-09-20T03:23:23.995000Z"),
 			},
 			&rmextension.WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -144,8 +144,8 @@ func Test_ExtensionUpdate(t *testing.T) {
 				Detail:    "update detail",
 				Extension: "test",
 				Password:  "update password",
-				TMCreate:  "2020-09-20T03:23:20.995000Z",
-				TMUpdate:  "2020-09-20T03:23:23.995000Z"},
+				TMCreate:  timePtr("2020-09-20T03:23:20.995000Z"),
+				TMUpdate:  timePtr("2020-09-20T03:23:23.995000Z")},
 		},
 	}
 

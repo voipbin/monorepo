@@ -37,7 +37,7 @@ func Test_VariableSet(t *testing.T) {
 			responseChannel: &channel.Channel{
 				ID:         "10dcefd8-f2db-11ed-8e26-af08a1c6a5e3",
 				AsteriskID: "3e:50:6b:43:bb:30",
-				TMDelete:   dbhandler.DefaultTimeStamp,
+				TMDelete:   nil,
 			},
 		},
 	}
@@ -91,7 +91,7 @@ func Test_variableGet(t *testing.T) {
 			channel: &channel.Channel{
 				ID:         "477849fc-f2db-11ed-9edb-434f4687b972",
 				AsteriskID: "3e:50:6b:43:bb:30",
-				TMDelete:   dbhandler.DefaultTimeStamp,
+				TMDelete:   nil,
 			},
 
 			responseValue: "value1",

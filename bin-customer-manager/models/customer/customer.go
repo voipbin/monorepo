@@ -1,6 +1,10 @@
 package customer
 
-import "github.com/gofrs/uuid"
+import (
+	"time"
+
+	"github.com/gofrs/uuid"
+)
 
 // Customer defines
 type Customer struct {
@@ -19,9 +23,9 @@ type Customer struct {
 
 	BillingAccountID uuid.UUID `json:"billing_account_id,omitempty" db:"billing_account_id,uuid"` // default billing account id
 
-	TMCreate string `json:"tm_create,omitempty" db:"tm_create"` // Created timestamp.
-	TMUpdate string `json:"tm_update,omitempty" db:"tm_update"` // Updated timestamp.
-	TMDelete string `json:"tm_delete,omitempty" db:"tm_delete"` // Deleted timestamp.
+	TMCreate *time.Time `json:"tm_create" db:"tm_create"` // Created timestamp.
+	TMUpdate *time.Time `json:"tm_update" db:"tm_update"` // Updated timestamp.
+	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"` // Deleted timestamp.
 }
 
 // WebhookMethod defines

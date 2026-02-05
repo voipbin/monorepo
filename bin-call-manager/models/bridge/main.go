@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"time"
 
 	"github.com/gofrs/uuid"
 
@@ -32,9 +33,9 @@ type Bridge struct {
 	ReferenceType ReferenceType
 	ReferenceID   uuid.UUID
 
-	TMCreate string
-	TMUpdate string
-	TMDelete string
+	TMCreate *time.Time
+	TMUpdate *time.Time
+	TMDelete *time.Time
 }
 
 // Matches return true if the given items are the same
@@ -91,7 +92,7 @@ func NewBridgeByBridgeCreated(e *ari.BridgeCreated) *Bridge {
 
 	b := NewBridgeByARIBridge(&e.Bridge)
 	b.AsteriskID = e.AsteriskID
-	b.TMCreate = string(e.Timestamp)
+	b.TMCreate = e.Timestamp.ToTime()
 
 	return b
 }

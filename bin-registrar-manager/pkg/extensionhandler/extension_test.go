@@ -105,8 +105,8 @@ func Test_Create(t *testing.T) {
 				Username:      "ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4",
 				Password:      "cf6917ba-6ec1-11eb-8810-e3829c2dfab8",
 				AllowedIPs:    []string{},
-				TMCreate:      "",
-				TMUpdate:      "",
+				TMCreate:      nil,
+				TMUpdate:      nil,
 			},
 		},
 	}

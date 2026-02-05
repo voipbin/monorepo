@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
+	"time"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -16,12 +17,16 @@ import (
 	"monorepo/bin-contact-manager/pkg/cachehandler"
 )
 
+func timePtr(t time.Time) *time.Time {
+	return &t
+}
+
 func Test_ContactCreate(t *testing.T) {
 	tests := []struct {
 		name    string
 		contact *contact.Contact
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *contact.Contact
 	}{
 		{
@@ -41,7 +46,7 @@ func Test_ContactCreate(t *testing.T) {
 				Notes:       "Test contact",
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)),
 			expectRes: &contact.Contact{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("250bbfa4-50d7-11ec-a6b1-8f9671a9e70e"),
@@ -55,9 +60,9 @@ func Test_ContactCreate(t *testing.T) {
 				Source:      "manual",
 				ExternalID:  "ext-001",
 				Notes:       "Test contact",
-				TMCreate:    "2020-04-18T03:22:17.995000Z",
-				TMUpdate:    DefaultTimeStamp,
-				TMDelete:    DefaultTimeStamp,
+				TMCreate:    timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)),
+				TMUpdate:    nil,
+				TMDelete:    nil,
 			},
 		},
 	}
@@ -76,7 +81,7 @@ func Test_ContactCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 			if err := h.ContactCreate(ctx, tt.contact); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -111,7 +116,7 @@ func Test_ContactUpdate(t *testing.T) {
 
 		updateFields map[contact.Field]any
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *contact.Contact
 	}{
 		{
@@ -132,7 +137,7 @@ func Test_ContactUpdate(t *testing.T) {
 				contact.FieldDisplayName: "Updated Name",
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)),
 			expectRes: &contact.Contact{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("ae1e0150-4c6b-11ec-922d-27336e407864"),
@@ -142,9 +147,9 @@ func Test_ContactUpdate(t *testing.T) {
 				LastName:    "Name",
 				DisplayName: "Updated Name",
 				Source:      "manual",
-				TMCreate:    "2020-04-18T03:22:17.995000Z",
-				TMUpdate:    "2020-04-18T03:22:17.995000Z",
-				TMDelete:    DefaultTimeStamp,
+				TMCreate:    timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)),
+				TMUpdate:    timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)),
+				TMDelete:    nil,
 			},
 		},
 	}
@@ -164,14 +169,14 @@ func Test_ContactUpdate(t *testing.T) {
 			ctx := context.Background()
 
 			// Create the contact first
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 			if err := h.ContactCreate(ctx, tt.contact); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			// Update the contact
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 			err := h.ContactUpdate(ctx, tt.contact.ID, tt.updateFields)
 			if err != nil {
@@ -203,7 +208,7 @@ func Test_ContactDelete(t *testing.T) {
 		name    string
 		contact *contact.Contact
 
-		responseCurTime string
+		responseCurTime *time.Time
 	}{
 		{
 			name: "normal",
@@ -218,7 +223,7 @@ func Test_ContactDelete(t *testing.T) {
 				Source:      "manual",
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)),
 		},
 	}
 
@@ -237,14 +242,14 @@ func Test_ContactDelete(t *testing.T) {
 			ctx := context.Background()
 
 			// Create the contact first
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().ContactSet(gomock.Any(), gomock.Any())
 			if err := h.ContactCreate(ctx, tt.contact); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			// Delete the contact
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().ContactSet(gomock.Any(), gomock.Any())
 			err := h.ContactDelete(ctx, tt.contact.ID)
 			if err != nil {
@@ -259,7 +264,7 @@ func Test_ContactDelete(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if res.TMDelete == DefaultTimeStamp {
+			if res.TMDelete == nil {
 				t.Errorf("Contact should be deleted but tm_delete is not set")
 			}
 		})
@@ -272,7 +277,7 @@ func Test_PhoneNumberCreate(t *testing.T) {
 		contact *contact.Contact
 		phone   *contact.PhoneNumber
 
-		responseCurTime string
+		responseCurTime *time.Time
 	}{
 		{
 			name: "normal",
@@ -295,7 +300,7 @@ func Test_PhoneNumberCreate(t *testing.T) {
 				IsPrimary:  true,
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)),
 		},
 	}
 
@@ -314,14 +319,14 @@ func Test_PhoneNumberCreate(t *testing.T) {
 			ctx := context.Background()
 
 			// Create the contact first
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 			if err := h.ContactCreate(ctx, tt.contact); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			// Create phone number (this also updates the contact cache)
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 			if err := h.PhoneNumberCreate(ctx, tt.phone); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -352,7 +357,7 @@ func Test_EmailCreate(t *testing.T) {
 		contact *contact.Contact
 		email   *contact.Email
 
-		responseCurTime string
+		responseCurTime *time.Time
 	}{
 		{
 			name: "normal",
@@ -374,7 +379,7 @@ func Test_EmailCreate(t *testing.T) {
 				IsPrimary:  true,
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)),
 		},
 	}
 
@@ -393,14 +398,14 @@ func Test_EmailCreate(t *testing.T) {
 			ctx := context.Background()
 
 			// Create the contact first
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 			if err := h.ContactCreate(ctx, tt.contact); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			// Create email (this also updates the contact cache)
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 			if err := h.EmailCreate(ctx, tt.email); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -434,7 +439,7 @@ func Test_TagAssignmentCreate(t *testing.T) {
 		contact *contact.Contact
 		tagID   uuid.UUID
 
-		responseCurTime string
+		responseCurTime *time.Time
 	}{
 		{
 			name: "normal",
@@ -449,7 +454,7 @@ func Test_TagAssignmentCreate(t *testing.T) {
 			},
 			tagID: uuid.FromStringOrNil("99999999-9999-9999-9999-999999999999"),
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)),
 		},
 	}
 
@@ -468,14 +473,14 @@ func Test_TagAssignmentCreate(t *testing.T) {
 			ctx := context.Background()
 
 			// Create the contact first
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 			if err := h.ContactCreate(ctx, tt.contact); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			// Create tag assignment
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 			if err := h.TagAssignmentCreate(ctx, tt.contact.ID, tt.tagID); err != nil {
 				t.Errorf("TagAssignmentCreate() error = %v", err)
@@ -506,7 +511,7 @@ func Test_TagAssignmentDelete(t *testing.T) {
 		contact *contact.Contact
 		tagID   uuid.UUID
 
-		responseCurTime string
+		responseCurTime *time.Time
 	}{
 		{
 			name: "normal",
@@ -521,7 +526,7 @@ func Test_TagAssignmentDelete(t *testing.T) {
 			},
 			tagID: uuid.FromStringOrNil("cccccccc-cccc-cccc-cccc-cccccccccccc"),
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)),
 		},
 	}
 
@@ -540,14 +545,14 @@ func Test_TagAssignmentDelete(t *testing.T) {
 			ctx := context.Background()
 
 			// Create the contact first
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 			if err := h.ContactCreate(ctx, tt.contact); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			// Create tag assignment
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 			if err := h.TagAssignmentCreate(ctx, tt.contact.ID, tt.tagID); err != nil {
 				t.Errorf("TagAssignmentCreate() error = %v", err)
@@ -580,7 +585,7 @@ func Test_PhoneNumberDelete(t *testing.T) {
 		contact *contact.Contact
 		phone   *contact.PhoneNumber
 
-		responseCurTime string
+		responseCurTime *time.Time
 	}{
 		{
 			name: "normal",
@@ -603,7 +608,7 @@ func Test_PhoneNumberDelete(t *testing.T) {
 				IsPrimary:  true,
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)),
 		},
 	}
 
@@ -622,14 +627,14 @@ func Test_PhoneNumberDelete(t *testing.T) {
 			ctx := context.Background()
 
 			// Create the contact first
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 			if err := h.ContactCreate(ctx, tt.contact); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			// Create phone number
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 			if err := h.PhoneNumberCreate(ctx, tt.phone); err != nil {
 				t.Errorf("PhoneNumberCreate() error = %v", err)
@@ -662,7 +667,7 @@ func Test_EmailDelete(t *testing.T) {
 		contact *contact.Contact
 		email   *contact.Email
 
-		responseCurTime string
+		responseCurTime *time.Time
 	}{
 		{
 			name: "normal",
@@ -684,7 +689,7 @@ func Test_EmailDelete(t *testing.T) {
 				IsPrimary:  true,
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)),
 		},
 	}
 
@@ -703,14 +708,14 @@ func Test_EmailDelete(t *testing.T) {
 			ctx := context.Background()
 
 			// Create the contact first
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 			if err := h.ContactCreate(ctx, tt.contact); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			// Create email
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 			if err := h.EmailCreate(ctx, tt.email); err != nil {
 				t.Errorf("EmailCreate() error = %v", err)
@@ -743,7 +748,7 @@ func Test_ContactDeleteByCustomerID(t *testing.T) {
 		contacts   []*contact.Contact
 		customerID uuid.UUID
 
-		responseCurTime string
+		responseCurTime *time.Time
 	}{
 		{
 			name: "delete all contacts for customer",
@@ -769,7 +774,7 @@ func Test_ContactDeleteByCustomerID(t *testing.T) {
 			},
 			customerID: uuid.FromStringOrNil("b0000000-0000-0000-0000-000000000000"),
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)),
 		},
 	}
 
@@ -789,7 +794,7 @@ func Test_ContactDeleteByCustomerID(t *testing.T) {
 
 			// Create contacts
 			for _, c := range tt.contacts {
-				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 				mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 				if err := h.ContactCreate(ctx, c); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -797,7 +802,7 @@ func Test_ContactDeleteByCustomerID(t *testing.T) {
 			}
 
 			// Delete all contacts for customer
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			if err := h.ContactDeleteByCustomerID(ctx, tt.customerID); err != nil {
 				t.Errorf("ContactDeleteByCustomerID() error = %v", err)
 			}
@@ -811,7 +816,7 @@ func Test_ContactDeleteByCustomerID(t *testing.T) {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
 				}
 
-				if res.TMDelete == DefaultTimeStamp {
+				if res.TMDelete == nil {
 					t.Errorf("Contact %s should be deleted but tm_delete is not set", c.ID)
 				}
 			}
@@ -898,7 +903,7 @@ func Test_PhoneNumberListByContactID(t *testing.T) {
 		contact *contact.Contact
 		phones  []*contact.PhoneNumber
 
-		responseCurTime string
+		responseCurTime *time.Time
 	}{
 		{
 			name: "list multiple phone numbers",
@@ -932,7 +937,7 @@ func Test_PhoneNumberListByContactID(t *testing.T) {
 				},
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)),
 		},
 	}
 
@@ -951,7 +956,7 @@ func Test_PhoneNumberListByContactID(t *testing.T) {
 			ctx := context.Background()
 
 			// Create the contact first
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 			if err := h.ContactCreate(ctx, tt.contact); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -959,7 +964,7 @@ func Test_PhoneNumberListByContactID(t *testing.T) {
 
 			// Create phone numbers
 			for _, p := range tt.phones {
-				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 				mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 				if err := h.PhoneNumberCreate(ctx, p); err != nil {
 					t.Errorf("PhoneNumberCreate() error = %v", err)
@@ -1011,7 +1016,7 @@ func Test_EmailListByContactID(t *testing.T) {
 		contact *contact.Contact
 		emails  []*contact.Email
 
-		responseCurTime string
+		responseCurTime *time.Time
 	}{
 		{
 			name: "list multiple emails",
@@ -1043,7 +1048,7 @@ func Test_EmailListByContactID(t *testing.T) {
 				},
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)),
 		},
 	}
 
@@ -1062,7 +1067,7 @@ func Test_EmailListByContactID(t *testing.T) {
 			ctx := context.Background()
 
 			// Create the contact first
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 			if err := h.ContactCreate(ctx, tt.contact); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1070,7 +1075,7 @@ func Test_EmailListByContactID(t *testing.T) {
 
 			// Create emails
 			for _, e := range tt.emails {
-				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 				mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 				if err := h.EmailCreate(ctx, e); err != nil {
 					t.Errorf("EmailCreate() error = %v", err)
@@ -1122,7 +1127,7 @@ func Test_TagAssignmentListByContactID(t *testing.T) {
 		contact *contact.Contact
 		tagIDs  []uuid.UUID
 
-		responseCurTime string
+		responseCurTime *time.Time
 	}{
 		{
 			name: "list multiple tags",
@@ -1140,7 +1145,7 @@ func Test_TagAssignmentListByContactID(t *testing.T) {
 				uuid.FromStringOrNil("faaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)),
 		},
 	}
 
@@ -1159,7 +1164,7 @@ func Test_TagAssignmentListByContactID(t *testing.T) {
 			ctx := context.Background()
 
 			// Create the contact first
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 			if err := h.ContactCreate(ctx, tt.contact); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1167,7 +1172,7 @@ func Test_TagAssignmentListByContactID(t *testing.T) {
 
 			// Create tag assignments
 			for _, tagID := range tt.tagIDs {
-				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 				mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 				if err := h.TagAssignmentCreate(ctx, tt.contact.ID, tagID); err != nil {
 					t.Errorf("TagAssignmentCreate() error = %v", err)
@@ -1220,7 +1225,7 @@ func Test_ContactUpdate_AllFields(t *testing.T) {
 
 		updateFields map[contact.Field]any
 
-		responseCurTime string
+		responseCurTime *time.Time
 	}{
 		{
 			name: "update all basic fields",
@@ -1249,7 +1254,7 @@ func Test_ContactUpdate_AllFields(t *testing.T) {
 				contact.FieldNotes:       "New notes",
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)),
 		},
 	}
 
@@ -1268,14 +1273,14 @@ func Test_ContactUpdate_AllFields(t *testing.T) {
 			ctx := context.Background()
 
 			// Create the contact first
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 			if err := h.ContactCreate(ctx, tt.contact); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			// Update the contact
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 			err := h.ContactUpdate(ctx, tt.contact.ID, tt.updateFields)
 			if err != nil {
@@ -1338,7 +1343,7 @@ func Test_ContactCreate_WithAllFields(t *testing.T) {
 		Notes:       "This is a full contact with all fields",
 	}
 
-	mockUtil.EXPECT().TimeGetCurTime().Return("2020-04-18T03:22:17.995000Z")
+	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)))
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 
 	if err := h.ContactCreate(ctx, c); err != nil {
@@ -1384,7 +1389,7 @@ func Test_ContactLookupByPhone(t *testing.T) {
 		contact *contact.Contact
 		phone   *contact.PhoneNumber
 
-		responseCurTime string
+		responseCurTime *time.Time
 	}{
 		{
 			name: "lookup by e164 phone",
@@ -1407,7 +1412,7 @@ func Test_ContactLookupByPhone(t *testing.T) {
 				IsPrimary:  true,
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)),
 		},
 	}
 
@@ -1426,14 +1431,14 @@ func Test_ContactLookupByPhone(t *testing.T) {
 			ctx := context.Background()
 
 			// Create the contact first
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 			if err := h.ContactCreate(ctx, tt.contact); err != nil {
 				t.Errorf("ContactCreate() error = %v", err)
 			}
 
 			// Create phone number
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 			if err := h.PhoneNumberCreate(ctx, tt.phone); err != nil {
 				t.Errorf("PhoneNumberCreate() error = %v", err)
@@ -1483,7 +1488,7 @@ func Test_ContactLookupByEmail(t *testing.T) {
 		contact *contact.Contact
 		email   *contact.Email
 
-		responseCurTime string
+		responseCurTime *time.Time
 	}{
 		{
 			name: "lookup by email",
@@ -1505,7 +1510,7 @@ func Test_ContactLookupByEmail(t *testing.T) {
 				IsPrimary:  true,
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)),
 		},
 	}
 
@@ -1524,14 +1529,14 @@ func Test_ContactLookupByEmail(t *testing.T) {
 			ctx := context.Background()
 
 			// Create the contact first
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 			if err := h.ContactCreate(ctx, tt.contact); err != nil {
 				t.Errorf("ContactCreate() error = %v", err)
 			}
 
 			// Create email
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 			if err := h.EmailCreate(ctx, tt.email); err != nil {
 				t.Errorf("EmailCreate() error = %v", err)
@@ -1598,7 +1603,7 @@ func Test_ContactDeleteByCustomerID_NoMatches(t *testing.T) {
 	// Use a non-existent customer ID
 	nonExistentCustomerID := uuid.FromStringOrNil("12121212-1212-1212-1212-121212121212")
 
-	mockUtil.EXPECT().TimeGetCurTime().Return("2020-04-18T03:22:17.995000Z")
+	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)))
 
 	err := h.ContactDeleteByCustomerID(ctx, nonExistentCustomerID)
 	if err != nil {
@@ -1732,7 +1737,7 @@ func Test_Multiple_PhoneNumbers_ForSameContact(t *testing.T) {
 	}
 
 	// Create contact
-	mockUtil.EXPECT().TimeGetCurTime().Return("2020-04-18T03:22:17.995000Z")
+	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)))
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	if err := h.ContactCreate(ctx, c); err != nil {
 		t.Errorf("ContactCreate() error = %v", err)
@@ -1748,7 +1753,7 @@ func Test_Multiple_PhoneNumbers_ForSameContact(t *testing.T) {
 		Type:       "mobile",
 		IsPrimary:  true,
 	}
-	mockUtil.EXPECT().TimeGetCurTime().Return("2020-04-18T03:22:17.995000Z")
+	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)))
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	if err := h.PhoneNumberCreate(ctx, phone1); err != nil {
 		t.Errorf("PhoneNumberCreate() error = %v", err)
@@ -1764,7 +1769,7 @@ func Test_Multiple_PhoneNumbers_ForSameContact(t *testing.T) {
 		Type:       "work",
 		IsPrimary:  false,
 	}
-	mockUtil.EXPECT().TimeGetCurTime().Return("2020-04-18T03:22:17.995000Z")
+	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)))
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	if err := h.PhoneNumberCreate(ctx, phone2); err != nil {
 		t.Errorf("PhoneNumberCreate() error = %v", err)
@@ -1806,7 +1811,7 @@ func Test_Multiple_Emails_ForSameContact(t *testing.T) {
 	}
 
 	// Create contact
-	mockUtil.EXPECT().TimeGetCurTime().Return("2020-04-18T03:22:17.995000Z")
+	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)))
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	if err := h.ContactCreate(ctx, c); err != nil {
 		t.Errorf("ContactCreate() error = %v", err)
@@ -1821,7 +1826,7 @@ func Test_Multiple_Emails_ForSameContact(t *testing.T) {
 		Type:       "work",
 		IsPrimary:  true,
 	}
-	mockUtil.EXPECT().TimeGetCurTime().Return("2020-04-18T03:22:17.995000Z")
+	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)))
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	if err := h.EmailCreate(ctx, email1); err != nil {
 		t.Errorf("EmailCreate() error = %v", err)
@@ -1836,7 +1841,7 @@ func Test_Multiple_Emails_ForSameContact(t *testing.T) {
 		Type:       "personal",
 		IsPrimary:  false,
 	}
-	mockUtil.EXPECT().TimeGetCurTime().Return("2020-04-18T03:22:17.995000Z")
+	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)))
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	if err := h.EmailCreate(ctx, email2); err != nil {
 		t.Errorf("EmailCreate() error = %v", err)
@@ -1878,7 +1883,7 @@ func Test_Multiple_Tags_ForSameContact(t *testing.T) {
 	}
 
 	// Create contact
-	mockUtil.EXPECT().TimeGetCurTime().Return("2020-04-18T03:22:17.995000Z")
+	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)))
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	if err := h.ContactCreate(ctx, c); err != nil {
 		t.Errorf("ContactCreate() error = %v", err)
@@ -1886,7 +1891,7 @@ func Test_Multiple_Tags_ForSameContact(t *testing.T) {
 
 	// Create first tag
 	tag1 := uuid.FromStringOrNil("29292929-2929-2929-2929-292929292929")
-	mockUtil.EXPECT().TimeGetCurTime().Return("2020-04-18T03:22:17.995000Z")
+	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)))
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	if err := h.TagAssignmentCreate(ctx, c.ID, tag1); err != nil {
 		t.Errorf("TagAssignmentCreate() error = %v", err)
@@ -1894,7 +1899,7 @@ func Test_Multiple_Tags_ForSameContact(t *testing.T) {
 
 	// Create second tag
 	tag2 := uuid.FromStringOrNil("30303030-3030-3030-3030-303030303030")
-	mockUtil.EXPECT().TimeGetCurTime().Return("2020-04-18T03:22:17.995000Z")
+	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)))
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	if err := h.TagAssignmentCreate(ctx, c.ID, tag2); err != nil {
 		t.Errorf("TagAssignmentCreate() error = %v", err)

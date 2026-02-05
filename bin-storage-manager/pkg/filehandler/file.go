@@ -69,7 +69,7 @@ func (h *fileHandler) Create(
 	// get dowload uri
 	expireDuration := 3650 * 24 * time.Hour // valid for 10 years
 	tmExpire := time.Now().UTC().Add(expireDuration)
-	tmDownloadExpire := h.utilHandler.TimeGetCurTimeAdd(expireDuration)
+	tmDownloadExpire := h.utilHandler.TimeNowAdd(expireDuration)
 
 	downloadURI, err := h.bucketfileGenerateDownloadURI(h.bucketMedia, dstFilepath, tmExpire)
 	if err != nil {

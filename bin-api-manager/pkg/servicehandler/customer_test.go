@@ -432,7 +432,7 @@ func Test_CustomerUpdateBillingAccountID(t *testing.T) {
 					ID:         uuid.FromStringOrNil("96a2ce84-1771-11ee-a155-83bf9a14ae55"),
 					CustomerID: uuid.FromStringOrNil("965f317e-1771-11ee-ac07-77247b121f85"),
 				},
-				TMDelete: defaultTimestamp,
+				TMDelete: nil,
 			},
 			expectRes: &cscustomer.WebhookMessage{
 				ID: uuid.FromStringOrNil("965f317e-1771-11ee-ac07-77247b121f85"),

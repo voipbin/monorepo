@@ -122,14 +122,14 @@ func Test_OrderNumberGet(t *testing.T) {
 					ID:         uuid.FromStringOrNil("17bd8d64-7be4-11eb-b887-8f1b24b98639"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-				TMDelete: defaultTimestamp,
+				TMDelete: nil,
 			},
 			&nmnumber.WebhookMessage{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("17bd8d64-7be4-11eb-b887-8f1b24b98639"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-				TMDelete: defaultTimestamp,
+				TMDelete: nil,
 			},
 		},
 	}
@@ -195,7 +195,7 @@ func Test_OrderNumberGetError(t *testing.T) {
 				Status:              nmnumber.StatusActive,
 				T38Enabled:          false,
 				EmergencyEnabled:    false,
-				TMDelete:            "2021-03-02T01:00:00.995000Z",
+				TMDelete:            timePtr("2021-03-02T01:00:00.995000Z"),
 			},
 		},
 	}
@@ -329,7 +329,7 @@ func Test_NumberDelete(t *testing.T) {
 				Status:              nmnumber.StatusActive,
 				T38Enabled:          false,
 				EmergencyEnabled:    false,
-				TMDelete:            defaultTimestamp,
+				TMDelete: nil,
 			},
 			&nmnumber.Number{
 				Identity: commonidentity.Identity{
@@ -342,9 +342,9 @@ func Test_NumberDelete(t *testing.T) {
 				Status:              nmnumber.StatusDeleted,
 				T38Enabled:          false,
 				EmergencyEnabled:    false,
-				TMCreate:            "2021-10-15T00:00:00.000001Z",
-				TMUpdate:            "2021-10-16T00:00:00.000001Z",
-				TMDelete:            "2021-10-16T00:00:00.000001Z",
+				TMCreate:            timePtr("2021-10-15T00:00:00.000001Z"),
+				TMUpdate:            timePtr("2021-10-16T00:00:00.000001Z"),
+				TMDelete:            timePtr("2021-10-16T00:00:00.000001Z"),
 			},
 		},
 	}
@@ -424,21 +424,21 @@ func Test_NumberUpdate(t *testing.T) {
 				Status:              nmnumber.StatusActive,
 				T38Enabled:          false,
 				EmergencyEnabled:    false,
-				TMDelete:            defaultTimestamp,
+				TMDelete: nil,
 			},
 			&fmflow.Flow{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("72001c3a-2ca2-11ee-96c3-4730286893af"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-				TMDelete: defaultTimestamp,
+				TMDelete: nil,
 			},
 			&fmflow.Flow{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("7240534a-2ca2-11ee-bb9a-8f1c5dafa508"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-				TMDelete: defaultTimestamp,
+				TMDelete: nil,
 			},
 			&nmnumber.Number{
 				Identity: commonidentity.Identity{
@@ -452,7 +452,7 @@ func Test_NumberUpdate(t *testing.T) {
 				Status:              nmnumber.StatusActive,
 				T38Enabled:          false,
 				EmergencyEnabled:    false,
-				TMDelete:            defaultTimestamp,
+				TMDelete: nil,
 			},
 		},
 	}
@@ -531,7 +531,7 @@ func Test_NumberUpdateError(t *testing.T) {
 				Status:              nmnumber.StatusActive,
 				T38Enabled:          false,
 				EmergencyEnabled:    false,
-				TMDelete:            "2021-03-02T01:00:00.995000Z",
+				TMDelete:            timePtr("2021-03-02T01:00:00.995000Z"),
 			},
 		},
 	}
@@ -671,7 +671,7 @@ func Test_numberVerifyFlow(t *testing.T) {
 					ID:         uuid.FromStringOrNil("3abc48b4-d57d-11ee-bbca-a713327af69d"),
 					CustomerID: uuid.FromStringOrNil("5a64f30a-d57d-11ee-bf12-0f63b531e815"),
 				},
-				TMDelete: defaultTimestamp,
+				TMDelete: nil,
 			},
 			expectRes: true,
 		},

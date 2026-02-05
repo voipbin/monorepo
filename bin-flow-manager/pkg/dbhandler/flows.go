@@ -31,12 +31,12 @@ func (h *handler) flowGetFromRow(row *sql.Rows) (*flow.Flow, error) {
 }
 
 func (h *handler) FlowCreate(ctx context.Context, f *flow.Flow) error {
-	now := h.util.TimeGetCurTime()
+	now := h.util.TimeNow()
 
 	// Set timestamps
 	f.TMCreate = now
-	f.TMUpdate = commondatabasehandler.DefaultTimeStamp
-	f.TMDelete = commondatabasehandler.DefaultTimeStamp
+	f.TMUpdate = nil
+	f.TMDelete = nil
 
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(f)
@@ -208,7 +208,7 @@ func (h *handler) FlowUpdate(ctx context.Context, id uuid.UUID, fields map[flow.
 		return nil
 	}
 
-	fields[flow.FieldTMUpdate] = h.util.TimeGetCurTime()
+	fields[flow.FieldTMUpdate] = h.util.TimeNow()
 
 	return h.flowUpdate(ctx, id, fields)
 }
@@ -243,7 +243,7 @@ func (h *handler) flowUpdate(ctx context.Context, id uuid.UUID, fields map[flow.
 // FlowDelete deletes the given flow
 func (h *handler) FlowDelete(ctx context.Context, id uuid.UUID) error {
 
-	now := h.util.TimeGetCurTime()
+	now := h.util.TimeNow()
 	fields := map[flow.Field]any{
 		flow.FieldTMDelete: now,
 		flow.FieldTMUpdate: now,

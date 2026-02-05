@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
+	"time"
 
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -17,11 +18,13 @@ import (
 
 func Test_CustomerCreate(t *testing.T) {
 
+	curTime := time.Date(2024, 4, 18, 3, 22, 17, 995000000, time.UTC)
+
 	tests := []struct {
 		name     string
 		customer *customer.Customer
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *customer.Customer
 	}{
 		{
@@ -39,7 +42,7 @@ func Test_CustomerCreate(t *testing.T) {
 				BillingAccountID: uuid.FromStringOrNil("5d7c011c-0e83-11ee-afc0-57978d43b290"),
 			},
 
-			responseCurTime: "2024-04-18T03:22:17.995000Z",
+			responseCurTime: &curTime,
 			expectRes: &customer.Customer{
 				ID:               uuid.FromStringOrNil("0bc5b900-7c65-11ec-a205-3b81594c7376"),
 				Name:             "test name",
@@ -50,9 +53,9 @@ func Test_CustomerCreate(t *testing.T) {
 				WebhookMethod:    "POST",
 				WebhookURI:       "test.com",
 				BillingAccountID: uuid.FromStringOrNil("5d7c011c-0e83-11ee-afc0-57978d43b290"),
-				TMCreate:         "2024-04-18T03:22:17.995000Z",
-				TMUpdate:         DefaultTimeStamp,
-				TMDelete:         DefaultTimeStamp,
+				TMCreate:         &curTime,
+				TMUpdate:         nil,
+				TMDelete:         nil,
 			},
 		},
 	}
@@ -72,7 +75,7 @@ func Test_CustomerCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CustomerSet(ctx, gomock.Any()).AnyTimes()
 			if err := h.CustomerCreate(ctx, tt.customer); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -92,12 +95,13 @@ func Test_CustomerCreate(t *testing.T) {
 }
 
 func TestCustomerDelete(t *testing.T) {
+	curTime := time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)
 
 	tests := []struct {
 		name     string
 		customer *customer.Customer
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *customer.Customer
 	}{
 		{
@@ -106,12 +110,12 @@ func TestCustomerDelete(t *testing.T) {
 				ID: uuid.FromStringOrNil("45adb3e8-7c65-11ec-8720-8f643ab80535"),
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: &curTime,
 			expectRes: &customer.Customer{
 				ID:       uuid.FromStringOrNil("45adb3e8-7c65-11ec-8720-8f643ab80535"),
-				TMCreate: "2020-04-18T03:22:17.995000Z",
-				TMUpdate: "2020-04-18T03:22:17.995000Z",
-				TMDelete: "2020-04-18T03:22:17.995000Z",
+				TMCreate: &curTime,
+				TMUpdate: &curTime,
+				TMDelete: &curTime,
 			},
 		},
 	}
@@ -130,14 +134,14 @@ func TestCustomerDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CustomerGet(ctx, tt.customer.ID).Return(nil, fmt.Errorf("")).AnyTimes()
 			mockCache.EXPECT().CustomerSet(ctx, gomock.Any()).Return(nil).AnyTimes()
 			if err := h.CustomerCreate(ctx, tt.customer); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			if err := h.CustomerDelete(ctx, tt.customer.ID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -155,6 +159,7 @@ func TestCustomerDelete(t *testing.T) {
 }
 
 func Test_CustomerList(t *testing.T) {
+	curTime := time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)
 
 	tests := []struct {
 		name      string
@@ -163,7 +168,7 @@ func Test_CustomerList(t *testing.T) {
 		token     string
 		filters   map[customer.Field]any
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       []*customer.Customer
 	}{
 		{
@@ -182,19 +187,19 @@ func Test_CustomerList(t *testing.T) {
 				customer.FieldDeleted: false,
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: &curTime,
 			expectRes: []*customer.Customer{
 				{
 					ID:       uuid.FromStringOrNil("500f6624-7c65-11ec-ba0f-8399fe28afb2"),
-					TMCreate: "2020-04-18T03:22:17.995000Z",
-					TMUpdate: DefaultTimeStamp,
-					TMDelete: DefaultTimeStamp,
+					TMCreate: &curTime,
+					TMUpdate: nil,
+					TMDelete: nil,
 				},
 				{
 					ID:       uuid.FromStringOrNil("5c4b732e-7c65-11ec-8f09-2720f96bb96d"),
-					TMCreate: "2020-04-18T03:22:17.995000Z",
-					TMUpdate: DefaultTimeStamp,
-					TMDelete: DefaultTimeStamp,
+					TMCreate: &curTime,
+					TMUpdate: nil,
+					TMDelete: nil,
 				},
 			},
 		},
@@ -216,7 +221,7 @@ func Test_CustomerList(t *testing.T) {
 			ctx := context.Background()
 
 			for _, u := range tt.customers {
-				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 				mockCache.EXPECT().CustomerSet(ctx, gomock.Any())
 				if err := h.CustomerCreate(ctx, u); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -236,6 +241,7 @@ func Test_CustomerList(t *testing.T) {
 }
 
 func Test_CustomerUpdate(t *testing.T) {
+	curTime := time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)
 
 	tests := []struct {
 		name     string
@@ -243,7 +249,7 @@ func Test_CustomerUpdate(t *testing.T) {
 
 		updateFields map[customer.Field]any
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *customer.Customer
 	}{
 		{
@@ -269,7 +275,7 @@ func Test_CustomerUpdate(t *testing.T) {
 				customer.FieldWebhookURI:    "test.com",
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: &curTime,
 			expectRes: &customer.Customer{
 				ID:            uuid.FromStringOrNil("a3697e6a-7c72-11ec-8fdf-dbda7d8fab3e"),
 				Name:          "test4 new",
@@ -279,9 +285,9 @@ func Test_CustomerUpdate(t *testing.T) {
 				Address:       "middle of nowhere",
 				WebhookMethod: customer.WebhookMethodPost,
 				WebhookURI:    "test.com",
-				TMCreate:      "2020-04-18T03:22:17.995000Z",
-				TMUpdate:      "2020-04-18T03:22:17.995000Z",
-				TMDelete:      DefaultTimeStamp,
+				TMCreate:      &curTime,
+				TMUpdate:      &curTime,
+				TMDelete:      nil,
 			},
 		},
 		{
@@ -307,16 +313,16 @@ func Test_CustomerUpdate(t *testing.T) {
 				customer.FieldWebhookURI:    "",
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: &curTime,
 			expectRes: &customer.Customer{
 				ID:            uuid.FromStringOrNil("e778f8b0-7c72-11ec-8605-9f86a3f3debe"),
 				Name:          "",
 				Detail:        "",
 				WebhookMethod: "",
 				WebhookURI:    "",
-				TMCreate:      "2020-04-18T03:22:17.995000Z",
-				TMUpdate:      "2020-04-18T03:22:17.995000Z",
-				TMDelete:      DefaultTimeStamp,
+				TMCreate:      &curTime,
+				TMUpdate:      &curTime,
+				TMDelete:      nil,
 			},
 		},
 	}
@@ -335,13 +341,13 @@ func Test_CustomerUpdate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CustomerSet(ctx, gomock.Any()).Return(nil)
 			if err := h.CustomerCreate(ctx, tt.customer); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CustomerSet(ctx, gomock.Any()).Return(nil)
 			if err := h.CustomerUpdate(ctx, tt.customer.ID, tt.updateFields); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -362,6 +368,7 @@ func Test_CustomerUpdate(t *testing.T) {
 }
 
 func Test_CustomerUpdateBillingAccountID(t *testing.T) {
+	curTime := time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)
 
 	tests := []struct {
 		name     string
@@ -369,7 +376,7 @@ func Test_CustomerUpdateBillingAccountID(t *testing.T) {
 
 		billingAccountID uuid.UUID
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *customer.Customer
 	}{
 		{
@@ -383,15 +390,15 @@ func Test_CustomerUpdateBillingAccountID(t *testing.T) {
 
 			uuid.FromStringOrNil("fc1bc1fc-0f8e-11ee-970b-b75ca3799e1f"),
 
-			"2020-04-18T03:22:17.995000Z",
+			&curTime,
 			&customer.Customer{
 				ID:               uuid.FromStringOrNil("fb6946f8-0f8e-11ee-b6e8-0b5d7cba3ef2"),
 				Name:             "test7",
 				Detail:           "detail7",
 				BillingAccountID: uuid.FromStringOrNil("fc1bc1fc-0f8e-11ee-970b-b75ca3799e1f"),
-				TMCreate:         "2020-04-18T03:22:17.995000Z",
-				TMUpdate:         "2020-04-18T03:22:17.995000Z",
-				TMDelete:         DefaultTimeStamp,
+				TMCreate:         &curTime,
+				TMUpdate:         &curTime,
+				TMDelete:         nil,
 			},
 		},
 	}
@@ -410,7 +417,7 @@ func Test_CustomerUpdateBillingAccountID(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CustomerSet(gomock.Any(), gomock.Any()).Return(nil)
 			if err := h.CustomerCreate(context.Background(), tt.customer); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -420,7 +427,7 @@ func Test_CustomerUpdateBillingAccountID(t *testing.T) {
 				customer.FieldBillingAccountID: tt.billingAccountID,
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CustomerSet(gomock.Any(), gomock.Any()).Return(nil)
 			if err := h.CustomerUpdate(ctx, tt.customer.ID, fields); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

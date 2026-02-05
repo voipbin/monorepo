@@ -1,6 +1,8 @@
 package transcript
 
 import (
+	"time"
+
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
@@ -15,10 +17,10 @@ type Transcript struct {
 	Direction Direction `json:"direction" db:"direction"` // direction. in/out
 	Message   string    `json:"message" db:"message"`     // message
 
-	TMTranscript string `json:"tm_transcript" db:"tm_transcript"` // timestamp transcripted. 0001-01-01 00:00:00.00000 points begining of the transcribe craete time.
+	TMTranscript *time.Time `json:"tm_transcript" db:"tm_transcript"` // timestamp transcripted. 0001-01-01 00:00:00.00000 points begining of the transcribe craete time.
 
-	TMCreate string `json:"tm_create" db:"tm_create"` // timestamp create
-	TMDelete string `json:"tm_delete" db:"tm_delete"` // timestamp delete
+	TMCreate *time.Time `json:"tm_create" db:"tm_create"` // timestamp create
+	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"` // timestamp delete
 }
 
 // Direction define

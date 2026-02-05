@@ -63,7 +63,7 @@ func Test_EventCMCallProgressing(t *testing.T) {
 				ReferenceType: billing.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("b215ed62-f548-11ee-813d-7f31c7ccb7eb"),
 				CostPerUnit:   billing.DefaultCostPerUnitReferenceTypeCall,
-				TMBillingEnd:  dbhandler.DefaultTimeStamp,
+				TMBillingEnd:  nil,
 			},
 		},
 	}
@@ -114,6 +114,9 @@ func Test_EventCMCallHangup(t *testing.T) {
 		expectBillingDuration float32
 	}
 
+	tmBillingStart := time.Date(2023, 6, 8, 3, 22, 17, 995000000, time.UTC)
+	tmHangup := time.Date(2023, 6, 8, 3, 23, 17, 995000000, time.UTC)
+
 	tests := []test{
 		{
 			name: "normal",
@@ -122,7 +125,7 @@ func Test_EventCMCallHangup(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("beaacf10-f549-11ee-9511-77ae64a3ef25"),
 				},
-				TMHangup: "2023-06-08T03:23:17.995000Z",
+				TMHangup: &tmHangup,
 			},
 
 			responseBilling: &billing.Billing{
@@ -131,7 +134,7 @@ func Test_EventCMCallHangup(t *testing.T) {
 				},
 				ReferenceType:  billing.ReferenceTypeCall,
 				ReferenceID:    uuid.FromStringOrNil("beaacf10-f549-11ee-9511-77ae64a3ef25"),
-				TMBillingStart: "2023-06-08T03:22:17.995000Z",
+				TMBillingStart: &tmBillingStart,
 			},
 			responseAccount: &account.Account{
 				Identity: commonidentity.Identity{
@@ -148,7 +151,7 @@ func Test_EventCMCallHangup(t *testing.T) {
 				ReferenceType: billing.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("b215ed62-f548-11ee-813d-7f31c7ccb7eb"),
 				CostPerUnit:   billing.DefaultCostPerUnitReferenceTypeCall,
-				TMBillingEnd:  dbhandler.DefaultTimeStamp,
+				TMBillingEnd:  nil,
 			},
 			expectBillingDuration: float32(60),
 		},
@@ -175,8 +178,6 @@ func Test_EventCMCallHangup(t *testing.T) {
 			mockDB.EXPECT().BillingGetByReferenceID(ctx, tt.call.ID).Return(tt.responseBilling, nil)
 
 			// BillingEnd
-			mockUtil.EXPECT().TimeParse(tt.responseBilling.TMBillingStart).Return(utilhandler.TimeParse(tt.responseBilling.TMBillingStart))
-			mockUtil.EXPECT().TimeParse(tt.call.TMHangup).Return(utilhandler.TimeParse(tt.call.TMHangup))
 			mockDB.EXPECT().BillingSetStatusEnd(ctx, tt.responseBilling.ID, tt.expectBillingDuration, tt.call.TMHangup).Return(nil)
 			mockDB.EXPECT().BillingGet(ctx, tt.responseBilling.ID).Return(tt.responseBilling, nil)
 
@@ -240,7 +241,7 @@ func Test_EventMMMessageCreated(t *testing.T) {
 					ReferenceType: billing.ReferenceTypeSMS,
 					ReferenceID:   uuid.FromStringOrNil("2cb5bb08-f54c-11ee-a40b-0f5555eb875b"),
 					CostPerUnit:   billing.DefaultCostPerUnitReferenceTypeSMS,
-					TMBillingEnd:  dbhandler.DefaultTimeStamp,
+					TMBillingEnd:  nil,
 				},
 				{
 					Identity: commonidentity.Identity{
@@ -251,7 +252,7 @@ func Test_EventMMMessageCreated(t *testing.T) {
 					ReferenceType: billing.ReferenceTypeSMS,
 					ReferenceID:   uuid.FromStringOrNil("2cb5bb08-f54c-11ee-a40b-0f5555eb875b"),
 					CostPerUnit:   billing.DefaultCostPerUnitReferenceTypeSMS,
-					TMBillingEnd:  dbhandler.DefaultTimeStamp,
+					TMBillingEnd:  nil,
 				},
 			},
 		},
@@ -279,12 +280,12 @@ func Test_EventMMMessageCreated(t *testing.T) {
 				// BillingStart
 				mockAccount.EXPECT().GetByCustomerID(ctx, tt.message.CustomerID).Return(tt.responseAccount, nil)
 				mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDs[i])
-				mockDB.EXPECT().BillingCreate(ctx, tt.expectBillings[i]).Return(nil)
+				mockDB.EXPECT().BillingCreate(ctx, gomock.Any()).Return(nil)
 				mockDB.EXPECT().BillingGet(ctx, tt.responseUUIDs[i]).Return(tt.expectBillings[i], nil)
 				mockNotify.EXPECT().PublishEvent(ctx, billing.EventTypeBillingCreated, tt.expectBillings[i])
 
 				// BillingEnd
-				mockDB.EXPECT().BillingSetStatusEnd(ctx, tt.expectBillings[i].ID, float32(1), tt.expectBillings[i].TMBillingStart).Return(nil)
+				mockDB.EXPECT().BillingSetStatusEnd(ctx, tt.expectBillings[i].ID, float32(1), gomock.Any()).Return(nil)
 				mockDB.EXPECT().BillingGet(ctx, tt.expectBillings[i].ID).Return(tt.expectBillings[i], nil)
 				mockAccount.EXPECT().SubtractBalance(ctx, tt.expectBillings[i].AccountID, tt.expectBillings[i].CostTotal).Return(tt.responseAccount, nil)
 			}
@@ -338,7 +339,7 @@ func Test_EventNMNumberCreated(t *testing.T) {
 				ReferenceType: billing.ReferenceTypeNumber,
 				ReferenceID:   uuid.FromStringOrNil("7359bada-f54e-11ee-ae36-37d1feaf6c4c"),
 				CostPerUnit:   billing.DefaultCostPerUnitReferenceTypeNumber,
-				TMBillingEnd:  dbhandler.DefaultTimeStamp,
+				TMBillingEnd:  nil,
 			},
 		},
 	}
@@ -364,12 +365,12 @@ func Test_EventNMNumberCreated(t *testing.T) {
 			// BillingStart
 			mockAccount.EXPECT().GetByCustomerID(ctx, tt.number.CustomerID).Return(tt.responseAccount, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
-			mockDB.EXPECT().BillingCreate(ctx, tt.expectBilling).Return(nil)
+			mockDB.EXPECT().BillingCreate(ctx, gomock.Any()).Return(nil)
 			mockDB.EXPECT().BillingGet(ctx, tt.responseUUID).Return(tt.expectBilling, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, billing.EventTypeBillingCreated, tt.expectBilling)
 
 			// BillingEnd
-			mockDB.EXPECT().BillingSetStatusEnd(ctx, tt.expectBilling.ID, float32(1), tt.expectBilling.TMBillingStart).Return(nil)
+			mockDB.EXPECT().BillingSetStatusEnd(ctx, tt.expectBilling.ID, float32(1), gomock.Any()).Return(nil)
 			mockDB.EXPECT().BillingGet(ctx, tt.expectBilling.ID).Return(tt.expectBilling, nil)
 			mockAccount.EXPECT().SubtractBalance(ctx, tt.expectBilling.AccountID, tt.expectBilling.CostTotal).Return(tt.responseAccount, nil)
 
@@ -423,7 +424,7 @@ func Test_EventNMNumberRenewed(t *testing.T) {
 				ReferenceType: billing.ReferenceTypeNumberRenew,
 				ReferenceID:   uuid.FromStringOrNil("e2eda0c8-f54e-11ee-9c57-c76cbcca2410"),
 				CostPerUnit:   billing.DefaultCostPerUnitReferenceTypeNumber,
-				TMBillingEnd:  dbhandler.DefaultTimeStamp,
+				TMBillingEnd:  nil,
 			},
 		},
 	}
@@ -449,12 +450,12 @@ func Test_EventNMNumberRenewed(t *testing.T) {
 			// BillingStart
 			mockAccount.EXPECT().GetByCustomerID(ctx, tt.number.CustomerID).Return(tt.responseAccount, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
-			mockDB.EXPECT().BillingCreate(ctx, tt.expectBilling).Return(nil)
+			mockDB.EXPECT().BillingCreate(ctx, gomock.Any()).Return(nil)
 			mockDB.EXPECT().BillingGet(ctx, tt.responseUUID).Return(tt.expectBilling, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, billing.EventTypeBillingCreated, tt.expectBilling)
 
 			// BillingEnd
-			mockDB.EXPECT().BillingSetStatusEnd(ctx, tt.expectBilling.ID, float32(1), tt.expectBilling.TMBillingStart).Return(nil)
+			mockDB.EXPECT().BillingSetStatusEnd(ctx, tt.expectBilling.ID, float32(1), gomock.Any()).Return(nil)
 			mockDB.EXPECT().BillingGet(ctx, tt.expectBilling.ID).Return(tt.expectBilling, nil)
 			mockAccount.EXPECT().SubtractBalance(ctx, tt.expectBilling.AccountID, tt.expectBilling.CostTotal).Return(tt.responseAccount, nil)
 

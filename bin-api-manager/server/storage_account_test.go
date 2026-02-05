@@ -43,7 +43,7 @@ func Test_storageAccountGet(t *testing.T) {
 				ID: uuid.FromStringOrNil("c85cf9d0-1bef-11ef-a736-e75259c323b2"),
 			},
 
-			expectRes: `{"id":"c85cf9d0-1bef-11ef-a736-e75259c323b2","customer_id":"00000000-0000-0000-0000-000000000000","total_file_count":0,"total_file_size":0,"tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes: `{"id":"c85cf9d0-1bef-11ef-a736-e75259c323b2","customer_id":"00000000-0000-0000-0000-000000000000","total_file_count":0,"total_file_size":0,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 

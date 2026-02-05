@@ -219,7 +219,7 @@ func Test_TranscribeStart(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Status:   cmcall.StatusProgressing,
-				TMDelete: defaultTimestamp,
+				TMDelete: nil,
 			},
 			responseTranscribe: &tmtranscribe.Transcribe{
 				Identity: commonidentity.Identity{

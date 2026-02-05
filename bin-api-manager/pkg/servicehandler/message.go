@@ -128,7 +128,7 @@ func (h *serviceHandler) MessageGet(ctx context.Context, a *amagent.Agent, id uu
 		return nil, fmt.Errorf("user has no permission")
 	}
 
-	if tmp.TMDelete != defaultTimestamp {
+	if tmp.TMDelete != nil {
 		log.WithField("message", tmp).Debugf("Deleted message.")
 		return nil, fmt.Errorf("not found")
 	}

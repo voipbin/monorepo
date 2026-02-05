@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 
-	commondb "monorepo/bin-common-handler/pkg/databasehandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	commonutil "monorepo/bin-common-handler/pkg/utilhandler"
@@ -18,6 +18,10 @@ import (
 	"monorepo/bin-talk-manager/models/participant"
 	"monorepo/bin-talk-manager/pkg/dbhandler"
 )
+
+func timePtr(t time.Time) *time.Time {
+	return &t
+}
 
 func Test_ParticipantAdd(t *testing.T) {
 	tests := []struct {
@@ -95,7 +99,7 @@ func Test_ParticipantAdd(t *testing.T) {
 					ID:         tt.chatID,
 					CustomerID: tt.customerID,
 				},
-				TMDelete: commondb.DefaultTimeStamp, // not deleted
+				TMDelete: nil, // not deleted
 			}
 			mockDB.EXPECT().ChatGet(ctx, tt.chatID).Return(mockChat, nil)
 
@@ -208,7 +212,7 @@ func Test_ParticipantAdd_error(t *testing.T) {
 					ID:         uuid.FromStringOrNil("e8427fa8-17b2-4e9e-8855-90e516bcf1d3"),
 					CustomerID: uuid.FromStringOrNil("ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4"),
 				},
-				TMDelete: "2024-01-15T10:30:00.000000Z", // Chat is deleted
+				TMDelete: timePtr(time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)), // Chat is deleted
 			},
 			expectError: true,
 		},
@@ -224,7 +228,7 @@ func Test_ParticipantAdd_error(t *testing.T) {
 					ID:         uuid.FromStringOrNil("ac810dc4-298c-11ee-984c-ebb7811c4114"),
 					CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
 				},
-				TMDelete: commondb.DefaultTimeStamp, // Not deleted
+				TMDelete: nil, // Not deleted
 			},
 			createError: fmt.Errorf("database error"),
 			expectError: true,
@@ -256,7 +260,7 @@ func Test_ParticipantAdd_error(t *testing.T) {
 					mockDB.EXPECT().ChatGet(ctx, tt.chatID).Return(tt.chatGetChat, nil)
 
 					// Only mock create if chat is not deleted
-					if tt.chatGetChat.TMDelete >= commondb.DefaultTimeStamp {
+					if tt.chatGetChat.TMDelete == nil {
 						mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("93d48228-3ed7-11ef-a9ca-070e7ba46a55"))
 						mockDB.EXPECT().ParticipantCreate(ctx, gomock.Any()).Return(tt.createError)
 					}
@@ -301,7 +305,7 @@ func Test_ParticipantList(t *testing.T) {
 						OwnerID:   uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
 					},
 					ChatID:   uuid.FromStringOrNil("ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4"),
-					TMJoined: "2024-01-15T10:30:00.000000Z",
+					TMJoined: timePtr(time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)),
 				},
 			},
 		},
@@ -322,7 +326,7 @@ func Test_ParticipantList(t *testing.T) {
 						OwnerID:   uuid.FromStringOrNil("31536998-da36-11ee-976a-b31b049d62c2"),
 					},
 					ChatID:   uuid.FromStringOrNil("ac810dc4-298c-11ee-984c-ebb7811c4114"),
-					TMJoined: "2024-01-15T10:30:00.000000Z",
+					TMJoined: timePtr(time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)),
 				},
 				{
 					Identity: commonidentity.Identity{
@@ -334,7 +338,7 @@ func Test_ParticipantList(t *testing.T) {
 						OwnerID:   uuid.FromStringOrNil("62b0e2b7-0583-4f78-9406-45b00d17a9b4"),
 					},
 					ChatID:   uuid.FromStringOrNil("ac810dc4-298c-11ee-984c-ebb7811c4114"),
-					TMJoined: "2024-01-15T11:00:00.000000Z",
+					TMJoined: timePtr(time.Date(2024, 1, 15, 11, 0, 0, 0, time.UTC)),
 				},
 				{
 					Identity: commonidentity.Identity{
@@ -346,7 +350,7 @@ func Test_ParticipantList(t *testing.T) {
 						OwnerID:   uuid.FromStringOrNil("809656e2-305e-43cd-8d7b-ccb44373dddb"),
 					},
 					ChatID:   uuid.FromStringOrNil("ac810dc4-298c-11ee-984c-ebb7811c4114"),
-					TMJoined: "2024-01-15T12:00:00.000000Z",
+					TMJoined: timePtr(time.Date(2024, 1, 15, 12, 0, 0, 0, time.UTC)),
 				},
 			},
 		},
@@ -489,7 +493,7 @@ func Test_ParticipantRemove(t *testing.T) {
 					OwnerID:   uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
 				},
 				ChatID:   uuid.FromStringOrNil("ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4"),
-				TMJoined: "2024-01-15T10:30:00.000000Z",
+				TMJoined: timePtr(time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)),
 			},
 		},
 		{
@@ -508,7 +512,7 @@ func Test_ParticipantRemove(t *testing.T) {
 					OwnerID:   uuid.FromStringOrNil("31536998-da36-11ee-976a-b31b049d62c2"),
 				},
 				ChatID:   uuid.FromStringOrNil("ac810dc4-298c-11ee-984c-ebb7811c4114"),
-				TMJoined: "2024-01-15T11:00:00.000000Z",
+				TMJoined: timePtr(time.Date(2024, 1, 15, 11, 0, 0, 0, time.UTC)),
 			},
 		},
 	}

@@ -70,7 +70,7 @@ func Test_Join(t *testing.T) {
 			responseBridge: &bridge.Bridge{
 				AsteriskID: "00:11:22:33:44:66",
 				ID:         "a5c525ec-dca0-11ea-b139-17780451d9da",
-				TMDelete:   dbhandler.DefaultTimeStamp,
+				TMDelete:   nil,
 			},
 			responseAsteriskAddressInternal: "test.com",
 			responseUUIDChannel:             uuid.FromStringOrNil("2b6f7cb4-9c76-11ed-9714-8b312d1ce8a5"),
@@ -105,7 +105,7 @@ func Test_Join(t *testing.T) {
 			responseBridge: &bridge.Bridge{
 				AsteriskID: "00:11:22:33:44:66",
 				ID:         "214c8606-38e4-11ec-8960-0fff1696a6b1",
-				TMDelete:   dbhandler.DefaultTimeStamp,
+				TMDelete:   nil,
 			},
 			responseAsteriskAddressInternal: "test.com",
 

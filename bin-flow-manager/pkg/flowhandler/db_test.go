@@ -119,7 +119,7 @@ func Test_Create(t *testing.T) {
 			mockAction.EXPECT().GenerateFlowActions(ctx, tt.actions).Return(tt.actions, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+			mockUtil.EXPECT().TimeNow().Return(utilhandler.TimeNow())
 			if tt.persist == true {
 				mockDB.EXPECT().FlowCreate(ctx, gomock.Any()).Return(nil)
 				mockDB.EXPECT().FlowGet(ctx, gomock.Any()).Return(tt.responseFlow, nil)

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	reflect "reflect"
 	"testing"
+	"time"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -20,11 +21,13 @@ import (
 
 func Test_TrunkCreate(t *testing.T) {
 
+	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
+
 	type test struct {
 		name  string
 		trunk *trunk.Trunk
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *trunk.Trunk
 	}
 
@@ -49,7 +52,7 @@ func Test_TrunkCreate(t *testing.T) {
 				},
 			},
 
-			"2021-02-26T18:26:49.000Z",
+			curTime,
 			&trunk.Trunk{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("5de945ba-519a-11ee-809d-0397adb97529"),
@@ -66,9 +69,9 @@ func Test_TrunkCreate(t *testing.T) {
 					"1.2.3.4",
 					"1.2.3.5",
 				},
-				TMCreate: "2021-02-26T18:26:49.000Z",
-				TMUpdate: DefaultTimeStamp,
-				TMDelete: DefaultTimeStamp,
+				TMCreate: curTime,
+				TMUpdate: nil,
+				TMDelete: nil,
 			},
 		},
 		{
@@ -79,16 +82,16 @@ func Test_TrunkCreate(t *testing.T) {
 				},
 			},
 
-			"2021-02-26T18:26:49.000Z",
+			curTime,
 			&trunk.Trunk{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("21ed74e4-cc80-11ee-b64b-b36a53c6cafc"),
 				},
 				AuthTypes:  []sipauth.AuthType{},
 				AllowedIPs: []string{},
-				TMCreate:   "2021-02-26T18:26:49.000Z",
-				TMUpdate:   DefaultTimeStamp,
-				TMDelete:   DefaultTimeStamp,
+				TMCreate:   curTime,
+				TMUpdate:   nil,
+				TMDelete:   nil,
 			},
 		},
 	}
@@ -109,7 +112,7 @@ func Test_TrunkCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().TrunkSet(ctx, gomock.Any())
 			if err := h.TrunkCreate(ctx, tt.trunk); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -143,6 +146,9 @@ func Test_TrunkCreate(t *testing.T) {
 }
 
 func Test_TrunkList(t *testing.T) {
+
+	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
+
 	type test struct {
 		name string
 		data []trunk.Trunk
@@ -151,7 +157,7 @@ func Test_TrunkList(t *testing.T) {
 		token   string
 		filters map[trunk.Field]any
 
-		responseCurTime string
+		responseCurTime *time.Time
 
 		expectRes []*trunk.Trunk
 	}
@@ -183,7 +189,7 @@ func Test_TrunkList(t *testing.T) {
 				trunk.FieldDomainName: "test2",
 			},
 
-			"2021-02-26T18:26:49.000Z",
+			curTime,
 
 			[]*trunk.Trunk{
 				{
@@ -194,9 +200,9 @@ func Test_TrunkList(t *testing.T) {
 					DomainName: "test2",
 					AuthTypes:  []sipauth.AuthType{},
 					AllowedIPs: []string{},
-					TMCreate:   "2021-02-26T18:26:49.000Z",
-					TMUpdate:   DefaultTimeStamp,
-					TMDelete:   DefaultTimeStamp,
+					TMCreate:   curTime,
+					TMUpdate:   nil,
+					TMDelete:   nil,
 				},
 			},
 		},
@@ -219,7 +225,7 @@ func Test_TrunkList(t *testing.T) {
 			ctx := context.Background()
 
 			for _, d := range tt.data {
-				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 				mockCache.EXPECT().TrunkSet(gomock.Any(), gomock.Any())
 				if err := h.TrunkCreate(ctx, &d); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -240,6 +246,8 @@ func Test_TrunkList(t *testing.T) {
 
 func Test_TrunkUpdate(t *testing.T) {
 
+	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
+
 	type test struct {
 		name        string
 		trunkCreate *trunk.Trunk
@@ -247,7 +255,7 @@ func Test_TrunkUpdate(t *testing.T) {
 		id     uuid.UUID
 		fields map[trunk.Field]any
 
-		responseCurTime string
+		responseCurTime *time.Time
 
 		expectDomain *trunk.Trunk
 	}
@@ -273,7 +281,7 @@ func Test_TrunkUpdate(t *testing.T) {
 				trunk.FieldAllowedIPs: []string{"1.2.3.4", "5.6.7.8"},
 			},
 
-			"2021-02-26T18:26:49.000Z",
+			curTime,
 
 			&trunk.Trunk{
 				Identity: commonidentity.Identity{
@@ -291,9 +299,9 @@ func Test_TrunkUpdate(t *testing.T) {
 					"5.6.7.8",
 				},
 
-				TMCreate: "2021-02-26T18:26:49.000Z",
-				TMUpdate: "2021-02-26T18:26:49.000Z",
-				TMDelete: DefaultTimeStamp,
+				TMCreate: curTime,
+				TMUpdate: curTime,
+				TMDelete: nil,
 			},
 		},
 	}
@@ -314,13 +322,13 @@ func Test_TrunkUpdate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().TrunkSet(ctx, gomock.Any())
 			if err := h.TrunkCreate(ctx, tt.trunkCreate); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().TrunkSet(ctx, gomock.Any())
 			if err := h.TrunkUpdate(ctx, tt.id, tt.fields); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

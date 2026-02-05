@@ -30,12 +30,12 @@ func (h *handler) routeGetFromRow(row *sql.Rows) (*route.Route, error) {
 
 // RouteCreate creates a new route record
 func (h *handler) RouteCreate(ctx context.Context, r *route.Route) error {
-	now := h.utilHandler.TimeGetCurTime()
+	now := h.utilHandler.TimeNow()
 
 	// Set timestamps
 	r.TMCreate = now
-	r.TMUpdate = commondatabasehandler.DefaultTimeStamp
-	r.TMDelete = commondatabasehandler.DefaultTimeStamp
+	r.TMUpdate = nil
+	r.TMDelete = nil
 
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(r)
@@ -160,7 +160,7 @@ func (h *handler) RouteList(ctx context.Context, token string, limit uint64, fil
 	sb := squirrel.
 		Select(fields...).
 		From(routesTable).
-		Where(squirrel.GtOrEq{string(route.FieldTMDelete): commondatabasehandler.DefaultTimeStamp}).
+		Where(squirrel.Eq{string(route.FieldTMDelete): nil}).
 		Where(squirrel.Lt{string(route.FieldTMCreate): token}).
 		OrderBy(string(route.FieldTMCreate) + " DESC", string(route.FieldID) + " DESC").
 		Limit(limit).
@@ -201,7 +201,7 @@ func (h *handler) RouteList(ctx context.Context, token string, limit uint64, fil
 
 // RouteDelete deletes the given route
 func (h *handler) RouteDelete(ctx context.Context, id uuid.UUID) error {
-	ts := h.utilHandler.TimeGetCurTime()
+	ts := h.utilHandler.TimeNow()
 
 	fields := map[route.Field]any{
 		route.FieldTMUpdate: ts,
@@ -246,7 +246,7 @@ func (h *handler) RouteUpdate(ctx context.Context, id uuid.UUID, fields map[rout
 		return nil
 	}
 
-	fields[route.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
+	fields[route.FieldTMUpdate] = h.utilHandler.TimeNow()
 
 	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {

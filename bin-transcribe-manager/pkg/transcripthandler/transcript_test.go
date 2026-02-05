@@ -4,6 +4,7 @@ import (
 	"context"
 	reflect "reflect"
 	"testing"
+	"time"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
@@ -19,6 +20,8 @@ import (
 
 func Test_Create(t *testing.T) {
 
+	tmTranscript := time.Date(0, 0, 0, 0, 0, 1, 0, time.UTC)
+
 	tests := []struct {
 		name string
 
@@ -26,7 +29,7 @@ func Test_Create(t *testing.T) {
 		transcribeID uuid.UUID
 		direction    transcript.Direction
 		message      string
-		tmTranscript string
+		tmTranscript *time.Time
 
 		responseUUID       uuid.UUID
 		responseTranscript *transcript.Transcript
@@ -40,7 +43,7 @@ func Test_Create(t *testing.T) {
 			uuid.FromStringOrNil("0da54c10-7eb5-11ed-b190-43412cc32f80"),
 			transcript.DirectionIn,
 			"test transcript",
-			"0000-00-00T00:00:01.00000Z",
+			&tmTranscript,
 
 			uuid.FromStringOrNil("494f5bfc-7eb5-11ed-a6d7-07162f18f28e"),
 			&transcript.Transcript{
@@ -51,7 +54,7 @@ func Test_Create(t *testing.T) {
 				TranscribeID: uuid.FromStringOrNil("0da54c10-7eb5-11ed-b190-43412cc32f80"),
 				Direction:    transcript.DirectionIn,
 				Message:      "test transcript",
-				TMTranscript: "0000-00-00T00:00:01.00000Z",
+				TMTranscript: &tmTranscript,
 			},
 
 			&transcript.Transcript{
@@ -62,7 +65,7 @@ func Test_Create(t *testing.T) {
 				TranscribeID: uuid.FromStringOrNil("0da54c10-7eb5-11ed-b190-43412cc32f80"),
 				Direction:    transcript.DirectionIn,
 				Message:      "test transcript",
-				TMTranscript: "0000-00-00T00:00:01.00000Z",
+				TMTranscript: &tmTranscript,
 			},
 		},
 	}
@@ -175,7 +178,7 @@ func Test_Delete(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("87cf2e7e-f25f-11ee-81cd-1f9ea9d83ffb"),
 				},
-				TMDelete: dbhandler.DefaultTimeStamp,
+				TMDelete: nil,
 			},
 		},
 	}

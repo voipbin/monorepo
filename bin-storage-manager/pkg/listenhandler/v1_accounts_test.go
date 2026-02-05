@@ -41,7 +41,7 @@ func Test_v1AccountsPost(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"023f0570-1b38-11ef-86b9-57db70737f8f","customer_id":"00000000-0000-0000-0000-000000000000","total_file_count":0,"total_file_size":0,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"023f0570-1b38-11ef-86b9-57db70737f8f","customer_id":"00000000-0000-0000-0000-000000000000","total_file_count":0,"total_file_size":0,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -110,7 +110,7 @@ func Test_v1AccountsGet(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"d1eec710-1b38-11ef-a425-47a057cb03ee","customer_id":"00000000-0000-0000-0000-000000000000","total_file_count":0,"total_file_size":0,"tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"d1eec710-1b38-11ef-a425-47a057cb03ee","customer_id":"00000000-0000-0000-0000-000000000000","total_file_count":0,"total_file_size":0,"tm_create":null,"tm_update":null,"tm_delete":null}]`),
 			},
 		},
 	}
@@ -166,7 +166,7 @@ func Test_v1AccountsIDGet(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"0c3d3d16-1b39-11ef-92ec-df76bb16f7c7","customer_id":"00000000-0000-0000-0000-000000000000","total_file_count":0,"total_file_size":0,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"0c3d3d16-1b39-11ef-92ec-df76bb16f7c7","customer_id":"00000000-0000-0000-0000-000000000000","total_file_count":0,"total_file_size":0,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -222,7 +222,7 @@ func Test_v1AccountsIDDelete(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"308ed81e-1b39-11ef-addf-af55fc0db7b7","customer_id":"00000000-0000-0000-0000-000000000000","total_file_count":0,"total_file_size":0,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"308ed81e-1b39-11ef-addf-af55fc0db7b7","customer_id":"00000000-0000-0000-0000-000000000000","total_file_count":0,"total_file_size":0,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}

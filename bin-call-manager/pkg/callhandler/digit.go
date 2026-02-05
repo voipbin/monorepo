@@ -216,7 +216,7 @@ func (h *callHandler) digitNotifyDTMFEvent(ctx context.Context, c *call.Call, di
 		Digit:    digits,
 		Duration: duration,
 
-		TMCreate: h.utilHandler.TimeGetCurTime(),
+		TMCreate: h.utilHandler.TimeNow(),
 	}
 
 	h.notifyHandler.PublishEvent(ctx, dtmf.EventTypeDTMFReceived, e)

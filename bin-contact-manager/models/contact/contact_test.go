@@ -2,11 +2,16 @@ package contact
 
 import (
 	"testing"
+	"time"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
 )
+
+func timePtr(t time.Time) *time.Time {
+	return &t
+}
 
 func TestContact_Matches(t *testing.T) {
 	tests := []struct {
@@ -45,9 +50,9 @@ func TestContact_Matches(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222"),
 				},
 				FirstName: "John",
-				TMCreate:  "2020-01-01T00:00:00.000000Z",
-				TMUpdate:  "2020-01-02T00:00:00.000000Z",
-				TMDelete:  "9999-01-01T00:00:00.000000Z",
+				TMCreate:  timePtr(time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)),
+				TMUpdate:  timePtr(time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC)),
+				TMDelete:  nil,
 			},
 			other: &Contact{
 				Identity: commonidentity.Identity{
@@ -55,9 +60,9 @@ func TestContact_Matches(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222"),
 				},
 				FirstName: "John",
-				TMCreate:  "2021-01-01T00:00:00.000000Z",
-				TMUpdate:  "2021-01-02T00:00:00.000000Z",
-				TMDelete:  "9999-01-01T00:00:00.000000Z",
+				TMCreate:  timePtr(time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)),
+				TMUpdate:  timePtr(time.Date(2021, 1, 2, 0, 0, 0, 0, time.UTC)),
+				TMDelete:  nil,
 			},
 			expected: true,
 		},

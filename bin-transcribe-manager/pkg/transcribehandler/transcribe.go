@@ -10,7 +10,6 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-transcribe-manager/models/transcribe"
 	"monorepo/bin-transcribe-manager/models/transcript"
-	"monorepo/bin-transcribe-manager/pkg/dbhandler"
 )
 
 // Get returns transcribe
@@ -120,7 +119,7 @@ func (h *transcribeHandler) Delete(ctx context.Context, id uuid.UUID) (*transcri
 		return nil, errors.Wrapf(err, "could not get transcribe info. transcribe_id: %s", id)
 	}
 
-	if tr.TMDelete != dbhandler.DefaultTimeStamp {
+	if tr.TMDelete != nil {
 		// already deleted
 		return tr, nil
 	}

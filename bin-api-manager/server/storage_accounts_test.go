@@ -51,7 +51,7 @@ func Test_storageAccountsGet(t *testing.T) {
 					ID: uuid.FromStringOrNil("6adce0da-004e-11ee-b74a-23da476139db"),
 				},
 			},
-			expectRes: `{"result":[{"id":"6adce0da-004e-11ee-b74a-23da476139db","customer_id":"00000000-0000-0000-0000-000000000000","total_file_count":0,"total_file_size":0,"tm_create":"","tm_update":"","tm_delete":""}],"next_page_token":""}`,
+			expectRes: `{"result":[{"id":"6adce0da-004e-11ee-b74a-23da476139db","customer_id":"00000000-0000-0000-0000-000000000000","total_file_count":0,"total_file_size":0,"tm_create":null,"tm_update":null,"tm_delete":null}],"next_page_token":""}`,
 		},
 	}
 
@@ -123,7 +123,7 @@ func Test_storageAccountsPost(t *testing.T) {
 			},
 
 			expectCustomerID: uuid.FromStringOrNil("a77397a6-1bef-11ef-bb4f-d76f9d478e32"),
-			expectRes:        `{"id":"ae58a520-1bef-11ef-afdc-571791bb0855","customer_id":"00000000-0000-0000-0000-000000000000","total_file_count":0,"total_file_size":0,"tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes:        `{"id":"ae58a520-1bef-11ef-afdc-571791bb0855","customer_id":"00000000-0000-0000-0000-000000000000","total_file_count":0,"total_file_size":0,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -193,7 +193,7 @@ func Test_storageAccountsIDGet(t *testing.T) {
 			responseStorageAccount: &smaccount.WebhookMessage{
 				ID: uuid.FromStringOrNil("c85cf9d0-1bef-11ef-a736-e75259c323b2"),
 			},
-			expectRes: `{"id":"c85cf9d0-1bef-11ef-a736-e75259c323b2","customer_id":"00000000-0000-0000-0000-000000000000","total_file_count":0,"total_file_size":0,"tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes: `{"id":"c85cf9d0-1bef-11ef-a736-e75259c323b2","customer_id":"00000000-0000-0000-0000-000000000000","total_file_count":0,"total_file_size":0,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -263,7 +263,7 @@ func Test_storageAccountsIDDelete(t *testing.T) {
 			},
 
 			expectStorageAccountID: uuid.FromStringOrNil("c88754b4-1bef-11ef-b6d2-0b09724bcbc3"),
-			expectRes:              `{"id":"c88754b4-1bef-11ef-b6d2-0b09724bcbc3","customer_id":"00000000-0000-0000-0000-000000000000","total_file_count":0,"total_file_size":0,"tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes:              `{"id":"c88754b4-1bef-11ef-b6d2-0b09724bcbc3","customer_id":"00000000-0000-0000-0000-000000000000","total_file_count":0,"total_file_size":0,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 

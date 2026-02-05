@@ -6,6 +6,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"time"
 
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -32,7 +33,7 @@ type DBHandler interface {
 	BillingGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*billing.Billing, error)
 	BillingList(ctx context.Context, size uint64, token string, filters map[billing.Field]any) ([]*billing.Billing, error)
 	BillingUpdate(ctx context.Context, id uuid.UUID, fields map[billing.Field]any) error
-	BillingSetStatusEnd(ctx context.Context, id uuid.UUID, billingDuration float32, timestamp string) error
+	BillingSetStatusEnd(ctx context.Context, id uuid.UUID, billingDuration float32, timestamp *time.Time) error
 	BillingSetStatus(ctx context.Context, id uuid.UUID, status billing.Status) error
 	BillingDelete(ctx context.Context, id uuid.UUID) error
 }

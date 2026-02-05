@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -311,10 +312,22 @@ func (h *listenHandler) processV1CallsIDActionTimeoutPost(ctx context.Context, m
 		return nil, err
 	}
 
+	var tmExecute *time.Time
+	if data.TMExecute != "" {
+		if t, err := time.Parse(time.RFC3339Nano, data.TMExecute); err == nil {
+			tmExecute = &t
+		} else {
+			t := utilhandler.TimeParse(data.TMExecute)
+			if !t.IsZero() {
+				tmExecute = &t
+			}
+		}
+	}
+
 	action := &fmaction.Action{
 		ID:        data.ActionID,
 		Type:      data.ActionType,
-		TMExecute: data.TMExecute,
+		TMExecute: tmExecute,
 	}
 
 	if err := h.callHandler.ActionTimeout(ctx, id, action); err != nil {

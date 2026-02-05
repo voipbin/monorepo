@@ -54,7 +54,7 @@ func Test_AISummaryCreate_referencetype_call(t *testing.T) {
 					ID:         uuid.FromStringOrNil("deefe77c-0cc9-11f0-9a60-f338d9acb104"),
 					CustomerID: uuid.FromStringOrNil("de33d3a2-0cc9-11f0-a377-37b9ae47ee38"),
 				},
-				TMDelete: defaultTimestamp,
+				TMDelete: nil,
 			},
 			responseSummary: &amsummary.Summary{
 				Identity: commonidentity.Identity{

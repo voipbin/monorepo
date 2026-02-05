@@ -1,6 +1,8 @@
 package queuecall
 
 import (
+	"time"
+
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
@@ -35,11 +37,11 @@ type Queuecall struct {
 	DurationWaiting int `json:"duration_waiting,omitempty" db:"duration_waiting"` // duration for waiting(ms)
 	DurationService int `json:"duration_service,omitempty" db:"duration_service"` // duration for service(ms)
 
-	TMCreate  string `json:"tm_create,omitempty" db:"tm_create"`   // Created timestamp.
-	TMService string `json:"tm_service,omitempty" db:"tm_service"` // Serviced timestamp.
-	TMUpdate  string `json:"tm_update,omitempty" db:"tm_update"`   // Updated timestamp.
-	TMEnd     string `json:"tm_end,omitempty" db:"tm_end"`         // ended timestamp.
-	TMDelete  string `json:"tm_delete,omitempty" db:"tm_delete"`   // Deleted timestamp.
+	TMCreate  *time.Time `json:"tm_create" db:"tm_create"`   // Created timestamp.
+	TMService *time.Time `json:"tm_service" db:"tm_service"` // Serviced timestamp.
+	TMUpdate  *time.Time `json:"tm_update" db:"tm_update"`   // Updated timestamp.
+	TMEnd     *time.Time `json:"tm_end" db:"tm_end"`         // ended timestamp.
+	TMDelete  *time.Time `json:"tm_delete" db:"tm_delete"`   // Deleted timestamp.
 }
 
 // ReferenceType define

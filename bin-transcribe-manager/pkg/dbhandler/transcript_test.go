@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
+	"time"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -18,12 +19,15 @@ import (
 
 func Test_TranscriptCreate(t *testing.T) {
 
+	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
+	tmTranscript := func() *time.Time { t := time.Date(0, 1, 1, 0, 0, 1, 0, time.UTC); return &t }()
+
 	type test struct {
 		name string
 
 		transcript *transcript.Transcript
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *transcript.Transcript
 	}
 
@@ -38,10 +42,10 @@ func Test_TranscriptCreate(t *testing.T) {
 				TranscribeID: uuid.FromStringOrNil("60942350-7e2f-11ed-be15-9fea382cfa70"),
 				Direction:    transcript.DirectionIn,
 				Message:      "Hello, this is test message",
-				TMTranscript: "0000-00-00T00:00:01.00000Z",
+				TMTranscript: tmTranscript,
 			},
 
-			responseCurTime: "2021-01-01T00:00:00.000Z",
+			responseCurTime: curTime,
 			expectRes: &transcript.Transcript{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("6029f7a0-7e2f-11ed-b9d0-5f9428aa8958"),
@@ -50,9 +54,9 @@ func Test_TranscriptCreate(t *testing.T) {
 				TranscribeID: uuid.FromStringOrNil("60942350-7e2f-11ed-be15-9fea382cfa70"),
 				Direction:    transcript.DirectionIn,
 				Message:      "Hello, this is test message",
-				TMTranscript: "0000-00-00T00:00:01.00000Z",
-				TMCreate:     "2021-01-01T00:00:00.000Z",
-				TMDelete:     DefaultTimeStamp,
+				TMTranscript: tmTranscript,
+				TMCreate:     curTime,
+				TMDelete:     nil,
 			},
 		},
 		{
@@ -63,13 +67,13 @@ func Test_TranscriptCreate(t *testing.T) {
 				},
 			},
 
-			responseCurTime: "2021-01-01T00:00:00.000Z",
+			responseCurTime: curTime,
 			expectRes: &transcript.Transcript{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("f2757f08-7e2f-11ed-a6c5-af8cdad93769"),
 				},
-				TMCreate: "2021-01-01T00:00:00.000Z",
-				TMDelete: DefaultTimeStamp,
+				TMCreate: curTime,
+				TMDelete: nil,
 			},
 		},
 	}
@@ -89,7 +93,7 @@ func Test_TranscriptCreate(t *testing.T) {
 				cache:       mockCache,
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().TranscriptSet(gomock.Any(), gomock.Any())
 			if err := h.TranscriptCreate(context.Background(), tt.transcript); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -111,13 +115,15 @@ func Test_TranscriptCreate(t *testing.T) {
 
 func Test_TranscriptList(t *testing.T) {
 
+	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
+
 	tests := []struct {
 		name        string
 		transcripts []*transcript.Transcript
 
 		filters map[transcript.Field]any
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       []*transcript.Transcript
 	}{
 		{
@@ -136,15 +142,15 @@ func Test_TranscriptList(t *testing.T) {
 				transcript.FieldDeleted:      false,
 			},
 
-			responseCurTime: "2021-01-01T00:00:00.000Z",
+			responseCurTime: curTime,
 			expectRes: []*transcript.Transcript{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("4db68b46-7e30-11ed-8c50-0fe723a2648a"),
 					},
 					TranscribeID: uuid.FromStringOrNil("4dda38ac-7e30-11ed-876b-3bf1eb420c31"),
-					TMCreate:     "2021-01-01T00:00:00.000Z",
-					TMDelete:     DefaultTimeStamp,
+					TMCreate:     curTime,
+					TMDelete:     nil,
 				},
 			},
 		},
@@ -156,7 +162,7 @@ func Test_TranscriptList(t *testing.T) {
 				transcript.FieldCustomerID: uuid.FromStringOrNil("8077cdec-7e30-11ed-93c6-efc2ead67105"),
 			},
 
-			responseCurTime: "",
+			responseCurTime: nil,
 			expectRes:       []*transcript.Transcript{},
 		},
 		{
@@ -181,23 +187,23 @@ func Test_TranscriptList(t *testing.T) {
 				transcript.FieldDeleted:      false,
 			},
 
-			responseCurTime: "2021-01-01T00:00:00.000Z",
+			responseCurTime: curTime,
 			expectRes: []*transcript.Transcript{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("892afd74-7e30-11ed-808f-578ac2e92b40"),
 					},
 					TranscribeID: uuid.FromStringOrNil("89560596-7e30-11ed-b714-e7b0632f17e9"),
-					TMCreate:     "2021-01-01T00:00:00.000Z",
-					TMDelete:     DefaultTimeStamp,
+					TMCreate:     curTime,
+					TMDelete:     nil,
 				},
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("8937c114-7e2e-11ed-8566-ffc2c99e510d"),
 					},
 					TranscribeID: uuid.FromStringOrNil("89560596-7e30-11ed-b714-e7b0632f17e9"),
-					TMCreate:     "2021-01-01T00:00:00.000Z",
-					TMDelete:     DefaultTimeStamp,
+					TMCreate:     curTime,
+					TMDelete:     nil,
 				},
 			},
 		},
@@ -220,7 +226,7 @@ func Test_TranscriptList(t *testing.T) {
 
 			// creates messages for test
 			for i := 0; i < len(tt.transcripts); i++ {
-				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 				mockCache.EXPECT().TranscriptSet(ctx, gomock.Any())
 
 				if err := h.TranscriptCreate(ctx, tt.transcripts[i]); err != nil {
@@ -242,11 +248,13 @@ func Test_TranscriptList(t *testing.T) {
 
 func Test_TranscriptDelete(t *testing.T) {
 
+	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
+
 	type test struct {
 		name       string
 		transcript *transcript.Transcript
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *transcript.Transcript
 	}
 
@@ -259,13 +267,13 @@ func Test_TranscriptDelete(t *testing.T) {
 				},
 			},
 
-			responseCurTime: "2021-01-01T00:00:00.000Z",
+			responseCurTime: curTime,
 			expectRes: &transcript.Transcript{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("15f2b1f4-f197-11ee-b786-7b9a797be96c"),
 				},
-				TMCreate: "2021-01-01T00:00:00.000Z",
-				TMDelete: "2021-01-01T00:00:00.000Z",
+				TMCreate: curTime,
+				TMDelete: curTime,
 			},
 		},
 	}
@@ -286,7 +294,7 @@ func Test_TranscriptDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime).AnyTimes()
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime).AnyTimes()
 			mockCache.EXPECT().TranscriptSet(ctx, gomock.Any())
 			if err := h.TranscriptCreate(ctx, tt.transcript); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

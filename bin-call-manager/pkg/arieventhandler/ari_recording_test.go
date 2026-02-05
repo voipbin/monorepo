@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 	"testing"
+	"time"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -20,6 +21,7 @@ import (
 	"monorepo/bin-call-manager/pkg/callhandler"
 	"monorepo/bin-call-manager/pkg/dbhandler"
 	"monorepo/bin-call-manager/pkg/recordinghandler"
+	"monorepo/bin-call-manager/pkg/testhelper"
 )
 
 func Test_EventHandlerRecordingStarted(t *testing.T) {
@@ -139,7 +141,7 @@ func Test_EventHandlerRecordingFinished_call(t *testing.T) {
 		event             *ari.RecordingFinished
 		call              *call.Call
 		responseRecording *recording.Recording
-		timestamp         string
+		timestamp         *time.Time
 
 		expectRecordingName string
 	}{
@@ -179,7 +181,7 @@ func Test_EventHandlerRecordingFinished_call(t *testing.T) {
 				ReferenceType: recording.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("3b16cef6-2b99-11eb-87eb-571ab4136611"),
 			},
-			"2020-02-10T13:08:40.888Z",
+			testhelper.TimePtr("2020-02-10T13:08:40.888Z"),
 
 			"call_3b16cef6-2b99-11eb-87eb-571ab4136611_2020-02-10T13:08:18.888Z",
 		},

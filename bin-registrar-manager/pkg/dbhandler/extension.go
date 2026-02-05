@@ -30,12 +30,12 @@ func (h *handler) extensionGetFromRow(row *sql.Rows) (*extension.Extension, erro
 
 // ExtensionCreate creates new Extension record.
 func (h *handler) ExtensionCreate(ctx context.Context, b *extension.Extension) error {
-	now := h.utilHandler.TimeGetCurTime()
+	now := h.utilHandler.TimeNow()
 
 	// Set timestamps
 	b.TMCreate = now
-	b.TMUpdate = DefaultTimeStamp
-	b.TMDelete = DefaultTimeStamp
+	b.TMUpdate = nil
+	b.TMDelete = nil
 
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(b)
@@ -185,7 +185,7 @@ func (h *handler) ExtensionGetByEndpointID(ctx context.Context, endpointID strin
 	res, err := h.extensionGetByEndpointIDFromCache(ctx, endpointID)
 	if err == nil {
 		// Check if cached extension is deleted (soft delete check)
-		if res.TMDelete >= commondatabasehandler.DefaultTimeStamp {
+		if res.TMDelete == nil {
 			return res, nil
 		}
 		// Cached extension is deleted, treat as not found
@@ -197,7 +197,7 @@ func (h *handler) ExtensionGetByEndpointID(ctx context.Context, endpointID strin
 		Select(fields...).
 		From(extensionsTable).
 		Where(squirrel.Eq{string(extension.FieldEndpointID): endpointID}).
-		Where(squirrel.GtOrEq{string(extension.FieldTMDelete): commondatabasehandler.DefaultTimeStamp}).
+		Where(squirrel.Eq{string(extension.FieldTMDelete): nil}).
 		OrderBy(string(extension.FieldTMCreate) + " DESC").
 		Limit(1).
 		PlaceholderFormat(squirrel.Question)
@@ -236,7 +236,7 @@ func (h *handler) ExtensionGetByExtension(ctx context.Context, customerID uuid.U
 	res, err := h.extensionGetByCustomerIDANDExtensionFromCache(ctx, customerID, ext)
 	if err == nil {
 		// Check if cached extension is deleted (soft delete check)
-		if res.TMDelete >= commondatabasehandler.DefaultTimeStamp {
+		if res.TMDelete == nil {
 			return res, nil
 		}
 		// Cached extension is deleted, treat as not found
@@ -249,7 +249,7 @@ func (h *handler) ExtensionGetByExtension(ctx context.Context, customerID uuid.U
 		From(extensionsTable).
 		Where(squirrel.Eq{string(extension.FieldCustomerID): customerID.Bytes()}).
 		Where(squirrel.Eq{string(extension.FieldExtension): ext}).
-		Where(squirrel.GtOrEq{string(extension.FieldTMDelete): commondatabasehandler.DefaultTimeStamp}).
+		Where(squirrel.Eq{string(extension.FieldTMDelete): nil}).
 		OrderBy(string(extension.FieldTMCreate) + " DESC").
 		Limit(1).
 		PlaceholderFormat(squirrel.Question)
@@ -284,7 +284,7 @@ func (h *handler) ExtensionGetByExtension(ctx context.Context, customerID uuid.U
 
 // ExtensionDelete deletes given extension
 func (h *handler) ExtensionDelete(ctx context.Context, id uuid.UUID) error {
-	ts := h.utilHandler.TimeGetCurTime()
+	ts := h.utilHandler.TimeNow()
 
 	fields := map[extension.Field]any{
 		extension.FieldTMUpdate: ts,
@@ -322,7 +322,7 @@ func (h *handler) ExtensionUpdate(ctx context.Context, id uuid.UUID, fields map[
 		return nil
 	}
 
-	fields[extension.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
+	fields[extension.FieldTMUpdate] = h.utilHandler.TimeNow()
 
 	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {

@@ -237,14 +237,14 @@ func Test_EmailGet(t *testing.T) {
 					ID:         uuid.FromStringOrNil("917887a4-00eb-11f0-9422-7fe52e96709b"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-				TMDelete: defaultTimestamp,
+				TMDelete: nil,
 			},
 			expectRes: &ememail.WebhookMessage{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("917887a4-00eb-11f0-9422-7fe52e96709b"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-				TMDelete: defaultTimestamp,
+				TMDelete: nil,
 			},
 		},
 	}
@@ -305,14 +305,14 @@ func Test_EmailDelete(t *testing.T) {
 					ID:         uuid.FromStringOrNil("150a839c-00ec-11f0-87c5-536f3d24ce8b"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-				TMDelete: defaultTimestamp,
+				TMDelete: nil,
 			},
 			expectRes: &ememail.WebhookMessage{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("150a839c-00ec-11f0-87c5-536f3d24ce8b"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-				TMDelete: defaultTimestamp,
+				TMDelete: nil,
 			},
 		},
 	}

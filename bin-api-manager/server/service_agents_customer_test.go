@@ -43,7 +43,7 @@ func Test_GetServiceAgentsCustomer(t *testing.T) {
 			responseCustomer: &cmcustomer.WebhookMessage{
 				ID: uuid.FromStringOrNil("9aae8ff0-bc88-11ef-8111-0fd82660b367"),
 			},
-			expectedRes: []byte(`{"id":"9aae8ff0-bc88-11ef-8111-0fd82660b367","billing_account_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
+			expectedRes: []byte(`{"id":"9aae8ff0-bc88-11ef-8111-0fd82660b367","billing_account_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`),
 		},
 	}
 

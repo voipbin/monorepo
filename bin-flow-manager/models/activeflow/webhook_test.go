@@ -3,6 +3,7 @@ package activeflow
 import (
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -13,6 +14,9 @@ import (
 )
 
 func Test_ConvertWebhookMessage(t *testing.T) {
+
+	tmCreate := time.Date(2022, 4, 18, 3, 22, 17, 995000000, time.UTC)
+	tmUpdate := time.Date(2022, 4, 18, 3, 22, 17, 995000000, time.UTC)
 
 	tests := []struct {
 		name string
@@ -58,9 +62,9 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 						Type: action.TypeAnswer,
 					},
 				},
-				TMCreate: "2022-04-18T03:22:17.995000Z",
-				TMUpdate: "2022-04-18T03:22:17.995000Z",
-				TMDelete: "9999-01-01 00:00:000",
+				TMCreate: &tmCreate,
+				TMUpdate: &tmUpdate,
+				TMDelete: nil,
 			},
 
 			expectedRes: &WebhookMessage{
@@ -84,9 +88,9 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 						Type: action.TypeAnswer,
 					},
 				},
-				TMCreate: "2022-04-18T03:22:17.995000Z",
-				TMUpdate: "2022-04-18T03:22:17.995000Z",
-				TMDelete: "9999-01-01 00:00:000",
+				TMCreate: &tmCreate,
+				TMUpdate: &tmUpdate,
+				TMDelete: nil,
 			},
 		},
 	}

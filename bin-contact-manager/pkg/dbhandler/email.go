@@ -29,7 +29,7 @@ func (h *handler) emailGetFromRow(rows *sql.Rows) (*contact.Email, error) {
 
 // EmailCreate creates a new email record
 func (h *handler) EmailCreate(ctx context.Context, e *contact.Email) error {
-	e.TMCreate = h.utilHandler.TimeGetCurTime()
+	e.TMCreate = h.utilHandler.TimeNow()
 
 	// prepare fields for insert
 	fields, err := commondatabasehandler.PrepareFields(e)

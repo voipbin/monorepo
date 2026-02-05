@@ -8,7 +8,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	ari "monorepo/bin-call-manager/models/ari"
-	"monorepo/bin-call-manager/pkg/dbhandler"
 )
 
 // EventHandlerPlaybackStarted handles PlaybackStarted ARI event
@@ -66,7 +65,7 @@ func (h *eventHandler) EventHandlerPlaybackFinished(ctx context.Context, evt int
 			// we don't return the error here.
 		}
 
-		if cn.TMEnd < dbhandler.DefaultTimeStamp {
+		if cn.TMEnd != nil {
 			log.Infof("The channel already hungup. channel_id: %s", cn.ID)
 			return nil
 		}
@@ -80,7 +79,7 @@ func (h *eventHandler) EventHandlerPlaybackFinished(ctx context.Context, evt int
 			return err
 		}
 
-		if br.TMDelete < dbhandler.DefaultTimeStamp {
+		if br.TMDelete != nil {
 			log.Infof("The bridge already deleted. bridge_id: %s", br.ID)
 			return nil
 		}

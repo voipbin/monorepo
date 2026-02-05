@@ -312,7 +312,7 @@ func Test_ARIChannelStateChange_outgoing_statusUp(t *testing.T) {
 				Direction: channel.DirectionOutgoing,
 				State:     ari.ChannelStateUp,
 
-				TMDelete: dbhandler.DefaultTimeStamp,
+				TMDelete: nil,
 			},
 			responseValCallID:  "286c4e9c-5b95-4bf8-a435-345883c99d27",
 			responseValPai:     "tel:+31616818985",

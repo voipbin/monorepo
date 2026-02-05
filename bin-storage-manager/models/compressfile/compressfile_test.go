@@ -2,6 +2,7 @@ package compress_file
 
 import (
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 )
@@ -11,10 +12,12 @@ func TestCompressFileStruct(t *testing.T) {
 	fileID2 := uuid.Must(uuid.NewV4())
 	fileID3 := uuid.Must(uuid.NewV4())
 
+	tmExpire := time.Date(2023, 1, 2, 0, 0, 0, 0, time.UTC)
+
 	cf := CompressFile{
 		FileIDs:          []uuid.UUID{fileID1, fileID2, fileID3},
 		DownloadURI:      "https://storage.googleapis.com/voipbin-tmp/compressed.zip",
-		TMDownloadExpire: "2023-01-02T00:00:00Z",
+		TMDownloadExpire: &tmExpire,
 	}
 
 	if len(cf.FileIDs) != 3 {
@@ -32,8 +35,8 @@ func TestCompressFileStruct(t *testing.T) {
 	if cf.DownloadURI != "https://storage.googleapis.com/voipbin-tmp/compressed.zip" {
 		t.Errorf("CompressFile.DownloadURI = %v, expected %v", cf.DownloadURI, "https://storage.googleapis.com/voipbin-tmp/compressed.zip")
 	}
-	if cf.TMDownloadExpire != "2023-01-02T00:00:00Z" {
-		t.Errorf("CompressFile.TMDownloadExpire = %v, expected %v", cf.TMDownloadExpire, "2023-01-02T00:00:00Z")
+	if !cf.TMDownloadExpire.Equal(tmExpire) {
+		t.Errorf("CompressFile.TMDownloadExpire = %v, expected %v", cf.TMDownloadExpire, tmExpire)
 	}
 }
 

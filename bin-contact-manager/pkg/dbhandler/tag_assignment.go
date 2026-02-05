@@ -14,7 +14,7 @@ const (
 
 // TagAssignmentCreate creates a new tag assignment
 func (h *handler) TagAssignmentCreate(ctx context.Context, contactID, tagID uuid.UUID) error {
-	tmCreate := h.utilHandler.TimeGetCurTime()
+	tmCreate := h.utilHandler.TimeNow()
 
 	query, args, err := sq.Insert(tagAssignmentTable).
 		Columns("contact_id", "tag_id", "tm_create").

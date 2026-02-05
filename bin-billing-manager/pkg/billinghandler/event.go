@@ -7,7 +7,6 @@ import (
 	cmcall "monorepo/bin-call-manager/models/call"
 
 	"monorepo/bin-billing-manager/models/billing"
-	"monorepo/bin-billing-manager/pkg/dbhandler"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	mmmessage "monorepo/bin-message-manager/models/message"
 
@@ -36,8 +35,8 @@ func (h *billingHandler) EventCMCallHangup(ctx context.Context, c *cmcall.Call) 
 		return nil
 	}
 
-	if c.TMHangup == "" || c.TMHangup == dbhandler.DefaultTimeStamp {
-		return fmt.Errorf("invalid tm_hangup. call_id: %s, tm_hangup: %s", c.ID, c.TMHangup)
+	if c.TMHangup == nil {
+		return fmt.Errorf("invalid tm_hangup. call_id: %s, tm_hangup: nil", c.ID)
 	}
 
 	if errEnd := h.BillingEnd(ctx, b, c.TMHangup, &c.Source, &c.Destination); errEnd != nil {

@@ -38,11 +38,11 @@ func (h *handler) sipauthGetFromRow(row *sql.Rows) (*sipauth.SIPAuth, error) {
 
 // SIPAuthCreate creates new SIPAuth record.
 func (h *handler) SIPAuthCreate(ctx context.Context, t *sipauth.SIPAuth) error {
-	now := h.utilHandler.TimeGetCurTime()
+	now := h.utilHandler.TimeNow()
 
 	// Set timestamps
 	t.TMCreate = now
-	t.TMUpdate = DefaultTimeStamp
+	t.TMUpdate = nil
 
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(t)
@@ -74,7 +74,7 @@ func (h *handler) SIPAuthUpdate(ctx context.Context, id uuid.UUID, fields map[si
 		return nil
 	}
 
-	fields[sipauth.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
+	fields[sipauth.FieldTMUpdate] = h.utilHandler.TimeNow()
 
 	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
+	"time"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -17,12 +18,13 @@ import (
 )
 
 func Test_TagCreate(t *testing.T) {
+	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
 
 	tests := []struct {
 		name string
 		tag  *tag.Tag
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *tag.Tag
 	}{
 		{
@@ -35,16 +37,16 @@ func Test_TagCreate(t *testing.T) {
 				Detail: "detail1",
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: curTime,
 			expectRes: &tag.Tag{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("250bbfa4-50d7-11ec-a6b1-8f9671a9e70e"),
 				},
 				Name:     "name1",
 				Detail:   "detail1",
-				TMCreate: "2020-04-18T03:22:17.995000Z",
-				TMUpdate: DefaultTimeStamp,
-				TMDelete: DefaultTimeStamp,
+				TMCreate: curTime,
+				TMUpdate: nil,
+				TMDelete: nil,
 			},
 		},
 	}
@@ -63,7 +65,7 @@ func Test_TagCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().TagSet(ctx, gomock.Any())
 			if err := h.TagCreate(ctx, tt.tag); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -84,6 +86,7 @@ func Test_TagCreate(t *testing.T) {
 }
 
 func Test_TagList(t *testing.T) {
+	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
 
 	tests := []struct {
 		name string
@@ -92,7 +95,7 @@ func Test_TagList(t *testing.T) {
 		size    uint64
 		filters map[tag.Field]any
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       []*tag.Tag
 	}{
 		{
@@ -122,7 +125,7 @@ func Test_TagList(t *testing.T) {
 				tag.FieldDeleted:    false,
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: curTime,
 			expectRes: []*tag.Tag{
 				{
 					Identity: commonidentity.Identity{
@@ -131,9 +134,9 @@ func Test_TagList(t *testing.T) {
 					},
 					Name:     "name1",
 					Detail:   "detail1",
-					TMCreate: "2020-04-18T03:22:17.995000Z",
-					TMUpdate: DefaultTimeStamp,
-					TMDelete: DefaultTimeStamp,
+					TMCreate: curTime,
+					TMUpdate: nil,
+					TMDelete: nil,
 				},
 				{
 					Identity: commonidentity.Identity{
@@ -142,9 +145,9 @@ func Test_TagList(t *testing.T) {
 					},
 					Name:     "name2",
 					Detail:   "detail2",
-					TMCreate: "2020-04-18T03:22:17.995000Z",
-					TMUpdate: DefaultTimeStamp,
-					TMDelete: DefaultTimeStamp,
+					TMCreate: curTime,
+					TMUpdate: nil,
+					TMDelete: nil,
 				},
 			},
 		},
@@ -165,7 +168,7 @@ func Test_TagList(t *testing.T) {
 			ctx := context.Background()
 
 			for _, u := range tt.tags {
-				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 				mockCache.EXPECT().TagSet(ctx, gomock.Any())
 				if err := h.TagCreate(ctx, u); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -185,6 +188,7 @@ func Test_TagList(t *testing.T) {
 }
 
 func Test_TagSetBasicInfo(t *testing.T) {
+	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
 
 	tests := []struct {
 		name string
@@ -195,7 +199,7 @@ func Test_TagSetBasicInfo(t *testing.T) {
 
 		tags []*tag.Tag
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *tag.Tag
 	}{
 		{
@@ -216,7 +220,7 @@ func Test_TagSetBasicInfo(t *testing.T) {
 				},
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: curTime,
 			expectRes: &tag.Tag{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("ae1e0150-4c6b-11ec-922d-27336e407864"),
@@ -224,9 +228,9 @@ func Test_TagSetBasicInfo(t *testing.T) {
 				},
 				Name:     "name1",
 				Detail:   "detail1",
-				TMCreate: "2020-04-18T03:22:17.995000Z",
-				TMUpdate: "2020-04-18T03:22:17.995000Z",
-				TMDelete: DefaultTimeStamp,
+				TMCreate: curTime,
+				TMUpdate: curTime,
+				TMDelete: nil,
 			},
 		},
 	}
@@ -246,14 +250,14 @@ func Test_TagSetBasicInfo(t *testing.T) {
 			ctx := context.Background()
 
 			for _, u := range tt.tags {
-				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 				mockCache.EXPECT().TagSet(ctx, gomock.Any())
 				if err := h.TagCreate(ctx, u); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
 				}
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().TagSet(ctx, gomock.Any())
 			err := h.TagSetBasicInfo(ctx, tt.id, tt.tagName, tt.detail)
 			if err != nil {
@@ -275,6 +279,7 @@ func Test_TagSetBasicInfo(t *testing.T) {
 }
 
 func Test_TagDelete(t *testing.T) {
+	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
 
 	tests := []struct {
 		name string
@@ -282,7 +287,7 @@ func Test_TagDelete(t *testing.T) {
 
 		id uuid.UUID
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *tag.Tag
 	}{
 		{
@@ -298,7 +303,7 @@ func Test_TagDelete(t *testing.T) {
 
 			id: uuid.FromStringOrNil("3963dbc6-50d7-11ec-916c-1b7d3056c90a"),
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: curTime,
 			expectRes: &tag.Tag{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("3963dbc6-50d7-11ec-916c-1b7d3056c90a"),
@@ -306,9 +311,9 @@ func Test_TagDelete(t *testing.T) {
 				},
 				Name:     "name1",
 				Detail:   "detail1",
-				TMCreate: "2020-04-18T03:22:17.995000Z",
-				TMUpdate: "2020-04-18T03:22:17.995000Z",
-				TMDelete: "2020-04-18T03:22:17.995000Z",
+				TMCreate: curTime,
+				TMUpdate: curTime,
+				TMDelete: curTime,
 			},
 		},
 	}
@@ -327,13 +332,13 @@ func Test_TagDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().TagSet(gomock.Any(), gomock.Any())
 			if err := h.TagCreate(ctx, tt.tag); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().TagSet(gomock.Any(), gomock.Any())
 			err := h.TagDelete(ctx, tt.id)
 			if err != nil {

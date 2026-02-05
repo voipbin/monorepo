@@ -29,7 +29,7 @@ func (h *serviceHandler) callGet(ctx context.Context, callID uuid.UUID) (*cmcall
 		return nil, errors.Wrapf(err, "could not get the call info")
 	}
 
-	if res.TMDelete < defaultTimestamp {
+	if res.TMDelete != nil {
 		return nil, fmt.Errorf("deleted call")
 	}
 

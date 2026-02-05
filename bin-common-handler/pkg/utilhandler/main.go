@@ -31,6 +31,11 @@ type UtilHandler interface {
 	TimeParse(timeString string) time.Time
 	TimeParseWithError(timeString string) (time.Time, error)
 
+	// time pointer helpers (for nullable timestamps)
+	TimeNow() *time.Time
+	TimeNowAdd(d time.Duration) *time.Time
+	IsDeleted(t *time.Time) bool
+
 	// url helpers
 	URLParseFilters(u *url.URL) map[string]string
 	URLMergeFilters(uri string, filters map[string]string) string

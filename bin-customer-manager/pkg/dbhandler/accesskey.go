@@ -30,12 +30,12 @@ func (h *handler) accesskeyGetFromRow(row *sql.Rows) (*accesskey.Accesskey, erro
 
 // AccesskeyCreate creates new accesskey record and returns the created accesskey record.
 func (h *handler) AccesskeyCreate(ctx context.Context, c *accesskey.Accesskey) error {
-	now := h.utilHandler.TimeGetCurTime()
+	now := h.utilHandler.TimeNow()
 
 	// Set timestamps
 	c.TMCreate = now
-	c.TMUpdate = DefaultTimeStamp
-	c.TMDelete = DefaultTimeStamp
+	c.TMUpdate = nil
+	c.TMDelete = nil
 
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(c)
@@ -208,7 +208,7 @@ func (h *handler) AccesskeyUpdate(ctx context.Context, id uuid.UUID, fields map[
 		return nil
 	}
 
-	fields[accesskey.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
+	fields[accesskey.FieldTMUpdate] = h.utilHandler.TimeNow()
 
 	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
@@ -235,7 +235,7 @@ func (h *handler) AccesskeyUpdate(ctx context.Context, id uuid.UUID, fields map[
 
 // AccesskeyDelete deletes the accesskey.
 func (h *handler) AccesskeyDelete(ctx context.Context, id uuid.UUID) error {
-	ts := h.utilHandler.TimeGetCurTime()
+	ts := h.utilHandler.TimeNow()
 
 	fields := map[accesskey.Field]any{
 		accesskey.FieldTMUpdate: ts,

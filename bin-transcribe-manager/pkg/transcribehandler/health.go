@@ -6,7 +6,6 @@ import (
 	"monorepo/bin-call-manager/models/call"
 
 	"monorepo/bin-transcribe-manager/models/transcribe"
-	"monorepo/bin-transcribe-manager/pkg/dbhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -33,7 +32,7 @@ func (h *transcribeHandler) HealthCheck(ctx context.Context, id uuid.UUID, retry
 		log.Errorf("Could not get transcribe info. err: %v", err)
 		return
 	}
-	if tr.Status == transcribe.StatusDone || tr.TMDelete < dbhandler.DefaultTimeStamp {
+	if tr.Status == transcribe.StatusDone || tr.TMDelete != nil {
 		// the call is done already. no need to check the health anymore.
 		return
 	}
@@ -48,7 +47,7 @@ func (h *transcribeHandler) HealthCheck(ctx context.Context, id uuid.UUID, retry
 			return
 		}
 
-		if c.Status == call.StatusHangup || c.TMDelete < dbhandler.DefaultTimeStamp || c.TMHangup < dbhandler.DefaultTimeStamp {
+		if c.Status == call.StatusHangup || c.TMDelete != nil || c.TMHangup != nil {
 			// the call is done already. no need to check the health anymore.
 			retryCount++
 		} else {
@@ -63,7 +62,7 @@ func (h *transcribeHandler) HealthCheck(ctx context.Context, id uuid.UUID, retry
 			return
 		}
 
-		if cb.TMDelete < dbhandler.DefaultTimeStamp {
+		if cb.TMDelete != nil {
 			retryCount++
 		} else {
 			retryCount = 0

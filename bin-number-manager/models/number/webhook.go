@@ -2,6 +2,8 @@ package number
 
 import (
 	"encoding/json"
+	"time"
+
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
@@ -24,12 +26,12 @@ type WebhookMessage struct {
 	T38Enabled       bool `json:"t38_enabled"`
 	EmergencyEnabled bool `json:"emergency_enabled"`
 
-	TMPurchase string `json:"tm_purchase"`
-	TMRenew    string `json:"tm_renew"`
+	TMPurchase *time.Time `json:"tm_purchase"`
+	TMRenew    *time.Time `json:"tm_renew"`
 
-	TMCreate string `json:"tm_create"`
-	TMUpdate string `json:"tm_update"`
-	TMDelete string `json:"tm_delete"`
+	TMCreate *time.Time `json:"tm_create"`
+	TMUpdate *time.Time `json:"tm_update"`
+	TMDelete *time.Time `json:"tm_delete"`
 }
 
 // ConvertWebhookMessage converts to the event

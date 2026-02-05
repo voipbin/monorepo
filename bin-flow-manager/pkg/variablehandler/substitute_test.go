@@ -433,7 +433,7 @@ func Test_substituteParseFromOther(t *testing.T) {
 				},
 			},
 
-			expectedRes: `{"id":"dfb89132-c05f-11f0-a2ad-8beb167b2ddd","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","master_call_id":"00000000-0000-0000-0000-000000000000","recording_id":"00000000-0000-0000-0000-000000000000","groupcall_id":"00000000-0000-0000-0000-000000000000","source":{},"destination":{},"action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000"}}`,
+			expectedRes: `{"id":"dfb89132-c05f-11f0-a2ad-8beb167b2ddd","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","master_call_id":"00000000-0000-0000-0000-000000000000","recording_id":"00000000-0000-0000-0000-000000000000","groupcall_id":"00000000-0000-0000-0000-000000000000","source":{},"destination":{},"action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","tm_execute":null}}`,
 		},
 		{
 			name: "reference type is conversation",
@@ -453,7 +453,7 @@ func Test_substituteParseFromOther(t *testing.T) {
 				},
 			},
 
-			expectedRes: `{"id":"e3b5a546-c063-11f0-9e2b-3339dafc15d0","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","account_id":"00000000-0000-0000-0000-000000000000","self":{},"peer":{}}`,
+			expectedRes: `{"id":"e3b5a546-c063-11f0-9e2b-3339dafc15d0","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","account_id":"00000000-0000-0000-0000-000000000000","self":{},"peer":{},"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 

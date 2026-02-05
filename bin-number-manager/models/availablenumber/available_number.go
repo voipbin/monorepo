@@ -1,6 +1,8 @@
 package availablenumber
 
 import (
+	"time"
+
 	"monorepo/bin-number-manager/models/number"
 )
 
@@ -16,9 +18,9 @@ type AvailableNumber struct {
 	Features   []Feature `json:"features"`
 
 	// timestamp
-	TMCreate string `json:"tm_create"`
-	TMUpdate string `json:"tm_update"`
-	TMDelete string `json:"tm_delete"`
+	TMCreate *time.Time `json:"tm_create"`
+	TMUpdate *time.Time `json:"tm_update"`
+	TMDelete *time.Time `json:"tm_delete"`
 }
 
 // Feature type

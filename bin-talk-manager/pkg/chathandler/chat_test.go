@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -18,6 +19,10 @@ import (
 	"monorepo/bin-talk-manager/pkg/dbhandler"
 	"monorepo/bin-talk-manager/pkg/participanthandler"
 )
+
+func timePtr(t time.Time) *time.Time {
+	return &t
+}
 
 func Test_ChatCreate(t *testing.T) {
 	tests := []struct {
@@ -348,7 +353,7 @@ func Test_ChatGet(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("809656e2-305e-43cd-8d7b-ccb44373dddb"),
 				},
 				Type:     chat.TypeDirect,
-				TMCreate: "2024-01-15T10:30:00.000000Z",
+				TMCreate: timePtr(time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)),
 			},
 		},
 	}
@@ -462,7 +467,7 @@ func Test_ChatList(t *testing.T) {
 						CustomerID: uuid.FromStringOrNil("809656e2-305e-43cd-8d7b-ccb44373dddb"),
 					},
 					Type:     chat.TypeDirect,
-					TMCreate: "2024-01-15T10:30:00.000000Z",
+					TMCreate: timePtr(time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)),
 				},
 				{
 					Identity: commonidentity.Identity{
@@ -470,7 +475,7 @@ func Test_ChatList(t *testing.T) {
 						CustomerID: uuid.FromStringOrNil("809656e2-305e-43cd-8d7b-ccb44373dddb"),
 					},
 					Type:     chat.TypeGroup,
-					TMCreate: "2024-01-15T11:00:00.000000Z",
+					TMCreate: timePtr(time.Date(2024, 1, 15, 11, 0, 0, 0, time.UTC)),
 				},
 			},
 		},
@@ -492,7 +497,7 @@ func Test_ChatList(t *testing.T) {
 						CustomerID: uuid.FromStringOrNil("ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4"),
 					},
 					Type:     chat.TypeGroup,
-					TMCreate: "2024-01-15T12:00:00.000000Z",
+					TMCreate: timePtr(time.Date(2024, 1, 15, 12, 0, 0, 0, time.UTC)),
 				},
 			},
 		},
@@ -617,7 +622,7 @@ func Test_ChatUpdate(t *testing.T) {
 				Type:     chat.TypeGroup,
 				Name:     "Old Name",
 				Detail:   "Old Detail",
-				TMCreate: "2024-01-15T10:30:00.000000Z",
+				TMCreate: timePtr(time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)),
 			},
 			responseUpdatedChat: &chat.Chat{
 				Identity: commonidentity.Identity{
@@ -627,8 +632,8 @@ func Test_ChatUpdate(t *testing.T) {
 				Type:     chat.TypeGroup,
 				Name:     "New Name",
 				Detail:   "Old Detail",
-				TMCreate: "2024-01-15T10:30:00.000000Z",
-				TMUpdate: "2024-01-15T11:00:00.000000Z",
+				TMCreate: timePtr(time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)),
+				TMUpdate: timePtr(time.Date(2024, 1, 15, 11, 0, 0, 0, time.UTC)),
 			},
 		},
 		{
@@ -646,7 +651,7 @@ func Test_ChatUpdate(t *testing.T) {
 				Type:     chat.TypeGroup,
 				Name:     "Old Name",
 				Detail:   "Old Detail",
-				TMCreate: "2024-01-15T10:30:00.000000Z",
+				TMCreate: timePtr(time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)),
 			},
 			responseUpdatedChat: &chat.Chat{
 				Identity: commonidentity.Identity{
@@ -656,8 +661,8 @@ func Test_ChatUpdate(t *testing.T) {
 				Type:     chat.TypeGroup,
 				Name:     "Old Name",
 				Detail:   "New Detail",
-				TMCreate: "2024-01-15T10:30:00.000000Z",
-				TMUpdate: "2024-01-15T11:00:00.000000Z",
+				TMCreate: timePtr(time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)),
+				TMUpdate: timePtr(time.Date(2024, 1, 15, 11, 0, 0, 0, time.UTC)),
 			},
 		},
 		{
@@ -675,7 +680,7 @@ func Test_ChatUpdate(t *testing.T) {
 				Type:     chat.TypeGroup,
 				Name:     "Old Name",
 				Detail:   "Old Detail",
-				TMCreate: "2024-01-15T10:30:00.000000Z",
+				TMCreate: timePtr(time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)),
 			},
 			responseUpdatedChat: &chat.Chat{
 				Identity: commonidentity.Identity{
@@ -685,8 +690,8 @@ func Test_ChatUpdate(t *testing.T) {
 				Type:     chat.TypeGroup,
 				Name:     "New Name",
 				Detail:   "New Detail",
-				TMCreate: "2024-01-15T10:30:00.000000Z",
-				TMUpdate: "2024-01-15T11:00:00.000000Z",
+				TMCreate: timePtr(time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)),
+				TMUpdate: timePtr(time.Date(2024, 1, 15, 11, 0, 0, 0, time.UTC)),
 			},
 		},
 	}
@@ -862,7 +867,7 @@ func Test_ChatDelete(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("809656e2-305e-43cd-8d7b-ccb44373dddb"),
 				},
 				Type:     chat.TypeDirect,
-				TMCreate: "2024-01-15T10:30:00.000000Z",
+				TMCreate: timePtr(time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)),
 			},
 		},
 	}

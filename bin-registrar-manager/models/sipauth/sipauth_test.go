@@ -2,6 +2,7 @@ package sipauth
 
 import (
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 )
@@ -17,8 +18,8 @@ func TestSIPAuthStruct(t *testing.T) {
 		Username:      "testuser",
 		Password:      "testpass",
 		AllowedIPs:    []string{"192.168.1.1", "10.0.0.1"},
-		TMCreate:      "2023-01-01T00:00:00Z",
-		TMUpdate:      "2023-01-02T00:00:00Z",
+		TMCreate:      func() *time.Time { t := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC); return &t }(),
+		TMUpdate:      func() *time.Time { t := time.Date(2023, 1, 2, 0, 0, 0, 0, time.UTC); return &t }(),
 	}
 
 	if sa.ID != id {

@@ -30,11 +30,11 @@ func (h *handler) transcriptGetFromRow(row *sql.Rows) (*transcript.Transcript, e
 
 // TranscriptCreate creates a new transcript
 func (h *handler) TranscriptCreate(ctx context.Context, t *transcript.Transcript) error {
-	now := h.utilHandler.TimeGetCurTime()
+	now := h.utilHandler.TimeNow()
 
 	// Set timestamps
 	t.TMCreate = now
-	t.TMDelete = commondatabasehandler.DefaultTimeStamp
+	t.TMDelete = nil
 
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(t)
@@ -200,7 +200,7 @@ func (h *handler) TranscriptList(ctx context.Context, size uint64, token string,
 
 // TranscriptDelete deletes the transcript.
 func (h *handler) TranscriptDelete(ctx context.Context, id uuid.UUID) error {
-	ts := h.utilHandler.TimeGetCurTime()
+	ts := h.utilHandler.TimeNow()
 
 	fields := map[transcript.Field]any{
 		transcript.FieldTMDelete: ts,

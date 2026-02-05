@@ -40,7 +40,7 @@ func Test_Delete(t *testing.T) {
 				},
 				Type:     confbridge.TypeConnect,
 				Status:   confbridge.StatusTerminating,
-				TMDelete: dbhandler.DefaultTimeStamp,
+				TMDelete: nil,
 			},
 		},
 	}

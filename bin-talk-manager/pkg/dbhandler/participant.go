@@ -16,7 +16,7 @@ import (
 const tableParticipants = "talk_participants"
 
 func (h *dbHandler) ParticipantCreate(ctx context.Context, p *participant.Participant) error {
-	now := h.utilHandler.TimeGetCurTime()
+	now := h.utilHandler.TimeNow()
 	p.TMJoined = now
 
 	// Try INSERT first

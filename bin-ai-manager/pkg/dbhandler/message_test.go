@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
+	"time"
 
 	"monorepo/bin-ai-manager/models/message"
 	"monorepo/bin-ai-manager/pkg/cachehandler"
@@ -16,12 +17,15 @@ import (
 )
 
 func Test_MessageCreate(t *testing.T) {
+
+	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
+
 	tests := []struct {
 		name string
 
 		message *message.Message
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *message.Message
 	}{
 		{
@@ -50,7 +54,7 @@ func Test_MessageCreate(t *testing.T) {
 				ToolCallID: "6798165e-9324-11f0-91a4-c7ebb2a64dfd",
 			},
 
-			responseCurTime: "2023-01-03T21:35:02.809Z",
+			responseCurTime: curTime,
 			expectRes: &message.Message{
 				Identity: identity.Identity{
 					ID:         uuid.FromStringOrNil("d5df8eac-f22b-11ef-b88e-7f62eefdf1ca"),
@@ -73,8 +77,8 @@ func Test_MessageCreate(t *testing.T) {
 				},
 				ToolCallID: "6798165e-9324-11f0-91a4-c7ebb2a64dfd",
 
-				TMCreate: "2023-01-03T21:35:02.809Z",
-				TMDelete: DefaultTimeStamp,
+				TMCreate: curTime,
+				TMDelete: nil,
 			},
 		},
 		{
@@ -87,15 +91,15 @@ func Test_MessageCreate(t *testing.T) {
 				AIcallID: uuid.FromStringOrNil("20b4c03c-f22c-11ef-abe7-3b10f3525941"),
 			},
 
-			responseCurTime: "2023-01-03T21:35:02.809Z",
+			responseCurTime: curTime,
 			expectRes: &message.Message{
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("d62e7a58-f22b-11ef-8edc-9b57d94ff8fc"),
 				},
 				AIcallID:  uuid.FromStringOrNil("20b4c03c-f22c-11ef-abe7-3b10f3525941"),
 				ToolCalls: nil,
-				TMCreate:  "2023-01-03T21:35:02.809Z",
-				TMDelete:  DefaultTimeStamp,
+				TMCreate:  curTime,
+				TMDelete:  nil,
 			},
 		},
 	}
@@ -116,7 +120,7 @@ func Test_MessageCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().MessageSet(ctx, gomock.Any())
 
 			if err := h.MessageCreate(ctx, tt.message); err != nil {

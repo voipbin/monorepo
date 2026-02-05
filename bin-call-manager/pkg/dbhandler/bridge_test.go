@@ -1,6 +1,8 @@
 package dbhandler
 
 import (
+	"time"
+	"monorepo/bin-call-manager/pkg/testhelper"
 	"context"
 	"fmt"
 	"reflect"
@@ -21,7 +23,7 @@ func Test_BridgeCreate(t *testing.T) {
 		name   string
 		bridge *bridge.Bridge
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *bridge.Bridge
 	}
 
@@ -33,14 +35,14 @@ func Test_BridgeCreate(t *testing.T) {
 				ID:         "98ff3f2a-8226-11ea-9ec5-079bcb66275c",
 			},
 
-			"2020-04-18T03:22:17.995000Z",
+			testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
 			&bridge.Bridge{
 				AsteriskID: "3e:50:6b:43:bb:30",
 				ID:         "98ff3f2a-8226-11ea-9ec5-079bcb66275c",
 				ChannelIDs: []string{},
-				TMCreate:   "2020-04-18T03:22:17.995000Z",
-				TMUpdate:   DefaultTimeStamp,
-				TMDelete:   DefaultTimeStamp,
+				TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMUpdate:   nil,
+				TMDelete:   nil,
 			},
 		},
 		{
@@ -52,16 +54,16 @@ func Test_BridgeCreate(t *testing.T) {
 				ReferenceID:   uuid.FromStringOrNil("23c83b3e-9316-11ea-91c3-ef8d90e0ec42"),
 			},
 
-			"2020-04-18T03:22:17.995000Z",
+			testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
 			&bridge.Bridge{
 				AsteriskID:    "3e:50:6b:43:bb:30",
 				ID:            "36d8b0be-9316-11ea-b829-6be92ca1faee",
 				ChannelIDs:    []string{},
 				ReferenceType: bridge.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("23c83b3e-9316-11ea-91c3-ef8d90e0ec42"),
-				TMCreate:      "2020-04-18T03:22:17.995000Z",
-				TMUpdate:      DefaultTimeStamp,
-				TMDelete:      DefaultTimeStamp,
+				TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMUpdate:      nil,
+				TMDelete:      nil,
 			},
 		},
 		{
@@ -73,16 +75,16 @@ func Test_BridgeCreate(t *testing.T) {
 				ReferenceID:   uuid.FromStringOrNil("560448b8-9316-11ea-a651-b78c9ee8e874"),
 			},
 
-			"2020-04-18T03:22:17.995000Z",
+			testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
 			&bridge.Bridge{
 				AsteriskID:    "3e:50:6b:43:bb:30",
 				ID:            "5149007a-9316-11ea-9de0-5f9cb2e8c235",
 				ChannelIDs:    []string{},
 				ReferenceType: bridge.ReferenceTypeConfbridge,
 				ReferenceID:   uuid.FromStringOrNil("560448b8-9316-11ea-a651-b78c9ee8e874"),
-				TMCreate:      "2020-04-18T03:22:17.995000Z",
-				TMUpdate:      DefaultTimeStamp,
-				TMDelete:      DefaultTimeStamp,
+				TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMUpdate:      nil,
+				TMDelete:      nil,
 			},
 		},
 	}
@@ -103,7 +105,7 @@ func Test_BridgeCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().BridgeSet(ctx, gomock.Any())
 			if err := h.BridgeCreate(ctx, tt.bridge); err != nil {
 				t.Errorf("Wrong match. BridgeCreate expect: ok, got: %v", err)
@@ -129,7 +131,7 @@ func Test_BridgeEnd(t *testing.T) {
 		name   string
 		bridge *bridge.Bridge
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *bridge.Bridge
 	}{
 		{
@@ -139,14 +141,14 @@ func Test_BridgeEnd(t *testing.T) {
 				ID:         "208a5bbe-8ee3-11ea-b267-174c3bd0a842",
 			},
 
-			"2020-04-18T05:22:17.995000Z",
+			testhelper.TimePtr("2020-04-18T05:22:17.995000Z"),
 			&bridge.Bridge{
 				AsteriskID: "3e:50:6b:43:bb:30",
 				ID:         "208a5bbe-8ee3-11ea-b267-174c3bd0a842",
 				ChannelIDs: []string{},
-				TMCreate:   "2020-04-18T05:22:17.995000Z",
-				TMUpdate:   "2020-04-18T05:22:17.995000Z",
-				TMDelete:   "2020-04-18T05:22:17.995000Z",
+				TMCreate: testhelper.TimePtr("2020-04-18T05:22:17.995000Z"),
+				TMUpdate: testhelper.TimePtr("2020-04-18T05:22:17.995000Z"),
+				TMDelete: testhelper.TimePtr("2020-04-18T05:22:17.995000Z"),
 			},
 		},
 	}
@@ -165,13 +167,13 @@ func Test_BridgeEnd(t *testing.T) {
 				cache:       mockCache,
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().BridgeSet(gomock.Any(), gomock.Any())
 			if err := h.BridgeCreate(context.Background(), tt.bridge); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().BridgeSet(gomock.Any(), gomock.Any())
 			if err := h.BridgeEnd(context.Background(), tt.bridge.ID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

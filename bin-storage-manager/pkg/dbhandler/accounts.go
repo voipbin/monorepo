@@ -30,12 +30,12 @@ func (h *handler) accountGetFromRow(row *sql.Rows) (*account.Account, error) {
 
 // AccountCreate creates a new account row
 func (h *handler) AccountCreate(ctx context.Context, a *account.Account) error {
-	now := h.util.TimeGetCurTime()
+	now := h.util.TimeNow()
 
 	// Set timestamps
 	a.TMCreate = now
-	a.TMUpdate = commondatabasehandler.DefaultTimeStamp
-	a.TMDelete = commondatabasehandler.DefaultTimeStamp
+	a.TMUpdate = nil
+	a.TMDelete = nil
 
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(a)
@@ -204,7 +204,7 @@ func (h *handler) AccountUpdate(ctx context.Context, id uuid.UUID, fields map[ac
 		return nil
 	}
 
-	fields[account.FieldTMUpdate] = h.util.TimeGetCurTime()
+	fields[account.FieldTMUpdate] = h.util.TimeNow()
 
 	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
@@ -242,7 +242,7 @@ func (h *handler) AccountIncreaseFileInfo(ctx context.Context, id uuid.UUID, fil
 		id = ?
 	`
 
-	if _, err := h.db.Exec(q, filecount, filesize, h.util.TimeGetCurTime(), id.Bytes()); err != nil {
+	if _, err := h.db.Exec(q, filecount, filesize, h.util.TimeNow(), id.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. AccountIncreaseFile. err: %v", err)
 	}
 
@@ -263,7 +263,7 @@ func (h *handler) AccountDecreaseFileInfo(ctx context.Context, id uuid.UUID, fil
 		id = ?
 	`
 
-	if _, err := h.db.Exec(q, filecount, filesize, h.util.TimeGetCurTime(), id.Bytes()); err != nil {
+	if _, err := h.db.Exec(q, filecount, filesize, h.util.TimeNow(), id.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. AccountDecreaseFileInfo. err: %v", err)
 	}
 
@@ -275,7 +275,7 @@ func (h *handler) AccountDecreaseFileInfo(ctx context.Context, id uuid.UUID, fil
 
 // AccountDelete deletes the given account
 func (h *handler) AccountDelete(ctx context.Context, id uuid.UUID) error {
-	ts := h.util.TimeGetCurTime()
+	ts := h.util.TimeNow()
 
 	fields := map[account.Field]any{
 		account.FieldTMUpdate: ts,

@@ -2,6 +2,7 @@ package activeflow
 
 import (
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 
@@ -143,19 +144,22 @@ func TestActiveflowMatches(t *testing.T) {
 	id := uuid.Must(uuid.NewV4())
 	flowID := uuid.Must(uuid.NewV4())
 
+	tm1 := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+	tm2 := time.Date(2024, 1, 2, 0, 0, 0, 0, time.UTC)
+
 	a1 := &Activeflow{
 		FlowID:   flowID,
 		Status:   StatusRunning,
-		TMCreate: "2024-01-01T00:00:00.000000Z",
-		TMUpdate: "2024-01-01T00:00:00.000000Z",
+		TMCreate: &tm1,
+		TMUpdate: &tm1,
 	}
 	a1.ID = id
 
 	a2 := &Activeflow{
 		FlowID:   flowID,
 		Status:   StatusRunning,
-		TMCreate: "2024-01-02T00:00:00.000000Z",
-		TMUpdate: "2024-01-02T00:00:00.000000Z",
+		TMCreate: &tm2,
+		TMUpdate: &tm2,
 	}
 	a2.ID = id
 

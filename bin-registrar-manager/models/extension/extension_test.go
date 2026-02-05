@@ -2,6 +2,7 @@ package extension
 
 import (
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 
@@ -28,9 +29,9 @@ func TestExtensionStruct(t *testing.T) {
 		Realm:      "example.com",
 		Username:   "ext_user",
 		Password:   "secret123",
-		TMCreate:   "2023-01-01T00:00:00Z",
-		TMUpdate:   "2023-01-02T00:00:00Z",
-		TMDelete:   "",
+		TMCreate:   func() *time.Time { t := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC); return &t }(),
+		TMUpdate:   func() *time.Time { t := time.Date(2023, 1, 2, 0, 0, 0, 0, time.UTC); return &t }(),
+		TMDelete:   nil,
 	}
 
 	if ext.ID != id {

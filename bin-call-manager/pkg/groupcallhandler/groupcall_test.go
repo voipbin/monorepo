@@ -37,7 +37,7 @@ func Test_Delete(t *testing.T) {
 					ID: uuid.FromStringOrNil("87141692-f0c6-11ee-966d-5b3abc616460"),
 				},
 				Status:   groupcall.StatusHangup,
-				TMDelete: dbhandler.DefaultTimeStamp,
+				TMDelete: nil,
 			},
 
 			&groupcall.Groupcall{
@@ -45,7 +45,7 @@ func Test_Delete(t *testing.T) {
 					ID: uuid.FromStringOrNil("87141692-f0c6-11ee-966d-5b3abc616460"),
 				},
 				Status:   groupcall.StatusHangup,
-				TMDelete: dbhandler.DefaultTimeStamp,
+				TMDelete: nil,
 			},
 		},
 	}

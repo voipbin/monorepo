@@ -13,7 +13,6 @@ import (
 	"monorepo/bin-call-manager/models/ari"
 	"monorepo/bin-call-manager/models/call"
 	"monorepo/bin-call-manager/models/channel"
-	"monorepo/bin-call-manager/pkg/dbhandler"
 )
 
 // Hangup Hangup the call
@@ -157,7 +156,7 @@ func (h *callHandler) hangingUpWithCause(ctx context.Context, id uuid.UUID, caus
 	}
 	log.WithField("channel", cn).Debugf("Hanging up the call channel. call_id: %s, channel_id: %s", c.ID, cn.ID)
 
-	if cn.TMEnd != dbhandler.DefaultTimeStamp {
+	if cn.TMEnd != nil {
 		// the channel is already ended. just hang up the call.
 		log.Debugf("The channel is already hungup. Hangup the call immediately. channel_id: %s, channel_state: %s", cn.ID, cn.State)
 		tmp, err := h.Hangup(ctx, cn)

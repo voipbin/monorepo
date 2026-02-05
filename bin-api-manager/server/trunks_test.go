@@ -65,7 +65,7 @@ func Test_trunksPOST(t *testing.T) {
 			expectUsername:   "testusername",
 			expectPassword:   "testpassword",
 			expectAllowedIPs: []string{"1.2.3.4"},
-			expectRes:        `{"id":"cb948fb8-db12-11ef-81f7-ef8092e4f1b5","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","domain_name":"","auth_types":null,"username":"","password":"","allowed_ips":null,"tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes:        `{"id":"cb948fb8-db12-11ef-81f7-ef8092e4f1b5","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","domain_name":"","auth_types":null,"username":"","password":"","allowed_ips":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -146,7 +146,7 @@ func Test_trunksGET(t *testing.T) {
 
 			expectPageSize:  20,
 			expectPageToken: "2020-09-20T03:23:20.995000Z",
-			expectRes:       `{"result":[{"id":"39c62e0a-db14-11ef-beab-071cd0697120","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","domain_name":"","auth_types":null,"username":"","password":"","allowed_ips":null,"tm_create":"","tm_update":"","tm_delete":""},{"id":"3ac27c32-db14-11ef-b206-cf30e0a672b7","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","domain_name":"","auth_types":null,"username":"","password":"","allowed_ips":null,"tm_create":"","tm_update":"","tm_delete":""}],"next_page_token":""}`,
+			expectRes:       `{"result":[{"id":"39c62e0a-db14-11ef-beab-071cd0697120","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","domain_name":"","auth_types":null,"username":"","password":"","allowed_ips":null,"tm_create":null,"tm_update":null,"tm_delete":null},{"id":"3ac27c32-db14-11ef-b206-cf30e0a672b7","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","domain_name":"","auth_types":null,"username":"","password":"","allowed_ips":null,"tm_create":null,"tm_update":null,"tm_delete":null}],"next_page_token":""}`,
 		},
 	}
 
@@ -219,7 +219,7 @@ func Test_TrunksIDGET(t *testing.T) {
 			},
 
 			expectTrunkID: uuid.FromStringOrNil("733b46f6-5588-11ee-b04e-c781770c2c87"),
-			expectRes:     `{"id":"733b46f6-5588-11ee-b04e-c781770c2c87","customer_id":"d8eff4fa-7ff7-11ec-834f-679286ad908b","name":"","detail":"","domain_name":"","auth_types":null,"username":"","password":"","allowed_ips":null,"tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes:     `{"id":"733b46f6-5588-11ee-b04e-c781770c2c87","customer_id":"d8eff4fa-7ff7-11ec-834f-679286ad908b","name":"","detail":"","domain_name":"","auth_types":null,"username":"","password":"","allowed_ips":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 

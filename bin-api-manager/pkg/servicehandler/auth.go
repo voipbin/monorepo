@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 	amagent "monorepo/bin-agent-manager/models/agent"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
@@ -96,10 +97,10 @@ func (h *serviceHandler) AuthAccesskeyParse(ctx context.Context, accesskey strin
 		return nil, err
 	}
 
-	curTime := h.utilHandler.TimeGetCurTime()
-	if ak.TMExpire < curTime {
+	curTime := time.Now().UTC()
+	if ak.TMExpire != nil && ak.TMExpire.Before(curTime) {
 		return nil, errors.New("token expired")
-	} else if ak.TMDelete < curTime {
+	} else if ak.TMDelete != nil {
 		return nil, errors.New("access key deleted")
 	}
 

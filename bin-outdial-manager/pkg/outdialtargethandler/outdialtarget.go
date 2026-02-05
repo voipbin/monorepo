@@ -4,12 +4,12 @@ import (
 	"context"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-outdial-manager/models/outdialtarget"
-	"monorepo/bin-outdial-manager/pkg/dbhandler"
 )
 
 // Create creates a new outdial
@@ -32,7 +32,7 @@ func (h *outdialTargetHandler) Create(
 		})
 
 	id := uuid.Must(uuid.NewV4())
-	ts := dbhandler.GetCurTime()
+	ts := utilhandler.TimeNow()
 	t := &outdialtarget.OutdialTarget{
 		ID:        id,
 		OutdialID: outdialID,
@@ -57,7 +57,7 @@ func (h *outdialTargetHandler) Create(
 
 		TMCreate: ts,
 		TMUpdate: ts,
-		TMDelete: dbhandler.DefaultTimeStamp,
+		TMDelete: nil,
 	}
 	log.WithField("outdial_target", t).Debug("Creating a new outdialtarget.")
 

@@ -23,6 +23,7 @@ import (
 	recording "monorepo/bin-call-manager/models/recording"
 	action "monorepo/bin-flow-manager/models/action"
 	reflect "reflect"
+	time "time"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -605,7 +606,7 @@ func (mr *MockDBHandlerMockRecorder) ChannelGet(ctx, id any) *gomock.Call {
 }
 
 // ChannelGetsForRecovery mocks base method.
-func (m *MockDBHandler) ChannelGetsForRecovery(ctx context.Context, asteriskID string, channelType channel.Type, startTime, endTime string, size uint64) ([]*channel.Channel, error) {
+func (m *MockDBHandler) ChannelGetsForRecovery(ctx context.Context, asteriskID string, channelType channel.Type, startTime, endTime *time.Time, size uint64) ([]*channel.Channel, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ChannelGetsForRecovery", ctx, asteriskID, channelType, startTime, endTime, size)
 	ret0, _ := ret[0].([]*channel.Channel)

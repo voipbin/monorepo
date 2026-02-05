@@ -60,7 +60,7 @@ func Test_v1EmailsGet(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"2a046c74-00c7-11f0-b07e-a385bcd60724","customer_id":"16d3fcf0-7f4c-11ec-a4c3-7bf43125108d","activeflow_id":"00000000-0000-0000-0000-000000000000","provider_type":"","provider_reference_id":"","source":null,"destinations":null,"status":"","subject":"","content":"","attachments":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"2a046c74-00c7-11f0-b07e-a385bcd60724","customer_id":"16d3fcf0-7f4c-11ec-a4c3-7bf43125108d","activeflow_id":"00000000-0000-0000-0000-000000000000","provider_type":"","provider_reference_id":"","source":null,"destinations":null,"status":"","subject":"","content":"","attachments":null,"tm_create":null,"tm_update":null,"tm_delete":null}]`),
 			},
 		},
 		{
@@ -96,7 +96,7 @@ func Test_v1EmailsGet(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"2a242316-00c7-11f0-96db-93d500b33431","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","provider_type":"","provider_reference_id":"","source":null,"destinations":null,"status":"","subject":"","content":"","attachments":null,"tm_create":"","tm_update":"","tm_delete":""},{"id":"2c2a494c-00c7-11f0-be49-8f6777e928d8","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","provider_type":"","provider_reference_id":"","source":null,"destinations":null,"status":"","subject":"","content":"","attachments":null,"tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"2a242316-00c7-11f0-96db-93d500b33431","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","provider_type":"","provider_reference_id":"","source":null,"destinations":null,"status":"","subject":"","content":"","attachments":null,"tm_create":null,"tm_update":null,"tm_delete":null},{"id":"2c2a494c-00c7-11f0-be49-8f6777e928d8","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","provider_type":"","provider_reference_id":"","source":null,"destinations":null,"status":"","subject":"","content":"","attachments":null,"tm_create":null,"tm_update":null,"tm_delete":null}]`),
 			},
 		},
 		{
@@ -209,7 +209,7 @@ func Test_v1EmailsPost(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"adcb77d6-00c8-11f0-aadc-1fe067d7823a","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","provider_type":"","provider_reference_id":"","source":null,"destinations":null,"status":"","subject":"","content":"","attachments":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"adcb77d6-00c8-11f0-aadc-1fe067d7823a","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","provider_type":"","provider_reference_id":"","source":null,"destinations":null,"status":"","subject":"","content":"","attachments":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -268,7 +268,7 @@ func Test_v1EmailsIDGet(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"ee70fd3c-00c9-11f0-8369-b773a83214a0","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","provider_type":"","provider_reference_id":"","source":null,"destinations":null,"status":"","subject":"","content":"","attachments":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"ee70fd3c-00c9-11f0-8369-b773a83214a0","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","provider_type":"","provider_reference_id":"","source":null,"destinations":null,"status":"","subject":"","content":"","attachments":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -328,7 +328,7 @@ func Test_v1EmailsIDDelete(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"eeac7ce0-00c9-11f0-99a7-2742f8cc6c8b","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","provider_type":"","provider_reference_id":"","source":null,"destinations":null,"status":"","subject":"","content":"","attachments":null,"tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"eeac7ce0-00c9-11f0-99a7-2742f8cc6c8b","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","provider_type":"","provider_reference_id":"","source":null,"destinations":null,"status":"","subject":"","content":"","attachments":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}

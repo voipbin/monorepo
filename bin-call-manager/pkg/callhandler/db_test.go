@@ -1,6 +1,7 @@
 package callhandler
 
 import (
+	"monorepo/bin-call-manager/pkg/testhelper"
 	"context"
 	"reflect"
 	"testing"
@@ -171,11 +172,11 @@ func Test_Create(t *testing.T) {
 					},
 				},
 
-				TMCreate:      "2020-04-18T03:22:17.995000Z",
-				TMUpdate:      dbhandler.DefaultTimeStamp,
-				TMProgressing: dbhandler.DefaultTimeStamp,
-				TMRinging:     dbhandler.DefaultTimeStamp,
-				TMHangup:      dbhandler.DefaultTimeStamp,
+				TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMUpdate:      nil,
+				TMProgressing: nil,
+				TMRinging:     nil,
+				TMHangup:      nil,
 			},
 
 			&call.Call{

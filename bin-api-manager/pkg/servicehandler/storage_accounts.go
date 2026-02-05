@@ -18,7 +18,7 @@ func (h *serviceHandler) storageAccountGet(ctx context.Context, accountID uuid.U
 		return nil, err
 	}
 
-	if res.TMDelete < defaultTimestamp {
+	if res.TMDelete != nil {
 		return nil, fmt.Errorf("not found")
 	}
 

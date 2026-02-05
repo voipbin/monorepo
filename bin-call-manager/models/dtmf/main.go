@@ -1,6 +1,8 @@
 package dtmf
 
 import (
+	"time"
+
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
@@ -13,5 +15,5 @@ type DTMF struct {
 	Digit    string    `json:"digit,omitempty"`
 	Duration int       `json:"duration,omitempty"` // in milliseconds
 
-	TMCreate string `json:"tm_create,omitempty"`
+	TMCreate *time.Time `json:"tm_create,omitempty"`
 }
