@@ -3,6 +3,9 @@ package callhandler
 import (
 	"context"
 	"testing"
+	"time"
+
+	"monorepo/bin-call-manager/pkg/testhelper"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
@@ -31,7 +34,7 @@ func Test_digitsReceivedNotActionDTMFReceived(t *testing.T) {
 
 		responseCall       *call.Call
 		responseUUIDDTMFID uuid.UUID
-		responseCurTime    string
+		responseCurTime    *time.Time
 		expectDTMF         *dtmf.DTMF
 		expectVariables    map[string]string
 	}{
@@ -55,7 +58,7 @@ func Test_digitsReceivedNotActionDTMFReceived(t *testing.T) {
 				},
 			},
 			responseUUIDDTMFID: uuid.FromStringOrNil("f496f2bc-b838-11f0-a757-4b893b2a9030"),
-			responseCurTime:    "2020-04-18T05:22:17.995000Z",
+			responseCurTime:    testhelper.TimePtr("2020-04-18T05:22:17.995000Z"),
 			expectDTMF: &dtmf.DTMF{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("f496f2bc-b838-11f0-a757-4b893b2a9030"),
@@ -65,7 +68,7 @@ func Test_digitsReceivedNotActionDTMFReceived(t *testing.T) {
 				Digit:    "4",
 				Duration: 100,
 
-				TMCreate: "2020-04-18T05:22:17.995000Z",
+				TMCreate: testhelper.TimePtr("2020-04-18T05:22:17.995000Z"),
 			},
 			expectVariables: map[string]string{
 				variableCallDigits: "4",
@@ -93,7 +96,7 @@ func Test_digitsReceivedNotActionDTMFReceived(t *testing.T) {
 
 			mockDB.EXPECT().CallGetByChannelID(ctx, tt.channel.ID).Return(tt.responseCall, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDDTMFID)
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockNotify.EXPECT().PublishEvent(ctx, dtmf.EventTypeDTMFReceived, tt.expectDTMF)
 			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.responseCall.ActiveflowID, tt.expectVariables).Return(nil)
 
@@ -115,7 +118,7 @@ func Test_DTMFReceived_action_digits_receive_continue(t *testing.T) {
 
 		responseCall       *call.Call
 		responseUUIDDTMFID uuid.UUID
-		responseCurTime    string
+		responseCurTime    *time.Time
 		responseVar        *variable.Variable
 		savedDTMFs         string
 
@@ -144,7 +147,7 @@ func Test_DTMFReceived_action_digits_receive_continue(t *testing.T) {
 				},
 			},
 			responseUUIDDTMFID: uuid.FromStringOrNil("edf469a2-b870-11f0-b28c-dfe1694e1cbe"),
-			responseCurTime:    "2020-04-18T05:22:17.995000Z",
+			responseCurTime:    testhelper.TimePtr("2020-04-18T05:22:17.995000Z"),
 			responseVar: &variable.Variable{
 				Variables: map[string]string{
 					variableCallDigits: "",
@@ -159,7 +162,7 @@ func Test_DTMFReceived_action_digits_receive_continue(t *testing.T) {
 				CallID:   uuid.FromStringOrNil("f0f0f6bc-695a-11eb-ae99-0b10f2bf1b94"),
 				Digit:    "4",
 				Duration: 100,
-				TMCreate: "2020-04-18T05:22:17.995000Z",
+				TMCreate: testhelper.TimePtr("2020-04-18T05:22:17.995000Z"),
 			},
 			expectVariables: map[string]string{
 				variableCallDigits: "${" + variableCallDigits + "}4",
@@ -188,7 +191,7 @@ func Test_DTMFReceived_action_digits_receive_continue(t *testing.T) {
 			mockDB.EXPECT().CallGetByChannelID(ctx, tt.channel.ID).Return(tt.responseCall, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDDTMFID)
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockNotify.EXPECT().PublishEvent(ctx, dtmf.EventTypeDTMFReceived, tt.expectDTMF)
 
 			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.responseCall.ActiveflowID).Return(tt.responseVar, nil)
@@ -212,7 +215,7 @@ func Test_Test_DTMFReceived_action_digits_receive_stop(t *testing.T) {
 
 		responseCall       *call.Call
 		responseUUIDDTMFID uuid.UUID
-		responseCurTime    string
+		responseCurTime    *time.Time
 
 		responseVariable *variable.Variable
 
@@ -244,7 +247,7 @@ func Test_Test_DTMFReceived_action_digits_receive_stop(t *testing.T) {
 				},
 			},
 			responseUUIDDTMFID: uuid.FromStringOrNil("abd9ce8a-b871-11f0-a7e7-0b3034922233"),
-			responseCurTime:    "2020-04-18T05:22:17.995000Z",
+			responseCurTime:    testhelper.TimePtr("2020-04-18T05:22:17.995000Z"),
 			responseVariable: &variable.Variable{
 				Variables: map[string]string{
 					variableCallDigits: "#",
@@ -259,7 +262,7 @@ func Test_Test_DTMFReceived_action_digits_receive_stop(t *testing.T) {
 				CallID:   uuid.FromStringOrNil("f0f0f6bc-695a-11eb-ae99-0b10f2bf1b94"),
 				Digit:    "#",
 				Duration: 100,
-				TMCreate: "2020-04-18T05:22:17.995000Z",
+				TMCreate: testhelper.TimePtr("2020-04-18T05:22:17.995000Z"),
 			},
 			expectVariables: map[string]string{
 				variableCallDigits: "${" + variableCallDigits + "}#",
@@ -289,7 +292,7 @@ func Test_Test_DTMFReceived_action_digits_receive_stop(t *testing.T) {
 				},
 			},
 			responseUUIDDTMFID: uuid.FromStringOrNil("ac10d5ba-b871-11f0-838c-0bceb98efacf"),
-			responseCurTime:    "2020-04-18T05:22:17.995000Z",
+			responseCurTime:    testhelper.TimePtr("2020-04-18T05:22:17.995000Z"),
 			responseVariable: &variable.Variable{
 				Variables: map[string]string{
 					variableCallDigits: "*",
@@ -304,7 +307,7 @@ func Test_Test_DTMFReceived_action_digits_receive_stop(t *testing.T) {
 				CallID:   uuid.FromStringOrNil("f0f0f6bc-695a-11eb-ae99-0b10f2bf1b94"),
 				Digit:    "*",
 				Duration: 100,
-				TMCreate: "2020-04-18T05:22:17.995000Z",
+				TMCreate: testhelper.TimePtr("2020-04-18T05:22:17.995000Z"),
 			},
 			expectVariables: map[string]string{
 				variableCallDigits: "${" + variableCallDigits + "}*",
@@ -333,7 +336,7 @@ func Test_Test_DTMFReceived_action_digits_receive_stop(t *testing.T) {
 				},
 			},
 			responseUUIDDTMFID: uuid.FromStringOrNil("ac352b5e-b871-11f0-90f4-7fffb7fdc179"),
-			responseCurTime:    "2020-04-18T05:22:17.995000Z",
+			responseCurTime:    testhelper.TimePtr("2020-04-18T05:22:17.995000Z"),
 			responseVariable: &variable.Variable{
 				Variables: map[string]string{
 					variableCallDigits: "12",
@@ -348,7 +351,7 @@ func Test_Test_DTMFReceived_action_digits_receive_stop(t *testing.T) {
 				CallID:   uuid.FromStringOrNil("f0f0f6bc-695a-11eb-ae99-0b10f2bf1b94"),
 				Digit:    "2",
 				Duration: 100,
-				TMCreate: "2020-04-18T05:22:17.995000Z",
+				TMCreate: testhelper.TimePtr("2020-04-18T05:22:17.995000Z"),
 			},
 			expectVariables: map[string]string{
 				variableCallDigits: "${" + variableCallDigits + "}2",
@@ -377,7 +380,7 @@ func Test_Test_DTMFReceived_action_digits_receive_stop(t *testing.T) {
 			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.responseCall, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDDTMFID)
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockNotify.EXPECT().PublishEvent(gomock.Any(), dtmf.EventTypeDTMFReceived, tt.expectDTMF)
 
 			mockReq.EXPECT().FlowV1VariableSetVariable(gomock.Any(), tt.responseCall.ActiveflowID, tt.expectVariables).Return(nil)
@@ -402,7 +405,7 @@ func Test_DTMFReceived_action_talk_digits_handle_next(t *testing.T) {
 
 		responseCall       *call.Call
 		responseUUIDDTMFID uuid.UUID
-		responseCurTime    string
+		responseCurTime    *time.Time
 
 		expectDigits    string
 		expectDTMF      *dtmf.DTMF
@@ -431,7 +434,7 @@ func Test_DTMFReceived_action_talk_digits_handle_next(t *testing.T) {
 				},
 			},
 			responseUUIDDTMFID: uuid.FromStringOrNil("6113fd7a-b872-11f0-ab9a-6f891f023f67"),
-			responseCurTime:    "2020-04-18T05:22:17.995000Z",
+			responseCurTime:    testhelper.TimePtr("2020-04-18T05:22:17.995000Z"),
 
 			expectDigits: "1",
 			expectDTMF: &dtmf.DTMF{
@@ -441,7 +444,7 @@ func Test_DTMFReceived_action_talk_digits_handle_next(t *testing.T) {
 				CallID:   uuid.FromStringOrNil("c102c248-a902-11ed-9cdd-439f377ef6a3"),
 				Digit:    "1",
 				Duration: 100,
-				TMCreate: "2020-04-18T05:22:17.995000Z",
+				TMCreate: testhelper.TimePtr("2020-04-18T05:22:17.995000Z"),
 			},
 			expectVariables: map[string]string{
 				variableCallDigits: "1",
@@ -470,7 +473,7 @@ func Test_DTMFReceived_action_talk_digits_handle_next(t *testing.T) {
 			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.responseCall, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDDTMFID)
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockNotify.EXPECT().PublishEvent(gomock.Any(), dtmf.EventTypeDTMFReceived, tt.expectDTMF)
 
 			mockReq.EXPECT().FlowV1VariableSetVariable(gomock.Any(), tt.responseCall.ActiveflowID, tt.expectVariables).Return(nil)
@@ -494,7 +497,7 @@ func Test_DTMFReceived_action_talk_digits_handle_none(t *testing.T) {
 
 		responseCall       *call.Call
 		responseUUIDDTMFID uuid.UUID
-		responseCurTime    string
+		responseCurTime    *time.Time
 
 		expectDigits    string
 		expectDTMF      *dtmf.DTMF
@@ -523,7 +526,7 @@ func Test_DTMFReceived_action_talk_digits_handle_none(t *testing.T) {
 				},
 			},
 			responseUUIDDTMFID: uuid.FromStringOrNil("f378c538-b872-11f0-8203-8fe3f320a39a"),
-			responseCurTime:    "2020-04-18T05:22:17.995000Z",
+			responseCurTime:    testhelper.TimePtr("2020-04-18T05:22:17.995000Z"),
 
 			expectDigits: "1",
 			expectDTMF: &dtmf.DTMF{
@@ -533,7 +536,7 @@ func Test_DTMFReceived_action_talk_digits_handle_none(t *testing.T) {
 				CallID:   uuid.FromStringOrNil("4f4b048c-a905-11ed-8dfa-07f2bde8ba51"),
 				Digit:    "1",
 				Duration: 100,
-				TMCreate: "2020-04-18T05:22:17.995000Z",
+				TMCreate: testhelper.TimePtr("2020-04-18T05:22:17.995000Z"),
 			},
 			expectVariables: map[string]string{
 				variableCallDigits: "1",
@@ -562,7 +565,7 @@ func Test_DTMFReceived_action_talk_digits_handle_none(t *testing.T) {
 			mockDB.EXPECT().CallGetByChannelID(gomock.Any(), tt.channel.ID).Return(tt.responseCall, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDDTMFID)
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockNotify.EXPECT().PublishEvent(gomock.Any(), dtmf.EventTypeDTMFReceived, tt.expectDTMF)
 
 			mockReq.EXPECT().FlowV1VariableSetVariable(gomock.Any(), tt.responseCall.ActiveflowID, tt.expectVariables).Return(nil)

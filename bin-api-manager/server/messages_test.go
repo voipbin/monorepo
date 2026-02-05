@@ -51,7 +51,7 @@ func Test_MessagesGET(t *testing.T) {
 
 			expectPageSize:  10,
 			expectPageToken: "2021-03-02T03:23:20.995000Z",
-			expectRes:       `{"result":[{"id":"282cf482-a2e9-11ec-a87d-6f5255677379","customer_id":"00000000-0000-0000-0000-000000000000","type":"","source":null,"targets":null,"text":"","direction":"","tm_create":"","tm_update":"","tm_delete":""}],"next_page_token":""}`,
+			expectRes:       `{"result":[{"id":"282cf482-a2e9-11ec-a87d-6f5255677379","customer_id":"00000000-0000-0000-0000-000000000000","type":"","source":null,"targets":null,"text":"","direction":"","tm_create":null,"tm_update":null,"tm_delete":null}],"next_page_token":""}`,
 		},
 	}
 
@@ -119,7 +119,7 @@ func Test_MessagesIDGET(t *testing.T) {
 			},
 
 			expectMessageID: uuid.FromStringOrNil("55b11820-a2e9-11ec-bc5e-936e4fe1096f"),
-			expectRes:       string(`{"id":"55b11820-a2e9-11ec-bc5e-936e4fe1096f","customer_id":"00000000-0000-0000-0000-000000000000","type":"","source":null,"targets":null,"text":"","direction":"","tm_create":"","tm_update":"","tm_delete":""}`),
+			expectRes:       string(`{"id":"55b11820-a2e9-11ec-bc5e-936e4fe1096f","customer_id":"00000000-0000-0000-0000-000000000000","type":"","source":null,"targets":null,"text":"","direction":"","tm_create":null,"tm_update":null,"tm_delete":null}`),
 		},
 	}
 
@@ -189,7 +189,7 @@ func Test_messagesIDDELETE(t *testing.T) {
 			},
 
 			expectMessageID: uuid.FromStringOrNil("9dd8042e-a2e9-11ec-b9b1-5740852cabef"),
-			expectRes:       `{"id":"9dd8042e-a2e9-11ec-b9b1-5740852cabef","customer_id":"00000000-0000-0000-0000-000000000000","type":"","source":null,"targets":null,"text":"","direction":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes:       `{"id":"9dd8042e-a2e9-11ec-b9b1-5740852cabef","customer_id":"00000000-0000-0000-0000-000000000000","type":"","source":null,"targets":null,"text":"","direction":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -273,7 +273,7 @@ func Test_messagesPOST(t *testing.T) {
 				},
 			},
 			expectText: "hello world",
-			expectRes:  `{"id":"d0b1f3f4-a2e9-11ec-8b3b-4b3b3b3b3b3b","customer_id":"00000000-0000-0000-0000-000000000000","type":"","source":null,"targets":null,"text":"","direction":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes:  `{"id":"d0b1f3f4-a2e9-11ec-8b3b-4b3b3b3b3b3b","customer_id":"00000000-0000-0000-0000-000000000000","type":"","source":null,"targets":null,"text":"","direction":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 

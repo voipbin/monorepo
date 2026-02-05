@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
+	"time"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
-	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	uuid "github.com/gofrs/uuid"
@@ -20,12 +20,12 @@ import (
 
 func Test_FlowCreate(t *testing.T) {
 
+	responseCurTime := time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)
+
 	tests := []struct {
 		name string
 
 		flow *flow.Flow
-
-		responseCurTime string
 
 		expectedRes *flow.Flow
 	}{
@@ -40,8 +40,6 @@ func Test_FlowCreate(t *testing.T) {
 				Detail: "test flow detail",
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
-
 			expectedRes: &flow.Flow{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2386221a-88e6-11ea-adeb-5f7b70fc89ff"),
@@ -49,9 +47,9 @@ func Test_FlowCreate(t *testing.T) {
 				Name:     "test flow name",
 				Detail:   "test flow detail",
 				Persist:  true,
-				TMCreate: "2020-04-18T03:22:17.995000Z",
-				TMUpdate: commondatabasehandler.DefaultTimeStamp,
-				TMDelete: commondatabasehandler.DefaultTimeStamp,
+				TMCreate: &responseCurTime,
+				TMUpdate: nil,
+				TMDelete: nil,
 			},
 		},
 		{
@@ -71,8 +69,6 @@ func Test_FlowCreate(t *testing.T) {
 				},
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
-
 			expectedRes: &flow.Flow{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("496365e2-88e6-11ea-956c-e3dfb6eaf1e8"),
@@ -86,9 +82,9 @@ func Test_FlowCreate(t *testing.T) {
 						Type: action.TypeEcho,
 					},
 				},
-				TMCreate: "2020-04-18T03:22:17.995000Z",
-				TMUpdate: commondatabasehandler.DefaultTimeStamp,
-				TMDelete: commondatabasehandler.DefaultTimeStamp,
+				TMCreate: &responseCurTime,
+				TMUpdate: nil,
+				TMDelete: nil,
 			},
 		},
 		{
@@ -117,8 +113,6 @@ func Test_FlowCreate(t *testing.T) {
 				OnCompleteFlowID: uuid.FromStringOrNil("a7d3d97e-ce16-11f0-809a-ff2f69e4c16a"),
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
-
 			expectedRes: &flow.Flow{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("72c4b8fa-88e6-11ea-a9cd-7bc36ee781ab"),
@@ -138,9 +132,9 @@ func Test_FlowCreate(t *testing.T) {
 					},
 				},
 				OnCompleteFlowID: uuid.FromStringOrNil("a7d3d97e-ce16-11f0-809a-ff2f69e4c16a"),
-				TMCreate:         "2020-04-18T03:22:17.995000Z",
-				TMUpdate:         commondatabasehandler.DefaultTimeStamp,
-				TMDelete:         commondatabasehandler.DefaultTimeStamp,
+				TMCreate:         &responseCurTime,
+				TMUpdate:         nil,
+				TMDelete:         nil,
 			},
 		},
 	}
@@ -160,7 +154,7 @@ func Test_FlowCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(&responseCurTime)
 			mockCache.EXPECT().FlowSet(ctx, gomock.Any())
 			if err := h.FlowCreate(ctx, tt.flow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -182,14 +176,14 @@ func Test_FlowCreate(t *testing.T) {
 
 func Test_FlowList(t *testing.T) {
 
+	responseCurTime := time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)
+
 	tests := []struct {
 		name  string
 		flows []flow.Flow
 
 		size    uint64
 		filters map[flow.Field]any
-
-		responseCurTime string
 
 		expectedRes []*flow.Flow
 	}{
@@ -220,7 +214,6 @@ func Test_FlowList(t *testing.T) {
 				flow.FieldDeleted:    false,
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
 			expectedRes: []*flow.Flow{
 				{
 					Identity: commonidentity.Identity{
@@ -229,9 +222,9 @@ func Test_FlowList(t *testing.T) {
 					},
 					Name:     "test1",
 					Persist:  true,
-					TMCreate: "2020-04-18T03:22:17.995000Z",
-					TMUpdate: commondatabasehandler.DefaultTimeStamp,
-					TMDelete: commondatabasehandler.DefaultTimeStamp,
+					TMCreate: &responseCurTime,
+					TMUpdate: nil,
+					TMDelete: nil,
 				},
 				{
 					Identity: commonidentity.Identity{
@@ -240,9 +233,9 @@ func Test_FlowList(t *testing.T) {
 					},
 					Name:     "test2",
 					Persist:  true,
-					TMCreate: "2020-04-18T03:22:17.995000Z",
-					TMUpdate: commondatabasehandler.DefaultTimeStamp,
-					TMDelete: commondatabasehandler.DefaultTimeStamp,
+					TMCreate: &responseCurTime,
+					TMUpdate: nil,
+					TMDelete: nil,
 				},
 			},
 		},
@@ -267,7 +260,6 @@ func Test_FlowList(t *testing.T) {
 				flow.FieldType:       flow.TypeFlow,
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
 			expectedRes: []*flow.Flow{
 				{
 					Identity: commonidentity.Identity{
@@ -277,9 +269,9 @@ func Test_FlowList(t *testing.T) {
 					Type:     flow.TypeFlow,
 					Name:     "test filter type",
 					Persist:  true,
-					TMCreate: "2020-04-18T03:22:17.995000Z",
-					TMUpdate: commondatabasehandler.DefaultTimeStamp,
-					TMDelete: commondatabasehandler.DefaultTimeStamp,
+					TMCreate: &responseCurTime,
+					TMUpdate: nil,
+					TMDelete: nil,
 				},
 			},
 		},
@@ -301,7 +293,7 @@ func Test_FlowList(t *testing.T) {
 			ctx := context.Background()
 
 			for _, flow := range tt.flows {
-				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeNow().Return(&responseCurTime)
 				mockCache.EXPECT().FlowSet(ctx, gomock.Any())
 				if err := h.FlowCreate(ctx, &flow); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -328,8 +320,6 @@ func Test_FlowUpdate(t *testing.T) {
 
 		id     uuid.UUID
 		fields map[flow.Field]any
-
-		responseCurTime string
 
 		expectedRes *flow.Flow
 	}{
@@ -432,13 +422,13 @@ func Test_FlowUpdate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+			mockUtil.EXPECT().TimeNow().Return(utilhandler.TimeNow())
 			mockCache.EXPECT().FlowSet(ctx, gomock.Any())
 			if err := h.FlowCreate(context.Background(), tt.flow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+			mockUtil.EXPECT().TimeNow().Return(utilhandler.TimeNow())
 			mockCache.EXPECT().FlowSet(ctx, gomock.Any())
 			if err := h.FlowUpdate(context.Background(), tt.id, tt.fields); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -451,9 +441,9 @@ func Test_FlowUpdate(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			res.TMUpdate = ""
-			res.TMCreate = ""
-			res.TMDelete = ""
+			res.TMUpdate = nil
+			res.TMCreate = nil
+			res.TMDelete = nil
 			if reflect.DeepEqual(tt.expectedRes, res) == false {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
@@ -463,11 +453,11 @@ func Test_FlowUpdate(t *testing.T) {
 
 func Test_FlowDelete(t *testing.T) {
 
+	responseCurTime := time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)
+
 	tests := []struct {
 		name string
 		flow *flow.Flow
-
-		responseCurTime string
 
 		expectedRes *flow.Flow
 	}{
@@ -482,8 +472,6 @@ func Test_FlowDelete(t *testing.T) {
 				Detail: "test flow detail",
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
-
 			expectedRes: &flow.Flow{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("9f59d11a-67c1-11eb-9cf4-1b8a94365c22"),
@@ -493,9 +481,9 @@ func Test_FlowDelete(t *testing.T) {
 				Detail:  "test flow detail",
 				Persist: true,
 
-				TMCreate: "2020-04-18T03:22:17.995000Z",
-				TMUpdate: "2020-04-18T03:22:17.995000Z",
-				TMDelete: "2020-04-18T03:22:17.995000Z",
+				TMCreate: &responseCurTime,
+				TMUpdate: &responseCurTime,
+				TMDelete: &responseCurTime,
 			},
 		},
 	}
@@ -515,13 +503,13 @@ func Test_FlowDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(&responseCurTime)
 			mockCache.EXPECT().FlowSet(ctx, gomock.Any())
 			if err := h.FlowCreate(ctx, tt.flow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(&responseCurTime)
 			mockCache.EXPECT().FlowSet(ctx, gomock.Any())
 			if err := h.FlowDelete(ctx, tt.flow.ID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

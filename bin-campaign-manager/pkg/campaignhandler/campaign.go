@@ -12,7 +12,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-campaign-manager/models/campaign"
-	"monorepo/bin-campaign-manager/pkg/dbhandler"
 )
 
 // Create creates a new campaign
@@ -531,7 +530,7 @@ func (h *campaignHandler) isValidOutdialID(ctx context.Context, outdialID uuid.U
 		return false
 	}
 
-	if od.TMDelete != dbhandler.DefaultTimeStamp {
+	if od.TMDelete != nil {
 		log.Debugf("The outdial is already deleted.")
 		return false
 	}
@@ -564,7 +563,7 @@ func (h *campaignHandler) isValidOutplanID(ctx context.Context, outplanID uuid.U
 		return false
 	}
 
-	if op.TMDelete != dbhandler.DefaultTimeStamp {
+	if op.TMDelete != nil {
 		log.Debugf("The outdial is already deleted.")
 		return false
 	}
@@ -597,7 +596,7 @@ func (h *campaignHandler) isValidQueueID(ctx context.Context, queueID uuid.UUID,
 		return false
 	}
 
-	if q.TMDelete != dbhandler.DefaultTimeStamp {
+	if q.TMDelete != nil {
 		log.Debugf("The queue is already deleted.")
 		return false
 	}
@@ -629,7 +628,7 @@ func (h *campaignHandler) isValidNextCampaignID(ctx context.Context, nextCampaig
 		return false
 	}
 
-	if c.TMDelete != dbhandler.DefaultTimeStamp {
+	if c.TMDelete != nil {
 		log.Debugf("The campaign is already deleted.")
 		return false
 	}

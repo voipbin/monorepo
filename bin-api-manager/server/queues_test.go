@@ -48,13 +48,13 @@ func Test_queuesGet(t *testing.T) {
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("f188b7aa-6476-11ec-a130-03a796c9e1e4"),
 					},
-					TMCreate: "2020-09-20T03:23:21.995000Z",
+					TMCreate: timePtr("2020-09-20T03:23:21.995000Z"),
 				},
 			},
 
 			expectPageSize:  20,
 			expectPageToken: "2020-09-20T03:23:20.995000Z",
-			expectRes:       `{"result":[{"id":"f188b7aa-6476-11ec-a130-03a796c9e1e4","customer_id":"00000000-0000-0000-0000-000000000000","wait_flow_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:21.995000Z"}],"next_page_token":"2020-09-20T03:23:21.995000Z"}`,
+			expectRes:       `{"result":[{"id":"f188b7aa-6476-11ec-a130-03a796c9e1e4","customer_id":"00000000-0000-0000-0000-000000000000","wait_flow_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null}],"next_page_token":"2020-09-20T03:23:21.995000Z"}`,
 		},
 		{
 			name: "more than 2 items",
@@ -75,7 +75,7 @@ func Test_queuesGet(t *testing.T) {
 
 					WaitQueuecallIDs:    []uuid.UUID{},
 					ServiceQueuecallIDs: []uuid.UUID{},
-					TMCreate:            "2020-09-20T03:23:21.995000Z",
+					TMCreate:            timePtr("2020-09-20T03:23:21.995000Z"),
 				},
 				{
 					Identity: commonidentity.Identity{
@@ -85,7 +85,7 @@ func Test_queuesGet(t *testing.T) {
 
 					WaitQueuecallIDs:    []uuid.UUID{},
 					ServiceQueuecallIDs: []uuid.UUID{},
-					TMCreate:            "2020-09-20T03:23:22.995000Z",
+					TMCreate:            timePtr("2020-09-20T03:23:22.995000Z"),
 				},
 				{
 					Identity: commonidentity.Identity{
@@ -95,13 +95,13 @@ func Test_queuesGet(t *testing.T) {
 
 					WaitQueuecallIDs:    []uuid.UUID{},
 					ServiceQueuecallIDs: []uuid.UUID{},
-					TMCreate:            "2020-09-20T03:23:23.995000Z",
+					TMCreate:            timePtr("2020-09-20T03:23:23.995000Z"),
 				},
 			},
 
 			expectPageSize:  20,
 			expectPageToken: "2020-09-20T03:23:20.995000Z",
-			expectRes:       `{"result":[{"id":"f1ad64a6-6476-11ec-a650-cf22de7273e6","customer_id":"00000000-0000-0000-0000-000000000000","wait_flow_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:21.995000Z"},{"id":"f1d22dd6-6476-11ec-84e0-676f11515eed","customer_id":"00000000-0000-0000-0000-000000000000","wait_flow_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:22.995000Z"},{"id":"f1fd30c6-6476-11ec-8b55-7f9c5b9550b7","customer_id":"00000000-0000-0000-0000-000000000000","wait_flow_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:23.995000Z"}],"next_page_token":"2020-09-20T03:23:23.995000Z"}`,
+			expectRes:       `{"result":[{"id":"f1ad64a6-6476-11ec-a650-cf22de7273e6","customer_id":"00000000-0000-0000-0000-000000000000","wait_flow_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null},{"id":"f1d22dd6-6476-11ec-84e0-676f11515eed","customer_id":"00000000-0000-0000-0000-000000000000","wait_flow_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:22.995Z","tm_update":null,"tm_delete":null},{"id":"f1fd30c6-6476-11ec-8b55-7f9c5b9550b7","customer_id":"00000000-0000-0000-0000-000000000000","wait_flow_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:23.995Z","tm_update":null,"tm_delete":null}],"next_page_token":"2020-09-20T03:23:23.995000Z"}`,
 		},
 	}
 
@@ -188,7 +188,7 @@ func Test_queuesPost(t *testing.T) {
 			expectWaitFlowID:     uuid.FromStringOrNil("74341d62-2115-11f0-b44e-871d5b4ad40e"),
 			expectWaitTimeout:    10000,
 			expectServiceTimeout: 100000,
-			expectRes:            `{"id":"72fe03fa-6475-11ec-b559-0fdf19201178","customer_id":"00000000-0000-0000-0000-000000000000","wait_flow_id":"00000000-0000-0000-0000-000000000000"}`,
+			expectRes:            `{"id":"72fe03fa-6475-11ec-b559-0fdf19201178","customer_id":"00000000-0000-0000-0000-000000000000","wait_flow_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -270,7 +270,7 @@ func Test_queuesIDGet(t *testing.T) {
 			},
 
 			expectQueueID: uuid.FromStringOrNil("395518ca-830a-11eb-badc-b3582bc51917"),
-			expectRes:     `{"id":"395518ca-830a-11eb-badc-b3582bc51917","customer_id":"00000000-0000-0000-0000-000000000000","wait_flow_id":"00000000-0000-0000-0000-000000000000"}`,
+			expectRes:     `{"id":"395518ca-830a-11eb-badc-b3582bc51917","customer_id":"00000000-0000-0000-0000-000000000000","wait_flow_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -340,7 +340,7 @@ func Test_queuesIDDelete(t *testing.T) {
 			},
 
 			expectQueueID: uuid.FromStringOrNil("5842d88a-6478-11ec-92cc-7fb5eb5d5e5a"),
-			expectRes:     `{"id":"5842d88a-6478-11ec-92cc-7fb5eb5d5e5a","customer_id":"00000000-0000-0000-0000-000000000000","wait_flow_id":"00000000-0000-0000-0000-000000000000"}`,
+			expectRes:     `{"id":"5842d88a-6478-11ec-92cc-7fb5eb5d5e5a","customer_id":"00000000-0000-0000-0000-000000000000","wait_flow_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -429,7 +429,7 @@ func Test_queuesIDPut(t *testing.T) {
 			expectWaitFlowID:     uuid.FromStringOrNil("c02a144c-2115-11f0-a9d5-97e0c247bb7b"),
 			expectTimeoutWait:    60000,
 			expectTimeoutService: 6000000,
-			expectRes:            `{"id":"39a61292-6479-11ec-8cee-d7ba44bf24ac","customer_id":"00000000-0000-0000-0000-000000000000","wait_flow_id":"00000000-0000-0000-0000-000000000000"}`,
+			expectRes:            `{"id":"39a61292-6479-11ec-8cee-d7ba44bf24ac","customer_id":"00000000-0000-0000-0000-000000000000","wait_flow_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -504,7 +504,7 @@ func Test_queuesIDTagIDsPut(t *testing.T) {
 			expectTagIDs: []uuid.UUID{
 				uuid.FromStringOrNil("aa740178-6479-11ec-879d-ab827778d4dd"),
 			},
-			expectRes: `{"id":"9ec11e74-6479-11ec-8956-9b1c6c142f77","customer_id":"00000000-0000-0000-0000-000000000000","wait_flow_id":"00000000-0000-0000-0000-000000000000"}`,
+			expectRes: `{"id":"9ec11e74-6479-11ec-8956-9b1c6c142f77","customer_id":"00000000-0000-0000-0000-000000000000","wait_flow_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -577,7 +577,7 @@ func Test_queuesIDRoutingMethodPut(t *testing.T) {
 
 			expectQueueID:       uuid.FromStringOrNil("9ec11e74-6479-11ec-8956-9b1c6c142f77"),
 			expectRoutingMethod: qmqueue.RoutingMethodRandom,
-			expectRes:           `{"id":"9ec11e74-6479-11ec-8956-9b1c6c142f77","customer_id":"00000000-0000-0000-0000-000000000000","wait_flow_id":"00000000-0000-0000-0000-000000000000"}`,
+			expectRes:           `{"id":"9ec11e74-6479-11ec-8956-9b1c6c142f77","customer_id":"00000000-0000-0000-0000-000000000000","wait_flow_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 

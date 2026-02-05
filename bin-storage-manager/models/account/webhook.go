@@ -2,6 +2,7 @@ package account
 
 import (
 	"encoding/json"
+	"time"
 
 	"github.com/gofrs/uuid"
 )
@@ -14,9 +15,9 @@ type WebhookMessage struct {
 	TotalFileCount int64 `json:"total_file_count"` // total file count
 	TotalFileSize  int64 `json:"total_file_size"`  // total file size in bytes
 
-	TMCreate string `json:"tm_create"`
-	TMUpdate string `json:"tm_update"`
-	TMDelete string `json:"tm_delete"`
+	TMCreate *time.Time `json:"tm_create"`
+	TMUpdate *time.Time `json:"tm_update"`
+	TMDelete *time.Time `json:"tm_delete"`
 }
 
 // ConvertWebhookMessage converts to the event

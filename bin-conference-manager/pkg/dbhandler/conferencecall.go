@@ -31,12 +31,12 @@ func (h *handler) conferencecallGetFromRow(row *sql.Rows) (*conferencecall.Confe
 
 // ConferencecallCreate creates a new conferencecall record.
 func (h *handler) ConferencecallCreate(ctx context.Context, cf *conferencecall.Conferencecall) error {
-	now := h.utilHandler.TimeGetCurTime()
+	now := h.utilHandler.TimeNow()
 
 	// Set timestamps
 	cf.TMCreate = now
-	cf.TMUpdate = commondatabasehandler.DefaultTimeStamp
-	cf.TMDelete = commondatabasehandler.DefaultTimeStamp
+	cf.TMUpdate = nil
+	cf.TMDelete = nil
 
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(cf)
@@ -252,7 +252,7 @@ func (h *handler) ConferencecallUpdate(ctx context.Context, id uuid.UUID, fields
 		return nil
 	}
 
-	fields[conferencecall.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
+	fields[conferencecall.FieldTMUpdate] = h.utilHandler.TimeNow()
 
 	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
@@ -280,7 +280,7 @@ func (h *handler) ConferencecallUpdate(ctx context.Context, id uuid.UUID, fields
 
 // ConferencecallDelete deletes the conferencecall
 func (h *handler) ConferencecallDelete(ctx context.Context, id uuid.UUID) error {
-	ts := h.utilHandler.TimeGetCurTime()
+	ts := h.utilHandler.TimeNow()
 
 	fields := map[conferencecall.Field]any{
 		conferencecall.FieldTMUpdate: ts,

@@ -31,14 +31,14 @@ func (h *handler) numberGetFromRow(row *sql.Rows) (*number.Number, error) {
 
 // NumberCreate creates a new number record.
 func (h *handler) NumberCreate(ctx context.Context, n *number.Number) error {
-	now := h.utilHandler.TimeGetCurTime()
+	now := h.utilHandler.TimeNow()
 
 	// Set timestamps
 	n.TMPurchase = now
 	n.TMRenew = now
 	n.TMCreate = now
-	n.TMUpdate = DefaultTimeStamp
-	n.TMDelete = DefaultTimeStamp
+	n.TMUpdate = nil
+	n.TMDelete = nil
 
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(n)
@@ -220,7 +220,7 @@ func (h *handler) NumberUpdate(ctx context.Context, id uuid.UUID, fields map[num
 		return nil
 	}
 
-	fields[number.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
+	fields[number.FieldTMUpdate] = h.utilHandler.TimeNow()
 
 	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
@@ -247,7 +247,7 @@ func (h *handler) NumberUpdate(ctx context.Context, id uuid.UUID, fields map[num
 
 // NumberDelete sets the delete timestamp.
 func (h *handler) NumberDelete(ctx context.Context, id uuid.UUID) error {
-	ts := h.utilHandler.TimeGetCurTime()
+	ts := h.utilHandler.TimeNow()
 
 	fields := map[number.Field]any{
 		number.FieldStatus:   number.StatusDeleted,

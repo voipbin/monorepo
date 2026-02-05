@@ -54,7 +54,7 @@ func Test_transcriptsGET(t *testing.T) {
 			expectPageSize:     10,
 			expectPageToken:    "2020-09-20T03:23:20.995000Z",
 			expectTranscribeID: uuid.FromStringOrNil("8425d50e-828d-11ed-a91c-f77fe2ce8202"),
-			expectRes:          `{"result":[{"id":"844b118e-828d-11ed-84a3-fb13c2a499e9","customer_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000","direction":"","message":"","tm_transcript":"","tm_create":""}],"next_page_token":""}`,
+			expectRes:          `{"result":[{"id":"844b118e-828d-11ed-84a3-fb13c2a499e9","customer_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000","direction":"","message":"","tm_transcript":null,"tm_create":null}],"next_page_token":""}`,
 		},
 	}
 

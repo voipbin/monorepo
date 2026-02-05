@@ -3,6 +3,7 @@ package listenhandler
 import (
 	reflect "reflect"
 	"testing"
+	"time"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
@@ -16,6 +17,7 @@ import (
 )
 
 func TestProcessV1TagsGet(t *testing.T) {
+	tmCreate := func() *time.Time { t := time.Date(2021, 11, 23, 17, 55, 39, 712000000, time.UTC); return &t }()
 
 	tests := []struct {
 		name    string
@@ -51,15 +53,15 @@ func TestProcessV1TagsGet(t *testing.T) {
 					},
 					Name:     "test tag 1",
 					Detail:   "test tag 1 detail",
-					TMCreate: "2021-11-23T17:55:39.712000Z",
-					TMUpdate: "9999-01-01T00:00:00.000000Z",
-					TMDelete: "9999-01-01T00:00:00.000000Z",
+					TMCreate: tmCreate,
+					TMUpdate: nil,
+					TMDelete: nil,
 				},
 			},
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","name":"test tag 1","detail":"test tag 1 detail","tm_create":"2021-11-23T17:55:39.712000Z","tm_update":"9999-01-01T00:00:00.000000Z","tm_delete":"9999-01-01T00:00:00.000000Z"}]`),
+				Data:       []byte(`[{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","name":"test tag 1","detail":"test tag 1 detail","tm_create":"2021-11-23T17:55:39.712Z","tm_update":null,"tm_delete":null}]`),
 			},
 		},
 		{
@@ -85,9 +87,9 @@ func TestProcessV1TagsGet(t *testing.T) {
 					},
 					Name:     "test tag 1",
 					Detail:   "test tag 1 detail",
-					TMCreate: "2021-11-23T17:55:39.712000Z",
-					TMUpdate: "9999-01-01T00:00:00.000000Z",
-					TMDelete: "9999-01-01T00:00:00.000000Z",
+					TMCreate: tmCreate,
+					TMUpdate: nil,
+					TMDelete: nil,
 				},
 				{
 					Identity: commonidentity.Identity{
@@ -96,15 +98,15 @@ func TestProcessV1TagsGet(t *testing.T) {
 					},
 					Name:     "test tag 2",
 					Detail:   "test tag 2 detail",
-					TMCreate: "2021-11-23T17:55:39.712000Z",
-					TMUpdate: "9999-01-01T00:00:00.000000Z",
-					TMDelete: "9999-01-01T00:00:00.000000Z",
+					TMCreate: tmCreate,
+					TMUpdate: nil,
+					TMDelete: nil,
 				},
 			},
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","name":"test tag 1","detail":"test tag 1 detail","tm_create":"2021-11-23T17:55:39.712000Z","tm_update":"9999-01-01T00:00:00.000000Z","tm_delete":"9999-01-01T00:00:00.000000Z"},{"id":"7379c73c-4e69-11ec-b667-4313a9abe846","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","name":"test tag 2","detail":"test tag 2 detail","tm_create":"2021-11-23T17:55:39.712000Z","tm_update":"9999-01-01T00:00:00.000000Z","tm_delete":"9999-01-01T00:00:00.000000Z"}]`),
+				Data:       []byte(`[{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","name":"test tag 1","detail":"test tag 1 detail","tm_create":"2021-11-23T17:55:39.712Z","tm_update":null,"tm_delete":null},{"id":"7379c73c-4e69-11ec-b667-4313a9abe846","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","name":"test tag 2","detail":"test tag 2 detail","tm_create":"2021-11-23T17:55:39.712Z","tm_update":null,"tm_delete":null}]`),
 			},
 		},
 	}
@@ -139,6 +141,7 @@ func TestProcessV1TagsGet(t *testing.T) {
 }
 
 func TestProcessV1TagsPost(t *testing.T) {
+	tmCreate := func() *time.Time { t := time.Date(2021, 11, 23, 17, 55, 39, 712000000, time.UTC); return &t }()
 
 	tests := []struct {
 		name    string
@@ -171,14 +174,14 @@ func TestProcessV1TagsPost(t *testing.T) {
 				},
 				Name:     "test tag1",
 				Detail:   "test tag1 detail",
-				TMCreate: "2021-11-23T17:55:39.712000Z",
-				TMUpdate: "9999-01-01T00:00:00.000000Z",
-				TMDelete: "9999-01-01T00:00:00.000000Z",
+				TMCreate: tmCreate,
+				TMUpdate: nil,
+				TMDelete: nil,
 			},
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","name":"test tag1","detail":"test tag1 detail","tm_create":"2021-11-23T17:55:39.712000Z","tm_update":"9999-01-01T00:00:00.000000Z","tm_delete":"9999-01-01T00:00:00.000000Z"}`),
+				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","name":"test tag1","detail":"test tag1 detail","tm_create":"2021-11-23T17:55:39.712Z","tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -214,6 +217,7 @@ func TestProcessV1TagsPost(t *testing.T) {
 }
 
 func TestProcessV1TagsIDGet(t *testing.T) {
+	tmCreate := func() *time.Time { t := time.Date(2021, 11, 23, 17, 55, 39, 712000000, time.UTC); return &t }()
 
 	tests := []struct {
 		name    string
@@ -241,14 +245,14 @@ func TestProcessV1TagsIDGet(t *testing.T) {
 				},
 				Name:     "test tag1",
 				Detail:   "test tag1 detail",
-				TMCreate: "2021-11-23T17:55:39.712000Z",
-				TMUpdate: "9999-01-01T00:00:00.000000Z",
-				TMDelete: "9999-01-01T00:00:00.000000Z",
+				TMCreate: tmCreate,
+				TMUpdate: nil,
+				TMDelete: nil,
 			},
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","name":"test tag1","detail":"test tag1 detail","tm_create":"2021-11-23T17:55:39.712000Z","tm_update":"9999-01-01T00:00:00.000000Z","tm_delete":"9999-01-01T00:00:00.000000Z"}`),
+				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","name":"test tag1","detail":"test tag1 detail","tm_create":"2021-11-23T17:55:39.712Z","tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -317,7 +321,7 @@ func TestProcessV1TagsIDPut(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -378,7 +382,7 @@ func TestProcessV1TagsIDDelete(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}

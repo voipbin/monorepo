@@ -78,7 +78,7 @@ func Test_EventHandlerStasisStart(t *testing.T) {
 					"domain":       "sip-service.voipbin.net",
 					"source":       "213.127.79.161",
 				},
-				TMDelete: dbhandler.DefaultTimeStamp,
+				TMDelete: nil,
 			},
 
 			expectChannelID: "1587774438.2390",

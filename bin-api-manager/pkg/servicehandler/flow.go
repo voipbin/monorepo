@@ -21,7 +21,7 @@ func (h *serviceHandler) flowGet(ctx context.Context, flowID uuid.UUID) (*fmflow
 		return nil, errors.Wrapf(err, "could not get the flow")
 	}
 
-	if res.TMDelete < defaultTimestamp {
+	if res.TMDelete != nil {
 		return nil, fmt.Errorf("not found")
 	}
 

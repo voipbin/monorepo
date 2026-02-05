@@ -47,7 +47,7 @@ func Test_Joined_type_connect(t *testing.T) {
 			bridge: &bridge.Bridge{
 				AsteriskID: "00:11:22:33:44:66",
 				ID:         "eb6d4516-38cf-11ec-9414-eb20d908d9a1",
-				TMDelete:   dbhandler.DefaultTimeStamp,
+				TMDelete:   nil,
 			},
 
 			responseConfbridge: &confbridge.Confbridge{
@@ -147,7 +147,7 @@ func Test_Joined_type_conference(t *testing.T) {
 			bridge: &bridge.Bridge{
 				AsteriskID: "00:11:22:33:44:66",
 				ID:         "eb6d4516-38cf-11ec-9414-eb20d908d9a1",
-				TMDelete:   dbhandler.DefaultTimeStamp,
+				TMDelete:   nil,
 			},
 
 			responseConfbridge: &confbridge.Confbridge{

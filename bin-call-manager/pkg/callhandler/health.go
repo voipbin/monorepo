@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"monorepo/bin-call-manager/models/call"
-	"monorepo/bin-call-manager/pkg/dbhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -37,7 +36,7 @@ func (h *callHandler) HealthCheck(ctx context.Context, id uuid.UUID, retryCount 
 	}
 
 	// validate call info
-	if c.Status == call.StatusHangup || c.TMDelete < dbhandler.DefaultTimeStamp || c.TMHangup < dbhandler.DefaultTimeStamp {
+	if c.Status == call.StatusHangup || c.TMDelete != nil || c.TMHangup != nil {
 		// the call is done already. no need to check the health anymore.
 		return
 	}
@@ -50,7 +49,7 @@ func (h *callHandler) HealthCheck(ctx context.Context, id uuid.UUID, retryCount 
 	}
 
 	// validate channel info
-	if cn.TMEnd < dbhandler.DefaultTimeStamp || cn.TMDelete < dbhandler.DefaultTimeStamp {
+	if cn.TMEnd != nil || cn.TMDelete != nil {
 		// channel's status is not valid. consider it's being terminate.
 		// increase retrycount and try again
 		retryCount++

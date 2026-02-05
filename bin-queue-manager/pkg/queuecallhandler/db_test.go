@@ -480,7 +480,7 @@ func Test_UpdateStatusService(t *testing.T) {
 
 		queuecall *queuecall.Queuecall
 
-		responseCurTime   string
+		responseCurTime   *time.Time
 		responseQueuecall *queuecall.Queuecall
 
 		expectDuration int
@@ -491,10 +491,10 @@ func Test_UpdateStatusService(t *testing.T) {
 			&queuecall.Queuecall{Identity: commonidentity.Identity{
 				ID: uuid.FromStringOrNil("d0631846-ad53-11ed-a845-47d58282b8a9"),
 			},
-				TMCreate: "2023-02-16T03:21:17.994000Z",
+				TMCreate: timePtr(time.Date(2023, time.February, 16, 3, 21, 17, 994000000, time.UTC)),
 			},
 
-			"2023-02-16T03:22:17.994000Z",
+			timePtr(time.Date(2023, time.February, 16, 3, 22, 17, 994000000, time.UTC)),
 			&queuecall.Queuecall{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d0631846-ad53-11ed-a845-47d58282b8a9"),
@@ -527,7 +527,7 @@ func Test_UpdateStatusService(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockDB.EXPECT().QueuecallSetStatusService(ctx, tt.queuecall.ID, tt.expectDuration, tt.responseCurTime).Return(nil)
 			mockDB.EXPECT().QueuecallGet(ctx, tt.queuecall.ID).Return(tt.responseQueuecall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallServiced, tt.responseQueuecall)
@@ -555,7 +555,7 @@ func Test_UpdateStatusAbandoned(t *testing.T) {
 
 		queuecall *queuecall.Queuecall
 
-		responseCurTime   string
+		responseCurTime   *time.Time
 		responseQueuecall *queuecall.Queuecall
 
 		expectDuration int
@@ -567,10 +567,10 @@ func Test_UpdateStatusAbandoned(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("1e7f1f56-ad55-11ed-8b59-8fd30a025131"),
 				},
-				TMCreate: "2023-02-16T03:21:17.994000Z",
+				TMCreate: timePtr(time.Date(2023, time.February, 16, 3, 21, 17, 994000000, time.UTC)),
 			},
 
-			"2023-02-16T03:22:17.994000Z",
+			timePtr(time.Date(2023, time.February, 16, 3, 22, 17, 994000000, time.UTC)),
 			&queuecall.Queuecall{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("1e7f1f56-ad55-11ed-8b59-8fd30a025131"),
@@ -604,7 +604,7 @@ func Test_UpdateStatusAbandoned(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockDB.EXPECT().QueuecallSetStatusAbandoned(ctx, tt.queuecall.ID, tt.expectDuration, tt.responseCurTime).Return(nil)
 			mockDB.EXPECT().QueuecallGet(ctx, tt.queuecall.ID).Return(tt.responseQueuecall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallAbandoned, tt.responseQueuecall)
@@ -631,7 +631,7 @@ func Test_UpdateStatusDone(t *testing.T) {
 
 		queuecall *queuecall.Queuecall
 
-		responseCurTime   string
+		responseCurTime   *time.Time
 		responseQueuecall *queuecall.Queuecall
 
 		expectDuration int
@@ -643,10 +643,10 @@ func Test_UpdateStatusDone(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("b9b87b66-ad55-11ed-a5a1-ff26874e502a"),
 				},
-				TMCreate: "2023-02-16T03:21:17.994000Z",
+				TMCreate: timePtr(time.Date(2023, time.February, 16, 3, 21, 17, 994000000, time.UTC)),
 			},
 
-			"2023-02-16T03:22:17.994000Z",
+			timePtr(time.Date(2023, time.February, 16, 3, 22, 17, 994000000, time.UTC)),
 			&queuecall.Queuecall{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("b9b87b66-ad55-11ed-a5a1-ff26874e502a"),
@@ -680,7 +680,7 @@ func Test_UpdateStatusDone(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockDB.EXPECT().QueuecallSetStatusDone(ctx, tt.queuecall.ID, tt.expectDuration, tt.responseCurTime).Return(nil)
 			mockDB.EXPECT().QueuecallGet(ctx, tt.queuecall.ID).Return(tt.responseQueuecall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallDone, tt.responseQueuecall)

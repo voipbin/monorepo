@@ -2,6 +2,7 @@ package campaign
 
 import (
 	"encoding/json"
+	"time"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	fmaction "monorepo/bin-flow-manager/models/action"
@@ -32,9 +33,9 @@ type WebhookMessage struct {
 
 	NextCampaignID uuid.UUID `json:"next_campaign_id"`
 
-	TMCreate string `json:"tm_create"`
-	TMUpdate string `json:"tm_update"`
-	TMDelete string `json:"tm_delete"`
+	TMCreate *time.Time `json:"tm_create"`
+	TMUpdate *time.Time `json:"tm_update"`
+	TMDelete *time.Time `json:"tm_delete"`
 }
 
 // ConvertWebhookMessage converts to the event

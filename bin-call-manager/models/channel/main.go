@@ -2,6 +2,7 @@ package channel
 
 import (
 	"strings"
+	"time"
 
 	"monorepo/bin-call-manager/models/ari"
 )
@@ -38,13 +39,13 @@ type Channel struct {
 	Direction     Direction     `json:"direction"`
 	MuteDirection MuteDirection `json:"mute_direction"`
 
-	TMAnswer  string `json:"tm_answer"`
-	TMRinging string `json:"tm_ringing"`
-	TMEnd     string `json:"tm_end"`
+	TMAnswer  *time.Time `json:"tm_answer"`
+	TMRinging *time.Time `json:"tm_ringing"`
+	TMEnd     *time.Time `json:"tm_end"`
 
-	TMCreate string `json:"tm_create"`
-	TMUpdate string `json:"tm_update"`
-	TMDelete string `json:"tm_delete"`
+	TMCreate *time.Time `json:"tm_create"`
+	TMUpdate *time.Time `json:"tm_update"`
+	TMDelete *time.Time `json:"tm_delete"`
 }
 
 // Tech represent channel's technology
@@ -197,7 +198,7 @@ const (
 func NewChannelByChannelCreated(e *ari.ChannelCreated) *Channel {
 	c := NewChannelByARIChannel(&e.Channel)
 	c.AsteriskID = e.AsteriskID
-	c.TMCreate = string(e.Timestamp)
+	c.TMCreate = e.Timestamp.ToTime()
 
 	return c
 }
@@ -206,7 +207,7 @@ func NewChannelByChannelCreated(e *ari.ChannelCreated) *Channel {
 func NewChannelByStasisStart(e *ari.StasisStart) *Channel {
 	c := NewChannelByARIChannel(&e.Channel)
 	c.AsteriskID = e.AsteriskID
-	c.TMCreate = string(e.Timestamp)
+	c.TMCreate = e.Timestamp.ToTime()
 
 	// get stasis name and stasis data
 	stasisData := map[StasisDataType]string{}

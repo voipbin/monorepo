@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
+	"time"
 
 	bmbilling "monorepo/bin-billing-manager/models/billing"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -308,6 +309,8 @@ func Test_Register_error(t *testing.T) {
 
 func Test_Update(t *testing.T) {
 
+	curTime := time.Date(2021, 2, 26, 18, 26, 49, 0, time.UTC)
+
 	tests := []struct {
 		name string
 
@@ -341,8 +344,8 @@ func Test_Update(t *testing.T) {
 				Status:              number.StatusActive,
 				T38Enabled:          false,
 				EmergencyEnabled:    false,
-				TMPurchase:          "2021-02-26T18:26:49.000Z",
-				TMCreate:            "2021-02-26T18:26:49.000Z",
+				TMPurchase:          &curTime,
+				TMCreate:            &curTime,
 			},
 		},
 	}
@@ -382,6 +385,8 @@ func Test_Update(t *testing.T) {
 
 func Test_List(t *testing.T) {
 
+	curTime := time.Date(2021, 2, 26, 18, 26, 49, 0, time.UTC)
+
 	type test struct {
 		name string
 
@@ -415,8 +420,8 @@ func Test_List(t *testing.T) {
 					Status:              number.StatusActive,
 					T38Enabled:          false,
 					EmergencyEnabled:    false,
-					TMPurchase:          "2021-02-26T18:26:49.000Z",
-					TMCreate:            "2021-02-26T18:26:49.000Z",
+					TMPurchase:          &curTime,
+					TMCreate:            &curTime,
 				},
 			},
 		},

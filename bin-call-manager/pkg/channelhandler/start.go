@@ -8,7 +8,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-call-manager/models/channel"
-	"monorepo/bin-call-manager/pkg/dbhandler"
 )
 
 // StartSnoop starts snoop channel
@@ -28,7 +27,7 @@ func (h *channelHandler) StartSnoop(ctx context.Context, id string, snoopID stri
 		return nil, errors.Wrap(err, "could not get channel info")
 	}
 
-	if cn.TMDelete < dbhandler.DefaultTimeStamp {
+	if cn.TMDelete != nil {
 		log.Errorf("The channel has hungup already.")
 		return nil, fmt.Errorf("the channel has hungup already")
 	}

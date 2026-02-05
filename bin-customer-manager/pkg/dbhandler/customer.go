@@ -30,12 +30,12 @@ func (h *handler) customerGetFromRow(row *sql.Rows) (*customer.Customer, error) 
 
 // CustomerCreate creates new customer record and returns the created customer record.
 func (h *handler) CustomerCreate(ctx context.Context, c *customer.Customer) error {
-	now := h.utilHandler.TimeGetCurTime()
+	now := h.utilHandler.TimeNow()
 
 	// Set timestamps
 	c.TMCreate = now
-	c.TMUpdate = DefaultTimeStamp
-	c.TMDelete = DefaultTimeStamp
+	c.TMUpdate = nil
+	c.TMDelete = nil
 
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(c)
@@ -208,7 +208,7 @@ func (h *handler) CustomerUpdate(ctx context.Context, id uuid.UUID, fields map[c
 		return nil
 	}
 
-	fields[customer.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
+	fields[customer.FieldTMUpdate] = h.utilHandler.TimeNow()
 
 	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
@@ -235,7 +235,7 @@ func (h *handler) CustomerUpdate(ctx context.Context, id uuid.UUID, fields map[c
 
 // CustomerDelete deletes the customer.
 func (h *handler) CustomerDelete(ctx context.Context, id uuid.UUID) error {
-	ts := h.utilHandler.TimeGetCurTime()
+	ts := h.utilHandler.TimeNow()
 
 	fields := map[customer.Field]any{
 		customer.FieldTMUpdate: ts,

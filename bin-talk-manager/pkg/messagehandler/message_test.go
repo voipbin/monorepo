@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -18,6 +19,10 @@ import (
 	"monorepo/bin-talk-manager/models/chat"
 	"monorepo/bin-talk-manager/pkg/dbhandler"
 )
+
+func timePtr(t time.Time) *time.Time {
+	return &t
+}
 
 func Test_MessageCreate(t *testing.T) {
 	customerID := uuid.FromStringOrNil("ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4")
@@ -109,7 +114,7 @@ func Test_MessageCreate(t *testing.T) {
 				ChatID:   chatID,
 				Type:     message.TypeNormal,
 				Text:     "Original message",
-				TMDelete: "", // Not deleted
+				TMDelete: nil, // Not deleted
 			},
 
 			expectError: false,
@@ -152,7 +157,7 @@ func Test_MessageCreate(t *testing.T) {
 				ChatID:   chatID,
 				Type:     message.TypeNormal,
 				Text:     "Deleted parent message",
-				TMDelete: "2024-01-17T00:00:00.000000Z", // Soft-deleted
+				TMDelete: timePtr(time.Date(2024, 1, 17, 0, 0, 0, 0, time.UTC)), // Soft-deleted
 			},
 
 			expectError: false, // MUST NOT error - soft-deleted parents allowed
@@ -595,7 +600,7 @@ func Test_MessageCreate_error(t *testing.T) {
 				ChatID:   chatID2, // Different talk!
 				Type:     message.TypeNormal,
 				Text:     "Message from another talk",
-				TMDelete: "",
+				TMDelete: nil,
 			},
 			getParentError: nil,
 
@@ -740,7 +745,7 @@ func Test_MessageGet(t *testing.T) {
 				Type:     message.TypeNormal,
 				Text:     "Hello, world!",
 				Metadata: message.Metadata{Reactions: []message.Reaction{}},
-				TMCreate: "2024-01-15T10:30:00.000000Z",
+				TMCreate: timePtr(time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)),
 			},
 		},
 		{
@@ -762,7 +767,7 @@ func Test_MessageGet(t *testing.T) {
 				Type:     message.TypeNormal,
 				Text:     "This is a reply",
 				Metadata: message.Metadata{Reactions: []message.Reaction{}},
-				TMCreate: "2024-01-15T11:00:00.000000Z",
+				TMCreate: timePtr(time.Date(2024, 1, 15, 11, 0, 0, 0, time.UTC)),
 			},
 		},
 	}
@@ -888,7 +893,7 @@ func Test_MessageList(t *testing.T) {
 					Type:     message.TypeNormal,
 					Text:     "First message",
 					Metadata: message.Metadata{Reactions: []message.Reaction{}},
-					TMCreate: "2024-01-15T10:30:00.000000Z",
+					TMCreate: timePtr(time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)),
 				},
 				{
 					Identity: commonidentity.Identity{
@@ -903,7 +908,7 @@ func Test_MessageList(t *testing.T) {
 					Type:     message.TypeNormal,
 					Text:     "Second message",
 					Metadata: message.Metadata{Reactions: []message.Reaction{}},
-					TMCreate: "2024-01-15T11:00:00.000000Z",
+					TMCreate: timePtr(time.Date(2024, 1, 15, 11, 0, 0, 0, time.UTC)),
 				},
 			},
 		},
@@ -933,7 +938,7 @@ func Test_MessageList(t *testing.T) {
 					Type:     message.TypeNormal,
 					Text:     "Agent message",
 					Metadata: message.Metadata{Reactions: []message.Reaction{}},
-					TMCreate: "2024-01-15T12:00:00.000000Z",
+					TMCreate: timePtr(time.Date(2024, 1, 15, 12, 0, 0, 0, time.UTC)),
 				},
 			},
 		},
@@ -1065,8 +1070,8 @@ func Test_MessageDelete(t *testing.T) {
 				Type:     message.TypeNormal,
 				Text:     "Message to delete",
 				Metadata: message.Metadata{Reactions: []message.Reaction{}},
-				TMCreate: "2024-01-15T10:30:00.000000Z",
-				TMDelete: "",
+				TMCreate: timePtr(time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)),
+				TMDelete: nil,
 			},
 			responseUpdatedMessage: &message.Message{
 				Identity: commonidentity.Identity{
@@ -1081,8 +1086,8 @@ func Test_MessageDelete(t *testing.T) {
 				Type:     message.TypeNormal,
 				Text:     "Message to delete",
 				Metadata: message.Metadata{Reactions: []message.Reaction{}},
-				TMCreate: "2024-01-15T10:30:00.000000Z",
-				TMDelete: "2024-01-17T15:00:00.000000Z",
+				TMCreate: timePtr(time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)),
+				TMDelete: timePtr(time.Date(2024, 1, 17, 15, 0, 0, 0, time.UTC)),
 			},
 		},
 	}
@@ -1126,7 +1131,7 @@ func Test_MessageDelete(t *testing.T) {
 			}
 
 			// Verify TMDelete is set
-			if res.TMDelete == "" {
+			if res.TMDelete == nil {
 				t.Errorf("Wrong match. TMDelete should be set after deletion")
 			}
 		})
@@ -1171,7 +1176,7 @@ func Test_MessageDelete_error(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("809656e2-305e-43cd-8d7b-ccb44373dddb"),
 				},
 				ChatID:   uuid.FromStringOrNil("ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4"),
-				TMDelete: "2024-01-17T10:00:00.000000Z", // Already deleted
+				TMDelete: timePtr(time.Date(2024, 1, 17, 10, 0, 0, 0, time.UTC)), // Already deleted
 			},
 			getError: nil,
 		},
@@ -1186,7 +1191,7 @@ func Test_MessageDelete_error(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
 				},
 				ChatID:   uuid.FromStringOrNil("ac810dc4-298c-11ee-984c-ebb7811c4114"),
-				TMDelete: "",
+				TMDelete: nil,
 			},
 			getError:    nil,
 			deleteError: fmt.Errorf("database error"),
@@ -1202,7 +1207,7 @@ func Test_MessageDelete_error(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("ba3ad8aa-cb0d-47fe-beef-f7c76c61a9f4"),
 				},
 				ChatID:   uuid.FromStringOrNil("31536998-da36-11ee-976a-b31b049d62c2"),
-				TMDelete: "",
+				TMDelete: nil,
 			},
 			getError:      nil,
 			deleteError:   nil,
@@ -1233,7 +1238,7 @@ func Test_MessageDelete_error(t *testing.T) {
 			// Only mock delete if first get succeeded and message not already deleted
 			if tt.getError == nil &&
 				tt.responseMessage != nil &&
-				tt.responseMessage.TMDelete == "" {
+				tt.responseMessage.TMDelete == nil {
 				mockDB.EXPECT().MessageDelete(ctx, tt.id).Return(tt.deleteError)
 
 				// Only mock second get if delete succeeded

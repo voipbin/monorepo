@@ -6,8 +6,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-
-	"monorepo/bin-call-manager/pkg/dbhandler"
 )
 
 // PlaybackStop stops the given channel's playback
@@ -23,7 +21,7 @@ func (h *channelHandler) PlaybackStop(ctx context.Context, id string) error {
 		return errors.Wrap(err, "could not get channel info")
 	}
 
-	if cn.TMDelete < dbhandler.DefaultTimeStamp {
+	if cn.TMDelete != nil {
 		log.Errorf("The channel has hungup already.")
 		return fmt.Errorf("the channel has hungup already")
 	}
@@ -63,7 +61,7 @@ func (h *channelHandler) Play(
 		return errors.Wrap(err, "could not get channel info")
 	}
 
-	if cn.TMDelete < dbhandler.DefaultTimeStamp {
+	if cn.TMDelete != nil {
 		log.Errorf("The channel has hungup already.")
 		return fmt.Errorf("the channel has hungup already")
 	}

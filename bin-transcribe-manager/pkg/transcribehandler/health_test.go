@@ -47,15 +47,15 @@ func Test_HealthCheck(t *testing.T) {
 				ReferenceType: transcribe.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("3f7775c7-af75-4fa7-85f2-3e6e9d27663f"),
 				Status:        transcribe.StatusProgressing,
-				TMDelete:      dbhandler.DefaultTimeStamp,
+				TMDelete:      nil,
 			},
 			responseCall: &cmcall.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("3f7775c7-af75-4fa7-85f2-3e6e9d27663f"),
 				},
 				Status:   cmcall.StatusProgressing,
-				TMHangup: dbhandler.DefaultTimeStamp,
-				TMDelete: dbhandler.DefaultTimeStamp,
+				TMHangup: nil,
+				TMDelete: nil,
 			},
 
 			expectRetryCount: 0,
@@ -73,13 +73,13 @@ func Test_HealthCheck(t *testing.T) {
 				ReferenceType: transcribe.ReferenceTypeConfbridge,
 				ReferenceID:   uuid.FromStringOrNil("fe812e35-b30e-4b38-9705-4cc22cbe3678"),
 				Status:        transcribe.StatusProgressing,
-				TMDelete:      dbhandler.DefaultTimeStamp,
+				TMDelete:      nil,
 			},
 			responseConfbridge: &cmconfbridge.Confbridge{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("fe812e35-b30e-4b38-9705-4cc22cbe3678"),
 				},
-				TMDelete: dbhandler.DefaultTimeStamp,
+				TMDelete: nil,
 			},
 
 			expectRetryCount: 0,
@@ -96,14 +96,14 @@ func Test_HealthCheck(t *testing.T) {
 				},
 				ReferenceType: transcribe.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("6f459316-678f-4c22-aa16-5f91cd8c4a2d"),
-				TMDelete:      dbhandler.DefaultTimeStamp,
+				TMDelete:      nil,
 			},
 			responseCall: &cmcall.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("6f459316-678f-4c22-aa16-5f91cd8c4a2d"),
 				},
 				Status:   cmcall.StatusHangup,
-				TMDelete: dbhandler.DefaultTimeStamp,
+				TMDelete: nil,
 			},
 
 			expectRetryCount: 1,
@@ -120,12 +120,13 @@ func Test_HealthCheck(t *testing.T) {
 				},
 				ReferenceType: transcribe.ReferenceTypeConfbridge,
 				ReferenceID:   uuid.FromStringOrNil("cdc3edd9-ee22-43ec-a598-4f27c896a4ca"),
-				TMDelete:      dbhandler.DefaultTimeStamp,
+				TMDelete:      nil,
 			},
 			responseConfbridge: &cmconfbridge.Confbridge{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("cdc3edd9-ee22-43ec-a598-4f27c896a4ca"),
 				},
+				TMDelete: func() *time.Time { t := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC); return &t }(),
 			},
 
 			expectRetryCount: 1,

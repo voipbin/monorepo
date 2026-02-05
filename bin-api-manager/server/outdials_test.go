@@ -51,13 +51,13 @@ func Test_outdialsGET(t *testing.T) {
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("438f0ccc-c64a-11ec-9ac6-b729ca9f28bf"),
 					},
-					TMCreate: "2020-09-20T03:23:21.995000Z",
+					TMCreate: timePtr("2020-09-20T03:23:21.995000Z"),
 				},
 			},
 
 			expectPageSize:  10,
 			expectPageToken: "2021-03-02T03:23:20.995000Z",
-			expectRes:       `{"result":[{"id":"438f0ccc-c64a-11ec-9ac6-b729ca9f28bf","customer_id":"00000000-0000-0000-0000-000000000000","campaign_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","tm_create":"2020-09-20T03:23:21.995000Z","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000Z"}`,
+			expectRes:       `{"result":[{"id":"438f0ccc-c64a-11ec-9ac6-b729ca9f28bf","customer_id":"00000000-0000-0000-0000-000000000000","campaign_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null}],"next_page_token":"2020-09-20T03:23:21.995000Z"}`,
 		},
 		{
 			name: "more than 2 items",
@@ -74,25 +74,25 @@ func Test_outdialsGET(t *testing.T) {
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("ad4ec08a-c64a-11ec-ad4d-2b9c85718834"),
 					},
-					TMCreate: "2020-09-20T03:23:21.995000Z",
+					TMCreate: timePtr("2020-09-20T03:23:21.995000Z"),
 				},
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("b088244e-c64a-11ec-afb8-2f6ebf108ed8"),
 					},
-					TMCreate: "2020-09-20T03:23:22.995000Z",
+					TMCreate: timePtr("2020-09-20T03:23:22.995000Z"),
 				},
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("c3e247e0-c64a-11ec-b415-c786d3fa957c"),
 					},
-					TMCreate: "2020-09-20T03:23:23.995000Z",
+					TMCreate: timePtr("2020-09-20T03:23:23.995000Z"),
 				},
 			},
 
 			expectPageSize:  10,
 			expectPageToken: "2021-03-02T03:23:20.995000Z",
-			expectRes:       `{"result":[{"id":"ad4ec08a-c64a-11ec-ad4d-2b9c85718834","customer_id":"00000000-0000-0000-0000-000000000000","campaign_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","tm_create":"2020-09-20T03:23:21.995000Z","tm_update":"","tm_delete":""},{"id":"b088244e-c64a-11ec-afb8-2f6ebf108ed8","customer_id":"00000000-0000-0000-0000-000000000000","campaign_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","tm_create":"2020-09-20T03:23:22.995000Z","tm_update":"","tm_delete":""},{"id":"c3e247e0-c64a-11ec-b415-c786d3fa957c","customer_id":"00000000-0000-0000-0000-000000000000","campaign_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","tm_create":"2020-09-20T03:23:23.995000Z","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:23.995000Z"}`,
+			expectRes:       `{"result":[{"id":"ad4ec08a-c64a-11ec-ad4d-2b9c85718834","customer_id":"00000000-0000-0000-0000-000000000000","campaign_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null},{"id":"b088244e-c64a-11ec-afb8-2f6ebf108ed8","customer_id":"00000000-0000-0000-0000-000000000000","campaign_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","tm_create":"2020-09-20T03:23:22.995Z","tm_update":null,"tm_delete":null},{"id":"c3e247e0-c64a-11ec-b415-c786d3fa957c","customer_id":"00000000-0000-0000-0000-000000000000","campaign_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","tm_create":"2020-09-20T03:23:23.995Z","tm_update":null,"tm_delete":null}],"next_page_token":"2020-09-20T03:23:23.995000Z"}`,
 		},
 	}
 
@@ -167,7 +167,7 @@ func Test_outdialsPOST(t *testing.T) {
 			expectName:       "test name",
 			expectDetail:     "test detail",
 			expectData:       "test data",
-			expectRes:        `{"id":"99b197a5-010e-4f4e-b9fc-aae44e241ddb","customer_id":"00000000-0000-0000-0000-000000000000","campaign_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes:        `{"id":"99b197a5-010e-4f4e-b9fc-aae44e241ddb","customer_id":"00000000-0000-0000-0000-000000000000","campaign_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -236,7 +236,7 @@ func Test_outdialsIDGET(t *testing.T) {
 			},
 
 			expectOutdialID: uuid.FromStringOrNil("3bb463ed-aa6e-4b64-9fc5-b1fc62096b67"),
-			expectRes:       `{"id":"3bb463ed-aa6e-4b64-9fc5-b1fc62096b67","customer_id":"00000000-0000-0000-0000-000000000000","campaign_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes:       `{"id":"3bb463ed-aa6e-4b64-9fc5-b1fc62096b67","customer_id":"00000000-0000-0000-0000-000000000000","campaign_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -374,7 +374,7 @@ func Test_outdialsIDPUT(t *testing.T) {
 			expectOutdialID: uuid.FromStringOrNil("38114323-144a-499c-bfde-f3d8af114a7a"),
 			expectName:      "test name",
 			expectDetail:    "test detail",
-			expectRes:       `{"id":"38114323-144a-499c-bfde-f3d8af114a7a","customer_id":"00000000-0000-0000-0000-000000000000","campaign_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes:       `{"id":"38114323-144a-499c-bfde-f3d8af114a7a","customer_id":"00000000-0000-0000-0000-000000000000","campaign_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -447,7 +447,7 @@ func Test_outdialsIDCampaignIDPUT(t *testing.T) {
 
 			expectOutdialID:  uuid.FromStringOrNil("607ea822-121d-4a52-ad3f-3f5320445ec8"),
 			expectCampaignID: uuid.FromStringOrNil("caad42fb-8266-4a24-be3f-9963ba14a20a"),
-			expectRes:        `{"id":"607ea822-121d-4a52-ad3f-3f5320445ec8","customer_id":"00000000-0000-0000-0000-000000000000","campaign_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes:        `{"id":"607ea822-121d-4a52-ad3f-3f5320445ec8","customer_id":"00000000-0000-0000-0000-000000000000","campaign_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -520,7 +520,7 @@ func Test_outdialsIDDataPUT(t *testing.T) {
 
 			expectOutdialID: uuid.FromStringOrNil("056eefbd-8afa-402a-8c9e-681040ec8803"),
 			expectData:      "test data",
-			expectRes:       `{"id":"056eefbd-8afa-402a-8c9e-681040ec8803","customer_id":"00000000-0000-0000-0000-000000000000","campaign_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes:       `{"id":"056eefbd-8afa-402a-8c9e-681040ec8803","customer_id":"00000000-0000-0000-0000-000000000000","campaign_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -620,7 +620,7 @@ func Test_outdialsIDTargetsPOST(t *testing.T) {
 				Type:   commonaddress.TypeTel,
 				Target: "+821100000005",
 			},
-			expectRes: `{"id":"e3097653-4c68-4915-add3-78b12a4ba151","outdial_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","status":"","destination_0":null,"destination_1":null,"destination_2":null,"destination_3":null,"destination_4":null,"try_count_0":0,"try_count_1":0,"try_count_2":0,"try_count_3":0,"try_count_4":0,"tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes: `{"id":"e3097653-4c68-4915-add3-78b12a4ba151","outdial_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","status":"","destination_0":null,"destination_1":null,"destination_2":null,"destination_3":null,"destination_4":null,"try_count_0":0,"try_count_1":0,"try_count_2":0,"try_count_3":0,"try_count_4":0,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -689,7 +689,7 @@ func Test_outdialsIDTargetsIDGET(t *testing.T) {
 
 			expectOutdialID:       uuid.FromStringOrNil("112950f8-e3d3-4585-b858-125a59f8f51f"),
 			expectOutdialtargetID: uuid.FromStringOrNil("86a52dde-c523-11ec-a8b0-53d9628a5d7f"),
-			expectRes:             `{"id":"86a52dde-c523-11ec-a8b0-53d9628a5d7f","outdial_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","status":"","destination_0":null,"destination_1":null,"destination_2":null,"destination_3":null,"destination_4":null,"try_count_0":0,"try_count_1":0,"try_count_2":0,"try_count_3":0,"try_count_4":0,"tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes:             `{"id":"86a52dde-c523-11ec-a8b0-53d9628a5d7f","outdial_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","status":"","destination_0":null,"destination_1":null,"destination_2":null,"destination_3":null,"destination_4":null,"try_count_0":0,"try_count_1":0,"try_count_2":0,"try_count_3":0,"try_count_4":0,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -758,7 +758,7 @@ func Test_outdialsIDTargetsIDDELETE(t *testing.T) {
 
 			expectOutdialID:       uuid.FromStringOrNil("112950f8-e3d3-4585-b858-125a59f8f51f"),
 			expectOutdialtargetID: uuid.FromStringOrNil("0adb2487-eea7-4ec9-bb7f-b2b2aa5af49e"),
-			expectRes:             `{"id":"0adb2487-eea7-4ec9-bb7f-b2b2aa5af49e","outdial_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","status":"","destination_0":null,"destination_1":null,"destination_2":null,"destination_3":null,"destination_4":null,"try_count_0":0,"try_count_1":0,"try_count_2":0,"try_count_3":0,"try_count_4":0,"tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes:             `{"id":"0adb2487-eea7-4ec9-bb7f-b2b2aa5af49e","outdial_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","status":"","destination_0":null,"destination_1":null,"destination_2":null,"destination_3":null,"destination_4":null,"try_count_0":0,"try_count_1":0,"try_count_2":0,"try_count_3":0,"try_count_4":0,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -826,14 +826,14 @@ func Test_outdialsIDTargetGET(t *testing.T) {
 			responseOutdialtargets: []*omoutdialtarget.WebhookMessage{
 				{
 					ID:       uuid.FromStringOrNil("80fcacd4-c82c-11ec-b008-67e3b5299bec"),
-					TMCreate: "2020-09-20T03:23:21.995000Z",
+					TMCreate: timePtr("2020-09-20T03:23:21.995000Z"),
 				},
 			},
 
 			expectOutdialID: uuid.FromStringOrNil("fe7a06b6-c82c-11ec-89fd-f741623099f0"),
 			expectPageSize:  10,
 			expectPageToken: "2020-09-20T03:23:21.995000Z",
-			expectRes:       `{"result":[{"id":"80fcacd4-c82c-11ec-b008-67e3b5299bec","outdial_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","status":"","destination_0":null,"destination_1":null,"destination_2":null,"destination_3":null,"destination_4":null,"try_count_0":0,"try_count_1":0,"try_count_2":0,"try_count_3":0,"try_count_4":0,"tm_create":"2020-09-20T03:23:21.995000Z","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000Z"}`,
+			expectRes:       `{"result":[{"id":"80fcacd4-c82c-11ec-b008-67e3b5299bec","outdial_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","status":"","destination_0":null,"destination_1":null,"destination_2":null,"destination_3":null,"destination_4":null,"try_count_0":0,"try_count_1":0,"try_count_2":0,"try_count_3":0,"try_count_4":0,"tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null}],"next_page_token":"2020-09-20T03:23:21.995000Z"}`,
 		},
 		{
 			name: "more than 2 items",
@@ -848,22 +848,22 @@ func Test_outdialsIDTargetGET(t *testing.T) {
 			responseOutdialtargets: []*omoutdialtarget.WebhookMessage{
 				{
 					ID:       uuid.FromStringOrNil("340757d8-c82e-11ec-92ef-235422080f76"),
-					TMCreate: "2020-09-20T03:23:21.995000Z",
+					TMCreate: timePtr("2020-09-20T03:23:21.995000Z"),
 				},
 				{
 					ID:       uuid.FromStringOrNil("34353180-c82e-11ec-b8f2-87eaa2dc5a1b"),
-					TMCreate: "2020-09-20T03:23:22.995000Z",
+					TMCreate: timePtr("2020-09-20T03:23:22.995000Z"),
 				},
 				{
 					ID:       uuid.FromStringOrNil("61f53c3c-c82e-11ec-ba3d-f387359c8014"),
-					TMCreate: "2020-09-20T03:23:23.995000Z",
+					TMCreate: timePtr("2020-09-20T03:23:23.995000Z"),
 				},
 			},
 
 			expectOutdialID: uuid.FromStringOrNil("33d8b93c-c82e-11ec-b630-f304b7d48448"),
 			expectPageSize:  15,
 			expectPageToken: "2020-09-20T03:23:21.995000Z",
-			expectRes:       `{"result":[{"id":"340757d8-c82e-11ec-92ef-235422080f76","outdial_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","status":"","destination_0":null,"destination_1":null,"destination_2":null,"destination_3":null,"destination_4":null,"try_count_0":0,"try_count_1":0,"try_count_2":0,"try_count_3":0,"try_count_4":0,"tm_create":"2020-09-20T03:23:21.995000Z","tm_update":"","tm_delete":""},{"id":"34353180-c82e-11ec-b8f2-87eaa2dc5a1b","outdial_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","status":"","destination_0":null,"destination_1":null,"destination_2":null,"destination_3":null,"destination_4":null,"try_count_0":0,"try_count_1":0,"try_count_2":0,"try_count_3":0,"try_count_4":0,"tm_create":"2020-09-20T03:23:22.995000Z","tm_update":"","tm_delete":""},{"id":"61f53c3c-c82e-11ec-ba3d-f387359c8014","outdial_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","status":"","destination_0":null,"destination_1":null,"destination_2":null,"destination_3":null,"destination_4":null,"try_count_0":0,"try_count_1":0,"try_count_2":0,"try_count_3":0,"try_count_4":0,"tm_create":"2020-09-20T03:23:23.995000Z","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:23.995000Z"}`,
+			expectRes:       `{"result":[{"id":"340757d8-c82e-11ec-92ef-235422080f76","outdial_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","status":"","destination_0":null,"destination_1":null,"destination_2":null,"destination_3":null,"destination_4":null,"try_count_0":0,"try_count_1":0,"try_count_2":0,"try_count_3":0,"try_count_4":0,"tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null},{"id":"34353180-c82e-11ec-b8f2-87eaa2dc5a1b","outdial_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","status":"","destination_0":null,"destination_1":null,"destination_2":null,"destination_3":null,"destination_4":null,"try_count_0":0,"try_count_1":0,"try_count_2":0,"try_count_3":0,"try_count_4":0,"tm_create":"2020-09-20T03:23:22.995Z","tm_update":null,"tm_delete":null},{"id":"61f53c3c-c82e-11ec-ba3d-f387359c8014","outdial_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","status":"","destination_0":null,"destination_1":null,"destination_2":null,"destination_3":null,"destination_4":null,"try_count_0":0,"try_count_1":0,"try_count_2":0,"try_count_3":0,"try_count_4":0,"tm_create":"2020-09-20T03:23:23.995Z","tm_update":null,"tm_delete":null}],"next_page_token":"2020-09-20T03:23:23.995000Z"}`,
 		},
 	}
 

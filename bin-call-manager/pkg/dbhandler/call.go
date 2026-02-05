@@ -47,15 +47,15 @@ func (h *handler) callGetFromRow(row *sql.Rows) (*call.Call, error) {
 
 // CallCreate creates new call record.
 func (h *handler) CallCreate(ctx context.Context, c *call.Call) error {
-	now := h.utilHandler.TimeGetCurTime()
+	now := h.utilHandler.TimeNow()
 
 	// Set timestamps
 	c.TMCreate = now
-	c.TMUpdate = commondatabasehandler.DefaultTimeStamp
-	c.TMDelete = commondatabasehandler.DefaultTimeStamp
-	c.TMRinging = commondatabasehandler.DefaultTimeStamp
-	c.TMProgressing = commondatabasehandler.DefaultTimeStamp
-	c.TMHangup = commondatabasehandler.DefaultTimeStamp
+	c.TMUpdate = nil
+	c.TMDelete = nil
+	c.TMRinging = nil
+	c.TMProgressing = nil
+	c.TMHangup = nil
 
 	// Initialize nil slices
 	if c.ChainedCallIDs == nil {
@@ -209,7 +209,7 @@ func (h *handler) CallUpdate(ctx context.Context, id uuid.UUID, fields map[call.
 
 	// Only set TMUpdate if it's not already provided
 	if _, ok := fields[call.FieldTMUpdate]; !ok {
-		fields[call.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
+		fields[call.FieldTMUpdate] = h.utilHandler.TimeNow()
 	}
 
 	tmpFields, err := commondatabasehandler.PrepareFields(fields)
@@ -244,7 +244,7 @@ func (h *handler) CallSetBridgeID(ctx context.Context, id uuid.UUID, bridgeID st
 
 // CallSetStatusRinging sets the call status to ringing
 func (h *handler) CallSetStatusRinging(ctx context.Context, id uuid.UUID) error {
-	ts := h.utilHandler.TimeGetCurTime()
+	ts := h.utilHandler.TimeNow()
 	return h.CallUpdate(ctx, id, map[call.Field]any{
 		call.FieldStatus:    call.StatusRinging,
 		call.FieldTMRinging: ts,
@@ -254,7 +254,7 @@ func (h *handler) CallSetStatusRinging(ctx context.Context, id uuid.UUID) error 
 
 // CallSetStatusProgressing sets the call status to progressing
 func (h *handler) CallSetStatusProgressing(ctx context.Context, id uuid.UUID) error {
-	ts := h.utilHandler.TimeGetCurTime()
+	ts := h.utilHandler.TimeNow()
 	return h.CallUpdate(ctx, id, map[call.Field]any{
 		call.FieldStatus:        call.StatusProgressing,
 		call.FieldTMProgressing: ts,
@@ -271,7 +271,7 @@ func (h *handler) CallSetStatus(ctx context.Context, id uuid.UUID, status call.S
 
 // CallSetHangup sets the call status to hangup
 func (h *handler) CallSetHangup(ctx context.Context, id uuid.UUID, reason call.HangupReason, hangupBy call.HangupBy) error {
-	ts := h.utilHandler.TimeGetCurTime()
+	ts := h.utilHandler.TimeNow()
 	return h.CallUpdate(ctx, id, map[call.Field]any{
 		call.FieldStatus:       call.StatusHangup,
 		call.FieldHangupBy:     hangupBy,
@@ -385,7 +385,7 @@ func (h *handler) CallAddChainedCallID(ctx context.Context, id, chainedCallID uu
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, chainedCallID.String(), h.utilHandler.TimeGetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, chainedCallID.String(), h.utilHandler.TimeNow(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CallAddChainedCallID. err: %v", err)
 	}
@@ -417,7 +417,7 @@ func (h *handler) CallRemoveChainedCallID(ctx context.Context, id, chainedCallID
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, chainedCallID.String(), h.utilHandler.TimeGetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, chainedCallID.String(), h.utilHandler.TimeNow(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CallRemoveChainedCallID. err: %v", err)
 	}
@@ -473,7 +473,7 @@ func (h *handler) CallAddRecordingIDs(ctx context.Context, id uuid.UUID, recordI
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, recordID.String(), h.utilHandler.TimeGetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, recordID.String(), h.utilHandler.TimeNow(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CallAddRecordingIDs. err: %v", err)
 	}
@@ -550,7 +550,7 @@ func (h *handler) CallTXAddChainedCallID(tx *sql.Tx, id, chainedCallID uuid.UUID
 		id = ?
 	`
 
-	_, err := tx.Exec(q, chainedCallID.String(), h.utilHandler.TimeGetCurTime(), id.Bytes())
+	_, err := tx.Exec(q, chainedCallID.String(), h.utilHandler.TimeNow(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CallAddChainedCallID. err: %v", err)
 	}
@@ -582,7 +582,7 @@ func (h *handler) CallTXRemoveChainedCallID(tx *sql.Tx, id, chainedCallID uuid.U
 		id = ?
 	`
 
-	_, err := tx.Exec(q, chainedCallID.String(), h.utilHandler.TimeGetCurTime(), id.Bytes())
+	_, err := tx.Exec(q, chainedCallID.String(), h.utilHandler.TimeNow(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. CallRemoveChainedCallID. err: %v", err)
 	}
@@ -602,7 +602,7 @@ func (h *handler) CallSetActionNextHold(ctx context.Context, id uuid.UUID, hold 
 
 // CallDelete deletes the call
 func (h *handler) CallDelete(ctx context.Context, id uuid.UUID) error {
-	ts := h.utilHandler.TimeGetCurTime()
+	ts := h.utilHandler.TimeNow()
 
 	fields := map[call.Field]any{
 		call.FieldTMUpdate: ts,

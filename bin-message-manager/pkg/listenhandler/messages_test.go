@@ -54,7 +54,7 @@ func Test_processV1MessagesGet(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"eeafd418-7a4e-11eb-8750-9bb0ca1d7926","customer_id":"197609d6-a29b-11ec-b884-5b8a227db58a","type":"","source":null,"targets":null,"provider_name":"","provider_reference_id":"","text":"","medias":null,"direction":"","tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"eeafd418-7a4e-11eb-8750-9bb0ca1d7926","customer_id":"197609d6-a29b-11ec-b884-5b8a227db58a","type":"","source":null,"targets":null,"provider_name":"","provider_reference_id":"","text":"","medias":null,"direction":"","tm_create":null,"tm_update":null,"tm_delete":null}]`),
 			},
 		},
 		{
@@ -88,7 +88,7 @@ func Test_processV1MessagesGet(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"760f30fa-a29b-11ec-87e7-2fc5bdc8739b","customer_id":"75dd760a-a29b-11ec-ba70-cb282aa1d594","type":"","source":null,"targets":null,"provider_name":"","provider_reference_id":"","text":"","medias":null,"direction":"","tm_create":"","tm_update":"","tm_delete":""},{"id":"7639e39a-a29b-11ec-b393-5b239b119501","customer_id":"75dd760a-a29b-11ec-ba70-cb282aa1d594","type":"","source":null,"targets":null,"provider_name":"","provider_reference_id":"","text":"","medias":null,"direction":"","tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"760f30fa-a29b-11ec-87e7-2fc5bdc8739b","customer_id":"75dd760a-a29b-11ec-ba70-cb282aa1d594","type":"","source":null,"targets":null,"provider_name":"","provider_reference_id":"","text":"","medias":null,"direction":"","tm_create":null,"tm_update":null,"tm_delete":null},{"id":"7639e39a-a29b-11ec-b393-5b239b119501","customer_id":"75dd760a-a29b-11ec-ba70-cb282aa1d594","type":"","source":null,"targets":null,"provider_name":"","provider_reference_id":"","text":"","medias":null,"direction":"","tm_create":null,"tm_update":null,"tm_delete":null}]`),
 			},
 		},
 	}
@@ -167,7 +167,7 @@ func Test_processV1MessagesPost(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"5f00c9bc-f176-11ec-bda0-af0b8c9491f5","customer_id":"00000000-0000-0000-0000-000000000000","type":"","source":null,"targets":null,"provider_name":"","provider_reference_id":"","text":"","medias":null,"direction":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"5f00c9bc-f176-11ec-bda0-af0b8c9491f5","customer_id":"00000000-0000-0000-0000-000000000000","type":"","source":null,"targets":null,"provider_name":"","provider_reference_id":"","text":"","medias":null,"direction":"","tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -224,7 +224,7 @@ func Test_processV1MessagesIDGet(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"73071e00-a29a-11ec-a43a-079fe08ce740","customer_id":"00000000-0000-0000-0000-000000000000","type":"","source":null,"targets":null,"provider_name":"","provider_reference_id":"","text":"","medias":null,"direction":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"73071e00-a29a-11ec-a43a-079fe08ce740","customer_id":"00000000-0000-0000-0000-000000000000","type":"","source":null,"targets":null,"provider_name":"","provider_reference_id":"","text":"","medias":null,"direction":"","tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -280,7 +280,7 @@ func Test_processV1MessagesIDDelete(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"63772a08-a2ee-11ec-8c6d-9714fb1cc108","customer_id":"00000000-0000-0000-0000-000000000000","type":"","source":null,"targets":null,"provider_name":"","provider_reference_id":"","text":"","medias":null,"direction":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"63772a08-a2ee-11ec-8c6d-9714fb1cc108","customer_id":"00000000-0000-0000-0000-000000000000","type":"","source":null,"targets":null,"provider_name":"","provider_reference_id":"","text":"","medias":null,"direction":"","tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}

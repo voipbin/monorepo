@@ -41,7 +41,7 @@ func Test_Terminating(t *testing.T) {
 				},
 				Type:     confbridge.TypeConnect,
 				Status:   confbridge.StatusProgressing,
-				TMDelete: dbhandler.DefaultTimeStamp,
+				TMDelete: nil,
 			},
 			responseConfbridgeUpdate: &confbridge.Confbridge{
 				Identity: commonidentity.Identity{
@@ -49,7 +49,7 @@ func Test_Terminating(t *testing.T) {
 				},
 				Type:     confbridge.TypeConnect,
 				Status:   confbridge.StatusTerminating,
-				TMDelete: dbhandler.DefaultTimeStamp},
+				TMDelete: nil},
 		},
 		{
 			name: "have bridge id",
@@ -63,7 +63,7 @@ func Test_Terminating(t *testing.T) {
 				Type:     confbridge.TypeConnect,
 				Status:   confbridge.StatusProgressing,
 				BridgeID: "ea17cc48-592d-4054-8424-ead8c3e45a26",
-				TMDelete: dbhandler.DefaultTimeStamp,
+				TMDelete: nil,
 			},
 			responseConfbridgeUpdate: nil,
 		},

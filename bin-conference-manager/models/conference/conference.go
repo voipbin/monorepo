@@ -3,6 +3,7 @@ package conference
 import (
 	"fmt"
 	"reflect"
+	"time"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
@@ -34,11 +35,11 @@ type Conference struct {
 	TranscribeID  uuid.UUID   `json:"transcribe_id,omitempty" db:"transcribe_id,uuid"`
 	TranscribeIDs []uuid.UUID `json:"transcribe_ids,omitempty" db:"transcribe_ids,json"`
 
-	TMEnd string `json:"tm_end,omitempty" db:"tm_end"` // represent the timestamp for conference ended.
+	TMEnd *time.Time `json:"tm_end" db:"tm_end"` // represent the timestamp for conference ended.
 
-	TMCreate string `json:"tm_create,omitempty" db:"tm_create"`
-	TMUpdate string `json:"tm_update,omitempty" db:"tm_update"`
-	TMDelete string `json:"tm_delete,omitempty" db:"tm_delete"`
+	TMCreate *time.Time `json:"tm_create" db:"tm_create"`
+	TMUpdate *time.Time `json:"tm_update" db:"tm_update"`
+	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"`
 }
 
 // Matches return true if the given items are the same

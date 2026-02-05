@@ -3,6 +3,7 @@ package contact
 import (
 	"encoding/json"
 	"testing"
+	"time"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
@@ -42,9 +43,9 @@ func TestContact_ConvertWebhookMessage(t *testing.T) {
 		TagIDs: []uuid.UUID{
 			uuid.FromStringOrNil("55555555-5555-5555-5555-555555555555"),
 		},
-		TMCreate: "2020-01-01T00:00:00.000000Z",
-		TMUpdate: "2020-01-02T00:00:00.000000Z",
-		TMDelete: "9999-01-01T00:00:00.000000Z",
+		TMCreate: func() *time.Time { t := time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC); return &t }(),
+		TMUpdate: func() *time.Time { t := time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC); return &t }(),
+		TMDelete: nil,
 	}
 
 	webhook := contact.ConvertWebhookMessage()
@@ -85,13 +86,13 @@ func TestContact_ConvertWebhookMessage(t *testing.T) {
 	if len(webhook.TagIDs) != len(contact.TagIDs) {
 		t.Errorf("TagIDs length mismatch: got %v, want %v", len(webhook.TagIDs), len(contact.TagIDs))
 	}
-	if webhook.TMCreate != contact.TMCreate {
+	if (webhook.TMCreate == nil) != (contact.TMCreate == nil) || (webhook.TMCreate != nil && !webhook.TMCreate.Equal(*contact.TMCreate)) {
 		t.Errorf("TMCreate mismatch: got %v, want %v", webhook.TMCreate, contact.TMCreate)
 	}
-	if webhook.TMUpdate != contact.TMUpdate {
+	if (webhook.TMUpdate == nil) != (contact.TMUpdate == nil) || (webhook.TMUpdate != nil && !webhook.TMUpdate.Equal(*contact.TMUpdate)) {
 		t.Errorf("TMUpdate mismatch: got %v, want %v", webhook.TMUpdate, contact.TMUpdate)
 	}
-	if webhook.TMDelete != contact.TMDelete {
+	if (webhook.TMDelete == nil) != (contact.TMDelete == nil) {
 		t.Errorf("TMDelete mismatch: got %v, want %v", webhook.TMDelete, contact.TMDelete)
 	}
 }
@@ -112,7 +113,7 @@ func TestContact_CreateWebhookEvent(t *testing.T) {
 				FirstName:   "John",
 				LastName:    "Doe",
 				DisplayName: "John Doe",
-				TMCreate:    "2020-01-01T00:00:00.000000Z",
+				TMCreate:    func() *time.Time { t := time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC); return &t }(),
 			},
 			wantErr: false,
 		},

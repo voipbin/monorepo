@@ -20,8 +20,8 @@ func (h *callHandler) RecoveryStart(ctx context.Context, asteriskID string) erro
 	log.Debugf("Starting recovery for asterisk ID: %s", asteriskID)
 
 	// get channels of the give asterisk ID
-	startTime := h.utilHandler.TimeGetCurTimeAdd(-(time.Hour * 24))
-	endTime := h.utilHandler.TimeGetCurTime()
+	startTime := h.utilHandler.TimeNowAdd(-(time.Hour * 24))
+	endTime := h.utilHandler.TimeNow()
 	channels, err := h.channelHandler.GetChannelsForRecovery(ctx, asteriskID, channel.TypeCall, startTime, endTime, defaultRecoveryChannelLimit)
 	if err != nil {
 		return errors.Wrapf(err, "could not get channels for recovery. asterisk_id: %s", asteriskID)

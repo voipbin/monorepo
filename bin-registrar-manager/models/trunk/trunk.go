@@ -1,6 +1,8 @@
 package trunk
 
 import (
+	"time"
+
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-registrar-manager/models/sipauth"
 )
@@ -21,9 +23,9 @@ type Trunk struct {
 	Password   string             `json:"password" db:"password"`           // DO NOT CHANGE. This used by the kamailio's INVITE validation
 	AllowedIPs []string           `json:"allowed_ips" db:"allowed_ips,json"` // DO NOT CHANGE. This used by the kamailio's INVITE validation
 
-	TMCreate string `json:"tm_create" db:"tm_create"`
-	TMUpdate string `json:"tm_update" db:"tm_update"`
-	TMDelete string `json:"tm_delete" db:"tm_delete"`
+	TMCreate *time.Time `json:"tm_create" db:"tm_create"`
+	TMUpdate *time.Time `json:"tm_update" db:"tm_update"`
+	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"`
 }
 
 // GenerateSIPAuth returns sipauth of the given trunk

@@ -27,7 +27,7 @@ func (h *serviceHandler) numberGet(ctx context.Context, id uuid.UUID) (*nmnumber
 		return nil, err
 	}
 
-	if res.TMDelete != defaultTimestamp {
+	if res.TMDelete != nil {
 		log.WithField("number", res).Debugf("Deleted number.")
 		return nil, fmt.Errorf("not found")
 	}

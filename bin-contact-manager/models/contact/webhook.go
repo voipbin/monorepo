@@ -2,6 +2,7 @@ package contact
 
 import (
 	"encoding/json"
+	"time"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
@@ -27,9 +28,9 @@ type WebhookMessage struct {
 	Emails       []Email       `json:"emails,omitempty"`
 	TagIDs       []uuid.UUID   `json:"tag_ids,omitempty"`
 
-	TMCreate string `json:"tm_create"`
-	TMUpdate string `json:"tm_update"`
-	TMDelete string `json:"tm_delete"`
+	TMCreate *time.Time `json:"tm_create"`
+	TMUpdate *time.Time `json:"tm_update"`
+	TMDelete *time.Time `json:"tm_delete"`
 }
 
 // ConvertWebhookMessage converts a Contact to a WebhookMessage

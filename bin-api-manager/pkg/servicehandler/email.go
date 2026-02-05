@@ -20,7 +20,7 @@ func (h *serviceHandler) emailGet(ctx context.Context, emailID uuid.UUID) (*emem
 		return nil, errors.Wrapf(err, "could not get the email")
 	}
 
-	if res.TMDelete < defaultTimestamp {
+	if res.TMDelete != nil {
 		return nil, fmt.Errorf("not found")
 	}
 

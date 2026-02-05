@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	reflect "reflect"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -16,6 +17,10 @@ import (
 	"monorepo/bin-talk-manager/models/chat"
 	"monorepo/bin-talk-manager/pkg/chathandler"
 )
+
+func timePtrChat(t time.Time) *time.Time {
+	return &t
+}
 
 func Test_processV1TalkChatsPost(t *testing.T) {
 	tests := []struct {
@@ -46,14 +51,14 @@ func Test_processV1TalkChatsPost(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
 				},
 				Type:     chat.TypeDirect,
-				TMCreate: "2021-11-23T17:55:39.712000Z",
-				TMUpdate: "9999-01-01T00:00:00.000000Z",
-				TMDelete: "9999-01-01T00:00:00.000000Z",
+				TMCreate: timePtrChat(time.Date(2021, 11, 23, 17, 55, 39, 712000000, time.UTC)),
+				TMUpdate: timePtrChat(time.Date(9999, 1, 1, 0, 0, 0, 0, time.UTC)),
+				TMDelete: timePtrChat(time.Date(9999, 1, 1, 0, 0, 0, 0, time.UTC)),
 			},
 			expectRes: &sock.Response{
 				StatusCode: 201,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"6ebc6880-31da-11ed-8e95-a3bc92af9795","customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","type":"direct","name":"","detail":"","member_count":0,"tm_create":"2021-11-23T17:55:39.712000Z","tm_update":"9999-01-01T00:00:00.000000Z","tm_delete":"9999-01-01T00:00:00.000000Z"}`),
+				Data:       []byte(`{"id":"6ebc6880-31da-11ed-8e95-a3bc92af9795","customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","type":"direct","name":"","detail":"","member_count":0,"tm_create":"2021-11-23T17:55:39.712Z","tm_update":"9999-01-01T00:00:00Z","tm_delete":"9999-01-01T00:00:00Z"}`),
 			},
 		},
 		{
@@ -74,14 +79,14 @@ func Test_processV1TalkChatsPost(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
 				},
 				Type:     chat.TypeGroup,
-				TMCreate: "2021-11-23T18:00:00.000000Z",
-				TMUpdate: "9999-01-01T00:00:00.000000Z",
-				TMDelete: "9999-01-01T00:00:00.000000Z",
+				TMCreate: timePtrChat(time.Date(2021, 11, 23, 18, 0, 0, 0, time.UTC)),
+				TMUpdate: timePtrChat(time.Date(9999, 1, 1, 0, 0, 0, 0, time.UTC)),
+				TMDelete: timePtrChat(time.Date(9999, 1, 1, 0, 0, 0, 0, time.UTC)),
 			},
 			expectRes: &sock.Response{
 				StatusCode: 201,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"7fcd7990-42eb-11ed-9fa6-b4cd93af9796","customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","type":"group","name":"","detail":"","member_count":0,"tm_create":"2021-11-23T18:00:00.000000Z","tm_update":"9999-01-01T00:00:00.000000Z","tm_delete":"9999-01-01T00:00:00.000000Z"}`),
+				Data:       []byte(`{"id":"7fcd7990-42eb-11ed-9fa6-b4cd93af9796","customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","type":"group","name":"","detail":"","member_count":0,"tm_create":"2021-11-23T18:00:00Z","tm_update":"9999-01-01T00:00:00Z","tm_delete":"9999-01-01T00:00:00Z"}`),
 			},
 		},
 	}
@@ -206,15 +211,15 @@ func Test_processV1TalkChatsGet(t *testing.T) {
 						CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
 					},
 					Type:     chat.TypeDirect,
-					TMCreate: "2021-11-23T17:55:39.712000Z",
-					TMUpdate: "9999-01-01T00:00:00.000000Z",
-					TMDelete: "9999-01-01T00:00:00.000000Z",
+					TMCreate: timePtrChat(time.Date(2021, 11, 23, 17, 55, 39, 712000000, time.UTC)),
+					TMUpdate: timePtrChat(time.Date(9999, 1, 1, 0, 0, 0, 0, time.UTC)),
+					TMDelete: timePtrChat(time.Date(9999, 1, 1, 0, 0, 0, 0, time.UTC)),
 				},
 			},
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"6ebc6880-31da-11ed-8e95-a3bc92af9795","customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","type":"direct","name":"","detail":"","member_count":0,"tm_create":"2021-11-23T17:55:39.712000Z","tm_update":"9999-01-01T00:00:00.000000Z","tm_delete":"9999-01-01T00:00:00.000000Z"}]`),
+				Data:       []byte(`[{"id":"6ebc6880-31da-11ed-8e95-a3bc92af9795","customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","type":"direct","name":"","detail":"","member_count":0,"tm_create":"2021-11-23T17:55:39.712Z","tm_update":"9999-01-01T00:00:00Z","tm_delete":"9999-01-01T00:00:00Z"}]`),
 			},
 		},
 		{
@@ -293,14 +298,14 @@ func Test_processV1TalkChatsIDGet(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
 				},
 				Type:     chat.TypeDirect,
-				TMCreate: "2021-11-23T17:55:39.712000Z",
-				TMUpdate: "9999-01-01T00:00:00.000000Z",
-				TMDelete: "9999-01-01T00:00:00.000000Z",
+				TMCreate: timePtrChat(time.Date(2021, 11, 23, 17, 55, 39, 712000000, time.UTC)),
+				TMUpdate: timePtrChat(time.Date(9999, 1, 1, 0, 0, 0, 0, time.UTC)),
+				TMDelete: timePtrChat(time.Date(9999, 1, 1, 0, 0, 0, 0, time.UTC)),
 			},
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"6ebc6880-31da-11ed-8e95-a3bc92af9795","customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","type":"direct","name":"","detail":"","member_count":0,"tm_create":"2021-11-23T17:55:39.712000Z","tm_update":"9999-01-01T00:00:00.000000Z","tm_delete":"9999-01-01T00:00:00.000000Z"}`),
+				Data:       []byte(`{"id":"6ebc6880-31da-11ed-8e95-a3bc92af9795","customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","type":"direct","name":"","detail":"","member_count":0,"tm_create":"2021-11-23T17:55:39.712Z","tm_update":"9999-01-01T00:00:00Z","tm_delete":"9999-01-01T00:00:00Z"}`),
 			},
 		},
 	}
@@ -364,14 +369,14 @@ func Test_processV1TalkChatsIDPut(t *testing.T) {
 				Type:     chat.TypeGroup,
 				Name:     "New Name",
 				Detail:   "Old Detail",
-				TMCreate: "2021-11-23T17:55:39.712000Z",
-				TMUpdate: "2021-11-23T18:00:00.000000Z",
-				TMDelete: "9999-01-01T00:00:00.000000Z",
+				TMCreate: timePtrChat(time.Date(2021, 11, 23, 17, 55, 39, 712000000, time.UTC)),
+				TMUpdate: timePtrChat(time.Date(2021, 11, 23, 18, 0, 0, 0, time.UTC)),
+				TMDelete: timePtrChat(time.Date(9999, 1, 1, 0, 0, 0, 0, time.UTC)),
 			},
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"6ebc6880-31da-11ed-8e95-a3bc92af9795","customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","type":"group","name":"New Name","detail":"Old Detail","member_count":0,"tm_create":"2021-11-23T17:55:39.712000Z","tm_update":"2021-11-23T18:00:00.000000Z","tm_delete":"9999-01-01T00:00:00.000000Z"}`),
+				Data:       []byte(`{"id":"6ebc6880-31da-11ed-8e95-a3bc92af9795","customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","type":"group","name":"New Name","detail":"Old Detail","member_count":0,"tm_create":"2021-11-23T17:55:39.712Z","tm_update":"2021-11-23T18:00:00Z","tm_delete":"9999-01-01T00:00:00Z"}`),
 			},
 		},
 		{
@@ -394,14 +399,14 @@ func Test_processV1TalkChatsIDPut(t *testing.T) {
 				Type:     chat.TypeGroup,
 				Name:     "Old Name",
 				Detail:   "New Detail",
-				TMCreate: "2021-11-23T17:55:39.712000Z",
-				TMUpdate: "2021-11-23T18:00:00.000000Z",
-				TMDelete: "9999-01-01T00:00:00.000000Z",
+				TMCreate: timePtrChat(time.Date(2021, 11, 23, 17, 55, 39, 712000000, time.UTC)),
+				TMUpdate: timePtrChat(time.Date(2021, 11, 23, 18, 0, 0, 0, time.UTC)),
+				TMDelete: timePtrChat(time.Date(9999, 1, 1, 0, 0, 0, 0, time.UTC)),
 			},
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"6ebc6880-31da-11ed-8e95-a3bc92af9795","customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","type":"group","name":"Old Name","detail":"New Detail","member_count":0,"tm_create":"2021-11-23T17:55:39.712000Z","tm_update":"2021-11-23T18:00:00.000000Z","tm_delete":"9999-01-01T00:00:00.000000Z"}`),
+				Data:       []byte(`{"id":"6ebc6880-31da-11ed-8e95-a3bc92af9795","customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","type":"group","name":"Old Name","detail":"New Detail","member_count":0,"tm_create":"2021-11-23T17:55:39.712Z","tm_update":"2021-11-23T18:00:00Z","tm_delete":"9999-01-01T00:00:00Z"}`),
 			},
 		},
 		{
@@ -424,14 +429,14 @@ func Test_processV1TalkChatsIDPut(t *testing.T) {
 				Type:     chat.TypeGroup,
 				Name:     "New Name",
 				Detail:   "New Detail",
-				TMCreate: "2021-11-23T17:55:39.712000Z",
-				TMUpdate: "2021-11-23T18:00:00.000000Z",
-				TMDelete: "9999-01-01T00:00:00.000000Z",
+				TMCreate: timePtrChat(time.Date(2021, 11, 23, 17, 55, 39, 712000000, time.UTC)),
+				TMUpdate: timePtrChat(time.Date(2021, 11, 23, 18, 0, 0, 0, time.UTC)),
+				TMDelete: timePtrChat(time.Date(9999, 1, 1, 0, 0, 0, 0, time.UTC)),
 			},
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"6ebc6880-31da-11ed-8e95-a3bc92af9795","customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","type":"group","name":"New Name","detail":"New Detail","member_count":0,"tm_create":"2021-11-23T17:55:39.712000Z","tm_update":"2021-11-23T18:00:00.000000Z","tm_delete":"9999-01-01T00:00:00.000000Z"}`),
+				Data:       []byte(`{"id":"6ebc6880-31da-11ed-8e95-a3bc92af9795","customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","type":"group","name":"New Name","detail":"New Detail","member_count":0,"tm_create":"2021-11-23T17:55:39.712Z","tm_update":"2021-11-23T18:00:00Z","tm_delete":"9999-01-01T00:00:00Z"}`),
 			},
 		},
 	}
@@ -541,14 +546,14 @@ func Test_processV1TalkChatsIDDelete(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
 				},
 				Type:     chat.TypeDirect,
-				TMCreate: "2021-11-23T17:55:39.712000Z",
-				TMUpdate: "2021-11-23T18:00:00.000000Z",
-				TMDelete: "2021-11-23T18:00:00.000000Z",
+				TMCreate: timePtrChat(time.Date(2021, 11, 23, 17, 55, 39, 712000000, time.UTC)),
+				TMUpdate: timePtrChat(time.Date(2021, 11, 23, 18, 0, 0, 0, time.UTC)),
+				TMDelete: timePtrChat(time.Date(2021, 11, 23, 18, 0, 0, 0, time.UTC)),
 			},
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"6ebc6880-31da-11ed-8e95-a3bc92af9795","customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","type":"direct","name":"","detail":"","member_count":0,"tm_create":"2021-11-23T17:55:39.712000Z","tm_update":"2021-11-23T18:00:00.000000Z","tm_delete":"2021-11-23T18:00:00.000000Z"}`),
+				Data:       []byte(`{"id":"6ebc6880-31da-11ed-8e95-a3bc92af9795","customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","type":"direct","name":"","detail":"","member_count":0,"tm_create":"2021-11-23T17:55:39.712Z","tm_update":"2021-11-23T18:00:00Z","tm_delete":"2021-11-23T18:00:00Z"}`),
 			},
 		},
 	}

@@ -2,6 +2,7 @@ package groupcall
 
 import (
 	"encoding/json"
+	"time"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -37,9 +38,9 @@ type WebhookMessage struct {
 	DialIndex      int `json:"dial_index,omitempty"`      // represent current dial index. valid only ringmethod is ringall
 
 	// timestamp
-	TMCreate string `json:"tm_create,omitempty"`
-	TMUpdate string `json:"tm_update,omitempty"`
-	TMDelete string `json:"tm_delete,omitempty"`
+	TMCreate *time.Time `json:"tm_create,omitempty"`
+	TMUpdate *time.Time `json:"tm_update,omitempty"`
+	TMDelete *time.Time `json:"tm_delete,omitempty"`
 }
 
 // ConvertWebhookMessage converts to the event

@@ -6,9 +6,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"time"
 
 	"monorepo/bin-call-manager/models/ari"
 	"monorepo/bin-call-manager/models/channel"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/pkg/errors"
 )
@@ -61,7 +63,7 @@ const (
 func (h *handler) channelGetFromRow(row *sql.Rows) (*channel.Channel, error) {
 	var data sql.NullString
 	var stasisData sql.NullString
-	var tmDelete sql.NullString
+	var tmCreateStr, tmUpdateStr, tmDeleteStr, tmAnswerStr, tmRingingStr, tmEndStr sql.NullString
 
 	res := &channel.Channel{}
 	if err := row.Scan(
@@ -92,13 +94,13 @@ func (h *handler) channelGetFromRow(row *sql.Rows) (*channel.Channel, error) {
 		&res.Direction,
 		&res.MuteDirection,
 
-		&res.TMCreate,
-		&res.TMUpdate,
-		&tmDelete,
+		&tmCreateStr,
+		&tmUpdateStr,
+		&tmDeleteStr,
 
-		&res.TMAnswer,
-		&res.TMRinging,
-		&res.TMEnd,
+		&tmAnswerStr,
+		&tmRingingStr,
+		&tmEndStr,
 	); err != nil {
 		return nil, fmt.Errorf("channelGetFromRow: Could not scan the row. err: %v", err)
 	}
@@ -123,11 +125,42 @@ func (h *handler) channelGetFromRow(row *sql.Rows) (*channel.Channel, error) {
 		res.StasisData = map[channel.StasisDataType]string{}
 	}
 
-	// TMDelete
-	if tmDelete.Valid {
-		res.TMDelete = tmDelete.String
-	} else {
-		res.TMDelete = DefaultTimeStamp
+	// Timestamps - parse strings to time.Time pointers
+	if tmCreateStr.Valid && tmCreateStr.String != "" {
+		t := utilhandler.TimeParse(tmCreateStr.String).UTC()
+		if !t.IsZero() {
+			res.TMCreate = &t
+		}
+	}
+	if tmUpdateStr.Valid && tmUpdateStr.String != "" {
+		t := utilhandler.TimeParse(tmUpdateStr.String).UTC()
+		if !t.IsZero() {
+			res.TMUpdate = &t
+		}
+	}
+	if tmDeleteStr.Valid && tmDeleteStr.String != "" {
+		t := utilhandler.TimeParse(tmDeleteStr.String).UTC()
+		if !t.IsZero() {
+			res.TMDelete = &t
+		}
+	}
+	if tmAnswerStr.Valid && tmAnswerStr.String != "" {
+		t := utilhandler.TimeParse(tmAnswerStr.String).UTC()
+		if !t.IsZero() {
+			res.TMAnswer = &t
+		}
+	}
+	if tmRingingStr.Valid && tmRingingStr.String != "" {
+		t := utilhandler.TimeParse(tmRingingStr.String).UTC()
+		if !t.IsZero() {
+			res.TMRinging = &t
+		}
+	}
+	if tmEndStr.Valid && tmEndStr.String != "" {
+		t := utilhandler.TimeParse(tmEndStr.String).UTC()
+		if !t.IsZero() {
+			res.TMEnd = &t
+		}
 	}
 
 	return res, nil
@@ -220,13 +253,13 @@ func (h *handler) ChannelCreate(ctx context.Context, c *channel.Channel) error {
 		c.Direction,
 		c.MuteDirection,
 
-		h.utilHandler.TimeGetCurTime(),
-		DefaultTimeStamp,
-		DefaultTimeStamp,
+		h.utilHandler.TimeNow(),
+		nil,
+		nil,
 
-		DefaultTimeStamp,
-		DefaultTimeStamp,
-		DefaultTimeStamp,
+		nil,
+		nil,
+		nil,
 	)
 	if err != nil {
 		return fmt.Errorf("ChannelCreate: Could not execute query. err: %v", err)
@@ -273,7 +306,7 @@ func (h *handler) ChannelSetData(ctx context.Context, id string, data map[string
 		return fmt.Errorf("dbhandler: Could not marshal. ChannelSetData. err: %v", err)
 	}
 
-	_, err = h.db.Exec(q, tmpData, h.utilHandler.TimeGetCurTime(), id)
+	_, err = h.db.Exec(q, tmpData, h.utilHandler.TimeNow(), id)
 	if err != nil {
 		return fmt.Errorf("could not execute. ChannelSetData. err: %v", err)
 	}
@@ -289,7 +322,7 @@ func (h *handler) ChannelSetDataItem(ctx context.Context, id string, key string,
 	//prepare
 	q := fmt.Sprintf("update call_channels set data = json_set(data, '$.%s', ?), tm_update = ? where id = ?", key)
 
-	_, err := h.db.Exec(q, value, h.utilHandler.TimeGetCurTime(), id)
+	_, err := h.db.Exec(q, value, h.utilHandler.TimeNow(), id)
 	if err != nil {
 		return fmt.Errorf("could not execute. ChannelSetDataItem. err: %v", err)
 	}
@@ -311,7 +344,7 @@ func (h *handler) ChannelSetStasis(ctx context.Context, id, stasis string) error
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, stasis, h.utilHandler.TimeGetCurTime(), id)
+	_, err := h.db.Exec(q, stasis, h.utilHandler.TimeNow(), id)
 	if err != nil {
 		return fmt.Errorf("could not execute. ChannelSetStasis. err: %v", err)
 	}
@@ -334,7 +367,7 @@ func (h *handler) ChannelSetStateAnswer(ctx context.Context, id string, state ar
 		id = ?
 	`
 
-	ts := h.utilHandler.TimeGetCurTime()
+	ts := h.utilHandler.TimeNow()
 	_, err := h.db.Exec(q, state, ts, ts, id)
 	if err != nil {
 		return fmt.Errorf("could not execute. ChannelSetStateUp. err: %v", err)
@@ -358,7 +391,7 @@ func (h *handler) ChannelSetStateRinging(ctx context.Context, id string, state a
 		id = ?
 	`
 
-	ts := h.utilHandler.TimeGetCurTime()
+	ts := h.utilHandler.TimeNow()
 	_, err := h.db.Exec(q, state, ts, ts, id)
 	if err != nil {
 		return fmt.Errorf("could not execute. ChannelSetStateRinging. err: %v", err)
@@ -381,7 +414,7 @@ func (h *handler) ChannelSetBridgeID(ctx context.Context, id, bridgeID string) e
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, bridgeID, h.utilHandler.TimeGetCurTime(), id)
+	_, err := h.db.Exec(q, bridgeID, h.utilHandler.TimeNow(), id)
 	if err != nil {
 		return fmt.Errorf("could not execute. ChannelSetBridgeID. err: %v", err)
 	}
@@ -403,7 +436,7 @@ func (h *handler) ChannelSetDirection(ctx context.Context, id string, direction 
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, direction, h.utilHandler.TimeGetCurTime(), id)
+	_, err := h.db.Exec(q, direction, h.utilHandler.TimeNow(), id)
 	if err != nil {
 		return fmt.Errorf("could not execute. ChannelSetDirection. err: %v", err)
 	}
@@ -425,7 +458,7 @@ func (h *handler) ChannelSetType(ctx context.Context, id string, cType channel.T
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, string(cType), h.utilHandler.TimeGetCurTime(), id)
+	_, err := h.db.Exec(q, string(cType), h.utilHandler.TimeNow(), id)
 	if err != nil {
 		return fmt.Errorf("could not execute. ChannelSetType. err: %v", err)
 	}
@@ -447,7 +480,7 @@ func (h *handler) ChannelSetSIPTransport(ctx context.Context, id string, transpo
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, transport, h.utilHandler.TimeGetCurTime(), id)
+	_, err := h.db.Exec(q, transport, h.utilHandler.TimeNow(), id)
 	if err != nil {
 		return fmt.Errorf("could not execute. ChannelSetSIPTransport. err: %v", err)
 	}
@@ -469,7 +502,7 @@ func (h *handler) ChannelSetSIPCallID(ctx context.Context, id string, sipID stri
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, sipID, h.utilHandler.TimeGetCurTime(), id)
+	_, err := h.db.Exec(q, sipID, h.utilHandler.TimeNow(), id)
 	if err != nil {
 		return fmt.Errorf("could not execute. ChannelSetSIPCallID. err: %v", err)
 	}
@@ -491,7 +524,7 @@ func (h *handler) ChannelSetPlaybackID(ctx context.Context, id string, playbackI
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, playbackID, h.utilHandler.TimeGetCurTime(), id)
+	_, err := h.db.Exec(q, playbackID, h.utilHandler.TimeNow(), id)
 	if err != nil {
 		return fmt.Errorf("could not execute. ChannelSetPlaybackID. err: %v", err)
 	}
@@ -515,7 +548,7 @@ func (h *handler) ChannelEndAndDelete(ctx context.Context, id string, hangup ari
 		id = ?
 	`
 
-	ts := h.utilHandler.TimeGetCurTime()
+	ts := h.utilHandler.TimeNow()
 	_, err := h.db.Exec(q, hangup, ts, ts, ts, id)
 	if err != nil {
 		return fmt.Errorf("could not execute. ChannelEnd. err: %v", err)
@@ -557,7 +590,7 @@ func (h *handler) ChannelSetStasisInfo(ctx context.Context, id string, chType ch
 
 		direction,
 
-		h.utilHandler.TimeGetCurTime(),
+		h.utilHandler.TimeNow(),
 		id,
 	)
 	if err != nil {
@@ -642,7 +675,7 @@ func (h *handler) ChannelSetMuteDirection(ctx context.Context, id string, muteDi
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, muteDirection, h.utilHandler.TimeGetCurTime(), id)
+	_, err := h.db.Exec(q, muteDirection, h.utilHandler.TimeNow(), id)
 	if err != nil {
 		return fmt.Errorf("could not execute. ChannelSetMuteDirection. err: %v", err)
 	}
@@ -672,8 +705,9 @@ func (h *handler) ChannelList(ctx context.Context, size uint64, token string, fi
 		switch k {
 		case "deleted":
 			if v == "false" {
-				q = fmt.Sprintf("%s and tm_delete >= ?", q)
-				values = append(values, DefaultTimeStamp)
+				q = fmt.Sprintf("%s and tm_delete IS NULL", q)
+			} else {
+				q = fmt.Sprintf("%s and tm_delete IS NOT NULL", q)
 			}
 
 		default:
@@ -711,8 +745,8 @@ func (h *handler) ChannelGetsForRecovery(
 	ctx context.Context,
 	asteriskID string,
 	channelType channel.Type,
-	startTime string,
-	endTime string,
+	startTime *time.Time,
+	endTime *time.Time,
 	size uint64,
 ) ([]*channel.Channel, error) {
 	// prepare

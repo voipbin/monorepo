@@ -30,12 +30,12 @@ func (h *handler) messageGetFromRow(row *sql.Rows) (*message.Message, error) {
 
 // MessageCreate creates a new message record
 func (h *handler) MessageCreate(ctx context.Context, msg *message.Message) error {
-	now := h.utilHandler.TimeGetCurTime()
+	now := h.utilHandler.TimeNow()
 
 	// Set timestamps
 	msg.TMCreate = now
-	msg.TMUpdate = commondatabasehandler.DefaultTimeStamp
-	msg.TMDelete = commondatabasehandler.DefaultTimeStamp
+	msg.TMUpdate = nil
+	msg.TMDelete = nil
 
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(msg)
@@ -210,7 +210,7 @@ func (h *handler) MessageGetsByTransactionID(ctx context.Context, transactionID 
 	sb := squirrel.
 		Select(fields...).
 		From(messagesTable).
-		Where(squirrel.GtOrEq{string(message.FieldTMDelete): commondatabasehandler.DefaultTimeStamp}).
+		Where(squirrel.Eq{string(message.FieldTMDelete): nil}).
 		Where(squirrel.Eq{string(message.FieldTransactionID): transactionID}).
 		Where(squirrel.Lt{string(message.FieldTMCreate): token}).
 		OrderBy(string(message.FieldTMCreate) + " DESC", string(message.FieldID) + " DESC").
@@ -257,7 +257,7 @@ func (h *handler) MessageUpdate(ctx context.Context, id uuid.UUID, fields map[me
 		return nil
 	}
 
-	fields[message.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
+	fields[message.FieldTMUpdate] = h.utilHandler.TimeNow()
 
 	preparedFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
@@ -291,7 +291,7 @@ func (h *handler) MessageUpdate(ctx context.Context, id uuid.UUID, fields map[me
 }
 
 func (h *handler) MessageDelete(ctx context.Context, id uuid.UUID) error {
-	ts := h.utilHandler.TimeGetCurTime()
+	ts := h.utilHandler.TimeNow()
 
 	fields := map[message.Field]any{
 		message.FieldTMUpdate: ts,

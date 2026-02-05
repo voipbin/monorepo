@@ -29,12 +29,12 @@ func (h *handler) pipecatcallGetFromRow(row *sql.Rows) (*pipecatcall.Pipecatcall
 }
 
 func (h *handler) PipecatcallCreate(ctx context.Context, f *pipecatcall.Pipecatcall) error {
-	now := h.utilHandler.TimeGetCurTime()
+	now := h.utilHandler.TimeNow()
 
 	// Set timestamps
 	f.TMCreate = now
-	f.TMUpdate = commondatabasehandler.DefaultTimeStamp
-	f.TMDelete = commondatabasehandler.DefaultTimeStamp
+	f.TMUpdate = nil
+	f.TMDelete = nil
 
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(f)
@@ -152,7 +152,7 @@ func (h *handler) PipecatcallUpdate(ctx context.Context, id uuid.UUID, fields ma
 		return nil
 	}
 
-	fields[pipecatcall.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
+	fields[pipecatcall.FieldTMUpdate] = h.utilHandler.TimeNow()
 
 	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
@@ -178,7 +178,7 @@ func (h *handler) PipecatcallUpdate(ctx context.Context, id uuid.UUID, fields ma
 }
 
 func (h *handler) PipecatcallDelete(ctx context.Context, id uuid.UUID) error {
-	ts := h.utilHandler.TimeGetCurTime()
+	ts := h.utilHandler.TimeNow()
 
 	fields := map[pipecatcall.Field]any{
 		pipecatcall.FieldTMUpdate: ts,

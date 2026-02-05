@@ -7,7 +7,6 @@ import (
 	"monorepo/bin-call-manager/models/call"
 	"monorepo/bin-call-manager/models/channel"
 	"monorepo/bin-call-manager/models/recording"
-	"monorepo/bin-call-manager/pkg/dbhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -149,7 +148,7 @@ func (h *recordingHandler) recordingReferenceTypeConfbridge(
 		activeflowID = cb.ActiveflowID
 	}
 
-	if cb.TMDelete < dbhandler.DefaultTimeStamp {
+	if cb.TMDelete != nil {
 		return nil, fmt.Errorf("invalid confbridge. confbridge_id: %s", confbridgeID)
 	}
 

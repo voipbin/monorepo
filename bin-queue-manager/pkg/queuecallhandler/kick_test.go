@@ -4,6 +4,7 @@ import (
 	"context"
 	reflect "reflect"
 	"testing"
+	"time"
 
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 
@@ -30,7 +31,7 @@ func Test_Kick(t *testing.T) {
 		queuecallID uuid.UUID
 
 		responseQueuecall *queuecall.Queuecall
-		responseCurTime   string
+		responseCurTime   *time.Time
 
 		expectDurationWaiting int
 	}{
@@ -59,11 +60,11 @@ func Test_Kick(t *testing.T) {
 				},
 
 				Status:    queuecall.StatusWaiting,
-				TMCreate:  "2021-04-18T03:22:17.994000Z",
-				TMService: "2021-04-18T03:22:17.994000Z",
-				TMDelete:  dbhandler.DefaultTimeStamp,
+				TMCreate:  timePtr(time.Date(2021, time.April, 18, 3, 22, 17, 994000000, time.UTC)),
+				TMService: timePtr(time.Date(2021, time.April, 18, 3, 22, 17, 994000000, time.UTC)),
+				TMDelete:  nil,
 			},
-			"2021-04-18T03:23:17.994000Z",
+			timePtr(time.Date(2021, time.April, 18, 3, 23, 17, 994000000, time.UTC)),
 
 			60000,
 		},
@@ -92,11 +93,11 @@ func Test_Kick(t *testing.T) {
 				},
 
 				Status:    queuecall.StatusService,
-				TMCreate:  "2021-04-18T03:22:17.994000Z",
-				TMService: "2021-04-18T03:23:17.994000Z",
-				TMDelete:  dbhandler.DefaultTimeStamp,
+				TMCreate:  timePtr(time.Date(2021, time.April, 18, 3, 22, 17, 994000000, time.UTC)),
+				TMService: timePtr(time.Date(2021, time.April, 18, 3, 23, 17, 994000000, time.UTC)),
+				TMDelete:  nil,
 			},
-			"2021-04-18T03:23:17.994000Z",
+			timePtr(time.Date(2021, time.April, 18, 3, 23, 17, 994000000, time.UTC)),
 			60000,
 		},
 	}
@@ -126,7 +127,7 @@ func Test_Kick(t *testing.T) {
 
 			mockReq.EXPECT().FlowV1ActiveflowServiceStop(ctx, tt.responseQueuecall.ReferenceActiveflowID, tt.queuecallID, 0).Return(nil)
 			if tt.responseQueuecall.Status != queuecall.StatusService {
-				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 				mockDB.EXPECT().QueuecallSetStatusAbandoned(ctx, tt.responseQueuecall.ID, tt.expectDurationWaiting, tt.responseCurTime)
 
 				mockDB.EXPECT().QueuecallGet(ctx, tt.responseQueuecall.ID).Return(tt.responseQueuecall, nil)
@@ -159,7 +160,7 @@ func Test_KickByReferenceID(t *testing.T) {
 		referenceID uuid.UUID
 
 		responseQueuecall *queuecall.Queuecall
-		responseCurTime   string
+		responseCurTime   *time.Time
 	}{
 		{
 			"queuecall's status is waiting",
@@ -186,11 +187,11 @@ func Test_KickByReferenceID(t *testing.T) {
 				},
 
 				Status:    queuecall.StatusWaiting,
-				TMService: "2021-04-18T03:22:17.994000Z",
-				TMEnd:     dbhandler.DefaultTimeStamp,
-				TMDelete:  dbhandler.DefaultTimeStamp,
+				TMService: timePtr(time.Date(2021, time.April, 18, 3, 22, 17, 994000000, time.UTC)),
+				TMEnd:     nil,
+				TMDelete:  nil,
 			},
-			"2021-04-18T03:22:17.994000Z",
+			timePtr(time.Date(2021, time.April, 18, 3, 22, 17, 994000000, time.UTC)),
 		},
 	}
 
@@ -220,7 +221,7 @@ func Test_KickByReferenceID(t *testing.T) {
 
 			mockReq.EXPECT().FlowV1ActiveflowServiceStop(ctx, tt.responseQueuecall.ReferenceActiveflowID, tt.responseQueuecall.ID, 0).Return(nil)
 			if tt.responseQueuecall.Status != queuecall.StatusService {
-				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 				mockDB.EXPECT().QueuecallSetStatusAbandoned(ctx, tt.responseQueuecall.ID, gomock.Any(), tt.responseCurTime)
 
 				mockDB.EXPECT().QueuecallGet(ctx, tt.responseQueuecall.ID).Return(tt.responseQueuecall, nil)
@@ -251,7 +252,7 @@ func Test_kickForce(t *testing.T) {
 		id uuid.UUID
 
 		responseQueuecall *queuecall.Queuecall
-		responseCurTime   string
+		responseCurTime   *time.Time
 	}{
 		{
 			"status is waiting",
@@ -278,11 +279,11 @@ func Test_kickForce(t *testing.T) {
 				},
 
 				Status:    queuecall.StatusWaiting,
-				TMService: "2021-04-18T03:22:17.994000Z",
-				TMEnd:     dbhandler.DefaultTimeStamp,
-				TMDelete:  dbhandler.DefaultTimeStamp,
+				TMService: timePtr(time.Date(2021, time.April, 18, 3, 22, 17, 994000000, time.UTC)),
+				TMEnd:     nil,
+				TMDelete:  nil,
 			},
-			"2021-04-18T03:22:17.994000Z",
+			timePtr(time.Date(2021, time.April, 18, 3, 22, 17, 994000000, time.UTC)),
 		},
 		{
 			"status is service",
@@ -309,11 +310,11 @@ func Test_kickForce(t *testing.T) {
 				},
 
 				Status:    queuecall.StatusService,
-				TMService: "2021-04-18T03:22:17.994000Z",
-				TMEnd:     dbhandler.DefaultTimeStamp,
-				TMDelete:  dbhandler.DefaultTimeStamp,
+				TMService: timePtr(time.Date(2021, time.April, 18, 3, 22, 17, 994000000, time.UTC)),
+				TMEnd:     nil,
+				TMDelete:  nil,
 			},
-			"2021-04-18T03:22:17.994000Z",
+			timePtr(time.Date(2021, time.April, 18, 3, 22, 17, 994000000, time.UTC)),
 		},
 	}
 
@@ -343,7 +344,7 @@ func Test_kickForce(t *testing.T) {
 
 			if tt.responseQueuecall.Status == queuecall.StatusService {
 				// update status done
-				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 				mockDB.EXPECT().QueuecallSetStatusDone(ctx, tt.responseQueuecall.ID, gomock.Any(), tt.responseCurTime).Return(nil)
 
 				mockDB.EXPECT().QueuecallGet(ctx, tt.responseQueuecall.ID).Return(tt.responseQueuecall, nil)
@@ -355,7 +356,7 @@ func Test_kickForce(t *testing.T) {
 				mockReq.EXPECT().FlowV1VariableDeleteVariable(ctx, gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 			} else {
 				// update status abandoned
-				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 				mockDB.EXPECT().QueuecallSetStatusAbandoned(ctx, tt.responseQueuecall.ID, gomock.Any(), tt.responseCurTime).Return(nil)
 
 				mockDB.EXPECT().QueuecallGet(ctx, tt.responseQueuecall.ID).Return(tt.responseQueuecall, nil)

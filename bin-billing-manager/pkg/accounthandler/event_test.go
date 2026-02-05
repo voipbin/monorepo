@@ -44,13 +44,13 @@ func Test_EventCUCustomerDeleted(t *testing.T) {
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("d7c03c9c-0e68-11ee-a061-7ff3a502f79b"),
 					},
-					TMDelete: dbhandler.DefaultTimeStamp,
+					TMDelete: nil,
 				},
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("d7e88e72-0e68-11ee-8ecd-fffa5f8b006c"),
 					},
-					TMDelete: dbhandler.DefaultTimeStamp,
+					TMDelete: nil,
 				},
 			},
 
@@ -63,13 +63,13 @@ func Test_EventCUCustomerDeleted(t *testing.T) {
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("d7c03c9c-0e68-11ee-a061-7ff3a502f79b"),
 					},
-					TMDelete: dbhandler.DefaultTimeStamp,
+					TMDelete: nil,
 				},
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("d7e88e72-0e68-11ee-8ecd-fffa5f8b006c"),
 					},
-					TMDelete: dbhandler.DefaultTimeStamp,
+					TMDelete: nil,
 				},
 			},
 		},

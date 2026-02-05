@@ -32,7 +32,7 @@ func Test_ConvertFlowManagerAction(t *testing.T) {
 				Option: map[string]any{
 					"key": "value",
 				},
-				TMExecute: "2025-01-21T17:00:00+09:00",
+				TMExecute: timePtr("2025-01-21T17:00:00+09:00"),
 			},
 		},
 		{
@@ -49,7 +49,7 @@ func Test_ConvertFlowManagerAction(t *testing.T) {
 				NextID:    uuid.Nil,
 				Type:      "example",
 				Option:    nil,
-				TMExecute: "2025-01-21T17:00:00+09:00",
+				TMExecute: timePtr("2025-01-21T17:00:00+09:00"),
 			},
 		},
 		{
@@ -66,7 +66,7 @@ func Test_ConvertFlowManagerAction(t *testing.T) {
 				NextID:    uuid.Nil,
 				Type:      "example",
 				Option:    map[string]any{"key": "value"},
-				TMExecute: "2025-01-21T17:00:00+09:00",
+				TMExecute: timePtr("2025-01-21T17:00:00+09:00"),
 			},
 		},
 		{
@@ -83,7 +83,7 @@ func Test_ConvertFlowManagerAction(t *testing.T) {
 				NextID:    uuid.Must(uuid.FromString("b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a12")),
 				Type:      "example",
 				Option:    map[string]any{"key": "value"},
-				TMExecute: "",
+				TMExecute: nil,
 			},
 		},
 	}

@@ -47,12 +47,12 @@ func (h *handler) groupcallGetFromRow(row *sql.Rows) (*groupcall.Groupcall, erro
 
 // GroupcallCreate sets groupcall.
 func (h *handler) GroupcallCreate(ctx context.Context, c *groupcall.Groupcall) error {
-	now := h.utilHandler.TimeGetCurTime()
+	now := h.utilHandler.TimeNow()
 
 	// Set timestamps
 	c.TMCreate = now
-	c.TMUpdate = commondatabasehandler.DefaultTimeStamp
-	c.TMDelete = commondatabasehandler.DefaultTimeStamp
+	c.TMUpdate = nil
+	c.TMDelete = nil
 
 	// Initialize nil slices/pointers
 	if c.Source == nil {
@@ -167,7 +167,7 @@ func (h *handler) GroupcallUpdate(ctx context.Context, id uuid.UUID, fields map[
 		return nil
 	}
 
-	fields[groupcall.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
+	fields[groupcall.FieldTMUpdate] = h.utilHandler.TimeNow()
 
 	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
@@ -275,7 +275,7 @@ func (h *handler) groupcallSetToCache(ctx context.Context, data *groupcall.Group
 
 // GroupcallDelete deletes the groupcall
 func (h *handler) GroupcallDelete(ctx context.Context, id uuid.UUID) error {
-	ts := h.utilHandler.TimeGetCurTime()
+	ts := h.utilHandler.TimeNow()
 	return h.GroupcallUpdate(ctx, id, map[groupcall.Field]any{
 		groupcall.FieldTMUpdate: ts,
 		groupcall.FieldTMDelete: ts,
@@ -293,7 +293,7 @@ func (h *handler) GroupcallDecreaseCallCount(ctx context.Context, id uuid.UUID) 
 		id = ?
 	`
 
-	ts := h.utilHandler.TimeGetCurTime()
+	ts := h.utilHandler.TimeNow()
 	_, err := h.db.Exec(q, ts, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. GroupcallDecreaseCallCount. err: %v", err)
@@ -314,7 +314,7 @@ func (h *handler) GroupcallDecreaseGroupcallCount(ctx context.Context, id uuid.U
 		id = ?
 	`
 
-	ts := h.utilHandler.TimeGetCurTime()
+	ts := h.utilHandler.TimeNow()
 	_, err := h.db.Exec(q, ts, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. GroupcallDecreaseGroupcallCount. err: %v", err)
@@ -351,7 +351,7 @@ func (h *handler) GroupcallSetCallIDsAndCallCountAndDialIndex(ctx context.Contex
 		id = ?
 	`
 
-	ts := h.utilHandler.TimeGetCurTime()
+	ts := h.utilHandler.TimeNow()
 	_, err = h.db.Exec(q, tmpCallIDs, callCount, dialIndex, ts, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. GroupcallSetCallIDsAndCallCountAndDialIndex. err: %v", err)
@@ -381,7 +381,7 @@ func (h *handler) GroupcallSetGroupcallIDsAndGroupcallCountAndDialIndex(ctx cont
 		id = ?
 	`
 
-	ts := h.utilHandler.TimeGetCurTime()
+	ts := h.utilHandler.TimeNow()
 	_, err = h.db.Exec(q, tmpGroupcallIDs, groupcallCount, dialIndex, ts, id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. GroupcallSetGroupcallIDsAndGroupcallCountAndDialIndex. err: %v", err)

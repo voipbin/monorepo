@@ -63,7 +63,7 @@ func Test_talksGET(t *testing.T) {
 
 			expectPageToken: "2020-09-20T03:23:20.995000Z",
 			expectPageSize:  10,
-			expectRes:       `{"result":[{"id":"83d48228-3ed7-11ef-a9ca-070e7ba46a55","customer_id":"550e8400-e29b-41d4-a716-446655440000","type":"direct"},{"id":"84caa752-3ed7-11ef-a428-7bbe6c050b77","customer_id":"550e8400-e29b-41d4-a716-446655440000","type":"group"}],"next_page_token":""}`,
+			expectRes:       `{"result":[{"id":"83d48228-3ed7-11ef-a9ca-070e7ba46a55","customer_id":"550e8400-e29b-41d4-a716-446655440000","type":"direct","tm_create":null,"tm_update":null,"tm_delete":null},{"id":"84caa752-3ed7-11ef-a428-7bbe6c050b77","customer_id":"550e8400-e29b-41d4-a716-446655440000","type":"group","tm_create":null,"tm_update":null,"tm_delete":null}],"next_page_token":""}`,
 		},
 	}
 
@@ -131,7 +131,7 @@ func Test_talksIDGET(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000"),
 				},
 				Type:     tkchat.TypeDirect,
-				TMCreate: "2020-09-20T03:23:21.995000Z",
+				TMCreate: timePtr("2020-09-20T03:23:21.995000Z"),
 			},
 
 			expectTalkID: uuid.FromStringOrNil("e66d1da0-3ed7-11ef-9208-4bcc069917a1"),
@@ -466,7 +466,7 @@ func Test_talksIDParticipantsGET(t *testing.T) {
 						OwnerID:   uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 					},
 					ChatID:   uuid.FromStringOrNil("e66d1da0-3ed7-11ef-9208-4bcc069917a1"),
-					TMJoined: "2020-09-20T03:23:21.995000Z",
+					TMJoined: timePtr("2020-09-20T03:23:21.995000Z"),
 				},
 			},
 
@@ -714,7 +714,7 @@ func Test_talkMessagesGET(t *testing.T) {
 
 			expectPageToken: "2020-09-20T03:23:20.995000Z",
 			expectPageSize:  10,
-			expectRes:       `{"result":[{"id":"93d48228-3ed7-11ef-a9ca-070e7ba46a55","customer_id":"550e8400-e29b-41d4-a716-446655440000","owner_type":"agent","owner_id":"2a2ec0ba-8004-11ec-aea5-439829c92a7c","chat_id":"e66d1da0-3ed7-11ef-9208-4bcc069917a1","type":"normal","text":"Hello","medias":null,"metadata":{"reactions":null},"tm_create":"","tm_update":"","tm_delete":""}],"next_page_token":""}`,
+			expectRes:       `{"result":[{"id":"93d48228-3ed7-11ef-a9ca-070e7ba46a55","customer_id":"550e8400-e29b-41d4-a716-446655440000","owner_type":"agent","owner_id":"2a2ec0ba-8004-11ec-aea5-439829c92a7c","chat_id":"e66d1da0-3ed7-11ef-9208-4bcc069917a1","type":"normal","text":"Hello","medias":null,"metadata":{"reactions":null},"tm_create":null,"tm_update":null,"tm_delete":null}],"next_page_token":""}`,
 		},
 	}
 
@@ -876,7 +876,7 @@ func Test_talkMessagesIDGET(t *testing.T) {
 				ChatID:   uuid.FromStringOrNil("e66d1da0-3ed7-11ef-9208-4bcc069917a1"),
 				Type:     tkmessage.TypeNormal,
 				Text:     "Hello",
-				TMCreate: "2020-09-20T03:23:21.995000Z",
+				TMCreate: timePtr("2020-09-20T03:23:21.995000Z"),
 			},
 
 			expectMessageID: uuid.FromStringOrNil("93d48228-3ed7-11ef-a9ca-070e7ba46a55"),

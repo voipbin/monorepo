@@ -11,7 +11,6 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-flow-manager/models/action"
 	"monorepo/bin-flow-manager/models/flow"
-	"monorepo/bin-flow-manager/pkg/dbhandler"
 )
 
 // Get returns flow
@@ -76,9 +75,9 @@ func (h *flowHandler) Create(
 
 		OnCompleteFlowID: onCompleteFlowID,
 
-		TMCreate: h.util.TimeGetCurTime(),
-		TMUpdate: dbhandler.DefaultTimeStamp,
-		TMDelete: dbhandler.DefaultTimeStamp,
+		TMCreate: h.util.TimeNow(),
+		TMUpdate: nil,
+		TMDelete: nil,
 	}
 	log.WithField("flow", f).Debug("Creating a new flow.")
 

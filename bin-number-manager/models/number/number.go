@@ -1,6 +1,8 @@
 package number
 
 import (
+	"time"
+
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
@@ -27,12 +29,12 @@ type Number struct {
 	EmergencyEnabled bool `json:"emergency_enabled" db:"emergency_enabled"`
 
 	// timestamp
-	TMPurchase string `json:"tm_purchase" db:"tm_purchase"`
-	TMRenew    string `json:"tm_renew" db:"tm_renew"`
+	TMPurchase *time.Time `json:"tm_purchase" db:"tm_purchase"`
+	TMRenew    *time.Time `json:"tm_renew" db:"tm_renew"`
 
-	TMCreate string `json:"tm_create" db:"tm_create"`
-	TMUpdate string `json:"tm_update" db:"tm_update"`
-	TMDelete string `json:"tm_delete" db:"tm_delete"`
+	TMCreate *time.Time `json:"tm_create" db:"tm_create"`
+	TMUpdate *time.Time `json:"tm_update" db:"tm_update"`
+	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"`
 }
 
 // ProviderName type

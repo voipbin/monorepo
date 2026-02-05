@@ -31,12 +31,12 @@ func (h *handler) activeflowGetFromRow(row *sql.Rows) (*activeflow.Activeflow, e
 }
 
 func (h *handler) ActiveflowCreate(ctx context.Context, f *activeflow.Activeflow) error {
-	now := h.util.TimeGetCurTime()
+	now := h.util.TimeNow()
 
 	// Set timestamps
 	f.TMCreate = now
-	f.TMUpdate = commondatabasehandler.DefaultTimeStamp
-	f.TMDelete = commondatabasehandler.DefaultTimeStamp
+	f.TMUpdate = nil
+	f.TMDelete = nil
 
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(f)
@@ -231,7 +231,7 @@ func (h *handler) ActiveflowUpdate(ctx context.Context, id uuid.UUID, fields map
 		return nil
 	}
 
-	fields[activeflow.FieldTMUpdate] = h.util.TimeGetCurTime()
+	fields[activeflow.FieldTMUpdate] = h.util.TimeNow()
 
 	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
@@ -256,7 +256,7 @@ func (h *handler) ActiveflowUpdate(ctx context.Context, id uuid.UUID, fields map
 }
 
 func (h *handler) ActiveflowDelete(ctx context.Context, id uuid.UUID) error {
-	ts := h.util.TimeGetCurTime()
+	ts := h.util.TimeNow()
 
 	fields := map[activeflow.Field]any{
 		activeflow.FieldTMUpdate: ts,

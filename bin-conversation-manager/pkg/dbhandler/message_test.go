@@ -5,9 +5,9 @@ import (
 	"fmt"
 	reflect "reflect"
 	"testing"
+	"time"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
-	commondatabase "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
@@ -25,7 +25,7 @@ func Test_MessageCreate(t *testing.T) {
 
 		message *message.Message
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *message.Message
 	}{
 		{
@@ -46,7 +46,7 @@ func Test_MessageCreate(t *testing.T) {
 				Medias:         []media.Media{},
 			},
 
-			responseCurTime: "2022-04-18T03:22:17.995000Z",
+			responseCurTime: func() *time.Time { t := time.Date(2022, 4, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
 			expectRes: &message.Message{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("19c162d4-e4a2-11ec-a3ce-ef751a8980e7"),
@@ -60,9 +60,9 @@ func Test_MessageCreate(t *testing.T) {
 				TransactionID:  "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
 				Text:           "Hello world",
 				Medias:         []media.Media{},
-				TMCreate:       "2022-04-18T03:22:17.995000Z",
-				TMUpdate:       commondatabase.DefaultTimeStamp,
-				TMDelete:       commondatabase.DefaultTimeStamp,
+				TMCreate:       func() *time.Time { t := time.Date(2022, 4, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
+				TMUpdate:       nil,
+				TMDelete:       nil,
 			},
 		},
 	}
@@ -82,7 +82,7 @@ func Test_MessageCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().MessageSet(gomock.Any(), gomock.Any())
 			if err := h.MessageCreate(ctx, tt.message); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -122,7 +122,7 @@ func Test_MessageList(t *testing.T) {
 		limit   uint64
 		filters map[message.Field]any
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       []*message.Message
 	}{
 		{
@@ -160,7 +160,7 @@ func Test_MessageList(t *testing.T) {
 				message.FieldConversationID: uuid.FromStringOrNil("c51b50ca-1bce-11f0-8c4c-db38779c786d"),
 			},
 
-			responseCurTime: "2022-04-18T03:22:17.995000Z",
+			responseCurTime: func() *time.Time { t := time.Date(2022, 4, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
 			expectRes: []*message.Message{
 				{
 					Identity: commonidentity.Identity{
@@ -173,9 +173,9 @@ func Test_MessageList(t *testing.T) {
 					ReferenceID:    uuid.FromStringOrNil("c548ef9e-1bce-11f0-801c-1f5a90192b72"),
 					Text:           "hello world",
 					Medias:         []media.Media{},
-					TMCreate:       "2022-04-18T03:22:17.995000Z",
-					TMUpdate:       commondatabase.DefaultTimeStamp,
-					TMDelete:       commondatabase.DefaultTimeStamp,
+					TMCreate:       func() *time.Time { t := time.Date(2022, 4, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
+					TMUpdate:       nil,
+					TMDelete:       nil,
 				},
 				{
 					Identity: commonidentity.Identity{
@@ -188,9 +188,9 @@ func Test_MessageList(t *testing.T) {
 					ReferenceID:    uuid.FromStringOrNil("c57b83be-1bce-11f0-904e-171ea4fa9d1b"),
 					Text:           "This is test",
 					Medias:         []media.Media{},
-					TMCreate:       "2022-04-18T03:22:17.995000Z",
-					TMUpdate:       commondatabase.DefaultTimeStamp,
-					TMDelete:       commondatabase.DefaultTimeStamp,
+					TMCreate:       func() *time.Time { t := time.Date(2022, 4, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
+					TMUpdate:       nil,
+					TMDelete:       nil,
 				},
 			},
 		},
@@ -212,7 +212,7 @@ func Test_MessageList(t *testing.T) {
 			ctx := context.Background()
 
 			for _, m := range tt.messages {
-				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 				mockCache.EXPECT().MessageSet(gomock.Any(), gomock.Any())
 				if err := h.MessageCreate(ctx, m); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -239,7 +239,7 @@ func Test_MessageUpdateStatus(t *testing.T) {
 
 		status message.Status
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *message.Message
 	}{
 		{
@@ -254,7 +254,7 @@ func Test_MessageUpdateStatus(t *testing.T) {
 
 			status: message.StatusDone,
 
-			responseCurTime: "2021-02-26T18:26:49.000Z",
+			responseCurTime: func() *time.Time { t := time.Date(2021, 2, 26, 18, 26, 49, 0, time.UTC); return &t }(),
 			expectRes: &message.Message{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("fc67b82c-a2a3-11ec-970f-1f9f06c64b70"),
@@ -262,9 +262,9 @@ func Test_MessageUpdateStatus(t *testing.T) {
 				},
 				Status: message.StatusDone,
 
-				TMCreate: "2021-02-26T18:26:49.000Z",
-				TMUpdate: "2021-02-26T18:26:49.000Z",
-				TMDelete: commondatabase.DefaultTimeStamp,
+				TMCreate: func() *time.Time { t := time.Date(2021, 2, 26, 18, 26, 49, 0, time.UTC); return &t }(),
+				TMUpdate: func() *time.Time { t := time.Date(2021, 2, 26, 18, 26, 49, 0, time.UTC); return &t }(),
+				TMDelete: nil,
 			},
 		},
 	}
@@ -283,13 +283,13 @@ func Test_MessageUpdateStatus(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().MessageSet(ctx, gomock.Any())
 			if err := h.MessageCreate(ctx, tt.message); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().MessageSet(ctx, gomock.Any())
 			if err := h.MessageUpdateStatus(ctx, tt.message.ID, tt.status); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -316,7 +316,7 @@ func Test_MessageDelete(t *testing.T) {
 		name    string
 		message *message.Message
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *message.Message
 	}{
 		{
@@ -335,7 +335,7 @@ func Test_MessageDelete(t *testing.T) {
 				Medias:         []media.Media{},
 			},
 
-			responseCurTime: "2021-02-26T18:26:49.000Z",
+			responseCurTime: func() *time.Time { t := time.Date(2021, 2, 26, 18, 26, 49, 0, time.UTC); return &t }(),
 			expectRes: &message.Message{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("4292410e-f1d8-11ec-b03e-639c5da6a05a"),
@@ -348,9 +348,9 @@ func Test_MessageDelete(t *testing.T) {
 				TransactionID:  "207b7274-f175-11ec-acf9-73a933332479",
 				Text:           "Hello world",
 				Medias:         []media.Media{},
-				TMCreate:       "2021-02-26T18:26:49.000Z",
-				TMUpdate:       "2021-02-26T18:26:49.000Z",
-				TMDelete:       commondatabase.DefaultTimeStamp,
+				TMCreate:       func() *time.Time { t := time.Date(2021, 2, 26, 18, 26, 49, 0, time.UTC); return &t }(),
+				TMUpdate:       func() *time.Time { t := time.Date(2021, 2, 26, 18, 26, 49, 0, time.UTC); return &t }(),
+				TMDelete:       nil,
 			},
 		},
 	}
@@ -369,13 +369,13 @@ func Test_MessageDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().MessageSet(ctx, gomock.Any())
 			if err := h.MessageCreate(ctx, tt.message); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().MessageSet(ctx, gomock.Any())
 			if err := h.MessageDelete(ctx, tt.message.ID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -406,7 +406,7 @@ func Test_MessageUpdate(t *testing.T) {
 		id    uuid.UUID
 		field map[message.Field]any
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *message.Message
 	}{
 		{
@@ -424,7 +424,7 @@ func Test_MessageUpdate(t *testing.T) {
 				message.FieldStatus:         message.StatusDone,
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: func() *time.Time { t := time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
 			expectRes: &message.Message{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("64b74416-3413-11f0-809c-c30541817b53"),
@@ -433,9 +433,9 @@ func Test_MessageUpdate(t *testing.T) {
 				ConversationID: uuid.FromStringOrNil("65209fd8-3413-11f0-8792-9be4d9395c77"),
 				Status:         message.StatusDone,
 
-				TMCreate: "2020-04-18T03:22:17.995000Z",
-				TMUpdate: "2020-04-18T03:22:17.995000Z",
-				TMDelete: commondatabase.DefaultTimeStamp,
+				TMCreate: func() *time.Time { t := time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
+				TMUpdate: func() *time.Time { t := time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
+				TMDelete: nil,
 			},
 		},
 	}
@@ -454,13 +454,13 @@ func Test_MessageUpdate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().MessageSet(ctx, gomock.Any())
 			if err := h.MessageCreate(ctx, tt.message); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().MessageSet(gomock.Any(), gomock.Any()).Return(nil)
 			if err := h.MessageUpdate(ctx, tt.id, tt.field); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

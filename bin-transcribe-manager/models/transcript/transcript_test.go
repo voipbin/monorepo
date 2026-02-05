@@ -2,6 +2,7 @@ package transcript
 
 import (
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 
@@ -13,6 +14,9 @@ func TestTranscriptStruct(t *testing.T) {
 	customerID := uuid.Must(uuid.NewV4())
 	transcribeID := uuid.Must(uuid.NewV4())
 
+	tmTranscript := time.Date(2023, 1, 1, 0, 0, 1, 123456000, time.UTC)
+	tmCreate := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
+
 	tr := Transcript{
 		Identity: commonidentity.Identity{
 			ID:         id,
@@ -21,9 +25,9 @@ func TestTranscriptStruct(t *testing.T) {
 		TranscribeID: transcribeID,
 		Direction:    DirectionIn,
 		Message:      "Hello, this is a test message.",
-		TMTranscript: "2023-01-01T00:00:01.123456Z",
-		TMCreate:     "2023-01-01T00:00:00Z",
-		TMDelete:     "",
+		TMTranscript: &tmTranscript,
+		TMCreate:     &tmCreate,
+		TMDelete:     nil,
 	}
 
 	if tr.ID != id {
@@ -41,8 +45,8 @@ func TestTranscriptStruct(t *testing.T) {
 	if tr.Message != "Hello, this is a test message." {
 		t.Errorf("Transcript.Message = %v, expected %v", tr.Message, "Hello, this is a test message.")
 	}
-	if tr.TMTranscript != "2023-01-01T00:00:01.123456Z" {
-		t.Errorf("Transcript.TMTranscript = %v, expected %v", tr.TMTranscript, "2023-01-01T00:00:01.123456Z")
+	if tr.TMTranscript == nil || !tr.TMTranscript.Equal(tmTranscript) {
+		t.Errorf("Transcript.TMTranscript = %v, expected %v", tr.TMTranscript, tmTranscript)
 	}
 }
 

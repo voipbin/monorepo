@@ -2,7 +2,6 @@ package transcripthandler
 
 import (
 	"context"
-	"fmt"
 	"strings"
 	"time"
 
@@ -87,11 +86,10 @@ func (h *transcriptHandler) processFromRecording(ctx context.Context, mediaLink 
 	return res, nil
 }
 
-func convertTime(duration time.Duration) string {
-	hours := int(duration.Hours())
-	minutes := int(duration.Minutes()) % 60
-	seconds := int(duration.Seconds()) % 60
-	microseconds := duration.Microseconds() % 1000000
-
-	return fmt.Sprintf("0001-01-01 %02d:%02d:%02d.%05d", hours, minutes, seconds, microseconds)
+func convertTime(duration time.Duration) *time.Time {
+	// Use the zero date (0001-01-01) as the base, offset by the duration.
+	// This preserves the original semantic: the timestamp represents an offset
+	// from the beginning of the transcription.
+	t := time.Date(1, 1, 1, 0, 0, 0, 0, time.UTC).Add(duration)
+	return &t
 }

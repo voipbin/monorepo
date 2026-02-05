@@ -58,7 +58,7 @@ func TestExtensionsPOST(t *testing.T) {
 			expectPassword:  "password",
 			expectName:      "test name",
 			expectDetail:    "test detail",
-			expectRes:       `{"id":"a6405fe0-d8e1-11ef-945f-9fe89b72b04d","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","extension":"","domain_name":"","username":"","password":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes:       `{"id":"a6405fe0-d8e1-11ef-945f-9fe89b72b04d","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","extension":"","domain_name":"","username":"","password":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -134,7 +134,7 @@ func Test_ExtensionsGET(t *testing.T) {
 
 			expectPageSize:  20,
 			expectPageToken: "2020-09-20T03:23:20.995000Z",
-			expectRes:       `{"result":[{"id":"2ce09268-d8e2-11ef-af37-7baa30593c20","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","extension":"","domain_name":"","username":"","password":"","tm_create":"","tm_update":"","tm_delete":""}],"next_page_token":""}`,
+			expectRes:       `{"result":[{"id":"2ce09268-d8e2-11ef-af37-7baa30593c20","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","extension":"","domain_name":"","username":"","password":"","tm_create":null,"tm_update":null,"tm_delete":null}],"next_page_token":""}`,
 		},
 	}
 
@@ -204,7 +204,7 @@ func Test_ExtensionsIDGET(t *testing.T) {
 			},
 
 			expectExntesionID: uuid.FromStringOrNil("2fbb29c0-6fb0-11eb-b2ef-4303769ecba5"),
-			expectRes:         `{"id":"2fbb29c0-6fb0-11eb-b2ef-4303769ecba5","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","extension":"","domain_name":"","username":"","password":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes:         `{"id":"2fbb29c0-6fb0-11eb-b2ef-4303769ecba5","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","extension":"","domain_name":"","username":"","password":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -282,7 +282,7 @@ func TestExtensionsIDPUT(t *testing.T) {
 			expectName:     "test name",
 			expectDetail:   "test detail",
 			expectPassword: "update password",
-			expectRes:      `{"id":"67492c7a-6fb0-11eb-8b3f-d7eb268910df","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","extension":"","domain_name":"","username":"","password":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes:      `{"id":"67492c7a-6fb0-11eb-8b3f-d7eb268910df","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","extension":"","domain_name":"","username":"","password":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -354,7 +354,7 @@ func TestExtensionsIDDELETE(t *testing.T) {
 			},
 
 			expectExtensionID: uuid.FromStringOrNil("be0c2b70-6fb0-11eb-849d-3f923b334d3b"),
-			expectRes:         `{"id":"be0c2b70-6fb0-11eb-849d-3f923b334d3b","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","extension":"","domain_name":"","username":"","password":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes:         `{"id":"be0c2b70-6fb0-11eb-849d-3f923b334d3b","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","extension":"","domain_name":"","username":"","password":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 

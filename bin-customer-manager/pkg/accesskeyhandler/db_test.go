@@ -139,6 +139,7 @@ func Test_ListByCustomerID(t *testing.T) {
 }
 
 func Test_Create(t *testing.T) {
+	expireTime := time.Date(2024, 4, 4, 7, 15, 59, 233415000, time.UTC)
 
 	tests := []struct {
 		name string
@@ -150,7 +151,7 @@ func Test_Create(t *testing.T) {
 
 		responseUUID    uuid.UUID
 		responseToken   string
-		responseExpire  string
+		responseExpire  *time.Time
 		expectAccesskey *accesskey.Accesskey
 	}{
 		{
@@ -163,14 +164,14 @@ func Test_Create(t *testing.T) {
 
 			responseUUID:   uuid.FromStringOrNil("5947fe5a-a75e-11ef-8595-878f92d49c95"),
 			responseToken:  "test_token",
-			responseExpire: "2024-04-04T07:15:59.233415Z",
+			responseExpire: &expireTime,
 			expectAccesskey: &accesskey.Accesskey{
 				ID:         uuid.FromStringOrNil("5947fe5a-a75e-11ef-8595-878f92d49c95"),
 				CustomerID: uuid.FromStringOrNil("58d43704-a75e-11ef-b9b7-279abaf5dda3"),
 				Name:       "test1",
 				Detail:     "detail1",
 				Token:      "test_token",
-				TMExpire:   "2024-04-04T07:15:59.233415Z",
+				TMExpire:   &expireTime,
 			},
 		},
 	}
@@ -194,7 +195,7 @@ func Test_Create(t *testing.T) {
 			ctx := context.Background()
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
-			mockUtil.EXPECT().TimeGetCurTimeAdd(tt.expire).Return(tt.responseExpire)
+			mockUtil.EXPECT().TimeNowAdd(tt.expire).Return(tt.responseExpire)
 			mockUtil.EXPECT().StringGenerateRandom(defaultLenToken).Return(tt.responseToken, nil)
 			mockDB.EXPECT().AccesskeyCreate(ctx, tt.expectAccesskey).Return(nil)
 			mockDB.EXPECT().AccesskeyGet(ctx, tt.responseUUID).Return(&accesskey.Accesskey{}, nil)
@@ -338,7 +339,7 @@ func Test_Delete(t *testing.T) {
 
 			responseAccesskey: &accesskey.Accesskey{
 				ID:       uuid.FromStringOrNil("b5be1332-a75d-11ef-8871-ef7e4ff7506a"),
-				TMDelete: dbhandler.DefaultTimeStamp,
+				TMDelete: nil,
 			},
 		},
 	}

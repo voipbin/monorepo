@@ -2,6 +2,7 @@ package outplan
 
 import (
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 )
@@ -19,9 +20,8 @@ func TestOutplanStruct(t *testing.T) {
 		MaxTryCount2: 2,
 		MaxTryCount3: 1,
 		MaxTryCount4: 1,
-		TMCreate:     "2024-01-01T00:00:00.000000Z",
-		TMUpdate:     "2024-01-01T00:00:00.000000Z",
-		TMDelete:     "9999-01-01T00:00:00.000000Z",
+		TMCreate: ptrTime(time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)),
+		TMUpdate: ptrTime(time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)),
 	}
 	o.ID = id
 
@@ -43,4 +43,8 @@ func TestMaxTryCountLenConstant(t *testing.T) {
 	if MaxTryCountLen != 5 {
 		t.Errorf("MaxTryCountLen = %v, expected %v", MaxTryCountLen, 5)
 	}
+}
+
+func ptrTime(t time.Time) *time.Time {
+	return &t
 }

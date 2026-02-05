@@ -101,7 +101,12 @@ func parseDirection(filename string) transcript.Direction {
 
 func sortTranscriptsByTMTranscript(transcripts []*transcript.Transcript) {
 	sort.SliceStable(transcripts, func(i, j int) bool {
-		// Directly compare TMTranscript strings
-		return transcripts[i].TMTranscript < transcripts[j].TMTranscript
+		if transcripts[i].TMTranscript == nil {
+			return true
+		}
+		if transcripts[j].TMTranscript == nil {
+			return false
+		}
+		return transcripts[i].TMTranscript.Before(*transcripts[j].TMTranscript)
 	})
 }

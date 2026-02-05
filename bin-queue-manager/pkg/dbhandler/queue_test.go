@@ -5,6 +5,7 @@ import (
 	"fmt"
 	reflect "reflect"
 	"testing"
+	"time"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -16,6 +17,10 @@ import (
 	"monorepo/bin-queue-manager/pkg/cachehandler"
 )
 
+func timePtr(t time.Time) *time.Time {
+	return &t
+}
+
 func Test_QueueCreate(t *testing.T) {
 
 	tests := []struct {
@@ -23,7 +28,7 @@ func Test_QueueCreate(t *testing.T) {
 
 		queue *queue.Queue
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *queue.Queue
 	}{
 		{
@@ -58,7 +63,7 @@ func Test_QueueCreate(t *testing.T) {
 				TotalAbandonedCount: 0,
 			},
 
-			responseCurTime: "2023-02-15T03:22:17.994000Z",
+			responseCurTime: timePtr(time.Date(2023, time.February, 15, 3, 22, 17, 994000000, time.UTC)),
 			expectRes: &queue.Queue{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("cba57fb6-59de-11ec-b230-5b6ab3380040"),
@@ -83,9 +88,9 @@ func Test_QueueCreate(t *testing.T) {
 				TotalIncomingCount:  0,
 				TotalServicedCount:  0,
 				TotalAbandonedCount: 0,
-				TMCreate:            "2023-02-15T03:22:17.994000Z",
-				TMUpdate:            DefaultTimeStamp,
-				TMDelete:            DefaultTimeStamp,
+				TMCreate:            timePtr(time.Date(2023, time.February, 15, 3, 22, 17, 994000000, time.UTC)),
+				TMUpdate:            nil,
+				TMDelete:            nil,
 			},
 		},
 	}
@@ -104,7 +109,7 @@ func Test_QueueCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().QueueSet(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 			mockCache.EXPECT().QueueGet(gomock.Any(), tt.queue.ID).Return(nil, fmt.Errorf("")).AnyTimes()
 			if err := h.QueueCreate(ctx, tt.queue); err != nil {
@@ -132,7 +137,7 @@ func Test_QueueList(t *testing.T) {
 		token   string
 		filters map[queue.Field]any
 
-		responseCurtime string
+		responseCurtime *time.Time
 		expectRes       []*queue.Queue
 	}
 
@@ -171,7 +176,7 @@ func Test_QueueList(t *testing.T) {
 				queue.FieldDeleted:    false,
 			},
 
-			responseCurtime: "2020-04-18T03:22:17.995000Z",
+			responseCurtime: timePtr(time.Date(2020, time.April, 18, 3, 22, 17, 995000000, time.UTC)),
 			expectRes: []*queue.Queue{
 				{
 					Identity: commonidentity.Identity{
@@ -183,9 +188,9 @@ func Test_QueueList(t *testing.T) {
 					TagIDs:              []uuid.UUID{},
 					WaitQueuecallIDs:    []uuid.UUID{},
 					ServiceQueuecallIDs: []uuid.UUID{},
-					TMCreate:            "2020-04-18T03:22:17.995000Z",
-					TMUpdate:            DefaultTimeStamp,
-					TMDelete:            DefaultTimeStamp,
+					TMCreate:            timePtr(time.Date(2020, time.April, 18, 3, 22, 17, 995000000, time.UTC)),
+					TMUpdate:            nil,
+					TMDelete:            nil,
 				},
 				{
 					Identity: commonidentity.Identity{
@@ -197,9 +202,9 @@ func Test_QueueList(t *testing.T) {
 					TagIDs:              []uuid.UUID{},
 					WaitQueuecallIDs:    []uuid.UUID{},
 					ServiceQueuecallIDs: []uuid.UUID{},
-					TMCreate:            "2020-04-18T03:22:17.995000Z",
-					TMUpdate:            DefaultTimeStamp,
-					TMDelete:            DefaultTimeStamp,
+					TMCreate:            timePtr(time.Date(2020, time.April, 18, 3, 22, 17, 995000000, time.UTC)),
+					TMUpdate:            nil,
+					TMDelete:            nil,
 				},
 			},
 		},
@@ -220,7 +225,7 @@ func Test_QueueList(t *testing.T) {
 			ctx := context.Background()
 
 			for _, u := range tt.data {
-				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurtime)
+				mockUtil.EXPECT().TimeNow().Return(tt.responseCurtime)
 				mockCache.EXPECT().QueueSet(gomock.Any(), gomock.Any())
 				if err := h.QueueCreate(ctx, u); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -244,7 +249,7 @@ func Test_QueueDelete(t *testing.T) {
 		name string
 		data *queue.Queue
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *queue.Queue
 	}{
 		{
@@ -255,7 +260,7 @@ func Test_QueueDelete(t *testing.T) {
 				},
 			},
 
-			responseCurTime: "2023-02-18T03:22:17.995000Z",
+			responseCurTime: timePtr(time.Date(2023, time.February, 18, 3, 22, 17, 995000000, time.UTC)),
 			expectRes: &queue.Queue{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("e0f86bb8-53a7-11ec-a123-c70052e998aa"),
@@ -263,9 +268,9 @@ func Test_QueueDelete(t *testing.T) {
 				TagIDs:              []uuid.UUID{},
 				WaitQueuecallIDs:    []uuid.UUID{},
 				ServiceQueuecallIDs: []uuid.UUID{},
-				TMCreate:            "2023-02-18T03:22:17.995000Z",
-				TMUpdate:            "2023-02-18T03:22:17.995000Z",
-				TMDelete:            "2023-02-18T03:22:17.995000Z",
+				TMCreate:            timePtr(time.Date(2023, time.February, 18, 3, 22, 17, 995000000, time.UTC)),
+				TMUpdate:            timePtr(time.Date(2023, time.February, 18, 3, 22, 17, 995000000, time.UTC)),
+				TMDelete:            timePtr(time.Date(2023, time.February, 18, 3, 22, 17, 995000000, time.UTC)),
 			},
 		},
 	}
@@ -284,13 +289,13 @@ func Test_QueueDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().QueueSet(ctx, gomock.Any())
 			if err := h.QueueCreate(ctx, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().QueueSet(ctx, gomock.Any())
 			if err := h.QueueDelete(ctx, tt.data.ID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -319,7 +324,7 @@ func Test_QueueUpdate(t *testing.T) {
 		id     uuid.UUID
 		fields map[queue.Field]any
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *queue.Queue
 	}{
 		{
@@ -342,7 +347,7 @@ func Test_QueueUpdate(t *testing.T) {
 				queue.FieldServiceTimeout: 6000000,
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: timePtr(time.Date(2020, time.April, 18, 3, 22, 17, 995000000, time.UTC)),
 			expectRes: &queue.Queue{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("5ddf2884-5a73-11ec-af95-43b28c48368b"),
@@ -359,9 +364,9 @@ func Test_QueueUpdate(t *testing.T) {
 				ServiceTimeout:      6000000,
 				WaitQueuecallIDs:    []uuid.UUID{},
 				ServiceQueuecallIDs: []uuid.UUID{},
-				TMCreate:            "2020-04-18T03:22:17.995000Z",
-				TMUpdate:            "2020-04-18T03:22:17.995000Z",
-				TMDelete:            DefaultTimeStamp,
+				TMCreate:            timePtr(time.Date(2020, time.April, 18, 3, 22, 17, 995000000, time.UTC)),
+				TMUpdate:            timePtr(time.Date(2020, time.April, 18, 3, 22, 17, 995000000, time.UTC)),
+				TMDelete:            nil,
 			},
 		},
 		{
@@ -378,7 +383,7 @@ func Test_QueueUpdate(t *testing.T) {
 				queue.FieldRoutingMethod: queue.RoutingMethodRandom,
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: timePtr(time.Date(2020, time.April, 18, 3, 22, 17, 995000000, time.UTC)),
 			expectRes: &queue.Queue{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("5e2a6740-5a73-11ec-83a2-07ef5e2c1687"),
@@ -387,9 +392,9 @@ func Test_QueueUpdate(t *testing.T) {
 				TagIDs:              []uuid.UUID{},
 				WaitQueuecallIDs:    []uuid.UUID{},
 				ServiceQueuecallIDs: []uuid.UUID{},
-				TMCreate:            "2020-04-18T03:22:17.995000Z",
-				TMUpdate:            "2020-04-18T03:22:17.995000Z",
-				TMDelete:            DefaultTimeStamp,
+				TMCreate:            timePtr(time.Date(2020, time.April, 18, 3, 22, 17, 995000000, time.UTC)),
+				TMUpdate:            timePtr(time.Date(2020, time.April, 18, 3, 22, 17, 995000000, time.UTC)),
+				TMDelete:            nil,
 			},
 		},
 		{
@@ -399,7 +404,6 @@ func Test_QueueUpdate(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("5e4a3b7e-5a73-11ec-81e9-a79e401158f0"),
 				},
-				TMCreate: "2020-04-18T03:22:17.995000Z",
 			},
 
 			id: uuid.FromStringOrNil("5e4a3b7e-5a73-11ec-81e9-a79e401158f0"),
@@ -407,7 +411,7 @@ func Test_QueueUpdate(t *testing.T) {
 				queue.FieldTagIDs: []uuid.UUID{uuid.FromStringOrNil("21fcd3d4-5a73-11ec-a185-935d2e1f0846")},
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: timePtr(time.Date(2020, time.April, 18, 3, 22, 17, 995000000, time.UTC)),
 			expectRes: &queue.Queue{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("5e4a3b7e-5a73-11ec-81e9-a79e401158f0"),
@@ -417,9 +421,9 @@ func Test_QueueUpdate(t *testing.T) {
 				},
 				WaitQueuecallIDs:    []uuid.UUID{},
 				ServiceQueuecallIDs: []uuid.UUID{},
-				TMCreate:            "2020-04-18T03:22:17.995000Z",
-				TMUpdate:            "2020-04-18T03:22:17.995000Z",
-				TMDelete:            DefaultTimeStamp,
+				TMCreate:            timePtr(time.Date(2020, time.April, 18, 3, 22, 17, 995000000, time.UTC)),
+				TMUpdate:            timePtr(time.Date(2020, time.April, 18, 3, 22, 17, 995000000, time.UTC)),
+				TMDelete:            nil,
 			},
 		},
 	}
@@ -438,13 +442,13 @@ func Test_QueueUpdate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().QueueSet(gomock.Any(), gomock.Any())
 			if err := h.QueueCreate(ctx, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().QueueSet(gomock.Any(), gomock.Any())
 			if err := h.QueueUpdate(ctx, tt.id, tt.fields); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

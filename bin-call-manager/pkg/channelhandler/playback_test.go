@@ -35,7 +35,7 @@ func Test_PlaybackStop(t *testing.T) {
 			&channel.Channel{
 				ID:         "56142206-a911-11ed-8d5d-c74b3f540ca7",
 				PlaybackID: "56f595f6-a911-11ed-b7d1-7f7aea3d1dcb",
-				TMDelete:   dbhandler.DefaultTimeStamp,
+				TMDelete:   nil,
 			},
 			&channel.Channel{
 				ID: "56142206-a911-11ed-8d5d-c74b3f540ca7",
@@ -49,7 +49,7 @@ func Test_PlaybackStop(t *testing.T) {
 			&channel.Channel{
 				ID:         "9371421e-a911-11ed-9f6f-77336360bb04",
 				PlaybackID: "",
-				TMDelete:   dbhandler.DefaultTimeStamp,
+				TMDelete:   nil,
 			},
 			&channel.Channel{
 				ID: "9371421e-a911-11ed-9f6f-77336360bb04",
@@ -117,7 +117,7 @@ func Test_Play(t *testing.T) {
 
 			responseChannel: &channel.Channel{
 				ID:       "b3bb9556-a911-11ed-82b4-5b1a0561bc34",
-				TMDelete: dbhandler.DefaultTimeStamp,
+				TMDelete: nil,
 			},
 		},
 	}

@@ -8,7 +8,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-call-manager/models/confbridge"
-	"monorepo/bin-call-manager/pkg/dbhandler"
 )
 
 // Terminating starts terminating the conference
@@ -26,7 +25,7 @@ func (h *confbridgeHandler) Terminating(ctx context.Context, id uuid.UUID) (*con
 		return nil, errors.Wrap(err, "could not get confbridge info")
 	}
 
-	if tmp.Status == confbridge.StatusTerminated || tmp.Status == confbridge.StatusTerminating || tmp.TMDelete != dbhandler.DefaultTimeStamp {
+	if tmp.Status == confbridge.StatusTerminated || tmp.Status == confbridge.StatusTerminating || tmp.TMDelete != nil {
 		log.Infof("The confbridge is already terminated. status: %s", tmp.Status)
 		return tmp, nil
 	}

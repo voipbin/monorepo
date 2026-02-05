@@ -1,6 +1,8 @@
 package transfer
 
 import (
+	"time"
+
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
@@ -21,9 +23,9 @@ type Transfer struct {
 	GroupcallID  uuid.UUID `json:"groupcall_id" db:"groupcall_id,uuid"` // created groupcall id
 	ConfbridgeID uuid.UUID `json:"confbridge_id" db:"confbridge_id,uuid"`
 
-	TMCreate string `json:"tm_create" db:"tm_create"`
-	TMUpdate string `json:"tm_update" db:"tm_update"`
-	TMDelete string `json:"tm_delete" db:"tm_delete"`
+	TMCreate *time.Time `json:"tm_create" db:"tm_create"`
+	TMUpdate *time.Time `json:"tm_update" db:"tm_update"`
+	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"`
 }
 
 // Type define

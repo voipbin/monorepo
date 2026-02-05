@@ -96,7 +96,7 @@ func (h *server) GetCampaigns(c *gin.Context, params openapi_server.GetCampaigns
 
 	nextToken := ""
 	if len(tmps) > 0 {
-		nextToken = tmps[len(tmps)-1].TMCreate
+		if tmps[len(tmps)-1].TMCreate != nil { nextToken = tmps[len(tmps)-1].TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z") }
 	}
 
 	res := GenerateListResponse(tmps, nextToken)
@@ -477,7 +477,7 @@ func (h *server) GetCampaignsIdCampaigncalls(c *gin.Context, id string, params o
 
 	nextToken := ""
 	if len(tmps) > 0 {
-		nextToken = tmps[len(tmps)-1].TMCreate
+		if tmps[len(tmps)-1].TMCreate != nil { nextToken = tmps[len(tmps)-1].TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z") }
 	}
 
 	res := GenerateListResponse(tmps, nextToken)

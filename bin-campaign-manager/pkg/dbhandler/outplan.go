@@ -31,12 +31,12 @@ func (h *handler) outplanGetFromRow(row *sql.Rows) (*outplan.Outplan, error) {
 
 // OutplanCreate insert a new plan record
 func (h *handler) OutplanCreate(ctx context.Context, o *outplan.Outplan) error {
-	now := h.util.TimeGetCurTime()
+	now := h.util.TimeNow()
 
 	// Set timestamps
 	o.TMCreate = now
-	o.TMUpdate = commondatabasehandler.DefaultTimeStamp
-	o.TMDelete = commondatabasehandler.DefaultTimeStamp
+	o.TMUpdate = nil
+	o.TMDelete = nil
 
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(o)
@@ -138,7 +138,7 @@ func (h *handler) outplanGetFromDB(ctx context.Context, id uuid.UUID) (*outplan.
 
 // OutplanDelete deletes the given outplan
 func (h *handler) OutplanDelete(ctx context.Context, id uuid.UUID) error {
-	ts := h.util.TimeGetCurTime()
+	ts := h.util.TimeNow()
 
 	fields := map[outplan.Field]any{
 		outplan.FieldTMUpdate: ts,
@@ -252,7 +252,7 @@ func (h *handler) OutplanUpdate(ctx context.Context, id uuid.UUID, fields map[ou
 		return nil
 	}
 
-	fields[outplan.FieldTMUpdate] = h.util.TimeGetCurTime()
+	fields[outplan.FieldTMUpdate] = h.util.TimeNow()
 
 	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {

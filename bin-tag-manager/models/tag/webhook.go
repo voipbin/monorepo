@@ -2,6 +2,8 @@ package tag
 
 import (
 	"encoding/json"
+	"time"
+
 	commonidentity "monorepo/bin-common-handler/models/identity"
 )
 
@@ -12,9 +14,9 @@ type WebhookMessage struct {
 	Name   string `json:"name"`   // tag's name
 	Detail string `json:"detail"` // tag's detail
 
-	TMCreate string `json:"tm_create"` // Created timestamp.
-	TMUpdate string `json:"tm_update"` // Updated timestamp.
-	TMDelete string `json:"tm_delete"` // Deleted timestamp.
+	TMCreate *time.Time `json:"tm_create"` // Created timestamp.
+	TMUpdate *time.Time `json:"tm_update"` // Updated timestamp.
+	TMDelete *time.Time `json:"tm_delete"` // Deleted timestamp.
 }
 
 // ConvertWebhookMessage converts to the event

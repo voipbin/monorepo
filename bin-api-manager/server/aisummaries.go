@@ -87,7 +87,7 @@ func (h *server) GetAisummaries(c *gin.Context, params openapi_server.GetAisumma
 
 	nextToken := ""
 	if len(tmps) > 0 {
-		nextToken = tmps[len(tmps)-1].TMCreate
+		if tmps[len(tmps)-1].TMCreate != nil { nextToken = tmps[len(tmps)-1].TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z") }
 	}
 
 	res := GenerateListResponse(tmps, nextToken)

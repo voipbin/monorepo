@@ -42,9 +42,9 @@ func (h *handler) emailGetFromRow(rows *sql.Rows) (*email.Email, error) {
 
 // EmailCreate creates a new email record.
 func (h *handler) EmailCreate(ctx context.Context, e *email.Email) error {
-	e.TMCreate = h.util.TimeGetCurTime()
-	e.TMUpdate = DefaultTimeStamp
-	e.TMDelete = DefaultTimeStamp
+	e.TMCreate = h.util.TimeNow()
+	e.TMUpdate = nil
+	e.TMDelete = nil
 
 	// prepare fields for insert
 	fields, err := commondatabasehandler.PrepareFields(e)
@@ -200,7 +200,7 @@ func (h *handler) EmailList(ctx context.Context, token string, size uint64, filt
 // EmailUpdate updates an email with the given fields.
 func (h *handler) EmailUpdate(ctx context.Context, id uuid.UUID, fields map[email.Field]any) error {
 	// add update timestamp
-	fields[email.FieldTMUpdate] = h.util.TimeGetCurTime()
+	fields[email.FieldTMUpdate] = h.util.TimeNow()
 
 	// prepare fields for update
 	data, err := commondatabasehandler.PrepareFields(fields)
@@ -229,7 +229,7 @@ func (h *handler) EmailUpdate(ctx context.Context, id uuid.UUID, fields map[emai
 
 // EmailDelete deletes the given email
 func (h *handler) EmailDelete(ctx context.Context, id uuid.UUID) error {
-	ts := h.util.TimeGetCurTime()
+	ts := h.util.TimeNow()
 	fields := map[email.Field]any{
 		email.FieldTMUpdate: ts,
 		email.FieldTMDelete: ts,

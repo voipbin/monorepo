@@ -54,7 +54,7 @@ func Test_PostAisummaries(t *testing.T) {
 			expectedOnEndFlowID:   uuid.FromStringOrNil("1c723502-0ccd-11f0-8c43-17bfdea221c5"),
 			expectedReferenceType: amsummary.ReferenceTypeCall,
 			expectedReferenceID:   uuid.FromStringOrNil("1ca46b4e-0ccd-11f0-8a52-2f20e29cf20a"),
-			expectedRes:           `{"id":"1cd2ab6c-0ccd-11f0-a783-67af79c5fb6d","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","on_end_flow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000"}`,
+			expectedRes:           `{"id":"1cd2ab6c-0ccd-11f0-a783-67af79c5fb6d","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","on_end_flow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -131,12 +131,12 @@ func Test_GetAisummaries(t *testing.T) {
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("f01f38f0-0ccd-11f0-81ab-730c812c39fb"),
 					},
-					TMCreate: "2020-09-20T03:23:21.995000Z",
+					TMCreate: timePtr("2020-09-20T03:23:21.995000Z"),
 				},
 			},
 			expectedPageSize:  10,
 			expectedPageToken: "2020-09-20T03:23:20.995000Z",
-			expectedRes:       `{"result":[{"id":"f01f38f0-0ccd-11f0-81ab-730c812c39fb","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","on_end_flow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:21.995000Z"}],"next_page_token":"2020-09-20T03:23:21.995000Z"}`,
+			expectedRes:       `{"result":[{"id":"f01f38f0-0ccd-11f0-81ab-730c812c39fb","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","on_end_flow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null}],"next_page_token":"2020-09-20T03:23:21.995000Z"}`,
 		},
 	}
 
@@ -204,7 +204,7 @@ func Test_GetAisummariesId(t *testing.T) {
 			},
 
 			expectAIID: uuid.FromStringOrNil("f04d646e-0ccd-11f0-aa34-e39ff78be410"),
-			expectRes:  `{"id":"f04d646e-0ccd-11f0-aa34-e39ff78be410","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","on_end_flow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000"}`,
+			expectRes:  `{"id":"f04d646e-0ccd-11f0-aa34-e39ff78be410","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","on_end_flow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -272,7 +272,7 @@ func Test_DeleteAisummariesId(t *testing.T) {
 			},
 
 			expectAIID: uuid.FromStringOrNil("f07adf48-0ccd-11f0-9b39-932e754611a0"),
-			expectRes:  `{"id":"f07adf48-0ccd-11f0-9b39-932e754611a0","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","on_end_flow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000"}`,
+			expectRes:  `{"id":"f07adf48-0ccd-11f0-9b39-932e754611a0","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","on_end_flow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 

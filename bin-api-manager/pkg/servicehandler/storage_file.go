@@ -18,7 +18,7 @@ func (h *serviceHandler) storageFileGet(ctx context.Context, fileID uuid.UUID) (
 		return nil, err
 	}
 
-	if res.TMDelete < defaultTimestamp {
+	if res.TMDelete != nil {
 		return nil, fmt.Errorf("not found")
 	}
 

@@ -67,7 +67,7 @@ func Test_conferencesPOST(t *testing.T) {
 			expectedTimeout:    86400,
 			expectedPreFlowID:  uuid.FromStringOrNil("3aa67eb8-1e1e-11f0-b497-8fc31b393da4"),
 			expectedPostFlowID: uuid.FromStringOrNil("3acff27a-1e1e-11f0-ad92-03d48bf8463a"),
-			expectedRes:        `{"id":"ee1e90cc-ac7a-11ea-8474-e740530b4266","customer_id":"00000000-0000-0000-0000-000000000000","pre_flow_id":"00000000-0000-0000-0000-000000000000","post_flow_id":"00000000-0000-0000-0000-000000000000","recording_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000"}`,
+			expectedRes:        `{"id":"ee1e90cc-ac7a-11ea-8474-e740530b4266","customer_id":"00000000-0000-0000-0000-000000000000","pre_flow_id":"00000000-0000-0000-0000-000000000000","post_flow_id":"00000000-0000-0000-0000-000000000000","recording_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000","tm_end":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 		{
 			name: "empty data",
@@ -88,7 +88,7 @@ func Test_conferencesPOST(t *testing.T) {
 
 			expectedPreFlowID:  uuid.Nil,
 			expectedPostFlowID: uuid.Nil,
-			expectedRes:        `{"id":"62fc88ba-3fe9-11ec-8ebb-8f1ee591edec","customer_id":"00000000-0000-0000-0000-000000000000","pre_flow_id":"00000000-0000-0000-0000-000000000000","post_flow_id":"00000000-0000-0000-0000-000000000000","recording_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000"}`,
+			expectedRes:        `{"id":"62fc88ba-3fe9-11ec-8ebb-8f1ee591edec","customer_id":"00000000-0000-0000-0000-000000000000","pre_flow_id":"00000000-0000-0000-0000-000000000000","post_flow_id":"00000000-0000-0000-0000-000000000000","recording_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000","tm_end":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 

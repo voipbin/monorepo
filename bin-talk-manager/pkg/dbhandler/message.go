@@ -16,10 +16,10 @@ import (
 const tableMessages = "talk_messages"
 
 func (h *dbHandler) MessageCreate(ctx context.Context, m *message.Message) error {
-	now := h.utilHandler.TimeGetCurTime()
+	now := h.utilHandler.TimeNow()
 	m.TMCreate = now
 	m.TMUpdate = now
-	m.TMDelete = commondb.DefaultTimeStamp
+	m.TMDelete = nil
 
 	// Initialize empty arrays if nil
 	if m.Medias == nil {
@@ -147,7 +147,7 @@ func (h *dbHandler) MessageList(ctx context.Context, filters map[message.Field]a
 }
 
 func (h *dbHandler) MessageUpdate(ctx context.Context, id uuid.UUID, fields map[message.Field]any) error {
-	now := h.utilHandler.TimeGetCurTime()
+	now := h.utilHandler.TimeNow()
 	fields[message.FieldTMUpdate] = now
 
 	preparedFields, err := commondb.PrepareFields(fields)
@@ -171,7 +171,7 @@ func (h *dbHandler) MessageUpdate(ctx context.Context, id uuid.UUID, fields map[
 }
 
 func (h *dbHandler) MessageDelete(ctx context.Context, id uuid.UUID) error {
-	now := h.utilHandler.TimeGetCurTime()
+	now := h.utilHandler.TimeNow()
 
 	query := sq.Update(tableMessages).
 		Set("tm_delete", now).
@@ -226,7 +226,7 @@ func (h *dbHandler) MessageAddReactionAtomic(ctx context.Context, messageID uuid
 	}
 
 	// Update atomically
-	now := h.utilHandler.TimeGetCurTime()
+	now := h.utilHandler.TimeNow()
 	query := `UPDATE talk_messages SET metadata = ?, tm_update = ? WHERE id = ?`
 
 	_, err = h.db.ExecContext(ctx, query, string(updatedJSON), now, messageID.Bytes())
@@ -272,7 +272,7 @@ func (h *dbHandler) MessageRemoveReactionAtomic(ctx context.Context, messageID u
 		return err
 	}
 
-	now := h.utilHandler.TimeGetCurTime()
+	now := h.utilHandler.TimeNow()
 	query := `UPDATE talk_messages SET metadata = ?, tm_update = ? WHERE id = ?`
 
 	_, err = h.db.ExecContext(ctx, query, string(updatedJSON), now, messageID.Bytes())

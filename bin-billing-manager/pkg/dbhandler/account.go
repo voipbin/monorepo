@@ -30,9 +30,9 @@ func (h *handler) accountGetFromRow(row *sql.Rows) (*account.Account, error) {
 
 // AccountCreate creates new account record.
 func (h *handler) AccountCreate(ctx context.Context, c *account.Account) error {
-	c.TMCreate = h.utilHandler.TimeGetCurTime()
-	c.TMUpdate = DefaultTimeStamp
-	c.TMDelete = DefaultTimeStamp
+	c.TMCreate = h.utilHandler.TimeNow()
+	c.TMUpdate = nil
+	c.TMDelete = nil
 
 	fields, err := commondatabasehandler.PrepareFields(c)
 	if err != nil {
@@ -194,7 +194,7 @@ func (h *handler) AccountUpdate(ctx context.Context, id uuid.UUID, fields map[ac
 	for k, v := range fields {
 		updateFields[string(k)] = v
 	}
-	updateFields["tm_update"] = h.utilHandler.TimeGetCurTime()
+	updateFields["tm_update"] = h.utilHandler.TimeNow()
 
 	preparedFields, err := commondatabasehandler.PrepareFields(updateFields)
 	if err != nil {
@@ -233,7 +233,7 @@ func (h *handler) AccountAddBalance(ctx context.Context, accountID uuid.UUID, ba
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, balance, h.utilHandler.TimeGetCurTime(), accountID.Bytes())
+	_, err := h.db.Exec(q, balance, h.utilHandler.TimeNow(), accountID.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. AccountAddBalance. err: %v", err)
 	}
@@ -257,7 +257,7 @@ func (h *handler) AccountSubtractBalance(ctx context.Context, accountID uuid.UUI
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, balance, h.utilHandler.TimeGetCurTime(), accountID.Bytes())
+	_, err := h.db.Exec(q, balance, h.utilHandler.TimeNow(), accountID.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. AccountSubtractBalance. err: %v", err)
 	}
@@ -270,7 +270,7 @@ func (h *handler) AccountSubtractBalance(ctx context.Context, accountID uuid.UUI
 
 // AccountDelete deletes the account
 func (h *handler) AccountDelete(ctx context.Context, id uuid.UUID) error {
-	ts := h.utilHandler.TimeGetCurTime()
+	ts := h.utilHandler.TimeNow()
 
 	query, args, err := sq.Update(accountsTable).
 		SetMap(map[string]any{

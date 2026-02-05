@@ -50,7 +50,7 @@ func Test_RecordingStart(t *testing.T) {
 				},
 				ActiveflowID: uuid.FromStringOrNil("67e5a500-0728-11f0-86ab-cb19621e1dd9"),
 				Status:       confbridge.StatusProgressing,
-				TMDelete:     dbhandler.DefaultTimeStamp,
+				TMDelete:     nil,
 			},
 			responseRecording: &recording.Recording{
 				Identity: commonidentity.Identity{

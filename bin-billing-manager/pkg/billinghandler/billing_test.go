@@ -27,7 +27,7 @@ func Test_BillingStart(t *testing.T) {
 		customerID     uuid.UUID
 		referenceType  billing.ReferenceType
 		referenceID    uuid.UUID
-		tmBillingStart string
+		tmBillingStart *time.Time
 		source         *commonaddress.Address
 		destination    *commonaddress.Address
 
@@ -38,6 +38,8 @@ func Test_BillingStart(t *testing.T) {
 		expectBilling *billing.Billing
 	}
 
+	tmBillingStart := time.Date(2023, 6, 8, 3, 22, 17, 995000000, time.UTC)
+
 	tests := []test{
 		{
 			name: "normal",
@@ -45,7 +47,7 @@ func Test_BillingStart(t *testing.T) {
 			customerID:     uuid.FromStringOrNil("a1f18e42-09f7-11ee-8485-5b8f354924bd"),
 			referenceType:  billing.ReferenceTypeCall,
 			referenceID:    uuid.FromStringOrNil("a21b5088-09f7-11ee-b0f7-2ba7f59b91a8"),
-			tmBillingStart: "2023-06-08T03:22:17.995000Z",
+			tmBillingStart: &tmBillingStart,
 			source: &commonaddress.Address{
 				Target: "+821100000001",
 			},
@@ -78,8 +80,8 @@ func Test_BillingStart(t *testing.T) {
 				CostPerUnit:      billing.DefaultCostPerUnitReferenceTypeCall,
 				CostTotal:        0,
 				BillingUnitCount: 0,
-				TMBillingStart:   "2023-06-08T03:22:17.995000Z",
-				TMBillingEnd:     dbhandler.DefaultTimeStamp,
+				TMBillingStart:   &tmBillingStart,
+				TMBillingEnd:     nil,
 			},
 		},
 	}
@@ -123,7 +125,7 @@ func Test_BillingStart_number_sms(t *testing.T) {
 		customerID     uuid.UUID
 		referenceType  billing.ReferenceType
 		referenceID    uuid.UUID
-		tmBillingStart string
+		tmBillingStart *time.Time
 		source         *commonaddress.Address
 		destination    *commonaddress.Address
 
@@ -134,6 +136,8 @@ func Test_BillingStart_number_sms(t *testing.T) {
 		expectBilling *billing.Billing
 	}
 
+	tmBillingStart := time.Date(2023, 6, 8, 3, 22, 17, 995000000, time.UTC)
+
 	tests := []test{
 		{
 			name: "type sms",
@@ -141,7 +145,7 @@ func Test_BillingStart_number_sms(t *testing.T) {
 			customerID:     uuid.FromStringOrNil("c29c8386-16a9-11ee-ae77-c336432e00f9"),
 			referenceType:  billing.ReferenceTypeSMS,
 			referenceID:    uuid.FromStringOrNil("c3183f6c-16a9-11ee-b2b9-677692eb71ef"),
-			tmBillingStart: "2023-06-08T03:22:17.995000Z",
+			tmBillingStart: &tmBillingStart,
 			source: &commonaddress.Address{
 				Target: "+821100000001",
 			},
@@ -180,8 +184,8 @@ func Test_BillingStart_number_sms(t *testing.T) {
 				CostPerUnit:      billing.DefaultCostPerUnitReferenceTypeSMS,
 				CostTotal:        0,
 				BillingUnitCount: 0,
-				TMBillingStart:   "2023-06-08T03:22:17.995000Z",
-				TMBillingEnd:     dbhandler.DefaultTimeStamp,
+				TMBillingStart:   &tmBillingStart,
+				TMBillingEnd:     nil,
 			},
 		},
 	}
@@ -211,7 +215,7 @@ func Test_BillingStart_number_sms(t *testing.T) {
 			mockNotify.EXPECT().PublishEvent(ctx, billing.EventTypeBillingCreated, tt.responseBilling)
 
 			// billing end
-			mockDB.EXPECT().BillingSetStatusEnd(ctx, tt.responseBilling.ID, float32(1), tt.tmBillingStart).Return(nil)
+			mockDB.EXPECT().BillingSetStatusEnd(ctx, tt.responseBilling.ID, float32(1), gomock.Any()).Return(nil)
 			mockDB.EXPECT().BillingGet(ctx, tt.responseBilling.ID).Return(tt.responseBilling, nil)
 
 			mockAccount.EXPECT().SubtractBalance(ctx, tt.responseBilling.AccountID, tt.responseBilling.CostTotal).Return(tt.responseAccount, nil)
@@ -231,7 +235,7 @@ func Test_BillingEnd(t *testing.T) {
 		name string
 
 		billing      *billing.Billing
-		tmBillingEnd string
+		tmBillingEnd *time.Time
 		source       *commonaddress.Address
 		destination  *commonaddress.Address
 
@@ -240,6 +244,9 @@ func Test_BillingEnd(t *testing.T) {
 
 		expectBillingUnitCount float32
 	}
+
+	tmBillingStart := time.Date(2023, 6, 8, 3, 22, 7, 991000000, time.UTC)
+	tmBillingEnd := time.Date(2023, 6, 8, 3, 22, 17, 995000000, time.UTC)
 
 	tests := []test{
 		{
@@ -252,9 +259,9 @@ func Test_BillingEnd(t *testing.T) {
 				},
 				AccountID:      uuid.FromStringOrNil("23d43574-16ad-11ee-9c99-3b8e376bb5a3"),
 				ReferenceType:  billing.ReferenceTypeCall,
-				TMBillingStart: "2023-06-08T03:22:07.991000Z",
+				TMBillingStart: &tmBillingStart,
 			},
-			tmBillingEnd: "2023-06-08T03:22:17.995000Z",
+			tmBillingEnd: &tmBillingEnd,
 			source: &commonaddress.Address{
 				Target: "+821100000001",
 			},
@@ -269,7 +276,7 @@ func Test_BillingEnd(t *testing.T) {
 				},
 				AccountID:      uuid.FromStringOrNil("23d43574-16ad-11ee-9c99-3b8e376bb5a3"),
 				ReferenceType:  billing.ReferenceTypeCall,
-				TMBillingStart: "2023-06-08T03:22:07.991000Z",
+				TMBillingStart: &tmBillingStart,
 			},
 			responseAccount: &account.Account{
 				Identity: commonidentity.Identity{
@@ -289,9 +296,9 @@ func Test_BillingEnd(t *testing.T) {
 				},
 				AccountID:      uuid.FromStringOrNil("9e128c36-16ae-11ee-9655-2f9b21f8f7ba"),
 				ReferenceType:  billing.ReferenceTypeSMS,
-				TMBillingStart: "2023-06-08T03:22:07.991000Z",
+				TMBillingStart: &tmBillingStart,
 			},
-			tmBillingEnd: "2023-06-08T03:22:17.995000Z",
+			tmBillingEnd: &tmBillingEnd,
 			source:       &commonaddress.Address{},
 			destination:  &commonaddress.Address{},
 
@@ -302,7 +309,7 @@ func Test_BillingEnd(t *testing.T) {
 				},
 				AccountID:      uuid.FromStringOrNil("9e128c36-16ae-11ee-9655-2f9b21f8f7ba"),
 				ReferenceType:  billing.ReferenceTypeCall,
-				TMBillingStart: "2023-06-08T03:22:07.991000Z",
+				TMBillingStart: &tmBillingStart,
 			},
 			responseAccount: &account.Account{
 				Identity: commonidentity.Identity{
@@ -331,11 +338,6 @@ func Test_BillingEnd(t *testing.T) {
 				accountHandler: mockAccount,
 			}
 			ctx := context.Background()
-
-			if tt.billing.ReferenceType == billing.ReferenceTypeCall {
-				mockUtil.EXPECT().TimeParse(tt.responseBilling.TMBillingStart).Return(utilhandler.TimeParse(tt.responseBilling.TMBillingStart))
-				mockUtil.EXPECT().TimeParse(tt.tmBillingEnd).Return(utilhandler.TimeParse(tt.tmBillingEnd))
-			}
 
 			mockDB.EXPECT().BillingSetStatusEnd(ctx, tt.responseBilling.ID, tt.expectBillingUnitCount, tt.tmBillingEnd).Return(nil)
 			mockDB.EXPECT().BillingGet(ctx, tt.responseBilling.ID).Return(tt.responseBilling, nil)

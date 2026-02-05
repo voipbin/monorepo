@@ -53,7 +53,7 @@ func Test_conversationAccountsGet(t *testing.T) {
 
 			expectPageSize:  20,
 			expectPageToken: "2020-09-20T03:23:20.995000Z",
-			expectRes:       `{"result":[{"id":"6adce0da-004e-11ee-b74a-23da476139db","customer_id":"00000000-0000-0000-0000-000000000000"}],"next_page_token":""}`,
+			expectRes:       `{"result":[{"id":"6adce0da-004e-11ee-b74a-23da476139db","customer_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}],"next_page_token":""}`,
 		},
 	}
 
@@ -135,7 +135,7 @@ func Test_conversationAccountsPost(t *testing.T) {
 			expectDetail: "test detail",
 			expectSecret: "test secret",
 			expectToken:  "test token",
-			expectRes:    `{"id":"6cc1b186-004f-11ee-91df-7f283f71f97a","customer_id":"00000000-0000-0000-0000-000000000000"}`,
+			expectRes:    `{"id":"6cc1b186-004f-11ee-91df-7f283f71f97a","customer_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -207,7 +207,7 @@ func Test_conversationAccountsIDGet(t *testing.T) {
 			},
 
 			expectConversationAccountID: uuid.FromStringOrNil("ab5a1bbe-004e-11ee-a22d-4f6e1c377a3c"),
-			expectRes:                   `{"id":"ab5a1bbe-004e-11ee-a22d-4f6e1c377a3c","customer_id":"00000000-0000-0000-0000-000000000000"}`,
+			expectRes:                   `{"id":"ab5a1bbe-004e-11ee-a22d-4f6e1c377a3c","customer_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -287,7 +287,7 @@ func Test_conversationAccountsIDPut(t *testing.T) {
 				cvaccount.FieldSecret: "test secret",
 				cvaccount.FieldToken:  "test token",
 			},
-			expectRes: `{"id":"009f2ac8-0050-11ee-b416-5f4fb9c7c682","customer_id":"00000000-0000-0000-0000-000000000000"}`,
+			expectRes: `{"id":"009f2ac8-0050-11ee-b416-5f4fb9c7c682","customer_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -359,7 +359,7 @@ func Test_conversationAccountsIDDelete(t *testing.T) {
 			},
 
 			expectConversationAccountID: uuid.FromStringOrNil("31a54f8a-0050-11ee-aa7e-d3a80a493b8b"),
-			expectRes:                   `{"id":"31a54f8a-0050-11ee-aa7e-d3a80a493b8b","customer_id":"00000000-0000-0000-0000-000000000000"}`,
+			expectRes:                   `{"id":"31a54f8a-0050-11ee-aa7e-d3a80a493b8b","customer_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 

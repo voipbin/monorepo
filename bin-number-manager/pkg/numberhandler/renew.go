@@ -81,7 +81,7 @@ func (h *numberHandler) renewNumbersByTMRenew(ctx context.Context, tmRenew strin
 		log.WithField("number", n).Debugf("Renewing the number. number_id: %s, number: %s", n.ID, n.Number)
 
 		fields := map[number.Field]any{
-			number.FieldTMRenew: h.utilHandler.TimeGetCurTime(),
+			number.FieldTMRenew: h.utilHandler.TimeNow(),
 		}
 		tmp, err := h.dbUpdate(ctx, n.ID, fields, number.EventTypeNumberRenewed)
 		if err != nil {

@@ -55,7 +55,7 @@ func Test_processV1TransfersPost(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"9e44cd92-dc73-11ed-ab06-c7042aaaba15","customer_id":"00000000-0000-0000-0000-000000000000","type":"","transferer_call_id":"00000000-0000-0000-0000-000000000000","transferee_addresses":null,"transferee_call_id":"00000000-0000-0000-0000-000000000000","groupcall_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"9e44cd92-dc73-11ed-ab06-c7042aaaba15","customer_id":"00000000-0000-0000-0000-000000000000","type":"","transferer_call_id":"00000000-0000-0000-0000-000000000000","transferee_addresses":null,"transferee_call_id":"00000000-0000-0000-0000-000000000000","groupcall_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}

@@ -1,6 +1,10 @@
 package accesskey
 
-import "github.com/gofrs/uuid"
+import (
+	"time"
+
+	"github.com/gofrs/uuid"
+)
 
 // Accesskey defines
 type Accesskey struct {
@@ -12,9 +16,9 @@ type Accesskey struct {
 
 	Token string `json:"token" db:"token"`
 
-	TMExpire string `json:"tm_expire,omitempty" db:"tm_expire"`
+	TMExpire *time.Time `json:"tm_expire" db:"tm_expire"`
 
-	TMCreate string `json:"tm_create,omitempty" db:"tm_create"`
-	TMUpdate string `json:"tm_update,omitempty" db:"tm_update"`
-	TMDelete string `json:"tm_delete,omitempty" db:"tm_delete"`
+	TMCreate *time.Time `json:"tm_create" db:"tm_create"`
+	TMUpdate *time.Time `json:"tm_update" db:"tm_update"`
+	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"`
 }

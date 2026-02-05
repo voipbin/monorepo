@@ -2,6 +2,7 @@ package billing
 
 import (
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 )
@@ -11,6 +12,11 @@ func TestBillingStruct(t *testing.T) {
 	accountID := uuid.Must(uuid.NewV4())
 	referenceID := uuid.Must(uuid.NewV4())
 
+	tmBillingStart := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+	tmBillingEnd := time.Date(2024, 1, 1, 0, 20, 0, 0, time.UTC)
+	tmCreate := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+	tmUpdate := time.Date(2024, 1, 1, 0, 20, 0, 0, time.UTC)
+
 	b := Billing{
 		AccountID:        accountID,
 		Status:           StatusProgressing,
@@ -19,11 +25,11 @@ func TestBillingStruct(t *testing.T) {
 		CostPerUnit:      0.020,
 		CostTotal:        0.40,
 		BillingUnitCount: 20,
-		TMBillingStart:   "2024-01-01T00:00:00.000000Z",
-		TMBillingEnd:     "2024-01-01T00:20:00.000000Z",
-		TMCreate:         "2024-01-01T00:00:00.000000Z",
-		TMUpdate:         "2024-01-01T00:20:00.000000Z",
-		TMDelete:         "9999-01-01T00:00:00.000000Z",
+		TMBillingStart:   &tmBillingStart,
+		TMBillingEnd:     &tmBillingEnd,
+		TMCreate:         &tmCreate,
+		TMUpdate:         &tmUpdate,
+		TMDelete:         nil,
 	}
 	b.ID = id
 

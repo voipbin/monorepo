@@ -1,6 +1,8 @@
 package action
 
 import (
+	"time"
+
 	"github.com/gofrs/uuid"
 )
 
@@ -11,7 +13,7 @@ type Action struct {
 	Type   Type           `json:"type,omitempty"`
 	Option map[string]any `json:"option,omitempty"` // represent the action option. this is used in call-manager, flow-manager, ai-manager, email-manager, message-manager, conversation-manager, webhook-manager.
 
-	TMExecute string `json:"tm_execute,omitempty"` // represent when this action has executed. This is used in call-manager.
+	TMExecute *time.Time `json:"tm_execute" db:"tm_execute"` // represent when this action has executed. This is used in call-manager.
 }
 
 // list of pre-defined ActionID

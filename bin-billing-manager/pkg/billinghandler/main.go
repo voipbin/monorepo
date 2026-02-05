@@ -4,6 +4,7 @@ package billinghandler
 
 import (
 	"context"
+	"time"
 
 	cmcall "monorepo/bin-call-manager/models/call"
 
@@ -31,12 +32,12 @@ type BillingHandler interface {
 		referenceType billing.ReferenceType,
 		referenceID uuid.UUID,
 		costPerUnit float32,
-		tmBillingStart string,
+		tmBillingStart *time.Time,
 	) (*billing.Billing, error)
 	Get(ctx context.Context, id uuid.UUID) (*billing.Billing, error)
 	GetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*billing.Billing, error)
 	List(ctx context.Context, size uint64, token string, filters map[billing.Field]any) ([]*billing.Billing, error)
-	UpdateStatusEnd(ctx context.Context, id uuid.UUID, billingDuration float32, tmBillingEnd string) (*billing.Billing, error)
+	UpdateStatusEnd(ctx context.Context, id uuid.UUID, billingDuration float32, tmBillingEnd *time.Time) (*billing.Billing, error)
 
 	EventCMCallProgressing(ctx context.Context, c *cmcall.Call) error
 	EventCMCallHangup(ctx context.Context, c *cmcall.Call) error

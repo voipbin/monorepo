@@ -12,6 +12,10 @@ const (
 	ISO8601LayoutNoZ = "2006-01-02T15:04:05.000000"
 	// LegacyLayout is the old custom format for backward compatibility
 	LegacyLayout = "2006-01-02 15:04:05.000000"
+	// SQLiteLayout is the SQLite datetime format with timezone offset
+	SQLiteLayout = "2006-01-02 15:04:05.999999999-07:00"
+	// SQLiteLayoutMillis is the SQLite datetime format with milliseconds and timezone offset
+	SQLiteLayoutMillis = "2006-01-02 15:04:05.999-07:00"
 )
 
 // TimeGetCurTime return current utc time string
@@ -78,6 +82,16 @@ func TimeParseWithError(timeString string) (time.Time, error) {
 
 	// Try legacy format for backward compatibility
 	if t, err := time.Parse(LegacyLayout, timeString); err == nil {
+		return t, nil
+	}
+
+	// Try SQLite datetime format with timezone offset
+	if t, err := time.Parse(SQLiteLayout, timeString); err == nil {
+		return t, nil
+	}
+
+	// Try SQLite datetime format with milliseconds and timezone offset
+	if t, err := time.Parse(SQLiteLayoutMillis, timeString); err == nil {
 		return t, nil
 	}
 

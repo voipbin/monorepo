@@ -1,7 +1,7 @@
 package telnyx
 
 import (
-	"strings"
+	"time"
 
 	"monorepo/bin-number-manager/models/number"
 	"monorepo/bin-number-manager/models/providernumber"
@@ -99,11 +99,13 @@ const (
 // ConvertNumber returns converted number
 func (t *PhoneNumber) ConvertNumber() *number.Number {
 
-	// Keep purchasedAt in ISO 8601 format, just ensure it has microseconds
-	tmPurchase := t.PurchasedAt
-	if strings.HasSuffix(tmPurchase, "Z") {
-		// Convert from "2021-02-25T17:54:53Z" to "2021-02-25T17:54:53.000000Z"
-		tmPurchase = strings.TrimSuffix(tmPurchase, "Z") + ".000000Z"
+	// Parse purchasedAt from Telnyx API format
+	var tmPurchase *time.Time
+	if t.PurchasedAt != "" {
+		parsed, err := time.Parse(time.RFC3339, t.PurchasedAt)
+		if err == nil {
+			tmPurchase = &parsed
+		}
 	}
 
 	res := &number.Number{
@@ -118,9 +120,9 @@ func (t *PhoneNumber) ConvertNumber() *number.Number {
 		EmergencyEnabled: t.EmergencyEnabled,
 
 		TMPurchase: tmPurchase,
-		TMCreate:   "",
-		TMUpdate:   "",
-		TMDelete:   "",
+		TMCreate:   nil,
+		TMUpdate:   nil,
+		TMDelete:   nil,
 	}
 
 	return res

@@ -2,6 +2,7 @@ package call
 
 import (
 	"encoding/json"
+	"time"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
@@ -42,13 +43,13 @@ type WebhookMessage struct {
 	HangupReason HangupReason `json:"hangup_reason,omitempty"`
 
 	// timestamp
-	TMProgressing string `json:"tm_progressing,omitempty"`
-	TMRinging     string `json:"tm_ringing,omitempty"`
-	TMHangup      string `json:"tm_hangup,omitempty"`
+	TMProgressing *time.Time `json:"tm_progressing,omitempty"`
+	TMRinging     *time.Time `json:"tm_ringing,omitempty"`
+	TMHangup      *time.Time `json:"tm_hangup,omitempty"`
 
-	TMCreate string `json:"tm_create,omitempty"`
-	TMUpdate string `json:"tm_update,omitempty"`
-	TMDelete string `json:"tm_delete,omitempty"`
+	TMCreate *time.Time `json:"tm_create,omitempty"`
+	TMUpdate *time.Time `json:"tm_update,omitempty"`
+	TMDelete *time.Time `json:"tm_delete,omitempty"`
 }
 
 // ConvertWebhookMessage converts to the event

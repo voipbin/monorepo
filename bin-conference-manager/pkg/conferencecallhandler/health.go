@@ -43,8 +43,8 @@ func (h *conferencecallHandler) HealthCheck(ctx context.Context, id uuid.UUID, r
 	}
 
 	// check max conferencecall duration
-	tmTimeout := h.utilHandler.TimeGetCurTimeAdd(-maxConferencecallDuration)
-	if cc.TMCreate < tmTimeout {
+	tmTimeout := h.utilHandler.TimeNowAdd(-maxConferencecallDuration)
+	if cc.TMCreate != nil && tmTimeout != nil && cc.TMCreate.Before(*tmTimeout) {
 		log.Debugf("Exceed max conferencecall duration. max_duration: %s", tmTimeout)
 		go func() {
 			_ = h.reqHandler.ConferenceV1ConferencecallHealthCheck(ctx, id, retryCount+1, defaultHealthCheckDelay)

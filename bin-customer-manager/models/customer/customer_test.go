@@ -2,6 +2,7 @@ package customer
 
 import (
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 )
@@ -9,6 +10,8 @@ import (
 func TestCustomerStruct(t *testing.T) {
 	id := uuid.Must(uuid.NewV4())
 	billingAccountID := uuid.Must(uuid.NewV4())
+	tmCreate := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+	tmUpdate := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
 
 	c := Customer{
 		ID:               id,
@@ -20,9 +23,9 @@ func TestCustomerStruct(t *testing.T) {
 		WebhookMethod:    WebhookMethodPost,
 		WebhookURI:       "https://webhook.example.com",
 		BillingAccountID: billingAccountID,
-		TMCreate:         "2024-01-01T00:00:00.000000Z",
-		TMUpdate:         "2024-01-01T00:00:00.000000Z",
-		TMDelete:         "9999-01-01T00:00:00.000000Z",
+		TMCreate:         &tmCreate,
+		TMUpdate:         &tmUpdate,
+		TMDelete:         nil,
 	}
 
 	if c.ID != id {

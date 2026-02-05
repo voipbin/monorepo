@@ -30,7 +30,7 @@ func Test_Delete(t *testing.T) {
 
 			responseCustomer: &customer.Customer{
 				ID:       uuid.FromStringOrNil("4cd23368-7cb7-11ec-9466-8318ef5a7125"),
-				TMDelete: dbhandler.DefaultTimeStamp,
+				TMDelete: nil,
 			},
 		},
 	}
@@ -85,7 +85,7 @@ func Test_validateCreate(t *testing.T) {
 
 			responseCustomer: &customer.Customer{
 				ID:       uuid.FromStringOrNil("4cd23368-7cb7-11ec-9466-8318ef5a7125"),
-				TMDelete: dbhandler.DefaultTimeStamp,
+				TMDelete: nil,
 			},
 
 			expectedRes: true,

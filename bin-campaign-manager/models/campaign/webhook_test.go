@@ -3,6 +3,7 @@ package campaign
 import (
 	"reflect"
 	"testing"
+	"time"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	fmaction "monorepo/bin-flow-manager/models/action"
@@ -44,9 +45,8 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 				OutdialID:      uuid.FromStringOrNil("e1ad39ba-8e62-11ee-87c5-2ba34c5eda2d"),
 				QueueID:        uuid.FromStringOrNil("e1d9e2bc-8e62-11ee-a4f9-ef02c916b7d2"),
 				NextCampaignID: uuid.FromStringOrNil("e202a06c-8e62-11ee-b00e-ab0605192f93"),
-				TMCreate:       "2020-10-10T03:30:17.000000Z",
-				TMUpdate:       "2020-10-10T03:31:17.000000Z",
-				TMDelete:       "9999-01-01 00:00:000",
+				TMCreate:       ptrTime(time.Date(2020, 10, 10, 3, 30, 17, 0, time.UTC)),
+				TMUpdate:       ptrTime(time.Date(2020, 10, 10, 3, 31, 17, 0, time.UTC)),
 			},
 
 			expectRes: &WebhookMessage{
@@ -69,9 +69,8 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 				OutdialID:      uuid.FromStringOrNil("e1ad39ba-8e62-11ee-87c5-2ba34c5eda2d"),
 				QueueID:        uuid.FromStringOrNil("e1d9e2bc-8e62-11ee-a4f9-ef02c916b7d2"),
 				NextCampaignID: uuid.FromStringOrNil("e202a06c-8e62-11ee-b00e-ab0605192f93"),
-				TMCreate:       "2020-10-10T03:30:17.000000Z",
-				TMUpdate:       "2020-10-10T03:31:17.000000Z",
-				TMDelete:       "9999-01-01 00:00:000",
+				TMCreate:       ptrTime(time.Date(2020, 10, 10, 3, 30, 17, 0, time.UTC)),
+				TMUpdate:       ptrTime(time.Date(2020, 10, 10, 3, 31, 17, 0, time.UTC)),
 			},
 		},
 	}

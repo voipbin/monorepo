@@ -1,6 +1,7 @@
 package arieventhandler
 
 import (
+	"monorepo/bin-call-manager/pkg/testhelper"
 	"context"
 	"testing"
 
@@ -48,7 +49,7 @@ func Test_EventHandlerPlaybackStarted(t *testing.T) {
 			&channel.Channel{
 				AsteriskID: "42:01:0a:a4:0f:d0",
 				ID:         "6a5ff362-74c5-4bbb-8848-9a5d23d4f170",
-				TMEnd:      dbhandler.DefaultTimeStamp,
+				TMEnd:      nil,
 			},
 			"6a5ff362-74c5-4bbb-8848-9a5d23d4f170",
 			"97bc9516-09ac-497f-b090-955c3c559c91",
@@ -117,7 +118,7 @@ func Test_EventHandlerPlaybackFinished(t *testing.T) {
 			responseChannel: &channel.Channel{
 				AsteriskID: "42:01:0a:a4:0f:d0",
 				ID:         "21dccba3-9792-4d57-904d-5260d57cd681",
-				TMEnd:      dbhandler.DefaultTimeStamp,
+				TMEnd:      nil,
 			},
 			expectchannelID:  "21dccba3-9792-4d57-904d-5260d57cd681",
 			expectPlaybackID: "a41baef4-04b9-403d-a9f5-8ea82c8b1749",
@@ -187,7 +188,7 @@ func TestEventHandlerPlaybackFinishedChannelGone(t *testing.T) {
 				AsteriskID: "42:01:0a:a4:0f:d0",
 				ID:         "ec552c6c-2757-11eb-b12c-9f77f7c7cb07",
 				State:      "Down",
-				TMEnd:      "2023-01-18T03:22:18.995000Z",
+				TMEnd: testhelper.TimePtr("2023-01-18T03:22:18.995000Z"),
 			},
 			"ec552c6c-2757-11eb-b12c-9f77f7c7cb07",
 			"a41baef4-04b9-403d-a9f5-8ea82c8b1749",

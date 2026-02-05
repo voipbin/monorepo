@@ -2,6 +2,8 @@ package recording
 
 import (
 	"encoding/json"
+	"time"
+
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
@@ -20,12 +22,12 @@ type WebhookMessage struct {
 
 	OnEndFlowID uuid.UUID `json:"on_end_flow_id,omitempty"` // executed when recording ends
 
-	TMStart string `json:"tm_start,omitempty"`
-	TMEnd   string `json:"tm_end,omitempty"`
+	TMStart *time.Time `json:"tm_start,omitempty"`
+	TMEnd   *time.Time `json:"tm_end,omitempty"`
 
-	TMCreate string `json:"tm_create,omitempty"`
-	TMUpdate string `json:"tm_update,omitempty"`
-	TMDelete string `json:"tm_delete,omitempty"`
+	TMCreate *time.Time `json:"tm_create,omitempty"`
+	TMUpdate *time.Time `json:"tm_update,omitempty"`
+	TMDelete *time.Time `json:"tm_delete,omitempty"`
 }
 
 // ConvertWebhookMessage converts to the event

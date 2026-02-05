@@ -2,6 +2,7 @@ package queue
 
 import (
 	"encoding/json"
+	"time"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
@@ -33,9 +34,9 @@ type WebhookMessage struct {
 	TotalServicedCount  int `json:"total_serviced_count,omitempty"`  // total serviced call count
 	TotalAbandonedCount int `json:"total_abandoned_count,omitempty"` // total abandoned call count
 
-	TMCreate string `json:"tm_create,omitempty"` // Created timestamp.
-	TMUpdate string `json:"tm_update,omitempty"` // Updated timestamp.
-	TMDelete string `json:"tm_delete,omitempty"` // Deleted timestamp.
+	TMCreate *time.Time `json:"tm_create"` // Created timestamp.
+	TMUpdate *time.Time `json:"tm_update"` // Updated timestamp.
+	TMDelete *time.Time `json:"tm_delete"` // Deleted timestamp.
 }
 
 // ConvertWebhookMessage Convert to the publishable message.

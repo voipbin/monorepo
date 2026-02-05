@@ -9,7 +9,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-queue-manager/models/queuecall"
-	"monorepo/bin-queue-manager/pkg/dbhandler"
 )
 
 // Kick kicks the queuecall from the queue
@@ -66,7 +65,7 @@ func (h *queuecallHandler) KickByReferenceID(ctx context.Context, referenceID uu
 		return nil, err
 	}
 
-	if qc.TMEnd < dbhandler.DefaultTimeStamp {
+	if qc.TMEnd != nil {
 		// already ended
 		return qc, nil
 	}

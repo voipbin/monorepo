@@ -41,7 +41,7 @@ func Test_accesskeyGet(t *testing.T) {
 			responseAccesskey: &csaccesskey.Accesskey{
 				ID:         uuid.FromStringOrNil("9c1078ba-ab47-11ef-b8b7-27bf39014b86"),
 				CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
-				TMDelete:   defaultTimestamp,
+				TMDelete: nil,
 			},
 		},
 	}
@@ -169,13 +169,13 @@ func Test_AccesskeyGet(t *testing.T) {
 			responseAccesskey: &csaccesskey.Accesskey{
 				ID:         uuid.FromStringOrNil("589ebbc2-ab48-11ef-a7b6-0be2f7042cdf"),
 				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
-				TMDelete:   defaultTimestamp,
+				TMDelete: nil,
 			},
 
 			expectedRes: &csaccesskey.WebhookMessage{
 				ID:         uuid.FromStringOrNil("589ebbc2-ab48-11ef-a7b6-0be2f7042cdf"),
 				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
-				TMDelete:   defaultTimestamp,
+				TMDelete: nil,
 			},
 		},
 	}
@@ -340,7 +340,7 @@ func Test_AccesskeyDelete(t *testing.T) {
 			responseAccesskey: &csaccesskey.Accesskey{
 				ID:         uuid.FromStringOrNil("bde73c60-ab49-11ef-810d-7b7404934537"),
 				CustomerID: uuid.FromStringOrNil("51639bbe-8e5e-11ee-afc4-4fbef5d3d983"),
-				TMDelete:   defaultTimestamp,
+				TMDelete: nil,
 			},
 		},
 	}

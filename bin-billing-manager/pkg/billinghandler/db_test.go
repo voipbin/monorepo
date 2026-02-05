@@ -4,6 +4,7 @@ import (
 	"context"
 	reflect "reflect"
 	"testing"
+	"time"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
@@ -27,13 +28,15 @@ func Test_Create(t *testing.T) {
 		referenceType  billing.ReferenceType
 		referenceID    uuid.UUID
 		costPerUnit    float32
-		tmBillingStart string
+		tmBillingStart *time.Time
 
 		responseUUID    uuid.UUID
 		responseBilling *billing.Billing
 
 		expectBilling *billing.Billing
 	}
+
+	tmBillingStart := time.Date(2023, 6, 8, 3, 22, 17, 995000000, time.UTC)
 
 	tests := []test{
 		{
@@ -44,7 +47,7 @@ func Test_Create(t *testing.T) {
 			referenceType:  billing.ReferenceTypeCall,
 			referenceID:    uuid.FromStringOrNil("978512dc-08fb-11ee-953a-cb7160fb1372"),
 			costPerUnit:    billing.DefaultCostPerUnitReferenceTypeCall,
-			tmBillingStart: "2023-06-08T03:22:17.995000Z",
+			tmBillingStart: &tmBillingStart,
 
 			responseUUID: uuid.FromStringOrNil("97a8cf42-08fb-11ee-a352-8fbcbed34869"),
 			responseBilling: &billing.Billing{
@@ -64,8 +67,8 @@ func Test_Create(t *testing.T) {
 				ReferenceID:    uuid.FromStringOrNil("978512dc-08fb-11ee-953a-cb7160fb1372"),
 				CostPerUnit:    billing.DefaultCostPerUnitReferenceTypeCall,
 				CostTotal:      0,
-				TMBillingStart: "2023-06-08T03:22:17.995000Z",
-				TMBillingEnd:   dbhandler.DefaultTimeStamp,
+				TMBillingStart: &tmBillingStart,
+				TMBillingEnd:   nil,
 			},
 		},
 	}
@@ -299,10 +302,12 @@ func Test_UpdateStatusEnd(t *testing.T) {
 
 		id              uuid.UUID
 		billingDuration float32
-		tmBillingEnd    string
+		tmBillingEnd    *time.Time
 
 		responseBilling *billing.Billing
 	}
+
+	tmBillingEnd := time.Date(2023, 6, 9, 3, 22, 17, 995000000, time.UTC)
 
 	tests := []test{
 		{
@@ -310,7 +315,7 @@ func Test_UpdateStatusEnd(t *testing.T) {
 
 			id:              uuid.FromStringOrNil("a33c2c6e-0900-11ee-b83b-5f7796e6df8a"),
 			billingDuration: 10.32,
-			tmBillingEnd:    "2023-06-09T03:22:17.995000Z",
+			tmBillingEnd:    &tmBillingEnd,
 
 			responseBilling: &billing.Billing{
 				Identity: commonidentity.Identity{

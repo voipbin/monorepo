@@ -54,7 +54,7 @@ func Test_GetActiveflows(t *testing.T) {
 
 			expectedPageSize:  100,
 			expectedPageToken: "",
-			expectedRes:       `{"result":[{"id":"c9f6c460-d3aa-11ef-9062-db42ef820bc8","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","on_complete_flow_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000"},"forward_action_id":"00000000-0000-0000-0000-000000000000"}],"next_page_token":""}`,
+			expectedRes:       `{"result":[{"id":"c9f6c460-d3aa-11ef-9062-db42ef820bc8","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","on_complete_flow_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","tm_execute":null},"forward_action_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}],"next_page_token":""}`,
 		},
 		{
 			name: "1 item",
@@ -77,7 +77,7 @@ func Test_GetActiveflows(t *testing.T) {
 
 			expectedPageSize:  10,
 			expectedPageToken: "2020-09-20T03:23:20.995000Z",
-			expectedRes:       `{"result":[{"id":"ca5324bc-d3aa-11ef-b3a2-5f9b2297d0b5","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","on_complete_flow_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000"},"forward_action_id":"00000000-0000-0000-0000-000000000000"}],"next_page_token":""}`,
+			expectedRes:       `{"result":[{"id":"ca5324bc-d3aa-11ef-b3a2-5f9b2297d0b5","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","on_complete_flow_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","tm_execute":null},"forward_action_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}],"next_page_token":""}`,
 		},
 		{
 			name: "more than 2 items",
@@ -110,7 +110,7 @@ func Test_GetActiveflows(t *testing.T) {
 
 			expectedPageSize:  10,
 			expectedPageToken: "2020-09-20T03:23:20.995000Z",
-			expectedRes:       `{"result":[{"id":"ca814ff4-d3aa-11ef-b654-4356ff1e24b8","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","on_complete_flow_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000"},"forward_action_id":"00000000-0000-0000-0000-000000000000"},{"id":"caaf28de-d3aa-11ef-acab-8364561636de","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","on_complete_flow_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000"},"forward_action_id":"00000000-0000-0000-0000-000000000000"},{"id":"d80bf73c-d3aa-11ef-9e3b-5327fa6fb18b","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","on_complete_flow_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000"},"forward_action_id":"00000000-0000-0000-0000-000000000000"}],"next_page_token":""}`,
+			expectedRes:       `{"result":[{"id":"ca814ff4-d3aa-11ef-b654-4356ff1e24b8","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","on_complete_flow_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","tm_execute":null},"forward_action_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null},{"id":"caaf28de-d3aa-11ef-acab-8364561636de","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","on_complete_flow_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","tm_execute":null},"forward_action_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null},{"id":"d80bf73c-d3aa-11ef-9e3b-5327fa6fb18b","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","on_complete_flow_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","tm_execute":null},"forward_action_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}],"next_page_token":""}`,
 		},
 	}
 
@@ -187,7 +187,7 @@ func Test_PostActiveflows(t *testing.T) {
 			},
 			expectedID:     uuid.FromStringOrNil("88eaacce-d3ab-11ef-ac99-23f970b154a2"),
 			expectedFlowID: uuid.FromStringOrNil("8917167e-d3ab-11ef-b322-b36809068d12"),
-			expectedRes:    `{"id":"893ebb34-d3ab-11ef-90e4-f31b0ef8762a","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","on_complete_flow_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000"},"forward_action_id":"00000000-0000-0000-0000-000000000000"}`,
+			expectedRes:    `{"id":"893ebb34-d3ab-11ef-90e4-f31b0ef8762a","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","on_complete_flow_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","tm_execute":null},"forward_action_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 		{
 			name: "empty",
@@ -209,7 +209,7 @@ func Test_PostActiveflows(t *testing.T) {
 			expectedActions: []fmaction.Action{},
 			expectedID:      uuid.Nil,
 			expectedFlowID:  uuid.Nil,
-			expectedRes:     `{"id":"8969817a-d3ab-11ef-b01b-c358a80962d3","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","on_complete_flow_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000"},"forward_action_id":"00000000-0000-0000-0000-000000000000"}`,
+			expectedRes:     `{"id":"8969817a-d3ab-11ef-b01b-c358a80962d3","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","on_complete_flow_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","tm_execute":null},"forward_action_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -282,11 +282,11 @@ func Test_GetActiveflowsId(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("31c3088a-cb2c-11ed-b323-2b5e8c1da422"),
 				},
-				TMCreate: "2020-09-20T03:23:21.995000Z",
+				TMCreate: timePtr("2020-09-20T03:23:21.995000Z"),
 			},
 
 			expectedActiveflowID: uuid.FromStringOrNil("31c3088a-cb2c-11ed-b323-2b5e8c1da422"),
-			expectedRes:          `{"id":"31c3088a-cb2c-11ed-b323-2b5e8c1da422","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","on_complete_flow_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000"},"forward_action_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:21.995000Z"}`,
+			expectedRes:          `{"id":"31c3088a-cb2c-11ed-b323-2b5e8c1da422","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","on_complete_flow_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","tm_execute":null},"forward_action_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -352,7 +352,7 @@ func Test_DeleteActiveflowsId(t *testing.T) {
 			},
 
 			expectActiveflowID: uuid.FromStringOrNil("8abf67b2-cb2c-11ed-997d-4ff8509599f7"),
-			expectRes:          `{"id":"8abf67b2-cb2c-11ed-997d-4ff8509599f7","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","on_complete_flow_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000"},"forward_action_id":"00000000-0000-0000-0000-000000000000"}`,
+			expectRes:          `{"id":"8abf67b2-cb2c-11ed-997d-4ff8509599f7","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","on_complete_flow_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","tm_execute":null},"forward_action_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -419,7 +419,7 @@ func Test_PostActiveflowsIdStop(t *testing.T) {
 			},
 
 			expectActiveflowID: uuid.FromStringOrNil("da10d24c-cb2c-11ed-be08-1fca5d4747f4"),
-			expectRes:          `{"id":"da10d24c-cb2c-11ed-be08-1fca5d4747f4","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","on_complete_flow_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000"},"forward_action_id":"00000000-0000-0000-0000-000000000000"}`,
+			expectRes:          `{"id":"da10d24c-cb2c-11ed-be08-1fca5d4747f4","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","on_complete_flow_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","tm_execute":null},"forward_action_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 

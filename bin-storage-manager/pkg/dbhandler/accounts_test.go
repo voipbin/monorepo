@@ -8,6 +8,7 @@ import (
 	"monorepo/bin-storage-manager/pkg/cachehandler"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -19,7 +20,7 @@ func Test_AccountCreate(t *testing.T) {
 		name string
 		file *account.Account
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *account.Account
 	}{
 		{
@@ -32,7 +33,7 @@ func Test_AccountCreate(t *testing.T) {
 				TotalFileSize:  1024,
 			},
 
-			"2024-05-18T03:22:17.995000Z",
+			func() *time.Time { t := time.Date(2024, 5, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
 			&account.Account{
 				ID:         uuid.FromStringOrNil("7e1d4424-198d-11ef-8962-5b7dcd4e37e8"),
 				CustomerID: uuid.FromStringOrNil("7e4d9caa-198d-11ef-a42b-abbbe058dea6"),
@@ -40,9 +41,9 @@ func Test_AccountCreate(t *testing.T) {
 				TotalFileCount: 1,
 				TotalFileSize:  1024,
 
-				TMCreate: "2024-05-18T03:22:17.995000Z",
-				TMUpdate: "9999-01-01T00:00:00.000000Z",
-				TMDelete: "9999-01-01T00:00:00.000000Z",
+				TMCreate: func() *time.Time { t := time.Date(2024, 5, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
+				TMUpdate: nil,
+				TMDelete: nil,
 			},
 		},
 	}
@@ -61,7 +62,7 @@ func Test_AccountCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().AccountSet(ctx, gomock.Any())
 			if err := h.AccountCreate(ctx, tt.file); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -90,7 +91,7 @@ func Test_AccountList(t *testing.T) {
 		size    uint64
 		filters map[account.Field]any
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       []*account.Account
 	}{
 		{
@@ -112,21 +113,21 @@ func Test_AccountList(t *testing.T) {
 				account.FieldDeleted:    false,
 			},
 
-			"2024-05-16T03:22:17.995000Z",
+			func() *time.Time { t := time.Date(2024, 5, 16, 3, 22, 17, 995000000, time.UTC); return &t }(),
 			[]*account.Account{
 				{
 					ID:         uuid.FromStringOrNil("5227c0ce-198d-11ef-b06c-a744dbfcde74"),
 					CustomerID: uuid.FromStringOrNil("52642a32-198d-11ef-ae41-7f16629231ae"),
-					TMCreate:   "2024-05-16T03:22:17.995000Z",
-					TMUpdate:   "9999-01-01T00:00:00.000000Z",
-					TMDelete:   "9999-01-01T00:00:00.000000Z",
+					TMCreate:   func() *time.Time { t := time.Date(2024, 5, 16, 3, 22, 17, 995000000, time.UTC); return &t }(),
+					TMUpdate:   nil,
+					TMDelete:   nil,
 				},
 				{
 					ID:         uuid.FromStringOrNil("529e6936-198d-11ef-afd6-57ccd5f20689"),
 					CustomerID: uuid.FromStringOrNil("52642a32-198d-11ef-ae41-7f16629231ae"),
-					TMCreate:   "2024-05-16T03:22:17.995000Z",
-					TMUpdate:   "9999-01-01T00:00:00.000000Z",
-					TMDelete:   "9999-01-01T00:00:00.000000Z",
+					TMCreate:   func() *time.Time { t := time.Date(2024, 5, 16, 3, 22, 17, 995000000, time.UTC); return &t }(),
+					TMUpdate:   nil,
+					TMDelete:   nil,
 				},
 			},
 		},
@@ -148,7 +149,7 @@ func Test_AccountList(t *testing.T) {
 			ctx := context.Background()
 
 			for _, account := range tt.accounts {
-				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 				mockCache.EXPECT().AccountSet(ctx, gomock.Any())
 				if err := h.AccountCreate(ctx, &account); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -177,7 +178,7 @@ func Test_AccountIncreaseFileInfo(t *testing.T) {
 		filecount int64
 		filesize  int64
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *account.Account
 	}{
 		{
@@ -194,7 +195,7 @@ func Test_AccountIncreaseFileInfo(t *testing.T) {
 			filecount: 1,
 			filesize:  1024,
 
-			responseCurTime: "2024-05-18T03:22:17.995000Z",
+			responseCurTime: func() *time.Time { t := time.Date(2024, 5, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
 			expectRes: &account.Account{
 				ID:         uuid.FromStringOrNil("e7f3e69e-198f-11ef-9c52-47220c3b173b"),
 				CustomerID: uuid.FromStringOrNil("7e4d9caa-198d-11ef-a42b-abbbe058dea6"),
@@ -202,9 +203,9 @@ func Test_AccountIncreaseFileInfo(t *testing.T) {
 				TotalFileCount: 2,
 				TotalFileSize:  2048,
 
-				TMCreate: "2024-05-18T03:22:17.995000Z",
-				TMUpdate: "2024-05-18T03:22:17.995000Z",
-				TMDelete: "9999-01-01T00:00:00.000000Z",
+				TMCreate: func() *time.Time { t := time.Date(2024, 5, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
+				TMUpdate: func() *time.Time { t := time.Date(2024, 5, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
+				TMDelete: nil,
 			},
 		},
 	}
@@ -223,7 +224,7 @@ func Test_AccountIncreaseFileInfo(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime).AnyTimes()
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime).AnyTimes()
 			mockCache.EXPECT().AccountSet(ctx, gomock.Any())
 			if err := h.AccountCreate(ctx, tt.account); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -258,7 +259,7 @@ func Test_AccountDecreaseFileInfo(t *testing.T) {
 		filecount int64
 		filesize  int64
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *account.Account
 	}{
 		{
@@ -275,7 +276,7 @@ func Test_AccountDecreaseFileInfo(t *testing.T) {
 			filecount: 1,
 			filesize:  1024,
 
-			responseCurTime: "2024-05-18T03:22:17.995000Z",
+			responseCurTime: func() *time.Time { t := time.Date(2024, 5, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
 			expectRes: &account.Account{
 				ID:         uuid.FromStringOrNil("218ea34a-19a3-11ef-af7b-8b096eadd9cd"),
 				CustomerID: uuid.FromStringOrNil("7e4d9caa-198d-11ef-a42b-abbbe058dea6"),
@@ -283,9 +284,9 @@ func Test_AccountDecreaseFileInfo(t *testing.T) {
 				TotalFileCount: 9,
 				TotalFileSize:  9216,
 
-				TMCreate: "2024-05-18T03:22:17.995000Z",
-				TMUpdate: "2024-05-18T03:22:17.995000Z",
-				TMDelete: "9999-01-01T00:00:00.000000Z",
+				TMCreate: func() *time.Time { t := time.Date(2024, 5, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
+				TMUpdate: func() *time.Time { t := time.Date(2024, 5, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
+				TMDelete: nil,
 			},
 		},
 	}
@@ -304,7 +305,7 @@ func Test_AccountDecreaseFileInfo(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime).AnyTimes()
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime).AnyTimes()
 			mockCache.EXPECT().AccountSet(ctx, gomock.Any())
 			if err := h.AccountCreate(ctx, tt.account); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -337,7 +338,7 @@ func Test_AccountDelete(t *testing.T) {
 
 		id uuid.UUID
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *account.Account
 	}{
 		{
@@ -349,14 +350,14 @@ func Test_AccountDelete(t *testing.T) {
 
 			id: uuid.FromStringOrNil("874be486-198f-11ef-9772-675746b370f6"),
 
-			responseCurTime: "2024-05-18T03:22:17.995000Z",
+			responseCurTime: func() *time.Time { t := time.Date(2024, 5, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
 			expectRes: &account.Account{
 				ID:         uuid.FromStringOrNil("874be486-198f-11ef-9772-675746b370f6"),
 				CustomerID: uuid.FromStringOrNil("7e4d9caa-198d-11ef-a42b-abbbe058dea6"),
 
-				TMCreate: "2024-05-18T03:22:17.995000Z",
-				TMUpdate: "2024-05-18T03:22:17.995000Z",
-				TMDelete: "2024-05-18T03:22:17.995000Z",
+				TMCreate: func() *time.Time { t := time.Date(2024, 5, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
+				TMUpdate: func() *time.Time { t := time.Date(2024, 5, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
+				TMDelete: func() *time.Time { t := time.Date(2024, 5, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
 			},
 		},
 	}
@@ -375,7 +376,7 @@ func Test_AccountDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime).AnyTimes()
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime).AnyTimes()
 			mockCache.EXPECT().AccountSet(ctx, gomock.Any())
 			if err := h.AccountCreate(ctx, tt.account); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

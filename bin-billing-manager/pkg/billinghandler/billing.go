@@ -20,7 +20,7 @@ func (h *billingHandler) BillingStart(
 	customerID uuid.UUID,
 	referenceType billing.ReferenceType,
 	referenceID uuid.UUID,
-	tmBillingStart string,
+	tmBillingStart *time.Time,
 	source *commonaddress.Address,
 	destination *commonaddress.Address,
 ) error {
@@ -83,7 +83,7 @@ func (h *billingHandler) BillingStart(
 func (h *billingHandler) BillingEnd(
 	ctx context.Context,
 	bill *billing.Billing,
-	tmBillingEnd string,
+	tmBillingEnd *time.Time,
 	source *commonaddress.Address,
 	destination *commonaddress.Address,
 ) error {
@@ -97,9 +97,9 @@ func (h *billingHandler) BillingEnd(
 	var billingUnitCount time.Duration
 	switch bill.ReferenceType {
 	case billing.ReferenceTypeCall:
-		timeStart := h.utilHandler.TimeParse(bill.TMBillingStart)
-		timeEnd := h.utilHandler.TimeParse(tmBillingEnd)
-		billingUnitCount = time.Duration(timeEnd.Sub(timeStart))
+		if bill.TMBillingStart != nil && tmBillingEnd != nil {
+			billingUnitCount = time.Duration(tmBillingEnd.Sub(*bill.TMBillingStart))
+		}
 
 	case billing.ReferenceTypeSMS, billing.ReferenceTypeNumber, billing.ReferenceTypeNumberRenew:
 		billingUnitCount = time.Duration(time.Second * 1)

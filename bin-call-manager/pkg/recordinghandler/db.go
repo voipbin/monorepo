@@ -8,7 +8,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-call-manager/models/recording"
-	"monorepo/bin-call-manager/pkg/dbhandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	smfile "monorepo/bin-storage-manager/models/file"
 )
@@ -60,8 +59,8 @@ func (h *recordingHandler) Create(
 		AsteriskID: asteriskID,
 		ChannelIDs: channelIDs,
 
-		TMStart: dbhandler.DefaultTimeStamp,
-		TMEnd:   dbhandler.DefaultTimeStamp,
+		TMStart: nil,
+		TMEnd:   nil,
 	}
 
 	if errCreate := h.db.RecordingCreate(ctx, tmp); errCreate != nil {

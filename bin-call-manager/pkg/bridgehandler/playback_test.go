@@ -42,7 +42,7 @@ func Test_Play(t *testing.T) {
 
 			responseBridge: &bridge.Bridge{
 				ID:       "b57850aa-7f0b-11f0-be7c-4b710b288213",
-				TMDelete: dbhandler.DefaultTimeStamp,
+				TMDelete: nil,
 			},
 		},
 	}

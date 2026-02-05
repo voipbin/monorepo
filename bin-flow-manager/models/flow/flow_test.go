@@ -77,7 +77,7 @@ func TestMarshalActionEcho(t *testing.T) {
 				ID:   uuid.FromStringOrNil("58bd9a56-8974-11ea-9271-0be0134dbfbd"),
 				Type: action.TypeEcho,
 			},
-			expectRes: `{"id":"58bd9a56-8974-11ea-9271-0be0134dbfbd","next_id":"00000000-0000-0000-0000-000000000000","type":"echo"}`,
+			expectRes: `{"id":"58bd9a56-8974-11ea-9271-0be0134dbfbd","next_id":"00000000-0000-0000-0000-000000000000","type":"echo","tm_execute":null}`,
 		},
 		{
 			name: "have option duration",
@@ -88,7 +88,7 @@ func TestMarshalActionEcho(t *testing.T) {
 					"duration": 180,
 				},
 			},
-			expectRes: `{"id":"58bd9a56-8974-11ea-9271-0be0134dbfbd","next_id":"00000000-0000-0000-0000-000000000000","type":"echo","option":{"duration":180}}`,
+			expectRes: `{"id":"58bd9a56-8974-11ea-9271-0be0134dbfbd","next_id":"00000000-0000-0000-0000-000000000000","type":"echo","option":{"duration":180},"tm_execute":null}`,
 		},
 	}
 

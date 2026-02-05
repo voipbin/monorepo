@@ -2,6 +2,7 @@ package provider
 
 import (
 	"encoding/json"
+	"time"
 
 	"github.com/gofrs/uuid"
 )
@@ -22,9 +23,9 @@ type WebhookMessage struct {
 	Detail string `json:"detail"`
 
 	// timestamp
-	TMCreate string `json:"tm_create"`
-	TMUpdate string `json:"tm_update"`
-	TMDelete string `json:"tm_delete"`
+	TMCreate *time.Time `json:"tm_create"`
+	TMUpdate *time.Time `json:"tm_update"`
+	TMDelete *time.Time `json:"tm_delete"`
 }
 
 // ConvertWebhookMessage converts to the event

@@ -1,6 +1,7 @@
 package bridge
 
 import (
+	"monorepo/bin-call-manager/pkg/testhelper"
 	"reflect"
 	"testing"
 
@@ -32,7 +33,7 @@ func TestNewBridgeByBridgeCreated(t *testing.T) {
 				ChannelIDs:    []string{},
 				ReferenceType: ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("5cef1dbc-13d8-11ec-9199-f3e0e965a469"),
-				TMCreate:      "2020-05-03T21:35:02.809",
+				TMCreate: testhelper.TimePtr("2020-05-03T21:35:02.809"),
 			},
 		},
 		{
@@ -50,7 +51,7 @@ func TestNewBridgeByBridgeCreated(t *testing.T) {
 				ChannelIDs:    []string{},
 				ReferenceType: ReferenceTypeConfbridge,
 				ReferenceID:   uuid.FromStringOrNil("8f537474-13d8-11ec-9193-7b377238c934"),
-				TMCreate:      "2020-05-03T21:35:02.809",
+				TMCreate: testhelper.TimePtr("2020-05-03T21:35:02.809"),
 			},
 		},
 		{
@@ -68,7 +69,7 @@ func TestNewBridgeByBridgeCreated(t *testing.T) {
 				ChannelIDs:    []string{},
 				ReferenceType: ReferenceTypeUnknown,
 				ReferenceID:   uuid.Nil,
-				TMCreate:      "2020-05-03T21:35:02.809",
+				TMCreate: testhelper.TimePtr("2020-05-03T21:35:02.809"),
 			},
 		}}
 

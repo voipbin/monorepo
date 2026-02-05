@@ -33,7 +33,7 @@ func Test_HoldOn(t *testing.T) {
 			&channel.Channel{
 				ID:         "e3119da2-cfcf-11ed-a0e8-afd845a8c6b4",
 				AsteriskID: "3e:50:6b:43:bb:30",
-				TMDelete:   dbhandler.DefaultTimeStamp,
+				TMDelete:   nil,
 			},
 		},
 	}
@@ -85,7 +85,7 @@ func Test_HoldOff(t *testing.T) {
 			&channel.Channel{
 				ID:         "0b219856-cfd0-11ed-94b5-1f3372c94993",
 				AsteriskID: "3e:50:6b:43:bb:30",
-				TMDelete:   dbhandler.DefaultTimeStamp,
+				TMDelete:   nil,
 			},
 		},
 	}

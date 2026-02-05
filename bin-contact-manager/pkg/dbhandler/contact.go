@@ -29,9 +29,9 @@ func (h *handler) contactGetFromRow(rows *sql.Rows) (*contact.Contact, error) {
 
 // ContactCreate creates a new contact record
 func (h *handler) ContactCreate(ctx context.Context, c *contact.Contact) error {
-	c.TMCreate = h.utilHandler.TimeGetCurTime()
-	c.TMUpdate = DefaultTimeStamp
-	c.TMDelete = DefaultTimeStamp
+	c.TMCreate = h.utilHandler.TimeNow()
+	c.TMUpdate = nil
+	c.TMDelete = nil
 
 	// prepare fields for insert
 	fields, err := commondatabasehandler.PrepareFields(c)
@@ -202,7 +202,7 @@ func (h *handler) ContactList(ctx context.Context, size uint64, token string, fi
 // ContactUpdate updates a contact with the given fields.
 func (h *handler) ContactUpdate(ctx context.Context, id uuid.UUID, fields map[contact.Field]any) error {
 	// add update timestamp
-	fields[contact.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
+	fields[contact.FieldTMUpdate] = h.utilHandler.TimeNow()
 
 	// prepare fields for update
 	data, err := commondatabasehandler.PrepareFields(fields)
@@ -231,7 +231,7 @@ func (h *handler) ContactUpdate(ctx context.Context, id uuid.UUID, fields map[co
 
 // ContactDelete soft-deletes a contact.
 func (h *handler) ContactDelete(ctx context.Context, id uuid.UUID) error {
-	ts := h.utilHandler.TimeGetCurTime()
+	ts := h.utilHandler.TimeNow()
 	fields := map[contact.Field]any{
 		contact.FieldTMUpdate: ts,
 		contact.FieldTMDelete: ts,
@@ -346,7 +346,7 @@ func (h *handler) ContactLookupByEmail(ctx context.Context, customerID uuid.UUID
 
 // ContactDeleteByCustomerID deletes all contacts for a customer (cascade cleanup).
 func (h *handler) ContactDeleteByCustomerID(ctx context.Context, customerID uuid.UUID) error {
-	ts := h.utilHandler.TimeGetCurTime()
+	ts := h.utilHandler.TimeNow()
 
 	query, args, err := sq.Update(contactTable).
 		Set("tm_update", ts).

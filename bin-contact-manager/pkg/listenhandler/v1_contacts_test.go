@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
+	"time"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
@@ -16,6 +17,10 @@ import (
 	"monorepo/bin-contact-manager/models/contact"
 	"monorepo/bin-contact-manager/pkg/contacthandler"
 )
+
+func timePtr(t time.Time) *time.Time {
+	return &t
+}
 
 func TestProcessV1ContactsGet(t *testing.T) {
 	tests := []struct {
@@ -49,15 +54,15 @@ func TestProcessV1ContactsGet(t *testing.T) {
 					LastName:    "Doe",
 					DisplayName: "John Doe",
 					Source:      "manual",
-					TMCreate:    "2021-11-23T17:55:39.712000Z",
-					TMUpdate:    "9999-01-01T00:00:00.000000Z",
-					TMDelete:    "9999-01-01T00:00:00.000000Z",
+					TMCreate:    timePtr(time.Date(2021, 11, 23, 17, 55, 39, 712000000, time.UTC)),
+					TMUpdate:    nil,
+					TMDelete:    nil,
 				},
 			},
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","first_name":"John","last_name":"Doe","display_name":"John Doe","company":"","job_title":"","source":"manual","external_id":"","notes":"","tm_create":"2021-11-23T17:55:39.712000Z","tm_update":"9999-01-01T00:00:00.000000Z","tm_delete":"9999-01-01T00:00:00.000000Z"}]`),
+				Data:       []byte(`[{"id":"bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","first_name":"John","last_name":"Doe","display_name":"John Doe","company":"","job_title":"","source":"manual","external_id":"","notes":"","tm_create":"2021-11-23T17:55:39.712Z","tm_update":null,"tm_delete":null}]`),
 			},
 		},
 	}
@@ -115,14 +120,14 @@ func TestProcessV1ContactsPost(t *testing.T) {
 				LastName:    "Smith",
 				DisplayName: "Jane Smith",
 				Source:      "manual",
-				TMCreate:    "2021-11-23T17:55:39.712000Z",
-				TMUpdate:    "9999-01-01T00:00:00.000000Z",
-				TMDelete:    "9999-01-01T00:00:00.000000Z",
+				TMCreate:    timePtr(time.Date(2021, 11, 23, 17, 55, 39, 712000000, time.UTC)),
+				TMUpdate:    nil,
+				TMDelete:    nil,
 			},
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","first_name":"Jane","last_name":"Smith","display_name":"Jane Smith","company":"","job_title":"","source":"manual","external_id":"","notes":"","tm_create":"2021-11-23T17:55:39.712000Z","tm_update":"9999-01-01T00:00:00.000000Z","tm_delete":"9999-01-01T00:00:00.000000Z"}`),
+				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","first_name":"Jane","last_name":"Smith","display_name":"Jane Smith","company":"","job_title":"","source":"manual","external_id":"","notes":"","tm_create":"2021-11-23T17:55:39.712Z","tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -181,14 +186,14 @@ func TestProcessV1ContactsIDGet(t *testing.T) {
 				LastName:    "Doe",
 				DisplayName: "John Doe",
 				Source:      "manual",
-				TMCreate:    "2021-11-23T17:55:39.712000Z",
-				TMUpdate:    "9999-01-01T00:00:00.000000Z",
-				TMDelete:    "9999-01-01T00:00:00.000000Z",
+				TMCreate:    timePtr(time.Date(2021, 11, 23, 17, 55, 39, 712000000, time.UTC)),
+				TMUpdate:    nil,
+				TMDelete:    nil,
 			},
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","first_name":"John","last_name":"Doe","display_name":"John Doe","company":"","job_title":"","source":"manual","external_id":"","notes":"","tm_create":"2021-11-23T17:55:39.712000Z","tm_update":"9999-01-01T00:00:00.000000Z","tm_delete":"9999-01-01T00:00:00.000000Z"}`),
+				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","first_name":"John","last_name":"Doe","display_name":"John Doe","company":"","job_title":"","source":"manual","external_id":"","notes":"","tm_create":"2021-11-23T17:55:39.712Z","tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -248,14 +253,14 @@ func TestProcessV1ContactsIDPut(t *testing.T) {
 				LastName:    "Doe",
 				DisplayName: "Updated Name",
 				Source:      "manual",
-				TMCreate:    "2021-11-23T17:55:39.712000Z",
-				TMUpdate:    "2021-11-24T10:00:00.000000Z",
-				TMDelete:    "9999-01-01T00:00:00.000000Z",
+				TMCreate:    timePtr(time.Date(2021, 11, 23, 17, 55, 39, 712000000, time.UTC)),
+				TMUpdate:    timePtr(time.Date(2021, 11, 24, 10, 0, 0, 0, time.UTC)),
+				TMDelete:    nil,
 			},
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","first_name":"Updated","last_name":"Doe","display_name":"Updated Name","company":"","job_title":"","source":"manual","external_id":"","notes":"","tm_create":"2021-11-23T17:55:39.712000Z","tm_update":"2021-11-24T10:00:00.000000Z","tm_delete":"9999-01-01T00:00:00.000000Z"}`),
+				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","first_name":"Updated","last_name":"Doe","display_name":"Updated Name","company":"","job_title":"","source":"manual","external_id":"","notes":"","tm_create":"2021-11-23T17:55:39.712Z","tm_update":"2021-11-24T10:00:00Z","tm_delete":null}`),
 			},
 		},
 	}
@@ -314,14 +319,14 @@ func TestProcessV1ContactsIDDelete(t *testing.T) {
 				LastName:    "Doe",
 				DisplayName: "John Doe",
 				Source:      "manual",
-				TMCreate:    "2021-11-23T17:55:39.712000Z",
-				TMUpdate:    "9999-01-01T00:00:00.000000Z",
-				TMDelete:    "2021-11-24T10:00:00.000000Z",
+				TMCreate:    timePtr(time.Date(2021, 11, 23, 17, 55, 39, 712000000, time.UTC)),
+				TMUpdate:    nil,
+				TMDelete:    timePtr(time.Date(2021, 11, 24, 10, 0, 0, 0, time.UTC)),
 			},
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","first_name":"John","last_name":"Doe","display_name":"John Doe","company":"","job_title":"","source":"manual","external_id":"","notes":"","tm_create":"2021-11-23T17:55:39.712000Z","tm_update":"9999-01-01T00:00:00.000000Z","tm_delete":"2021-11-24T10:00:00.000000Z"}`),
+				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","first_name":"John","last_name":"Doe","display_name":"John Doe","company":"","job_title":"","source":"manual","external_id":"","notes":"","tm_create":"2021-11-23T17:55:39.712Z","tm_update":null,"tm_delete":"2021-11-24T10:00:00Z"}`),
 			},
 		},
 	}
@@ -382,14 +387,14 @@ func TestProcessV1ContactsLookupGet(t *testing.T) {
 				LastName:    "Doe",
 				DisplayName: "John Doe",
 				Source:      "manual",
-				TMCreate:    "2021-11-23T17:55:39.712000Z",
-				TMUpdate:    "9999-01-01T00:00:00.000000Z",
-				TMDelete:    "9999-01-01T00:00:00.000000Z",
+				TMCreate:    timePtr(time.Date(2021, 11, 23, 17, 55, 39, 712000000, time.UTC)),
+				TMUpdate:    nil,
+				TMDelete:    nil,
 			},
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","first_name":"John","last_name":"Doe","display_name":"John Doe","company":"","job_title":"","source":"manual","external_id":"","notes":"","tm_create":"2021-11-23T17:55:39.712000Z","tm_update":"9999-01-01T00:00:00.000000Z","tm_delete":"9999-01-01T00:00:00.000000Z"}`),
+				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","first_name":"John","last_name":"Doe","display_name":"John Doe","company":"","job_title":"","source":"manual","external_id":"","notes":"","tm_create":"2021-11-23T17:55:39.712Z","tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -449,14 +454,14 @@ func TestProcessV1ContactsPhoneNumbersPost(t *testing.T) {
 				LastName:    "Doe",
 				DisplayName: "John Doe",
 				Source:      "manual",
-				TMCreate:    "2021-11-23T17:55:39.712000Z",
-				TMUpdate:    "9999-01-01T00:00:00.000000Z",
-				TMDelete:    "9999-01-01T00:00:00.000000Z",
+				TMCreate:    timePtr(time.Date(2021, 11, 23, 17, 55, 39, 712000000, time.UTC)),
+				TMUpdate:    nil,
+				TMDelete:    nil,
 			},
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","first_name":"John","last_name":"Doe","display_name":"John Doe","company":"","job_title":"","source":"manual","external_id":"","notes":"","tm_create":"2021-11-23T17:55:39.712000Z","tm_update":"9999-01-01T00:00:00.000000Z","tm_delete":"9999-01-01T00:00:00.000000Z"}`),
+				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","first_name":"John","last_name":"Doe","display_name":"John Doe","company":"","job_title":"","source":"manual","external_id":"","notes":"","tm_create":"2021-11-23T17:55:39.712Z","tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -518,14 +523,14 @@ func TestProcessV1ContactsTagsPost(t *testing.T) {
 				LastName:    "Doe",
 				DisplayName: "John Doe",
 				Source:      "manual",
-				TMCreate:    "2021-11-23T17:55:39.712000Z",
-				TMUpdate:    "9999-01-01T00:00:00.000000Z",
-				TMDelete:    "9999-01-01T00:00:00.000000Z",
+				TMCreate:    timePtr(time.Date(2021, 11, 23, 17, 55, 39, 712000000, time.UTC)),
+				TMUpdate:    nil,
+				TMDelete:    nil,
 			},
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","first_name":"John","last_name":"Doe","display_name":"John Doe","company":"","job_title":"","source":"manual","external_id":"","notes":"","tm_create":"2021-11-23T17:55:39.712000Z","tm_update":"9999-01-01T00:00:00.000000Z","tm_delete":"9999-01-01T00:00:00.000000Z"}`),
+				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","first_name":"John","last_name":"Doe","display_name":"John Doe","company":"","job_title":"","source":"manual","external_id":"","notes":"","tm_create":"2021-11-23T17:55:39.712Z","tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -586,14 +591,14 @@ func TestProcessV1ContactsPhoneNumbersIDDelete(t *testing.T) {
 				LastName:    "Doe",
 				DisplayName: "John Doe",
 				Source:      "manual",
-				TMCreate:    "2021-11-23T17:55:39.712000Z",
-				TMUpdate:    "9999-01-01T00:00:00.000000Z",
-				TMDelete:    "9999-01-01T00:00:00.000000Z",
+				TMCreate:    timePtr(time.Date(2021, 11, 23, 17, 55, 39, 712000000, time.UTC)),
+				TMUpdate:    nil,
+				TMDelete:    nil,
 			},
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","first_name":"John","last_name":"Doe","display_name":"John Doe","company":"","job_title":"","source":"manual","external_id":"","notes":"","tm_create":"2021-11-23T17:55:39.712000Z","tm_update":"9999-01-01T00:00:00.000000Z","tm_delete":"9999-01-01T00:00:00.000000Z"}`),
+				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","first_name":"John","last_name":"Doe","display_name":"John Doe","company":"","job_title":"","source":"manual","external_id":"","notes":"","tm_create":"2021-11-23T17:55:39.712Z","tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -653,14 +658,14 @@ func TestProcessV1ContactsEmailsPost(t *testing.T) {
 				LastName:    "Doe",
 				DisplayName: "John Doe",
 				Source:      "manual",
-				TMCreate:    "2021-11-23T17:55:39.712000Z",
-				TMUpdate:    "9999-01-01T00:00:00.000000Z",
-				TMDelete:    "9999-01-01T00:00:00.000000Z",
+				TMCreate:    timePtr(time.Date(2021, 11, 23, 17, 55, 39, 712000000, time.UTC)),
+				TMUpdate:    nil,
+				TMDelete:    nil,
 			},
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","first_name":"John","last_name":"Doe","display_name":"John Doe","company":"","job_title":"","source":"manual","external_id":"","notes":"","tm_create":"2021-11-23T17:55:39.712000Z","tm_update":"9999-01-01T00:00:00.000000Z","tm_delete":"9999-01-01T00:00:00.000000Z"}`),
+				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","first_name":"John","last_name":"Doe","display_name":"John Doe","company":"","job_title":"","source":"manual","external_id":"","notes":"","tm_create":"2021-11-23T17:55:39.712Z","tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -721,14 +726,14 @@ func TestProcessV1ContactsEmailsIDDelete(t *testing.T) {
 				LastName:    "Doe",
 				DisplayName: "John Doe",
 				Source:      "manual",
-				TMCreate:    "2021-11-23T17:55:39.712000Z",
-				TMUpdate:    "9999-01-01T00:00:00.000000Z",
-				TMDelete:    "9999-01-01T00:00:00.000000Z",
+				TMCreate:    timePtr(time.Date(2021, 11, 23, 17, 55, 39, 712000000, time.UTC)),
+				TMUpdate:    nil,
+				TMDelete:    nil,
 			},
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","first_name":"John","last_name":"Doe","display_name":"John Doe","company":"","job_title":"","source":"manual","external_id":"","notes":"","tm_create":"2021-11-23T17:55:39.712000Z","tm_update":"9999-01-01T00:00:00.000000Z","tm_delete":"9999-01-01T00:00:00.000000Z"}`),
+				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","first_name":"John","last_name":"Doe","display_name":"John Doe","company":"","job_title":"","source":"manual","external_id":"","notes":"","tm_create":"2021-11-23T17:55:39.712Z","tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -789,14 +794,14 @@ func TestProcessV1ContactsTagsIDDelete(t *testing.T) {
 				LastName:    "Doe",
 				DisplayName: "John Doe",
 				Source:      "manual",
-				TMCreate:    "2021-11-23T17:55:39.712000Z",
-				TMUpdate:    "9999-01-01T00:00:00.000000Z",
-				TMDelete:    "9999-01-01T00:00:00.000000Z",
+				TMCreate:    timePtr(time.Date(2021, 11, 23, 17, 55, 39, 712000000, time.UTC)),
+				TMUpdate:    nil,
+				TMDelete:    nil,
 			},
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","first_name":"John","last_name":"Doe","display_name":"John Doe","company":"","job_title":"","source":"manual","external_id":"","notes":"","tm_create":"2021-11-23T17:55:39.712000Z","tm_update":"9999-01-01T00:00:00.000000Z","tm_delete":"9999-01-01T00:00:00.000000Z"}`),
+				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","first_name":"John","last_name":"Doe","display_name":"John Doe","company":"","job_title":"","source":"manual","external_id":"","notes":"","tm_create":"2021-11-23T17:55:39.712Z","tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -857,14 +862,14 @@ func TestProcessV1ContactsLookupGetByEmail(t *testing.T) {
 				LastName:    "Doe",
 				DisplayName: "John Doe",
 				Source:      "manual",
-				TMCreate:    "2021-11-23T17:55:39.712000Z",
-				TMUpdate:    "9999-01-01T00:00:00.000000Z",
-				TMDelete:    "9999-01-01T00:00:00.000000Z",
+				TMCreate:    timePtr(time.Date(2021, 11, 23, 17, 55, 39, 712000000, time.UTC)),
+				TMUpdate:    nil,
+				TMDelete:    nil,
 			},
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","first_name":"John","last_name":"Doe","display_name":"John Doe","company":"","job_title":"","source":"manual","external_id":"","notes":"","tm_create":"2021-11-23T17:55:39.712000Z","tm_update":"9999-01-01T00:00:00.000000Z","tm_delete":"9999-01-01T00:00:00.000000Z"}`),
+				Data:       []byte(`{"id":"c31676f0-4e69-11ec-afe3-77ba49fae527","customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","first_name":"John","last_name":"Doe","display_name":"John Doe","company":"","job_title":"","source":"manual","external_id":"","notes":"","tm_create":"2021-11-23T17:55:39.712Z","tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}

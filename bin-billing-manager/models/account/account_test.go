@@ -2,12 +2,15 @@ package account
 
 import (
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 )
 
 func TestAccountStruct(t *testing.T) {
 	id := uuid.Must(uuid.NewV4())
+	tmCreate := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+	tmUpdate := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
 
 	a := Account{
 		Name:          "Test Account",
@@ -16,9 +19,9 @@ func TestAccountStruct(t *testing.T) {
 		Balance:       100.50,
 		PaymentType:   PaymentTypePrepaid,
 		PaymentMethod: PaymentMethodCreditCard,
-		TMCreate:      "2024-01-01T00:00:00.000000Z",
-		TMUpdate:      "2024-01-01T00:00:00.000000Z",
-		TMDelete:      "9999-01-01T00:00:00.000000Z",
+		TMCreate:      &tmCreate,
+		TMUpdate:      &tmUpdate,
+		TMDelete:      nil,
 	}
 	a.ID = id
 

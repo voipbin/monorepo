@@ -193,7 +193,7 @@ func (h *callHandler) ActionNext(ctx context.Context, c *call.Call) error {
 	log.WithField("action", nextAction).Debugf("Received next action. action_id: %s, action_type: %s", nextAction.ID, nextAction.Type)
 
 	// set action and action next hold
-	nextAction.TMExecute = h.utilHandler.TimeGetCurTime()
+	nextAction.TMExecute = h.utilHandler.TimeNow()
 	cc, err := h.updateActionAndActionNextHold(ctx, c.ID, nextAction)
 	if err != nil {
 		log.Errorf("Could not set the action for call. Move to the next action. err: %v", err)
@@ -254,7 +254,9 @@ func (h *callHandler) ActionTimeout(ctx context.Context, callID uuid.UUID, a *fm
 	log.WithField("call", c).Debugf("Found call info. call_id: %s", c.ID)
 
 	// check current action and requested action info
-	if (c.Action.ID != a.ID) || (c.Action.TMExecute != a.TMExecute) || c.ActionNextHold {
+	tmExecuteMatch := (c.Action.TMExecute == nil && a.TMExecute == nil) ||
+		(c.Action.TMExecute != nil && a.TMExecute != nil && c.Action.TMExecute.Equal(*a.TMExecute))
+	if (c.Action.ID != a.ID) || !tmExecuteMatch || c.ActionNextHold {
 		return fmt.Errorf("invalid timed out action condition")
 	}
 

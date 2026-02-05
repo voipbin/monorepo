@@ -1,6 +1,7 @@
 package channel
 
 import (
+	"monorepo/bin-call-manager/pkg/testhelper"
 	"reflect"
 	"testing"
 
@@ -82,7 +83,7 @@ func TestNewChannelByChannelCreated(t *testing.T) {
 				Data:       map[string]interface{}{},
 				StasisData: map[StasisDataType]string{},
 
-				TMCreate: "2020-04-25T00:08:32.346",
+				TMCreate: testhelper.TimePtr("2020-04-25T00:08:32.346"),
 			},
 		},
 	}
@@ -136,7 +137,7 @@ func Test_NewChannelByStasisStart(t *testing.T) {
 					"SOURCE":      "45.249.91.194",
 				},
 
-				TMCreate: "2020-05-10T07:11:05.479",
+				TMCreate: testhelper.TimePtr("2020-05-10T07:11:05.479"),
 			},
 		},
 	}

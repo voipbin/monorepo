@@ -4,11 +4,16 @@ import (
 	"encoding/json"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 )
+
+func timePtr(t time.Time) *time.Time {
+	return &t
+}
 
 func TestParticipantInputStruct(t *testing.T) {
 	ownerID := uuid.Must(uuid.NewV4())
@@ -42,7 +47,7 @@ func TestParticipantStruct(t *testing.T) {
 			OwnerID:   ownerID,
 		},
 		ChatID:   chatID,
-		TMJoined: "2023-01-01T00:00:00Z",
+		TMJoined: timePtr(time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)),
 	}
 
 	if p.ID != id {
@@ -60,8 +65,9 @@ func TestParticipantStruct(t *testing.T) {
 	if p.ChatID != chatID {
 		t.Errorf("Participant.ChatID = %v, expected %v", p.ChatID, chatID)
 	}
-	if p.TMJoined != "2023-01-01T00:00:00Z" {
-		t.Errorf("Participant.TMJoined = %v, expected %v", p.TMJoined, "2023-01-01T00:00:00Z")
+	expectedTM := timePtr(time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC))
+	if p.TMJoined == nil || !p.TMJoined.Equal(*expectedTM) {
+		t.Errorf("Participant.TMJoined = %v, expected %v", p.TMJoined, expectedTM)
 	}
 }
 
@@ -81,7 +87,7 @@ func TestParticipant_ConvertWebhookMessage(t *testing.T) {
 			OwnerID:   ownerID,
 		},
 		ChatID:   chatID,
-		TMJoined: "2023-01-01T00:00:00Z",
+		TMJoined: timePtr(time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)),
 	}
 
 	result := p.ConvertWebhookMessage()
@@ -119,7 +125,7 @@ func TestParticipant_CreateWebhookEvent(t *testing.T) {
 			OwnerID:   ownerID,
 		},
 		ChatID:   chatID,
-		TMJoined: "2023-01-01T00:00:00Z",
+		TMJoined: timePtr(time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)),
 	}
 
 	data, err := p.CreateWebhookEvent()

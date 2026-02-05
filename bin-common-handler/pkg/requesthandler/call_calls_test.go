@@ -4,6 +4,7 @@ import (
 	"context"
 	"reflect"
 	"testing"
+	"time"
 
 	cmcall "monorepo/bin-call-manager/models/call"
 	"monorepo/bin-call-manager/models/externalmedia"
@@ -96,7 +97,7 @@ func Test_CallV1CallActionTimeout(t *testing.T) {
 			&fmaction.Action{
 				ID:        uuid.FromStringOrNil("eccec152-4c6e-11ec-bb47-d343ee142464"),
 				Type:      fmaction.TypeAnswer,
-				TMExecute: "2020-09-20T03:23:20.995000Z",
+				TMExecute: func() *time.Time { t := time.Date(2020, 9, 20, 3, 23, 20, 995000000, time.UTC); return &t }(),
 			},
 
 			"bin-manager.call-manager.request",
@@ -770,7 +771,7 @@ func Test_CallV1CallHangup(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"fa0ddb32-25cd-11eb-a604-8b239b305055","customer_id":"a789f1d6-7f52-11ec-b563-e3d43178d814","asterisk_id":"","channel_id":"","flow_id":"59518eae-ed66-11ea-85ef-b77bdbc74ccc","conf_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"source":{"type":"","target":"","name":""},"destination":{"type":"","target":"","name":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","type":"","tm_execute":""},"direction":"","hangup_by":"","hangup_reason":"","tm_create":"","tm_update":"","tm_progressing":"","tm_ringing":"","tm_hangup":""}`),
+				Data:       []byte(`{"id":"fa0ddb32-25cd-11eb-a604-8b239b305055","customer_id":"a789f1d6-7f52-11ec-b563-e3d43178d814","asterisk_id":"","channel_id":"","flow_id":"59518eae-ed66-11ea-85ef-b77bdbc74ccc","conf_id":"00000000-0000-0000-0000-000000000000","type":"","master_call_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":null,"source":{"type":"","target":"","name":""},"destination":{"type":"","target":"","name":""},"status":"","data":null,"action":{"id":"00000000-0000-0000-0000-000000000000","type":"","tm_execute":null},"direction":"","hangup_by":"","hangup_reason":"","tm_create":null,"tm_update":null,"tm_progressing":null,"tm_ringing":null,"tm_hangup":null}`),
 			},
 
 			"bin-manager.call-manager.request",

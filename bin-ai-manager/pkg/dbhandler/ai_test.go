@@ -5,6 +5,7 @@ import (
 	"fmt"
 	reflect "reflect"
 	"testing"
+	"time"
 
 	"monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -18,12 +19,14 @@ import (
 
 func Test_AICreate(t *testing.T) {
 
+	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
+
 	tests := []struct {
 		name string
 
 		ai *ai.AI
 
-		responseCurTime string
+		responseCurTime *time.Time
 
 		expectRes *ai.AI
 	}{
@@ -48,7 +51,7 @@ func Test_AICreate(t *testing.T) {
 				STTType:    ai.STTTypeElevenLabs,
 			},
 
-			responseCurTime: "2023-01-03T21:35:02.809Z",
+			responseCurTime: curTime,
 			expectRes: &ai.AI{
 				Identity: identity.Identity{
 					ID:         uuid.FromStringOrNil("165c9f1e-a5e0-11ed-8521-db074e85944c"),
@@ -67,9 +70,9 @@ func Test_AICreate(t *testing.T) {
 				TTSVoiceID: "test tts voice id",
 				STTType:    ai.STTTypeElevenLabs,
 
-				TMCreate: "2023-01-03T21:35:02.809Z",
-				TMUpdate: DefaultTimeStamp,
-				TMDelete: DefaultTimeStamp,
+				TMCreate: curTime,
+				TMUpdate: nil,
+				TMDelete: nil,
 			},
 		},
 		{
@@ -80,15 +83,15 @@ func Test_AICreate(t *testing.T) {
 				},
 			},
 
-			responseCurTime: "2023-01-03T21:35:02.809Z",
+			responseCurTime: curTime,
 			expectRes: &ai.AI{
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("16bbdc18-a5e0-11ed-8762-5771d36fd113"),
 				},
 				EngineData: nil,
-				TMCreate:   "2023-01-03T21:35:02.809Z",
-				TMUpdate:   DefaultTimeStamp,
-				TMDelete:   DefaultTimeStamp,
+				TMCreate:   curTime,
+				TMUpdate:   nil,
+				TMDelete:   nil,
 			},
 		},
 	}
@@ -109,7 +112,7 @@ func Test_AICreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().AISet(ctx, gomock.Any())
 			if err := h.AICreate(ctx, tt.ai); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -131,13 +134,15 @@ func Test_AICreate(t *testing.T) {
 
 func Test_AIDelete(t *testing.T) {
 
+	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
+
 	tests := []struct {
 		name string
 		ai   *ai.AI
 
 		id uuid.UUID
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *ai.AI
 	}{
 		{
@@ -150,15 +155,15 @@ func Test_AIDelete(t *testing.T) {
 
 			id: uuid.FromStringOrNil("5b769ed2-a5e1-11ed-8ad0-5bc10434535b"),
 
-			responseCurTime: "2023-01-03T21:35:02.809Z",
+			responseCurTime: curTime,
 			expectRes: &ai.AI{
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("5b769ed2-a5e1-11ed-8ad0-5bc10434535b"),
 				},
 				EngineData: nil,
-				TMCreate:   "2023-01-03T21:35:02.809Z",
-				TMUpdate:   "2023-01-03T21:35:02.809Z",
-				TMDelete:   "2023-01-03T21:35:02.809Z",
+				TMCreate:   curTime,
+				TMUpdate:   curTime,
+				TMDelete:   curTime,
 			},
 		},
 	}
@@ -178,13 +183,13 @@ func Test_AIDelete(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().AISet(ctx, gomock.Any())
 			if err := h.AICreate(ctx, tt.ai); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().AISet(ctx, gomock.Any())
 			if errDel := h.AIDelete(ctx, tt.id); errDel != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errDel)
@@ -207,6 +212,8 @@ func Test_AIDelete(t *testing.T) {
 
 func Test_AIList(t *testing.T) {
 
+	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
+
 	tests := []struct {
 		name string
 		ais  []*ai.AI
@@ -214,7 +221,7 @@ func Test_AIList(t *testing.T) {
 		count   int
 		filters map[ai.Field]any
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       []*ai.AI
 	}{
 		{
@@ -240,7 +247,7 @@ func Test_AIList(t *testing.T) {
 				ai.FieldCustomerID: uuid.FromStringOrNil("6d35368c-a76d-11ed-9699-235c9e4a0117"),
 			},
 
-			responseCurTime: "2023-01-03T21:35:02.809Z",
+			responseCurTime: curTime,
 			expectRes: []*ai.AI{
 				{
 					Identity: identity.Identity{
@@ -248,9 +255,9 @@ func Test_AIList(t *testing.T) {
 						CustomerID: uuid.FromStringOrNil("6d35368c-a76d-11ed-9699-235c9e4a0117"),
 					},
 					EngineData: nil,
-					TMCreate:   "2023-01-03T21:35:02.809Z",
-					TMUpdate:   DefaultTimeStamp,
-					TMDelete:   DefaultTimeStamp,
+					TMCreate:   curTime,
+					TMUpdate:   nil,
+					TMDelete:   nil,
 				},
 				{
 					Identity: identity.Identity{
@@ -258,9 +265,9 @@ func Test_AIList(t *testing.T) {
 						CustomerID: uuid.FromStringOrNil("6d35368c-a76d-11ed-9699-235c9e4a0117"),
 					},
 					EngineData: nil,
-					TMCreate:   "2023-01-03T21:35:02.809Z",
-					TMUpdate:   DefaultTimeStamp,
-					TMDelete:   DefaultTimeStamp,
+					TMCreate:   curTime,
+					TMUpdate:   nil,
+					TMDelete:   nil,
 				},
 			},
 		},
@@ -274,7 +281,7 @@ func Test_AIList(t *testing.T) {
 				ai.FieldCustomerID: uuid.FromStringOrNil("b31d32ae-7f45-11ec-82c6-936e22306376"),
 			},
 
-			responseCurTime: "2023-01-03T21:35:02.809Z",
+			responseCurTime: curTime,
 			expectRes:       []*ai.AI{},
 		},
 	}
@@ -295,7 +302,7 @@ func Test_AIList(t *testing.T) {
 			ctx := context.Background()
 
 			for _, cf := range tt.ais {
-				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 				mockCache.EXPECT().AISet(ctx, gomock.Any())
 				if errCreate := h.AICreate(ctx, cf); errCreate != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", errCreate)
@@ -317,6 +324,8 @@ func Test_AIList(t *testing.T) {
 
 func Test_AIUpdate(t *testing.T) {
 
+	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
+
 	tests := []struct {
 		name string
 		ai   *ai.AI
@@ -324,7 +333,7 @@ func Test_AIUpdate(t *testing.T) {
 		id     uuid.UUID
 		fields map[ai.Field]any
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *ai.AI
 	}{
 		{
@@ -352,7 +361,7 @@ func Test_AIUpdate(t *testing.T) {
 				ai.FieldSTTType:    ai.STTTypeElevenLabs,
 			},
 
-			responseCurTime: "2023-01-03T21:35:02.809Z",
+			responseCurTime: curTime,
 			expectRes: &ai.AI{
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("8bdc0568-f82e-11ed-9b13-0fb0a7490981"),
@@ -370,9 +379,9 @@ func Test_AIUpdate(t *testing.T) {
 				TTSType:    ai.TTSTypeCartesia,
 				TTSVoiceID: "new tts voice id",
 				STTType:    ai.STTTypeElevenLabs,
-				TMCreate:   "2023-01-03T21:35:02.809Z",
-				TMUpdate:   "2023-01-03T21:35:02.809Z",
-				TMDelete:   DefaultTimeStamp,
+				TMCreate:   curTime,
+				TMUpdate:   curTime,
+				TMDelete:   nil,
 			},
 		},
 	}
@@ -392,13 +401,13 @@ func Test_AIUpdate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().AISet(ctx, gomock.Any())
 			if err := h.AICreate(ctx, tt.ai); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().AISet(ctx, gomock.Any())
 			if errUpdate := h.AIUpdate(ctx, tt.id, tt.fields); errUpdate != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errUpdate)

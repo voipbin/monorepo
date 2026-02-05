@@ -82,9 +82,9 @@ func Test_MessageList(t *testing.T) {
 			}
 
 			for _, num := range res {
-				num.TMCreate = ""
-				num.TMUpdate = ""
-				num.TMDelete = ""
+				num.TMCreate = nil
+				num.TMUpdate = nil
+				num.TMDelete = nil
 			}
 
 			if !reflect.DeepEqual(res[0], tt.expectRes[0]) {
@@ -120,14 +120,14 @@ func Test_MessageGet(t *testing.T) {
 					ID:         uuid.FromStringOrNil("5d607ade-a2e4-11ec-b1b8-6fdc099c84f1"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-				TMDelete: defaultTimestamp,
+				TMDelete: nil,
 			},
 			&mmmessage.WebhookMessage{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("5d607ade-a2e4-11ec-b1b8-6fdc099c84f1"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-				TMDelete: defaultTimestamp,
+				TMDelete: nil,
 			},
 		},
 	}
@@ -261,14 +261,14 @@ func Test_MessageDelete(t *testing.T) {
 					ID:         uuid.FromStringOrNil("88c326c0-a2e6-11ec-84b4-7f4501f624df"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-				TMDelete: defaultTimestamp,
+				TMDelete: nil,
 			},
 			&mmmessage.WebhookMessage{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("88c326c0-a2e6-11ec-84b4-7f4501f624df"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-				TMDelete: defaultTimestamp,
+				TMDelete: nil,
 			},
 		},
 	}

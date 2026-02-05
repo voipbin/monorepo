@@ -2,13 +2,13 @@ package transcripthandler
 
 import (
 	"context"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-transcribe-manager/models/transcript"
-	"monorepo/bin-transcribe-manager/pkg/dbhandler"
 )
 
 // Create creates a new transcribe
@@ -18,7 +18,7 @@ func (h *transcriptHandler) Create(
 	transcribeID uuid.UUID,
 	direction transcript.Direction,
 	message string,
-	tmTranscript string,
+	tmTranscript *time.Time,
 ) (*transcript.Transcript, error) {
 
 	id := h.utilHandler.UUIDCreate()
@@ -66,7 +66,7 @@ func (h *transcriptHandler) Delete(ctx context.Context, id uuid.UUID) (*transcri
 		return nil, errors.Wrapf(err, "could not get transcript info. transcript_id: %s", id)
 	}
 
-	if tr.TMDelete != dbhandler.DefaultTimeStamp {
+	if tr.TMDelete != nil {
 		// already deleted
 		return tr, nil
 	}

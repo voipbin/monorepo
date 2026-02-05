@@ -62,7 +62,7 @@ func Test_Start_referencetype_call(t *testing.T) {
 					ID: uuid.FromStringOrNil("0e5ecd0c-8211-11ed-9c0a-4fa1d29f93c2"),
 				},
 				Status:   cmcall.StatusProgressing,
-				TMDelete: commondatabase.DefaultTimeStamp,
+				TMDelete: nil,
 			},
 			responseUUID: uuid.FromStringOrNil("a4b155b6-9875-11ed-9117-1f7140765600"),
 			responseStreamings: []*streaming.Streaming{
@@ -185,7 +185,7 @@ func Test_isValidReference(t *testing.T) {
 					ID: uuid.FromStringOrNil("918c6c26-98ae-11ed-8a80-a703c7717d9a"),
 				},
 				Status:   cmcall.StatusProgressing,
-				TMDelete: commondatabase.DefaultTimeStamp,
+				TMDelete: nil,
 			},
 
 			expectRes: true,
@@ -200,7 +200,7 @@ func Test_isValidReference(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("915fe2c8-98ae-11ed-8b05-bf167f4d8651"),
 				},
-				TMDelete: commondatabase.DefaultTimeStamp,
+				TMDelete: nil,
 			},
 
 			expectRes: true,

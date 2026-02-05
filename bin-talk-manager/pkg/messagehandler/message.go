@@ -92,7 +92,7 @@ func (h *messageHandler) MessageCreate(ctx context.Context, req MessageCreateReq
 		// INTENTIONALLY ALLOWED: Parent can be soft-deleted
 		// Reason: Preserve thread structure even when parent messages are deleted
 		// UI should display deleted parent as placeholder (e.g., "Message deleted")
-		if parent.TMDelete != "" {
+		if parent.TMDelete != nil {
 			log.WithFields(logrus.Fields{
 				"parent_id": parent.ID,
 				"chat_id":   req.ChatID,
@@ -161,7 +161,7 @@ func (h *messageHandler) MessageDelete(ctx context.Context, id uuid.UUID) (*mess
 	}
 
 	// Check if already deleted
-	if msg.TMDelete != "" {
+	if msg.TMDelete != nil {
 		return nil, errors.New("message already deleted")
 	}
 

@@ -5,9 +5,9 @@ import (
 	"fmt"
 	reflect "reflect"
 	"testing"
+	"time"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
-	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
@@ -20,9 +20,10 @@ import (
 func Test_AccountCreate(t *testing.T) {
 
 	type test struct {
-		name            string
-		account         *account.Account
-		responseCurTime string
+		name    string
+		account *account.Account
+
+		responseCurTime *time.Time
 
 		expectRes *account.Account
 	}
@@ -41,7 +42,7 @@ func Test_AccountCreate(t *testing.T) {
 				Secret: "test secret",
 				Token:  "test token",
 			},
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: func() *time.Time { t := time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
 
 			expectRes: &account.Account{
 				Identity: commonidentity.Identity{
@@ -54,9 +55,9 @@ func Test_AccountCreate(t *testing.T) {
 				Secret: "test secret",
 				Token:  "test token",
 
-				TMCreate: "2020-04-18T03:22:17.995000Z",
-				TMUpdate: commondatabasehandler.DefaultTimeStamp,
-				TMDelete: commondatabasehandler.DefaultTimeStamp,
+				TMCreate: func() *time.Time { t := time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
+				TMUpdate: nil,
+				TMDelete: nil,
 			},
 		},
 		{
@@ -67,16 +68,16 @@ func Test_AccountCreate(t *testing.T) {
 					ID: uuid.FromStringOrNil("ec8d1c56-fdf3-11ed-83a6-2bfbd5b33bd6"),
 				},
 			},
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: func() *time.Time { t := time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
 
 			expectRes: &account.Account{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("ec8d1c56-fdf3-11ed-83a6-2bfbd5b33bd6"),
 				},
 
-				TMCreate: "2020-04-18T03:22:17.995000Z",
-				TMUpdate: commondatabasehandler.DefaultTimeStamp,
-				TMDelete: commondatabasehandler.DefaultTimeStamp,
+				TMCreate: func() *time.Time { t := time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
+				TMUpdate: nil,
+				TMDelete: nil,
 			},
 		},
 	}
@@ -97,7 +98,7 @@ func Test_AccountCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().AccountSet(ctx, gomock.Any())
 			if err := h.AccountCreate(ctx, tt.account); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -129,7 +130,7 @@ func Test_AccountSet(t *testing.T) {
 		secret      string
 		token       string
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *account.Account
 	}{
 		{
@@ -148,7 +149,7 @@ func Test_AccountSet(t *testing.T) {
 			secret:      "test secret",
 			token:       "test token",
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: func() *time.Time { t := time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
 			expectRes: &account.Account{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("463bfbc0-fee2-11ed-81c2-639d6bd87cf4"),
@@ -159,9 +160,9 @@ func Test_AccountSet(t *testing.T) {
 				Detail:   "test detail",
 				Secret:   "test secret",
 				Token:    "test token",
-				TMCreate: "2020-04-18T03:22:17.995000Z",
-				TMUpdate: "2020-04-18T03:22:17.995000Z",
-				TMDelete: commondatabasehandler.DefaultTimeStamp,
+				TMCreate: func() *time.Time { t := time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
+				TMUpdate: func() *time.Time { t := time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
+				TMDelete: nil,
 			},
 		},
 	}
@@ -180,13 +181,13 @@ func Test_AccountSet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().AccountSet(ctx, gomock.Any())
 			if err := h.AccountCreate(ctx, tt.account); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().AccountSet(gomock.Any(), gomock.Any()).Return(nil)
 			if err := h.AccountSet(ctx, tt.id, tt.accountName, tt.detail, tt.secret, tt.token); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -262,7 +263,7 @@ func Test_AccountList(t *testing.T) {
 		limit   uint64
 		filters map[account.Field]any
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       []*account.Account
 	}{
 		{
@@ -289,25 +290,25 @@ func Test_AccountList(t *testing.T) {
 				account.FieldCustomerID: uuid.FromStringOrNil("157d41b4-3e16-11ef-a8ed-4b84a868d055"),
 			},
 
-			responseCurTime: "2022-04-18T03:22:17.995000Z",
+			responseCurTime: func() *time.Time { t := time.Date(2022, 4, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
 			expectRes: []*account.Account{
 				{
 					Identity: commonidentity.Identity{
 						ID:         uuid.FromStringOrNil("151e39da-3e16-11ef-955d-4711f28377ec"),
 						CustomerID: uuid.FromStringOrNil("157d41b4-3e16-11ef-a8ed-4b84a868d055"),
 					},
-					TMCreate: "2022-04-18T03:22:17.995000Z",
-					TMUpdate: commondatabasehandler.DefaultTimeStamp,
-					TMDelete: commondatabasehandler.DefaultTimeStamp,
+					TMCreate: func() *time.Time { t := time.Date(2022, 4, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
+					TMUpdate: nil,
+					TMDelete: nil,
 				},
 				{
 					Identity: commonidentity.Identity{
 						ID:         uuid.FromStringOrNil("15b4e826-3e16-11ef-8cff-47069c33bcae"),
 						CustomerID: uuid.FromStringOrNil("157d41b4-3e16-11ef-a8ed-4b84a868d055"),
 					},
-					TMCreate: "2022-04-18T03:22:17.995000Z",
-					TMUpdate: commondatabasehandler.DefaultTimeStamp,
-					TMDelete: commondatabasehandler.DefaultTimeStamp,
+					TMCreate: func() *time.Time { t := time.Date(2022, 4, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
+					TMUpdate: nil,
+					TMDelete: nil,
 				},
 			},
 		},
@@ -329,7 +330,7 @@ func Test_AccountList(t *testing.T) {
 			ctx := context.Background()
 
 			for _, c := range tt.accounts {
-				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 				mockCache.EXPECT().AccountSet(gomock.Any(), gomock.Any())
 				if err := h.AccountCreate(ctx, c); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -356,7 +357,7 @@ func Test_AccountDelete(t *testing.T) {
 
 		id uuid.UUID
 
-		responseCurTime string
+		responseCurTime *time.Time
 
 		expectRes *account.Account
 	}
@@ -372,7 +373,7 @@ func Test_AccountDelete(t *testing.T) {
 			},
 
 			id:              uuid.FromStringOrNil("fe975e76-1bdc-11f0-9f72-b3f86287ed78"),
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: func() *time.Time { t := time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
 
 			expectRes: &account.Account{
 				Identity: commonidentity.Identity{
@@ -380,9 +381,9 @@ func Test_AccountDelete(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("876fb2c6-796d-4925-aaf0-570b0a4323bb"),
 				},
 
-				TMCreate: "2020-04-18T03:22:17.995000Z",
-				TMUpdate: "2020-04-18T03:22:17.995000Z",
-				TMDelete: "2020-04-18T03:22:17.995000Z",
+				TMCreate: func() *time.Time { t := time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
+				TMUpdate: func() *time.Time { t := time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
+				TMDelete: func() *time.Time { t := time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
 			},
 		},
 	}
@@ -402,13 +403,13 @@ func Test_AccountDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().AccountSet(ctx, gomock.Any())
 			if err := h.AccountCreate(ctx, tt.account); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().AccountGet(ctx, tt.account.ID).Return(nil, fmt.Errorf(""))
 			mockCache.EXPECT().AccountSet(ctx, gomock.Any())
 			if errDelete := h.AccountDelete(ctx, tt.account.ID); errDelete != nil {

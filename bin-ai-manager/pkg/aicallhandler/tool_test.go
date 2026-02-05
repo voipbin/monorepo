@@ -866,7 +866,7 @@ func Test_toolHandleGetAIcallMessages(t *testing.T) {
 			expectAIcallID: uuid.FromStringOrNil("cfe9753e-d3ea-11f0-a686-3b5c56d58abf"),
 			expectRes: &messageContent{
 				Result:       "success",
-				Message:      `[{"id":"05a8c208-d46b-11f0-b4ce-3f2afb9cba1b","customer_id":"00000000-0000-0000-0000-000000000000","aicall_id":"00000000-0000-0000-0000-000000000000"},{"id":"05e43a7c-d46b-11f0-ad07-e7fb818d821b","customer_id":"00000000-0000-0000-0000-000000000000","aicall_id":"00000000-0000-0000-0000-000000000000"}]`,
+				Message:      `[{"id":"05a8c208-d46b-11f0-b4ce-3f2afb9cba1b","customer_id":"00000000-0000-0000-0000-000000000000","aicall_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_delete":null},{"id":"05e43a7c-d46b-11f0-ad07-e7fb818d821b","customer_id":"00000000-0000-0000-0000-000000000000","aicall_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_delete":null}]`,
 				ToolCallID:   "cfb2f874-d3ea-11f0-957d-939b29f6bdf8",
 				ResourceType: "messages",
 				ResourceID:   "cfe9753e-d3ea-11f0-a686-3b5c56d58abf",

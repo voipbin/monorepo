@@ -56,7 +56,7 @@ func (h *server) GetContacts(c *gin.Context, params openapi_server.GetContactsPa
 
 	nextToken := ""
 	if len(tmps) > 0 {
-		nextToken = tmps[len(tmps)-1].TMCreate
+		if tmps[len(tmps)-1].TMCreate != nil { nextToken = tmps[len(tmps)-1].TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z") }
 	}
 
 	res := GenerateListResponse(tmps, nextToken)

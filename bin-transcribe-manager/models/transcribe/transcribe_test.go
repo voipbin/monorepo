@@ -2,6 +2,7 @@ package transcribe
 
 import (
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 
@@ -18,6 +19,9 @@ func TestTranscribeStruct(t *testing.T) {
 	streamingID1 := uuid.Must(uuid.NewV4())
 	streamingID2 := uuid.Must(uuid.NewV4())
 
+	tmCreate := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
+	tmUpdate := time.Date(2023, 1, 2, 0, 0, 0, 0, time.UTC)
+
 	tr := Transcribe{
 		Identity: commonidentity.Identity{
 			ID:         id,
@@ -32,9 +36,9 @@ func TestTranscribeStruct(t *testing.T) {
 		Language:      "en-US",
 		Direction:     DirectionBoth,
 		StreamingIDs:  []uuid.UUID{streamingID1, streamingID2},
-		TMCreate:      "2023-01-01T00:00:00Z",
-		TMUpdate:      "2023-01-02T00:00:00Z",
-		TMDelete:      "",
+		TMCreate:      &tmCreate,
+		TMUpdate:      &tmUpdate,
+		TMDelete:      nil,
 	}
 
 	if tr.ID != id {

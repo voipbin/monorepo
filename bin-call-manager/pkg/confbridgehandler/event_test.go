@@ -40,14 +40,14 @@ func Test_EventCUCustomerDeleted(t *testing.T) {
 						ID: uuid.FromStringOrNil("42e3a4e8-f0cf-11ee-8d63-9748a0e7a936"),
 					},
 					Status:   confbridge.StatusTerminated,
-					TMDelete: dbhandler.DefaultTimeStamp,
+					TMDelete: nil,
 				},
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("43207666-f0cf-11ee-a8a2-1f40b0249a54"),
 					},
 					Status:   confbridge.StatusTerminated,
-					TMDelete: dbhandler.DefaultTimeStamp,
+					TMDelete: nil,
 				},
 			},
 

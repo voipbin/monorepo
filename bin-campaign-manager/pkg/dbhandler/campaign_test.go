@@ -5,6 +5,7 @@ import (
 	"fmt"
 	reflect "reflect"
 	"testing"
+	"time"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -18,12 +19,15 @@ import (
 	"monorepo/bin-campaign-manager/pkg/cachehandler"
 )
 
+var curTime = time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)
+var curTime2 = time.Date(2020, 4, 18, 3, 22, 18, 995000000, time.UTC)
+
 func Test_CampaignCreate(t *testing.T) {
 	tests := []struct {
 		name     string
 		campaign *campaign.Campaign
 
-		responseCurTime string
+		responseCurTime *time.Time
 
 		expectRes *campaign.Campaign
 	}{
@@ -51,12 +55,12 @@ func Test_CampaignCreate(t *testing.T) {
 				OutdialID:      uuid.FromStringOrNil("ba5c57c6-b3ce-11ec-b997-4b54d7754db6"),
 				QueueID:        uuid.FromStringOrNil("ba91a87c-b3ce-11ec-993c-2f5317fef011"),
 				NextCampaignID: uuid.FromStringOrNil("bc7a45f4-b3ce-11ec-978f-ebb914007273"),
-				TMCreate:       "2020-04-18T03:22:17.995000Z",
-				TMUpdate:       "2020-04-18T03:22:17.995000Z",
-				TMDelete:       DefaultTimeStamp,
+				TMCreate:       &curTime,
+				TMUpdate:       &curTime,
+				TMDelete:       nil,
 			},
 
-			"2020-04-18T03:22:17.995000Z",
+			&curTime,
 			&campaign.Campaign{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("b9d134a2-b3ce-11ec-87b1-df25314b0e76"),
@@ -79,9 +83,9 @@ func Test_CampaignCreate(t *testing.T) {
 				OutdialID:      uuid.FromStringOrNil("ba5c57c6-b3ce-11ec-b997-4b54d7754db6"),
 				QueueID:        uuid.FromStringOrNil("ba91a87c-b3ce-11ec-993c-2f5317fef011"),
 				NextCampaignID: uuid.FromStringOrNil("bc7a45f4-b3ce-11ec-978f-ebb914007273"),
-				TMCreate:       "2020-04-18T03:22:17.995000Z",
-				TMUpdate:       DefaultTimeStamp,
-				TMDelete:       DefaultTimeStamp,
+				TMCreate:       &curTime,
+				TMUpdate:       nil,
+				TMDelete:       nil,
 			},
 		},
 		{
@@ -108,12 +112,12 @@ func Test_CampaignCreate(t *testing.T) {
 				OutdialID:      uuid.FromStringOrNil("ba5c57c6-b3ce-11ec-b997-4b54d7754db6"),
 				QueueID:        uuid.FromStringOrNil("ba91a87c-b3ce-11ec-993c-2f5317fef011"),
 				NextCampaignID: uuid.FromStringOrNil("bc7a45f4-b3ce-11ec-978f-ebb914007273"),
-				TMCreate:       "2020-04-18T03:22:17.995000Z",
-				TMUpdate:       "2020-04-18T03:22:17.995000Z",
-				TMDelete:       DefaultTimeStamp,
+				TMCreate:       &curTime,
+				TMUpdate:       &curTime,
+				TMDelete:       nil,
 			},
 
-			"2020-04-18T03:22:17.995000Z",
+			&curTime,
 			&campaign.Campaign{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("18ebc9ba-8765-4171-8b21-36f8792384ce"),
@@ -136,9 +140,9 @@ func Test_CampaignCreate(t *testing.T) {
 				OutdialID:      uuid.FromStringOrNil("ba5c57c6-b3ce-11ec-b997-4b54d7754db6"),
 				QueueID:        uuid.FromStringOrNil("ba91a87c-b3ce-11ec-993c-2f5317fef011"),
 				NextCampaignID: uuid.FromStringOrNil("bc7a45f4-b3ce-11ec-978f-ebb914007273"),
-				TMCreate:       "2020-04-18T03:22:17.995000Z",
-				TMUpdate:       DefaultTimeStamp,
-				TMDelete:       DefaultTimeStamp,
+				TMCreate:       &curTime,
+				TMUpdate:       nil,
+				TMDelete:       nil,
 			},
 		},
 	}
@@ -158,7 +162,7 @@ func Test_CampaignCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
 			if err := h.CampaignCreate(ctx, tt.campaign); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -198,9 +202,9 @@ func Test_CampaignDelete(t *testing.T) {
 				OutdialID:      uuid.FromStringOrNil("ba5c57c6-b3ce-11ec-b997-4b54d7754db6"),
 				QueueID:        uuid.FromStringOrNil("ba91a87c-b3ce-11ec-993c-2f5317fef011"),
 				NextCampaignID: uuid.FromStringOrNil("bc7a45f4-b3ce-11ec-978f-ebb914007273"),
-				TMCreate:       "2020-04-18T03:22:17.995000Z",
-				TMUpdate:       "2020-04-18T03:22:17.995000Z",
-				TMDelete:       DefaultTimeStamp,
+				TMCreate:       &curTime,
+				TMUpdate:       &curTime,
+				TMDelete:       nil,
 			},
 		},
 	}
@@ -231,8 +235,8 @@ func Test_CampaignDelete(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if res.TMDelete == DefaultTimeStamp {
-				t.Errorf("Wrong match. expect: any other, got: %s", res.TMDelete)
+			if res.TMDelete == nil {
+				t.Errorf("Wrong match. expect: non-nil, got: nil")
 			}
 		})
 	}
@@ -247,7 +251,7 @@ func Test_CampaignListByCustomerID(t *testing.T) {
 		token      string
 		limit      uint64
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       []*campaign.Campaign
 	}{
 		{
@@ -280,7 +284,7 @@ func Test_CampaignListByCustomerID(t *testing.T) {
 			"2022-04-18T03:22:17.995000Z",
 			100,
 
-			"2020-04-18T03:22:18.995000Z",
+			&curTime,
 			[]*campaign.Campaign{
 				{
 					Identity: commonidentity.Identity{
@@ -302,9 +306,9 @@ func Test_CampaignListByCustomerID(t *testing.T) {
 					OutdialID:      uuid.FromStringOrNil("f9a4deb8-b3d2-11ec-8ced-cfd5fa2a7c1b"),
 					QueueID:        uuid.FromStringOrNil("f9ce6d96-b3d2-11ec-94ac-bb22aad0488d"),
 					NextCampaignID: uuid.FromStringOrNil("f9f84bf2-b3d2-11ec-8a68-d7464098d793"),
-					TMCreate:       "2020-04-18T03:22:18.995000Z",
-					TMUpdate:       DefaultTimeStamp,
-					TMDelete:       DefaultTimeStamp,
+					TMCreate:       &curTime,
+					TMUpdate:       nil,
+					TMDelete:       nil,
 				},
 			},
 		},
@@ -343,7 +347,7 @@ func Test_CampaignListByCustomerID(t *testing.T) {
 			"2022-04-18T03:22:17.995000Z",
 			100,
 
-			"2020-04-18T03:22:17.995000Z",
+			&curTime,
 			[]*campaign.Campaign{
 				{
 					Identity: commonidentity.Identity{
@@ -357,9 +361,9 @@ func Test_CampaignListByCustomerID(t *testing.T) {
 					OutdialID:      uuid.FromStringOrNil("f9a4deb8-b3d2-11ec-8ced-cfd5fa2a7c1b"),
 					QueueID:        uuid.FromStringOrNil("f9ce6d96-b3d2-11ec-94ac-bb22aad0488d"),
 					NextCampaignID: uuid.FromStringOrNil("f9f84bf2-b3d2-11ec-8a68-d7464098d793"),
-					TMCreate:       "2020-04-18T03:22:17.995000Z",
-					TMUpdate:       DefaultTimeStamp,
-					TMDelete:       DefaultTimeStamp,
+					TMCreate:       &curTime,
+					TMUpdate:       nil,
+					TMDelete:       nil,
 				},
 				{
 					Identity: commonidentity.Identity{
@@ -373,9 +377,9 @@ func Test_CampaignListByCustomerID(t *testing.T) {
 					OutdialID:      uuid.FromStringOrNil("f9a4deb8-b3d2-11ec-8ced-cfd5fa2a7c1b"),
 					QueueID:        uuid.FromStringOrNil("f9ce6d96-b3d2-11ec-94ac-bb22aad0488d"),
 					NextCampaignID: uuid.FromStringOrNil("f9f84bf2-b3d2-11ec-8a68-d7464098d793"),
-					TMCreate:       "2020-04-18T03:22:17.995000Z",
-					TMUpdate:       DefaultTimeStamp,
-					TMDelete:       DefaultTimeStamp,
+					TMCreate:       &curTime,
+					TMUpdate:       nil,
+					TMDelete:       nil,
 				},
 			},
 		},
@@ -397,7 +401,7 @@ func Test_CampaignListByCustomerID(t *testing.T) {
 			ctx := context.Background()
 
 			for _, p := range tt.campaigns {
-				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 				mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
 				if err := h.CampaignCreate(ctx, p); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -428,7 +432,7 @@ func Test_CampaignUpdateBasicInfo(t *testing.T) {
 		serviceLevel int
 		endHandle    campaign.EndHandle
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *campaign.Campaign
 	}{
 		{
@@ -454,7 +458,7 @@ func Test_CampaignUpdateBasicInfo(t *testing.T) {
 			serviceLevel: 100,
 			endHandle:    campaign.EndHandleContinue,
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: &curTime,
 			expectRes: &campaign.Campaign{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("cadc92e6-b3d3-11ec-a6ec-ab2d193ab762"),
@@ -470,9 +474,9 @@ func Test_CampaignUpdateBasicInfo(t *testing.T) {
 				OutdialID:      uuid.FromStringOrNil("cb6a0d7e-b3d3-11ec-ae5f-1b6bf31623b8"),
 				QueueID:        uuid.FromStringOrNil("cb9ec816-b3d3-11ec-8fea-578f80554cac"),
 				NextCampaignID: uuid.FromStringOrNil("cbce4438-b3d3-11ec-9b72-cf0786bc7233"),
-				TMCreate:       "2020-04-18T03:22:17.995000Z",
-				TMUpdate:       "2020-04-18T03:22:17.995000Z",
-				TMDelete:       DefaultTimeStamp,
+				TMCreate:       &curTime,
+				TMUpdate:       &curTime,
+				TMDelete:       nil,
 			},
 		},
 	}
@@ -492,13 +496,13 @@ func Test_CampaignUpdateBasicInfo(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
 			if err := h.CampaignCreate(ctx, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
 			if err := h.CampaignUpdateBasicInfo(ctx, tt.data.ID, tt.campaignName, tt.detail, tt.campaignType, tt.serviceLevel, tt.endHandle); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -528,7 +532,7 @@ func Test_CampaignUpdateResourceInfo(t *testing.T) {
 		queueID        uuid.UUID
 		nextCampaignID uuid.UUID
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *campaign.Campaign
 	}{
 		{
@@ -552,7 +556,7 @@ func Test_CampaignUpdateResourceInfo(t *testing.T) {
 			queueID:        uuid.FromStringOrNil("2ac5856e-b3d4-11ec-999d-376dbe88d746"),
 			nextCampaignID: uuid.FromStringOrNil("7b753100-7ccb-11ee-a39a-5faf460167f7"),
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: &curTime,
 			expectRes: &campaign.Campaign{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("2928a27c-b3d4-11ec-93ea-932164cd844b"),
@@ -565,9 +569,9 @@ func Test_CampaignUpdateResourceInfo(t *testing.T) {
 				OutdialID:      uuid.FromStringOrNil("2a8c690a-b3d4-11ec-b837-4fc7444b844f"),
 				QueueID:        uuid.FromStringOrNil("2ac5856e-b3d4-11ec-999d-376dbe88d746"),
 				NextCampaignID: uuid.FromStringOrNil("7b753100-7ccb-11ee-a39a-5faf460167f7"),
-				TMCreate:       "2020-04-18T03:22:17.995000Z",
-				TMUpdate:       "2020-04-18T03:22:17.995000Z",
-				TMDelete:       DefaultTimeStamp,
+				TMCreate:       &curTime,
+				TMUpdate:       &curTime,
+				TMDelete:       nil,
 			},
 		},
 	}
@@ -587,13 +591,13 @@ func Test_CampaignUpdateResourceInfo(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
 			if err := h.CampaignCreate(context.Background(), tt.campaign); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
 			if err := h.CampaignUpdateResourceInfo(ctx, tt.campaign.ID, tt.outplanID, tt.outdialID, tt.queueID, tt.nextCampaignID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -621,7 +625,7 @@ func Test_CampaignUpdateNextCampaignID(t *testing.T) {
 
 		nextCampaignID uuid.UUID
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *campaign.Campaign
 	}{
 		{
@@ -642,7 +646,7 @@ func Test_CampaignUpdateNextCampaignID(t *testing.T) {
 
 			uuid.FromStringOrNil("baf03152-b3d4-11ec-bfe4-eb0cddbd111d"),
 
-			"2020-04-18T03:22:17.995000Z",
+			&curTime,
 			&campaign.Campaign{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("ba9569b6-b3d4-11ec-854c-778329a51158"),
@@ -655,9 +659,9 @@ func Test_CampaignUpdateNextCampaignID(t *testing.T) {
 				OutdialID:      uuid.FromStringOrNil("29b93706-b3d4-11ec-b884-57ba15a12519"),
 				QueueID:        uuid.FromStringOrNil("29f12d00-b3d4-11ec-a884-dba81c6dc4da"),
 				NextCampaignID: uuid.FromStringOrNil("baf03152-b3d4-11ec-bfe4-eb0cddbd111d"),
-				TMCreate:       "2020-04-18T03:22:17.995000Z",
-				TMUpdate:       "2020-04-18T03:22:17.995000Z",
-				TMDelete:       DefaultTimeStamp,
+				TMCreate:       &curTime,
+				TMUpdate:       &curTime,
+				TMDelete:       nil,
 			},
 		},
 	}
@@ -677,13 +681,13 @@ func Test_CampaignUpdateNextCampaignID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
 			if err := h.CampaignCreate(context.Background(), tt.campaign); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
 			if err := h.CampaignUpdateNextCampaignID(ctx, tt.campaign.ID, tt.nextCampaignID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -710,7 +714,7 @@ func Test_CampaignUpdateStatus(t *testing.T) {
 
 		status campaign.Status
 
-		responseCurTime string
+		responseCurTime *time.Time
 
 		expectRes *campaign.Campaign
 	}{
@@ -734,7 +738,7 @@ func Test_CampaignUpdateStatus(t *testing.T) {
 
 			campaign.StatusRun,
 
-			"2020-04-18T03:22:17.995000Z",
+			&curTime,
 			&campaign.Campaign{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("ef762a33-24ef-486a-bb91-5496456ebaa5"),
@@ -749,9 +753,9 @@ func Test_CampaignUpdateStatus(t *testing.T) {
 				OutdialID:      uuid.FromStringOrNil("29b93706-b3d4-11ec-b884-57ba15a12519"),
 				QueueID:        uuid.FromStringOrNil("29f12d00-b3d4-11ec-a884-dba81c6dc4da"),
 				NextCampaignID: uuid.FromStringOrNil("2a21ba1a-b3d4-11ec-a5cf-bf03f62e70c7"),
-				TMCreate:       "2020-04-18T03:22:17.995000Z",
-				TMUpdate:       "2020-04-18T03:22:17.995000Z",
-				TMDelete:       DefaultTimeStamp,
+				TMCreate:       &curTime,
+				TMUpdate:       &curTime,
+				TMDelete:       nil,
 			},
 		},
 	}
@@ -771,13 +775,13 @@ func Test_CampaignUpdateStatus(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
 			if err := h.CampaignCreate(ctx, tt.campaign); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
 			if err := h.CampaignUpdateStatus(ctx, tt.campaign.ID, tt.status); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -805,7 +809,7 @@ func Test_CampaignUpdateStatusAndExecute(t *testing.T) {
 		status  campaign.Status
 		execute campaign.Execute
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *campaign.Campaign
 	}{
 		{
@@ -829,7 +833,7 @@ func Test_CampaignUpdateStatusAndExecute(t *testing.T) {
 			campaign.StatusRun,
 			campaign.ExecuteRun,
 
-			"2020-04-18T03:22:17.995000Z",
+			&curTime,
 			&campaign.Campaign{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("1b18e1e0-18a7-4a8f-b0ca-5f99597a0bea"),
@@ -844,9 +848,9 @@ func Test_CampaignUpdateStatusAndExecute(t *testing.T) {
 				OutdialID:      uuid.FromStringOrNil("29b93706-b3d4-11ec-b884-57ba15a12519"),
 				QueueID:        uuid.FromStringOrNil("29f12d00-b3d4-11ec-a884-dba81c6dc4da"),
 				NextCampaignID: uuid.FromStringOrNil("2a21ba1a-b3d4-11ec-a5cf-bf03f62e70c7"),
-				TMCreate:       "2020-04-18T03:22:17.995000Z",
-				TMUpdate:       "2020-04-18T03:22:17.995000Z",
-				TMDelete:       DefaultTimeStamp,
+				TMCreate:       &curTime,
+				TMUpdate:       &curTime,
+				TMDelete:       nil,
 			},
 		},
 	}
@@ -866,13 +870,13 @@ func Test_CampaignUpdateStatusAndExecute(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
 			if err := h.CampaignCreate(ctx, tt.campaign); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
 			if err := h.CampaignUpdateStatusAndExecute(ctx, tt.campaign.ID, tt.status, tt.execute); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -899,7 +903,7 @@ func Test_CampaignUpdateExecute(t *testing.T) {
 
 		execute campaign.Execute
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *campaign.Campaign
 	}{
 		{
@@ -922,7 +926,7 @@ func Test_CampaignUpdateExecute(t *testing.T) {
 
 			campaign.ExecuteRun,
 
-			"2020-04-18T03:22:17.995000Z",
+			&curTime,
 			&campaign.Campaign{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("41089aad-d8c0-4685-a609-8ab9f264ab74"),
@@ -937,9 +941,9 @@ func Test_CampaignUpdateExecute(t *testing.T) {
 				OutdialID:      uuid.FromStringOrNil("29b93706-b3d4-11ec-b884-57ba15a12519"),
 				QueueID:        uuid.FromStringOrNil("29f12d00-b3d4-11ec-a884-dba81c6dc4da"),
 				NextCampaignID: uuid.FromStringOrNil("2a21ba1a-b3d4-11ec-a5cf-bf03f62e70c7"),
-				TMCreate:       "2020-04-18T03:22:17.995000Z",
-				TMUpdate:       "2020-04-18T03:22:17.995000Z",
-				TMDelete:       DefaultTimeStamp,
+				TMCreate:       &curTime,
+				TMUpdate:       &curTime,
+				TMDelete:       nil,
 			},
 		},
 	}
@@ -959,13 +963,13 @@ func Test_CampaignUpdateExecute(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
 			if err := h.CampaignCreate(ctx, tt.campaign); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
 			if err := h.CampaignUpdateExecute(ctx, tt.campaign.ID, tt.execute); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -992,7 +996,7 @@ func Test_OutplanUpdateServiceLevel(t *testing.T) {
 
 		serviceLevel int
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *campaign.Campaign
 	}{
 		{
@@ -1014,7 +1018,7 @@ func Test_OutplanUpdateServiceLevel(t *testing.T) {
 
 			300,
 
-			"2020-04-18T03:22:17.995000Z",
+			&curTime,
 			&campaign.Campaign{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("a1bf91b2-b741-11ec-8260-47e8860a9e3b"),
@@ -1028,9 +1032,9 @@ func Test_OutplanUpdateServiceLevel(t *testing.T) {
 				OutdialID:      uuid.FromStringOrNil("29b93706-b3d4-11ec-b884-57ba15a12519"),
 				QueueID:        uuid.FromStringOrNil("29f12d00-b3d4-11ec-a884-dba81c6dc4da"),
 				NextCampaignID: uuid.FromStringOrNil("baf03152-b3d4-11ec-bfe4-eb0cddbd111d"),
-				TMCreate:       "2020-04-18T03:22:17.995000Z",
-				TMUpdate:       "2020-04-18T03:22:17.995000Z",
-				TMDelete:       DefaultTimeStamp,
+				TMCreate:       &curTime,
+				TMUpdate:       &curTime,
+				TMDelete:       nil,
 			},
 		},
 	}
@@ -1050,13 +1054,13 @@ func Test_OutplanUpdateServiceLevel(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
 			if err := h.CampaignCreate(ctx, tt.campaign); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
 			if err := h.CampaignUpdateServiceLevel(ctx, tt.campaign.ID, tt.serviceLevel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1083,7 +1087,7 @@ func Test_OutplanUpdateEndHandle(t *testing.T) {
 
 		endHandle campaign.EndHandle
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *campaign.Campaign
 	}{
 		{
@@ -1106,7 +1110,7 @@ func Test_OutplanUpdateEndHandle(t *testing.T) {
 
 			campaign.EndHandleContinue,
 
-			"2020-04-18T03:22:17.995000Z",
+			&curTime,
 			&campaign.Campaign{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("38a47dc8-704e-4818-bb16-113335ed85ec"),
@@ -1121,9 +1125,9 @@ func Test_OutplanUpdateEndHandle(t *testing.T) {
 				OutdialID:      uuid.FromStringOrNil("29b93706-b3d4-11ec-b884-57ba15a12519"),
 				QueueID:        uuid.FromStringOrNil("29f12d00-b3d4-11ec-a884-dba81c6dc4da"),
 				NextCampaignID: uuid.FromStringOrNil("baf03152-b3d4-11ec-bfe4-eb0cddbd111d"),
-				TMCreate:       "2020-04-18T03:22:17.995000Z",
-				TMUpdate:       "2020-04-18T03:22:17.995000Z",
-				TMDelete:       DefaultTimeStamp,
+				TMCreate:       &curTime,
+				TMUpdate:       &curTime,
+				TMDelete:       nil,
 			},
 		},
 	}
@@ -1143,13 +1147,13 @@ func Test_OutplanUpdateEndHandle(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
 			if err := h.CampaignCreate(ctx, tt.campaign); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
 			if err := h.CampaignUpdateEndHandle(ctx, tt.campaign.ID, tt.endHandle); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1176,7 +1180,7 @@ func Test_CampaignUpdateActions(t *testing.T) {
 
 		actions []fmaction.Action
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *campaign.Campaign
 	}{
 		{
@@ -1204,7 +1208,7 @@ func Test_CampaignUpdateActions(t *testing.T) {
 				},
 			},
 
-			"2020-04-18T03:22:17.995000Z",
+			&curTime,
 			&campaign.Campaign{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("20e8968f-b36b-4b2c-acc7-d4240724d967"),
@@ -1225,9 +1229,9 @@ func Test_CampaignUpdateActions(t *testing.T) {
 				OutdialID:      uuid.FromStringOrNil("29b93706-b3d4-11ec-b884-57ba15a12519"),
 				QueueID:        uuid.FromStringOrNil("29f12d00-b3d4-11ec-a884-dba81c6dc4da"),
 				NextCampaignID: uuid.FromStringOrNil("baf03152-b3d4-11ec-bfe4-eb0cddbd111d"),
-				TMCreate:       "2020-04-18T03:22:17.995000Z",
-				TMUpdate:       "2020-04-18T03:22:17.995000Z",
-				TMDelete:       DefaultTimeStamp,
+				TMCreate:       &curTime,
+				TMUpdate:       &curTime,
+				TMDelete:       nil,
 			},
 		},
 	}
@@ -1247,13 +1251,13 @@ func Test_CampaignUpdateActions(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
 			if err := h.CampaignCreate(ctx, tt.campaign); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
 			if err := h.CampaignUpdateActions(ctx, tt.campaign.ID, tt.actions); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1280,7 +1284,7 @@ func Test_OutplanUpdateType(t *testing.T) {
 
 		campaignType campaign.Type
 
-		responseCurtime string
+		responseCurtime *time.Time
 		expectRes       *campaign.Campaign
 	}{
 		{
@@ -1305,7 +1309,7 @@ func Test_OutplanUpdateType(t *testing.T) {
 
 			campaign.TypeCall,
 
-			"2020-04-18T03:22:17.995000Z",
+			&curTime,
 			&campaign.Campaign{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("da627f5c-52c3-4509-b80d-505d346e631f"),
@@ -1322,9 +1326,9 @@ func Test_OutplanUpdateType(t *testing.T) {
 				OutdialID:      uuid.FromStringOrNil("29b93706-b3d4-11ec-b884-57ba15a12519"),
 				QueueID:        uuid.FromStringOrNil("29f12d00-b3d4-11ec-a884-dba81c6dc4da"),
 				NextCampaignID: uuid.FromStringOrNil("baf03152-b3d4-11ec-bfe4-eb0cddbd111d"),
-				TMCreate:       "2020-04-18T03:22:17.995000Z",
-				TMUpdate:       "2020-04-18T03:22:17.995000Z",
-				TMDelete:       DefaultTimeStamp,
+				TMCreate:       &curTime,
+				TMUpdate:       &curTime,
+				TMDelete:       nil,
 			},
 		},
 	}
@@ -1344,13 +1348,13 @@ func Test_OutplanUpdateType(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurtime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurtime)
 			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
 			if err := h.CampaignCreate(ctx, tt.campaign); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurtime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurtime)
 			mockCache.EXPECT().CampaignSet(ctx, gomock.Any()).Return(nil)
 			if err := h.CampaignUpdateType(ctx, tt.campaign.ID, tt.campaignType); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -6,6 +6,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"time"
 
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -76,8 +77,8 @@ type DBHandler interface {
 		ctx context.Context,
 		asteriskID string,
 		channelType channel.Type,
-		startTime string,
-		endTime string,
+		startTime *time.Time,
+		endTime *time.Time,
 		size uint64,
 	) ([]*channel.Channel, error)
 	ChannelSetBridgeID(ctx context.Context, id, bridgeID string) error

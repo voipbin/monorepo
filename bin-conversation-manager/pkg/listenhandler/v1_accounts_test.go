@@ -60,7 +60,7 @@ func Test_processV1AccountsGet(t *testing.T) {
 			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"645891fe-e863-11ec-b291-9f454e92f1bb","customer_id":"00000000-0000-0000-0000-000000000000"}]`),
+				Data:       []byte(`[{"id":"645891fe-e863-11ec-b291-9f454e92f1bb","customer_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}]`),
 			},
 		},
 		{
@@ -96,7 +96,7 @@ func Test_processV1AccountsGet(t *testing.T) {
 			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"6b5f9da6-fecb-11ed-a0ea-4fdabd236387","customer_id":"00000000-0000-0000-0000-000000000000"},{"id":"6b906c9c-fecb-11ed-a341-f38426e7e737","customer_id":"00000000-0000-0000-0000-000000000000"}]`),
+				Data:       []byte(`[{"id":"6b5f9da6-fecb-11ed-a0ea-4fdabd236387","customer_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null},{"id":"6b906c9c-fecb-11ed-a341-f38426e7e737","customer_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}]`),
 			},
 		},
 	}
@@ -171,7 +171,7 @@ func Test_processV1AccountsPost(t *testing.T) {
 			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"459c19ae-fecc-11ed-9558-fbf54c7aa51e","customer_id":"00000000-0000-0000-0000-000000000000"}`),
+				Data:       []byte(`{"id":"459c19ae-fecc-11ed-9558-fbf54c7aa51e","customer_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -232,7 +232,7 @@ func Test_processV1AccountsIDGet(t *testing.T) {
 			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"1793ed06-fecd-11ed-ab65-07ce8687961d","customer_id":"00000000-0000-0000-0000-000000000000"}`),
+				Data:       []byte(`{"id":"1793ed06-fecd-11ed-ab65-07ce8687961d","customer_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -289,7 +289,7 @@ func Test_processV1AccountsIDPut(t *testing.T) {
 			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"17c1c726-fecd-11ed-8139-dff04db7fa05","customer_id":"00000000-0000-0000-0000-000000000000"}`),
+				Data:       []byte(`{"id":"17c1c726-fecd-11ed-8139-dff04db7fa05","customer_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 			responseAccount: &account.Account{
 				Identity: commonidentity.Identity{
@@ -363,7 +363,7 @@ func Test_processV1AccountsIDDelete(t *testing.T) {
 			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"17eeb786-fecd-11ed-8113-5f6f4693c29f","customer_id":"00000000-0000-0000-0000-000000000000"}`),
+				Data:       []byte(`{"id":"17eeb786-fecd-11ed-8113-5f6f4693c29f","customer_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}

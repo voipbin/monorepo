@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"monorepo/bin-call-manager/models/call"
-	"monorepo/bin-call-manager/pkg/dbhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -24,7 +23,7 @@ func (h *callHandler) Delete(ctx context.Context, id uuid.UUID) (*call.Call, err
 		return nil, err
 	}
 
-	if c.TMDelete != dbhandler.DefaultTimeStamp {
+	if c.TMDelete != nil {
 		// the call has been deleted already.
 		return c, nil
 	}

@@ -1,6 +1,10 @@
 package billing
 
-import "github.com/gofrs/uuid"
+import (
+	"time"
+
+	"github.com/gofrs/uuid"
+)
 
 // FieldStruct defines allowed filters for Billing queries
 // Each field corresponds to a filterable database column
@@ -13,7 +17,7 @@ type FieldStruct struct {
 	ReferenceID    uuid.UUID     `filter:"reference_id"`
 	CostPerUnit    float64       `filter:"cost_per_unit"`
 	CostTotal      float64       `filter:"cost_total"`
-	TMBillingStart string        `filter:"tm_billing_start"`
-	TMBillingEnd   string        `filter:"tm_billing_end"`
+	TMBillingStart *time.Time    `filter:"tm_billing_start"`
+	TMBillingEnd   *time.Time    `filter:"tm_billing_end"`
 	Deleted        bool          `filter:"deleted"`
 }

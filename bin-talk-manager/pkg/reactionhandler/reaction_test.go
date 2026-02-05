@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -15,6 +16,10 @@ import (
 	"monorepo/bin-talk-manager/models/message"
 	"monorepo/bin-talk-manager/pkg/dbhandler"
 )
+
+func timePtr(t time.Time) *time.Time {
+	return &t
+}
 
 func Test_ReactionAdd(t *testing.T) {
 	messageID := uuid.FromStringOrNil("e8427fa8-17b2-4e9e-8855-90e516bcf1d3")
@@ -52,7 +57,7 @@ func Test_ReactionAdd(t *testing.T) {
 				Type:     message.TypeNormal,
 				Text:     "Hello, world!",
 				Metadata: message.Metadata{Reactions: []message.Reaction{}},
-				TMCreate: "2024-01-15T10:30:00.000000Z",
+				TMCreate: timePtr(time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)),
 			},
 			responseUpdatedMessage: &message.Message{
 				Identity: commonidentity.Identity{
@@ -62,8 +67,8 @@ func Test_ReactionAdd(t *testing.T) {
 				ChatID:   chatID,
 				Type:     message.TypeNormal,
 				Text:     "Hello, world!",
-				Metadata: message.Metadata{Reactions: []message.Reaction{{Emoji: "👍", OwnerType: "agent", OwnerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"), TMCreate: "2024-01-17T10:30:00.000000Z"}}},
-				TMCreate: "2024-01-15T10:30:00.000000Z",
+				Metadata: message.Metadata{Reactions: []message.Reaction{{Emoji: "👍", OwnerType: "agent", OwnerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"), TMCreate: timePtr(time.Date(2024, 1, 17, 10, 30, 0, 0, time.UTC))}}},
+				TMCreate: timePtr(time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)),
 			},
 
 			expectError: false,
@@ -84,8 +89,8 @@ func Test_ReactionAdd(t *testing.T) {
 				ChatID:   chatID,
 				Type:     message.TypeNormal,
 				Text:     "Message with existing reaction",
-				Metadata: message.Metadata{Reactions: []message.Reaction{{Emoji: "👍", OwnerType: "agent", OwnerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"), TMCreate: "2024-01-17T10:30:00.000000Z"}}},
-				TMCreate: "2024-01-15T10:30:00.000000Z",
+				Metadata: message.Metadata{Reactions: []message.Reaction{{Emoji: "👍", OwnerType: "agent", OwnerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"), TMCreate: timePtr(time.Date(2024, 1, 17, 10, 30, 0, 0, time.UTC))}}},
+				TMCreate: timePtr(time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)),
 			},
 			responseUpdatedMessage: &message.Message{
 				Identity: commonidentity.Identity{
@@ -95,8 +100,8 @@ func Test_ReactionAdd(t *testing.T) {
 				ChatID:   chatID,
 				Type:     message.TypeNormal,
 				Text:     "Message with existing reaction",
-				Metadata: message.Metadata{Reactions: []message.Reaction{{Emoji: "👍", OwnerType: "agent", OwnerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"), TMCreate: "2024-01-17T10:30:00.000000Z"}, {Emoji: "❤️", OwnerType: "agent", OwnerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"), TMCreate: "2024-01-17T10:35:00.000000Z"}}},
-				TMCreate: "2024-01-15T10:30:00.000000Z",
+				Metadata: message.Metadata{Reactions: []message.Reaction{{Emoji: "👍", OwnerType: "agent", OwnerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"), TMCreate: timePtr(time.Date(2024, 1, 17, 10, 30, 0, 0, time.UTC))}, {Emoji: "❤️", OwnerType: "agent", OwnerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"), TMCreate: timePtr(time.Date(2024, 1, 17, 10, 35, 0, 0, time.UTC))}}},
+				TMCreate: timePtr(time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)),
 			},
 
 			expectError: false,
@@ -117,8 +122,8 @@ func Test_ReactionAdd(t *testing.T) {
 				ChatID:   chatID,
 				Type:     message.TypeNormal,
 				Text:     "Message with reaction",
-				Metadata: message.Metadata{Reactions: []message.Reaction{{Emoji: "👍", OwnerType: "agent", OwnerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"), TMCreate: "2024-01-17T10:30:00.000000Z"}}},
-				TMCreate: "2024-01-15T10:30:00.000000Z",
+				Metadata: message.Metadata{Reactions: []message.Reaction{{Emoji: "👍", OwnerType: "agent", OwnerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"), TMCreate: timePtr(time.Date(2024, 1, 17, 10, 30, 0, 0, time.UTC))}}},
+				TMCreate: timePtr(time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)),
 			},
 			responseUpdatedMessage: nil, // Not used - returns same message
 
@@ -140,8 +145,8 @@ func Test_ReactionAdd(t *testing.T) {
 				ChatID:   chatID,
 				Type:     message.TypeNormal,
 				Text:     "Message with reaction from another user",
-				Metadata: message.Metadata{Reactions: []message.Reaction{{Emoji: "👍", OwnerType: "agent", OwnerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"), TMCreate: "2024-01-17T10:30:00.000000Z"}}},
-				TMCreate: "2024-01-15T10:30:00.000000Z",
+				Metadata: message.Metadata{Reactions: []message.Reaction{{Emoji: "👍", OwnerType: "agent", OwnerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"), TMCreate: timePtr(time.Date(2024, 1, 17, 10, 30, 0, 0, time.UTC))}}},
+				TMCreate: timePtr(time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)),
 			},
 			responseUpdatedMessage: &message.Message{
 				Identity: commonidentity.Identity{
@@ -151,8 +156,8 @@ func Test_ReactionAdd(t *testing.T) {
 				ChatID:   chatID,
 				Type:     message.TypeNormal,
 				Text:     "Message with reaction from another user",
-				Metadata: message.Metadata{Reactions: []message.Reaction{{Emoji: "👍", OwnerType: "agent", OwnerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"), TMCreate: "2024-01-17T10:30:00.000000Z"}, {Emoji: "👍", OwnerType: "agent", OwnerID: uuid.FromStringOrNil("31536998-da36-11ee-976a-b31b049d62c2"), TMCreate: "2024-01-17T10:35:00.000000Z"}}},
-				TMCreate: "2024-01-15T10:30:00.000000Z",
+				Metadata: message.Metadata{Reactions: []message.Reaction{{Emoji: "👍", OwnerType: "agent", OwnerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"), TMCreate: timePtr(time.Date(2024, 1, 17, 10, 30, 0, 0, time.UTC))}, {Emoji: "👍", OwnerType: "agent", OwnerID: uuid.FromStringOrNil("31536998-da36-11ee-976a-b31b049d62c2"), TMCreate: timePtr(time.Date(2024, 1, 17, 10, 35, 0, 0, time.UTC))}}},
+				TMCreate: timePtr(time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)),
 			},
 
 			expectError: false,
@@ -182,7 +187,7 @@ func Test_ReactionAdd(t *testing.T) {
 			// If not idempotent case, mock atomic add and final get
 			if tt.responseUpdatedMessage != nil {
 				// Mock timestamp generation
-				mockUtil.EXPECT().TimeGetCurTime().Return("2024-01-17T10:30:00.000000Z")
+				mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2024, 1, 17, 10, 30, 0, 0, time.UTC)))
 				mockDB.EXPECT().MessageAddReactionAtomic(ctx, tt.messageID, gomock.Any()).Return(nil)
 				mockDB.EXPECT().MessageGet(ctx, tt.messageID).Return(tt.responseUpdatedMessage, nil)
 			}
@@ -381,7 +386,7 @@ func Test_ReactionAdd_error(t *testing.T) {
 				// Only mock atomic add if get succeeded and returned non-nil message
 				if tt.getError == nil && tt.responseMessage != nil {
 					// Mock UUID generation for timestamp
-					mockUtil.EXPECT().TimeGetCurTime().Return("2024-01-17T10:30:00.000000Z")
+					mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2024, 1, 17, 10, 30, 0, 0, time.UTC)))
 					mockDB.EXPECT().MessageAddReactionAtomic(ctx, tt.messageID, gomock.Any()).Return(tt.atomicAddError)
 
 					// Only mock second get if atomic add succeeded
@@ -438,7 +443,7 @@ func Test_ReactionRemove(t *testing.T) {
 				Type:     message.TypeNormal,
 				Text:     "Message after reaction removed",
 				Metadata: message.Metadata{Reactions: []message.Reaction{}},
-				TMCreate: "2024-01-15T10:30:00.000000Z",
+				TMCreate: timePtr(time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)),
 			},
 
 			expectError: false,
@@ -459,8 +464,8 @@ func Test_ReactionRemove(t *testing.T) {
 				ChatID:   chatID,
 				Type:     message.TypeNormal,
 				Text:     "Message with remaining reactions",
-				Metadata: message.Metadata{Reactions: []message.Reaction{{Emoji: "❤️", OwnerType: "agent", OwnerID: uuid.FromStringOrNil("31536998-da36-11ee-976a-b31b049d62c2"), TMCreate: "2024-01-17T10:35:00.000000Z"}}},
-				TMCreate: "2024-01-15T10:30:00.000000Z",
+				Metadata: message.Metadata{Reactions: []message.Reaction{{Emoji: "❤️", OwnerType: "agent", OwnerID: uuid.FromStringOrNil("31536998-da36-11ee-976a-b31b049d62c2"), TMCreate: timePtr(time.Date(2024, 1, 17, 10, 35, 0, 0, time.UTC))}}},
+				TMCreate: timePtr(time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)),
 			},
 
 			expectError: false,
@@ -481,8 +486,8 @@ func Test_ReactionRemove(t *testing.T) {
 				ChatID:   chatID,
 				Type:     message.TypeNormal,
 				Text:     "Message after specific user reaction removed",
-				Metadata: message.Metadata{Reactions: []message.Reaction{{Emoji: "👍", OwnerType: "agent", OwnerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"), TMCreate: "2024-01-17T10:30:00.000000Z"}}},
-				TMCreate: "2024-01-15T10:30:00.000000Z",
+				Metadata: message.Metadata{Reactions: []message.Reaction{{Emoji: "👍", OwnerType: "agent", OwnerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"), TMCreate: timePtr(time.Date(2024, 1, 17, 10, 30, 0, 0, time.UTC))}}},
+				TMCreate: timePtr(time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)),
 			},
 
 			expectError: false,

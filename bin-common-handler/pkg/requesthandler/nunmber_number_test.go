@@ -122,7 +122,7 @@ func Test_NumberV1NumberList(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"0e00bb78-7b19-11eb-a238-9f1154b2c92e","number":"+821021656521","flow_id":"00000000-0000-0000-0000-000000000000","customer_id":"b7041f62-7ff5-11ec-b1dd-d7e05b3c5096","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"0e00bb78-7b19-11eb-a238-9f1154b2c92e","number":"+821021656521","flow_id":"00000000-0000-0000-0000-000000000000","customer_id":"b7041f62-7ff5-11ec-b1dd-d7e05b3c5096","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":null,"tm_create":null,"tm_update":null,"tm_delete":null}]`),
 			},
 			[]nmnumber.Number{
 				{
@@ -136,10 +136,10 @@ func Test_NumberV1NumberList(t *testing.T) {
 					Status:              nmnumber.StatusActive,
 					T38Enabled:          false,
 					EmergencyEnabled:    false,
-					TMPurchase:          "",
-					TMCreate:            "",
-					TMUpdate:            "",
-					TMDelete:            "",
+					TMPurchase:          nil,
+					TMCreate:            nil,
+					TMUpdate:            nil,
+					TMDelete:            nil,
 				},
 			},
 		},
@@ -197,7 +197,7 @@ func Test_NumberV1NumberGet(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"74a2f4bc-7be2-11eb-bb71-c767ac6ed931","number":"+821021656521","flow_id":"00000000-0000-0000-0000-000000000000","customer_id":"b7041f62-7ff5-11ec-b1dd-d7e05b3c5096","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"74a2f4bc-7be2-11eb-bb71-c767ac6ed931","number":"+821021656521","flow_id":"00000000-0000-0000-0000-000000000000","customer_id":"b7041f62-7ff5-11ec-b1dd-d7e05b3c5096","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 			&nmnumber.Number{
 				Identity: identity.Identity{
@@ -210,10 +210,10 @@ func Test_NumberV1NumberGet(t *testing.T) {
 				Status:              nmnumber.StatusActive,
 				T38Enabled:          false,
 				EmergencyEnabled:    false,
-				TMPurchase:          "",
-				TMCreate:            "",
-				TMUpdate:            "",
-				TMDelete:            "",
+				TMPurchase: nil,
+				TMCreate:   nil,
+				TMUpdate:   nil,
+				TMDelete:   nil,
 			},
 		},
 	}
@@ -270,7 +270,7 @@ func Test_NumberV1NumberDelete(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"aa0b1c7e-7be2-11eb-89f2-a7882f79d5b5","number":"+821021656521","flow_id":"00000000-0000-0000-0000-000000000000","customer_id":"b7041f62-7ff5-11ec-b1dd-d7e05b3c5096","provider_name":"telnyx","provider_reference_id":"","status":"deleted","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"aa0b1c7e-7be2-11eb-89f2-a7882f79d5b5","number":"+821021656521","flow_id":"00000000-0000-0000-0000-000000000000","customer_id":"b7041f62-7ff5-11ec-b1dd-d7e05b3c5096","provider_name":"telnyx","provider_reference_id":"","status":"deleted","t38_enabled":false,"emergency_enabled":false,"tm_purchase":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 			&nmnumber.Number{
 				Identity: identity.Identity{
@@ -283,10 +283,10 @@ func Test_NumberV1NumberDelete(t *testing.T) {
 				Status:              nmnumber.StatusDeleted,
 				T38Enabled:          false,
 				EmergencyEnabled:    false,
-				TMPurchase:          "",
-				TMCreate:            "",
-				TMUpdate:            "",
-				TMDelete:            "",
+				TMPurchase: nil,
+				TMCreate:   nil,
+				TMUpdate:   nil,
+				TMDelete:   nil,
 			},
 		},
 	}
@@ -351,7 +351,7 @@ func Test_NumberV1NumberUpdate(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"d3877fec-7c5b-11eb-bb46-07fe08c74815","number":"+821021656521","call_flow_id":"d45aae76-7c5b-11eb-9542-eb46d11b1c1a","message_flow_id":"b409020e-a873-11ec-bce6-3fcf97b72d44","customer_id":"b7041f62-7ff5-11ec-b1dd-d7e05b3c5096","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":"","tm_create":"","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"d3877fec-7c5b-11eb-bb46-07fe08c74815","number":"+821021656521","call_flow_id":"d45aae76-7c5b-11eb-9542-eb46d11b1c1a","message_flow_id":"b409020e-a873-11ec-bce6-3fcf97b72d44","customer_id":"b7041f62-7ff5-11ec-b1dd-d7e05b3c5096","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"tm_purchase":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 			&nmnumber.Number{
 				Identity: identity.Identity{
@@ -366,10 +366,10 @@ func Test_NumberV1NumberUpdate(t *testing.T) {
 				Status:              nmnumber.StatusActive,
 				T38Enabled:          false,
 				EmergencyEnabled:    false,
-				TMPurchase:          "",
-				TMCreate:            "",
-				TMUpdate:            "",
-				TMDelete:            "",
+				TMPurchase: nil,
+				TMCreate:   nil,
+				TMUpdate:   nil,
+				TMDelete:   nil,
 			},
 		},
 	}

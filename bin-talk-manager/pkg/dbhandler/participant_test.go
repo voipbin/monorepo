@@ -4,6 +4,7 @@ import (
 	"context"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 
@@ -68,8 +69,8 @@ func Test_ParticipantCreate(t *testing.T) {
 			}
 
 			// Clear timestamps for comparison
-			tt.data.TMJoined = ""
-			res.TMJoined = ""
+			tt.data.TMJoined = nil
+			res.TMJoined = nil
 
 			if !reflect.DeepEqual(tt.data, res) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.data, res)
@@ -132,7 +133,11 @@ func Test_ParticipantCreate_UPSERT(t *testing.T) {
 			if err != nil {
 				t.Errorf("Failed to get first participant: %v", err)
 			}
-			firstTimestamp := firstRes.TMJoined
+			var firstTimestamp *time.Time
+			if firstRes.TMJoined != nil {
+				t := *firstRes.TMJoined
+				firstTimestamp = &t
+			}
 
 			// Create second participant (should UPSERT if same chat + owner)
 			if err := h.ParticipantCreate(ctx, tt.secondParticipant); err != nil {
@@ -157,8 +162,8 @@ func Test_ParticipantCreate_UPSERT(t *testing.T) {
 				}
 
 				// Timestamp should be updated (different from first)
-				if participants[0].TMJoined == firstTimestamp {
-					t.Errorf("Expected timestamp to be updated, but it's the same: %s", firstTimestamp)
+				if firstTimestamp != nil && participants[0].TMJoined != nil && participants[0].TMJoined.Equal(*firstTimestamp) {
+					t.Errorf("Expected timestamp to be updated, but it's the same: %v", firstTimestamp)
 				}
 			}
 		})

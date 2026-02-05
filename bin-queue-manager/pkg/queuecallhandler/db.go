@@ -193,7 +193,7 @@ func (h *queuecallHandler) UpdateStatusService(ctx context.Context, qc *queuecal
 	})
 	log.Debug("Updating queuecall status to service.")
 
-	curTime := h.utilHandler.TimeGetCurTime()
+	curTime := h.utilHandler.TimeNow()
 	duration := getDuration(ctx, qc.TMCreate, curTime)
 
 	if errService := h.db.QueuecallSetStatusService(ctx, qc.ID, int(duration.Milliseconds()), curTime); errService != nil {
@@ -231,7 +231,7 @@ func (h *queuecallHandler) UpdateStatusAbandoned(ctx context.Context, qc *queuec
 	})
 	log.Debug("Updating queuecall status to waiting.")
 
-	curTime := h.utilHandler.TimeGetCurTime()
+	curTime := h.utilHandler.TimeNow()
 	duration := getDuration(ctx, qc.TMCreate, curTime)
 
 	if errService := h.db.QueuecallSetStatusAbandoned(ctx, qc.ID, int(duration.Milliseconds()), curTime); errService != nil {
@@ -278,7 +278,7 @@ func (h *queuecallHandler) UpdateStatusDone(ctx context.Context, qc *queuecall.Q
 	})
 	log.Debug("Updating queuecall status to waiting.")
 
-	curTime := h.utilHandler.TimeGetCurTime()
+	curTime := h.utilHandler.TimeNow()
 	duration := getDuration(ctx, qc.TMCreate, curTime)
 
 	if errService := h.db.QueuecallSetStatusDone(ctx, qc.ID, int(duration.Milliseconds()), curTime); errService != nil {

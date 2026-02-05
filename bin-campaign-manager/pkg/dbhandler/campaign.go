@@ -32,12 +32,12 @@ func (h *handler) campaignGetFromRow(row *sql.Rows) (*campaign.Campaign, error) 
 
 // CampaignCreate insert a new campaign record
 func (h *handler) CampaignCreate(ctx context.Context, c *campaign.Campaign) error {
-	now := h.util.TimeGetCurTime()
+	now := h.util.TimeNow()
 
 	// Set timestamps
 	c.TMCreate = now
-	c.TMUpdate = commondatabasehandler.DefaultTimeStamp
-	c.TMDelete = commondatabasehandler.DefaultTimeStamp
+	c.TMUpdate = nil
+	c.TMDelete = nil
 
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(c)
@@ -139,7 +139,7 @@ func (h *handler) campaignGetFromDB(ctx context.Context, id uuid.UUID) (*campaig
 
 // CampaignDelete deletes the given campaign
 func (h *handler) CampaignDelete(ctx context.Context, id uuid.UUID) error {
-	ts := h.util.TimeGetCurTime()
+	ts := h.util.TimeNow()
 
 	fields := map[campaign.Field]any{
 		campaign.FieldTMUpdate: ts,
@@ -275,7 +275,7 @@ func (h *handler) CampaignUpdate(ctx context.Context, id uuid.UUID, fields map[c
 		return nil
 	}
 
-	fields[campaign.FieldTMUpdate] = h.util.TimeGetCurTime()
+	fields[campaign.FieldTMUpdate] = h.util.TimeNow()
 
 	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {

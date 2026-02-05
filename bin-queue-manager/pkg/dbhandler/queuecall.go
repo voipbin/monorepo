@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"time"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
@@ -41,14 +42,14 @@ func (h *handler) queuecallGetFromRow(row *sql.Rows) (*queuecall.Queuecall, erro
 
 // QueuecallCreate creates new QueueCall record and returns the created QueueCall.
 func (h *handler) QueuecallCreate(ctx context.Context, qc *queuecall.Queuecall) error {
-	now := h.utilHandler.TimeGetCurTime()
+	now := h.utilHandler.TimeNow()
 
 	// Set timestamps
 	qc.TMCreate = now
-	qc.TMService = DefaultTimeStamp
-	qc.TMUpdate = DefaultTimeStamp
-	qc.TMEnd = DefaultTimeStamp
-	qc.TMDelete = DefaultTimeStamp
+	qc.TMService = nil
+	qc.TMUpdate = nil
+	qc.TMEnd = nil
+	qc.TMDelete = nil
 
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(qc)
@@ -260,7 +261,7 @@ func (h *handler) QueuecallUpdate(ctx context.Context, id uuid.UUID, fields map[
 		return nil
 	}
 
-	fields[queuecall.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
+	fields[queuecall.FieldTMUpdate] = h.utilHandler.TimeNow()
 
 	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
@@ -287,7 +288,7 @@ func (h *handler) QueuecallUpdate(ctx context.Context, id uuid.UUID, fields map[
 
 // QueuecallDelete deletes the queuecall.
 func (h *handler) QueuecallDelete(ctx context.Context, id uuid.UUID) error {
-	ts := h.utilHandler.TimeGetCurTime()
+	ts := h.utilHandler.TimeNow()
 
 	fields := map[queuecall.Field]any{
 		queuecall.FieldTMUpdate: ts,
@@ -334,7 +335,7 @@ func (h *handler) QueuecallSetStatusConnecting(ctx context.Context, id uuid.UUID
 }
 
 // QueuecallSetStatusService sets the Queuecall's status to the service.
-func (h *handler) QueuecallSetStatusService(ctx context.Context, id uuid.UUID, durationWaiting int, ts string) error {
+func (h *handler) QueuecallSetStatusService(ctx context.Context, id uuid.UUID, durationWaiting int, ts *time.Time) error {
 	fields := map[queuecall.Field]any{
 		queuecall.FieldStatus:          queuecall.StatusService,
 		queuecall.FieldDurationWaiting: durationWaiting,
@@ -368,7 +369,7 @@ func (h *handler) QueuecallSetStatusService(ctx context.Context, id uuid.UUID, d
 }
 
 // QueuecallSetStatusAbandoned sets the Queuecall's status to the abandoned.
-func (h *handler) QueuecallSetStatusAbandoned(ctx context.Context, id uuid.UUID, durationWaiting int, ts string) error {
+func (h *handler) QueuecallSetStatusAbandoned(ctx context.Context, id uuid.UUID, durationWaiting int, ts *time.Time) error {
 	fields := map[queuecall.Field]any{
 		queuecall.FieldStatus:          queuecall.StatusAbandoned,
 		queuecall.FieldDurationWaiting: durationWaiting,
@@ -402,7 +403,7 @@ func (h *handler) QueuecallSetStatusAbandoned(ctx context.Context, id uuid.UUID,
 }
 
 // QueuecallSetStatusDone sets the Queuecall's status to the done.
-func (h *handler) QueuecallSetStatusDone(ctx context.Context, id uuid.UUID, durationService int, ts string) error {
+func (h *handler) QueuecallSetStatusDone(ctx context.Context, id uuid.UUID, durationService int, ts *time.Time) error {
 	fields := map[queuecall.Field]any{
 		queuecall.FieldStatus:          queuecall.StatusDone,
 		queuecall.FieldDurationService: durationService,

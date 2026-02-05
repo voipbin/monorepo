@@ -2,6 +2,7 @@ package campaigncall
 
 import (
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 )
@@ -31,9 +32,8 @@ func TestCampaigncallStruct(t *testing.T) {
 		Result:           ResultNone,
 		DestinationIndex: 0,
 		TryCount:         1,
-		TMCreate:         "2024-01-01T00:00:00.000000Z",
-		TMUpdate:         "2024-01-01T00:00:00.000000Z",
-		TMDelete:         "9999-01-01T00:00:00.000000Z",
+		TMCreate: ptrTime(time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)),
+		TMUpdate: ptrTime(time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)),
 	}
 	cc.ID = id
 
@@ -109,4 +109,8 @@ func TestResultConstants(t *testing.T) {
 			}
 		})
 	}
+}
+
+func ptrTime(t time.Time) *time.Time {
+	return &t
 }

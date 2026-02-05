@@ -41,12 +41,12 @@ func (h *handler) queueGetFromRow(row *sql.Rows) (*queue.Queue, error) {
 
 // QueueCreate creates new queue record and returns the created queue.
 func (h *handler) QueueCreate(ctx context.Context, q *queue.Queue) error {
-	now := h.utilHandler.TimeGetCurTime()
+	now := h.utilHandler.TimeNow()
 
 	// Set timestamps
 	q.TMCreate = now
-	q.TMUpdate = DefaultTimeStamp
-	q.TMDelete = DefaultTimeStamp
+	q.TMUpdate = nil
+	q.TMDelete = nil
 
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(q)
@@ -217,7 +217,7 @@ func (h *handler) QueueUpdate(ctx context.Context, id uuid.UUID, fields map[queu
 		return nil
 	}
 
-	fields[queue.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
+	fields[queue.FieldTMUpdate] = h.utilHandler.TimeNow()
 
 	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
@@ -244,7 +244,7 @@ func (h *handler) QueueUpdate(ctx context.Context, id uuid.UUID, fields map[queu
 
 // QueueDelete deletes the queue.
 func (h *handler) QueueDelete(ctx context.Context, id uuid.UUID) error {
-	ts := h.utilHandler.TimeGetCurTime()
+	ts := h.utilHandler.TimeNow()
 
 	fields := map[queue.Field]any{
 		queue.FieldTMUpdate: ts,
@@ -293,7 +293,7 @@ func (h *handler) QueueAddWaitQueueCallID(ctx context.Context, id, queueCallID u
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, queueCallID.String(), h.utilHandler.TimeGetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, queueCallID.String(), h.utilHandler.TimeNow(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. QueueAddWaitQueueCallID. err: %v", err)
 	}
@@ -332,7 +332,7 @@ func (h *handler) QueueIncreaseTotalServicedCount(ctx context.Context, id, queue
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, queueCallID.String(), queueCallID.String(), h.utilHandler.TimeGetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, queueCallID.String(), queueCallID.String(), h.utilHandler.TimeNow(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. QueueIncreaseTotalServicedCount. err: %v", err)
 	}
@@ -366,7 +366,7 @@ func (h *handler) QueueIncreaseTotalAbandonedCount(ctx context.Context, id, queu
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, queueCallID.String(), h.utilHandler.TimeGetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, queueCallID.String(), h.utilHandler.TimeNow(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. QueueIncreaseTotalAbandonedCount. err: %v", err)
 	}
@@ -399,7 +399,7 @@ func (h *handler) QueueRemoveServiceQueueCall(ctx context.Context, id, queueCall
 		and id = ?
 	`
 
-	_, err := h.db.Exec(q, queueCallID.String(), h.utilHandler.TimeGetCurTime(), queueCallID.String(), id.Bytes())
+	_, err := h.db.Exec(q, queueCallID.String(), h.utilHandler.TimeNow(), queueCallID.String(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. QueueRemoveServiceQueueCall. err: %v", err)
 	}
@@ -432,7 +432,7 @@ func (h *handler) QueueRemoveWaitQueueCall(ctx context.Context, id, queueCallID 
 		and id = ?
 	`
 
-	_, err := h.db.Exec(q, queueCallID.String(), h.utilHandler.TimeGetCurTime(), queueCallID.String(), id.Bytes())
+	_, err := h.db.Exec(q, queueCallID.String(), h.utilHandler.TimeNow(), queueCallID.String(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. QueueRemoveWaitQueueCall. err: %v", err)
 	}

@@ -1,6 +1,8 @@
 package recording
 
 import (
+	"time"
+
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
@@ -25,12 +27,12 @@ type Recording struct {
 	AsteriskID string   `json:"asterisk_id,omitempty" db:"asterisk_id"`
 	ChannelIDs []string `json:"channel_ids,omitempty" db:"channel_ids,json"` // snoop channel ids for recording
 
-	TMStart string `json:"tm_start,omitempty" db:"tm_start"`
-	TMEnd   string `json:"tm_end,omitempty" db:"tm_end"`
+	TMStart *time.Time `json:"tm_start,omitempty" db:"tm_start"`
+	TMEnd   *time.Time `json:"tm_end,omitempty" db:"tm_end"`
 
-	TMCreate string `json:"tm_create,omitempty" db:"tm_create"`
-	TMUpdate string `json:"tm_update,omitempty" db:"tm_update"`
-	TMDelete string `json:"tm_delete,omitempty" db:"tm_delete"`
+	TMCreate *time.Time `json:"tm_create,omitempty" db:"tm_create"`
+	TMUpdate *time.Time `json:"tm_update,omitempty" db:"tm_update"`
+	TMDelete *time.Time `json:"tm_delete,omitempty" db:"tm_delete"`
 }
 
 // ReferenceType type

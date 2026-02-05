@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 )
@@ -17,13 +18,13 @@ func TestMetadataStruct(t *testing.T) {
 				Emoji:     "👍",
 				OwnerType: "agent",
 				OwnerID:   ownerID,
-				TMCreate:  "2023-01-01T00:00:00Z",
+				TMCreate:  timePtr(time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)),
 			},
 			{
 				Emoji:     "❤️",
 				OwnerType: "user",
 				OwnerID:   uuid.Must(uuid.NewV4()),
-				TMCreate:  "2023-01-01T00:01:00Z",
+				TMCreate:  timePtr(time.Date(2023, 1, 1, 0, 1, 0, 0, time.UTC)),
 			},
 		},
 	}
@@ -49,7 +50,7 @@ func TestReactionStruct(t *testing.T) {
 		Emoji:     "🎉",
 		OwnerType: "agent",
 		OwnerID:   ownerID,
-		TMCreate:  "2023-01-01T00:00:00Z",
+		TMCreate:  timePtr(time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)),
 	}
 
 	if reaction.Emoji != "🎉" {
@@ -61,8 +62,9 @@ func TestReactionStruct(t *testing.T) {
 	if reaction.OwnerID != ownerID {
 		t.Errorf("Reaction.OwnerID = %v, expected %v", reaction.OwnerID, ownerID)
 	}
-	if reaction.TMCreate != "2023-01-01T00:00:00Z" {
-		t.Errorf("Reaction.TMCreate = %v, expected %v", reaction.TMCreate, "2023-01-01T00:00:00Z")
+	expectedTM := timePtr(time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC))
+	if reaction.TMCreate == nil || !reaction.TMCreate.Equal(*expectedTM) {
+		t.Errorf("Reaction.TMCreate = %v, expected %v", reaction.TMCreate, expectedTM)
 	}
 }
 
@@ -75,7 +77,7 @@ func TestMetadataMarshalUnmarshal(t *testing.T) {
 				Emoji:     "👍",
 				OwnerType: "agent",
 				OwnerID:   ownerID,
-				TMCreate:  "2023-01-01T00:00:00Z",
+				TMCreate:  timePtr(time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)),
 			},
 		},
 	}

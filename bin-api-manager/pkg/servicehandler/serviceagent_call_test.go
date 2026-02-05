@@ -134,7 +134,7 @@ func Test_ServiceAgentCallGet(t *testing.T) {
 				Owner: commonidentity.Owner{
 					OwnerID: uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
 				},
-				TMDelete: defaultTimestamp,
+				TMDelete: nil,
 			},
 			expectRes: &cmcall.WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -143,7 +143,7 @@ func Test_ServiceAgentCallGet(t *testing.T) {
 				Owner: commonidentity.Owner{
 					OwnerID: uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
 				},
-				TMDelete: defaultTimestamp,
+				TMDelete: nil,
 			},
 		},
 	}
@@ -208,7 +208,7 @@ func Test_ServiceAgentCallDelete(t *testing.T) {
 				Owner: commonidentity.Owner{
 					OwnerID: uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
 				},
-				TMDelete: defaultTimestamp,
+				TMDelete: nil,
 			},
 			expectRes: &cmcall.WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -217,7 +217,7 @@ func Test_ServiceAgentCallDelete(t *testing.T) {
 				Owner: commonidentity.Owner{
 					OwnerID: uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
 				},
-				TMDelete: defaultTimestamp,
+				TMDelete: nil,
 			},
 		},
 	}

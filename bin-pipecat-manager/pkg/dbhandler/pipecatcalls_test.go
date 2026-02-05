@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
+	"time"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
-	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-pipecat-manager/models/pipecatcall"
 
@@ -17,6 +17,10 @@ import (
 	"monorepo/bin-pipecat-manager/pkg/cachehandler"
 )
 
+func timePtr(t time.Time) *time.Time {
+	return &t
+}
+
 func Test_PipecatcallsCreate(t *testing.T) {
 
 	tests := []struct {
@@ -24,7 +28,7 @@ func Test_PipecatcallsCreate(t *testing.T) {
 
 		pipecatcall *pipecatcall.Pipecatcall
 
-		responseCurTime string
+		responseCurTime *time.Time
 
 		expectedRes *pipecatcall.Pipecatcall
 	}{
@@ -63,7 +67,7 @@ func Test_PipecatcallsCreate(t *testing.T) {
 				TTSVoiceID:  "test-voice-id",
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)),
 
 			expectedRes: &pipecatcall.Pipecatcall{
 				Identity: commonidentity.Identity{
@@ -95,9 +99,9 @@ func Test_PipecatcallsCreate(t *testing.T) {
 				TTSLanguage: "en-US",
 				TTSVoiceID:  "test-voice-id",
 
-				TMCreate: "2020-04-18T03:22:17.995000Z",
-				TMUpdate: commondatabasehandler.DefaultTimeStamp,
-				TMDelete: commondatabasehandler.DefaultTimeStamp,
+				TMCreate: timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)),
+				TMUpdate: nil,
+				TMDelete: nil,
 			},
 		},
 		{
@@ -109,15 +113,15 @@ func Test_PipecatcallsCreate(t *testing.T) {
 				},
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)),
 
 			expectedRes: &pipecatcall.Pipecatcall{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2386221a-88e6-11ea-adeb-5f7b70fc89ff"),
 				},
-				TMCreate: "2020-04-18T03:22:17.995000Z",
-				TMUpdate: commondatabasehandler.DefaultTimeStamp,
-				TMDelete: commondatabasehandler.DefaultTimeStamp,
+				TMCreate: timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)),
+				TMUpdate: nil,
+				TMDelete: nil,
 			},
 		},
 	}
@@ -137,7 +141,7 @@ func Test_PipecatcallsCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().PipecatcallSet(ctx, gomock.Any())
 			if err := h.PipecatcallCreate(ctx, tt.pipecatcall); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -166,7 +170,7 @@ func Test_PipecatcallUpdate(t *testing.T) {
 		id     uuid.UUID
 		fields map[pipecatcall.Field]any
 
-		responseCurTime string
+		responseCurTime *time.Time
 
 		expectedRes *pipecatcall.Pipecatcall
 	}{
@@ -190,7 +194,7 @@ func Test_PipecatcallUpdate(t *testing.T) {
 				},
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)),
 
 			expectedRes: &pipecatcall.Pipecatcall{
 				Identity: commonidentity.Identity{
@@ -205,9 +209,9 @@ func Test_PipecatcallUpdate(t *testing.T) {
 					},
 				},
 
-				TMCreate: "2020-04-18T03:22:17.995000Z",
-				TMUpdate: "2020-04-18T03:22:17.995000Z",
-				TMDelete: commondatabasehandler.DefaultTimeStamp,
+				TMCreate: timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)),
+				TMUpdate: timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)),
+				TMDelete: nil,
 			},
 		},
 	}
@@ -226,13 +230,13 @@ func Test_PipecatcallUpdate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().PipecatcallSet(ctx, gomock.Any())
 			if err := h.PipecatcallCreate(context.Background(), tt.flow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().PipecatcallSet(ctx, gomock.Any())
 			if err := h.PipecatcallUpdate(context.Background(), tt.id, tt.fields); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -258,7 +262,7 @@ func Test_FlowDelete(t *testing.T) {
 		name string
 		flow *pipecatcall.Pipecatcall
 
-		responseCurTime string
+		responseCurTime *time.Time
 
 		expectedRes *pipecatcall.Pipecatcall
 	}{
@@ -271,7 +275,7 @@ func Test_FlowDelete(t *testing.T) {
 				},
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)),
 
 			expectedRes: &pipecatcall.Pipecatcall{
 				Identity: commonidentity.Identity{
@@ -279,9 +283,9 @@ func Test_FlowDelete(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("4fd5c734-b492-11f0-8d98-7f3010848eb1"),
 				},
 
-				TMCreate: "2020-04-18T03:22:17.995000Z",
-				TMUpdate: "2020-04-18T03:22:17.995000Z",
-				TMDelete: "2020-04-18T03:22:17.995000Z",
+				TMCreate: timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)),
+				TMUpdate: timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)),
+				TMDelete: timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)),
 			},
 		},
 	}
@@ -301,13 +305,13 @@ func Test_FlowDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().PipecatcallSet(ctx, gomock.Any())
 			if err := h.PipecatcallCreate(ctx, tt.flow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().PipecatcallSet(ctx, gomock.Any())
 			if err := h.PipecatcallDelete(ctx, tt.flow.ID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

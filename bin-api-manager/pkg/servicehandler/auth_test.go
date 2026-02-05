@@ -44,7 +44,7 @@ func Test_AuthLogin(t *testing.T) {
 				},
 			},
 			responseCurTime: "2023-11-19 09:29:11.763331118",
-			expectedRes:     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZ2VudCI6eyJpZCI6IjZiYzM0MmQwLThhZWQtMTFlZS1hMDdkLTdiYzdmZWU1YTMzNiIsImN1c3RvbWVyX2lkIjoiNmMwZmYxOTgtOGFlZC0xMWVlLThhMDQtNDc0NTg0OTQ3ZTAzIiwidXNlcm5hbWUiOiIiLCJwYXNzd29yZF9oYXNoIjoiIiwibmFtZSI6IiIsImRldGFpbCI6IiIsInJpbmdfbWV0aG9kIjoiIiwic3RhdHVzIjoiIiwicGVybWlzc2lvbiI6MCwidGFnX2lkcyI6bnVsbCwiYWRkcmVzc2VzIjpudWxsLCJ0bV9jcmVhdGUiOiIiLCJ0bV91cGRhdGUiOiIiLCJ0bV9kZWxldGUiOiIifSwiZXhwaXJlIjoiMjAyMy0xMS0xOSAwOToyOToxMS43NjMzMzExMTgifQ.E7PxZxY2R1T-nm-Rs5m-rAiDPZPmr-ySeNLmIKfQP_Y",
+			expectedRes:     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZ2VudCI6eyJpZCI6IjZiYzM0MmQwLThhZWQtMTFlZS1hMDdkLTdiYzdmZWU1YTMzNiIsImN1c3RvbWVyX2lkIjoiNmMwZmYxOTgtOGFlZC0xMWVlLThhMDQtNDc0NTg0OTQ3ZTAzIiwidXNlcm5hbWUiOiIiLCJwYXNzd29yZF9oYXNoIjoiIiwibmFtZSI6IiIsImRldGFpbCI6IiIsInJpbmdfbWV0aG9kIjoiIiwic3RhdHVzIjoiIiwicGVybWlzc2lvbiI6MCwidGFnX2lkcyI6bnVsbCwiYWRkcmVzc2VzIjpudWxsfSwiZXhwaXJlIjoiMjAyMy0xMS0xOSAwOToyOToxMS43NjMzMzExMTgifQ.wfDWIwHRqZvu3JD0Cq-MbFzunJ41SFK3Qc21IQlma8c",
 		},
 	}
 
@@ -165,8 +165,8 @@ func Test_AuthAccesskeyParse(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("a68a0422-af3f-11ef-a15e-5f3bf088a0e3"),
 					Name:       "test key name",
 					Detail:     "test key detail",
-					TMExpire:   defaultTimestamp,
-					TMDelete:   defaultTimestamp,
+					TMExpire: nil,
+					TMDelete: nil,
 				},
 			},
 			responseCurTime: "2023-11-19 09:29:11.763331118",
@@ -202,7 +202,6 @@ func Test_AuthAccesskeyParse(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().CustomerV1AccesskeyList(ctx, "", gomock.Any(), gomock.Any()).Return(tt.responseAccesskeys, nil)
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 
 			res, err := h.AuthAccesskeyParse(ctx, tt.accesskey)
 			if err != nil {
@@ -237,8 +236,8 @@ func Test_AuthAccesskeyParse_error(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("a68a0422-af3f-11ef-a15e-5f3bf088a0e3"),
 					Name:       "test key name",
 					Detail:     "test key detail",
-					TMExpire:   "2023-11-19 09:29:11.763331117",
-					TMDelete:   defaultTimestamp,
+					TMExpire:   timePtr("2023-11-19 09:29:11.763331117"),
+					TMDelete: nil,
 				},
 			},
 			responseCurTime: "2023-11-19 09:29:11.763331118",
@@ -254,8 +253,8 @@ func Test_AuthAccesskeyParse_error(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("a68a0422-af3f-11ef-a15e-5f3bf088a0e3"),
 					Name:       "test key name",
 					Detail:     "test key detail",
-					TMExpire:   defaultTimestamp,
-					TMDelete:   "2023-11-19 09:29:11.763331117",
+					TMExpire: nil,
+					TMDelete:   timePtr("2023-11-19 09:29:11.763331117"),
 				},
 			},
 			responseCurTime: "2023-11-19 09:29:11.763331118",
@@ -279,7 +278,6 @@ func Test_AuthAccesskeyParse_error(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().CustomerV1AccesskeyList(ctx, "", gomock.Any(), gomock.Any()).Return(tt.responseAccesskeys, nil)
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
 
 			_, err := h.AuthAccesskeyParse(ctx, tt.accesskey)
 			if err == nil {

@@ -24,6 +24,8 @@ import (
 
 func Test_HealthCheck(t *testing.T) {
 
+	curTime := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC)
+
 	tests := []struct {
 		name string
 
@@ -31,7 +33,7 @@ func Test_HealthCheck(t *testing.T) {
 		retryCount int
 
 		responseConferencecall *conferencecall.Conferencecall
-		responseCurTimeAdd     string
+		responseCurTimeAdd     *time.Time
 		responseCall           *cmcall.Call
 		responseConference     *conference.Conference
 	}{
@@ -47,9 +49,9 @@ func Test_HealthCheck(t *testing.T) {
 				},
 				Status:      conferencecall.StatusJoined,
 				ReferenceID: uuid.FromStringOrNil("ae1a2bec-94d2-11ed-913d-73ee1991cfa1"),
-				TMCreate:    "2023-01-03T21:35:02.809Z",
+				TMCreate:    &curTime,
 			},
-			"2023-01-03T21:35:02.809Z",
+			&curTime,
 			&cmcall.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("ae1a2bec-94d2-11ed-913d-73ee1991cfa1"),
@@ -87,7 +89,7 @@ func Test_HealthCheck(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().ConferencecallGet(ctx, tt.id).Return(tt.responseConferencecall, nil)
-			mockUtil.EXPECT().TimeGetCurTimeAdd(-maxConferencecallDuration).Return(tt.responseCurTimeAdd)
+			mockUtil.EXPECT().TimeNowAdd(-maxConferencecallDuration).Return(tt.responseCurTimeAdd)
 			mockReq.EXPECT().CallV1CallGet(ctx, tt.responseConferencecall.ReferenceID).Return(tt.responseCall, nil)
 			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, tt.responseConferencecall.ConferenceID).Return(tt.responseConference, nil)
 
@@ -102,6 +104,9 @@ func Test_HealthCheck(t *testing.T) {
 
 func Test_HealthCheck_error(t *testing.T) {
 
+	curTime := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC)
+	curTimeEarlier := time.Date(2023, 1, 1, 21, 35, 2, 809000000, time.UTC)
+
 	tests := []struct {
 		name string
 
@@ -110,7 +115,7 @@ func Test_HealthCheck_error(t *testing.T) {
 
 		responseConferencecall      *conferencecall.Conferencecall
 		responseConferencecallError error
-		responseCurTimeAdd          string
+		responseCurTimeAdd          *time.Time
 		responseCall                *cmcall.Call
 		responseCallError           error
 		responseConference          *conference.Conference
@@ -130,9 +135,9 @@ func Test_HealthCheck_error(t *testing.T) {
 				},
 				Status:      conferencecall.StatusJoined,
 				ReferenceID: uuid.FromStringOrNil("8e75c934-94d4-11ed-9de9-7fce898af73a"),
-				TMCreate:    "2023-01-03T21:35:02.809Z",
+				TMCreate:    &curTime,
 			},
-			responseCurTimeAdd: "2023-01-03T21:35:02.809Z",
+			responseCurTimeAdd: &curTime,
 			responseCall: &cmcall.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("8e75c934-94d4-11ed-9de9-7fce898af73a"),
@@ -167,9 +172,9 @@ func Test_HealthCheck_error(t *testing.T) {
 					ID: uuid.FromStringOrNil("c01de0ec-94d5-11ed-b353-77ec1e03ac6a"),
 				},
 				Status:   conferencecall.StatusLeaved,
-				TMCreate: "2023-01-03T21:35:02.809Z",
+				TMCreate: &curTime,
 			},
-			responseCurTimeAdd: "2023-01-03T21:35:02.809Z",
+			responseCurTimeAdd: &curTime,
 		},
 		{
 			name: "call get failed",
@@ -183,9 +188,9 @@ func Test_HealthCheck_error(t *testing.T) {
 				},
 				Status:      conferencecall.StatusJoined,
 				ReferenceID: uuid.FromStringOrNil("c07ee874-94d5-11ed-8da1-6fef0f91be9b"),
-				TMCreate:    "2023-01-03T21:35:02.809Z",
+				TMCreate:    &curTime,
 			},
-			responseCurTimeAdd: "2023-01-03T21:35:02.809Z",
+			responseCurTimeAdd: &curTime,
 			responseCallError:  fmt.Errorf(""),
 
 			expectRetryCount: 1,
@@ -202,9 +207,9 @@ func Test_HealthCheck_error(t *testing.T) {
 				},
 				Status:      conferencecall.StatusJoined,
 				ReferenceID: uuid.FromStringOrNil("85a99b98-94d7-11ed-87b3-4f8bf6bfbd39"),
-				TMCreate:    "2023-01-03T21:35:02.809Z",
+				TMCreate:    &curTime,
 			},
-			responseCurTimeAdd: "2023-01-03T21:35:02.809Z",
+			responseCurTimeAdd: &curTime,
 			responseCall: &cmcall.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("85a99b98-94d7-11ed-87b3-4f8bf6bfbd39"),
@@ -227,9 +232,9 @@ func Test_HealthCheck_error(t *testing.T) {
 				Status:       conferencecall.StatusJoined,
 				ReferenceID:  uuid.FromStringOrNil("a5724d7c-94d6-11ed-bc34-5f290587207e"),
 				ConferenceID: uuid.FromStringOrNil("a599133a-94d6-11ed-9556-9fe210b5e9df"),
-				TMCreate:     "2023-01-03T21:35:02.809Z",
+				TMCreate:     &curTime,
 			},
-			responseCurTimeAdd: "2023-01-03T21:35:02.809Z",
+			responseCurTimeAdd: &curTime,
 			responseCall: &cmcall.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("a5724d7c-94d6-11ed-bc34-5f290587207e"),
@@ -252,9 +257,9 @@ func Test_HealthCheck_error(t *testing.T) {
 				Status:       conferencecall.StatusJoined,
 				ReferenceID:  uuid.FromStringOrNil("198fbabe-94d7-11ed-b69a-5336a8f18455"),
 				ConferenceID: uuid.FromStringOrNil("19bc2734-94d7-11ed-9373-37b511c36f27"),
-				TMCreate:     "2023-01-03T21:35:02.809Z",
+				TMCreate:     &curTime,
 			},
-			responseCurTimeAdd: "2023-01-03T21:35:02.809Z",
+			responseCurTimeAdd: &curTime,
 			responseCall: &cmcall.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("198fbabe-94d7-11ed-b69a-5336a8f18455"),
@@ -284,9 +289,9 @@ func Test_HealthCheck_error(t *testing.T) {
 				Status:       conferencecall.StatusJoined,
 				ReferenceID:  uuid.FromStringOrNil("3f3059d5-6a74-4e6b-a225-964ee1d315b8"),
 				ConferenceID: uuid.FromStringOrNil("bfb771f8-c594-45f2-bca7-7dd06e431031"),
-				TMCreate:     "2023-01-03T21:35:02.809Z",
+				TMCreate:     &curTime,
 			},
-			responseCurTimeAdd: "2023-01-01T21:35:02.809Z",
+			responseCurTimeAdd: &curTimeEarlier,
 			responseCall: &cmcall.Call{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("3f3059d5-6a74-4e6b-a225-964ee1d315b8"),
@@ -342,8 +347,8 @@ func Test_HealthCheck_error(t *testing.T) {
 				if tt.responseConferencecallError != nil {
 					mockReq.EXPECT().ConferenceV1ConferencecallHealthCheck(ctx, tt.id, tt.expectRetryCount, defaultHealthCheckDelay)
 				} else {
-					mockUtil.EXPECT().TimeGetCurTimeAdd(-maxConferencecallDuration).Return(tt.responseCurTimeAdd)
-					if tt.responseConferencecall.TMCreate < tt.responseCurTimeAdd {
+					mockUtil.EXPECT().TimeNowAdd(-maxConferencecallDuration).Return(tt.responseCurTimeAdd)
+					if tt.responseConferencecall.TMCreate != nil && tt.responseCurTimeAdd != nil && tt.responseConferencecall.TMCreate.Before(*tt.responseCurTimeAdd) {
 						mockReq.EXPECT().ConferenceV1ConferencecallHealthCheck(ctx, tt.id, tt.expectRetryCount, defaultHealthCheckDelay)
 					} else {
 						if tt.responseConferencecall.Status != conferencecall.StatusLeaved {

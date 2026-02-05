@@ -32,12 +32,12 @@ func (h *handler) conversationGetFromRow(row *sql.Rows) (*conversation.Conversat
 }
 
 func (h *handler) ConversationCreate(ctx context.Context, cv *conversation.Conversation) error {
-	now := h.utilHandler.TimeGetCurTime()
+	now := h.utilHandler.TimeNow()
 
 	// Set timestamps
 	cv.TMCreate = now
-	cv.TMUpdate = commondatabasehandler.DefaultTimeStamp
-	cv.TMDelete = commondatabasehandler.DefaultTimeStamp
+	cv.TMUpdate = nil
+	cv.TMDelete = nil
 
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(cv)
@@ -255,7 +255,7 @@ func (h *handler) ConversationUpdate(ctx context.Context, id uuid.UUID, fields m
 		return nil
 	}
 
-	fields[conversation.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
+	fields[conversation.FieldTMUpdate] = h.utilHandler.TimeNow()
 
 	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {

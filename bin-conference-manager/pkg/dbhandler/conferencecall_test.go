@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
+	"time"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -18,12 +19,14 @@ import (
 
 func Test_ConferencecallCreate(t *testing.T) {
 
+	curTime := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC)
+
 	tests := []struct {
 		name string
 
 		conferencecall *conferencecall.Conferencecall
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *conferencecall.Conferencecall
 	}{
 		{
@@ -44,7 +47,7 @@ func Test_ConferencecallCreate(t *testing.T) {
 				Status: conferencecall.StatusJoining,
 			},
 
-			responseCurTime: "2023-01-03T21:35:02.809Z",
+			responseCurTime: &curTime,
 			expectRes: &conferencecall.Conferencecall{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("aab1d10e-2bb2-41fe-b519-273af50e8774"),
@@ -59,9 +62,9 @@ func Test_ConferencecallCreate(t *testing.T) {
 
 				Status: conferencecall.StatusJoining,
 
-				TMCreate: "2023-01-03T21:35:02.809Z",
-				TMUpdate: DefaultTimeStamp,
-				TMDelete: DefaultTimeStamp,
+				TMCreate: &curTime,
+				TMUpdate: nil,
+				TMDelete: nil,
 			},
 		},
 	}
@@ -82,7 +85,7 @@ func Test_ConferencecallCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().ConferencecallSet(ctx, gomock.Any())
 			if err := h.ConferencecallCreate(ctx, tt.conferencecall); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -104,13 +107,15 @@ func Test_ConferencecallCreate(t *testing.T) {
 
 func Test_ConferencecallGetByReferenceID(t *testing.T) {
 
+	curTime := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC)
+
 	type test struct {
 		name           string
 		conferencecall *conferencecall.Conferencecall
 
 		referenceID uuid.UUID
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *conferencecall.Conferencecall
 	}
 
@@ -128,7 +133,7 @@ func Test_ConferencecallGetByReferenceID(t *testing.T) {
 
 			uuid.FromStringOrNil("371ebbd2-b52c-4e03-9444-0110f2b695cb"),
 
-			"2023-01-03T21:35:02.809Z",
+			&curTime,
 			&conferencecall.Conferencecall{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("1b4e752c-b766-4419-b778-73308e9607be"),
@@ -136,9 +141,9 @@ func Test_ConferencecallGetByReferenceID(t *testing.T) {
 				},
 				ReferenceType: conferencecall.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("371ebbd2-b52c-4e03-9444-0110f2b695cb"),
-				TMCreate:      "2023-01-03T21:35:02.809Z",
-				TMUpdate:      DefaultTimeStamp,
-				TMDelete:      DefaultTimeStamp,
+				TMCreate:      &curTime,
+				TMUpdate:      nil,
+				TMDelete:      nil,
 			},
 		},
 	}
@@ -159,7 +164,7 @@ func Test_ConferencecallGetByReferenceID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().ConferencecallSet(ctx, gomock.Any())
 			if err := h.ConferencecallCreate(ctx, tt.conferencecall); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -181,6 +186,8 @@ func Test_ConferencecallGetByReferenceID(t *testing.T) {
 
 func Test_ConferencecallList(t *testing.T) {
 
+	curTime := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC)
+
 	tests := []struct {
 		name            string
 		conferencecalls []*conferencecall.Conferencecall
@@ -188,7 +195,7 @@ func Test_ConferencecallList(t *testing.T) {
 		count   int
 		filters map[conferencecall.Field]any
 
-		responseCurTime string
+		responseCurTime *time.Time
 
 		expectRes []*conferencecall.Conferencecall
 	}{
@@ -215,25 +222,25 @@ func Test_ConferencecallList(t *testing.T) {
 				conferencecall.FieldDeleted:    false,
 			},
 
-			"2023-01-03T21:35:02.809Z",
+			&curTime,
 			[]*conferencecall.Conferencecall{
 				{
 					Identity: commonidentity.Identity{
 						ID:         uuid.FromStringOrNil("43b02684-94ce-11ed-95e6-3727def0e4fd"),
 						CustomerID: uuid.FromStringOrNil("8512e56c-cb08-46fa-96de-7855d0889577"),
 					},
-					TMCreate: "2023-01-03T21:35:02.809Z",
-					TMUpdate: DefaultTimeStamp,
-					TMDelete: DefaultTimeStamp,
+					TMCreate: &curTime,
+					TMUpdate: nil,
+					TMDelete: nil,
 				},
 				{
 					Identity: commonidentity.Identity{
 						ID:         uuid.FromStringOrNil("50be6c64-94ce-11ed-9def-dfcdc44a112d"),
 						CustomerID: uuid.FromStringOrNil("8512e56c-cb08-46fa-96de-7855d0889577"),
 					},
-					TMCreate: "2023-01-03T21:35:02.809Z",
-					TMUpdate: DefaultTimeStamp,
-					TMDelete: DefaultTimeStamp,
+					TMCreate: &curTime,
+					TMUpdate: nil,
+					TMDelete: nil,
 				},
 			},
 		},
@@ -247,7 +254,7 @@ func Test_ConferencecallList(t *testing.T) {
 				conferencecall.FieldDeleted:    false,
 			},
 
-			"2023-01-03T21:35:02.809Z",
+			&curTime,
 			[]*conferencecall.Conferencecall{},
 		},
 	}
@@ -267,7 +274,7 @@ func Test_ConferencecallList(t *testing.T) {
 			ctx := context.Background()
 
 			for _, cc := range tt.conferencecalls {
-				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 				mockCache.EXPECT().ConferencecallSet(ctx, gomock.Any())
 				if errCreate := h.ConferencecallCreate(ctx, cc); errCreate != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", errCreate)
@@ -288,13 +295,15 @@ func Test_ConferencecallList(t *testing.T) {
 
 func Test_ConferencecallDelete(t *testing.T) {
 
+	curTime := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC)
+
 	tests := []struct {
 		name           string
 		conferencecall *conferencecall.Conferencecall
 
 		id uuid.UUID
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *conferencecall.Conferencecall
 	}{
 		{
@@ -307,14 +316,14 @@ func Test_ConferencecallDelete(t *testing.T) {
 
 			uuid.FromStringOrNil("284a800e-94d0-11ed-89ad-c749aec641a6"),
 
-			"2023-01-03T21:35:02.809Z",
+			&curTime,
 			&conferencecall.Conferencecall{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("284a800e-94d0-11ed-89ad-c749aec641a6"),
 				},
-				TMCreate: "2023-01-03T21:35:02.809Z",
-				TMUpdate: "2023-01-03T21:35:02.809Z",
-				TMDelete: "2023-01-03T21:35:02.809Z",
+				TMCreate: &curTime,
+				TMUpdate: &curTime,
+				TMDelete: &curTime,
 			},
 		},
 	}
@@ -334,13 +343,13 @@ func Test_ConferencecallDelete(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().ConferencecallSet(ctx, gomock.Any())
 			if err := h.ConferencecallCreate(ctx, tt.conferencecall); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().ConferencecallSet(ctx, gomock.Any())
 			if errDel := h.ConferencecallDelete(ctx, tt.id); errDel != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errDel)

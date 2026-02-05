@@ -4,6 +4,7 @@ import (
 	"context"
 	reflect "reflect"
 	"testing"
+	"time"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -320,8 +321,8 @@ func Test_isDialableTarget(t *testing.T) {
 					Target: "+821100000001",
 				},
 				TryCount0: 0,
-				TMCreate:  "2022-04-18T03:00:17.995000Z",
-				TMUpdate:  "2022-04-18T03:22:17.995000Z",
+				TMCreate:  timePtr(time.Date(2022, 4, 18, 3, 0, 17, 995000000, time.UTC)),
+				TMUpdate:  timePtr(time.Date(2022, 4, 18, 3, 22, 17, 995000000, time.UTC)),
 			},
 			600000, // 10 min
 
@@ -337,8 +338,8 @@ func Test_isDialableTarget(t *testing.T) {
 					Target: "+821100000001",
 				},
 				TryCount0: 0,
-				TMCreate:  "2020-04-18T03:22:17.995000Z",
-				TMUpdate:  "2020-04-18T03:22:17.995000Z",
+				TMCreate:  timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)),
+				TMUpdate:  timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)),
 			},
 			315360000000, // 10 years
 
@@ -354,8 +355,8 @@ func Test_isDialableTarget(t *testing.T) {
 					Target: "+821100000001",
 				},
 				TryCount0: 0,
-				TMCreate:  "2022-04-18T03:00:17.995000Z",
-				TMUpdate:  "2022-04-18T03:22:17.995000Z",
+				TMCreate:  timePtr(time.Date(2022, 4, 18, 3, 0, 17, 995000000, time.UTC)),
+				TMUpdate:  timePtr(time.Date(2022, 4, 18, 3, 22, 17, 995000000, time.UTC)),
 			},
 			315360000000, // 10 years
 
@@ -597,4 +598,8 @@ func Test_isDialable(t *testing.T) {
 			}
 		})
 	}
+}
+
+func timePtr(t time.Time) *time.Time {
+	return &t
 }

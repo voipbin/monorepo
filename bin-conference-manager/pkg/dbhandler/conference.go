@@ -45,13 +45,13 @@ func (h *handler) conferenceGetFromRow(row *sql.Rows) (*conference.Conference, e
 
 // ConferenceCreate creates a new conference record.
 func (h *handler) ConferenceCreate(ctx context.Context, cf *conference.Conference) error {
-	now := h.utilHandler.TimeGetCurTime()
+	now := h.utilHandler.TimeNow()
 
 	// Set timestamps
-	cf.TMEnd = commondatabasehandler.DefaultTimeStamp
+	cf.TMEnd = nil
 	cf.TMCreate = now
-	cf.TMUpdate = commondatabasehandler.DefaultTimeStamp
-	cf.TMDelete = commondatabasehandler.DefaultTimeStamp
+	cf.TMUpdate = nil
+	cf.TMDelete = nil
 
 	// Initialize nil fields
 	if cf.Data == nil {
@@ -272,7 +272,7 @@ func (h *handler) ConferenceUpdate(ctx context.Context, id uuid.UUID, fields map
 		return nil
 	}
 
-	fields[conference.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
+	fields[conference.FieldTMUpdate] = h.utilHandler.TimeNow()
 
 	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
@@ -313,7 +313,7 @@ func (h *handler) ConferenceAddConferencecallID(ctx context.Context, id, confere
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, conferencecallID.String(), h.utilHandler.TimeGetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, conferencecallID.String(), h.utilHandler.TimeNow(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConferenceAddConferencecallID. err: %v", err)
 	}
@@ -345,7 +345,7 @@ func (h *handler) ConferenceRemoveConferencecallID(ctx context.Context, id, conf
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, conferencecallID.String(), h.utilHandler.TimeGetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, conferencecallID.String(), h.utilHandler.TimeNow(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConferenceRemoveConferencecallID. err: %v", err)
 	}
@@ -358,7 +358,7 @@ func (h *handler) ConferenceRemoveConferencecallID(ctx context.Context, id, conf
 
 // ConferenceDelete deletes the conference
 func (h *handler) ConferenceDelete(ctx context.Context, id uuid.UUID) error {
-	ts := h.utilHandler.TimeGetCurTime()
+	ts := h.utilHandler.TimeNow()
 
 	fields := map[conference.Field]any{
 		conference.FieldTMUpdate: ts,
@@ -392,7 +392,7 @@ func (h *handler) ConferenceDelete(ctx context.Context, id uuid.UUID) error {
 
 // ConferenceEnd ends the conference
 func (h *handler) ConferenceEnd(ctx context.Context, id uuid.UUID) error {
-	ts := h.utilHandler.TimeGetCurTime()
+	ts := h.utilHandler.TimeNow()
 
 	fields := map[conference.Field]any{
 		conference.FieldStatus:   conference.StatusTerminated,
@@ -418,7 +418,7 @@ func (h *handler) ConferenceAddRecordingIDs(ctx context.Context, id uuid.UUID, r
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, recordingID.String(), h.utilHandler.TimeGetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, recordingID.String(), h.utilHandler.TimeNow(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConferenceAddRecordingIDs. err: %v", err)
 	}
@@ -444,7 +444,7 @@ func (h *handler) ConferenceAddTranscribeIDs(ctx context.Context, id uuid.UUID, 
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, transcribeID.String(), h.utilHandler.TimeGetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, transcribeID.String(), h.utilHandler.TimeNow(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConferenceAddTranscribeIDs. err: %v", err)
 	}

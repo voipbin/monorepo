@@ -39,12 +39,12 @@ func (h *handler) trunkGetFromRow(row *sql.Rows) (*trunk.Trunk, error) {
 
 // TrunkCreate creates new Trunk record.
 func (h *handler) TrunkCreate(ctx context.Context, t *trunk.Trunk) error {
-	now := h.utilHandler.TimeGetCurTime()
+	now := h.utilHandler.TimeNow()
 
 	// Set timestamps
 	t.TMCreate = now
-	t.TMUpdate = DefaultTimeStamp
-	t.TMDelete = DefaultTimeStamp
+	t.TMUpdate = nil
+	t.TMDelete = nil
 
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(t)
@@ -176,7 +176,7 @@ func (h *handler) TrunkUpdate(ctx context.Context, id uuid.UUID, fields map[trun
 		return nil
 	}
 
-	fields[trunk.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
+	fields[trunk.FieldTMUpdate] = h.utilHandler.TimeNow()
 
 	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
@@ -226,7 +226,7 @@ func (h *handler) TrunkGetByDomainName(ctx context.Context, domainName string) (
 	res, err := h.trunkGetByDomainNameFromCache(ctx, domainName)
 	if err == nil {
 		// Check if cached trunk is deleted (soft delete check)
-		if res.TMDelete >= commondatabasehandler.DefaultTimeStamp {
+		if res.TMDelete == nil {
 			return res, nil
 		}
 		// Cached trunk is deleted, treat as not found
@@ -305,7 +305,7 @@ func (h *handler) TrunkList(ctx context.Context, size uint64, token string, filt
 
 // TrunkDelete deletes given Trunk
 func (h *handler) TrunkDelete(ctx context.Context, id uuid.UUID) error {
-	ts := h.utilHandler.TimeGetCurTime()
+	ts := h.utilHandler.TimeNow()
 
 	fields := map[trunk.Field]any{
 		trunk.FieldTMUpdate: ts,

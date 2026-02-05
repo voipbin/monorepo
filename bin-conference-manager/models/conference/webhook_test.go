@@ -2,8 +2,9 @@ package conference
 
 import (
 	"encoding/json"
-	reflect "reflect"
+	"reflect"
 	"testing"
+	"time"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
@@ -11,6 +12,12 @@ import (
 )
 
 func Test_Conference_CreateWebhookEvent(t *testing.T) {
+
+	tmEnd := time.Date(2025, 5, 1, 0, 0, 0, 0, time.UTC)
+	tmCreate := time.Date(2025, 4, 2, 0, 0, 0, 0, time.UTC)
+	tmUpdate := time.Date(2025, 4, 3, 0, 0, 0, 0, time.UTC)
+	tmDelete := time.Date(2025, 4, 4, 0, 0, 0, 0, time.UTC)
+
 	tests := []struct {
 		name       string
 		conference Conference
@@ -46,10 +53,10 @@ func Test_Conference_CreateWebhookEvent(t *testing.T) {
 				TranscribeIDs: []uuid.UUID{
 					uuid.FromStringOrNil("d0278cd8-1350-11ed-91f4-4f03d0c82169"),
 				},
-				TMEnd:    "2025-05-01T00:00:00.000Z",
-				TMCreate: "2025-04-02T00:00:00.000Z",
-				TMUpdate: "2025-04-03T00:00:00.000Z",
-				TMDelete: "2025-04-04T00:00:00.000Z",
+				TMEnd:    &tmEnd,
+				TMCreate: &tmCreate,
+				TMUpdate: &tmUpdate,
+				TMDelete: &tmDelete,
 			},
 			wantErr: false,
 		},
@@ -110,6 +117,12 @@ func Test_Conference_CreateWebhookEvent(t *testing.T) {
 }
 
 func Test_Webhook_MarshalUnmarshal(t *testing.T) {
+
+	tmEnd := time.Date(2025, 5, 1, 0, 0, 0, 0, time.UTC)
+	tmCreate := time.Date(2025, 4, 2, 0, 0, 0, 0, time.UTC)
+	tmUpdate := time.Date(2025, 4, 3, 0, 0, 0, 0, time.UTC)
+	tmDelete := time.Date(2025, 4, 4, 0, 0, 0, 0, time.UTC)
+
 	tests := []struct {
 		name    string
 		webhook WebhookMessage
@@ -144,10 +157,10 @@ func Test_Webhook_MarshalUnmarshal(t *testing.T) {
 				TranscribeIDs: []uuid.UUID{
 					uuid.FromStringOrNil("d0278cd8-1350-11ed-91f4-4f03d0c82169"),
 				},
-				TMEnd:    "2025-05-01T00:00:00.000Z",
-				TMCreate: "2025-04-02T00:00:00.000Z",
-				TMUpdate: "2025-04-03T00:00:00.000Z",
-				TMDelete: "2025-04-04T00:00:00.000Z",
+				TMEnd:    &tmEnd,
+				TMCreate: &tmCreate,
+				TMUpdate: &tmUpdate,
+				TMDelete: &tmDelete,
 			},
 		},
 	}

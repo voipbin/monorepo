@@ -12,7 +12,6 @@ import (
 	"monorepo/bin-flow-manager/models/action"
 	"monorepo/bin-flow-manager/models/activeflow"
 	"monorepo/bin-flow-manager/models/stack"
-	"monorepo/bin-flow-manager/pkg/dbhandler"
 )
 
 // Create creates a new activeflow
@@ -326,7 +325,7 @@ func (h *activeflowHandler) Delete(ctx context.Context, id uuid.UUID) (*activefl
 	}
 
 	// check the activeflow has been
-	if a.TMDelete != dbhandler.DefaultTimeStamp {
+	if a.TMDelete != nil {
 		// already deleted
 		return a, nil
 	}

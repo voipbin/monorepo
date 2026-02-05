@@ -7,8 +7,8 @@ import (
 	"github.com/sirupsen/logrus"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-outdial-manager/models/outdial"
-	"monorepo/bin-outdial-manager/pkg/dbhandler"
 )
 
 // Create creates a new outdial
@@ -39,9 +39,9 @@ func (h *outdialHandler) Create(
 
 		Data: data,
 
-		TMCreate: dbhandler.GetCurTime(),
-		TMUpdate: dbhandler.DefaultTimeStamp,
-		TMDelete: dbhandler.DefaultTimeStamp,
+		TMCreate: utilhandler.TimeNow(),
+		TMUpdate: nil,
+		TMDelete: nil,
 	}
 	log.WithField("outdial", t).Debug("Creating a new outdial.")
 

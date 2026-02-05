@@ -2,6 +2,7 @@ package customer
 
 import (
 	"encoding/json"
+	"time"
 
 	"github.com/gofrs/uuid"
 )
@@ -23,9 +24,9 @@ type WebhookMessage struct {
 
 	BillingAccountID uuid.UUID `json:"billing_account_id,omitempty"` // default billing account id
 
-	TMCreate string `json:"tm_create"` // Created timestamp.
-	TMUpdate string `json:"tm_update"` // Updated timestamp.
-	TMDelete string `json:"tm_delete"` // Deleted timestamp.
+	TMCreate *time.Time `json:"tm_create"` // Created timestamp.
+	TMUpdate *time.Time `json:"tm_update"` // Updated timestamp.
+	TMDelete *time.Time `json:"tm_delete"` // Deleted timestamp.
 }
 
 // ConvertWebhookMessage converts to the event

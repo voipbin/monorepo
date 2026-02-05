@@ -21,7 +21,7 @@ func (h *serviceHandler) accesskeyGet(ctx context.Context, a *amagent.Agent, acc
 		return nil, fmt.Errorf("not found")
 	}
 
-	if res.TMDelete < defaultTimestamp {
+	if res.TMDelete != nil {
 		return nil, fmt.Errorf("deleted item")
 	}
 

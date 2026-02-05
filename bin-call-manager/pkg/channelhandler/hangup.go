@@ -8,7 +8,6 @@ import (
 
 	"monorepo/bin-call-manager/models/ari"
 	"monorepo/bin-call-manager/models/channel"
-	"monorepo/bin-call-manager/pkg/dbhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 )
 
@@ -29,7 +28,7 @@ func (h *channelHandler) HangingUp(ctx context.Context, id string, cause ari.Cha
 		return nil, errors.Wrapf(err, "could not get channel info with id: %s", id)
 	}
 
-	if res.TMDelete < dbhandler.DefaultTimeStamp {
+	if res.TMDelete != nil {
 		// already hungup nothing to do
 		return res, nil
 	}
@@ -62,7 +61,7 @@ func (h *channelHandler) HangingUpWithDelay(ctx context.Context, id string, caus
 		return nil, errors.Wrapf(err, "could not get channel info with id: %s", id)
 	}
 
-	if res.TMDelete < dbhandler.DefaultTimeStamp {
+	if res.TMDelete != nil {
 		// already hungup nothing to do
 		return nil, fmt.Errorf("already hungup")
 	}

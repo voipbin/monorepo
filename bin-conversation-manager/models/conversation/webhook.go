@@ -2,6 +2,7 @@ package conversation
 
 import (
 	"encoding/json"
+	"time"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -25,9 +26,9 @@ type WebhookMessage struct {
 	Self commonaddress.Address `json:"self,omitempty"`
 	Peer commonaddress.Address `json:"peer,omitempty"`
 
-	TMCreate string `json:"tm_create,omitempty"`
-	TMUpdate string `json:"tm_update,omitempty"`
-	TMDelete string `json:"tm_delete,omitempty"`
+	TMCreate *time.Time `json:"tm_create"`
+	TMUpdate *time.Time `json:"tm_update"`
+	TMDelete *time.Time `json:"tm_delete"`
 }
 
 // ConvertWebhookMessage converts to the event

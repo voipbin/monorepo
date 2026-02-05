@@ -30,12 +30,12 @@ func (h *handler) fileGetFromRow(row *sql.Rows) (*file.File, error) {
 
 // FileCreate creates a new file row
 func (h *handler) FileCreate(ctx context.Context, f *file.File) error {
-	now := h.util.TimeGetCurTime()
+	now := h.util.TimeNow()
 
 	// Set timestamps
 	f.TMCreate = now
-	f.TMUpdate = commondatabasehandler.DefaultTimeStamp
-	f.TMDelete = commondatabasehandler.DefaultTimeStamp
+	f.TMUpdate = nil
+	f.TMDelete = nil
 
 	// Use PrepareFields to get field map
 	fields, err := commondatabasehandler.PrepareFields(f)
@@ -215,7 +215,7 @@ func (h *handler) FileUpdate(ctx context.Context, id uuid.UUID, fields map[file.
 		return nil
 	}
 
-	fields[file.FieldTMUpdate] = h.util.TimeGetCurTime()
+	fields[file.FieldTMUpdate] = h.util.TimeNow()
 
 	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
@@ -244,7 +244,7 @@ func (h *handler) FileUpdate(ctx context.Context, id uuid.UUID, fields map[file.
 
 // FileDelete deletes the given file
 func (h *handler) FileDelete(ctx context.Context, id uuid.UUID) error {
-	ts := h.util.TimeGetCurTime()
+	ts := h.util.TimeNow()
 
 	fields := map[file.Field]any{
 		file.FieldTMUpdate: ts,

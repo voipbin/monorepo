@@ -2,6 +2,8 @@ package aicall
 
 import (
 	"encoding/json"
+	"time"
+
 	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-common-handler/models/identity"
 
@@ -27,10 +29,10 @@ type WebhookMessage struct {
 	Gender   Gender `json:"gender,omitempty"`
 	Language string `json:"language,omitempty"`
 
-	TMEnd    string `json:"tm_end,omitempty"`
-	TMCreate string `json:"tm_create,omitempty"`
-	TMUpdate string `json:"tm_update,omitempty"`
-	TMDelete string `json:"tm_delete,omitempty"`
+	TMEnd    *time.Time `json:"tm_end"`
+	TMCreate *time.Time `json:"tm_create"`
+	TMUpdate *time.Time `json:"tm_update"`
+	TMDelete *time.Time `json:"tm_delete"`
 }
 
 // ConvertWebhookMessage converts to the event

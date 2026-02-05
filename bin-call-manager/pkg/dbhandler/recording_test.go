@@ -1,6 +1,8 @@
 package dbhandler
 
 import (
+	"time"
+	"monorepo/bin-call-manager/pkg/testhelper"
 	"context"
 	"fmt"
 	"reflect"
@@ -22,7 +24,7 @@ func Test_RecordingCreate(t *testing.T) {
 
 		recording *recording.Recording
 
-		responseCurTime string
+		responseCurTime *time.Time
 
 		expectedRes *recording.Recording
 	}
@@ -61,11 +63,11 @@ func Test_RecordingCreate(t *testing.T) {
 					"125a1ea4-8cb9-11ed-b34c-336ac5eeeec4",
 				},
 
-				TMStart: "2020-04-18T03:22:18.995000Z",
-				TMEnd:   "2020-04-18T03:22:19.995000Z",
+				TMStart: testhelper.TimePtr("2020-04-18T03:22:18.995000Z"),
+				TMEnd: testhelper.TimePtr("2020-04-18T03:22:19.995000Z"),
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
 
 			expectedRes: &recording.Recording{
 				Identity: commonidentity.Identity{
@@ -97,11 +99,11 @@ func Test_RecordingCreate(t *testing.T) {
 					"125a1ea4-8cb9-11ed-b34c-336ac5eeeec4",
 				},
 
-				TMStart:  "2020-04-18T03:22:18.995000Z",
-				TMEnd:    "2020-04-18T03:22:19.995000Z",
-				TMCreate: "2020-04-18T03:22:17.995000Z",
-				TMUpdate: DefaultTimeStamp,
-				TMDelete: DefaultTimeStamp,
+				TMStart: testhelper.TimePtr("2020-04-18T03:22:18.995000Z"),
+				TMEnd: testhelper.TimePtr("2020-04-18T03:22:19.995000Z"),
+				TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMUpdate: nil,
+				TMDelete: nil,
 			},
 		},
 	}
@@ -122,7 +124,7 @@ func Test_RecordingCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().RecordingSet(ctx, gomock.Any()).Return(nil)
 			if err := h.RecordingCreate(ctx, tt.recording); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -160,7 +162,7 @@ func Test_RecordingList(t *testing.T) {
 
 		filters map[recording.Field]any
 
-		responseCurTime string
+		responseCurTime *time.Time
 
 		expectedRes []*recording.Recording
 	}
@@ -187,7 +189,7 @@ func Test_RecordingList(t *testing.T) {
 				recording.FieldCustomerID: uuid.FromStringOrNil("f15430d8-7f43-11ec-b82c-b7ffeefaf0b9"),
 				recording.FieldDeleted:    false,
 			},
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
 
 			expectedRes: []*recording.Recording{
 				{
@@ -198,11 +200,11 @@ func Test_RecordingList(t *testing.T) {
 					Filenames:  []string{},
 					ChannelIDs: []string{},
 
-					TMStart:  "",
-					TMEnd:    "",
-					TMCreate: "2020-04-18T03:22:17.995000Z",
-					TMUpdate: DefaultTimeStamp,
-					TMDelete: DefaultTimeStamp,
+					TMStart:  nil,
+					TMEnd:    nil,
+					TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+					TMUpdate: nil,
+					TMDelete: nil,
 				},
 				{
 					Identity: commonidentity.Identity{
@@ -212,11 +214,11 @@ func Test_RecordingList(t *testing.T) {
 					Filenames:  []string{},
 					ChannelIDs: []string{},
 
-					TMStart:  "",
-					TMEnd:    "",
-					TMCreate: "2020-04-18T03:22:17.995000Z",
-					TMUpdate: DefaultTimeStamp,
-					TMDelete: DefaultTimeStamp,
+					TMStart:  nil,
+					TMEnd:    nil,
+					TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+					TMUpdate: nil,
+					TMDelete: nil,
 				},
 			},
 		},
@@ -228,7 +230,7 @@ func Test_RecordingList(t *testing.T) {
 			filters: map[recording.Field]any{
 				recording.FieldCustomerID: uuid.FromStringOrNil("08cb92b0-7f44-11ec-8753-6f51eae532cc"),
 			},
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
 
 			expectedRes: []*recording.Recording{},
 		},
@@ -249,7 +251,7 @@ func Test_RecordingList(t *testing.T) {
 			ctx := context.Background()
 
 			for _, recording := range tt.recordings {
-				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 				mockCache.EXPECT().RecordingSet(ctx, gomock.Any()).Return(nil)
 				_ = h.RecordingCreate(ctx, recording)
 			}
@@ -274,7 +276,7 @@ func Test_RecordingDelete(t *testing.T) {
 
 		id uuid.UUID
 
-		responseCurTime string
+		responseCurTime *time.Time
 
 		expectedRes *recording.Recording
 	}
@@ -289,7 +291,7 @@ func Test_RecordingDelete(t *testing.T) {
 			},
 
 			id:              uuid.FromStringOrNil("86d8f342-8eb5-11ed-b1b3-cf6176be331f"),
-			responseCurTime: "2020-04-18T03:22:18.995000Z",
+			responseCurTime: testhelper.TimePtr("2020-04-18T03:22:18.995000Z"),
 
 			expectedRes: &recording.Recording{
 				Identity: commonidentity.Identity{
@@ -299,9 +301,9 @@ func Test_RecordingDelete(t *testing.T) {
 				Filenames:  []string{},
 				ChannelIDs: []string{},
 
-				TMCreate: "2020-04-18T03:22:18.995000Z",
-				TMUpdate: "2020-04-18T03:22:18.995000Z",
-				TMDelete: "2020-04-18T03:22:18.995000Z",
+				TMCreate: testhelper.TimePtr("2020-04-18T03:22:18.995000Z"),
+				TMUpdate: testhelper.TimePtr("2020-04-18T03:22:18.995000Z"),
+				TMDelete: testhelper.TimePtr("2020-04-18T03:22:18.995000Z"),
 			},
 		},
 	}
@@ -320,13 +322,13 @@ func Test_RecordingDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().RecordingSet(ctx, gomock.Any())
 			if err := h.RecordingCreate(ctx, tt.recording); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().RecordingSet(ctx, gomock.Any())
 			if err := h.RecordingDelete(ctx, tt.id); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -171,9 +171,9 @@ func Test_AstBridgeGet(t *testing.T) {
 				ReferenceType: cmbridge.ReferenceTypeConfbridge,
 				ReferenceID:   uuid.FromStringOrNil("60d7ee79-78f5-4c86-9d34-4c699e8d5ee7"),
 
-				TMCreate: "",
-				TMUpdate: "",
-				TMDelete: "",
+				TMCreate: nil,
+				TMUpdate: nil,
+				TMDelete: nil,
 			},
 		},
 	}

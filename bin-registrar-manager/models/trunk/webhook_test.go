@@ -3,6 +3,7 @@ package trunk
 import (
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 
@@ -36,9 +37,9 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 				AllowedIPs: []string{
 					"1.2.3.4",
 				},
-				TMCreate: "2020-04-18T03:22:17.995000Z",
-				TMUpdate: "2020-04-18T03:22:18.995000Z",
-				TMDelete: "2020-04-18T03:22:19.995000Z",
+				TMCreate: func() *time.Time { t := time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
+				TMUpdate: func() *time.Time { t := time.Date(2020, 4, 18, 3, 22, 18, 995000000, time.UTC); return &t }(),
+				TMDelete: func() *time.Time { t := time.Date(2020, 4, 18, 3, 22, 19, 995000000, time.UTC); return &t }(),
 			},
 
 			expectRes: &WebhookMessage{
@@ -55,9 +56,9 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 				AllowedIPs: []string{
 					"1.2.3.4",
 				},
-				TMCreate: "2020-04-18T03:22:17.995000Z",
-				TMUpdate: "2020-04-18T03:22:18.995000Z",
-				TMDelete: "2020-04-18T03:22:19.995000Z",
+				TMCreate: func() *time.Time { t := time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
+				TMUpdate: func() *time.Time { t := time.Date(2020, 4, 18, 3, 22, 18, 995000000, time.UTC); return &t }(),
+				TMDelete: func() *time.Time { t := time.Date(2020, 4, 18, 3, 22, 19, 995000000, time.UTC); return &t }(),
 			},
 		},
 	}

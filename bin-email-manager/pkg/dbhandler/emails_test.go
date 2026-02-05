@@ -10,10 +10,15 @@ import (
 	"monorepo/bin-email-manager/pkg/cachehandler"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 )
+
+func timePtr(t time.Time) *time.Time {
+	return &t
+}
 
 func Test_EmailCreate(t *testing.T) {
 
@@ -21,7 +26,7 @@ func Test_EmailCreate(t *testing.T) {
 		name  string
 		email *email.Email
 
-		responseCurTime string
+		responseCurTime *time.Time
 
 		expectResCreate *email.Email
 	}{
@@ -60,7 +65,7 @@ func Test_EmailCreate(t *testing.T) {
 				},
 			},
 
-			responseCurTime: "2025-03-13T03:22:17.995000Z",
+			responseCurTime: timePtr(time.Date(2025, 3, 13, 3, 22, 17, 995000000, time.UTC)),
 
 			expectResCreate: &email.Email{
 				Identity: commonidentity.Identity{
@@ -94,9 +99,9 @@ func Test_EmailCreate(t *testing.T) {
 					},
 				},
 
-				TMCreate: "2025-03-13T03:22:17.995000Z",
-				TMUpdate: DefaultTimeStamp,
-				TMDelete: DefaultTimeStamp,
+				TMCreate: timePtr(time.Date(2025, 3, 13, 3, 22, 17, 995000000, time.UTC)),
+				TMUpdate: nil,
+				TMDelete: nil,
 			},
 		},
 	}
@@ -116,7 +121,7 @@ func Test_EmailCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().EmailSet(gomock.Any(), gomock.Any())
 			if errCreate := h.EmailCreate(ctx, tt.email); errCreate != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errCreate)
@@ -133,7 +138,7 @@ func Test_EmailCreate(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.email, resCreate)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().EmailSet(gomock.Any(), gomock.Any()).Return(nil)
 			if errUpdate := h.EmailUpdateStatus(ctx, tt.email.ID, email.StatusDelivered); errUpdate != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errUpdate)
@@ -154,7 +159,7 @@ func Test_EmailCreate(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.email, resUpdate)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().EmailSet(gomock.Any(), gomock.Any()).Return(nil)
 			if errUpdate := h.EmailDelete(ctx, tt.email.ID); errUpdate != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errUpdate)
@@ -215,7 +220,7 @@ func Test_EmailList(t *testing.T) {
 			size: 10,
 			filters: map[email.Field]any{
 				email.FieldCustomerID: uuid.FromStringOrNil("b7cff8ba-ffe7-11ef-ab26-737ee1b185a8"),
-				email.FieldTMDelete:   DefaultTimeStamp,
+				email.FieldDeleted:    false,
 			},
 
 			expectRes: []*email.Email{
@@ -227,8 +232,8 @@ func Test_EmailList(t *testing.T) {
 					Source:       &commonaddress.Address{},
 					Destinations: []commonaddress.Address{},
 					Attachments:  []email.Attachment{},
-					TMUpdate:     DefaultTimeStamp,
-					TMDelete:     DefaultTimeStamp,
+					TMUpdate:     nil,
+					TMDelete:     nil,
 				},
 				{
 					Identity: commonidentity.Identity{
@@ -238,8 +243,8 @@ func Test_EmailList(t *testing.T) {
 					Source:       &commonaddress.Address{},
 					Destinations: []commonaddress.Address{},
 					Attachments:  []email.Attachment{},
-					TMUpdate:     DefaultTimeStamp,
-					TMDelete:     DefaultTimeStamp,
+					TMUpdate:     nil,
+					TMDelete:     nil,
 				},
 			},
 		},
@@ -261,7 +266,7 @@ func Test_EmailList(t *testing.T) {
 			ctx := context.Background()
 
 			for _, e := range tt.emails {
-				mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime())
+				mockUtil.EXPECT().TimeNow().Return(utilhandler.TimeNow())
 				mockCache.EXPECT().EmailSet(ctx, gomock.Any())
 				if err := h.EmailCreate(ctx, &e); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -274,7 +279,7 @@ func Test_EmailList(t *testing.T) {
 			}
 
 			for _, f := range res {
-				f.TMCreate = ""
+				f.TMCreate = nil
 			}
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
@@ -293,7 +298,7 @@ func Test_EmailUpdateProviderReferenceID(t *testing.T) {
 		id                  uuid.UUID
 		providerReferenceID string
 
-		responseCurTime string
+		responseCurTime *time.Time
 
 		expectRes *email.Email
 	}{
@@ -308,7 +313,7 @@ func Test_EmailUpdateProviderReferenceID(t *testing.T) {
 			id:                  uuid.FromStringOrNil("83bf937c-0010-11f0-98ab-f7954e7eb6d8"),
 			providerReferenceID: "8409255a-0010-11f0-8fe6-c7156be65533",
 
-			responseCurTime: "2025-03-13T03:22:17.995000Z",
+			responseCurTime: timePtr(time.Date(2025, 3, 13, 3, 22, 17, 995000000, time.UTC)),
 
 			expectRes: &email.Email{
 				Identity: commonidentity.Identity{
@@ -319,9 +324,9 @@ func Test_EmailUpdateProviderReferenceID(t *testing.T) {
 				Destinations:        []commonaddress.Address{},
 				Attachments:         []email.Attachment{},
 
-				TMCreate: "2025-03-13T03:22:17.995000Z",
-				TMUpdate: "2025-03-13T03:22:17.995000Z",
-				TMDelete: DefaultTimeStamp,
+				TMCreate: timePtr(time.Date(2025, 3, 13, 3, 22, 17, 995000000, time.UTC)),
+				TMUpdate: timePtr(time.Date(2025, 3, 13, 3, 22, 17, 995000000, time.UTC)),
+				TMDelete: nil,
 			},
 		},
 	}
@@ -341,13 +346,13 @@ func Test_EmailUpdateProviderReferenceID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().EmailSet(ctx, gomock.Any())
 			if err := h.EmailCreate(ctx, tt.email); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().EmailSet(gomock.Any(), gomock.Any()).Return(nil)
 			if errUpdate := h.EmailUpdateProviderReferenceID(ctx, tt.id, tt.providerReferenceID); errUpdate != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errUpdate)

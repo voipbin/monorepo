@@ -28,7 +28,7 @@ func Test_CompressCreate(t *testing.T) {
 		responseFilesByReferenceIDs [][]*file.File
 		responseFilepath            string
 		responseDownloadURI         string
-		responseCurTimeAdd          string
+		responseCurTimeAdd          *time.Time
 
 		expectSourcefilePaths []string
 		expectFiles           []*file.File
@@ -66,7 +66,7 @@ func Test_CompressCreate(t *testing.T) {
 			},
 			responseFilepath:    "test/result/file/path/3bb54938-1d6b-11ef-996a-b79925fc2e03",
 			responseDownloadURI: "http://localhost/download/uri",
-			responseCurTimeAdd:  "2024-05-16T03:22:17.995000Z",
+			responseCurTimeAdd:  func() *time.Time { t := time.Date(2024, 5, 16, 3, 22, 17, 995000000, time.UTC); return &t }(),
 
 			expectSourcefilePaths: []string{
 				"test/file/path/4ada1a3e-1d6a-11ef-99c3-076e46349385",
@@ -92,7 +92,7 @@ func Test_CompressCreate(t *testing.T) {
 					uuid.FromStringOrNil("536b5c64-1d6d-11ef-bf65-1ffae2d556ab"),
 				},
 				DownloadURI:      "http://localhost/download/uri",
-				TMDownloadExpire: "2024-05-16T03:22:17.995000Z",
+				TMDownloadExpire: func() *time.Time { t := time.Date(2024, 5, 16, 3, 22, 17, 995000000, time.UTC); return &t }(),
 			},
 		},
 	}
@@ -125,7 +125,7 @@ func Test_CompressCreate(t *testing.T) {
 			// mockFile.EXPECT().CompressCreateRaw(ctx, h.bucketNameMedia, tt.expectSourcefilePaths).Return(h.bucketNameMedia, tt.responseFilepath, nil)
 			mockFile.EXPECT().CompressCreate(ctx, tt.expectFiles).Return(h.bucketNameMedia, tt.responseFilepath, nil)
 			mockFile.EXPECT().DownloadURIGet(ctx, h.bucketNameMedia, tt.responseFilepath, time.Hour*24).Return("", tt.responseDownloadURI, nil)
-			mockUtil.EXPECT().TimeGetCurTimeAdd(24 * time.Hour).Return(tt.responseCurTimeAdd)
+			mockUtil.EXPECT().TimeNowAdd(24 * time.Hour).Return(tt.responseCurTimeAdd)
 
 			res, err := h.CompressfileCreate(ctx, tt.referenceIDs, tt.fileIDs)
 			if err != nil {

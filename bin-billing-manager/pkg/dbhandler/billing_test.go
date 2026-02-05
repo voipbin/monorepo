@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
+	"time"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -23,9 +24,14 @@ func Test_BillingCreate(t *testing.T) {
 
 		billing *billing.Billing
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *billing.Billing
 	}
+
+	tmBillingStart := time.Date(2020, 4, 18, 3, 22, 18, 995000000, time.UTC)
+	tmBillingEnd := time.Date(2020, 4, 18, 3, 22, 19, 995000000, time.UTC)
+	tmCreate := time.Date(2023, 6, 7, 3, 22, 17, 995000000, time.UTC)
+	tmCreate2 := time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)
 
 	tests := []test{
 		{
@@ -43,11 +49,11 @@ func Test_BillingCreate(t *testing.T) {
 				CostPerUnit:      2.02,
 				CostTotal:        0,
 				BillingUnitCount: 30.12,
-				TMBillingStart:   "2020-04-18T03:22:18.995000Z",
-				TMBillingEnd:     "2020-04-18T03:22:19.995000Z",
+				TMBillingStart:   &tmBillingStart,
+				TMBillingEnd:     &tmBillingEnd,
 			},
 
-			responseCurTime: "2023-06-07T03:22:17.995000Z",
+			responseCurTime: &tmCreate,
 			expectRes: &billing.Billing{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("012b0808-07ae-11ee-956e-a31693cf908b"),
@@ -60,11 +66,11 @@ func Test_BillingCreate(t *testing.T) {
 				CostPerUnit:      2.02,
 				CostTotal:        0,
 				BillingUnitCount: 30.12,
-				TMBillingStart:   "2020-04-18T03:22:18.995000Z",
-				TMBillingEnd:     "2020-04-18T03:22:19.995000Z",
-				TMCreate:         "2023-06-07T03:22:17.995000Z",
-				TMUpdate:         DefaultTimeStamp,
-				TMDelete:         DefaultTimeStamp,
+				TMBillingStart:   &tmBillingStart,
+				TMBillingEnd:     &tmBillingEnd,
+				TMCreate:         &tmCreate,
+				TMUpdate:         nil,
+				TMDelete:         nil,
 			},
 		},
 		{
@@ -76,14 +82,14 @@ func Test_BillingCreate(t *testing.T) {
 				},
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: &tmCreate2,
 			expectRes: &billing.Billing{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("a94849ce-07ae-11ee-a930-9b5e28e2ead9"),
 				},
-				TMCreate: "2020-04-18T03:22:17.995000Z",
-				TMUpdate: DefaultTimeStamp,
-				TMDelete: DefaultTimeStamp,
+				TMCreate: &tmCreate2,
+				TMUpdate: nil,
+				TMDelete: nil,
 			},
 		},
 	}
@@ -103,7 +109,7 @@ func Test_BillingCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().BillingSet(ctx, gomock.Any())
 			if err := h.BillingCreate(ctx, tt.billing); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -142,9 +148,11 @@ func Test_BillingList(t *testing.T) {
 
 		filters map[billing.Field]any
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       []*billing.Billing
 	}
+
+	tmCreate := time.Date(2023, 6, 8, 3, 22, 17, 995000000, time.UTC)
 
 	tests := []test{
 		{
@@ -168,25 +176,25 @@ func Test_BillingList(t *testing.T) {
 				billing.FieldCustomerID: uuid.FromStringOrNil("a9db1420-07ae-11ee-ab10-1ffa68fea7d8"),
 			},
 
-			responseCurTime: "2023-06-08T03:22:17.995000Z",
+			responseCurTime: &tmCreate,
 			expectRes: []*billing.Billing{
 				{
 					Identity: commonidentity.Identity{
 						ID:         uuid.FromStringOrNil("a97bade6-07ae-11ee-8916-4f8af853ac9b"),
 						CustomerID: uuid.FromStringOrNil("a9db1420-07ae-11ee-ab10-1ffa68fea7d8"),
 					},
-					TMCreate: "2023-06-08T03:22:17.995000Z",
-					TMUpdate: DefaultTimeStamp,
-					TMDelete: DefaultTimeStamp,
+					TMCreate: &tmCreate,
+					TMUpdate: nil,
+					TMDelete: nil,
 				},
 				{
 					Identity: commonidentity.Identity{
 						ID:         uuid.FromStringOrNil("a9ab7120-07ae-11ee-9a8d-6f3e025fae7a"),
 						CustomerID: uuid.FromStringOrNil("a9db1420-07ae-11ee-ab10-1ffa68fea7d8"),
 					},
-					TMCreate: "2023-06-08T03:22:17.995000Z",
-					TMUpdate: DefaultTimeStamp,
-					TMDelete: DefaultTimeStamp,
+					TMCreate: &tmCreate,
+					TMUpdate: nil,
+					TMDelete: nil,
 				},
 			},
 		},
@@ -209,7 +217,7 @@ func Test_BillingList(t *testing.T) {
 			ctx := context.Background()
 
 			for _, c := range tt.billings {
-				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 				mockCache.EXPECT().BillingSet(ctx, gomock.Any())
 				if err := h.BillingCreate(ctx, c); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -236,11 +244,14 @@ func Test_BillingSetStatusEnd(t *testing.T) {
 
 		id              uuid.UUID
 		billingDuration float32
-		timestamp       string
+		timestamp       *time.Time
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *billing.Billing
 	}
+
+	tmBillingEnd := time.Date(2023, 6, 8, 3, 22, 15, 995000000, time.UTC)
+	tmCreate := time.Date(2023, 6, 8, 3, 22, 17, 995000000, time.UTC)
 
 	tests := []test{
 		{
@@ -252,14 +263,14 @@ func Test_BillingSetStatusEnd(t *testing.T) {
 				Status:       billing.StatusProgressing,
 				CostPerUnit:  10.12,
 				CostTotal:    0,
-				TMBillingEnd: "",
+				TMBillingEnd: nil,
 			},
 
 			id:              uuid.FromStringOrNil("1441f0ac-07b1-11ee-a5d8-cb0119ac5064"),
 			billingDuration: 10.12,
-			timestamp:       "2023-06-08T03:22:15.995000Z",
+			timestamp:       &tmBillingEnd,
 
-			responseCurTime: "2023-06-08T03:22:17.995000Z",
+			responseCurTime: &tmCreate,
 			expectRes: &billing.Billing{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("1441f0ac-07b1-11ee-a5d8-cb0119ac5064"),
@@ -268,11 +279,11 @@ func Test_BillingSetStatusEnd(t *testing.T) {
 				CostPerUnit:      10.12,
 				CostTotal:        102.4144,
 				BillingUnitCount: 10.12,
-				TMBillingEnd:     "2023-06-08T03:22:15.995000Z",
+				TMBillingEnd:     &tmBillingEnd,
 
-				TMCreate: "2023-06-08T03:22:17.995000Z",
-				TMUpdate: "2023-06-08T03:22:17.995000Z",
-				TMDelete: DefaultTimeStamp,
+				TMCreate: &tmCreate,
+				TMUpdate: &tmCreate,
+				TMDelete: nil,
 			},
 		},
 	}
@@ -293,13 +304,13 @@ func Test_BillingSetStatusEnd(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().BillingSet(ctx, gomock.Any())
 			if err := h.BillingCreate(ctx, tt.billing); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().BillingSet(ctx, gomock.Any())
 			if err := h.BillingSetStatusEnd(ctx, tt.id, tt.billingDuration, tt.timestamp); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -328,9 +339,11 @@ func Test_BillingSetStatus(t *testing.T) {
 		id     uuid.UUID
 		status billing.Status
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *billing.Billing
 	}
+
+	tmCreate := time.Date(2023, 6, 8, 3, 22, 17, 995000000, time.UTC)
 
 	tests := []test{
 		{
@@ -345,16 +358,16 @@ func Test_BillingSetStatus(t *testing.T) {
 			id:     uuid.FromStringOrNil("1d30c8de-07b4-11ee-b80c-c7c0f2007941"),
 			status: billing.StatusFinished,
 
-			responseCurTime: "2023-06-08T03:22:17.995000Z",
+			responseCurTime: &tmCreate,
 			expectRes: &billing.Billing{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("1d30c8de-07b4-11ee-b80c-c7c0f2007941"),
 				},
 				Status: billing.StatusFinished,
 
-				TMCreate: "2023-06-08T03:22:17.995000Z",
-				TMUpdate: "2023-06-08T03:22:17.995000Z",
-				TMDelete: DefaultTimeStamp,
+				TMCreate: &tmCreate,
+				TMUpdate: &tmCreate,
+				TMDelete: nil,
 			},
 		},
 	}
@@ -375,13 +388,13 @@ func Test_BillingSetStatus(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().BillingSet(ctx, gomock.Any())
 			if err := h.BillingCreate(ctx, tt.billing); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().BillingSet(ctx, gomock.Any())
 			if err := h.BillingSetStatus(ctx, tt.id, tt.status); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -409,9 +422,11 @@ func Test_BillingDelete(t *testing.T) {
 
 		id uuid.UUID
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *billing.Billing
 	}
+
+	tmCreate := time.Date(2023, 6, 8, 3, 22, 17, 995000000, time.UTC)
 
 	tests := []test{
 		{
@@ -424,15 +439,15 @@ func Test_BillingDelete(t *testing.T) {
 
 			id: uuid.FromStringOrNil("699bdc72-07b4-11ee-83bc-db5341c91127"),
 
-			responseCurTime: "2023-06-08T03:22:17.995000Z",
+			responseCurTime: &tmCreate,
 			expectRes: &billing.Billing{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("699bdc72-07b4-11ee-83bc-db5341c91127"),
 				},
 
-				TMCreate: "2023-06-08T03:22:17.995000Z",
-				TMUpdate: "2023-06-08T03:22:17.995000Z",
-				TMDelete: "2023-06-08T03:22:17.995000Z",
+				TMCreate: &tmCreate,
+				TMUpdate: &tmCreate,
+				TMDelete: &tmCreate,
 			},
 		},
 	}
@@ -453,13 +468,13 @@ func Test_BillingDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().BillingSet(ctx, gomock.Any())
 			if err := h.BillingCreate(ctx, tt.billing); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().BillingSet(ctx, gomock.Any())
 			if err := h.BillingDelete(ctx, tt.id); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

@@ -1,6 +1,8 @@
 package groupcall
 
 import (
+	"time"
+
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
@@ -35,9 +37,9 @@ type Groupcall struct {
 	DialIndex      int `json:"dial_index,omitempty" db:"dial_index"`           // represent current dial index. valid only ringmethod is ringall
 
 	// timestamp
-	TMCreate string `json:"tm_create,omitempty" db:"tm_create"`
-	TMUpdate string `json:"tm_update,omitempty" db:"tm_update"`
-	TMDelete string `json:"tm_delete,omitempty" db:"tm_delete"`
+	TMCreate *time.Time `json:"tm_create,omitempty" db:"tm_create"`
+	TMUpdate *time.Time `json:"tm_update,omitempty" db:"tm_update"`
+	TMDelete *time.Time `json:"tm_delete,omitempty" db:"tm_delete"`
 }
 
 // Status define

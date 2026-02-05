@@ -56,7 +56,7 @@ func Test_PostBillingAccounts(t *testing.T) {
 			expectedDetail:        "test detail",
 			expectedPaymentType:   bmaccount.PaymentTypePrepaid,
 			expectedPaymentMethod: bmaccount.PaymentMethodCreditCard,
-			expectRes:             `{"id":"fa87d0ce-11e6-11ee-9d0a-ef3f8b33f9d9","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","balance":0,"payment_type":"","payment_method":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes:             `{"id":"fa87d0ce-11e6-11ee-9d0a-ef3f8b33f9d9","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","balance":0,"payment_type":"","payment_method":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -128,12 +128,12 @@ func Test_GetBillingAccounts(t *testing.T) {
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("30984a42-11ea-11ee-b5d2-93d4f8db3dca"),
 					},
-					TMCreate: "2020-09-20T03:23:21.995000Z",
+					TMCreate: timePtr("2020-09-20T03:23:21.995000Z"),
 				},
 			},
 			expectPageSize:  10,
 			expectPageToken: "2020-09-20T03:23:20.995000Z",
-			expectRes:       `{"result":[{"id":"30984a42-11ea-11ee-b5d2-93d4f8db3dca","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","balance":0,"payment_type":"","payment_method":"","tm_create":"2020-09-20T03:23:21.995000Z","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:21.995000Z"}`,
+			expectRes:       `{"result":[{"id":"30984a42-11ea-11ee-b5d2-93d4f8db3dca","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","balance":0,"payment_type":"","payment_method":"","tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null}],"next_page_token":"2020-09-20T03:23:21.995000Z"}`,
 		},
 		{
 			name: "more than 2 items",
@@ -150,25 +150,25 @@ func Test_GetBillingAccounts(t *testing.T) {
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("30caab9a-11ea-11ee-8f18-5735018f9df2"),
 					},
-					TMCreate: "2020-09-20T03:23:21.995000Z",
+					TMCreate: timePtr("2020-09-20T03:23:21.995000Z"),
 				},
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("30f86f76-11ea-11ee-ae51-ef177df11436"),
 					},
-					TMCreate: "2020-09-20T03:23:22.995000Z",
+					TMCreate: timePtr("2020-09-20T03:23:22.995000Z"),
 				},
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("312228ca-11ea-11ee-9004-eb6099103496"),
 					},
-					TMCreate: "2020-09-20T03:23:23.995000Z",
+					TMCreate: timePtr("2020-09-20T03:23:23.995000Z"),
 				},
 			},
 
 			expectPageSize:  10,
 			expectPageToken: "2020-09-20T03:23:20.995000Z",
-			expectRes:       `{"result":[{"id":"30caab9a-11ea-11ee-8f18-5735018f9df2","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","balance":0,"payment_type":"","payment_method":"","tm_create":"2020-09-20T03:23:21.995000Z","tm_update":"","tm_delete":""},{"id":"30f86f76-11ea-11ee-ae51-ef177df11436","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","balance":0,"payment_type":"","payment_method":"","tm_create":"2020-09-20T03:23:22.995000Z","tm_update":"","tm_delete":""},{"id":"312228ca-11ea-11ee-9004-eb6099103496","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","balance":0,"payment_type":"","payment_method":"","tm_create":"2020-09-20T03:23:23.995000Z","tm_update":"","tm_delete":""}],"next_page_token":"2020-09-20T03:23:23.995000Z"}`,
+			expectRes:       `{"result":[{"id":"30caab9a-11ea-11ee-8f18-5735018f9df2","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","balance":0,"payment_type":"","payment_method":"","tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null},{"id":"30f86f76-11ea-11ee-ae51-ef177df11436","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","balance":0,"payment_type":"","payment_method":"","tm_create":"2020-09-20T03:23:22.995Z","tm_update":null,"tm_delete":null},{"id":"312228ca-11ea-11ee-9004-eb6099103496","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","balance":0,"payment_type":"","payment_method":"","tm_create":"2020-09-20T03:23:23.995Z","tm_update":null,"tm_delete":null}],"next_page_token":"2020-09-20T03:23:23.995000Z"}`,
 		},
 	}
 
@@ -237,7 +237,7 @@ func Test_DeleteBillingAccountsId(t *testing.T) {
 				},
 			},
 			expectBillingAccountID: uuid.FromStringOrNil("9738a486-11ea-11ee-b56b-db24f5d2c81a"),
-			expectRes:              `{"id":"9738a486-11ea-11ee-b56b-db24f5d2c81a","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","balance":0,"payment_type":"","payment_method":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes:              `{"id":"9738a486-11ea-11ee-b56b-db24f5d2c81a","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","balance":0,"payment_type":"","payment_method":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -305,7 +305,7 @@ func Test_GetBillingAccountsId(t *testing.T) {
 					ID: uuid.FromStringOrNil("602eb6b4-11eb-11ee-b79f-03124621dcc4"),
 				},
 			},
-			expectRes: `{"id":"602eb6b4-11eb-11ee-b79f-03124621dcc4","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","balance":0,"payment_type":"","payment_method":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes: `{"id":"602eb6b4-11eb-11ee-b79f-03124621dcc4","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","balance":0,"payment_type":"","payment_method":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -381,7 +381,7 @@ func Test_PutBillingAccountsId(t *testing.T) {
 			expectBillingAccountID: uuid.FromStringOrNil("8d1d01bc-4cdd-11ee-a22f-03714037d3db"),
 			expectName:             "update name",
 			expectDetail:           "update detail",
-			expectRes:              `{"id":"8d1d01bc-4cdd-11ee-a22f-03714037d3db","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","balance":0,"payment_type":"","payment_method":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes:              `{"id":"8d1d01bc-4cdd-11ee-a22f-03714037d3db","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","balance":0,"payment_type":"","payment_method":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -460,7 +460,7 @@ func Test_PutBillingAccountsIdPaymentInfo(t *testing.T) {
 			expectBillingAccountID: uuid.FromStringOrNil("64461024-4cdf-11ee-be1f-e7111eb57d28"),
 			expectPaymentType:      bmaccount.PaymentTypePrepaid,
 			expectPaymentMethod:    bmaccount.PaymentMethodCreditCard,
-			expectRes:              `{"id":"64461024-4cdf-11ee-be1f-e7111eb57d28","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","balance":0,"payment_type":"","payment_method":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes:              `{"id":"64461024-4cdf-11ee-be1f-e7111eb57d28","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","balance":0,"payment_type":"","payment_method":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -537,7 +537,7 @@ func Test_PostBillingAccountsIdBalanceAddForce(t *testing.T) {
 
 			expectBillingAccountID: uuid.FromStringOrNil("605eae78-11eb-11ee-b8d3-6fd8da9d9879"),
 			expectBalance:          20.9,
-			expectRes:              `{"id":"605eae78-11eb-11ee-b8d3-6fd8da9d9879","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","balance":0,"payment_type":"","payment_method":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes:              `{"id":"605eae78-11eb-11ee-b8d3-6fd8da9d9879","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","balance":0,"payment_type":"","payment_method":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -611,7 +611,7 @@ func Test_PostBillingAccountsIdBalanceSubtractForce(t *testing.T) {
 
 			expectBillingAccountID: uuid.FromStringOrNil("e4e38ff6-11eb-11ee-879b-cb22a78168e4"),
 			expectBalance:          20.9,
-			expectRes:              `{"id":"e4e38ff6-11eb-11ee-879b-cb22a78168e4","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","balance":0,"payment_type":"","payment_method":"","tm_create":"","tm_update":"","tm_delete":""}`,
+			expectRes:              `{"id":"e4e38ff6-11eb-11ee-879b-cb22a78168e4","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","balance":0,"payment_type":"","payment_method":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 

@@ -80,7 +80,7 @@ func (h *handler) outdialTargetGetFromRowForAvailable(row *sql.Rows) (*outdialta
 	var name, detail, data, status sql.NullString
 	var destination0, destination1, destination2, destination3, destination4 sql.NullString
 	var tryCount0, tryCount1, tryCount2, tryCount3, tryCount4 sql.NullInt64
-	var tmCreate, tmUpdate, tmDelete sql.NullString
+	var tmCreate, tmUpdate, tmDelete sql.NullTime
 
 	if err := row.Scan(
 		&id,
@@ -146,13 +146,13 @@ func (h *handler) outdialTargetGetFromRowForAvailable(row *sql.Rows) (*outdialta
 		res.TryCount4 = int(tryCount4.Int64)
 	}
 	if tmCreate.Valid {
-		res.TMCreate = tmCreate.String
+		res.TMCreate = &tmCreate.Time
 	}
 	if tmUpdate.Valid {
-		res.TMUpdate = tmUpdate.String
+		res.TMUpdate = &tmUpdate.Time
 	}
 	if tmDelete.Valid {
-		res.TMDelete = tmDelete.String
+		res.TMDelete = &tmDelete.Time
 	}
 
 	// Parse destinations (JSON fields)
@@ -357,7 +357,7 @@ func (h *handler) OutdialTargetUpdate(ctx context.Context, id uuid.UUID, fields 
 		return nil
 	}
 
-	fields[outdialtarget.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
+	fields[outdialtarget.FieldTMUpdate] = h.utilHandler.TimeNow()
 
 	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
@@ -384,7 +384,7 @@ func (h *handler) OutdialTargetUpdate(ctx context.Context, id uuid.UUID, fields 
 
 // OutdialTargetDelete deletes the outdialtarget.
 func (h *handler) OutdialTargetDelete(ctx context.Context, id uuid.UUID) error {
-	ts := h.utilHandler.TimeGetCurTime()
+	ts := h.utilHandler.TimeNow()
 
 	fields := map[outdialtarget.Field]any{
 		outdialtarget.FieldTMUpdate: ts,
@@ -426,7 +426,7 @@ func (h *handler) OutdialTargetUpdateProgressing(ctx context.Context, id uuid.UU
 		id = ?
 	`, destinationIndex, destinationIndex)
 
-	if _, err := h.db.Exec(q, outdialtarget.StatusProgressing, h.utilHandler.TimeGetCurTime(), id.Bytes()); err != nil {
+	if _, err := h.db.Exec(q, outdialtarget.StatusProgressing, h.utilHandler.TimeNow(), id.Bytes()); err != nil {
 		return fmt.Errorf("could not execute the query. OutdialTargetUpdateProgressing. err: %v", err)
 	}
 

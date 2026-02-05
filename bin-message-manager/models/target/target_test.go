@@ -2,11 +2,17 @@ package target
 
 import (
 	"testing"
+	"time"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 )
 
+func timePtr(t time.Time) *time.Time {
+	return &t
+}
+
 func TestTargetStruct(t *testing.T) {
+	tmUpdate := timePtr(time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC))
 	target := Target{
 		Destination: commonaddress.Address{
 			Type:   commonaddress.TypeTel,
@@ -14,7 +20,7 @@ func TestTargetStruct(t *testing.T) {
 		},
 		Status:   StatusSent,
 		Parts:    2,
-		TMUpdate: "2024-01-01T00:00:00.000000Z",
+		TMUpdate: tmUpdate,
 	}
 
 	if target.Destination.Type != commonaddress.TypeTel {
@@ -29,8 +35,8 @@ func TestTargetStruct(t *testing.T) {
 	if target.Parts != 2 {
 		t.Errorf("Target.Parts = %v, expected %v", target.Parts, 2)
 	}
-	if target.TMUpdate != "2024-01-01T00:00:00.000000Z" {
-		t.Errorf("Target.TMUpdate = %v, expected %v", target.TMUpdate, "2024-01-01T00:00:00.000000Z")
+	if target.TMUpdate == nil || !target.TMUpdate.Equal(*tmUpdate) {
+		t.Errorf("Target.TMUpdate = %v, expected %v", target.TMUpdate, tmUpdate)
 	}
 }
 

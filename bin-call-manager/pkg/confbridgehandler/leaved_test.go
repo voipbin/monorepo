@@ -62,7 +62,7 @@ func Test_Leaved(t *testing.T) {
 					"372b84b4-38e8-11ec-b135-638987bdf59b": uuid.FromStringOrNil("eaa09918-38e7-11ec-b386-bb681c4ba744"),
 					"82d7c562-d6d6-11ec-b40a-8b93a18cec7e": uuid.FromStringOrNil("82ff0e4c-d6d6-11ec-9b01-aba6fd69e457"),
 				},
-				TMDelete: dbhandler.DefaultTimeStamp,
+				TMDelete: nil,
 			},
 
 			expectConfbridgeID: uuid.FromStringOrNil("eb2e51b2-38cf-11ec-9b34-5ff390dc1ef2"),
@@ -94,7 +94,7 @@ func Test_Leaved(t *testing.T) {
 				ChannelCallIDs: map[string]uuid.UUID{
 					"372b84b4-38e8-11ec-b135-638987bdf59b": uuid.FromStringOrNil("eaa09918-38e7-11ec-b386-bb681c4ba744"),
 				},
-				TMDelete: dbhandler.DefaultTimeStamp,
+				TMDelete: nil,
 			},
 
 			expectConfbridgeID: uuid.FromStringOrNil("72c6f936-d6d6-11ec-ae21-2f89b16a3e4b"),

@@ -9,7 +9,6 @@ import (
 
 	"monorepo/bin-call-manager/models/confbridge"
 	"monorepo/bin-call-manager/models/recording"
-	"monorepo/bin-call-manager/pkg/dbhandler"
 )
 
 // confbridgeHandler starts the confbridge recording
@@ -36,8 +35,8 @@ func (h *confbridgeHandler) RecordingStart(
 	if c.RecordingID != uuid.Nil {
 		log.Errorf("The confbridge recording is already progressing. recording_id: %s", c.RecordingID)
 		return nil, fmt.Errorf("recording is already progressing")
-	} else if c.TMDelete < dbhandler.DefaultTimeStamp {
-		log.Errorf("The confbridge status is not progressing. tm_delete: %s", c.TMDelete)
+	} else if c.TMDelete != nil {
+		log.Errorf("The confbridge status is not progressing. tm_delete: %v", c.TMDelete)
 		return nil, fmt.Errorf("invalid status")
 	}
 
@@ -85,8 +84,8 @@ func (h *confbridgeHandler) RecordingStop(ctx context.Context, id uuid.UUID) (*c
 	if c.RecordingID == uuid.Nil {
 		log.Errorf("No Recording progressing. conference_id: %s, recording_id: %s", c.ID, c.RecordingID)
 		return nil, fmt.Errorf("no recording")
-	} else if c.TMDelete < dbhandler.DefaultTimeStamp {
-		log.Errorf("The confbridge status is not progressing. tm_delete: %s", c.TMDelete)
+	} else if c.TMDelete != nil {
+		log.Errorf("The confbridge status is not progressing. tm_delete: %v", c.TMDelete)
 		return nil, fmt.Errorf("invalid status")
 	}
 

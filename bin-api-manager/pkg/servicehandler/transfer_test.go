@@ -62,7 +62,7 @@ func Test_TransferStart(t *testing.T) {
 					ID:         uuid.FromStringOrNil("00d773d4-dd3b-11ed-bcad-d3c44f5b7491"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-				TMDelete: defaultTimestamp,
+				TMDelete: nil,
 			},
 			responseTransfer: &tmtransfer.Transfer{
 				Identity: commonidentity.Identity{

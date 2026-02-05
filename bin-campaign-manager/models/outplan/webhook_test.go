@@ -3,6 +3,7 @@ package outplan
 import (
 	"reflect"
 	"testing"
+	"time"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -40,9 +41,8 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 				MaxTryCount2: 7,
 				MaxTryCount3: 8,
 				MaxTryCount4: 9,
-				TMCreate:     "2020-10-10T03:30:17.000000Z",
-				TMUpdate:     "2020-10-10T03:31:17.000000Z",
-				TMDelete:     "9999-01-01T00:00:00.000000Z",
+				TMCreate:     ptrTime(time.Date(2020, 10, 10, 3, 30, 17, 0, time.UTC)),
+				TMUpdate:     ptrTime(time.Date(2020, 10, 10, 3, 31, 17, 0, time.UTC)),
 			},
 
 			expectRes: &WebhookMessage{
@@ -63,9 +63,8 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 				MaxTryCount2: 7,
 				MaxTryCount3: 8,
 				MaxTryCount4: 9,
-				TMCreate:     "2020-10-10T03:30:17.000000Z",
-				TMUpdate:     "2020-10-10T03:31:17.000000Z",
-				TMDelete:     "9999-01-01T00:00:00.000000Z",
+				TMCreate:     ptrTime(time.Date(2020, 10, 10, 3, 30, 17, 0, time.UTC)),
+				TMUpdate:     ptrTime(time.Date(2020, 10, 10, 3, 31, 17, 0, time.UTC)),
 			},
 		},
 	}

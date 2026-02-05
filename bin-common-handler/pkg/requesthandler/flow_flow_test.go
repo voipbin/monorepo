@@ -4,6 +4,7 @@ import (
 	"context"
 	reflect "reflect"
 	"testing"
+	"time"
 
 	fmaction "monorepo/bin-flow-manager/models/action"
 	fmflow "monorepo/bin-flow-manager/models/flow"
@@ -50,7 +51,7 @@ func Test_FlowV1FlowCreate(t *testing.T) {
 			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"5d205ffa-f2ee-11ea-9ae3-cf94fb96c9f0","customer_id":"857f154e-7f4d-11ec-b669-a7aa025fbeaf","type":"flow","name":"test flow","detail":"test flow detail","actions":[],"persist":true,"tm_create":"2020-09-20T03:23:20.995000Z","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"5d205ffa-f2ee-11ea-9ae3-cf94fb96c9f0","customer_id":"857f154e-7f4d-11ec-b669-a7aa025fbeaf","type":"flow","name":"test flow","detail":"test flow detail","actions":[],"persist":true,"tm_create":"2020-09-20T03:23:20.995000Z","tm_update":null,"tm_delete":null}`),
 			},
 
 			expectTarget: "bin-manager.flow-manager.request",
@@ -70,9 +71,9 @@ func Test_FlowV1FlowCreate(t *testing.T) {
 				Detail:   "test flow detail",
 				Actions:  []fmaction.Action{},
 				Persist:  true,
-				TMCreate: "2020-09-20T03:23:20.995000Z",
-				TMUpdate: "",
-				TMDelete: "",
+				TMCreate: func() *time.Time { t := time.Date(2020, 9, 20, 3, 23, 20, 995000000, time.UTC); return &t }(),
+				TMUpdate: nil,
+				TMDelete: nil,
 			},
 		},
 	}
@@ -131,7 +132,7 @@ func Test_FlowV1FlowUpdate(t *testing.T) {
 			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"7dc3a1b2-6789-11eb-9f30-1b1cc6d13e51","customer_id":"bb832464-7f4d-11ec-aab5-8f3e1e3958d5","name":"update name","detail":"update detail","actions":[],"tm_create":"2020-09-20T03:23:20.995000Z","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"7dc3a1b2-6789-11eb-9f30-1b1cc6d13e51","customer_id":"bb832464-7f4d-11ec-aab5-8f3e1e3958d5","name":"update name","detail":"update detail","actions":[],"tm_create":"2020-09-20T03:23:20.995000Z","tm_update":null,"tm_delete":null}`),
 			},
 			expectTarget: "bin-manager.flow-manager.request",
 			expectRequest: &sock.Request{
@@ -148,9 +149,9 @@ func Test_FlowV1FlowUpdate(t *testing.T) {
 				Name:     "update name",
 				Detail:   "update detail",
 				Actions:  []fmaction.Action{},
-				TMCreate: "2020-09-20T03:23:20.995000Z",
-				TMUpdate: "",
-				TMDelete: "",
+				TMCreate: func() *time.Time { t := time.Date(2020, 9, 20, 3, 23, 20, 995000000, time.UTC); return &t }(),
+				TMUpdate: nil,
+				TMDelete: nil,
 			},
 		},
 	}
@@ -207,7 +208,7 @@ func Test_FlowV1FlowGet(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"be66d9a6-6ed6-11eb-8152-0bb66bad7293","customer_id":"c36412ba-7f4d-11ec-a6ec-67db89124047","name":"test flow","detail":"test flow detail","actions":[],"tm_create":"2020-09-20T03:23:20.995000Z","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"be66d9a6-6ed6-11eb-8152-0bb66bad7293","customer_id":"c36412ba-7f4d-11ec-a6ec-67db89124047","name":"test flow","detail":"test flow detail","actions":[],"tm_create":"2020-09-20T03:23:20.995000Z","tm_update":null,"tm_delete":null}`),
 			},
 
 			"bin-manager.flow-manager.request",
@@ -224,9 +225,9 @@ func Test_FlowV1FlowGet(t *testing.T) {
 				Name:     "test flow",
 				Detail:   "test flow detail",
 				Actions:  []fmaction.Action{},
-				TMCreate: "2020-09-20T03:23:20.995000Z",
-				TMUpdate: "",
-				TMDelete: "",
+				TMCreate: func() *time.Time { t := time.Date(2020, 9, 20, 3, 23, 20, 995000000, time.UTC); return &t }(),
+				TMUpdate: nil,
+				TMDelete: nil,
 			},
 		},
 	}
@@ -345,7 +346,7 @@ func Test_FlowV1FlowList(t *testing.T) {
 			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"158e4b2c-0c55-11eb-b4f2-37c93a78a6a0","customer_id":"c971cc06-7f4d-11ec-b0dc-5ff21ea97f57","name":"test flow","detail":"test flow detail","actions":[],"tm_create":"2020-09-20T03:23:20.995000Z","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"158e4b2c-0c55-11eb-b4f2-37c93a78a6a0","customer_id":"c971cc06-7f4d-11ec-b0dc-5ff21ea97f57","name":"test flow","detail":"test flow detail","actions":[],"tm_create":"2020-09-20T03:23:20.995000Z","tm_update":null,"tm_delete":null}]`),
 			},
 
 			expectURL:    "/v1/flows?page_token=2020-09-20T03%3A23%3A20.995000Z&page_size=10",
@@ -365,9 +366,9 @@ func Test_FlowV1FlowList(t *testing.T) {
 					Name:     "test flow",
 					Detail:   "test flow detail",
 					Actions:  []fmaction.Action{},
-					TMCreate: "2020-09-20T03:23:20.995000Z",
-					TMUpdate: "",
-					TMDelete: "",
+					TMCreate: func() *time.Time { t := time.Date(2020, 9, 20, 3, 23, 20, 995000000, time.UTC); return &t }(),
+					TMUpdate: nil,
+					TMDelete: nil,
 				},
 			},
 		},
@@ -383,7 +384,7 @@ func Test_FlowV1FlowList(t *testing.T) {
 			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"158e4b2c-0c55-11eb-b4f2-37c93a78a6a0","customer_id":"d9fceace-7f4d-11ec-8949-cf7a5dce40c9","name":"test flow","detail":"test flow detail","actions":[],"tm_create":"2020-09-20T03:23:20.995000Z","tm_update":"","tm_delete":""}]`),
+				Data:       []byte(`[{"id":"158e4b2c-0c55-11eb-b4f2-37c93a78a6a0","customer_id":"d9fceace-7f4d-11ec-8949-cf7a5dce40c9","name":"test flow","detail":"test flow detail","actions":[],"tm_create":"2020-09-20T03:23:20.995000Z","tm_update":null,"tm_delete":null}]`),
 			},
 
 			expectURL:    "/v1/flows?page_token=2020-09-20T03%3A23%3A20.995000Z&page_size=10",
@@ -403,9 +404,9 @@ func Test_FlowV1FlowList(t *testing.T) {
 					Name:     "test flow",
 					Detail:   "test flow detail",
 					Actions:  []fmaction.Action{},
-					TMCreate: "2020-09-20T03:23:20.995000Z",
-					TMUpdate: "",
-					TMDelete: "",
+					TMCreate: func() *time.Time { t := time.Date(2020, 9, 20, 3, 23, 20, 995000000, time.UTC); return &t }(),
+					TMUpdate: nil,
+					TMDelete: nil,
 				},
 			},
 		}}
@@ -464,14 +465,14 @@ func Test_FlowV1FlowUpdateActions(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"a645703d-4cd7-4c5d-af76-d2f9f2fafcd0","customer_id":"bb832464-7f4d-11ec-aab5-8f3e1e3958d5","name":"update name","detail":"update detail","actions":[],"tm_create":"2020-09-20T03:23:20.995000Z","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"a645703d-4cd7-4c5d-af76-d2f9f2fafcd0","customer_id":"bb832464-7f4d-11ec-aab5-8f3e1e3958d5","name":"update name","detail":"update detail","actions":[],"tm_create":"2020-09-20T03:23:20.995000Z","tm_update":null,"tm_delete":null}`),
 			},
 			"bin-manager.flow-manager.request",
 			&sock.Request{
 				URI:      "/v1/flows/a645703d-4cd7-4c5d-af76-d2f9f2fafcd0/actions",
 				Method:   sock.RequestMethodPut,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer"}]}`),
+				Data:     []byte(`{"actions":[{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","type":"answer","tm_execute":null}]}`),
 			},
 			&fmflow.Flow{
 				Identity: identity.Identity{
@@ -481,9 +482,9 @@ func Test_FlowV1FlowUpdateActions(t *testing.T) {
 				Name:     "update name",
 				Detail:   "update detail",
 				Actions:  []fmaction.Action{},
-				TMCreate: "2020-09-20T03:23:20.995000Z",
-				TMUpdate: "",
-				TMDelete: "",
+				TMCreate: func() *time.Time { t := time.Date(2020, 9, 20, 3, 23, 20, 995000000, time.UTC); return &t }(),
+				TMUpdate: nil,
+				TMDelete: nil,
 			},
 		},
 		{
@@ -495,7 +496,7 @@ func Test_FlowV1FlowUpdateActions(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"0fb53139-3e5d-4ce7-8de6-d39420a18cf5","customer_id":"bb832464-7f4d-11ec-aab5-8f3e1e3958d5","name":"update name","detail":"update detail","actions":[],"tm_create":"2020-09-20T03:23:20.995000Z","tm_update":"","tm_delete":""}`),
+				Data:       []byte(`{"id":"0fb53139-3e5d-4ce7-8de6-d39420a18cf5","customer_id":"bb832464-7f4d-11ec-aab5-8f3e1e3958d5","name":"update name","detail":"update detail","actions":[],"tm_create":"2020-09-20T03:23:20.995000Z","tm_update":null,"tm_delete":null}`),
 			},
 			"bin-manager.flow-manager.request",
 			&sock.Request{
@@ -512,9 +513,9 @@ func Test_FlowV1FlowUpdateActions(t *testing.T) {
 				Name:     "update name",
 				Detail:   "update detail",
 				Actions:  []fmaction.Action{},
-				TMCreate: "2020-09-20T03:23:20.995000Z",
-				TMUpdate: "",
-				TMDelete: "",
+				TMCreate: func() *time.Time { t := time.Date(2020, 9, 20, 3, 23, 20, 995000000, time.UTC); return &t }(),
+				TMUpdate: nil,
+				TMDelete: nil,
 			},
 		},
 	}

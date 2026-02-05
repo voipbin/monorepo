@@ -15,10 +15,10 @@ import (
 const tableChats = "talk_chats"
 
 func (h *dbHandler) ChatCreate(ctx context.Context, t *chat.Chat) error {
-	now := h.utilHandler.TimeGetCurTime()
+	now := h.utilHandler.TimeNow()
 	t.TMCreate = now
 	t.TMUpdate = now
-	t.TMDelete = commondb.DefaultTimeStamp
+	t.TMDelete = nil
 
 	fields, err := commondb.PrepareFields(t)
 	if err != nil {
@@ -128,11 +128,11 @@ func (h *dbHandler) ChatList(ctx context.Context, filters map[chat.Field]any, to
 	if deleted, hasDeleted := filters[chat.FieldDeleted]; hasDeleted {
 		if deletedBool, ok := deleted.(bool); ok {
 			if deletedBool {
-				// Get deleted chats (tm_delete != default timestamp)
-				query = query.Where(sq.NotEq{tableChats + ".tm_delete": commondb.DefaultTimeStamp})
+				// Get deleted chats (tm_delete IS NOT NULL)
+				query = query.Where(sq.NotEq{tableChats + ".tm_delete": nil})
 			} else {
-				// Get non-deleted chats (tm_delete == default timestamp)
-				query = query.Where(sq.Eq{tableChats + ".tm_delete": commondb.DefaultTimeStamp})
+				// Get non-deleted chats (tm_delete IS NULL)
+				query = query.Where(sq.Eq{tableChats + ".tm_delete": nil})
 			}
 		}
 		// Remove deleted filter from map before applying to chats table
@@ -180,7 +180,7 @@ func (h *dbHandler) ChatList(ctx context.Context, filters map[chat.Field]any, to
 }
 
 func (h *dbHandler) ChatUpdate(ctx context.Context, id uuid.UUID, fields map[chat.Field]any) error {
-	now := h.utilHandler.TimeGetCurTime()
+	now := h.utilHandler.TimeNow()
 	fields[chat.FieldTMUpdate] = now
 
 	preparedFields, err := commondb.PrepareFields(fields)
@@ -204,7 +204,7 @@ func (h *dbHandler) ChatUpdate(ctx context.Context, id uuid.UUID, fields map[cha
 }
 
 func (h *dbHandler) ChatDelete(ctx context.Context, id uuid.UUID) error {
-	now := h.utilHandler.TimeGetCurTime()
+	now := h.utilHandler.TimeNow()
 
 	query := sq.Update(tableChats).
 		Set("tm_delete", now).
@@ -223,7 +223,7 @@ func (h *dbHandler) ChatDelete(ctx context.Context, id uuid.UUID) error {
 
 // ChatMemberCountIncrement atomically increments the member_count by 1
 func (h *dbHandler) ChatMemberCountIncrement(ctx context.Context, chatID uuid.UUID) error {
-	now := h.utilHandler.TimeGetCurTime()
+	now := h.utilHandler.TimeNow()
 
 	sqlQuery := `UPDATE talk_chats SET member_count = member_count + 1, tm_update = ? WHERE id = ?`
 
@@ -238,7 +238,7 @@ func (h *dbHandler) ChatMemberCountIncrement(ctx context.Context, chatID uuid.UU
 
 // ChatMemberCountDecrement atomically decrements the member_count by 1 (minimum 0)
 func (h *dbHandler) ChatMemberCountDecrement(ctx context.Context, chatID uuid.UUID) error {
-	now := h.utilHandler.TimeGetCurTime()
+	now := h.utilHandler.TimeNow()
 
 	// Use GREATEST to ensure member_count doesn't go below 0
 	sqlQuery := `UPDATE talk_chats SET member_count = GREATEST(member_count - 1, 0), tm_update = ? WHERE id = ?`
@@ -272,7 +272,7 @@ func (h *dbHandler) FindDirectChatByParticipants(ctx context.Context, customerID
 		FROM talk_chats c
 		WHERE c.customer_id = ?
 		  AND c.type = ?
-		  AND c.tm_delete = ?
+		  AND c.tm_delete IS NULL
 		  AND c.id IN (
 		      SELECT p1.chat_id
 		      FROM talk_participants p1
@@ -289,7 +289,6 @@ func (h *dbHandler) FindDirectChatByParticipants(ctx context.Context, customerID
 	args := []interface{}{
 		customerID.Bytes(),
 		string(chat.TypeDirect),
-		commondb.DefaultTimeStamp,
 		ownerType1,
 		ownerID1.Bytes(),
 		ownerType2,

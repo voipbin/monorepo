@@ -1,6 +1,10 @@
 package sipauth
 
-import "github.com/gofrs/uuid"
+import (
+	"time"
+
+	"github.com/gofrs/uuid"
+)
 
 // SIPAuth struct
 type SIPAuth struct {
@@ -15,8 +19,8 @@ type SIPAuth struct {
 
 	AllowedIPs []string `json:"allowed_ips,omitempty" db:"allowed_ips,json"`
 
-	TMCreate string `json:"tm_create,omitempty" db:"tm_create"`
-	TMUpdate string `json:"tm_update,omitempty" db:"tm_update"`
+	TMCreate *time.Time `json:"tm_create" db:"tm_create"`
+	TMUpdate *time.Time `json:"tm_update" db:"tm_update"`
 }
 
 // ReferenceType define

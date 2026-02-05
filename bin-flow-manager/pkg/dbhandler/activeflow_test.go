@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
+	"time"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
-	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
@@ -21,12 +21,12 @@ import (
 
 func Test_ActiveflowCreate(t *testing.T) {
 
+	responseCurTime := time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)
+
 	tests := []struct {
 		name string
 
 		activeflow *activeflow.Activeflow
-
-		responseCurTime string
 
 		expectedRes *activeflow.Activeflow
 	}{
@@ -76,8 +76,6 @@ func Test_ActiveflowCreate(t *testing.T) {
 				},
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
-
 			expectedRes: &activeflow.Activeflow{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("2752907c-ace3-11ec-8fa5-b7c9abbb778b"),
@@ -120,9 +118,9 @@ func Test_ActiveflowCreate(t *testing.T) {
 					},
 				},
 
-				TMCreate: "2020-04-18T03:22:17.995000Z",
-				TMUpdate: commondatabasehandler.DefaultTimeStamp,
-				TMDelete: commondatabasehandler.DefaultTimeStamp,
+				TMCreate: &responseCurTime,
+				TMUpdate: nil,
+				TMDelete: nil,
 			},
 		},
 	}
@@ -142,7 +140,7 @@ func Test_ActiveflowCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(&responseCurTime)
 			mockCache.EXPECT().ActiveflowSet(gomock.Any(), gomock.Any())
 			if err := h.ActiveflowCreate(ctx, tt.activeflow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -164,14 +162,14 @@ func Test_ActiveflowCreate(t *testing.T) {
 
 func Test_ActiveflowUpdate(t *testing.T) {
 
+	responseCurTime := time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)
+
 	tests := []struct {
 		name       string
 		activeflow *activeflow.Activeflow
 
 		id     uuid.UUID
 		fields map[activeflow.Field]any
-
-		responseCurTime string
 
 		expectedRes *activeflow.Activeflow
 	}{
@@ -232,9 +230,7 @@ func Test_ActiveflowUpdate(t *testing.T) {
 				},
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
-
-			expectedRes: &activeflow.Activeflow{
+		expectedRes: &activeflow.Activeflow{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("7b55d582-ace6-11ec-a6de-b7dda3562854"),
 					CustomerID: uuid.FromStringOrNil("27803e46-ace3-11ec-bad1-2fd1981d5580"),
@@ -277,9 +273,9 @@ func Test_ActiveflowUpdate(t *testing.T) {
 					},
 				},
 
-				TMCreate: "2020-04-18T03:22:17.995000Z",
-				TMUpdate: "2020-04-18T03:22:17.995000Z",
-				TMDelete: commondatabasehandler.DefaultTimeStamp,
+				TMCreate: &responseCurTime,
+				TMUpdate: &responseCurTime,
+				TMDelete: nil,
 			},
 		},
 	}
@@ -299,13 +295,13 @@ func Test_ActiveflowUpdate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(&responseCurTime)
 			mockCache.EXPECT().ActiveflowSet(gomock.Any(), gomock.Any())
 			if err := h.ActiveflowCreate(ctx, tt.activeflow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(&responseCurTime)
 			mockCache.EXPECT().ActiveflowSet(gomock.Any(), gomock.Any())
 			if errUpdate := h.ActiveflowUpdate(ctx, tt.id, tt.fields); errUpdate != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errUpdate)
@@ -327,12 +323,12 @@ func Test_ActiveflowUpdate(t *testing.T) {
 
 func Test_ActiveflowDelete(t *testing.T) {
 
+	responseCurTime := time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)
+
 	tests := []struct {
 		name string
 
 		activeflow *activeflow.Activeflow
-
-		responseCurTime string
 
 		expectedRes *activeflow.Activeflow
 	}{
@@ -376,8 +372,6 @@ func Test_ActiveflowDelete(t *testing.T) {
 				ExecutedActions: []action.Action{},
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
-
 			expectedRes: &activeflow.Activeflow{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("56d3aa20-aced-11ec-bcec-e3508fe4f7e1"),
@@ -414,9 +408,9 @@ func Test_ActiveflowDelete(t *testing.T) {
 				ExecuteCount:    1,
 				ExecutedActions: []action.Action{},
 
-				TMCreate: "2020-04-18T03:22:17.995000Z",
-				TMUpdate: "2020-04-18T03:22:17.995000Z",
-				TMDelete: "2020-04-18T03:22:17.995000Z",
+				TMCreate: &responseCurTime,
+				TMUpdate: &responseCurTime,
+				TMDelete: &responseCurTime,
 			},
 		},
 	}
@@ -436,13 +430,13 @@ func Test_ActiveflowDelete(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(&responseCurTime)
 			mockCache.EXPECT().ActiveflowSet(ctx, gomock.Any())
 			if err := h.ActiveflowCreate(ctx, tt.activeflow); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(&responseCurTime)
 			mockCache.EXPECT().ActiveflowSet(ctx, gomock.Any())
 			if err := h.ActiveflowDelete(ctx, tt.activeflow.ID); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -464,14 +458,14 @@ func Test_ActiveflowDelete(t *testing.T) {
 
 func Test_ActiveflowList(t *testing.T) {
 
+	responseCurTime := time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)
+
 	tests := []struct {
 		name        string
 		activeflows []activeflow.Activeflow
 
 		size    uint64
 		filters map[activeflow.Field]any
-
-		responseCurTime string
 
 		expectedRes []*activeflow.Activeflow
 	}{
@@ -498,26 +492,24 @@ func Test_ActiveflowList(t *testing.T) {
 				activeflow.FieldDeleted:    false,
 			},
 
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
-
 			expectedRes: []*activeflow.Activeflow{
 				{
 					Identity: commonidentity.Identity{
 						ID:         uuid.FromStringOrNil("b9c89d28-ecda-11ee-a4c3-3f9069ec91c9"),
 						CustomerID: uuid.FromStringOrNil("c3419d78-ecda-11ee-96fd-276b944569e9"),
 					},
-					TMCreate: "2020-04-18T03:22:17.995000Z",
-					TMUpdate: commondatabasehandler.DefaultTimeStamp,
-					TMDelete: commondatabasehandler.DefaultTimeStamp,
+					TMCreate: &responseCurTime,
+					TMUpdate: nil,
+					TMDelete: nil,
 				},
 				{
 					Identity: commonidentity.Identity{
 						ID:         uuid.FromStringOrNil("ba4c00d2-ecda-11ee-9b4e-efecfed060d2"),
 						CustomerID: uuid.FromStringOrNil("c3419d78-ecda-11ee-96fd-276b944569e9"),
 					},
-					TMCreate: "2020-04-18T03:22:17.995000Z",
-					TMUpdate: commondatabasehandler.DefaultTimeStamp,
-					TMDelete: commondatabasehandler.DefaultTimeStamp,
+					TMCreate: &responseCurTime,
+					TMUpdate: nil,
+					TMDelete: nil,
 				},
 			},
 		},
@@ -539,7 +531,7 @@ func Test_ActiveflowList(t *testing.T) {
 			ctx := context.Background()
 
 			for _, activeflow := range tt.activeflows {
-				mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+				mockUtil.EXPECT().TimeNow().Return(&responseCurTime)
 				mockCache.EXPECT().ActiveflowSet(gomock.Any(), gomock.Any())
 				if err := h.ActiveflowCreate(ctx, &activeflow); err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)

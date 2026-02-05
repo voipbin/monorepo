@@ -36,7 +36,7 @@ func Test_HealthCheck(t *testing.T) {
 			&channel.Channel{
 				ID:         "4f8eee94-dee8-11ee-a675-e301225ac38f",
 				AsteriskID: "42:01:0a:a4:00:03",
-				TMEnd:      dbhandler.DefaultTimeStamp,
+				TMEnd:      nil,
 			},
 		},
 		{
@@ -48,7 +48,7 @@ func Test_HealthCheck(t *testing.T) {
 			&channel.Channel{
 				ID:         "27959a54-6e79-11ed-aef7-df3a51cc2639",
 				AsteriskID: "42:01:0a:a4:00:03",
-				TMEnd:      dbhandler.DefaultTimeStamp,
+				TMEnd:      nil,
 			},
 		},
 	}

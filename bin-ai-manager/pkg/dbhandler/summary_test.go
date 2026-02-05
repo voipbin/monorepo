@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
+	"time"
 
 	"monorepo/bin-ai-manager/models/summary"
 	"monorepo/bin-ai-manager/pkg/cachehandler"
@@ -16,12 +17,15 @@ import (
 )
 
 func Test_SummaryCreate(t *testing.T) {
+
+	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
+
 	tests := []struct {
 		name string
 
 		summary *summary.Summary
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *summary.Summary
 	}{
 		{
@@ -42,7 +46,7 @@ func Test_SummaryCreate(t *testing.T) {
 				Content:  "Hello",
 			},
 
-			responseCurTime: "2023-01-03T21:35:02.809Z",
+			responseCurTime: curTime,
 			expectRes: &summary.Summary{
 				Identity: identity.Identity{
 					ID:         uuid.FromStringOrNil("69973904-0a48-11f0-8f10-037c653e7ac2"),
@@ -57,9 +61,9 @@ func Test_SummaryCreate(t *testing.T) {
 				Language: "en-US",
 				Content:  "Hello",
 
-				TMCreate: "2023-01-03T21:35:02.809Z",
-				TMUpdate: DefaultTimeStamp,
-				TMDelete: DefaultTimeStamp,
+				TMCreate: curTime,
+				TMUpdate: nil,
+				TMDelete: nil,
 			},
 		},
 		{
@@ -72,15 +76,15 @@ func Test_SummaryCreate(t *testing.T) {
 				},
 			},
 
-			responseCurTime: "2023-01-03T21:35:02.809Z",
+			responseCurTime: curTime,
 			expectRes: &summary.Summary{
 				Identity: identity.Identity{
 					ID:         uuid.FromStringOrNil("b4ec7c70-0a48-11f0-bfb1-9f0ee7583e2a"),
 					CustomerID: uuid.FromStringOrNil("6a04b59c-0a48-11f0-a206-d723dd7442a6"),
 				},
-				TMCreate: "2023-01-03T21:35:02.809Z",
-				TMUpdate: DefaultTimeStamp,
-				TMDelete: DefaultTimeStamp,
+				TMCreate: curTime,
+				TMUpdate: nil,
+				TMDelete: nil,
 			},
 		},
 	}
@@ -101,7 +105,7 @@ func Test_SummaryCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().SummarySet(ctx, gomock.Any())
 			if err := h.SummaryCreate(ctx, tt.summary); err != nil {
 				t.Errorf("Unexpected error: %v", err)
@@ -132,6 +136,9 @@ func Test_SummaryCreate(t *testing.T) {
 }
 
 func Test_SummaryUpdate(t *testing.T) {
+
+	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
+
 	tests := []struct {
 		name    string
 		summary *summary.Summary
@@ -139,7 +146,7 @@ func Test_SummaryUpdate(t *testing.T) {
 		id     uuid.UUID
 		fields map[summary.Field]any
 
-		responseCurTime string
+		responseCurTime *time.Time
 		expectRes       *summary.Summary
 	}{
 		{
@@ -165,7 +172,7 @@ func Test_SummaryUpdate(t *testing.T) {
 				summary.FieldContent: "test content",
 			},
 
-			responseCurTime: "2023-01-03T21:35:02.809Z",
+			responseCurTime: curTime,
 			expectRes: &summary.Summary{
 				Identity: identity.Identity{
 					ID:         uuid.FromStringOrNil("0951c95e-0bd5-11f0-a747-c75eccfcb319"),
@@ -180,9 +187,9 @@ func Test_SummaryUpdate(t *testing.T) {
 				Language: "en-US",
 				Content:  "test content",
 
-				TMCreate: "2023-01-03T21:35:02.809Z",
-				TMUpdate: "2023-01-03T21:35:02.809Z",
-				TMDelete: DefaultTimeStamp,
+				TMCreate: curTime,
+				TMUpdate: curTime,
+				TMDelete: nil,
 			},
 		},
 	}
@@ -203,13 +210,13 @@ func Test_SummaryUpdate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().SummarySet(ctx, gomock.Any())
 			if err := h.SummaryCreate(ctx, tt.summary); err != nil {
 				t.Errorf("Unexpected error: %v", err)
 			}
 
-			mockUtil.EXPECT().TimeGetCurTime().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().SummarySet(ctx, gomock.Any())
 			if errUpdate := h.SummaryUpdate(ctx, tt.id, tt.fields); errUpdate != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errUpdate)

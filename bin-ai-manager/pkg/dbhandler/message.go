@@ -18,8 +18,8 @@ const (
 
 // MessageCreate creates a new message record.
 func (h *handler) MessageCreate(ctx context.Context, c *message.Message) error {
-	c.TMCreate = h.utilHandler.TimeGetCurTime()
-	c.TMDelete = DefaultTimeStamp
+	c.TMCreate = h.utilHandler.TimeNow()
+	c.TMDelete = nil
 
 	fields, err := commondatabasehandler.PrepareFields(c)
 	if err != nil {
@@ -125,7 +125,7 @@ func (h *handler) MessageGet(ctx context.Context, id uuid.UUID) (*message.Messag
 
 // MessageDelete deletes the message.
 func (h *handler) MessageDelete(ctx context.Context, id uuid.UUID) error {
-	ts := h.utilHandler.TimeGetCurTime()
+	ts := h.utilHandler.TimeNow()
 
 	query, args, err := sq.Update(messageTable).
 		SetMap(map[string]any{

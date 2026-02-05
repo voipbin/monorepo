@@ -16,6 +16,7 @@ import (
 	message "monorepo/bin-message-manager/models/message"
 	number "monorepo/bin-number-manager/models/number"
 	reflect "reflect"
+	time "time"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -46,7 +47,7 @@ func (m *MockBillingHandler) EXPECT() *MockBillingHandlerMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockBillingHandler) Create(ctx context.Context, customerID, accountID uuid.UUID, referenceType billing.ReferenceType, referenceID uuid.UUID, costPerUnit float32, tmBillingStart string) (*billing.Billing, error) {
+func (m *MockBillingHandler) Create(ctx context.Context, customerID, accountID uuid.UUID, referenceType billing.ReferenceType, referenceID uuid.UUID, costPerUnit float32, tmBillingStart *time.Time) (*billing.Billing, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Create", ctx, customerID, accountID, referenceType, referenceID, costPerUnit, tmBillingStart)
 	ret0, _ := ret[0].(*billing.Billing)
@@ -176,7 +177,7 @@ func (mr *MockBillingHandlerMockRecorder) List(ctx, size, token, filters any) *g
 }
 
 // UpdateStatusEnd mocks base method.
-func (m *MockBillingHandler) UpdateStatusEnd(ctx context.Context, id uuid.UUID, billingDuration float32, tmBillingEnd string) (*billing.Billing, error) {
+func (m *MockBillingHandler) UpdateStatusEnd(ctx context.Context, id uuid.UUID, billingDuration float32, tmBillingEnd *time.Time) (*billing.Billing, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateStatusEnd", ctx, id, billingDuration, tmBillingEnd)
 	ret0, _ := ret[0].(*billing.Billing)

@@ -313,7 +313,7 @@ func Test_Delete(t *testing.T) {
 				},
 				Status:        transcribe.StatusDone,
 				ReferenceType: transcribe.ReferenceTypeCall,
-				TMDelete:      dbhandler.DefaultTimeStamp,
+				TMDelete:      nil,
 			},
 
 			&transcribe.Transcribe{
@@ -322,7 +322,7 @@ func Test_Delete(t *testing.T) {
 				},
 				Status:        transcribe.StatusDone,
 				ReferenceType: transcribe.ReferenceTypeCall,
-				TMDelete:      dbhandler.DefaultTimeStamp,
+				TMDelete:      nil,
 			},
 		},
 	}

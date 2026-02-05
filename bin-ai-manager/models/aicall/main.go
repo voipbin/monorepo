@@ -1,6 +1,8 @@
 package aicall
 
 import (
+	"time"
+
 	"github.com/gofrs/uuid"
 
 	"monorepo/bin-ai-manager/models/ai"
@@ -31,10 +33,10 @@ type AIcall struct {
 	Gender   Gender `json:"gender,omitempty" db:"gender"`
 	Language string `json:"language,omitempty" db:"language"`
 
-	TMEnd    string `json:"tm_end,omitempty" db:"tm_end"`
-	TMCreate string `json:"tm_create,omitempty" db:"tm_create"`
-	TMUpdate string `json:"tm_update,omitempty" db:"tm_update"`
-	TMDelete string `json:"tm_delete,omitempty" db:"tm_delete"`
+	TMEnd    *time.Time `json:"tm_end" db:"tm_end"`
+	TMCreate *time.Time `json:"tm_create" db:"tm_create"`
+	TMUpdate *time.Time `json:"tm_update" db:"tm_update"`
+	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"`
 }
 
 // ReferenceType define

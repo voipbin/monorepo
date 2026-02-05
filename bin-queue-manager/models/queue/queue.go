@@ -1,6 +1,8 @@
 package queue
 
 import (
+	"time"
+
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
@@ -34,9 +36,9 @@ type Queue struct {
 	TotalServicedCount  int `json:"total_serviced_count,omitempty" db:"total_serviced_count"`   // total serviced call count
 	TotalAbandonedCount int `json:"total_abandoned_count,omitempty" db:"total_abandoned_count"` // total abandoned call count
 
-	TMCreate string `json:"tm_create,omitempty" db:"tm_create"` // Created timestamp.
-	TMUpdate string `json:"tm_update,omitempty" db:"tm_update"` // Updated timestamp.
-	TMDelete string `json:"tm_delete,omitempty" db:"tm_delete"` // Deleted timestamp.
+	TMCreate *time.Time `json:"tm_create" db:"tm_create"` // Created timestamp.
+	TMUpdate *time.Time `json:"tm_update" db:"tm_update"` // Updated timestamp.
+	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"` // Deleted timestamp.
 }
 
 // RoutingMethod type

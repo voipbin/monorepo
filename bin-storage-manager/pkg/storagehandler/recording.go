@@ -44,7 +44,7 @@ func (h *storageHandler) RecordingGet(ctx context.Context, id uuid.UUID) (*bucke
 	log.Debugf("Created download uri. len: %d", len(downloadURI))
 
 	// create recording.Recording
-	tmExpire := h.utilHandler.TimeGetCurTimeAdd(24 * time.Hour)
+	tmExpire := h.utilHandler.TimeNowAdd(24 * time.Hour)
 	res := &bucketfile.BucketFile{
 		ReferenceType:    bucketfile.ReferenceTypeRecording,
 		ReferenceID:      id,

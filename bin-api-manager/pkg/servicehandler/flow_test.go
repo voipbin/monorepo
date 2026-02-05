@@ -60,7 +60,7 @@ func Test_FlowCreate(t *testing.T) {
 					ID:         uuid.FromStringOrNil("dce9b1a2-cf91-11f0-9854-df19288f16fe"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-				TMDelete: defaultTimestamp,
+				TMDelete: nil,
 			},
 			responseFlow: &fmflow.Flow{
 				Identity: commonidentity.Identity{
@@ -137,7 +137,7 @@ func Test_FlowDelete(t *testing.T) {
 				Name:     "test",
 				Detail:   "test detail",
 				Actions:  []fmaction.Action{},
-				TMDelete: defaultTimestamp,
+				TMDelete: nil,
 			},
 			expectRes: &fmflow.WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -147,7 +147,7 @@ func Test_FlowDelete(t *testing.T) {
 				Name:     "test",
 				Detail:   "test detail",
 				Actions:  []fmaction.Action{},
-				TMDelete: defaultTimestamp,
+				TMDelete: nil,
 			},
 		},
 	}
@@ -210,7 +210,7 @@ func Test_FlowGet(t *testing.T) {
 				Name:     "test",
 				Detail:   "test detail",
 				Actions:  []fmaction.Action{},
-				TMDelete: defaultTimestamp,
+				TMDelete: nil,
 			},
 			expectRes: &fmflow.WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -220,7 +220,7 @@ func Test_FlowGet(t *testing.T) {
 				Name:     "test",
 				Detail:   "test detail",
 				Actions:  []fmaction.Action{},
-				TMDelete: defaultTimestamp,
+				TMDelete: nil,
 			},
 		},
 		{
@@ -247,7 +247,7 @@ func Test_FlowGet(t *testing.T) {
 						Type: fmaction.TypeAnswer,
 					},
 				},
-				TMDelete: defaultTimestamp,
+				TMDelete: nil,
 			},
 			expectRes: &fmflow.WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -262,7 +262,7 @@ func Test_FlowGet(t *testing.T) {
 						Type: "answer",
 					},
 				},
-				TMDelete: defaultTimestamp,
+				TMDelete: nil,
 			},
 		},
 	}
@@ -328,7 +328,7 @@ func Test_FlowList(t *testing.T) {
 					Name:     "test1",
 					Detail:   "test detail1",
 					Actions:  []fmaction.Action{},
-					TMDelete: defaultTimestamp,
+					TMDelete: nil,
 				},
 				{
 					Identity: commonidentity.Identity{
@@ -338,7 +338,7 @@ func Test_FlowList(t *testing.T) {
 					Name:     "test2",
 					Detail:   "test detail2",
 					Actions:  []fmaction.Action{},
-					TMDelete: defaultTimestamp,
+					TMDelete: nil,
 				},
 			},
 			expectFilters: map[fmflow.Field]any{
@@ -355,7 +355,7 @@ func Test_FlowList(t *testing.T) {
 					Name:     "test1",
 					Detail:   "test detail1",
 					Actions:  []fmaction.Action{},
-					TMDelete: defaultTimestamp,
+					TMDelete: nil,
 				},
 				{
 					Identity: commonidentity.Identity{
@@ -365,7 +365,7 @@ func Test_FlowList(t *testing.T) {
 					Name:     "test2",
 					Detail:   "test detail2",
 					Actions:  []fmaction.Action{},
-					TMDelete: defaultTimestamp,
+					TMDelete: nil,
 				},
 			},
 		},
@@ -395,7 +395,7 @@ func Test_FlowList(t *testing.T) {
 							Type: fmaction.TypeAnswer,
 						},
 					},
-					TMDelete: defaultTimestamp,
+					TMDelete: nil,
 				},
 			},
 			expectFilters: map[fmflow.Field]any{
@@ -417,7 +417,7 @@ func Test_FlowList(t *testing.T) {
 							Type: "answer",
 						},
 					},
-					TMDelete: defaultTimestamp,
+					TMDelete: nil,
 				},
 			},
 		},
@@ -492,21 +492,21 @@ func Test_FlowUpdate(t *testing.T) {
 					ID:         uuid.FromStringOrNil("a64ff8ce-1ab3-4564-9d34-e5f3147810e5"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-				TMDelete: defaultTimestamp,
+				TMDelete: nil,
 			},
 			responseCompleteFlow: &fmflow.Flow{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("dd113542-cf91-11f0-9f8a-fb8e4c6a808b"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-				TMDelete: defaultTimestamp,
+				TMDelete: nil,
 			},
 			expectRes: &fmflow.WebhookMessage{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("a64ff8ce-1ab3-4564-9d34-e5f3147810e5"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-				TMDelete: defaultTimestamp,
+				TMDelete: nil,
 			},
 		},
 	}
@@ -576,7 +576,7 @@ func Test_FlowUpdateActions(t *testing.T) {
 					ID:         uuid.FromStringOrNil("00498856-678d-11eb-89a6-37bc9314dc94"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-				TMDelete: defaultTimestamp,
+				TMDelete: nil,
 			},
 
 			expectRes: &fmflow.WebhookMessage{
@@ -584,7 +584,7 @@ func Test_FlowUpdateActions(t *testing.T) {
 					ID:         uuid.FromStringOrNil("00498856-678d-11eb-89a6-37bc9314dc94"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-				TMDelete: defaultTimestamp,
+				TMDelete: nil,
 			},
 		},
 	}

@@ -3,6 +3,7 @@ package activeflow
 import (
 	"fmt"
 	"reflect"
+	"time"
 
 	"github.com/gofrs/uuid"
 
@@ -40,9 +41,9 @@ type Activeflow struct {
 	ExecuteCount    uint64          `json:"execute_count,omitempty" db:"execute_count"`
 	ExecutedActions []action.Action `json:"executed_actions,omitempty" db:"executed_actions,json"` // list of executed actions
 
-	TMCreate string `json:"tm_create,omitempty" db:"tm_create"`
-	TMUpdate string `json:"tm_update,omitempty" db:"tm_update"`
-	TMDelete string `json:"tm_delete,omitempty" db:"tm_delete"`
+	TMCreate *time.Time `json:"tm_create" db:"tm_create"`
+	TMUpdate *time.Time `json:"tm_update" db:"tm_update"`
+	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"`
 }
 
 // Status define

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	reflect "reflect"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -26,6 +27,8 @@ func Test_OutdialCreate(t *testing.T) {
 		utilHandler: utilhandler.NewUtilHandler(),
 	}
 
+	curTime := func() *time.Time { t := time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC); return &t }()
+
 	tests := []struct {
 		name      string
 		outdial   *outdial.Outdial
@@ -45,7 +48,7 @@ func Test_OutdialCreate(t *testing.T) {
 
 				Data: "test uuid data string",
 
-				TMCreate: "2020-04-18T03:22:17.995000Z",
+				TMCreate: curTime,
 			},
 			&outdial.Outdial{
 				Identity: commonidentity.Identity{
@@ -59,7 +62,7 @@ func Test_OutdialCreate(t *testing.T) {
 
 				Data: "test uuid data string",
 
-				TMCreate: "2020-04-18T03:22:17.995000Z",
+				TMCreate: curTime,
 			},
 		},
 	}
@@ -99,6 +102,8 @@ func Test_OutdialList(t *testing.T) {
 		utilHandler: utilhandler.NewUtilHandler(),
 	}
 
+	curTime := func() *time.Time { t := time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC); return &t }()
+
 	tests := []struct {
 		name       string
 		customerID uuid.UUID
@@ -117,7 +122,7 @@ func Test_OutdialList(t *testing.T) {
 						CustomerID: uuid.FromStringOrNil("8c5bc8e4-abf8-11ec-a5f5-fb2f8c29041b"),
 					},
 					Name:     "test1",
-					TMDelete: DefaultTimeStamp,
+					TMCreate: curTime,
 				},
 				{
 					Identity: commonidentity.Identity{
@@ -125,7 +130,7 @@ func Test_OutdialList(t *testing.T) {
 						CustomerID: uuid.FromStringOrNil("8c5bc8e4-abf8-11ec-a5f5-fb2f8c29041b"),
 					},
 					Name:     "test2",
-					TMDelete: DefaultTimeStamp,
+					TMCreate: curTime,
 				},
 			},
 			[]*outdial.Outdial{
@@ -134,16 +139,14 @@ func Test_OutdialList(t *testing.T) {
 						ID:         uuid.FromStringOrNil("8c807824-abf8-11ec-bf9f-9f7c1fd38a43"),
 						CustomerID: uuid.FromStringOrNil("8c5bc8e4-abf8-11ec-a5f5-fb2f8c29041b"),
 					},
-					Name:     "test2",
-					TMDelete: DefaultTimeStamp,
+					Name: "test2",
 				},
 				{
 					Identity: commonidentity.Identity{
 						ID:         uuid.FromStringOrNil("8c2eff6c-abf8-11ec-aef8-9757be01931e"),
 						CustomerID: uuid.FromStringOrNil("8c5bc8e4-abf8-11ec-a5f5-fb2f8c29041b"),
 					},
-					Name:     "test1",
-					TMDelete: DefaultTimeStamp,
+					Name: "test1",
 				},
 			},
 		},
@@ -171,8 +174,8 @@ func Test_OutdialList(t *testing.T) {
 
 			// Clear timestamps for comparison
 			for _, flow := range flows {
-				flow.TMCreate = ""
-				flow.TMUpdate = ""
+				flow.TMCreate = nil
+				flow.TMUpdate = nil
 			}
 
 			// Check length first

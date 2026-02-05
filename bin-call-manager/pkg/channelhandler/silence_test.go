@@ -33,7 +33,7 @@ func Test_SilenceOn(t *testing.T) {
 			&channel.Channel{
 				ID:         "0166c4b6-d139-11ed-b354-7ffad3f2c2fb",
 				AsteriskID: "3e:50:6b:43:bb:30",
-				TMDelete:   dbhandler.DefaultTimeStamp,
+				TMDelete:   nil,
 			},
 		},
 	}
@@ -85,7 +85,7 @@ func Test_SilenceOff(t *testing.T) {
 			&channel.Channel{
 				ID:         "0191d4f8-d139-11ed-8f50-833af1cb1cee",
 				AsteriskID: "3e:50:6b:43:bb:30",
-				TMDelete:   dbhandler.DefaultTimeStamp,
+				TMDelete:   nil,
 			},
 		},
 	}

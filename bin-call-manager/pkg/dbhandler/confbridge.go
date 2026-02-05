@@ -44,12 +44,12 @@ func (h *handler) confbridgeGetFromRow(row *sql.Rows) (*confbridge.Confbridge, e
 
 // ConfbridgeCreate creates a new confbridge record.
 func (h *handler) ConfbridgeCreate(ctx context.Context, cb *confbridge.Confbridge) error {
-	now := h.utilHandler.TimeGetCurTime()
+	now := h.utilHandler.TimeNow()
 
 	// Set timestamps
 	cb.TMCreate = now
-	cb.TMUpdate = commondatabasehandler.DefaultTimeStamp
-	cb.TMDelete = commondatabasehandler.DefaultTimeStamp
+	cb.TMUpdate = nil
+	cb.TMDelete = nil
 
 	// Initialize nil slices/maps
 	if cb.Flags == nil {
@@ -266,7 +266,7 @@ func (h *handler) ConfbridgeUpdate(ctx context.Context, id uuid.UUID, fields map
 		return nil
 	}
 
-	fields[confbridge.FieldTMUpdate] = h.utilHandler.TimeGetCurTime()
+	fields[confbridge.FieldTMUpdate] = h.utilHandler.TimeNow()
 
 	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
@@ -300,7 +300,7 @@ func (h *handler) ConfbridgeSetBridgeID(ctx context.Context, id uuid.UUID, bridg
 
 // ConfbridgeDelete ends the conference
 func (h *handler) ConfbridgeDelete(ctx context.Context, id uuid.UUID) error {
-	ts := h.utilHandler.TimeGetCurTime()
+	ts := h.utilHandler.TimeNow()
 	return h.ConfbridgeUpdate(ctx, id, map[confbridge.Field]any{
 		confbridge.FieldTMDelete: ts,
 	})
@@ -328,7 +328,7 @@ func (h *handler) ConfbridgeAddRecordingIDs(ctx context.Context, id uuid.UUID, r
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, recordingID.Bytes(), h.utilHandler.TimeGetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, recordingID.Bytes(), h.utilHandler.TimeNow(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConfbridgeAddRecordingIDs. err: %v", err)
 	}
@@ -359,7 +359,7 @@ func (h *handler) ConfbridgeAddChannelCallID(ctx context.Context, id uuid.UUID, 
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, key, callID.String(), h.utilHandler.TimeGetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, key, callID.String(), h.utilHandler.TimeNow(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConfbridgeAddChannelCallID. err: %v", err)
 	}
@@ -382,7 +382,7 @@ func (h *handler) ConfbridgeRemoveChannelCallID(ctx context.Context, id uuid.UUI
 		id = ?
 	`
 
-	_, err := h.db.Exec(q, key, h.utilHandler.TimeGetCurTime(), id.Bytes())
+	_, err := h.db.Exec(q, key, h.utilHandler.TimeNow(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConfbridgeRemoveChannelCallID. err: %v", err)
 	}
@@ -412,7 +412,7 @@ func (h *handler) ConfbridgeSetFlags(ctx context.Context, id uuid.UUID, flags []
 		id = ?
 	`
 
-	_, err = h.db.Exec(q, tmp, h.utilHandler.TimeGetCurTime(), id.Bytes())
+	_, err = h.db.Exec(q, tmp, h.utilHandler.TimeNow(), id.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not execute. ConfbridgeSetFlags. err: %v", err)
 	}

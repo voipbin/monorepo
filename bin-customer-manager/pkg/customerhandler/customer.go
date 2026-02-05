@@ -5,7 +5,6 @@ import (
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-customer-manager/models/customer"
-	"monorepo/bin-customer-manager/pkg/dbhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -26,7 +25,7 @@ func (h *customerHandler) Delete(ctx context.Context, id uuid.UUID) (*customer.C
 		return nil, err
 	}
 
-	if c.TMDelete != dbhandler.DefaultTimeStamp {
+	if c.TMDelete != nil {
 		// already deleted
 		log.Infof("The customer already deleted. customer_id: %s", c.ID)
 		return c, nil

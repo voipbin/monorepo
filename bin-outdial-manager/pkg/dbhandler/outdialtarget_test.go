@@ -5,6 +5,7 @@ import (
 	"fmt"
 	reflect "reflect"
 	"testing"
+	"time"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -26,6 +27,8 @@ func Test_OutdialTargetCreate(t *testing.T) {
 		cache:       mockCache,
 		utilHandler: utilhandler.NewUtilHandler(),
 	}
+
+	curTime := func() *time.Time { t := time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC); return &t }()
 
 	tests := []struct {
 		name          string
@@ -49,7 +52,7 @@ func Test_OutdialTargetCreate(t *testing.T) {
 					Target: "+821100000001",
 				},
 
-				TMCreate: "2020-04-18T03:22:17.995000Z",
+				TMCreate: curTime,
 			},
 			&outdialtarget.OutdialTarget{
 				ID:        uuid.FromStringOrNil("26f03072-b01b-11ec-8b95-b7c2633990d7"),
@@ -66,7 +69,7 @@ func Test_OutdialTargetCreate(t *testing.T) {
 					Target: "+821100000001",
 				},
 
-				TMCreate: "2020-04-18T03:22:17.995000Z",
+				TMCreate: curTime,
 			},
 		},
 	}
@@ -107,6 +110,8 @@ func Test_OutdialTargetList(t *testing.T) {
 		utilHandler: utilhandler.NewUtilHandler(),
 	}
 
+	curTime := func() *time.Time { t := time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC); return &t }()
+
 	tests := []struct {
 		name           string
 		outdialID      uuid.UUID
@@ -123,13 +128,13 @@ func Test_OutdialTargetList(t *testing.T) {
 					ID:        uuid.FromStringOrNil("791b1d2e-b01d-11ec-b6eb-d3f27ead80d3"),
 					OutdialID: uuid.FromStringOrNil("786650b0-b01d-11ec-988e-c377bbf8e597"),
 					Name:      "test1",
-					TMDelete:  DefaultTimeStamp,
+					TMCreate:  curTime,
 				},
 				{
 					ID:        uuid.FromStringOrNil("794b32de-b01d-11ec-9bc7-fbbf15a88054"),
 					OutdialID: uuid.FromStringOrNil("786650b0-b01d-11ec-988e-c377bbf8e597"),
 					Name:      "test2",
-					TMDelete:  DefaultTimeStamp,
+					TMCreate:  curTime,
 				},
 			},
 			[]*outdialtarget.OutdialTarget{
@@ -137,13 +142,11 @@ func Test_OutdialTargetList(t *testing.T) {
 					ID:        uuid.FromStringOrNil("794b32de-b01d-11ec-9bc7-fbbf15a88054"),
 					OutdialID: uuid.FromStringOrNil("786650b0-b01d-11ec-988e-c377bbf8e597"),
 					Name:      "test2",
-					TMDelete:  DefaultTimeStamp,
 				},
 				{
 					ID:        uuid.FromStringOrNil("791b1d2e-b01d-11ec-b6eb-d3f27ead80d3"),
 					OutdialID: uuid.FromStringOrNil("786650b0-b01d-11ec-988e-c377bbf8e597"),
 					Name:      "test1",
-					TMDelete:  DefaultTimeStamp,
 				},
 			},
 		},
@@ -171,8 +174,8 @@ func Test_OutdialTargetList(t *testing.T) {
 
 			// Clear timestamps for comparison
 			for _, target := range targets {
-				target.TMCreate = ""
-				target.TMUpdate = ""
+				target.TMCreate = nil
+				target.TMUpdate = nil
 			}
 
 			// Check length first

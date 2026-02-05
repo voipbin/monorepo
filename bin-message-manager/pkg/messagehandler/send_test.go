@@ -82,9 +82,8 @@ func Test_Send(t *testing.T) {
 						Type:   commonaddress.TypeTel,
 						Target: "+821100000002",
 					},
-					Status:   target.StatusSent,
-					Parts:    1,
-					TMUpdate: "2022-03-18T03:22:17.995000Z",
+					Status: target.StatusSent,
+					Parts:  1,
 				},
 			},
 

@@ -45,14 +45,14 @@ func Test_EventCUCustomerDeleted(t *testing.T) {
 						ID: uuid.FromStringOrNil("caeca0bc-f2e4-11ee-a152-e7331c726b3b"),
 					},
 					Status:   transcribe.StatusDone,
-					TMDelete: dbhandler.DefaultTimeStamp,
+					TMDelete: nil,
 				},
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("cb17285a-f2e4-11ee-aaee-c31bb727756e"),
 					},
 					Status:   transcribe.StatusDone,
-					TMDelete: dbhandler.DefaultTimeStamp,
+					TMDelete: nil,
 				},
 			},
 
@@ -127,14 +127,14 @@ func Test_EventCMCallHangup(t *testing.T) {
 						ID: uuid.FromStringOrNil("60c49f2c-f2ef-11ee-b34e-0ff8d9efb06c"),
 					},
 					Status:   transcribe.StatusDone,
-					TMDelete: dbhandler.DefaultTimeStamp,
+					TMDelete: nil,
 				},
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("61321d36-f2ef-11ee-91a2-1b4be4f8b801"),
 					},
 					Status:   transcribe.StatusDone,
-					TMDelete: dbhandler.DefaultTimeStamp,
+					TMDelete: nil,
 				},
 			},
 
@@ -203,14 +203,14 @@ func Test_EventCMConfbridgeTerminated(t *testing.T) {
 						ID: uuid.FromStringOrNil("a75970f6-f2f0-11ee-8f5f-c3086817f421"),
 					},
 					Status:   transcribe.StatusDone,
-					TMDelete: dbhandler.DefaultTimeStamp,
+					TMDelete: nil,
 				},
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("a789fbcc-f2f0-11ee-9902-4b978847b531"),
 					},
 					Status:   transcribe.StatusDone,
-					TMDelete: dbhandler.DefaultTimeStamp,
+					TMDelete: nil,
 				},
 			},
 

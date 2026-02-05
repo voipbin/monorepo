@@ -753,7 +753,7 @@ func Test_ConferenceMediaStreamStart(t *testing.T) {
 					ID:         uuid.FromStringOrNil("9543aae2-eb4a-11ee-987e-e725fbe471f2"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-				TMDelete: defaultTimestamp,
+				TMDelete: nil,
 			},
 			[]*cfconference.WebhookMessage{
 				{

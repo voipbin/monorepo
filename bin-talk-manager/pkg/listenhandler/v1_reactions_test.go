@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	reflect "reflect"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -15,6 +16,10 @@ import (
 	"monorepo/bin-talk-manager/models/message"
 	"monorepo/bin-talk-manager/pkg/reactionhandler"
 )
+
+func timePtrReact(t time.Time) *time.Time {
+	return &t
+}
 
 func Test_processV1MessagesIDReactionsPost(t *testing.T) {
 	tests := []struct {
@@ -54,15 +59,15 @@ func Test_processV1MessagesIDReactionsPost(t *testing.T) {
 				Type:     message.TypeNormal,
 				Text:     "Hello world",
 				Medias:   []message.Media{},
-				Metadata: message.Metadata{Reactions: []message.Reaction{{Emoji: "👍", OwnerType: "agent", OwnerID: uuid.FromStringOrNil("7fcd7990-42eb-11ed-9fa6-b4cd93af9796"), TMCreate: "2021-11-23T17:55:39.712000Z"}}},
-				TMCreate: "2021-11-23T17:55:39.712000Z",
-				TMUpdate: "2021-11-23T17:56:00.000000Z",
-				TMDelete: "9999-01-01T00:00:00.000000Z",
+				Metadata: message.Metadata{Reactions: []message.Reaction{{Emoji: "👍", OwnerType: "agent", OwnerID: uuid.FromStringOrNil("7fcd7990-42eb-11ed-9fa6-b4cd93af9796"), TMCreate: timePtrReact(time.Date(2021, 11, 23, 17, 55, 39, 712000000, time.UTC))}}},
+				TMCreate: timePtrReact(time.Date(2021, 11, 23, 17, 55, 39, 712000000, time.UTC)),
+				TMUpdate: timePtrReact(time.Date(2021, 11, 23, 17, 56, 0, 0, time.UTC)),
+				TMDelete: timePtrReact(time.Date(9999, 1, 1, 0, 0, 0, 0, time.UTC)),
 			},
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"9ade9b10-64ed-11ed-b1c8-d6ef95af9798","customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","owner_type":"agent","owner_id":"7fcd7990-42eb-11ed-9fa6-b4cd93af9796","chat_id":"6ebc6880-31da-11ed-8e95-a3bc92af9795","type":"normal","text":"Hello world","medias":[],"metadata":{"reactions":[{"emoji":"👍","owner_type":"agent","owner_id":"7fcd7990-42eb-11ed-9fa6-b4cd93af9796","tm_create":"2021-11-23T17:55:39.712000Z"}]},"tm_create":"2021-11-23T17:55:39.712000Z","tm_update":"2021-11-23T17:56:00.000000Z","tm_delete":"9999-01-01T00:00:00.000000Z"}`),
+				Data:       []byte(`{"id":"9ade9b10-64ed-11ed-b1c8-d6ef95af9798","customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","owner_type":"agent","owner_id":"7fcd7990-42eb-11ed-9fa6-b4cd93af9796","chat_id":"6ebc6880-31da-11ed-8e95-a3bc92af9795","type":"normal","text":"Hello world","medias":[],"metadata":{"reactions":[{"emoji":"👍","owner_type":"agent","owner_id":"7fcd7990-42eb-11ed-9fa6-b4cd93af9796","tm_create":"2021-11-23T17:55:39.712Z"}]},"tm_create":"2021-11-23T17:55:39.712Z","tm_update":"2021-11-23T17:56:00Z","tm_delete":"9999-01-01T00:00:00Z"}`),
 			},
 		},
 		{
@@ -91,15 +96,15 @@ func Test_processV1MessagesIDReactionsPost(t *testing.T) {
 				Type:     message.TypeNormal,
 				Text:     "Hello world",
 				Medias:   []message.Media{},
-				Metadata: message.Metadata{Reactions: []message.Reaction{{Emoji: "❤️", OwnerType: "customer", OwnerID: uuid.FromStringOrNil("8ede8b40-86ef-11ed-d4fb-e9e028af9801"), TMCreate: "2021-11-23T18:00:00.000000Z"}}},
-				TMCreate: "2021-11-23T17:55:39.712000Z",
-				TMUpdate: "2021-11-23T18:00:00.000000Z",
-				TMDelete: "9999-01-01T00:00:00.000000Z",
+				Metadata: message.Metadata{Reactions: []message.Reaction{{Emoji: "❤️", OwnerType: "customer", OwnerID: uuid.FromStringOrNil("8ede8b40-86ef-11ed-d4fb-e9e028af9801"), TMCreate: timePtrReact(time.Date(2021, 11, 23, 18, 0, 0, 0, time.UTC))}}},
+				TMCreate: timePtrReact(time.Date(2021, 11, 23, 17, 55, 39, 712000000, time.UTC)),
+				TMUpdate: timePtrReact(time.Date(2021, 11, 23, 18, 0, 0, 0, time.UTC)),
+				TMDelete: timePtrReact(time.Date(9999, 1, 1, 0, 0, 0, 0, time.UTC)),
 			},
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"9ade9b10-64ed-11ed-b1c8-d6ef95af9798","customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","owner_type":"agent","owner_id":"7fcd7990-42eb-11ed-9fa6-b4cd93af9796","chat_id":"6ebc6880-31da-11ed-8e95-a3bc92af9795","type":"normal","text":"Hello world","medias":[],"metadata":{"reactions":[{"emoji":"❤️","owner_type":"customer","owner_id":"8ede8b40-86ef-11ed-d4fb-e9e028af9801","tm_create":"2021-11-23T18:00:00.000000Z"}]},"tm_create":"2021-11-23T17:55:39.712000Z","tm_update":"2021-11-23T18:00:00.000000Z","tm_delete":"9999-01-01T00:00:00.000000Z"}`),
+				Data:       []byte(`{"id":"9ade9b10-64ed-11ed-b1c8-d6ef95af9798","customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","owner_type":"agent","owner_id":"7fcd7990-42eb-11ed-9fa6-b4cd93af9796","chat_id":"6ebc6880-31da-11ed-8e95-a3bc92af9795","type":"normal","text":"Hello world","medias":[],"metadata":{"reactions":[{"emoji":"❤️","owner_type":"customer","owner_id":"8ede8b40-86ef-11ed-d4fb-e9e028af9801","tm_create":"2021-11-23T18:00:00Z"}]},"tm_create":"2021-11-23T17:55:39.712Z","tm_update":"2021-11-23T18:00:00Z","tm_delete":"9999-01-01T00:00:00Z"}`),
 			},
 		},
 	}
@@ -236,14 +241,14 @@ func Test_processV1MessagesIDReactionsDelete(t *testing.T) {
 				Text:     "Hello world",
 				Medias:   []message.Media{},
 				Metadata: message.Metadata{Reactions: []message.Reaction{}},
-				TMCreate: "2021-11-23T17:55:39.712000Z",
-				TMUpdate: "2021-11-23T17:56:00.000000Z",
-				TMDelete: "9999-01-01T00:00:00.000000Z",
+				TMCreate: timePtrReact(time.Date(2021, 11, 23, 17, 55, 39, 712000000, time.UTC)),
+				TMUpdate: timePtrReact(time.Date(2021, 11, 23, 17, 56, 0, 0, time.UTC)),
+				TMDelete: timePtrReact(time.Date(9999, 1, 1, 0, 0, 0, 0, time.UTC)),
 			},
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"9ade9b10-64ed-11ed-b1c8-d6ef95af9798","customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","owner_type":"agent","owner_id":"7fcd7990-42eb-11ed-9fa6-b4cd93af9796","chat_id":"6ebc6880-31da-11ed-8e95-a3bc92af9795","type":"normal","text":"Hello world","medias":[],"metadata":{"reactions":[]},"tm_create":"2021-11-23T17:55:39.712000Z","tm_update":"2021-11-23T17:56:00.000000Z","tm_delete":"9999-01-01T00:00:00.000000Z"}`),
+				Data:       []byte(`{"id":"9ade9b10-64ed-11ed-b1c8-d6ef95af9798","customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","owner_type":"agent","owner_id":"7fcd7990-42eb-11ed-9fa6-b4cd93af9796","chat_id":"6ebc6880-31da-11ed-8e95-a3bc92af9795","type":"normal","text":"Hello world","medias":[],"metadata":{"reactions":[]},"tm_create":"2021-11-23T17:55:39.712Z","tm_update":"2021-11-23T17:56:00Z","tm_delete":"9999-01-01T00:00:00Z"}`),
 			},
 		},
 		{
@@ -272,15 +277,15 @@ func Test_processV1MessagesIDReactionsDelete(t *testing.T) {
 				Type:     message.TypeNormal,
 				Text:     "Hello world",
 				Medias:   []message.Media{},
-				Metadata: message.Metadata{Reactions: []message.Reaction{{Emoji: "👍", OwnerType: "agent", OwnerID: uuid.FromStringOrNil("7fcd7990-42eb-11ed-9fa6-b4cd93af9796"), TMCreate: "2021-11-23T17:55:39.712000Z"}}},
-				TMCreate: "2021-11-23T17:55:39.712000Z",
-				TMUpdate: "2021-11-23T18:00:00.000000Z",
-				TMDelete: "9999-01-01T00:00:00.000000Z",
+				Metadata: message.Metadata{Reactions: []message.Reaction{{Emoji: "👍", OwnerType: "agent", OwnerID: uuid.FromStringOrNil("7fcd7990-42eb-11ed-9fa6-b4cd93af9796"), TMCreate: timePtrReact(time.Date(2021, 11, 23, 17, 55, 39, 712000000, time.UTC))}}},
+				TMCreate: timePtrReact(time.Date(2021, 11, 23, 17, 55, 39, 712000000, time.UTC)),
+				TMUpdate: timePtrReact(time.Date(2021, 11, 23, 18, 0, 0, 0, time.UTC)),
+				TMDelete: timePtrReact(time.Date(9999, 1, 1, 0, 0, 0, 0, time.UTC)),
 			},
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"9ade9b10-64ed-11ed-b1c8-d6ef95af9798","customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","owner_type":"agent","owner_id":"7fcd7990-42eb-11ed-9fa6-b4cd93af9796","chat_id":"6ebc6880-31da-11ed-8e95-a3bc92af9795","type":"normal","text":"Hello world","medias":[],"metadata":{"reactions":[{"emoji":"👍","owner_type":"agent","owner_id":"7fcd7990-42eb-11ed-9fa6-b4cd93af9796","tm_create":"2021-11-23T17:55:39.712000Z"}]},"tm_create":"2021-11-23T17:55:39.712000Z","tm_update":"2021-11-23T18:00:00.000000Z","tm_delete":"9999-01-01T00:00:00.000000Z"}`),
+				Data:       []byte(`{"id":"9ade9b10-64ed-11ed-b1c8-d6ef95af9798","customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","owner_type":"agent","owner_id":"7fcd7990-42eb-11ed-9fa6-b4cd93af9796","chat_id":"6ebc6880-31da-11ed-8e95-a3bc92af9795","type":"normal","text":"Hello world","medias":[],"metadata":{"reactions":[{"emoji":"👍","owner_type":"agent","owner_id":"7fcd7990-42eb-11ed-9fa6-b4cd93af9796","tm_create":"2021-11-23T17:55:39.712Z"}]},"tm_create":"2021-11-23T17:55:39.712Z","tm_update":"2021-11-23T18:00:00Z","tm_delete":"9999-01-01T00:00:00Z"}`),
 			},
 		},
 	}

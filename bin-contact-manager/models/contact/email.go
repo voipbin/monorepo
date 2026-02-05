@@ -1,6 +1,8 @@
 package contact
 
 import (
+	"time"
+
 	"github.com/gofrs/uuid"
 )
 
@@ -40,7 +42,7 @@ type Email struct {
 	IsPrimary bool `json:"is_primary" db:"is_primary"`
 
 	// TMCreate is when this email was added to the contact.
-	TMCreate string `json:"tm_create" db:"tm_create"`
+	TMCreate *time.Time `json:"tm_create" db:"tm_create"`
 }
 
 // Email type constants

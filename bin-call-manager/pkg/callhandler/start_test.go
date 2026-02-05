@@ -1,9 +1,11 @@
 package callhandler
 
 import (
+	"monorepo/bin-call-manager/pkg/testhelper"
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 	bmbilling "monorepo/bin-billing-manager/models/billing"
@@ -87,7 +89,7 @@ func Test_Start_incoming_typeConferenceStart(t *testing.T) {
 		responseConference  *cfconference.Conference
 		responseFlow        *fmflow.Flow
 		responseActiveflow  *fmactiveflow.Activeflow
-		responseCurTime     string
+		responseCurTime     *time.Time
 
 		expectActions    []fmaction.Action
 		expectBridgeName string
@@ -156,7 +158,7 @@ func Test_Start_incoming_typeConferenceStart(t *testing.T) {
 					ID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
 				},
 			},
-			responseCurTime: "2020-04-18T03:22:17.995000Z",
+			responseCurTime: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
 
 			expectActions: []fmaction.Action{
 				{
@@ -199,11 +201,11 @@ func Test_Start_incoming_typeConferenceStart(t *testing.T) {
 				Direction:  call.DirectionIncoming,
 				Dialroutes: []rmroute.Route{},
 
-				TMCreate:      "2020-04-18T03:22:17.995000Z",
-				TMUpdate:      dbhandler.DefaultTimeStamp,
-				TMProgressing: dbhandler.DefaultTimeStamp,
-				TMRinging:     dbhandler.DefaultTimeStamp,
-				TMHangup:      dbhandler.DefaultTimeStamp,
+				TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMUpdate:      nil,
+				TMProgressing: nil,
+				TMRinging:     nil,
+				TMHangup:      nil,
 			},
 		},
 	}
@@ -392,11 +394,11 @@ func Test_StartCallHandle_IncomingTypeFlow(t *testing.T) {
 				Direction:  call.DirectionIncoming,
 				Dialroutes: []rmroute.Route{},
 
-				TMCreate:      "2020-04-18T03:22:17.995000Z",
-				TMUpdate:      dbhandler.DefaultTimeStamp,
-				TMProgressing: dbhandler.DefaultTimeStamp,
-				TMRinging:     dbhandler.DefaultTimeStamp,
-				TMHangup:      dbhandler.DefaultTimeStamp,
+				TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMUpdate:      nil,
+				TMProgressing: nil,
+				TMRinging:     nil,
+				TMHangup:      nil,
 			},
 		},
 	}
