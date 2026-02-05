@@ -30,7 +30,6 @@ from pipecat.frames.frames import LLMRunFrame
 from pipecat.pipeline.pipeline import Pipeline
 from pipecat.pipeline.runner import PipelineRunner
 from pipecat.pipeline.task import PipelineParams, PipelineTask
-from pipecat.processors.frameworks.rtvi import RTVIConfig, RTVIObserver, RTVIProcessor
 from pipecat.serializers.protobuf import ProtobufFrameSerializer
 from pipecat.transports.websocket.client import (
     WebsocketClientParams,
@@ -117,15 +116,6 @@ async def run_pipeline(
         }
     init_tasks["ws_output"] = asyncio.create_task(init_output_ws())
 
-    async def init_rtvi():
-        start = time.monotonic()
-        rtvi = RTVIProcessor(config=RTVIConfig(config=[]))
-        logger.info(f"[INIT][rtvi] done in {time.monotonic() - start:.3f} sec. pipeline id={id}")
-        return {
-            "rtvi": rtvi,
-        }
-    init_tasks["rtvi"] = asyncio.create_task(init_rtvi())
-
     # Await all init tasks
     try:
         results_list = await asyncio.gather(*init_tasks.values())
@@ -151,16 +141,17 @@ async def run_pipeline(
     llm_context_aggregator = results["llm_context_aggregator"]
 
     transport_output = results["transport_output"]
-    rtvi = results["rtvi"]
 
     # Assemble pipeline stages
+    # Note: RTVIProcessor and RTVIObserver are NOT manually added here.
+    # PipelineTask automatically sets up RTVI (enable_rtvi=True by default).
+    # Adding them manually would cause duplicate bot-llm-text messages.
     pipeline_stages = []
 
     if transport_input:
         pipeline_stages.append(transport_input.input())
         pipeline_stages.append(stt_service)
 
-    pipeline_stages.append(rtvi)
     pipeline_stages.append(llm_context_aggregator.user())
     pipeline_stages.append(llm_service)
 
@@ -183,7 +174,6 @@ async def run_pipeline(
             enable_metrics=True,
             enable_usage_metrics=True,
         ),
-        observers=[RTVIObserver(rtvi)],
     )
 
     await task_manager.add(id, task)
