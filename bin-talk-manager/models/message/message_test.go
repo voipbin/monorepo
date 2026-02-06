@@ -8,7 +8,6 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	amagent "monorepo/bin-agent-manager/models/agent"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 )
@@ -49,13 +48,8 @@ func Test_MediaMarshalUnmarshal(t *testing.T) {
 		{
 			name: "media_type_agent",
 			media: Media{
-				Type: MediaTypeAgent,
-				Agent: amagent.Agent{
-					Identity: commonidentity.Identity{
-						ID: uuid.FromStringOrNil("b2c3d4e5-f6a7-8901-bcde-f23456789012"),
-					},
-					Username: "testagent",
-				},
+				Type:    MediaTypeAgent,
+				AgentID: uuid.FromStringOrNil("b2c3d4e5-f6a7-8901-bcde-f23456789012"),
 			},
 		},
 	}

@@ -6,7 +6,6 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	amagent "monorepo/bin-agent-manager/models/agent"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 )
@@ -72,7 +71,7 @@ type Media struct {
 	Type MediaType `json:"type,omitempty"`
 
 	Address commonaddress.Address `json:"address,omitempty"`  // valid only if the Type is address type
-	Agent   amagent.Agent         `json:"agent,omitempty"`    // valid only if the type is agent type
+	AgentID uuid.UUID             `json:"agent_id,omitempty"` // valid only if the type is agent type
 	FileID  uuid.UUID             `json:"file_id,omitempty"`  // valid only if the Type is file
 	LinkURL string                `json:"link_url,omitempty"` // valid only if the Type is link type
 }
