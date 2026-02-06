@@ -2,32 +2,32 @@
 
 Call
 ====
-In this Quickstart, you'll learn how to make an outbound voice call.
+Make an outbound voice call using the VoIPBin API. You can either define actions inline or reference an existing flow.
 
-Make your first voice call with manual actions
------------------------------------------------
-Use the VoIPBIN API to initiate an outbound telephone call from your VoIPBIN account.
+Make a call with inline actions
+-------------------------------
+This example initiates a call and plays a text-to-speech message to the recipient:
 
 .. code::
 
-    $ curl --location --request POST 'https://api.voipbin.net/v1.0/calls?token=your-voipbin-token' \
+    $ curl --request POST 'https://api.voipbin.net/v1.0/calls?token=<your-token>' \
         --header 'Content-Type: application/json' \
         --data-raw '{
             "source": {
                 "type": "tel",
-                "target": "+82XXXXXXXX"
+                "target": "<your-source-number>"
             },
             "destinations": [
                 {
                     "type": "tel",
-                    "target": "+82XXXXXXXX"
+                    "target": "<your-destination-number>"
                 }
             ],
             "actions": [
                 {
                     "type": "talk",
                     "option": {
-                        "text": "Hello. This is voipbin test. The voipbin provides ready to go CPaaS service. Thank you, bye.",
+                        "text": "Hello. This is a VoIPBin test call. Thank you, bye.",
                         "gender": "female",
                         "language": "en-US"
                     }
@@ -35,108 +35,48 @@ Use the VoIPBIN API to initiate an outbound telephone call from your VoIPBIN acc
             ]
         }'
 
-    [
-        {
-            "id": "e2a65df2-4e50-4e37-8628-df07b3cec579",
-            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
-            "flow_id": "6cbaa351-b112-452d-84c2-01488671013d",
-            "type": "flow",
-            "master_call_id": "00000000-0000-0000-0000-000000000000",
-            "chained_call_ids": [],
-            "recording_id": "00000000-0000-0000-0000-000000000000",
-            "recording_ids": [],
-            "source": {
-                "type": "tel",
-                "target": "+15551234567",
-                "target_name": "",
-                "name": "",
-                "detail": ""
-            },
-            "destination": {
-                "type": "tel",
-                "target": "+15559876543",
-                "target_name": "",
-                "name": "",
-                "detail": ""
-            },
-            "status": "dialing",
-            "action": {
-                "id": "00000000-0000-0000-0000-000000000001",
-                "next_id": "00000000-0000-0000-0000-000000000000",
-                "type": ""
-            },
-            "direction": "outgoing",
-            "hangup_by": "",
-            "hangup_reason": "",
-            "tm_progressing": "9999-01-01 00:00:00.000000",
-            "tm_ringing": "9999-01-01 00:00:00.000000",
-            "tm_hangup": "9999-01-01 00:00:00.000000",
-            "tm_create": "2023-03-28 12:00:05.248732",
-            "tm_update": "9999-01-01 00:00:00.000000",
-            "tm_delete": "9999-01-01 00:00:00.000000"
-        }
-    ]
-
-Make your first voice call with existing flow
----------------------------------------------
-Use the VoIPBIN API to initiate an outbound telephone call with existing flow.
+The response includes the call details with ``"status": "dialing"``:
 
 .. code::
 
-    $ curl --location --request POST 'https://api.voipbin.net/v1.0/calls?token=your-voipbin-token' \
+    [
+        {
+            "id": "e2a65df2-4e50-4e37-8628-df07b3cec579",
+            "flow_id": "6cbaa351-b112-452d-84c2-01488671013d",
+            "source": {
+                "type": "tel",
+                "target": "<your-source-number>"
+            },
+            "destination": {
+                "type": "tel",
+                "target": "<your-destination-number>"
+            },
+            "status": "dialing",
+            "direction": "outgoing",
+            ...
+        }
+    ]
+
+Make a call with an existing flow
+---------------------------------
+If you have already created a flow, you can reference it by ``flow_id`` instead of defining actions inline:
+
+.. code::
+
+    $ curl --request POST 'https://api.voipbin.net/v1.0/calls?token=<your-token>' \
         --header 'Content-Type: application/json' \
         --data-raw '{
             "source": {
                 "type": "tel",
-                "target": "<your source number>"
+                "target": "<your-source-number>"
             },
             "destinations": [
                 {
                     "type": "tel",
-                    "target": "<your destination number>"
+                    "target": "<your-destination-number>"
                 }
             ],
-            "flow_id": "ed95a3c4-22d4-11ee-add7-8742a741581e",
+            "flow_id": "<your-flow-id>"
         }'
 
-    [
-        {
-            "id": "e2a65df2-4e50-4e37-8628-df07b3cec579",
-            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
-            "flow_id": "ed95a3c4-22d4-11ee-add7-8742a741581e",
-            "type": "flow",
-            "master_call_id": "00000000-0000-0000-0000-000000000000",
-            "chained_call_ids": [],
-            "recording_id": "00000000-0000-0000-0000-000000000000",
-            "recording_ids": [],
-            "source": {
-                "type": "tel",
-                "target": "+15551234567",
-                "target_name": "",
-                "name": "",
-                "detail": ""
-            },
-            "destination": {
-                "type": "tel",
-                "target": "+15559876543",
-                "target_name": "",
-                "name": "",
-                "detail": ""
-            },
-            "status": "dialing",
-            "action": {
-                "id": "00000000-0000-0000-0000-000000000001",
-                "next_id": "00000000-0000-0000-0000-000000000000",
-                "type": ""
-            },
-            "direction": "outgoing",
-            "hangup_by": "",
-            "hangup_reason": "",
-            "tm_progressing": "9999-01-01 00:00:00.000000",
-            "tm_ringing": "9999-01-01 00:00:00.000000",
-            "tm_hangup": "9999-01-01 00:00:00.000000",
-            "tm_create": "2023-03-28 12:00:05.248732",
-            "tm_update": "9999-01-01 00:00:00.000000",
-            "tm_delete": "9999-01-01 00:00:00.000000"
-        }
-    ]
+For more details on flows, see the :ref:`Flow tutorial <flow-main>`.
