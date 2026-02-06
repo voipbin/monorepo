@@ -36,6 +36,10 @@ func (h *sipHandler) GetSIPMessages(ctx context.Context, sipCallID string, fromT
 		"func":       "GetSIPMessages",
 		"sip_callid": sipCallID,
 	})
+	log.WithFields(logrus.Fields{
+		"from_time": fromTime,
+		"to_time":   toTime,
+	}).Info("SIPHandler called - fetching SIP messages")
 
 	messages, err := h.homerHandler.GetSIPMessages(ctx, sipCallID, fromTime, toTime)
 	if err != nil {
@@ -59,6 +63,10 @@ func (h *sipHandler) GetPcap(ctx context.Context, sipCallID string, fromTime, to
 		"func":       "GetPcap",
 		"sip_callid": sipCallID,
 	})
+	log.WithFields(logrus.Fields{
+		"from_time": fromTime,
+		"to_time":   toTime,
+	}).Info("SIPHandler called - fetching PCAP data")
 
 	pcapData, err := h.homerHandler.GetPcap(ctx, sipCallID, fromTime, toTime)
 	if err != nil {

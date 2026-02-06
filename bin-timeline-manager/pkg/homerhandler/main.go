@@ -106,6 +106,11 @@ func (h *homerHandler) GetSIPMessages(ctx context.Context, sipCallID string, fro
 		"func":       "GetSIPMessages",
 		"sip_callid": sipCallID,
 	})
+	log.WithFields(logrus.Fields{
+		"homer_addr": h.homerAPIAddr,
+		"from_time":  fromTime,
+		"to_time":    toTime,
+	}).Info("HomerHandler called - querying Homer API for SIP messages")
 
 	if h.homerAPIAddr == "" || h.homerAuthToken == "" {
 		return nil, fmt.Errorf("missing Homer API address or auth token")
@@ -210,6 +215,11 @@ func (h *homerHandler) GetPcap(ctx context.Context, sipCallID string, fromTime, 
 		"func":       "GetPcap",
 		"sip_callid": sipCallID,
 	})
+	log.WithFields(logrus.Fields{
+		"homer_addr": h.homerAPIAddr,
+		"from_time":  fromTime,
+		"to_time":    toTime,
+	}).Info("HomerHandler called - querying Homer API for PCAP data")
 
 	if h.homerAPIAddr == "" || h.homerAuthToken == "" {
 		return nil, fmt.Errorf("missing Homer API address or auth token")

@@ -16,6 +16,7 @@ func (h *listenHandler) v1SIPMessagesPost(ctx context.Context, m *sock.Request) 
 	log := logrus.WithFields(logrus.Fields{
 		"func": "v1SIPMessagesPost",
 	})
+	log.Info("RPC handler called - SIP messages request received")
 
 	// Parse request
 	var req request.V1SIPMessagesPost
@@ -64,6 +65,7 @@ func (h *listenHandler) v1SIPPcapPost(ctx context.Context, m *sock.Request) (*so
 	log := logrus.WithFields(logrus.Fields{
 		"func": "v1SIPPcapPost",
 	})
+	log.Info("RPC handler called - PCAP request received")
 
 	// Parse request
 	var req request.V1SIPPcapPost
