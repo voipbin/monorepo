@@ -424,7 +424,11 @@ This applies to any struct that:
 1. **Update the Go struct** in the service's `models/` directory
 2. **Update the OpenAPI schema** in `bin-openapi-manager/openapi/openapi.yaml`
 3. **Regenerate OpenAPI types** with `go generate ./...` in `bin-openapi-manager`
-4. **Run verification** for both the service AND `bin-openapi-manager`
+4. **Regenerate API server code** with `go generate ./...` in `bin-api-manager` (it generates server code FROM the openapi.yaml)
+5. **Run verification** for the service, `bin-openapi-manager`, AND `bin-api-manager`
+
+**Why api-manager regeneration is required:**
+`bin-api-manager` uses `go generate` to create server code directly from `bin-openapi-manager/openapi/openapi.yaml`. The generated code lives in `bin-api-manager/gens/openapi_server/gen.go`. If you update the OpenAPI spec but don't regenerate api-manager, the API server will use stale types.
 
 **Example:**
 ```go
@@ -439,10 +443,15 @@ TalkManagerMedia:
     agent_id:           # Changed from agent: $ref AgentManagerAgent
       type: string
       format: uuid
+
+// Then regenerate BOTH:
+// cd bin-openapi-manager && go generate ./...
+// cd bin-api-manager && go generate ./...
 ```
 
 **Why this matters:**
 - Clients (web apps, mobile apps) depend on the OpenAPI spec for type generation
+- The API server uses generated types from the spec
 - Mismatched specs cause runtime errors or silent data loss
 - API documentation becomes incorrect
 
