@@ -410,6 +410,66 @@ func (h *server) PostContactsIdPhoneNumbers(c *gin.Context, id string) {
 	c.JSON(201, res)
 }
 
+func (h *server) PutContactsIdPhoneNumbersPhoneNumberId(c *gin.Context, id string, phoneNumberId string) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "PutContactsIdPhoneNumbersPhoneNumberId",
+		"request_address": c.ClientIP,
+	})
+
+	tmp, exists := c.Get("agent")
+	if !exists {
+		log.Errorf("Could not find agent info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
+
+	contactID := uuid.FromStringOrNil(id)
+	if contactID == uuid.Nil {
+		log.Error("Could not parse the contact id.")
+		c.AbortWithStatus(400)
+		return
+	}
+
+	phoneNumID := uuid.FromStringOrNil(phoneNumberId)
+	if phoneNumID == uuid.Nil {
+		log.Error("Could not parse the phone number id.")
+		c.AbortWithStatus(400)
+		return
+	}
+
+	var req openapi_server.PutContactsIdPhoneNumbersPhoneNumberIdJSONBody
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	// Build fields map from request
+	fields := make(map[string]any)
+	if req.Number != nil {
+		fields["number"] = *req.Number
+	}
+	if req.Type != nil {
+		fields["type"] = string(*req.Type)
+	}
+	if req.IsPrimary != nil {
+		fields["is_primary"] = *req.IsPrimary
+	}
+
+	res, err := h.serviceHandler.ContactPhoneNumberUpdate(c.Request.Context(), &a, contactID, phoneNumID, fields)
+	if err != nil {
+		log.Errorf("Could not update phone number on contact. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
 func (h *server) DeleteContactsIdPhoneNumbersPhoneNumberId(c *gin.Context, id string, phoneNumberId string) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "DeleteContactsIdPhoneNumbersPhoneNumberId",
@@ -500,6 +560,66 @@ func (h *server) PostContactsIdEmails(c *gin.Context, id string) {
 	}
 
 	c.JSON(201, res)
+}
+
+func (h *server) PutContactsIdEmailsEmailId(c *gin.Context, id string, emailId string) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "PutContactsIdEmailsEmailId",
+		"request_address": c.ClientIP,
+	})
+
+	tmp, exists := c.Get("agent")
+	if !exists {
+		log.Errorf("Could not find agent info.")
+		c.AbortWithStatus(400)
+		return
+	}
+	a := tmp.(amagent.Agent)
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
+
+	contactID := uuid.FromStringOrNil(id)
+	if contactID == uuid.Nil {
+		log.Error("Could not parse the contact id.")
+		c.AbortWithStatus(400)
+		return
+	}
+
+	emlID := uuid.FromStringOrNil(emailId)
+	if emlID == uuid.Nil {
+		log.Error("Could not parse the email id.")
+		c.AbortWithStatus(400)
+		return
+	}
+
+	var req openapi_server.PutContactsIdEmailsEmailIdJSONBody
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	// Build fields map from request
+	fields := make(map[string]any)
+	if req.Address != nil {
+		fields["address"] = string(*req.Address)
+	}
+	if req.Type != nil {
+		fields["type"] = string(*req.Type)
+	}
+	if req.IsPrimary != nil {
+		fields["is_primary"] = *req.IsPrimary
+	}
+
+	res, err := h.serviceHandler.ContactEmailUpdate(c.Request.Context(), &a, contactID, emlID, fields)
+	if err != nil {
+		log.Errorf("Could not update email on contact. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
 }
 
 func (h *server) DeleteContactsIdEmailsEmailId(c *gin.Context, id string, emailId string) {

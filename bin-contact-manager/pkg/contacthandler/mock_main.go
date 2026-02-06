@@ -251,3 +251,33 @@ func (mr *MockContactHandlerMockRecorder) Update(ctx, id, fields any) *gomock.Ca
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockContactHandler)(nil).Update), ctx, id, fields)
 }
+
+// UpdateEmail mocks base method.
+func (m *MockContactHandler) UpdateEmail(ctx context.Context, contactID, emailID uuid.UUID, fields map[string]any) (*contact.Contact, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateEmail", ctx, contactID, emailID, fields)
+	ret0, _ := ret[0].(*contact.Contact)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateEmail indicates an expected call of UpdateEmail.
+func (mr *MockContactHandlerMockRecorder) UpdateEmail(ctx, contactID, emailID, fields any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateEmail", reflect.TypeOf((*MockContactHandler)(nil).UpdateEmail), ctx, contactID, emailID, fields)
+}
+
+// UpdatePhoneNumber mocks base method.
+func (m *MockContactHandler) UpdatePhoneNumber(ctx context.Context, contactID, phoneID uuid.UUID, fields map[string]any) (*contact.Contact, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdatePhoneNumber", ctx, contactID, phoneID, fields)
+	ret0, _ := ret[0].(*contact.Contact)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdatePhoneNumber indicates an expected call of UpdatePhoneNumber.
+func (mr *MockContactHandlerMockRecorder) UpdatePhoneNumber(ctx, contactID, phoneID, fields any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePhoneNumber", reflect.TypeOf((*MockContactHandler)(nil).UpdatePhoneNumber), ctx, contactID, phoneID, fields)
+}

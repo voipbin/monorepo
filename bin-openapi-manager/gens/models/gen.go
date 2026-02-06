@@ -699,6 +699,13 @@ const (
 	PostContactsIdEmailsJSONBodyTypeWork     PostContactsIdEmailsJSONBodyType = "work"
 )
 
+// Defines values for PutContactsIdEmailsEmailIdJSONBodyType.
+const (
+	PutContactsIdEmailsEmailIdJSONBodyTypeOther    PutContactsIdEmailsEmailIdJSONBodyType = "other"
+	PutContactsIdEmailsEmailIdJSONBodyTypePersonal PutContactsIdEmailsEmailIdJSONBodyType = "personal"
+	PutContactsIdEmailsEmailIdJSONBodyTypeWork     PutContactsIdEmailsEmailIdJSONBodyType = "work"
+)
+
 // Defines values for PostContactsIdPhoneNumbersJSONBodyType.
 const (
 	PostContactsIdPhoneNumbersJSONBodyTypeFax    PostContactsIdPhoneNumbersJSONBodyType = "fax"
@@ -706,6 +713,15 @@ const (
 	PostContactsIdPhoneNumbersJSONBodyTypeMobile PostContactsIdPhoneNumbersJSONBodyType = "mobile"
 	PostContactsIdPhoneNumbersJSONBodyTypeOther  PostContactsIdPhoneNumbersJSONBodyType = "other"
 	PostContactsIdPhoneNumbersJSONBodyTypeWork   PostContactsIdPhoneNumbersJSONBodyType = "work"
+)
+
+// Defines values for PutContactsIdPhoneNumbersPhoneNumberIdJSONBodyType.
+const (
+	PutContactsIdPhoneNumbersPhoneNumberIdJSONBodyTypeFax    PutContactsIdPhoneNumbersPhoneNumberIdJSONBodyType = "fax"
+	PutContactsIdPhoneNumbersPhoneNumberIdJSONBodyTypeHome   PutContactsIdPhoneNumbersPhoneNumberIdJSONBodyType = "home"
+	PutContactsIdPhoneNumbersPhoneNumberIdJSONBodyTypeMobile PutContactsIdPhoneNumbersPhoneNumberIdJSONBodyType = "mobile"
+	PutContactsIdPhoneNumbersPhoneNumberIdJSONBodyTypeOther  PutContactsIdPhoneNumbersPhoneNumberIdJSONBodyType = "other"
+	PutContactsIdPhoneNumbersPhoneNumberIdJSONBodyTypeWork   PutContactsIdPhoneNumbersPhoneNumberIdJSONBodyType = "work"
 )
 
 // Defines values for GetConversationsJSONBodyType.
@@ -3836,6 +3852,16 @@ type PostContactsIdEmailsJSONBody struct {
 // PostContactsIdEmailsJSONBodyType defines parameters for PostContactsIdEmails.
 type PostContactsIdEmailsJSONBodyType string
 
+// PutContactsIdEmailsEmailIdJSONBody defines parameters for PutContactsIdEmailsEmailId.
+type PutContactsIdEmailsEmailIdJSONBody struct {
+	Address   *openapi_types.Email                    `json:"address,omitempty"`
+	IsPrimary *bool                                   `json:"is_primary,omitempty"`
+	Type      *PutContactsIdEmailsEmailIdJSONBodyType `json:"type,omitempty"`
+}
+
+// PutContactsIdEmailsEmailIdJSONBodyType defines parameters for PutContactsIdEmailsEmailId.
+type PutContactsIdEmailsEmailIdJSONBodyType string
+
 // PostContactsIdPhoneNumbersJSONBody defines parameters for PostContactsIdPhoneNumbers.
 type PostContactsIdPhoneNumbersJSONBody struct {
 	IsPrimary *bool                                   `json:"is_primary,omitempty"`
@@ -3845,6 +3871,16 @@ type PostContactsIdPhoneNumbersJSONBody struct {
 
 // PostContactsIdPhoneNumbersJSONBodyType defines parameters for PostContactsIdPhoneNumbers.
 type PostContactsIdPhoneNumbersJSONBodyType string
+
+// PutContactsIdPhoneNumbersPhoneNumberIdJSONBody defines parameters for PutContactsIdPhoneNumbersPhoneNumberId.
+type PutContactsIdPhoneNumbersPhoneNumberIdJSONBody struct {
+	IsPrimary *bool                                               `json:"is_primary,omitempty"`
+	Number    *string                                             `json:"number,omitempty"`
+	Type      *PutContactsIdPhoneNumbersPhoneNumberIdJSONBodyType `json:"type,omitempty"`
+}
+
+// PutContactsIdPhoneNumbersPhoneNumberIdJSONBodyType defines parameters for PutContactsIdPhoneNumbersPhoneNumberId.
+type PutContactsIdPhoneNumbersPhoneNumberIdJSONBodyType string
 
 // PostContactsIdTagsJSONBody defines parameters for PostContactsIdTags.
 type PostContactsIdTagsJSONBody struct {
@@ -4941,8 +4977,14 @@ type PutContactsIdJSONRequestBody PutContactsIdJSONBody
 // PostContactsIdEmailsJSONRequestBody defines body for PostContactsIdEmails for application/json ContentType.
 type PostContactsIdEmailsJSONRequestBody PostContactsIdEmailsJSONBody
 
+// PutContactsIdEmailsEmailIdJSONRequestBody defines body for PutContactsIdEmailsEmailId for application/json ContentType.
+type PutContactsIdEmailsEmailIdJSONRequestBody PutContactsIdEmailsEmailIdJSONBody
+
 // PostContactsIdPhoneNumbersJSONRequestBody defines body for PostContactsIdPhoneNumbers for application/json ContentType.
 type PostContactsIdPhoneNumbersJSONRequestBody PostContactsIdPhoneNumbersJSONBody
+
+// PutContactsIdPhoneNumbersPhoneNumberIdJSONRequestBody defines body for PutContactsIdPhoneNumbersPhoneNumberId for application/json ContentType.
+type PutContactsIdPhoneNumbersPhoneNumberIdJSONRequestBody PutContactsIdPhoneNumbersPhoneNumberIdJSONBody
 
 // PostContactsIdTagsJSONRequestBody defines body for PostContactsIdTags for application/json ContentType.
 type PostContactsIdTagsJSONRequestBody PostContactsIdTagsJSONBody

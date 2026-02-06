@@ -186,6 +186,21 @@ func (mr *MockDBHandlerMockRecorder) EmailDelete(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EmailDelete", reflect.TypeOf((*MockDBHandler)(nil).EmailDelete), ctx, id)
 }
 
+// EmailGet mocks base method.
+func (m *MockDBHandler) EmailGet(ctx context.Context, id uuid.UUID) (*contact.Email, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EmailGet", ctx, id)
+	ret0, _ := ret[0].(*contact.Email)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// EmailGet indicates an expected call of EmailGet.
+func (mr *MockDBHandlerMockRecorder) EmailGet(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EmailGet", reflect.TypeOf((*MockDBHandler)(nil).EmailGet), ctx, id)
+}
+
 // EmailListByContactID mocks base method.
 func (m *MockDBHandler) EmailListByContactID(ctx context.Context, contactID uuid.UUID) ([]contact.Email, error) {
 	m.ctrl.T.Helper()
@@ -213,6 +228,20 @@ func (m *MockDBHandler) EmailResetPrimary(ctx context.Context, contactID uuid.UU
 func (mr *MockDBHandlerMockRecorder) EmailResetPrimary(ctx, contactID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EmailResetPrimary", reflect.TypeOf((*MockDBHandler)(nil).EmailResetPrimary), ctx, contactID)
+}
+
+// EmailUpdate mocks base method.
+func (m *MockDBHandler) EmailUpdate(ctx context.Context, id uuid.UUID, fields map[string]any) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EmailUpdate", ctx, id, fields)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EmailUpdate indicates an expected call of EmailUpdate.
+func (mr *MockDBHandlerMockRecorder) EmailUpdate(ctx, id, fields any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EmailUpdate", reflect.TypeOf((*MockDBHandler)(nil).EmailUpdate), ctx, id, fields)
 }
 
 // PhoneNumberCreate mocks base method.
@@ -243,6 +272,21 @@ func (mr *MockDBHandlerMockRecorder) PhoneNumberDelete(ctx, id any) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PhoneNumberDelete", reflect.TypeOf((*MockDBHandler)(nil).PhoneNumberDelete), ctx, id)
 }
 
+// PhoneNumberGet mocks base method.
+func (m *MockDBHandler) PhoneNumberGet(ctx context.Context, id uuid.UUID) (*contact.PhoneNumber, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PhoneNumberGet", ctx, id)
+	ret0, _ := ret[0].(*contact.PhoneNumber)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PhoneNumberGet indicates an expected call of PhoneNumberGet.
+func (mr *MockDBHandlerMockRecorder) PhoneNumberGet(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PhoneNumberGet", reflect.TypeOf((*MockDBHandler)(nil).PhoneNumberGet), ctx, id)
+}
+
 // PhoneNumberListByContactID mocks base method.
 func (m *MockDBHandler) PhoneNumberListByContactID(ctx context.Context, contactID uuid.UUID) ([]contact.PhoneNumber, error) {
 	m.ctrl.T.Helper()
@@ -270,6 +314,20 @@ func (m *MockDBHandler) PhoneNumberResetPrimary(ctx context.Context, contactID u
 func (mr *MockDBHandlerMockRecorder) PhoneNumberResetPrimary(ctx, contactID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PhoneNumberResetPrimary", reflect.TypeOf((*MockDBHandler)(nil).PhoneNumberResetPrimary), ctx, contactID)
+}
+
+// PhoneNumberUpdate mocks base method.
+func (m *MockDBHandler) PhoneNumberUpdate(ctx context.Context, id uuid.UUID, fields map[string]any) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PhoneNumberUpdate", ctx, id, fields)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PhoneNumberUpdate indicates an expected call of PhoneNumberUpdate.
+func (mr *MockDBHandlerMockRecorder) PhoneNumberUpdate(ctx, id, fields any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PhoneNumberUpdate", reflect.TypeOf((*MockDBHandler)(nil).PhoneNumberUpdate), ctx, id, fields)
 }
 
 // TagAssignmentCreate mocks base method.

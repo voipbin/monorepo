@@ -47,6 +47,20 @@ type EmailCreate struct {
 	IsPrimary bool   `json:"is_primary"`
 }
 
+// PhoneNumberUpdate is the request body for PUT /v1/contacts/{id}/phone-numbers/{phone_number_id}
+type PhoneNumberUpdate struct {
+	Number    *string `json:"number,omitempty"`
+	Type      *string `json:"type,omitempty"`
+	IsPrimary *bool   `json:"is_primary,omitempty"`
+}
+
+// EmailUpdate is the request body for PUT /v1/contacts/{id}/emails/{email_id}
+type EmailUpdate struct {
+	Address   *string `json:"address,omitempty"`
+	Type      *string `json:"type,omitempty"`
+	IsPrimary *bool   `json:"is_primary,omitempty"`
+}
+
 // TagAssignment is the request body for POST /v1/contacts/{id}/tags
 type TagAssignment struct {
 	TagID uuid.UUID `json:"tag_id"`

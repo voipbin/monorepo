@@ -2965,6 +2965,21 @@ func (mr *MockRequestHandlerMockRecorder) ContactV1EmailDelete(ctx, contactID, e
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactV1EmailDelete", reflect.TypeOf((*MockRequestHandler)(nil).ContactV1EmailDelete), ctx, contactID, emailID)
 }
 
+// ContactV1EmailUpdate mocks base method.
+func (m *MockRequestHandler) ContactV1EmailUpdate(ctx context.Context, contactID, emailID uuid.UUID, fields map[string]any) (*contact.Contact, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ContactV1EmailUpdate", ctx, contactID, emailID, fields)
+	ret0, _ := ret[0].(*contact.Contact)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ContactV1EmailUpdate indicates an expected call of ContactV1EmailUpdate.
+func (mr *MockRequestHandlerMockRecorder) ContactV1EmailUpdate(ctx, contactID, emailID, fields any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactV1EmailUpdate", reflect.TypeOf((*MockRequestHandler)(nil).ContactV1EmailUpdate), ctx, contactID, emailID, fields)
+}
+
 // ContactV1PhoneNumberCreate mocks base method.
 func (m *MockRequestHandler) ContactV1PhoneNumberCreate(ctx context.Context, contactID uuid.UUID, number, numberE164, phoneType string, isPrimary bool) (*contact.Contact, error) {
 	m.ctrl.T.Helper()
@@ -2993,6 +3008,21 @@ func (m *MockRequestHandler) ContactV1PhoneNumberDelete(ctx context.Context, con
 func (mr *MockRequestHandlerMockRecorder) ContactV1PhoneNumberDelete(ctx, contactID, phoneNumberID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactV1PhoneNumberDelete", reflect.TypeOf((*MockRequestHandler)(nil).ContactV1PhoneNumberDelete), ctx, contactID, phoneNumberID)
+}
+
+// ContactV1PhoneNumberUpdate mocks base method.
+func (m *MockRequestHandler) ContactV1PhoneNumberUpdate(ctx context.Context, contactID, phoneNumberID uuid.UUID, fields map[string]any) (*contact.Contact, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ContactV1PhoneNumberUpdate", ctx, contactID, phoneNumberID, fields)
+	ret0, _ := ret[0].(*contact.Contact)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ContactV1PhoneNumberUpdate indicates an expected call of ContactV1PhoneNumberUpdate.
+func (mr *MockRequestHandlerMockRecorder) ContactV1PhoneNumberUpdate(ctx, contactID, phoneNumberID, fields any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactV1PhoneNumberUpdate", reflect.TypeOf((*MockRequestHandler)(nil).ContactV1PhoneNumberUpdate), ctx, contactID, phoneNumberID, fields)
 }
 
 // ContactV1TagAdd mocks base method.

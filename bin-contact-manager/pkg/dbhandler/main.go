@@ -29,15 +29,19 @@ type DBHandler interface {
 
 	// PhoneNumber operations
 	PhoneNumberCreate(ctx context.Context, p *contact.PhoneNumber) error
+	PhoneNumberUpdate(ctx context.Context, id uuid.UUID, fields map[string]any) error
 	PhoneNumberDelete(ctx context.Context, id uuid.UUID) error
 	PhoneNumberListByContactID(ctx context.Context, contactID uuid.UUID) ([]contact.PhoneNumber, error)
 	PhoneNumberResetPrimary(ctx context.Context, contactID uuid.UUID) error
+	PhoneNumberGet(ctx context.Context, id uuid.UUID) (*contact.PhoneNumber, error)
 
 	// Email operations
 	EmailCreate(ctx context.Context, e *contact.Email) error
+	EmailUpdate(ctx context.Context, id uuid.UUID, fields map[string]any) error
 	EmailDelete(ctx context.Context, id uuid.UUID) error
 	EmailListByContactID(ctx context.Context, contactID uuid.UUID) ([]contact.Email, error)
 	EmailResetPrimary(ctx context.Context, contactID uuid.UUID) error
+	EmailGet(ctx context.Context, id uuid.UUID) (*contact.Email, error)
 
 	// TagAssignment operations
 	TagAssignmentCreate(ctx context.Context, contactID, tagID uuid.UUID) error

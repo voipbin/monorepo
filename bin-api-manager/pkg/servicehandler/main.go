@@ -385,6 +385,7 @@ type ServiceHandler interface {
 		phoneType string,
 		isPrimary bool,
 	) (*cmcontact.WebhookMessage, error)
+	ContactPhoneNumberUpdate(ctx context.Context, a *amagent.Agent, contactID uuid.UUID, phoneNumberID uuid.UUID, fields map[string]any) (*cmcontact.WebhookMessage, error)
 	ContactPhoneNumberDelete(ctx context.Context, a *amagent.Agent, contactID uuid.UUID, phoneNumberID uuid.UUID) (*cmcontact.WebhookMessage, error)
 	ContactEmailCreate(
 		ctx context.Context,
@@ -394,6 +395,7 @@ type ServiceHandler interface {
 		emailType string,
 		isPrimary bool,
 	) (*cmcontact.WebhookMessage, error)
+	ContactEmailUpdate(ctx context.Context, a *amagent.Agent, contactID uuid.UUID, emailID uuid.UUID, fields map[string]any) (*cmcontact.WebhookMessage, error)
 	ContactEmailDelete(ctx context.Context, a *amagent.Agent, contactID uuid.UUID, emailID uuid.UUID) (*cmcontact.WebhookMessage, error)
 	ContactTagAdd(ctx context.Context, a *amagent.Agent, contactID uuid.UUID, tagID uuid.UUID) (*cmcontact.WebhookMessage, error)
 	ContactTagRemove(ctx context.Context, a *amagent.Agent, contactID uuid.UUID, tagID uuid.UUID) (*cmcontact.WebhookMessage, error)

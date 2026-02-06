@@ -53,6 +53,58 @@ func (h *handler) PhoneNumberCreate(ctx context.Context, p *contact.PhoneNumber)
 	return nil
 }
 
+// PhoneNumberGet retrieves a single phone number by ID
+func (h *handler) PhoneNumberGet(ctx context.Context, id uuid.UUID) (*contact.PhoneNumber, error) {
+	columns := commondatabasehandler.GetDBFields(&contact.PhoneNumber{})
+
+	query, args, err := sq.Select(columns...).
+		From(phoneNumberTable).
+		Where(sq.Eq{"id": id.Bytes()}).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. PhoneNumberGet. err: %v", err)
+	}
+
+	rows, err := h.db.Query(query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. PhoneNumberGet. err: %v", err)
+	}
+	defer func() {
+		_ = rows.Close()
+	}()
+
+	if !rows.Next() {
+		return nil, ErrNotFound
+	}
+
+	res, err := h.phoneNumberGetFromRow(rows)
+	if err != nil {
+		return nil, fmt.Errorf("could not scan. PhoneNumberGet. err: %v", err)
+	}
+
+	return res, nil
+}
+
+// PhoneNumberUpdate updates a phone number record
+func (h *handler) PhoneNumberUpdate(ctx context.Context, id uuid.UUID, fields map[string]any) error {
+	q := sq.Update(phoneNumberTable).Where(sq.Eq{"id": id.Bytes()})
+	for k, v := range fields {
+		q = q.Set(k, v)
+	}
+
+	query, args, err := q.ToSql()
+	if err != nil {
+		return fmt.Errorf("could not build query. PhoneNumberUpdate. err: %v", err)
+	}
+
+	_, err = h.db.Exec(query, args...)
+	if err != nil {
+		return fmt.Errorf("could not execute. PhoneNumberUpdate. err: %v", err)
+	}
+
+	return nil
+}
+
 // PhoneNumberDelete deletes a phone number record
 func (h *handler) PhoneNumberDelete(ctx context.Context, id uuid.UUID) error {
 	// First get the phone number to find the contact_id for cache update
