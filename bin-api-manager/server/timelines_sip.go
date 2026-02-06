@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -98,5 +99,7 @@ func (h *server) GetTimelinesCallsCallIdPcap(c *gin.Context, callId openapi_type
 		return
 	}
 
+	filename := fmt.Sprintf("call-%s.pcap", callId.String())
+	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%q", filename))
 	c.Data(http.StatusOK, "application/vnd.tcpdump.pcap", pcapData)
 }
