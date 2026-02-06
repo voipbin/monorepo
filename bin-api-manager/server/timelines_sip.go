@@ -11,9 +11,9 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func (h *server) GetTimelinesCallCallIdSipMessages(c *gin.Context, callId openapi_types.UUID) {
+func (h *server) GetTimelinesCallsCallIdSipMessages(c *gin.Context, callId openapi_types.UUID) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":            "GetTimelinesCallCallIdSipMessages",
+		"func":            "GetTimelinesCallsCallIdSipMessages",
 		"request_address": c.ClientIP(),
 		"call_id":         callId,
 	})
@@ -55,9 +55,9 @@ func (h *server) GetTimelinesCallCallIdSipMessages(c *gin.Context, callId openap
 	c.JSON(http.StatusOK, res)
 }
 
-func (h *server) GetTimelinesCallCallIdPcap(c *gin.Context, callId openapi_types.UUID) {
+func (h *server) GetTimelinesCallsCallIdPcap(c *gin.Context, callId openapi_types.UUID) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":            "GetTimelinesCallCallIdPcap",
+		"func":            "GetTimelinesCallsCallIdPcap",
 		"request_address": c.ClientIP(),
 		"call_id":         callId,
 	})
