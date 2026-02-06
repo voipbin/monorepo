@@ -63,6 +63,8 @@ func (h *listenHandler) v1MessagesPost(ctx context.Context, m commonsock.Request
 }
 
 func (h *listenHandler) v1MessagesGet(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{"func": "v1MessagesGet", "request": m})
+
 	u, _ := url.Parse(m.URI)
 
 	// Parse pagination
@@ -76,7 +78,7 @@ func (h *listenHandler) v1MessagesGet(ctx context.Context, m commonsock.Request)
 	// Parse filters from request body using utilhandler pattern
 	tmpFilters, err := h.utilHandler.ParseFiltersFromRequestBody(m.Data)
 	if err != nil {
-		logrus.Errorf("Could not parse filters. err: %v", err)
+		log.Errorf("Could not parse filters. err: %v", err)
 		return simpleResponse(400), nil
 	}
 
@@ -86,12 +88,13 @@ func (h *listenHandler) v1MessagesGet(ctx context.Context, m commonsock.Request)
 		tmpFilters,
 	)
 	if err != nil {
-		logrus.Errorf("Could not convert filters. err: %v", err)
+		log.Errorf("Could not convert filters. err: %v", err)
 		return simpleResponse(400), nil
 	}
 
 	messages, err := h.messageHandler.MessageList(ctx, typedFilters, pageToken, pageSize)
 	if err != nil {
+		log.Errorf("Could not list the messages. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -104,11 +107,14 @@ func (h *listenHandler) v1MessagesGet(ctx context.Context, m commonsock.Request)
 }
 
 func (h *listenHandler) v1MessagesIDGet(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{"func": "v1MessagesIDGet", "request": m})
+
 	matches := regV1MessagesID.FindStringSubmatch(m.URI)
 	messageID := uuid.FromStringOrNil(matches[1])
 
 	msg, err := h.messageHandler.MessageGet(ctx, messageID)
 	if err != nil {
+		log.Errorf("Could not get the message. err: %v", err)
 		return simpleResponse(404), nil
 	}
 
@@ -121,11 +127,14 @@ func (h *listenHandler) v1MessagesIDGet(ctx context.Context, m commonsock.Reques
 }
 
 func (h *listenHandler) v1MessagesIDDelete(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{"func": "v1MessagesIDDelete", "request": m})
+
 	matches := regV1MessagesID.FindStringSubmatch(m.URI)
 	messageID := uuid.FromStringOrNil(matches[1])
 
 	msg, err := h.messageHandler.MessageDelete(ctx, messageID)
 	if err != nil {
+		log.Errorf("Could not delete the message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
