@@ -23,7 +23,7 @@ const (
 	defaultHTTPTimeout = 30 * time.Second
 
 	// defaultTimeBuffer is the buffer added/subtracted to the time range for Homer searches.
-	defaultTimeBuffer = 30 * time.Second
+	defaultTimeBuffer = 10 * time.Minute
 
 	// defaultSIPMessageLimit is the maximum number of SIP messages returned.
 	defaultSIPMessageLimit = 50
