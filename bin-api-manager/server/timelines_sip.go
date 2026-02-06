@@ -17,6 +17,7 @@ func (h *server) GetTimelinesCallsCallIdSipMessages(c *gin.Context, callId opena
 		"request_address": c.ClientIP(),
 		"call_id":         callId,
 	})
+	log.Info("Handler called - SIP messages request received")
 
 	// Get agent from context
 	tmp, exists := c.Get("agent")
@@ -61,6 +62,7 @@ func (h *server) GetTimelinesCallsCallIdPcap(c *gin.Context, callId openapi_type
 		"request_address": c.ClientIP(),
 		"call_id":         callId,
 	})
+	log.Info("Handler called - PCAP request received")
 
 	// Get agent from context
 	tmp, exists := c.Get("agent")
