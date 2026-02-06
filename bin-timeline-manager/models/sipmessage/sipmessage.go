@@ -13,9 +13,8 @@ type SIPMessage struct {
 
 // SIPMessagesResponse is the response for SIP messages list.
 type SIPMessagesResponse struct {
-	CallID    string        `json:"call_id"`
-	SIPCallID string        `json:"sip_call_id"`
-	Messages  []*SIPMessage `json:"messages"`
+	NextPageToken string        `json:"next_page_token"`
+	Result        []*SIPMessage `json:"result"`
 }
 
 // PcapResponse is the response for PCAP download.

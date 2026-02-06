@@ -45,9 +45,6 @@ func (h *listenHandler) v1SIPMessagesPost(ctx context.Context, m *sock.Request) 
 		return simpleResponse(500), nil
 	}
 
-	// Set the CallID from the request on the response
-	result.CallID = req.CallID.String()
-
 	// Marshal response
 	data, err := json.Marshal(result)
 	if err != nil {

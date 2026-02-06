@@ -17754,8 +17754,9 @@ type GetTimelinesCallsCallIdSipMessagesResponseObject interface {
 }
 
 type GetTimelinesCallsCallIdSipMessages200JSONResponse struct {
-	CallId   *openapi_types.UUID `json:"call_id,omitempty"`
-	Messages *[]struct {
+	// NextPageToken Token for fetching the next page of results (empty if no more pages)
+	NextPageToken *string `json:"next_page_token,omitempty"`
+	Result        *[]struct {
 		DstIp     *string    `json:"dst_ip,omitempty"`
 		DstPort   *int       `json:"dst_port,omitempty"`
 		Method    *string    `json:"method,omitempty"`
@@ -17763,8 +17764,7 @@ type GetTimelinesCallsCallIdSipMessages200JSONResponse struct {
 		SrcIp     *string    `json:"src_ip,omitempty"`
 		SrcPort   *int       `json:"src_port,omitempty"`
 		Timestamp *time.Time `json:"timestamp,omitempty"`
-	} `json:"messages,omitempty"`
-	SipCallId *string `json:"sip_call_id,omitempty"`
+	} `json:"result,omitempty"`
 }
 
 func (response GetTimelinesCallsCallIdSipMessages200JSONResponse) VisitGetTimelinesCallsCallIdSipMessagesResponse(w http.ResponseWriter) error {

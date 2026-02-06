@@ -182,8 +182,9 @@ func (h *homerHandler) GetSIPMessages(ctx context.Context, sipCallID string, fro
 	// Convert Homer messages to SIPMessage model
 	messages := make([]*sipmessage.SIPMessage, 0, len(apiResponse.Data.Messages))
 	for _, msg := range apiResponse.Data.Messages {
-		// Convert micro_ts (microseconds) to a timestamp string
-		ts := time.UnixMicro(msg.MicroTS).UTC().Format(time.RFC3339Nano)
+		// Convert micro_ts (milliseconds) to a timestamp string
+		// Note: Despite the field name, Homer returns milliseconds, not microseconds
+		ts := time.UnixMilli(msg.MicroTS).UTC().Format(time.RFC3339Nano)
 
 		messages = append(messages, &sipmessage.SIPMessage{
 			Timestamp: ts,
