@@ -9,7 +9,6 @@
         <title>Quickstart &mdash; voipbin  documentation</title>
     
     <link rel="stylesheet" type="text/css" href="_static/dist/fontawesome.css" />
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8e8a900e" />
       <link rel="stylesheet" type="text/css" href="_static/dist/theme.css?v=310cf088" />
       <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
             <link rel="index" title="Index" href="genindex.html" />
@@ -186,242 +185,220 @@
                         <main role="main" id="main">
     <section id="quickstart">
 <span id="quickstart-main"></span><h1>Quickstart<a class="headerlink" href="#quickstart" title="Link to this heading"></a></h1>
+<p>There are two ways to get started with VoIPBin:</p>
+<ul class="simple">
+<li><p><strong>Try the Demo</strong> — Click the <strong>Try Demo Account</strong> button at <a class="reference external" href="https://admin.voipbin.net">admin.voipbin.net</a> to explore VoIPBin instantly. No setup or sign-up needed.</p></li>
+<li><p><strong>Run the Sandbox</strong> — Run the full VoIPBin platform on your local machine using Docker. See the <a class="reference internal" href="#quickstart-sandbox"><span class="std std-ref">Sandbox</span></a> section below.</p></li>
+</ul>
+<p>For production use, you can <a class="reference internal" href="quickstart_signup.html#quickstart-signup"><span class="std std-ref">sign up</span></a> for your own account.</p>
+<section id="sandbox">
+<span id="quickstart-sandbox"></span><h2>Sandbox<a class="headerlink" href="#sandbox" title="Link to this heading"></a></h2>
+<p>The VoIPBin Sandbox lets you run the entire VoIPBin platform on your local machine with a single command. No sign-up required — it comes with a pre-configured admin account and is ready to use immediately.</p>
+<section id="prerequisites">
+<h3>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Docker and Docker Compose v2</p></li>
+</ul>
+</section>
+<section id="install-and-run">
+<h3>Install and Run<a class="headerlink" href="#install-and-run" title="Link to this heading"></a></h3>
+<p>Clone the sandbox repository and launch the interactive CLI:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ git clone https://github.com/voipbin/sandbox.git
+$ cd sandbox
+$ sudo ./voipbin
+</pre></div>
+</div>
+<p>Initialize and start the services:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">voipbin</span><span class="o">&gt;</span> <span class="n">init</span>
+<span class="n">voipbin</span><span class="o">&gt;</span> <span class="n">start</span>
+</pre></div>
+</div>
+<p>Once started, you can log in with the default admin account:</p>
+<ul class="simple">
+<li><p><strong>Username</strong>: <a class="reference external" href="mailto:admin&#37;&#52;&#48;localhost">admin<span>&#64;</span>localhost</a></p></li>
+<li><p><strong>Password</strong>: <a class="reference external" href="mailto:admin&#37;&#52;&#48;localhost">admin<span>&#64;</span>localhost</a></p></li>
+</ul>
+<p>For full documentation, troubleshooting, and advanced usage, see the <a class="reference external" href="https://github.com/voipbin/sandbox">Sandbox GitHub repository</a>.</p>
+</section>
+<section id="using-tutorials-with-the-sandbox">
+<h3>Using Tutorials with the Sandbox<a class="headerlink" href="#using-tutorials-with-the-sandbox" title="Link to this heading"></a></h3>
+<p>All tutorials in this documentation use <code class="docutils literal notranslate"><span class="pre">https://api.voipbin.net</span></code> as the API endpoint. If you are using the sandbox, substitute it with your local sandbox endpoint:</p>
+<ul class="simple">
+<li><p><strong>Production</strong>: <code class="docutils literal notranslate"><span class="pre">https://api.voipbin.net</span></code></p></li>
+<li><p><strong>Sandbox</strong>: <code class="docutils literal notranslate"><span class="pre">https://api.voipbin.test:8443</span></code></p></li>
+</ul>
+<p>For example, to generate a token using the sandbox:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST &#39;https://api.voipbin.test:8443/auth/login&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;username&quot;: &quot;admin@localhost&quot;,
+        &quot;password&quot;: &quot;admin@localhost&quot;
+    }&#39;
+</pre></div>
+</div>
+</section>
+</section>
 <section id="signup">
 <span id="quickstart-signup"></span><h2>Signup<a class="headerlink" href="#signup" title="Link to this heading"></a></h2>
-<p>In this Quickstart, you’ll learn how to sign up and receive your account credentials to start using the VoIPBIN API.</p>
-<section id="sign-up-to-voipbin">
-<h3>Sign up to VoIPBIN<a class="headerlink" href="#sign-up-to-voipbin" title="Link to this heading"></a></h3>
-<p>To begin, send a sign-up request email to:</p>
-<p><strong>pchero21&#64;gmail.com</strong></p>
-<p>Include the following details in your email:</p>
+<p>To use the VoIPBin production API, you need your own account. You can also request access directly from the <a class="reference external" href="https://admin.voipbin.net">admin console login page</a> by clicking <strong>Request access</strong>.</p>
+<section id="request-an-account">
+<h3>Request an Account<a class="headerlink" href="#request-an-account" title="Link to this heading"></a></h3>
+<p>Send a sign-up request email to:</p>
+<p><strong>sungtae&#64;voipbin.net</strong></p>
+<p>Include the following details:</p>
 <ul class="simple">
 <li><p>Your name or organization name.</p></li>
 <li><p>Contact information.</p></li>
-<li><p>A brief description of how you plan to use VoIPBIN.</p></li>
+<li><p>A brief description of how you plan to use VoIPBin.</p></li>
 </ul>
-<p><strong>Note:</strong> VoIPBIN is currently a personal project. Automatic account creation is not available at this time, so all requests are handled manually. Please allow some time for your request to be processed.</p>
+<p><strong>Note:</strong> VoIPBin is currently a personal project. Automatic account creation is not available at this time, so all requests are handled manually.</p>
 </section>
 <section id="what-happens-next">
 <h3>What Happens Next<a class="headerlink" href="#what-happens-next" title="Link to this heading"></a></h3>
-<p>Once your request is processed, you will receive an email with the following account credentials:</p>
+<p>Once your request is processed, you will receive an email with:</p>
 <ul class="simple">
-<li><p><strong>ID</strong>: Your unique account identifier.</p></li>
+<li><p><strong>Username</strong>: Your account username.</p></li>
 <li><p><strong>Password</strong>: A secure password to access your account.</p></li>
 </ul>
-<p>Keep these credentials secure, as they are required to log in and access VoIPBIN services.</p>
-<p>After receiving your account credentials, you can start exploring VoIPBIN features. Begin with the tutorial guides to understand how to configure and use the API effectively.</p>
+<p>Keep these credentials secure. You will use them to log in to the <a class="reference external" href="https://admin.voipbin.net">admin console</a> and to authenticate API requests.</p>
 </section>
 </section>
 <section id="authentication">
 <span id="quickstart-authentication"></span><h2>Authentication<a class="headerlink" href="#authentication" title="Link to this heading"></a></h2>
-<p>In this Quickstart, you’ll learn how to authenticate your requests using either a <strong>Token</strong> or an <strong>Accesskey</strong>.</p>
-<p>To interact with the VoIPBIN API, you need to authenticate your requests using either a <strong>Token</strong> or an <strong>Accesskey</strong>. Both options serve the same purpose — validating your request and authenticating your identity.</p>
-<section id="generate-token">
-<h3>Generate Token<a class="headerlink" href="#generate-token" title="Link to this heading"></a></h3>
-<p>To generate a JWT token, send a request with your username and password, as shown in the example below:</p>
+<p>Every API request must be authenticated using either a <strong>Token</strong> (JWT) or an <strong>Accesskey</strong>. Both serve the same purpose — choose whichever fits your workflow.</p>
+<section id="generate-a-token">
+<h3>Generate a Token<a class="headerlink" href="#generate-a-token" title="Link to this heading"></a></h3>
+<p>Send a login request with your username and password to receive a JWT token. The token is valid for 7 days.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST &#39;https://api.voipbin.net/auth/login&#39; \
     --header &#39;Content-Type: application/json&#39; \
     --data-raw &#39;{
         &quot;username&quot;: &quot;your-voipbin-username&quot;,
         &quot;password&quot;: &quot;your-voipbin-password&quot;
     }&#39;
-
-{
-    &quot;username&quot;: &quot;your-voipbin-username&quot;,
-    &quot;token&quot;: &quot;eyJhbsdiOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdXN0b21lciI6IntcImlkXCI6XCI1ZTRhMDY4MC04MDRlLTExZWMtODQ3Ny0yZmVhNTk2OGQ4NWJcIixcInVzZXJuYW1lXCI6XCJhZG1pblwiLFwibmFtZVwiOlwiYWRtaW5cIixcImRldGFpbFwiOlwiYWRtaW4gYWNjb3VudFwiLFwid2ViaG9va19tZXRob2RcIjpcIlBPU1TcIixcIndlYmhvb2tfdXJpXCI6XCJodHRwczovL2VubG1ieXVqamowbWcueC5waXBlZHJlYW0ubmV0XCIsXCJsaW5lX3NlY3JldFwiOlwiYmE1ZjA1NzVkODI2ZDViNGEwNTJhNDMxNDVlZjEzOTFcIixcImxpbmVfdG9rZW5cIjpcInRzZklpREIvMmNHSTVzSFJNSW9wN1MzU1M0S3NiRWxKL3VrUUtzNkxwSFkxWG9GM2hxdi9sF0CtLg0SY9U0&quot;
-}
 </pre></div>
 </div>
-<p>The token will be valid for 7 days.</p>
-</section>
-<section id="generate-accesskey">
-<h3>Generate Accesskey<a class="headerlink" href="#generate-accesskey" title="Link to this heading"></a></h3>
-<p>You can generate your access key directly from the VoIPBIN admin page, as shown in the image below.</p>
-<p>To use the API, you will need an access key, so generating it from the admin page is required. When creating the access key, you can specify an expire parameter to define how long the access key will remain valid.</p>
-<img alt="_images/quickstart_authentication_accesskey.png" src="_images/quickstart_authentication_accesskey.png" />
-<p>For more details on how to use the <strong>Accesskey</strong>, refer to the full tutorial <a class="reference internal" href="accesskey.html#accesskey-main"><span class="std std-ref">here</span></a>.</p>
-</section>
-<section id="using-your-token-or-accesskey">
-<h3>Using Your Token or Accesskey<a class="headerlink" href="#using-your-token-or-accesskey" title="Link to this heading"></a></h3>
-<p>You can use either a <strong>Token</strong> or an <strong>Accesskey</strong> for authentication in API requests. Both serve the same purpose, so choose the one that best fits your workflow.</p>
-<ul class="simple">
-<li><p>For <strong>Token</strong>: Include it in the request header or body when making API requests.</p></li>
-<li><p>For <strong>Accesskey</strong>: Include the access key token in the <cite>accesskey</cite> query parameter when making API requests.</p></li>
-</ul>
-</section>
-<section id="example-to-retrieve-a-list-of-access-keys">
-<h3>Example to retrieve a list of access keys<a class="headerlink" href="#example-to-retrieve-a-list-of-access-keys" title="Link to this heading"></a></h3>
-<p>Using <strong>Accesskey</strong>:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/accesskeys?accesskey=AuTKq6F5ABCD3xw9&#39;
+<p>Response:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;your-voipbin-username&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;token&quot;</span><span class="p">:</span> <span class="s2">&quot;eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...&quot;</span>
+<span class="p">}</span>
 </pre></div>
 </div>
-<p>Using <strong>Token</strong> (in the request header):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/accesskeys&#39; \
+<p>Use the token in subsequent requests via the <code class="docutils literal notranslate"><span class="pre">Authorization</span></code> header:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --request GET &#39;https://api.voipbin.net/v1.0/accesskeys&#39; \
     --header &#39;Authorization: Bearer &lt;your-token&gt;&#39;
 </pre></div>
 </div>
-<p>Using <strong>Token</strong> (in the request parameter):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/accesskeys?token=&lt;your token&gt;&#39;
+<p>Or as a query parameter:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --request GET &#39;https://api.voipbin.net/v1.0/accesskeys?token=&lt;your-token&gt;&#39;
 </pre></div>
 </div>
+</section>
+<section id="generate-an-accesskey">
+<h3>Generate an Accesskey<a class="headerlink" href="#generate-an-accesskey" title="Link to this heading"></a></h3>
+<p>For long-lived authentication, generate an access key from the <a class="reference external" href="https://admin.voipbin.net">admin console</a>. You can set a custom expiration when creating it.</p>
+<img alt="_images/quickstart_authentication_accesskey.png" src="_images/quickstart_authentication_accesskey.png" />
+<p>Use the access key as a query parameter:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --request GET &#39;https://api.voipbin.net/v1.0/accesskeys?accesskey=&lt;your-accesskey&gt;&#39;
+</pre></div>
+</div>
+<p>For more details, see the full <a class="reference internal" href="accesskey.html#accesskey-main"><span class="std std-ref">Accesskey tutorial</span></a>.</p>
 </section>
 </section>
 <section id="call">
 <span id="quickstart-call"></span><h2>Call<a class="headerlink" href="#call" title="Link to this heading"></a></h2>
-<p>In this Quickstart, you’ll learn how to make an outbound voice call.</p>
-<section id="make-your-first-voice-call-with-manual-actions">
-<h3>Make your first voice call with manual actions<a class="headerlink" href="#make-your-first-voice-call-with-manual-actions" title="Link to this heading"></a></h3>
-<p>Use the VoIPBIN API to initiate an outbound telephone call from your VoIPBIN account.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=your-voipbin-token&#39; \
+<p>Make an outbound voice call using the VoIPBin API. You can either define actions inline or reference an existing flow.</p>
+<section id="make-a-call-with-inline-actions">
+<h3>Make a call with inline actions<a class="headerlink" href="#make-a-call-with-inline-actions" title="Link to this heading"></a></h3>
+<p>This example initiates a call and plays a text-to-speech message to the recipient:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;your-token&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
     --data-raw &#39;{
         &quot;source&quot;: {
             &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+82XXXXXXXX&quot;
+            &quot;target&quot;: &quot;&lt;your-source-number&gt;&quot;
         },
         &quot;destinations&quot;: [
             {
                 &quot;type&quot;: &quot;tel&quot;,
-                &quot;target&quot;: &quot;+82XXXXXXXX&quot;
+                &quot;target&quot;: &quot;&lt;your-destination-number&gt;&quot;
             }
         ],
         &quot;actions&quot;: [
             {
                 &quot;type&quot;: &quot;talk&quot;,
                 &quot;option&quot;: {
-                    &quot;text&quot;: &quot;Hello. This is voipbin test. The voipbin provides ready to go CPaaS service. Thank you, bye.&quot;,
+                    &quot;text&quot;: &quot;Hello. This is a VoIPBin test call. Thank you, bye.&quot;,
                     &quot;gender&quot;: &quot;female&quot;,
                     &quot;language&quot;: &quot;en-US&quot;
                 }
             }
         ]
     }&#39;
-
-[
-    {
-        &quot;id&quot;: &quot;e2a65df2-4e50-4e37-8628-df07b3cec579&quot;,
-        &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-        &quot;flow_id&quot;: &quot;6cbaa351-b112-452d-84c2-01488671013d&quot;,
-        &quot;type&quot;: &quot;flow&quot;,
-        &quot;master_call_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-        &quot;chained_call_ids&quot;: [],
-        &quot;recording_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-        &quot;recording_ids&quot;: [],
-        &quot;source&quot;: {
-            &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+15551234567&quot;,
-            &quot;target_name&quot;: &quot;&quot;,
-            &quot;name&quot;: &quot;&quot;,
-            &quot;detail&quot;: &quot;&quot;
-        },
-        &quot;destination&quot;: {
-            &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+15559876543&quot;,
-            &quot;target_name&quot;: &quot;&quot;,
-            &quot;name&quot;: &quot;&quot;,
-            &quot;detail&quot;: &quot;&quot;
-        },
-        &quot;status&quot;: &quot;dialing&quot;,
-        &quot;action&quot;: {
-            &quot;id&quot;: &quot;00000000-0000-0000-0000-000000000001&quot;,
-            &quot;next_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-            &quot;type&quot;: &quot;&quot;
-        },
-        &quot;direction&quot;: &quot;outgoing&quot;,
-        &quot;hangup_by&quot;: &quot;&quot;,
-        &quot;hangup_reason&quot;: &quot;&quot;,
-        &quot;tm_progressing&quot;: &quot;9999-01-01 00:00:00.000000&quot;,
-        &quot;tm_ringing&quot;: &quot;9999-01-01 00:00:00.000000&quot;,
-        &quot;tm_hangup&quot;: &quot;9999-01-01 00:00:00.000000&quot;,
-        &quot;tm_create&quot;: &quot;2023-03-28 12:00:05.248732&quot;,
-        &quot;tm_update&quot;: &quot;9999-01-01 00:00:00.000000&quot;,
-        &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
-    }
-]
+</pre></div>
+</div>
+<p>The response includes the call details with <code class="docutils literal notranslate"><span class="pre">&quot;status&quot;:</span> <span class="pre">&quot;dialing&quot;</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;e2a65df2-4e50-4e37-8628-df07b3cec579&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;6cbaa351-b112-452d-84c2-01488671013d&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;your-source-number&gt;&quot;</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;your-destination-number&gt;&quot;</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;dialing&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;outgoing&quot;</span><span class="p">,</span>
+        <span class="o">...</span>
+    <span class="p">}</span>
+<span class="p">]</span>
 </pre></div>
 </div>
 </section>
-<section id="make-your-first-voice-call-with-existing-flow">
-<h3>Make your first voice call with existing flow<a class="headerlink" href="#make-your-first-voice-call-with-existing-flow" title="Link to this heading"></a></h3>
-<p>Use the VoIPBIN API to initiate an outbound telephone call with existing flow.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=your-voipbin-token&#39; \
+<section id="make-a-call-with-an-existing-flow">
+<h3>Make a call with an existing flow<a class="headerlink" href="#make-a-call-with-an-existing-flow" title="Link to this heading"></a></h3>
+<p>If you have already created a flow, you can reference it by <code class="docutils literal notranslate"><span class="pre">flow_id</span></code> instead of defining actions inline:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;your-token&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
     --data-raw &#39;{
         &quot;source&quot;: {
             &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;&lt;your source number&gt;&quot;
+            &quot;target&quot;: &quot;&lt;your-source-number&gt;&quot;
         },
         &quot;destinations&quot;: [
             {
                 &quot;type&quot;: &quot;tel&quot;,
-                &quot;target&quot;: &quot;&lt;your destination number&gt;&quot;
+                &quot;target&quot;: &quot;&lt;your-destination-number&gt;&quot;
             }
         ],
-        &quot;flow_id&quot;: &quot;ed95a3c4-22d4-11ee-add7-8742a741581e&quot;,
+        &quot;flow_id&quot;: &quot;&lt;your-flow-id&gt;&quot;
     }&#39;
-
-[
-    {
-        &quot;id&quot;: &quot;e2a65df2-4e50-4e37-8628-df07b3cec579&quot;,
-        &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-        &quot;flow_id&quot;: &quot;ed95a3c4-22d4-11ee-add7-8742a741581e&quot;,
-        &quot;type&quot;: &quot;flow&quot;,
-        &quot;master_call_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-        &quot;chained_call_ids&quot;: [],
-        &quot;recording_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-        &quot;recording_ids&quot;: [],
-        &quot;source&quot;: {
-            &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+15551234567&quot;,
-            &quot;target_name&quot;: &quot;&quot;,
-            &quot;name&quot;: &quot;&quot;,
-            &quot;detail&quot;: &quot;&quot;
-        },
-        &quot;destination&quot;: {
-            &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+15559876543&quot;,
-            &quot;target_name&quot;: &quot;&quot;,
-            &quot;name&quot;: &quot;&quot;,
-            &quot;detail&quot;: &quot;&quot;
-        },
-        &quot;status&quot;: &quot;dialing&quot;,
-        &quot;action&quot;: {
-            &quot;id&quot;: &quot;00000000-0000-0000-0000-000000000001&quot;,
-            &quot;next_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-            &quot;type&quot;: &quot;&quot;
-        },
-        &quot;direction&quot;: &quot;outgoing&quot;,
-        &quot;hangup_by&quot;: &quot;&quot;,
-        &quot;hangup_reason&quot;: &quot;&quot;,
-        &quot;tm_progressing&quot;: &quot;9999-01-01 00:00:00.000000&quot;,
-        &quot;tm_ringing&quot;: &quot;9999-01-01 00:00:00.000000&quot;,
-        &quot;tm_hangup&quot;: &quot;9999-01-01 00:00:00.000000&quot;,
-        &quot;tm_create&quot;: &quot;2023-03-28 12:00:05.248732&quot;,
-        &quot;tm_update&quot;: &quot;9999-01-01 00:00:00.000000&quot;,
-        &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
-    }
-]
 </pre></div>
 </div>
+<p>For more details on flows, see the <a class="reference internal" href="flow.html#flow-main"><span class="std std-ref">Flow tutorial</span></a>.</p>
 </section>
 </section>
 <section id="queue">
 <span id="quickstart-queue"></span><h2>Queue<a class="headerlink" href="#queue" title="Link to this heading"></a></h2>
-<p>In this Quickstart, you’ll learn how to set the queue.</p>
-<section id="create-your-first-queue">
-<h3>Create your first queue<a class="headerlink" href="#create-your-first-queue" title="Link to this heading"></a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/queues?token=your-voipbin-token&#39; \
+<p>Queues let you route incoming calls to available agents. Callers hear hold music or messages while waiting for an agent to become available.</p>
+<section id="create-a-queue">
+<h3>Create a queue<a class="headerlink" href="#create-a-queue" title="Link to this heading"></a></h3>
+<p>This example creates a queue that routes calls randomly to agents matching a specific tag. While callers wait, they hear a text-to-speech greeting followed by a 1-second pause (looped):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST &#39;https://api.voipbin.net/v1.0/queues?token=&lt;your-token&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
     --data-raw &#39;{
-        &quot;name&quot;: &quot;test queue&quot;,
-        &quot;detail&quot;: &quot;test queue detail&quot;,
+        &quot;name&quot;: &quot;support queue&quot;,
+        &quot;detail&quot;: &quot;Customer support queue&quot;,
         &quot;routing_method&quot;: &quot;random&quot;,
-        &quot;tag_ids&quot;: [&quot;d7450dda-21e0-4611-b09a-8d771c50a5e6&quot;],
+        &quot;tag_ids&quot;: [&quot;&lt;your-tag-id&gt;&quot;],
         &quot;wait_actions&quot;: [
             {
-                &quot;type&quot;:&quot;talk&quot;,
+                &quot;type&quot;: &quot;talk&quot;,
                 &quot;option&quot;: {
-                    &quot;text&quot;: &quot;Hello. This is test queue. Please wait.&quot;,
+                    &quot;text&quot;: &quot;Thank you for calling. Please wait while we connect you to an agent.&quot;,
                     &quot;gender&quot;: &quot;female&quot;,
                     &quot;language&quot;: &quot;en-US&quot;
                 }
@@ -436,52 +413,40 @@
         &quot;timeout_wait&quot;: 100000,
         &quot;timeout_service&quot;: 10000000
     }&#39;
-
-{
-    &quot;id&quot;: &quot;99bf739a-932f-433c-b1bf-103d33d7e9bb&quot;,
-    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-    &quot;name&quot;: &quot;test queue&quot;,
-    &quot;detail&quot;: &quot;test queue detail&quot;,
-    &quot;routing_method&quot;: &quot;random&quot;,
-    &quot;tag_ids&quot;: [
-        &quot;d7450dda-21e0-4611-b09a-8d771c50a5e6&quot;
-    ],
-    &quot;wait_actions&quot;: [
-        {
-            &quot;id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-            &quot;next_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-            &quot;type&quot;: &quot;talk&quot;,
-            &quot;option&quot;: {
-                &quot;text&quot;: &quot;Hello. This is test queue. Please wait.&quot;,
-                &quot;gender&quot;: &quot;female&quot;,
-                &quot;language&quot;: &quot;en-US&quot;
-            }
-        },
-        {
-            &quot;id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-            &quot;next_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-            &quot;type&quot;: &quot;sleep&quot;,
-            &quot;option&quot;: {
-                &quot;duration&quot;: 1000
-            }
-        }
-    ],
-    &quot;wait_timeout&quot;: 100000,
-    &quot;service_timeout&quot;: 10000000,
-    &quot;wait_queuecall_ids&quot;: [
-        &quot;65b3f8c3-ce8e-4a5d-ae13-598aa2889377&quot;
-    ],
-    &quot;service_queuecall_ids&quot;: [],
-    &quot;total_incoming_count&quot;: 228,
-    &quot;total_serviced_count&quot;: 169,
-    &quot;total_abandoned_count&quot;: 99,
-    &quot;tm_create&quot;: &quot;2021-12-24 06:33:10.556226&quot;,
-    &quot;tm_update&quot;: &quot;2023-03-07 12:39:54.664143&quot;,
-    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
-}
 </pre></div>
 </div>
+<p>The response includes the created queue with its ID and configuration:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;99bf739a-932f-433c-b1bf-103d33d7e9bb&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;support queue&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;Customer support queue&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;routing_method&quot;</span><span class="p">:</span> <span class="s2">&quot;random&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tag_ids&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;&lt;your-tag-id&gt;&quot;</span><span class="p">],</span>
+    <span class="o">...</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Key parameters:</p>
+<ul class="simple">
+<li><p><strong>routing_method</strong>: How calls are distributed to agents (<code class="docutils literal notranslate"><span class="pre">random</span></code>, <code class="docutils literal notranslate"><span class="pre">round-robin</span></code>).</p></li>
+<li><p><strong>tag_ids</strong>: Agent tags to match. Only agents with matching tags will receive calls from this queue.</p></li>
+<li><p><strong>wait_actions</strong>: Actions executed while the caller waits (e.g., play messages, music).</p></li>
+<li><p><strong>timeout_wait</strong>: Maximum time (ms) a caller waits in the queue before timing out.</p></li>
+<li><p><strong>timeout_service</strong>: Maximum time (ms) for an active call with an agent.</p></li>
+</ul>
+<p>For more details, see the <span class="xref std std-ref">Queue tutorial</span>.</p>
 </section>
+</section>
+<section id="what-s-next">
+<span id="quickstart-next"></span><h2>What’s Next<a class="headerlink" href="#what-s-next" title="Link to this heading"></a></h2>
+<p>Now that you have made your first API calls, explore the full capabilities of VoIPBin:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="flow.html#flow-main"><span class="std std-ref">Flow</span></a> — Build programmable voice workflows with the visual flow builder.</p></li>
+<li><p><span class="xref std std-ref">AI</span> — Integrate AI-powered voice agents with real-time speech processing.</p></li>
+<li><p><span class="xref std std-ref">Conference</span> — Set up multi-party conferencing.</p></li>
+<li><p><a class="reference internal" href="conversation.html#conversation-main"><span class="std std-ref">Conversation</span></a> — Manage messaging conversations.</p></li>
+</ul>
+<p>For the complete API reference, visit the <a class="reference external" href="https://api.voipbin.net/redoc/index.html">API documentation</a>.</p>
 </section>
 </section>
 
@@ -501,27 +466,32 @@
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
 <li><a class="reference internal" href="#">Quickstart</a><ul>
+<li><a class="reference internal" href="#sandbox">Sandbox</a><ul>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
+<li><a class="reference internal" href="#install-and-run">Install and Run</a></li>
+<li><a class="reference internal" href="#using-tutorials-with-the-sandbox">Using Tutorials with the Sandbox</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#signup">Signup</a><ul>
-<li><a class="reference internal" href="#sign-up-to-voipbin">Sign up to VoIPBIN</a></li>
+<li><a class="reference internal" href="#request-an-account">Request an Account</a></li>
 <li><a class="reference internal" href="#what-happens-next">What Happens Next</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#authentication">Authentication</a><ul>
-<li><a class="reference internal" href="#generate-token">Generate Token</a></li>
-<li><a class="reference internal" href="#generate-accesskey">Generate Accesskey</a></li>
-<li><a class="reference internal" href="#using-your-token-or-accesskey">Using Your Token or Accesskey</a></li>
-<li><a class="reference internal" href="#example-to-retrieve-a-list-of-access-keys">Example to retrieve a list of access keys</a></li>
+<li><a class="reference internal" href="#generate-a-token">Generate a Token</a></li>
+<li><a class="reference internal" href="#generate-an-accesskey">Generate an Accesskey</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#call">Call</a><ul>
-<li><a class="reference internal" href="#make-your-first-voice-call-with-manual-actions">Make your first voice call with manual actions</a></li>
-<li><a class="reference internal" href="#make-your-first-voice-call-with-existing-flow">Make your first voice call with existing flow</a></li>
+<li><a class="reference internal" href="#make-a-call-with-inline-actions">Make a call with inline actions</a></li>
+<li><a class="reference internal" href="#make-a-call-with-an-existing-flow">Make a call with an existing flow</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#queue">Queue</a><ul>
-<li><a class="reference internal" href="#create-your-first-queue">Create your first queue</a></li>
+<li><a class="reference internal" href="#create-a-queue">Create a queue</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#what-s-next">What’s Next</a></li>
 </ul>
 </li>
 </ul>
@@ -563,7 +533,7 @@
                     </a>
                     and
                     <a class="text-white" href="https://www.sphinx-doc.org/" rel="nofollow" target="_blank">
-                        Sphinx 9.1.0
+                        Sphinx 7.2.6
                     </a>
                 </small>
             </div>
@@ -571,11 +541,11 @@
     </div>
         </div>
     </footer>
-        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/jquery.js?v=8dae8fb0"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
         <script src="_static/documentation_options.js?v=5929fcd5"></script>
-        <script src="_static/doctools.js?v=fd6eb6e6"></script>
-        <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
         <script src="_static/clipboard.min.js?v=a7894cd8"></script>
         <script src="_static/copybutton.js?v=f281be69"></script>
         <script type="text/javascript" src="_static/dist/theme.js"></script>

@@ -2,13 +2,11 @@
 
 Authentication
 ==============
-In this Quickstart, you'll learn how to authenticate your requests using either a **Token** or an **Accesskey**.
+Every API request must be authenticated using either a **Token** (JWT) or an **Accesskey**. Both serve the same purpose — choose whichever fits your workflow.
 
-To interact with the VoIPBIN API, you need to authenticate your requests using either a **Token** or an **Accesskey**. Both options serve the same purpose — validating your request and authenticating your identity.
-
-Generate Token
---------------
-To generate a JWT token, send a request with your username and password, as shown in the example below:
+Generate a Token
+----------------
+Send a login request with your username and password to receive a JWT token. The token is valid for 7 days.
 
 .. code::
 
@@ -19,48 +17,38 @@ To generate a JWT token, send a request with your username and password, as show
             "password": "your-voipbin-password"
         }'
 
+Response:
+
+.. code::
+
     {
         "username": "your-voipbin-username",
-        "token": "eyJhbsdiOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdXN0b21lciI6IntcImlkXCI6XCI1ZTRhMDY4MC04MDRlLTExZWMtODQ3Ny0yZmVhNTk2OGQ4NWJcIixcInVzZXJuYW1lXCI6XCJhZG1pblwiLFwibmFtZVwiOlwiYWRtaW5cIixcImRldGFpbFwiOlwiYWRtaW4gYWNjb3VudFwiLFwid2ViaG9va19tZXRob2RcIjpcIlBPU1TcIixcIndlYmhvb2tfdXJpXCI6XCJodHRwczovL2VubG1ieXVqamowbWcueC5waXBlZHJlYW0ubmV0XCIsXCJsaW5lX3NlY3JldFwiOlwiYmE1ZjA1NzVkODI2ZDViNGEwNTJhNDMxNDVlZjEzOTFcIixcImxpbmVfdG9rZW5cIjpcInRzZklpREIvMmNHSTVzSFJNSW9wN1MzU1M0S3NiRWxKL3VrUUtzNkxwSFkxWG9GM2hxdi9sF0CtLg0SY9U0"
+        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
     }
 
-The token will be valid for 7 days.
+Use the token in subsequent requests via the ``Authorization`` header:
 
-Generate Accesskey
-------------------
-You can generate your access key directly from the VoIPBIN admin page, as shown in the image below. 
+.. code::
 
-To use the API, you will need an access key, so generating it from the admin page is required. When creating the access key, you can specify an expire parameter to define how long the access key will remain valid.
+    $ curl -k --request GET 'https://api.voipbin.net/v1.0/accesskeys' \
+        --header 'Authorization: Bearer <your-token>'
+
+Or as a query parameter:
+
+.. code::
+
+    $ curl -k --request GET 'https://api.voipbin.net/v1.0/accesskeys?token=<your-token>'
+
+Generate an Accesskey
+---------------------
+For long-lived authentication, generate an access key from the `admin console <https://admin.voipbin.net>`_. You can set a custom expiration when creating it.
 
 .. image:: _static/images/quickstart_authentication_accesskey.png
 
-For more details on how to use the **Accesskey**, refer to the full tutorial :ref:`here <accesskey-main>`.
-
-Using Your Token or Accesskey
------------------------------
-You can use either a **Token** or an **Accesskey** for authentication in API requests. Both serve the same purpose, so choose the one that best fits your workflow.
-
-- For **Token**: Include it in the request header or body when making API requests.
-- For **Accesskey**: Include the access key token in the `accesskey` query parameter when making API requests.
-
-Example to retrieve a list of access keys
------------------------------------------
-
-Using **Accesskey**:
+Use the access key as a query parameter:
 
 .. code::
 
-    $ curl -k --location --request GET 'https://api.voipbin.net/v1.0/accesskeys?accesskey=AuTKq6F5ABCD3xw9'
+    $ curl -k --request GET 'https://api.voipbin.net/v1.0/accesskeys?accesskey=<your-accesskey>'
 
-Using **Token** (in the request header):
-
-.. code::
-
-    $ curl -k --location --request GET 'https://api.voipbin.net/v1.0/accesskeys' \
-        --header 'Authorization: Bearer <your-token>'
-
-Using **Token** (in the request parameter):
-
-.. code::
-
-    $ curl -k --location --request GET 'https://api.voipbin.net/v1.0/accesskeys?token=<your token>'
+For more details, see the full :ref:`Accesskey tutorial <accesskey-main>`.
