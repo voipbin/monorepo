@@ -3612,9 +3612,10 @@ components:
         address:
           description: Valid only if the type is `address`.
           $ref: '#/components/schemas/CommonAddress'
-        agent:
+        agent_id:
           description: Valid only if the type is `agent`.
-          $ref: '#/components/schemas/AgentManagerAgent'
+          type: string
+          format: uuid
         file_id:
           description: Valid only if the type is `file`.
           type: string
