@@ -360,6 +360,69 @@ func Test_Create(t *testing.T) {
 
 **Related pattern:** See `bin-flow-manager` for reference implementation.
 
+### Logging Pattern (REQUIRED)
+
+**CRITICAL: ALWAYS use structured logging with function name and request context. NEVER use bare `logrus.Errorf()` directly.**
+
+**The Rule:**
+All handler functions MUST create a logger with context fields at the start of the function, then use that logger for all logging within the function.
+
+**Correct pattern:**
+```go
+func (h *listenHandler) v1MessagesGet(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
+    log := logrus.WithFields(logrus.Fields{"func": "v1MessagesGet", "request": m})
+
+    // ... function logic ...
+
+    if err != nil {
+        log.Errorf("Could not list the messages. err: %v", err)
+        return simpleResponse(500), nil
+    }
+
+    // ... rest of function ...
+}
+```
+
+**Wrong pattern:**
+```go
+// ❌ WRONG - No function context
+func (h *listenHandler) v1MessagesGet(ctx context.Context, m commonsock.Request) (*commonsock.Response, error) {
+    // ... function logic ...
+
+    if err != nil {
+        logrus.Errorf("Failed to list messages: %v", err)  // Missing function name and request!
+        return simpleResponse(500), nil
+    }
+}
+```
+
+**Why this matters:**
+1. **Debugging** - Function name in logs helps quickly identify which handler failed
+2. **Request tracing** - Request context helps reproduce issues
+3. **Consistency** - All logs from a function share the same context
+4. **Searchability** - Can filter logs by function name
+
+**Error message format:**
+- Use format: `"Could not <action>. err: %v"`
+- Examples:
+  - `log.Errorf("Could not list the messages. err: %v", err)`
+  - `log.Errorf("Could not get the chat. err: %v", err)`
+  - `log.Errorf("Could not parse filters. err: %v", err)`
+
+**Required fields:**
+- `"func"`: Function name (e.g., `"v1MessagesGet"`)
+- `"request"`: The request object `m` for RPC handlers
+
+**Optional additional fields:**
+```go
+log := logrus.WithFields(logrus.Fields{
+    "func":        "v1MessagesGet",
+    "request":     m,
+    "customer_id": customerID,  // Add relevant IDs when available
+    "chat_id":     chatID,
+})
+```
+
 ## Testing Approach
 
 ### Test File Organization
