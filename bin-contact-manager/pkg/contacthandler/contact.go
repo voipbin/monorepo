@@ -4,12 +4,36 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"unicode"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-contact-manager/models/contact"
 )
+
+// normalizeE164 normalizes a phone number to E.164 format by stripping
+// all characters except digits and the leading '+'.
+// If the input is empty, it derives E.164 from the raw number.
+func normalizeE164(e164, number string) string {
+	src := strings.TrimSpace(e164)
+	if src == "" {
+		src = strings.TrimSpace(number)
+	}
+	if src == "" {
+		return ""
+	}
+
+	var b strings.Builder
+	for i, r := range src {
+		if r == '+' && i == 0 {
+			b.WriteRune(r)
+		} else if unicode.IsDigit(r) {
+			b.WriteRune(r)
+		}
+	}
+	return b.String()
+}
 
 // Create creates a new contact with optional phone numbers, emails, and tags
 func (h *contactHandler) Create(ctx context.Context, c *contact.Contact) (*contact.Contact, error) {
@@ -49,8 +73,7 @@ func (h *contactHandler) Create(ctx context.Context, c *contact.Contact) (*conta
 		p.ID = h.utilHandler.UUIDCreate()
 		p.CustomerID = c.CustomerID
 		p.ContactID = c.ID
-		// Normalize email to lowercase
-		p.NumberE164 = strings.TrimSpace(p.NumberE164)
+		p.NumberE164 = normalizeE164(p.NumberE164, p.Number)
 
 		if err := h.db.PhoneNumberCreate(ctx, &p); err != nil {
 			log.Warnf("Could not create phone number. err: %v", err)
@@ -191,7 +214,7 @@ func (h *contactHandler) AddPhoneNumber(ctx context.Context, contactID uuid.UUID
 	p.ID = h.utilHandler.UUIDCreate()
 	p.CustomerID = c.CustomerID
 	p.ContactID = contactID
-	p.NumberE164 = strings.TrimSpace(p.NumberE164)
+	p.NumberE164 = normalizeE164(p.NumberE164, p.Number)
 
 	if err := h.db.PhoneNumberCreate(ctx, p); err != nil {
 		log.Errorf("Could not create phone number. err: %v", err)
