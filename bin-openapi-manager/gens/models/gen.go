@@ -2939,8 +2939,8 @@ type TalkManagerMedia struct {
 	// Address Contains source or destination detail info.
 	Address *CommonAddress `json:"address,omitempty"`
 
-	// Agent Represents an agent resource.
-	Agent *AgentManagerAgent `json:"agent,omitempty"`
+	// AgentId Valid only if the type is `agent`.
+	AgentId *openapi_types.UUID `json:"agent_id,omitempty"`
 
 	// FileId Valid only if the type is `file`.
 	FileId *string `json:"file_id,omitempty"`
