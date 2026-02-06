@@ -352,6 +352,36 @@ Follow these standards:
 
 **For detailed standards, logging examples, and naming conventions, see [code-quality-standards.md](docs/code-quality-standards.md)**
 
+### Debug Logging for Retrieved Data
+
+**CRITICAL: Always add debug logs when retrieving data from other services or databases.**
+
+When fetching data (calls, channels, agents, customers, etc.), add a debug log immediately after successful retrieval. This helps trace request flow and debug issues in production.
+
+**Pattern:**
+```go
+// After retrieving data, log it with the object and key identifier
+call, err := h.callGet(ctx, callID)
+if err != nil {
+    log.Infof("Could not get call: %v", err)
+    return nil, fmt.Errorf("call not found")
+}
+log.WithField("call", call).Debugf("Retrieved call info. call_id: %s", call.ID)
+
+ch, err := h.reqHandler.CallV1ChannelGet(ctx, call.ChannelID)
+if err != nil {
+    log.Errorf("Could not get channel: %v", err)
+    return nil, fmt.Errorf("no data available")
+}
+log.WithField("channel", ch).Debugf("Retrieved channel info. channel_id: %s", ch.ID)
+```
+
+**Guidelines:**
+- Use `Debug` level (not Info) to avoid log spam in production
+- Include the full object in `WithField` for detailed inspection
+- Include the key identifier in the message for quick scanning
+- Add logs after EVERY successful data retrieval, not just errors
+
 ### Common Gotchas
 
 #### Updating Shared Library Function Signatures

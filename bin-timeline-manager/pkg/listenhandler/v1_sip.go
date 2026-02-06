@@ -2,6 +2,7 @@ package listenhandler
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"time"
 
@@ -16,6 +17,7 @@ func (h *listenHandler) v1SIPMessagesPost(ctx context.Context, m *sock.Request) 
 	log := logrus.WithFields(logrus.Fields{
 		"func": "v1SIPMessagesPost",
 	})
+	log.Info("RPC handler called - SIP messages request received")
 
 	// Parse request
 	var req request.V1SIPMessagesPost
@@ -44,9 +46,6 @@ func (h *listenHandler) v1SIPMessagesPost(ctx context.Context, m *sock.Request) 
 		return simpleResponse(500), nil
 	}
 
-	// Set the CallID from the request on the response
-	result.CallID = req.CallID.String()
-
 	// Marshal response
 	data, err := json.Marshal(result)
 	if err != nil {
@@ -64,6 +63,7 @@ func (h *listenHandler) v1SIPPcapPost(ctx context.Context, m *sock.Request) (*so
 	log := logrus.WithFields(logrus.Fields{
 		"func": "v1SIPPcapPost",
 	})
+	log.Info("RPC handler called - PCAP request received")
 
 	// Parse request
 	var req request.V1SIPPcapPost
@@ -92,9 +92,19 @@ func (h *listenHandler) v1SIPPcapPost(ctx context.Context, m *sock.Request) (*so
 		return simpleResponse(500), nil
 	}
 
+	// Base64 encode PCAP data for JSON transport
+	encoded := base64.StdEncoding.EncodeToString(pcapData)
+
+	// Wrap in JSON object
+	respData, err := json.Marshal(map[string]string{"data": encoded})
+	if err != nil {
+		log.Errorf("Could not marshal PCAP response. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
 	return &sock.Response{
 		StatusCode: 200,
 		DataType:   "application/octet-stream",
-		Data:       pcapData,
+		Data:       respData,
 	}, nil
 }

@@ -1,6 +1,8 @@
 get:
   summary: Get SIP messages for a call
-  description: Returns SIP message timeline for the specified call from Homer SIP capture.
+  description: |
+    Returns SIP message timeline for the specified call from Homer SIP capture.
+    Internal-to-internal messages (where both src and dst IPs are RFC 1918 private addresses) are filtered out.
   tags:
     - Timeline
   parameters:
@@ -19,12 +21,10 @@ get:
           schema:
             type: object
             properties:
-              call_id:
+              next_page_token:
                 type: string
-                format: uuid
-              sip_call_id:
-                type: string
-              messages:
+                description: Token for fetching the next page of results (empty if no more pages)
+              result:
                 type: array
                 items:
                   type: object

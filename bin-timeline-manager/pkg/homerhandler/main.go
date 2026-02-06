@@ -23,7 +23,7 @@ const (
 	defaultHTTPTimeout = 30 * time.Second
 
 	// defaultTimeBuffer is the buffer added/subtracted to the time range for Homer searches.
-	defaultTimeBuffer = 30 * time.Second
+	defaultTimeBuffer = 10 * time.Minute
 
 	// defaultSIPMessageLimit is the maximum number of SIP messages returned.
 	defaultSIPMessageLimit = 50
@@ -106,6 +106,11 @@ func (h *homerHandler) GetSIPMessages(ctx context.Context, sipCallID string, fro
 		"func":       "GetSIPMessages",
 		"sip_callid": sipCallID,
 	})
+	log.WithFields(logrus.Fields{
+		"homer_addr": h.homerAPIAddr,
+		"from_time":  fromTime,
+		"to_time":    toTime,
+	}).Info("HomerHandler called - querying Homer API for SIP messages")
 
 	if h.homerAPIAddr == "" || h.homerAuthToken == "" {
 		return nil, fmt.Errorf("missing Homer API address or auth token")
@@ -177,8 +182,9 @@ func (h *homerHandler) GetSIPMessages(ctx context.Context, sipCallID string, fro
 	// Convert Homer messages to SIPMessage model
 	messages := make([]*sipmessage.SIPMessage, 0, len(apiResponse.Data.Messages))
 	for _, msg := range apiResponse.Data.Messages {
-		// Convert micro_ts (microseconds) to a timestamp string
-		ts := time.UnixMicro(msg.MicroTS).UTC().Format(time.RFC3339Nano)
+		// Convert micro_ts (milliseconds) to a timestamp string
+		// Note: Despite the field name, Homer returns milliseconds, not microseconds
+		ts := time.UnixMilli(msg.MicroTS).UTC().Format(time.RFC3339Nano)
 
 		messages = append(messages, &sipmessage.SIPMessage{
 			Timestamp: ts,
@@ -210,6 +216,11 @@ func (h *homerHandler) GetPcap(ctx context.Context, sipCallID string, fromTime, 
 		"func":       "GetPcap",
 		"sip_callid": sipCallID,
 	})
+	log.WithFields(logrus.Fields{
+		"homer_addr": h.homerAPIAddr,
+		"from_time":  fromTime,
+		"to_time":    toTime,
+	}).Info("HomerHandler called - querying Homer API for PCAP data")
 
 	if h.homerAPIAddr == "" || h.homerAuthToken == "" {
 		return nil, fmt.Errorf("missing Homer API address or auth token")

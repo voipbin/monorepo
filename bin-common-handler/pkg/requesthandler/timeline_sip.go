@@ -2,6 +2,7 @@ package requesthandler
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 
@@ -67,5 +68,19 @@ func (r *requestHandler) TimelineV1SIPPcapGet(ctx context.Context, callID uuid.U
 		return nil, fmt.Errorf("request failed with status %d", tmp.StatusCode)
 	}
 
-	return tmp.Data, nil
+	// Parse response containing base64-encoded PCAP data
+	var respData struct {
+		Data string `json:"data"`
+	}
+	if err := json.Unmarshal(tmp.Data, &respData); err != nil {
+		return nil, fmt.Errorf("could not parse PCAP response: %w", err)
+	}
+
+	// Decode base64 data
+	pcapData, err := base64.StdEncoding.DecodeString(respData.Data)
+	if err != nil {
+		return nil, fmt.Errorf("could not decode PCAP data: %w", err)
+	}
+
+	return pcapData, nil
 }

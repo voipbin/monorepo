@@ -1,6 +1,8 @@
 get:
   summary: Get PCAP download for a call
-  description: Returns a download URL for PCAP file containing SIP messages for the specified call.
+  description: |
+    Returns PCAP file containing SIP messages for the specified call.
+    Internal-to-internal packets (where both src and dst IPs are RFC 1918 private addresses) are filtered out.
   tags:
     - Timeline
   parameters:
