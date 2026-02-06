@@ -4,13 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-bin-talk-manager is a microservice within a larger VoIP monorepo that manages talk functionality with threading and reactions. It handles:
-- **Talks**: Chat sessions (1:1 and group)
+bin-talk-manager is a microservice within a larger VoIP monorepo that manages chat functionality with threading and reactions. It handles:
+- **Chats**: Chat sessions (direct 1:1, group, and public talk channels)
 - **Messages**: Text messages with threading support (replies to messages)
-- **Participants**: Talk membership management with re-join support
+- **Participants**: Chat membership management with re-join support
 - **Reactions**: Emoji reactions on messages with atomic operations
 
-The service operates as a RabbitMQ-based RPC server, listening for requests and processing talk-related operations.
+The service operates as a RabbitMQ-based RPC server, listening for requests and processing chat-related operations.
 
 ## Build and Run Commands
 
@@ -18,6 +18,9 @@ The service operates as a RabbitMQ-based RPC server, listening for requests and 
 ```bash
 # Build the service
 go build -o ./bin/talk-manager ./cmd/talk-manager
+
+# Build the CLI tool
+go build -o ./bin/talk-control ./cmd/talk-control
 
 # Build using Docker (from monorepo root)
 docker build -f bin-talk-manager/Dockerfile -t talk-manager-image .
@@ -29,12 +32,12 @@ docker build -f bin-talk-manager/Dockerfile -t talk-manager-image .
 go test ./...
 
 # Run tests for a specific package
-go test ./pkg/talkhandler/...
+go test ./pkg/chathandler/...
 go test ./pkg/messagehandler/...
 go test ./pkg/dbhandler/...
 
 # Run a specific test
-go test ./pkg/talkhandler -run Test_TalkCreate
+go test ./pkg/chathandler -run Test_ChatCreate
 
 # Run tests with verbose output
 go test -v ./...
@@ -64,20 +67,30 @@ go generate ./...
 
 ## talk-control CLI Tool
 
-A command-line tool for managing talks and messages directly via database/cache (bypasses RabbitMQ RPC). **All output is JSON format** (stdout), logs go to stderr.
+A command-line tool for managing chats and messages directly via database/cache (bypasses RabbitMQ RPC). **All output is JSON format** (stdout), logs go to stderr.
 
 ```bash
-# Chat (Talk) commands
-./bin/talk-control chat create --customer_id <uuid> [--type normal] [--name] [--detail]
+# Chat commands
+./bin/talk-control chat create --customer-id <uuid> --type <direct|group|talk> --creator-type <type> --creator-id <uuid> [--name] [--detail]
 ./bin/talk-control chat get --id <uuid>
-./bin/talk-control chat list --customer_id <uuid> [--limit 100] [--token]
+./bin/talk-control chat list --customer-id <uuid> [--size 100] [--token]
 ./bin/talk-control chat update --id <uuid> [--name] [--detail]
 ./bin/talk-control chat delete --id <uuid>
 
 # Message commands
-./bin/talk-control message create --talk_id <uuid> --text <text> [--sender_id] [--reply_to]
+./bin/talk-control message create --chat-id <uuid> --owner-type <type> --owner-id <uuid> --type <normal|system> --text <text> [--parent-id <uuid>]
 ./bin/talk-control message get --id <uuid>
-./bin/talk-control message list --talk_id <uuid> [--limit 100] [--token]
+./bin/talk-control message list --chat-id <uuid> [--size 100] [--token]
+./bin/talk-control message delete --id <uuid>
+
+# Participant commands
+./bin/talk-control participant add --chat-id <uuid> --owner-type <type> --owner-id <uuid>
+./bin/talk-control participant list --customer-id <uuid> --chat-id <uuid>
+./bin/talk-control participant remove --customer-id <uuid> --participant-id <uuid>
+
+# Reaction commands
+./bin/talk-control reaction add --message-id <uuid> --emoji <emoji> --owner-type <type> --owner-id <uuid>
+./bin/talk-control reaction remove --message-id <uuid> --emoji <emoji> --owner-type <type> --owner-id <uuid>
 ```
 
 Uses same environment variables as talk-manager (`DATABASE_DSN`, `RABBITMQ_ADDRESS`, `REDIS_ADDRESS`, etc.).
@@ -89,25 +102,46 @@ Uses same environment variables as talk-manager (`DATABASE_DSN`, `RABBITMQ_ADDRE
 This service uses a **RabbitMQ RPC pattern** for all external communication:
 - Listens on queue: `QueueNameTalkRequest`
 - Publishes events to: `QueueNameTalkEvent`
-- Uses regex-based URI routing (e.g., `/v1/talks`, `/v1/messages`)
+- Uses regex-based URI routing (e.g., `/v1/chats`, `/v1/messages`)
 - Request/response via `sock.Request` and `sock.Response` types from `bin-common-handler`
+
+### API Endpoints
+
+| Method | URI | Description |
+|--------|-----|-------------|
+| POST | `/v1/chats` | Create a new chat |
+| GET | `/v1/chats` | List chats |
+| GET | `/v1/chats/{id}` | Get chat by ID |
+| PUT | `/v1/chats/{id}` | Update chat |
+| DELETE | `/v1/chats/{id}` | Delete chat |
+| POST | `/v1/chats/{id}/participants` | Add participant to chat |
+| GET | `/v1/chats/{id}/participants` | List chat participants |
+| DELETE | `/v1/chats/{id}/participants/{pid}` | Remove participant |
+| GET | `/v1/participants` | List participants (filtered) |
+| POST | `/v1/messages` | Create a message |
+| GET | `/v1/messages` | List messages |
+| GET | `/v1/messages/{id}` | Get message by ID |
+| DELETE | `/v1/messages/{id}` | Delete message |
+| POST | `/v1/messages/{id}/reactions` | Add reaction to message |
+| DELETE | `/v1/messages/{id}/reactions` | Remove reaction from message |
 
 ### Core Data Model
 
-The talk system has a three-table structure:
+The chat system has a three-table structure:
 
-1. **Talk** (`models/talk/talk.go`): The shared talk session
-   - Contains: `customer_id`, `type` (normal/group)
-   - Types: `TypeNormal` (1:1) and `TypeGroup` (multi-participant)
+1. **Chat** (`models/chat/chat.go`): The chat session
+   - Contains: `customer_id`, `type`, `name`, `detail`, `member_count`
+   - Types: `TypeDirect` (1:1 private), `TypeGroup` (multi-user private), `TypeTalk` (public channel)
 
-2. **Participant** (`models/participant/participant.go`): Talk membership
-   - Links users to talks via `chat_id`, `owner_type`, `owner_id`
+2. **Participant** (`models/participant/participant.go`): Chat membership
+   - Links users to chats via `chat_id`, `owner_type`, `owner_id`
    - UNIQUE constraint allows UPSERT for re-joining
    - Hard delete (no `tm_delete` field)
 
 3. **Message** (`models/message/message.go`): Messages with threading and reactions
    - Threading: Optional `parent_id` for replies
    - Reactions: JSON metadata array with atomic operations
+   - Media attachments: Supports address, agent, file, and link types
    - Soft delete with `tm_delete` timestamp
 
 ### Handler Architecture
@@ -120,8 +154,8 @@ listenhandler (pkg/listenhandler/)
   ├─ Routes based on URI/method regex matching
   └─ Delegates to domain handlers
       │
-      ├─ talkhandler (pkg/talkhandler/)
-      │   └─ Business logic for talks
+      ├─ chathandler (pkg/chathandler/)
+      │   └─ Business logic for chats
       │
       ├─ messagehandler (pkg/messagehandler/)
       │   └─ Business logic for messages with threading validation
@@ -157,8 +191,8 @@ This service heavily relies on `monorepo/bin-common-handler`:
 ### Database Schema
 
 Tables are defined in `scripts/database_scripts/`:
-- `talk_chats`: Main talk records
-- `talk_participants`: Talk membership (with UNIQUE constraint for UPSERT)
+- `talk_chats`: Main chat records
+- `talk_participants`: Chat membership (with UNIQUE constraint for UPSERT)
 - `talk_messages`: Messages with optional parent_id and metadata JSON
 
 All tables use:
@@ -184,14 +218,14 @@ Runtime configuration via environment variables (see `k8s/deployment.yml`):
 The message handler implements a critical threading validation policy:
 
 1. **Parent must exist in database** - `MessageGet` verifies parent message exists
-2. **Parent must be in same talk** - Prevents cross-talk threading attacks
+2. **Parent must be in same chat** - Prevents cross-chat threading attacks
 3. **INTENTIONALLY ALLOWS soft-deleted parents** - Preserves thread structure even when parent messages are deleted
 
 ```go
 // From messagehandler/message.go
-// CRITICAL: Validate parent is in same talk (prevents cross-talk threading)
+// CRITICAL: Validate parent is in same chat (prevents cross-chat threading)
 if parent.ChatID != req.ChatID {
-    return nil, errors.New("parent message must be in the same talk")
+    return nil, errors.New("parent message must be in the same chat")
 }
 
 // INTENTIONALLY ALLOWED: Parent can be soft-deleted (TMDelete != "")
@@ -225,7 +259,7 @@ This prevents lost updates when multiple users add reactions simultaneously.
 
 ### Participant Re-join Support (UPSERT)
 
-The participant handler uses UPSERT to allow users to leave and re-join talks. The UNIQUE constraint on `(chat_id, owner_type, owner_id)` triggers the UPSERT behavior.
+The participant handler uses UPSERT to allow users to leave and re-join chats. The UNIQUE constraint on `(chat_id, owner_type, owner_id)` triggers the UPSERT behavior.
 
 **CRITICAL: MySQL vs SQLite UPSERT syntax difference**
 
@@ -332,10 +366,9 @@ func Test_Create(t *testing.T) {
 
 Tests use the standard Go pattern:
 - Test files live alongside source code: `handler.go` → `handler_test.go`
-- Each handler package has tests: `talkhandler/talk_test.go`, `messagehandler/message_test.go`, etc.
+- Each handler package has tests: `chathandler/chat_test.go`, `messagehandler/message_test.go`, etc.
 - Database tests use SQLite in-memory: `dbhandler/*_test.go` with `main_test.go` for setup
 - Listenhandler tests: `listenhandler/*_test.go` testing all endpoint handlers
-- Total test coverage: ~6,500 lines across 12 test files
 
 ### Test Coverage Requirements (REQUIRED)
 
@@ -351,28 +384,27 @@ Tests use the standard Go pattern:
 
 ✅ **CORRECT - All functions tested:**
 ```
-talkhandler/talk.go:
-  - TalkCreate()    → talk_test.go: Test_TalkCreate()
-  - TalkGet()       → talk_test.go: Test_TalkGet()
-  - TalkList()      → talk_test.go: Test_TalkList()
-  - TalkDelete()    → talk_test.go: Test_TalkDelete()
+chathandler/chat.go:
+  - ChatCreate()    → chat_test.go: Test_ChatCreate()
+  - ChatGet()       → chat_test.go: Test_ChatGet()
+  - ChatList()      → chat_test.go: Test_ChatList()
+  - ChatDelete()    → chat_test.go: Test_ChatDelete()
 
-listenhandler/v1_talks.go:
-  - processV1Talks()       → v1_talks_test.go: Test_processV1Talks()
-  - v1TalksPost()          → v1_talks_test.go: Test_processV1TalksPost()
-  - v1TalksGet()           → v1_talks_test.go: Test_processV1TalksGet()
-  - processV1TalksID()     → v1_talks_test.go: Test_processV1TalksIDGet()
+listenhandler/v1_chats.go:
+  - v1ChatsPost()          → v1_chats_test.go: Test_v1ChatsPost()
+  - v1ChatsGet()           → v1_chats_test.go: Test_v1ChatsGet()
+  - v1ChatsIDGet()         → v1_chats_test.go: Test_v1ChatsIDGet()
 ```
 
 ❌ **WRONG - Functions without tests:**
 ```
-listenhandler/v1_talks.go has 5 functions but no test file
+listenhandler/v1_chats.go has 5 functions but no test file
 messagehandler/message.go has 4 functions but only Test_MessageCreate() exists
 ```
 
 **Exceptions (functions that don't need separate tests):**
 - Private helper functions used only within tested functions
-- Trivial getters/setters (e.g., `func (t *Talk) GetID() uuid.UUID { return t.ID }`)
+- Trivial getters/setters (e.g., `func (c *Chat) GetID() uuid.UUID { return c.ID }`)
 - Functions that are exact duplicates (same logic, different types)
 
 **Verification:**
@@ -386,7 +418,7 @@ grep -n "^func Test_" handler_test.go
 ```
 
 **This rule applies to ALL packages:**
-- ✅ pkg/talkhandler - All CRUD functions tested
+- ✅ pkg/chathandler - All CRUD functions tested
 - ✅ pkg/messagehandler - All CRUD functions tested
 - ✅ pkg/participanthandler - All CRUD functions tested
 - ✅ pkg/reactionhandler - All CRUD functions tested
@@ -398,34 +430,34 @@ grep -n "^func Test_" handler_test.go
 **All tests MUST use table-driven structure with subtests:**
 
 ```go
-func Test_TalkCreate(t *testing.T) {
+func Test_ChatCreate(t *testing.T) {
     tests := []struct {
         name string
 
         // Input fields
         customerID uuid.UUID
-        talkType   talk.Type
+        chatType   chat.Type
 
         // Mock response fields
-        responseTalk *talk.Talk
+        responseChat *chat.Chat
 
         // Expected result fields
-        expectRes   *talk.Talk
+        expectRes   *chat.Chat
         expectError bool
     }{
         {
             name: "normal",
             customerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
-            talkType: talk.TypeNormal,
-            responseTalk: &talk.Talk{
+            chatType: chat.TypeDirect,
+            responseChat: &chat.Chat{
                 Identity: commonidentity.Identity{
                     ID: uuid.FromStringOrNil("6ebc6880-31da-11ed-8e95-a3bc92af9795"),
                 },
             },
-            expectRes: &talk.Talk{...},
+            expectRes: &chat.Chat{...},
         },
         {
-            name: "group talk",
+            name: "group chat",
             // ... test case
         },
     }
@@ -443,7 +475,7 @@ func Test_TalkCreate(t *testing.T) {
 **All handler tests MUST use gomock for dependency injection:**
 
 ```go
-func Test_TalkCreate(t *testing.T) {
+func Test_ChatCreate(t *testing.T) {
     tests := []struct { /* ... */ }
 
     for _, tt := range tests {
@@ -457,19 +489,19 @@ func Test_TalkCreate(t *testing.T) {
             mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
             // Step 3: Create handler with mocks injected
-            h := &talkHandler{
+            h := &chatHandler{
                 dbHandler:     mockDB,
                 notifyHandler: mockNotify,
             }
 
             // Step 4: Set up expectations in call order
             ctx := context.Background()
-            mockDB.EXPECT().TalkCreate(ctx, gomock.Any()).Return(nil)
-            mockDB.EXPECT().TalkGet(ctx, tt.expectRes.ID).Return(tt.responseTalk, nil)
-            mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), talk.EventTypeTalkCreated, gomock.Any())
+            mockDB.EXPECT().ChatCreate(ctx, gomock.Any()).Return(nil)
+            mockDB.EXPECT().ChatGet(ctx, tt.expectRes.ID).Return(tt.responseChat, nil)
+            mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), chat.EventTypeChatCreated, gomock.Any())
 
             // Step 5: Call the function
-            res, err := h.TalkCreate(ctx, tt.customerID, tt.talkType)
+            res, err := h.ChatCreate(ctx, tt.customerID, tt.chatType)
 
             // Step 6: Assert results
             if err != nil {
@@ -561,19 +593,19 @@ func TestMain(m *testing.M) {
 
 **Database operation tests:**
 ```go
-func Test_TalkCreate(t *testing.T) {
+func Test_ChatCreate(t *testing.T) {
     tests := []struct {
         name string
-        data *talk.Talk
+        data *chat.Chat
     }{
         {
             "normal",
-            &talk.Talk{
+            &chat.Chat{
                 Identity: commonidentity.Identity{
                     ID: uuid.FromStringOrNil("..."),
                     CustomerID: uuid.FromStringOrNil("..."),
                 },
-                Type: talk.TypeNormal,
+                Type: chat.TypeDirect,
             },
         },
     }
@@ -586,21 +618,21 @@ func Test_TalkCreate(t *testing.T) {
             ctx := context.Background()
 
             // Test create
-            if err := h.TalkCreate(ctx, tt.data); err != nil {
+            if err := h.ChatCreate(ctx, tt.data); err != nil {
                 t.Errorf("Wrong match. expect: ok, got: %v", err)
             }
 
             // Test retrieval to verify
-            res, err := h.TalkGet(ctx, tt.data.ID)
+            res, err := h.ChatGet(ctx, tt.data.ID)
             if err != nil {
                 t.Errorf("Wrong match. expect: ok, got: %v", err)
             }
 
             // Clear timestamps for comparison (auto-generated)
-            res.TMCreate = ""
-            res.TMUpdate = ""
-            tt.data.TMCreate = ""
-            tt.data.TMUpdate = ""
+            res.TMCreate = nil
+            res.TMUpdate = nil
+            tt.data.TMCreate = nil
+            tt.data.TMUpdate = nil
 
             if !reflect.DeepEqual(tt.data, res) {
                 t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.data, res)
@@ -615,11 +647,11 @@ func Test_TalkCreate(t *testing.T) {
 **Pattern:** `Test_<FunctionName>` or `Test_<FunctionName>_error`
 
 Examples:
-- `Test_TalkCreate` - Normal cases
-- `Test_TalkCreate_error` - Error cases (separate function)
-- `Test_TalkGet` - Normal retrieval
-- `Test_TalkGet_error` - Error retrieval
-- `Test_TalkList` - List operations
+- `Test_ChatCreate` - Normal cases
+- `Test_ChatCreate_error` - Error cases (separate function)
+- `Test_ChatGet` - Normal retrieval
+- `Test_ChatGet_error` - Error retrieval
+- `Test_ChatList` - List operations
 
 **Test case names** (within table):
 - Use lowercase, descriptive names: `"normal"`, `"not found"`, `"empty list"`, `"validation error"`
@@ -629,18 +661,18 @@ Examples:
 **Create separate test functions for error cases:**
 
 ```go
-func Test_TalkCreate(t *testing.T) {
+func Test_ChatCreate(t *testing.T) {
     tests := []struct {
         name string
         // normal cases only
     }{
         {"normal", /* ... */},
-        {"group talk", /* ... */},
+        {"group chat", /* ... */},
     }
     // test implementation
 }
 
-func Test_TalkCreate_error(t *testing.T) {
+func Test_ChatCreate_error(t *testing.T) {
     tests := []struct {
         name string
         // error cases only
@@ -666,7 +698,7 @@ func Test_TalkCreate_error(t *testing.T) {
 ### Test Coverage Expectations
 
 For bin-talk-manager test coverage:
-- **talkhandler**: 100% of implementation code
+- **chathandler**: 100% of implementation code
 - **messagehandler**: 66% (complex threading logic)
 - **participanthandler**: ~80%
 - **reactionhandler**: ~75%
@@ -681,22 +713,22 @@ All critical code paths (validation, threading, atomic operations) are covered.
 1. Add regex pattern to `pkg/listenhandler/main.go`
 2. Add case to `processRequest()` switch statement
 3. Implement handler method in corresponding file
-4. Use domain handlers (talkhandler, messagehandler) for business logic
+4. Use domain handlers (chathandler, messagehandler) for business logic
 5. Return `sock.Response` with appropriate status code and marshaled data
 
 ### Adding a new database operation
 
 1. Define method in `pkg/dbhandler/main.go` interface
-2. Implement in corresponding file (e.g., `talk.go`, `message.go`)
+2. Implement in corresponding file (e.g., `chat.go`, `message.go`)
 3. Update mock: `cd pkg/dbhandler && go generate`
 4. Add tests in `*_test.go`
 
 ### Adding a new business logic method
 
-1. Define method in handler interface (e.g., `pkg/talkhandler/main.go`)
-2. Implement in handler file (e.g., `pkg/talkhandler/talk.go`)
+1. Define method in handler interface (e.g., `pkg/chathandler/main.go`)
+2. Implement in handler file (e.g., `pkg/chathandler/chat.go`)
 3. Add validation, database calls, webhook publishing
-4. Update mock: `cd pkg/talkhandler && go generate`
+4. Update mock: `cd pkg/chathandler && go generate`
 5. Add table-driven tests in `*_test.go`
 
 ## Monorepo Context
