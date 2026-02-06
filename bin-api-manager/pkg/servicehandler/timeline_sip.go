@@ -30,6 +30,7 @@ func (h *serviceHandler) TimelineSIPMessagesGet(
 		log.Infof("Could not get call: %v", err)
 		return nil, fmt.Errorf("call not found")
 	}
+	log.WithField("call", call).Debugf("Retrieved call info. call_id: %s", call.ID)
 
 	// Check permission
 	if !h.hasPermission(ctx, a, call.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
@@ -48,6 +49,7 @@ func (h *serviceHandler) TimelineSIPMessagesGet(
 		log.Errorf("Could not get channel: %v", err)
 		return nil, fmt.Errorf("no SIP data available for this call")
 	}
+	log.WithField("channel", ch).Debugf("Retrieved channel info. channel_id: %s", ch.ID)
 
 	if ch.SIPCallID == "" {
 		log.Info("Channel has no SIP Call-ID")
@@ -89,6 +91,7 @@ func (h *serviceHandler) TimelineSIPPcapGet(
 		log.Infof("Could not get call: %v", err)
 		return nil, fmt.Errorf("call not found")
 	}
+	log.WithField("call", call).Debugf("Retrieved call info. call_id: %s", call.ID)
 
 	// Check permission
 	if !h.hasPermission(ctx, a, call.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
@@ -107,6 +110,7 @@ func (h *serviceHandler) TimelineSIPPcapGet(
 		log.Errorf("Could not get channel: %v", err)
 		return nil, fmt.Errorf("no SIP data available for this call")
 	}
+	log.WithField("channel", ch).Debugf("Retrieved channel info. channel_id: %s", ch.ID)
 
 	if ch.SIPCallID == "" {
 		log.Info("Channel has no SIP Call-ID")
