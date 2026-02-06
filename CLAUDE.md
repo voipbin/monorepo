@@ -411,6 +411,41 @@ type Model struct {
 }
 ```
 
+#### Model/Struct Changes Require OpenAPI Updates
+
+**CRITICAL: Most API-facing structs are tightly coupled with OpenAPI specs. When changing struct definitions, you MUST also update the corresponding OpenAPI schema.**
+
+This applies to any struct that:
+- Is returned by API endpoints (response models)
+- Is accepted by API endpoints (request models)
+- Is embedded in other API-facing structs
+
+**When modifying struct fields:**
+1. **Update the Go struct** in the service's `models/` directory
+2. **Update the OpenAPI schema** in `bin-openapi-manager/openapi/openapi.yaml`
+3. **Regenerate OpenAPI types** with `go generate ./...` in `bin-openapi-manager`
+4. **Run verification** for both the service AND `bin-openapi-manager`
+
+**Example:**
+```go
+// Changing this in bin-talk-manager/models/message/message.go:
+type Media struct {
+    AgentID uuid.UUID `json:"agent_id,omitempty"`  // Changed from Agent amagent.Agent
+}
+
+// Requires updating bin-openapi-manager/openapi/openapi.yaml:
+TalkManagerMedia:
+  properties:
+    agent_id:           # Changed from agent: $ref AgentManagerAgent
+      type: string
+      format: uuid
+```
+
+**Why this matters:**
+- Clients (web apps, mobile apps) depend on the OpenAPI spec for type generation
+- Mismatched specs cause runtime errors or silent data loss
+- API documentation becomes incorrect
+
 **For complete gotcha explanations and troubleshooting, see [code-quality-standards.md#common-gotchas](docs/code-quality-standards.md#common-gotchas)**
 
 ## Where to Document New Information
