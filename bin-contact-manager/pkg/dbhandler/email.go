@@ -102,6 +102,24 @@ func (h *handler) EmailDelete(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
+// EmailResetPrimary sets is_primary to false for all emails of a contact
+func (h *handler) EmailResetPrimary(ctx context.Context, contactID uuid.UUID) error {
+	query, args, err := sq.Update(emailTable).
+		Set("is_primary", false).
+		Where(sq.Eq{"contact_id": contactID.Bytes()}).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("could not build query. EmailResetPrimary. err: %v", err)
+	}
+
+	_, err = h.db.Exec(query, args...)
+	if err != nil {
+		return fmt.Errorf("could not execute. EmailResetPrimary. err: %v", err)
+	}
+
+	return nil
+}
+
 // EmailListByContactID returns all emails for a contact
 func (h *handler) EmailListByContactID(ctx context.Context, contactID uuid.UUID) ([]contact.Email, error) {
 	columns := commondatabasehandler.GetDBFields(&contact.Email{})

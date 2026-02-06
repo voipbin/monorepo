@@ -102,6 +102,24 @@ func (h *handler) PhoneNumberDelete(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
+// PhoneNumberResetPrimary sets is_primary to false for all phone numbers of a contact
+func (h *handler) PhoneNumberResetPrimary(ctx context.Context, contactID uuid.UUID) error {
+	query, args, err := sq.Update(phoneNumberTable).
+		Set("is_primary", false).
+		Where(sq.Eq{"contact_id": contactID.Bytes()}).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("could not build query. PhoneNumberResetPrimary. err: %v", err)
+	}
+
+	_, err = h.db.Exec(query, args...)
+	if err != nil {
+		return fmt.Errorf("could not execute. PhoneNumberResetPrimary. err: %v", err)
+	}
+
+	return nil
+}
+
 // PhoneNumberListByContactID returns all phone numbers for a contact
 func (h *handler) PhoneNumberListByContactID(ctx context.Context, contactID uuid.UUID) ([]contact.PhoneNumber, error) {
 	columns := commondatabasehandler.GetDBFields(&contact.PhoneNumber{})

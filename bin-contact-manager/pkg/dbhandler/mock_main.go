@@ -201,6 +201,20 @@ func (mr *MockDBHandlerMockRecorder) EmailListByContactID(ctx, contactID any) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EmailListByContactID", reflect.TypeOf((*MockDBHandler)(nil).EmailListByContactID), ctx, contactID)
 }
 
+// EmailResetPrimary mocks base method.
+func (m *MockDBHandler) EmailResetPrimary(ctx context.Context, contactID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EmailResetPrimary", ctx, contactID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EmailResetPrimary indicates an expected call of EmailResetPrimary.
+func (mr *MockDBHandlerMockRecorder) EmailResetPrimary(ctx, contactID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EmailResetPrimary", reflect.TypeOf((*MockDBHandler)(nil).EmailResetPrimary), ctx, contactID)
+}
+
 // PhoneNumberCreate mocks base method.
 func (m *MockDBHandler) PhoneNumberCreate(ctx context.Context, p *contact.PhoneNumber) error {
 	m.ctrl.T.Helper()
@@ -242,6 +256,20 @@ func (m *MockDBHandler) PhoneNumberListByContactID(ctx context.Context, contactI
 func (mr *MockDBHandlerMockRecorder) PhoneNumberListByContactID(ctx, contactID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PhoneNumberListByContactID", reflect.TypeOf((*MockDBHandler)(nil).PhoneNumberListByContactID), ctx, contactID)
+}
+
+// PhoneNumberResetPrimary mocks base method.
+func (m *MockDBHandler) PhoneNumberResetPrimary(ctx context.Context, contactID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PhoneNumberResetPrimary", ctx, contactID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PhoneNumberResetPrimary indicates an expected call of PhoneNumberResetPrimary.
+func (mr *MockDBHandlerMockRecorder) PhoneNumberResetPrimary(ctx, contactID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PhoneNumberResetPrimary", reflect.TypeOf((*MockDBHandler)(nil).PhoneNumberResetPrimary), ctx, contactID)
 }
 
 // TagAssignmentCreate mocks base method.

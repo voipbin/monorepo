@@ -75,6 +75,12 @@ func (h *contactHandler) Create(ctx context.Context, c *contact.Contact) (*conta
 		p.ContactID = c.ID
 		p.NumberE164 = normalizeE164(p.NumberE164, p.Number)
 
+		if p.IsPrimary {
+			if err := h.db.PhoneNumberResetPrimary(ctx, c.ID); err != nil {
+				log.Warnf("Could not reset primary phone number. err: %v", err)
+			}
+		}
+
 		if err := h.db.PhoneNumberCreate(ctx, &p); err != nil {
 			log.Warnf("Could not create phone number. err: %v", err)
 		}
@@ -87,6 +93,12 @@ func (h *contactHandler) Create(ctx context.Context, c *contact.Contact) (*conta
 		e.ContactID = c.ID
 		// Normalize email to lowercase
 		e.Address = strings.ToLower(strings.TrimSpace(e.Address))
+
+		if e.IsPrimary {
+			if err := h.db.EmailResetPrimary(ctx, c.ID); err != nil {
+				log.Warnf("Could not reset primary email. err: %v", err)
+			}
+		}
 
 		if err := h.db.EmailCreate(ctx, &e); err != nil {
 			log.Warnf("Could not create email. err: %v", err)
@@ -216,6 +228,14 @@ func (h *contactHandler) AddPhoneNumber(ctx context.Context, contactID uuid.UUID
 	p.ContactID = contactID
 	p.NumberE164 = normalizeE164(p.NumberE164, p.Number)
 
+	// Enforce single primary: reset existing primaries before setting new one
+	if p.IsPrimary {
+		if err := h.db.PhoneNumberResetPrimary(ctx, contactID); err != nil {
+			log.Errorf("Could not reset primary phone number. err: %v", err)
+			return nil, fmt.Errorf("could not reset primary phone number: %w", err)
+		}
+	}
+
 	if err := h.db.PhoneNumberCreate(ctx, p); err != nil {
 		log.Errorf("Could not create phone number. err: %v", err)
 		return nil, fmt.Errorf("could not create phone number: %w", err)
@@ -277,6 +297,14 @@ func (h *contactHandler) AddEmail(ctx context.Context, contactID uuid.UUID, e *c
 	e.ContactID = contactID
 	// Normalize email to lowercase
 	e.Address = strings.ToLower(strings.TrimSpace(e.Address))
+
+	// Enforce single primary: reset existing primaries before setting new one
+	if e.IsPrimary {
+		if err := h.db.EmailResetPrimary(ctx, contactID); err != nil {
+			log.Errorf("Could not reset primary email. err: %v", err)
+			return nil, fmt.Errorf("could not reset primary email: %w", err)
+		}
+	}
 
 	if err := h.db.EmailCreate(ctx, e); err != nil {
 		log.Errorf("Could not create email. err: %v", err)

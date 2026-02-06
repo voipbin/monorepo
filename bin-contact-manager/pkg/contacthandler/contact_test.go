@@ -353,6 +353,9 @@ func Test_AddPhoneNumber(t *testing.T) {
 
 			mockDB.EXPECT().ContactGet(ctx, tt.contactID).Return(tt.responseContact, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333"))
+			if tt.phone.IsPrimary {
+				mockDB.EXPECT().PhoneNumberResetPrimary(ctx, tt.contactID).Return(nil)
+			}
 			mockDB.EXPECT().PhoneNumberCreate(ctx, gomock.Any()).Return(nil)
 			mockDB.EXPECT().ContactGet(ctx, tt.contactID).Return(tt.responseContact, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, contact.EventTypeContactUpdated, gomock.Any())
@@ -414,6 +417,9 @@ func Test_AddEmail(t *testing.T) {
 
 			mockDB.EXPECT().ContactGet(ctx, tt.contactID).Return(tt.responseContact, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("66666666-6666-6666-6666-666666666666"))
+			if tt.email.IsPrimary {
+				mockDB.EXPECT().EmailResetPrimary(ctx, tt.contactID).Return(nil)
+			}
 			mockDB.EXPECT().EmailCreate(ctx, gomock.Any()).Return(nil)
 			mockDB.EXPECT().ContactGet(ctx, tt.contactID).Return(tt.responseContact, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, contact.EventTypeContactUpdated, gomock.Any())
@@ -1806,8 +1812,9 @@ func Test_Create_WithMultiplePhones(t *testing.T) {
 
 	mockUtil.EXPECT().UUIDCreate().Return(contactID)
 	mockDB.EXPECT().ContactCreate(ctx, gomock.Any()).Return(nil)
-	// Three phone numbers
+	// Three phone numbers - first is primary
 	mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("a3333333-3333-3333-3333-333333333333"))
+	mockDB.EXPECT().PhoneNumberResetPrimary(ctx, contactID).Return(nil)
 	mockDB.EXPECT().PhoneNumberCreate(ctx, gomock.Any()).Return(nil)
 	mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("a4444444-4444-4444-4444-444444444444"))
 	mockDB.EXPECT().PhoneNumberCreate(ctx, gomock.Any()).Return(nil)
@@ -1863,8 +1870,9 @@ func Test_Create_WithMultipleEmails(t *testing.T) {
 
 	mockUtil.EXPECT().UUIDCreate().Return(contactID)
 	mockDB.EXPECT().ContactCreate(ctx, gomock.Any()).Return(nil)
-	// Two emails
+	// Two emails - first is primary
 	mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("b3333333-3333-3333-3333-333333333333"))
+	mockDB.EXPECT().EmailResetPrimary(ctx, contactID).Return(nil)
 	mockDB.EXPECT().EmailCreate(ctx, gomock.Any()).Return(nil)
 	mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("b4444444-4444-4444-4444-444444444444"))
 	mockDB.EXPECT().EmailCreate(ctx, gomock.Any()).Return(nil)
@@ -2002,6 +2010,7 @@ func Test_AddEmail_NormalizesAddress(t *testing.T) {
 
 	mockDB.EXPECT().ContactGet(ctx, contactID).Return(responseContact, nil)
 	mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("e3333333-3333-3333-3333-333333333333"))
+	mockDB.EXPECT().EmailResetPrimary(ctx, contactID).Return(nil)
 	// Verify that the email address passed to EmailCreate is normalized
 	mockDB.EXPECT().EmailCreate(ctx, gomock.Any()).DoAndReturn(func(_ context.Context, e *contact.Email) error {
 		if e.Address != "user@example.com" {
@@ -2153,6 +2162,7 @@ func Test_AddPhoneNumber_TrimsSpaces(t *testing.T) {
 
 	mockDB.EXPECT().ContactGet(ctx, contactID).Return(responseContact, nil)
 	mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("f3333333-3333-3333-3333-333333333333"))
+	mockDB.EXPECT().PhoneNumberResetPrimary(ctx, contactID).Return(nil)
 	// Verify that the phone number is trimmed
 	mockDB.EXPECT().PhoneNumberCreate(ctx, gomock.Any()).DoAndReturn(func(_ context.Context, p *contact.PhoneNumber) error {
 		if p.NumberE164 != "+15551234567" {
