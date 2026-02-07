@@ -87,6 +87,29 @@ func (h *handler) EmailGet(ctx context.Context, id uuid.UUID) (*contact.Email, e
 
 // EmailUpdate updates an email record
 func (h *handler) EmailUpdate(ctx context.Context, id uuid.UUID, fields map[string]any) error {
+	// First get the contact_id for cache update
+	selectQuery, selectArgs, err := sq.Select("contact_id").
+		From(emailTable).
+		Where(sq.Eq{"id": id.Bytes()}).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("could not build query. EmailUpdate. err: %v", err)
+	}
+
+	rows, err := h.db.Query(selectQuery, selectArgs...)
+	if err != nil {
+		return fmt.Errorf("could not query. EmailUpdate. err: %v", err)
+	}
+
+	var contactIDBytes []byte
+	if rows.Next() {
+		if err := rows.Scan(&contactIDBytes); err != nil {
+			_ = rows.Close()
+			return fmt.Errorf("could not scan contact_id. EmailUpdate. err: %v", err)
+		}
+	}
+	_ = rows.Close()
+
 	q := sq.Update(emailTable).Where(sq.Eq{"id": id.Bytes()})
 	for k, v := range fields {
 		q = q.Set(k, v)
@@ -100,6 +123,14 @@ func (h *handler) EmailUpdate(ctx context.Context, id uuid.UUID, fields map[stri
 	_, err = h.db.Exec(query, args...)
 	if err != nil {
 		return fmt.Errorf("could not execute. EmailUpdate. err: %v", err)
+	}
+
+	// Update the contact cache
+	if len(contactIDBytes) > 0 {
+		contactID, err := uuid.FromBytes(contactIDBytes)
+		if err == nil {
+			_ = h.contactUpdateToCache(ctx, contactID)
+		}
 	}
 
 	return nil
