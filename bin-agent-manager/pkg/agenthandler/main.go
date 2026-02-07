@@ -25,6 +25,14 @@ const (
 	defaultPasswordHashCost = 10
 )
 
+// PasswordResetEmailType distinguishes the email content for password reset.
+type PasswordResetEmailType int
+
+const (
+	PasswordResetEmailTypeForgot  PasswordResetEmailType = iota // user-initiated forgot password
+	PasswordResetEmailTypeWelcome                                // new customer welcome email
+)
+
 // AgentHandler interface
 type AgentHandler interface {
 	Create(ctx context.Context, customerID uuid.UUID, username, password, name, detail string, ringMethod agent.RingMethod, permission agent.Permission, tagIDs []uuid.UUID, addresses []commonaddress.Address) (*agent.Agent, error)
@@ -41,7 +49,7 @@ type AgentHandler interface {
 	UpdateStatus(ctx context.Context, id uuid.UUID, status agent.Status) (*agent.Agent, error)
 	UpdateTagIDs(ctx context.Context, id uuid.UUID, tags []uuid.UUID) (*agent.Agent, error)
 
-	PasswordForgot(ctx context.Context, username string) (string, string, error)
+	PasswordForgot(ctx context.Context, username string, emailType PasswordResetEmailType) error
 	PasswordReset(ctx context.Context, token string, password string) error
 
 	EventGroupcallCreated(ctx context.Context, groupcall *cmgroupcall.Groupcall) error

@@ -19,9 +19,7 @@ func Test_ProcessV1PasswordForgotPost(t *testing.T) {
 		name    string
 		request *sock.Request
 
-		responseToken    string
-		responseUsername string
-		responseErr      error
+		responseErr error
 
 		expectRes *sock.Response
 	}{
@@ -34,14 +32,10 @@ func Test_ProcessV1PasswordForgotPost(t *testing.T) {
 				Data:     []byte(`{"username":"test@voipbin.net"}`),
 			},
 
-			responseToken:    "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
-			responseUsername: "test@voipbin.net",
-			responseErr:      nil,
+			responseErr: nil,
 
 			expectRes: &sock.Response{
 				StatusCode: 200,
-				DataType:   "application/json",
-				Data:       []byte(`{"token":"abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890","username":"test@voipbin.net"}`),
 			},
 		},
 	}
@@ -59,7 +53,7 @@ func Test_ProcessV1PasswordForgotPost(t *testing.T) {
 				agentHandler: mockAgent,
 			}
 
-			mockAgent.EXPECT().PasswordForgot(gomock.Any(), "test@voipbin.net").Return(tt.responseToken, tt.responseUsername, tt.responseErr)
+			mockAgent.EXPECT().PasswordForgot(gomock.Any(), "test@voipbin.net", agenthandler.PasswordResetEmailTypeForgot).Return(tt.responseErr)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -92,7 +86,7 @@ func Test_ProcessV1PasswordForgotPost_AgentNotFound(t *testing.T) {
 		Data:     []byte(`{"username":"unknown@voipbin.net"}`),
 	}
 
-	mockAgent.EXPECT().PasswordForgot(gomock.Any(), "unknown@voipbin.net").Return("", "", fmt.Errorf("agent not found"))
+	mockAgent.EXPECT().PasswordForgot(gomock.Any(), "unknown@voipbin.net", agenthandler.PasswordResetEmailTypeForgot).Return(fmt.Errorf("agent not found"))
 
 	res, err := h.processRequest(req)
 	if err != nil {

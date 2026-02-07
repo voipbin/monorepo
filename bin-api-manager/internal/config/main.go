@@ -41,7 +41,6 @@ type Config struct {
 	SSLCertBase64           string // SSLCertBase64 is the base64-encoded SSL certificate for HTTPS connections.
 	SSLPrivKeyBase64        string // SSLPrivKeyBase64 is the base64-encoded SSL private key for HTTPS connections.
 	ListenIPAudiosock       string // ListenIPAudiosock is the IP address for audiosocket connection listening.
-	PasswordResetBaseURL    string // PasswordResetBaseURL is the base URL for password reset links in emails.
 }
 
 func Bootstrap(cmd *cobra.Command) error {
@@ -89,7 +88,6 @@ func bindConfig(cmd *cobra.Command) error {
 	f.String("ssl_cert_base64", "", "Base64 encoded SSL certificate")
 	f.String("ssl_privkey_base64", "", "Base64 encoded SSL private key")
 	f.String("listen_ip_audiosock", "", "Listen IP address for audiosocket connection")
-	f.String("password_reset_base_url", "https://api.voipbin.net", "Base URL for password reset links")
 
 	bindings := map[string]string{
 		"rabbitmq_address":          "RABBITMQ_ADDRESS",
@@ -105,7 +103,6 @@ func bindConfig(cmd *cobra.Command) error {
 		"ssl_cert_base64":           "SSL_CERT_BASE64",
 		"ssl_privkey_base64":        "SSL_PRIVKEY_BASE64",
 		"listen_ip_audiosock":       "POD_IP",
-		"password_reset_base_url":   "PASSWORD_RESET_BASE_URL",
 	}
 
 	for flagKey, envKey := range bindings {
@@ -144,7 +141,6 @@ func LoadGlobalConfig() {
 			SSLCertBase64:           viper.GetString("ssl_cert_base64"),
 			SSLPrivKeyBase64:        viper.GetString("ssl_privkey_base64"),
 			ListenIPAudiosock:       viper.GetString("listen_ip_audiosock"),
-			PasswordResetBaseURL:    viper.GetString("password_reset_base_url"),
 		}
 		logrus.Debug("Configuration has been loaded and locked.")
 	})

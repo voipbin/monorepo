@@ -2,6 +2,8 @@ package agenthandler
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 
@@ -140,11 +142,19 @@ func (h *agentHandler) EventCustomerCreated(ctx context.Context, cu *cmcustomer.
 	})
 	log.Debugf("Creating basic customer admin agent for new customer. customer_id: %s", cu.ID)
 
+	// generate random unusable password
+	randomBytes := make([]byte, 32)
+	if _, err := rand.Read(randomBytes); err != nil {
+		log.Errorf("Could not generate random password. err: %v", err)
+		return errors.Wrap(err, "could not generate random password")
+	}
+	randomPassword := hex.EncodeToString(randomBytes)
+
 	a, err := h.Create(
 		ctx,
 		cu.ID,
 		cu.Email,
-		cu.Email,
+		randomPassword,
 		"default admin",
 		"default agent account for admin permission",
 		agent.RingMethodRingAll,
@@ -157,6 +167,12 @@ func (h *agentHandler) EventCustomerCreated(ctx context.Context, cu *cmcustomer.
 		return errors.Wrap(err, "could not create basic customer admin agent")
 	}
 	log.WithField("agent", a).Debugf("Created basic admin agent for new customer. agent_id: %s", a.ID)
+
+	// send welcome email with password reset link
+	if err := h.PasswordForgot(ctx, cu.Email, PasswordResetEmailTypeWelcome); err != nil {
+		log.Errorf("Could not send welcome email. err: %v", err)
+		// don't fail the event - the agent was created successfully
+	}
 
 	return nil
 }

@@ -25,6 +25,7 @@ type Config struct {
 	RedisAddress            string // RedisAddress is the address (including host and port) of the Redis server.
 	RedisPassword           string // RedisPassword is the password used for authenticating to the Redis server.
 	RedisDatabase           int    // RedisDatabase is the numeric Redis logical database index to select, not a name.
+	PasswordResetBaseURL    string // PasswordResetBaseURL is the base URL for password reset links in emails.
 }
 
 func Bootstrap(cmd *cobra.Command) error {
@@ -49,6 +50,7 @@ func bindConfig(cmd *cobra.Command) error {
 	f.String("redis_address", "", "Redis server address")
 	f.String("redis_password", "", "Redis password")
 	f.Int("redis_database", 0, "Redis database index")
+	f.String("password_reset_base_url", "https://api.voipbin.net", "Base URL for password reset links")
 
 	bindings := map[string]string{
 		"rabbitmq_address":          "RABBITMQ_ADDRESS",
@@ -58,6 +60,7 @@ func bindConfig(cmd *cobra.Command) error {
 		"redis_address":             "REDIS_ADDRESS",
 		"redis_password":            "REDIS_PASSWORD",
 		"redis_database":            "REDIS_DATABASE",
+		"password_reset_base_url":   "PASSWORD_RESET_BASE_URL",
 	}
 
 	for flagKey, envKey := range bindings {
@@ -90,6 +93,7 @@ func LoadGlobalConfig() {
 			RedisAddress:            viper.GetString("redis_address"),
 			RedisPassword:           viper.GetString("redis_password"),
 			RedisDatabase:           viper.GetInt("redis_database"),
+			PasswordResetBaseURL:    viper.GetString("password_reset_base_url"),
 		}
 		logrus.Debug("Configuration has been loaded and locked.")
 	})

@@ -8,17 +8,10 @@ import (
 	"monorepo/bin-common-handler/models/sock"
 )
 
-// passwordForgotResponse is the response struct for password forgot RPC
-type passwordForgotResponse struct {
-	Token    string `json:"token"`
-	Username string `json:"username"`
-}
-
 // AgentV1PasswordForgot sends a request to agent-manager
-// to generate a password reset token for the given username.
-// Returns (token, username, error).
+// to generate a password reset token and send the reset email.
 // timeout: milliseconds
-func (r *requestHandler) AgentV1PasswordForgot(ctx context.Context, timeout int, username string) (string, string, error) {
+func (r *requestHandler) AgentV1PasswordForgot(ctx context.Context, timeout int, username string) error {
 	uri := "/v1/password-forgot"
 
 	req := &amrequest.V1DataPasswordForgotPost{
@@ -27,20 +20,19 @@ func (r *requestHandler) AgentV1PasswordForgot(ctx context.Context, timeout int,
 
 	m, err := json.Marshal(req)
 	if err != nil {
-		return "", "", err
+		return err
 	}
 
 	tmp, err := r.sendRequestAgent(ctx, uri, sock.RequestMethodPost, "agent/password-forgot", timeout, 0, ContentTypeJSON, m)
 	if err != nil {
-		return "", "", err
+		return err
 	}
 
-	var res passwordForgotResponse
-	if errParse := parseResponse(tmp, &res); errParse != nil {
-		return "", "", errParse
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
 	}
 
-	return res.Token, res.Username, nil
+	return nil
 }
 
 // AgentV1PasswordReset sends a request to agent-manager

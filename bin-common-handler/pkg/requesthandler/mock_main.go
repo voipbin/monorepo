@@ -652,13 +652,11 @@ func (mr *MockRequestHandlerMockRecorder) AgentV1Login(ctx, timeout, username, p
 }
 
 // AgentV1PasswordForgot mocks base method.
-func (m *MockRequestHandler) AgentV1PasswordForgot(ctx context.Context, timeout int, username string) (string, string, error) {
+func (m *MockRequestHandler) AgentV1PasswordForgot(ctx context.Context, timeout int, username string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AgentV1PasswordForgot", ctx, timeout, username)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(string)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // AgentV1PasswordForgot indicates an expected call of AgentV1PasswordForgot.

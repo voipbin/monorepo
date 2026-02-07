@@ -20,8 +20,6 @@ func Test_AuthPasswordForgot(t *testing.T) {
 
 		username string
 
-		responseToken    string
-		responseUsername string
 		responseForgotErr error
 	}{
 		{
@@ -29,8 +27,6 @@ func Test_AuthPasswordForgot(t *testing.T) {
 
 			username: "test@voipbin.net",
 
-			responseToken:    "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
-			responseUsername: "test@voipbin.net",
 			responseForgotErr: nil,
 		},
 	}
@@ -50,8 +46,7 @@ func Test_AuthPasswordForgot(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AgentV1PasswordForgot(ctx, 30000, tt.username).Return(tt.responseToken, tt.responseUsername, tt.responseForgotErr)
-			mockReq.EXPECT().EmailV1EmailSend(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil)
+			mockReq.EXPECT().AgentV1PasswordForgot(ctx, 30000, tt.username).Return(tt.responseForgotErr)
 
 			err := h.AuthPasswordForgot(ctx, tt.username)
 			if err != nil {
@@ -75,7 +70,7 @@ func Test_AuthPasswordForgot_AgentNotFound(t *testing.T) {
 	}
 	ctx := context.Background()
 
-	mockReq.EXPECT().AgentV1PasswordForgot(ctx, 30000, "unknown@voipbin.net").Return("", "", fmt.Errorf("not found"))
+	mockReq.EXPECT().AgentV1PasswordForgot(ctx, 30000, "unknown@voipbin.net").Return(fmt.Errorf("not found"))
 
 	err := h.AuthPasswordForgot(ctx, "unknown@voipbin.net")
 	if err != nil {
