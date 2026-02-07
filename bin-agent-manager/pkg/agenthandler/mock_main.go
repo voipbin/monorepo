@@ -192,19 +192,17 @@ func (mr *MockAgentHandlerMockRecorder) Login(ctx, username, password any) *gomo
 }
 
 // PasswordForgot mocks base method.
-func (m *MockAgentHandler) PasswordForgot(ctx context.Context, username string) (string, string, error) {
+func (m *MockAgentHandler) PasswordForgot(ctx context.Context, username string, emailType PasswordResetEmailType) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PasswordForgot", ctx, username)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(string)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
+	ret := m.ctrl.Call(m, "PasswordForgot", ctx, username, emailType)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // PasswordForgot indicates an expected call of PasswordForgot.
-func (mr *MockAgentHandlerMockRecorder) PasswordForgot(ctx, username any) *gomock.Call {
+func (mr *MockAgentHandlerMockRecorder) PasswordForgot(ctx, username, emailType any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PasswordForgot", reflect.TypeOf((*MockAgentHandler)(nil).PasswordForgot), ctx, username)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PasswordForgot", reflect.TypeOf((*MockAgentHandler)(nil).PasswordForgot), ctx, username, emailType)
 }
 
 // PasswordReset mocks base method.

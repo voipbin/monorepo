@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"time"
 
+	"monorepo/bin-agent-manager/internal/config"
 	commonaddress "monorepo/bin-common-handler/models/address"
 
 	"github.com/gofrs/uuid"
@@ -403,35 +404,73 @@ func (h *agentHandler) UpdateStatus(ctx context.Context, id uuid.UUID, status ag
 	return res, nil
 }
 
-// PasswordForgot generates a password reset token for the given username.
-// Returns (token, username, error). Returns error if agent not found.
-func (h *agentHandler) PasswordForgot(ctx context.Context, username string) (string, string, error) {
+// PasswordForgot generates a password reset token for the given username
+// and sends the appropriate email (forgot-password or welcome).
+func (h *agentHandler) PasswordForgot(ctx context.Context, username string, emailType PasswordResetEmailType) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "PasswordForgot",
-		"username": username,
+		"func":      "PasswordForgot",
+		"username":  username,
+		"emailType": emailType,
 	})
 	log.Debug("Processing password forgot request.")
 
 	a, err := h.db.AgentGetByUsername(ctx, username)
 	if err != nil {
 		log.Infof("Could not find agent by username. err: %v", err)
-		return "", "", fmt.Errorf("agent not found")
+		return fmt.Errorf("agent not found")
 	}
 	log.WithField("agent_id", a.ID).Debugf("Found agent for password reset. agent_id: %s", a.ID)
 
 	tokenBytes := make([]byte, passwordResetTokenLen)
 	if _, err := rand.Read(tokenBytes); err != nil {
 		log.Errorf("Could not generate random token. err: %v", err)
-		return "", "", errors.Wrap(err, "could not generate token")
+		return errors.Wrap(err, "could not generate token")
 	}
 	token := hex.EncodeToString(tokenBytes)
 
 	if err := h.cache.PasswordResetTokenSet(ctx, token, a.ID, passwordResetTokenTTL); err != nil {
 		log.Errorf("Could not store password reset token. err: %v", err)
-		return "", "", errors.Wrap(err, "could not store token")
+		return errors.Wrap(err, "could not store token")
 	}
 
-	return token, username, nil
+	cfg := config.Get()
+	resetLink := cfg.PasswordResetBaseURL + "/auth/password-reset?token=" + token
+
+	var subject, content string
+	switch emailType {
+	case PasswordResetEmailTypeWelcome:
+		subject = "Welcome to VoIPBin - Set Your Password"
+		content = fmt.Sprintf(
+			"Welcome to VoIPBin! Your account has been created.\n\n"+
+				"Click the link below to set your password. This link expires in 1 hour.\n\n"+
+				"%s\n\n"+
+				"If you have any questions, please contact our support team.",
+			resetLink,
+		)
+	default:
+		subject = "VoIPBin Password Reset"
+		content = fmt.Sprintf(
+			"You have requested a password reset for your VoIPBin account.\n\n"+
+				"Click the link below to reset your password. This link expires in 1 hour.\n\n"+
+				"%s\n\n"+
+				"If you did not request this, you can safely ignore this email.",
+			resetLink,
+		)
+	}
+
+	destinations := []commonaddress.Address{
+		{
+			Type:   commonaddress.TypeEmail,
+			Target: username,
+		},
+	}
+
+	if _, err := h.reqHandler.EmailV1EmailSend(ctx, uuid.Nil, uuid.Nil, destinations, subject, content, nil); err != nil {
+		log.Errorf("Could not send password reset email. err: %v", err)
+		return errors.Wrap(err, "could not send password reset email")
+	}
+
+	return nil
 }
 
 // PasswordReset validates the token and updates the agent's password.

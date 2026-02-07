@@ -7,11 +7,8 @@ import (
 	"time"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
-	"monorepo/bin-api-manager/internal/config"
-	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
-	"github.com/gofrs/uuid"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/sirupsen/logrus"
 )
@@ -136,33 +133,8 @@ func (h *serviceHandler) AuthPasswordForgot(ctx context.Context, username string
 	})
 	log.Debug("Processing password forgot request.")
 
-	token, _, err := h.reqHandler.AgentV1PasswordForgot(ctx, 30000, username)
-	if err != nil {
+	if err := h.reqHandler.AgentV1PasswordForgot(ctx, 30000, username); err != nil {
 		log.Infof("Could not process password forgot. err: %v", err)
-		return nil
-	}
-
-	cfg := config.Get()
-	resetLink := cfg.PasswordResetBaseURL + "/auth/password-reset?token=" + token
-
-	destinations := []commonaddress.Address{
-		{
-			Type:   commonaddress.TypeEmail,
-			Target: username,
-		},
-	}
-
-	subject := "VoIPBin Password Reset"
-	content := fmt.Sprintf(
-		"You have requested a password reset for your VoIPBin account.\n\n"+
-			"Click the link below to reset your password. This link expires in 1 hour.\n\n"+
-			"%s\n\n"+
-			"If you did not request this, you can safely ignore this email.",
-		resetLink,
-	)
-
-	if _, err := h.reqHandler.EmailV1EmailSend(ctx, uuid.Nil, uuid.Nil, destinations, subject, content, nil); err != nil {
-		log.Errorf("Could not send password reset email. err: %v", err)
 	}
 
 	return nil

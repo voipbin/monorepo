@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"testing"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -23,15 +24,17 @@ func Test_PasswordForgot(t *testing.T) {
 	tests := []struct {
 		name string
 
-		username string
+		username  string
+		emailType PasswordResetEmailType
 
 		responseAgent *agent.Agent
 		responseErr   error
 	}{
 		{
-			name: "normal",
+			name: "normal - forgot password",
 
-			username: "test@voipbin.net",
+			username:  "test@voipbin.net",
+			emailType: PasswordResetEmailTypeForgot,
 
 			responseAgent: &agent.Agent{
 				Identity: commonidentity.Identity{
@@ -39,6 +42,21 @@ func Test_PasswordForgot(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
 				},
 				Username: "test@voipbin.net",
+			},
+			responseErr: nil,
+		},
+		{
+			name: "normal - welcome email",
+
+			username:  "new@voipbin.net",
+			emailType: PasswordResetEmailTypeWelcome,
+
+			responseAgent: &agent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("bc810dc4-298c-11ee-984c-ebb7811c4114"),
+					CustomerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
+				},
+				Username: "new@voipbin.net",
 			},
 			responseErr: nil,
 		},
@@ -64,18 +82,13 @@ func Test_PasswordForgot(t *testing.T) {
 
 			mockDB.EXPECT().AgentGetByUsername(ctx, tt.username).Return(tt.responseAgent, tt.responseErr)
 			mockCache.EXPECT().PasswordResetTokenSet(ctx, gomock.Any(), tt.responseAgent.ID, passwordResetTokenTTL).Return(nil)
+			mockReq.EXPECT().EmailV1EmailSend(ctx, uuid.Nil, uuid.Nil, []commonaddress.Address{
+				{Type: commonaddress.TypeEmail, Target: tt.username},
+			}, gomock.Any(), gomock.Any(), gomock.Nil()).Return(nil, nil)
 
-			token, username, err := h.PasswordForgot(ctx, tt.username)
+			err := h.PasswordForgot(ctx, tt.username, tt.emailType)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if len(token) != 64 {
-				t.Errorf("Wrong token length. expect: 64, got: %d", len(token))
-			}
-
-			if username != tt.username {
-				t.Errorf("Wrong username. expect: %s, got: %s", tt.username, username)
 			}
 		})
 	}
@@ -100,7 +113,7 @@ func Test_PasswordForgot_AgentNotFound(t *testing.T) {
 
 	mockDB.EXPECT().AgentGetByUsername(ctx, "unknown@voipbin.net").Return(nil, fmt.Errorf("not found"))
 
-	_, _, err := h.PasswordForgot(ctx, "unknown@voipbin.net")
+	err := h.PasswordForgot(ctx, "unknown@voipbin.net", PasswordResetEmailTypeForgot)
 	if err == nil {
 		t.Errorf("Wrong match. expect: error, got: ok")
 	}
@@ -133,7 +146,7 @@ func Test_PasswordForgot_CacheSetError(t *testing.T) {
 	mockDB.EXPECT().AgentGetByUsername(ctx, "test@voipbin.net").Return(responseAgent, nil)
 	mockCache.EXPECT().PasswordResetTokenSet(ctx, gomock.Any(), responseAgent.ID, passwordResetTokenTTL).Return(fmt.Errorf("cache error"))
 
-	_, _, err := h.PasswordForgot(ctx, "test@voipbin.net")
+	err := h.PasswordForgot(ctx, "test@voipbin.net", PasswordResetEmailTypeForgot)
 	if err == nil {
 		t.Errorf("Wrong match. expect: error, got: ok")
 	}

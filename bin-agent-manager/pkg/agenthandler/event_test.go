@@ -19,6 +19,7 @@ import (
 	gomock "go.uber.org/mock/gomock"
 
 	"monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-agent-manager/pkg/cachehandler"
 	"monorepo/bin-agent-manager/pkg/dbhandler"
 )
 
@@ -246,6 +247,7 @@ func Test_EventCustomerCreated(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("e3722b4c-ccca-11ee-b18c-03025e4b324b"),
 				},
+				Username: "test@voipbin.net",
 			},
 		},
 	}
@@ -259,22 +261,32 @@ func Test_EventCustomerCreated(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
 
 			h := &agentHandler{
 				reqHandler:    mockReq,
 				db:            mockDB,
 				notifyHandler: mockNotify,
 				utilHandler:   mockUtil,
+				cache:         mockCache,
 			}
 			ctx := context.Background()
 
+			// agent Create expectations
 			mockUtil.EXPECT().EmailIsValid(tt.customer.Email).Return(true)
 			mockDB.EXPECT().AgentGetByUsername(ctx, tt.customer.Email).Return(nil, fmt.Errorf(""))
-			mockUtil.EXPECT().HashGenerate(tt.customer.Email, defaultPasswordHashCost).Return(tt.responseHash, nil)
+			mockUtil.EXPECT().HashGenerate(gomock.Any(), defaultPasswordHashCost).Return(tt.responseHash, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDB.EXPECT().AgentCreate(ctx, gomock.Any()).Return(nil)
 			mockDB.EXPECT().AgentGet(ctx, tt.responseUUID).Return(tt.responseAgent, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAgent.CustomerID, agent.EventTypeAgentCreated, tt.responseAgent)
+
+			// PasswordForgot expectations (welcome email)
+			mockDB.EXPECT().AgentGetByUsername(ctx, tt.customer.Email).Return(tt.responseAgent, nil)
+			mockCache.EXPECT().PasswordResetTokenSet(ctx, gomock.Any(), tt.responseAgent.ID, passwordResetTokenTTL).Return(nil)
+			mockReq.EXPECT().EmailV1EmailSend(ctx, uuid.Nil, uuid.Nil, []commonaddress.Address{
+				{Type: commonaddress.TypeEmail, Target: tt.customer.Email},
+			}, "Welcome to VoIPBin - Set Your Password", gomock.Any(), gomock.Nil()).Return(nil, nil)
 
 			if err := h.EventCustomerCreated(ctx, tt.customer); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
