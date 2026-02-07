@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"regexp"
 
 	"monorepo/bin-api-manager/models/common"
 	"monorepo/bin-api-manager/pkg/servicehandler"
@@ -9,6 +10,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
+
+var validResetToken = regexp.MustCompile(`^[0-9a-f]{64}$`)
 
 type RequestBodyLoginPOST struct {
 	Username string `json:"username" binding:"required"`
@@ -134,7 +137,7 @@ func PostPasswordReset(c *gin.Context) {
 // It serves a simple HTML page for the password reset form.
 func GetPasswordReset(c *gin.Context) {
 	token := c.Query("token")
-	if token == "" {
+	if !validResetToken.MatchString(token) {
 		c.AbortWithStatus(400)
 		return
 	}

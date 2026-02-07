@@ -441,12 +441,21 @@ func (h *agentHandler) PasswordReset(ctx context.Context, token string, password
 	})
 	log.Debug("Processing password reset request.")
 
+	if len(password) < 8 {
+		return fmt.Errorf("password must be at least 8 characters")
+	}
+
 	agentID, err := h.cache.PasswordResetTokenGet(ctx, token)
 	if err != nil {
 		log.Infof("Could not find password reset token. err: %v", err)
 		return fmt.Errorf("invalid or expired token")
 	}
 	log.WithField("agent_id", agentID).Debugf("Found agent for token. agent_id: %s", agentID)
+
+	if agentID == agent.GuestAgentID {
+		log.Infof("Attempted password reset for guest agent.")
+		return fmt.Errorf("cannot reset password for guest agent")
+	}
 
 	passHash, err := h.utilHandler.HashGenerate(password, defaultPasswordHashCost)
 	if err != nil {

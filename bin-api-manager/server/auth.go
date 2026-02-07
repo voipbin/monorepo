@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"regexp"
 
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
@@ -9,6 +10,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
+
+var validResetToken = regexp.MustCompile(`^[0-9a-f]{64}$`)
 
 func (h *server) PostAuthLogin(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
@@ -67,7 +70,7 @@ func (h *server) PostAuthPasswordForgot(c *gin.Context) {
 
 func (h *server) GetAuthPasswordReset(c *gin.Context, params openapi_server.GetAuthPasswordResetParams) {
 	token := params.Token
-	if token == "" {
+	if !validResetToken.MatchString(token) {
 		c.AbortWithStatus(400)
 		return
 	}
