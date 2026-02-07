@@ -53,6 +53,89 @@ func (h *handler) PhoneNumberCreate(ctx context.Context, p *contact.PhoneNumber)
 	return nil
 }
 
+// PhoneNumberGet retrieves a single phone number by ID
+func (h *handler) PhoneNumberGet(ctx context.Context, id uuid.UUID) (*contact.PhoneNumber, error) {
+	columns := commondatabasehandler.GetDBFields(&contact.PhoneNumber{})
+
+	query, args, err := sq.Select(columns...).
+		From(phoneNumberTable).
+		Where(sq.Eq{"id": id.Bytes()}).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. PhoneNumberGet. err: %v", err)
+	}
+
+	rows, err := h.db.Query(query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. PhoneNumberGet. err: %v", err)
+	}
+	defer func() {
+		_ = rows.Close()
+	}()
+
+	if !rows.Next() {
+		return nil, ErrNotFound
+	}
+
+	res, err := h.phoneNumberGetFromRow(rows)
+	if err != nil {
+		return nil, fmt.Errorf("could not scan. PhoneNumberGet. err: %v", err)
+	}
+
+	return res, nil
+}
+
+// PhoneNumberUpdate updates a phone number record
+func (h *handler) PhoneNumberUpdate(ctx context.Context, id uuid.UUID, fields map[string]any) error {
+	// First get the contact_id for cache update
+	selectQuery, selectArgs, err := sq.Select("contact_id").
+		From(phoneNumberTable).
+		Where(sq.Eq{"id": id.Bytes()}).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("could not build query. PhoneNumberUpdate. err: %v", err)
+	}
+
+	rows, err := h.db.Query(selectQuery, selectArgs...)
+	if err != nil {
+		return fmt.Errorf("could not query. PhoneNumberUpdate. err: %v", err)
+	}
+
+	var contactIDBytes []byte
+	if rows.Next() {
+		if err := rows.Scan(&contactIDBytes); err != nil {
+			_ = rows.Close()
+			return fmt.Errorf("could not scan contact_id. PhoneNumberUpdate. err: %v", err)
+		}
+	}
+	_ = rows.Close()
+
+	q := sq.Update(phoneNumberTable).Where(sq.Eq{"id": id.Bytes()})
+	for k, v := range fields {
+		q = q.Set(k, v)
+	}
+
+	query, args, err := q.ToSql()
+	if err != nil {
+		return fmt.Errorf("could not build query. PhoneNumberUpdate. err: %v", err)
+	}
+
+	_, err = h.db.Exec(query, args...)
+	if err != nil {
+		return fmt.Errorf("could not execute. PhoneNumberUpdate. err: %v", err)
+	}
+
+	// Update the contact cache
+	if len(contactIDBytes) > 0 {
+		contactID, err := uuid.FromBytes(contactIDBytes)
+		if err == nil {
+			_ = h.contactUpdateToCache(ctx, contactID)
+		}
+	}
+
+	return nil
+}
+
 // PhoneNumberDelete deletes a phone number record
 func (h *handler) PhoneNumberDelete(ctx context.Context, id uuid.UUID) error {
 	// First get the phone number to find the contact_id for cache update
@@ -97,6 +180,24 @@ func (h *handler) PhoneNumberDelete(ctx context.Context, id uuid.UUID) error {
 		if err == nil {
 			_ = h.contactUpdateToCache(ctx, contactID)
 		}
+	}
+
+	return nil
+}
+
+// PhoneNumberResetPrimary sets is_primary to false for all phone numbers of a contact
+func (h *handler) PhoneNumberResetPrimary(ctx context.Context, contactID uuid.UUID) error {
+	query, args, err := sq.Update(phoneNumberTable).
+		Set("is_primary", false).
+		Where(sq.Eq{"contact_id": contactID.Bytes()}).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("could not build query. PhoneNumberResetPrimary. err: %v", err)
+	}
+
+	_, err = h.db.Exec(query, args...)
+	if err != nil {
+		return fmt.Errorf("could not execute. PhoneNumberResetPrimary. err: %v", err)
 	}
 
 	return nil

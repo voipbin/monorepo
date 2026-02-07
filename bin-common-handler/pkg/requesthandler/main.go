@@ -771,6 +771,7 @@ type RequestHandler interface {
 		phoneType string,
 		isPrimary bool,
 	) (*cmcontact.Contact, error)
+	ContactV1PhoneNumberUpdate(ctx context.Context, contactID uuid.UUID, phoneNumberID uuid.UUID, fields map[string]any) (*cmcontact.Contact, error)
 	ContactV1PhoneNumberDelete(ctx context.Context, contactID uuid.UUID, phoneNumberID uuid.UUID) (*cmcontact.Contact, error)
 
 	// contact-manager emails
@@ -781,6 +782,7 @@ type RequestHandler interface {
 		emailType string,
 		isPrimary bool,
 	) (*cmcontact.Contact, error)
+	ContactV1EmailUpdate(ctx context.Context, contactID uuid.UUID, emailID uuid.UUID, fields map[string]any) (*cmcontact.Contact, error)
 	ContactV1EmailDelete(ctx context.Context, contactID uuid.UUID, emailID uuid.UUID) (*cmcontact.Contact, error)
 
 	// contact-manager tags

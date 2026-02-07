@@ -1,3 +1,43 @@
+put:
+  summary: Update phone number on contact
+  description: Update a phone number on the contact.
+  tags:
+    - Contact
+  parameters:
+    - name: id
+      in: path
+      description: The ID of the contact.
+      required: true
+      schema:
+        type: string
+    - name: phone_number_id
+      in: path
+      description: The ID of the phone number.
+      required: true
+      schema:
+        type: string
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            number:
+              type: string
+            type:
+              type: string
+              enum: [mobile, work, home, fax, other]
+            is_primary:
+              type: boolean
+  responses:
+    '200':
+      description: Phone number updated successfully.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ContactManagerContact'
+
 delete:
   summary: Remove phone number from contact
   description: Remove a phone number from the contact.

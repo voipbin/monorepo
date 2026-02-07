@@ -320,6 +320,43 @@ func (h *serviceHandler) ContactPhoneNumberCreate(
 	return res, nil
 }
 
+// ContactPhoneNumberUpdate sends a request to contact-manager
+// to update a phone number on a contact.
+func (h *serviceHandler) ContactPhoneNumberUpdate(
+	ctx context.Context,
+	a *amagent.Agent,
+	contactID uuid.UUID,
+	phoneNumberID uuid.UUID,
+	fields map[string]any,
+) (*cmcontact.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "ContactPhoneNumberUpdate",
+		"customer_id":     a.CustomerID,
+		"contact_id":      contactID,
+		"phone_number_id": phoneNumberID,
+	})
+
+	ct, err := h.contactGet(ctx, contactID)
+	if err != nil {
+		log.Errorf("Could not get the contact info. err: %v", err)
+		return nil, err
+	}
+
+	if !h.hasPermission(ctx, a, ct.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		return nil, fmt.Errorf("user has no permission")
+	}
+
+	// send request
+	tmp, err := h.reqHandler.ContactV1PhoneNumberUpdate(ctx, contactID, phoneNumberID, fields)
+	if err != nil {
+		log.Infof("Could not update phone number on contact. err: %v", err)
+		return nil, err
+	}
+
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}
+
 // ContactPhoneNumberDelete sends a request to contact-manager
 // to remove a phone number from a contact.
 func (h *serviceHandler) ContactPhoneNumberDelete(ctx context.Context, a *amagent.Agent, contactID uuid.UUID, phoneNumberID uuid.UUID) (*cmcontact.WebhookMessage, error) {
@@ -381,6 +418,43 @@ func (h *serviceHandler) ContactEmailCreate(
 	tmp, err := h.reqHandler.ContactV1EmailCreate(ctx, contactID, address, emailType, isPrimary)
 	if err != nil {
 		log.Infof("Could not add email to contact. err: %v", err)
+		return nil, err
+	}
+
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}
+
+// ContactEmailUpdate sends a request to contact-manager
+// to update an email on a contact.
+func (h *serviceHandler) ContactEmailUpdate(
+	ctx context.Context,
+	a *amagent.Agent,
+	contactID uuid.UUID,
+	emailID uuid.UUID,
+	fields map[string]any,
+) (*cmcontact.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "ContactEmailUpdate",
+		"customer_id": a.CustomerID,
+		"contact_id":  contactID,
+		"email_id":    emailID,
+	})
+
+	ct, err := h.contactGet(ctx, contactID)
+	if err != nil {
+		log.Errorf("Could not get the contact info. err: %v", err)
+		return nil, err
+	}
+
+	if !h.hasPermission(ctx, a, ct.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		return nil, fmt.Errorf("user has no permission")
+	}
+
+	// send request
+	tmp, err := h.reqHandler.ContactV1EmailUpdate(ctx, contactID, emailID, fields)
+	if err != nil {
+		log.Infof("Could not update email on contact. err: %v", err)
 		return nil, err
 	}
 

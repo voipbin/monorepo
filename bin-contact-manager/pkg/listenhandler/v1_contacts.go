@@ -385,6 +385,62 @@ func (h *listenHandler) processV1ContactsPhoneNumbersPost(ctx context.Context, m
 	return res, nil
 }
 
+// processV1ContactsPhoneNumbersIDPut handles PUT /v1/contacts/{id}/phone-numbers/{phone_id} request
+func (h *listenHandler) processV1ContactsPhoneNumbersIDPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 6 {
+		return simpleResponse(400), nil
+	}
+
+	contactID := uuid.FromStringOrNil(uriItems[3])
+	phoneID := uuid.FromStringOrNil(uriItems[5])
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "processV1ContactsPhoneNumbersIDPut",
+		"contact_id": contactID,
+		"phone_id":   phoneID,
+	})
+	log.WithField("request", m).Debug("Received request.")
+
+	var reqData request.PhoneNumberUpdate
+	if err := json.Unmarshal([]byte(m.Data), &reqData); err != nil {
+		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		return simpleResponse(400), nil
+	}
+	log.WithField("request", reqData).Debug("Updating phone number.")
+
+	// Build fields map from request
+	fields := make(map[string]any)
+	if reqData.Number != nil {
+		fields["number"] = *reqData.Number
+	}
+	if reqData.Type != nil {
+		fields["type"] = *reqData.Type
+	}
+	if reqData.IsPrimary != nil {
+		fields["is_primary"] = *reqData.IsPrimary
+	}
+
+	tmp, err := h.contactHandler.UpdatePhoneNumber(ctx, contactID, phoneID, fields)
+	if err != nil {
+		log.Errorf("Could not update phone number. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+
+	res := &sock.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
 // processV1ContactsPhoneNumbersIDDelete handles DELETE /v1/contacts/{id}/phone-numbers/{phone_id} request
 func (h *listenHandler) processV1ContactsPhoneNumbersIDDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	uriItems := strings.Split(m.URI, "/")
@@ -452,6 +508,62 @@ func (h *listenHandler) processV1ContactsEmailsPost(ctx context.Context, m *sock
 	tmp, err := h.contactHandler.AddEmail(ctx, contactID, email)
 	if err != nil {
 		log.Errorf("Could not add email. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+
+	res := &sock.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1ContactsEmailsIDPut handles PUT /v1/contacts/{id}/emails/{email_id} request
+func (h *listenHandler) processV1ContactsEmailsIDPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 6 {
+		return simpleResponse(400), nil
+	}
+
+	contactID := uuid.FromStringOrNil(uriItems[3])
+	emailID := uuid.FromStringOrNil(uriItems[5])
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "processV1ContactsEmailsIDPut",
+		"contact_id": contactID,
+		"email_id":   emailID,
+	})
+	log.WithField("request", m).Debug("Received request.")
+
+	var reqData request.EmailUpdate
+	if err := json.Unmarshal([]byte(m.Data), &reqData); err != nil {
+		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		return simpleResponse(400), nil
+	}
+	log.WithField("request", reqData).Debug("Updating email.")
+
+	// Build fields map from request
+	fields := make(map[string]any)
+	if reqData.Address != nil {
+		fields["address"] = *reqData.Address
+	}
+	if reqData.Type != nil {
+		fields["type"] = *reqData.Type
+	}
+	if reqData.IsPrimary != nil {
+		fields["is_primary"] = *reqData.IsPrimary
+	}
+
+	tmp, err := h.contactHandler.UpdateEmail(ctx, contactID, emailID, fields)
+	if err != nil {
+		log.Errorf("Could not update email. err: %v", err)
 		return simpleResponse(500), nil
 	}
 

@@ -179,6 +179,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 		response, err = h.processV1ContactsPhoneNumbersPost(ctx, m)
 		requestType = "/v1/contacts/{id}/phone-numbers"
 
+	// PUT /contacts/{id}/phone-numbers/{phone_id}
+	case regV1ContactsPhoneNumbersID.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
+		response, err = h.processV1ContactsPhoneNumbersIDPut(ctx, m)
+		requestType = "/v1/contacts/{id}/phone-numbers/{phone_id}"
+
 	// DELETE /contacts/{id}/phone-numbers/{phone_id}
 	case regV1ContactsPhoneNumbersID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
 		response, err = h.processV1ContactsPhoneNumbersIDDelete(ctx, m)
@@ -192,6 +197,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1ContactsEmails.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1ContactsEmailsPost(ctx, m)
 		requestType = "/v1/contacts/{id}/emails"
+
+	// PUT /contacts/{id}/emails/{email_id}
+	case regV1ContactsEmailsID.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
+		response, err = h.processV1ContactsEmailsIDPut(ctx, m)
+		requestType = "/v1/contacts/{id}/emails/{email_id}"
 
 	// DELETE /contacts/{id}/emails/{email_id}
 	case regV1ContactsEmailsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:

@@ -4,12 +4,36 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"unicode"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-contact-manager/models/contact"
 )
+
+// normalizeE164 normalizes a phone number to E.164 format by stripping
+// all characters except digits and the leading '+'.
+// If the input is empty, it derives E.164 from the raw number.
+func normalizeE164(e164, number string) string {
+	src := strings.TrimSpace(e164)
+	if src == "" {
+		src = strings.TrimSpace(number)
+	}
+	if src == "" {
+		return ""
+	}
+
+	var b strings.Builder
+	for i, r := range src {
+		if r == '+' && i == 0 {
+			b.WriteRune(r)
+		} else if unicode.IsDigit(r) {
+			b.WriteRune(r)
+		}
+	}
+	return b.String()
+}
 
 // Create creates a new contact with optional phone numbers, emails, and tags
 func (h *contactHandler) Create(ctx context.Context, c *contact.Contact) (*contact.Contact, error) {
@@ -49,8 +73,13 @@ func (h *contactHandler) Create(ctx context.Context, c *contact.Contact) (*conta
 		p.ID = h.utilHandler.UUIDCreate()
 		p.CustomerID = c.CustomerID
 		p.ContactID = c.ID
-		// Normalize email to lowercase
-		p.NumberE164 = strings.TrimSpace(p.NumberE164)
+		p.NumberE164 = normalizeE164(p.NumberE164, p.Number)
+
+		if p.IsPrimary {
+			if err := h.db.PhoneNumberResetPrimary(ctx, c.ID); err != nil {
+				log.Warnf("Could not reset primary phone number. err: %v", err)
+			}
+		}
 
 		if err := h.db.PhoneNumberCreate(ctx, &p); err != nil {
 			log.Warnf("Could not create phone number. err: %v", err)
@@ -64,6 +93,12 @@ func (h *contactHandler) Create(ctx context.Context, c *contact.Contact) (*conta
 		e.ContactID = c.ID
 		// Normalize email to lowercase
 		e.Address = strings.ToLower(strings.TrimSpace(e.Address))
+
+		if e.IsPrimary {
+			if err := h.db.EmailResetPrimary(ctx, c.ID); err != nil {
+				log.Warnf("Could not reset primary email. err: %v", err)
+			}
+		}
 
 		if err := h.db.EmailCreate(ctx, &e); err != nil {
 			log.Warnf("Could not create email. err: %v", err)
@@ -191,7 +226,15 @@ func (h *contactHandler) AddPhoneNumber(ctx context.Context, contactID uuid.UUID
 	p.ID = h.utilHandler.UUIDCreate()
 	p.CustomerID = c.CustomerID
 	p.ContactID = contactID
-	p.NumberE164 = strings.TrimSpace(p.NumberE164)
+	p.NumberE164 = normalizeE164(p.NumberE164, p.Number)
+
+	// Enforce single primary: reset existing primaries before setting new one
+	if p.IsPrimary {
+		if err := h.db.PhoneNumberResetPrimary(ctx, contactID); err != nil {
+			log.Errorf("Could not reset primary phone number. err: %v", err)
+			return nil, fmt.Errorf("could not reset primary phone number: %w", err)
+		}
+	}
 
 	if err := h.db.PhoneNumberCreate(ctx, p); err != nil {
 		log.Errorf("Could not create phone number. err: %v", err)
@@ -205,6 +248,46 @@ func (h *contactHandler) AddPhoneNumber(ctx context.Context, contactID uuid.UUID
 	}
 
 	// Publish event
+	h.publishEvent(ctx, contact.EventTypeContactUpdated, res)
+
+	return res, nil
+}
+
+// UpdatePhoneNumber updates a phone number on a contact
+func (h *contactHandler) UpdatePhoneNumber(ctx context.Context, contactID, phoneID uuid.UUID, fields map[string]any) (*contact.Contact, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "UpdatePhoneNumber",
+		"contact_id": contactID,
+		"phone_id":   phoneID,
+	})
+
+	// Enforce single primary if setting is_primary to true
+	if isPrimary, ok := fields["is_primary"]; ok {
+		if primary, isBool := isPrimary.(bool); isBool && primary {
+			if err := h.db.PhoneNumberResetPrimary(ctx, contactID); err != nil {
+				log.Errorf("Could not reset primary phone number. err: %v", err)
+				return nil, fmt.Errorf("could not reset primary phone number: %w", err)
+			}
+		}
+	}
+
+	// Normalize number_e164 if number is being updated
+	if number, ok := fields["number"]; ok {
+		if numStr, isStr := number.(string); isStr {
+			fields["number_e164"] = normalizeE164("", numStr)
+		}
+	}
+
+	if err := h.db.PhoneNumberUpdate(ctx, phoneID, fields); err != nil {
+		log.Errorf("Could not update phone number. err: %v", err)
+		return nil, fmt.Errorf("could not update phone number: %w", err)
+	}
+
+	res, err := h.db.ContactGet(ctx, contactID)
+	if err != nil {
+		return nil, fmt.Errorf("could not get updated contact: %w", err)
+	}
+
 	h.publishEvent(ctx, contact.EventTypeContactUpdated, res)
 
 	return res, nil
@@ -255,6 +338,14 @@ func (h *contactHandler) AddEmail(ctx context.Context, contactID uuid.UUID, e *c
 	// Normalize email to lowercase
 	e.Address = strings.ToLower(strings.TrimSpace(e.Address))
 
+	// Enforce single primary: reset existing primaries before setting new one
+	if e.IsPrimary {
+		if err := h.db.EmailResetPrimary(ctx, contactID); err != nil {
+			log.Errorf("Could not reset primary email. err: %v", err)
+			return nil, fmt.Errorf("could not reset primary email: %w", err)
+		}
+	}
+
 	if err := h.db.EmailCreate(ctx, e); err != nil {
 		log.Errorf("Could not create email. err: %v", err)
 		return nil, fmt.Errorf("could not create email: %w", err)
@@ -267,6 +358,46 @@ func (h *contactHandler) AddEmail(ctx context.Context, contactID uuid.UUID, e *c
 	}
 
 	// Publish event
+	h.publishEvent(ctx, contact.EventTypeContactUpdated, res)
+
+	return res, nil
+}
+
+// UpdateEmail updates an email on a contact
+func (h *contactHandler) UpdateEmail(ctx context.Context, contactID, emailID uuid.UUID, fields map[string]any) (*contact.Contact, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "UpdateEmail",
+		"contact_id": contactID,
+		"email_id":   emailID,
+	})
+
+	// Enforce single primary if setting is_primary to true
+	if isPrimary, ok := fields["is_primary"]; ok {
+		if primary, isBool := isPrimary.(bool); isBool && primary {
+			if err := h.db.EmailResetPrimary(ctx, contactID); err != nil {
+				log.Errorf("Could not reset primary email. err: %v", err)
+				return nil, fmt.Errorf("could not reset primary email: %w", err)
+			}
+		}
+	}
+
+	// Normalize email address if being updated
+	if address, ok := fields["address"]; ok {
+		if addrStr, isStr := address.(string); isStr {
+			fields["address"] = strings.ToLower(strings.TrimSpace(addrStr))
+		}
+	}
+
+	if err := h.db.EmailUpdate(ctx, emailID, fields); err != nil {
+		log.Errorf("Could not update email. err: %v", err)
+		return nil, fmt.Errorf("could not update email: %w", err)
+	}
+
+	res, err := h.db.ContactGet(ctx, contactID)
+	if err != nil {
+		return nil, fmt.Errorf("could not get updated contact: %w", err)
+	}
+
 	h.publishEvent(ctx, contact.EventTypeContactUpdated, res)
 
 	return res, nil

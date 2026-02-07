@@ -30,10 +30,12 @@ type ContactHandler interface {
 
 	// PhoneNumber operations
 	AddPhoneNumber(ctx context.Context, contactID uuid.UUID, p *contact.PhoneNumber) (*contact.Contact, error)
+	UpdatePhoneNumber(ctx context.Context, contactID, phoneID uuid.UUID, fields map[string]any) (*contact.Contact, error)
 	RemovePhoneNumber(ctx context.Context, contactID, phoneID uuid.UUID) (*contact.Contact, error)
 
 	// Email operations
 	AddEmail(ctx context.Context, contactID uuid.UUID, e *contact.Email) (*contact.Contact, error)
+	UpdateEmail(ctx context.Context, contactID, emailID uuid.UUID, fields map[string]any) (*contact.Contact, error)
 	RemoveEmail(ctx context.Context, contactID, emailID uuid.UUID) (*contact.Contact, error)
 
 	// Tag operations

@@ -1599,6 +1599,21 @@ func (mr *MockServiceHandlerMockRecorder) ContactEmailDelete(ctx, a, contactID, 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactEmailDelete", reflect.TypeOf((*MockServiceHandler)(nil).ContactEmailDelete), ctx, a, contactID, emailID)
 }
 
+// ContactEmailUpdate mocks base method.
+func (m *MockServiceHandler) ContactEmailUpdate(ctx context.Context, a *agent.Agent, contactID, emailID uuid.UUID, fields map[string]any) (*contact.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ContactEmailUpdate", ctx, a, contactID, emailID, fields)
+	ret0, _ := ret[0].(*contact.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ContactEmailUpdate indicates an expected call of ContactEmailUpdate.
+func (mr *MockServiceHandlerMockRecorder) ContactEmailUpdate(ctx, a, contactID, emailID, fields any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactEmailUpdate", reflect.TypeOf((*MockServiceHandler)(nil).ContactEmailUpdate), ctx, a, contactID, emailID, fields)
+}
+
 // ContactGet mocks base method.
 func (m *MockServiceHandler) ContactGet(ctx context.Context, a *agent.Agent, contactID uuid.UUID) (*contact.WebhookMessage, error) {
 	m.ctrl.T.Helper()
@@ -1672,6 +1687,21 @@ func (m *MockServiceHandler) ContactPhoneNumberDelete(ctx context.Context, a *ag
 func (mr *MockServiceHandlerMockRecorder) ContactPhoneNumberDelete(ctx, a, contactID, phoneNumberID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactPhoneNumberDelete", reflect.TypeOf((*MockServiceHandler)(nil).ContactPhoneNumberDelete), ctx, a, contactID, phoneNumberID)
+}
+
+// ContactPhoneNumberUpdate mocks base method.
+func (m *MockServiceHandler) ContactPhoneNumberUpdate(ctx context.Context, a *agent.Agent, contactID, phoneNumberID uuid.UUID, fields map[string]any) (*contact.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ContactPhoneNumberUpdate", ctx, a, contactID, phoneNumberID, fields)
+	ret0, _ := ret[0].(*contact.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ContactPhoneNumberUpdate indicates an expected call of ContactPhoneNumberUpdate.
+func (mr *MockServiceHandlerMockRecorder) ContactPhoneNumberUpdate(ctx, a, contactID, phoneNumberID, fields any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactPhoneNumberUpdate", reflect.TypeOf((*MockServiceHandler)(nil).ContactPhoneNumberUpdate), ctx, a, contactID, phoneNumberID, fields)
 }
 
 // ContactTagAdd mocks base method.
