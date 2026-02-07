@@ -3466,6 +3466,27 @@ type PostAuthLoginJSONBody struct {
 	Username string `json:"username"`
 }
 
+// PostAuthPasswordForgotJSONBody defines parameters for PostAuthPasswordForgot.
+type PostAuthPasswordForgotJSONBody struct {
+	// Username The agent's username (email address)
+	Username string `json:"username"`
+}
+
+// GetAuthPasswordResetParams defines parameters for GetAuthPasswordReset.
+type GetAuthPasswordResetParams struct {
+	// Token The password reset token from the email link
+	Token string `form:"token" json:"token"`
+}
+
+// PostAuthPasswordResetJSONBody defines parameters for PostAuthPasswordReset.
+type PostAuthPasswordResetJSONBody struct {
+	// Password The new password
+	Password string `json:"password"`
+
+	// Token The password reset token from the email link
+	Token string `json:"token"`
+}
+
 // GetAvailableNumbersParams defines parameters for GetAvailableNumbers.
 type GetAvailableNumbersParams struct {
 	// PageSize The size of results.
@@ -4904,6 +4925,12 @@ type PostAisummariesJSONRequestBody PostAisummariesJSONBody
 
 // PostAuthLoginJSONRequestBody defines body for PostAuthLogin for application/json ContentType.
 type PostAuthLoginJSONRequestBody PostAuthLoginJSONBody
+
+// PostAuthPasswordForgotJSONRequestBody defines body for PostAuthPasswordForgot for application/json ContentType.
+type PostAuthPasswordForgotJSONRequestBody PostAuthPasswordForgotJSONBody
+
+// PostAuthPasswordResetJSONRequestBody defines body for PostAuthPasswordReset for application/json ContentType.
+type PostAuthPasswordResetJSONRequestBody PostAuthPasswordResetJSONBody
 
 // PostBillingAccountsJSONRequestBody defines body for PostBillingAccounts for application/json ContentType.
 type PostBillingAccountsJSONRequestBody PostBillingAccountsJSONBody

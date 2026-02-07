@@ -17,6 +17,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	"monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-agent-manager/pkg/cachehandler"
 	"monorepo/bin-agent-manager/pkg/dbhandler"
 )
 
@@ -40,6 +41,9 @@ type AgentHandler interface {
 	UpdateStatus(ctx context.Context, id uuid.UUID, status agent.Status) (*agent.Agent, error)
 	UpdateTagIDs(ctx context.Context, id uuid.UUID, tags []uuid.UUID) (*agent.Agent, error)
 
+	PasswordForgot(ctx context.Context, username string) (string, string, error)
+	PasswordReset(ctx context.Context, token string, password string) error
+
 	EventGroupcallCreated(ctx context.Context, groupcall *cmgroupcall.Groupcall) error
 	EventGroupcallProgressing(ctx context.Context, groupcall *cmgroupcall.Groupcall) error
 	EventCustomerDeleted(ctx context.Context, cu *cmcustomer.Customer) error
@@ -50,15 +54,17 @@ type agentHandler struct {
 	utilHandler   utilhandler.UtilHandler
 	reqHandler    requesthandler.RequestHandler
 	db            dbhandler.DBHandler
+	cache         cachehandler.CacheHandler
 	notifyHandler notifyhandler.NotifyHandler
 }
 
 // NewAgentHandler return AgentHandler interface
-func NewAgentHandler(reqHandler requesthandler.RequestHandler, dbHandler dbhandler.DBHandler, notifyHandler notifyhandler.NotifyHandler) AgentHandler {
+func NewAgentHandler(reqHandler requesthandler.RequestHandler, dbHandler dbhandler.DBHandler, notifyHandler notifyhandler.NotifyHandler, cache cachehandler.CacheHandler) AgentHandler {
 	return &agentHandler{
 		utilHandler:   utilhandler.NewUtilHandler(),
 		reqHandler:    reqHandler,
 		db:            dbHandler,
+		cache:         cache,
 		notifyHandler: notifyHandler,
 	}
 }

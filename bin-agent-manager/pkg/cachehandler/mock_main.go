@@ -13,6 +13,7 @@ import (
 	context "context"
 	agent "monorepo/bin-agent-manager/models/agent"
 	reflect "reflect"
+	time "time"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -83,4 +84,47 @@ func (m *MockCacheHandler) Connect() error {
 func (mr *MockCacheHandlerMockRecorder) Connect() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Connect", reflect.TypeOf((*MockCacheHandler)(nil).Connect))
+}
+
+// PasswordResetTokenDelete mocks base method.
+func (m *MockCacheHandler) PasswordResetTokenDelete(ctx context.Context, token string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PasswordResetTokenDelete", ctx, token)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PasswordResetTokenDelete indicates an expected call of PasswordResetTokenDelete.
+func (mr *MockCacheHandlerMockRecorder) PasswordResetTokenDelete(ctx, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PasswordResetTokenDelete", reflect.TypeOf((*MockCacheHandler)(nil).PasswordResetTokenDelete), ctx, token)
+}
+
+// PasswordResetTokenGet mocks base method.
+func (m *MockCacheHandler) PasswordResetTokenGet(ctx context.Context, token string) (uuid.UUID, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PasswordResetTokenGet", ctx, token)
+	ret0, _ := ret[0].(uuid.UUID)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PasswordResetTokenGet indicates an expected call of PasswordResetTokenGet.
+func (mr *MockCacheHandlerMockRecorder) PasswordResetTokenGet(ctx, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PasswordResetTokenGet", reflect.TypeOf((*MockCacheHandler)(nil).PasswordResetTokenGet), ctx, token)
+}
+
+// PasswordResetTokenSet mocks base method.
+func (m *MockCacheHandler) PasswordResetTokenSet(ctx context.Context, token string, agentID uuid.UUID, ttl time.Duration) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PasswordResetTokenSet", ctx, token, agentID, ttl)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PasswordResetTokenSet indicates an expected call of PasswordResetTokenSet.
+func (mr *MockCacheHandlerMockRecorder) PasswordResetTokenSet(ctx, token, agentID, ttl any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PasswordResetTokenSet", reflect.TypeOf((*MockCacheHandler)(nil).PasswordResetTokenSet), ctx, token, agentID, ttl)
 }

@@ -65,7 +65,7 @@ func initAgentHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (agenthand
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameAgentEvent, serviceName, "")
 
-	return agenthandler.NewAgentHandler(reqHandler, db, notifyHandler), nil
+	return agenthandler.NewAgentHandler(reqHandler, db, notifyHandler, cache), nil
 }
 
 func initCommand() *cobra.Command {

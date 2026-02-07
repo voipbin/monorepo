@@ -191,6 +191,36 @@ func (mr *MockAgentHandlerMockRecorder) Login(ctx, username, password any) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Login", reflect.TypeOf((*MockAgentHandler)(nil).Login), ctx, username, password)
 }
 
+// PasswordForgot mocks base method.
+func (m *MockAgentHandler) PasswordForgot(ctx context.Context, username string) (string, string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PasswordForgot", ctx, username)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(string)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// PasswordForgot indicates an expected call of PasswordForgot.
+func (mr *MockAgentHandlerMockRecorder) PasswordForgot(ctx, username any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PasswordForgot", reflect.TypeOf((*MockAgentHandler)(nil).PasswordForgot), ctx, username)
+}
+
+// PasswordReset mocks base method.
+func (m *MockAgentHandler) PasswordReset(ctx context.Context, token, password string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PasswordReset", ctx, token, password)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PasswordReset indicates an expected call of PasswordReset.
+func (mr *MockAgentHandlerMockRecorder) PasswordReset(ctx, token, password any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PasswordReset", reflect.TypeOf((*MockAgentHandler)(nil).PasswordReset), ctx, token, password)
+}
+
 // UpdateAddresses mocks base method.
 func (m *MockAgentHandler) UpdateAddresses(ctx context.Context, id uuid.UUID, addresses []address.Address) (*agent.Agent, error) {
 	m.ctrl.T.Helper()

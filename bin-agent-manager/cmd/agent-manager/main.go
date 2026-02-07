@@ -93,7 +93,7 @@ func runServices(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameAgentEvent, serviceName, "")
-	agentHandler := agenthandler.NewAgentHandler(reqHandler, db, notifyHandler)
+	agentHandler := agenthandler.NewAgentHandler(reqHandler, db, notifyHandler, cache)
 
 	if errListen := runServiceListen(sockHandler, agentHandler); errListen != nil {
 		return errors.Wrapf(errListen, "failed to run service listen")

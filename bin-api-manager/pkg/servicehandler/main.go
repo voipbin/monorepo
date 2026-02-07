@@ -138,6 +138,8 @@ type ServiceHandler interface {
 	AuthJWTGenerate(data map[string]interface{}) (string, error)
 	AuthJWTParse(ctx context.Context, tokenString string) (map[string]interface{}, error)
 	AuthAccesskeyParse(ctx context.Context, accesskey string) (map[string]interface{}, error)
+	AuthPasswordForgot(ctx context.Context, username string) error
+	AuthPasswordReset(ctx context.Context, token string, password string) error
 
 	// available numbers
 	AvailableNumberList(ctx context.Context, a *amagent.Agent, size uint64, countryCode string) ([]*nmavailablenumber.WebhookMessage, error)

@@ -57,6 +57,10 @@ var (
 
 	// login
 	regV1Login = regexp.MustCompile("/v1/login$")
+
+	// password reset
+	regV1PasswordForgot = regexp.MustCompile("/v1/password-forgot$")
+	regV1PasswordReset  = regexp.MustCompile("/v1/password-reset$")
 )
 
 var (
@@ -210,6 +214,19 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1Login.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1Login(ctx, m)
 		requestType = "/v1/login"
+
+	////////////
+	// password reset
+	////////////
+	// POST /password-forgot
+	case regV1PasswordForgot.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1PasswordForgotPost(ctx, m)
+		requestType = "/v1/password-forgot"
+
+	// POST /password-reset
+	case regV1PasswordReset.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1PasswordResetPost(ctx, m)
+		requestType = "/v1/password-reset"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found
