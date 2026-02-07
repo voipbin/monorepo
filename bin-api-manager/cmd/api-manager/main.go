@@ -210,6 +210,9 @@ func runListenHTTP(serviceHandler servicehandler.ServiceHandler) {
 	app.GET("/ping", service.GetPing)
 	auth := app.Group("/auth")
 	auth.POST("/login", service.PostLogin)
+	auth.POST("/password-forgot", service.PostPasswordForgot)
+	auth.GET("/password-reset", service.GetPasswordReset)
+	auth.POST("/password-reset", service.PostPasswordReset)
 
 	appServer := server.NewServer(serviceHandler)
 

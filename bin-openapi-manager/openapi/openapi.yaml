@@ -3871,6 +3871,10 @@ components:
 paths:
   /auth/login:
     $ref: './paths/auth/login.yaml'
+  /auth/password-forgot:
+    $ref: './paths/auth/password-forgot.yaml'
+  /auth/password-reset:
+    $ref: './paths/auth/password-reset.yaml'
 
   /accesskeys:
     $ref: './paths/accesskeys/main.yaml'

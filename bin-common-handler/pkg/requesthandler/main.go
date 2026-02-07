@@ -373,6 +373,10 @@ type RequestHandler interface {
 	// agent-manager login
 	AgentV1Login(ctx context.Context, timeout int, username string, password string) (*amagent.Agent, error)
 
+	// agent-manager password reset
+	AgentV1PasswordForgot(ctx context.Context, timeout int, username string) (string, string, error)
+	AgentV1PasswordReset(ctx context.Context, timeout int, token string, password string) error
+
 	// billing-manager account
 	BillingV1AccountList(ctx context.Context, pageToken string, pageSize uint64, filters map[bmaccount.Field]any) ([]bmaccount.Account, error)
 	BillingV1AccountGet(ctx context.Context, accountID uuid.UUID) (*bmaccount.Account, error)

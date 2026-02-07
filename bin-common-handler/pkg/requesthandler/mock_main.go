@@ -651,6 +651,36 @@ func (mr *MockRequestHandlerMockRecorder) AgentV1Login(ctx, timeout, username, p
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentV1Login", reflect.TypeOf((*MockRequestHandler)(nil).AgentV1Login), ctx, timeout, username, password)
 }
 
+// AgentV1PasswordForgot mocks base method.
+func (m *MockRequestHandler) AgentV1PasswordForgot(ctx context.Context, timeout int, username string) (string, string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AgentV1PasswordForgot", ctx, timeout, username)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(string)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// AgentV1PasswordForgot indicates an expected call of AgentV1PasswordForgot.
+func (mr *MockRequestHandlerMockRecorder) AgentV1PasswordForgot(ctx, timeout, username any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentV1PasswordForgot", reflect.TypeOf((*MockRequestHandler)(nil).AgentV1PasswordForgot), ctx, timeout, username)
+}
+
+// AgentV1PasswordReset mocks base method.
+func (m *MockRequestHandler) AgentV1PasswordReset(ctx context.Context, timeout int, token, password string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AgentV1PasswordReset", ctx, timeout, token, password)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AgentV1PasswordReset indicates an expected call of AgentV1PasswordReset.
+func (mr *MockRequestHandlerMockRecorder) AgentV1PasswordReset(ctx, timeout, token, password any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentV1PasswordReset", reflect.TypeOf((*MockRequestHandler)(nil).AgentV1PasswordReset), ctx, timeout, token, password)
+}
+
 // AstAMIRedirect mocks base method.
 func (m *MockRequestHandler) AstAMIRedirect(ctx context.Context, asteriskID, channelID, context, exten, priority string) error {
 	m.ctrl.T.Helper()

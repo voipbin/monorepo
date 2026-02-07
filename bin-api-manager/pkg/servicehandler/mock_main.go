@@ -724,6 +724,34 @@ func (mr *MockServiceHandlerMockRecorder) AuthLogin(ctx, username, password any)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AuthLogin", reflect.TypeOf((*MockServiceHandler)(nil).AuthLogin), ctx, username, password)
 }
 
+// AuthPasswordForgot mocks base method.
+func (m *MockServiceHandler) AuthPasswordForgot(ctx context.Context, username string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AuthPasswordForgot", ctx, username)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AuthPasswordForgot indicates an expected call of AuthPasswordForgot.
+func (mr *MockServiceHandlerMockRecorder) AuthPasswordForgot(ctx, username any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AuthPasswordForgot", reflect.TypeOf((*MockServiceHandler)(nil).AuthPasswordForgot), ctx, username)
+}
+
+// AuthPasswordReset mocks base method.
+func (m *MockServiceHandler) AuthPasswordReset(ctx context.Context, token, password string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AuthPasswordReset", ctx, token, password)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AuthPasswordReset indicates an expected call of AuthPasswordReset.
+func (mr *MockServiceHandlerMockRecorder) AuthPasswordReset(ctx, token, password any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AuthPasswordReset", reflect.TypeOf((*MockServiceHandler)(nil).AuthPasswordReset), ctx, token, password)
+}
+
 // AvailableNumberList mocks base method.
 func (m *MockServiceHandler) AvailableNumberList(ctx context.Context, a *agent.Agent, size uint64, countryCode string) ([]*availablenumber.WebhookMessage, error) {
 	m.ctrl.T.Helper()

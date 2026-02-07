@@ -11,6 +11,8 @@ import (
 	"monorepo/bin-agent-manager/models/agent"
 )
 
+const passwordResetKeyPrefix = "password_reset:"
+
 // getSerialize returns cached serialized info.
 func (h *handler) getSerialize(ctx context.Context, key string, data interface{}) error {
 	tmp, err := h.Cache.Get(ctx, key).Result()
@@ -76,5 +78,38 @@ func (h *handler) AgentSet(ctx context.Context, u *agent.Agent) error {
 		return err
 	}
 
+	return nil
+}
+
+// PasswordResetTokenSet stores a password reset token in Redis with a TTL.
+func (h *handler) PasswordResetTokenSet(ctx context.Context, token string, agentID uuid.UUID, ttl time.Duration) error {
+	key := passwordResetKeyPrefix + token
+	if err := h.Cache.Set(ctx, key, agentID.String(), ttl).Err(); err != nil {
+		return err
+	}
+	return nil
+}
+
+// PasswordResetTokenGet retrieves the agent ID associated with a password reset token.
+func (h *handler) PasswordResetTokenGet(ctx context.Context, token string) (uuid.UUID, error) {
+	key := passwordResetKeyPrefix + token
+	val, err := h.Cache.Get(ctx, key).Result()
+	if err != nil {
+		return uuid.Nil, err
+	}
+
+	id, err := uuid.FromString(val)
+	if err != nil {
+		return uuid.Nil, fmt.Errorf("could not parse agent id from token: %v", err)
+	}
+	return id, nil
+}
+
+// PasswordResetTokenDelete removes a password reset token from Redis.
+func (h *handler) PasswordResetTokenDelete(ctx context.Context, token string) error {
+	key := passwordResetKeyPrefix + token
+	if err := h.Cache.Del(ctx, key).Err(); err != nil {
+		return err
+	}
 	return nil
 }

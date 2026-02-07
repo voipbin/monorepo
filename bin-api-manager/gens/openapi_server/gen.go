@@ -3475,6 +3475,27 @@ type PostAuthLoginJSONBody struct {
 	Username string `json:"username"`
 }
 
+// PostAuthPasswordForgotJSONBody defines parameters for PostAuthPasswordForgot.
+type PostAuthPasswordForgotJSONBody struct {
+	// Username The agent's username (email address)
+	Username string `json:"username"`
+}
+
+// GetAuthPasswordResetParams defines parameters for GetAuthPasswordReset.
+type GetAuthPasswordResetParams struct {
+	// Token The password reset token from the email link
+	Token string `form:"token" json:"token"`
+}
+
+// PostAuthPasswordResetJSONBody defines parameters for PostAuthPasswordReset.
+type PostAuthPasswordResetJSONBody struct {
+	// Password The new password
+	Password string `json:"password"`
+
+	// Token The password reset token from the email link
+	Token string `json:"token"`
+}
+
 // GetAvailableNumbersParams defines parameters for GetAvailableNumbers.
 type GetAvailableNumbersParams struct {
 	// PageSize The size of results.
@@ -4914,6 +4935,12 @@ type PostAisummariesJSONRequestBody PostAisummariesJSONBody
 // PostAuthLoginJSONRequestBody defines body for PostAuthLogin for application/json ContentType.
 type PostAuthLoginJSONRequestBody PostAuthLoginJSONBody
 
+// PostAuthPasswordForgotJSONRequestBody defines body for PostAuthPasswordForgot for application/json ContentType.
+type PostAuthPasswordForgotJSONRequestBody PostAuthPasswordForgotJSONBody
+
+// PostAuthPasswordResetJSONRequestBody defines body for PostAuthPasswordReset for application/json ContentType.
+type PostAuthPasswordResetJSONRequestBody PostAuthPasswordResetJSONBody
+
 // PostBillingAccountsJSONRequestBody defines body for PostBillingAccounts for application/json ContentType.
 type PostBillingAccountsJSONRequestBody PostBillingAccountsJSONBody
 
@@ -5285,6 +5312,15 @@ type ServerInterface interface {
 	// Authenticate and generate JWT token
 	// (POST /auth/login)
 	PostAuthLogin(c *gin.Context)
+	// Request a password reset
+	// (POST /auth/password-forgot)
+	PostAuthPasswordForgot(c *gin.Context)
+	// Password reset page
+	// (GET /auth/password-reset)
+	GetAuthPasswordReset(c *gin.Context, params GetAuthPasswordResetParams)
+	// Execute password reset
+	// (POST /auth/password-reset)
+	PostAuthPasswordReset(c *gin.Context)
 	// List available numbers
 	// (GET /available_numbers)
 	GetAvailableNumbers(c *gin.Context, params GetAvailableNumbersParams)
@@ -6915,6 +6951,65 @@ func (siw *ServerInterfaceWrapper) PostAuthLogin(c *gin.Context) {
 	}
 
 	siw.Handler.PostAuthLogin(c)
+}
+
+// PostAuthPasswordForgot operation middleware
+func (siw *ServerInterfaceWrapper) PostAuthPasswordForgot(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostAuthPasswordForgot(c)
+}
+
+// GetAuthPasswordReset operation middleware
+func (siw *ServerInterfaceWrapper) GetAuthPasswordReset(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetAuthPasswordResetParams
+
+	// ------------- Required query parameter "token" -------------
+
+	if paramValue := c.Query("token"); paramValue != "" {
+
+	} else {
+		siw.ErrorHandler(c, fmt.Errorf("Query argument token is required, but not found"), http.StatusBadRequest)
+		return
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "token", c.Request.URL.Query(), &params.Token)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetAuthPasswordReset(c, params)
+}
+
+// PostAuthPasswordReset operation middleware
+func (siw *ServerInterfaceWrapper) PostAuthPasswordReset(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostAuthPasswordReset(c)
 }
 
 // GetAvailableNumbers operation middleware
@@ -12748,6 +12843,9 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.DELETE(options.BaseURL+"/aisummaries/:id", wrapper.DeleteAisummariesId)
 	router.GET(options.BaseURL+"/aisummaries/:id", wrapper.GetAisummariesId)
 	router.POST(options.BaseURL+"/auth/login", wrapper.PostAuthLogin)
+	router.POST(options.BaseURL+"/auth/password-forgot", wrapper.PostAuthPasswordForgot)
+	router.GET(options.BaseURL+"/auth/password-reset", wrapper.GetAuthPasswordReset)
+	router.POST(options.BaseURL+"/auth/password-reset", wrapper.PostAuthPasswordReset)
 	router.GET(options.BaseURL+"/available_numbers", wrapper.GetAvailableNumbers)
 	router.GET(options.BaseURL+"/billing_accounts", wrapper.GetBillingAccounts)
 	router.POST(options.BaseURL+"/billing_accounts", wrapper.PostBillingAccounts)
@@ -13772,6 +13870,91 @@ func (response PostAuthLogin500JSONResponse) VisitPostAuthLoginResponse(w http.R
 	w.WriteHeader(500)
 
 	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAuthPasswordForgotRequestObject struct {
+	Body *PostAuthPasswordForgotJSONRequestBody
+}
+
+type PostAuthPasswordForgotResponseObject interface {
+	VisitPostAuthPasswordForgotResponse(w http.ResponseWriter) error
+}
+
+type PostAuthPasswordForgot200JSONResponse map[string]interface{}
+
+func (response PostAuthPasswordForgot200JSONResponse) VisitPostAuthPasswordForgotResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAuthPasswordForgot400Response struct {
+}
+
+func (response PostAuthPasswordForgot400Response) VisitPostAuthPasswordForgotResponse(w http.ResponseWriter) error {
+	w.WriteHeader(400)
+	return nil
+}
+
+type GetAuthPasswordResetRequestObject struct {
+	Params GetAuthPasswordResetParams
+}
+
+type GetAuthPasswordResetResponseObject interface {
+	VisitGetAuthPasswordResetResponse(w http.ResponseWriter) error
+}
+
+type GetAuthPasswordReset200TexthtmlResponse struct {
+	Body          io.Reader
+	ContentLength int64
+}
+
+func (response GetAuthPasswordReset200TexthtmlResponse) VisitGetAuthPasswordResetResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "text/html")
+	if response.ContentLength != 0 {
+		w.Header().Set("Content-Length", fmt.Sprint(response.ContentLength))
+	}
+	w.WriteHeader(200)
+
+	if closer, ok := response.Body.(io.ReadCloser); ok {
+		defer closer.Close()
+	}
+	_, err := io.Copy(w, response.Body)
+	return err
+}
+
+type GetAuthPasswordReset400Response struct {
+}
+
+func (response GetAuthPasswordReset400Response) VisitGetAuthPasswordResetResponse(w http.ResponseWriter) error {
+	w.WriteHeader(400)
+	return nil
+}
+
+type PostAuthPasswordResetRequestObject struct {
+	Body *PostAuthPasswordResetJSONRequestBody
+}
+
+type PostAuthPasswordResetResponseObject interface {
+	VisitPostAuthPasswordResetResponse(w http.ResponseWriter) error
+}
+
+type PostAuthPasswordReset200JSONResponse map[string]interface{}
+
+func (response PostAuthPasswordReset200JSONResponse) VisitPostAuthPasswordResetResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAuthPasswordReset400Response struct {
+}
+
+func (response PostAuthPasswordReset400Response) VisitPostAuthPasswordResetResponse(w http.ResponseWriter) error {
+	w.WriteHeader(400)
+	return nil
 }
 
 type GetAvailableNumbersRequestObject struct {
@@ -18339,6 +18522,15 @@ type StrictServerInterface interface {
 	// Authenticate and generate JWT token
 	// (POST /auth/login)
 	PostAuthLogin(ctx context.Context, request PostAuthLoginRequestObject) (PostAuthLoginResponseObject, error)
+	// Request a password reset
+	// (POST /auth/password-forgot)
+	PostAuthPasswordForgot(ctx context.Context, request PostAuthPasswordForgotRequestObject) (PostAuthPasswordForgotResponseObject, error)
+	// Password reset page
+	// (GET /auth/password-reset)
+	GetAuthPasswordReset(ctx context.Context, request GetAuthPasswordResetRequestObject) (GetAuthPasswordResetResponseObject, error)
+	// Execute password reset
+	// (POST /auth/password-reset)
+	PostAuthPasswordReset(ctx context.Context, request PostAuthPasswordResetRequestObject) (PostAuthPasswordResetResponseObject, error)
 	// List available numbers
 	// (GET /available_numbers)
 	GetAvailableNumbers(ctx context.Context, request GetAvailableNumbersRequestObject) (GetAvailableNumbersResponseObject, error)
@@ -20180,6 +20372,99 @@ func (sh *strictHandler) PostAuthLogin(ctx *gin.Context) {
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PostAuthLoginResponseObject); ok {
 		if err := validResponse.VisitPostAuthLoginResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostAuthPasswordForgot operation middleware
+func (sh *strictHandler) PostAuthPasswordForgot(ctx *gin.Context) {
+	var request PostAuthPasswordForgotRequestObject
+
+	var body PostAuthPasswordForgotJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostAuthPasswordForgot(ctx, request.(PostAuthPasswordForgotRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostAuthPasswordForgot")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostAuthPasswordForgotResponseObject); ok {
+		if err := validResponse.VisitPostAuthPasswordForgotResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetAuthPasswordReset operation middleware
+func (sh *strictHandler) GetAuthPasswordReset(ctx *gin.Context, params GetAuthPasswordResetParams) {
+	var request GetAuthPasswordResetRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetAuthPasswordReset(ctx, request.(GetAuthPasswordResetRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetAuthPasswordReset")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetAuthPasswordResetResponseObject); ok {
+		if err := validResponse.VisitGetAuthPasswordResetResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostAuthPasswordReset operation middleware
+func (sh *strictHandler) PostAuthPasswordReset(ctx *gin.Context) {
+	var request PostAuthPasswordResetRequestObject
+
+	var body PostAuthPasswordResetJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostAuthPasswordReset(ctx, request.(PostAuthPasswordResetRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostAuthPasswordReset")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostAuthPasswordResetResponseObject); ok {
+		if err := validResponse.VisitPostAuthPasswordResetResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

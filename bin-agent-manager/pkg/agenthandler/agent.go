@@ -2,7 +2,10 @@ package agenthandler
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"fmt"
+	"time"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 
@@ -11,6 +14,11 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-agent-manager/models/agent"
+)
+
+const (
+	passwordResetTokenTTL = time.Hour // 1 hour
+	passwordResetTokenLen = 32        // 32 bytes = 64 hex chars
 )
 
 // List returns agents
@@ -393,4 +401,83 @@ func (h *agentHandler) UpdateStatus(ctx context.Context, id uuid.UUID, status ag
 	}
 
 	return res, nil
+}
+
+// PasswordForgot generates a password reset token for the given username.
+// Returns (token, username, error). Returns error if agent not found.
+func (h *agentHandler) PasswordForgot(ctx context.Context, username string) (string, string, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":     "PasswordForgot",
+		"username": username,
+	})
+	log.Debug("Processing password forgot request.")
+
+	a, err := h.db.AgentGetByUsername(ctx, username)
+	if err != nil {
+		log.Infof("Could not find agent by username. err: %v", err)
+		return "", "", fmt.Errorf("agent not found")
+	}
+	log.WithField("agent_id", a.ID).Debugf("Found agent for password reset. agent_id: %s", a.ID)
+
+	tokenBytes := make([]byte, passwordResetTokenLen)
+	if _, err := rand.Read(tokenBytes); err != nil {
+		log.Errorf("Could not generate random token. err: %v", err)
+		return "", "", errors.Wrap(err, "could not generate token")
+	}
+	token := hex.EncodeToString(tokenBytes)
+
+	if err := h.cache.PasswordResetTokenSet(ctx, token, a.ID, passwordResetTokenTTL); err != nil {
+		log.Errorf("Could not store password reset token. err: %v", err)
+		return "", "", errors.Wrap(err, "could not store token")
+	}
+
+	return token, username, nil
+}
+
+// PasswordReset validates the token and updates the agent's password.
+func (h *agentHandler) PasswordReset(ctx context.Context, token string, password string) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "PasswordReset",
+	})
+	log.Debug("Processing password reset request.")
+
+	if len(password) < 8 {
+		return fmt.Errorf("password must be at least 8 characters")
+	}
+
+	agentID, err := h.cache.PasswordResetTokenGet(ctx, token)
+	if err != nil {
+		log.Infof("Could not find password reset token. err: %v", err)
+		return fmt.Errorf("invalid or expired token")
+	}
+	log.WithField("agent_id", agentID).Debugf("Found agent for token. agent_id: %s", agentID)
+
+	if agentID == agent.GuestAgentID {
+		log.Infof("Attempted password reset for guest agent.")
+		return fmt.Errorf("cannot reset password for guest agent")
+	}
+
+	passHash, err := h.utilHandler.HashGenerate(password, defaultPasswordHashCost)
+	if err != nil {
+		log.Errorf("Could not generate password hash. err: %v", err)
+		return errors.Wrap(err, "could not generate password hash")
+	}
+
+	if err := h.db.AgentSetPasswordHash(ctx, agentID, passHash); err != nil {
+		log.Errorf("Could not update password. err: %v", err)
+		return errors.Wrap(err, "could not update password")
+	}
+
+	if err := h.cache.PasswordResetTokenDelete(ctx, token); err != nil {
+		log.Errorf("Could not delete password reset token. err: %v", err)
+	}
+
+	res, err := h.db.AgentGet(ctx, agentID)
+	if err != nil {
+		log.Errorf("Could not get updated agent. err: %v", err)
+		return nil
+	}
+	h.notifyHandler.PublishEvent(ctx, agent.EventTypeAgentUpdated, res)
+
+	return nil
 }
