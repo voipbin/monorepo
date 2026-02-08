@@ -158,6 +158,20 @@ func (mr *MockDBHandlerMockRecorder) CustomerGet(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerGet", reflect.TypeOf((*MockDBHandler)(nil).CustomerGet), ctx, id)
 }
 
+// CustomerHardDelete mocks base method.
+func (m *MockDBHandler) CustomerHardDelete(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CustomerHardDelete", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CustomerHardDelete indicates an expected call of CustomerHardDelete.
+func (mr *MockDBHandlerMockRecorder) CustomerHardDelete(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerHardDelete", reflect.TypeOf((*MockDBHandler)(nil).CustomerHardDelete), ctx, id)
+}
+
 // CustomerList mocks base method.
 func (m *MockDBHandler) CustomerList(ctx context.Context, size uint64, token string, filters map[customer.Field]any) ([]*customer.Customer, error) {
 	m.ctrl.T.Helper()

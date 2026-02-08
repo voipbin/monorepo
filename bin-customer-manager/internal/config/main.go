@@ -23,6 +23,7 @@ type Config struct {
 	RedisAddress         string
 	RedisPassword        string
 	RedisDatabase        int
+	EmailVerifyBaseURL   string
 }
 
 func Bootstrap(cmd *cobra.Command) error {
@@ -48,6 +49,7 @@ func bindConfig(cmd *cobra.Command) error {
 	f.String("redis_address", "", "Redis server address")
 	f.String("redis_password", "", "Redis password")
 	f.Int("redis_database", 0, "Redis database index")
+	f.String("email_verify_base_url", "https://api.voipbin.net", "Base URL for email verification links")
 
 	bindings := map[string]string{
 		"rabbitmq_address":          "RABBITMQ_ADDRESS",
@@ -57,6 +59,7 @@ func bindConfig(cmd *cobra.Command) error {
 		"redis_address":             "REDIS_ADDRESS",
 		"redis_password":            "REDIS_PASSWORD",
 		"redis_database":            "REDIS_DATABASE",
+		"email_verify_base_url":     "EMAIL_VERIFY_BASE_URL",
 	}
 
 	for flagKey, envKey := range bindings {
@@ -86,6 +89,7 @@ func LoadGlobalConfig() {
 			RedisAddress:         viper.GetString("redis_address"),
 			RedisPassword:        viper.GetString("redis_password"),
 			RedisDatabase:        viper.GetInt("redis_database"),
+			EmailVerifyBaseURL:   viper.GetString("email_verify_base_url"),
 		}
 		logrus.Debug("Configuration has been loaded and locked.")
 	})

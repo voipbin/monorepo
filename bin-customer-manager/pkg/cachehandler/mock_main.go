@@ -14,6 +14,7 @@ import (
 	accesskey "monorepo/bin-customer-manager/models/accesskey"
 	customer "monorepo/bin-customer-manager/models/customer"
 	reflect "reflect"
+	time "time"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -113,4 +114,47 @@ func (m *MockCacheHandler) CustomerSet(ctx context.Context, c *customer.Customer
 func (mr *MockCacheHandlerMockRecorder) CustomerSet(ctx, c any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerSet", reflect.TypeOf((*MockCacheHandler)(nil).CustomerSet), ctx, c)
+}
+
+// EmailVerifyTokenDelete mocks base method.
+func (m *MockCacheHandler) EmailVerifyTokenDelete(ctx context.Context, token string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EmailVerifyTokenDelete", ctx, token)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EmailVerifyTokenDelete indicates an expected call of EmailVerifyTokenDelete.
+func (mr *MockCacheHandlerMockRecorder) EmailVerifyTokenDelete(ctx, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EmailVerifyTokenDelete", reflect.TypeOf((*MockCacheHandler)(nil).EmailVerifyTokenDelete), ctx, token)
+}
+
+// EmailVerifyTokenGet mocks base method.
+func (m *MockCacheHandler) EmailVerifyTokenGet(ctx context.Context, token string) (uuid.UUID, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EmailVerifyTokenGet", ctx, token)
+	ret0, _ := ret[0].(uuid.UUID)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// EmailVerifyTokenGet indicates an expected call of EmailVerifyTokenGet.
+func (mr *MockCacheHandlerMockRecorder) EmailVerifyTokenGet(ctx, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EmailVerifyTokenGet", reflect.TypeOf((*MockCacheHandler)(nil).EmailVerifyTokenGet), ctx, token)
+}
+
+// EmailVerifyTokenSet mocks base method.
+func (m *MockCacheHandler) EmailVerifyTokenSet(ctx context.Context, token string, customerID uuid.UUID, ttl time.Duration) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EmailVerifyTokenSet", ctx, token, customerID, ttl)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EmailVerifyTokenSet indicates an expected call of EmailVerifyTokenSet.
+func (mr *MockCacheHandlerMockRecorder) EmailVerifyTokenSet(ctx, token, customerID, ttl any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EmailVerifyTokenSet", reflect.TypeOf((*MockCacheHandler)(nil).EmailVerifyTokenSet), ctx, token, customerID, ttl)
 }

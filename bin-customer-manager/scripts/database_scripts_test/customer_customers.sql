@@ -15,6 +15,8 @@ create table customer_customers(
 
   billing_account_id binary(16),
 
+  email_verified boolean not null default false,
+
   tm_create datetime(6),
   tm_update datetime(6),
   tm_delete datetime(6)

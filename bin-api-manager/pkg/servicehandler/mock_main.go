@@ -1957,6 +1957,21 @@ func (mr *MockServiceHandlerMockRecorder) CustomerDelete(ctx, a, customerID any)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerDelete", reflect.TypeOf((*MockServiceHandler)(nil).CustomerDelete), ctx, a, customerID)
 }
 
+// CustomerEmailVerify mocks base method.
+func (m *MockServiceHandler) CustomerEmailVerify(ctx context.Context, token string) (*customer.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CustomerEmailVerify", ctx, token)
+	ret0, _ := ret[0].(*customer.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CustomerEmailVerify indicates an expected call of CustomerEmailVerify.
+func (mr *MockServiceHandlerMockRecorder) CustomerEmailVerify(ctx, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerEmailVerify", reflect.TypeOf((*MockServiceHandler)(nil).CustomerEmailVerify), ctx, token)
+}
+
 // CustomerGet mocks base method.
 func (m *MockServiceHandler) CustomerGet(ctx context.Context, a *agent.Agent, customerID uuid.UUID) (*customer.WebhookMessage, error) {
 	m.ctrl.T.Helper()
@@ -1985,6 +2000,21 @@ func (m *MockServiceHandler) CustomerList(ctx context.Context, a *agent.Agent, s
 func (mr *MockServiceHandlerMockRecorder) CustomerList(ctx, a, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerList", reflect.TypeOf((*MockServiceHandler)(nil).CustomerList), ctx, a, size, token, filters)
+}
+
+// CustomerSignup mocks base method.
+func (m *MockServiceHandler) CustomerSignup(ctx context.Context, name, detail, email, phoneNumber, address string, webhookMethod customer.WebhookMethod, webhookURI string) (*customer.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CustomerSignup", ctx, name, detail, email, phoneNumber, address, webhookMethod, webhookURI)
+	ret0, _ := ret[0].(*customer.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CustomerSignup indicates an expected call of CustomerSignup.
+func (mr *MockServiceHandlerMockRecorder) CustomerSignup(ctx, name, detail, email, phoneNumber, address, webhookMethod, webhookURI any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerSignup", reflect.TypeOf((*MockServiceHandler)(nil).CustomerSignup), ctx, name, detail, email, phoneNumber, address, webhookMethod, webhookURI)
 }
 
 // CustomerUpdate mocks base method.
