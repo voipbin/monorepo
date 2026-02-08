@@ -1,0 +1,31 @@
+post:
+  summary: Add tag to contact
+  description: Add a tag to the contact.
+  tags:
+    - Service Agent
+  parameters:
+    - name: id
+      in: path
+      description: The ID of the contact.
+      required: true
+      schema:
+        type: string
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - tag_id
+          properties:
+            tag_id:
+              type: string
+              format: uuid
+  responses:
+    '200':
+      description: Tag added successfully.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ContactManagerContact'

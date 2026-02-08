@@ -686,10 +686,10 @@ const (
 
 // Defines values for PostContactsJSONBodySource.
 const (
-	Api    PostContactsJSONBodySource = "api"
-	Import PostContactsJSONBodySource = "import"
-	Manual PostContactsJSONBodySource = "manual"
-	Sync   PostContactsJSONBodySource = "sync"
+	PostContactsJSONBodySourceApi    PostContactsJSONBodySource = "api"
+	PostContactsJSONBodySourceImport PostContactsJSONBodySource = "import"
+	PostContactsJSONBodySourceManual PostContactsJSONBodySource = "manual"
+	PostContactsJSONBodySourceSync   PostContactsJSONBodySource = "sync"
 )
 
 // Defines values for PostContactsIdEmailsJSONBodyType.
@@ -728,6 +728,62 @@ const (
 const (
 	Line    GetConversationsJSONBodyType = "line"
 	Message GetConversationsJSONBodyType = "message"
+)
+
+// Defines values for PostServiceAgentsContactsJSONBodyEmailsType.
+const (
+	PostServiceAgentsContactsJSONBodyEmailsTypeOther    PostServiceAgentsContactsJSONBodyEmailsType = "other"
+	PostServiceAgentsContactsJSONBodyEmailsTypePersonal PostServiceAgentsContactsJSONBodyEmailsType = "personal"
+	PostServiceAgentsContactsJSONBodyEmailsTypeWork     PostServiceAgentsContactsJSONBodyEmailsType = "work"
+)
+
+// Defines values for PostServiceAgentsContactsJSONBodyPhoneNumbersType.
+const (
+	PostServiceAgentsContactsJSONBodyPhoneNumbersTypeFax    PostServiceAgentsContactsJSONBodyPhoneNumbersType = "fax"
+	PostServiceAgentsContactsJSONBodyPhoneNumbersTypeHome   PostServiceAgentsContactsJSONBodyPhoneNumbersType = "home"
+	PostServiceAgentsContactsJSONBodyPhoneNumbersTypeMobile PostServiceAgentsContactsJSONBodyPhoneNumbersType = "mobile"
+	PostServiceAgentsContactsJSONBodyPhoneNumbersTypeOther  PostServiceAgentsContactsJSONBodyPhoneNumbersType = "other"
+	PostServiceAgentsContactsJSONBodyPhoneNumbersTypeWork   PostServiceAgentsContactsJSONBodyPhoneNumbersType = "work"
+)
+
+// Defines values for PostServiceAgentsContactsJSONBodySource.
+const (
+	PostServiceAgentsContactsJSONBodySourceApi    PostServiceAgentsContactsJSONBodySource = "api"
+	PostServiceAgentsContactsJSONBodySourceImport PostServiceAgentsContactsJSONBodySource = "import"
+	PostServiceAgentsContactsJSONBodySourceManual PostServiceAgentsContactsJSONBodySource = "manual"
+	PostServiceAgentsContactsJSONBodySourceSync   PostServiceAgentsContactsJSONBodySource = "sync"
+)
+
+// Defines values for PostServiceAgentsContactsIdEmailsJSONBodyType.
+const (
+	PostServiceAgentsContactsIdEmailsJSONBodyTypeOther    PostServiceAgentsContactsIdEmailsJSONBodyType = "other"
+	PostServiceAgentsContactsIdEmailsJSONBodyTypePersonal PostServiceAgentsContactsIdEmailsJSONBodyType = "personal"
+	PostServiceAgentsContactsIdEmailsJSONBodyTypeWork     PostServiceAgentsContactsIdEmailsJSONBodyType = "work"
+)
+
+// Defines values for PutServiceAgentsContactsIdEmailsEmailIdJSONBodyType.
+const (
+	PutServiceAgentsContactsIdEmailsEmailIdJSONBodyTypeOther    PutServiceAgentsContactsIdEmailsEmailIdJSONBodyType = "other"
+	PutServiceAgentsContactsIdEmailsEmailIdJSONBodyTypePersonal PutServiceAgentsContactsIdEmailsEmailIdJSONBodyType = "personal"
+	PutServiceAgentsContactsIdEmailsEmailIdJSONBodyTypeWork     PutServiceAgentsContactsIdEmailsEmailIdJSONBodyType = "work"
+)
+
+// Defines values for PostServiceAgentsContactsIdPhoneNumbersJSONBodyType.
+const (
+	PostServiceAgentsContactsIdPhoneNumbersJSONBodyTypeFax    PostServiceAgentsContactsIdPhoneNumbersJSONBodyType = "fax"
+	PostServiceAgentsContactsIdPhoneNumbersJSONBodyTypeHome   PostServiceAgentsContactsIdPhoneNumbersJSONBodyType = "home"
+	PostServiceAgentsContactsIdPhoneNumbersJSONBodyTypeMobile PostServiceAgentsContactsIdPhoneNumbersJSONBodyType = "mobile"
+	PostServiceAgentsContactsIdPhoneNumbersJSONBodyTypeOther  PostServiceAgentsContactsIdPhoneNumbersJSONBodyType = "other"
+	PostServiceAgentsContactsIdPhoneNumbersJSONBodyTypeWork   PostServiceAgentsContactsIdPhoneNumbersJSONBodyType = "work"
+)
+
+// Defines values for PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONBodyType.
+const (
+	PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONBodyTypeFax    PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONBodyType = "fax"
+	PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONBodyTypeHome   PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONBodyType = "home"
+	PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONBodyTypeMobile PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONBodyType = "mobile"
+	PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONBodyTypeOther  PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONBodyType = "other"
+	PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONBodyTypeWork   PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONBodyType = "work"
 )
 
 // Defines values for GetTimelinesResourceTypeResourceIdEventsParamsResourceType.
@@ -4578,6 +4634,112 @@ type GetServiceAgentsCallsParams struct {
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
+// GetServiceAgentsContactsParams defines parameters for GetServiceAgentsContacts.
+type GetServiceAgentsContactsParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostServiceAgentsContactsJSONBody defines parameters for PostServiceAgentsContacts.
+type PostServiceAgentsContactsJSONBody struct {
+	Company     *string `json:"company,omitempty"`
+	DisplayName *string `json:"display_name,omitempty"`
+	Emails      *[]struct {
+		Address   *openapi_types.Email                         `json:"address,omitempty"`
+		IsPrimary *bool                                        `json:"is_primary,omitempty"`
+		Type      *PostServiceAgentsContactsJSONBodyEmailsType `json:"type,omitempty"`
+	} `json:"emails,omitempty"`
+	ExternalId   *string `json:"external_id,omitempty"`
+	FirstName    *string `json:"first_name,omitempty"`
+	JobTitle     *string `json:"job_title,omitempty"`
+	LastName     *string `json:"last_name,omitempty"`
+	Notes        *string `json:"notes,omitempty"`
+	PhoneNumbers *[]struct {
+		IsPrimary *bool                                              `json:"is_primary,omitempty"`
+		Number    *string                                            `json:"number,omitempty"`
+		Type      *PostServiceAgentsContactsJSONBodyPhoneNumbersType `json:"type,omitempty"`
+	} `json:"phone_numbers,omitempty"`
+	Source *PostServiceAgentsContactsJSONBodySource `json:"source,omitempty"`
+	TagIds *[]openapi_types.UUID                    `json:"tag_ids,omitempty"`
+}
+
+// PostServiceAgentsContactsJSONBodyEmailsType defines parameters for PostServiceAgentsContacts.
+type PostServiceAgentsContactsJSONBodyEmailsType string
+
+// PostServiceAgentsContactsJSONBodyPhoneNumbersType defines parameters for PostServiceAgentsContacts.
+type PostServiceAgentsContactsJSONBodyPhoneNumbersType string
+
+// PostServiceAgentsContactsJSONBodySource defines parameters for PostServiceAgentsContacts.
+type PostServiceAgentsContactsJSONBodySource string
+
+// GetServiceAgentsContactsLookupParams defines parameters for GetServiceAgentsContactsLookup.
+type GetServiceAgentsContactsLookupParams struct {
+	// Phone Phone number in E.164 format to lookup.
+	Phone *string `form:"phone,omitempty" json:"phone,omitempty"`
+
+	// Email Email address to lookup.
+	Email *string `form:"email,omitempty" json:"email,omitempty"`
+}
+
+// PutServiceAgentsContactsIdJSONBody defines parameters for PutServiceAgentsContactsId.
+type PutServiceAgentsContactsIdJSONBody struct {
+	Company     *string `json:"company,omitempty"`
+	DisplayName *string `json:"display_name,omitempty"`
+	ExternalId  *string `json:"external_id,omitempty"`
+	FirstName   *string `json:"first_name,omitempty"`
+	JobTitle    *string `json:"job_title,omitempty"`
+	LastName    *string `json:"last_name,omitempty"`
+	Notes       *string `json:"notes,omitempty"`
+}
+
+// PostServiceAgentsContactsIdEmailsJSONBody defines parameters for PostServiceAgentsContactsIdEmails.
+type PostServiceAgentsContactsIdEmailsJSONBody struct {
+	Address   openapi_types.Email                            `json:"address"`
+	IsPrimary *bool                                          `json:"is_primary,omitempty"`
+	Type      *PostServiceAgentsContactsIdEmailsJSONBodyType `json:"type,omitempty"`
+}
+
+// PostServiceAgentsContactsIdEmailsJSONBodyType defines parameters for PostServiceAgentsContactsIdEmails.
+type PostServiceAgentsContactsIdEmailsJSONBodyType string
+
+// PutServiceAgentsContactsIdEmailsEmailIdJSONBody defines parameters for PutServiceAgentsContactsIdEmailsEmailId.
+type PutServiceAgentsContactsIdEmailsEmailIdJSONBody struct {
+	Address   *openapi_types.Email                                 `json:"address,omitempty"`
+	IsPrimary *bool                                                `json:"is_primary,omitempty"`
+	Type      *PutServiceAgentsContactsIdEmailsEmailIdJSONBodyType `json:"type,omitempty"`
+}
+
+// PutServiceAgentsContactsIdEmailsEmailIdJSONBodyType defines parameters for PutServiceAgentsContactsIdEmailsEmailId.
+type PutServiceAgentsContactsIdEmailsEmailIdJSONBodyType string
+
+// PostServiceAgentsContactsIdPhoneNumbersJSONBody defines parameters for PostServiceAgentsContactsIdPhoneNumbers.
+type PostServiceAgentsContactsIdPhoneNumbersJSONBody struct {
+	IsPrimary *bool                                                `json:"is_primary,omitempty"`
+	Number    string                                               `json:"number"`
+	Type      *PostServiceAgentsContactsIdPhoneNumbersJSONBodyType `json:"type,omitempty"`
+}
+
+// PostServiceAgentsContactsIdPhoneNumbersJSONBodyType defines parameters for PostServiceAgentsContactsIdPhoneNumbers.
+type PostServiceAgentsContactsIdPhoneNumbersJSONBodyType string
+
+// PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONBody defines parameters for PutServiceAgentsContactsIdPhoneNumbersPhoneNumberId.
+type PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONBody struct {
+	IsPrimary *bool                                                            `json:"is_primary,omitempty"`
+	Number    *string                                                          `json:"number,omitempty"`
+	Type      *PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONBodyType `json:"type,omitempty"`
+}
+
+// PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONBodyType defines parameters for PutServiceAgentsContactsIdPhoneNumbersPhoneNumberId.
+type PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONBodyType string
+
+// PostServiceAgentsContactsIdTagsJSONBody defines parameters for PostServiceAgentsContactsIdTags.
+type PostServiceAgentsContactsIdTagsJSONBody struct {
+	TagId openapi_types.UUID `json:"tag_id"`
+}
+
 // GetServiceAgentsConversationsParams defines parameters for GetServiceAgentsConversations.
 type GetServiceAgentsConversationsParams struct {
 	// PageSize The size of results.
@@ -5132,6 +5294,27 @@ type PostRoutesJSONRequestBody PostRoutesJSONBody
 
 // PutRoutesIdJSONRequestBody defines body for PutRoutesId for application/json ContentType.
 type PutRoutesIdJSONRequestBody PutRoutesIdJSONBody
+
+// PostServiceAgentsContactsJSONRequestBody defines body for PostServiceAgentsContacts for application/json ContentType.
+type PostServiceAgentsContactsJSONRequestBody PostServiceAgentsContactsJSONBody
+
+// PutServiceAgentsContactsIdJSONRequestBody defines body for PutServiceAgentsContactsId for application/json ContentType.
+type PutServiceAgentsContactsIdJSONRequestBody PutServiceAgentsContactsIdJSONBody
+
+// PostServiceAgentsContactsIdEmailsJSONRequestBody defines body for PostServiceAgentsContactsIdEmails for application/json ContentType.
+type PostServiceAgentsContactsIdEmailsJSONRequestBody PostServiceAgentsContactsIdEmailsJSONBody
+
+// PutServiceAgentsContactsIdEmailsEmailIdJSONRequestBody defines body for PutServiceAgentsContactsIdEmailsEmailId for application/json ContentType.
+type PutServiceAgentsContactsIdEmailsEmailIdJSONRequestBody PutServiceAgentsContactsIdEmailsEmailIdJSONBody
+
+// PostServiceAgentsContactsIdPhoneNumbersJSONRequestBody defines body for PostServiceAgentsContactsIdPhoneNumbers for application/json ContentType.
+type PostServiceAgentsContactsIdPhoneNumbersJSONRequestBody PostServiceAgentsContactsIdPhoneNumbersJSONBody
+
+// PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONRequestBody defines body for PutServiceAgentsContactsIdPhoneNumbersPhoneNumberId for application/json ContentType.
+type PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONRequestBody PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONBody
+
+// PostServiceAgentsContactsIdTagsJSONRequestBody defines body for PostServiceAgentsContactsIdTags for application/json ContentType.
+type PostServiceAgentsContactsIdTagsJSONRequestBody PostServiceAgentsContactsIdTagsJSONBody
 
 // PostServiceAgentsConversationsIdMessagesJSONRequestBody defines body for PostServiceAgentsConversationsIdMessages for application/json ContentType.
 type PostServiceAgentsConversationsIdMessagesJSONRequestBody PostServiceAgentsConversationsIdMessagesJSONBody
