@@ -31,11 +31,11 @@ type RTCPStats struct {
 	RTCPErrors    int     `json:"rtcp_errors"`
 }
 
-// SIPMessagesResponse is the response for SIP messages list.
-type SIPMessagesResponse struct {
-	NextPageToken string        `json:"next_page_token"`
-	RTCPStats     *RTCPStats    `json:"rtcp_stats,omitempty"`
-	Result        []*SIPMessage `json:"result"`
+// SIPInfoResponse is the response for the SIP info endpoint, containing
+// both SIP messages and RTCP quality stats.
+type SIPInfoResponse struct {
+	SIPMessages []*SIPMessage `json:"sip_messages"`
+	RTCPStats   *RTCPStats    `json:"rtcp_stats,omitempty"`
 }
 
 // regexRTPStat matches the RTP portion of the RTPStat value.

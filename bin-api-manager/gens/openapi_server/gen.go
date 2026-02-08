@@ -5972,9 +5972,9 @@ type ServerInterface interface {
 	// Get PCAP download for a call
 	// (GET /timelines/calls/{call_id}/pcap)
 	GetTimelinesCallsCallIdPcap(c *gin.Context, callId openapi_types.UUID)
-	// Get SIP messages for a call
-	// (GET /timelines/calls/{call_id}/sip-messages)
-	GetTimelinesCallsCallIdSipMessages(c *gin.Context, callId openapi_types.UUID)
+	// Get SIP info for a call
+	// (GET /timelines/calls/{call_id}/sip-info)
+	GetTimelinesCallsCallIdSipInfo(c *gin.Context, callId openapi_types.UUID)
 	// Get timeline events for a resource
 	// (GET /timelines/{resource_type}/{resource_id}/events)
 	GetTimelinesResourceTypeResourceIdEvents(c *gin.Context, resourceType GetTimelinesResourceTypeResourceIdEventsParamsResourceType, resourceId openapi_types.UUID, params GetTimelinesResourceTypeResourceIdEventsParams)
@@ -12389,8 +12389,8 @@ func (siw *ServerInterfaceWrapper) GetTimelinesCallsCallIdPcap(c *gin.Context) {
 	siw.Handler.GetTimelinesCallsCallIdPcap(c, callId)
 }
 
-// GetTimelinesCallsCallIdSipMessages operation middleware
-func (siw *ServerInterfaceWrapper) GetTimelinesCallsCallIdSipMessages(c *gin.Context) {
+// GetTimelinesCallsCallIdSipInfo operation middleware
+func (siw *ServerInterfaceWrapper) GetTimelinesCallsCallIdSipInfo(c *gin.Context) {
 
 	var err error
 
@@ -12410,7 +12410,7 @@ func (siw *ServerInterfaceWrapper) GetTimelinesCallsCallIdSipMessages(c *gin.Con
 		}
 	}
 
-	siw.Handler.GetTimelinesCallsCallIdSipMessages(c, callId)
+	siw.Handler.GetTimelinesCallsCallIdSipInfo(c, callId)
 }
 
 // GetTimelinesResourceTypeResourceIdEvents operation middleware
@@ -13063,7 +13063,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.GET(options.BaseURL+"/tags/:id", wrapper.GetTagsId)
 	router.PUT(options.BaseURL+"/tags/:id", wrapper.PutTagsId)
 	router.GET(options.BaseURL+"/timelines/calls/:call_id/pcap", wrapper.GetTimelinesCallsCallIdPcap)
-	router.GET(options.BaseURL+"/timelines/calls/:call_id/sip-messages", wrapper.GetTimelinesCallsCallIdSipMessages)
+	router.GET(options.BaseURL+"/timelines/calls/:call_id/sip-info", wrapper.GetTimelinesCallsCallIdSipInfo)
 	router.GET(options.BaseURL+"/timelines/:resource_type/:resource_id/events", wrapper.GetTimelinesResourceTypeResourceIdEvents)
 	router.GET(options.BaseURL+"/transcribes", wrapper.GetTranscribes)
 	router.POST(options.BaseURL+"/transcribes", wrapper.PostTranscribes)
@@ -18082,27 +18082,15 @@ func (response GetTimelinesCallsCallIdPcap502Response) VisitGetTimelinesCallsCal
 	return nil
 }
 
-type GetTimelinesCallsCallIdSipMessagesRequestObject struct {
+type GetTimelinesCallsCallIdSipInfoRequestObject struct {
 	CallId openapi_types.UUID `json:"call_id"`
 }
 
-type GetTimelinesCallsCallIdSipMessagesResponseObject interface {
-	VisitGetTimelinesCallsCallIdSipMessagesResponse(w http.ResponseWriter) error
+type GetTimelinesCallsCallIdSipInfoResponseObject interface {
+	VisitGetTimelinesCallsCallIdSipInfoResponse(w http.ResponseWriter) error
 }
 
-type GetTimelinesCallsCallIdSipMessages200JSONResponse struct {
-	// NextPageToken Token for fetching the next page of results (empty if no more pages)
-	NextPageToken *string `json:"next_page_token,omitempty"`
-	Result        *[]struct {
-		DstIp     *string    `json:"dst_ip,omitempty"`
-		DstPort   *int       `json:"dst_port,omitempty"`
-		Method    *string    `json:"method,omitempty"`
-		Raw       *string    `json:"raw,omitempty"`
-		SrcIp     *string    `json:"src_ip,omitempty"`
-		SrcPort   *int       `json:"src_port,omitempty"`
-		Timestamp *time.Time `json:"timestamp,omitempty"`
-	} `json:"result,omitempty"`
-
+type GetTimelinesCallsCallIdSipInfo200JSONResponse struct {
 	// RtcpStats RTCP quality metrics parsed from X-RTP-Stat header in BYE messages. Null if no RTCP stats available.
 	RtcpStats *struct {
 		// Jitter Jitter in milliseconds
@@ -18135,43 +18123,52 @@ type GetTimelinesCallsCallIdSipMessages200JSONResponse struct {
 		// Rtt Round-trip time as reported by RTPEngine
 		Rtt int `json:"rtt"`
 	} `json:"rtcp_stats"`
+	SipMessages *[]struct {
+		DstIp     *string    `json:"dst_ip,omitempty"`
+		DstPort   *int       `json:"dst_port,omitempty"`
+		Method    *string    `json:"method,omitempty"`
+		Raw       *string    `json:"raw,omitempty"`
+		SrcIp     *string    `json:"src_ip,omitempty"`
+		SrcPort   *int       `json:"src_port,omitempty"`
+		Timestamp *time.Time `json:"timestamp,omitempty"`
+	} `json:"sip_messages,omitempty"`
 }
 
-func (response GetTimelinesCallsCallIdSipMessages200JSONResponse) VisitGetTimelinesCallsCallIdSipMessagesResponse(w http.ResponseWriter) error {
+func (response GetTimelinesCallsCallIdSipInfo200JSONResponse) VisitGetTimelinesCallsCallIdSipInfoResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 
 	return json.NewEncoder(w).Encode(response)
 }
 
-type GetTimelinesCallsCallIdSipMessages400Response struct {
+type GetTimelinesCallsCallIdSipInfo400Response struct {
 }
 
-func (response GetTimelinesCallsCallIdSipMessages400Response) VisitGetTimelinesCallsCallIdSipMessagesResponse(w http.ResponseWriter) error {
+func (response GetTimelinesCallsCallIdSipInfo400Response) VisitGetTimelinesCallsCallIdSipInfoResponse(w http.ResponseWriter) error {
 	w.WriteHeader(400)
 	return nil
 }
 
-type GetTimelinesCallsCallIdSipMessages403Response struct {
+type GetTimelinesCallsCallIdSipInfo403Response struct {
 }
 
-func (response GetTimelinesCallsCallIdSipMessages403Response) VisitGetTimelinesCallsCallIdSipMessagesResponse(w http.ResponseWriter) error {
+func (response GetTimelinesCallsCallIdSipInfo403Response) VisitGetTimelinesCallsCallIdSipInfoResponse(w http.ResponseWriter) error {
 	w.WriteHeader(403)
 	return nil
 }
 
-type GetTimelinesCallsCallIdSipMessages404Response struct {
+type GetTimelinesCallsCallIdSipInfo404Response struct {
 }
 
-func (response GetTimelinesCallsCallIdSipMessages404Response) VisitGetTimelinesCallsCallIdSipMessagesResponse(w http.ResponseWriter) error {
+func (response GetTimelinesCallsCallIdSipInfo404Response) VisitGetTimelinesCallsCallIdSipInfoResponse(w http.ResponseWriter) error {
 	w.WriteHeader(404)
 	return nil
 }
 
-type GetTimelinesCallsCallIdSipMessages502Response struct {
+type GetTimelinesCallsCallIdSipInfo502Response struct {
 }
 
-func (response GetTimelinesCallsCallIdSipMessages502Response) VisitGetTimelinesCallsCallIdSipMessagesResponse(w http.ResponseWriter) error {
+func (response GetTimelinesCallsCallIdSipInfo502Response) VisitGetTimelinesCallsCallIdSipInfoResponse(w http.ResponseWriter) error {
 	w.WriteHeader(502)
 	return nil
 }
@@ -19215,9 +19212,9 @@ type StrictServerInterface interface {
 	// Get PCAP download for a call
 	// (GET /timelines/calls/{call_id}/pcap)
 	GetTimelinesCallsCallIdPcap(ctx context.Context, request GetTimelinesCallsCallIdPcapRequestObject) (GetTimelinesCallsCallIdPcapResponseObject, error)
-	// Get SIP messages for a call
-	// (GET /timelines/calls/{call_id}/sip-messages)
-	GetTimelinesCallsCallIdSipMessages(ctx context.Context, request GetTimelinesCallsCallIdSipMessagesRequestObject) (GetTimelinesCallsCallIdSipMessagesResponseObject, error)
+	// Get SIP info for a call
+	// (GET /timelines/calls/{call_id}/sip-info)
+	GetTimelinesCallsCallIdSipInfo(ctx context.Context, request GetTimelinesCallsCallIdSipInfoRequestObject) (GetTimelinesCallsCallIdSipInfoResponseObject, error)
 	// Get timeline events for a resource
 	// (GET /timelines/{resource_type}/{resource_id}/events)
 	GetTimelinesResourceTypeResourceIdEvents(ctx context.Context, request GetTimelinesResourceTypeResourceIdEventsRequestObject) (GetTimelinesResourceTypeResourceIdEventsResponseObject, error)
@@ -26947,17 +26944,17 @@ func (sh *strictHandler) GetTimelinesCallsCallIdPcap(ctx *gin.Context, callId op
 	}
 }
 
-// GetTimelinesCallsCallIdSipMessages operation middleware
-func (sh *strictHandler) GetTimelinesCallsCallIdSipMessages(ctx *gin.Context, callId openapi_types.UUID) {
-	var request GetTimelinesCallsCallIdSipMessagesRequestObject
+// GetTimelinesCallsCallIdSipInfo operation middleware
+func (sh *strictHandler) GetTimelinesCallsCallIdSipInfo(ctx *gin.Context, callId openapi_types.UUID) {
+	var request GetTimelinesCallsCallIdSipInfoRequestObject
 
 	request.CallId = callId
 
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.GetTimelinesCallsCallIdSipMessages(ctx, request.(GetTimelinesCallsCallIdSipMessagesRequestObject))
+		return sh.ssi.GetTimelinesCallsCallIdSipInfo(ctx, request.(GetTimelinesCallsCallIdSipInfoRequestObject))
 	}
 	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "GetTimelinesCallsCallIdSipMessages")
+		handler = middleware(handler, "GetTimelinesCallsCallIdSipInfo")
 	}
 
 	response, err := handler(ctx, request)
@@ -26965,8 +26962,8 @@ func (sh *strictHandler) GetTimelinesCallsCallIdSipMessages(ctx *gin.Context, ca
 	if err != nil {
 		ctx.Error(err)
 		ctx.Status(http.StatusInternalServerError)
-	} else if validResponse, ok := response.(GetTimelinesCallsCallIdSipMessagesResponseObject); ok {
-		if err := validResponse.VisitGetTimelinesCallsCallIdSipMessagesResponse(ctx.Writer); err != nil {
+	} else if validResponse, ok := response.(GetTimelinesCallsCallIdSipInfoResponseObject); ok {
+		if err := validResponse.VisitGetTimelinesCallsCallIdSipInfoResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

@@ -39,6 +39,7 @@ const (
 type HomerHandler interface {
 	GetSIPMessages(ctx context.Context, sipCallID string, fromTime, toTime time.Time) ([]*sipmessage.SIPMessage, error)
 	GetPcap(ctx context.Context, sipCallID string, fromTime, toTime time.Time) ([]byte, error)
+	GetRTCPPcap(ctx context.Context, sipCallID string, fromTime, toTime time.Time) ([]byte, error)
 }
 
 type homerHandler struct {
@@ -285,6 +286,85 @@ func (h *homerHandler) GetPcap(ctx context.Context, sipCallID string, fromTime, 
 	}
 
 	log.WithField("pcap_size", len(pcapData)).Debug("Received PCAP data from Homer.")
+
+	return pcapData, nil
+}
+
+// GetRTCPPcap retrieves RTCP PCAP data (hepid 5) from Homer for a given SIP call ID and time range.
+func (h *homerHandler) GetRTCPPcap(ctx context.Context, sipCallID string, fromTime, toTime time.Time) ([]byte, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "GetRTCPPcap",
+		"sip_callid": sipCallID,
+	})
+	log.WithFields(logrus.Fields{
+		"homer_addr": h.homerAPIAddr,
+		"from_time":  fromTime,
+		"to_time":    toTime,
+	}).Info("HomerHandler called - querying Homer API for RTCP PCAP data")
+
+	if h.homerAPIAddr == "" || h.homerAuthToken == "" {
+		return nil, fmt.Errorf("missing Homer API address or auth token")
+	}
+
+	if sipCallID == "" {
+		return nil, fmt.Errorf("sip call ID cannot be empty")
+	}
+
+	homerAPIEndpoint := fmt.Sprintf("%s/api/v3/export/call/messages/pcap", h.homerAPIAddr)
+
+	// Add buffer to time range
+	fromTimestamp := fromTime.Add(-defaultTimeBuffer).UnixMilli()
+	toTimestamp := toTime.Add(defaultTimeBuffer).UnixMilli()
+
+	payload := homerRequestPayload{
+		Timestamp: timeRange{
+			From: fromTimestamp,
+			To:   toTimestamp,
+		},
+		Param: homerRequestParam{
+			Limit: homerPcapSearchLimit,
+			Search: map[string]any{
+				"5_default": map[string]any{
+					"callid": []string{sipCallID},
+					"type":   "string",
+					"hepid":  5,
+				},
+			},
+			Transaction: map[string]any{},
+		},
+	}
+
+	payloadBytes, err := json.Marshal(payload)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not marshal Homer RTCP PCAP request payload for SIP call ID %s", sipCallID)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, homerAPIEndpoint, bytes.NewBuffer(payloadBytes))
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not create HTTP request for RTCP PCAP export for SIP call ID %s", sipCallID)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Auth-Token", h.homerAuthToken)
+
+	resp, err := h.httpClient.Do(req)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not send HTTP request for RTCP PCAP export for SIP call ID %s", sipCallID)
+	}
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+
+	if resp.StatusCode >= 300 {
+		return nil, fmt.Errorf("homer API returned non-success status %s for RTCP PCAP export for SIP call ID %s", resp.Status, sipCallID)
+	}
+
+	pcapData, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not read RTCP PCAP response body for SIP call ID %s", sipCallID)
+	}
+
+	log.WithField("pcap_size", len(pcapData)).Debug("Received RTCP PCAP data from Homer.")
 
 	return pcapData, nil
 }

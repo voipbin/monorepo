@@ -12,7 +12,7 @@ import (
 	"monorepo/bin-timeline-manager/pkg/homerhandler"
 )
 
-func TestGetSIPMessages(t *testing.T) {
+func TestGetSIPInfo(t *testing.T) {
 	fromTime := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
 	toTime := time.Date(2026, 1, 1, 1, 0, 0, 0, time.UTC)
 
@@ -114,7 +114,7 @@ func TestGetSIPMessages(t *testing.T) {
 
 			h := NewSIPHandler(mockHomer)
 
-			resp, err := h.GetSIPMessages(context.Background(), tt.sipCallID, fromTime, toTime)
+			resp, err := h.GetSIPInfo(context.Background(), tt.sipCallID, fromTime, toTime)
 			if tt.wantErr {
 				if err == nil {
 					t.Fatal("expected error, got nil")
@@ -125,8 +125,8 @@ func TestGetSIPMessages(t *testing.T) {
 				t.Fatalf("unexpected error: %v", err)
 			}
 
-			if len(resp.Result) != tt.wantCount {
-				t.Errorf("result count = %d, want %d", len(resp.Result), tt.wantCount)
+			if len(resp.SIPMessages) != tt.wantCount {
+				t.Errorf("SIPMessages count = %d, want %d", len(resp.SIPMessages), tt.wantCount)
 			}
 
 			if tt.wantRTCPStats {

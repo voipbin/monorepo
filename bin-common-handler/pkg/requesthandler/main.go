@@ -1229,7 +1229,7 @@ type RequestHandler interface {
 	TimelineV1EventList(ctx context.Context, req *tmevent.EventListRequest) (*tmevent.EventListResponse, error)
 
 	// timeline-manager sip
-	TimelineV1SIPMessagesGet(ctx context.Context, callID uuid.UUID, sipCallID string, fromTime, toTime string) (*tmsipmessage.SIPMessagesResponse, error)
+	TimelineV1SIPInfoGet(ctx context.Context, callID uuid.UUID, sipCallID string, fromTime, toTime string) (*tmsipmessage.SIPInfoResponse, error)
 	TimelineV1SIPPcapGet(ctx context.Context, callID uuid.UUID, sipCallID string, fromTime, toTime string) ([]byte, error)
 
 	// webhook-manager webhooks

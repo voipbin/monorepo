@@ -13,14 +13,14 @@ import (
 	"monorepo/bin-timeline-manager/pkg/listenhandler/models/request"
 )
 
-func (h *listenHandler) v1SIPMessagesPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+func (h *listenHandler) v1SIPInfoPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func": "v1SIPMessagesPost",
+		"func": "v1SIPInfoPost",
 	})
-	log.Info("RPC handler called - SIP messages request received")
+	log.Info("RPC handler called - SIP info request received")
 
 	// Parse request
-	var req request.V1SIPMessagesPost
+	var req request.V1SIPInfoPost
 	if err := json.Unmarshal(m.Data, &req); err != nil {
 		log.Errorf("Could not unmarshal request. err: %v", err)
 		return simpleResponse(400), nil
@@ -40,9 +40,9 @@ func (h *listenHandler) v1SIPMessagesPost(ctx context.Context, m *sock.Request) 
 	}
 
 	// Call handler
-	result, err := h.sipHandler.GetSIPMessages(ctx, req.SIPCallID, fromTime, toTime)
+	result, err := h.sipHandler.GetSIPInfo(ctx, req.SIPCallID, fromTime, toTime)
 	if err != nil {
-		log.Errorf("Could not get SIP messages. err: %v", err)
+		log.Errorf("Could not get SIP info. err: %v", err)
 		return simpleResponse(500), nil
 	}
 

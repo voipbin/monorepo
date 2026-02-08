@@ -57,17 +57,17 @@ func (mr *MockSIPHandlerMockRecorder) GetPcap(ctx, sipCallID, fromTime, toTime a
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPcap", reflect.TypeOf((*MockSIPHandler)(nil).GetPcap), ctx, sipCallID, fromTime, toTime)
 }
 
-// GetSIPMessages mocks base method.
-func (m *MockSIPHandler) GetSIPMessages(ctx context.Context, sipCallID string, fromTime, toTime time.Time) (*sipmessage.SIPMessagesResponse, error) {
+// GetSIPInfo mocks base method.
+func (m *MockSIPHandler) GetSIPInfo(ctx context.Context, sipCallID string, fromTime, toTime time.Time) (*sipmessage.SIPInfoResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSIPMessages", ctx, sipCallID, fromTime, toTime)
-	ret0, _ := ret[0].(*sipmessage.SIPMessagesResponse)
+	ret := m.ctrl.Call(m, "GetSIPInfo", ctx, sipCallID, fromTime, toTime)
+	ret0, _ := ret[0].(*sipmessage.SIPInfoResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetSIPMessages indicates an expected call of GetSIPMessages.
-func (mr *MockSIPHandlerMockRecorder) GetSIPMessages(ctx, sipCallID, fromTime, toTime any) *gomock.Call {
+// GetSIPInfo indicates an expected call of GetSIPInfo.
+func (mr *MockSIPHandlerMockRecorder) GetSIPInfo(ctx, sipCallID, fromTime, toTime any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSIPMessages", reflect.TypeOf((*MockSIPHandler)(nil).GetSIPMessages), ctx, sipCallID, fromTime, toTime)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSIPInfo", reflect.TypeOf((*MockSIPHandler)(nil).GetSIPInfo), ctx, sipCallID, fromTime, toTime)
 }

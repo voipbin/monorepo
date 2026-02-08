@@ -12,14 +12,14 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// TimelineSIPMessagesGet retrieves SIP messages for a call.
-func (h *serviceHandler) TimelineSIPMessagesGet(
+// TimelineSIPInfoGet retrieves SIP info (messages + RTCP stats) for a call.
+func (h *serviceHandler) TimelineSIPInfoGet(
 	ctx context.Context,
 	a *amagent.Agent,
 	callID uuid.UUID,
-) (*tmsipmessage.SIPMessagesResponse, error) {
+) (*tmsipmessage.SIPInfoResponse, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "TimelineSIPMessagesGet",
+		"func":        "TimelineSIPInfoGet",
 		"customer_id": a.CustomerID,
 		"call_id":     callID,
 	})
@@ -64,9 +64,9 @@ func (h *serviceHandler) TimelineSIPMessagesGet(
 	}
 
 	// Call timeline-manager
-	res, err := h.reqHandler.TimelineV1SIPMessagesGet(ctx, callID, ch.SIPCallID, fromTime.Format(time.RFC3339), toTime.Format(time.RFC3339))
+	res, err := h.reqHandler.TimelineV1SIPInfoGet(ctx, callID, ch.SIPCallID, fromTime.Format(time.RFC3339), toTime.Format(time.RFC3339))
 	if err != nil {
-		log.Errorf("Could not get SIP messages: %v", err)
+		log.Errorf("Could not get SIP info: %v", err)
 		return nil, fmt.Errorf("upstream service unavailable")
 	}
 
