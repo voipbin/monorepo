@@ -1,6 +1,6 @@
 # Call SIP Timeline & PCAP API Implementation Plan
 
-> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
+**Status:** Implemented. The code samples below reflect the original implementation. PR #411 (2026-02-08) subsequently renamed `sip-messages` to `sip-analysis`, added RTCP stats, and merged RTCP packets into PCAP downloads. See [2026-02-08-timeline-rtcp-stats-design.md](2026-02-08-timeline-rtcp-stats-design.md) for the current state.
 
 **Goal:** Add API endpoints to retrieve SIP message timeline and PCAP download for calls via Homer integration.
 
