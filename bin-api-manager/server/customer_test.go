@@ -48,7 +48,7 @@ func Test_customerGET(t *testing.T) {
 			},
 
 			expectedCustomerID: uuid.FromStringOrNil("e25f1af8-c44f-11ef-9d46-bfaf61e659c2"),
-			expectedRes:        `{"id":"e25f1af8-c44f-11ef-9d46-bfaf61e659c2","billing_account_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectedRes:        `{"id":"e25f1af8-c44f-11ef-9d46-bfaf61e659c2","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -131,7 +131,7 @@ func Test_customerPut(t *testing.T) {
 			expectedAddress:       "somewhere",
 			expectedWebhookMethod: cscustomer.WebhookMethodPost,
 			expectedWebhookURI:    "test.com",
-			expectedRes:           `{"id":"4b7dcc68-c451-11ef-a289-33cbfe065115","billing_account_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectedRes:           `{"id":"4b7dcc68-c451-11ef-a289-33cbfe065115","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -204,7 +204,7 @@ func Test_customerBillingAccountIDPut(t *testing.T) {
 
 			expectedCustomerID:       uuid.FromStringOrNil("2422306e-c514-11ef-a89d-2f0585ee15f9"),
 			expectedBillingAccountID: uuid.FromStringOrNil("245bc55e-c514-11ef-85d3-23d66dfc487a"),
-			expectedRes:              `{"id":"2422306e-c514-11ef-a89d-2f0585ee15f9","billing_account_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectedRes:              `{"id":"2422306e-c514-11ef-a89d-2f0585ee15f9","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 

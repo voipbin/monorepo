@@ -1972,6 +1972,9 @@ components:
         billing_account_id:
           type: string
           description: The ID of the customer's default billing account.
+        email_verified:
+          type: boolean
+          description: Whether the customer's email has been verified.
         tm_create:
           type: string
           description: Timestamp when the customer was created.

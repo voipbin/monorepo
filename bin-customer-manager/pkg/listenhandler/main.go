@@ -56,6 +56,9 @@ var (
 	regV1CustomersID                   = regexp.MustCompile("/v1/customers/" + regUUID + "$")
 	regV1CustomersIDIsValidBalance     = regexp.MustCompile("/v1/customers/" + regUUID + "/is_valid_balance$")
 	regV1CustomersIDIsBillingAccountID = regexp.MustCompile("/v1/customers/" + regUUID + "/billing_account_id$")
+
+	regV1CustomersSignup      = regexp.MustCompile("/v1/customers/signup$")
+	regV1CustomersEmailVerify = regexp.MustCompile("/v1/customers/email_verify$")
 )
 
 var (
@@ -173,6 +176,16 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	////////////
 	// customers
 	////////////
+	// POST /customers/signup
+	case regV1CustomersSignup.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1CustomersSignupPost(ctx, m)
+		requestType = "/v1/customers/signup"
+
+	// POST /customers/email_verify
+	case regV1CustomersEmailVerify.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1CustomersEmailVerifyPost(ctx, m)
+		requestType = "/v1/customers/email_verify"
+
 	// GET /customers
 	case regV1CustomersGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1CustomersGet(ctx, m)

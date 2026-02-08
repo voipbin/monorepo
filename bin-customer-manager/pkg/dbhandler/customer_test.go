@@ -446,3 +446,72 @@ func Test_CustomerUpdateBillingAccountID(t *testing.T) {
 		})
 	}
 }
+
+func Test_CustomerHardDelete(t *testing.T) {
+	curTime := time.Date(2024, 4, 18, 3, 22, 17, 995000000, time.UTC)
+
+	tests := []struct {
+		name     string
+		customer *customer.Customer
+
+		responseCurTime *time.Time
+	}{
+		{
+			name: "normal",
+			customer: &customer.Customer{
+				ID:    uuid.FromStringOrNil("aa111111-0000-0000-0000-000000000001"),
+				Name:  "hard delete test",
+				Email: "harddelete@voipbin.net",
+			},
+
+			responseCurTime: &curTime,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
+			h := handler{
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
+			}
+			ctx := context.Background()
+
+			// create first
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
+			mockCache.EXPECT().CustomerSet(ctx, gomock.Any()).Return(nil)
+			if err := h.CustomerCreate(ctx, tt.customer); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			// verify it exists
+			mockCache.EXPECT().CustomerGet(ctx, tt.customer.ID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().CustomerSet(ctx, gomock.Any()).Return(nil)
+			res, err := h.CustomerGet(ctx, tt.customer.ID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+			if res == nil {
+				t.Errorf("Wrong match. expect: customer, got: nil")
+			}
+
+			// hard delete
+			if err := h.CustomerHardDelete(ctx, tt.customer.ID); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			// verify it's gone
+			mockCache.EXPECT().CustomerGet(ctx, tt.customer.ID).Return(nil, fmt.Errorf(""))
+			_, err = h.CustomerGet(ctx, tt.customer.ID)
+			if err == nil {
+				t.Errorf("Wrong match. expect: error (not found), got: nil")
+			}
+		})
+	}
+}

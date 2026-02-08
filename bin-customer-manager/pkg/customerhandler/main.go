@@ -13,6 +13,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	"monorepo/bin-customer-manager/models/customer"
+	"monorepo/bin-customer-manager/pkg/cachehandler"
 	"monorepo/bin-customer-manager/pkg/dbhandler"
 )
 
@@ -44,6 +45,20 @@ type CustomerHandler interface {
 	) (*customer.Customer, error)
 	UpdateBillingAccountID(ctx context.Context, id uuid.UUID, billingAccountID uuid.UUID) (*customer.Customer, error)
 
+	Signup(
+		ctx context.Context,
+		name string,
+		detail string,
+		email string,
+		phoneNumber string,
+		address string,
+		webhookMethod customer.WebhookMethod,
+		webhookURI string,
+	) (*customer.Customer, error)
+	EmailVerify(ctx context.Context, token string) (*customer.Customer, error)
+
+	RunCleanupUnverified(ctx context.Context)
+
 	IsValidBalance(ctx context.Context, customerID uuid.UUID, billingType bmbilling.ReferenceType, country string, count int) (bool, error)
 }
 
@@ -51,15 +66,17 @@ type customerHandler struct {
 	utilHandler   utilhandler.UtilHandler
 	reqHandler    requesthandler.RequestHandler
 	db            dbhandler.DBHandler
+	cache         cachehandler.CacheHandler
 	notifyHandler notifyhandler.NotifyHandler
 }
 
 // NewCustomerHandler return UserHandler interface
-func NewCustomerHandler(reqHandler requesthandler.RequestHandler, dbHandler dbhandler.DBHandler, notifyHandler notifyhandler.NotifyHandler) CustomerHandler {
+func NewCustomerHandler(reqHandler requesthandler.RequestHandler, dbHandler dbhandler.DBHandler, cache cachehandler.CacheHandler, notifyHandler notifyhandler.NotifyHandler) CustomerHandler {
 	return &customerHandler{
 		utilHandler:   utilhandler.NewUtilHandler(),
 		reqHandler:    reqHandler,
 		db:            dbHandler,
+		cache:         cache,
 		notifyHandler: notifyHandler,
 	}
 }

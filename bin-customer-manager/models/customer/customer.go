@@ -23,6 +23,8 @@ type Customer struct {
 
 	BillingAccountID uuid.UUID `json:"billing_account_id,omitempty" db:"billing_account_id,uuid"` // default billing account id
 
+	EmailVerified bool `json:"email_verified" db:"email_verified"`
+
 	TMCreate *time.Time `json:"tm_create" db:"tm_create"` // Created timestamp.
 	TMUpdate *time.Time `json:"tm_update" db:"tm_update"` // Updated timestamp.
 	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"` // Deleted timestamp.

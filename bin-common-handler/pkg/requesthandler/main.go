@@ -677,6 +677,17 @@ type RequestHandler interface {
 	) (*cscustomer.Customer, error)
 	CustomerV1CustomerIsValidBalance(ctx context.Context, customerID uuid.UUID, referenceType bmbilling.ReferenceType, country string, count int) (bool, error)
 	CustomerV1CustomerUpdateBillingAccountID(ctx context.Context, customerID uuid.UUID, biillingAccountID uuid.UUID) (*cscustomer.Customer, error)
+	CustomerV1CustomerSignup(
+		ctx context.Context,
+		name string,
+		detail string,
+		email string,
+		phoneNumber string,
+		address string,
+		webhookMethod cscustomer.WebhookMethod,
+		webhookURI string,
+	) (*cscustomer.Customer, error)
+	CustomerV1CustomerEmailVerify(ctx context.Context, token string) (*cscustomer.Customer, error)
 
 	// conference-manager conference
 	ConferenceV1ConferenceGet(ctx context.Context, conferenceID uuid.UUID) (*cfconference.Conference, error)

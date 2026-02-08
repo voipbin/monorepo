@@ -213,6 +213,9 @@ func runListenHTTP(serviceHandler servicehandler.ServiceHandler) {
 	auth.POST("/password-forgot", service.PostPasswordForgot)
 	auth.GET("/password-reset", service.GetPasswordReset)
 	auth.POST("/password-reset", service.PostPasswordReset)
+	auth.POST("/signup", service.PostCustomerSignup)
+	auth.GET("/email-verify", service.GetCustomerEmailVerify)
+	auth.POST("/email-verify", service.PostCustomerEmailVerify)
 
 	appServer := server.NewServer(serviceHandler)
 

@@ -43,6 +43,24 @@ type V1DataCustomersIDBillingAccountIDPut struct {
 	BillingAccountID uuid.UUID `json:"billing_account_id"`
 }
 
+// V1DataCustomersSignupPost is request struct for POST /v1/customers/signup
+type V1DataCustomersSignupPost struct {
+	Name   string `json:"name,omitempty"`
+	Detail string `json:"detail,omitempty"`
+
+	Email       string `json:"email,omitempty"`
+	PhoneNumber string `json:"phone_number,omitempty"`
+	Address     string `json:"address"`
+
+	WebhookMethod customer.WebhookMethod `json:"webhook_method,omitempty"`
+	WebhookURI    string                 `json:"webhook_uri,omitempty"`
+}
+
+// V1DataCustomersEmailVerifyPost is request struct for POST /v1/customers/email_verify
+type V1DataCustomersEmailVerifyPost struct {
+	Token string `json:"token"`
+}
+
 // V1DataCustomersIDIsValidBalancePost is rquest param define for POST /customers/<customer-id>/is_valid_balance
 type V1DataCustomersIDIsValidBalancePost struct {
 	ReferenceType bmbilling.ReferenceType `json:"reference_type"`

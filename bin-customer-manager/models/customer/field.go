@@ -17,6 +17,8 @@ const (
 
 	FieldBillingAccountID Field = "billing_account_id"
 
+	FieldEmailVerified Field = "email_verified"
+
 	FieldTMCreate Field = "tm_create"
 	FieldTMUpdate Field = "tm_update"
 	FieldTMDelete Field = "tm_delete"
