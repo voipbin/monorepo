@@ -18123,7 +18123,7 @@ type GetTimelinesCallsCallIdSipAnalysis200JSONResponse struct {
 		// Rtt Round-trip time as reported by RTPEngine
 		Rtt int `json:"rtt"`
 	} `json:"rtcp_stats"`
-	SipMessages *[]struct {
+	SipMessages []struct {
 		DstIp     *string    `json:"dst_ip,omitempty"`
 		DstPort   *int       `json:"dst_port,omitempty"`
 		Method    *string    `json:"method,omitempty"`
@@ -18131,7 +18131,7 @@ type GetTimelinesCallsCallIdSipAnalysis200JSONResponse struct {
 		SrcIp     *string    `json:"src_ip,omitempty"`
 		SrcPort   *int       `json:"src_port,omitempty"`
 		Timestamp *time.Time `json:"timestamp,omitempty"`
-	} `json:"sip_messages,omitempty"`
+	} `json:"sip_messages"`
 }
 
 func (response GetTimelinesCallsCallIdSipAnalysis200JSONResponse) VisitGetTimelinesCallsCallIdSipAnalysisResponse(w http.ResponseWriter) error {

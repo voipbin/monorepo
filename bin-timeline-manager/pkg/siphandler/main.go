@@ -132,6 +132,11 @@ func (h *sipHandler) GetPcap(ctx context.Context, sipCallID string, fromTime, to
 	}
 	log.WithField("sip_pcap_size", len(sipPcapData)).Debug("Retrieved SIP PCAP data.")
 
+	if len(sipPcapData) == 0 {
+		log.Debug("No SIP PCAP data available.")
+		return []byte{}, nil
+	}
+
 	// Fetch RTCP PCAP (hepid 5) - non-fatal if this fails
 	rtcpPcapData, err := h.homerHandler.GetRTCPPcap(ctx, sipCallID, fromTime, toTime)
 	if err != nil {

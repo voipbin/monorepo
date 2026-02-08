@@ -104,7 +104,7 @@ func (h *listenHandler) v1SIPPcapPost(ctx context.Context, m *sock.Request) (*so
 
 	return &sock.Response{
 		StatusCode: 200,
-		DataType:   "application/octet-stream",
+		DataType:   "application/json",
 		Data:       respData,
 	}, nil
 }

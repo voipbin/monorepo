@@ -21,6 +21,8 @@ get:
         application/json:
           schema:
             type: object
+            required:
+              - sip_messages
             properties:
               sip_messages:
                 type: array
