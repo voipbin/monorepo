@@ -1884,6 +1884,9 @@ type CustomerManagerCustomer struct {
 	// Email Email address of the customer.
 	Email *string `json:"email,omitempty"`
 
+	// EmailVerified Whether the customer's email has been verified.
+	EmailVerified *bool `json:"email_verified,omitempty"`
+
 	// Id Unique identifier for the customer.
 	Id *string `json:"id,omitempty"`
 
@@ -18120,7 +18123,7 @@ type GetTimelinesCallsCallIdSipAnalysis200JSONResponse struct {
 		// RtpPackets Total RTP packets transferred
 		RtpPackets int `json:"rtp_packets"`
 
-		// Rtt Round-trip time as reported by RTPEngine
+		// Rtt Round-trip time in microseconds as reported by RTPEngine (divide by 1000 for milliseconds)
 		Rtt int `json:"rtt"`
 	} `json:"rtcp_stats"`
 	SipMessages []struct {

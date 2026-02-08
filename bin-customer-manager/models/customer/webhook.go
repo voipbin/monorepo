@@ -24,6 +24,8 @@ type WebhookMessage struct {
 
 	BillingAccountID uuid.UUID `json:"billing_account_id,omitempty"` // default billing account id
 
+	EmailVerified bool `json:"email_verified"`
+
 	TMCreate *time.Time `json:"tm_create"` // Created timestamp.
 	TMUpdate *time.Time `json:"tm_update"` // Updated timestamp.
 	TMDelete *time.Time `json:"tm_delete"` // Deleted timestamp.
@@ -45,6 +47,8 @@ func (h *Customer) ConvertWebhookMessage() *WebhookMessage {
 		WebhookURI:    h.WebhookURI,
 
 		BillingAccountID: h.BillingAccountID,
+
+		EmailVerified: h.EmailVerified,
 
 		TMCreate: h.TMCreate,
 		TMUpdate: h.TMUpdate,

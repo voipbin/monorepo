@@ -254,6 +254,52 @@ func (h *serviceHandler) CustomerUpdateBillingAccountID(ctx context.Context, a *
 	return res.ConvertWebhookMessage(), nil
 }
 
+// CustomerSignup creates an unverified customer and sends a verification email.
+// This is a public endpoint — no authentication required.
+func (h *serviceHandler) CustomerSignup(
+	ctx context.Context,
+	name string,
+	detail string,
+	email string,
+	phoneNumber string,
+	address string,
+	webhookMethod cscustomer.WebhookMethod,
+	webhookURI string,
+) (*cscustomer.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "CustomerSignup",
+		"email": email,
+	})
+	log.Debug("Processing customer signup.")
+
+	cu, err := h.reqHandler.CustomerV1CustomerSignup(ctx, name, detail, email, phoneNumber, address, webhookMethod, webhookURI)
+	if err != nil {
+		log.Errorf("Could not signup customer. err: %v", err)
+		return nil, err
+	}
+
+	res := cu.ConvertWebhookMessage()
+	return res, nil
+}
+
+// CustomerEmailVerify validates a verification token and activates the customer.
+// This is a public endpoint — no authentication required.
+func (h *serviceHandler) CustomerEmailVerify(ctx context.Context, token string) (*cscustomer.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "CustomerEmailVerify",
+	})
+	log.Debug("Processing customer email verification.")
+
+	cu, err := h.reqHandler.CustomerV1CustomerEmailVerify(ctx, token)
+	if err != nil {
+		log.Errorf("Could not verify customer email. err: %v", err)
+		return nil, err
+	}
+
+	res := cu.ConvertWebhookMessage()
+	return res, nil
+}
+
 // convertCustomerFilters converts map[string]string to map[cscustomer.Field]any
 func (h *serviceHandler) convertCustomerFilters(filters map[string]string) (map[cscustomer.Field]any, error) {
 	// Convert to map[string]any first

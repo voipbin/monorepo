@@ -1875,6 +1875,9 @@ type CustomerManagerCustomer struct {
 	// Email Email address of the customer.
 	Email *string `json:"email,omitempty"`
 
+	// EmailVerified Whether the customer's email has been verified.
+	EmailVerified *bool `json:"email_verified,omitempty"`
+
 	// Id Unique identifier for the customer.
 	Id *string `json:"id,omitempty"`
 

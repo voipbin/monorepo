@@ -116,6 +116,7 @@ func Test_Create(t *testing.T) {
 				WebhookMethod:    customer.WebhookMethodPost,
 				WebhookURI:       "test.com",
 				BillingAccountID: uuid.Nil,
+				EmailVerified:    true,
 			},
 		},
 	}
