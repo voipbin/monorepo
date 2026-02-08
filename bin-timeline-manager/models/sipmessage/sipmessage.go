@@ -31,9 +31,9 @@ type RTCPStats struct {
 	RTCPErrors    int     `json:"rtcp_errors"`
 }
 
-// SIPInfoResponse is the response for the SIP info endpoint, containing
+// SIPAnalysisResponse is the response for the SIP analysis endpoint, containing
 // both SIP messages and RTCP quality stats.
-type SIPInfoResponse struct {
+type SIPAnalysisResponse struct {
 	SIPMessages []*SIPMessage `json:"sip_messages"`
 	RTCPStats   *RTCPStats    `json:"rtcp_stats,omitempty"`
 }

@@ -4250,8 +4250,8 @@ paths:
   /timelines/{resource_type}/{resource_id}/events:
     $ref: './paths/timelines/resource_events.yaml'
 
-  /timelines/calls/{call_id}/sip-info:
-    $ref: './paths/timelines/call_sip_info.yaml'
+  /timelines/calls/{call_id}/sip-analysis:
+    $ref: './paths/timelines/call_sip_analysis.yaml'
 
   /timelines/calls/{call_id}/pcap:
     $ref: './paths/timelines/call_pcap.yaml'

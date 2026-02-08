@@ -12,13 +12,13 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func (h *server) GetTimelinesCallsCallIdSipInfo(c *gin.Context, callId openapi_types.UUID) {
+func (h *server) GetTimelinesCallsCallIdSipAnalysis(c *gin.Context, callId openapi_types.UUID) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":            "GetTimelinesCallsCallIdSipInfo",
+		"func":            "GetTimelinesCallsCallIdSipAnalysis",
 		"request_address": c.ClientIP(),
 		"call_id":         callId,
 	})
-	log.Info("Handler called - SIP info request received")
+	log.Info("Handler called - SIP analysis request received")
 
 	// Get agent from context
 	tmp, exists := c.Get("agent")
@@ -38,9 +38,9 @@ func (h *server) GetTimelinesCallsCallIdSipInfo(c *gin.Context, callId openapi_t
 		return
 	}
 
-	res, err := h.serviceHandler.TimelineSIPInfoGet(c.Request.Context(), &a, callUUID)
+	res, err := h.serviceHandler.TimelineSIPAnalysisGet(c.Request.Context(), &a, callUUID)
 	if err != nil {
-		log.Infof("Could not get SIP info: %v", err)
+		log.Infof("Could not get SIP analysis: %v", err)
 		switch err.Error() {
 		case "call not found":
 			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})

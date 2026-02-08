@@ -5704,19 +5704,19 @@ func (mr *MockRequestHandlerMockRecorder) TimelineV1EventList(ctx, req any) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TimelineV1EventList", reflect.TypeOf((*MockRequestHandler)(nil).TimelineV1EventList), ctx, req)
 }
 
-// TimelineV1SIPInfoGet mocks base method.
-func (m *MockRequestHandler) TimelineV1SIPInfoGet(ctx context.Context, callID uuid.UUID, sipCallID, fromTime, toTime string) (*sipmessage.SIPInfoResponse, error) {
+// TimelineV1SIPAnalysisGet mocks base method.
+func (m *MockRequestHandler) TimelineV1SIPAnalysisGet(ctx context.Context, callID uuid.UUID, sipCallID, fromTime, toTime string) (*sipmessage.SIPAnalysisResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TimelineV1SIPInfoGet", ctx, callID, sipCallID, fromTime, toTime)
-	ret0, _ := ret[0].(*sipmessage.SIPInfoResponse)
+	ret := m.ctrl.Call(m, "TimelineV1SIPAnalysisGet", ctx, callID, sipCallID, fromTime, toTime)
+	ret0, _ := ret[0].(*sipmessage.SIPAnalysisResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// TimelineV1SIPInfoGet indicates an expected call of TimelineV1SIPInfoGet.
-func (mr *MockRequestHandlerMockRecorder) TimelineV1SIPInfoGet(ctx, callID, sipCallID, fromTime, toTime any) *gomock.Call {
+// TimelineV1SIPAnalysisGet indicates an expected call of TimelineV1SIPAnalysisGet.
+func (mr *MockRequestHandlerMockRecorder) TimelineV1SIPAnalysisGet(ctx, callID, sipCallID, fromTime, toTime any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TimelineV1SIPInfoGet", reflect.TypeOf((*MockRequestHandler)(nil).TimelineV1SIPInfoGet), ctx, callID, sipCallID, fromTime, toTime)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TimelineV1SIPAnalysisGet", reflect.TypeOf((*MockRequestHandler)(nil).TimelineV1SIPAnalysisGet), ctx, callID, sipCallID, fromTime, toTime)
 }
 
 // TimelineV1SIPPcapGet mocks base method.

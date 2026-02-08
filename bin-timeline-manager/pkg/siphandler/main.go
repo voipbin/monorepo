@@ -48,7 +48,7 @@ func isPrivateIP(ipStr string) bool {
 
 // SIPHandler interface for SIP message and PCAP operations.
 type SIPHandler interface {
-	GetSIPInfo(ctx context.Context, sipCallID string, fromTime, toTime time.Time) (*sipmessage.SIPInfoResponse, error)
+	GetSIPAnalysis(ctx context.Context, sipCallID string, fromTime, toTime time.Time) (*sipmessage.SIPAnalysisResponse, error)
 	GetPcap(ctx context.Context, sipCallID string, fromTime, toTime time.Time) ([]byte, error)
 }
 
@@ -63,16 +63,16 @@ func NewSIPHandler(homerHandler homerhandler.HomerHandler) SIPHandler {
 	}
 }
 
-// GetSIPInfo retrieves SIP messages and RTCP stats for a given SIP call ID and time range.
-func (h *sipHandler) GetSIPInfo(ctx context.Context, sipCallID string, fromTime, toTime time.Time) (*sipmessage.SIPInfoResponse, error) {
+// GetSIPAnalysis retrieves SIP messages and RTCP stats for a given SIP call ID and time range.
+func (h *sipHandler) GetSIPAnalysis(ctx context.Context, sipCallID string, fromTime, toTime time.Time) (*sipmessage.SIPAnalysisResponse, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":       "GetSIPInfo",
+		"func":       "GetSIPAnalysis",
 		"sip_callid": sipCallID,
 	})
 	log.WithFields(logrus.Fields{
 		"from_time": fromTime,
 		"to_time":   toTime,
-	}).Info("SIPHandler called - fetching SIP info")
+	}).Info("SIPHandler called - fetching SIP analysis")
 
 	messages, err := h.homerHandler.GetSIPMessages(ctx, sipCallID, fromTime, toTime)
 	if err != nil {
@@ -103,7 +103,7 @@ func (h *sipHandler) GetSIPInfo(ctx context.Context, sipCallID string, fromTime,
 		"filtered_count": len(filtered),
 	}).Debug("Filtered internal messages.")
 
-	res := &sipmessage.SIPInfoResponse{
+	res := &sipmessage.SIPAnalysisResponse{
 		SIPMessages: filtered,
 		RTCPStats:   rtcpStats,
 	}

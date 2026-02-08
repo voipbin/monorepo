@@ -1,5 +1,5 @@
 get:
-  summary: Get SIP info for a call
+  summary: Get SIP analysis for a call
   description: |
     Returns SIP messages and RTCP quality stats for the specified call from Homer SIP capture.
     Internal-to-internal messages (where both src and dst IPs are RFC 1918 private addresses) are filtered out.
@@ -16,7 +16,7 @@ get:
         format: uuid
   responses:
     '200':
-      description: SIP info for the call.
+      description: SIP analysis for the call.
       content:
         application/json:
           schema:

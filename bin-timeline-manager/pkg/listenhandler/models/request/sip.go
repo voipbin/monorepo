@@ -2,8 +2,8 @@ package request
 
 import "github.com/gofrs/uuid"
 
-// V1SIPInfoPost represents the request for getting SIP info (messages + RTCP stats).
-type V1SIPInfoPost struct {
+// V1SIPAnalysisPost represents the request for getting SIP analysis (messages + RTCP stats).
+type V1SIPAnalysisPost struct {
 	CallID    uuid.UUID `json:"call_id"`
 	SIPCallID string    `json:"sip_call_id"`
 	FromTime  string    `json:"from_time"`

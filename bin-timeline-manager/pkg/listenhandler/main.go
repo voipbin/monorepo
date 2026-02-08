@@ -19,7 +19,7 @@ import (
 
 var (
 	regV1Events  = regexp.MustCompile("/v1/events$")
-	regV1SIPInfo = regexp.MustCompile("/v1/sip/info$")
+	regV1SIPAnalysis = regexp.MustCompile("/v1/sip/analysis$")
 	regV1SIPPcap = regexp.MustCompile("/v1/sip/pcap$")
 )
 
@@ -112,9 +112,9 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 		requestType = "/events"
 		response, err = h.v1EventsPost(ctx, m)
 
-	case regV1SIPInfo.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+	case regV1SIPAnalysis.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		requestType = "/sip/info"
-		response, err = h.v1SIPInfoPost(ctx, m)
+		response, err = h.v1SIPAnalysisPost(ctx, m)
 
 	case regV1SIPPcap.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		requestType = "/sip/pcap"
