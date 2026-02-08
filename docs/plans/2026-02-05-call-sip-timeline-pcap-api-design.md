@@ -1,14 +1,16 @@
 # Call SIP Timeline & PCAP API Design
 
+**Status:** Implemented. Updated by PR #411 (2026-02-08) — endpoint renamed from `sip-messages` to `sip-analysis`, RTCP stats added, PCAP now includes RTCP packets.
+
 ## Overview
 
-Add API endpoints to retrieve SIP message timeline and PCAP download for calls. This enables customers to debug their own calls and support staff to diagnose issues.
+Add API endpoints to retrieve SIP message timeline, RTCP quality stats, and PCAP download for calls. This enables customers to debug their own calls and support staff to diagnose issues.
 
 ## API Endpoints
 
-### GET /v1/timelines/call/{call-id}/sip-messages
+### GET /timelines/calls/{call_id}/sip-analysis
 
-Returns SIP messages for a call as JSON.
+Returns SIP messages and RTCP quality stats for a call as JSON. Internal-to-internal messages (where both src and dst IPs are RFC 1918 private addresses) are filtered out. RTCP stats are extracted from X-RTP-Stat headers in BYE messages before filtering.
 
 **Authorization:**
 - Customers: Can access their own calls (validated via `call.CustomerID`)
@@ -17,21 +19,35 @@ Returns SIP messages for a call as JSON.
 **Response:**
 ```json
 {
-  "call_id": "uuid",
-  "sip_call_id": "abc123@host",
-  "messages": [
+  "sip_messages": [
     {
       "timestamp": "2026-02-05T10:30:00.123456Z",
       "method": "INVITE",
-      "src_ip": "10.0.0.1",
+      "src_ip": "203.0.113.1",
       "src_port": 5060,
-      "dst_ip": "10.0.0.2",
+      "dst_ip": "10.96.4.18",
       "dst_port": 5060,
       "raw": "INVITE sip:user@host SIP/2.0\r\n..."
     }
-  ]
+  ],
+  "rtcp_stats": {
+    "mos": 3.8,
+    "jitter": 7,
+    "packet_loss_pct": 0,
+    "rtt": 260682,
+    "rtp_bytes": 258452,
+    "rtp_packets": 1509,
+    "rtp_errors": 0,
+    "rtcp_bytes": 1248,
+    "rtcp_packets": 18,
+    "rtcp_errors": 12
+  }
 }
 ```
+
+- `sip_messages` is always present (required), may be empty array
+- `rtcp_stats` is `null` when no X-RTP-Stat header found (not omitted)
+- `rtt` is in microseconds (divide by 1000 for milliseconds)
 
 **Limits:**
 - Maximum 50 messages returned
@@ -93,8 +109,8 @@ Response to User
 
 ### Timeline-manager Internal RPC Methods
 
-- `TimelineV1SIPMessagesGet(sip_call_id, from_time, to_time)` - Returns SIP messages
-- `TimelineV1PcapGet(sip_call_id, from_time, to_time)` - Returns download URL
+- `TimelineV1SIPAnalysisGet(call_id, sip_call_id, from_time, to_time)` — Returns SIP messages + RTCP stats
+- `TimelineV1SIPPcapGet(call_id, sip_call_id, from_time, to_time)` — Returns PCAP bytes (SIP + RTCP merged)
 
 ## Homer Integration
 
@@ -151,10 +167,11 @@ Environment variables (same pattern as call-manager recovery):
 
 ### Flow
 
-1. Timeline-manager calls Homer's `POST /api/v3/export/call/messages/pcap`
-2. Homer returns PCAP bytes directly
-3. Timeline-manager uploads to GCS via storage-manager
-4. Returns signed URL with 15-minute expiry
+1. Timeline-manager fetches SIP PCAP from Homer (hepid 1) via `POST /api/v3/export/call/messages/pcap`
+2. Timeline-manager fetches RTCP PCAP from Homer (hepid 5) — non-fatal if this fails
+3. Merge SIP and RTCP PCAPs sorted by timestamp
+4. Filter out internal-to-internal packets
+5. Return filtered PCAP bytes directly (or upload to GCS via storage-manager for signed URL)
 
 ### Caching Strategy
 
@@ -221,9 +238,9 @@ No new tables required. Timeline-manager is stateless:
 
 ### API Manager Changes
 
-Add two new route handlers in `bin-api-manager`:
-- `TimelineCallSIPMessagesGet` - GET /v1/timelines/call/{call-id}/sip-messages
-- `TimelineCallPcapGet` - GET /v1/timelines/call/{call-id}/pcap
+Route handlers in `bin-api-manager` (generated from OpenAPI spec):
+- `GetTimelinesCallsCallIdSipAnalysis` — GET /timelines/calls/{call_id}/sip-analysis
+- `GetTimelinesCallsCallIdPcap` — GET /timelines/calls/{call_id}/pcap
 
 ### OpenAPI Changes
 
