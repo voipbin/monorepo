@@ -57,6 +57,21 @@ func (mr *MockHomerHandlerMockRecorder) GetPcap(ctx, sipCallID, fromTime, toTime
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPcap", reflect.TypeOf((*MockHomerHandler)(nil).GetPcap), ctx, sipCallID, fromTime, toTime)
 }
 
+// GetRTCPPcap mocks base method.
+func (m *MockHomerHandler) GetRTCPPcap(ctx context.Context, sipCallID string, fromTime, toTime time.Time) ([]byte, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetRTCPPcap", ctx, sipCallID, fromTime, toTime)
+	ret0, _ := ret[0].([]byte)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetRTCPPcap indicates an expected call of GetRTCPPcap.
+func (mr *MockHomerHandlerMockRecorder) GetRTCPPcap(ctx, sipCallID, fromTime, toTime any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRTCPPcap", reflect.TypeOf((*MockHomerHandler)(nil).GetRTCPPcap), ctx, sipCallID, fromTime, toTime)
+}
+
 // GetSIPMessages mocks base method.
 func (m *MockHomerHandler) GetSIPMessages(ctx context.Context, sipCallID string, fromTime, toTime time.Time) ([]*sipmessage.SIPMessage, error) {
 	m.ctrl.T.Helper()

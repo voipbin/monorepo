@@ -12,14 +12,14 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// TimelineSIPMessagesGet retrieves SIP messages for a call.
-func (h *serviceHandler) TimelineSIPMessagesGet(
+// TimelineSIPAnalysisGet retrieves SIP analysis (messages + RTCP stats) for a call.
+func (h *serviceHandler) TimelineSIPAnalysisGet(
 	ctx context.Context,
 	a *amagent.Agent,
 	callID uuid.UUID,
-) (*tmsipmessage.SIPMessagesResponse, error) {
+) (*tmsipmessage.SIPAnalysisResponse, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "TimelineSIPMessagesGet",
+		"func":        "TimelineSIPAnalysisGet",
 		"customer_id": a.CustomerID,
 		"call_id":     callID,
 	})
@@ -58,15 +58,23 @@ func (h *serviceHandler) TimelineSIPMessagesGet(
 
 	// Determine time range from call timestamps
 	fromTime := call.TMCreate
+	if fromTime == nil {
+		log.Info("Call has no create timestamp")
+		return nil, fmt.Errorf("no SIP data available for this call")
+	}
 	toTime := call.TMHangup
 	if toTime == nil {
 		toTime = call.TMUpdate
 	}
+	if toTime == nil {
+		now := time.Now()
+		toTime = &now
+	}
 
 	// Call timeline-manager
-	res, err := h.reqHandler.TimelineV1SIPMessagesGet(ctx, callID, ch.SIPCallID, fromTime.Format(time.RFC3339), toTime.Format(time.RFC3339))
+	res, err := h.reqHandler.TimelineV1SIPAnalysisGet(ctx, callID, ch.SIPCallID, fromTime.Format(time.RFC3339), toTime.Format(time.RFC3339))
 	if err != nil {
-		log.Errorf("Could not get SIP messages: %v", err)
+		log.Errorf("Could not get SIP analysis: %v", err)
 		return nil, fmt.Errorf("upstream service unavailable")
 	}
 
@@ -119,9 +127,17 @@ func (h *serviceHandler) TimelineSIPPcapGet(
 
 	// Determine time range from call timestamps
 	fromTime := call.TMCreate
+	if fromTime == nil {
+		log.Info("Call has no create timestamp")
+		return nil, fmt.Errorf("no SIP data available for this call")
+	}
 	toTime := call.TMHangup
 	if toTime == nil {
 		toTime = call.TMUpdate
+	}
+	if toTime == nil {
+		now := time.Now()
+		toTime = &now
 	}
 
 	// Call timeline-manager

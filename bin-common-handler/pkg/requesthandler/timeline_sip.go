@@ -12,10 +12,10 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-// TimelineV1SIPMessagesGet sends a request to timeline-manager
-// to retrieve SIP messages matching the given criteria.
-func (r *requestHandler) TimelineV1SIPMessagesGet(ctx context.Context, callID uuid.UUID, sipCallID string, fromTime, toTime string) (*tmsipmessage.SIPMessagesResponse, error) {
-	uri := "/v1/sip/messages"
+// TimelineV1SIPAnalysisGet sends a request to timeline-manager
+// to retrieve SIP analysis (messages + RTCP stats) matching the given criteria.
+func (r *requestHandler) TimelineV1SIPAnalysisGet(ctx context.Context, callID uuid.UUID, sipCallID string, fromTime, toTime string) (*tmsipmessage.SIPAnalysisResponse, error) {
+	uri := "/v1/sip/analysis"
 
 	req := map[string]any{
 		"call_id":     callID,
@@ -29,12 +29,12 @@ func (r *requestHandler) TimelineV1SIPMessagesGet(ctx context.Context, callID uu
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestTimeline(ctx, uri, sock.RequestMethodPost, "timeline/sip-messages", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestTimeline(ctx, uri, sock.RequestMethodPost, "timeline/sip-analysis", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}
 
-	var res tmsipmessage.SIPMessagesResponse
+	var res tmsipmessage.SIPAnalysisResponse
 	if errParse := parseResponse(tmp, &res); errParse != nil {
 		return nil, errParse
 	}
