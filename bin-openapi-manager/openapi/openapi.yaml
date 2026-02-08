@@ -3878,6 +3878,10 @@ paths:
     $ref: './paths/auth/password-forgot.yaml'
   /auth/password-reset:
     $ref: './paths/auth/password-reset.yaml'
+  /auth/signup:
+    $ref: './paths/auth/signup.yaml'
+  /auth/email-verify:
+    $ref: './paths/auth/email-verify.yaml'
 
   /accesskeys:
     $ref: './paths/accesskeys/main.yaml'
