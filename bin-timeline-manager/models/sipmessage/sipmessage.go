@@ -35,7 +35,7 @@ type RTCPStats struct {
 // both SIP messages and RTCP quality stats.
 type SIPAnalysisResponse struct {
 	SIPMessages []*SIPMessage `json:"sip_messages"`
-	RTCPStats   *RTCPStats    `json:"rtcp_stats,omitempty"`
+	RTCPStats   *RTCPStats    `json:"rtcp_stats"`
 }
 
 // regexRTPStat matches the RTP portion of the RTPStat value.
@@ -56,6 +56,7 @@ func ParseXRTPStat(value string) *RTCPStats {
 	}
 
 	stats := &RTCPStats{}
+	parsed := false
 
 	// Split into key=value portion and RTPStat portion.
 	// RTPStat contains semicolons internally, so we find it first and handle separately.
@@ -86,12 +87,16 @@ func ParseXRTPStat(value string) *RTCPStats {
 		switch key {
 		case "MOS":
 			stats.MOS, _ = strconv.ParseFloat(val, 64)
+			parsed = true
 		case "Jitter":
 			stats.Jitter, _ = strconv.Atoi(val)
+			parsed = true
 		case "PacketLossPct":
 			stats.PacketLossPct, _ = strconv.ParseFloat(val, 64)
+			parsed = true
 		case "RTT":
 			stats.RTT, _ = strconv.Atoi(val)
+			parsed = true
 		}
 	}
 
@@ -101,12 +106,18 @@ func ParseXRTPStat(value string) *RTCPStats {
 			stats.RTPBytes, _ = strconv.Atoi(m[1])
 			stats.RTPPackets, _ = strconv.Atoi(m[2])
 			stats.RTPErrors, _ = strconv.Atoi(m[3])
+			parsed = true
 		}
 		if m := regexRTCPStat.FindStringSubmatch(rtpStatPart); len(m) == 4 {
 			stats.RTCPBytes, _ = strconv.Atoi(m[1])
 			stats.RTCPPackets, _ = strconv.Atoi(m[2])
 			stats.RTCPErrors, _ = strconv.Atoi(m[3])
+			parsed = true
 		}
+	}
+
+	if !parsed {
+		return nil
 	}
 
 	return stats

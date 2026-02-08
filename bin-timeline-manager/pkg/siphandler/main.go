@@ -5,6 +5,7 @@ package siphandler
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"net"
 	"sort"
 	"time"
@@ -204,6 +205,9 @@ func mergePcaps(pcap1, pcap2 []byte) ([]byte, error) {
 	reader2, err := pcapgo.NewReader(bytes.NewReader(pcap2))
 	if err != nil {
 		return nil, err
+	}
+	if reader2.LinkType() != linkType {
+		return nil, fmt.Errorf("link type mismatch: pcap1=%v, pcap2=%v", linkType, reader2.LinkType())
 	}
 	for {
 		data, ci, readErr := reader2.ReadPacketData()

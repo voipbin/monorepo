@@ -58,9 +58,17 @@ func (h *serviceHandler) TimelineSIPAnalysisGet(
 
 	// Determine time range from call timestamps
 	fromTime := call.TMCreate
+	if fromTime == nil {
+		log.Info("Call has no create timestamp")
+		return nil, fmt.Errorf("no SIP data available for this call")
+	}
 	toTime := call.TMHangup
 	if toTime == nil {
 		toTime = call.TMUpdate
+	}
+	if toTime == nil {
+		now := time.Now()
+		toTime = &now
 	}
 
 	// Call timeline-manager
@@ -119,9 +127,17 @@ func (h *serviceHandler) TimelineSIPPcapGet(
 
 	// Determine time range from call timestamps
 	fromTime := call.TMCreate
+	if fromTime == nil {
+		log.Info("Call has no create timestamp")
+		return nil, fmt.Errorf("no SIP data available for this call")
+	}
 	toTime := call.TMHangup
 	if toTime == nil {
 		toTime = call.TMUpdate
+	}
+	if toTime == nil {
+		now := time.Now()
+		toTime = &now
 	}
 
 	// Call timeline-manager

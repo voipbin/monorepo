@@ -113,7 +113,7 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 		response, err = h.v1EventsPost(ctx, m)
 
 	case regV1SIPAnalysis.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
-		requestType = "/sip/info"
+		requestType = "/sip/analysis"
 		response, err = h.v1SIPAnalysisPost(ctx, m)
 
 	case regV1SIPPcap.MatchString(m.URI) && m.Method == sock.RequestMethodPost:

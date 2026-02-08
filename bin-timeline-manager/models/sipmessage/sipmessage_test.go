@@ -94,6 +94,16 @@ func TestParseXRTPStat(t *testing.T) {
 				MOS: 3.5,
 			},
 		},
+		{
+			name:  "garbage input returns nil",
+			input: "foobar",
+			want:  nil,
+		},
+		{
+			name:  "unrecognized keys returns nil",
+			input: "Unknown=123;Other=456",
+			want:  nil,
+		},
 	}
 
 	for _, tt := range tests {
