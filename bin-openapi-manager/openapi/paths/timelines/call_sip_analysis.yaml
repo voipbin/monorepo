@@ -73,7 +73,7 @@ get:
                     description: Packet loss percentage
                   rtt:
                     type: integer
-                    description: Round-trip time as reported by RTPEngine
+                    description: Round-trip time in microseconds as reported by RTPEngine (divide by 1000 for milliseconds)
                   rtp_bytes:
                     type: integer
                     description: Total RTP bytes transferred
