@@ -667,6 +667,14 @@ const (
 	TransferManagerTransferTypeBlind    TransferManagerTransferType = "blind"
 )
 
+// Defines values for PostAuthSignupJSONBodyWebhookMethod.
+const (
+	DELETE PostAuthSignupJSONBodyWebhookMethod = "DELETE"
+	GET    PostAuthSignupJSONBodyWebhookMethod = "GET"
+	POST   PostAuthSignupJSONBodyWebhookMethod = "POST"
+	PUT    PostAuthSignupJSONBodyWebhookMethod = "PUT"
+)
+
 // Defines values for PostCallsIdRecordingStartJSONBodyFormat.
 const (
 	PostCallsIdRecordingStartJSONBodyFormatWav PostCallsIdRecordingStartJSONBodyFormat = "wav"
@@ -3525,6 +3533,18 @@ type PostAisummariesJSONBody struct {
 	ReferenceType AIManagerSummaryReferenceType `json:"reference_type"`
 }
 
+// GetAuthEmailVerifyParams defines parameters for GetAuthEmailVerify.
+type GetAuthEmailVerifyParams struct {
+	// Token The email verification token from the signup email (64-character hex string)
+	Token string `form:"token" json:"token"`
+}
+
+// PostAuthEmailVerifyJSONBody defines parameters for PostAuthEmailVerify.
+type PostAuthEmailVerifyJSONBody struct {
+	// Token The email verification token from the signup email (64-character hex string)
+	Token string `json:"token"`
+}
+
 // PostAuthLoginJSONBody defines parameters for PostAuthLogin.
 type PostAuthLoginJSONBody struct {
 	// Password The user password
@@ -3554,6 +3574,33 @@ type PostAuthPasswordResetJSONBody struct {
 	// Token The password reset token from the email link
 	Token string `json:"token"`
 }
+
+// PostAuthSignupJSONBody defines parameters for PostAuthSignup.
+type PostAuthSignupJSONBody struct {
+	// Address Address of the customer
+	Address *string `json:"address,omitempty"`
+
+	// Detail Details about the customer
+	Detail *string `json:"detail,omitempty"`
+
+	// Email Email address for the customer account
+	Email string `json:"email"`
+
+	// Name Name of the customer
+	Name *string `json:"name,omitempty"`
+
+	// PhoneNumber Phone number of the customer
+	PhoneNumber *string `json:"phone_number,omitempty"`
+
+	// WebhookMethod HTTP method for webhook notifications
+	WebhookMethod *PostAuthSignupJSONBodyWebhookMethod `json:"webhook_method,omitempty"`
+
+	// WebhookUri URI for receiving webhook notifications
+	WebhookUri *string `json:"webhook_uri,omitempty"`
+}
+
+// PostAuthSignupJSONBodyWebhookMethod defines parameters for PostAuthSignup.
+type PostAuthSignupJSONBodyWebhookMethod string
 
 // GetAvailableNumbersParams defines parameters for GetAvailableNumbers.
 type GetAvailableNumbersParams struct {
@@ -5097,6 +5144,9 @@ type PutAisIdJSONRequestBody PutAisIdJSONBody
 // PostAisummariesJSONRequestBody defines body for PostAisummaries for application/json ContentType.
 type PostAisummariesJSONRequestBody PostAisummariesJSONBody
 
+// PostAuthEmailVerifyJSONRequestBody defines body for PostAuthEmailVerify for application/json ContentType.
+type PostAuthEmailVerifyJSONRequestBody PostAuthEmailVerifyJSONBody
+
 // PostAuthLoginJSONRequestBody defines body for PostAuthLogin for application/json ContentType.
 type PostAuthLoginJSONRequestBody PostAuthLoginJSONBody
 
@@ -5105,6 +5155,9 @@ type PostAuthPasswordForgotJSONRequestBody PostAuthPasswordForgotJSONBody
 
 // PostAuthPasswordResetJSONRequestBody defines body for PostAuthPasswordReset for application/json ContentType.
 type PostAuthPasswordResetJSONRequestBody PostAuthPasswordResetJSONBody
+
+// PostAuthSignupJSONRequestBody defines body for PostAuthSignup for application/json ContentType.
+type PostAuthSignupJSONRequestBody PostAuthSignupJSONBody
 
 // PostBillingAccountsJSONRequestBody defines body for PostBillingAccounts for application/json ContentType.
 type PostBillingAccountsJSONRequestBody PostBillingAccountsJSONBody
@@ -5495,6 +5548,12 @@ type ServerInterface interface {
 	// Get ai summary details.
 	// (GET /aisummaries/{id})
 	GetAisummariesId(c *gin.Context, id string)
+	// Email verification page
+	// (GET /auth/email-verify)
+	GetAuthEmailVerify(c *gin.Context, params GetAuthEmailVerifyParams)
+	// Complete email verification
+	// (POST /auth/email-verify)
+	PostAuthEmailVerify(c *gin.Context)
 	// Authenticate and generate JWT token
 	// (POST /auth/login)
 	PostAuthLogin(c *gin.Context)
@@ -5507,6 +5566,9 @@ type ServerInterface interface {
 	// Execute password reset
 	// (POST /auth/password-reset)
 	PostAuthPasswordReset(c *gin.Context)
+	// Sign up a new customer
+	// (POST /auth/signup)
+	PostAuthSignup(c *gin.Context)
 	// List available numbers
 	// (GET /available_numbers)
 	GetAvailableNumbers(c *gin.Context, params GetAvailableNumbersParams)
@@ -7168,6 +7230,52 @@ func (siw *ServerInterfaceWrapper) GetAisummariesId(c *gin.Context) {
 	siw.Handler.GetAisummariesId(c, id)
 }
 
+// GetAuthEmailVerify operation middleware
+func (siw *ServerInterfaceWrapper) GetAuthEmailVerify(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetAuthEmailVerifyParams
+
+	// ------------- Required query parameter "token" -------------
+
+	if paramValue := c.Query("token"); paramValue != "" {
+
+	} else {
+		siw.ErrorHandler(c, fmt.Errorf("Query argument token is required, but not found"), http.StatusBadRequest)
+		return
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "token", c.Request.URL.Query(), &params.Token)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetAuthEmailVerify(c, params)
+}
+
+// PostAuthEmailVerify operation middleware
+func (siw *ServerInterfaceWrapper) PostAuthEmailVerify(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostAuthEmailVerify(c)
+}
+
 // PostAuthLogin operation middleware
 func (siw *ServerInterfaceWrapper) PostAuthLogin(c *gin.Context) {
 
@@ -7238,6 +7346,19 @@ func (siw *ServerInterfaceWrapper) PostAuthPasswordReset(c *gin.Context) {
 	}
 
 	siw.Handler.PostAuthPasswordReset(c)
+}
+
+// PostAuthSignup operation middleware
+func (siw *ServerInterfaceWrapper) PostAuthSignup(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostAuthSignup(c)
 }
 
 // GetAvailableNumbers operation middleware
@@ -13460,10 +13581,13 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.POST(options.BaseURL+"/aisummaries", wrapper.PostAisummaries)
 	router.DELETE(options.BaseURL+"/aisummaries/:id", wrapper.DeleteAisummariesId)
 	router.GET(options.BaseURL+"/aisummaries/:id", wrapper.GetAisummariesId)
+	router.GET(options.BaseURL+"/auth/email-verify", wrapper.GetAuthEmailVerify)
+	router.POST(options.BaseURL+"/auth/email-verify", wrapper.PostAuthEmailVerify)
 	router.POST(options.BaseURL+"/auth/login", wrapper.PostAuthLogin)
 	router.POST(options.BaseURL+"/auth/password-forgot", wrapper.PostAuthPasswordForgot)
 	router.GET(options.BaseURL+"/auth/password-reset", wrapper.GetAuthPasswordReset)
 	router.POST(options.BaseURL+"/auth/password-reset", wrapper.PostAuthPasswordReset)
+	router.POST(options.BaseURL+"/auth/signup", wrapper.PostAuthSignup)
 	router.GET(options.BaseURL+"/available_numbers", wrapper.GetAvailableNumbers)
 	router.GET(options.BaseURL+"/billing_accounts", wrapper.GetBillingAccounts)
 	router.POST(options.BaseURL+"/billing_accounts", wrapper.PostBillingAccounts)
@@ -14431,6 +14555,66 @@ func (response GetAisummariesId200JSONResponse) VisitGetAisummariesIdResponse(w 
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetAuthEmailVerifyRequestObject struct {
+	Params GetAuthEmailVerifyParams
+}
+
+type GetAuthEmailVerifyResponseObject interface {
+	VisitGetAuthEmailVerifyResponse(w http.ResponseWriter) error
+}
+
+type GetAuthEmailVerify200TexthtmlResponse struct {
+	Body          io.Reader
+	ContentLength int64
+}
+
+func (response GetAuthEmailVerify200TexthtmlResponse) VisitGetAuthEmailVerifyResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "text/html")
+	if response.ContentLength != 0 {
+		w.Header().Set("Content-Length", fmt.Sprint(response.ContentLength))
+	}
+	w.WriteHeader(200)
+
+	if closer, ok := response.Body.(io.ReadCloser); ok {
+		defer closer.Close()
+	}
+	_, err := io.Copy(w, response.Body)
+	return err
+}
+
+type GetAuthEmailVerify400Response struct {
+}
+
+func (response GetAuthEmailVerify400Response) VisitGetAuthEmailVerifyResponse(w http.ResponseWriter) error {
+	w.WriteHeader(400)
+	return nil
+}
+
+type PostAuthEmailVerifyRequestObject struct {
+	Body *PostAuthEmailVerifyJSONRequestBody
+}
+
+type PostAuthEmailVerifyResponseObject interface {
+	VisitPostAuthEmailVerifyResponse(w http.ResponseWriter) error
+}
+
+type PostAuthEmailVerify200JSONResponse CustomerManagerCustomer
+
+func (response PostAuthEmailVerify200JSONResponse) VisitPostAuthEmailVerifyResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAuthEmailVerify400Response struct {
+}
+
+func (response PostAuthEmailVerify400Response) VisitPostAuthEmailVerifyResponse(w http.ResponseWriter) error {
+	w.WriteHeader(400)
+	return nil
+}
+
 type PostAuthLoginRequestObject struct {
 	Body *PostAuthLoginJSONRequestBody
 }
@@ -14585,6 +14769,31 @@ type PostAuthPasswordReset400Response struct {
 }
 
 func (response PostAuthPasswordReset400Response) VisitPostAuthPasswordResetResponse(w http.ResponseWriter) error {
+	w.WriteHeader(400)
+	return nil
+}
+
+type PostAuthSignupRequestObject struct {
+	Body *PostAuthSignupJSONRequestBody
+}
+
+type PostAuthSignupResponseObject interface {
+	VisitPostAuthSignupResponse(w http.ResponseWriter) error
+}
+
+type PostAuthSignup200JSONResponse CustomerManagerCustomer
+
+func (response PostAuthSignup200JSONResponse) VisitPostAuthSignupResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAuthSignup400Response struct {
+}
+
+func (response PostAuthSignup400Response) VisitPostAuthSignupResponse(w http.ResponseWriter) error {
 	w.WriteHeader(400)
 	return nil
 }
@@ -19450,6 +19659,12 @@ type StrictServerInterface interface {
 	// Get ai summary details.
 	// (GET /aisummaries/{id})
 	GetAisummariesId(ctx context.Context, request GetAisummariesIdRequestObject) (GetAisummariesIdResponseObject, error)
+	// Email verification page
+	// (GET /auth/email-verify)
+	GetAuthEmailVerify(ctx context.Context, request GetAuthEmailVerifyRequestObject) (GetAuthEmailVerifyResponseObject, error)
+	// Complete email verification
+	// (POST /auth/email-verify)
+	PostAuthEmailVerify(ctx context.Context, request PostAuthEmailVerifyRequestObject) (PostAuthEmailVerifyResponseObject, error)
 	// Authenticate and generate JWT token
 	// (POST /auth/login)
 	PostAuthLogin(ctx context.Context, request PostAuthLoginRequestObject) (PostAuthLoginResponseObject, error)
@@ -19462,6 +19677,9 @@ type StrictServerInterface interface {
 	// Execute password reset
 	// (POST /auth/password-reset)
 	PostAuthPasswordReset(ctx context.Context, request PostAuthPasswordResetRequestObject) (PostAuthPasswordResetResponseObject, error)
+	// Sign up a new customer
+	// (POST /auth/signup)
+	PostAuthSignup(ctx context.Context, request PostAuthSignupRequestObject) (PostAuthSignupResponseObject, error)
 	// List available numbers
 	// (GET /available_numbers)
 	GetAvailableNumbers(ctx context.Context, request GetAvailableNumbersRequestObject) (GetAvailableNumbersResponseObject, error)
@@ -21319,6 +21537,66 @@ func (sh *strictHandler) GetAisummariesId(ctx *gin.Context, id string) {
 	}
 }
 
+// GetAuthEmailVerify operation middleware
+func (sh *strictHandler) GetAuthEmailVerify(ctx *gin.Context, params GetAuthEmailVerifyParams) {
+	var request GetAuthEmailVerifyRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetAuthEmailVerify(ctx, request.(GetAuthEmailVerifyRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetAuthEmailVerify")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetAuthEmailVerifyResponseObject); ok {
+		if err := validResponse.VisitGetAuthEmailVerifyResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostAuthEmailVerify operation middleware
+func (sh *strictHandler) PostAuthEmailVerify(ctx *gin.Context) {
+	var request PostAuthEmailVerifyRequestObject
+
+	var body PostAuthEmailVerifyJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostAuthEmailVerify(ctx, request.(PostAuthEmailVerifyRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostAuthEmailVerify")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostAuthEmailVerifyResponseObject); ok {
+		if err := validResponse.VisitPostAuthEmailVerifyResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
 // PostAuthLogin operation middleware
 func (sh *strictHandler) PostAuthLogin(ctx *gin.Context) {
 	var request PostAuthLoginRequestObject
@@ -21438,6 +21716,39 @@ func (sh *strictHandler) PostAuthPasswordReset(ctx *gin.Context) {
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PostAuthPasswordResetResponseObject); ok {
 		if err := validResponse.VisitPostAuthPasswordResetResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostAuthSignup operation middleware
+func (sh *strictHandler) PostAuthSignup(ctx *gin.Context) {
+	var request PostAuthSignupRequestObject
+
+	var body PostAuthSignupJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostAuthSignup(ctx, request.(PostAuthSignupRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostAuthSignup")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostAuthSignupResponseObject); ok {
+		if err := validResponse.VisitPostAuthSignupResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

@@ -1,0 +1,67 @@
+get:
+  summary: Email verification page
+  description: |
+    Serves an HTML page that auto-submits the email verification token.
+
+    The customer clicks the verification link from their email, which opens this page.
+    The page automatically submits the token to complete verification.
+
+    This endpoint does not require authentication.
+
+    **Note:** This endpoint is available at `/auth/email-verify` (not under `/v1.0` prefix).
+  tags:
+    - Auth
+  security: []
+  parameters:
+    - name: token
+      in: query
+      required: true
+      description: The email verification token from the signup email (64-character hex string)
+      schema:
+        type: string
+        pattern: '^[0-9a-f]{64}$'
+  responses:
+    '200':
+      description: HTML page with email verification form
+      content:
+        text/html:
+          schema:
+            type: string
+    '400':
+      description: Bad request - missing or invalid token parameter
+
+post:
+  summary: Complete email verification
+  description: |
+    Validates the email verification token and activates the customer account.
+
+    Upon successful verification, the customer's email is marked as verified
+    and a welcome email is sent with instructions to set a password.
+
+    This endpoint does not require authentication.
+
+    **Note:** This endpoint is available at `/auth/email-verify` (not under `/v1.0` prefix).
+  tags:
+    - Auth
+  security: []
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - token
+          properties:
+            token:
+              type: string
+              description: The email verification token from the signup email (64-character hex string)
+  responses:
+    '200':
+      description: Email successfully verified
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CustomerManagerCustomer'
+    '400':
+      description: Bad request - invalid or expired token
