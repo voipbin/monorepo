@@ -4214,6 +4214,25 @@ paths:
   /service_agents/talk_messages:
     $ref: './paths/service_agents/talk_messages.yaml'
 
+  /service_agents/contacts/{id}/phone_numbers/{phone_number_id}:
+    $ref: './paths/service_agents/contacts_id_phonenumbers_id.yaml'
+  /service_agents/contacts/{id}/phone_numbers:
+    $ref: './paths/service_agents/contacts_id_phonenumbers.yaml'
+  /service_agents/contacts/{id}/emails/{email_id}:
+    $ref: './paths/service_agents/contacts_id_emails_id.yaml'
+  /service_agents/contacts/{id}/emails:
+    $ref: './paths/service_agents/contacts_id_emails.yaml'
+  /service_agents/contacts/{id}/tags/{tag_id}:
+    $ref: './paths/service_agents/contacts_id_tags_id.yaml'
+  /service_agents/contacts/{id}/tags:
+    $ref: './paths/service_agents/contacts_id_tags.yaml'
+  /service_agents/contacts/{id}:
+    $ref: './paths/service_agents/contacts_id.yaml'
+  /service_agents/contacts/lookup:
+    $ref: './paths/service_agents/contacts_lookup.yaml'
+  /service_agents/contacts:
+    $ref: './paths/service_agents/contacts.yaml'
+
   /storage_account:
     $ref: './paths/storage_account/main.yaml'
 

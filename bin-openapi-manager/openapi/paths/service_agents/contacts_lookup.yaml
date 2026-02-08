@@ -1,0 +1,27 @@
+get:
+  summary: Lookup contact
+  description: Find a contact by phone number or email.
+  tags:
+    - Service Agent
+  parameters:
+    - name: phone
+      in: query
+      description: Phone number in E.164 format to lookup.
+      required: false
+      schema:
+        type: string
+    - name: email
+      in: query
+      description: Email address to lookup.
+      required: false
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Contact found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ContactManagerContact'
+    '404':
+      description: Contact not found.

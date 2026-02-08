@@ -1,0 +1,66 @@
+put:
+  summary: Update email on contact
+  description: Update an email address on the contact.
+  tags:
+    - Service Agent
+  parameters:
+    - name: id
+      in: path
+      description: The ID of the contact.
+      required: true
+      schema:
+        type: string
+    - name: email_id
+      in: path
+      description: The ID of the email.
+      required: true
+      schema:
+        type: string
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            address:
+              type: string
+              format: email
+            type:
+              type: string
+              enum: [work, personal, other]
+            is_primary:
+              type: boolean
+  responses:
+    '200':
+      description: Email updated successfully.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ContactManagerContact'
+
+delete:
+  summary: Remove email from contact
+  description: Remove an email address from the contact.
+  tags:
+    - Service Agent
+  parameters:
+    - name: id
+      in: path
+      description: The ID of the contact.
+      required: true
+      schema:
+        type: string
+    - name: email_id
+      in: path
+      description: The ID of the email.
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Email removed successfully.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ContactManagerContact'
