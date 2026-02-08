@@ -1,0 +1,102 @@
+get:
+  summary: Get SIP analysis for a call
+  description: |
+    Returns SIP messages and RTCP quality stats for the specified call from Homer SIP capture.
+    Internal-to-internal messages (where both src and dst IPs are RFC 1918 private addresses) are filtered out.
+    RTCP stats are extracted from X-RTP-Stat headers in BYE messages before filtering.
+  tags:
+    - Timeline
+  parameters:
+    - name: call_id
+      in: path
+      required: true
+      description: The UUID of the call
+      schema:
+        type: string
+        format: uuid
+  responses:
+    '200':
+      description: SIP analysis for the call.
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - sip_messages
+            properties:
+              sip_messages:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    timestamp:
+                      type: string
+                      format: date-time
+                    method:
+                      type: string
+                    src_ip:
+                      type: string
+                    src_port:
+                      type: integer
+                    dst_ip:
+                      type: string
+                    dst_port:
+                      type: integer
+                    raw:
+                      type: string
+              rtcp_stats:
+                type: object
+                description: RTCP quality metrics parsed from X-RTP-Stat header in BYE messages. Null if no RTCP stats available.
+                nullable: true
+                required:
+                  - mos
+                  - jitter
+                  - packet_loss_pct
+                  - rtt
+                  - rtp_bytes
+                  - rtp_packets
+                  - rtp_errors
+                  - rtcp_bytes
+                  - rtcp_packets
+                  - rtcp_errors
+                properties:
+                  mos:
+                    type: number
+                    format: double
+                    description: Mean Opinion Score (1.0-5.0)
+                  jitter:
+                    type: integer
+                    description: Jitter in milliseconds
+                  packet_loss_pct:
+                    type: number
+                    format: double
+                    description: Packet loss percentage
+                  rtt:
+                    type: integer
+                    description: Round-trip time in microseconds as reported by RTPEngine (divide by 1000 for milliseconds)
+                  rtp_bytes:
+                    type: integer
+                    description: Total RTP bytes transferred
+                  rtp_packets:
+                    type: integer
+                    description: Total RTP packets transferred
+                  rtp_errors:
+                    type: integer
+                    description: Total RTP errors
+                  rtcp_bytes:
+                    type: integer
+                    description: Total RTCP bytes transferred
+                  rtcp_packets:
+                    type: integer
+                    description: Total RTCP packets transferred
+                  rtcp_errors:
+                    type: integer
+                    description: Total RTCP errors
+    '400':
+      description: Invalid request parameters
+    '403':
+      description: Permission denied
+    '404':
+      description: Call not found or no SIP data available
+    '502':
+      description: Upstream service unavailable
