@@ -18102,6 +18102,39 @@ type GetTimelinesCallsCallIdSipMessages200JSONResponse struct {
 		SrcPort   *int       `json:"src_port,omitempty"`
 		Timestamp *time.Time `json:"timestamp,omitempty"`
 	} `json:"result,omitempty"`
+
+	// RtcpStats RTCP quality metrics parsed from X-RTP-Stat header in BYE messages. Null if no RTCP stats available.
+	RtcpStats *struct {
+		// Jitter Jitter in milliseconds
+		Jitter int `json:"jitter"`
+
+		// Mos Mean Opinion Score (1.0-5.0)
+		Mos float64 `json:"mos"`
+
+		// PacketLossPct Packet loss percentage
+		PacketLossPct float64 `json:"packet_loss_pct"`
+
+		// RtcpBytes Total RTCP bytes transferred
+		RtcpBytes int `json:"rtcp_bytes"`
+
+		// RtcpErrors Total RTCP errors
+		RtcpErrors int `json:"rtcp_errors"`
+
+		// RtcpPackets Total RTCP packets transferred
+		RtcpPackets int `json:"rtcp_packets"`
+
+		// RtpBytes Total RTP bytes transferred
+		RtpBytes int `json:"rtp_bytes"`
+
+		// RtpErrors Total RTP errors
+		RtpErrors int `json:"rtp_errors"`
+
+		// RtpPackets Total RTP packets transferred
+		RtpPackets int `json:"rtp_packets"`
+
+		// Rtt Round-trip time as reported by RTPEngine
+		Rtt int `json:"rtt"`
+	} `json:"rtcp_stats"`
 }
 
 func (response GetTimelinesCallsCallIdSipMessages200JSONResponse) VisitGetTimelinesCallsCallIdSipMessagesResponse(w http.ResponseWriter) error {

@@ -80,6 +80,15 @@ func (h *sipHandler) GetSIPMessages(ctx context.Context, sipCallID string, fromT
 		return nil, err
 	}
 
+	// Extract RTCP stats from BYE messages before filtering (the BYE with X-RTP-Stat
+	// typically comes from internal IPs and would be filtered out).
+	rtcpStats := sipmessage.ExtractRTCPStatsFromMessages(messages)
+	if rtcpStats != nil {
+		log.WithField("rtcp_stats", rtcpStats).Debug("Extracted RTCP stats from X-RTP-Stat header.")
+	} else {
+		log.Debug("No RTCP stats found in SIP messages.")
+	}
+
 	// Filter out messages where both src and dst are internal IPs
 	filtered := make([]*sipmessage.SIPMessage, 0, len(messages))
 	for _, msg := range messages {
@@ -96,6 +105,7 @@ func (h *sipHandler) GetSIPMessages(ctx context.Context, sipCallID string, fromT
 
 	res := &sipmessage.SIPMessagesResponse{
 		NextPageToken: "",
+		RTCPStats:     rtcpStats,
 		Result:        filtered,
 	}
 
