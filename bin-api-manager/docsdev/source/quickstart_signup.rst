@@ -2,27 +2,15 @@
 
 Signup
 ======
-To use the VoIPBin production API, you need your own account. You can also request access directly from the `admin console login page <https://admin.voipbin.net>`_ by clicking **Request access**.
+To use the VoIPBin production API, you need your own account.
 
-Request an Account
-------------------
-Send a sign-up request email to:
+How to Sign Up
+--------------
+1. Go to the `admin console <https://admin.voipbin.net>`_.
+2. Click **Sign Up**.
+3. Enter your email address and submit.
+4. Check your inbox for a verification email.
+5. Click the verification link in the email to verify your address.
+6. You will receive a welcome email with instructions to set your password.
 
-**sungtae@voipbin.net**
-
-Include the following details:
-
-- Your name or organization name.
-- Contact information.
-- A brief description of how you plan to use VoIPBin.
-
-**Note:** VoIPBin is currently a personal project. Automatic account creation is not available at this time, so all requests are handled manually.
-
-What Happens Next
-------------------
-Once your request is processed, you will receive an email with:
-
-- **Username**: Your account username.
-- **Password**: A secure password to access your account.
-
-Keep these credentials secure. You will use them to log in to the `admin console <https://admin.voipbin.net>`_ and to authenticate API requests.
+Once your password is set, you can log in to the `admin console <https://admin.voipbin.net>`_ and start making API requests.
