@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rag-manager
+  labels:
+    app: rag-manager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rag-manager
+  template:
+    metadata:
+      labels:
+        app: rag-manager
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "2112"
+    spec:
+      containers:
+        - name: rag-manager
+          image: rag-manager-image
+          command:
+            - './rag-manager'
+          env:
+            - name: RABBITMQ_ADDRESS
+              value: ${RABBITMQ_ADDRESS}
+            - name: OPENAI_API_KEY
+              value: ${OPENAI_API_KEY}
+            - name: OPENAI_EMBEDDING_MODEL
+              value: "text-embedding-3-small"
+            - name: RAG_LLM_MODEL
+              value: "gpt-4o"
+            - name: RAG_TOP_K
+              value: "5"
+            - name: RAG_CHUNK_MAX_TOKENS
+              value: "800"
+            - name: GCS_BUCKET
+              value: ${GCS_BUCKET}
+            - name: GCS_EMBEDDINGS_PATH
+              value: "rag/embeddings.gob"
+            - name: RAG_DOCS_BASE_PATH
+              value: "/app/docs"
+            - name: PROMETHEUS_ENDPOINT
+              value: "/metrics"
+            - name: PROMETHEUS_LISTEN_ADDRESS
+              value: ":2112"
+          ports:
+            - name: metrics
+              protocol: "TCP"
+              containerPort: 2112
+          resources:
+            limits:
+              cpu: "100m"
+              memory: "128M"

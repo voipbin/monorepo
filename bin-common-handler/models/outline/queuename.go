@@ -100,6 +100,11 @@ const (
 	QueueNameQueueRequest   QueueName = "bin-manager.queue-manager.request"
 	QueueNameQueueSubscribe QueueName = "bin-manager.queue-manager.subscribe"
 
+	// rag-manager
+	QueueNameRagEvent     QueueName = "bin-manager.rag-manager.event"
+	QueueNameRagRequest   QueueName = "bin-manager.rag-manager.request"
+	QueueNameRagSubscribe QueueName = "bin-manager.rag-manager.subscribe"
+
 	// registrar-manager
 	QueueNameRegistrarEvent     QueueName = "bin-manager.registrar-manager.event"
 	QueueNameRegistrarRequest   QueueName = "bin-manager.registrar-manager.request"
