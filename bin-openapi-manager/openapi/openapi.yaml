@@ -4237,6 +4237,11 @@ paths:
   /service_agents/contacts:
     $ref: './paths/service_agents/contacts.yaml'
 
+  /service_agents/tags/{id}:
+    $ref: './paths/service_agents/tags_id.yaml'
+  /service_agents/tags:
+    $ref: './paths/service_agents/tags.yaml'
+
   /storage_account:
     $ref: './paths/storage_account/main.yaml'
 
