@@ -1,0 +1,19 @@
+get:
+  summary: Retrieve detailed information of a tag
+  description: Fetches detailed information of a specific tag by its ID.
+  tags:
+    - Service Agent
+  parameters:
+    - name: id
+      in: path
+      description: The ID of the tag.
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: The details of the requested tag.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TagManagerTag'

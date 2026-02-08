@@ -1,0 +1,22 @@
+get:
+  summary: Retrieve a list of tags
+  description: Fetches a list of tags with pagination support.
+  tags:
+    - Service Agent
+  parameters:
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
+  responses:
+    '200':
+      description: A list of tags.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/CommonPagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TagManagerTag'

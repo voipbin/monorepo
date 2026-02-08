@@ -4876,6 +4876,15 @@ type PutServiceAgentsMeStatusJSONBody struct {
 	Status AgentManagerAgentStatus `json:"status"`
 }
 
+// GetServiceAgentsTagsParams defines parameters for GetServiceAgentsTags.
+type GetServiceAgentsTagsParams struct {
+	// PageSize The size of results.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken The token. tm_create
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
 // GetServiceAgentsTalkChannelsParams defines parameters for GetServiceAgentsTalkChannels.
 type GetServiceAgentsTalkChannelsParams struct {
 	// PageSize The size of results.
@@ -6169,6 +6178,12 @@ type ServerInterface interface {
 	// Update authenticated agent's status
 	// (PUT /service_agents/me/status)
 	PutServiceAgentsMeStatus(c *gin.Context)
+	// Retrieve a list of tags
+	// (GET /service_agents/tags)
+	GetServiceAgentsTags(c *gin.Context, params GetServiceAgentsTagsParams)
+	// Retrieve detailed information of a tag
+	// (GET /service_agents/tags/{id})
+	GetServiceAgentsTagsId(c *gin.Context, id string)
 	// Get list of public talk channels
 	// (GET /service_agents/talk_channels)
 	GetServiceAgentsTalkChannels(c *gin.Context, params GetServiceAgentsTalkChannelsParams)
@@ -12377,6 +12392,64 @@ func (siw *ServerInterfaceWrapper) PutServiceAgentsMeStatus(c *gin.Context) {
 	siw.Handler.PutServiceAgentsMeStatus(c)
 }
 
+// GetServiceAgentsTags operation middleware
+func (siw *ServerInterfaceWrapper) GetServiceAgentsTags(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetServiceAgentsTagsParams
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetServiceAgentsTags(c, params)
+}
+
+// GetServiceAgentsTagsId operation middleware
+func (siw *ServerInterfaceWrapper) GetServiceAgentsTagsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetServiceAgentsTagsId(c, id)
+}
+
 // GetServiceAgentsTalkChannels operation middleware
 func (siw *ServerInterfaceWrapper) GetServiceAgentsTalkChannels(c *gin.Context) {
 
@@ -13788,6 +13861,8 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.PUT(options.BaseURL+"/service_agents/me/addresses", wrapper.PutServiceAgentsMeAddresses)
 	router.PUT(options.BaseURL+"/service_agents/me/password", wrapper.PutServiceAgentsMePassword)
 	router.PUT(options.BaseURL+"/service_agents/me/status", wrapper.PutServiceAgentsMeStatus)
+	router.GET(options.BaseURL+"/service_agents/tags", wrapper.GetServiceAgentsTags)
+	router.GET(options.BaseURL+"/service_agents/tags/:id", wrapper.GetServiceAgentsTagsId)
 	router.GET(options.BaseURL+"/service_agents/talk_channels", wrapper.GetServiceAgentsTalkChannels)
 	router.GET(options.BaseURL+"/service_agents/talk_chats", wrapper.GetServiceAgentsTalkChats)
 	router.POST(options.BaseURL+"/service_agents/talk_chats", wrapper.PostServiceAgentsTalkChats)
@@ -18517,6 +18592,44 @@ func (response PutServiceAgentsMeStatus200JSONResponse) VisitPutServiceAgentsMeS
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetServiceAgentsTagsRequestObject struct {
+	Params GetServiceAgentsTagsParams
+}
+
+type GetServiceAgentsTagsResponseObject interface {
+	VisitGetServiceAgentsTagsResponse(w http.ResponseWriter) error
+}
+
+type GetServiceAgentsTags200JSONResponse struct {
+	// NextPageToken The token for next pagination.
+	NextPageToken *string          `json:"next_page_token,omitempty"`
+	Result        *[]TagManagerTag `json:"result,omitempty"`
+}
+
+func (response GetServiceAgentsTags200JSONResponse) VisitGetServiceAgentsTagsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetServiceAgentsTagsIdRequestObject struct {
+	Id string `json:"id"`
+}
+
+type GetServiceAgentsTagsIdResponseObject interface {
+	VisitGetServiceAgentsTagsIdResponse(w http.ResponseWriter) error
+}
+
+type GetServiceAgentsTagsId200JSONResponse TagManagerTag
+
+func (response GetServiceAgentsTagsId200JSONResponse) VisitGetServiceAgentsTagsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type GetServiceAgentsTalkChannelsRequestObject struct {
 	Params GetServiceAgentsTalkChannelsParams
 }
@@ -20280,6 +20393,12 @@ type StrictServerInterface interface {
 	// Update authenticated agent's status
 	// (PUT /service_agents/me/status)
 	PutServiceAgentsMeStatus(ctx context.Context, request PutServiceAgentsMeStatusRequestObject) (PutServiceAgentsMeStatusResponseObject, error)
+	// Retrieve a list of tags
+	// (GET /service_agents/tags)
+	GetServiceAgentsTags(ctx context.Context, request GetServiceAgentsTagsRequestObject) (GetServiceAgentsTagsResponseObject, error)
+	// Retrieve detailed information of a tag
+	// (GET /service_agents/tags/{id})
+	GetServiceAgentsTagsId(ctx context.Context, request GetServiceAgentsTagsIdRequestObject) (GetServiceAgentsTagsIdResponseObject, error)
 	// Get list of public talk channels
 	// (GET /service_agents/talk_channels)
 	GetServiceAgentsTalkChannels(ctx context.Context, request GetServiceAgentsTalkChannelsRequestObject) (GetServiceAgentsTalkChannelsResponseObject, error)
@@ -27733,6 +27852,60 @@ func (sh *strictHandler) PutServiceAgentsMeStatus(ctx *gin.Context) {
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PutServiceAgentsMeStatusResponseObject); ok {
 		if err := validResponse.VisitPutServiceAgentsMeStatusResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetServiceAgentsTags operation middleware
+func (sh *strictHandler) GetServiceAgentsTags(ctx *gin.Context, params GetServiceAgentsTagsParams) {
+	var request GetServiceAgentsTagsRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetServiceAgentsTags(ctx, request.(GetServiceAgentsTagsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetServiceAgentsTags")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetServiceAgentsTagsResponseObject); ok {
+		if err := validResponse.VisitGetServiceAgentsTagsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetServiceAgentsTagsId operation middleware
+func (sh *strictHandler) GetServiceAgentsTagsId(ctx *gin.Context, id string) {
+	var request GetServiceAgentsTagsIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetServiceAgentsTagsId(ctx, request.(GetServiceAgentsTagsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetServiceAgentsTagsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetServiceAgentsTagsIdResponseObject); ok {
+		if err := validResponse.VisitGetServiceAgentsTagsIdResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

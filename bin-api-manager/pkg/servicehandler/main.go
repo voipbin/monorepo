@@ -785,6 +785,10 @@ type ServiceHandler interface {
 	ServiceAgentContactTagAdd(ctx context.Context, a *amagent.Agent, contactID uuid.UUID, tagID uuid.UUID) (*cmcontact.WebhookMessage, error)
 	ServiceAgentContactTagRemove(ctx context.Context, a *amagent.Agent, contactID uuid.UUID, tagID uuid.UUID) (*cmcontact.WebhookMessage, error)
 
+	// service_agent tag
+	ServiceAgentTagList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*tmtag.WebhookMessage, error)
+	ServiceAgentTagGet(ctx context.Context, a *amagent.Agent, tagID uuid.UUID) (*tmtag.WebhookMessage, error)
+
 	// service_agent customer
 	ServiceAgentCustomerGet(ctx context.Context, a *amagent.Agent) (*cscustomer.WebhookMessage, error)
 
