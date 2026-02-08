@@ -214,9 +214,14 @@ const passwordResetHTML = `<!DOCTYPE html>
       body: JSON.stringify({ token: token, password: password })
     }).then(function(resp) {
       if (resp.ok) {
-        msgEl.textContent = 'Password updated successfully. You can now log in with your new password.';
-        msgEl.className = 'message success';
-        document.getElementById('resetForm').style.display = 'none';
+        var container = document.querySelector('.container');
+        while (container.firstChild) { container.removeChild(container.firstChild); }
+        var h1 = document.createElement('h1');
+        h1.textContent = 'Password Updated';
+        var p = document.createElement('p');
+        p.textContent = 'Your password has been changed successfully.';
+        container.appendChild(h1);
+        container.appendChild(p);
       } else {
         msgEl.textContent = 'Invalid or expired reset link. Please request a new one.';
         msgEl.className = 'message error';
