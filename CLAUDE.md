@@ -261,6 +261,36 @@ git push -u origin NOJIRA-descriptive-change-summary
 
 **For detailed branch strategies and merge workflows, see [git-workflow-guide.md](docs/git-workflow-guide.md)**
 
+### Design & Implementation Workflow
+
+**CRITICAL: For non-trivial changes, ALWAYS write a design document before implementing.**
+
+This applies to: new features, architectural changes, multi-file modifications, and any work that benefits from upfront planning. Simple fixes (typos, single-line bug fixes) do not require a design document.
+
+**Workflow:**
+
+1. **Brainstorm and validate the design verbally** — Understand the current state, ask clarifying questions, and agree on the approach with the user.
+2. **Create a worktree** — All files (design docs and code) are written in the worktree, never in the main repository.
+   ```bash
+   cd ~/gitvoipbin/monorepo
+   git worktree add ~/gitvoipbin/monorepo-worktrees/NOJIRA-feature-name -b NOJIRA-feature-name
+   cd ~/gitvoipbin/monorepo-worktrees/NOJIRA-feature-name
+   ```
+3. **Write the design document** in the worktree:
+   - Location: `docs/plans/YYYY-MM-DD-<topic>-design.md`
+   - Include: problem statement, approach, files to change, and any trade-offs discussed
+4. **Implement the changes** in the same worktree.
+5. **Run verification workflow** before committing.
+6. **Commit everything together** (design doc + implementation), push, and create PR.
+
+**Design document location:** `docs/plans/YYYY-MM-DD-<topic>-design.md` (always in the worktree)
+
+**Why design docs:**
+- Serves as a reference during implementation
+- Provides context for future developers
+- Documents decisions and trade-offs
+- Lives in the repo alongside the code it describes
+
 ## Build & Development
 
 **For complete build commands, testing patterns, code generation, and linting, see [development-guide.md](docs/development-guide.md)**
