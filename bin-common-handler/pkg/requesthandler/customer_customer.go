@@ -193,6 +193,74 @@ func (r *requestHandler) CustomerV1CustomerIsValidBalance(ctx context.Context, c
 	return res.Valid, nil
 }
 
+// CustomerV1CustomerSignup sends a signup request to customer-manager.
+// Creates an unverified customer and sends a verification email.
+func (r *requestHandler) CustomerV1CustomerSignup(
+	ctx context.Context,
+	name string,
+	detail string,
+	email string,
+	phoneNumber string,
+	address string,
+	webhookMethod cscustomer.WebhookMethod,
+	webhookURI string,
+) (*cscustomer.Customer, error) {
+	uri := "/v1/customers/signup"
+
+	reqData := csrequest.V1DataCustomersSignupPost{
+		Name:          name,
+		Detail:        detail,
+		Email:         email,
+		PhoneNumber:   phoneNumber,
+		Address:       address,
+		WebhookMethod: webhookMethod,
+		WebhookURI:    webhookURI,
+	}
+
+	m, err := json.Marshal(reqData)
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestCustomer(ctx, uri, sock.RequestMethodPost, "customer/customers/signup", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
+		return nil, err
+	}
+
+	var res cscustomer.Customer
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
+}
+
+// CustomerV1CustomerEmailVerify sends an email verification request to customer-manager.
+func (r *requestHandler) CustomerV1CustomerEmailVerify(ctx context.Context, token string) (*cscustomer.Customer, error) {
+	uri := "/v1/customers/email_verify"
+
+	reqData := csrequest.V1DataCustomersEmailVerifyPost{
+		Token: token,
+	}
+
+	m, err := json.Marshal(reqData)
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestCustomer(ctx, uri, sock.RequestMethodPost, "customer/customers/email_verify", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
+		return nil, err
+	}
+
+	var res cscustomer.Customer
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
+}
+
 // CustomerV1CustomerUpdateBillingAccountID sends a request to customer-manager
 // to update the customer's billing account id.
 func (r *requestHandler) CustomerV1CustomerUpdateBillingAccountID(ctx context.Context, customerID uuid.UUID, biillingAccountID uuid.UUID) (*cscustomer.Customer, error) {

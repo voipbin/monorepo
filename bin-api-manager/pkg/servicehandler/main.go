@@ -463,6 +463,17 @@ type ServiceHandler interface {
 	) (*cscustomer.WebhookMessage, error)
 	CustomerDelete(ctx context.Context, a *amagent.Agent, customerID uuid.UUID) (*cscustomer.WebhookMessage, error)
 	CustomerUpdateBillingAccountID(ctx context.Context, a *amagent.Agent, customerID uuid.UUID, billingAccountID uuid.UUID) (*cscustomer.WebhookMessage, error)
+	CustomerSignup(
+		ctx context.Context,
+		name string,
+		detail string,
+		email string,
+		phoneNumber string,
+		address string,
+		webhookMethod cscustomer.WebhookMethod,
+		webhookURI string,
+	) (*cscustomer.WebhookMessage, error)
+	CustomerEmailVerify(ctx context.Context, token string) (*cscustomer.WebhookMessage, error)
 
 	// extension handlers
 	ExtensionCreate(ctx context.Context, a *amagent.Agent, ext string, password string, name string, detail string) (*rmextension.WebhookMessage, error)

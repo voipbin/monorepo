@@ -341,7 +341,7 @@ func initCustomerHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (custom
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameCustomerEvent, serviceName, "")
 
-	return customerhandler.NewCustomerHandler(reqHandler, db, notifyHandler), nil
+	return customerhandler.NewCustomerHandler(reqHandler, db, cache, notifyHandler), nil
 }
 
 func resolveUUID(flagName string, label string) (uuid.UUID, error) {

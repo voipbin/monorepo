@@ -29,6 +29,7 @@ type DBHandler interface {
 	CustomerGet(ctx context.Context, id uuid.UUID) (*customer.Customer, error)
 	CustomerList(ctx context.Context, size uint64, token string, filters map[customer.Field]any) ([]*customer.Customer, error)
 	CustomerUpdate(ctx context.Context, id uuid.UUID, fields map[customer.Field]any) error
+	CustomerHardDelete(ctx context.Context, id uuid.UUID) error
 }
 
 // handler database handler

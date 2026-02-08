@@ -274,3 +274,21 @@ func (h *handler) CustomerDelete(ctx context.Context, id uuid.UUID) error {
 
 	return nil
 }
+
+// CustomerHardDelete permanently removes a customer record from the database.
+func (h *handler) CustomerHardDelete(ctx context.Context, id uuid.UUID) error {
+	sb := squirrel.Delete(customerTable).
+		Where(squirrel.Eq{string(customer.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+
+	sqlStr, args, err := sb.ToSql()
+	if err != nil {
+		return fmt.Errorf("CustomerHardDelete: build SQL failed: %w", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, sqlStr, args...); err != nil {
+		return fmt.Errorf("CustomerHardDelete: exec failed: %w", err)
+	}
+
+	return nil
+}

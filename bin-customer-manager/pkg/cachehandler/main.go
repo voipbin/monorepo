@@ -4,6 +4,7 @@ package cachehandler
 
 import (
 	"context"
+	"time"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/gofrs/uuid"
@@ -29,6 +30,10 @@ type CacheHandler interface {
 
 	CustomerGet(ctx context.Context, id uuid.UUID) (*customer.Customer, error)
 	CustomerSet(ctx context.Context, c *customer.Customer) error
+
+	EmailVerifyTokenSet(ctx context.Context, token string, customerID uuid.UUID, ttl time.Duration) error
+	EmailVerifyTokenGet(ctx context.Context, token string) (uuid.UUID, error)
+	EmailVerifyTokenDelete(ctx context.Context, token string) error
 }
 
 // NewHandler creates DBHandler
