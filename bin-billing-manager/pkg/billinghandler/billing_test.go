@@ -174,6 +174,7 @@ func Test_BillingStart_number_sms(t *testing.T) {
 				ReferenceType: billing.ReferenceTypeSMS,
 				ReferenceID:   uuid.FromStringOrNil("c3183f6c-16a9-11ee-b2b9-677692eb71ef"),
 				CostPerUnit:   billing.DefaultCostPerUnitReferenceTypeSMS,
+				CostTotal:     billing.DefaultCostPerUnitReferenceTypeSMS,
 			},
 
 			expectBilling: &billing.Billing{
@@ -281,6 +282,8 @@ func Test_BillingEnd(t *testing.T) {
 				},
 				AccountID:      uuid.FromStringOrNil("23d43574-16ad-11ee-9c99-3b8e376bb5a3"),
 				ReferenceType:  billing.ReferenceTypeCall,
+				CostPerUnit:    billing.DefaultCostPerUnitReferenceTypeCall,
+				CostTotal:      billing.DefaultCostPerUnitReferenceTypeCall * 10.004,
 				TMBillingStart: &tmBillingStart,
 			},
 			responseAccount: &account.Account{
@@ -314,6 +317,8 @@ func Test_BillingEnd(t *testing.T) {
 				},
 				AccountID:      uuid.FromStringOrNil("9e128c36-16ae-11ee-9655-2f9b21f8f7ba"),
 				ReferenceType:  billing.ReferenceTypeCall,
+				CostPerUnit:    billing.DefaultCostPerUnitReferenceTypeSMS,
+				CostTotal:      billing.DefaultCostPerUnitReferenceTypeSMS,
 				TMBillingStart: &tmBillingStart,
 			},
 			responseAccount: &account.Account{
@@ -459,6 +464,8 @@ func Test_BillingEnd_subtract_error(t *testing.T) {
 				},
 				AccountID:      uuid.FromStringOrNil("e2222222-0000-0000-0000-000000000001"),
 				ReferenceType:  billing.ReferenceTypeCall,
+				CostPerUnit:    billing.DefaultCostPerUnitReferenceTypeCall,
+				CostTotal:      billing.DefaultCostPerUnitReferenceTypeCall * 10.004,
 				TMBillingStart: &tmBillingStart,
 			},
 		},

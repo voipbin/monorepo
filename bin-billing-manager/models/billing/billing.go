@@ -39,8 +39,9 @@ type ReferenceType string
 // list of reference types
 const (
 	ReferenceTypeNone        ReferenceType = ""
-	ReferenceTypeCall        ReferenceType = "call"
-	ReferenceTypeSMS         ReferenceType = "sms"
+	ReferenceTypeCall          ReferenceType = "call"
+	ReferenceTypeCallExtension ReferenceType = "call_extension"
+	ReferenceTypeSMS           ReferenceType = "sms"
 	ReferenceTypeNumber      ReferenceType = "number"
 	ReferenceTypeNumberRenew ReferenceType = "number_renew"
 )
@@ -58,7 +59,8 @@ const (
 
 // list of default billing info
 const (
-	DefaultCostPerUnitReferenceTypeCall   float32 = 0.020
-	DefaultCostPerUnitReferenceTypeSMS    float32 = 0.008
-	DefaultCostPerUnitReferenceTypeNumber float32 = 5
+	DefaultCostPerUnitReferenceTypeCall          float32 = 0.020
+	DefaultCostPerUnitReferenceTypeCallExtension float32 = 0
+	DefaultCostPerUnitReferenceTypeSMS           float32 = 0.008
+	DefaultCostPerUnitReferenceTypeNumber        float32 = 5
 )

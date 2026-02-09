@@ -60,6 +60,11 @@ func (h *accountHandler) IsValidBalance(ctx context.Context, accountID uuid.UUID
 		return true, nil
 	}
 
+	// call_extension is always valid regardless of balance
+	if billingType == billing.ReferenceTypeCallExtension {
+		return true, nil
+	}
+
 	if count < 1 {
 		count = 1
 	}
