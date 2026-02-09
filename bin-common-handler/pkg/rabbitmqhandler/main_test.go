@@ -2,7 +2,9 @@ package rabbitmqhandler
 
 import (
 	"errors"
+	"sync"
 	"testing"
+	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
@@ -135,7 +137,7 @@ func TestClose_ClosesAllQueueChannels(t *testing.T) {
 	if mockConn.closeCalled != 1 {
 		t.Errorf("Expected connection Close() to be called once, got %d", mockConn.closeCalled)
 	}
-	if !r.closed {
+	if !r.closed.Load() {
 		t.Error("Expected rabbit.closed to be true")
 	}
 }
@@ -652,7 +654,7 @@ func TestNewRabbit_InitializesCorrectly(t *testing.T) {
 		t.Error("Expected queueBinds map to be initialized")
 	}
 
-	if rabbit.closed {
+	if rabbit.closed.Load() {
 		t.Error("Expected closed to be false initially")
 	}
 }
@@ -734,4 +736,165 @@ func TestRedeclareScenario_ClosesOldChannels(t *testing.T) {
 	if newExchangeCh.closeCalled != 0 {
 		t.Errorf("Expected new exchange channel not to be closed, got %d", newExchangeCh.closeCalled)
 	}
+}
+
+// ============================================================================
+// Reconnector Tests
+// ============================================================================
+
+func TestReconnector_ExitsWhenErrorChannelClosed(t *testing.T) {
+	errCh := make(chan *amqp.Error)
+	r := &rabbit{
+		uri:          "amqp://localhost",
+		errorChannel: errCh,
+		queues:       make(map[string]*queue),
+		exchanges:    make(map[string]*exchange),
+		queueBinds:   make(map[string]*queueBind),
+	}
+
+	done := make(chan struct{})
+	go func() {
+		r.reconnector()
+		close(done)
+	}()
+
+	// Close the error channel to signal exit
+	close(errCh)
+
+	select {
+	case <-done:
+		// reconnector exited as expected
+	case <-time.After(2 * time.Second):
+		t.Fatal("reconnector did not exit after errorChannel was closed")
+	}
+}
+
+func TestReconnector_ExitsWhenClosedFlagIsSet(t *testing.T) {
+	errCh := make(chan *amqp.Error, 1)
+	r := &rabbit{
+		uri:          "amqp://localhost",
+		errorChannel: errCh,
+		queues:       make(map[string]*queue),
+		exchanges:    make(map[string]*exchange),
+		queueBinds:   make(map[string]*queueBind),
+	}
+
+	// Set closed before sending error
+	r.closed.Store(true)
+
+	done := make(chan struct{})
+	go func() {
+		r.reconnector()
+		close(done)
+	}()
+
+	// Send an error to unblock the channel receive
+	errCh <- amqp.ErrClosed
+
+	select {
+	case <-done:
+		// reconnector exited because closed flag was set
+	case <-time.After(2 * time.Second):
+		t.Fatal("reconnector did not exit after closed flag was set")
+	}
+}
+
+func TestClose_ClosedFlagIsAtomicallySafe(t *testing.T) {
+	// Verify that concurrent reads of closed from reconnector
+	// and write from Close do not cause a data race.
+	// This test is meaningful when run with -race flag.
+	mockConn := newMockConnection()
+	errCh := make(chan *amqp.Error, 1)
+
+	r := &rabbit{
+		uri:          "amqp://localhost",
+		connection:   mockConn,
+		errorChannel: errCh,
+		queues:       make(map[string]*queue),
+		exchanges:    make(map[string]*exchange),
+		queueBinds:   make(map[string]*queueBind),
+	}
+
+	var wg sync.WaitGroup
+
+	// Simulate reconnector reading closed flag concurrently
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		// Read closed flag many times concurrently with Close()
+		for i := 0; i < 100; i++ {
+			_ = r.closed.Load()
+		}
+	}()
+
+	// Call Close which writes the closed flag
+	r.Close()
+
+	wg.Wait()
+
+	if !r.closed.Load() {
+		t.Error("Expected closed to be true after Close()")
+	}
+}
+
+func TestClose_SetsClosedBeforeClosingResources(t *testing.T) {
+	// Verify that closed flag is set before channels/connection are closed.
+	// This ensures reconnector sees the flag and exits rather than attempting reconnect.
+	var closedAtChannelClose bool
+	mockConn := newMockConnection()
+
+	r := &rabbit{
+		uri:        "amqp://localhost",
+		connection: mockConn,
+		queues:     make(map[string]*queue),
+		exchanges:  make(map[string]*exchange),
+		queueBinds: make(map[string]*queueBind),
+	}
+
+	// Use a mock channel that captures the closed state when Close() is called
+	captureChannel := &closedCaptureMockChannel{r: r}
+	r.queues["test"] = &queue{name: "test", channel: captureChannel}
+
+	r.Close()
+
+	closedAtChannelClose = captureChannel.closedWasTrue
+
+	if !closedAtChannelClose {
+		t.Error("Expected closed flag to be true when channel.Close() was called")
+	}
+}
+
+// closedCaptureMockChannel is a mock that checks the closed flag when Close() is called
+type closedCaptureMockChannel struct {
+	r              *rabbit
+	closedWasTrue  bool
+}
+
+func (m *closedCaptureMockChannel) Close() error {
+	m.closedWasTrue = m.r.closed.Load()
+	return nil
+}
+
+func (m *closedCaptureMockChannel) Consume(queue, consumer string, autoAck, exclusive, noLocal, noWait bool, args amqp.Table) (<-chan amqp.Delivery, error) {
+	return make(<-chan amqp.Delivery), nil
+}
+
+func (m *closedCaptureMockChannel) Qos(prefetchCount, prefetchSize int, global bool) error {
+	return nil
+}
+
+func (m *closedCaptureMockChannel) QueueBind(name, key, exchange string, noWait bool, args amqp.Table) error {
+	return nil
+}
+
+func (m *closedCaptureMockChannel) QueueDelete(name string, ifUnused, ifEmpty, noWait bool) (int, error) {
+	return 0, nil
+}
+
+func (m *closedCaptureMockChannel) ExchangeDeclare(name, kind string, durable, autoDelete, internal, noWait bool, args amqp.Table) error {
+	return nil
+}
+
+func (m *closedCaptureMockChannel) QueueDeclare(name string, durable, autoDelete, exclusive, noWait bool, args amqp.Table) (amqp.Queue, error) {
+	return amqp.Queue{Name: name}, nil
 }

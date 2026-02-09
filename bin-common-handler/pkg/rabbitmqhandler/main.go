@@ -6,6 +6,7 @@ import (
 	"context"
 	"monorepo/bin-common-handler/models/sock"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -60,7 +61,7 @@ type rabbit struct {
 
 	errorChannel chan *amqp.Error
 	connection   amqpConnection
-	closed       bool
+	closed       atomic.Bool
 
 	// mu protects concurrent access to queues, exchanges, and queueBinds maps.
 	// Use RLock for reads and Lock for writes.
@@ -126,7 +127,7 @@ func (r *rabbit) Close() {
 		"url": r.uri,
 	}).Info("Close the rabbitmq connection.")
 
-	r.closed = true
+	r.closed.Store(true)
 
 	r.mu.RLock()
 	// close all queue channels
@@ -162,7 +163,7 @@ func (r *rabbit) reconnector() {
 			// Channel closed, exit the goroutine
 			return
 		}
-		if r.closed {
+		if r.closed.Load() {
 			// Rabbit is being closed, exit the goroutine
 			return
 		}
