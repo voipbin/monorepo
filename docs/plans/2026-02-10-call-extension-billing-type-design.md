@@ -53,7 +53,7 @@ Add a new billing reference type `call_extension` that represents non-PSTN calls
 
 ## Reference Type Determination Logic
 
-The subscribe handler in billing-manager determines the reference type from the call object:
+The billing handler in billing-manager determines the reference type from the call object:
 
 ```go
 func getReferenceTypeForCall(c *cmcall.Call) billing.ReferenceType {
@@ -82,7 +82,7 @@ func getReferenceTypeForCall(c *cmcall.Call) billing.ReferenceType {
 | File | Change |
 |---|---|
 | `bin-billing-manager/models/billing/billing.go` | Add `ReferenceTypeCallExtension` and `DefaultCostPerUnitReferenceTypeCallExtension` constants |
-| `bin-billing-manager/pkg/subscribehandler/call.go` | Add `getReferenceTypeForCall()` helper; use it in `processEventCMCallProgressing` and `processEventCMCallHangup` |
+| `bin-billing-manager/pkg/billinghandler/event.go` | Add `getReferenceTypeForCall()` helper; use it in `EventCMCallProgressing` |
 | `bin-billing-manager/pkg/billinghandler/billing.go` | Handle `ReferenceTypeCallExtension` in `BillingStart` (set cost_per_unit to 0); skip balance deduction when cost_total is 0 in `BillingEnd` |
 | `bin-billing-manager/pkg/accounthandler/balance.go` | Handle `ReferenceTypeCallExtension` in `IsValidBalance` — return valid immediately |
 

@@ -67,6 +67,39 @@ func Test_EventCMCallProgressing(t *testing.T) {
 				TMBillingEnd:  nil,
 			},
 		},
+		{
+			name: "outgoing call to extension creates call_extension billing",
+
+			call: &cmcall.Call{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("fb111111-0000-0000-0000-000000000001"),
+				},
+				Direction: cmcall.DirectionOutgoing,
+				Destination: commonaddress.Address{
+					Type:   commonaddress.TypeExtension,
+					Target: "1002",
+				},
+			},
+
+			responseAccount: &account.Account{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("fb222222-0000-0000-0000-000000000001"),
+				},
+			},
+			responseUUID: uuid.FromStringOrNil("fb333333-0000-0000-0000-000000000001"),
+
+			expectBilling: &billing.Billing{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("fb333333-0000-0000-0000-000000000001"),
+				},
+				AccountID:     uuid.FromStringOrNil("fb222222-0000-0000-0000-000000000001"),
+				Status:        billing.StatusProgressing,
+				ReferenceType: billing.ReferenceTypeCallExtension,
+				ReferenceID:   uuid.FromStringOrNil("fb111111-0000-0000-0000-000000000001"),
+				CostPerUnit:   billing.DefaultCostPerUnitReferenceTypeCallExtension,
+				TMBillingEnd:  nil,
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -88,7 +121,7 @@ func Test_EventCMCallProgressing(t *testing.T) {
 			ctx := context.Background()
 
 			// idempotency check
-			mockDB.EXPECT().BillingGetByReferenceTypeAndID(ctx, billing.ReferenceTypeCall, tt.call.ID).Return(nil, dbhandler.ErrNotFound)
+			mockDB.EXPECT().BillingGetByReferenceTypeAndID(ctx, tt.expectBilling.ReferenceType, tt.call.ID).Return(nil, dbhandler.ErrNotFound)
 
 			// BillingStart
 			mockAccount.EXPECT().GetByCustomerID(ctx, tt.call.CustomerID).Return(tt.responseAccount, nil)
@@ -589,6 +622,26 @@ func Test_getReferenceTypeForCall(t *testing.T) {
 				Direction: cmcall.DirectionOutgoing,
 				Destination: commonaddress.Address{
 					Type: commonaddress.TypeLine,
+				},
+			},
+			expectReferenceType: billing.ReferenceTypeCallExtension,
+		},
+		{
+			name: "outgoing call to email",
+			call: &cmcall.Call{
+				Direction: cmcall.DirectionOutgoing,
+				Destination: commonaddress.Address{
+					Type: commonaddress.TypeEmail,
+				},
+			},
+			expectReferenceType: billing.ReferenceTypeCallExtension,
+		},
+		{
+			name: "incoming call with no source type",
+			call: &cmcall.Call{
+				Direction: cmcall.DirectionIncoming,
+				Source: commonaddress.Address{
+					Type: commonaddress.TypeNone,
 				},
 			},
 			expectReferenceType: billing.ReferenceTypeCallExtension,
