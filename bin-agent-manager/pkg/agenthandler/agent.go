@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"monorepo/bin-agent-manager/internal/config"
+	"monorepo/bin-agent-manager/pkg/dbhandler"
 	commonaddress "monorepo/bin-common-handler/models/address"
 
 	"github.com/gofrs/uuid"
@@ -367,7 +368,7 @@ func (h *agentHandler) UpdateAddresses(ctx context.Context, id uuid.UUID, addres
 
 		// check if the address is already assigned to the other agent
 		ag, err := h.GetByCustomerIDAndAddress(ctx, a.CustomerID, &address)
-		if err != nil {
+		if err != nil && err != dbhandler.ErrNotFound {
 			log.Errorf("Could not get agent info of the address. err: %v", err)
 			return nil, errors.Wrap(err, "could not get agent info of the address")
 		}
