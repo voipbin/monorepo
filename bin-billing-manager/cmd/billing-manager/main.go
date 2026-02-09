@@ -1,10 +1,12 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
@@ -22,6 +24,7 @@ import (
 	"monorepo/bin-billing-manager/pkg/billinghandler"
 	"monorepo/bin-billing-manager/pkg/cachehandler"
 	"monorepo/bin-billing-manager/pkg/dbhandler"
+	"monorepo/bin-billing-manager/pkg/failedeventhandler"
 	"monorepo/bin-billing-manager/pkg/listenhandler"
 	"monorepo/bin-billing-manager/pkg/subscribehandler"
 )
@@ -123,8 +126,8 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 		return err
 	}
 
-	// run subscribe
-	if err := runSubscribe(sockHandler, accountHandler, billingHandler); err != nil {
+	// run subscribe (with failed event handler)
+	if err := runSubscribe(sqlDB, sockHandler, accountHandler, billingHandler); err != nil {
 		return err
 	}
 
@@ -132,7 +135,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 }
 
 // runSubscribe runs the subscribed event handler
-func runSubscribe(sockHandler sockhandler.SockHandler, accoutHandler accounthandler.AccountHandler, billingHandler billinghandler.BillingHandler) error {
+func runSubscribe(sqlDB *sql.DB, sockHandler sockhandler.SockHandler, accoutHandler accounthandler.AccountHandler, billingHandler billinghandler.BillingHandler) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "runSubscribe",
 	})
@@ -143,19 +146,49 @@ func runSubscribe(sockHandler sockhandler.SockHandler, accoutHandler accounthand
 		string(commonoutline.QueueNameCustomerEvent),
 		string(commonoutline.QueueNameNumberEvent),
 	}
-	subHandler := subscribehandler.NewSubscribeHandler(
+
+	// create subscribe handler first, then wire the failed event handler with a circular reference
+	// to the subscribe handler's processEvent
+	var subHandler subscribehandler.SubscribeHandler
+	var failedHandler failedeventhandler.FailedEventHandler
+
+	// placeholder processor — will be set after subscribe handler is created
+	subHandler = subscribehandler.NewSubscribeHandler(
 		sockHandler,
 		string(commonoutline.QueueNameBillingSubscribe),
 		subscribeTargets,
 		accoutHandler,
 		billingHandler,
+		nil, // temporary nil — set below
 	)
+
+	// create failed event handler with the subscribe handler's process function
+	failedHandler = failedeventhandler.NewFailedEventHandler(sqlDB, subscribehandler.GetEventProcessor(subHandler))
+
+	// set the failed event handler on the subscribe handler
+	subscribehandler.SetFailedEventHandler(subHandler, failedHandler)
 
 	// run
 	if err := subHandler.Run(); err != nil {
 		log.Errorf("Could not run the subscribe handler. err: %v", err)
 		return err
 	}
+
+	// start failed event retry loop
+	go func() {
+		ticker := time.NewTicker(60 * time.Second)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				if err := failedHandler.RetryPending(context.Background()); err != nil {
+					log.Errorf("Failed event retry error. err: %v", err)
+				}
+			case <-chDone:
+				return
+			}
+		}
+	}()
 
 	return nil
 }

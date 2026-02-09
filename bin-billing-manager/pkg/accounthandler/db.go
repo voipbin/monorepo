@@ -102,6 +102,42 @@ func (h *accountHandler) List(ctx context.Context, size uint64, token string, fi
 	return res, nil
 }
 
+// SubtractBalanceWithCheck atomically checks the balance and subtracts.
+// For admin accounts, the balance check is skipped.
+func (h *accountHandler) SubtractBalanceWithCheck(ctx context.Context, accountID uuid.UUID, amount float32) (*account.Account, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "SubtractBalanceWithCheck",
+		"account_id": accountID,
+		"amount":     amount,
+	})
+
+	// get account to check type
+	a, err := h.db.AccountGet(ctx, accountID)
+	if err != nil {
+		log.Errorf("Could not get account. err: %v", err)
+		return nil, errors.Wrap(err, "could not get account info")
+	}
+
+	// admin accounts bypass balance check
+	if a.Type == account.TypeAdmin {
+		return h.SubtractBalance(ctx, accountID, amount)
+	}
+
+	// normal accounts use atomic check-and-subtract
+	if errSub := h.db.AccountSubtractBalanceWithCheck(ctx, accountID, amount); errSub != nil {
+		log.Errorf("Could not subtract the balance with check. err: %v", errSub)
+		return nil, errors.Wrap(errSub, "could not subtract the balance")
+	}
+
+	res, err := h.db.AccountGet(ctx, accountID)
+	if err != nil {
+		log.Errorf("Could not get updated account. err: %v", err)
+		return nil, errors.Wrap(err, "could not get updated account info")
+	}
+
+	return res, nil
+}
+
 // SubtractBalance substracts the balance of the given customer id.
 func (h *accountHandler) SubtractBalance(ctx context.Context, accountID uuid.UUID, balance float32) (*account.Account, error) {
 	log := logrus.WithFields(logrus.Fields{

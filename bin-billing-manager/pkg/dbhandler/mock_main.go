@@ -145,6 +145,20 @@ func (mr *MockDBHandlerMockRecorder) AccountSubtractBalance(ctx, accountID, bala
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountSubtractBalance", reflect.TypeOf((*MockDBHandler)(nil).AccountSubtractBalance), ctx, accountID, balance)
 }
 
+// AccountSubtractBalanceWithCheck mocks base method.
+func (m *MockDBHandler) AccountSubtractBalanceWithCheck(ctx context.Context, accountID uuid.UUID, amount float32) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AccountSubtractBalanceWithCheck", ctx, accountID, amount)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AccountSubtractBalanceWithCheck indicates an expected call of AccountSubtractBalanceWithCheck.
+func (mr *MockDBHandlerMockRecorder) AccountSubtractBalanceWithCheck(ctx, accountID, amount any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountSubtractBalanceWithCheck", reflect.TypeOf((*MockDBHandler)(nil).AccountSubtractBalanceWithCheck), ctx, accountID, amount)
+}
+
 // AccountUpdate mocks base method.
 func (m *MockDBHandler) AccountUpdate(ctx context.Context, id uuid.UUID, fields map[account.Field]any) error {
 	m.ctrl.T.Helper()
@@ -215,6 +229,21 @@ func (m *MockDBHandler) BillingGetByReferenceID(ctx context.Context, referenceID
 func (mr *MockDBHandlerMockRecorder) BillingGetByReferenceID(ctx, referenceID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingGetByReferenceID", reflect.TypeOf((*MockDBHandler)(nil).BillingGetByReferenceID), ctx, referenceID)
+}
+
+// BillingGetByReferenceTypeAndID mocks base method.
+func (m *MockDBHandler) BillingGetByReferenceTypeAndID(ctx context.Context, referenceType billing.ReferenceType, referenceID uuid.UUID) (*billing.Billing, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BillingGetByReferenceTypeAndID", ctx, referenceType, referenceID)
+	ret0, _ := ret[0].(*billing.Billing)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BillingGetByReferenceTypeAndID indicates an expected call of BillingGetByReferenceTypeAndID.
+func (mr *MockDBHandlerMockRecorder) BillingGetByReferenceTypeAndID(ctx, referenceType, referenceID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BillingGetByReferenceTypeAndID", reflect.TypeOf((*MockDBHandler)(nil).BillingGetByReferenceTypeAndID), ctx, referenceType, referenceID)
 }
 
 // BillingList mocks base method.

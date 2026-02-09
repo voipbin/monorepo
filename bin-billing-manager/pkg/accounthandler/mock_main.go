@@ -192,6 +192,21 @@ func (mr *MockAccountHandlerMockRecorder) SubtractBalance(ctx, accountID, balanc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SubtractBalance", reflect.TypeOf((*MockAccountHandler)(nil).SubtractBalance), ctx, accountID, balance)
 }
 
+// SubtractBalanceWithCheck mocks base method.
+func (m *MockAccountHandler) SubtractBalanceWithCheck(ctx context.Context, accountID uuid.UUID, amount float32) (*account.Account, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SubtractBalanceWithCheck", ctx, accountID, amount)
+	ret0, _ := ret[0].(*account.Account)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SubtractBalanceWithCheck indicates an expected call of SubtractBalanceWithCheck.
+func (mr *MockAccountHandlerMockRecorder) SubtractBalanceWithCheck(ctx, accountID, amount any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SubtractBalanceWithCheck", reflect.TypeOf((*MockAccountHandler)(nil).SubtractBalanceWithCheck), ctx, accountID, amount)
+}
+
 // UpdateBasicInfo mocks base method.
 func (m *MockAccountHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*account.Account, error) {
 	m.ctrl.T.Helper()

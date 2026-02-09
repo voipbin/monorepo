@@ -2,6 +2,7 @@ package billinghandler
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -103,6 +104,9 @@ func Test_BillingStart(t *testing.T) {
 				accountHandler: mockAccount,
 			}
 			ctx := context.Background()
+
+			// idempotency check - no existing billing
+			mockDB.EXPECT().BillingGetByReferenceTypeAndID(ctx, tt.referenceType, tt.referenceID).Return(nil, fmt.Errorf("not found"))
 
 			mockAccount.EXPECT().GetByCustomerID(ctx, tt.customerID).Return(tt.responseAccount, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
@@ -208,6 +212,9 @@ func Test_BillingStart_number_sms(t *testing.T) {
 			}
 			ctx := context.Background()
 
+			// idempotency check - no existing billing
+			mockDB.EXPECT().BillingGetByReferenceTypeAndID(ctx, tt.referenceType, tt.referenceID).Return(nil, fmt.Errorf("not found"))
+
 			mockAccount.EXPECT().GetByCustomerID(ctx, tt.customerID).Return(tt.responseAccount, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDB.EXPECT().BillingCreate(ctx, tt.expectBilling).Return(nil)
@@ -218,13 +225,11 @@ func Test_BillingStart_number_sms(t *testing.T) {
 			mockDB.EXPECT().BillingSetStatusEnd(ctx, tt.responseBilling.ID, float32(1), gomock.Any()).Return(nil)
 			mockDB.EXPECT().BillingGet(ctx, tt.responseBilling.ID).Return(tt.responseBilling, nil)
 
-			mockAccount.EXPECT().SubtractBalance(ctx, tt.responseBilling.AccountID, tt.responseBilling.CostTotal).Return(tt.responseAccount, nil)
+			mockAccount.EXPECT().SubtractBalanceWithCheck(ctx, tt.responseBilling.AccountID, tt.responseBilling.CostTotal).Return(tt.responseAccount, nil)
 
 			if err := h.BillingStart(ctx, tt.customerID, tt.referenceType, tt.referenceID, tt.tmBillingStart, tt.source, tt.destination); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
-
-			time.Sleep(4 * time.Second)
 		})
 	}
 }
@@ -342,7 +347,7 @@ func Test_BillingEnd(t *testing.T) {
 			mockDB.EXPECT().BillingSetStatusEnd(ctx, tt.responseBilling.ID, tt.expectBillingUnitCount, tt.tmBillingEnd).Return(nil)
 			mockDB.EXPECT().BillingGet(ctx, tt.responseBilling.ID).Return(tt.responseBilling, nil)
 
-			mockAccount.EXPECT().SubtractBalance(ctx, tt.responseBilling.AccountID, tt.responseBilling.CostTotal).Return(tt.responseAccount, nil)
+			mockAccount.EXPECT().SubtractBalanceWithCheck(ctx, tt.responseBilling.AccountID, tt.responseBilling.CostTotal).Return(tt.responseAccount, nil)
 
 			if err := h.BillingEnd(ctx, tt.billing, tt.tmBillingEnd, tt.source, tt.destination); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

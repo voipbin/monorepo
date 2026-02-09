@@ -23,6 +23,7 @@ import (
 
 	"monorepo/bin-billing-manager/pkg/accounthandler"
 	"monorepo/bin-billing-manager/pkg/billinghandler"
+	"monorepo/bin-billing-manager/pkg/failedeventhandler"
 )
 
 // SubscribeHandler interface
@@ -36,8 +37,9 @@ type subscribeHandler struct {
 	subscribeQueue   string
 	subscribeTargets []string
 
-	accountHandler accounthandler.AccountHandler
-	billingHandler billinghandler.BillingHandler
+	accountHandler      accounthandler.AccountHandler
+	billingHandler      billinghandler.BillingHandler
+	failedEventHandler  failedeventhandler.FailedEventHandler
 }
 
 var (
@@ -69,14 +71,16 @@ func NewSubscribeHandler(
 	subscribeTargets []string,
 	accountHandler accounthandler.AccountHandler,
 	billingHandler billinghandler.BillingHandler,
+	failedEventHandler failedeventhandler.FailedEventHandler,
 ) SubscribeHandler {
 	h := &subscribeHandler{
 		sockHandler:      sockHandler,
 		subscribeQueue:   subscribeQueue,
 		subscribeTargets: subscribeTargets,
 
-		accountHandler: accountHandler,
-		billingHandler: billingHandler,
+		accountHandler:     accountHandler,
+		billingHandler:     billingHandler,
+		failedEventHandler: failedEventHandler,
 	}
 
 	return h
@@ -119,7 +123,10 @@ func (h *subscribeHandler) processEventRun(m *sock.Event) error {
 	})
 
 	if errProcess := h.processEvent(m); errProcess != nil {
-		log.Errorf("Could not consume the subscribed event message correctly. err: %v", errProcess)
+		log.Errorf("Could not consume the subscribed event message correctly. Persisting for retry. err: %v", errProcess)
+		if errSave := h.failedEventHandler.Save(context.Background(), m, errProcess); errSave != nil {
+			log.Errorf("CRITICAL: Could not save failed event. Data loss possible. err: %v", errSave)
+		}
 	}
 
 	return nil
@@ -180,8 +187,21 @@ func (h *subscribeHandler) processEvent(m *sock.Event) error {
 
 	if err != nil {
 		log.Errorf("Could not process the event correctly. publisher: %s, type: %s, err: %v", m.Publisher, m.Type, err)
-		return nil
+		return err
 	}
 
 	return nil
+}
+
+// GetEventProcessor returns the processEvent function as a callback for the failed event handler retry loop.
+func GetEventProcessor(sh SubscribeHandler) failedeventhandler.EventProcessor {
+	h := sh.(*subscribeHandler)
+	return h.processEvent
+}
+
+// SetFailedEventHandler sets the failed event handler on the subscribe handler.
+// This is used to break the circular dependency during initialization.
+func SetFailedEventHandler(sh SubscribeHandler, feh failedeventhandler.FailedEventHandler) {
+	h := sh.(*subscribeHandler)
+	h.failedEventHandler = feh
 }

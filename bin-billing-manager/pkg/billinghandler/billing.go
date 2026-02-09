@@ -32,6 +32,13 @@ func (h *billingHandler) BillingStart(
 		"tm_billing_start": tmBillingStart,
 	})
 
+	// idempotency check — return early if billing already exists for this reference
+	existing, err := h.db.BillingGetByReferenceTypeAndID(ctx, referenceType, referenceID)
+	if err == nil && existing != nil {
+		log.WithField("billing", existing).Debugf("Billing already exists for reference. Skipping creation. reference_type: %s, reference_id: %s", referenceType, referenceID)
+		return nil
+	}
+
 	// get account
 	a, err := h.accountHandler.GetByCustomerID(ctx, customerID)
 	if err != nil {
@@ -69,12 +76,10 @@ func (h *billingHandler) BillingStart(
 
 	if flagEnd {
 		log.Debugf("The end flag has set. End the billing now. reference_id: %s", referenceID)
-		go func() {
-			if errBilling := h.BillingEnd(context.Background(), tmp, tmBillingStart, source, destination); errBilling != nil {
-				// note: we could not bill the cost. But we write the log only here.
-				log.Errorf("Could not end the billing. err: %v", errBilling)
-			}
-		}()
+		if errBilling := h.BillingEnd(ctx, tmp, tmBillingStart, source, destination); errBilling != nil {
+			log.Errorf("Could not end the billing. err: %v", errBilling)
+			return errors.Wrap(errBilling, "could not end the billing")
+		}
 	}
 
 	return nil
@@ -116,11 +121,11 @@ func (h *billingHandler) BillingEnd(
 	}
 	log.WithField("billing", tmp).Debugf("Updated billing status end. billing_id: %s", tmp.ID)
 
-	// update account balance
-	ac, err := h.accountHandler.SubtractBalance(ctx, tmp.AccountID, tmp.CostTotal)
+	// update account balance with atomic check
+	ac, err := h.accountHandler.SubtractBalanceWithCheck(ctx, tmp.AccountID, tmp.CostTotal)
 	if err != nil {
-		log.Errorf("Could not substract the balance from the account. err: %v", err)
-		return errors.Wrap(err, "could not substract the account balance from the account")
+		log.Errorf("Could not subtract the balance from the account. err: %v", err)
+		return errors.Wrap(err, "could not subtract the account balance from the account")
 	}
 	log.WithField("account", ac).Debugf("Updated account balance. account_id: %s, balance: %f", ac.ID, ac.Balance)
 
