@@ -19,6 +19,7 @@ import (
 
 // ConferenceHandler is interface for conference handle
 type ConferenceHandler interface {
+	CountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error)
 	Create(
 		ctx context.Context,
 		id uuid.UUID,

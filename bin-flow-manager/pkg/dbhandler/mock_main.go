@@ -145,6 +145,21 @@ func (mr *MockDBHandlerMockRecorder) ActiveflowUpdate(ctx, id, fields any) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveflowUpdate", reflect.TypeOf((*MockDBHandler)(nil).ActiveflowUpdate), ctx, id, fields)
 }
 
+// FlowCountByCustomerID mocks base method.
+func (m *MockDBHandler) FlowCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FlowCountByCustomerID", ctx, customerID)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FlowCountByCustomerID indicates an expected call of FlowCountByCustomerID.
+func (mr *MockDBHandlerMockRecorder) FlowCountByCustomerID(ctx, customerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowCountByCustomerID", reflect.TypeOf((*MockDBHandler)(nil).FlowCountByCustomerID), ctx, customerID)
+}
+
 // FlowCreate mocks base method.
 func (m *MockDBHandler) FlowCreate(ctx context.Context, f *flow.Flow) error {
 	m.ctrl.T.Helper()

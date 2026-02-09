@@ -44,6 +44,7 @@ var (
 
 	// v1
 	// queues
+	regV1QueuesCountByCustomer = regexp.MustCompile("/v1/queues/count_by_customer$")
 	regV1Queues                = regexp.MustCompile("/v1/queues$")
 	regV1QueuesGet             = regexp.MustCompile(`/v1/queues\?` + regAny + "$")
 	reqV1QueuesID              = regexp.MustCompile("/v1/queues/" + regUUID + "$")
@@ -158,6 +159,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	// // queues
 	// ////////////
 	// /queues
+	// GET /queues/count_by_customer
+	case regV1QueuesCountByCustomer.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1QueuesCountByCustomerGet(ctx, m)
+		requestType = "/v1/queues/count_by_customer"
+
 	// GET /queues
 	case regV1QueuesGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1QueuesGet(ctx, m)

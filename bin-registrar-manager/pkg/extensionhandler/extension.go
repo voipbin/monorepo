@@ -3,9 +3,12 @@ package extensionhandler
 import (
 	"context"
 
+	"fmt"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	commonbilling "monorepo/bin-common-handler/models/billing"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-registrar-manager/models/astaor"
 	"monorepo/bin-registrar-manager/models/astauth"
@@ -31,6 +34,17 @@ func (h *extensionHandler) Create(
 		"extension":   ext,
 		"password":    password,
 	})
+
+	// check resource limit
+	valid, err := h.reqHandler.CustomerV1CustomerIsValidResourceLimit(ctx, customerID, commonbilling.ResourceTypeExtension)
+	if err != nil {
+		log.Errorf("Could not validate resource limit. err: %v", err)
+		return nil, fmt.Errorf("could not validate resource limit: %w", err)
+	}
+	if !valid {
+		log.Infof("Resource limit exceeded for customer. customer_id: %s", customerID)
+		return nil, fmt.Errorf("resource limit exceeded")
+	}
 
 	// create realm
 	realm := common.GenerateRealmExtension(customerID)

@@ -14,6 +14,14 @@ import (
 	"github.com/pkg/errors"
 )
 
+type extensionCountByCustomerRequest struct {
+	CustomerID uuid.UUID `json:"customer_id"`
+}
+
+type extensionCountByCustomerResponse struct {
+	Count int `json:"count"`
+}
+
 // RegistrarV1ExtensionCreate sends a request to registrar-manager
 // to creating a extension.
 // it returns created extension if it succeed.
@@ -159,4 +167,29 @@ func (r *requestHandler) RegistrarV1ExtensionGetByExtension(ctx context.Context,
 	}
 
 	return &res, nil
+}
+
+// RegistrarV1ExtensionCountByCustomerID sends a request to registrar-manager
+// to get the count of extensions for the given customer.
+func (r *requestHandler) RegistrarV1ExtensionCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error) {
+	uri := "/v1/extensions/count_by_customer"
+
+	m, err := json.Marshal(extensionCountByCustomerRequest{
+		CustomerID: customerID,
+	})
+	if err != nil {
+		return 0, err
+	}
+
+	tmp, err := r.sendRequestRegistrar(ctx, uri, sock.RequestMethodGet, "registrar/extensions/count_by_customer", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
+		return 0, err
+	}
+
+	var res extensionCountByCustomerResponse
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return 0, errParse
+	}
+
+	return res.Count, nil
 }

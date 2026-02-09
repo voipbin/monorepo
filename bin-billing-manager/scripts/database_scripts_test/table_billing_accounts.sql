@@ -2,7 +2,8 @@ create table billing_accounts(
   id            binary(16),
   customer_id   binary(16),
 
-  type varchar(255),
+  type      varchar(255),
+  plan_type varchar(255),
 
   name    varchar(255),
   detail  text,

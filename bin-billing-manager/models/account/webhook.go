@@ -14,6 +14,8 @@ type WebhookMessage struct {
 	Name   string `json:"name"`
 	Detail string `json:"detail"`
 
+	PlanType PlanType `json:"plan_type"`
+
 	Balance float32 `json:"balance"` // USD
 
 	PaymentType   PaymentType   `json:"payment_type"`
@@ -32,6 +34,8 @@ func (h *Account) ConvertWebhookMessage() *WebhookMessage {
 
 		Name:   h.Name,
 		Detail: h.Detail,
+
+		PlanType: h.PlanType,
 
 		Balance: h.Balance,
 

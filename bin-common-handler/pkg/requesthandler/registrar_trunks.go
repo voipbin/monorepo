@@ -15,6 +15,14 @@ import (
 	"github.com/pkg/errors"
 )
 
+type trunkCountByCustomerRequest struct {
+	CustomerID uuid.UUID `json:"customer_id"`
+}
+
+type trunkCountByCustomerResponse struct {
+	Count int `json:"count"`
+}
+
 // RegistrarV1TrunkCreate sends a request to registrar-manager
 // to creating a trunk.
 // it returns created trunk if it succeed.
@@ -162,4 +170,29 @@ func (r *requestHandler) RegistrarV1TrunkUpdateBasicInfo(ctx context.Context, tr
 	}
 
 	return &res, nil
+}
+
+// RegistrarV1TrunkCountByCustomerID sends a request to registrar-manager
+// to get the count of trunks for the given customer.
+func (r *requestHandler) RegistrarV1TrunkCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error) {
+	uri := "/v1/trunks/count_by_customer"
+
+	m, err := json.Marshal(trunkCountByCustomerRequest{
+		CustomerID: customerID,
+	})
+	if err != nil {
+		return 0, err
+	}
+
+	tmp, err := r.sendRequestRegistrar(ctx, uri, sock.RequestMethodGet, "registrar/trunks/count_by_customer", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
+		return 0, err
+	}
+
+	var res trunkCountByCustomerResponse
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return 0, errParse
+	}
+
+	return res.Count, nil
 }

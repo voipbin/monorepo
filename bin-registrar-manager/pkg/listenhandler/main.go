@@ -49,14 +49,16 @@ var (
 	regV1ContactsGet = regexp.MustCompile(`/v1/contacts(\?.*)?$`)
 
 	// extensions
-	regV1Extensions    = regexp.MustCompile("/v1/extensions$")
-	regV1ExtensionsGet = regexp.MustCompile(`/v1/extensions\?`)
+	regV1ExtensionsCountByCustomer = regexp.MustCompile("/v1/extensions/count_by_customer$")
+	regV1Extensions                = regexp.MustCompile("/v1/extensions$")
+	regV1ExtensionsGet             = regexp.MustCompile(`/v1/extensions\?`)
 	regV1ExtensionsID  = regexp.MustCompile("/v1/extensions/" + regUUID + "$")
 	// regV1ExtensionsExtensionEndpoint     = regexp.MustCompile("/v1/extensions/endpoint/" + regAny + "$")
 	regV1ExtensionsExtensionExtensionGet = regexp.MustCompile("/v1/extensions/extension/" + regAny + `(\?.*)?$`)
 
 	// trunks
-	regV1Trunks           = regexp.MustCompile("/v1/trunks$")
+	regV1TrunksCountByCustomer = regexp.MustCompile("/v1/trunks/count_by_customer$")
+	regV1Trunks                = regexp.MustCompile("/v1/trunks$")
 	regV1TrunksGet        = regexp.MustCompile(`/v1/trunks\?`)
 	regV1TrunksID         = regexp.MustCompile("/v1/trunks/" + regUUID + "$")
 	regV1TrunksDomainName = regexp.MustCompile("/v1/trunks/domain_name/" + regAny)
@@ -167,6 +169,10 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	/////////////
 	// extensions
 	/////////////
+	case regV1ExtensionsCountByCustomer.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1ExtensionsCountByCustomerGet(ctx, m)
+		requestType = "/v1/extensions/count_by_customer"
+
 	case regV1ExtensionsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1ExtensionsIDGet(ctx, m)
 		requestType = "/v1/extensions/<extension-id>"
@@ -198,6 +204,10 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	/////////////
 	// trunks
 	/////////////
+	case regV1TrunksCountByCustomer.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1TrunksCountByCustomerGet(ctx, m)
+		requestType = "/v1/trunks/count_by_customer"
+
 	case regV1TrunksGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1TrunksGet(ctx, m)
 		requestType = "/v1/trunks"

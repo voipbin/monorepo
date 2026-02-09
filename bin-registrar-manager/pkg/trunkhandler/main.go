@@ -22,6 +22,7 @@ import (
 
 // TrunkHandler is interface for service handle
 type TrunkHandler interface {
+	CountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error)
 	Create(
 		ctx context.Context,
 		customerID uuid.UUID,

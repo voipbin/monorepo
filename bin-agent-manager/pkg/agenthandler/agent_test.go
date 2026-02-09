@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonbilling "monorepo/bin-common-handler/models/billing"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -152,6 +153,8 @@ func Test_Create(t *testing.T) {
 				notifyHandler: mockNotify,
 			}
 			ctx := context.Background()
+
+			mockReq.EXPECT().CustomerV1CustomerIsValidResourceLimit(ctx, tt.customerID, commonbilling.ResourceTypeAgent).Return(true, nil)
 
 			mockUtil.EXPECT().EmailIsValid(tt.username).Return(true)
 

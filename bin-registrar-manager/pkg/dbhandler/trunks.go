@@ -37,6 +37,27 @@ func (h *handler) trunkGetFromRow(row *sql.Rows) (*trunk.Trunk, error) {
 	return res, nil
 }
 
+// TrunkCountByCustomerID returns the count of active trunks for the given customer.
+func (h *handler) TrunkCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error) {
+	query, args, err := squirrel.
+		Select("COUNT(*)").
+		From(trunksTable).
+		Where(squirrel.Eq{string(trunk.FieldCustomerID): customerID.Bytes()}).
+		Where(squirrel.Eq{string(trunk.FieldTMDelete): nil}).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
+	if err != nil {
+		return 0, fmt.Errorf("TrunkCountByCustomerID: could not build query. err: %v", err)
+	}
+
+	var count int
+	if err := h.db.QueryRowContext(ctx, query, args...).Scan(&count); err != nil {
+		return 0, fmt.Errorf("TrunkCountByCustomerID: could not query. err: %v", err)
+	}
+
+	return count, nil
+}
+
 // TrunkCreate creates new Trunk record.
 func (h *handler) TrunkCreate(ctx context.Context, t *trunk.Trunk) error {
 	now := h.utilHandler.TimeNow()

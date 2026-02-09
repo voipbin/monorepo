@@ -30,6 +30,7 @@ type DBHandler interface {
 	ActiveflowReleaseLock(ctx context.Context, id uuid.UUID) error
 
 	// flow
+	FlowCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error)
 	FlowCreate(ctx context.Context, f *flow.Flow) error
 	FlowDelete(ctx context.Context, id uuid.UUID) error
 	FlowGet(ctx context.Context, id uuid.UUID) (*flow.Flow, error)

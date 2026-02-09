@@ -10,6 +10,7 @@ import (
 	bmbilling "monorepo/bin-billing-manager/models/billing"
 	bmrequest "monorepo/bin-billing-manager/pkg/listenhandler/models/request"
 	bmresponse "monorepo/bin-billing-manager/pkg/listenhandler/models/response"
+	commonbilling "monorepo/bin-common-handler/models/billing"
 	"monorepo/bin-common-handler/models/sock"
 
 	"github.com/gofrs/uuid"
@@ -217,6 +218,30 @@ func (r *requestHandler) BillingV1AccountIsValidBalance(ctx context.Context, acc
 	}
 
 	var res bmresponse.V1ResponseAccountsIDIsValidBalance
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return false, errParse
+	}
+
+	return res.Valid, nil
+}
+
+// BillingV1AccountIsValidResourceLimit returns true if the given account has not exceeded the resource limit for the given resource type
+func (r *requestHandler) BillingV1AccountIsValidResourceLimit(ctx context.Context, accountID uuid.UUID, resourceType commonbilling.ResourceType) (bool, error) {
+	uri := fmt.Sprintf("/v1/accounts/%s/is_valid_resource_limit", accountID)
+
+	m, err := json.Marshal(bmrequest.V1DataAccountsIDIsValidResourceLimitPOST{
+		ResourceType: string(resourceType),
+	})
+	if err != nil {
+		return false, err
+	}
+
+	tmp, err := r.sendRequestBilling(ctx, uri, sock.RequestMethodPost, "billing/accounts/<account-id>/is_valid_resource_limit", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
+		return false, err
+	}
+
+	var res bmresponse.V1ResponseAccountsIDIsValidResourceLimit
 	if errParse := parseResponse(tmp, &res); errParse != nil {
 		return false, errParse
 	}

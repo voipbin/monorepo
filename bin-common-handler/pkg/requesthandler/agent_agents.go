@@ -16,6 +16,14 @@ import (
 	"monorepo/bin-common-handler/models/sock"
 )
 
+type agentCountByCustomerRequest struct {
+	CustomerID uuid.UUID `json:"customer_id"`
+}
+
+type agentCountByCustomerResponse struct {
+	Count int `json:"count"`
+}
+
 // AgentV1AgentCreate sends a request to agent-manager
 // to creating an Agent.
 // it returns created call if it succeed.
@@ -383,4 +391,29 @@ func (r *requestHandler) AgentV1AgentUpdatePermission(ctx context.Context, id uu
 	}
 
 	return &res, nil
+}
+
+// AgentV1AgentCountByCustomerID sends a request to agent-manager
+// to get the count of agents for the given customer.
+func (r *requestHandler) AgentV1AgentCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error) {
+	uri := "/v1/agents/count_by_customer"
+
+	m, err := json.Marshal(agentCountByCustomerRequest{
+		CustomerID: customerID,
+	})
+	if err != nil {
+		return 0, err
+	}
+
+	tmp, err := r.sendRequestAgent(ctx, uri, sock.RequestMethodGet, "agent/agents/count_by_customer", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
+		return 0, err
+	}
+
+	var res agentCountByCustomerResponse
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return 0, errParse
+	}
+
+	return res.Count, nil
 }

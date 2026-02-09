@@ -15,6 +15,14 @@ import (
 	"github.com/pkg/errors"
 )
 
+type conferenceCountByCustomerRequest struct {
+	CustomerID uuid.UUID `json:"customer_id"`
+}
+
+type conferenceCountByCustomerResponse struct {
+	Count int `json:"count"`
+}
+
 // ConferenceV1ConferenceGet gets the conference.
 func (r *requestHandler) ConferenceV1ConferenceGet(ctx context.Context, conferenceID uuid.UUID) (*cfconference.Conference, error) {
 
@@ -335,4 +343,29 @@ func (r *requestHandler) ConferenceV1ConferenceTranscribeStop(ctx context.Contex
 	}
 
 	return &res, nil
+}
+
+// ConferenceV1ConferenceCountByCustomerID sends a request to conference-manager
+// to get the count of conferences for the given customer.
+func (r *requestHandler) ConferenceV1ConferenceCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error) {
+	uri := "/v1/conferences/count_by_customer"
+
+	m, err := json.Marshal(conferenceCountByCustomerRequest{
+		CustomerID: customerID,
+	})
+	if err != nil {
+		return 0, err
+	}
+
+	tmp, err := r.sendRequestConference(ctx, uri, sock.RequestMethodGet, "conference/conferences/count_by_customer", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
+		return 0, err
+	}
+
+	var res conferenceCountByCustomerResponse
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return 0, errParse
+	}
+
+	return res.Count, nil
 }

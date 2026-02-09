@@ -43,6 +43,21 @@ func (m *MockExtensionHandler) EXPECT() *MockExtensionHandlerMockRecorder {
 	return m.recorder
 }
 
+// CountByCustomerID mocks base method.
+func (m *MockExtensionHandler) CountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CountByCustomerID", ctx, customerID)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CountByCustomerID indicates an expected call of CountByCustomerID.
+func (mr *MockExtensionHandlerMockRecorder) CountByCustomerID(ctx, customerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CountByCustomerID", reflect.TypeOf((*MockExtensionHandler)(nil).CountByCustomerID), ctx, customerID)
+}
+
 // Create mocks base method.
 func (m *MockExtensionHandler) Create(ctx context.Context, customerID uuid.UUID, name, detail, ext, password string) (*extension.Extension, error) {
 	m.ctrl.T.Helper()

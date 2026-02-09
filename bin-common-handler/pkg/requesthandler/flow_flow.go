@@ -15,6 +15,14 @@ import (
 	"github.com/pkg/errors"
 )
 
+type flowCountByCustomerRequest struct {
+	CustomerID uuid.UUID `json:"customer_id"`
+}
+
+type flowCountByCustomerResponse struct {
+	Count int `json:"count"`
+}
+
 // FlowV1FlowCreate creates a new flow.
 func (r *requestHandler) FlowV1FlowCreate(
 	ctx context.Context,
@@ -182,4 +190,29 @@ func (r *requestHandler) FlowV1FlowList(ctx context.Context, pageToken string, p
 	}
 
 	return res, nil
+}
+
+// FlowV1FlowCountByCustomerID sends a request to flow-manager
+// to get the count of flows for the given customer.
+func (r *requestHandler) FlowV1FlowCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error) {
+	uri := "/v1/flows/count_by_customer"
+
+	m, err := json.Marshal(flowCountByCustomerRequest{
+		CustomerID: customerID,
+	})
+	if err != nil {
+		return 0, err
+	}
+
+	tmp, err := r.sendRequestFlow(ctx, uri, sock.RequestMethodGet, "flow/flows/count_by_customer", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
+		return 0, err
+	}
+
+	var res flowCountByCustomerResponse
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return 0, errParse
+	}
+
+	return res.Count, nil
 }

@@ -18,6 +18,14 @@ import (
 	"github.com/pkg/errors"
 )
 
+type queueCountByCustomerRequest struct {
+	CustomerID uuid.UUID `json:"customer_id"`
+}
+
+type queueCountByCustomerResponse struct {
+	Count int `json:"count"`
+}
+
 // QueueV1QueueList sends a request to queue-manager
 // to get a list of queues.
 // Returns list of queues
@@ -316,4 +324,29 @@ func (r *requestHandler) QueueV1QueueUpdateExecute(ctx context.Context, queueID 
 	}
 
 	return &res, nil
+}
+
+// QueueV1QueueCountByCustomerID sends a request to queue-manager
+// to get the count of queues for the given customer.
+func (r *requestHandler) QueueV1QueueCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error) {
+	uri := "/v1/queues/count_by_customer"
+
+	m, err := json.Marshal(queueCountByCustomerRequest{
+		CustomerID: customerID,
+	})
+	if err != nil {
+		return 0, err
+	}
+
+	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodGet, "queue/queues/count_by_customer", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
+		return 0, err
+	}
+
+	var res queueCountByCustomerResponse
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return 0, errParse
+	}
+
+	return res.Count, nil
 }

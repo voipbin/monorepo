@@ -13,6 +13,7 @@ import (
 	context "context"
 	account "monorepo/bin-billing-manager/models/account"
 	billing "monorepo/bin-billing-manager/models/billing"
+	billing0 "monorepo/bin-common-handler/models/billing"
 	customer "monorepo/bin-customer-manager/models/customer"
 	reflect "reflect"
 
@@ -160,6 +161,21 @@ func (m *MockAccountHandler) IsValidBalance(ctx context.Context, accountID uuid.
 func (mr *MockAccountHandlerMockRecorder) IsValidBalance(ctx, accountID, billingType, country, count any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsValidBalance", reflect.TypeOf((*MockAccountHandler)(nil).IsValidBalance), ctx, accountID, billingType, country, count)
+}
+
+// IsValidResourceLimit mocks base method.
+func (m *MockAccountHandler) IsValidResourceLimit(ctx context.Context, accountID uuid.UUID, resourceType billing0.ResourceType) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsValidResourceLimit", ctx, accountID, resourceType)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// IsValidResourceLimit indicates an expected call of IsValidResourceLimit.
+func (mr *MockAccountHandlerMockRecorder) IsValidResourceLimit(ctx, accountID, resourceType any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsValidResourceLimit", reflect.TypeOf((*MockAccountHandler)(nil).IsValidResourceLimit), ctx, accountID, resourceType)
 }
 
 // List mocks base method.

@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	bmbilling "monorepo/bin-billing-manager/models/billing"
+	commonbilling "monorepo/bin-common-handler/models/billing"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -276,6 +277,50 @@ func (h *listenHandler) processV1CustomersIDIsValidBalance(ctx context.Context, 
 	}
 
 	tmp := &response.V1ResponseCustomersIDIsValidBalancePost{
+		Valid: valid,
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		return simpleResponse(404), nil
+	}
+
+	res := &sock.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1CustomersIDIsValidResourceLimit handles POST /v1/customers/<customer-id>/is_valid_resource_limit request
+func (h *listenHandler) processV1CustomersIDIsValidResourceLimit(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1CustomersIDIsValidResourceLimit",
+		"request": m,
+	})
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 5 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+
+	var req request.V1DataCustomersIDIsValidResourceLimitPost
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
+		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		return simpleResponse(400), nil
+	}
+
+	valid, err := h.customerHandler.IsValidResourceLimit(ctx, id, commonbilling.ResourceType(req.ResourceType))
+	if err != nil {
+		log.Errorf("Could not validate the customer's resource limit. err: %v", err)
+		return simpleResponse(400), nil
+	}
+
+	tmp := &response.V1ResponseCustomersIDIsValidResourceLimitPost{
 		Valid: valid,
 	}
 

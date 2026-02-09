@@ -44,6 +44,7 @@ var (
 
 	// v1
 	// agents
+	regV1AgentsCountByCustomer      = regexp.MustCompile("/v1/agents/count_by_customer$")
 	regV1Agents                     = regexp.MustCompile("/v1/agents$")
 	regV1AgentsGet                  = regexp.MustCompile(`/v1/agents\?(.*)$`)
 	regV1AgentsUsernameLogin        = regexp.MustCompile("/v1/agents/" + regAny + "/login$")
@@ -147,6 +148,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	////////////
 	// agents
 	////////////
+	// GET /agents/count_by_customer
+	case regV1AgentsCountByCustomer.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1AgentsCountByCustomerGet(ctx, m)
+		requestType = "/v1/agents/count_by_customer"
+
 	// GET /agents
 	case regV1AgentsGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1AgentsGet(ctx, m)

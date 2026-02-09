@@ -7,6 +7,7 @@ import (
 	"net/url"
 
 	bmbilling "monorepo/bin-billing-manager/models/billing"
+	commonbilling "monorepo/bin-common-handler/models/billing"
 	"monorepo/bin-common-handler/models/sock"
 	cscustomer "monorepo/bin-customer-manager/models/customer"
 	csrequest "monorepo/bin-customer-manager/pkg/listenhandler/models/request"
@@ -186,6 +187,33 @@ func (r *requestHandler) CustomerV1CustomerIsValidBalance(ctx context.Context, c
 	}
 
 	var res csresponse.V1ResponseCustomersIDIsValidBalancePost
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return false, errParse
+	}
+
+	return res.Valid, nil
+}
+
+// CustomerV1CustomerIsValidResourceLimit sends a request to customer-manager
+// returns true if the customer has not exceeded the resource limit for the given resource type.
+func (r *requestHandler) CustomerV1CustomerIsValidResourceLimit(ctx context.Context, customerID uuid.UUID, resourceType commonbilling.ResourceType) (bool, error) {
+	uri := fmt.Sprintf("/v1/customers/%s/is_valid_resource_limit", customerID)
+
+	data := &csrequest.V1DataCustomersIDIsValidResourceLimitPost{
+		ResourceType: string(resourceType),
+	}
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		return false, err
+	}
+
+	tmp, err := r.sendRequestCustomer(ctx, uri, sock.RequestMethodPost, "customer/customers/<customer-id>/is_valid_resource_limit", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
+		return false, err
+	}
+
+	var res csresponse.V1ResponseCustomersIDIsValidResourceLimitPost
 	if errParse := parseResponse(tmp, &res); errParse != nil {
 		return false, errParse
 	}

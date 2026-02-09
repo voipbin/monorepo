@@ -22,6 +22,7 @@ type DBHandler interface {
 	ConferenceAddConferencecallID(ctx context.Context, id, callID uuid.UUID) error
 	ConferenceAddRecordingIDs(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) error
 	ConferenceAddTranscribeIDs(ctx context.Context, id uuid.UUID, transcribeID uuid.UUID) error
+	ConferenceCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error)
 	ConferenceCreate(ctx context.Context, cf *conference.Conference) error
 	ConferenceDelete(ctx context.Context, id uuid.UUID) error
 	ConferenceEnd(ctx context.Context, id uuid.UUID) error

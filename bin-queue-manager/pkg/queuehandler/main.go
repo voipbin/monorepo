@@ -26,6 +26,7 @@ const (
 
 // QueueHandler interface
 type QueueHandler interface {
+	CountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error)
 	Create(
 		ctx context.Context,
 		customerID uuid.UUID,

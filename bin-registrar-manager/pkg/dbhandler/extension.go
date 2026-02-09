@@ -28,6 +28,27 @@ func (h *handler) extensionGetFromRow(row *sql.Rows) (*extension.Extension, erro
 	return res, nil
 }
 
+// ExtensionCountByCustomerID returns the count of active extensions for the given customer.
+func (h *handler) ExtensionCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error) {
+	query, args, err := squirrel.
+		Select("COUNT(*)").
+		From(extensionsTable).
+		Where(squirrel.Eq{string(extension.FieldCustomerID): customerID.Bytes()}).
+		Where(squirrel.Eq{string(extension.FieldTMDelete): nil}).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
+	if err != nil {
+		return 0, fmt.Errorf("ExtensionCountByCustomerID: could not build query. err: %v", err)
+	}
+
+	var count int
+	if err := h.db.QueryRowContext(ctx, query, args...).Scan(&count); err != nil {
+		return 0, fmt.Errorf("ExtensionCountByCustomerID: could not query. err: %v", err)
+	}
+
+	return count, nil
+}
+
 // ExtensionCreate creates new Extension record.
 func (h *handler) ExtensionCreate(ctx context.Context, b *extension.Extension) error {
 	now := h.utilHandler.TimeNow()

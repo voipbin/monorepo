@@ -43,6 +43,11 @@ type V1DataAccountsIDIsValidBalancePOST struct {
 	Count       int    `json:"count"`
 }
 
+// V1DataAccountsIDIsValidResourceLimitPOST is rquest param define for POST /accounts/<account-id>/is_valid_resource_limit
+type V1DataAccountsIDIsValidResourceLimitPOST struct {
+	ResourceType string `json:"resource_type"`
+}
+
 // V1DataAccountsIDPaymentInfoPUT is rquest param define for POST /accounts/<account-id>/payment_info
 type V1DataAccountsIDPaymentInfoPUT struct {
 	PaymentType   account.PaymentType   `json:"payment_type"`

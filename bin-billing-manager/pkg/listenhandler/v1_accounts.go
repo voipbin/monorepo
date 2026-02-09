@@ -17,6 +17,7 @@ import (
 	"monorepo/bin-billing-manager/models/billing"
 	"monorepo/bin-billing-manager/pkg/listenhandler/models/request"
 	"monorepo/bin-billing-manager/pkg/listenhandler/models/response"
+	commonbilling "monorepo/bin-common-handler/models/billing"
 )
 
 // processV1AccountsGet handles GET /v1/accounts request
@@ -313,6 +314,49 @@ func (h *listenHandler) processV1AccountsIDIsValidBalancePost(ctx context.Contex
 	}
 
 	tmp := &response.V1ResponseAccountsIDIsValidBalance{
+		Valid: valid,
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		return simpleResponse(404), nil
+	}
+
+	res := &sock.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1AccountsIDIsValidResourceLimitPost handles POST /v1/accounts/<account-id>/is_valid_resource_limit request
+func (h *listenHandler) processV1AccountsIDIsValidResourceLimitPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1AccountsIDIsValidResourceLimitPost",
+		"request": m,
+	})
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 5 {
+		return simpleResponse(400), nil
+	}
+
+	accountID := uuid.FromStringOrNil(uriItems[3])
+
+	var req request.V1DataAccountsIDIsValidResourceLimitPOST
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
+		return nil, err
+	}
+
+	valid, err := h.accountHandler.IsValidResourceLimit(ctx, accountID, commonbilling.ResourceType(req.ResourceType))
+	if err != nil {
+		log.Errorf("Could not validate the account's resource limit. err: %v", err)
+		return simpleResponse(404), nil
+	}
+
+	tmp := &response.V1ResponseAccountsIDIsValidResourceLimit{
 		Valid: valid,
 	}
 

@@ -8,6 +8,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	commonbilling "monorepo/bin-common-handler/models/billing"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-flow-manager/models/action"
 	"monorepo/bin-flow-manager/models/flow"
@@ -50,6 +51,17 @@ func (h *flowHandler) Create(
 		"actions":             actions,
 		"on_complete_flow_id": onCompleteFlowID,
 	})
+
+	// check resource limit
+	valid, errLimit := h.reqHandler.CustomerV1CustomerIsValidResourceLimit(ctx, customerID, commonbilling.ResourceTypeFlow)
+	if errLimit != nil {
+		log.Errorf("Could not validate resource limit. err: %v", errLimit)
+		return nil, fmt.Errorf("could not validate resource limit: %w", errLimit)
+	}
+	if !valid {
+		log.Infof("Resource limit exceeded for customer. customer_id: %s", customerID)
+		return nil, fmt.Errorf("resource limit exceeded")
+	}
 
 	// generates the actions
 	a, err := h.actionHandler.GenerateFlowActions(ctx, actions)

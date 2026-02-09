@@ -34,6 +34,7 @@ type flowHandler struct {
 type FlowHandler interface {
 	ActionGet(ctx context.Context, flowID uuid.UUID, actionID uuid.UUID) (*action.Action, error)
 
+	CountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error)
 	Create(
 		ctx context.Context,
 		customerID uuid.UUID,

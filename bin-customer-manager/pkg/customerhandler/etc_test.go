@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	bmbilling "monorepo/bin-billing-manager/models/billing"
+	commonbilling "monorepo/bin-common-handler/models/billing"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
@@ -68,6 +69,66 @@ func Test_IsValidBalance(t *testing.T) {
 			mockReq.EXPECT().BillingV1AccountIsValidBalance(ctx, tt.responseCustomer.BillingAccountID, tt.billingType, tt.country, tt.count).Return(tt.responseValid, nil)
 
 			res, err := h.IsValidBalance(ctx, tt.customerID, tt.billingType, tt.country, tt.count)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if res != tt.expectRes {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_IsValidResourceLimit(t *testing.T) {
+	tests := []struct {
+		name string
+
+		customerID   uuid.UUID
+		resourceType commonbilling.ResourceType
+
+		responseCustomer *customer.Customer
+		responseValid    bool
+
+		expectRes bool
+	}{
+		{
+			name: "normal",
+
+			customerID:   uuid.FromStringOrNil("8d1e40bc-0f8a-11ee-91e3-5be5aea558dd"),
+			resourceType: commonbilling.ResourceTypeAgent,
+
+			responseCustomer: &customer.Customer{
+				ID:               uuid.FromStringOrNil("8d1e40bc-0f8a-11ee-91e3-5be5aea558dd"),
+				BillingAccountID: uuid.FromStringOrNil("8d4b5c96-0f8a-11ee-c0dc-9b9d7bfd6099"),
+			},
+
+			responseValid: true,
+
+			expectRes: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &customerHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().CustomerGet(ctx, tt.customerID).Return(tt.responseCustomer, nil)
+			mockReq.EXPECT().BillingV1AccountIsValidResourceLimit(ctx, tt.responseCustomer.BillingAccountID, tt.resourceType).Return(tt.responseValid, nil)
+
+			res, err := h.IsValidResourceLimit(ctx, tt.customerID, tt.resourceType)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

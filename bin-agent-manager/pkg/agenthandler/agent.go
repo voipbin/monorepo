@@ -10,6 +10,7 @@ import (
 	"monorepo/bin-agent-manager/internal/config"
 	"monorepo/bin-agent-manager/pkg/dbhandler"
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonbilling "monorepo/bin-common-handler/models/billing"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -90,6 +91,17 @@ func (h *agentHandler) Create(ctx context.Context, customerID uuid.UUID, usernam
 		"permission":  permission,
 	})
 	log.Debug("Creating a new user.")
+
+	// check resource limit
+	valid, err := h.reqHandler.CustomerV1CustomerIsValidResourceLimit(ctx, customerID, commonbilling.ResourceTypeAgent)
+	if err != nil {
+		log.Errorf("Could not validate resource limit. err: %v", err)
+		return nil, fmt.Errorf("could not validate resource limit: %w", err)
+	}
+	if !valid {
+		log.Infof("Resource limit exceeded for customer. customer_id: %s", customerID)
+		return nil, fmt.Errorf("resource limit exceeded")
+	}
 
 	// validate username
 	if !h.utilHandler.EmailIsValid(username) {

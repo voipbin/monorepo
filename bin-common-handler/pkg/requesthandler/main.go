@@ -30,6 +30,7 @@ import (
 	amsummary "monorepo/bin-ai-manager/models/summary"
 	amtool "monorepo/bin-ai-manager/models/tool"
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonbilling "monorepo/bin-common-handler/models/billing"
 	"monorepo/bin-common-handler/models/service"
 
 	cfconference "monorepo/bin-conference-manager/models/conference"
@@ -369,6 +370,7 @@ type RequestHandler interface {
 	AgentV1AgentUpdatePermission(ctx context.Context, id uuid.UUID, permission amagent.Permission) (*amagent.Agent, error)
 	AgentV1AgentUpdateStatus(ctx context.Context, id uuid.UUID, status amagent.Status) (*amagent.Agent, error)
 	AgentV1AgentUpdateTagIDs(ctx context.Context, id uuid.UUID, tagIDs []uuid.UUID) (*amagent.Agent, error)
+	AgentV1AgentCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error)
 
 	// agent-manager login
 	AgentV1Login(ctx context.Context, timeout int, username string, password string) (*amagent.Agent, error)
@@ -385,6 +387,7 @@ type RequestHandler interface {
 	BillingV1AccountAddBalanceForce(ctx context.Context, accountID uuid.UUID, balance float32) (*bmaccount.Account, error)
 	BillingV1AccountSubtractBalanceForce(ctx context.Context, accountID uuid.UUID, balance float32) (*bmaccount.Account, error)
 	BillingV1AccountIsValidBalance(ctx context.Context, accountID uuid.UUID, billingType bmbilling.ReferenceType, country string, count int) (bool, error)
+	BillingV1AccountIsValidResourceLimit(ctx context.Context, accountID uuid.UUID, resourceType commonbilling.ResourceType) (bool, error)
 	BillingV1AccountUpdateBasicInfo(ctx context.Context, accountID uuid.UUID, name string, detail string) (*bmaccount.Account, error)
 	BillingV1AccountUpdatePaymentInfo(ctx context.Context, accountID uuid.UUID, paymentType bmaccount.PaymentType, paymentMethod bmaccount.PaymentMethod) (*bmaccount.Account, error)
 
@@ -676,6 +679,7 @@ type RequestHandler interface {
 		webhookURI string,
 	) (*cscustomer.Customer, error)
 	CustomerV1CustomerIsValidBalance(ctx context.Context, customerID uuid.UUID, referenceType bmbilling.ReferenceType, country string, count int) (bool, error)
+	CustomerV1CustomerIsValidResourceLimit(ctx context.Context, customerID uuid.UUID, resourceType commonbilling.ResourceType) (bool, error)
 	CustomerV1CustomerUpdateBillingAccountID(ctx context.Context, customerID uuid.UUID, biillingAccountID uuid.UUID) (*cscustomer.Customer, error)
 	CustomerV1CustomerSignup(
 		ctx context.Context,
@@ -729,6 +733,7 @@ type RequestHandler interface {
 	ConferenceV1ConferenceStop(ctx context.Context, conferenceID uuid.UUID, delay int) (*cfconference.Conference, error)
 	ConferenceV1ConferenceTranscribeStart(ctx context.Context, conferenceID uuid.UUID, language string) (*cfconference.Conference, error)
 	ConferenceV1ConferenceTranscribeStop(ctx context.Context, conferenceID uuid.UUID) (*cfconference.Conference, error)
+	ConferenceV1ConferenceCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error)
 
 	// conference-manager conferencecall
 	ConferenceV1ConferencecallGet(ctx context.Context, conferencecallID uuid.UUID) (*cfconferencecall.Conferencecall, error)
@@ -912,6 +917,7 @@ type RequestHandler interface {
 		onCompleteFlowID uuid.UUID,
 	) (*fmflow.Flow, error)
 	FlowV1FlowUpdateActions(ctx context.Context, flowID uuid.UUID, actions []fmaction.Action) (*fmflow.Flow, error)
+	FlowV1FlowCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error)
 
 	// flow-manager variables
 	FlowV1VariableGet(ctx context.Context, variableID uuid.UUID) (*fmvariable.Variable, error)
@@ -1056,6 +1062,7 @@ type RequestHandler interface {
 	QueueV1QueuecallTimeoutWait(ctx context.Context, queuecallID uuid.UUID, delay int) error
 	QueueV1QueuecallTimeoutService(ctx context.Context, queuecallID uuid.UUID, delay int) error
 	QueueV1QueuecallUpdateStatusWaiting(ctx context.Context, queuecallID uuid.UUID) (*qmqueuecall.Queuecall, error)
+	QueueV1QueueCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error)
 
 	// queue-manager service
 	QueueV1ServiceTypeQueuecallStart(ctx context.Context, queueID uuid.UUID, activeflowID uuid.UUID, referenceType qmqueuecall.ReferenceType, referenceID uuid.UUID) (*service.Service, error)
@@ -1070,6 +1077,7 @@ type RequestHandler interface {
 	RegistrarV1ExtensionGet(ctx context.Context, extensionID uuid.UUID) (*rmextension.Extension, error)
 	RegistrarV1ExtensionList(ctx context.Context, pageToken string, pageSize uint64, filters map[rmextension.Field]any) ([]rmextension.Extension, error)
 	RegistrarV1ExtensionUpdate(ctx context.Context, id uuid.UUID, name, detail, password string) (*rmextension.Extension, error)
+	RegistrarV1ExtensionCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error)
 
 	// registrar-manager trunk
 	RegistrarV1TrunkCreate(ctx context.Context, customerID uuid.UUID, name string, detail string, domainName string, authTypes []rmsipauth.AuthType, username string, password string, allowedIPs []string) (*rmtrunk.Trunk, error)
@@ -1078,6 +1086,7 @@ type RequestHandler interface {
 	RegistrarV1TrunkGetByDomainName(ctx context.Context, domainName string) (*rmtrunk.Trunk, error)
 	RegistrarV1TrunkDelete(ctx context.Context, trunkID uuid.UUID) (*rmtrunk.Trunk, error)
 	RegistrarV1TrunkUpdateBasicInfo(ctx context.Context, trunkID uuid.UUID, name string, detail string, authTypes []rmsipauth.AuthType, username string, password string, allowedIPs []string) (*rmtrunk.Trunk, error)
+	RegistrarV1TrunkCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error)
 
 	// route-manager dialroutes
 	RouteV1DialrouteList(ctx context.Context, filters map[rmroute.Field]any) ([]rmroute.Route, error)

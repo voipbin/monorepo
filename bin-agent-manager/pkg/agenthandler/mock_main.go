@@ -45,6 +45,21 @@ func (m *MockAgentHandler) EXPECT() *MockAgentHandlerMockRecorder {
 	return m.recorder
 }
 
+// CountByCustomerID mocks base method.
+func (m *MockAgentHandler) CountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CountByCustomerID", ctx, customerID)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CountByCustomerID indicates an expected call of CountByCustomerID.
+func (mr *MockAgentHandlerMockRecorder) CountByCustomerID(ctx, customerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CountByCustomerID", reflect.TypeOf((*MockAgentHandler)(nil).CountByCustomerID), ctx, customerID)
+}
+
 // Create mocks base method.
 func (m *MockAgentHandler) Create(ctx context.Context, customerID uuid.UUID, username, password, name, detail string, ringMethod agent.RingMethod, permission agent.Permission, tagIDs []uuid.UUID, addresses []address.Address) (*agent.Agent, error) {
 	m.ctrl.T.Helper()
